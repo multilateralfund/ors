@@ -18,7 +18,7 @@ class Substance(models.Model):
 #blend model
 class Blend(models.Model):
     blend_name = models.CharField(max_length=100)
-    blend_description = models.TextField()
+    blend_description = models.TextField(null=True, blank=True)
     #the blend contains multiple substances, each with a percentage
     blend_substances = models.ManyToManyField(Substance, through='BlendSubstance')
     blend_odp = models.FloatField(null=True, blank=True)
