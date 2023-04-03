@@ -1,0 +1,36 @@
+From: Ngoc Thuy Duong <laura.duong@un.org> 
+Sent: Monday, March 20, 2023 5:49 PM
+To: vlad.posea@eaudeweb.ro; andrei.melis@eaudeweb.ro; andrei.petcu@eaudeweb.ro
+Cc: Fadi Abou Elias <fadi.abouelias@un.org>; Misha Alberizzi <misha.alberizzi@un.org>; Tina Birmpili <tina.birmpili@un.org>; Elina Yuen <elina.yuen@un.org>; Balaji Natarajan <balaji.natarajan@un.org>
+Subject: Country Programme Format
+
+Dear Vlad and Andrei,
+
+Kindly find all the country programme formats since 1995 attached.  I also share the link of the web database below:
+
+1.	1995 to 2004 – Submissions are available mostly in hard copy  
+2.	2005 - 2011 –  Data are submitted in Excel or submitted via Web Page 
+       http://www.multilateralfund.org/cp/login.aspx
+3.	2012 - 2018 – Data are submitted in Excel or submitted via Web Page
+http://www.multilateralfund.org/cpnew/Login.aspx
+4.	2019 – 2021 – Data are submitted in Excel
+5.	2022 and beyond - Data are submitted in Excel
+The username and password for the websites are:
+Username: guest
+Password: guest@unmfs
+
+After countries submitted the CP data, we extracted and consolidated the information in Excel and did the conversion from metric tonnes to ODP tonnes or CO2-eq and summarized in the following attachment:
+•	CPData-Extraction-ALL
+•	CPData-Extraction HFC
+•	CPData-Extraction HCFC
+In addition, I also attached two country programme documents submitted to the Executive Committee and two excel files with actual data submitted by the countries for your information:
+•	8808
+•	9108
+•	Brazil-2021 CP Data
+•	Mexico-2021 CP Data
+Please let me know if you need more information.
+
+Best regards,
+
+Laura
+
