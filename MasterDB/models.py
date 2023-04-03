@@ -18,7 +18,8 @@ class Substance(models.Model):
 #blend model
 class Blend(models.Model):
     blend_name = models.CharField(max_length=100)
-    blend_description = models.TextField()
+    blend_description = models.TextField(null=
+                False)
     #the blend contains multiple substances, each with a percentage
     blend_substances = models.ManyToManyField(Substance, through='BlendSubstance')
     blend_odp = models.FloatField(null=True, blank=True)
@@ -34,3 +35,21 @@ class BlendSubstance(models.Model):
 
     def __str__(self):
         return self.blend.blend_name + " " + self.substance.substance_name + " " + self.percentage
+    
+#country model; contains name, m49 code, and iso code
+class Country(models.Model):
+    country_name = models.CharField(max_length=100)
+    country_m49 = models.IntegerField(null=True, blank=True)
+    country_iso = models.CharField(max_length=3, null=True, blank=True)
+
+    def __str__(self):
+        return self.country_name
+    
+#model with how a substance can be used; contains name, description; a usage also can have a parent usage
+class Usage(models.Model):
+    usage_name = models.CharField(max_length=100)
+    usage_description = models.TextField()
+    usage_parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='parent')
+
+    def __str__(self):
+        return self.usage_name`
