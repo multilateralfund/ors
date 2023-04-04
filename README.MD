@@ -19,7 +19,6 @@
 4. Run migrations and create initial admin user:
 
    ```shell
-   docker-compose exec app wait-for db:5432 -- echo "Ready"
    docker-compose exec app ./manage.py migrate
    docker-compose exec app ./manage.py createsuperuser
    ```
