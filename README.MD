@@ -1,4 +1,4 @@
-# PraisB Backend Development
+# MultilateralFund Backend Development
 
 1. Install Docker and Docker Compose.
    <https://docs.docker.com/get-docker/>
@@ -58,7 +58,6 @@ It may become necessary to return the development environment to a fresh state. 
 docker-compose down
 docker volume rm multilateralfund_db
 docker-compose up -d
-docker-compose exec app wait-for db:5432 -- echo "Ready"
 docker-compose exec app ./manage.py migrate
 docker-compose exec app ./manage.py createsuperuser
 ```
