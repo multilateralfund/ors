@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  app:
+    image: multilateralfund:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    volumes:
+      - .:/var/local/multilateralfund
+    env_file:
+      - .env
+    environment:
+      - DJANGO_MIGRATE=yes
+    command: [ "run" ]
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+
+volumes:
+  pg-data:
+    driver: local
