@@ -1,0 +1,22 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+.coverage
+htmlcov/
+.cache
+
+# virtualenv
+venv/
+sandbox/
+
+
+# macOS specific files
+*.DS_Store
+
+
+# PyCharm conf
+.idea/
+.vscode
+
+# environment file
+.env
