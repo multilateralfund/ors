@@ -44,7 +44,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core',
+    "constance",
+    "constance.backends.database",
+    "core",
 ]
 
 MIDDLEWARE = [
@@ -143,3 +145,12 @@ STATIC_ROOT = 'static'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# CONSTANCE
+# https://django-constance.readthedocs.io/en/latest/
+
+CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
+
+CONSTANCE_CONFIG = {
+    "TEST_CONST": (12, "Just for test"),
+}
