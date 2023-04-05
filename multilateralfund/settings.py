@@ -77,6 +77,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'multilateralfund.wsgi.application'
 
+#custom user
+AUTH_USER_MODEL = 'core.User'
+
+
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
