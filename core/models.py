@@ -1,4 +1,9 @@
+
+from django.contrib.auth.models import AbstractUser
 from django.db import models
+
+class User(AbstractUser):
+    pass
 
 
 # substance model
@@ -12,7 +17,7 @@ class Substance(models.Model):
     substance_polyol = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.substance_namepip
+        return self.substance_name
 
 
 # blend model
