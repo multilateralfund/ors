@@ -1,0 +1,97 @@
+import json
+import logging
+
+from django.db import transaction
+from django.conf import settings
+
+from core.models import Blend, BlendComponents, Group, Substance
+
+logger = logging.getLogger(__name__)
+OZONE_DATA_DIR = settings.ROOT_DIR / "import_data" / "ozone_data"
+
+
+@transaction.atomic
+def import_data(cls, file_path, exclude=[]):
+    with open(file_path, "r") as f:
+        list_data = json.load(f)
+
+    for instance_data in list_data:
+        instance = instance_data["fields"]
+        instance["id"] = instance_data["pk"]
+        # remove unused fields
+        for k in exclude:
+            instance.pop(k)
+
+        # set custom fields
+        if cls == Group and instance["annex"]:
+            # set annex => 1->A; 2->B; 3->C
+            instance["annex"] = chr(ord("A") + instance["annex"] - 1)
+        elif cls == Blend:
+            # set blend name
+            instance["name"] = instance.pop("blend_id")
+        elif cls == Substance:
+            # set foreign key
+            instance["group_id"] = instance.pop("group")
+        elif cls == BlendComponents:
+            # set foreign key
+            instance["blend_id"] = instance.pop("blend")
+            instance["substance_id"] = instance.pop("substance")
+
+        # create or update instance
+        cls.objects.update_or_create(
+            id=instance_data["pk"],
+            defaults=instance,
+        )
+
+
+def import_groups():
+    exclude = [
+        "control_treaty",
+        "report_treaty",
+        "phase_out_year_article_5",
+        "phase_out_year_non_article_5",
+    ]
+    import_data(Group, OZONE_DATA_DIR / "groups.json", exclude)
+    logger.info("✔ groups imported")
+
+
+def import_substances():
+    exclude = [
+        "substance_id",
+        "gwp2",
+        "remark",
+        "r_code",
+        "main_usage",
+        "has_critical_uses",
+    ]
+    import_data(Substance, OZONE_DATA_DIR / "substances.json", exclude)
+    logger.info("✔ substances imported")
+
+
+def import_blends():
+    exclude = [
+        "legacy_blend_id",
+        "party",
+        "hfc",
+        "hcfc",
+        "main_usage",
+        "remark",
+        "cnumber",
+        "is_deactivated",
+    ]
+
+    import_data(Blend, OZONE_DATA_DIR / "blends.json", exclude)
+    logger.info("✔ substances imported")
+
+
+def import_blend_components():
+    exclude = ["cnumber"]
+    import_data(BlendComponents, OZONE_DATA_DIR / "blend_components.json", exclude)
+    logger.info("✔ blend components imported")
+
+
+def import_all_data():
+    import_groups()
+    import_substances()
+    import_blends()
+    import_blend_components()
