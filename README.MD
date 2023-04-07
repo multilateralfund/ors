@@ -70,6 +70,12 @@ docker-compose exec app ./manage.py makemigrations
 docker-compose exec app ./manage.py migrate
 ```
 
+### Import data
+To import groups, substances, blends and blend components please run:
+```shell
+docker-compose exec app ./manage.py import_ozone_data
+```
+
 ### Run Tests
 
 ```shell
