@@ -7,7 +7,7 @@ on:
 
 jobs:
   docker-build:
-    uses: ./.github/workflow/docker-build.yml
+    uses: ./.github/workflows/docker-build.yml
   deploy-staging:
     needs: docker-build
-    uses: ./.github/workflow/deploy-staging.yml
+    uses: ./.github/workflows/deploy-staging.yml
