@@ -23,7 +23,7 @@ jobs:
       packages: write
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Log in to the Container registry
@@ -34,12 +34,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata (tags, labels) for Docker
-        uses: docker/metadata-actions@v4
         id: meta
+        uses: docker/metadata-action@v4
         with:
           images: ${{ matrix.image }}
 
-      - name: Build and push Docker images
+      - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
           context: .
