@@ -9,10 +9,10 @@ server {
     gzip on;
     gzip_types text/plain text/css application/javascript application/json image/svg+xml;
 
-    location /static/ {
-        alias /.fs/static/;
-        expires 365d;
-    }
+#    location /static/ {
+#        alias /.fs/static/;
+#        expires 365d;
+#    }
 
     location ~ ^/(admin|api)/ {
         client_max_body_size 1m;

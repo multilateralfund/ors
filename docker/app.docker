@@ -6,12 +6,15 @@ ENV PYTHONUNBUFFERED 1
 ENV PIP_NO_CACHE_DIR=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
+RUN mkdir /.fs /app
 WORKDIR /app
+VOLUME ["/.fs"]
 
-RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends wait-for-it && \
-    apt-get clean && \
-    rm -vrf /var/lib/apt/lists/*
+RUN runDeps="netcat gettext build-essential gcc" \
+    && apt-get update -y \
+    && apt-get install -y --no-install-recommends $runDeps \
+    && apt-get clean \
+    && rm -vrf /var/lib/apt/lists/*
 
 RUN pip install --upgrade pip
 COPY $REQFILE .
@@ -19,7 +22,6 @@ RUN pip install --no-cache-dir -r $REQFILE
 
 COPY . /app
 
-COPY docker/wait_for_services.sh /usr/local/bin/wait_for_services.sh
 COPY docker/entrypoint.sh /usr/local/bin/
 
 EXPOSE 8000

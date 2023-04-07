@@ -1,0 +1,13 @@
+name: "CI"
+
+on:
+  push:
+    branches:
+      - "frontend-integration"
+
+jobs:
+  docker-build:
+    uses: ./.github/workflow/docker-build.yml
+  deploy-staging:
+    needs: docker-build
+    uses: ./.github/workflow/deploy-staging.yml
