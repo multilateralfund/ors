@@ -7,7 +7,6 @@ from django.conf import settings
 from core.models import Blend, BlendComponents, Group, Substance
 
 logger = logging.getLogger(__name__)
-OZONE_DATA_DIR = settings.ROOT_DIR / "import_data" / "ozone_data"
 
 
 @transaction.atomic
@@ -51,7 +50,7 @@ def import_groups():
         "phase_out_year_article_5",
         "phase_out_year_non_article_5",
     ]
-    import_data(Group, OZONE_DATA_DIR / "groups.json", exclude)
+    import_data(Group, settings.IMPORT_DATA_DIR / "groups.json", exclude)
     logger.info("✔ groups imported")
 
 
@@ -64,7 +63,7 @@ def import_substances():
         "main_usage",
         "has_critical_uses",
     ]
-    import_data(Substance, OZONE_DATA_DIR / "substances.json", exclude)
+    import_data(Substance, settings.IMPORT_DATA_DIR / "substances.json", exclude)
     logger.info("✔ substances imported")
 
 
@@ -80,13 +79,15 @@ def import_blends():
         "is_deactivated",
     ]
 
-    import_data(Blend, OZONE_DATA_DIR / "blends.json", exclude)
+    import_data(Blend, settings.IMPORT_DATA_DIR / "blends.json", exclude)
     logger.info("✔ substances imported")
 
 
 def import_blend_components():
     exclude = ["cnumber"]
-    import_data(BlendComponents, OZONE_DATA_DIR / "blend_components.json", exclude)
+    import_data(
+        BlendComponents, settings.IMPORT_DATA_DIR / "blend_components.json", exclude
+    )
     logger.info("✔ blend components imported")
 
 

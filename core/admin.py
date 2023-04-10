@@ -1,6 +1,15 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from core.models import Blend, BlendComponents, Group, Substance, User
+from core.models import (
+    Blend,
+    BlendComponents,
+    Country,
+    Group,
+    Price,
+    Substance,
+    Usage,
+    User,
+)
 
 admin.site.register(User, UserAdmin)
 
@@ -12,14 +21,14 @@ def get_final_display_list(cls, exclude):
 @admin.register(Substance)
 class SubstanceAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
-        exclude = ["blendcomponents"]
+        exclude = ["blendcomponents", "price"]
         return get_final_display_list(Substance, exclude)
 
 
 @admin.register(Blend)
 class BlendAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
-        exclude = ["blendcomponents"]
+        exclude = ["blendcomponents", "price"]
         return get_final_display_list(Blend, exclude)
 
 
@@ -34,3 +43,23 @@ class GroupAdmin(admin.ModelAdmin):
 class BlendComponentsAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         return get_final_display_list(BlendComponents, [])
+
+
+@admin.register(Country)
+class CountryAdmin(admin.ModelAdmin):
+    def get_list_display(self, request):
+        exclude = ["countryprogrammereport"]
+        return get_final_display_list(Country, exclude)
+
+
+@admin.register(Price)
+class PriceAdmin(admin.ModelAdmin):
+    def get_list_display(self, request):
+        return get_final_display_list(Price, [])
+
+
+@admin.register(Usage)
+class UsageAdmin(admin.ModelAdmin):
+    def get_list_display(self, request):
+        exclude = ["usage"]
+        return get_final_display_list(Usage, exclude)

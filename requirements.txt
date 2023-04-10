@@ -8,7 +8,9 @@ django-picklefield==3.1
 gunicorn==20.1.0
 ipython==8.12.0
 mypy-extensions==1.0.0
+openpyxl==3.1.2
 packaging==23.0
+pandas==2.0.0
 pathspec==0.11.1
 platformdirs==3.2.0
 psycopg2-binary==2.9.6

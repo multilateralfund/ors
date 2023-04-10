@@ -97,20 +97,50 @@ class BlendComponents(models.Model):
 
 # country model; contains name, m49 code, and iso code
 class Country(models.Model):
-    country_name = models.CharField(max_length=100)
-    country_m49 = models.IntegerField(null=True, blank=True)
-    country_iso = models.CharField(max_length=3, null=True, blank=True)
+    name = models.CharField(max_length=100)
+    m49 = models.IntegerField(null=True, blank=True)
+    iso3 = models.CharField(max_length=3, null=True, blank=True)
+    is_lvc = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.country_name
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "Countries"
+
+
+class UsageManager(models.Manager):
+    def get_by_name(self, name):
+        name_str = name.lower()
+        return self.filter(
+            models.Q(name__iexact=name_str) | models.Q(full_name=name_str)
+        )
 
 
 class Usage(models.Model):
-    usage_name = models.CharField(max_length=100)
-    usage_description = models.TextField()
-    usage_parent = models.ForeignKey(
-        "self", on_delete=models.CASCADE, null=True, blank=True, related_name="parent"
-    )
+    name = models.CharField(max_length=100)
+    full_name = models.CharField(max_length=248)
+    description = models.TextField(null=True, blank=True)
+    parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True)
+
+    objects = UsageManager()
 
     def __str__(self):
-        return self.usage_name
+        return self.name
+
+
+class CountryProgrammeReport(models.Model):
+    name = models.CharField(max_length=248)
+    year = models.IntegerField()
+    comment = models.TextField(null=True, blank=True)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE)
+
+
+class Price(models.Model):
+    value = models.FloatField()
+    comment = models.TextField(null=True, blank=True)
+    blend = models.ForeignKey(Blend, on_delete=models.CASCADE)
+    substance = models.ForeignKey(Substance, on_delete=models.CASCADE)
+    country_programme_report = models.ForeignKey(
+        CountryProgrammeReport, on_delete=models.CASCADE
+    )
