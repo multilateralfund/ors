@@ -22,7 +22,7 @@ services:
     volumes:
       - app_data:/app/.fs
     expose:
-      - 8000
+      - "8000:8000"
     depends_on:
       - postgres
 
