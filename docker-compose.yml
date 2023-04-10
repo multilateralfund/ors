@@ -32,6 +32,8 @@ services:
       - app_data:/.fs
     depends_on:
       - app
+    ports:
+      - "80:80"
 
 volumes:
   pg-data:
