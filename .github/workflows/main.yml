@@ -5,6 +5,9 @@ on:
     branches:
       - "frontend-integration"
 
+  # Allows you to run workflow manually from the action tab
+  workflow_call:
+
 jobs:
   docker-build:
     uses: ./.github/workflows/docker-build.yml
