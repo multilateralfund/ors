@@ -15,9 +15,9 @@ jobs:
       matrix:
         include:
           - dockerfile: ./docker/app.docker
-            image: ghcr.io/multilateralfunds/ors-app
+            image: ghcr.io/multilateralfunds/multilateralfund-app
           - dockerfile: ./docker/nginx.docker
-            image: ghcr.io/multilateralfunds/ors-nginx
+            image: ghcr.io/multilateralfunds/multilateralfund-nginx
 
     permissions:
       contents: read
@@ -50,5 +50,5 @@ jobs:
           push: true
           pull: true
           file: ${{ matrix.dockerfile }}
-          tags: ${{ matrix.image }}:${{ env.IMAGE_TAG }}
+          tags: ${{ matrix.image }}:latest
           labels: ${{ steps.meta.outputs.labels }}
