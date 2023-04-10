@@ -50,5 +50,5 @@ jobs:
           push: true
           pull: true
           file: ${{ matrix.dockerfile }}
-          tags: ${{ matrix.image }}:${{ env.IMAGE_TAG }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
