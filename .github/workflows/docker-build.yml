@@ -15,9 +15,9 @@ jobs:
       matrix:
         include:
           - dockerfile: ./docker/app.docker
-            image: ghcr.io/multilateralfunds/multilateralfund-app
+            image: ghcr.io/multilateralfund/multilateralfund-app
           - dockerfile: ./docker/nginx.docker
-            image: ghcr.io/multilateralfunds/multilateralfund-nginx
+            image: ghcr.io/multilateralfund/multilateralfund-nginx
 
     permissions:
       contents: read
