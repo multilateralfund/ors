@@ -33,7 +33,8 @@ services:
     depends_on:
       - app
     ports:
-      - "80:80"
+      - "3000:80"
+    extra_hosts:
 
 volumes:
   pg-data:
