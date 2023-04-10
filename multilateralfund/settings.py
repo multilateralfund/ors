@@ -32,7 +32,9 @@ SECRET_KEY = 'django-insecure-9ty_tzwdfjg%7sam=d2c70zo!9t1c_d$6empgpct0%a%&9w4h=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'multilateralfund.edw.ro'
+]
 
 
 # Application definition
