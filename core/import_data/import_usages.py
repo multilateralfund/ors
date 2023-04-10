@@ -34,7 +34,7 @@ def parse_usage_file(file_path):
             "full_name": row["full name"],
             "parent": parent,
         }
-        Usage.objects.update_or_create(name=row["name"], defaults=usage_data)
+        Usage.objects.update_or_create(full_name=row["full name"], defaults=usage_data)
 
 
 def import_usages():

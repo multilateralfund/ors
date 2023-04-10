@@ -21,14 +21,14 @@ def get_final_display_list(cls, exclude):
 @admin.register(Substance)
 class SubstanceAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
-        exclude = ["blendcomponents"]
+        exclude = ["blendcomponents", "price"]
         return get_final_display_list(Substance, exclude)
 
 
 @admin.register(Blend)
 class BlendAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
-        exclude = ["blendcomponents"]
+        exclude = ["blendcomponents", "price"]
         return get_final_display_list(Blend, exclude)
 
 
