@@ -15,9 +15,9 @@ jobs:
       matrix:
         include:
           - dockerfile: ./docker/app.docker
-            image: ghrc.io/multilateralfunds/ors-app
+            image: ${{ env.REGISTRY }}/multilateralfunds/ors-app
           - dockerfile: ./docker/nginx.docker
-            image: ghrc.io/multilateralfunds/ors-nginx
+            image: ${{ env.REGISTRY }}/multilateralfunds/ors-nginx
 
     permissions:
       contents: read
