@@ -15,5 +15,5 @@ fi
 ./manage.py collectstatic --noinput
 
 if [[ "$RUN_COMMAND" == *"$1"* ]]; then
-    gunicorn multilateralfund.wsgi --bind 0.0.0.0:8000
+    gunicorn multilateralfund.wsgi --bind 0.0.0.0:8000 --reload
 fi

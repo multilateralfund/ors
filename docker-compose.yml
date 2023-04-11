@@ -20,20 +20,18 @@ services:
     environment:
       - DJANGO_MIGRATE=yes
     volumes:
-      - app_data:/app/.fs
+      - app_data:/app
     expose:
-      - "8000:8000"
+      - 8000
     depends_on:
       - postgres
 
   nginx:
     image: ghcr.io/multilateralfund/multilateralfund-nginx:${DOCKER_TAG:-main}
     volumes:
-      - app_data:/.fs
+      - app_data:/app
     depends_on:
       - app
-    ports:
-      - "3000:80"
 
 volumes:
   pg-data:
