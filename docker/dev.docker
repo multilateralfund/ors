@@ -2,10 +2,14 @@ FROM node:18-slim
 
 WORKDIR /app
 
-COPY ./frontend package*.json ./
-
+COPY frontend/package.json .
+COPY frontend/package-lock.json .
 RUN npm install
 
-EXPOSE 3000
+COPY frontend/ .
 
-CMD ["npm", "start"]
+COPY ./docker/entrypoint-vite.sh /usr/local/bin/
+
+ENTRYPOINT ["entrypoint-vite.sh"]
+
+CMD ["npm", "run", "dev"]
