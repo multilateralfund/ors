@@ -32,6 +32,8 @@ services:
       - app_data:/app
     depends_on:
       - app
+    ports:
+      - "3000:80"
 
 volumes:
   pg-data:
