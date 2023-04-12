@@ -44,6 +44,8 @@ def parse_countries_xlsx(file_path, country_lvc):
     """
     df = pd.read_excel(file_path)
     for _, row in df.iterrows():
+        if row["CTR_DESCRIPTION"] != "Country":
+            continue
         region, _ = Region.objects.get_or_create(name=row["REGION"])
         subregion, _ = Subregion.objects.get_or_create(
             name=row["SUBREGION"],
