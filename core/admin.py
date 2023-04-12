@@ -6,7 +6,9 @@ from core.models import (
     Country,
     Group,
     Price,
+    Subregion,
     Substance,
+    Region,
     Usage,
     User,
 )
@@ -50,6 +52,20 @@ class CountryAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = ["countryprogrammereport"]
         return get_final_display_list(Country, exclude)
+
+
+@admin.register(Subregion)
+class SubregionAdmin(admin.ModelAdmin):
+    def get_list_display(self, request):
+        exclude = ["country"]
+        return get_final_display_list(Subregion, exclude)
+
+
+@admin.register(Region)
+class RegionAdmin(admin.ModelAdmin):
+    def get_list_display(self, request):
+        exclude = ["subregion"]
+        return get_final_display_list(Region, exclude)
 
 
 @admin.register(Price)
