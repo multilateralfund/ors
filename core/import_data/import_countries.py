@@ -4,7 +4,7 @@ import pandas as pd
 from django.db import transaction
 from django.conf import settings
 
-from core.models import Country
+from core.models import Country, Subregion, Region
 
 logger = logging.getLogger(__name__)
 
@@ -19,15 +19,18 @@ def parse_country_lvc_file(file_path):
         - if a country is lvc then the value for country name key will be True
     """
     country_lvc = {}
-    df = pd.read_excel(file_path, names=["country", "status"])
+    df = pd.read_excel(file_path)
     for _, row in df.iterrows():
-        country_lvc[row["country"]] = row["status"].lower() == "lvc"
+        country_lvc[row["Country"]] = {
+            "is_lvc": row["CountryCategory"].lower() == "lvc",
+            "baseline": row["Baseline"],
+        }
 
     return country_lvc
 
 
 @transaction.atomic
-def parse_countries_csv(file_path, country_lvc):
+def parse_countries_xlsx(file_path, country_lvc):
     """
     Import countries from file
     Please make sure that the file has the correct extention
@@ -39,14 +42,27 @@ def parse_countries_csv(file_path, country_lvc):
         - if a country is lvc then the value for country name key will be True
 
     """
-    df = pd.read_csv(file_path)
+    df = pd.read_excel(file_path)
     for _, row in df.iterrows():
+        region, _ = Region.objects.get_or_create(name=row["REGION"])
+        subregion, _ = Subregion.objects.get_or_create(
+            name=row["SUBREGION"],
+            region_id=region.id,
+        )
         country_data = {
-            "name": row["Country"],
-            "iso3": row["ISO3"],
-            "m49": row["M49"] if not pd.isna(row["M49"]) else None,
-            "is_lvc": country_lvc.get(row["Country"], False),
+            "name": row["COUNTRY"],
+            "iso3": row["CTR"],
+            "full_name": row["COUNTRYFULLNAME"],
+            "ozone_unit": row["OZONE_UNIT"],
+            "subregion_id": subregion.id,
         }
+        if row["COUNTRY"] in country_lvc:
+            country_data.update(
+                {
+                    "is_lvc": country_lvc[row["COUNTRY"]]["is_lvc"],
+                    "lvc_baseline": country_lvc[row["COUNTRY"]]["baseline"],
+                }
+            )
 
         Country.objects.update_or_create(
             name=country_data["name"],
@@ -56,9 +72,9 @@ def parse_countries_csv(file_path, country_lvc):
 
 def import_countries():
     country_lvc = parse_country_lvc_file(
-        settings.IMPORT_DATA_DIR / "CountryClassification-LVC-Non-LVC.xlsx"
+        settings.IMPORT_DATA_DIR / "tbCountryLVCNonLVCHCFC.xlsx"
     )
     logger.info("✔ lvc clasification file parsed")
 
-    parse_countries_csv(settings.IMPORT_DATA_DIR / "countries.csv", country_lvc)
+    parse_countries_xlsx(settings.IMPORT_DATA_DIR / "countries.xlsx", country_lvc)
     logger.info("✔ countries imported")
