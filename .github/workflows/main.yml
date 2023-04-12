@@ -3,7 +3,7 @@ name: "CI"
 on:
   push:
     branches:
-      - "frontend-integration"
+      - "main"
 
   # Allows you to run workflow manually from the action tab
   workflow_call:
