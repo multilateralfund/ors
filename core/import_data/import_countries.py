@@ -74,7 +74,7 @@ def parse_countries_xlsx(file_path, country_lvc):
 
 def import_countries():
     country_lvc = parse_country_lvc_file(
-        settings.IMPORT_DATA_DIR / "tbCountryLVCNonLVCHCFC.xlsx"
+        settings.IMPORT_DATA_DIR / "countries_lvc.xlsx"
     )
     logger.info("✔ lvc clasification file parsed")
 
