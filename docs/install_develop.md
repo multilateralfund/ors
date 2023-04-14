@@ -20,7 +20,7 @@ This document describes installation steps required to install locally for devel
 
 - Configure local settings, starting from the dev example
   ```shell
-  cp .env.develop.example .env
+  cp .env.example .env
   ```
 - Install dependencies
   ```shell
