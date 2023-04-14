@@ -6,8 +6,9 @@ ENV PYTHONUNBUFFERED 1
 ENV PIP_NO_CACHE_DIR=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
-RUN mkdir /app
+RUN mkdir /.fs /app
 WORKDIR /app
+VOLUME ["/.fs"]
 
 RUN runDeps="netcat gettext build-essential gcc" \
     && apt-get update -y \
@@ -23,6 +24,5 @@ COPY . /app
 
 COPY docker/entrypoint.sh /usr/local/bin/
 
-EXPOSE 8000
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["run"]

@@ -45,7 +45,6 @@ When pulling new code, you may have to:
 ```shell
 docker-compose build
 docker-compose up -d
-docker-compose exec app ./manage.py migrate
 ```
 
 ### View logs in real time
@@ -64,7 +63,6 @@ It may become necessary to return the development environment to a fresh state. 
 docker-compose down
 docker volume rm multilateralfund_db
 docker-compose up -d
-docker-compose exec app ./manage.py migrate
 docker-compose exec app ./manage.py createsuperuser
 ```
 
@@ -74,7 +72,6 @@ Every time that the models inside the `models.py` are changed these two commands
 
 ```shell
 docker-compose exec app ./manage.py makemigrations
-docker-compose exec app ./manage.py migrate
 ```
 
 ### Run Tests

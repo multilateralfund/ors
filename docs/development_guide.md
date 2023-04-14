@@ -33,6 +33,10 @@ To add a new dependency:
   ```bash
   pip install -r requirements.txt
   ```
+- Freeze the new constraints
+  ```
+  pip freeze > requirements.txt
+  ```
 
 ## Previewing production build locally
 

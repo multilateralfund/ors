@@ -20,7 +20,7 @@ services:
     environment:
       - DJANGO_MIGRATE=yes
     volumes:
-      - app_data:/app
+      - app_data:/app/.fs
     expose:
       - 8000
     depends_on:
@@ -29,7 +29,7 @@ services:
   nginx:
     image: ghcr.io/multilateralfund/multilateralfund-nginx:${DOCKER_TAG:-main}
     volumes:
-      - app_data:/app
+      - app_data:/.fs
     depends_on:
       - app
     ports:

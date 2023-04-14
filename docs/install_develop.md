@@ -11,7 +11,7 @@ This document describes installation steps required to install locally for devel
 - Install and start postgresql (>=15)
 - Create a postgresql database and user:
   ```shell
-  sudo -u postgres createuser -Pds da && sudo -u postgres createdb da
+  sudo -u postgres createuser -Pds mutualfund && sudo -u postgres createdb mutualfund
   ```
 - _(Recommended)_ create and activate a python virtualenv
 - Clone this repository
@@ -24,7 +24,7 @@ This document describes installation steps required to install locally for devel
   ```
 - Install dependencies
   ```shell
-  pip install -c constraints.txt
+  pip install -c requirements.txt
   ```
 - Run migrations
   ```shell
@@ -63,7 +63,7 @@ This document describes installation steps required to install locally for devel
 - Update the code with the latest version
 - Update third-party packages required at runtime.
   ```shell
-  pip install -c constraints.txt
+  pip install -c requirements.txt
   ```
 - Update frontend dependencies
   ```shell
