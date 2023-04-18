@@ -47,6 +47,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
+    "dj_rest_auth",
+    "rest_framework.authtoken",
     "constance",
     "constance.backends.database",
     "core",
@@ -181,4 +184,21 @@ LOGGING = {
             "propagate": False,
         },
     },
+}
+
+SITE_ID = 1
+
+# DRF Integration
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+}
+
+REST_AUTH = {
+    "USE_JWT": True,
+    "JWT_AUTH_HTTPONLY": False,
+    "JWT_AUTH_COOKIE": "app-auth",
+    "JWT_AUTH_REFRESH_COOKIE": "app-auth-refresh",
 }
