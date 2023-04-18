@@ -1,3 +1,13 @@
-import { Outlet } from "react-router-dom";
+import { Outlet } from 'react-router-dom'
+import { Header } from '../components/shared/Header'
 
-export const BaseLayout = () => <Outlet />;
+export const BaseLayout = () => {
+  return (
+    <>
+      <div className="container ">
+        <Header />
+        <Outlet />
+      </div>
+    </>
+  )
+}

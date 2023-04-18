@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { RootState } from '../store'
 import { authEndpoints } from './endpoints/authEndpoints'
 import { API_URL } from '../constants'
-import { selectAuthToken } from '../slices/authSlice'
+import { selectAuthToken } from '@/slices/authSlice'
 // import { userEndpoints } from './endpoints/userEndpoints'
 
 export const baseQuery = fetchBaseQuery({

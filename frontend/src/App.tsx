@@ -9,6 +9,7 @@ import {
 
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/auth/LoginPage'
+import { RecoverPassPage } from './pages/auth/RecoverPassPage'
 
 const auth = (component: React.ReactElement) => (
   <RequireAuth>
@@ -26,6 +27,7 @@ export default function App() {
       <Route element={<BaseLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={anon(<LoginPage />)} />
+        <Route path="/forgot-password" element={anon(<RecoverPassPage />)} />
       </Route>
     </Routes>
   )

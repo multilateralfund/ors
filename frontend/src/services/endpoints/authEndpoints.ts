@@ -1,5 +1,5 @@
 import { EndpointBuilder } from '@reduxjs/toolkit/dist/query/endpointDefinitions'
-import { BaseOutput } from '../../types/BaseOutput'
+import { BaseOutput } from '@/types/BaseOutput'
 
 export const authEndpoints = (
   builder: EndpointBuilder<ReturnType<any>, string, 'api'>,
