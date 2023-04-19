@@ -1,0 +1,24 @@
+name: Deploy Staging
+
+# Ensure that only one job works on this at a time
+concurrency: staging_deployment
+
+on:
+  workflow_call:
+
+jobs:
+  deploy:
+    runs-on:
+      - self-hosted
+      - ors-staging
+    steps:
+      - uses: actions/checkout@v3
+      - name: Update docker-compose.yml
+        run: |
+          cp docker-compose.yml /home/ors/
+      - name: Update services
+        run: |
+          cd /home/ors/
+          docker compose pull
+          docker compose up -d --remove-orphans
+          docker compose top
