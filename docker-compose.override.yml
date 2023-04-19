@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/app.docker
+    volumes:
+      - ./:/app
+      - ./static:/app/static
+
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx.docker
+    ports:
+      - 8080:80
+
+volumes:
+  pg-data:
