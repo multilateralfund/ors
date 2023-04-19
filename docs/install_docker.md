@@ -30,9 +30,9 @@
    docker-compose exec app ./manage.py createsuperuser
    ```
 
-6. Open the site in a browser: http://localhost:8000/api
+6. Open the site in a browser: http://localhost:8080/api
 
-7. The admin panel: http://localhost:8000/api/admin/
+7. The admin panel: http://localhost:8080/admin/
    Login in the admin panel using the superuser account created at step 5
 
 ### Updating the development environment
