@@ -41,6 +41,14 @@
         "ts": "never",
         "tsx": "never"
       }
+    ],
+    "no-restricted-properties": [
+      "warn",
+      {
+        "object": "[import][meta]",
+        "property": "env",
+        "message": "Use `/src/utils/env.ts` instead of `import.meta.env`"
+      }
     ]
   },
   "settings": {
