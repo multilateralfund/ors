@@ -12,8 +12,10 @@ if [ "$DJANGO_MIGRATE" = "yes" ]; then
     python manage.py migrate --noinput
 fi
 
-./manage.py collectstatic --noinput
+python manage.py collectstatic --noinput
 
 if [[ "$RUN_COMMAND" == *"$1"* ]]; then
     gunicorn multilateralfund.wsgi --bind 0.0.0.0:8000
 fi
+
+exec "$@"
