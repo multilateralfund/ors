@@ -21,7 +21,7 @@ from django.urls import path, include
 from . import views
 
 urlpatterns = [
-    path("api/v1/", views.index, name="index"),
     path("admin/", admin.site.urls),
-    path("auth/", include("dj_rest_auth.urls")),
+    path("api/auth/", include("dj_rest_auth.urls")),
+    path("api/v1/", views.index, name="index"),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
