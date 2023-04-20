@@ -7,7 +7,12 @@ class User(AbstractUser):
     pass
 
 
-# substance model
+class SubstanceManager(models.Manager):
+    def get_by_name(self, name):
+        name_str = name.lower()
+        return self.filter(name__iexact=name_str)
+
+
 class Substance(models.Model):
     name = models.CharField(max_length=128)
     description = models.TextField(null=True, blank=True)
@@ -38,6 +43,7 @@ class Substance(models.Model):
         related_name="substances",
         on_delete=models.SET_NULL,
     )
+    objects = SubstanceManager()
 
     def __str__(self):
         return self.name
@@ -57,7 +63,18 @@ class Group(models.Model):
         return self.name
 
 
-# blend model
+class BlendManager(models.Manager):
+    def get_by_name(self, name):
+        name_str = name.lower()
+        return self.filter(name__iexact=name_str)
+
+    def get_by_composition(self, composition):
+        comp_str = composition.lower()
+        return self.filter(
+            models.Q(composition__iexact=comp_str) | models.Q(composition_alt=comp_str)
+        )
+
+
 class Blend(models.Model):
     class BlendTypes(models.TextChoices):
         ZEOTROPE = "Zeotrope", "Zeotrope"
@@ -76,6 +93,8 @@ class Blend(models.Model):
     gwp = models.DecimalField(max_digits=20, decimal_places=10, null=True, blank=True)
     is_contained_in_polyols = models.BooleanField(default=False)
     sort_order = models.IntegerField(null=True)
+
+    objects = BlendManager()
 
     def __str__(self):
         return self.name
