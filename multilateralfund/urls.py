@@ -17,10 +17,11 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 urlpatterns = [
-    path('api/v1/', views.index, name="index"),
-    path('admin/', admin.site.urls),
-]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    path("admin/", admin.site.urls),
+    path("api/auth/", include("dj_rest_auth.urls")),
+    path("api/v1/", views.index, name="index"),
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
