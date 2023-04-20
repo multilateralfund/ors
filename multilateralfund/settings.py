@@ -50,6 +50,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
+    "dj_rest_auth",
+    "rest_framework.authtoken",
     "constance",
     "constance.backends.database",
     "core",
@@ -143,8 +146,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
+FS_DIR = BASE_DIR / ".fs"
+
 STATIC_URL = "static/"
-STATIC_ROOT = "static"
+STATIC_ROOT = FS_DIR / "static"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -184,4 +189,21 @@ LOGGING = {
             "propagate": False,
         },
     },
+}
+
+SITE_ID = 1
+
+# DRF Integration
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+}
+
+REST_AUTH = {
+    "USE_JWT": True,
+    "JWT_AUTH_HTTPONLY": False,
+    "JWT_AUTH_COOKIE": "app-auth",
+    "JWT_AUTH_REFRESH_COOKIE": "app-auth-refresh",
 }
