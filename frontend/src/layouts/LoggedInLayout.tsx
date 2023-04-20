@@ -1,12 +1,12 @@
 import React from 'react'
-// import { useGetMeQuery } from "../services/api";
+import { useGetMeQuery } from '@/services/api'
 
-type Props = {
+interface Props {
   children?: React.ReactNode
 }
 
-export const LoggedInLayout: React.FC<Props> = ({ children }) => {
-  // useGetMeQuery(null);
+export const LoggedInLayout = ({ children }: Props) => {
+  useGetMeQuery(null)
   return (
     <div
       style={{

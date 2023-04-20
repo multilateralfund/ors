@@ -1,14 +1,14 @@
-// import { useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { Navigate, useLocation } from 'react-router-dom'
+import { selectAuthToken } from '@/slices/authSlice'
 
-type Props = {
+interface Props {
   children?: React.ReactNode
 }
 
-export const RequireAnonym: React.FC<Props> = ({ children }) => {
-  // const token = useSelector(selectAuthToken)
+export const RequireAnonym = ({ children }: Props) => {
+  const token = useSelector(selectAuthToken)
   const location = useLocation()
-  const token = false
 
   if (!token) {
     return <>{children}</>

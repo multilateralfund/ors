@@ -1,9 +1,9 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { API_URL } from '../constants'
 import { RootState } from '../store'
 import { authEndpoints } from './endpoints/authEndpoints'
-import { API_URL } from '../constants'
+import { userEndpoints } from './endpoints/userEndpoints'
 import { selectAuthToken } from '@/slices/authSlice'
-// import { userEndpoints } from './endpoints/userEndpoints'
 
 export const baseQuery = fetchBaseQuery({
   baseUrl: API_URL,
@@ -23,8 +23,8 @@ export const api = createApi({
   tagTypes: [],
   endpoints: builder => ({
     ...authEndpoints(builder),
-    // ...userEndpoints(builder),
+    ...userEndpoints(builder),
   }),
 })
 
-export const { useLoginMutation } = api
+export const { useLoginMutation, useGetMeQuery } = api
