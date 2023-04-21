@@ -1,25 +1,21 @@
-import React from 'react'
-import { useDispatch } from 'react-redux'
-// import { useMe } from '../../hooks/useMe'
-import { logout } from '../../slices/authSlice'
-import { Navbar, Button, CustomFlowbiteTheme } from 'flowbite-react'
+import { useDispatch, useSelector } from 'react-redux'
+import { logout } from '@/slices/authSlice'
+import { selectUser } from '@/slices/userSlice'
+import { Navbar, Button } from 'flowbite-react'
 import { useNavigate } from 'react-router-dom'
 
 export const Header = () => {
-  // const { me, isLoading } = useMe()
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const { user } = useSelector(selectUser)
+
   const onConfirmLogout = () => {
     dispatch(logout())
+
+    window.location.href = '/'
   }
 
-  const navbarTheme: CustomFlowbiteTheme = {
-    navbar: {
-      root: {
-        base: 'bg-grey-50',
-      },
-    },
-  }
+  const onLogin = () => navigate('/login')
 
   return (
     <Navbar fluid={true}>
@@ -32,8 +28,22 @@ export const Header = () => {
           />
         </div>
       </Navbar.Brand>
-      <div className="flex md:order-2">
-        <Button onClick={() => navigate('/login')}>Login</Button>
+      <div className="flex md:order-2 items-center">
+        {user ? (
+          <>
+            <span>Hi {user.first_name}</span>
+            <a
+              href="#"
+              onClick={onConfirmLogout}
+              className="text-gray-800 dark:text-white hover:bg-gray-50 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800"
+            >
+              Logout
+            </a>
+          </>
+        ) : (
+          <Button onClick={onLogin}>Login</Button>
+        )}
+
         <Navbar.Toggle />
       </div>
       <Navbar.Collapse></Navbar.Collapse>

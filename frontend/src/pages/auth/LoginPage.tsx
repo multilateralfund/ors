@@ -1,43 +1,38 @@
 import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { useForm } from 'react-hook-form'
-import { Button } from 'flowbite-react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
+import { Button } from 'flowbite-react'
 import { api, useLoginMutation } from '@/services/api'
 import { setToken } from '@/slices/authSlice'
+import { setUser } from '@/slices/userSlice'
 import { InputError } from '@/components/shared/InputError'
-
-const schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-})
+import { AuthFormValues, authSchema } from '@/types/User'
 
 export const LoginPage = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
-    resolver: zodResolver(schema),
+  } = useForm<AuthFormValues>({
+    resolver: zodResolver(authSchema),
   })
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [login, { isLoading, error }] = useLoginMutation()
 
-  const onSubmit = async (formState: any) => {
+  const onSubmit = async ({ username, password }: AuthFormValues) => {
     if (isLoading) {
       return
     }
 
-    const loginOutput = await login({
-      email: formState.email,
-      password: formState.password,
-    }).unwrap()
+    const loginOutput = await login({ username, password }).unwrap()
 
-    dispatch(setToken(loginOutput.data))
+    dispatch(setToken(loginOutput))
+    dispatch(setUser(loginOutput.user))
     dispatch(api.util.resetApiState())
-    navigate('/')
+
+    navigate('/profile')
   }
 
   return (
@@ -63,19 +58,21 @@ export const LoginPage = () => {
                 htmlFor="email"
                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >
-                Your email
+                Username
               </label>
               <input
-                {...register('email', {
+                {...register('username', {
                   required: 'Email Address is required',
                 })}
-                type="email"
-                name="email"
-                id="email"
+                // type="email"
+                name="username"
+                id="username"
                 className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="name@company.com"
               />
-              {errors.email && <InputError>{errors.email.message}</InputError>}
+              {errors.username?.message && (
+                <InputError>{errors.username.message}</InputError>
+              )}
             </div>
             <div>
               <label
@@ -85,7 +82,7 @@ export const LoginPage = () => {
                 Password
               </label>
               <input
-                {...register('passwords', { required: true })}
+                {...register('password', { required: true })}
                 type="password"
                 name="password"
                 id="password"
@@ -122,7 +119,7 @@ export const LoginPage = () => {
                 Forgot password?
               </a>
             </div>
-            <Button className="w-full" type="submit">
+            <Button className="w-full" type="submit" disabled={isLoading}>
               Sign in
             </Button>
           </form>

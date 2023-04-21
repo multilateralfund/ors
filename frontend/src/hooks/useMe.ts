@@ -4,6 +4,6 @@ export const useMe = () => {
   const { data, isLoading } = useGetMeQuery(null)
   return {
     isLoading,
-    me: data?.data,
+    me: data,
   }
 }

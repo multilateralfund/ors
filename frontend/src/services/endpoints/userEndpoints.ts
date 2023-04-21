@@ -1,13 +1,20 @@
 import { EndpointBuilder } from '@reduxjs/toolkit/dist/query/endpointDefinitions'
-import { BaseOutput } from '../../types/BaseOutput'
+import { setUser } from '@/slices/userSlice'
+import { IUser } from '@/types/User'
 
 export const userEndpoints = (
   builder: EndpointBuilder<ReturnType<any>, string, 'api'>,
 ) => ({
-  getMe: builder.query<BaseOutput<any>, null>({
+  getMe: builder.query<IUser, null>({
     query: () => ({
-      url: '/user/me',
+      url: '/auth/user/',
       method: 'GET',
     }),
+    async onQueryStarted(args, { dispatch, queryFulfilled }) {
+      try {
+        const { data } = await queryFulfilled
+        dispatch(setUser(data))
+      } catch (error) {}
+    },
   }),
 })

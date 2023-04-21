@@ -28,7 +28,6 @@ if os.path.exists(str(BASE_DIR / ".env")):
 BACKEND_HOST = env.list("BACKEND_HOST")
 FRONTEND_HOST = env.list("FRONTEND_HOST")
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -40,6 +39,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = [_host.rsplit(":", 1)[0] for _host in BACKEND_HOST]
 
+# CORS allowed origins
+CORS_ALLOWED_ORIGINS = [_host.rsplit(",", 1)[0] for _host in FRONTEND_HOST]
 
 # Application definition
 
@@ -52,6 +53,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "dj_rest_auth",
+    "corsheaders",
     "rest_framework.authtoken",
     "constance",
     "constance.backends.database",
@@ -61,6 +63,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
