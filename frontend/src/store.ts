@@ -34,7 +34,7 @@ export const store = configureStore({
     getDefaultMiddleware({
       immutableCheck: false,
       serializableCheck: false,
-    }).concat(api.middleware, rtkQueryErrorLogger),
+    }).concat(api.middleware),
 })
 
 export type RootState = ReturnType<typeof store.getState>

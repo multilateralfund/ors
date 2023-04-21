@@ -7,10 +7,11 @@ import {
   LoggedInLayout,
 } from './layouts'
 
-import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/auth/LoginPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { RecoverPassPage } from './pages/auth/RecoverPassPage'
+import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
+import { EmailVerificationPage } from './pages/auth/EmailVerificationPage'
 
 const auth = (component: React.ReactElement) => (
   <RequireAuth>
@@ -27,7 +28,13 @@ export default function App() {
     <Routes>
       <Route element={<BaseLayout />}>
         <Route path="/" element={<LoginPage />} />
-        <Route path="/forgot-password" element={anon(<RecoverPassPage />)} />
+        <Route path="/forgot-password" element={<RecoverPassPage />} />
+        <Route path="/reset-password" element={anon(<ResetPasswordPage />)}>
+          <Route path=":uid/:token" element={anon(<ResetPasswordPage />)} />
+        </Route>
+        <Route path="/verify-email" element={<EmailVerificationPage />}>
+          <Route path=":verificationCode" element={<EmailVerificationPage />} />
+        </Route>
         <Route path="/profile" element={auth(<ProfilePage />)} />
       </Route>
     </Routes>

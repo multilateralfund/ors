@@ -1,27 +1,36 @@
 import { useEffect } from 'react'
-import { Button } from 'flowbite-react'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
+import { useNavigate, useParams } from 'react-router-dom'
 import { object, string, TypeOf } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'react-toastify'
-import { useForgotPasswordMutation } from '@/services/api'
+import { useResetPasswordMutation } from '@/services/api'
 import { FormInput } from '@/components/form/FormInput'
+import { Button } from '@/components/shared/Button'
 
-const forgotPasswordSchema = object({
-  email: string()
-    .min(1, 'Email address is required')
-    .email('Email Address is invalid'),
+const resetPasswordSchema = object({
+  new_password1: string()
+    .min(1, 'Password is required')
+    .min(8, 'Password must be more than 8 characters'),
+  new_password2: string().min(1, 'Please confirm your password'),
+}).refine(data => data.new_password1 === data.new_password2, {
+  message: 'Passwords do not match',
+  path: ['passwordConfirm'],
 })
 
-export type ForgotPasswordInput = TypeOf<typeof forgotPasswordSchema>
+export type ResetPasswordInput = TypeOf<typeof resetPasswordSchema>
 
-export const RecoverPassPage = () => {
-  const methods = useForm<ForgotPasswordInput>({
-    resolver: zodResolver(forgotPasswordSchema),
+export const ResetPasswordPage = () => {
+  const { uid, token } = useParams<{ uid: string; token: string }>()
+
+  const methods = useForm<ResetPasswordInput>({
+    resolver: zodResolver(resetPasswordSchema),
   })
 
-  const [forgotPassword, { isLoading, isError, error, isSuccess, data }] =
-    useForgotPasswordMutation()
+  const [resetPassword, { isLoading, isError, error, isSuccess, data }] =
+    useResetPasswordMutation()
+
+  const navigate = useNavigate()
 
   const {
     reset,
@@ -29,25 +38,22 @@ export const RecoverPassPage = () => {
     formState: { isSubmitSuccessful },
   } = methods
 
+  console.log(error)
+
   useEffect(() => {
     if (isSuccess) {
-      toast.success(data)
+      navigate('/login')
+      toast.success('Password updated successfully, login')
     }
 
     if (isError) {
-      if (Array.isArray((error as any).data.error)) {
-        ;(error as any).data.error.forEach((el: any) =>
-          toast.error(el.message, {
-            position: 'top-right',
-          }),
-        )
-      } else {
-        toast.error((error as any).data.message, {
+      if (error.status === 400) {
+        toast.error('Server error', {
           position: 'top-right',
         })
       }
     }
-  }, [isLoading, isError])
+  }, [isLoading])
 
   useEffect(() => {
     if (isSubmitSuccessful) {
@@ -55,27 +61,8 @@ export const RecoverPassPage = () => {
     }
   }, [isSubmitSuccessful])
 
-  const onSubmitHandler: SubmitHandler<ForgotPasswordInput> = ({ email }) => {
-    forgotPassword({ email })
-  }
-
-  if (isSuccess) {
-    return (
-      <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-        <div
-          className="p-4 mb-4 text-sm text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400"
-          role="alert"
-        >
-          We have sent you a password recovery email.
-        </div>
-        <a
-          className="font-medium text-primary-600 hover:underline dark:text-primary-500"
-          href="/"
-        >
-          Back to login
-        </a>
-      </div>
-    )
+  const onSubmitHandler: SubmitHandler<ResetPasswordInput> = values => {
+    resetPassword({ ...values, token: token!, uid: uid! })
   }
 
   return (
@@ -89,20 +76,24 @@ export const RecoverPassPage = () => {
       </a>
       <div className="w-full p-6 bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700 sm:p-8">
         <h1 className="mb-1 text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-          Forgot your password?
+          Change Password
         </h1>
-        <p className="font-light text-gray-500 dark:text-gray-400">
-          We'll email you instructions to reset your password.
-        </p>
         <FormProvider {...methods}>
           <form
             className="mt-4 space-y-4 lg:mt-5 md:space-y-5"
             onSubmit={handleSubmit(onSubmitHandler)}
           >
             <FormInput
-              name="email"
-              label="Your email"
-              placeholder="name@company.com"
+              name="new_password1"
+              label="New Password"
+              placeholder="••••••••"
+              type="password"
+            />
+            <FormInput
+              name="new_password2"
+              label="Confirm password"
+              placeholder="••••••••"
+              type="password"
             />
             <div className="flex items-start">
               <div className="text-sm">
@@ -114,8 +105,8 @@ export const RecoverPassPage = () => {
                 </a>
               </div>
             </div>
-            <Button className="w-full" type="submit">
-              Reset password
+            <Button type="submit" isLoading={isLoading}>
+              Change password
             </Button>
           </form>
         </FormProvider>

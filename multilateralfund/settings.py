@@ -14,6 +14,7 @@ import environ
 import logging
 import os
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -55,6 +56,7 @@ INSTALLED_APPS = [
     "dj_rest_auth",
     "corsheaders",
     "rest_framework.authtoken",
+    "rest_framework_simplejwt",
     "constance",
     "constance.backends.database",
     "core",
@@ -196,6 +198,11 @@ LOGGING = {
 
 SITE_ID = 1
 
+EMAIL_HOST = env.str('EMAIL_HOST')
+EMAIL_PORT = env.int('EMAIL_PORT')
+EMAIL_HOST_USER = env.str('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env.str('EMAIL_HOST_PASSWORD')
+
 # DRF Integration
 
 REST_FRAMEWORK = {
@@ -209,4 +216,5 @@ REST_AUTH = {
     "JWT_AUTH_HTTPONLY": False,
     "JWT_AUTH_COOKIE": "app-auth",
     "JWT_AUTH_REFRESH_COOKIE": "app-auth-refresh",
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60)
 }

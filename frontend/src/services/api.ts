@@ -36,7 +36,10 @@ const customFetchBase: BaseQueryFn<
   await mutex.waitForUnlock()
   let result = await baseQuery(args, api, extraOptions)
 
-  if ((result.error?.data as any)?.detail === 'Signature has expired.') {
+  if (
+    (result.error?.data as any)?.detail ===
+    'Given token not valid for any token type'
+  ) {
     if (!mutex.isLocked()) {
       const release = await mutex.acquire()
 
@@ -52,7 +55,7 @@ const customFetchBase: BaseQueryFn<
           result = await baseQuery(args, api, extraOptions)
         } else {
           api.dispatch(logout())
-          window.location.href = '/login'
+          window.location.href = '/'
         }
       } finally {
         // release must be called once the mutex should be released again.
@@ -79,4 +82,9 @@ export const api = createApi({
   }),
 })
 
-export const { useLoginMutation, useGetMeQuery } = api
+export const {
+  useLoginMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
+  useGetMeQuery,
+} = api
