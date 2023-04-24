@@ -35,14 +35,8 @@ export const RecoverPassPage = () => {
     }
 
     if (isError) {
-      if (Array.isArray((error as any).data.error)) {
-        ;(error as any).data.error.forEach((el: any) =>
-          toast.error(el.message, {
-            position: 'top-right',
-          }),
-        )
-      } else {
-        toast.error((error as any).data.message, {
+      if (error.status === 400) {
+        toast.error('Server error', {
           position: 'top-right',
         })
       }

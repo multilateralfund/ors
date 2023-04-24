@@ -38,8 +38,6 @@ export const ResetPasswordPage = () => {
     formState: { isSubmitSuccessful },
   } = methods
 
-  console.log(error)
-
   useEffect(() => {
     if (isSuccess) {
       navigate('/login')
