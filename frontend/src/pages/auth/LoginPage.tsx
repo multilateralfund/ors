@@ -1,38 +1,65 @@
-import { useNavigate } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
-import { useForm } from 'react-hook-form'
+import { useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
+import { object, string, TypeOf } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Button } from 'flowbite-react'
-import { api, useLoginMutation } from '@/services/api'
-import { setToken } from '@/slices/authSlice'
-import { setUser } from '@/slices/userSlice'
-import { InputError } from '@/components/form/InputError'
-import { AuthFormValues, authSchema } from '@/types/User'
+import { toast } from 'react-toastify'
+import { useLoginMutation } from '@/services/api'
+import { Button } from '@/components/shared/Button'
+import { FormInput } from '@/components/form/FormInput'
+
+const loginSchema = object({
+  username: string().min(1, 'Username is required'),
+  password: string()
+    .min(1, 'Password is required')
+    .min(8, 'Password must be more than 8 characters')
+    .max(32, 'Password must be less than 32 characters'),
+})
+
+export type LoginInput = TypeOf<typeof loginSchema>
 
 export const LoginPage = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<AuthFormValues>({
-    resolver: zodResolver(authSchema),
+  const methods = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
   })
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
-  const [login, { isLoading, error }] = useLoginMutation()
 
-  const onSubmit = async ({ username, password }: AuthFormValues) => {
-    if (isLoading) {
-      return
+  const [loginUser, { isLoading, isError, error, isSuccess }] =
+    useLoginMutation()
+
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const from = ((location.state as any)?.from.pathname as string) || '/profile'
+
+  const {
+    reset,
+    handleSubmit,
+    formState: { isSubmitSuccessful },
+  } = methods
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success('You successfully logged in')
+      navigate(from)
     }
 
-    const loginOutput = await login({ username, password }).unwrap()
+    if (isError) {
+      if (error.status === 400) {
+        toast.error('Unable to log in with provided credentials.', {
+          position: 'top-right',
+        })
+      }
+    }
+  }, [isLoading])
 
-    dispatch(setToken(loginOutput))
-    dispatch(setUser(loginOutput.user))
-    dispatch(api.util.resetApiState())
+  useEffect(() => {
+    if (isSubmitSuccessful) {
+      reset()
+    }
+  }, [isSubmitSuccessful])
 
-    navigate('/profile')
+  const onSubmit: SubmitHandler<LoginInput> = values => {
+    loginUser(values)
   }
 
   return (
@@ -49,61 +76,35 @@ export const LoginPage = () => {
           <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
             Sign in to your account
           </h1>
-          <form
-            className="space-y-4 md:space-y-6"
-            onSubmit={handleSubmit(d => onSubmit(d))}
-          >
-            <div>
-              <label
-                htmlFor="email"
-                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-              >
-                Username
-              </label>
-              <input
-                {...register('username', {
-                  required: 'Email Address is required',
-                })}
+          <FormProvider {...methods}>
+            <form
+              className="space-y-4 md:space-y-6"
+              onSubmit={handleSubmit(d => onSubmit(d))}
+            >
+              <FormInput
+                label="Username"
                 name="username"
-                id="username"
-                className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="name@company.com"
+                placeholder="type your username"
               />
-              {errors.username?.message && (
-                <InputError>{errors.username.message}</InputError>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="password"
-                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-              >
-                Password
-              </label>
-              <input
-                {...register('password', { required: true })}
-                type="password"
+              <FormInput
+                label="Password"
                 name="password"
-                id="password"
+                type="password"
                 placeholder="••••••••"
-                className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               />
-              {errors.password && (
-                <InputError>{errors.password.message}</InputError>
-              )}
-            </div>
-            <div className="flex justify-end">
-              <a
-                href="/forgot-password"
-                className="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
-              >
-                Forgot password?
-              </a>
-            </div>
-            <Button className="w-full" type="submit" disabled={isLoading}>
-              Sign in
-            </Button>
-          </form>
+              <div className="flex justify-end">
+                <a
+                  href="/forgot-password"
+                  className="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
+                >
+                  Forgot password?
+                </a>
+              </div>
+              <Button className="w-full" type="submit" disabled={isLoading}>
+                Sign in
+              </Button>
+            </form>
+          </FormProvider>
         </div>
       </div>
     </div>

@@ -6,10 +6,3 @@ export type IUser = {
   last_name: string
   username: string
 }
-
-export const authSchema = z.object({
-  username: z.string(),
-  password: z.string().min(6),
-})
-
-export type AuthFormValues = z.infer<typeof authSchema>
