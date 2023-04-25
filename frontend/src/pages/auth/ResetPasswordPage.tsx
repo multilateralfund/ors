@@ -40,7 +40,7 @@ export const ResetPasswordPage = () => {
 
   useEffect(() => {
     if (isSuccess) {
-      navigate('/login')
+      navigate('/')
       toast.success('Password updated successfully, login')
     }
 
