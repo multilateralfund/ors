@@ -78,7 +78,7 @@ ROOT_URLCONF = "multilateralfund.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(ROOT_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -216,5 +216,7 @@ REST_AUTH = {
     "JWT_AUTH_HTTPONLY": False,
     "JWT_AUTH_COOKIE": "app-auth",
     "JWT_AUTH_REFRESH_COOKIE": "app-auth-refresh",
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60)
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "PASSWORD_RESET_USE_SITES_DOMAIN": True,
+    "PASSWORD_RESET_SERIALIZER": "core.api.serializers.CustomPasswordResetSerializer"
 }

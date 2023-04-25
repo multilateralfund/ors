@@ -31,5 +31,6 @@ urlpatterns = [
          PasswordResetView.as_view(), name='password_reset'),
     path('api/auth/password_reset_confirm/<uidb64>/<token>/',
          PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset-password/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='reset_password_frontend'),
     path("api/v1/", views.index, name="index"),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
