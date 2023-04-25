@@ -13,3 +13,8 @@ To import usages run:
 ```shell
 docker-compose exec app ./manage.py import_usages
 ```
+
+To import records run:
+```shell
+docker-compose exec app ./manage.py import_records
+```
