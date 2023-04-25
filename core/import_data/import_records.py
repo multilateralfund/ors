@@ -24,6 +24,8 @@ REQUIRED_COLUMNS = [
     "Year",
 ]
 
+SECTION = "B"
+
 
 def check_headers(df):
     for c in REQUIRED_COLUMNS:
@@ -122,7 +124,7 @@ def get_chemical(chemical_name):
     return None, None
 
 
-def parse_sheet(df, file_name, section):
+def parse_sheet(df, file_name):
     if not check_headers(df):
         logger.error("Couldn't parse this sheet")
         return
@@ -166,7 +168,7 @@ def parse_sheet(df, file_name, section):
                 "country_programme_report_id": current_cp.id,
                 "usage_id": usage_dict[usage].id,
                 "value_metric": row[usage],
-                "section": section,
+                "section": SECTION,
             }
             records.append(Record(**record_data))
 
@@ -175,26 +177,26 @@ def parse_sheet(df, file_name, section):
     logger.info("✔ sheet parsed")
 
 
-def parse_file(file_path, cp_name, section):
+def parse_file(file_path, cp_name):
     all_sheets = pd.read_excel(file_path, sheet_name=None)
     for sheet_name, df in all_sheets.items():
         logger.info(f"Start parsing sheet: {sheet_name}")
-        parse_sheet(df, cp_name, section)
+        parse_sheet(df, cp_name)
 
 
 def drop_old_data(file_name):
     CountryProgrammeReport.objects.filter(
         source__iexact=file_name.lower()
     ).all().delete()
+    logger.info("✔ old data deleted")
 
 
 @transaction.atomic
 def import_records():
     file_name = "CP_Data_SectionB_2019_2021.xlsx"
-    section = "B"
     file_path = settings.ROOT_DIR / "import_data/records" / file_name
 
     drop_old_data(file_name)
-    parse_file(file_path, file_name, section)
+    parse_file(file_path, file_name)
 
     logger.info("✔ records imported")
