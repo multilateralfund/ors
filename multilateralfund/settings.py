@@ -14,6 +14,7 @@ import environ
 import logging
 import os
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,7 +29,6 @@ if os.path.exists(str(BASE_DIR / ".env")):
 BACKEND_HOST = env.list("BACKEND_HOST")
 FRONTEND_HOST = env.list("FRONTEND_HOST")
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -40,6 +40,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = [_host.rsplit(":", 1)[0] for _host in BACKEND_HOST]
 
+# CORS allowed origins
+CORS_ALLOWED_ORIGINS = [_host.rsplit(",", 1)[0] for _host in FRONTEND_HOST]
 
 # Application definition
 
@@ -52,7 +54,9 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "dj_rest_auth",
+    "corsheaders",
     "rest_framework.authtoken",
+    "rest_framework_simplejwt",
     "constance",
     "constance.backends.database",
     "core",
@@ -61,6 +65,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -73,7 +78,7 @@ ROOT_URLCONF = "multilateralfund.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(ROOT_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -193,6 +198,11 @@ LOGGING = {
 
 SITE_ID = 1
 
+EMAIL_HOST = env.str('EMAIL_HOST')
+EMAIL_PORT = env.int('EMAIL_PORT')
+EMAIL_HOST_USER = env.str('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env.str('EMAIL_HOST_PASSWORD')
+
 # DRF Integration
 
 REST_FRAMEWORK = {
@@ -206,4 +216,7 @@ REST_AUTH = {
     "JWT_AUTH_HTTPONLY": False,
     "JWT_AUTH_COOKIE": "app-auth",
     "JWT_AUTH_REFRESH_COOKIE": "app-auth-refresh",
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "PASSWORD_RESET_USE_SITES_DOMAIN": True,
+    "PASSWORD_RESET_SERIALIZER": "core.api.serializers.CustomPasswordResetSerializer"
 }
