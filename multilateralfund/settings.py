@@ -43,6 +43,9 @@ ALLOWED_HOSTS = [_host.rsplit(":", 1)[0] for _host in BACKEND_HOST]
 # CORS allowed origins
 CORS_ALLOWED_ORIGINS = [_host.rsplit(",", 1)[0] for _host in FRONTEND_HOST]
 
+# CSRF allowed origins
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+
 # Application definition
 
 INSTALLED_APPS = [
