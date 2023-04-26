@@ -7,6 +7,12 @@ class User(AbstractUser):
     pass
 
 
+class SubstanceManager(models.Manager):
+    def get_by_name(self, name):
+        name_str = name.lower()
+        return self.filter(models.Q(name__iexact=name_str))
+
+
 # substance model
 class Substance(models.Model):
     name = models.CharField(max_length=128)
@@ -39,6 +45,8 @@ class Substance(models.Model):
         on_delete=models.SET_NULL,
     )
 
+    objects = SubstanceManager()
+
     def __str__(self):
         return self.name
 
@@ -57,7 +65,14 @@ class Group(models.Model):
         return self.name
 
 
-# blend model
+class BlendManager(models.Manager):
+    def get_by_name(self, name):
+        name_str = name.lower()
+        return self.filter(
+            models.Q(name__iexact=name_str) | models.Q(other_names__iexact=name_str)
+        )
+
+
 class Blend(models.Model):
     class BlendTypes(models.TextChoices):
         ZEOTROPE = "Zeotrope", "Zeotrope"
@@ -77,6 +92,8 @@ class Blend(models.Model):
     is_contained_in_polyols = models.BooleanField(default=False)
     sort_order = models.IntegerField(null=True)
 
+    objects = BlendManager()
+
     def __str__(self):
         return self.name
 
@@ -95,6 +112,14 @@ class BlendComponents(models.Model):
         return self.blend.blend_id + " " + self.substance.name + " " + self.percentage
 
 
+class CountryManager(models.Manager):
+    def get_by_name(self, name):
+        name_str = name.lower()
+        return self.filter(
+            models.Q(name__iexact=name_str) | models.Q(full_name__iexact=name_str)
+        )
+
+
 # country model; contains name, m49 code, and iso code
 class Country(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -109,6 +134,8 @@ class Country(models.Model):
         blank=True,
         on_delete=models.CASCADE,
     )
+
+    objects = CountryManager()
 
     def __str__(self):
         return self.name
@@ -139,7 +166,7 @@ class UsageManager(models.Manager):
     def get_by_name(self, name):
         name_str = name.lower()
         return self.filter(
-            models.Q(name__iexact=name_str) | models.Q(full_name=name_str)
+            models.Q(name__iexact=name_str) | models.Q(full_name__iexact=name_str)
         )
 
 
@@ -157,16 +184,33 @@ class Usage(models.Model):
 
 class CountryProgrammeReport(models.Model):
     name = models.CharField(max_length=248)
+    source = models.CharField(max_length=248)
     year = models.IntegerField()
     comment = models.TextField(null=True, blank=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
 
 
 class Price(models.Model):
+    blend = models.ForeignKey(Blend, on_delete=models.CASCADE, null=True, blank=True)
+    substance = models.ForeignKey(
+        Substance, on_delete=models.CASCADE, null=True, blank=True
+    )
     value = models.FloatField()
     comment = models.TextField(null=True, blank=True)
-    blend = models.ForeignKey(Blend, on_delete=models.CASCADE)
-    substance = models.ForeignKey(Substance, on_delete=models.CASCADE)
     country_programme_report = models.ForeignKey(
         CountryProgrammeReport, on_delete=models.CASCADE
     )
+
+
+class Record(models.Model):
+    blend = models.ForeignKey(Blend, on_delete=models.CASCADE, null=True, blank=True)
+    substance = models.ForeignKey(
+        Substance, on_delete=models.CASCADE, null=True, blank=True
+    )
+    country_programme_report = models.ForeignKey(
+        CountryProgrammeReport, on_delete=models.CASCADE
+    )
+    usage = models.ForeignKey(Usage, on_delete=models.CASCADE)
+    value_odp = models.FloatField(null=True, blank=True)
+    value_metric = models.FloatField(null=True, blank=True)
+    section = models.CharField(max_length=164)
