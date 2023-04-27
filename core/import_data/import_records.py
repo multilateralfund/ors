@@ -80,7 +80,7 @@ def get_country(country_name):
     return country
 
 
-def get_country_program(row, file_name, country):
+def get_country_program(row, country):
     """
     get or create country program for this row
     @param row = Series (current row from sheet)
@@ -91,7 +91,7 @@ def get_country_program(row, file_name, country):
     """
     cp_name = f"{country.name} {row['Year']}"
     cp, _ = CountryProgrammeReport.objects.get_or_create(
-        name=cp_name, year=row["Year"], country_id=country.id, source=file_name
+        name=cp_name, year=row["Year"], country_id=country.id
     )
 
     return cp
@@ -142,7 +142,7 @@ def parse_sheet(df, file_name):
             current_country_name = row["Country"]
             current_country_obj = get_country(current_country_name)
             if current_country_obj:
-                current_cp = get_country_program(row, file_name, current_country_obj)
+                current_cp = get_country_program(row, current_country_obj)
 
         if not current_country_obj:
             # we didn't found a country in db:
@@ -150,7 +150,7 @@ def parse_sheet(df, file_name):
 
         # another year => another country program
         if current_cp.year != row["Year"]:
-            current_cp = get_country_program(row, file_name, current_country_obj)
+            current_cp = get_country_program(row, current_country_obj)
 
         # get chemical
         substance_id, blend_id = get_chemical(row["Chemical"])
@@ -169,6 +169,7 @@ def parse_sheet(df, file_name):
                 "usage_id": usage_dict[usage].id,
                 "value_metric": row[usage],
                 "section": SECTION,
+                "source": file_name,
             }
             records.append(Record(**record_data))
 
@@ -185,9 +186,7 @@ def parse_file(file_path, cp_name):
 
 
 def drop_old_data(file_name):
-    CountryProgrammeReport.objects.filter(
-        source__iexact=file_name.lower()
-    ).all().delete()
+    Record.objects.filter(source__iexact=file_name.lower()).all().delete()
     logger.info("✔ old data deleted")
 
 
