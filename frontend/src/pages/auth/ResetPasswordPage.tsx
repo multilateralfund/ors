@@ -7,6 +7,7 @@ import { toast } from 'react-toastify'
 import { useResetPasswordMutation } from '@/services/api'
 import { FormInput } from '@/components/form/FormInput'
 import { Button } from '@/components/shared/Button'
+import { Logo } from '@/components/shared/Logo'
 
 const resetPasswordSchema = object({
   new_password1: string()
@@ -65,13 +66,7 @@ export const ResetPasswordPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-      <a href="#" className="items-center block w-60 mb-5">
-        <img
-          className="w-auto h-auto"
-          src="http://www.multilateralfund.org/_layouts/images/UNMFNewLogo.bmp"
-          alt="logo"
-        />
-      </a>
+      <Logo />
       <div className="w-full p-6 bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700 sm:p-8">
         <h1 className="mb-1 text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
           Change Password

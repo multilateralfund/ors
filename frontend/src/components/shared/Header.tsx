@@ -3,6 +3,7 @@ import { logout } from '@/slices/authSlice'
 import { selectUser } from '@/slices/userSlice'
 import { Navbar, Button } from 'flowbite-react'
 import { useNavigate } from 'react-router-dom'
+import { Logo } from './Logo'
 
 export const Header = () => {
   const navigate = useNavigate()
@@ -21,11 +22,7 @@ export const Header = () => {
     <Navbar fluid={true}>
       <Navbar.Brand to="/">
         <div className="self-center whitespace-nowrap text-xl font-semibold dark:text-white w-[200px]">
-          <img
-            className="w-auto h-auto"
-            src="http://www.multilateralfund.org/_layouts/images/UNMFNewLogo.bmp"
-            alt="logo"
-          />
+          <Logo />
         </div>
       </Navbar.Brand>
       <div className="flex md:order-2 items-center">
