@@ -27,13 +27,16 @@ export default function App() {
   return (
     <Routes>
       <Route element={<BaseLayout />}>
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/forgot-password" element={<RecoverPassPage />} />
+        <Route path="/" element={anon(<LoginPage />)} />
+        <Route path="/forgot-password" element={anon(<RecoverPassPage />)} />
         <Route path="/reset-password" element={anon(<ResetPasswordPage />)}>
           <Route path=":uid/:token" element={anon(<ResetPasswordPage />)} />
         </Route>
-        <Route path="/verify-email" element={<EmailVerificationPage />}>
-          <Route path=":verificationCode" element={<EmailVerificationPage />} />
+        <Route path="/verify-email" element={anon(<EmailVerificationPage />)}>
+          <Route
+            path=":verificationCode"
+            element={anon(<EmailVerificationPage />)}
+          />
         </Route>
         <Route path="/profile" element={auth(<ProfilePage />)} />
       </Route>
