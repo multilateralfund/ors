@@ -12,6 +12,7 @@ import { ProfilePage } from './pages/ProfilePage'
 import { RecoverPassPage } from './pages/auth/RecoverPassPage'
 import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
 import { EmailVerificationPage } from './pages/auth/EmailVerificationPage'
+import { HomePage } from './pages/HomePage'
 
 const auth = (component: React.ReactElement) => (
   <RequireAuth>
@@ -27,7 +28,8 @@ export default function App() {
   return (
     <Routes>
       <Route element={<BaseLayout />}>
-        <Route path="/" element={anon(<LoginPage />)} />
+        <Route path="/" element={auth(<HomePage />)} />
+        <Route path="/login" element={anon(<LoginPage />)} />
         <Route path="/forgot-password" element={anon(<RecoverPassPage />)} />
         <Route path="/reset-password" element={anon(<ResetPasswordPage />)}>
           <Route path=":uid/:token" element={anon(<ResetPasswordPage />)} />
