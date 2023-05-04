@@ -1,9 +1,10 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { logout } from '@/slices/authSlice'
 import { selectUser } from '@/slices/userSlice'
-import { Navbar, Button } from 'flowbite-react'
+import { Navbar } from 'flowbite-react'
 import { useNavigate } from 'react-router-dom'
-import { Logo } from './Logo'
+import { LangSwitcher } from './LangSwitcher'
+import LogoSmall from '@/assets/logos/mlf_icon.png'
 
 export const Header = () => {
   const navigate = useNavigate()
@@ -16,17 +17,18 @@ export const Header = () => {
     window.location.href = '/'
   }
 
-  const onLogin = () => navigate('/login')
-
   return (
     <Navbar fluid={true}>
-      <Navbar.Brand to="/">
-        <div className="self-center whitespace-nowrap text-xl font-semibold dark:text-white w-[200px]">
-          <Logo />
-        </div>
-      </Navbar.Brand>
+      {user && (
+        <Navbar.Brand to="/">
+          <div className="self-center whitespace-nowrap text-xl font-semibold dark:text-white w-10">
+            <img src={LogoSmall} alt="logo" className="w-auto h-auto" />
+          </div>
+          <span className="pl-2">MLFS</span>
+        </Navbar.Brand>
+      )}
       <div className="flex md:order-2 items-center">
-        {user ? (
+        {user && (
           <>
             <span>Hi {user.first_name}</span>
             <a
@@ -37,10 +39,8 @@ export const Header = () => {
               Logout
             </a>
           </>
-        ) : (
-          <Button onClick={onLogin}>Login</Button>
         )}
-
+        <LangSwitcher />
         <Navbar.Toggle />
       </div>
       <Navbar.Collapse></Navbar.Collapse>
