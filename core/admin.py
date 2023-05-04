@@ -14,6 +14,8 @@ from core.models import (
     Usage,
     User,
 )
+from core.models.project_sector import ProjectSector, ProjectSubSector
+from core.models.project_submission import ProjectSubmission
 
 admin.site.register(User, UserAdmin)
 
@@ -52,7 +54,7 @@ class BlendComponentsAdmin(admin.ModelAdmin):
 @admin.register(Country)
 class CountryAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
-        exclude = ["countryprogrammereport"]
+        exclude = ["countryprogrammereport", "projectsubmission"]
         return get_final_display_list(Country, exclude)
 
 
@@ -94,3 +96,24 @@ class CountryProgrammeReportAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = ["price", "record", "usage"]
         return get_final_display_list(CountryProgrammeReport, exclude)
+
+
+@admin.register(ProjectSector)
+class ProjectSectorAdmin(admin.ModelAdmin):
+    def get_list_display(self, request):
+        exclude = ["subsector"]
+        return get_final_display_list(ProjectSector, exclude)
+
+
+@admin.register(ProjectSubSector)
+class ProjectSubSectorAdmin(admin.ModelAdmin):
+    def get_list_display(self, request):
+        exclude = ["projectsubmission"]
+        return get_final_display_list(ProjectSubSector, exclude)
+
+
+@admin.register(ProjectSubmission)
+class ProjectSubmissionAdmin(admin.ModelAdmin):
+    def get_list_display(self, request):
+        exclude = ["submissionodsodp", "submissionamount"]
+        return get_final_display_list(ProjectSubmission, exclude)

@@ -38,6 +38,6 @@ def parse_usage_file(file_path):
 
 
 def import_usages():
-    file_path = settings.IMPORT_DATA_DIR / "usages.xlsx"
+    file_path = settings.IMPORT_RESOURCES_DIR / "usages.xlsx"
     parse_usage_file(file_path)
     logger.info("✔ usages imported")

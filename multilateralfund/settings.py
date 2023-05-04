@@ -19,7 +19,8 @@ from datetime import timedelta
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 ROOT_DIR = BASE_DIR / "core"
-IMPORT_DATA_DIR = ROOT_DIR / "import_data" / "resources"
+IMPORT_DATA_DIR = ROOT_DIR / "import_data"
+IMPORT_RESOURCES_DIR = ROOT_DIR / "import_data" / "resources"
 
 env = environ.Env()
 
@@ -201,10 +202,10 @@ LOGGING = {
 
 SITE_ID = 1
 
-EMAIL_HOST = env.str('EMAIL_HOST')
-EMAIL_PORT = env.int('EMAIL_PORT')
-EMAIL_HOST_USER = env.str('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = env.str('EMAIL_HOST_PASSWORD')
+EMAIL_HOST = env.str("EMAIL_HOST")
+EMAIL_PORT = env.int("EMAIL_PORT")
+EMAIL_HOST_USER = env.str("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD")
 
 # DRF Integration
 
@@ -221,5 +222,5 @@ REST_AUTH = {
     "JWT_AUTH_REFRESH_COOKIE": "app-auth-refresh",
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "PASSWORD_RESET_USE_SITES_DOMAIN": True,
-    "PASSWORD_RESET_SERIALIZER": "core.api.serializers.CustomPasswordResetSerializer"
+    "PASSWORD_RESET_SERIALIZER": "core.api.serializers.CustomPasswordResetSerializer",
 }
