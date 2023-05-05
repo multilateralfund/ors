@@ -133,7 +133,7 @@ def parse_sheet(df, file_name):
     current_country_obj = None
     current_cp = None
     records = []
-    for i, row in df.iterrows():
+    for _, row in df.iterrows():
         if row["Chemical"] == "TOTAL":
             continue
 
@@ -193,7 +193,7 @@ def drop_old_data(file_name):
 @transaction.atomic
 def import_records():
     file_name = "CP_Data_SectionB_2019_2021.xlsx"
-    file_path = settings.ROOT_DIR / "import_data/records" / file_name
+    file_path = settings.IMPORT_DATA_DIR / "records" / file_name
 
     drop_old_data(file_name)
     parse_file(file_path, file_name)
