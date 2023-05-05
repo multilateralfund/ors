@@ -1,5 +1,3 @@
-const FullScreenLoader = () => {
-  return <div className="h-[95vh]"></div>
+export const FullScreenLoader = () => {
+  return <div className="h-[95vh]">LOADING</div>
 }
-
-export default FullScreenLoader

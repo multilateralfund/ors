@@ -1,20 +1,24 @@
-import { useDispatch, useSelector } from 'react-redux'
-import { logout } from '@/slices/authSlice'
+import { useSelector } from 'react-redux'
 import { selectUser } from '@/slices/userSlice'
 import { Navbar } from 'flowbite-react'
-import { useNavigate } from 'react-router-dom'
 import { LangSwitcher } from './LangSwitcher'
-import LogoSmall from '@/assets/logos/mlf_icon.png'
+import { useLogoutMutation } from '@/services/api'
+import { imgSrc } from '@/utils/assets'
+import { useEffect } from 'react'
 
 export const Header = () => {
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
   const { user } = useSelector(selectUser)
 
-  const onConfirmLogout = () => {
-    dispatch(logout())
+  const [logoutUser, { isSuccess, isLoading }] = useLogoutMutation()
 
-    window.location.href = '/'
+  useEffect(() => {
+    if (isSuccess) {
+      window.location.href = '/login'
+    }
+  }, [isLoading])
+
+  const onConfirmLogout = () => {
+    logoutUser()
   }
 
   return (
@@ -22,7 +26,11 @@ export const Header = () => {
       {user && (
         <Navbar.Brand to="/">
           <div className="self-center whitespace-nowrap text-xl font-semibold dark:text-white w-10">
-            <img src={LogoSmall} alt="logo" className="w-auto h-auto" />
+            <img
+              src={imgSrc('/assets/logos/mlf_icon.png')}
+              alt="logo"
+              className="w-auto h-auto"
+            />
           </div>
           <span className="pl-2">MLFS</span>
         </Navbar.Brand>
