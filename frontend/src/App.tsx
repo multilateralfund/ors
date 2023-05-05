@@ -17,9 +17,7 @@ import { RequireUser } from './layouts/RequireUser'
 import { UnauthorizedPage } from './pages/UnauthorizePage'
 
 const auth = (component: React.ReactElement) => (
-  // <RequireAuth>
   <LoggedInLayout>{component}</LoggedInLayout>
-  // </RequireAuth>
 )
 
 const anon = (component: React.ReactElement) => (
