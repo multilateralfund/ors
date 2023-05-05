@@ -19,6 +19,10 @@ from core.models.project_submission import (
 logger = logging.getLogger(__name__)
 ODS_ODP_COUNT = 3  # Number of ODS/ODP tuples in the file
 
+SUBSECTORS_ALT_NAMES = {
+    "HFC phase-down plan": "HFC phase down plan",
+}
+
 
 def get_object_by_name(cls, obj_name, index_row, obj_type_name):
     """
@@ -107,11 +111,13 @@ def parse_file(file_path, file_name):
 
     for index_row, row in df.iterrows():
         country = get_object_by_name(Country, row["COUNTRY"], index_row, "country")
-        subsec = get_object_by_name(
-            ProjectSubSector, row["SUBSECTOR"], index_row, "subsector"
-        )
         agency = get_object_by_name(Agency, row["AGENCY"], index_row, "agency")
-
+        # get subsector name from dict if exists else use the same name from the file
+        subsect_name = SUBSECTORS_ALT_NAMES.get(row["SUBSECTOR"], row["SUBSECTOR"])
+        subsec = get_object_by_name(
+            ProjectSubSector, subsect_name, index_row, "subsector"
+        )
+        # if country or agency or subsector does not exists then skip this row
         if not country or not subsec or not agency:
             continue
 
@@ -177,10 +183,12 @@ def drop_old_data(file_name):
 
 
 def import_proposals():
-    file_name = "tbProposalsNew90.xlsx"
-    file_path = settings.IMPORT_DATA_DIR / "proposals" / file_name
+    file_names = ["tbProposalsNew90.xlsx", "tbProposalsNew91.xlsx"]
+    for file_name in file_names:
+        logger.info(f"importing {file_name}")
+        file_path = settings.IMPORT_DATA_DIR / "proposals" / file_name
 
-    drop_old_data(file_name)
-    parse_file(file_path, file_name)
+        drop_old_data(file_name)
+        parse_file(file_path, file_name)
 
     logger.info("✔ proposals imported")
