@@ -21,7 +21,7 @@ const resetPasswordSchema = object({
 
 export type ResetPasswordInput = TypeOf<typeof resetPasswordSchema>
 
-export const ResetPasswordPage = () => {
+export function ResetPasswordPage() {
   const { uid, token } = useParams<{ uid: string; token: string }>()
 
   const methods = useForm<ResetPasswordInput>({

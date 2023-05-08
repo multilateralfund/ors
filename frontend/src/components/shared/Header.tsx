@@ -1,10 +1,10 @@
+import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { selectUser } from '@/slices/userSlice'
-import { Navbar } from 'flowbite-react'
-import { LangSwitcher } from './LangSwitcher'
+import { Navbar, DarkThemeToggle } from 'flowbite-react'
 import { useLogoutMutation } from '@/services/api'
 import { imgSrc } from '@/utils/assets'
-import { useEffect } from 'react'
+import { LangSwitcher } from './LangSwitcher'
 
 export const Header = () => {
   const { user } = useSelector(selectUser)
@@ -22,7 +22,7 @@ export const Header = () => {
   }
 
   return (
-    <Navbar fluid={true}>
+    <Navbar fluid>
       {user && (
         <Navbar.Brand to="/">
           <div className="self-center whitespace-nowrap text-xl font-semibold dark:text-white w-10">
@@ -49,9 +49,10 @@ export const Header = () => {
           </>
         )}
         <LangSwitcher />
+        <DarkThemeToggle />
         <Navbar.Toggle />
       </div>
-      <Navbar.Collapse></Navbar.Collapse>
+      <Navbar.Collapse />
     </Navbar>
   )
 }

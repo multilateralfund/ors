@@ -1,8 +1,8 @@
-import React, { FC, ButtonHTMLAttributes, AnchorHTMLAttributes } from 'react'
+import { FC, ButtonHTMLAttributes, ReactNode } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 interface IButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  children: React.ReactNode
+  children: ReactNode
   className?: string
   isLoading?: boolean
 }
@@ -32,7 +32,7 @@ export const Button: FC<IButtonProps> = ({
     font-medium
     rounded-lg
     ${disabledClasses}
-    ${className ? className : ''}
+    ${className || ''}
   `)
 
   const loading = () => (

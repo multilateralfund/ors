@@ -5,13 +5,12 @@ import {
   fetchBaseQuery,
   FetchBaseQueryError,
 } from '@reduxjs/toolkit/query'
-import { RootState } from '../store'
-import { authEndpoints } from './endpoints/authEndpoints'
-import { userEndpoints } from './endpoints/userEndpoints'
-import { selectAuthToken, selectAuthState } from '@/slices/authSlice'
+import { selectAuthToken, selectAuthState, logout } from '@/slices/authSlice'
 import { Mutex } from 'async-mutex'
 import { env } from '@/utils/env'
-import { logout } from '@/slices/authSlice'
+import { userEndpoints } from './endpoints/userEndpoints'
+import { authEndpoints } from './endpoints/authEndpoints'
+import { RootState } from '../store'
 
 const baseQuery = fetchBaseQuery({
   baseUrl: env.apiBaseUrl,

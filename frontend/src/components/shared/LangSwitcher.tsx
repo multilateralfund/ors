@@ -10,7 +10,7 @@ export const LangSwitcher = () => {
     LANGUAGES[i18n.language as LanguagesKeys]?.nativeName || 'English'
 
   return (
-    <Dropdown label={currentLanguage} inline={true}>
+    <Dropdown label={currentLanguage} inline>
       {objectKeys(LANGUAGES).map(lng => (
         <Dropdown.Item
           key={lng}

@@ -10,7 +10,7 @@ export const RequireUser = ({ allowedRoles }: Props) => {
   const [cookies] = useCookies()
   const location = useLocation()
 
-  /*const { isLoading, isFetching } = userApi.endpoints.getMe.useQuery(null, {
+  /* const { isLoading, isFetching } = userApi.endpoints.getMe.useQuery(null, {
     skip: false,
     refetchOnMountOrArgChange: true,
   })
@@ -23,7 +23,7 @@ export const RequireUser = ({ allowedRoles }: Props) => {
 
   if (loading) {
     return <FullScreenLoader />
-  }*/
+  } */
 
   /*
     Need to be added after we have roles
@@ -36,7 +36,7 @@ export const RequireUser = ({ allowedRoles }: Props) => {
       <Navigate to="/login" state={{ from: location }} replace />
     );
   */
-  return cookies['orsauth'] ? (
+  return cookies.orsauth ? (
     <Outlet />
   ) : (
     <Navigate to="/login" state={{ from: location }} replace />

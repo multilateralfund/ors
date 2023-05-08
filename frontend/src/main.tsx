@@ -1,5 +1,6 @@
-import React, { Suspense } from 'react'
-import ReactDOM from 'react-dom/client'
+import { Suspense, StrictMode } from 'react'
+import * as ReactDOM from 'react-dom/client'
+import { Flowbite } from 'flowbite-react'
 import { BrowserRouter } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import { CookiesProvider } from 'react-cookie'
@@ -14,16 +15,18 @@ import './index.css'
 import 'react-toastify/dist/ReactToastify.css'
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <BrowserRouter>
-        <CookiesProvider>
-          <Suspense fallback="...is loading">
-            <App />
-          </Suspense>
-          <ToastContainer />
-        </CookiesProvider>
-      </BrowserRouter>
-    </Provider>
-  </React.StrictMode>,
+  <StrictMode>
+    <Flowbite>
+      <Provider store={store}>
+        <BrowserRouter>
+          <CookiesProvider>
+            <Suspense fallback="...is loading">
+              <App />
+            </Suspense>
+            <ToastContainer />
+          </CookiesProvider>
+        </BrowserRouter>
+      </Provider>
+    </Flowbite>
+  </StrictMode>,
 )

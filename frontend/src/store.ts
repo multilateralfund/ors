@@ -1,10 +1,13 @@
-import { configureStore } from '@reduxjs/toolkit'
+import {
+  configureStore,
+  isRejectedWithValue,
+  Middleware,
+} from '@reduxjs/toolkit'
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux'
+import { toast } from 'react-toastify'
 import { api } from './services/api'
 import { authReducer } from './slices/authSlice'
 import { userReducer } from './slices/userSlice'
-import { isRejectedWithValue, Middleware } from '@reduxjs/toolkit'
-import { toast } from 'react-toastify'
 
 export const rtkQueryErrorLogger: Middleware = () => next => action => {
   if (isRejectedWithValue(action)) {

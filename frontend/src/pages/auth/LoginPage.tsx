@@ -19,7 +19,7 @@ const loginSchema = object({
 
 export type LoginInput = TypeOf<typeof loginSchema>
 
-export const LoginPage = () => {
+export function LoginPage() {
   const methods = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
   })
