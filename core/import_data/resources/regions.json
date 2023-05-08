@@ -1,0 +1,56 @@
+[
+{
+    "model": "core.region",
+    "pk": 1,
+    "fields": {
+        "abbr": "AFR",
+        "name": "Africa",
+        "remark": ""
+    }
+},
+{
+    "model": "core.region",
+    "pk": 2,
+    "fields": {
+        "abbr": "ASIA",
+        "name": "Asia-Pacific",
+        "remark": ""
+    }
+},
+{
+    "model": "core.region",
+    "pk": 3,
+    "fields": {
+        "abbr": "EEUR",
+        "name": "Eastern Europe",
+        "remark": ""
+    }
+},
+{
+    "model": "core.region",
+    "pk": 4,
+    "fields": {
+        "abbr": "LAC",
+        "name": "Latin America and the Caribbean",
+        "remark": ""
+    }
+},
+{
+    "model": "core.region",
+    "pk": 5,
+    "fields": {
+        "abbr": "UNK",
+        "name": "Unspecified",
+        "remark": ""
+    }
+},
+{
+    "model": "core.region",
+    "pk": 6,
+    "fields": {
+        "abbr": "WEUR",
+        "name": "Western Europe and Others",
+        "remark": ""
+    }
+}
+]

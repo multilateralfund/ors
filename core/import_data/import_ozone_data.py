@@ -16,7 +16,7 @@ def import_data(cls, file_path, exclude=[]):
 
     for instance_data in list_data:
         instance = instance_data["fields"]
-        instance["id"] = instance_data["pk"]
+        instance["ozone_id"] = instance_data["pk"]
         # remove unused fields
         for k in exclude:
             instance.pop(k)
@@ -28,19 +28,31 @@ def import_data(cls, file_path, exclude=[]):
         elif cls == Blend:
             # set blend name
             instance["name"] = instance.pop("blend_id")
-        elif cls == Substance:
+        elif cls == Substance and instance["group"]:
             # set foreign key
-            instance["group_id"] = instance.pop("group")
+            group_ozone_id = instance.pop("group")
+            instance["group_id"] = Group.objects.get(ozone_id=group_ozone_id).id
         elif cls == BlendComponents:
             # set foreign key
-            instance["blend_id"] = instance.pop("blend")
-            instance["substance_id"] = instance.pop("substance")
+            blend_ozone_id = instance.pop("blend")
+            substance_ozone_id = instance.pop("substance")
+            instance["blend_id"] = Blend.objects.get(ozone_id=blend_ozone_id).id
+            instance["substance_id"] = Substance.objects.get(
+                ozone_id=substance_ozone_id
+            ).id
 
         # create or update instance
-        cls.objects.update_or_create(
-            id=instance_data["pk"],
-            defaults=instance,
-        )
+        if cls == BlendComponents:
+            cls.objects.update_or_create(
+                blend_id=instance["blend_id"],
+                substance_id=instance["substance_id"],
+                defaults=instance,
+            )
+        else:
+            cls.objects.update_or_create(
+                name=instance["name"],
+                defaults=instance,
+            )
 
 
 def import_groups():
@@ -80,7 +92,7 @@ def import_blends():
     ]
 
     import_data(Blend, settings.IMPORT_RESOURCES_DIR / "blends.json", exclude)
-    logger.info("✔ substances imported")
+    logger.info("✔ blends imported")
 
 
 def import_blend_components():

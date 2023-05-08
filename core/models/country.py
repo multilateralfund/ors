@@ -5,18 +5,24 @@ class CountryManager(models.Manager):
     def get_by_name(self, name):
         name_str = name.lower()
         return self.filter(
-            models.Q(name__iexact=name_str) | models.Q(full_name__iexact=name_str)
+            models.Q(name__iexact=name_str)
+            | models.Q(full_name__iexact=name_str)
+            | models.Q(name_alt__iexact=name_str)
         )
 
 
 # country model; contains name, m49 code, and iso code
 class Country(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    name_alt = models.CharField(max_length=256, null=True, blank=True)
+    abbr = models.CharField(max_length=10, null=True, blank=True)
+    abbr_alt = models.CharField(max_length=10, null=True, blank=True)
     full_name = models.CharField(max_length=256)
     iso3 = models.CharField(max_length=3, null=True, blank=True)
     ozone_unit = models.TextField(null=True, blank=True)
     is_lvc = models.BooleanField(default=False)
     lvc_baseline = models.FloatField(null=True, blank=True)
+    ozone_id = models.IntegerField(null=True, blank=True)
     subregion = models.ForeignKey(
         "Subregion",
         null=True,
@@ -35,6 +41,8 @@ class Country(models.Model):
 
 class Subregion(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    abbr = models.CharField(max_length=10, null=True, blank=True)
+    ozone_id = models.IntegerField(null=True, blank=True)
     region = models.ForeignKey(
         "Region",
         on_delete=models.CASCADE,
@@ -46,6 +54,8 @@ class Subregion(models.Model):
 
 class Region(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    abbr = models.CharField(max_length=10, null=True, blank=True)
+    ozone_id = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.name

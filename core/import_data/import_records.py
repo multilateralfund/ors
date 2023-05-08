@@ -26,6 +26,11 @@ REQUIRED_COLUMNS = [
 
 SECTION = "B"
 
+COUNTRY_NAME_DICT = {
+    "Brunei Darussalan": "Brunei Darussalam",
+    "Eswatini (the Kingdom of)": "Eswatini",
+}
+
 
 def check_headers(df):
     for c in REQUIRED_COLUMNS:
@@ -73,6 +78,11 @@ def get_usages_from_sheet(df):
 
 
 def get_country(country_name):
+    """
+    get country object from country name
+    @param country_name = string
+    """
+    country_name = COUNTRY_NAME_DICT.get(country_name, country_name)
     country = Country.objects.get_by_name(country_name).first()
     if not country:
         logger.warning(f"This country does not exists: {country_name}")

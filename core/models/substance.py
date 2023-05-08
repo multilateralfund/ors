@@ -9,7 +9,7 @@ class SubstanceManager(models.Manager):
 
 # substance model
 class Substance(models.Model):
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, unique=True)
     description = models.TextField(null=True, blank=True)
     odp = models.DecimalField(max_digits=20, decimal_places=10)
     min_odp = models.DecimalField(max_digits=20, decimal_places=10)
@@ -31,6 +31,7 @@ class Substance(models.Model):
     sort_order = models.IntegerField(null=True)
     is_contained_in_polyols = models.BooleanField()
     is_captured = models.BooleanField(default=False)
+    ozone_id = models.IntegerField(null=True, blank=True)
     group = models.ForeignKey(
         "Group",
         null=True,
