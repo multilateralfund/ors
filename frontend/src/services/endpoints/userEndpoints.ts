@@ -9,6 +9,7 @@ export const userEndpoints = (
     query: () => ({
       url: '/auth/user/',
       method: 'GET',
+      credentials: 'include',
     }),
     async onQueryStarted(args, { dispatch, queryFulfilled }) {
       try {

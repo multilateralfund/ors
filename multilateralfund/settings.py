@@ -43,6 +43,7 @@ ALLOWED_HOSTS = [_host.rsplit(":", 1)[0] for _host in BACKEND_HOST]
 
 # CORS allowed origins
 CORS_ALLOWED_ORIGINS = [_host.rsplit(",", 1)[0] for _host in FRONTEND_HOST]
+CORS_ALLOW_CREDENTIALS = True
 
 # CSRF allowed origins
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
@@ -211,15 +212,17 @@ EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD")
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.SessionAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 }
 
 REST_AUTH = {
     "USE_JWT": True,
+    "SESSION_LOGIN": True,
     "JWT_AUTH_HTTPONLY": False,
-    "JWT_AUTH_COOKIE": "app-auth",
-    "JWT_AUTH_REFRESH_COOKIE": "app-auth-refresh",
+    "JWT_AUTH_COOKIE": "orsauth",
+    "JWT_AUTH_REFRESH_COOKIE": "orsrefresh",
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "PASSWORD_RESET_USE_SITES_DOMAIN": True,
     "PASSWORD_RESET_SERIALIZER": "core.api.serializers.CustomPasswordResetSerializer",

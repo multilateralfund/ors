@@ -13,11 +13,11 @@ import { RecoverPassPage } from './pages/auth/RecoverPassPage'
 import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
 import { EmailVerificationPage } from './pages/auth/EmailVerificationPage'
 import { HomePage } from './pages/HomePage'
+import { RequireUser } from './layouts/RequireUser'
+import { UnauthorizedPage } from './pages/UnauthorizePage'
 
 const auth = (component: React.ReactElement) => (
-  <RequireAuth>
-    <LoggedInLayout>{component}</LoggedInLayout>
-  </RequireAuth>
+  <LoggedInLayout>{component}</LoggedInLayout>
 )
 
 const anon = (component: React.ReactElement) => (
@@ -28,7 +28,10 @@ export default function App() {
   return (
     <Routes>
       <Route element={<BaseLayout />}>
-        <Route path="/" element={auth(<HomePage />)} />
+        <Route element={<RequireUser allowedRoles={['user', 'admin']} />}>
+          <Route path="/" element={auth(<HomePage />)} />
+        </Route>
+        <Route path="/unauthorized" element={anon(<UnauthorizedPage />)} />
         <Route path="/login" element={anon(<LoginPage />)} />
         <Route path="/forgot-password" element={anon(<RecoverPassPage />)} />
         <Route path="/reset-password" element={anon(<ResetPasswordPage />)}>

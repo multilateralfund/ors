@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { Cookies } from 'react-cookie'
 import { RootState } from '../store'
 
 interface AuthState {
@@ -23,17 +24,15 @@ export const authSlice = createSlice({
     ) => {
       state.access_token = action.payload.access_token
       state.refresh_token = action.payload.refresh_token
-      localStorage.setItem('access_token', action.payload.access_token)
-      localStorage.setItem('refresh_token', action.payload.refresh_token)
-      localStorage.setItem('token_exp', new Date().toUTCString())
     },
     logout: state => {
+      const cookie = new Cookies()
+      cookie.remove('sessionid')
+      cookie.remove('orsrefresh')
+      cookie.remove('orsauth')
+      cookie.remove('csrftoken')
       state.access_token = undefined
       state.refresh_token = undefined
-      state.token_exp = undefined
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('refresh_token')
-      localStorage.removeItem('token_exp')
     },
   },
 })

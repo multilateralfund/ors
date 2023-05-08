@@ -1,7 +1,7 @@
 import { EndpointBuilder } from '@reduxjs/toolkit/dist/query/endpointDefinitions'
 import { IUser } from '@/types/User'
 import { LoginInput } from '@/pages/auth/LoginPage'
-import { setToken } from '@/slices/authSlice'
+import { logout, setToken } from '@/slices/authSlice'
 import { setUser } from '@/slices/userSlice'
 
 type Output = {
@@ -17,13 +17,26 @@ export const authEndpoints = (
     query: body => ({
       url: '/auth/login/',
       method: 'POST',
+      credentials: 'include',
       body,
     }),
     async onQueryStarted(_, { dispatch, queryFulfilled }) {
       try {
         const { data } = await queryFulfilled
-        dispatch(setToken(data))
         dispatch(setUser(data.user))
+      } catch (error) {}
+    },
+  }),
+  logout: builder.mutation<void, void>({
+    query: body => ({
+      url: '/auth/logout/',
+      method: 'POST',
+      // credentials: 'include',
+    }),
+    async onQueryStarted(_, { dispatch, queryFulfilled }) {
+      try {
+        await queryFulfilled
+        dispatch(logout())
       } catch (error) {}
     },
   }),
@@ -31,6 +44,7 @@ export const authEndpoints = (
     query: body => ({
       url: '/auth/password/reset/',
       method: 'POST',
+      credentials: 'include',
       body,
     }),
   }),
@@ -41,6 +55,7 @@ export const authEndpoints = (
     query: body => ({
       url: '/auth/password/reset/confirm/',
       method: 'POST',
+      credentials: 'include',
       body,
     }),
   }),
