@@ -11,7 +11,7 @@ This document describes installation steps required to install locally for devel
 - Install and start postgresql (>=15)
 - Create a postgresql database and user:
   ```shell
-  sudo -u postgres createuser -Pds multilateralfund && sudo -u postgres createdb multilateralfund
+  sudo -u postgres createuser -Pds multilateralfund && sudo -u postgres createdb --encoding=UTF8 multilateralfund
   ```
 - _(Recommended)_ create and activate a python virtualenv
 - Clone this repository
@@ -55,8 +55,8 @@ This document describes installation steps required to install locally for devel
   npm run dev
   ```
 
-- Check frontend is running correctly at http://localhost:8080
-- Check backend is running correctly at http://localhost:8000/api/admin and login with credentials:
+- Check frontend is running correctly at <http://localhost:8080>
+- Check backend is running correctly at <http://localhost:8000/admin/>
 
 ## Updating the application
 
