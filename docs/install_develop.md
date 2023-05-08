@@ -11,7 +11,7 @@ This document describes installation steps required to install locally for devel
 - Install and start postgresql (>=15)
 - Create a postgresql database and user:
   ```shell
-  sudo -u postgres createuser -Pds mutualfund && sudo -u postgres createdb mutualfund
+  sudo -u postgres createuser -Pds multilateralfund && sudo -u postgres createdb multilateralfund
   ```
 - _(Recommended)_ create and activate a python virtualenv
 - Clone this repository

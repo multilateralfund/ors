@@ -13,7 +13,7 @@ settings. See [code style workflow](https://github.com/digital-agenda-data/digit
 ## Starting points
 
 - Backend:
-  - [django](https://docs.djangoproject.com//)
+  - [django](https://docs.djangoproject.com/)
   - [django-rest-framework](https://www.django-rest-framework.org/)
 - Frontend:
   - [react](https://react.dev/)
