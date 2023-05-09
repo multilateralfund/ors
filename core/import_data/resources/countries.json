@@ -95,7 +95,7 @@
         "fields": {
             "name": "Andorra",
             "abbr": "AD",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 1,
             "remark": "",
             "mdg_region": "20",
@@ -167,7 +167,7 @@
         "fields": {
             "name": "Antigua and Barbuda",
             "abbr": "AG",
-            "subregion": 9,
+            "subregion": 7,
             "parent_party": 4,
             "remark": "",
             "mdg_region": "28",
@@ -185,7 +185,7 @@
         "fields": {
             "name": "Argentina",
             "abbr": "AR",
-            "subregion": 11,
+            "subregion": 9,
             "parent_party": 11,
             "remark": "",
             "mdg_region": "32",
@@ -239,7 +239,7 @@
         "fields": {
             "name": "Australia",
             "abbr": "AU",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 14,
             "remark": "",
             "mdg_region": "36",
@@ -257,7 +257,7 @@
         "fields": {
             "name": "Austria",
             "abbr": "AT",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 13,
             "remark": "",
             "mdg_region": "40",
@@ -293,7 +293,7 @@
         "fields": {
             "name": "Bahamas",
             "abbr": "BS",
-            "subregion": 9,
+            "subregion": 7,
             "parent_party": 33,
             "remark": "",
             "mdg_region": "44",
@@ -347,7 +347,7 @@
         "fields": {
             "name": "Barbados",
             "abbr": "BB",
-            "subregion": 9,
+            "subregion": 7,
             "parent_party": 19,
             "remark": "",
             "mdg_region": "52",
@@ -383,7 +383,7 @@
         "fields": {
             "name": "Belgium",
             "abbr": "BE",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 21,
             "remark": "",
             "mdg_region": "56",
@@ -401,7 +401,7 @@
         "fields": {
             "name": "Belize",
             "abbr": "BZ",
-            "subregion": 9,
+            "subregion": 7,
             "parent_party": 38,
             "remark": "",
             "mdg_region": "84",
@@ -473,7 +473,7 @@
         "fields": {
             "name": "Bolivia (Plurinational State of)",
             "abbr": "BO",
-            "subregion": 11,
+            "subregion": 9,
             "parent_party": 30,
             "remark": "",
             "mdg_region": "68",
@@ -563,7 +563,7 @@
         "fields": {
             "name": "Brazil",
             "abbr": "BR",
-            "subregion": 11,
+            "subregion": 9,
             "parent_party": 32,
             "remark": "",
             "mdg_region": "76",
@@ -617,7 +617,7 @@
         "fields": {
             "name": "Bulgaria",
             "abbr": "BG",
-            "subregion": 15,
+            "subregion": 6,
             "parent_party": 23,
             "remark": "",
             "mdg_region": "100",
@@ -725,7 +725,7 @@
         "fields": {
             "name": "Canada",
             "abbr": "CA",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 39,
             "remark": "",
             "mdg_region": "124",
@@ -797,7 +797,7 @@
         "fields": {
             "name": "Chile",
             "abbr": "CL",
-            "subregion": 11,
+            "subregion": 9,
             "parent_party": 47,
             "remark": "",
             "mdg_region": "152",
@@ -869,7 +869,7 @@
         "fields": {
             "name": "Colombia",
             "abbr": "CO",
-            "subregion": 11,
+            "subregion": 9,
             "parent_party": 50,
             "remark": "",
             "mdg_region": "170",
@@ -923,7 +923,7 @@
         "fields": {
             "name": "Cook Islands",
             "abbr": "CK",
-            "subregion": 12,
+            "subregion": 4,
             "parent_party": 46,
             "remark": "",
             "mdg_region": "184",
@@ -941,7 +941,7 @@
         "fields": {
             "name": "Costa Rica",
             "abbr": "CR",
-            "subregion": 10,
+            "subregion": 8,
             "parent_party": 51,
             "remark": "",
             "mdg_region": "188",
@@ -977,7 +977,7 @@
         "fields": {
             "name": "Croatia",
             "abbr": "HR",
-            "subregion": 15,
+            "subregion": 6,
             "parent_party": 100,
             "remark": "Hrvatska",
             "mdg_region": "191",
@@ -995,7 +995,7 @@
         "fields": {
             "name": "Cuba",
             "abbr": "CU",
-            "subregion": 10,
+            "subregion": 8,
             "parent_party": 52,
             "remark": "",
             "mdg_region": "192",
@@ -1049,7 +1049,7 @@
         "fields": {
             "name": "Czechia",
             "abbr": "CZ",
-            "subregion": 15,
+            "subregion": 6,
             "parent_party": 57,
             "remark": "",
             "mdg_region": "203",
@@ -1103,7 +1103,7 @@
         "fields": {
             "name": "Denmark",
             "abbr": "DK",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 60,
             "remark": "",
             "mdg_region": "208",
@@ -1139,7 +1139,7 @@
         "fields": {
             "name": "Dominica",
             "abbr": "DM",
-            "subregion": 9,
+            "subregion": 7,
             "parent_party": 61,
             "remark": "",
             "mdg_region": "212",
@@ -1157,7 +1157,7 @@
         "fields": {
             "name": "Dominican Republic",
             "abbr": "DO",
-            "subregion": 10,
+            "subregion": 8,
             "parent_party": 62,
             "remark": "",
             "mdg_region": "214",
@@ -1175,7 +1175,7 @@
         "fields": {
             "name": "Ecuador",
             "abbr": "EC",
-            "subregion": 11,
+            "subregion": 9,
             "parent_party": 64,
             "remark": "",
             "mdg_region": "218",
@@ -1211,7 +1211,7 @@
         "fields": {
             "name": "El Salvador",
             "abbr": "SV",
-            "subregion": 10,
+            "subregion": 8,
             "parent_party": 212,
             "remark": "",
             "mdg_region": "222",
@@ -1265,7 +1265,7 @@
         "fields": {
             "name": "Estonia",
             "abbr": "EE",
-            "subregion": 15,
+            "subregion": 6,
             "parent_party": 66,
             "remark": "",
             "mdg_region": "233",
@@ -1319,7 +1319,7 @@
         "fields": {
             "name": "European Union",
             "abbr": "EU",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 65,
             "remark": "",
             "mdg_region": "97",
@@ -1373,7 +1373,7 @@
         "fields": {
             "name": "Fiji",
             "abbr": "FJ",
-            "subregion": 12,
+            "subregion": 4,
             "parent_party": 73,
             "remark": "",
             "mdg_region": "242",
@@ -1391,7 +1391,7 @@
         "fields": {
             "name": "Finland",
             "abbr": "FI",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 72,
             "remark": "",
             "mdg_region": "246",
@@ -1409,7 +1409,7 @@
         "fields": {
             "name": "France",
             "abbr": "FR",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 77,
             "remark": "",
             "mdg_region": "250",
@@ -1535,7 +1535,7 @@
         "fields": {
             "name": "Germany",
             "abbr": "DE",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 58,
             "remark": "",
             "mdg_region": "276",
@@ -1589,7 +1589,7 @@
         "fields": {
             "name": "Greece",
             "abbr": "GR",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 91,
             "remark": "",
             "mdg_region": "300",
@@ -1625,7 +1625,7 @@
         "fields": {
             "name": "Grenada",
             "abbr": "GD",
-            "subregion": 9,
+            "subregion": 7,
             "parent_party": 80,
             "remark": "",
             "mdg_region": "308",
@@ -1679,7 +1679,7 @@
         "fields": {
             "name": "Guatemala",
             "abbr": "GT",
-            "subregion": 10,
+            "subregion": 8,
             "parent_party": 93,
             "remark": "",
             "mdg_region": "320",
@@ -1751,7 +1751,7 @@
         "fields": {
             "name": "Guyana",
             "abbr": "GY",
-            "subregion": 9,
+            "subregion": 7,
             "parent_party": 96,
             "remark": "",
             "mdg_region": "328",
@@ -1769,7 +1769,7 @@
         "fields": {
             "name": "Haiti",
             "abbr": "HT",
-            "subregion": 9,
+            "subregion": 7,
             "parent_party": 101,
             "remark": "",
             "mdg_region": "332",
@@ -1805,7 +1805,7 @@
         "fields": {
             "name": "Holy See",
             "abbr": "VA",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 238,
             "remark": "Vatican City",
             "mdg_region": "336",
@@ -1823,7 +1823,7 @@
         "fields": {
             "name": "Honduras",
             "abbr": "HN",
-            "subregion": 10,
+            "subregion": 8,
             "parent_party": 99,
             "remark": "",
             "mdg_region": "340",
@@ -1859,7 +1859,7 @@
         "fields": {
             "name": "Hungary",
             "abbr": "HU",
-            "subregion": 15,
+            "subregion": 6,
             "parent_party": 102,
             "remark": "",
             "mdg_region": "348",
@@ -1877,7 +1877,7 @@
         "fields": {
             "name": "Iceland",
             "abbr": "IS",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 111,
             "remark": "",
             "mdg_region": "352",
@@ -1967,7 +1967,7 @@
         "fields": {
             "name": "Ireland",
             "abbr": "IE",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 104,
             "remark": "",
             "mdg_region": "372",
@@ -2003,7 +2003,7 @@
         "fields": {
             "name": "Israel",
             "abbr": "IL",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 105,
             "remark": "",
             "mdg_region": "376",
@@ -2021,7 +2021,7 @@
         "fields": {
             "name": "Italy",
             "abbr": "IT",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 112,
             "remark": "",
             "mdg_region": "380",
@@ -2039,7 +2039,7 @@
         "fields": {
             "name": "Jamaica",
             "abbr": "JM",
-            "subregion": 9,
+            "subregion": 7,
             "parent_party": 114,
             "remark": "",
             "mdg_region": "388",
@@ -2057,7 +2057,7 @@
         "fields": {
             "name": "Japan",
             "abbr": "JP",
-            "subregion": 14,
+            "subregion": 4,
             "parent_party": 116,
             "remark": "",
             "mdg_region": "392",
@@ -2147,7 +2147,7 @@
         "fields": {
             "name": "Kiribati",
             "abbr": "KI",
-            "subregion": 12,
+            "subregion": 4,
             "parent_party": 120,
             "remark": "",
             "mdg_region": "296",
@@ -2237,7 +2237,7 @@
         "fields": {
             "name": "Latvia",
             "abbr": "LV",
-            "subregion": 15,
+            "subregion": 6,
             "parent_party": 137,
             "remark": "",
             "mdg_region": "428",
@@ -2327,7 +2327,7 @@
         "fields": {
             "name": "Liechtenstein",
             "abbr": "LI",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 131,
             "remark": "",
             "mdg_region": "438",
@@ -2345,7 +2345,7 @@
         "fields": {
             "name": "Lithuania",
             "abbr": "LT",
-            "subregion": 15,
+            "subregion": 6,
             "parent_party": 135,
             "remark": "",
             "mdg_region": "440",
@@ -2363,7 +2363,7 @@
         "fields": {
             "name": "Luxembourg",
             "abbr": "LU",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 136,
             "remark": "",
             "mdg_region": "442",
@@ -2489,7 +2489,7 @@
         "fields": {
             "name": "Malta",
             "abbr": "MT",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 155,
             "remark": "",
             "mdg_region": "470",
@@ -2507,7 +2507,7 @@
         "fields": {
             "name": "Marshall Islands",
             "abbr": "MH",
-            "subregion": 12,
+            "subregion": 4,
             "parent_party": 145,
             "remark": "",
             "mdg_region": "584",
@@ -2597,7 +2597,7 @@
         "fields": {
             "name": "Mexico",
             "abbr": "MX",
-            "subregion": 10,
+            "subregion": 8,
             "parent_party": 159,
             "remark": "",
             "mdg_region": "484",
@@ -2615,7 +2615,7 @@
         "fields": {
             "name": "Micronesia (Federated States of)",
             "abbr": "FM",
-            "subregion": 12,
+            "subregion": 4,
             "parent_party": 75,
             "remark": "",
             "mdg_region": "583",
@@ -2633,7 +2633,7 @@
         "fields": {
             "name": "Monaco",
             "abbr": "MC",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 140,
             "remark": "",
             "mdg_region": "492",
@@ -2777,7 +2777,7 @@
         "fields": {
             "name": "Nauru",
             "abbr": "NR",
-            "subregion": 12,
+            "subregion": 4,
             "parent_party": 171,
             "remark": "",
             "mdg_region": "520",
@@ -2831,7 +2831,7 @@
         "fields": {
             "name": "Netherlands (Kingdom of the)",
             "abbr": "NL",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 168,
             "remark": "",
             "mdg_region": "528",
@@ -2867,7 +2867,7 @@
         "fields": {
             "name": "New Zealand",
             "abbr": "NZ",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 173,
             "remark": "",
             "mdg_region": "554",
@@ -2885,7 +2885,7 @@
         "fields": {
             "name": "Nicaragua",
             "abbr": "NI",
-            "subregion": 10,
+            "subregion": 8,
             "parent_party": 167,
             "remark": "",
             "mdg_region": "558",
@@ -2939,7 +2939,7 @@
         "fields": {
             "name": "Niue",
             "abbr": "NU",
-            "subregion": 12,
+            "subregion": 4,
             "parent_party": 172,
             "remark": "",
             "mdg_region": "570",
@@ -3011,7 +3011,7 @@
         "fields": {
             "name": "Norway",
             "abbr": "NO",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 169,
             "remark": "",
             "mdg_region": "578",
@@ -3065,7 +3065,7 @@
         "fields": {
             "name": "Palau",
             "abbr": "PW",
-            "subregion": 12,
+            "subregion": 4,
             "parent_party": 187,
             "remark": "",
             "mdg_region": "585",
@@ -3083,7 +3083,7 @@
         "fields": {
             "name": "Panama",
             "abbr": "PA",
-            "subregion": 10,
+            "subregion": 8,
             "parent_party": 175,
             "remark": "",
             "mdg_region": "591",
@@ -3101,7 +3101,7 @@
         "fields": {
             "name": "Papua New Guinea",
             "abbr": "PG",
-            "subregion": 12,
+            "subregion": 4,
             "parent_party": 178,
             "remark": "",
             "mdg_region": "598",
@@ -3119,7 +3119,7 @@
         "fields": {
             "name": "Paraguay",
             "abbr": "PY",
-            "subregion": 11,
+            "subregion": 9,
             "parent_party": 188,
             "remark": "",
             "mdg_region": "600",
@@ -3137,7 +3137,7 @@
         "fields": {
             "name": "Peru",
             "abbr": "PE",
-            "subregion": 11,
+            "subregion": 9,
             "parent_party": 176,
             "remark": "",
             "mdg_region": "604",
@@ -3191,7 +3191,7 @@
         "fields": {
             "name": "Poland",
             "abbr": "PL",
-            "subregion": 15,
+            "subregion": 6,
             "parent_party": 181,
             "remark": "",
             "mdg_region": "616",
@@ -3209,7 +3209,7 @@
         "fields": {
             "name": "Portugal",
             "abbr": "PT",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 186,
             "remark": "",
             "mdg_region": "620",
@@ -3317,7 +3317,7 @@
         "fields": {
             "name": "Romania",
             "abbr": "RO",
-            "subregion": 15,
+            "subregion": 6,
             "parent_party": 191,
             "remark": "",
             "mdg_region": "642",
@@ -3407,7 +3407,7 @@
         "fields": {
             "name": "Saint Kitts and Nevis",
             "abbr": "KN",
-            "subregion": 9,
+            "subregion": 7,
             "parent_party": 122,
             "remark": "",
             "mdg_region": "659",
@@ -3425,7 +3425,7 @@
         "fields": {
             "name": "Saint Lucia",
             "abbr": "LC",
-            "subregion": 9,
+            "subregion": 7,
             "parent_party": 130,
             "remark": "",
             "mdg_region": "662",
@@ -3479,7 +3479,7 @@
         "fields": {
             "name": "Saint Vincent and the Grenadines",
             "abbr": "VC",
-            "subregion": 9,
+            "subregion": 7,
             "parent_party": 239,
             "remark": "",
             "mdg_region": "670",
@@ -3497,7 +3497,7 @@
         "fields": {
             "name": "Samoa",
             "abbr": "WS",
-            "subregion": 12,
+            "subregion": 4,
             "parent_party": 246,
             "remark": "",
             "mdg_region": "882",
@@ -3515,7 +3515,7 @@
         "fields": {
             "name": "San Marino",
             "abbr": "SM",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 206,
             "remark": "",
             "mdg_region": "674",
@@ -3677,7 +3677,7 @@
         "fields": {
             "name": "Slovakia",
             "abbr": "SK",
-            "subregion": 15,
+            "subregion": 6,
             "parent_party": 204,
             "remark": "",
             "mdg_region": "703",
@@ -3695,7 +3695,7 @@
         "fields": {
             "name": "Slovenia",
             "abbr": "SI",
-            "subregion": 15,
+            "subregion": 6,
             "parent_party": 202,
             "remark": "",
             "mdg_region": "705",
@@ -3713,7 +3713,7 @@
         "fields": {
             "name": "Solomon Islands",
             "abbr": "SB",
-            "subregion": 12,
+            "subregion": 4,
             "parent_party": 196,
             "remark": "",
             "mdg_region": "90",
@@ -3803,7 +3803,7 @@
         "fields": {
             "name": "Spain",
             "abbr": "ES",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 70,
             "remark": "",
             "mdg_region": "724",
@@ -3839,7 +3839,7 @@
         "fields": {
             "name": "State of Palestine",
             "abbr": "PS",
-            "subregion": 14,
+            "subregion": 5,
             "parent_party": 185,
             "remark": "",
             "mdg_region": "275",
@@ -3875,7 +3875,7 @@
         "fields": {
             "name": "Suriname",
             "abbr": "SR",
-            "subregion": 9,
+            "subregion": 7,
             "parent_party": 209,
             "remark": "",
             "mdg_region": "740",
@@ -3911,7 +3911,7 @@
         "fields": {
             "name": "Sweden",
             "abbr": "SE",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 199,
             "remark": "",
             "mdg_region": "752",
@@ -3929,7 +3929,7 @@
         "fields": {
             "name": "Switzerland",
             "abbr": "CH",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 44,
             "remark": "",
             "mdg_region": "756",
@@ -4073,7 +4073,7 @@
         "fields": {
             "name": "Tonga",
             "abbr": "TO",
-            "subregion": 12,
+            "subregion": 4,
             "parent_party": 226,
             "remark": "",
             "mdg_region": "776",
@@ -4091,7 +4091,7 @@
         "fields": {
             "name": "Trinidad and Tobago",
             "abbr": "TT",
-            "subregion": 9,
+            "subregion": 7,
             "parent_party": 228,
             "remark": "",
             "mdg_region": "780",
@@ -4127,7 +4127,7 @@
         "fields": {
             "name": "T\u00fcrkiye",
             "abbr": "TR",
-            "subregion": 8,
+            "subregion": 6,
             "parent_party": 227,
             "remark": "Turkey, participates fully in both WEOG and Asian Group, but for electoral purposes is considered a member of WEOG only.",
             "mdg_region": "792",
@@ -4181,7 +4181,7 @@
         "fields": {
             "name": "Tuvalu",
             "abbr": "TV",
-            "subregion": 12,
+            "subregion": 4,
             "parent_party": 229,
             "remark": "",
             "mdg_region": "798",
@@ -4253,7 +4253,7 @@
         "fields": {
             "name": "United Kingdom of Great Britain and Northern Ireland",
             "abbr": "GB",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 79,
             "remark": "",
             "mdg_region": "826",
@@ -4307,7 +4307,7 @@
         "fields": {
             "name": "United States of America",
             "abbr": "US",
-            "subregion": 18,
+            "subregion": 6,
             "parent_party": 235,
             "remark": "",
             "mdg_region": "840",
@@ -4325,7 +4325,7 @@
         "fields": {
             "name": "Uruguay",
             "abbr": "UY",
-            "subregion": 11,
+            "subregion": 9,
             "parent_party": 236,
             "remark": "",
             "mdg_region": "858",
@@ -4361,7 +4361,7 @@
         "fields": {
             "name": "Vanuatu",
             "abbr": "VU",
-            "subregion": 12,
+            "subregion": 4,
             "parent_party": 244,
             "remark": "",
             "mdg_region": "548",
@@ -4379,7 +4379,7 @@
         "fields": {
             "name": "Venezuela (Bolivarian Republic of)",
             "abbr": "VE",
-            "subregion": 11,
+            "subregion": 9,
             "parent_party": 240,
             "remark": "",
             "mdg_region": "862",
@@ -4505,7 +4505,7 @@
         "fields": {
             "name": "Yugoslavia",
             "abbr": "YU",
-            "subregion": 15,
+            "subregion": 6,
             "parent_party": null,
             "remark": "",
             "mdg_region": "688",

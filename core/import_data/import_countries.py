@@ -35,6 +35,22 @@ def parse_country_lvc_file(file_path):
     return country_lvc
 
 
+def get_country(country_data):
+    """
+    Get country by name or full name
+    @param country_data = dict
+    @return country = Country object or None
+    """
+    country = Country.objects.get_by_name(country_data["name"])
+    if country:
+        return country
+
+    if country_data.get("full_name"):
+        country = Country.objects.get_by_name(country_data["full_name"])
+
+    return country
+
+
 def update_or_create_country(country_data, country_lvc):
     """
     Create country
@@ -50,13 +66,12 @@ def update_or_create_country(country_data, country_lvc):
             }
         )
 
-    # get country
-    country = Country.objects.get_by_name(country_data["name"])
-    if not country and country_data.get("full_name"):
-        country = Country.objects.get_by_name(country_data["full_name"])
+    country = get_country(country_data)
 
     # update or create country
     if country:
+        # remove name from country_data to avoid update name
+        country_data.pop("name")
         country.update(**country_data)
     else:
         Country.objects.create(**country_data)
@@ -75,6 +90,14 @@ def parse_countries_json_file(file_path, country_lvc):
         json_data = json.load(f)
 
     for country_json in json_data:
+        if country_json["pk"] != country_json["fields"]["parent_party"]:
+            # skip unwanted territories
+            continue
+
+        subregion = Subregion.objects.filter(
+            import_id=country_json["fields"]["subregion"]
+        ).first()
+
         country_data = {
             "ozone_id": country_json["pk"],
             "name": country_json["fields"]["name"],
@@ -82,6 +105,7 @@ def parse_countries_json_file(file_path, country_lvc):
             "iso3": country_json["fields"]["iso_alpha3_code"],
             "abbr_alt": country_json["fields"]["abbr_alt"],
             "name_alt": country_json["fields"]["name_alt"],
+            "subregion": subregion,
         }
         update_or_create_country(country_data, country_lvc)
 
@@ -99,12 +123,8 @@ def parse_countries_xlsx_file(file_path, country_lvc):
         if row["CTR_DESCRIPTION"] != "Country":
             continue
 
-        # get or create region and subregion
-        region, _ = Region.objects.get_or_create(name=row["REGION"])
-        subregion, _ = Subregion.objects.get_or_create(
-            name=row["SUBREGION"],
-            defaults={"name": row["SUBREGION"], "region_id": region.id},
-        )
+        # get subregion
+        subregion = Subregion.objects.get_by_name(row["SUBREGION"]).first()
 
         # update country
         country_data = {
@@ -118,14 +138,59 @@ def parse_countries_xlsx_file(file_path, country_lvc):
         update_or_create_country(country_data, country_lvc)
 
 
+def parse_regions_file(file_path):
+    """
+    Parse regions json file and import regions
+    @param file_path string
+    """
+    with open(file_path, "r") as f:
+        json_data = json.load(f)
+
+    for region_json in json_data:
+        region_data = {
+            "name": region_json["name"],
+            "abbr": region_json["abbr"],
+        }
+        Region.objects.get_or_create(
+            name=region_data["name"],
+            defaults=region_data,
+        )
+
+
+def parse_subregions_file(file_path):
+    """
+    Parse subregions json file and import subregions
+    @param file_path string
+    """
+    with open(file_path, "r") as f:
+        json_data = json.load(f)
+
+    for subregion_json in json_data:
+        region = Region.objects.get_by_name(subregion_json["region"]).first()
+        subregion_data = {
+            "name": subregion_json["name"],
+            "abbr": subregion_json["abbr"],
+            "import_id": subregion_json["pk"],
+            "region": region,
+        }
+        Subregion.objects.get_or_create(
+            name=subregion_data["name"],
+            defaults=subregion_data,
+        )
+
+
 @transaction.atomic
 def import_countries():
     country_lvc = parse_country_lvc_file(
         settings.IMPORT_RESOURCES_DIR / "countries_lvc.xlsx"
     )
-    logger.info("✔ lvc clasification file parsed")
+    logger.info("✔ lvc clasification file parse")
+    parse_regions_file(settings.IMPORT_RESOURCES_DIR / "regions.json")
+    logger.info("✔ regions imported")
+    parse_subregions_file(settings.IMPORT_RESOURCES_DIR / "subregions.json")
+    logger.info("✔ subregions imported")
     parse_countries_json_file(
-        settings.IMPORT_RESOURCES_DIR / "parties.json", country_lvc
+        settings.IMPORT_RESOURCES_DIR / "countries.json", country_lvc
     )
     logger.info("✔ countries json parsed")
     parse_countries_xlsx_file(

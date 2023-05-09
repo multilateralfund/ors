@@ -1,182 +1,56 @@
 [
-{
-    "model": "core.subregion",
-    "pk": 1,
-    "fields": {
+    {
+        "pk": 1,
         "abbr": "AFE",
-        "name": "AFR-English-Speaking",
-        "region": 1,
-        "remark": "Patrick Salifu <patrick.salifu@un.org>;Florence Asher <florence.asher@un.org>"
-    }
-},
-{
-    "model": "core.subregion",
-    "pk": 2,
-    "fields": {
+        "name": "English-speaking Africa",
+        "region": "Africa"
+    },
+    {
+        "pk": 2,
         "abbr": "AFF",
-        "name": "AFR-French-Speaking",
-        "region": 1,
-        "remark": "Yamar Guisse <guisse@un.org>;Moussa Barry <moussa.barry@un.org>"
-    }
-},
-{
-    "model": "core.subregion",
-    "pk": 13,
-    "fields": {
-        "abbr": "UNK",
-        "name": "Unspecified",
-        "region": 1,
-        "remark": ""
-    }
-},
-{
-    "model": "core.subregion",
-    "pk": 6,
-    "fields": {
-        "abbr": "ECAN",
-        "name": "East/Central Europe Network",
-        "region": 2,
-        "remark": "Halvart Koeppen <halvart.koppen@un.org>"
-    }
-},
-{
-    "model": "core.subregion",
-    "pk": 12,
-    "fields": {
-        "abbr": "PIC",
-        "name": "Pacific Island Countries",
-        "region": 2,
-        "remark": "Shaofeng Hu <hus@un.org>"
-    }
-},
-{
-    "model": "core.subregion",
-    "pk": 4,
-    "fields": {
+        "name": "French-speaking Africa",
+        "region": "Africa"
+    },
+    {
+        "pk": 3,
+        "abbr": "ASE",
+        "name": "South East Asia",
+        "region": "Asia and the Pacific"
+    },
+    {
+        "pk": 4,
         "abbr": "ASO",
         "name": "South Asia",
-        "region": 2,
-        "remark": "Shaofeng Hu <hus@un.org>"
-    }
-},
-{
-    "model": "core.subregion",
-    "pk": 3,
-    "fields": {
-        "abbr": "ASE",
-        "name": "South East Asia and Pacific",
-        "region": 2,
-        "remark": "Shaofeng Hu <hus@un.org>"
-    }
-},
-{
-    "model": "core.subregion",
-    "pk": 14,
-    "fields": {
-        "abbr": "UNK",
-        "name": "Unspecified",
-        "region": 2,
-        "remark": ""
-    }
-},
-{
-    "model": "core.subregion",
-    "pk": 5,
-    "fields": {
+        "region": "Asia and the Pacific"
+    },
+    {
+        "pk": 5,
         "abbr": "ASR",
         "name": "West Asia",
-        "region": 2,
-        "remark": "Khaled Klaly <khaled.klaly@un.org>"
-    }
-},
-{
-    "model": "core.subregion",
-    "pk": 7,
-    "fields": {
+        "region": "Asia and the Pacific"
+    },
+    {
+        "pk": 6,
         "abbr": "ECAN",
-        "name": "East/Central Europe Network",
-        "region": 3,
-        "remark": "Halvart Koeppen <halvart.koppen@un.org>"
-    }
-},
-{
-    "model": "core.subregion",
-    "pk": 15,
-    "fields": {
-        "abbr": "UNK",
-        "name": "Unspecified",
-        "region": 3,
-        "remark": ""
-    }
-},
-{
-    "model": "core.subregion",
-    "pk": 9,
-    "fields": {
+        "name": "Europe",
+        "region": "Europe"
+    },
+    {
+        "pk": 7,
         "abbr": "LCA",
         "name": "Caribbean",
-        "region": 4,
-        "remark": "Donnalyn Charles <donnalyn.charles@un.org>;Marco Pinzon <marco.pinzon@un.org>"
-    }
-},
-{
-    "model": "core.subregion",
-    "pk": 10,
-    "fields": {
+        "region": "Latin America and the Caribbean"
+    },
+    {
+        "pk": 8,
         "abbr": "LCE",
-        "name": "LA-Central",
-        "region": 4,
-        "remark": "Marco Pinzon <marco.pinzon@un.org>"
-    }
-},
-{
-    "model": "core.subregion",
-    "pk": 11,
-    "fields": {
+        "name": "Central America",
+        "region": "Latin America and the Caribbean"
+    },
+    {
+        "pk": 9,
         "abbr": "LCS",
-        "name": "LA-South",
-        "region": 4,
-        "remark": "Marco Pinzon <marco.pinzon@un.org>"
+        "name": "Southern Latin America Network",
+        "region": "Latin America and the Caribbean"
     }
-},
-{
-    "model": "core.subregion",
-    "pk": 16,
-    "fields": {
-        "abbr": "UNK",
-        "name": "Unspecified",
-        "region": 4,
-        "remark": ""
-    }
-},
-{
-    "model": "core.subregion",
-    "pk": 17,
-    "fields": {
-        "abbr": "UNK",
-        "name": "Unspecified",
-        "region": 5,
-        "remark": ""
-    }
-},
-{
-    "model": "core.subregion",
-    "pk": 8,
-    "fields": {
-        "abbr": "ECAN",
-        "name": "East/Central Europe Network",
-        "region": 6,
-        "remark": "Halvart Koeppen <halvart.koppen@un.org>; Turkey is in WEUR according to UN grouping."
-    }
-},
-{
-    "model": "core.subregion",
-    "pk": 18,
-    "fields": {
-        "abbr": "UNK",
-        "name": "Unspecified",
-        "region": 6,
-        "remark": ""
-    }
-}
 ]

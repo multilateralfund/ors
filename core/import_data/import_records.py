@@ -193,6 +193,7 @@ def parse_file(file_path, cp_name):
     all_sheets = pd.read_excel(file_path, sheet_name=None)
     for sheet_name, df in all_sheets.items():
         logger.info(f"Start parsing sheet: {sheet_name}")
+        df = df.rename(columns=lambda x: x.strip())
         parse_sheet(df, cp_name)
 
 
@@ -203,7 +204,7 @@ def drop_old_data(file_name):
 
 @transaction.atomic
 def import_records():
-    file_name = "CP_Data_SectionB_2019_2021.xlsx"
+    file_name = "CP Data-SectionB-2019-2021.xlsx"
     file_path = settings.IMPORT_DATA_DIR / "records" / file_name
 
     drop_old_data(file_name)
