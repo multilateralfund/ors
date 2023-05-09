@@ -177,7 +177,7 @@ class ProjectSectorAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["subsector"]
+        exclude = ["projectsubsector"]
         return get_final_display_list(ProjectSector, exclude)
 
 
