@@ -14,9 +14,12 @@ import './utils/i18n'
 import './index.css'
 import 'react-toastify/dist/ReactToastify.css'
 
+const isDark = (localStorage.getItem('theme') &&
+  localStorage.getItem('theme') === 'dark') as boolean
+
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>
-    <Flowbite theme={{ theme: flowbiteTheme }}>
+    <Flowbite theme={{ theme: flowbiteTheme, dark: isDark }}>
       <Provider store={store}>
         <BrowserRouter>
           <CookiesProvider>

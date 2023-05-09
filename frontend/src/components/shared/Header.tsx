@@ -1,13 +1,15 @@
 import { useEffect } from 'react'
-import { useSelector } from 'react-redux'
-import { selectUser } from '@/slices/userSlice'
-import { Navbar, DarkThemeToggle } from 'flowbite-react'
+import { useSelector, useDispatch } from 'react-redux'
+import { selectUser, setTheme } from '@/slices/userSlice'
+import { Navbar, DarkThemeToggle, useTheme } from 'flowbite-react'
 import { useLogoutMutation } from '@/services/api'
 import { imgSrc } from '@/utils/assets'
 import { LangSwitcher } from './LangSwitcher'
 
 export const Header = () => {
   const { user } = useSelector(selectUser)
+  const dispatch = useDispatch()
+  const theme = useTheme()
 
   const [logoutUser, { isSuccess, isLoading }] = useLogoutMutation()
 
@@ -16,6 +18,10 @@ export const Header = () => {
       window.location.href = '/login'
     }
   }, [isLoading])
+
+  useEffect(() => {
+    dispatch(setTheme({ mode: theme?.mode }))
+  }, [theme.mode])
 
   const onConfirmLogout = () => {
     logoutUser()
