@@ -219,11 +219,12 @@ REST_FRAMEWORK = {
 
 REST_AUTH = {
     "USE_JWT": True,
-    "SESSION_LOGIN": True,
     "JWT_AUTH_HTTPONLY": False,
     "JWT_AUTH_COOKIE": "orsauth",
     "JWT_AUTH_REFRESH_COOKIE": "orsrefresh",
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "PASSWORD_RESET_USE_SITES_DOMAIN": True,
-    "PASSWORD_RESET_SERIALIZER": "core.api.serializers.CustomPasswordResetSerializer",
+    "PASSWORD_RESET_SERIALIZER": "core.api.serializers.CustomPasswordResetSerializer",   
 }
+SESSION_COOKIE_HTTPONLY=False
+CSRF_COOKIE_HTTPONLY=True

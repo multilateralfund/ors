@@ -36,7 +36,7 @@ export const RequireUser = ({ allowedRoles }: Props) => {
       <Navigate to="/login" state={{ from: location }} replace />
     );
   */
-  return cookies.orsauth ? (
+  return cookies.sessionid ? (
     <Outlet />
   ) : (
     <Navigate to="/login" state={{ from: location }} replace />

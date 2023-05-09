@@ -1,3 +1,4 @@
+import { useGetMeQuery } from '@/services/api'
 import { Footer } from 'flowbite-react'
 import { MdFacebook } from 'react-icons/md'
 import { Header } from '@/components/shared/Header'
@@ -10,10 +11,11 @@ interface Props {
 }
 
 export const LoggedInLayout = ({ children, isFooter = false }: Props) => {
+  useGetMeQuery(null)
   return (
     <>
       <Header />
-      <div className="flex items-start pt-0">
+      <div className="flex items-start pt-16">
         <Sidebar />
         <MainContent isFooter={isFooter}>{children}</MainContent>
       </div>
@@ -23,7 +25,7 @@ export const LoggedInLayout = ({ children, isFooter = false }: Props) => {
 
 const MainContent = ({ children, isFooter }: Props) => {
   return (
-    <main className="relative h-full w-full overflow-y-auto dark:bg-gray-900">
+    <main className="relative h-full w-full overflow-y-auto bg-gray-50 dark:bg-gray-900 lg:ml-64">
       {children}
       {isFooter && (
         <div className="mx-4 mt-4">
