@@ -14,8 +14,10 @@ from core.models import (
     Usage,
     User,
 )
+from core.models.agency import Agency
 from core.models.project_sector import ProjectSector, ProjectSubSector
 from core.models.project_submission import ProjectSubmission
+from core.models.substance import SubstanceAltName
 
 admin.site.register(User, UserAdmin)
 
@@ -24,10 +26,16 @@ def get_final_display_list(cls, exclude):
     return [field.name for field in cls._meta.get_fields() if field.name not in exclude]
 
 
+@admin.register(SubstanceAltName)
+class SubstanceAltNameAdmin(admin.ModelAdmin):
+    def get_list_display(self, request):
+        return get_final_display_list(SubstanceAltName, [])
+
+
 @admin.register(Substance)
 class SubstanceAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
-        exclude = ["blendcomponents", "price", "record"]
+        exclude = ["blendcomponents", "price", "record", "substancealtname"]
         return get_final_display_list(Substance, exclude)
 
 
@@ -117,3 +125,10 @@ class ProjectSubmissionAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = ["submissionodsodp", "submissionamount"]
         return get_final_display_list(ProjectSubmission, exclude)
+
+
+@admin.register(Agency)
+class AgencyAdmin(admin.ModelAdmin):
+    def get_list_display(self, request):
+        exclude = ["projectsubmission"]
+        return get_final_display_list(Agency, exclude)

@@ -44,3 +44,14 @@ class Substance(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class SubstanceAltName(models.Model):
+    substance = models.ForeignKey(Substance, on_delete=models.CASCADE)
+    name = models.CharField(max_length=128, unique=True)
+    ozone_id = models.IntegerField(null=True, blank=True)
+
+    objects = SubstanceManager()
+
+    def __str__(self):
+        return self.name

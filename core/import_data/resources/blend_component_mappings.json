@@ -1,0 +1,1289 @@
+[
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 117,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "CTC",
+        "substance": 19,
+        "remarks": "",
+        "created": "2022-05-11T12:24:02.764Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 116,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "BCM",
+        "substance": 96,
+        "remarks": "",
+        "created": "2022-05-11T12:22:36.725Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 115,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "MB",
+        "substance": 95,
+        "remarks": "",
+        "created": "2022-05-11T12:22:06.795Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 114,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "TCA",
+        "substance": 20,
+        "remarks": "",
+        "created": "2022-05-11T12:21:39.793Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 113,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HBFC-31 B1",
+        "substance": 92,
+        "remarks": "",
+        "created": "2022-05-11T12:20:04.865Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 112,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HBFC-21 B2",
+        "substance": 93,
+        "remarks": "",
+        "created": "2022-05-11T12:19:44.542Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 111,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Halon 2402",
+        "substance": 8,
+        "remarks": "",
+        "created": "2022-05-11T12:19:17.807Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 110,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Halon 1301",
+        "substance": 7,
+        "remarks": "",
+        "created": "2022-05-11T12:18:54.456Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 109,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Halon 1211",
+        "substance": 6,
+        "remarks": "",
+        "created": "2022-05-11T12:18:29.792Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 108,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Ethan",
+        "substance": 288,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.216Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 107,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HCFC-124",
+        "substance": 26,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.214Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 106,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "-AR",
+        "substance": 306,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.212Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 105,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Others (no F-gas of Regulation (EU) 517/2014)",
+        "substance": 281,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.210Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 104,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "no F-gas of Regulation (EC) 842/2006",
+        "substance": 281,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.208Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 103,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "R-124",
+        "substance": 26,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.205Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 102,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "R-22",
+        "substance": 36,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.203Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 101,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "R1234ZE",
+        "substance": 301,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.201Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 100,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "R134a",
+        "substance": 99,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.199Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 99,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "R-E170",
+        "substance": 289,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.197Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 98,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "unspecified gas for destruction",
+        "substance": 281,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.195Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 97,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "SF6",
+        "substance": 360,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.193Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 96,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "SF5CF3",
+        "substance": 361,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.190Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 95,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Propylene",
+        "substance": 285,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.188Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 94,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "PFPMIE",
+        "substance": 309,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.186Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 93,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "PFC-c-318",
+        "substance": 292,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.184Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 92,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Other",
+        "substance": 281,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.182Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 91,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "NF3",
+        "substance": 357,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.179Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 90,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "N2O",
+        "substance": 358,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.177Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 89,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Methylene chloride",
+        "substance": 330,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.175Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 88,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Methyl formate",
+        "substance": 356,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.173Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 87,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Methyl chloride",
+        "substance": 329,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.171Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 86,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Isopentane",
+        "substance": 296,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.169Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 85,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Hydrogen",
+        "substance": 355,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.166Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 84,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-569sf2",
+        "substance": 354,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.164Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 83,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-449sl",
+        "substance": 353,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.162Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 82,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-43-10pccc124",
+        "substance": 352,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.159Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 81,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-374pc2",
+        "substance": 351,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.157Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 80,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-356\u00a0mec3",
+        "substance": 346,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.155Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 79,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-356pcf3",
+        "substance": 350,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.152Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 78,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-356pcf2",
+        "substance": 349,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.150Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 77,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-356pcc3",
+        "substance": 348,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.148Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 76,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-356mm1",
+        "substance": 347,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.146Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 75,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-347\u00a0mcf2",
+        "substance": 343,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.143Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 74,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-347pcf2",
+        "substance": 345,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.141Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 73,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-347mmy1",
+        "substance": 344,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.139Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 72,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-347mcc3",
+        "substance": 308,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.137Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 71,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-338pcc13",
+        "substance": 342,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.134Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 70,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-338mmz1",
+        "substance": 341,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.132Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 69,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-338mcf2",
+        "substance": 340,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.130Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 68,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-329mcc2",
+        "substance": 339,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.128Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 67,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-254cb2",
+        "substance": 337,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.126Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 66,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-245fa2",
+        "substance": 110,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.123Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 65,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-245cb2",
+        "substance": 336,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.121Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 64,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-236fa",
+        "substance": 108,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.119Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 63,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-236ea2",
+        "substance": 107,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.117Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 62,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-236ca12",
+        "substance": 335,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.115Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 61,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-227ea",
+        "substance": 104,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.113Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 60,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-143a",
+        "substance": 101,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.110Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 59,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-134",
+        "substance": 98,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.108Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 58,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-125",
+        "substance": 97,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.106Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 57,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE 365\u00a0mcf3",
+        "substance": 112,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.104Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 56,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE 263fb2",
+        "substance": 338,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.102Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 55,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFC-1336mzz",
+        "substance": 286,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.099Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 54,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HCFE-235da2",
+        "substance": 49,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.097Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 53,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HCFC-1233zd",
+        "substance": 333,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.095Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 52,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HCFC-1233xf",
+        "substance": 326,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.093Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 51,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Ethylene",
+        "substance": 332,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.090Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 50,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Ethoxyethane (Diethyl ether)",
+        "substance": 331,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.088Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 49,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "CO2",
+        "substance": 298,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.086Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 48,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Chloroform",
+        "substance": 328,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.084Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 47,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "CH4",
+        "substance": 305,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.081Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 46,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "c-C3F6",
+        "substance": 334,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.079Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 45,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "bis(trifluoromethyl)-methanol",
+        "substance": 362,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.077Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 44,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Ammonia",
+        "substance": 297,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.075Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 43,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "2,2,3,3,3-pentafluoropropanol",
+        "substance": 323,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.073Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 42,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "(CF2)4CH(OH)",
+        "substance": 359,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.070Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 41,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "R740 (Argon)",
+        "substance": 306,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.068Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 40,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "R142b",
+        "substance": 33,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.066Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 39,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "R 22",
+        "substance": 36,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.064Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 38,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Propane",
+        "substance": 291,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.062Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 37,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Pentane",
+        "substance": 295,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.059Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 36,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Methane",
+        "substance": 305,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.057Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 35,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Isobutane",
+        "substance": 294,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.055Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 34,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Ethane",
+        "substance": 288,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.053Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 33,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Dimethyl ether",
+        "substance": 289,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.050Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 32,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Carbon dioxide",
+        "substance": 298,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.048Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 31,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "C2F6",
+        "substance": 283,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.046Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 30,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Butane",
+        "substance": 293,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.044Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 29,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Argon",
+        "substance": 306,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.042Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 28,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "t-DCE",
+        "substance": 282,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.039Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 27,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "R22",
+        "substance": 36,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.037Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 26,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "R14 (Tetrafluoromethane)",
+        "substance": 307,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.034Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 25,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "R124",
+        "substance": 26,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.031Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 24,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "R12",
+        "substance": 5,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.029Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 23,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "PFC-5-1-14",
+        "substance": 322,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.026Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 22,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "PFC-4-1-12",
+        "substance": 321,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.024Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 21,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "PFC-3-1-10",
+        "substance": 320,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.022Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 20,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "OS-10 (107-46-0)",
+        "substance": 314,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.020Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 19,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "n-Propanol",
+        "substance": 319,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.017Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 18,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Nitromethane (75-52-5)",
+        "substance": 318,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.015Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 17,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Methoxytridecafluoroheptene isomers",
+        "substance": 317,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.013Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 16,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Methanol (67-56-1)",
+        "substance": 316,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.010Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 15,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Isopropyl alcohol (IPA) (67-63-0)",
+        "substance": 315,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.008Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 14,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFE-245fa1",
+        "substance": 110,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.006Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 13,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFC-1234ze",
+        "substance": 301,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.004Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 12,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HFC-1234yf",
+        "substance": 284,
+        "remarks": "",
+        "created": "2022-05-11T09:34:35.001Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 11,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Heptafluorocyclopentane (15290-77-4)",
+        "substance": 313,
+        "remarks": "",
+        "created": "2022-05-11T09:34:34.999Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 10,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HCFC-123",
+        "substance": 24,
+        "remarks": "",
+        "created": "2022-05-11T09:34:34.997Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 9,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "HCFC-114",
+        "substance": 3,
+        "remarks": "",
+        "created": "2022-05-11T09:34:34.994Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 8,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Ethanol (64-17-5)",
+        "substance": 312,
+        "remarks": "",
+        "created": "2022-05-11T09:34:34.992Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 7,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Ethanol",
+        "substance": 312,
+        "remarks": "",
+        "created": "2022-05-11T09:34:34.990Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 6,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Cyclopentane (287-92-3)",
+        "substance": 310,
+        "remarks": "",
+        "created": "2022-05-11T09:34:34.988Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 5,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "Cyclo Pentane",
+        "substance": 310,
+        "remarks": "",
+        "created": "2022-05-11T09:34:34.986Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 4,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "C6F14",
+        "substance": 322,
+        "remarks": "",
+        "created": "2022-05-11T09:34:34.983Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 3,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "C5F12",
+        "substance": 321,
+        "remarks": "",
+        "created": "2022-05-11T09:34:34.981Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 2,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "C4F10",
+        "substance": 320,
+        "remarks": "",
+        "created": "2022-05-11T09:34:34.978Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 1,
+    "fields": {
+        "party": 65,
+        "party_blend_component": "1,2 Trans DCE (156-60-5)",
+        "substance": 282,
+        "remarks": "",
+        "created": "2022-05-11T09:34:34.976Z"
+    }
+}
+]

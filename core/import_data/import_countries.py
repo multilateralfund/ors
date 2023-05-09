@@ -9,8 +9,9 @@ from core.models import Country, Subregion, Region
 
 logger = logging.getLogger(__name__)
 
-REGION_NAME_DICT = {
-    "Asia and Pacific": "Asia-Pacific",
+
+COUNTRY_NAME_DICT = {
+    "United Arab Emirats": "United Arab Emirates",
 }
 
 
@@ -34,47 +35,7 @@ def parse_country_lvc_file(file_path):
     return country_lvc
 
 
-def parse_regions_file(file_path):
-    """
-    Parse regions file
-    @param file_path = str (file path for import file)
-    """
-    with open(file_path, "r") as f:
-        json_data = json.load(f)
-
-    for region_json in json_data:
-        region_data = {
-            "ozone_id": region_json["pk"],
-            "name": region_json["fields"]["name"],
-            "abbr": region_json["fields"]["abbr"],
-        }
-        Region.objects.update_or_create(name=region_data["name"], defaults=region_data)
-
-
-def parse_subregions_file(file_path):
-    """
-    Parse subregions file
-    @param file_path = str (file path for import file)
-    """
-    with open(file_path, "r") as f:
-        json_data = json.load(f)
-
-    for subregion_json in json_data:
-        region = Region.objects.filter(
-            ozone_id=subregion_json["fields"]["region"]
-        ).first()
-        subregion_data = {
-            "ozone_id": subregion_json["pk"],
-            "name": subregion_json["fields"]["name"],
-            "abbr": subregion_json["fields"]["abbr"],
-            "region": region,
-        }
-        Subregion.objects.update_or_create(
-            name=subregion_data["name"], defaults=subregion_data
-        )
-
-
-def create_country(country_data, country_lvc):
+def update_or_create_country(country_data, country_lvc):
     """
     Create country
     @param country_data = dict
@@ -89,8 +50,16 @@ def create_country(country_data, country_lvc):
             }
         )
 
-    # create country
-    Country.objects.update_or_create(name=country_data["name"], defaults=country_data)
+    # get country
+    country = Country.objects.get_by_name(country_data["name"])
+    if not country and country_data.get("full_name"):
+        country = Country.objects.get_by_name(country_data["full_name"])
+
+    # update or create country
+    if country:
+        country.update(**country_data)
+    else:
+        Country.objects.create(**country_data)
 
 
 def parse_countries_json_file(file_path, country_lvc):
@@ -106,9 +75,6 @@ def parse_countries_json_file(file_path, country_lvc):
         json_data = json.load(f)
 
     for country_json in json_data:
-        subregion = Subregion.objects.filter(
-            ozone_id=country_json["fields"]["subregion"]
-        ).first()
         country_data = {
             "ozone_id": country_json["pk"],
             "name": country_json["fields"]["name"],
@@ -116,9 +82,8 @@ def parse_countries_json_file(file_path, country_lvc):
             "iso3": country_json["fields"]["iso_alpha3_code"],
             "abbr_alt": country_json["fields"]["abbr_alt"],
             "name_alt": country_json["fields"]["name_alt"],
-            "subregion": subregion,
         }
-        create_country(country_data, country_lvc)
+        update_or_create_country(country_data, country_lvc)
 
 
 def parse_countries_xlsx_file(file_path, country_lvc):
@@ -133,30 +98,24 @@ def parse_countries_xlsx_file(file_path, country_lvc):
     for _, row in df.iterrows():
         if row["CTR_DESCRIPTION"] != "Country":
             continue
-        country = Country.objects.filter(name=row["COUNTRY"]).first()
 
-        # create country if not exists
-        if not country:
-            # get or create region and subregion
-            region_name = REGION_NAME_DICT.get(row["REGION"], row["REGION"])
-            region, _ = Region.objects.get_or_create(name=region_name)
-            subregion, _ = Subregion.objects.get_or_create(
-                name=row["SUBREGION"],
-                defaults={"name": row["SUBREGION"], "region_id": region.id},
-            )
-            # create country
-            country_data = {
-                "name": row["COUNTRY"],
-                "iso3": row["CTR"],
-                "full_name": row["COUNTRYFULLNAME"],
-                "ozone_unit": row["OZONE_UNIT"],
-                "subregion": subregion,
-            }
-            create_country(country_data, country_lvc)
-        else:
-            # update ozone unit if the country exists
-            country.ozone_unit = row["OZONE_UNIT"]
-            country.save()
+        # get or create region and subregion
+        region, _ = Region.objects.get_or_create(name=row["REGION"])
+        subregion, _ = Subregion.objects.get_or_create(
+            name=row["SUBREGION"],
+            defaults={"name": row["SUBREGION"], "region_id": region.id},
+        )
+
+        # update country
+        country_data = {
+            "name": COUNTRY_NAME_DICT.get(row["COUNTRY"], row["COUNTRY"]),
+            "full_name": COUNTRY_NAME_DICT.get(
+                row["COUNTRYFULLNAME"], row["COUNTRYFULLNAME"]
+            ),
+            "ozone_unit": row["OZONE_UNIT"],
+            "subregion": subregion,
+        }
+        update_or_create_country(country_data, country_lvc)
 
 
 @transaction.atomic
@@ -165,10 +124,6 @@ def import_countries():
         settings.IMPORT_RESOURCES_DIR / "countries_lvc.xlsx"
     )
     logger.info("✔ lvc clasification file parsed")
-    parse_regions_file(settings.IMPORT_RESOURCES_DIR / "regions.json")
-    logger.info("✔ regions imported")
-    parse_subregions_file(settings.IMPORT_RESOURCES_DIR / "subregions.json")
-    logger.info("✔ subregions imported")
     parse_countries_json_file(
         settings.IMPORT_RESOURCES_DIR / "parties.json", country_lvc
     )

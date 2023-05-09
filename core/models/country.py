@@ -3,7 +3,7 @@ from django.db import models
 
 class CountryManager(models.Manager):
     def get_by_name(self, name):
-        name_str = name.lower()
+        name_str = name.strip().lower()
         return self.filter(
             models.Q(name__iexact=name_str)
             | models.Q(full_name__iexact=name_str)
@@ -18,7 +18,7 @@ class Country(models.Model):
     abbr = models.CharField(max_length=10, null=True, blank=True)
     abbr_alt = models.CharField(max_length=10, null=True, blank=True)
     full_name = models.CharField(max_length=256)
-    iso3 = models.CharField(max_length=3, null=True, blank=True)
+    iso3 = models.CharField(max_length=3, unique=True, null=True, blank=True)
     ozone_unit = models.TextField(null=True, blank=True)
     is_lvc = models.BooleanField(default=False)
     lvc_baseline = models.FloatField(null=True, blank=True)

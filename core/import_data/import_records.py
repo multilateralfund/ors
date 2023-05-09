@@ -3,6 +3,7 @@ import pandas as pd
 
 from django.db import transaction
 from django.conf import settings
+from core.import_data.utils import get_substance_id_by_name
 
 from core.models import Country, CountryProgrammeReport, Record, Substance, Blend, Usage
 
@@ -122,9 +123,9 @@ def get_chemical(chemical_name):
     # R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%) => R-404A
     chemical_name = chemical_name.split(" ", 1)[0]
 
-    substance = Substance.objects.get_by_name(chemical_name).first()
-    if substance:
-        return substance.id, None
+    substance_id = get_substance_id_by_name(chemical_name)
+    if substance_id:
+        return substance_id, None
 
     blend = Blend.objects.get_by_name(chemical_name).first()
     if blend:

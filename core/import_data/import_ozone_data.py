@@ -5,6 +5,7 @@ from django.db import transaction
 from django.conf import settings
 
 from core.models import Blend, BlendComponents, Group, Substance
+from core.models.substance import SubstanceAltName
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,38 @@ def import_groups():
     logger.info("✔ groups imported")
 
 
+def import_substances_alternative_names():
+    """
+    Import substances alternative names from json file
+    """
+
+    # read data from json file
+    file_name = settings.IMPORT_RESOURCES_DIR / "blend_component_mappings.json"
+    with open(file_name, "r") as f:
+        list_data = json.load(f)
+
+    # create or update instance for alternative names
+    for instance_data in list_data:
+        # get instance data
+        instance = {
+            "name": instance_data["fields"]["party_blend_component"],
+            "ozone_id": instance_data["pk"],
+        }
+        instance["substance_id"] = Substance.objects.get(
+            ozone_id=instance_data["fields"]["substance"]
+        ).id
+
+        # create or update substance name
+        SubstanceAltName.objects.update_or_create(
+            name=instance["name"],
+            defaults=instance,
+        )
+
+
 def import_substances():
+    """
+    Import substances from json file and create alternative names
+    """
     exclude = [
         "substance_id",
         "gwp2",
@@ -77,6 +109,8 @@ def import_substances():
     ]
     import_data(Substance, settings.IMPORT_RESOURCES_DIR / "substances.json", exclude)
     logger.info("✔ substances imported")
+    import_substances_alternative_names()
+    logger.info("✔ substances alternative names imported")
 
 
 def import_blends():
