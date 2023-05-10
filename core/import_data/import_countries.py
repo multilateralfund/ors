@@ -86,7 +86,7 @@ def parse_countries_json_file(file_path, country_lvc):
         - if a country is lvc then the value for country name key will be True
     """
 
-    with open(file_path, "r") as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         json_data = json.load(f)
 
     for country_json in json_data:
@@ -143,7 +143,7 @@ def parse_regions_file(file_path):
     Parse regions json file and import regions
     @param file_path string
     """
-    with open(file_path, "r") as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         json_data = json.load(f)
 
     for region_json in json_data:
@@ -162,7 +162,7 @@ def parse_subregions_file(file_path):
     Parse subregions json file and import subregions
     @param file_path string
     """
-    with open(file_path, "r") as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         json_data = json.load(f)
 
     for subregion_json in json_data:

@@ -131,7 +131,7 @@ def get_chemical(chemical_name):
     if blend:
         return None, blend.id
 
-    logger.warning(f"This chemical does not exists: {chemical_name}")
+    logger.warning(f"This chemical does not exist: {chemical_name}")
     return None, None
 
 
