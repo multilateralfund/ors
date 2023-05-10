@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { selectUser, setTheme } from '@/slices/userSlice'
+import { useNavigate } from 'react-router-dom'
 import { Navbar, DarkThemeToggle, useTheme, Dropdown } from 'flowbite-react'
+import { selectUser, setTheme } from '@/slices/userSlice'
 import { useLogoutMutation } from '@/services/api'
 import { imgSrc } from '@/utils/assets'
 import { LangSwitcher } from './LangSwitcher'
@@ -68,9 +69,12 @@ const UserInfo = ({
   user: IUser | undefined
   onLogout: () => void
 }) => {
+  const navigate = useNavigate()
   return (
     <Dropdown label={user?.first_name} inline>
-      <Dropdown.Item>Profile</Dropdown.Item>
+      <Dropdown.Item onClick={() => navigate('/profile')}>
+        Profile
+      </Dropdown.Item>
       <Dropdown.Item onClick={() => window.open('/admin', '_blank')}>
         Admin
       </Dropdown.Item>
