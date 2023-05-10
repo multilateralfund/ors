@@ -1,0 +1,4556 @@
+[
+    {
+        "model": "core.party",
+        "pk": 3,
+        "fields": {
+            "name": "Afghanistan",
+            "abbr": "AF",
+            "subregion": 4,
+            "parent_party": 3,
+            "remark": "",
+            "mdg_region": "4",
+            "iso_alpha3_code": "AFG",
+            "abbr_alt": "AFG",
+            "name_alt": "Afghanistan",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 16,
+        "fields": {
+            "name": "\u00c5land Islands",
+            "abbr": "AX",
+            "subregion": 17,
+            "parent_party": 72,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "ALA",
+            "abbr_alt": "",
+            "name_alt": "\u00c5land Islands",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 6,
+        "fields": {
+            "name": "Albania",
+            "abbr": "AL",
+            "subregion": 6,
+            "parent_party": 6,
+            "remark": "",
+            "mdg_region": "8",
+            "iso_alpha3_code": "ALB",
+            "abbr_alt": "ALB",
+            "name_alt": "Albania",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 63,
+        "fields": {
+            "name": "Algeria",
+            "abbr": "DZ",
+            "subregion": 2,
+            "parent_party": 63,
+            "remark": "",
+            "mdg_region": "12",
+            "iso_alpha3_code": "DZA",
+            "abbr_alt": "ALG",
+            "name_alt": "Algeria",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 12,
+        "fields": {
+            "name": "American Samoa",
+            "abbr": "AS",
+            "subregion": 17,
+            "parent_party": 235,
+            "remark": "",
+            "mdg_region": "16",
+            "iso_alpha3_code": "ASM",
+            "abbr_alt": "ASAM",
+            "name_alt": "American Samoa",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 1,
+        "fields": {
+            "name": "Andorra",
+            "abbr": "AD",
+            "subregion": 6,
+            "parent_party": 1,
+            "remark": "",
+            "mdg_region": "20",
+            "iso_alpha3_code": "AND",
+            "abbr_alt": "AND",
+            "name_alt": "Andorra",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 9,
+        "fields": {
+            "name": "Angola",
+            "abbr": "AO",
+            "subregion": 1,
+            "parent_party": 9,
+            "remark": "",
+            "mdg_region": "24",
+            "iso_alpha3_code": "AGO",
+            "abbr_alt": "ANG",
+            "name_alt": "Angola",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 5,
+        "fields": {
+            "name": "Anguilla",
+            "abbr": "AI",
+            "subregion": 17,
+            "parent_party": 79,
+            "remark": "",
+            "mdg_region": "660",
+            "iso_alpha3_code": "AIA",
+            "abbr_alt": "ANGU",
+            "name_alt": "Anguilla",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 10,
+        "fields": {
+            "name": "Antarctica",
+            "abbr": "AQ",
+            "subregion": 17,
+            "parent_party": null,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "ATA",
+            "abbr_alt": "ANTA",
+            "name_alt": "Antarctica",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 4,
+        "fields": {
+            "name": "Antigua and Barbuda",
+            "abbr": "AG",
+            "subregion": 7,
+            "parent_party": 4,
+            "remark": "",
+            "mdg_region": "28",
+            "iso_alpha3_code": "ATG",
+            "abbr_alt": "ANT",
+            "name_alt": "Antigua & Barbuda",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 11,
+        "fields": {
+            "name": "Argentina",
+            "abbr": "AR",
+            "subregion": 9,
+            "parent_party": 11,
+            "remark": "",
+            "mdg_region": "32",
+            "iso_alpha3_code": "ARG",
+            "abbr_alt": "ARG",
+            "name_alt": "Argentina",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1988-06-29",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 7,
+        "fields": {
+            "name": "Armenia",
+            "abbr": "AM",
+            "subregion": 6,
+            "parent_party": 7,
+            "remark": "",
+            "mdg_region": "51",
+            "iso_alpha3_code": "ARM",
+            "abbr_alt": "ARM",
+            "name_alt": "Armenia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 15,
+        "fields": {
+            "name": "Aruba",
+            "abbr": "AW",
+            "subregion": 17,
+            "parent_party": 168,
+            "remark": "",
+            "mdg_region": "533",
+            "iso_alpha3_code": "ABW",
+            "abbr_alt": "ARU",
+            "name_alt": "Aruba",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 14,
+        "fields": {
+            "name": "Australia",
+            "abbr": "AU",
+            "subregion": 6,
+            "parent_party": 14,
+            "remark": "",
+            "mdg_region": "36",
+            "iso_alpha3_code": "AUS",
+            "abbr_alt": "AUL",
+            "name_alt": "Australia",
+            "sign_date_vc": null,
+            "sign_date_mp": "1988-06-08",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 13,
+        "fields": {
+            "name": "Austria",
+            "abbr": "AT",
+            "subregion": 6,
+            "parent_party": 13,
+            "remark": "",
+            "mdg_region": "40",
+            "iso_alpha3_code": "AUT",
+            "abbr_alt": "AUS",
+            "name_alt": "Austria",
+            "sign_date_vc": "1985-09-16",
+            "sign_date_mp": "1988-08-29",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 17,
+        "fields": {
+            "name": "Azerbaijan",
+            "abbr": "AZ",
+            "subregion": 6,
+            "parent_party": 17,
+            "remark": "",
+            "mdg_region": "31",
+            "iso_alpha3_code": "AZE",
+            "abbr_alt": "AZE",
+            "name_alt": "Azerbaijan",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 33,
+        "fields": {
+            "name": "Bahamas",
+            "abbr": "BS",
+            "subregion": 7,
+            "parent_party": 33,
+            "remark": "",
+            "mdg_region": "44",
+            "iso_alpha3_code": "BHS",
+            "abbr_alt": "BAH",
+            "name_alt": "Bahamas",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 24,
+        "fields": {
+            "name": "Bahrain",
+            "abbr": "BH",
+            "subregion": 5,
+            "parent_party": 24,
+            "remark": "",
+            "mdg_region": "48",
+            "iso_alpha3_code": "BHR",
+            "abbr_alt": "BAI",
+            "name_alt": "Bahrain",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 20,
+        "fields": {
+            "name": "Bangladesh",
+            "abbr": "BD",
+            "subregion": 4,
+            "parent_party": 20,
+            "remark": "",
+            "mdg_region": "50",
+            "iso_alpha3_code": "BGD",
+            "abbr_alt": "BAN",
+            "name_alt": "Bangladesh",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 19,
+        "fields": {
+            "name": "Barbados",
+            "abbr": "BB",
+            "subregion": 7,
+            "parent_party": 19,
+            "remark": "",
+            "mdg_region": "52",
+            "iso_alpha3_code": "BRB",
+            "abbr_alt": "BAR",
+            "name_alt": "Barbados",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 37,
+        "fields": {
+            "name": "Belarus",
+            "abbr": "BY",
+            "subregion": 6,
+            "parent_party": 37,
+            "remark": "",
+            "mdg_region": "112",
+            "iso_alpha3_code": "BLR",
+            "abbr_alt": "BEA",
+            "name_alt": "Belarus",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1988-01-22",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 21,
+        "fields": {
+            "name": "Belgium",
+            "abbr": "BE",
+            "subregion": 6,
+            "parent_party": 21,
+            "remark": "",
+            "mdg_region": "56",
+            "iso_alpha3_code": "BEL",
+            "abbr_alt": "BEG",
+            "name_alt": "Belgium",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 38,
+        "fields": {
+            "name": "Belize",
+            "abbr": "BZ",
+            "subregion": 7,
+            "parent_party": 38,
+            "remark": "",
+            "mdg_region": "84",
+            "iso_alpha3_code": "BLZ",
+            "abbr_alt": "BEL",
+            "name_alt": "Belize",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 26,
+        "fields": {
+            "name": "Benin",
+            "abbr": "BJ",
+            "subregion": 2,
+            "parent_party": 26,
+            "remark": "",
+            "mdg_region": "204",
+            "iso_alpha3_code": "BEN",
+            "abbr_alt": "BEN",
+            "name_alt": "Benin",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 28,
+        "fields": {
+            "name": "Bermuda",
+            "abbr": "BM",
+            "subregion": 17,
+            "parent_party": 79,
+            "remark": "",
+            "mdg_region": "60",
+            "iso_alpha3_code": "BMU",
+            "abbr_alt": "BER",
+            "name_alt": "Bermuda",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 34,
+        "fields": {
+            "name": "Bhutan",
+            "abbr": "BT",
+            "subregion": 4,
+            "parent_party": 34,
+            "remark": "",
+            "mdg_region": "64",
+            "iso_alpha3_code": "BTN",
+            "abbr_alt": "BHU",
+            "name_alt": "Bhutan",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 30,
+        "fields": {
+            "name": "Bolivia (Plurinational State of)",
+            "abbr": "BO",
+            "subregion": 9,
+            "parent_party": 30,
+            "remark": "",
+            "mdg_region": "68",
+            "iso_alpha3_code": "BOL",
+            "abbr_alt": "BOL",
+            "name_alt": "Bolivia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 31,
+        "fields": {
+            "name": "Bonaire, Sint Eustatius and Saba",
+            "abbr": "BQ",
+            "subregion": 17,
+            "parent_party": 168,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "BES",
+            "abbr_alt": "",
+            "name_alt": "Bonaire,StEust&Saba",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 18,
+        "fields": {
+            "name": "Bosnia and Herzegovina",
+            "abbr": "BA",
+            "subregion": 6,
+            "parent_party": 18,
+            "remark": "",
+            "mdg_region": "70",
+            "iso_alpha3_code": "BIH",
+            "abbr_alt": "BOS",
+            "name_alt": "Bosnia & Herzegovina",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 36,
+        "fields": {
+            "name": "Botswana",
+            "abbr": "BW",
+            "subregion": 1,
+            "parent_party": 36,
+            "remark": "",
+            "mdg_region": "72",
+            "iso_alpha3_code": "BWA",
+            "abbr_alt": "BOT",
+            "name_alt": "Botswana",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 35,
+        "fields": {
+            "name": "Bouvet Island",
+            "abbr": "BV",
+            "subregion": 17,
+            "parent_party": 169,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "BVT",
+            "abbr_alt": "BOU",
+            "name_alt": "Bouvet Island",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 32,
+        "fields": {
+            "name": "Brazil",
+            "abbr": "BR",
+            "subregion": 9,
+            "parent_party": 32,
+            "remark": "",
+            "mdg_region": "76",
+            "iso_alpha3_code": "BRA",
+            "abbr_alt": "BRA",
+            "name_alt": "Brazil",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 108,
+        "fields": {
+            "name": "British Indian Ocean Territory",
+            "abbr": "IO",
+            "subregion": 17,
+            "parent_party": 79,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "IOT",
+            "abbr_alt": "BIOT",
+            "name_alt": "Brit Indn Ocean Terr",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 29,
+        "fields": {
+            "name": "Brunei Darussalam",
+            "abbr": "BN",
+            "subregion": 3,
+            "parent_party": 29,
+            "remark": "",
+            "mdg_region": "96",
+            "iso_alpha3_code": "BRN",
+            "abbr_alt": "BRU",
+            "name_alt": "Brunei Darussalam",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 23,
+        "fields": {
+            "name": "Bulgaria",
+            "abbr": "BG",
+            "subregion": 6,
+            "parent_party": 23,
+            "remark": "",
+            "mdg_region": "100",
+            "iso_alpha3_code": "BGR",
+            "abbr_alt": "BUG",
+            "name_alt": "Bulgaria",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 22,
+        "fields": {
+            "name": "Burkina Faso",
+            "abbr": "BF",
+            "subregion": 2,
+            "parent_party": 22,
+            "remark": "",
+            "mdg_region": "854",
+            "iso_alpha3_code": "BFA",
+            "abbr_alt": "BUK",
+            "name_alt": "Burkina Faso",
+            "sign_date_vc": "1985-12-12",
+            "sign_date_mp": "1988-09-14",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 25,
+        "fields": {
+            "name": "Burundi",
+            "abbr": "BI",
+            "subregion": 2,
+            "parent_party": 25,
+            "remark": "",
+            "mdg_region": "108",
+            "iso_alpha3_code": "BDI",
+            "abbr_alt": "BUR",
+            "name_alt": "Burundi",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 53,
+        "fields": {
+            "name": "Cabo Verde",
+            "abbr": "CV",
+            "subregion": 2,
+            "parent_party": 53,
+            "remark": "",
+            "mdg_region": "132",
+            "iso_alpha3_code": "CPV",
+            "abbr_alt": "CAP",
+            "name_alt": "Cape Verde",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 119,
+        "fields": {
+            "name": "Cambodia",
+            "abbr": "KH",
+            "subregion": 3,
+            "parent_party": 119,
+            "remark": "",
+            "mdg_region": "116",
+            "iso_alpha3_code": "KHM",
+            "abbr_alt": "CAB",
+            "name_alt": "Cambodia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 48,
+        "fields": {
+            "name": "Cameroon",
+            "abbr": "CM",
+            "subregion": 2,
+            "parent_party": 48,
+            "remark": "",
+            "mdg_region": "120",
+            "iso_alpha3_code": "CMR",
+            "abbr_alt": "CAM",
+            "name_alt": "Cameroon",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 39,
+        "fields": {
+            "name": "Canada",
+            "abbr": "CA",
+            "subregion": 6,
+            "parent_party": 39,
+            "remark": "",
+            "mdg_region": "124",
+            "iso_alpha3_code": "CAN",
+            "abbr_alt": "CAN",
+            "name_alt": "Canada",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 126,
+        "fields": {
+            "name": "Cayman Islands",
+            "abbr": "KY",
+            "subregion": 17,
+            "parent_party": 79,
+            "remark": "",
+            "mdg_region": "136",
+            "iso_alpha3_code": "CYM",
+            "abbr_alt": "CAY",
+            "name_alt": "Cayman Islands",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 42,
+        "fields": {
+            "name": "Central African Republic",
+            "abbr": "CF",
+            "subregion": 2,
+            "parent_party": 42,
+            "remark": "",
+            "mdg_region": "140",
+            "iso_alpha3_code": "CAF",
+            "abbr_alt": "CAR",
+            "name_alt": "Central African Rep.",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 217,
+        "fields": {
+            "name": "Chad",
+            "abbr": "TD",
+            "subregion": 2,
+            "parent_party": 217,
+            "remark": "",
+            "mdg_region": "148",
+            "iso_alpha3_code": "TCD",
+            "abbr_alt": "CHD",
+            "name_alt": "Chad",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 47,
+        "fields": {
+            "name": "Chile",
+            "abbr": "CL",
+            "subregion": 9,
+            "parent_party": 47,
+            "remark": "",
+            "mdg_region": "152",
+            "iso_alpha3_code": "CHL",
+            "abbr_alt": "CHE",
+            "name_alt": "Chile",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1988-06-14",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 49,
+        "fields": {
+            "name": "China",
+            "abbr": "CN",
+            "subregion": 4,
+            "parent_party": 49,
+            "remark": "",
+            "mdg_region": "156",
+            "iso_alpha3_code": "CHN",
+            "abbr_alt": "CHI",
+            "name_alt": "China",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 55,
+        "fields": {
+            "name": "Christmas Island",
+            "abbr": "CX",
+            "subregion": 17,
+            "parent_party": 14,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "CXR",
+            "abbr_alt": "CHR",
+            "name_alt": "Christmas Is",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 40,
+        "fields": {
+            "name": "Cocos (Keeling) Islands",
+            "abbr": "CC",
+            "subregion": 17,
+            "parent_party": 14,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "CCK",
+            "abbr_alt": "COC",
+            "name_alt": "Cocos (Keeling) Is",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 50,
+        "fields": {
+            "name": "Colombia",
+            "abbr": "CO",
+            "subregion": 9,
+            "parent_party": 50,
+            "remark": "",
+            "mdg_region": "170",
+            "iso_alpha3_code": "COL",
+            "abbr_alt": "COL",
+            "name_alt": "Colombia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 121,
+        "fields": {
+            "name": "Comoros",
+            "abbr": "KM",
+            "subregion": 2,
+            "parent_party": 121,
+            "remark": "",
+            "mdg_region": "174",
+            "iso_alpha3_code": "COM",
+            "abbr_alt": "COM",
+            "name_alt": "Comoros",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 43,
+        "fields": {
+            "name": "Congo",
+            "abbr": "CG",
+            "subregion": 2,
+            "parent_party": 43,
+            "remark": "",
+            "mdg_region": "178",
+            "iso_alpha3_code": "COG",
+            "abbr_alt": "CON",
+            "name_alt": "Congo",
+            "sign_date_vc": null,
+            "sign_date_mp": "1988-09-15",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 46,
+        "fields": {
+            "name": "Cook Islands",
+            "abbr": "CK",
+            "subregion": 3,
+            "parent_party": 46,
+            "remark": "",
+            "mdg_region": "184",
+            "iso_alpha3_code": "COK",
+            "abbr_alt": "COO",
+            "name_alt": "Cook Islands",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 51,
+        "fields": {
+            "name": "Costa Rica",
+            "abbr": "CR",
+            "subregion": 8,
+            "parent_party": 51,
+            "remark": "",
+            "mdg_region": "188",
+            "iso_alpha3_code": "CRI",
+            "abbr_alt": "COS",
+            "name_alt": "Costa Rica",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 45,
+        "fields": {
+            "name": "C\u00f4te d'Ivoire",
+            "abbr": "CI",
+            "subregion": 2,
+            "parent_party": 45,
+            "remark": "",
+            "mdg_region": "384",
+            "iso_alpha3_code": "CIV",
+            "abbr_alt": "COV",
+            "name_alt": "Cote d'Ivoire",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 100,
+        "fields": {
+            "name": "Croatia",
+            "abbr": "HR",
+            "subregion": 6,
+            "parent_party": 100,
+            "remark": "Hrvatska",
+            "mdg_region": "191",
+            "iso_alpha3_code": "HRV",
+            "abbr_alt": "CRO",
+            "name_alt": "Croatia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 52,
+        "fields": {
+            "name": "Cuba",
+            "abbr": "CU",
+            "subregion": 8,
+            "parent_party": 52,
+            "remark": "",
+            "mdg_region": "192",
+            "iso_alpha3_code": "CUB",
+            "abbr_alt": "CUB",
+            "name_alt": "Cuba",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 54,
+        "fields": {
+            "name": "Cura\u00e7ao",
+            "abbr": "CW",
+            "subregion": 17,
+            "parent_party": 168,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "CUW",
+            "abbr_alt": "",
+            "name_alt": "Cura\u00e7ao",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 56,
+        "fields": {
+            "name": "Cyprus",
+            "abbr": "CY",
+            "subregion": 14,
+            "parent_party": 56,
+            "remark": "",
+            "mdg_region": "196",
+            "iso_alpha3_code": "CYP",
+            "abbr_alt": "CYP",
+            "name_alt": "Cyprus",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 57,
+        "fields": {
+            "name": "Czechia",
+            "abbr": "CZ",
+            "subregion": 6,
+            "parent_party": 57,
+            "remark": "",
+            "mdg_region": "203",
+            "iso_alpha3_code": "CZE",
+            "abbr_alt": "CZE",
+            "name_alt": "Czechia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 123,
+        "fields": {
+            "name": "Democratic People's Republic of Korea",
+            "abbr": "KP",
+            "subregion": 4,
+            "parent_party": 123,
+            "remark": "",
+            "mdg_region": "408",
+            "iso_alpha3_code": "PRK",
+            "abbr_alt": "KOD",
+            "name_alt": "Korea, DPR",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 41,
+        "fields": {
+            "name": "Democratic Republic of the Congo",
+            "abbr": "CD",
+            "subregion": 2,
+            "parent_party": 41,
+            "remark": "",
+            "mdg_region": "180",
+            "iso_alpha3_code": "COD",
+            "abbr_alt": "COR",
+            "name_alt": "Congo, DR",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 60,
+        "fields": {
+            "name": "Denmark",
+            "abbr": "DK",
+            "subregion": 6,
+            "parent_party": 60,
+            "remark": "",
+            "mdg_region": "208",
+            "iso_alpha3_code": "DNK",
+            "abbr_alt": "DEN",
+            "name_alt": "Denmark",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 59,
+        "fields": {
+            "name": "Djibouti",
+            "abbr": "DJ",
+            "subregion": 2,
+            "parent_party": 59,
+            "remark": "",
+            "mdg_region": "262",
+            "iso_alpha3_code": "DJI",
+            "abbr_alt": "DJI",
+            "name_alt": "Djibouti",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 61,
+        "fields": {
+            "name": "Dominica",
+            "abbr": "DM",
+            "subregion": 7,
+            "parent_party": 61,
+            "remark": "",
+            "mdg_region": "212",
+            "iso_alpha3_code": "DMA",
+            "abbr_alt": "DMI",
+            "name_alt": "Dominica",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 62,
+        "fields": {
+            "name": "Dominican Republic",
+            "abbr": "DO",
+            "subregion": 8,
+            "parent_party": 62,
+            "remark": "",
+            "mdg_region": "214",
+            "iso_alpha3_code": "DOM",
+            "abbr_alt": "DOM",
+            "name_alt": "Dominican Republic",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 64,
+        "fields": {
+            "name": "Ecuador",
+            "abbr": "EC",
+            "subregion": 9,
+            "parent_party": 64,
+            "remark": "",
+            "mdg_region": "218",
+            "iso_alpha3_code": "ECU",
+            "abbr_alt": "ECU",
+            "name_alt": "Ecuador",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 67,
+        "fields": {
+            "name": "Egypt",
+            "abbr": "EG",
+            "subregion": 1,
+            "parent_party": 67,
+            "remark": "",
+            "mdg_region": "818",
+            "iso_alpha3_code": "EGY",
+            "abbr_alt": "EGY",
+            "name_alt": "Egypt",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 212,
+        "fields": {
+            "name": "El Salvador",
+            "abbr": "SV",
+            "subregion": 8,
+            "parent_party": 212,
+            "remark": "",
+            "mdg_region": "222",
+            "iso_alpha3_code": "SLV",
+            "abbr_alt": "ELS",
+            "name_alt": "El Salvador",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 90,
+        "fields": {
+            "name": "Equatorial Guinea",
+            "abbr": "GQ",
+            "subregion": 2,
+            "parent_party": 90,
+            "remark": "",
+            "mdg_region": "226",
+            "iso_alpha3_code": "GNQ",
+            "abbr_alt": "EQG",
+            "name_alt": "Equatorial Guinea",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 69,
+        "fields": {
+            "name": "Eritrea",
+            "abbr": "ER",
+            "subregion": 1,
+            "parent_party": 69,
+            "remark": "",
+            "mdg_region": "232",
+            "iso_alpha3_code": "ERI",
+            "abbr_alt": "ERI",
+            "name_alt": "Eritrea",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 66,
+        "fields": {
+            "name": "Estonia",
+            "abbr": "EE",
+            "subregion": 6,
+            "parent_party": 66,
+            "remark": "",
+            "mdg_region": "233",
+            "iso_alpha3_code": "EST",
+            "abbr_alt": "EST",
+            "name_alt": "Estonia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 215,
+        "fields": {
+            "name": "Eswatini",
+            "abbr": "SZ",
+            "subregion": 1,
+            "parent_party": 215,
+            "remark": "",
+            "mdg_region": "748",
+            "iso_alpha3_code": "SWZ",
+            "abbr_alt": "SWA",
+            "name_alt": "Swaziland",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 71,
+        "fields": {
+            "name": "Ethiopia",
+            "abbr": "ET",
+            "subregion": 1,
+            "parent_party": 71,
+            "remark": "",
+            "mdg_region": "231",
+            "iso_alpha3_code": "ETH",
+            "abbr_alt": "ETH",
+            "name_alt": "Ethiopia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 65,
+        "fields": {
+            "name": "European Union",
+            "abbr": "EU",
+            "subregion": 6,
+            "parent_party": 65,
+            "remark": "",
+            "mdg_region": "97",
+            "iso_alpha3_code": "EC",
+            "abbr_alt": "ECE",
+            "name_alt": "European Union",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 74,
+        "fields": {
+            "name": "Falkland Islands (Malvinas)",
+            "abbr": "FK",
+            "subregion": 17,
+            "parent_party": 79,
+            "remark": "South Pacific",
+            "mdg_region": "238",
+            "iso_alpha3_code": "FLK",
+            "abbr_alt": "FAL",
+            "name_alt": "Falkland Is",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 76,
+        "fields": {
+            "name": "Faroe Islands",
+            "abbr": "FO",
+            "subregion": 17,
+            "parent_party": 60,
+            "remark": "",
+            "mdg_region": "234",
+            "iso_alpha3_code": "FRO",
+            "abbr_alt": "FAR",
+            "name_alt": "Faroe Islands",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 73,
+        "fields": {
+            "name": "Fiji",
+            "abbr": "FJ",
+            "subregion": 3,
+            "parent_party": 73,
+            "remark": "",
+            "mdg_region": "242",
+            "iso_alpha3_code": "FJI",
+            "abbr_alt": "FIJ",
+            "name_alt": "Fiji",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 72,
+        "fields": {
+            "name": "Finland",
+            "abbr": "FI",
+            "subregion": 6,
+            "parent_party": 72,
+            "remark": "",
+            "mdg_region": "246",
+            "iso_alpha3_code": "FIN",
+            "abbr_alt": "FIN",
+            "name_alt": "Finland",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 77,
+        "fields": {
+            "name": "France",
+            "abbr": "FR",
+            "subregion": 6,
+            "parent_party": 77,
+            "remark": "",
+            "mdg_region": "250",
+            "iso_alpha3_code": "FRA",
+            "abbr_alt": "FRA",
+            "name_alt": "France",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 82,
+        "fields": {
+            "name": "French Guiana",
+            "abbr": "GF",
+            "subregion": 17,
+            "parent_party": 77,
+            "remark": "",
+            "mdg_region": "254",
+            "iso_alpha3_code": "GUF",
+            "abbr_alt": "FRG",
+            "name_alt": "French Guiana",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 177,
+        "fields": {
+            "name": "French Polynesia",
+            "abbr": "PF",
+            "subregion": 17,
+            "parent_party": 77,
+            "remark": "Includes Austral Islands , Gambier Islands, Marquesas Islands , Society Archipelago , Tahiti, Tuamotu Islands",
+            "mdg_region": "258",
+            "iso_alpha3_code": "PYF",
+            "abbr_alt": "FRP",
+            "name_alt": "French Polynesia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 218,
+        "fields": {
+            "name": "French Southern Territories",
+            "abbr": "TF",
+            "subregion": 17,
+            "parent_party": 77,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "ATF",
+            "abbr_alt": "FRST",
+            "name_alt": "French Sthern Terrs",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 78,
+        "fields": {
+            "name": "Gabon",
+            "abbr": "GA",
+            "subregion": 2,
+            "parent_party": 78,
+            "remark": "",
+            "mdg_region": "266",
+            "iso_alpha3_code": "GAB",
+            "abbr_alt": "GAB",
+            "name_alt": "Gabon",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 87,
+        "fields": {
+            "name": "Gambia",
+            "abbr": "GM",
+            "subregion": 1,
+            "parent_party": 87,
+            "remark": "",
+            "mdg_region": "270",
+            "iso_alpha3_code": "GMB",
+            "abbr_alt": "GAM",
+            "name_alt": "Gambia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 81,
+        "fields": {
+            "name": "Georgia",
+            "abbr": "GE",
+            "subregion": 6,
+            "parent_party": 81,
+            "remark": "",
+            "mdg_region": "268",
+            "iso_alpha3_code": "GEO",
+            "abbr_alt": "GEO",
+            "name_alt": "Georgia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 58,
+        "fields": {
+            "name": "Germany",
+            "abbr": "DE",
+            "subregion": 6,
+            "parent_party": 58,
+            "remark": "",
+            "mdg_region": "276",
+            "iso_alpha3_code": "DEU",
+            "abbr_alt": "GER",
+            "name_alt": "Germany",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 84,
+        "fields": {
+            "name": "Ghana",
+            "abbr": "GH",
+            "subregion": 1,
+            "parent_party": 84,
+            "remark": "",
+            "mdg_region": "288",
+            "iso_alpha3_code": "GHA",
+            "abbr_alt": "GHA",
+            "name_alt": "Ghana",
+            "sign_date_vc": null,
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 85,
+        "fields": {
+            "name": "Gibraltar",
+            "abbr": "GI",
+            "subregion": 17,
+            "parent_party": 79,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "GIB",
+            "abbr_alt": "GIB",
+            "name_alt": "Gibraltar",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 91,
+        "fields": {
+            "name": "Greece",
+            "abbr": "GR",
+            "subregion": 6,
+            "parent_party": 91,
+            "remark": "",
+            "mdg_region": "300",
+            "iso_alpha3_code": "GRC",
+            "abbr_alt": "GRE",
+            "name_alt": "Greece",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1987-10-29",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 86,
+        "fields": {
+            "name": "Greenland",
+            "abbr": "GL",
+            "subregion": 17,
+            "parent_party": 60,
+            "remark": "",
+            "mdg_region": "304",
+            "iso_alpha3_code": "GRL",
+            "abbr_alt": "GRLD",
+            "name_alt": "Greenland",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 80,
+        "fields": {
+            "name": "Grenada",
+            "abbr": "GD",
+            "subregion": 7,
+            "parent_party": 80,
+            "remark": "",
+            "mdg_region": "308",
+            "iso_alpha3_code": "GRD",
+            "abbr_alt": "GRN",
+            "name_alt": "Grenada",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 89,
+        "fields": {
+            "name": "Guadeloupe",
+            "abbr": "GP",
+            "subregion": 17,
+            "parent_party": 77,
+            "remark": "",
+            "mdg_region": "312",
+            "iso_alpha3_code": "GLP",
+            "abbr_alt": "GUAD",
+            "name_alt": "Guadeloupe",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 94,
+        "fields": {
+            "name": "Guam",
+            "abbr": "GU",
+            "subregion": 17,
+            "parent_party": 235,
+            "remark": "",
+            "mdg_region": "316",
+            "iso_alpha3_code": "GUM",
+            "abbr_alt": "GUAM",
+            "name_alt": "Guam",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 93,
+        "fields": {
+            "name": "Guatemala",
+            "abbr": "GT",
+            "subregion": 8,
+            "parent_party": 93,
+            "remark": "",
+            "mdg_region": "320",
+            "iso_alpha3_code": "GTM",
+            "abbr_alt": "GUA",
+            "name_alt": "Guatemala",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 83,
+        "fields": {
+            "name": "Guernsey",
+            "abbr": "GG",
+            "subregion": 17,
+            "parent_party": 79,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "GGY",
+            "abbr_alt": "GUE",
+            "name_alt": "Guernsey",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 88,
+        "fields": {
+            "name": "Guinea",
+            "abbr": "GN",
+            "subregion": 2,
+            "parent_party": 88,
+            "remark": "",
+            "mdg_region": "324",
+            "iso_alpha3_code": "GIN",
+            "abbr_alt": "GUI",
+            "name_alt": "Guinea",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 95,
+        "fields": {
+            "name": "Guinea Bissau",
+            "abbr": "GW",
+            "subregion": 2,
+            "parent_party": 95,
+            "remark": "",
+            "mdg_region": "624",
+            "iso_alpha3_code": "GNB",
+            "abbr_alt": "GUS",
+            "name_alt": "Guinea Bissau",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 96,
+        "fields": {
+            "name": "Guyana",
+            "abbr": "GY",
+            "subregion": 7,
+            "parent_party": 96,
+            "remark": "",
+            "mdg_region": "328",
+            "iso_alpha3_code": "GUY",
+            "abbr_alt": "GUY",
+            "name_alt": "Guyana",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 101,
+        "fields": {
+            "name": "Haiti",
+            "abbr": "HT",
+            "subregion": 7,
+            "parent_party": 101,
+            "remark": "",
+            "mdg_region": "332",
+            "iso_alpha3_code": "HTI",
+            "abbr_alt": "HAI",
+            "name_alt": "Haiti",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 98,
+        "fields": {
+            "name": "Heard Island and McDonald Islands",
+            "abbr": "HM",
+            "subregion": 17,
+            "parent_party": 14,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "HMD",
+            "abbr_alt": "HMI",
+            "name_alt": "Heard Is & McDonald Is",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 238,
+        "fields": {
+            "name": "Holy See",
+            "abbr": "VA",
+            "subregion": 6,
+            "parent_party": 238,
+            "remark": "Vatican City",
+            "mdg_region": "336",
+            "iso_alpha3_code": "VAT",
+            "abbr_alt": "HOLV",
+            "name_alt": "Holy See",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 99,
+        "fields": {
+            "name": "Honduras",
+            "abbr": "HN",
+            "subregion": 8,
+            "parent_party": 99,
+            "remark": "",
+            "mdg_region": "340",
+            "iso_alpha3_code": "HND",
+            "abbr_alt": "HON",
+            "name_alt": "Honduras",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 97,
+        "fields": {
+            "name": "Hong Kong",
+            "abbr": "HK",
+            "subregion": 14,
+            "parent_party": 49,
+            "remark": "",
+            "mdg_region": "344",
+            "iso_alpha3_code": "HKG",
+            "abbr_alt": "CHH",
+            "name_alt": "Hong Kong",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 102,
+        "fields": {
+            "name": "Hungary",
+            "abbr": "HU",
+            "subregion": 6,
+            "parent_party": 102,
+            "remark": "",
+            "mdg_region": "348",
+            "iso_alpha3_code": "HUN",
+            "abbr_alt": "HUN",
+            "name_alt": "Hungary",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 111,
+        "fields": {
+            "name": "Iceland",
+            "abbr": "IS",
+            "subregion": 6,
+            "parent_party": 111,
+            "remark": "",
+            "mdg_region": "352",
+            "iso_alpha3_code": "ISL",
+            "abbr_alt": "ICE",
+            "name_alt": "Iceland",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 107,
+        "fields": {
+            "name": "India",
+            "abbr": "IN",
+            "subregion": 4,
+            "parent_party": 107,
+            "remark": "",
+            "mdg_region": "356",
+            "iso_alpha3_code": "IND",
+            "abbr_alt": "IND",
+            "name_alt": "India",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 103,
+        "fields": {
+            "name": "Indonesia",
+            "abbr": "ID",
+            "subregion": 3,
+            "parent_party": 103,
+            "remark": "",
+            "mdg_region": "360",
+            "iso_alpha3_code": "IDN",
+            "abbr_alt": "INS",
+            "name_alt": "Indonesia",
+            "sign_date_vc": null,
+            "sign_date_mp": "1988-07-21",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 110,
+        "fields": {
+            "name": "Iran (Islamic Republic of)",
+            "abbr": "IR",
+            "subregion": 4,
+            "parent_party": 110,
+            "remark": "",
+            "mdg_region": "364",
+            "iso_alpha3_code": "IRN",
+            "abbr_alt": "IRA",
+            "name_alt": "Iran",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 109,
+        "fields": {
+            "name": "Iraq",
+            "abbr": "IQ",
+            "subregion": 5,
+            "parent_party": 109,
+            "remark": "",
+            "mdg_region": "368",
+            "iso_alpha3_code": "IRQ",
+            "abbr_alt": "IRQ",
+            "name_alt": "Iraq",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 104,
+        "fields": {
+            "name": "Ireland",
+            "abbr": "IE",
+            "subregion": 6,
+            "parent_party": 104,
+            "remark": "",
+            "mdg_region": "372",
+            "iso_alpha3_code": "IRL",
+            "abbr_alt": "IRS",
+            "name_alt": "Ireland",
+            "sign_date_vc": null,
+            "sign_date_mp": "1988-09-15",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 106,
+        "fields": {
+            "name": "Isle of Man",
+            "abbr": "IM",
+            "subregion": 17,
+            "parent_party": 79,
+            "remark": "",
+            "mdg_region": "833",
+            "iso_alpha3_code": "IMN",
+            "abbr_alt": "ISM",
+            "name_alt": "Isle of Man",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 105,
+        "fields": {
+            "name": "Israel",
+            "abbr": "IL",
+            "subregion": 6,
+            "parent_party": 105,
+            "remark": "",
+            "mdg_region": "376",
+            "iso_alpha3_code": "ISR",
+            "abbr_alt": "ISR",
+            "name_alt": "Israel",
+            "sign_date_vc": null,
+            "sign_date_mp": "1988-01-14",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 112,
+        "fields": {
+            "name": "Italy",
+            "abbr": "IT",
+            "subregion": 6,
+            "parent_party": 112,
+            "remark": "",
+            "mdg_region": "380",
+            "iso_alpha3_code": "ITA",
+            "abbr_alt": "ITA",
+            "name_alt": "Italy",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 114,
+        "fields": {
+            "name": "Jamaica",
+            "abbr": "JM",
+            "subregion": 7,
+            "parent_party": 114,
+            "remark": "",
+            "mdg_region": "388",
+            "iso_alpha3_code": "JAM",
+            "abbr_alt": "JAM",
+            "name_alt": "Jamaica",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 116,
+        "fields": {
+            "name": "Japan",
+            "abbr": "JP",
+            "subregion": 4,
+            "parent_party": 116,
+            "remark": "",
+            "mdg_region": "392",
+            "iso_alpha3_code": "JPN",
+            "abbr_alt": "JAP",
+            "name_alt": "Japan",
+            "sign_date_vc": null,
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 113,
+        "fields": {
+            "name": "Jersey",
+            "abbr": "JE",
+            "subregion": 17,
+            "parent_party": 79,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "JEY",
+            "abbr_alt": "JER",
+            "name_alt": "Jersey",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 115,
+        "fields": {
+            "name": "Jordan",
+            "abbr": "JO",
+            "subregion": 5,
+            "parent_party": 115,
+            "remark": "",
+            "mdg_region": "400",
+            "iso_alpha3_code": "JOR",
+            "abbr_alt": "JOR",
+            "name_alt": "Jordan",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 127,
+        "fields": {
+            "name": "Kazakhstan",
+            "abbr": "KZ",
+            "subregion": 6,
+            "parent_party": 127,
+            "remark": "",
+            "mdg_region": "398",
+            "iso_alpha3_code": "KAZ",
+            "abbr_alt": "KAZ",
+            "name_alt": "Kazakhstan",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 117,
+        "fields": {
+            "name": "Kenya",
+            "abbr": "KE",
+            "subregion": 1,
+            "parent_party": 117,
+            "remark": "",
+            "mdg_region": "404",
+            "iso_alpha3_code": "KEN",
+            "abbr_alt": "KEN",
+            "name_alt": "Kenya",
+            "sign_date_vc": null,
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 120,
+        "fields": {
+            "name": "Kiribati",
+            "abbr": "KI",
+            "subregion": 3,
+            "parent_party": 120,
+            "remark": "",
+            "mdg_region": "296",
+            "iso_alpha3_code": "KIR",
+            "abbr_alt": "KIR",
+            "name_alt": "Kiribati",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 253,
+        "fields": {
+            "name": "Kosovo",
+            "abbr": "XK",
+            "subregion": 6,
+            "parent_party": 192,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "XXK",
+            "abbr_alt": "",
+            "name_alt": "",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 125,
+        "fields": {
+            "name": "Kuwait",
+            "abbr": "KW",
+            "subregion": 5,
+            "parent_party": 125,
+            "remark": "",
+            "mdg_region": "414",
+            "iso_alpha3_code": "KWT",
+            "abbr_alt": "KUW",
+            "name_alt": "Kuwait",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 118,
+        "fields": {
+            "name": "Kyrgyzstan",
+            "abbr": "KG",
+            "subregion": 6,
+            "parent_party": 118,
+            "remark": "",
+            "mdg_region": "417",
+            "iso_alpha3_code": "KGZ",
+            "abbr_alt": "KYR",
+            "name_alt": "Kyrgyzstan",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 128,
+        "fields": {
+            "name": "Lao People's Democratic Republic",
+            "abbr": "LA",
+            "subregion": 3,
+            "parent_party": 128,
+            "remark": "",
+            "mdg_region": "418",
+            "iso_alpha3_code": "LAO",
+            "abbr_alt": "LAO",
+            "name_alt": "Lao PDR",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 137,
+        "fields": {
+            "name": "Latvia",
+            "abbr": "LV",
+            "subregion": 6,
+            "parent_party": 137,
+            "remark": "",
+            "mdg_region": "428",
+            "iso_alpha3_code": "LVA",
+            "abbr_alt": "LAT",
+            "name_alt": "Latvia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 129,
+        "fields": {
+            "name": "Lebanon",
+            "abbr": "LB",
+            "subregion": 5,
+            "parent_party": 129,
+            "remark": "",
+            "mdg_region": "422",
+            "iso_alpha3_code": "LBN",
+            "abbr_alt": "LEB",
+            "name_alt": "Lebanon",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 134,
+        "fields": {
+            "name": "Lesotho",
+            "abbr": "LS",
+            "subregion": 1,
+            "parent_party": 134,
+            "remark": "",
+            "mdg_region": "426",
+            "iso_alpha3_code": "LSO",
+            "abbr_alt": "LES",
+            "name_alt": "Lesotho",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 133,
+        "fields": {
+            "name": "Liberia",
+            "abbr": "LR",
+            "subregion": 1,
+            "parent_party": 133,
+            "remark": "",
+            "mdg_region": "430",
+            "iso_alpha3_code": "LBR",
+            "abbr_alt": "LIB",
+            "name_alt": "Liberia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 138,
+        "fields": {
+            "name": "Libya",
+            "abbr": "LY",
+            "subregion": 1,
+            "parent_party": 138,
+            "remark": "",
+            "mdg_region": "434",
+            "iso_alpha3_code": "LBY",
+            "abbr_alt": "LIJ",
+            "name_alt": "Libya",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 131,
+        "fields": {
+            "name": "Liechtenstein",
+            "abbr": "LI",
+            "subregion": 6,
+            "parent_party": 131,
+            "remark": "",
+            "mdg_region": "438",
+            "iso_alpha3_code": "LIE",
+            "abbr_alt": "LIN",
+            "name_alt": "Liechtenstein",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 135,
+        "fields": {
+            "name": "Lithuania",
+            "abbr": "LT",
+            "subregion": 6,
+            "parent_party": 135,
+            "remark": "",
+            "mdg_region": "440",
+            "iso_alpha3_code": "LTU",
+            "abbr_alt": "LIT",
+            "name_alt": "Lithuania",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 136,
+        "fields": {
+            "name": "Luxembourg",
+            "abbr": "LU",
+            "subregion": 6,
+            "parent_party": 136,
+            "remark": "",
+            "mdg_region": "442",
+            "iso_alpha3_code": "LUX",
+            "abbr_alt": "LUX",
+            "name_alt": "Luxembourg",
+            "sign_date_vc": "1985-04-17",
+            "sign_date_mp": "1988-01-29",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 150,
+        "fields": {
+            "name": "Macao",
+            "abbr": "MO",
+            "subregion": 17,
+            "parent_party": 49,
+            "remark": "",
+            "mdg_region": "446",
+            "iso_alpha3_code": "MAC",
+            "abbr_alt": "MACA",
+            "name_alt": "Macao",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 144,
+        "fields": {
+            "name": "Madagascar",
+            "abbr": "MG",
+            "subregion": 2,
+            "parent_party": 144,
+            "remark": "",
+            "mdg_region": "450",
+            "iso_alpha3_code": "MDG",
+            "abbr_alt": "MAD",
+            "name_alt": "Madagascar",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 158,
+        "fields": {
+            "name": "Malawi",
+            "abbr": "MW",
+            "subregion": 1,
+            "parent_party": 158,
+            "remark": "",
+            "mdg_region": "454",
+            "iso_alpha3_code": "MWI",
+            "abbr_alt": "MAI",
+            "name_alt": "Malawi",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 160,
+        "fields": {
+            "name": "Malaysia",
+            "abbr": "MY",
+            "subregion": 3,
+            "parent_party": 160,
+            "remark": "",
+            "mdg_region": "458",
+            "iso_alpha3_code": "MYS",
+            "abbr_alt": "MAL",
+            "name_alt": "Malaysia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 157,
+        "fields": {
+            "name": "Maldives",
+            "abbr": "MV",
+            "subregion": 4,
+            "parent_party": 157,
+            "remark": "",
+            "mdg_region": "462",
+            "iso_alpha3_code": "MDV",
+            "abbr_alt": "MAM",
+            "name_alt": "Maldives",
+            "sign_date_vc": null,
+            "sign_date_mp": "1988-07-12",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 147,
+        "fields": {
+            "name": "Mali",
+            "abbr": "ML",
+            "subregion": 2,
+            "parent_party": 147,
+            "remark": "",
+            "mdg_region": "466",
+            "iso_alpha3_code": "MLI",
+            "abbr_alt": "MAN",
+            "name_alt": "Mali",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 155,
+        "fields": {
+            "name": "Malta",
+            "abbr": "MT",
+            "subregion": 6,
+            "parent_party": 155,
+            "remark": "",
+            "mdg_region": "470",
+            "iso_alpha3_code": "MLT",
+            "abbr_alt": "MAO",
+            "name_alt": "Malta",
+            "sign_date_vc": null,
+            "sign_date_mp": "1988-09-15",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 145,
+        "fields": {
+            "name": "Marshall Islands",
+            "abbr": "MH",
+            "subregion": 3,
+            "parent_party": 145,
+            "remark": "",
+            "mdg_region": "584",
+            "iso_alpha3_code": "MHL",
+            "abbr_alt": "MAR",
+            "name_alt": "Marshall Is",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 152,
+        "fields": {
+            "name": "Martinique",
+            "abbr": "MQ",
+            "subregion": 17,
+            "parent_party": 77,
+            "remark": "",
+            "mdg_region": "474",
+            "iso_alpha3_code": "MTQ",
+            "abbr_alt": "FRM",
+            "name_alt": "Martinique",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 153,
+        "fields": {
+            "name": "Mauritania",
+            "abbr": "MR",
+            "subregion": 2,
+            "parent_party": 153,
+            "remark": "",
+            "mdg_region": "478",
+            "iso_alpha3_code": "MRT",
+            "abbr_alt": "MAT",
+            "name_alt": "Mauritania",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 156,
+        "fields": {
+            "name": "Mauritius",
+            "abbr": "MU",
+            "subregion": 1,
+            "parent_party": 156,
+            "remark": "",
+            "mdg_region": "480",
+            "iso_alpha3_code": "MUS",
+            "abbr_alt": "MAU",
+            "name_alt": "Mauritius",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 248,
+        "fields": {
+            "name": "Mayotte",
+            "abbr": "YT",
+            "subregion": 17,
+            "parent_party": 77,
+            "remark": "",
+            "mdg_region": "175",
+            "iso_alpha3_code": "MYT",
+            "abbr_alt": "MAY",
+            "name_alt": "Mayotte",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 159,
+        "fields": {
+            "name": "Mexico",
+            "abbr": "MX",
+            "subregion": 8,
+            "parent_party": 159,
+            "remark": "",
+            "mdg_region": "484",
+            "iso_alpha3_code": "MEX",
+            "abbr_alt": "MEX",
+            "name_alt": "Mexico",
+            "sign_date_vc": "1985-04-01",
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 75,
+        "fields": {
+            "name": "Micronesia (Federated States of)",
+            "abbr": "FM",
+            "subregion": 3,
+            "parent_party": 75,
+            "remark": "",
+            "mdg_region": "583",
+            "iso_alpha3_code": "FSM",
+            "abbr_alt": "MIC",
+            "name_alt": "Micronesia, FS",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 140,
+        "fields": {
+            "name": "Monaco",
+            "abbr": "MC",
+            "subregion": 6,
+            "parent_party": 140,
+            "remark": "",
+            "mdg_region": "492",
+            "iso_alpha3_code": "MCO",
+            "abbr_alt": "MOC",
+            "name_alt": "Monaco",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 149,
+        "fields": {
+            "name": "Mongolia",
+            "abbr": "MN",
+            "subregion": 4,
+            "parent_party": 149,
+            "remark": "",
+            "mdg_region": "496",
+            "iso_alpha3_code": "MNG",
+            "abbr_alt": "MON",
+            "name_alt": "Mongolia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 142,
+        "fields": {
+            "name": "Montenegro",
+            "abbr": "ME",
+            "subregion": 6,
+            "parent_party": 142,
+            "remark": "",
+            "mdg_region": "499",
+            "iso_alpha3_code": "MNE",
+            "abbr_alt": "MNT",
+            "name_alt": "Montenegro",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 154,
+        "fields": {
+            "name": "Montserrat",
+            "abbr": "MS",
+            "subregion": 17,
+            "parent_party": 79,
+            "remark": "",
+            "mdg_region": "500",
+            "iso_alpha3_code": "MSR",
+            "abbr_alt": "MONT",
+            "name_alt": "Montserrat",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 139,
+        "fields": {
+            "name": "Morocco",
+            "abbr": "MA",
+            "subregion": 2,
+            "parent_party": 139,
+            "remark": "",
+            "mdg_region": "504",
+            "iso_alpha3_code": "MAR",
+            "abbr_alt": "MOR",
+            "name_alt": "Morocco",
+            "sign_date_vc": "1986-02-07",
+            "sign_date_mp": "1988-01-07",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 161,
+        "fields": {
+            "name": "Mozambique",
+            "abbr": "MZ",
+            "subregion": 1,
+            "parent_party": 161,
+            "remark": "",
+            "mdg_region": "508",
+            "iso_alpha3_code": "MOZ",
+            "abbr_alt": "MOZ",
+            "name_alt": "Mozambique",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 148,
+        "fields": {
+            "name": "Myanmar",
+            "abbr": "MM",
+            "subregion": 3,
+            "parent_party": 148,
+            "remark": "",
+            "mdg_region": "104",
+            "iso_alpha3_code": "MMR",
+            "abbr_alt": "MYA",
+            "name_alt": "Myanmar",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 162,
+        "fields": {
+            "name": "Namibia",
+            "abbr": "NA",
+            "subregion": 1,
+            "parent_party": 162,
+            "remark": "",
+            "mdg_region": "516",
+            "iso_alpha3_code": "NAM",
+            "abbr_alt": "NAM",
+            "name_alt": "Namibia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 171,
+        "fields": {
+            "name": "Nauru",
+            "abbr": "NR",
+            "subregion": 3,
+            "parent_party": 171,
+            "remark": "",
+            "mdg_region": "520",
+            "iso_alpha3_code": "NRU",
+            "abbr_alt": "NAU",
+            "name_alt": "Nauru",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 170,
+        "fields": {
+            "name": "Nepal",
+            "abbr": "NP",
+            "subregion": 4,
+            "parent_party": 170,
+            "remark": "",
+            "mdg_region": "524",
+            "iso_alpha3_code": "NPL",
+            "abbr_alt": "NEP",
+            "name_alt": "Nepal",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 8,
+        "fields": {
+            "name": "Netherlands Antilles",
+            "abbr": "AN",
+            "subregion": 17,
+            "parent_party": 168,
+            "remark": "",
+            "mdg_region": "530",
+            "iso_alpha3_code": "ANT",
+            "abbr_alt": "NETA",
+            "name_alt": "Netherlands Antilles",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 168,
+        "fields": {
+            "name": "Netherlands (Kingdom of the)",
+            "abbr": "NL",
+            "subregion": 6,
+            "parent_party": 168,
+            "remark": "",
+            "mdg_region": "528",
+            "iso_alpha3_code": "NLD",
+            "abbr_alt": "NET",
+            "name_alt": "Netherlands",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 163,
+        "fields": {
+            "name": "New Caledonia",
+            "abbr": "NC",
+            "subregion": 17,
+            "parent_party": 77,
+            "remark": "Noum\u00e9a / Noumea",
+            "mdg_region": "540",
+            "iso_alpha3_code": "NCL",
+            "abbr_alt": "CAL",
+            "name_alt": "New Caledonia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 173,
+        "fields": {
+            "name": "New Zealand",
+            "abbr": "NZ",
+            "subregion": 6,
+            "parent_party": 173,
+            "remark": "",
+            "mdg_region": "554",
+            "iso_alpha3_code": "NZL",
+            "abbr_alt": "NEZ",
+            "name_alt": "New Zealand",
+            "sign_date_vc": "1986-03-21",
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 167,
+        "fields": {
+            "name": "Nicaragua",
+            "abbr": "NI",
+            "subregion": 8,
+            "parent_party": 167,
+            "remark": "",
+            "mdg_region": "558",
+            "iso_alpha3_code": "NIC",
+            "abbr_alt": "NIC",
+            "name_alt": "Nicaragua",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 164,
+        "fields": {
+            "name": "Niger",
+            "abbr": "NE",
+            "subregion": 2,
+            "parent_party": 164,
+            "remark": "",
+            "mdg_region": "562",
+            "iso_alpha3_code": "NER",
+            "abbr_alt": "NIG",
+            "name_alt": "Niger",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 166,
+        "fields": {
+            "name": "Nigeria",
+            "abbr": "NG",
+            "subregion": 1,
+            "parent_party": 166,
+            "remark": "",
+            "mdg_region": "566",
+            "iso_alpha3_code": "NGA",
+            "abbr_alt": "NIR",
+            "name_alt": "Nigeria",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 172,
+        "fields": {
+            "name": "Niue",
+            "abbr": "NU",
+            "subregion": 3,
+            "parent_party": 172,
+            "remark": "",
+            "mdg_region": "570",
+            "iso_alpha3_code": "NIU",
+            "abbr_alt": "NIU",
+            "name_alt": "Niue",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 165,
+        "fields": {
+            "name": "Norfolk Island",
+            "abbr": "NF",
+            "subregion": 17,
+            "parent_party": 14,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "NFK",
+            "abbr_alt": "NORF",
+            "name_alt": "Norfolk Island",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 151,
+        "fields": {
+            "name": "Northern Mariana Islands",
+            "abbr": "MP",
+            "subregion": 17,
+            "parent_party": 235,
+            "remark": "",
+            "mdg_region": "580",
+            "iso_alpha3_code": "MNP",
+            "abbr_alt": "NMI",
+            "name_alt": "Northern Mariana Is",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 146,
+        "fields": {
+            "name": "North Macedonia",
+            "abbr": "MK",
+            "subregion": 6,
+            "parent_party": 146,
+            "remark": "",
+            "mdg_region": "807",
+            "iso_alpha3_code": "MKD",
+            "abbr_alt": "MAC",
+            "name_alt": "North Macedonia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 169,
+        "fields": {
+            "name": "Norway",
+            "abbr": "NO",
+            "subregion": 6,
+            "parent_party": 169,
+            "remark": "",
+            "mdg_region": "578",
+            "iso_alpha3_code": "NOR",
+            "abbr_alt": "NOR",
+            "name_alt": "Norway",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 174,
+        "fields": {
+            "name": "Oman",
+            "abbr": "OM",
+            "subregion": 5,
+            "parent_party": 174,
+            "remark": "",
+            "mdg_region": "512",
+            "iso_alpha3_code": "OMN",
+            "abbr_alt": "OMA",
+            "name_alt": "Oman",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 180,
+        "fields": {
+            "name": "Pakistan",
+            "abbr": "PK",
+            "subregion": 4,
+            "parent_party": 180,
+            "remark": "",
+            "mdg_region": "586",
+            "iso_alpha3_code": "PAK",
+            "abbr_alt": "PAK",
+            "name_alt": "Pakistan",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 187,
+        "fields": {
+            "name": "Palau",
+            "abbr": "PW",
+            "subregion": 3,
+            "parent_party": 187,
+            "remark": "",
+            "mdg_region": "585",
+            "iso_alpha3_code": "PLW",
+            "abbr_alt": "PAL",
+            "name_alt": "Palau",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 175,
+        "fields": {
+            "name": "Panama",
+            "abbr": "PA",
+            "subregion": 8,
+            "parent_party": 175,
+            "remark": "",
+            "mdg_region": "591",
+            "iso_alpha3_code": "PAN",
+            "abbr_alt": "PAN",
+            "name_alt": "Panama",
+            "sign_date_vc": null,
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 178,
+        "fields": {
+            "name": "Papua New Guinea",
+            "abbr": "PG",
+            "subregion": 3,
+            "parent_party": 178,
+            "remark": "",
+            "mdg_region": "598",
+            "iso_alpha3_code": "PNG",
+            "abbr_alt": "PAP",
+            "name_alt": "Papua New Guinea",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 188,
+        "fields": {
+            "name": "Paraguay",
+            "abbr": "PY",
+            "subregion": 9,
+            "parent_party": 188,
+            "remark": "",
+            "mdg_region": "600",
+            "iso_alpha3_code": "PRY",
+            "abbr_alt": "PAR",
+            "name_alt": "Paraguay",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 176,
+        "fields": {
+            "name": "Peru",
+            "abbr": "PE",
+            "subregion": 9,
+            "parent_party": 176,
+            "remark": "",
+            "mdg_region": "604",
+            "iso_alpha3_code": "PER",
+            "abbr_alt": "PER",
+            "name_alt": "Peru",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 179,
+        "fields": {
+            "name": "Philippines",
+            "abbr": "PH",
+            "subregion": 3,
+            "parent_party": 179,
+            "remark": "",
+            "mdg_region": "608",
+            "iso_alpha3_code": "PHL",
+            "abbr_alt": "PHI",
+            "name_alt": "Philippines",
+            "sign_date_vc": null,
+            "sign_date_mp": "1988-09-14",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 183,
+        "fields": {
+            "name": "Pitcairn",
+            "abbr": "PN",
+            "subregion": 17,
+            "parent_party": 79,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "PCN",
+            "abbr_alt": "PIT",
+            "name_alt": "Pitcairn",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 181,
+        "fields": {
+            "name": "Poland",
+            "abbr": "PL",
+            "subregion": 6,
+            "parent_party": 181,
+            "remark": "",
+            "mdg_region": "616",
+            "iso_alpha3_code": "POL",
+            "abbr_alt": "POL",
+            "name_alt": "Poland",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 186,
+        "fields": {
+            "name": "Portugal",
+            "abbr": "PT",
+            "subregion": 6,
+            "parent_party": 186,
+            "remark": "",
+            "mdg_region": "620",
+            "iso_alpha3_code": "PRT",
+            "abbr_alt": "POR",
+            "name_alt": "Portugal",
+            "sign_date_vc": null,
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 184,
+        "fields": {
+            "name": "Puerto Rico",
+            "abbr": "PR",
+            "subregion": 16,
+            "parent_party": 235,
+            "remark": "",
+            "mdg_region": "630",
+            "iso_alpha3_code": "PRI",
+            "abbr_alt": "PUE",
+            "name_alt": "Puerto Rico",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 189,
+        "fields": {
+            "name": "Qatar",
+            "abbr": "QA",
+            "subregion": 5,
+            "parent_party": 189,
+            "remark": "",
+            "mdg_region": "634",
+            "iso_alpha3_code": "QAT",
+            "abbr_alt": "QAT",
+            "name_alt": "Qatar",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 124,
+        "fields": {
+            "name": "Republic of Korea",
+            "abbr": "KR",
+            "subregion": 4,
+            "parent_party": 124,
+            "remark": "",
+            "mdg_region": "410",
+            "iso_alpha3_code": "KOR",
+            "abbr_alt": "KOR",
+            "name_alt": "Korea, Republic of",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 141,
+        "fields": {
+            "name": "Republic of Moldova",
+            "abbr": "MD",
+            "subregion": 6,
+            "parent_party": 141,
+            "remark": "",
+            "mdg_region": "498",
+            "iso_alpha3_code": "MDA",
+            "abbr_alt": "MOA",
+            "name_alt": "Moldova",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 190,
+        "fields": {
+            "name": "R\u00e9union",
+            "abbr": "RE",
+            "subregion": 17,
+            "parent_party": 77,
+            "remark": "",
+            "mdg_region": "638",
+            "iso_alpha3_code": "REU",
+            "abbr_alt": "REU",
+            "name_alt": "R\u00e9union",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 191,
+        "fields": {
+            "name": "Romania",
+            "abbr": "RO",
+            "subregion": 6,
+            "parent_party": 191,
+            "remark": "",
+            "mdg_region": "642",
+            "iso_alpha3_code": "ROU",
+            "abbr_alt": "ROM",
+            "name_alt": "Romania",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 193,
+        "fields": {
+            "name": "Russian Federation",
+            "abbr": "RU",
+            "subregion": 6,
+            "parent_party": 193,
+            "remark": "",
+            "mdg_region": "643",
+            "iso_alpha3_code": "RUS",
+            "abbr_alt": "RUS",
+            "name_alt": "Russian Federation",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1987-12-29",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 194,
+        "fields": {
+            "name": "Rwanda",
+            "abbr": "RW",
+            "subregion": 1,
+            "parent_party": 194,
+            "remark": "",
+            "mdg_region": "646",
+            "iso_alpha3_code": "RWA",
+            "abbr_alt": "RWA",
+            "name_alt": "Rwanda",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 27,
+        "fields": {
+            "name": "Saint Barth\u00e9lemy",
+            "abbr": "BL",
+            "subregion": 17,
+            "parent_party": 77,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "BLM",
+            "abbr_alt": "",
+            "name_alt": "Saint Barth\u00e9lemy",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 201,
+        "fields": {
+            "name": "Saint Helena, Ascension and Tristan da Cunha",
+            "abbr": "SH",
+            "subregion": 17,
+            "parent_party": 79,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "SHN",
+            "abbr_alt": "SH",
+            "name_alt": "Saint Helena",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 122,
+        "fields": {
+            "name": "Saint Kitts and Nevis",
+            "abbr": "KN",
+            "subregion": 7,
+            "parent_party": 122,
+            "remark": "",
+            "mdg_region": "659",
+            "iso_alpha3_code": "KNA",
+            "abbr_alt": "SAA",
+            "name_alt": "St Kitts & Nevis",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 130,
+        "fields": {
+            "name": "Saint Lucia",
+            "abbr": "LC",
+            "subregion": 7,
+            "parent_party": 130,
+            "remark": "",
+            "mdg_region": "662",
+            "iso_alpha3_code": "LCA",
+            "abbr_alt": "SAC",
+            "name_alt": "St Lucia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 143,
+        "fields": {
+            "name": "Saint Martin",
+            "abbr": "MF",
+            "subregion": 17,
+            "parent_party": 77,
+            "remark": "French part/partie fran\u00e7aise",
+            "mdg_region": null,
+            "iso_alpha3_code": "MAF",
+            "abbr_alt": "",
+            "name_alt": "Saint Martin",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 182,
+        "fields": {
+            "name": "Saint Pierre and Miquelon",
+            "abbr": "PM",
+            "subregion": 17,
+            "parent_party": 77,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "SPM",
+            "abbr_alt": "SPM",
+            "name_alt": "St Pierre & Miquelon",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 239,
+        "fields": {
+            "name": "Saint Vincent and the Grenadines",
+            "abbr": "VC",
+            "subregion": 7,
+            "parent_party": 239,
+            "remark": "",
+            "mdg_region": "670",
+            "iso_alpha3_code": "VCT",
+            "abbr_alt": "SAG",
+            "name_alt": "St Vincent/Grenadines",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 246,
+        "fields": {
+            "name": "Samoa",
+            "abbr": "WS",
+            "subregion": 3,
+            "parent_party": 246,
+            "remark": "",
+            "mdg_region": "882",
+            "iso_alpha3_code": "WSM",
+            "abbr_alt": "SAM",
+            "name_alt": "Samoa",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 206,
+        "fields": {
+            "name": "San Marino",
+            "abbr": "SM",
+            "subregion": 6,
+            "parent_party": 206,
+            "remark": "",
+            "mdg_region": "674",
+            "iso_alpha3_code": "SMR",
+            "abbr_alt": "SAN",
+            "name_alt": "San Marino",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 211,
+        "fields": {
+            "name": "Sao Tome and Principe",
+            "abbr": "ST",
+            "subregion": 2,
+            "parent_party": 211,
+            "remark": "",
+            "mdg_region": "678",
+            "iso_alpha3_code": "STP",
+            "abbr_alt": "SAO",
+            "name_alt": "Sao Tome & Principe",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 195,
+        "fields": {
+            "name": "Saudi Arabia",
+            "abbr": "SA",
+            "subregion": 5,
+            "parent_party": 195,
+            "remark": "",
+            "mdg_region": "682",
+            "iso_alpha3_code": "SAU",
+            "abbr_alt": "SAU",
+            "name_alt": "Saudi Arabia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 207,
+        "fields": {
+            "name": "Senegal",
+            "abbr": "SN",
+            "subregion": 2,
+            "parent_party": 207,
+            "remark": "",
+            "mdg_region": "686",
+            "iso_alpha3_code": "SEN",
+            "abbr_alt": "SEN",
+            "name_alt": "Senegal",
+            "sign_date_vc": null,
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 192,
+        "fields": {
+            "name": "Serbia",
+            "abbr": "RS",
+            "subregion": 6,
+            "parent_party": 192,
+            "remark": "",
+            "mdg_region": "688",
+            "iso_alpha3_code": "SRB",
+            "abbr_alt": "YUG",
+            "name_alt": "Serbia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 197,
+        "fields": {
+            "name": "Seychelles",
+            "abbr": "SC",
+            "subregion": 1,
+            "parent_party": 197,
+            "remark": "",
+            "mdg_region": "690",
+            "iso_alpha3_code": "SYC",
+            "abbr_alt": "SEY",
+            "name_alt": "Seychelles",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 205,
+        "fields": {
+            "name": "Sierra Leone",
+            "abbr": "SL",
+            "subregion": 1,
+            "parent_party": 205,
+            "remark": "",
+            "mdg_region": "694",
+            "iso_alpha3_code": "SLE",
+            "abbr_alt": "SIL",
+            "name_alt": "Sierra Leone",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 200,
+        "fields": {
+            "name": "Singapore",
+            "abbr": "SG",
+            "subregion": 3,
+            "parent_party": 200,
+            "remark": "",
+            "mdg_region": "702",
+            "iso_alpha3_code": "SGP",
+            "abbr_alt": "SIN",
+            "name_alt": "Singapore",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 213,
+        "fields": {
+            "name": "Sint Maarten",
+            "abbr": "SX",
+            "subregion": 17,
+            "parent_party": 168,
+            "remark": "Dutch part/partie n\u00e9erlandaise",
+            "mdg_region": null,
+            "iso_alpha3_code": "SXM",
+            "abbr_alt": "",
+            "name_alt": "Sint Maarten",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 204,
+        "fields": {
+            "name": "Slovakia",
+            "abbr": "SK",
+            "subregion": 6,
+            "parent_party": 204,
+            "remark": "",
+            "mdg_region": "703",
+            "iso_alpha3_code": "SVK",
+            "abbr_alt": "SLO",
+            "name_alt": "Slovakia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 202,
+        "fields": {
+            "name": "Slovenia",
+            "abbr": "SI",
+            "subregion": 6,
+            "parent_party": 202,
+            "remark": "",
+            "mdg_region": "705",
+            "iso_alpha3_code": "SVN",
+            "abbr_alt": "SLN",
+            "name_alt": "Slovenia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 196,
+        "fields": {
+            "name": "Solomon Islands",
+            "abbr": "SB",
+            "subregion": 3,
+            "parent_party": 196,
+            "remark": "",
+            "mdg_region": "90",
+            "iso_alpha3_code": "SLB",
+            "abbr_alt": "SOI",
+            "name_alt": "Solomon Islands",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 208,
+        "fields": {
+            "name": "Somalia",
+            "abbr": "SO",
+            "subregion": 1,
+            "parent_party": 208,
+            "remark": "",
+            "mdg_region": "706",
+            "iso_alpha3_code": "SOM",
+            "abbr_alt": "SOM",
+            "name_alt": "Somalia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 249,
+        "fields": {
+            "name": "South Africa",
+            "abbr": "ZA",
+            "subregion": 1,
+            "parent_party": 249,
+            "remark": "",
+            "mdg_region": "710",
+            "iso_alpha3_code": "ZAF",
+            "abbr_alt": "SOU",
+            "name_alt": "South Africa",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 92,
+        "fields": {
+            "name": "South Georgia and the South Sandwich Islands",
+            "abbr": "GS",
+            "subregion": 17,
+            "parent_party": 79,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "SGS",
+            "abbr_alt": "SGSS",
+            "name_alt": "Sth Georgia &  Sth Sandwi",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 210,
+        "fields": {
+            "name": "South Sudan",
+            "abbr": "SS",
+            "subregion": 1,
+            "parent_party": 210,
+            "remark": "",
+            "mdg_region": "728",
+            "iso_alpha3_code": "SSD",
+            "abbr_alt": "",
+            "name_alt": "South Sudan",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 70,
+        "fields": {
+            "name": "Spain",
+            "abbr": "ES",
+            "subregion": 6,
+            "parent_party": 70,
+            "remark": "",
+            "mdg_region": "724",
+            "iso_alpha3_code": "ESP",
+            "abbr_alt": "SPA",
+            "name_alt": "Spain",
+            "sign_date_vc": null,
+            "sign_date_mp": "1988-07-21",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 132,
+        "fields": {
+            "name": "Sri Lanka",
+            "abbr": "LK",
+            "subregion": 4,
+            "parent_party": 132,
+            "remark": "",
+            "mdg_region": "144",
+            "iso_alpha3_code": "LKA",
+            "abbr_alt": "SRL",
+            "name_alt": "Sri Lanka",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 185,
+        "fields": {
+            "name": "State of Palestine",
+            "abbr": "PS",
+            "subregion": 5,
+            "parent_party": 185,
+            "remark": "",
+            "mdg_region": "275",
+            "iso_alpha3_code": "PSE",
+            "abbr_alt": "PAS",
+            "name_alt": "Palestine",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 198,
+        "fields": {
+            "name": "Sudan",
+            "abbr": "SD",
+            "subregion": 1,
+            "parent_party": 198,
+            "remark": "",
+            "mdg_region": "729",
+            "iso_alpha3_code": "SDN",
+            "abbr_alt": "SUD",
+            "name_alt": "Sudan",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 209,
+        "fields": {
+            "name": "Suriname",
+            "abbr": "SR",
+            "subregion": 7,
+            "parent_party": 209,
+            "remark": "",
+            "mdg_region": "740",
+            "iso_alpha3_code": "SUR",
+            "abbr_alt": "SUR",
+            "name_alt": "Suriname",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 203,
+        "fields": {
+            "name": "Svalbard and Jan Mayen",
+            "abbr": "SJ",
+            "subregion": 17,
+            "parent_party": 169,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "SJM",
+            "abbr_alt": "SJM",
+            "name_alt": "Svalbard & Jan Mayen",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 199,
+        "fields": {
+            "name": "Sweden",
+            "abbr": "SE",
+            "subregion": 6,
+            "parent_party": 199,
+            "remark": "",
+            "mdg_region": "752",
+            "iso_alpha3_code": "SWE",
+            "abbr_alt": "SWE",
+            "name_alt": "Sweden",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 44,
+        "fields": {
+            "name": "Switzerland",
+            "abbr": "CH",
+            "subregion": 6,
+            "parent_party": 44,
+            "remark": "",
+            "mdg_region": "756",
+            "iso_alpha3_code": "CHE",
+            "abbr_alt": "SWI",
+            "name_alt": "Switzerland",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 214,
+        "fields": {
+            "name": "Syrian Arab Republic",
+            "abbr": "SY",
+            "subregion": 5,
+            "parent_party": 214,
+            "remark": "",
+            "mdg_region": "760",
+            "iso_alpha3_code": "SYR",
+            "abbr_alt": "SYR",
+            "name_alt": "Syrian Arab Republic",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 230,
+        "fields": {
+            "name": "Taiwan, Province of China",
+            "abbr": "TW",
+            "subregion": 14,
+            "parent_party": 49,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "TWN",
+            "abbr_alt": "CHT",
+            "name_alt": "Taiwan, China",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 221,
+        "fields": {
+            "name": "Tajikistan",
+            "abbr": "TJ",
+            "subregion": 6,
+            "parent_party": 221,
+            "remark": "",
+            "mdg_region": "762",
+            "iso_alpha3_code": "TJK",
+            "abbr_alt": "TAJ",
+            "name_alt": "Tajikistan",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 220,
+        "fields": {
+            "name": "Thailand",
+            "abbr": "TH",
+            "subregion": 3,
+            "parent_party": 220,
+            "remark": "",
+            "mdg_region": "764",
+            "iso_alpha3_code": "THA",
+            "abbr_alt": "THA",
+            "name_alt": "Thailand",
+            "sign_date_vc": null,
+            "sign_date_mp": "1988-09-15",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 223,
+        "fields": {
+            "name": "Timor-Leste",
+            "abbr": "TL",
+            "subregion": 3,
+            "parent_party": 223,
+            "remark": "",
+            "mdg_region": "626",
+            "iso_alpha3_code": "TLS",
+            "abbr_alt": "EAS",
+            "name_alt": "Timor-Leste",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 219,
+        "fields": {
+            "name": "Togo",
+            "abbr": "TG",
+            "subregion": 2,
+            "parent_party": 219,
+            "remark": "",
+            "mdg_region": "768",
+            "iso_alpha3_code": "TGO",
+            "abbr_alt": "TOG",
+            "name_alt": "Togo",
+            "sign_date_vc": null,
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 222,
+        "fields": {
+            "name": "Tokelau",
+            "abbr": "TK",
+            "subregion": 17,
+            "parent_party": 173,
+            "remark": "",
+            "mdg_region": "772",
+            "iso_alpha3_code": "TKL",
+            "abbr_alt": "TOK",
+            "name_alt": "Tokelau",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 226,
+        "fields": {
+            "name": "Tonga",
+            "abbr": "TO",
+            "subregion": 3,
+            "parent_party": 226,
+            "remark": "",
+            "mdg_region": "776",
+            "iso_alpha3_code": "TON",
+            "abbr_alt": "TON",
+            "name_alt": "Tonga",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 228,
+        "fields": {
+            "name": "Trinidad and Tobago",
+            "abbr": "TT",
+            "subregion": 7,
+            "parent_party": 228,
+            "remark": "",
+            "mdg_region": "780",
+            "iso_alpha3_code": "TTO",
+            "abbr_alt": "TRI",
+            "name_alt": "Trinidad & Tobago",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 225,
+        "fields": {
+            "name": "Tunisia",
+            "abbr": "TN",
+            "subregion": 2,
+            "parent_party": 225,
+            "remark": "",
+            "mdg_region": "788",
+            "iso_alpha3_code": "TUN",
+            "abbr_alt": "TUN",
+            "name_alt": "Tunisia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 227,
+        "fields": {
+            "name": "T\u00fcrkiye",
+            "abbr": "TR",
+            "subregion": 6,
+            "parent_party": 227,
+            "remark": "Turkey, participates fully in both WEOG and Asian Group, but for electoral purposes is considered a member of WEOG only.",
+            "mdg_region": "792",
+            "iso_alpha3_code": "TUR",
+            "abbr_alt": "TUR",
+            "name_alt": "T\u00fcrkiye",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 224,
+        "fields": {
+            "name": "Turkmenistan",
+            "abbr": "TM",
+            "subregion": 6,
+            "parent_party": 224,
+            "remark": "",
+            "mdg_region": "795",
+            "iso_alpha3_code": "TKM",
+            "abbr_alt": "TUS",
+            "name_alt": "Turkmenistan",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 216,
+        "fields": {
+            "name": "Turks and Caicos Islands",
+            "abbr": "TC",
+            "subregion": 17,
+            "parent_party": 79,
+            "remark": "",
+            "mdg_region": "796",
+            "iso_alpha3_code": "TCA",
+            "abbr_alt": "TCI",
+            "name_alt": "Turks & Caicos Is",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 229,
+        "fields": {
+            "name": "Tuvalu",
+            "abbr": "TV",
+            "subregion": 3,
+            "parent_party": 229,
+            "remark": "",
+            "mdg_region": "798",
+            "iso_alpha3_code": "TUV",
+            "abbr_alt": "TUV",
+            "name_alt": "Tuvalu",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 233,
+        "fields": {
+            "name": "Uganda",
+            "abbr": "UG",
+            "subregion": 1,
+            "parent_party": 233,
+            "remark": "",
+            "mdg_region": "800",
+            "iso_alpha3_code": "UGA",
+            "abbr_alt": "UGN",
+            "name_alt": "Uganda",
+            "sign_date_vc": null,
+            "sign_date_mp": "1988-09-15",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 232,
+        "fields": {
+            "name": "Ukraine",
+            "abbr": "UA",
+            "subregion": 6,
+            "parent_party": 232,
+            "remark": "",
+            "mdg_region": "804",
+            "iso_alpha3_code": "UKR",
+            "abbr_alt": "UKR",
+            "name_alt": "Ukraine",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1988-02-18",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 2,
+        "fields": {
+            "name": "United Arab Emirates",
+            "abbr": "AE",
+            "subregion": 5,
+            "parent_party": 2,
+            "remark": "",
+            "mdg_region": "784",
+            "iso_alpha3_code": "ARE",
+            "abbr_alt": "UNA",
+            "name_alt": "United Arab Emirates",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 79,
+        "fields": {
+            "name": "United Kingdom of Great Britain and Northern Ireland",
+            "abbr": "GB",
+            "subregion": 6,
+            "parent_party": 79,
+            "remark": "",
+            "mdg_region": "826",
+            "iso_alpha3_code": "GBR",
+            "abbr_alt": "UAK",
+            "name_alt": "United Kingdom",
+            "sign_date_vc": "1985-05-20",
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 231,
+        "fields": {
+            "name": "United Republic of Tanzania",
+            "abbr": "TZ",
+            "subregion": 1,
+            "parent_party": 231,
+            "remark": "",
+            "mdg_region": "834",
+            "iso_alpha3_code": "TZA",
+            "abbr_alt": "TAN",
+            "name_alt": "Tanzania",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 234,
+        "fields": {
+            "name": "United States Minor Outlying Islands",
+            "abbr": "UM",
+            "subregion": 17,
+            "parent_party": 235,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "UMI",
+            "abbr_alt": "UASM",
+            "name_alt": "US Minor Outlying Is",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 235,
+        "fields": {
+            "name": "United States of America",
+            "abbr": "US",
+            "subregion": 6,
+            "parent_party": 235,
+            "remark": "",
+            "mdg_region": "840",
+            "iso_alpha3_code": "USA",
+            "abbr_alt": "UAS",
+            "name_alt": "United States",
+            "sign_date_vc": "1985-03-22",
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 236,
+        "fields": {
+            "name": "Uruguay",
+            "abbr": "UY",
+            "subregion": 9,
+            "parent_party": 236,
+            "remark": "",
+            "mdg_region": "858",
+            "iso_alpha3_code": "URY",
+            "abbr_alt": "URU",
+            "name_alt": "Uruguay",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 237,
+        "fields": {
+            "name": "Uzbekistan",
+            "abbr": "UZ",
+            "subregion": 6,
+            "parent_party": 237,
+            "remark": "",
+            "mdg_region": "860",
+            "iso_alpha3_code": "UZB",
+            "abbr_alt": "UZB",
+            "name_alt": "Uzbekistan",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 244,
+        "fields": {
+            "name": "Vanuatu",
+            "abbr": "VU",
+            "subregion": 3,
+            "parent_party": 244,
+            "remark": "",
+            "mdg_region": "548",
+            "iso_alpha3_code": "VUT",
+            "abbr_alt": "VAN",
+            "name_alt": "Vanuatu",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 240,
+        "fields": {
+            "name": "Venezuela (Bolivarian Republic of)",
+            "abbr": "VE",
+            "subregion": 9,
+            "parent_party": 240,
+            "remark": "",
+            "mdg_region": "862",
+            "iso_alpha3_code": "VEN",
+            "abbr_alt": "VEN",
+            "name_alt": "Venezuela",
+            "sign_date_vc": null,
+            "sign_date_mp": "1987-09-16",
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 243,
+        "fields": {
+            "name": "Viet Nam",
+            "abbr": "VN",
+            "subregion": 3,
+            "parent_party": 243,
+            "remark": "",
+            "mdg_region": "704",
+            "iso_alpha3_code": "VNM",
+            "abbr_alt": "VIE",
+            "name_alt": "Viet Nam",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 241,
+        "fields": {
+            "name": "Virgin Islands, British",
+            "abbr": "VG",
+            "subregion": 17,
+            "parent_party": 79,
+            "remark": "",
+            "mdg_region": "92",
+            "iso_alpha3_code": "VGB",
+            "abbr_alt": "UAKV",
+            "name_alt": "Virgin Is, British",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 242,
+        "fields": {
+            "name": "Virgin Islands, USA",
+            "abbr": "VI",
+            "subregion": 17,
+            "parent_party": 235,
+            "remark": "",
+            "mdg_region": "850",
+            "iso_alpha3_code": "VIR",
+            "abbr_alt": "UASV",
+            "name_alt": "Virgin Islands, USA",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 245,
+        "fields": {
+            "name": "Wallis and Futuna",
+            "abbr": "WF",
+            "subregion": 17,
+            "parent_party": 77,
+            "remark": "",
+            "mdg_region": null,
+            "iso_alpha3_code": "WLF",
+            "abbr_alt": "WAL",
+            "name_alt": "Wallis & Futuna",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 68,
+        "fields": {
+            "name": "Western Sahara",
+            "abbr": "EH",
+            "subregion": 17,
+            "parent_party": null,
+            "remark": "",
+            "mdg_region": "732",
+            "iso_alpha3_code": "ESH",
+            "abbr_alt": "WS",
+            "name_alt": "Western Sahara",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 247,
+        "fields": {
+            "name": "Yemen",
+            "abbr": "YE",
+            "subregion": 5,
+            "parent_party": 247,
+            "remark": "",
+            "mdg_region": "887",
+            "iso_alpha3_code": "YEM",
+            "abbr_alt": "YEM",
+            "name_alt": "Yemen",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 252,
+        "fields": {
+            "name": "Yugoslavia",
+            "abbr": "YU",
+            "subregion": 6,
+            "parent_party": null,
+            "remark": "",
+            "mdg_region": "688",
+            "iso_alpha3_code": "YUG",
+            "abbr_alt": "YUG",
+            "name_alt": "Yugoslavia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": false
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 250,
+        "fields": {
+            "name": "Zambia",
+            "abbr": "ZM",
+            "subregion": 1,
+            "parent_party": 250,
+            "remark": "",
+            "mdg_region": "894",
+            "iso_alpha3_code": "ZMB",
+            "abbr_alt": "ZAM",
+            "name_alt": "Zambia",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    },
+    {
+        "model": "core.party",
+        "pk": 251,
+        "fields": {
+            "name": "Zimbabwe",
+            "abbr": "ZW",
+            "subregion": 1,
+            "parent_party": 251,
+            "remark": "",
+            "mdg_region": "716",
+            "iso_alpha3_code": "ZWE",
+            "abbr_alt": "ZIM",
+            "name_alt": "Zimbabwe",
+            "sign_date_vc": null,
+            "sign_date_mp": null,
+            "is_active": true
+        }
+    }
+]

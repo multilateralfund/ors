@@ -1,0 +1,27 @@
+[
+    {
+        "pk": 1,
+        "abbr": "AFR",
+        "name": "Africa"
+    },
+    {
+        "pk": 2,
+        "abbr": "ASP",
+        "name": "Asia and the Pacific"
+    },
+    {
+        "pk": 3,
+        "abbr": "EUR",
+        "name": "Europe"
+    },
+    {
+        "pk": 4,
+        "abbr": "LAC",
+        "name": "Latin America and the Caribbean"
+    },
+    {
+        "pk": 5,
+        "abbr": "",
+        "name": "Global"
+    }
+]

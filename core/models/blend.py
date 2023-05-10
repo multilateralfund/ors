@@ -47,6 +47,7 @@ class Blend(models.Model):
     )
     is_contained_in_polyols = models.BooleanField(default=False)
     sort_order = models.IntegerField(null=True)
+    ozone_id = models.IntegerField(null=True, blank=True)
 
     objects = BlendManager()
 
@@ -63,6 +64,10 @@ class BlendComponents(models.Model):
         validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
     )
     component_name = models.CharField(max_length=128, blank=True)
+    ozone_id = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.blend.blend_id + " " + self.substance.name + " " + self.percentage
+
+    class Meta:
+        verbose_name_plural = "Blend Components"

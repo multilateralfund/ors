@@ -2,7 +2,7 @@
 To import resources (groups, substances, blends, blend components, usages, 
     sectors, agencies, countries), run:
 ```shell
-docker-compose exec app ./manage.py import_resources
+docker-compose exec app ./manage.py import_resources all
 ```
 
 To run the import only for one resource(ex. usages) run:

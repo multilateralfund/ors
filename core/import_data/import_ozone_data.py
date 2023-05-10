@@ -5,6 +5,7 @@ from django.db import transaction
 from django.conf import settings
 
 from core.models import Blend, BlendComponents, Group, Substance
+from core.models.substance import SubstanceAltName
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +17,7 @@ def import_data(cls, file_path, exclude=[]):
 
     for instance_data in list_data:
         instance = instance_data["fields"]
-        instance["id"] = instance_data["pk"]
+        instance["ozone_id"] = instance_data["pk"]
         # remove unused fields
         for k in exclude:
             instance.pop(k)
@@ -28,19 +29,31 @@ def import_data(cls, file_path, exclude=[]):
         elif cls == Blend:
             # set blend name
             instance["name"] = instance.pop("blend_id")
-        elif cls == Substance:
+        elif cls == Substance and instance["group"]:
             # set foreign key
-            instance["group_id"] = instance.pop("group")
+            group_ozone_id = instance.pop("group")
+            instance["group_id"] = Group.objects.get(ozone_id=group_ozone_id).id
         elif cls == BlendComponents:
             # set foreign key
-            instance["blend_id"] = instance.pop("blend")
-            instance["substance_id"] = instance.pop("substance")
+            blend_ozone_id = instance.pop("blend")
+            substance_ozone_id = instance.pop("substance")
+            instance["blend_id"] = Blend.objects.get(ozone_id=blend_ozone_id).id
+            instance["substance_id"] = Substance.objects.get(
+                ozone_id=substance_ozone_id
+            ).id
 
         # create or update instance
-        cls.objects.update_or_create(
-            id=instance_data["pk"],
-            defaults=instance,
-        )
+        if cls == BlendComponents:
+            cls.objects.update_or_create(
+                blend_id=instance["blend_id"],
+                substance_id=instance["substance_id"],
+                defaults=instance,
+            )
+        else:
+            cls.objects.update_or_create(
+                name=instance["name"],
+                defaults=instance,
+            )
 
 
 def import_groups():
@@ -54,7 +67,38 @@ def import_groups():
     logger.info("✔ groups imported")
 
 
+def import_substances_alternative_names():
+    """
+    Import substances alternative names from json file
+    """
+
+    # read data from json file
+    file_name = settings.IMPORT_RESOURCES_DIR / "blend_component_mappings.json"
+    with open(file_name, "r") as f:
+        list_data = json.load(f)
+
+    # create or update instance for alternative names
+    for instance_data in list_data:
+        # get instance data
+        instance = {
+            "name": instance_data["fields"]["party_blend_component"],
+            "ozone_id": instance_data["pk"],
+        }
+        instance["substance_id"] = Substance.objects.get(
+            ozone_id=instance_data["fields"]["substance"]
+        ).id
+
+        # create or update substance name
+        SubstanceAltName.objects.update_or_create(
+            name=instance["name"],
+            defaults=instance,
+        )
+
+
 def import_substances():
+    """
+    Import substances from json file and create alternative names
+    """
     exclude = [
         "substance_id",
         "gwp2",
@@ -65,6 +109,8 @@ def import_substances():
     ]
     import_data(Substance, settings.IMPORT_RESOURCES_DIR / "substances.json", exclude)
     logger.info("✔ substances imported")
+    import_substances_alternative_names()
+    logger.info("✔ substances alternative names imported")
 
 
 def import_blends():
@@ -80,7 +126,7 @@ def import_blends():
     ]
 
     import_data(Blend, settings.IMPORT_RESOURCES_DIR / "blends.json", exclude)
-    logger.info("✔ substances imported")
+    logger.info("✔ blends imported")
 
 
 def import_blend_components():

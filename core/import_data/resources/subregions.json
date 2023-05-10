@@ -1,0 +1,56 @@
+[
+    {
+        "pk": 1,
+        "abbr": "AFE",
+        "name": "English-speaking Africa",
+        "region": "Africa"
+    },
+    {
+        "pk": 2,
+        "abbr": "AFF",
+        "name": "French-speaking Africa",
+        "region": "Africa"
+    },
+    {
+        "pk": 3,
+        "abbr": "ASE",
+        "name": "South East Asia",
+        "region": "Asia and the Pacific"
+    },
+    {
+        "pk": 4,
+        "abbr": "ASO",
+        "name": "South Asia",
+        "region": "Asia and the Pacific"
+    },
+    {
+        "pk": 5,
+        "abbr": "ASR",
+        "name": "West Asia",
+        "region": "Asia and the Pacific"
+    },
+    {
+        "pk": 6,
+        "abbr": "ECAN",
+        "name": "Europe",
+        "region": "Europe"
+    },
+    {
+        "pk": 7,
+        "abbr": "LCA",
+        "name": "Caribbean",
+        "region": "Latin America and the Caribbean"
+    },
+    {
+        "pk": 8,
+        "abbr": "LCE",
+        "name": "Central America",
+        "region": "Latin America and the Caribbean"
+    },
+    {
+        "pk": 9,
+        "abbr": "LCS",
+        "name": "Southern Latin America Network",
+        "region": "Latin America and the Caribbean"
+    }
+]

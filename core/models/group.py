@@ -10,6 +10,7 @@ class Group(models.Model):
     description_alt = models.TextField(null=True, blank=True)
     is_odp = models.BooleanField(default=True)
     is_gwp = models.BooleanField(default=False)
+    ozone_id = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.name

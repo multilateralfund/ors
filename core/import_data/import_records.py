@@ -3,6 +3,7 @@ import pandas as pd
 
 from django.db import transaction
 from django.conf import settings
+from core.import_data.utils import get_substance_id_by_name
 
 from core.models import Country, CountryProgrammeReport, Record, Substance, Blend, Usage
 
@@ -25,6 +26,11 @@ REQUIRED_COLUMNS = [
 ]
 
 SECTION = "B"
+
+COUNTRY_NAME_DICT = {
+    "Brunei Darussalan": "Brunei Darussalam",
+    "Eswatini (the Kingdom of)": "Eswatini",
+}
 
 
 def check_headers(df):
@@ -73,6 +79,11 @@ def get_usages_from_sheet(df):
 
 
 def get_country(country_name):
+    """
+    get country object from country name
+    @param country_name = string
+    """
+    country_name = COUNTRY_NAME_DICT.get(country_name, country_name)
     country = Country.objects.get_by_name(country_name).first()
     if not country:
         logger.warning(f"This country does not exists: {country_name}")
@@ -112,15 +123,15 @@ def get_chemical(chemical_name):
     # R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%) => R-404A
     chemical_name = chemical_name.split(" ", 1)[0]
 
-    substance = Substance.objects.get_by_name(chemical_name).first()
-    if substance:
-        return substance.id, None
+    substance_id = get_substance_id_by_name(chemical_name)
+    if substance_id:
+        return substance_id, None
 
     blend = Blend.objects.get_by_name(chemical_name).first()
     if blend:
         return None, blend.id
 
-    logger.warning(f"This chemical does not exists: {chemical_name}")
+    logger.warning(f"This chemical does not exist: {chemical_name}")
     return None, None
 
 
@@ -182,6 +193,7 @@ def parse_file(file_path, cp_name):
     all_sheets = pd.read_excel(file_path, sheet_name=None)
     for sheet_name, df in all_sheets.items():
         logger.info(f"Start parsing sheet: {sheet_name}")
+        df = df.rename(columns=lambda x: x.strip())
         parse_sheet(df, cp_name)
 
 
@@ -192,7 +204,7 @@ def drop_old_data(file_name):
 
 @transaction.atomic
 def import_records():
-    file_name = "CP_Data_SectionB_2019_2021.xlsx"
+    file_name = "CP Data-SectionB-2019-2021.xlsx"
     file_path = settings.IMPORT_DATA_DIR / "records" / file_name
 
     drop_old_data(file_name)
