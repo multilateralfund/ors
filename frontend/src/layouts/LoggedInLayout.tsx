@@ -15,7 +15,7 @@ export const LoggedInLayout = ({ children, isFooter = false }: Props) => {
   return (
     <>
       <Header />
-      <div className="flex items-start pt-16">
+      <div className="flex items-start pt-10">
         <Sidebar />
         <MainContent isFooter={isFooter}>{children}</MainContent>
       </div>
@@ -25,7 +25,7 @@ export const LoggedInLayout = ({ children, isFooter = false }: Props) => {
 
 const MainContent = ({ children, isFooter }: Props) => {
   return (
-    <main className="relative h-full w-full overflow-y-auto bg-gray-50 dark:bg-gray-900 lg:ml-64">
+    <main className="relative h-full w-full overflow-y-auto bg-gray-50 dark:bg-gray-900 lg:ml-32">
       {children}
       {isFooter && (
         <div className="mx-4 mt-4">

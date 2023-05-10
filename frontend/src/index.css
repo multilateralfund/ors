@@ -12,5 +12,10 @@
   body {
     @apply bg-white;
     @apply dark:bg-gray-900;
+    height: 100%;
+  }
+
+  aside {
+    @apply w-32 !important;
   }
 }

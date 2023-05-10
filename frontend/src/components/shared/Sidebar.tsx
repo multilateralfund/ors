@@ -12,7 +12,7 @@ export const Sidebar = () => {
   }, [setCurrentPage])
 
   return (
-    <FlowbiteSidebar aria-label="Sidebar with multi-level dropdown example">
+    <FlowbiteSidebar className="w-32">
       <div className="flex h-full flex-col justify-between py-2">
         <FlowbiteSidebar.Items className="flex-col">
           <FlowbiteSidebar.ItemGroup>

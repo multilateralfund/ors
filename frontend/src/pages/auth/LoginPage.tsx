@@ -30,7 +30,7 @@ export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const from = ((location.state as any)?.from.pathname as string) || '/profile'
+  const from = ((location.state as any)?.from.pathname as string) || '/'
 
   const {
     reset,
@@ -90,7 +90,7 @@ export function LoginPage() {
               <div className="flex justify-end">
                 <a
                   href="/forgot-password"
-                  className="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
+                  className="text-sm font-medium text-primary-600 hover:underline dark:text-white"
                 >
                   Forgot password?
                 </a>

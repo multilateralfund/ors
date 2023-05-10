@@ -11,6 +11,7 @@ i18n
     },
 
     fallbackLng: 'en',
+    lng: localStorage.getItem('lang') || 'en',
     debug: true,
 
     interpolation: {
