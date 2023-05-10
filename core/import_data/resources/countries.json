@@ -41,7 +41,7 @@
         "fields": {
             "name": "Albania",
             "abbr": "AL",
-            "subregion": 7,
+            "subregion": 6,
             "parent_party": 6,
             "remark": "",
             "mdg_region": "8",
@@ -203,7 +203,7 @@
         "fields": {
             "name": "Armenia",
             "abbr": "AM",
-            "subregion": 7,
+            "subregion": 6,
             "parent_party": 7,
             "remark": "",
             "mdg_region": "51",
@@ -275,7 +275,7 @@
         "fields": {
             "name": "Azerbaijan",
             "abbr": "AZ",
-            "subregion": 7,
+            "subregion": 6,
             "parent_party": 17,
             "remark": "",
             "mdg_region": "31",
@@ -365,7 +365,7 @@
         "fields": {
             "name": "Belarus",
             "abbr": "BY",
-            "subregion": 7,
+            "subregion": 6,
             "parent_party": 37,
             "remark": "",
             "mdg_region": "112",
@@ -509,7 +509,7 @@
         "fields": {
             "name": "Bosnia and Herzegovina",
             "abbr": "BA",
-            "subregion": 7,
+            "subregion": 6,
             "parent_party": 18,
             "remark": "",
             "mdg_region": "70",
@@ -923,7 +923,7 @@
         "fields": {
             "name": "Cook Islands",
             "abbr": "CK",
-            "subregion": 4,
+            "subregion": 3,
             "parent_party": 46,
             "remark": "",
             "mdg_region": "184",
@@ -1373,7 +1373,7 @@
         "fields": {
             "name": "Fiji",
             "abbr": "FJ",
-            "subregion": 4,
+            "subregion": 3,
             "parent_party": 73,
             "remark": "",
             "mdg_region": "242",
@@ -1517,7 +1517,7 @@
         "fields": {
             "name": "Georgia",
             "abbr": "GE",
-            "subregion": 7,
+            "subregion": 6,
             "parent_party": 81,
             "remark": "",
             "mdg_region": "268",
@@ -1739,7 +1739,7 @@
             "mdg_region": "624",
             "iso_alpha3_code": "GNB",
             "abbr_alt": "GUS",
-            "name_alt": "Guinea-Bissau",
+            "name_alt": "Guinea Bissau",
             "sign_date_vc": null,
             "sign_date_mp": null,
             "is_active": true
@@ -2147,7 +2147,7 @@
         "fields": {
             "name": "Kiribati",
             "abbr": "KI",
-            "subregion": 4,
+            "subregion": 3,
             "parent_party": 120,
             "remark": "",
             "mdg_region": "296",
@@ -2165,7 +2165,7 @@
         "fields": {
             "name": "Kosovo",
             "abbr": "XK",
-            "subregion": 7,
+            "subregion": 6,
             "parent_party": 192,
             "remark": "",
             "mdg_region": null,
@@ -2507,7 +2507,7 @@
         "fields": {
             "name": "Marshall Islands",
             "abbr": "MH",
-            "subregion": 4,
+            "subregion": 3,
             "parent_party": 145,
             "remark": "",
             "mdg_region": "584",
@@ -2615,7 +2615,7 @@
         "fields": {
             "name": "Micronesia (Federated States of)",
             "abbr": "FM",
-            "subregion": 4,
+            "subregion": 3,
             "parent_party": 75,
             "remark": "",
             "mdg_region": "583",
@@ -2669,7 +2669,7 @@
         "fields": {
             "name": "Montenegro",
             "abbr": "ME",
-            "subregion": 7,
+            "subregion": 6,
             "parent_party": 142,
             "remark": "",
             "mdg_region": "499",
@@ -2777,7 +2777,7 @@
         "fields": {
             "name": "Nauru",
             "abbr": "NR",
-            "subregion": 4,
+            "subregion": 3,
             "parent_party": 171,
             "remark": "",
             "mdg_region": "520",
@@ -2939,7 +2939,7 @@
         "fields": {
             "name": "Niue",
             "abbr": "NU",
-            "subregion": 4,
+            "subregion": 3,
             "parent_party": 172,
             "remark": "",
             "mdg_region": "570",
@@ -2993,7 +2993,7 @@
         "fields": {
             "name": "North Macedonia",
             "abbr": "MK",
-            "subregion": 7,
+            "subregion": 6,
             "parent_party": 146,
             "remark": "",
             "mdg_region": "807",
@@ -3065,7 +3065,7 @@
         "fields": {
             "name": "Palau",
             "abbr": "PW",
-            "subregion": 4,
+            "subregion": 3,
             "parent_party": 187,
             "remark": "",
             "mdg_region": "585",
@@ -3101,7 +3101,7 @@
         "fields": {
             "name": "Papua New Guinea",
             "abbr": "PG",
-            "subregion": 4,
+            "subregion": 3,
             "parent_party": 178,
             "remark": "",
             "mdg_region": "598",
@@ -3281,7 +3281,7 @@
         "fields": {
             "name": "Republic of Moldova",
             "abbr": "MD",
-            "subregion": 7,
+            "subregion": 6,
             "parent_party": 141,
             "remark": "",
             "mdg_region": "498",
@@ -3335,7 +3335,7 @@
         "fields": {
             "name": "Russian Federation",
             "abbr": "RU",
-            "subregion": 7,
+            "subregion": 6,
             "parent_party": 193,
             "remark": "",
             "mdg_region": "643",
@@ -3497,7 +3497,7 @@
         "fields": {
             "name": "Samoa",
             "abbr": "WS",
-            "subregion": 4,
+            "subregion": 3,
             "parent_party": 246,
             "remark": "",
             "mdg_region": "882",
@@ -3587,7 +3587,7 @@
         "fields": {
             "name": "Serbia",
             "abbr": "RS",
-            "subregion": 7,
+            "subregion": 6,
             "parent_party": 192,
             "remark": "",
             "mdg_region": "688",
@@ -3713,7 +3713,7 @@
         "fields": {
             "name": "Solomon Islands",
             "abbr": "SB",
-            "subregion": 4,
+            "subregion": 3,
             "parent_party": 196,
             "remark": "",
             "mdg_region": "90",
@@ -3953,7 +3953,7 @@
             "mdg_region": "760",
             "iso_alpha3_code": "SYR",
             "abbr_alt": "SYR",
-            "name_alt": "Syria",
+            "name_alt": "Syrian Arab Republic",
             "sign_date_vc": null,
             "sign_date_mp": null,
             "is_active": true
@@ -4025,7 +4025,7 @@
             "mdg_region": "626",
             "iso_alpha3_code": "TLS",
             "abbr_alt": "EAS",
-            "name_alt": "Timor Leste",
+            "name_alt": "Timor-Leste",
             "sign_date_vc": null,
             "sign_date_mp": null,
             "is_active": true
@@ -4073,7 +4073,7 @@
         "fields": {
             "name": "Tonga",
             "abbr": "TO",
-            "subregion": 4,
+            "subregion": 3,
             "parent_party": 226,
             "remark": "",
             "mdg_region": "776",
@@ -4133,7 +4133,7 @@
             "mdg_region": "792",
             "iso_alpha3_code": "TUR",
             "abbr_alt": "TUR",
-            "name_alt": "Turkey",
+            "name_alt": "T\u00fcrkiye",
             "sign_date_vc": null,
             "sign_date_mp": null,
             "is_active": true
@@ -4181,7 +4181,7 @@
         "fields": {
             "name": "Tuvalu",
             "abbr": "TV",
-            "subregion": 4,
+            "subregion": 3,
             "parent_party": 229,
             "remark": "",
             "mdg_region": "798",
@@ -4217,7 +4217,7 @@
         "fields": {
             "name": "Ukraine",
             "abbr": "UA",
-            "subregion": 7,
+            "subregion": 6,
             "parent_party": 232,
             "remark": "",
             "mdg_region": "804",
@@ -4361,7 +4361,7 @@
         "fields": {
             "name": "Vanuatu",
             "abbr": "VU",
-            "subregion": 4,
+            "subregion": 3,
             "parent_party": 244,
             "remark": "",
             "mdg_region": "548",
@@ -4403,7 +4403,7 @@
             "mdg_region": "704",
             "iso_alpha3_code": "VNM",
             "abbr_alt": "VIE",
-            "name_alt": "Vietnam",
+            "name_alt": "Viet Nam",
             "sign_date_vc": null,
             "sign_date_mp": null,
             "is_active": true
