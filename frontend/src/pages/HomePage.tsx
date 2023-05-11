@@ -1,5 +1,6 @@
 import { Badge, Dropdown, Table } from 'flowbite-react'
 import type { FC } from 'react'
+import { TableData } from '@/components/table/TableData'
 
 export const HomePage: FC = function () {
   return (
@@ -7,7 +8,9 @@ export const HomePage: FC = function () {
       {/* <SalesThisWeek /> */}
       <div className="my-6">{/* <LatestTransactions /> */}</div>
       <LatestCustomers />
-      <div className="my-6">{/* <AcquisitionOverview /> */}</div>
+      <div className="my-6">
+        <TableData />
+      </div>
     </div>
   )
 }
