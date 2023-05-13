@@ -3,9 +3,14 @@ import pandas as pd
 
 from django.db import transaction
 from django.conf import settings
-from core.import_data.utils import get_substance_id_by_name
+from core.import_data.utils import (
+    COUNTRY_NAME_MAPPING,
+    delete_old_records,
+    get_cp_report,
+    get_substance_id_by_name,
+)
 
-from core.models import Country, CountryProgrammeReport, Record, Substance, Blend, Usage
+from core.models import Country, CountryProgrammeReport, Record, Blend, Usage
 
 logger = logging.getLogger(__name__)
 
@@ -26,11 +31,6 @@ REQUIRED_COLUMNS = [
 ]
 
 SECTION = "B"
-
-COUNTRY_NAME_DICT = {
-    "Brunei Darussalan": "Brunei Darussalam",
-    "Eswatini (the Kingdom of)": "Eswatini",
-}
 
 
 def check_headers(df):
@@ -83,29 +83,12 @@ def get_country(country_name):
     get country object from country name
     @param country_name = string
     """
-    country_name = COUNTRY_NAME_DICT.get(country_name, country_name)
+    country_name = COUNTRY_NAME_MAPPING.get(country_name, country_name)
     country = Country.objects.get_by_name(country_name).first()
     if not country:
         logger.warning(f"This country does not exists: {country_name}")
         return
     return country
-
-
-def get_country_program(row, country):
-    """
-    get or create country program for this row
-    @param row = Series (current row from sheet)
-    @param file_name = string
-    @param country = Country obj
-
-    @return country_program = CountryProgrammeReport object
-    """
-    cp_name = f"{country.name} {row['Year']}"
-    cp, _ = CountryProgrammeReport.objects.get_or_create(
-        name=cp_name, year=row["Year"], country_id=country.id
-    )
-
-    return cp
 
 
 def get_chemical(chemical_name):
@@ -153,7 +136,9 @@ def parse_sheet(df, file_name):
             current_country_name = row["Country"]
             current_country_obj = get_country(current_country_name)
             if current_country_obj:
-                current_cp = get_country_program(row, current_country_obj)
+                current_cp = get_cp_report(
+                    row["Year"], current_country_obj.name, current_country_obj.id
+                )
 
         if not current_country_obj:
             # we didn't found a country in db:
@@ -161,7 +146,9 @@ def parse_sheet(df, file_name):
 
         # another year => another country program
         if current_cp.year != row["Year"]:
-            current_cp = get_country_program(row, current_country_obj)
+            current_cp = get_cp_report(
+                row["Year"], current_country_obj.name, current_country_obj.id
+            )
 
         # get chemical
         substance_id, blend_id = get_chemical(row["Chemical"])
@@ -197,17 +184,12 @@ def parse_file(file_path, cp_name):
         parse_sheet(df, cp_name)
 
 
-def drop_old_data(file_name):
-    Record.objects.filter(source__iexact=file_name.lower()).all().delete()
-    logger.info("✔ old data deleted")
-
-
 @transaction.atomic
 def import_records():
     file_name = "CP Data-SectionB-2019-2021.xlsx"
     file_path = settings.IMPORT_DATA_DIR / "records" / file_name
 
-    drop_old_data(file_name)
+    delete_old_records(file_name, logger)
     parse_file(file_path, file_name)
 
     logger.info("✔ records imported")

@@ -1,0 +1,72 @@
+[
+  {
+    "ProjectDateId": 1,
+    "ProjectDate": 2012,
+    "Active": 1
+  },
+  {
+    "ProjectDateId": 2,
+    "ProjectDate": 2013,
+    "Active": 0
+  },
+  {
+    "ProjectDateId": 3,
+    "ProjectDate": 2014,
+    "Active": 0
+  },
+  {
+    "ProjectDateId": 4,
+    "ProjectDate": 2015,
+    "Active": 0
+  },
+  {
+    "ProjectDateId": 5,
+    "ProjectDate": 2016,
+    "Active": 0
+  },
+  {
+    "ProjectDateId": 6,
+    "ProjectDate": 2017,
+    "Active": 0
+  },
+  {
+    "ProjectDateId": 7,
+    "ProjectDate": 2018,
+    "Active": 0
+  },
+  {
+    "ProjectDateId": 8,
+    "ProjectDate": 2019,
+    "Active": 0
+  },
+  {
+    "ProjectDateId": 9,
+    "ProjectDate": 2020,
+    "Active": 0
+  },
+  {
+    "ProjectDateId": 10,
+    "ProjectDate": 2021,
+    "Active": 0
+  },
+  {
+    "ProjectDateId": 11,
+    "ProjectDate": 2022,
+    "Active": 0
+  },
+  {
+    "ProjectDateId": 12,
+    "ProjectDate": 2023,
+    "Active": 0
+  },
+  {
+    "ProjectDateId": 13,
+    "ProjectDate": 2024,
+    "Active": 0
+  },
+  {
+    "ProjectDateId": 14,
+    "ProjectDate": 2025,
+    "Active": 0
+  }
+]

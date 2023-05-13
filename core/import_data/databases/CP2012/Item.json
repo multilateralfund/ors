@@ -1,0 +1,362 @@
+[
+  {
+    "ItemId": 1,
+    "ItemCategoryId": 1,
+    "Name": "CFC-11"
+  },
+  {
+    "ItemId": 2,
+    "ItemCategoryId": 1,
+    "Name": "CFC-12"
+  },
+  {
+    "ItemId": 3,
+    "ItemCategoryId": 1,
+    "Name": "CFC-113"
+  },
+  {
+    "ItemId": 4,
+    "ItemCategoryId": 1,
+    "Name": "CFC-114"
+  },
+  {
+    "ItemId": 5,
+    "ItemCategoryId": 1,
+    "Name": "CFC-115"
+  },
+  {
+    "ItemId": 6,
+    "ItemCategoryId": 2,
+    "Name": "Halon 1211"
+  },
+  {
+    "ItemId": 7,
+    "ItemCategoryId": 2,
+    "Name": "Halon 1301"
+  },
+  {
+    "ItemId": 8,
+    "ItemCategoryId": 2,
+    "Name": "Halon 2402"
+  },
+  {
+    "ItemId": 9,
+    "ItemCategoryId": 3,
+    "Name": "Carbon tetrachloride"
+  },
+  {
+    "ItemId": 10,
+    "ItemCategoryId": 5,
+    "Name": "HCFC-22"
+  },
+  {
+    "ItemId": 11,
+    "ItemCategoryId": 5,
+    "Name": "HCFC-141b"
+  },
+  {
+    "ItemId": 12,
+    "ItemCategoryId": 5,
+    "Name": "HCFC-142b"
+  },
+  {
+    "ItemId": 13,
+    "ItemCategoryId": 5,
+    "Name": "HCFC-123"
+  },
+  {
+    "ItemId": 14,
+    "ItemCategoryId": 5,
+    "Name": "Other3"
+  },
+  {
+    "ItemId": 15,
+    "ItemCategoryId": 6,
+    "Name": "Methyl bromide"
+  },
+  {
+    "ItemId": 16,
+    "ItemCategoryId": 4,
+    "Name": "Methyl chloroform"
+  },
+  {
+    "ItemId": 17,
+    "ItemCategoryId": null,
+    "Name": "R-502"
+  },
+  {
+    "ItemId": 18,
+    "ItemCategoryId": null,
+    "Name": "HFC-134a "
+  },
+  {
+    "ItemId": 19,
+    "ItemCategoryId": null,
+    "Name": "Number of trainers for customs"
+  },
+  {
+    "ItemId": 20,
+    "ItemCategoryId": null,
+    "Name": "Number of customs officers trained"
+  },
+  {
+    "ItemId": 21,
+    "ItemCategoryId": null,
+    "Name": "Number of trainers for technicians"
+  },
+  {
+    "ItemId": 22,
+    "ItemCategoryId": null,
+    "Name": "Number of technicians trained"
+  },
+  {
+    "ItemId": 23,
+    "ItemCategoryId": null,
+    "Name": "Number of technicians certified"
+  },
+  {
+    "ItemId": 24,
+    "ItemCategoryId": null,
+    "Name": "Estimated CFC-11 recovered with equipment funded by Multilateral Fund"
+  },
+  {
+    "ItemId": 25,
+    "ItemCategoryId": null,
+    "Name": "Estimated CFC-11 reused with equipment funded by Multilateral Fund "
+  },
+  {
+    "ItemId": 26,
+    "ItemCategoryId": null,
+    "Name": "Estimated CFC-12 recovered with equipment funded by Multilateral Fund "
+  },
+  {
+    "ItemId": 27,
+    "ItemCategoryId": null,
+    "Name": "Estimated CFC-12 reused with equipment funded by Multilateral Fund"
+  },
+  {
+    "ItemId": 28,
+    "ItemCategoryId": null,
+    "Name": "Number of funded recovery machines in operation"
+  },
+  {
+    "ItemId": 29,
+    "ItemCategoryId": null,
+    "Name": "Number of funded recycling machines in operation"
+  },
+  {
+    "ItemId": 30,
+    "ItemCategoryId": null,
+    "Name": "Number of funded end-users converted"
+  },
+  {
+    "ItemId": 31,
+    "ItemCategoryId": null,
+    "Name": "Number of funded end-users retrofitted"
+  },
+  {
+    "ItemId": 32,
+    "ItemCategoryId": null,
+    "Name": "HCFC-121"
+  },
+  {
+    "ItemId": 33,
+    "ItemCategoryId": null,
+    "Name": "HCFC-124"
+  },
+  {
+    "ItemId": 34,
+    "ItemCategoryId": 7,
+    "Name": "CFC-13"
+  },
+  {
+    "ItemId": 35,
+    "ItemCategoryId": null,
+    "Name": "Total CFC-11 recovered"
+  },
+  {
+    "ItemId": 36,
+    "ItemCategoryId": null,
+    "Name": "Total CFC-11 reused"
+  },
+  {
+    "ItemId": 37,
+    "ItemCategoryId": null,
+    "Name": "Total CFC-12 recovered"
+  },
+  {
+    "ItemId": 38,
+    "ItemCategoryId": null,
+    "Name": "Total CFC-12 reused"
+  },
+  {
+    "ItemId": 39,
+    "ItemCategoryId": null,
+    "Name": "Number of funded recovery machines not in operation"
+  },
+  {
+    "ItemId": 40,
+    "ItemCategoryId": null,
+    "Name": "Number of funded recycling machines not in operation"
+  },
+  {
+    "ItemId": 41,
+    "ItemCategoryId": null,
+    "Name": "HCFC-133"
+  },
+  {
+    "ItemId": 42,
+    "ItemCategoryId": null,
+    "Name": "HCFC-141"
+  },
+  {
+    "ItemId": 43,
+    "ItemCategoryId": null,
+    "Name": "HCFC-142"
+  },
+  {
+    "ItemId": 44,
+    "ItemCategoryId": null,
+    "Name": "HCFC-21"
+  },
+  {
+    "ItemId": 45,
+    "ItemCategoryId": null,
+    "Name": "HCFC-225"
+  },
+  {
+    "ItemId": 46,
+    "ItemCategoryId": null,
+    "Name": "HCFC-225ca"
+  },
+  {
+    "ItemId": 47,
+    "ItemCategoryId": null,
+    "Name": "HCFC-225cb"
+  },
+  {
+    "ItemId": 48,
+    "ItemCategoryId": null,
+    "Name": "Other"
+  },
+  {
+    "ItemId": 61,
+    "ItemCategoryId": null,
+    "Name": "R-404A"
+  },
+  {
+    "ItemId": 62,
+    "ItemCategoryId": null,
+    "Name": "R-507A"
+  },
+  {
+    "ItemId": 63,
+    "ItemCategoryId": null,
+    "Name": "R-410A"
+  },
+  {
+    "ItemId": 64,
+    "ItemCategoryId": null,
+    "Name": "R-407C"
+  },
+  {
+    "ItemId": 65,
+    "ItemCategoryId": null,
+    "Name": "HFC-245fa"
+  },
+  {
+    "ItemId": 66,
+    "ItemCategoryId": null,
+    "Name": "HFC-356mfc"
+  },
+  {
+    "ItemId": 67,
+    "ItemCategoryId": null,
+    "Name": "HFC-227ea"
+  },
+  {
+    "ItemId": 68,
+    "ItemCategoryId": null,
+    "Name": "Isobutane (HC-600a)"
+  },
+  {
+    "ItemId": 69,
+    "ItemCategoryId": null,
+    "Name": "Propane (HC-290)"
+  },
+  {
+    "ItemId": 70,
+    "ItemCategoryId": null,
+    "Name": "Pentane"
+  },
+  {
+    "ItemId": 71,
+    "ItemCategoryId": null,
+    "Name": "Cyclopentane"
+  },
+  {
+    "ItemId": 72,
+    "ItemCategoryId": null,
+    "Name": "Methyl formate"
+  },
+  {
+    "ItemId": 73,
+    "ItemCategoryId": null,
+    "Name": "MDI (for production of foam)"
+  },
+  {
+    "ItemId": 74,
+    "ItemCategoryId": 5,
+    "Name": "HCFC-141b in Imported Pre-blended Polyol"
+  },
+  {
+    "ItemId": 75,
+    "ItemCategoryId": 5,
+    "Name": "HCFC-123"
+  },
+  {
+    "ItemId": 76,
+    "ItemCategoryId": 5,
+    "Name": "HCFC-124"
+  },
+  {
+    "ItemId": 77,
+    "ItemCategoryId": 5,
+    "Name": "HCFC-133"
+  },
+  {
+    "ItemId": 78,
+    "ItemCategoryId": 5,
+    "Name": "HCFC-225"
+  },
+  {
+    "ItemId": 79,
+    "ItemCategoryId": 5,
+    "Name": "HCFC-225ca"
+  },
+  {
+    "ItemId": 80,
+    "ItemCategoryId": 5,
+    "Name": "HCFC-225cb"
+  },
+  {
+    "ItemId": 81,
+    "ItemCategoryId": null,
+    "Name": "Estimated HCFC-22 recovered with equipment funded by Multilateral Fund"
+  },
+  {
+    "ItemId": 82,
+    "ItemCategoryId": null,
+    "Name": "Total HCFC-22 recovered"
+  },
+  {
+    "ItemId": 83,
+    "ItemCategoryId": null,
+    "Name": "Estimated HCFC-22 reused with equipment funded by Multilateral Fund"
+  },
+  {
+    "ItemId": 84,
+    "ItemCategoryId": null,
+    "Name": "Total HCFC-22 reused"
+  }
+]
