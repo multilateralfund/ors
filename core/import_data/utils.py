@@ -1,5 +1,4 @@
-from core.models.country_programme import CountryProgrammeReport
-from core.models.record import Record
+from core.models.country_programme import CountryProgrammeReport, CountryProgrammeRecord
 from core.models.substance import Substance, SubstanceAltName
 
 
@@ -40,13 +39,13 @@ def parse_string(str):
     return str.strip().lower()
 
 
-def delete_old_records(source, logger):
+def delete_old_cp_records(source, logger):
     """
     delete old records from db
     @param source: string source name
     @param logger: logger object
     """
-    Record.objects.filter(source__iexact=source.lower()).all().delete()
+    CountryProgrammeRecord.objects.filter(source__iexact=source.lower()).all().delete()
     logger.info(f"✔ old records from {source} deleted")
 
 

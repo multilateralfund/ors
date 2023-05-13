@@ -7,7 +7,7 @@ from core.models import (
     CountryProgrammeReport,
     Group,
     Price,
-    Record,
+    CountryProgrammeRecord,
     Subregion,
     Substance,
     Region,
@@ -142,18 +142,18 @@ class UsageAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["usage", "record"]
+        exclude = ["usage", "countryprogrammerecord"]
         return get_final_display_list(Usage, exclude)
 
 
-@admin.register(Record)
-class RecordAdmin(admin.ModelAdmin):
+@admin.register(CountryProgrammeRecord)
+class CountryProgrammeRecordAdmin(admin.ModelAdmin):
     list_filter = [
         "source",
     ]
 
     def get_list_display(self, request):
-        return get_final_display_list(Record, [])
+        return get_final_display_list(CountryProgrammeRecord, [])
 
 
 @admin.register(CountryProgrammeReport)
@@ -166,7 +166,7 @@ class CountryProgrammeReportAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["price", "record", "usage"]
+        exclude = ["price", "countryprogrammerecord", "usage"]
         return get_final_display_list(CountryProgrammeReport, exclude)
 
 

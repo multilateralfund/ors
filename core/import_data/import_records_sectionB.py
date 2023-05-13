@@ -5,12 +5,17 @@ from django.db import transaction
 from django.conf import settings
 from core.import_data.utils import (
     COUNTRY_NAME_MAPPING,
-    delete_old_records,
+    delete_old_cp_records,
     get_cp_report,
     get_substance_id_by_name,
 )
 
-from core.models import Country, CountryProgrammeReport, Record, Blend, Usage
+from core.models import (
+    Country,
+    CountryProgrammeRecord,
+    Blend,
+    Usage,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -169,9 +174,9 @@ def parse_sheet(df, file_name):
                 "section": SECTION,
                 "source": file_name,
             }
-            records.append(Record(**record_data))
+            records.append(CountryProgrammeRecord(**record_data))
 
-    Record.objects.bulk_create(records)
+    CountryProgrammeRecord.objects.bulk_create(records)
 
     logger.info("✔ sheet parsed")
 
@@ -189,7 +194,7 @@ def import_records():
     file_name = "CP Data-SectionB-2019-2021.xlsx"
     file_path = settings.IMPORT_DATA_DIR / "records" / file_name
 
-    delete_old_records(file_name, logger)
+    delete_old_cp_records(file_name, logger)
     parse_file(file_path, file_name)
 
     logger.info("✔ records imported")
