@@ -82,3 +82,25 @@ def get_cp_report(year, country_name, country_id):
     )
 
     return cp
+
+
+def get_object_by_name(cls, obj_name, index_row, obj_type_name, logger):
+    """
+    get object by name or log error if not found in db
+    @param cls: Class instance
+    @param obj_name: string -> object name (filter value)
+    @param index_row: integer -> index row
+    @param obj_type_name: string -> object type name (for logging)
+    @param logger: logger object
+
+    @return: object or None
+    """
+    if not obj_name:
+        return None
+    obj = cls.objects.get_by_name(obj_name).first()
+    if not obj:
+        logger.info(
+            f"[row: {index_row}]: This {obj_type_name} does not exists in data base: {obj_name}"
+        )
+
+    return obj

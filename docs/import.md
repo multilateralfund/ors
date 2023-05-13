@@ -20,10 +20,18 @@ The options for this command are:
 - sectors -> -> import the sectors and subsectors
 - agencies -> -> import only the agencies
 
-To import records run:
+To import all records run (from xlsx and databases):
 ```shell
-docker-compose exec app ./manage.py import_records
+docker-compose exec app ./manage.py import_records all
 ```
+
+To run the import only for onetype of records(ex. databases) run:
+```shell
+docker-compose exec app ./manage.py import_records cp_db
+```
+The options for this command are:
+- xlsx_files -> records from xlsx files
+- cp_db -> country programme databases
 
 To import project proposals run:
 ```shell

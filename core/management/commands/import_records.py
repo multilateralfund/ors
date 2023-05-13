@@ -9,7 +9,7 @@ class Command(BaseCommand):
     help = """
         Import records
         params:
-            - type = sectionb => from xlsx sectionB
+            - type = xlsx_files => from xlsx files
             - type = cp_db => from databases
     """
 
@@ -19,7 +19,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         rec_type = kwargs["type"]
 
-        if rec_type in ["sectionb", "all"]:
+        if rec_type in ["xlsx_files", "all"]:
             rec_sectonB()
         if rec_type in ["cp_db", "all"]:
             rec_cp_db()

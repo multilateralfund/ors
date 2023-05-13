@@ -7,6 +7,7 @@ from core.import_data.utils import (
     COUNTRY_NAME_MAPPING,
     delete_old_cp_records,
     get_cp_report,
+    get_object_by_name,
     get_substance_id_by_name,
 )
 
@@ -83,20 +84,17 @@ def get_usages_from_sheet(df):
     return usage_dict
 
 
-def get_country(country_name):
+def get_country(country_name, index_row):
     """
     get country object from country name
     @param country_name = string
     """
     country_name = COUNTRY_NAME_MAPPING.get(country_name, country_name)
-    country = Country.objects.get_by_name(country_name).first()
-    if not country:
-        logger.warning(f"This country does not exists: {country_name}")
-        return
+    country = get_object_by_name(Country, country_name, index_row, "country", logger)
     return country
 
 
-def get_chemical(chemical_name):
+def get_chemical(chemical_name, index_row):
     """
     parse chemical name from row and return substance_id or blend_id:
         - if the chemical is a substance => return (substance_id, None)
@@ -119,7 +117,7 @@ def get_chemical(chemical_name):
     if blend:
         return None, blend.id
 
-    logger.warning(f"This chemical does not exist: {chemical_name}")
+    logger.warning(f"[row: {index_row}]: This chemical does not exist: {chemical_name}")
     return None, None
 
 
@@ -132,14 +130,14 @@ def parse_sheet(df, file_name):
     current_country_obj = None
     current_cp = None
     records = []
-    for _, row in df.iterrows():
+    for index_row, row in df.iterrows():
         if row["Chemical"] == "TOTAL":
             continue
 
         # another country => another country program
         if row["Country"] != current_country_name:
             current_country_name = row["Country"]
-            current_country_obj = get_country(current_country_name)
+            current_country_obj = get_country(current_country_name, index_row)
             if current_country_obj:
                 current_cp = get_cp_report(
                     row["Year"], current_country_obj.name, current_country_obj.id
@@ -156,7 +154,7 @@ def parse_sheet(df, file_name):
             )
 
         # get chemical
-        substance_id, blend_id = get_chemical(row["Chemical"])
+        substance_id, blend_id = get_chemical(row["Chemical"], index_row)
         if not substance_id and not blend_id:
             continue
 
