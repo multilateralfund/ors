@@ -51,7 +51,7 @@ def get_country_dict(file_name):
             country_json["Country"].strip(), country_json["Country"]
         )
 
-        if "test" in country_name.lower():
+        if "test" in country_name.lower() or "article 5" in country_name.lower():
             # set test countries to be skipped in the future
             country_dict[country_json["CountryId"]] = {
                 "id": country.id,
