@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   flexRender,
   GroupingState,
@@ -9,79 +9,330 @@ import {
   getGroupedRowModel,
   getExpandedRowModel,
   ColumnDef,
+  Table,
+  TableMeta,
+  RowData,
 } from '@tanstack/react-table'
 
 type Reporting = {
-  substance: string
-  aerosol: number
-  foam: number
-  fireFighting: number
-  manufOther: number
-  manufAc: number
-  manufTotal: number
-  servicing: number
-  solvent: number
-  other3: number
-  sectorTotal: number
-  import: number
-  export: number
-  production: number
-  importQuotas: number
+  substance: {
+    name: string
+    value: string
+    isEditable: boolean
+  }
+  aerosol: {
+    name: string
+    value: number
+    isEditable: boolean
+  }
+  foam: {
+    name: string
+    value: number
+    isEditable: boolean
+  }
+  fireFighting: {
+    name: string
+    value: number
+    isEditable: boolean
+  }
+  manufOther: {
+    name: string
+    value: number
+    isEditable: boolean
+  }
+  manufAc: {
+    name: string
+    value: number
+    isEditable: boolean
+  }
+  manufTotal: {
+    name: string
+    value: number
+    isEditable: boolean
+  }
+  servicing: {
+    name: string
+    value: number
+    isEditable: boolean
+  }
+  solvent: {
+    name: string
+    value: number
+    isEditable: boolean
+  }
+  other3: {
+    name: string
+    value: number
+    isEditable: boolean
+  }
+  sectorTotal: {
+    name: string
+    value: number
+    isEditable: boolean
+  }
+  import: {
+    name: string
+    value: number
+    isEditable: boolean
+  }
+  export: {
+    name: string
+    value: number
+    isEditable: boolean
+  }
+  production: {
+    name: string
+    value: number
+    isEditable: boolean
+  }
+  importQuotas: {
+    name: string
+    value: number
+    isEditable: boolean
+  }
 }
 
 const defaultData: Reporting[] = [
   {
-    substance: 'HFC-32',
-    aerosol: 0.0,
-    foam: 0.0,
-    fireFighting: 0.0,
-    manufOther: 0.0,
-    manufAc: 0.0,
-    manufTotal: 0.0,
-    servicing: 0.0,
-    solvent: 0.0,
-    other3: 0.0,
-    sectorTotal: 0.0,
-    import: 0.0,
-    export: 0.0,
-    production: 0.0,
-    importQuotas: 0.0,
+    substance: {
+      name: 'HFC-32',
+      value: 'HFC-32',
+      isEditable: false,
+    },
+    aerosol: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    foam: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    fireFighting: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: false,
+    },
+    manufOther: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    manufAc: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    manufTotal: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    servicing: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    solvent: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    other3: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    sectorTotal: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    import: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    export: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    production: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    importQuotas: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
   },
   {
-    substance: 'HFC-41',
-    aerosol: 0.0,
-    foam: 0.0,
-    fireFighting: 0.0,
-    manufOther: 0.0,
-    manufAc: 0.0,
-    manufTotal: 0.0,
-    servicing: 0.0,
-    solvent: 0.0,
-    other3: 0.0,
-    sectorTotal: 0.0,
-    import: 0.0,
-    export: 0.0,
-    production: 0.0,
-    importQuotas: 0.0,
+    substance: {
+      name: 'HFC-41',
+      value: 'HFC-41',
+      isEditable: false,
+    },
+    aerosol: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    foam: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    fireFighting: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: false,
+    },
+    manufOther: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    manufAc: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    manufTotal: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    servicing: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    solvent: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    other3: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    sectorTotal: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    import: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    export: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    production: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    importQuotas: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
   },
   {
-    substance: 'HFC-125',
-    aerosol: 0.0,
-    foam: 0.0,
-    fireFighting: 0.0,
-    manufOther: 0.0,
-    manufAc: 0.0,
-    manufTotal: 0.0,
-    servicing: 0.0,
-    solvent: 0.0,
-    other3: 0.0,
-    sectorTotal: 0.0,
-    import: 0.0,
-    export: 0.0,
-    production: 0.0,
-    importQuotas: 0.0,
+    substance: {
+      name: 'HFC-125',
+      value: 'HFC-125',
+      isEditable: false,
+    },
+    aerosol: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    foam: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    fireFighting: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    manufOther: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    manufAc: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    manufTotal: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    servicing: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    solvent: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    other3: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    sectorTotal: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    import: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    export: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    production: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
+    importQuotas: {
+      name: 'Aerosol',
+      value: 0.0,
+      isEditable: true,
+    },
   },
 ]
+
+declare module '@tanstack/react-table' {
+  interface TableMeta<TData extends RowData> {
+    updateData: (rowIndex: number, columnId: string, value: unknown) => void
+  }
+}
+
+const isNotEditable = ['substance']
 
 export const TableData = () => {
   const [data, setData] = useState(() => [...defaultData])
@@ -139,8 +390,8 @@ export const TableData = () => {
             accessorKey: 'solvent',
           },
           {
-            header: 'Other3',
-            accessorKey: 'other3',
+            header: 'Other',
+            accessorKey: 'other',
           },
           {
             header: 'TOTAL',
@@ -171,6 +422,37 @@ export const TableData = () => {
   const table = useReactTable({
     data,
     columns,
+    defaultColumn: {
+      cell({ getValue, row: { index, original }, column: { id }, table }) {
+        const initialValue = original[id as keyof Reporting]?.value
+        const isEditable = original[id as keyof Reporting]?.isEditable
+
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        const [value, setValue] = useState(initialValue)
+
+        const onBlur = () => {
+          table.options.meta?.updateData(index, id, value)
+        }
+
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        useEffect(() => {
+          setValue(initialValue)
+        }, [initialValue])
+
+        if (!isEditable) {
+          return <span>{value}</span>
+        }
+
+        return (
+          <input
+            className="bg-gray-50 w-full p-1 text-right rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            value={value}
+            onChange={e => setValue(e.target.value)}
+            onBlur={onBlur}
+          />
+        )
+      },
+    },
     state: {
       grouping,
     },
@@ -180,7 +462,11 @@ export const TableData = () => {
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    // debugTable: true,
+    meta: {
+      updateData: (rowIndex, columnId, value) => {
+        console.log(rowIndex, columnId, value)
+      },
+    },
   })
 
   return (
