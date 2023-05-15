@@ -45,7 +45,12 @@ class SubstanceAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["blendcomponents", "price", "record", "substancealtname"]
+        exclude = [
+            "blendcomponents",
+            "price",
+            "countryprogrammerecord",
+            "substancealtname",
+        ]
         return get_final_display_list(Substance, exclude)
 
 
@@ -61,7 +66,7 @@ class BlendAdmin(admin.ModelAdmin):
     list_filter = ["type"]
 
     def get_list_display(self, request):
-        exclude = ["blendcomponents", "price", "record"]
+        exclude = ["blendcomponents", "price", "countryprogrammerecord"]
         return get_final_display_list(Blend, exclude)
 
 

@@ -6,9 +6,20 @@ from core.models.substance import Substance
 
 class BlendManager(models.Manager):
     def get_by_name(self, name):
-        name_str = name.lower()
+        name_str = name.strip()
         return self.filter(
-            models.Q(name__iexact=name_str) | models.Q(other_names__iexact=name_str)
+            models.Q(name__iexact=name_str)
+            | models.Q(other_names__iexact=name_str)
+            | models.Q(composition__iexact=name_str)
+            | models.Q(composition_alt__iexact=name_str)
+        )
+
+    def get_by_composition(self, composition_name):
+        composition_name = composition_name.strip()
+
+        return self.filter(
+            models.Q(composition__iexact=composition_name)
+            | models.Q(composition_alt__iexact=composition_name)
         )
 
 

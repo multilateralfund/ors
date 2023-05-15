@@ -1,4 +1,5 @@
 import logging
+import re
 import pandas as pd
 
 from django.db import transaction
@@ -94,6 +95,43 @@ def get_country(country_name, index_row):
     return country
 
 
+def parse_chemical_name(chemical_name):
+    """
+    Parse chemical name from row and return chemical_search_name and composition:
+        e.g.:
+        R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%) => ("R-404A", "HFC-125=44%, HFC-134a=4%, HFC-143a=52%")
+        HFC-23 (use) => ("HFC-23" , "")
+        R438 (Assumed R-438A) => ("R-438A", "")
+        HFC-365mfc in imported pre-blended polyols => ("HFC-365mfc", "")
+    """
+
+    composition = re.findall(r"\((.*)\)|$", chemical_name)[0]
+    if "use" in composition:
+        # composition = "use"
+        composition = ""
+
+    if "Assu" in composition:
+        # composition = "Assumed R-438A"
+        composition = ""
+        chemical_search_name = re.findall(r"Assu.ed,? (.*)|$", composition)[0]
+        return chemical_search_name, composition
+
+    # update composition to be in the same format as in the db
+    if composition:
+        symbols_mapping = {
+            ",": ";",
+            " = ": "=",
+            "= ": "=",
+            " =": "=",
+        }
+        for symbol, replacement in symbols_mapping.items():
+            composition = composition.replace(symbol, replacement)
+
+    chemical_search_name = chemical_name.split(" ")[0]
+
+    return chemical_search_name, composition
+
+
 def get_chemical(chemical_name, index_row):
     """
     parse chemical name from row and return substance_id or blend_id:
@@ -105,19 +143,25 @@ def get_chemical(chemical_name, index_row):
     @return tuple => (int, None) or (None, int) or (None, None)
     """
 
-    # HFC-23 (use) => HFC-23
-    # R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%) => R-404A
-    chemical_name = chemical_name.split(" ", 1)[0]
-
-    substance_id = get_substance_id_by_name(chemical_name)
+    chemical_search_name, composition = parse_chemical_name(chemical_name)
+    substance_id = get_substance_id_by_name(chemical_search_name)
     if substance_id:
         return substance_id, None
 
-    blend = Blend.objects.get_by_name(chemical_name).first()
+    blend = Blend.objects.get_by_name(chemical_search_name).first()
     if blend:
         return None, blend.id
 
-    logger.warning(f"[row: {index_row}]: This chemical does not exist: {chemical_name}")
+    if composition:
+        blend = Blend.objects.get_by_composition(composition).first()
+        if blend:
+            return None, blend.id
+
+    logger.warning(
+        f"[row: {index_row}]: "
+        f"This chemical does not exist:{chemical_name}, "
+        f"Serached name:{chemical_search_name}, searched composition:{composition}"
+    )
     return None, None
 
 
