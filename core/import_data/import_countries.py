@@ -4,15 +4,11 @@ import pandas as pd
 
 from django.db import transaction
 from django.conf import settings
+from core.import_data.utils import COUNTRY_NAME_MAPPING
 
 from core.models import Country, Subregion, Region
 
 logger = logging.getLogger(__name__)
-
-
-COUNTRY_NAME_DICT = {
-    "United Arab Emirats": "United Arab Emirates",
-}
 
 
 def parse_country_lvc_file(file_path):
@@ -128,8 +124,8 @@ def parse_countries_xlsx_file(file_path, country_lvc):
 
         # update country
         country_data = {
-            "name": COUNTRY_NAME_DICT.get(row["COUNTRY"], row["COUNTRY"]),
-            "full_name": COUNTRY_NAME_DICT.get(
+            "name": COUNTRY_NAME_MAPPING.get(row["COUNTRY"], row["COUNTRY"]),
+            "full_name": COUNTRY_NAME_MAPPING.get(
                 row["COUNTRYFULLNAME"], row["COUNTRYFULLNAME"]
             ),
             "ozone_unit": row["OZONE_UNIT"],
