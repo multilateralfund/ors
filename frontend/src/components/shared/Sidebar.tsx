@@ -26,12 +26,10 @@ export const Sidebar = () => {
               Dashboard
             </FlowbiteSidebar.Item>
             <FlowbiteSidebar.Item
-              href="/e-commerce/products"
+              href="/reports"
               icon={IoBarChart}
               className={
-                currentPage === '/e-commerce/products'
-                  ? 'bg-gray-100 dark:bg-gray-700'
-                  : ''
+                currentPage === '/reports' ? 'bg-gray-100 dark:bg-gray-700' : ''
               }
             >
               Reports

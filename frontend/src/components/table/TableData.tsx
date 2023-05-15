@@ -439,13 +439,23 @@ export const TableData = () => {
           setValue(initialValue)
         }, [initialValue])
 
-        if (!isEditable) {
+        if (id === 'substance') {
           return <span>{value}</span>
+        }
+
+        if (!isEditable) {
+          return (
+            <input
+              disabled
+              value={value}
+              className="bg-gray-200 w-full p-1 text-right rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            />
+          )
         }
 
         return (
           <input
-            className="bg-gray-50 w-full p-1 text-right rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            className="bg-white border w-full p-1 text-right rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             value={value}
             onChange={e => setValue(e.target.value)}
             onBlur={onBlur}
@@ -475,7 +485,7 @@ export const TableData = () => {
         <div className="relative overflow-hidden bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400 border-2">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400 border-2 dark:border-gray-600">
                 {table.getHeaderGroups().map(headerGroup => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map(header => {
@@ -484,7 +494,7 @@ export const TableData = () => {
                           key={header.id}
                           colSpan={header.colSpan}
                           scope="col"
-                          className="px-2 py-1 border text-center"
+                          className="px-2 py-1 border text-center dark:border-gray-600"
                         >
                           {header.isPlaceholder ? null : (
                             <>
