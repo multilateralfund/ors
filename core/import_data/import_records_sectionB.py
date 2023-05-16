@@ -1,3 +1,4 @@
+import itertools
 import logging
 import re
 import pandas as pd
@@ -7,6 +8,7 @@ from django.conf import settings
 from core.import_data.utils import (
     COUNTRY_NAME_MAPPING,
     delete_old_cp_records,
+    get_blend_id_by_name_or_components,
     get_cp_report,
     get_object_by_name,
     get_substance_id_by_name,
@@ -15,7 +17,6 @@ from core.import_data.utils import (
 from core.models import (
     Country,
     CountryProgrammeRecord,
-    Blend,
     Usage,
 )
 
@@ -38,6 +39,13 @@ REQUIRED_COLUMNS = [
 ]
 
 SECTION = "B"
+
+# "R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%)" => [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")]
+BLEND_COMPONENTS_RE = r"(\w{1,4}\-\w{3,6})s?=?\s?\(?(\d{,3}\.?\d{,3})\%\)?"
+# "R23/R125/CO2/HFO-1132 (10%/10%/60%/20%)"
+BLEND_COMPOSITION_RE = r"(/[a-zA-Z0-9/-]{3,9}\s?\(\d{1,3})"
+# "R448 (Assuned R-448A)" => "R-448A"
+ASSUMED_NAME_RE = r"\(Assu.ed,? (.*)\)|$"
 
 
 def check_headers(df):
@@ -97,39 +105,30 @@ def get_country(country_name, index_row):
 
 def parse_chemical_name(chemical_name):
     """
-    Parse chemical name from row and return chemical_search_name and composition:
+    Parse chemical name from row and return chemical_search_name and components list:
         e.g.:
-        R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%) => ("R-404A", "HFC-125=44%, HFC-134a=4%, HFC-143a=52%")
-        HFC-23 (use) => ("HFC-23" , "")
-        R438 (Assumed R-438A) => ("R-438A", "")
-        HFC-365mfc in imported pre-blended polyols => ("HFC-365mfc", "")
+        R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%) => ("R-404A", [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")])
+        HFC-23 (use) => ("HFC-23" , [])
+        R438 (Assumed R-438A) => ("R-438A", [])
+        HFC-365mfc in imported pre-blended polyols => ("HFC-365mfc", [])
+        R32/R125/R134a/HFO (24%/25%/26%/25%) => R32/R125/R134a/HFO (24%/25%/26%/25%), []
     """
+    # remove Fullwidth Right Parenthesis
+    chemical_name = chemical_name.replace("）", ")")
 
-    composition = re.findall(r"\((.*)\)|$", chemical_name)[0]
-    if "use" in composition:
-        # composition = "use"
-        composition = ""
+    # if the chemical name has an assumed name then we will search by the assumed name
+    if "Assu" in chemical_name:
+        chemical_search_name = re.findall(ASSUMED_NAME_RE, chemical_name)[0]
+        return chemical_search_name, []
 
-    if "Assu" in composition:
-        # composition = "Assumed R-438A"
-        composition = ""
-        chemical_search_name = re.findall(r"Assu.ed,? (.*)|$", composition)[0]
-        return chemical_search_name, composition
+    # R32/R125/R134a/HFO (24%/25%/26%/25%)
+    if re.search(BLEND_COMPOSITION_RE, chemical_name):
+        return chemical_name.strip(), []
 
-    # update composition to be in the same format as in the db
-    if composition:
-        symbols_mapping = {
-            ",": ";",
-            " = ": "=",
-            "= ": "=",
-            " =": "=",
-        }
-        for symbol, replacement in symbols_mapping.items():
-            composition = composition.replace(symbol, replacement)
-
+    components = re.findall(BLEND_COMPONENTS_RE, chemical_name)
     chemical_search_name = chemical_name.split(" ")[0]
 
-    return chemical_search_name, composition
+    return chemical_search_name, components
 
 
 def get_chemical(chemical_name, index_row):
@@ -143,24 +142,19 @@ def get_chemical(chemical_name, index_row):
     @return tuple => (int, None) or (None, int) or (None, None)
     """
 
-    chemical_search_name, composition = parse_chemical_name(chemical_name)
+    chemical_search_name, components = parse_chemical_name(chemical_name)
     substance_id = get_substance_id_by_name(chemical_search_name)
     if substance_id:
         return substance_id, None
 
-    blend = Blend.objects.get_by_name(chemical_search_name).first()
-    if blend:
-        return None, blend.id
-
-    if composition:
-        blend = Blend.objects.get_by_composition(composition).first()
-        if blend:
-            return None, blend.id
+    blend_id = get_blend_id_by_name_or_components(chemical_search_name, components)
+    if blend_id:
+        return None, blend_id
 
     logger.warning(
         f"[row: {index_row}]: "
         f"This chemical does not exist:{chemical_name}, "
-        f"Serached name:{chemical_search_name}, searched composition:{composition}"
+        f"Serached name:{chemical_search_name}, searched conponents:{components}"
     )
     return None, None
 
@@ -198,7 +192,12 @@ def parse_sheet(df, file_name):
             )
 
         # get chemical
-        substance_id, blend_id = get_chemical(row["Chemical"], index_row)
+        # Other1 from Cuba is R-417A
+        chemical_name = row["Chemical"]
+        if row["Chemical"] == "Other1" and current_country_obj.name == "Cuba":
+            chemical_name = "R-417A"
+
+        substance_id, blend_id = get_chemical(chemical_name, index_row)
         if not substance_id and not blend_id:
             continue
 

@@ -4,7 +4,7 @@ import logging
 from django.db import transaction
 from django.conf import settings
 
-from core.models import Blend, BlendComponents, Group, Substance
+from core.models import Blend, BlendComponents, Group, Substance, BlendAltName
 from core.models.substance import SubstanceAltName
 
 logger = logging.getLogger(__name__)
@@ -67,13 +67,17 @@ def import_groups():
     logger.info("✔ groups imported")
 
 
-def import_substances_alternative_names():
+def import_alternative_names(cls, cls_alt_name, file_name, chemical_name, field_name):
     """
-    Import substances alternative names from json file
+    Import alternative names from json file
+    @param cls class
+    @param file_name string
+    @param chemical_name string (substance or blend)
+    @param field_name string (field from json for alternative name)
     """
 
     # read data from json file
-    file_name = settings.IMPORT_RESOURCES_DIR / "blend_component_mappings.json"
+    file_name = settings.IMPORT_RESOURCES_DIR / file_name
     with open(file_name, "r") as f:
         list_data = json.load(f)
 
@@ -81,15 +85,15 @@ def import_substances_alternative_names():
     for instance_data in list_data:
         # get instance data
         instance = {
-            "name": instance_data["fields"]["party_blend_component"],
+            "name": instance_data["fields"][field_name],
             "ozone_id": instance_data["pk"],
         }
-        instance["substance_id"] = Substance.objects.get(
-            ozone_id=instance_data["fields"]["substance"]
+        instance[f"{chemical_name}_id"] = cls.objects.get(
+            ozone_id=instance_data["fields"][chemical_name]
         ).id
 
-        # create or update substance name
-        SubstanceAltName.objects.update_or_create(
+        # create or update name
+        cls_alt_name.objects.update_or_create(
             name=instance["name"],
             defaults=instance,
         )
@@ -109,7 +113,13 @@ def import_substances():
     ]
     import_data(Substance, settings.IMPORT_RESOURCES_DIR / "substances.json", exclude)
     logger.info("✔ substances imported")
-    import_substances_alternative_names()
+    import_alternative_names(
+        Substance,
+        SubstanceAltName,
+        "blend_component_mappings.json",
+        "substance",
+        "party_blend_component",
+    )
     logger.info("✔ substances alternative names imported")
 
 
@@ -127,6 +137,14 @@ def import_blends():
 
     import_data(Blend, settings.IMPORT_RESOURCES_DIR / "blends.json", exclude)
     logger.info("✔ blends imported")
+    import_alternative_names(
+        Blend,
+        BlendAltName,
+        "blend_mappings.json",
+        "blend",
+        "remarks",
+    )
+    logger.info("✔ blends alternative names imported")
 
 
 def import_blend_components():

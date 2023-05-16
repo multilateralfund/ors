@@ -14,14 +14,6 @@ class BlendManager(models.Manager):
             | models.Q(composition_alt__iexact=name_str)
         )
 
-    def get_by_composition(self, composition_name):
-        composition_name = composition_name.strip()
-
-        return self.filter(
-            models.Q(composition__iexact=composition_name)
-            | models.Q(composition_alt__iexact=composition_name)
-        )
-
 
 class Blend(models.Model):
     class BlendTypes(models.TextChoices):
@@ -66,6 +58,63 @@ class Blend(models.Model):
         return self.name
 
 
+class BlendAltNameManager(models.Manager):
+    def get_by_name(self, name):
+        name_str = name.strip()
+        return self.filter(name__iexact=name_str)
+
+
+class BlendAltName(models.Model):
+    name = models.CharField(max_length=256)
+    blend = models.ForeignKey(Blend, on_delete=models.CASCADE)
+    ozone_id = models.IntegerField(null=True, blank=True)
+
+    objects = BlendAltNameManager()
+
+    def __str__(self):
+        return self.name
+
+
+class BlendComponentManager(models.Manager):
+    def get_blend_by_components(self, components_list):
+        """
+        get a blend by a list of components
+
+        @param components_list: list of tuples (substance_name, percentage)
+        @return: Blend object or None
+        """
+        filter_lsit = []
+        # set the filter list for the query using the components list
+        for substance_name, percentage in components_list:
+            # check if the percentage is a float and if not return None
+            try:
+                percent = float(percentage) / 100
+            except:
+                return None
+
+            filter_lsit.append(
+                models.Q(substance__name__iexact=substance_name, percentage=percent)
+            )
+
+        # create the query
+        filters = filter_lsit.pop()
+        for item in filter_lsit:
+            filters |= item
+
+        queryset = (
+            self.values("blend_id")
+            .filter(filters)
+            .annotate(total=models.Count("blend"))
+            .filter(models.Q(total=len(components_list)))
+        )
+
+        # if the queryset is not empty return the blend
+        if queryset:
+            return Blend.objects.get(id=queryset[0]["blend_id"])
+
+        return None
+
+
 class BlendComponents(models.Model):
     blend = models.ForeignKey(Blend, on_delete=models.CASCADE)
     substance = models.ForeignKey(Substance, on_delete=models.CASCADE)
@@ -76,6 +125,8 @@ class BlendComponents(models.Model):
     )
     component_name = models.CharField(max_length=128, blank=True)
     ozone_id = models.IntegerField(null=True, blank=True)
+
+    objects = BlendComponentManager()
 
     def __str__(self):
         return self.blend.blend_id + " " + self.substance.name + " " + self.percentage

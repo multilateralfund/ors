@@ -15,6 +15,7 @@ from core.models import (
     User,
 )
 from core.models.agency import Agency
+from core.models.blend import BlendAltName
 from core.models.project_sector import ProjectSector, ProjectSubSector
 from core.models.project_submission import ProjectSubmission
 from core.models.substance import SubstanceAltName
@@ -66,8 +67,19 @@ class BlendAdmin(admin.ModelAdmin):
     list_filter = ["type"]
 
     def get_list_display(self, request):
-        exclude = ["blendcomponents", "price", "countryprogrammerecord"]
+        exclude = ["blendcomponents", "price", "countryprogrammerecord", "blendaltname"]
         return get_final_display_list(Blend, exclude)
+
+
+@admin.register(BlendAltName)
+class BlendAltNameAdmin(admin.ModelAdmin):
+    search_fields = [
+        "name",
+        "blend__name",
+    ]
+
+    def get_list_display(self, request):
+        return get_final_display_list(BlendAltName, [])
 
 
 @admin.register(Group)

@@ -1,3 +1,4 @@
+from core.models.blend import Blend, BlendAltName, BlendComponents
 from core.models.country_programme import CountryProgrammeReport, CountryProgrammeRecord
 from core.models.substance import Substance, SubstanceAltName
 
@@ -56,6 +57,7 @@ def get_substance_id_by_name(substance_name):
 
     @return: int substance id
     """
+
     substance = Substance.objects.get_by_name(substance_name).first()
     if substance:
         return substance.id
@@ -63,6 +65,23 @@ def get_substance_id_by_name(substance_name):
     substance = SubstanceAltName.objects.get_by_name(substance_name).first()
     if substance:
         return substance.substance_id
+
+    return None
+
+
+def get_blend_id_by_name_or_components(blend_name, components):
+    blend = Blend.objects.get_by_name(blend_name).first()
+    if blend:
+        return blend.id
+
+    blend = BlendAltName.objects.get_by_name(blend_name).first()
+    if blend:
+        return blend.blend_id
+
+    if components:
+        blend = BlendComponents.objects.get_blend_by_components(components)
+        if blend:
+            return blend.id
 
     return None
 
