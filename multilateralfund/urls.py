@@ -21,8 +21,7 @@ from django.urls import path, include
 from dj_rest_auth.views import (
     PasswordResetView, PasswordResetConfirmView,
 )
-
-from . import views
+# from api import urls as apis_urls
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -32,5 +31,5 @@ urlpatterns = [
     path('api/auth/password_reset_confirm/<uidb64>/<token>/',
          PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset-password/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='reset_password_frontend'),
-    path("api/v1/", views.index, name="index"),
+    path('api/', include('api.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
