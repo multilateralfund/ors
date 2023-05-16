@@ -3,7 +3,7 @@ from django.db import models
 
 class AgencyManager(models.Manager):
     def get_by_name(self, name):
-        name_str = name.strip().lower()
+        name_str = name.strip()
         return self.filter(name__iexact=name_str)
 
 

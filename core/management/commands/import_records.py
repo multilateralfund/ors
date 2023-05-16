@@ -14,7 +14,13 @@ class Command(BaseCommand):
     """
 
     def add_arguments(self, parser):
-        parser.add_argument("type", type=str, help="Records type", default="all")
+        parser.add_argument(
+            "type",
+            type=str,
+            help="Records type",
+            default="all",
+            choices=["xlsx_files", "cp_db", "all"],
+        )
 
     def handle(self, *args, **kwargs):
         rec_type = kwargs["type"]

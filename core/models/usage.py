@@ -3,7 +3,7 @@ from django.db import models
 
 class UsageManager(models.Manager):
     def get_by_name(self, name):
-        name_str = name.lower()
+        name_str = name.strip()
         return self.filter(
             models.Q(name__iexact=name_str) | models.Q(full_name__iexact=name_str)
         )

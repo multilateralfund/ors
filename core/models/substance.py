@@ -3,7 +3,7 @@ from django.db import models
 
 class SubstanceManager(models.Manager):
     def get_by_name(self, name):
-        name_str = name.lower()
+        name_str = name.strip()
         return self.filter(models.Q(name__iexact=name_str))
 
 
