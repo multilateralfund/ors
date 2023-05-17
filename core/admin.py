@@ -166,11 +166,14 @@ class UsageAdmin(admin.ModelAdmin):
 @admin.register(CountryProgrammeRecord)
 class CountryProgrammeRecordAdmin(admin.ModelAdmin):
     list_filter = [
-        "source",
+        "usage",
+        "country_programme_report__year",
+        "country_programme_report__country",
     ]
 
     def get_list_display(self, request):
-        return get_final_display_list(CountryProgrammeRecord, [])
+        exclude = ["country_programme_report", "source"]
+        return get_final_display_list(CountryProgrammeRecord, exclude)
 
 
 @admin.register(CountryProgrammeReport)
@@ -179,11 +182,11 @@ class CountryProgrammeReportAdmin(admin.ModelAdmin):
         "name",
     ]
     list_filter = [
-        "year",
+        "year", "country"
     ]
 
     def get_list_display(self, request):
-        exclude = ["price", "countryprogrammerecord", "usage"]
+        exclude = ["price", "countryprogrammerecord", "usage", "comment"]
         return get_final_display_list(CountryProgrammeReport, exclude)
 
 
