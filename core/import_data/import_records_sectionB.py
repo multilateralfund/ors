@@ -144,8 +144,8 @@ def get_chemical(chemical_name, index_row):
 
     logger.warning(
         f"[row: {index_row}]: "
-        f"This chemical does not exist:{chemical_name}, "
-        f"Searched name:{chemical_search_name}, searched conponents:{components}"
+        f"This chemical does not exist: {chemical_name}, "
+        f"Searched name: {chemical_search_name}, searched components: {components}"
     )
     return None, None
 
