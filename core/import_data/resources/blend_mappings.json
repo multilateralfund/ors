@@ -1,9 +1,86 @@
 [
 {
     "model": "core.blendmapping",
+    "pk": 214,
+    "fields": {
+        "party": 159,
+        "blend": 208,
+        "party_blend_id": "R-YH222",
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T16:02:03.674Z"
+    }
+},
+{
+    "model": "core.blendmapping",
+    "pk": 212,
+    "fields": {
+        "party": 11,
+        "blend": 202,
+        "party_blend_id": "PFC1102 HC",
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T15:17:42.370Z"
+    }
+},
+{
+    "model": "core.blendmapping",
+    "pk": 211,
+    "fields": {
+        "party": 11,
+        "blend": 57,
+        "party_blend_id": "DYR 5",
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T15:16:33.413Z"
+    }
+},
+{
+    "model": "core.blendmapping",
+    "pk": 210,
+    "fields": {
+        "party": 50,
+        "blend": 176,
+        "party_blend_id": "HFC 365mfc/HFC 227 ea (93/7)",
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T15:12:43.758Z"
+    }
+},
+{
+    "model": "core.blendmapping",
+    "pk": 209,
+    "fields": {
+        "party": 47,
+        "blend": 176,
+        "party_blend_id": "HFC-365mfc / HFC-227ea",
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T15:10:28.802Z"
+    }
+},
+{
+    "model": "core.blendmapping",
+    "pk": 208,
+    "fields": {
+        "party": 159,
+        "blend": 184,
+        "party_blend_id": "Formacel Z6",
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T14:30:45.373Z"
+    }
+},
+{
+    "model": "core.blendmapping",
+    "pk": 207,
+    "fields": {
+        "party": 167,
+        "blend": 97,
+        "party_blend_id": "N40-R448A",
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T14:26:10.024Z"
+    }
+},
+{
+    "model": "core.blendmapping",
     "pk": 206,
     "fields": {
-        "party": null,
+        "party": 50,
         "blend": 356,
         "party_blend_id": "PFC-1102HC",
         "remarks": "Found in MLFS data",

@@ -1,6 +1,248 @@
 [
 {
     "model": "core.blendcomponentmapping",
+    "pk": 140,
+    "fields": {
+        "party": 32,
+        "party_blend_component": "HFO-1336mzz",
+        "substance": 286,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T15:03:38.609Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 139,
+    "fields": {
+        "party": 32,
+        "party_blend_component": "HFO-1234 ze",
+        "substance": 301,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T15:02:17.937Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 138,
+    "fields": {
+        "party": 167,
+        "party_blend_component": "HFO-1233zd",
+        "substance": 333,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T14:59:36.369Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 137,
+    "fields": {
+        "party": 49,
+        "party_blend_component": "CF4",
+        "substance": 367,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T14:58:03.371Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 136,
+    "fields": {
+        "party": 49,
+        "party_blend_component": "R245fa",
+        "substance": 110,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T14:57:08.025Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 135,
+    "fields": {
+        "party": 49,
+        "party_blend_component": "R23",
+        "substance": 105,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T14:56:26.095Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 134,
+    "fields": {
+        "party": 49,
+        "party_blend_component": "R365mfc",
+        "substance": 112,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T14:55:16.835Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 133,
+    "fields": {
+        "party": 49,
+        "party_blend_component": "32",
+        "substance": 111,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T14:51:09.637Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 132,
+    "fields": {
+        "party": 49,
+        "party_blend_component": "R236fa",
+        "substance": 108,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T14:50:34.257Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 131,
+    "fields": {
+        "party": 49,
+        "party_blend_component": "R227ea",
+        "substance": 104,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T14:49:45.506Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 130,
+    "fields": {
+        "party": 49,
+        "party_blend_component": "R600a",
+        "substance": 294,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T14:48:31.802Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 129,
+    "fields": {
+        "party": 49,
+        "party_blend_component": "DME",
+        "substance": 289,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T14:45:47.666Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 128,
+    "fields": {
+        "party": 49,
+        "party_blend_component": "R152a",
+        "substance": 103,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T14:42:48.449Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 127,
+    "fields": {
+        "party": 49,
+        "party_blend_component": "R218",
+        "substance": 290,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T14:39:38.821Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 126,
+    "fields": {
+        "party": 49,
+        "party_blend_component": "R600",
+        "substance": 293,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T14:37:51.543Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 125,
+    "fields": {
+        "party": 49,
+        "party_blend_component": "R32",
+        "substance": 111,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T14:37:10.567Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 124,
+    "fields": {
+        "party": 49,
+        "party_blend_component": "R125",
+        "substance": 97,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T14:36:53.016Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 123,
+    "fields": {
+        "party": 147,
+        "party_blend_component": "R-290",
+        "substance": 291,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T14:32:26.822Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 122,
+    "fields": {
+        "party": 250,
+        "party_blend_component": "R290",
+        "substance": 291,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T13:29:47.920Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 121,
+    "fields": {
+        "party": 101,
+        "party_blend_component": "R-600A",
+        "substance": 294,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-12T14:58:31.677Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 120,
+    "fields": {
+        "party": null,
+        "party_blend_component": "R-600",
+        "substance": 293,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-12T14:58:10.021Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 119,
+    "fields": {
+        "party": 147,
+        "party_blend_component": "HC-600",
+        "substance": 293,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-12T14:08:11.478Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
     "pk": 118,
     "fields": {
         "party": null,
