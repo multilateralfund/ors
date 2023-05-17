@@ -241,6 +241,8 @@ def parse_record_data(item_attributes_file, country_dict, year_dict, chemical_di
 
         # create records
         for usage, usage_id in current_usages_dict.items():
+            if not item[usage]:
+                continue
             record_data = {
                 "substance_id": substance_id,
                 "blend_id": blend_id,

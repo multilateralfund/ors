@@ -203,7 +203,8 @@ def parse_sheet(df, file_name):
 
         # insert records
         for usage in usage_dict:
-            if pd.isna(row[usage]):
+            if pd.isna(row[usage]) or not row[usage]:
+                # if the value is empty or is 0 => skip
                 continue
 
             record_data = {
