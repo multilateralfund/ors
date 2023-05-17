@@ -78,17 +78,6 @@
 },
 {
     "model": "core.blendcomponentmapping",
-    "pk": 133,
-    "fields": {
-        "party": 49,
-        "party_blend_component": "32",
-        "substance": 111,
-        "remarks": "Found in MLFS data",
-        "created": "2023-05-17T14:51:09.637Z"
-    }
-},
-{
-    "model": "core.blendcomponentmapping",
     "pk": 132,
     "fields": {
         "party": 49,

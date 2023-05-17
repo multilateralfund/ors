@@ -1,6 +1,28 @@
 [
 {
     "model": "core.blendmapping",
+    "pk": 216,
+    "fields": {
+        "party": 47,
+        "blend": 176,
+        "party_blend_id": "HFC-365mfc/HFC-227ea (93/7) en polioles premezclados imp.",
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T17:24:02.721Z"
+    }
+},
+{
+    "model": "core.blendmapping",
+    "pk": 215,
+    "fields": {
+        "party": 49,
+        "blend": 221,
+        "party_blend_id": "32/R125/R134a/R227ea/R236fa/R600",
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-17T16:57:22.734Z"
+    }
+},
+{
+    "model": "core.blendmapping",
     "pk": 214,
     "fields": {
         "party": 159,
