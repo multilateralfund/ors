@@ -32,6 +32,7 @@ def parse_usage_file(file_path):
         usage_data = {
             "name": row["name"],
             "full_name": row["full name"],
+            "sort_order": row["sort_order"],
             "parent": parent,
         }
         Usage.objects.update_or_create(full_name=row["full name"], defaults=usage_data)

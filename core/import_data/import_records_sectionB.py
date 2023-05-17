@@ -29,7 +29,6 @@ NON_USAGE_COLUMNS = {
     "Chemical",
     "GWP",
     "Year",
-    "TOTAL (MT)",
 }
 
 REQUIRED_COLUMNS = [
@@ -64,8 +63,6 @@ def get_usage_from_column_name(column_name):
     column_name = column_name.replace(" (MT)", "")
     # remove -
     column_name = column_name.replace("- ", "")
-    # remove Total (Refrigeration Manufacturing - Total (MT))
-    column_name = column_name.replace(" Total", "")
 
     return column_name
 
@@ -224,7 +221,7 @@ def parse_sheet(df, file_name):
 
 
 def parse_file(file_path, cp_name):
-    all_sheets = pd.read_excel(file_path, sheet_name=None)
+    all_sheets = pd.read_excel(file_path, sheet_name=None, na_values="NDR")
     for sheet_name, df in all_sheets.items():
         logger.info(f"Start parsing sheet: {sheet_name}")
         df = df.rename(columns=lambda x: x.strip())

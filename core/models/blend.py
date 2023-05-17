@@ -49,7 +49,7 @@ class Blend(models.Model):
         help_text="Global Warming Potential",
     )
     is_contained_in_polyols = models.BooleanField(default=False)
-    sort_order = models.IntegerField(null=True)
+    sort_order = models.FloatField(null=True, blank=True)
     ozone_id = models.IntegerField(null=True, blank=True)
 
     objects = BlendManager()

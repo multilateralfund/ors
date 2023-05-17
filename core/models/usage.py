@@ -14,8 +14,17 @@ class Usage(models.Model):
     full_name = models.CharField(max_length=248)
     description = models.TextField(null=True, blank=True)
     parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True)
+    sort_order = models.FloatField(null=True, blank=True)
 
     objects = UsageManager()
 
     def __str__(self):
         return self.name
+
+
+class ChemicalUsage(models.Model):
+    usage = models.ForeignKey(Usage, on_delete=models.CASCADE)
+    substance = models.ForeignKey(
+        "Substance", on_delete=models.CASCADE, null=True, blank=True
+    )
+    blend = models.ForeignKey("Blend", on_delete=models.CASCADE, null=True, blank=True)
