@@ -44,8 +44,6 @@ SECTION = "B"
 BLEND_COMPONENTS_RE = r"(\w{1,4}\-\w{3,6})s?=?\s?\(?(\d{,3}\.?\d{,3})\%\)?"
 # "R23/R125/CO2/HFO-1132 (10%/10%/60%/20%)"
 BLEND_COMPOSITION_RE = r"(/[a-zA-Z0-9/-]{3,9}\s?\(\d{1,3})"
-# "R448 (Assuned R-448A)" => "R-448A"
-ASSUMED_NAME_RE = r"\(Assu.ed,? (.*)\)|$"
 
 
 def check_headers(df):
@@ -108,27 +106,20 @@ def parse_chemical_name(chemical_name):
     Parse chemical name from row and return chemical_search_name and components list:
         e.g.:
         R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%) => ("R-404A", [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")])
-        HFC-23 (use) => ("HFC-23" , [])
-        R438 (Assumed R-438A) => ("R-438A", [])
-        HFC-365mfc in imported pre-blended polyols => ("HFC-365mfc", [])
         R32/R125/R134a/HFO (24%/25%/26%/25%) => R32/R125/R134a/HFO (24%/25%/26%/25%), []
     """
     # remove Fullwidth Right Parenthesis
-    chemical_name = chemical_name.replace("）", ")")
-
-    # if the chemical name has an assumed name then we will search by the assumed name
-    if "Assu" in chemical_name:
-        chemical_search_name = re.findall(ASSUMED_NAME_RE, chemical_name)[0]
-        return chemical_search_name, []
+    chemical_name = chemical_name.replace("）", ")").strip()
 
     # R32/R125/R134a/HFO (24%/25%/26%/25%)
     if re.search(BLEND_COMPOSITION_RE, chemical_name):
-        return chemical_name.strip(), []
+        return chemical_name, []
 
     components = re.findall(BLEND_COMPONENTS_RE, chemical_name)
-    chemical_search_name = chemical_name.split(" ")[0]
+    if components:
+        chemical_name = chemical_name.split("(")[0].strip()
 
-    return chemical_search_name, components
+    return chemical_name, components
 
 
 def get_chemical(chemical_name, index_row):
@@ -154,7 +145,7 @@ def get_chemical(chemical_name, index_row):
     logger.warning(
         f"[row: {index_row}]: "
         f"This chemical does not exist:{chemical_name}, "
-        f"Serached name:{chemical_search_name}, searched conponents:{components}"
+        f"Searched name:{chemical_search_name}, searched conponents:{components}"
     )
     return None, None
 
