@@ -1,6 +1,17 @@
 [
 {
     "model": "core.blendmapping",
+    "pk": 218,
+    "fields": {
+        "party": 49,
+        "blend": 396,
+        "party_blend_id": "R134a/1-Bromopropane (70%/30%\uff09",
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-18T12:06:52.884Z"
+    }
+},
+{
+    "model": "core.blendmapping",
     "pk": 217,
     "fields": {
         "party": 50,
