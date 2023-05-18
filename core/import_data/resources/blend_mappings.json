@@ -1,6 +1,17 @@
 [
 {
     "model": "core.blendmapping",
+    "pk": 217,
+    "fields": {
+        "party": 50,
+        "blend": 156,
+        "party_blend_id": "Chesterton 296 EU: HFC-134a (40-50 %), HFC-365mfc (20-30%), HFC-245fa (20-30%) and isopropyl alcohol (1-5%)",
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-18T10:13:46.144Z"
+    }
+},
+{
+    "model": "core.blendmapping",
     "pk": 216,
     "fields": {
         "party": 47,
@@ -1326,7 +1337,7 @@
         "party": 65,
         "blend": 243,
         "party_blend_id": "228",
-        "remarks": "",
+        "remarks": "Mix: PFC-5-1-14: 33.334%; PFC-3-1-10: 33.333%; PFC-4-1-12: 33.333%",
         "created": "2022-05-11T09:46:25.985Z"
     }
 },
@@ -2083,7 +2094,7 @@
     "pk": 26,
     "fields": {
         "party": 65,
-        "blend": 171,
+        "blend": 13,
         "party_blend_id": "35",
         "remarks": "HFC-125:86%;PFC-218:9%;HC-290:5%",
         "created": "2022-05-11T09:34:34.696Z"
