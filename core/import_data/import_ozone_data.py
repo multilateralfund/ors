@@ -82,7 +82,7 @@ def import_groups():
     logger.info("✔ groups imported")
 
 
-def import_alternative_names(cls, cls_alt_name, file_name, chemical_name, field_name):
+def import_alternative_names(cls, cls_alt_name, file_name, chemical_name, field_names, skip_cond=None):
     """
     Import alternative names from json file
     @param cls class
@@ -99,25 +99,28 @@ def import_alternative_names(cls, cls_alt_name, file_name, chemical_name, field_
     # create or update instance for alternative names
     for instance_data in list_data:
         # get instance data
-        instance = {
-            "name": instance_data["fields"][field_name],
-            "ozone_id": instance_data["pk"],
-        }
-        try:
-            instance[f"{chemical_name}_id"] = cls.objects.get(
-                ozone_id=instance_data["fields"][chemical_name]
-            ).id
-        except cls.DoesNotExist:
-            logger.warning(
-                f"⚠️ {chemical_name} with ozone_id {instance_data['fields'][chemical_name]} does not exist"
-            )
-            continue
+        for field_name in field_names:
+            if skip_cond and skip_cond(instance_data["fields"][field_name]):
+                continue
+            instance = {
+                "name": instance_data["fields"][field_name],
+                "ozone_id": instance_data["pk"],
+            }
+            try:
+                instance[f"{chemical_name}_id"] = cls.objects.get(
+                    ozone_id=instance_data["fields"][chemical_name]
+                ).id
+            except cls.DoesNotExist:
+                logger.warning(
+                    f"⚠️ {chemical_name} with ozone_id {instance_data['fields'][chemical_name]} does not exist"
+                )
+                continue
 
-        # create or update name
-        cls_alt_name.objects.update_or_create(
-            name=instance["name"],
-            defaults=instance,
-        )
+            # create or update name
+            cls_alt_name.objects.update_or_create(
+                name=instance["name"],
+                defaults=instance,
+            )
 
 
 def import_substances():
@@ -139,7 +142,7 @@ def import_substances():
         SubstanceAltName,
         "blend_component_mappings.json",
         "substance",
-        "party_blend_component",
+        ["party_blend_component"],
     )
     logger.info("✔ substances alternative names imported")
 
@@ -162,7 +165,8 @@ def import_blends():
         BlendAltName,
         "blend_mappings.json",
         "blend",
-        "remarks",
+        ["party_blend_id", "remarks"],
+        lambda value : value == 'Found in MLFS data' or value.isnumeric()
     )
     logger.info("✔ blends alternative names imported")
 
