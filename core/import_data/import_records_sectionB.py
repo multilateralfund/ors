@@ -43,7 +43,7 @@ SECTION = "B"
 # "R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%)" => [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")]
 BLEND_COMPONENTS_RE = r"(\w{1,4}\-?\s?\w{2,7})\s?=?-?\s?\(?(\d{1,3}\.?\,?\d{,3})\%\)?"
 # "R23/R125/CO2/HFO-1132 (10%/10%/60%/20%)"
-BLEND_COMPOSITION_RE = r"((/[a-zA-Z0-9/-]{3,11})+\s?\(\d{1,3}\.?\,?\d{,2}?%)"
+BLEND_COMPOSITION_RE = r"((/[a-zA-Z0-9/-]{3,15})+\s?\(\d{1,3}\.?\,?\d{,2}?%)"
 
 
 def check_headers(df):
