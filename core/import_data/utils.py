@@ -79,7 +79,18 @@ def get_blend_id_by_name_or_components(blend_name, components):
         return blend.blend_id
 
     if components:
-        blend = BlendComponents.objects.get_blend_by_components(components)
+        subst_prcnt = []
+        for substance_name, percentage in components:
+            try:
+                subst_id = get_substance_id_by_name(substance_name)
+                if not subst_id:
+                    return None
+                prcnt = float(percentage) / 100
+                subst_prcnt.append((subst_id, prcnt))
+            except:
+                return None
+
+        blend = BlendComponents.objects.get_blend_by_components(subst_prcnt)
         if blend:
             return blend.id
 

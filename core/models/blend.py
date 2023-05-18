@@ -80,20 +80,14 @@ class BlendComponentManager(models.Manager):
         """
         get a blend by a list of components
 
-        @param components_list: list of tuples (substance_name, percentage)
+        @param components_list: list of tuples (substance_id, percentage)
         @return: Blend object or None
         """
         filter_lsit = []
         # set the filter list for the query using the components list
-        for substance_name, percentage in components_list:
-            # check if the percentage is a float and if not return None
-            try:
-                percent = float(percentage) / 100
-            except:
-                return None
-
+        for substance_id, percentage in components_list:
             filter_lsit.append(
-                models.Q(substance__name__iexact=substance_name, percentage=percent)
+                models.Q(substance_id=substance_id, percentage=percentage)
             )
 
         # create the query
@@ -104,7 +98,7 @@ class BlendComponentManager(models.Manager):
         queryset = (
             self.values("blend_id")
             .filter(filters)
-            .annotate(total=models.Count("blend"))
+            .annotate(total=models.Count("substance_id"))
             .filter(models.Q(total=len(components_list)))
         )
 

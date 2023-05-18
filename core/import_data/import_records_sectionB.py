@@ -41,9 +41,9 @@ REQUIRED_COLUMNS = [
 SECTION = "B"
 
 # "R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%)" => [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")]
-BLEND_COMPONENTS_RE = r"(\w{1,4}\-\w{2,7})\s?=?-?\s?\(?(\d{,3}\.?\,?\d{,3})\%\)?"
+BLEND_COMPONENTS_RE = r"(\w{1,4}\-?\s?\w{2,7})\s?=?-?\s?\(?(\d{1,3}\.?\,?\d{,3})\%\)?"
 # "R23/R125/CO2/HFO-1132 (10%/10%/60%/20%)"
-BLEND_COMPOSITION_RE = r"(/[a-zA-Z0-9/-]{3,9}\s?\(\d{1,3})"
+BLEND_COMPOSITION_RE = r"((/[a-zA-Z0-9/-]{3,11})+\s?\(\d{1,3}\.?\,?\d{,2}?%)"
 
 
 def check_headers(df):
@@ -106,22 +106,35 @@ def parse_chemical_name(chemical_name):
     Parse chemical name from row and return chemical_search_name and components list:
         e.g.:
         R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%) => ("R-404A", [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")])
-        R32/R125/R134a/HFO (24%/25%/26%/25%) => R32/R125/R134a/HFO (24%/25%/26%/25%), []
+        R125/R218/R290 (86%/9%/5%) =>R125/R218/R290 (86%/9%/5%),   [('R125', '86'), ('R218', '9'), ('R290', '5')]
+    @param chemical_name string
+    @return tuple => (chemical_search_name, components)
+        - chemical_search_name = string
+        - components = list of tuple (substance_name, percentage)
     """
     # remove Fullwidth Right Parenthesis
     chemical_name = chemical_name.replace("）", ")").strip()
 
     # R32/R125/R134a/HFO (24%/25%/26%/25%)
     if re.search(BLEND_COMPOSITION_RE, chemical_name):
-        return chemical_name, []
+        substances, percentages = chemical_name.split("(")
+        substances = substances.strip().split("/")
+        percentages = re.findall(r"(\d{1,3}\.?\,?\d{,3})\%", percentages)
+        if len(substances) != len(percentages):
+            return chemical_name, []
+        components = list(zip(substances, percentages))
+        return chemical_name, components
 
     components = re.findall(BLEND_COMPONENTS_RE, chemical_name)
     if components:
-        chemical_name = chemical_name.split("(")[0].strip()
         # check if the number of components is equal to the number of %
         if chemical_name.count("%") != len(components):
-            # R-514A (HFO-1336mzz=74,7%, trans-Dicloroetileno=25,3%) => components = [HFO-1336mzz, 74,7]
+            # R-514A (HFO-1336mzz=74,7%, trans-Dicloroetileno=25,3%) => components = [HFO-1336mzz, 74.7]
             components = []
+
+        components = [(c.strip().replace(" ", "-"), p) for c, p in components]
+        chemical_search_name = chemical_name.split("(")[0].strip()
+        return chemical_search_name, components
 
     return chemical_name, components
 
