@@ -9,17 +9,23 @@ class Command(BaseCommand):
     help = """
         Import records
         params:
-            - type = sectionb => from xlsx sectionB
+            - type = xlsx_files => from xlsx files
             - type = cp_db => from databases
     """
 
     def add_arguments(self, parser):
-        parser.add_argument("type", type=str, help="Records type", default="all")
+        parser.add_argument(
+            "type",
+            type=str,
+            help="Records type",
+            default="all",
+            choices=["xlsx_files", "cp_db", "all"],
+        )
 
     def handle(self, *args, **kwargs):
         rec_type = kwargs["type"]
 
-        if rec_type in ["sectionb", "all"]:
+        if rec_type in ["xlsx_files", "all"]:
             rec_sectonB()
         if rec_type in ["cp_db", "all"]:
             rec_cp_db()

@@ -3,7 +3,7 @@ from django.db import models
 
 class CountryManager(models.Manager):
     def get_by_name(self, name):
-        name_str = name.strip().lower()
+        name_str = name.strip()
         return self.filter(
             models.Q(name__iexact=name_str)
             | models.Q(full_name__iexact=name_str)
@@ -41,7 +41,7 @@ class Country(models.Model):
 
 class RegionManager(models.Manager):
     def get_by_name(self, name):
-        name_str = name.strip().lower()
+        name_str = name.strip()
         return self.filter(name__iexact=name_str)
 
 

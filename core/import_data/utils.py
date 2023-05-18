@@ -1,5 +1,5 @@
-from core.models.country_programme import CountryProgrammeReport
-from core.models.record import Record
+from core.models.blend import Blend, BlendAltName, BlendComponents
+from core.models.country_programme import CountryProgrammeReport, CountryProgrammeRecord
 from core.models.substance import Substance, SubstanceAltName
 
 
@@ -40,13 +40,13 @@ def parse_string(str):
     return str.strip().lower()
 
 
-def delete_old_records(source, logger):
+def delete_old_cp_records(source, logger):
     """
     delete old records from db
     @param source: string source name
     @param logger: logger object
     """
-    Record.objects.filter(source__iexact=source.lower()).all().delete()
+    CountryProgrammeRecord.objects.filter(source__iexact=source.lower()).all().delete()
     logger.info(f"✔ old records from {source} deleted")
 
 
@@ -57,6 +57,7 @@ def get_substance_id_by_name(substance_name):
 
     @return: int substance id
     """
+
     substance = Substance.objects.get_by_name(substance_name).first()
     if substance:
         return substance.id
@@ -64,6 +65,34 @@ def get_substance_id_by_name(substance_name):
     substance = SubstanceAltName.objects.get_by_name(substance_name).first()
     if substance:
         return substance.substance_id
+
+    return None
+
+
+def get_blend_id_by_name_or_components(blend_name, components):
+    blend = Blend.objects.get_by_name(blend_name).first()
+    if blend:
+        return blend.id
+
+    blend = BlendAltName.objects.get_by_name(blend_name).first()
+    if blend:
+        return blend.blend_id
+
+    if components:
+        subst_prcnt = []
+        for substance_name, percentage in components:
+            try:
+                subst_id = get_substance_id_by_name(substance_name)
+                if not subst_id:
+                    return None
+                prcnt = float(percentage) / 100
+                subst_prcnt.append((subst_id, prcnt))
+            except:
+                return None
+
+        blend = BlendComponents.objects.get_blend_by_components(subst_prcnt)
+        if blend:
+            return blend.id
 
     return None
 
@@ -83,3 +112,25 @@ def get_cp_report(year, country_name, country_id):
     )
 
     return cp
+
+
+def get_object_by_name(cls, obj_name, index_row, obj_type_name, logger):
+    """
+    get object by name or log error if not found in db
+    @param cls: Class instance
+    @param obj_name: string -> object name (filter value)
+    @param index_row: integer -> index row
+    @param obj_type_name: string -> object type name (for logging)
+    @param logger: logger object
+
+    @return: object or None
+    """
+    if not obj_name:
+        return None
+    obj = cls.objects.get_by_name(obj_name).first()
+    if not obj:
+        logger.info(
+            f"[row: {index_row}]: This {obj_type_name} does not exists in data base: {obj_name}"
+        )
+
+    return obj

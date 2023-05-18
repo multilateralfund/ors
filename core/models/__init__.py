@@ -6,7 +6,6 @@ from .group import *
 from .price import *
 from .project_sector import *
 from .project_submission import *
-from .record import *
 from .substance import *
 from .usage import *
 from .user import *

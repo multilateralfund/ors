@@ -4,7 +4,7 @@ import logging
 from django.db import transaction
 from django.conf import settings
 
-from core.models import Blend, BlendComponents, Group, Substance
+from core.models import Blend, BlendComponents, Group, Substance, BlendAltName
 from core.models.substance import SubstanceAltName
 
 logger = logging.getLogger(__name__)
@@ -27,6 +27,10 @@ def import_data(cls, file_path, exclude=[]):
             # set annex => 1->A; 2->B; 3->C
             instance["annex"] = chr(ord("A") + instance["annex"] - 1)
         elif cls == Blend:
+            # skip deactivated blends
+            if instance["is_deactivated"]:
+                continue
+            instance.pop("is_deactivated")
             # set blend name
             instance["name"] = instance.pop("blend_id")
         elif cls == Substance and instance["group"]:
@@ -37,10 +41,21 @@ def import_data(cls, file_path, exclude=[]):
             # set foreign key
             blend_ozone_id = instance.pop("blend")
             substance_ozone_id = instance.pop("substance")
-            instance["blend_id"] = Blend.objects.get(ozone_id=blend_ozone_id).id
-            instance["substance_id"] = Substance.objects.get(
-                ozone_id=substance_ozone_id
-            ).id
+            try:
+                instance["blend_id"] = Blend.objects.get(ozone_id=blend_ozone_id).id
+                instance["substance_id"] = Substance.objects.get(
+                    ozone_id=substance_ozone_id
+                ).id
+            except Blend.DoesNotExist:
+                logger.warning(
+                    f"⚠️ blend with ozone_id {blend_ozone_id} does not exist"
+                )
+                continue
+            except Substance.DoesNotExist:
+                logger.warning(
+                    f"⚠️ substance with ozone_id {substance_ozone_id} does not exist"
+                )
+                continue
 
         # create or update instance
         if cls == BlendComponents:
@@ -67,32 +82,45 @@ def import_groups():
     logger.info("✔ groups imported")
 
 
-def import_substances_alternative_names():
+def import_alternative_names(cls, cls_alt_name, file_name, chemical_name, field_names, skip_cond=None):
     """
-    Import substances alternative names from json file
+    Import alternative names from json file
+    @param cls class
+    @param file_name string
+    @param chemical_name string (substance or blend)
+    @param field_name string (field from json for alternative name)
     """
 
     # read data from json file
-    file_name = settings.IMPORT_RESOURCES_DIR / "blend_component_mappings.json"
+    file_name = settings.IMPORT_RESOURCES_DIR / file_name
     with open(file_name, "r") as f:
         list_data = json.load(f)
 
     # create or update instance for alternative names
     for instance_data in list_data:
         # get instance data
-        instance = {
-            "name": instance_data["fields"]["party_blend_component"],
-            "ozone_id": instance_data["pk"],
-        }
-        instance["substance_id"] = Substance.objects.get(
-            ozone_id=instance_data["fields"]["substance"]
-        ).id
+        for field_name in field_names:
+            if skip_cond and skip_cond(instance_data["fields"][field_name]):
+                continue
+            instance = {
+                "name": instance_data["fields"][field_name],
+                "ozone_id": instance_data["pk"],
+            }
+            try:
+                instance[f"{chemical_name}_id"] = cls.objects.get(
+                    ozone_id=instance_data["fields"][chemical_name]
+                ).id
+            except cls.DoesNotExist:
+                logger.warning(
+                    f"⚠️ {chemical_name} with ozone_id {instance_data['fields'][chemical_name]} does not exist"
+                )
+                continue
 
-        # create or update substance name
-        SubstanceAltName.objects.update_or_create(
-            name=instance["name"],
-            defaults=instance,
-        )
+            # create or update name
+            cls_alt_name.objects.update_or_create(
+                name=instance["name"],
+                defaults=instance,
+            )
 
 
 def import_substances():
@@ -109,7 +137,13 @@ def import_substances():
     ]
     import_data(Substance, settings.IMPORT_RESOURCES_DIR / "substances.json", exclude)
     logger.info("✔ substances imported")
-    import_substances_alternative_names()
+    import_alternative_names(
+        Substance,
+        SubstanceAltName,
+        "blend_component_mappings.json",
+        "substance",
+        ["party_blend_component"],
+    )
     logger.info("✔ substances alternative names imported")
 
 
@@ -122,11 +156,19 @@ def import_blends():
         "main_usage",
         "remark",
         "cnumber",
-        "is_deactivated",
     ]
 
     import_data(Blend, settings.IMPORT_RESOURCES_DIR / "blends.json", exclude)
     logger.info("✔ blends imported")
+    import_alternative_names(
+        Blend,
+        BlendAltName,
+        "blend_mappings.json",
+        "blend",
+        ["party_blend_id", "remarks"],
+        lambda value : value == 'Found in MLFS data' or value.isnumeric()
+    )
+    logger.info("✔ blends alternative names imported")
 
 
 def import_blend_components():

@@ -6,12 +6,17 @@ from django.conf import settings
 from core.import_data.utils import (
     COUNTRY_NAME_MAPPING,
     USAGE_NAME_MAPPING,
-    delete_old_records,
+    delete_old_cp_records,
     get_substance_id_by_name,
     get_cp_report,
 )
 
-from core.models import Country, CountryProgrammeReport, Record, Blend, Usage
+from core.models import (
+    Country,
+    CountryProgrammeRecord,
+    Blend,
+    Usage,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -236,6 +241,8 @@ def parse_record_data(item_attributes_file, country_dict, year_dict, chemical_di
 
         # create records
         for usage, usage_id in current_usages_dict.items():
+            if not item[usage]:
+                continue
             record_data = {
                 "substance_id": substance_id,
                 "blend_id": blend_id,
@@ -244,9 +251,9 @@ def parse_record_data(item_attributes_file, country_dict, year_dict, chemical_di
                 "value_metric": item[usage],
                 "source": item_attributes_file,
             }
-            records.append(Record(**record_data))
+            records.append(CountryProgrammeRecord(**record_data))
 
-    Record.objects.bulk_create(records)
+    CountryProgrammeRecord.objects.bulk_create(records)
 
 
 def parse_db_files(db_dir_path):
@@ -264,7 +271,7 @@ def parse_db_files(db_dir_path):
     logger.info("✔ chemical file parsed" + str(len(chemical_dict)))
 
     item_attributes_file = f"{db_dir_path}/ItemAttributes.json"
-    delete_old_records(item_attributes_file, logger)
+    delete_old_cp_records(item_attributes_file, logger)
     parse_record_data(item_attributes_file, country_dict, year_dict, chemical_dict)
     logger.info(f"✔ records from {db_dir_path} imported")
 

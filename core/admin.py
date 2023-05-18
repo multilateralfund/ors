@@ -7,7 +7,7 @@ from core.models import (
     CountryProgrammeReport,
     Group,
     Price,
-    Record,
+    CountryProgrammeRecord,
     Subregion,
     Substance,
     Region,
@@ -15,6 +15,7 @@ from core.models import (
     User,
 )
 from core.models.agency import Agency
+from core.models.blend import BlendAltName
 from core.models.project_sector import ProjectSector, ProjectSubSector
 from core.models.project_submission import ProjectSubmission
 from core.models.substance import SubstanceAltName
@@ -45,7 +46,12 @@ class SubstanceAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["blendcomponents", "price", "record", "substancealtname"]
+        exclude = [
+            "blendcomponents",
+            "price",
+            "countryprogrammerecord",
+            "substancealtname",
+        ]
         return get_final_display_list(Substance, exclude)
 
 
@@ -61,8 +67,19 @@ class BlendAdmin(admin.ModelAdmin):
     list_filter = ["type"]
 
     def get_list_display(self, request):
-        exclude = ["blendcomponents", "price", "record"]
+        exclude = ["blendcomponents", "price", "countryprogrammerecord", "blendaltname"]
         return get_final_display_list(Blend, exclude)
+
+
+@admin.register(BlendAltName)
+class BlendAltNameAdmin(admin.ModelAdmin):
+    search_fields = [
+        "name",
+        "blend__name",
+    ]
+
+    def get_list_display(self, request):
+        return get_final_display_list(BlendAltName, [])
 
 
 @admin.register(Group)
@@ -142,18 +159,32 @@ class UsageAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["usage", "record"]
+        exclude = ["usage", "countryprogrammerecord"]
         return get_final_display_list(Usage, exclude)
 
 
-@admin.register(Record)
-class RecordAdmin(admin.ModelAdmin):
+@admin.register(CountryProgrammeRecord)
+class CountryProgrammeRecordAdmin(admin.ModelAdmin):
     list_filter = [
-        "source",
+        "usage",
+        "country_programme_report__year",
+        "country_programme_report__country",
     ]
 
+    def get_country(self, obj):
+        return obj.country_programme_report.country
+    get_country.short_description = 'Country'
+
+    def get_year(self, obj):
+        return obj.country_programme_report.year
+    get_year.short_description = 'Year'
+
     def get_list_display(self, request):
-        return get_final_display_list(Record, [])
+        exclude = ["country_programme_report", "source"]
+        return get_final_display_list(CountryProgrammeRecord, exclude) + [
+            "get_year",
+            "get_country",
+        ]
 
 
 @admin.register(CountryProgrammeReport)
@@ -162,11 +193,11 @@ class CountryProgrammeReportAdmin(admin.ModelAdmin):
         "name",
     ]
     list_filter = [
-        "year",
+        "year", "country"
     ]
 
     def get_list_display(self, request):
-        exclude = ["price", "record", "usage"]
+        exclude = ["price", "countryprogrammerecord", "usage", "comment"]
         return get_final_display_list(CountryProgrammeReport, exclude)
 
 

@@ -22,7 +22,22 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "resource", type=str, help="Resource to import", default="all"
+            "resource",
+            type=str,
+            help="Resource to import",
+            default="all",
+            choices=[
+                "all",
+                "all_ozone_data",
+                "groups",
+                "substances",
+                "blends",
+                "blend_components",
+                "usages",
+                "sectors",
+                "agencies",
+                "countries",
+            ],
         )
 
     def handle(self, *args, **kwargs):
