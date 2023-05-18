@@ -129,7 +129,7 @@ class BlendComponents(models.Model):
     objects = BlendComponentManager()
 
     def __str__(self):
-        return self.blend.blend_id + " " + self.substance.name + " " + self.percentage
+        return self.blend.name + " " + self.substance.name + " " + str(self.percentage)
 
     class Meta:
         verbose_name_plural = "Blend Components"

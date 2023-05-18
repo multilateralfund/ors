@@ -41,7 +41,7 @@ REQUIRED_COLUMNS = [
 SECTION = "B"
 
 # "R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%)" => [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")]
-BLEND_COMPONENTS_RE = r"(\w{1,4}\-\w{3,6})s?=?\s?\(?(\d{,3}\.?\d{,3})\%\)?"
+BLEND_COMPONENTS_RE = r"(\w{1,4}\-\w{2,7})\s?=?-?\s?\(?(\d{,3}\.?\,?\d{,3})\%\)?"
 # "R23/R125/CO2/HFO-1132 (10%/10%/60%/20%)"
 BLEND_COMPOSITION_RE = r"(/[a-zA-Z0-9/-]{3,9}\s?\(\d{1,3})"
 
@@ -118,6 +118,10 @@ def parse_chemical_name(chemical_name):
     components = re.findall(BLEND_COMPONENTS_RE, chemical_name)
     if components:
         chemical_name = chemical_name.split("(")[0].strip()
+        # check if the number of components is equal to the number of %
+        if chemical_name.count("%") != len(components):
+            # R-514A (HFO-1336mzz=74,7%, trans-Dicloroetileno=25,3%) => components = [HFO-1336mzz, 74,7]
+            components = []
 
     return chemical_name, components
 
