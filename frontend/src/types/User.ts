@@ -1,5 +1,3 @@
-import * as z from 'zod'
-
 export type IUser = {
   email: string
   first_name: string

@@ -19,3 +19,39 @@
     @apply w-32 !important;
   }
 }
+
+.react-select-container .react-select__control {
+  @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg;
+  @apply dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500;
+}
+
+.react-select-container .react-select__single-value {
+  @apply text-gray-500;
+  @apply dark:text-white;
+}
+
+.react-select__indicator-separator {
+  @apply bg-gray-50;
+  @apply dark:bg-gray-500;
+}
+
+.react-select__menu {
+  @apply bg-gray-50;
+  @apply dark:bg-gray-700;
+  @apply text-sm;
+}
+.react-select__option {
+  @apply text-gray-500;
+  @apply dark:text-white;
+}
+
+.react-select__option:hover {
+  @apply bg-gray-100;
+  @apply dark:bg-gray-600;
+}
+.react-select__option--is-selected,
+.react-select__option--is-focused,
+.react-select__option--is-disabled {
+  @apply bg-gray-100;
+  @apply dark:bg-gray-600;
+}

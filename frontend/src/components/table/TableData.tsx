@@ -1,419 +1,159 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
+import { selectSubstancesAnnexA, selectUsages } from '@/slices/reportSlice'
+import { Modal } from 'flowbite-react'
+import { FormInput } from '../form/FormInput'
+import Select from 'react-select'
+
 import {
   flexRender,
-  GroupingState,
   useReactTable,
-  getPaginationRowModel,
-  getFilteredRowModel,
   getCoreRowModel,
-  getGroupedRowModel,
-  getExpandedRowModel,
   ColumnDef,
-  Table,
-  TableMeta,
-  RowData,
 } from '@tanstack/react-table'
+import { Button } from '../shared/Button'
 
-type Reporting = {
-  substance: {
-    name: string
-    value: string
-    isEditable: boolean
-  }
-  aerosol: {
-    name: string
-    value: number
-    isEditable: boolean
-  }
-  foam: {
-    name: string
-    value: number
-    isEditable: boolean
-  }
-  fireFighting: {
-    name: string
-    value: number
-    isEditable: boolean
-  }
-  manufOther: {
-    name: string
-    value: number
-    isEditable: boolean
-  }
-  manufAc: {
-    name: string
-    value: number
-    isEditable: boolean
-  }
-  manufTotal: {
-    name: string
-    value: number
-    isEditable: boolean
-  }
-  servicing: {
-    name: string
-    value: number
-    isEditable: boolean
-  }
-  solvent: {
-    name: string
-    value: number
-    isEditable: boolean
-  }
-  other3: {
-    name: string
-    value: number
-    isEditable: boolean
-  }
-  sectorTotal: {
-    name: string
-    value: number
-    isEditable: boolean
-  }
-  import: {
-    name: string
-    value: number
-    isEditable: boolean
-  }
-  export: {
-    name: string
-    value: number
-    isEditable: boolean
-  }
-  production: {
-    name: string
-    value: number
-    isEditable: boolean
-  }
-  importQuotas: {
-    name: string
-    value: number
-    isEditable: boolean
-  }
-}
+type Reporting = any
 
-const defaultData: Reporting[] = [
+const defaultData: Reporting[] = []
+
+const RECORDS = [
   {
-    substance: {
-      name: 'HFC-32',
-      value: 'HFC-32',
-      isEditable: false,
-    },
-    aerosol: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    foam: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    fireFighting: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: false,
-    },
-    manufOther: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    manufAc: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    manufTotal: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    servicing: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    solvent: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    other3: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    sectorTotal: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    import: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    export: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    production: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    importQuotas: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
+    name: 'CFC-11',
+    id: 1,
+    usages: [
+      {
+        name: 'Aerosol',
+        id: 12,
+      },
+      {
+        name: 'Foam',
+        id: 121,
+      },
+      {
+        name: 'Refrigeration',
+        id: 122,
+        children: [
+          {
+            name: 'Manufacturing',
+            id: 1234,
+          },
+          {
+            name: 'Servicing',
+            id: 12222,
+          },
+        ],
+      },
+    ],
   },
   {
-    substance: {
-      name: 'HFC-41',
-      value: 'HFC-41',
-      isEditable: false,
-    },
-    aerosol: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    foam: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    fireFighting: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: false,
-    },
-    manufOther: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    manufAc: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    manufTotal: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    servicing: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    solvent: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    other3: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    sectorTotal: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    import: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    export: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    production: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    importQuotas: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-  },
-  {
-    substance: {
-      name: 'HFC-125',
-      value: 'HFC-125',
-      isEditable: false,
-    },
-    aerosol: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    foam: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    fireFighting: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    manufOther: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    manufAc: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    manufTotal: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    servicing: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    solvent: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    other3: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    sectorTotal: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    import: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    export: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    production: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
-    importQuotas: {
-      name: 'Aerosol',
-      value: 0.0,
-      isEditable: true,
-    },
+    name: 'CFC-113',
+    id: 2,
+    usages: [
+      {
+        name: 'Solvent',
+        id: 12,
+      },
+      {
+        name: 'Process agent',
+        id: 121,
+      },
+      {
+        name: 'Lab Use',
+        id: 121,
+      },
+    ],
   },
 ]
 
-declare module '@tanstack/react-table' {
-  interface TableMeta<TData extends RowData> {
-    updateData: (rowIndex: number, columnId: string, value: unknown) => void
-  }
-}
-
-const isNotEditable = ['substance']
-
-export const TableData = () => {
+export const TableData = ({ isEditable = false }: { isEditable?: boolean }) => {
   const [data, setData] = useState(() => [...defaultData])
-  const [grouping, setGrouping] = useState<GroupingState>([])
+  const [showModal, setShowModal] = useState(false)
 
-  const columns = useMemo<ColumnDef<Reporting>[]>(
+  const columns = useMemo<ColumnDef<any>[]>(
     () => [
       {
-        header: 'Substance',
+        header: 'Substances',
         accessorKey: 'substance',
       },
       {
-        header: 'Use by Sector',
+        header: 'Aerosol',
+        accessorKey: 'aerosol',
+      },
+      {
+        header: 'Foam',
+        accessorKey: 'foam',
+      },
+      {
+        header: 'Fire Fighting',
+        accessorKey: 'fire',
+      },
+      {
+        header: 'Refrigeration',
         columns: [
           {
-            accessorKey: 'aerosol',
-            header: 'Aerosol',
+            header: 'Manufacturing',
+            accessorKey: 'manufacturing',
           },
           {
-            accessorKey: 'foam',
-            header: 'Foam',
-          },
-          {
-            accessorKey: 'fireFighting',
-            header: 'Fire Fighting',
-          },
-          {
-            header: 'Refrigeration',
-            columns: [
-              {
-                header: 'Manufacturing',
-                columns: [
-                  {
-                    header: 'Other',
-                    accessorKey: 'manufOther',
-                  },
-                  {
-                    header: 'AC',
-                    accessorKey: 'manufAc',
-                  },
-                  {
-                    header: 'Total',
-                    accessorKey: 'manufTotal',
-                  },
-                ],
-              },
-              {
-                header: 'Servicing',
-                accessorKey: 'servicing',
-              },
-            ],
-          },
-          {
-            heder: 'Solvent',
-            accessorKey: 'solvent',
-          },
-          {
-            header: 'Other',
-            accessorKey: 'other',
-          },
-          {
-            header: 'TOTAL',
-            accessorKey: 'sectorTotal',
+            header: 'Servicing',
+            accessorKey: 'servicing',
           },
         ],
       },
       {
-        header: 'Import',
-        accessorKey: 'import',
+        header: 'Solvent',
+        accessorKey: 'solvent',
       },
       {
-        header: 'Export',
-        accessorKey: 'export',
+        header: 'Process agent',
+        accessorKey: 'agent',
+      },
+      {
+        header: 'Lab Use',
+        accessorKey: 'lab_use',
+      },
+      {
+        header: 'Methy Bromide',
+        columns: [
+          {
+            header: 'QPS',
+            accessorKey: 'qps',
+          },
+          {
+            header: 'Non-QPS',
+            accessorKey: 'non-qps',
+          },
+        ],
+      },
+      {
+        header: 'Imports',
+        accessorKey: 'imports',
+      },
+      {
+        header: 'Exports',
+        accessorKey: 'exports',
       },
       {
         header: 'Production',
         accessorKey: 'production',
       },
       {
-        header: 'Import quotas',
-        accessorKey: 'importQuotas',
+        header: 'Import Quotas',
+        accessorKey: 'import_quotas',
+      },
+      {
+        header: 'Date ban',
+        accessorKey: 'date_ban',
+      },
+      {
+        header: 'Remarks',
+        accessorKey: 'remarks',
+      },
+      {
+        header: 'Actions',
+        accessorKey: 'action',
       },
     ],
     [],
@@ -422,132 +162,199 @@ export const TableData = () => {
   const table = useReactTable({
     data,
     columns,
-    defaultColumn: {
-      cell({ getValue, row: { index, original }, column: { id }, table }) {
-        const initialValue = original[id as keyof Reporting]?.value
-        const isEditable = original[id as keyof Reporting]?.isEditable
-
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        const [value, setValue] = useState(initialValue)
-
-        const onBlur = () => {
-          table.options.meta?.updateData(index, id, value)
-        }
-
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        useEffect(() => {
-          setValue(initialValue)
-        }, [initialValue])
-
-        if (id === 'substance') {
-          return <span>{value}</span>
-        }
-
-        if (!isEditable) {
-          return (
-            <input
-              disabled
-              value={value}
-              className="bg-gray-200 w-full p-1 text-right rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            />
-          )
-        }
-
-        return (
-          <input
-            className="bg-white border w-full p-1 text-right rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            value={value}
-            onChange={e => setValue(e.target.value)}
-            onBlur={onBlur}
-          />
-        )
-      },
-    },
-    state: {
-      grouping,
-    },
-    onGroupingChange: setGrouping,
-    getExpandedRowModel: getExpandedRowModel(),
-    getGroupedRowModel: getGroupedRowModel(),
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    meta: {
-      updateData: (rowIndex, columnId, value) => {
-        console.log(rowIndex, columnId, value)
-      },
-    },
   })
 
   return (
-    <section className="bg-gray-50 dark:bg-gray-900 py-3 sm:py-5">
-      <div className="">
-        <div className="relative overflow-hidden bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400 border-2 dark:border-gray-600">
-                {table.getHeaderGroups().map(headerGroup => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map(header => {
-                      return (
-                        <th
-                          key={header.id}
-                          colSpan={header.colSpan}
-                          scope="col"
-                          className="px-2 py-1 border text-center dark:border-gray-600"
-                        >
-                          {header.isPlaceholder ? null : (
-                            <>
-                              <div>
-                                {flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext(),
-                                )}
-                              </div>
-                            </>
-                          )}
-                        </th>
-                      )
-                    })}
-                  </tr>
-                ))}
-              </thead>
-              <tbody>
-                {table.getRowModel().rows.map(row => (
-                  <tr
-                    key={row.id}
-                    className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >
-                    {row.getVisibleCells().map(cell => {
-                      return (
-                        <td key={cell.id} className="px-2 py-4">
-                          {cell.getIsGrouped() ? (
-                            <></>
-                          ) : cell.getIsAggregated() ? (
-                            // If the cell is aggregated, use the Aggregated
-                            // renderer for cell
-                            flexRender(
-                              cell.column.columnDef.aggregatedCell ??
+    <>
+      <section className="bg-gray-50 dark:bg-gray-900 py-3 sm:py-5">
+        <div className="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
+          <div className="mx-auto max-w-screen-xl">
+            <TableHeaderActions onAddSubstances={() => setShowModal(true)} />
+            <div className="overflow-hidden">
+              <table className="w-full text-xs text-left text-gray-500 dark:text-gray-400">
+                <thead className="text-xs text-gray-700 bg-gray-100 dark:bg-gray-700 dark:text-gray-400  dark:border-gray-600">
+                  {table.getHeaderGroups().map(headerGroup => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map(header => {
+                        return (
+                          <th
+                            key={header.id}
+                            colSpan={header.colSpan}
+                            scope="col"
+                            className="px-2 py-1 border text-center dark:border-gray-600"
+                          >
+                            {header.isPlaceholder ? null : (
+                              <>
+                                <div className="text-[0.65rem]">
+                                  {flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext(),
+                                  )}
+                                </div>
+                              </>
+                            )}
+                          </th>
+                        )
+                      })}
+                    </tr>
+                  ))}
+                </thead>
+                <tbody>
+                  {table.getRowModel().rows.map(row => (
+                    <>
+                      <tr
+                        key={row.id}
+                        className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        {row.getVisibleCells().map(cell => {
+                          return (
+                            <td key={cell.id} className="px-2 py-2">
+                              {flexRender(
                                 cell.column.columnDef.cell,
-                              cell.getContext(),
-                            )
-                          ) : cell.getIsPlaceholder() ? null : ( // For cells with repeated values, render null
-                            // Otherwise, just render the regular cell
-                            flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext(),
-                            )
-                          )}
-                        </td>
-                      )
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                                cell.getContext(),
+                              )}
+                            </td>
+                          )
+                        })}
+                      </tr>
+                    </>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
+      </section>
+      <AddSubstancesModal
+        show={showModal}
+        onClose={() => setShowModal(false)}
+      />
+    </>
+  )
+}
+
+const TableHeaderActions = ({
+  onAddSubstances,
+}: {
+  onAddSubstances?: () => void
+}) => {
+  return (
+    <div className="flex flex-col md:flex-row items-center justify-end space-y-3 md:space-y-0 md:space-x-4 p-4">
+      <div className="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
+        <Button onClick={onAddSubstances}>+ Add substances</Button>
       </div>
-    </section>
+    </div>
+  )
+}
+
+const AddSubstancesModal = ({
+  show = false,
+  onClose,
+}: {
+  show?: boolean
+  onClose?: () => void
+}) => {
+  const [selectedOption, setSelectedOption] = useState<any>(null)
+  const [selectedRecords, setSelectedRecords] = useState<any>(null)
+  const methods = useForm()
+
+  const substances = useSelector(selectSubstancesAnnexA)
+
+  useEffect(() => {
+    if (selectedOption) {
+      const substance = RECORDS.find(item => item.id === selectedOption.value)
+      setSelectedRecords(substance?.usages)
+    }
+  }, [selectedOption])
+
+  const ComposeInputsByUsage = () => {
+    console.log(selectedRecords)
+    if (!selectedRecords) return null
+
+    return (
+      <>
+        {selectedRecords.map((record: any) => {
+          if (record.children) {
+            return (
+              <div className="w-full text-center" key={record.id}>
+                <label className="block text-sm font-bold text-gray-900 dark:text-white">
+                  {record.name}
+                </label>
+                <div className="flex flex-row w-full ">
+                  {record.children.map((child: any) => {
+                    return (
+                      <div className="w-full mr-3" key={child.id}>
+                        <FormInput name={child.name} label={child.name} />
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          }
+          return (
+            <div key={record.id}>
+              <FormInput name={record.name} label={record.name} />
+            </div>
+          )
+        })}
+      </>
+    )
+  }
+
+  return (
+    <Modal show={show} size="2xl" onClose={onClose} position="top-center">
+      <Modal.Header>Add substances</Modal.Header>
+      <Modal.Body>
+        <FormProvider {...methods}>
+          <div className="flex flex-col gap-1">
+            <div>
+              <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                Select substance
+              </label>
+              <Select
+                defaultValue={selectedOption}
+                onChange={setSelectedOption}
+                options={substances}
+                className="react-select-container"
+                classNamePrefix="react-select"
+              />
+            </div>
+            {selectedOption && <ComposeInputsByUsage />}
+            <div className="flex flex-col gap-1">
+              <hr className="my-2" />
+              <div>
+                <FormInput name="Import" label="Import" />
+              </div>
+              <div>
+                <FormInput name="Export" label="Export" />
+              </div>
+              <div>
+                <FormInput name="Production" label="Production" />
+              </div>
+              <div>
+                <FormInput name="Import quotas" label="Import quotas" />
+              </div>
+              <div>
+                <FormInput
+                  name="Import quotas"
+                  label="If imports are banned, indicate date ban commenced (DD/MM/YYYY)"
+                />
+              </div>
+              <div>
+                <FormInput name="remarks" label="Remarks" />
+              </div>
+            </div>
+          </div>
+        </FormProvider>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button onClick={() => console.log('saved')}>Add more</Button>
+        <Button onClick={() => console.log('saved')}>
+          Add and close modal
+        </Button>
+      </Modal.Footer>
+    </Modal>
   )
 }
