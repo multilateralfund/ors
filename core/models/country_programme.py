@@ -12,6 +12,9 @@ class CountryProgrammeReport(models.Model):
     comment = models.TextField(null=True, blank=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.name
+
 
 class CountryProgrammeRecord(models.Model):
     blend = models.ForeignKey(Blend, on_delete=models.CASCADE, null=True, blank=True)

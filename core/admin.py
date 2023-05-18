@@ -171,9 +171,20 @@ class CountryProgrammeRecordAdmin(admin.ModelAdmin):
         "country_programme_report__country",
     ]
 
+    def get_country(self, obj):
+        return obj.country_programme_report.country
+    get_country.short_description = 'Country'
+
+    def get_year(self, obj):
+        return obj.country_programme_report.year
+    get_year.short_description = 'Year'
+
     def get_list_display(self, request):
         exclude = ["country_programme_report", "source"]
-        return get_final_display_list(CountryProgrammeRecord, exclude)
+        return get_final_display_list(CountryProgrammeRecord, exclude) + [
+            "get_year",
+            "get_country",
+        ]
 
 
 @admin.register(CountryProgrammeReport)
