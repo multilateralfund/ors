@@ -107,6 +107,7 @@ def parse_chemical_name(chemical_name):
         e.g.:
         R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%) => ("R-404A", [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")])
         R125/R218/R290 (86%/9%/5%) =>R125/R218/R290 (86%/9%/5%),   [('R125', '86'), ('R218', '9'), ('R290', '5')]
+        R23/Other uncontrolled substances (98%/2%) => R23/Other uncontrolled substances (98%/2%), [(R23, 98), (Other substances, 2)]
     @param chemical_name string
     @return tuple => (chemical_search_name, components)
         - chemical_search_name = string
@@ -115,10 +116,16 @@ def parse_chemical_name(chemical_name):
     # remove Fullwidth Right Parenthesis
     chemical_name = chemical_name.replace("）", ")").strip()
 
+    # R23/Other uncontrolled substances (98%/2%)
     # R32/R125/R134a/HFO (24%/25%/26%/25%)
-    if re.search(BLEND_COMPOSITION_RE, chemical_name):
+    if ("Other uncontrolled substances" in chemical_name) or (
+        re.search(BLEND_COMPOSITION_RE, chemical_name)
+    ):
+        chemical_name.replace("Other uncontrolled substances", "Other substances")
+
         substances, percentages = chemical_name.split("(")
         substances = substances.strip().split("/")
+
         percentages = re.findall(r"(\d{1,3}\.?\,?\d{,3})\%", percentages)
         if len(substances) != len(percentages):
             return chemical_name, []
