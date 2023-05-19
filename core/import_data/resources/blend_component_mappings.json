@@ -1,6 +1,28 @@
 [
 {
     "model": "core.blendcomponentmapping",
+    "pk": 144,
+    "fields": {
+        "party": 50,
+        "party_blend_component": "R-14",
+        "substance": 307,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-19T14:38:01.723Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 143,
+    "fields": {
+        "party": 50,
+        "party_blend_component": "R-740",
+        "substance": 306,
+        "remarks": "Found in MLFS data",
+        "created": "2023-05-19T14:37:37.523Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
     "pk": 142,
     "fields": {
         "party": 52,
