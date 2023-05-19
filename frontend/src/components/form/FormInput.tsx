@@ -9,12 +9,14 @@ interface IFormInputProps extends InputHTMLAttributes<HTMLInputElement> {
   name: string
   label: string
   sizing?: ButtonSize
+  inline?: boolean
 }
 
 export const FormInput: FC<IFormInputProps> = ({
   name,
   label,
   sizing = 'xs',
+  inline = false,
   ...otherProps
 }) => {
   const {
@@ -38,7 +40,7 @@ export const FormInput: FC<IFormInputProps> = ({
     focus:ring-primary-600
     focus:border-primary-600
     block
-    w-full
+    ${inline ? 'w-full' : 'w-full'}
     p-${sizes[sizing]}
     dark:bg-gray-700
     dark:border-gray-600
@@ -55,10 +57,22 @@ export const FormInput: FC<IFormInputProps> = ({
       name={name}
       render={({ field }) => (
         <>
-          <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-            {label}
-          </label>
-          <input className={inputClasses} {...field} {...otherProps} />
+          {inline ? (
+            <div className="flex flex-row w-full justify-between">
+              <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white w-1/2">
+                {label}
+              </label>
+              <input className={inputClasses} {...field} {...otherProps} />
+            </div>
+          ) : (
+            <>
+              <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                {label}
+              </label>
+              <input className={inputClasses} {...field} {...otherProps} />
+            </>
+          )}
+
           {!!errors[name] && (
             <InputError>
               {errors[name] ? (errors[name]?.message as unknown as string) : ''}

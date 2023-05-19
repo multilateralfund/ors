@@ -269,7 +269,6 @@ const AddSubstancesModal = ({
   }, [selectedOption])
 
   const ComposeInputsByUsage = () => {
-    console.log(selectedRecords)
     if (!selectedRecords) return null
 
     return (
@@ -277,15 +276,24 @@ const AddSubstancesModal = ({
         {selectedRecords.map((record: any) => {
           if (record.children) {
             return (
-              <div className="w-full text-center" key={record.id}>
-                <label className="block text-sm font-bold text-gray-900 dark:text-white">
+              <div className="w-full text-left my-3" key={record.id}>
+                <label className="block text-sm font-bold my-2 text-gray-900 dark:text-white text-center">
                   {record.name}
                 </label>
                 <div className="flex flex-row w-full ">
-                  {record.children.map((child: any) => {
+                  {record.children.map((child: any, i: number) => {
                     return (
-                      <div className="w-full mr-3" key={child.id}>
-                        <FormInput name={child.name} label={child.name} />
+                      <div
+                        className={`w-full ${
+                          i + 1 === record.children.length ? '' : 'mr-3'
+                        }`}
+                        key={child.id}
+                      >
+                        <FormInput
+                          name={child.name}
+                          label={child.name}
+                          type="number"
+                        />
                       </div>
                     )
                   })}
@@ -295,7 +303,12 @@ const AddSubstancesModal = ({
           }
           return (
             <div key={record.id}>
-              <FormInput name={record.name} label={record.name} />
+              <FormInput
+                name={record.name}
+                label={record.name}
+                inline
+                type="number"
+              />
             </div>
           )
         })}
@@ -308,8 +321,8 @@ const AddSubstancesModal = ({
       <Modal.Header>Add substances</Modal.Header>
       <Modal.Body>
         <FormProvider {...methods}>
-          <div className="flex flex-col gap-1">
-            <div>
+          <div className="flex flex-col gap-2">
+            <div className="mb-2">
               <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                 Select substance
               </label>
@@ -322,38 +335,48 @@ const AddSubstancesModal = ({
               />
             </div>
             {selectedOption && <ComposeInputsByUsage />}
-            <div className="flex flex-col gap-1">
-              <hr className="my-2" />
+            <div className="flex flex-col gap-2 mt-3">
               <div>
-                <FormInput name="Import" label="Import" />
+                <FormInput name="Import" label="Import" inline type="number" />
               </div>
               <div>
-                <FormInput name="Export" label="Export" />
+                <FormInput name="Export" label="Export" inline type="number" />
               </div>
               <div>
-                <FormInput name="Production" label="Production" />
-              </div>
-              <div>
-                <FormInput name="Import quotas" label="Import quotas" />
+                <FormInput
+                  name="Production"
+                  label="Production"
+                  inline
+                  type="number"
+                />
               </div>
               <div>
                 <FormInput
                   name="Import quotas"
-                  label="If imports are banned, indicate date ban commenced (DD/MM/YYYY)"
+                  label="Import quotas"
+                  inline
+                  type="number"
                 />
               </div>
               <div>
-                <FormInput name="remarks" label="Remarks" />
+                <FormInput
+                  name="Import quotas"
+                  label="If imports are banned"
+                  inline
+                />
+              </div>
+              <div>
+                <FormInput name="remarks" label="Remarks" inline />
               </div>
             </div>
           </div>
         </FormProvider>
       </Modal.Body>
       <Modal.Footer>
-        <Button onClick={() => console.log('saved')}>Add more</Button>
         <Button onClick={() => console.log('saved')}>
           Add and close modal
         </Button>
+        <Button onClick={() => console.log('saved')}>Add more</Button>
       </Modal.Footer>
     </Modal>
   )
