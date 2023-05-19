@@ -86,7 +86,10 @@ def parse_countries_json_file(file_path, country_lvc):
         json_data = json.load(f)
 
     for country_json in json_data:
-        if country_json["pk"] != country_json["fields"]["parent_party"]:
+        if (
+            country_json["pk"] != country_json["fields"]["parent_party"]
+            and country_json["fields"]["name"] != "Yugoslavia"
+        ):
             # skip unwanted territories
             continue
 

@@ -13025,127 +13025,6 @@
 },
 {
     "model": "core.blendcomponent",
-    "pk": 1358,
-    "fields": {
-        "blend": 391,
-        "substance": 367,
-        "percentage": "0.90000",
-        "component_name": "Carbon tetrafluoride",
-        "cnumber": "0"
-    }
-},
-{
-    "model": "core.blendcomponent",
-    "pk": 1339,
-    "fields": {
-        "blend": 384,
-        "substance": 367,
-        "percentage": "0.44100",
-        "component_name": "Carbon tetrafluoride",
-        "cnumber": "0"
-    }
-},
-{
-    "model": "core.blendcomponent",
-    "pk": 1316,
-    "fields": {
-        "blend": 377,
-        "substance": 367,
-        "percentage": "0.22000",
-        "component_name": "Carbon tetrafluoride",
-        "cnumber": "0"
-    }
-},
-{
-    "model": "core.blendcomponent",
-    "pk": 1313,
-    "fields": {
-        "blend": 376,
-        "substance": 367,
-        "percentage": "0.10000",
-        "component_name": "Carbon tetrafluoride",
-        "cnumber": "0"
-    }
-},
-{
-    "model": "core.blendcomponent",
-    "pk": 1307,
-    "fields": {
-        "blend": 375,
-        "substance": 367,
-        "percentage": "0.20000",
-        "component_name": "Carbon tetrafluoride",
-        "cnumber": "0"
-    }
-},
-{
-    "model": "core.blendcomponent",
-    "pk": 1302,
-    "fields": {
-        "blend": 374,
-        "substance": 367,
-        "percentage": "0.20000",
-        "component_name": "Carbon tetrafluoride",
-        "cnumber": "0"
-    }
-},
-{
-    "model": "core.blendcomponent",
-    "pk": 1297,
-    "fields": {
-        "blend": 373,
-        "substance": 367,
-        "percentage": "0.10000",
-        "component_name": "Carbon tetrafluoride",
-        "cnumber": "0"
-    }
-},
-{
-    "model": "core.blendcomponent",
-    "pk": 1292,
-    "fields": {
-        "blend": 372,
-        "substance": 367,
-        "percentage": "0.25000",
-        "component_name": "Carbon tetrafluoride",
-        "cnumber": "0"
-    }
-},
-{
-    "model": "core.blendcomponent",
-    "pk": 1287,
-    "fields": {
-        "blend": 371,
-        "substance": 367,
-        "percentage": "0.25000",
-        "component_name": "Carbon tetrafluoride",
-        "cnumber": "0"
-    }
-},
-{
-    "model": "core.blendcomponent",
-    "pk": 1282,
-    "fields": {
-        "blend": 370,
-        "substance": 367,
-        "percentage": "0.21000",
-        "component_name": "Carbon tetrafluoride",
-        "cnumber": "0"
-    }
-},
-{
-    "model": "core.blendcomponent",
-    "pk": 1277,
-    "fields": {
-        "blend": 369,
-        "substance": 368,
-        "percentage": "0.20000",
-        "component_name": "HFO-1132",
-        "cnumber": "0"
-    }
-},
-{
-    "model": "core.blendcomponent",
     "pk": 1387,
     "fields": {
         "blend": 402,
@@ -13230,6 +13109,28 @@
         "percentage": "0.24000",
         "component_name": "HFC-32",
         "cnumber": "0"
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1400,
+    "fields": {
+        "blend": 493,
+        "substance": 97,
+        "percentage": "0.47000",
+        "component_name": "HFC-125",
+        "cnumber": ""
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1392,
+    "fields": {
+        "blend": 429,
+        "substance": 97,
+        "percentage": "0.14000",
+        "component_name": "HFC-125",
+        "cnumber": "125"
     }
 },
 {
@@ -13472,6 +13373,28 @@
         "percentage": "0.10000",
         "component_name": "HFC-125",
         "cnumber": "0"
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1399,
+    "fields": {
+        "blend": 493,
+        "substance": 99,
+        "percentage": "0.53000",
+        "component_name": "HFC-134a",
+        "cnumber": ""
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1398,
+    "fields": {
+        "blend": 492,
+        "substance": 99,
+        "percentage": "0.12500",
+        "component_name": "HFC-134a",
+        "cnumber": ""
     }
 },
 {
@@ -13762,6 +13685,28 @@
 },
 {
     "model": "core.blendcomponent",
+    "pk": 1397,
+    "fields": {
+        "blend": 492,
+        "substance": 110,
+        "percentage": "0.87500",
+        "component_name": "HFC-245fa",
+        "cnumber": ""
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1393,
+    "fields": {
+        "blend": 429,
+        "substance": 110,
+        "percentage": "0.40000",
+        "component_name": "HFC-245fa",
+        "cnumber": "245"
+    }
+},
+{
+    "model": "core.blendcomponent",
     "pk": 1389,
     "fields": {
         "blend": 403,
@@ -13846,6 +13791,17 @@
         "percentage": "0.83000",
         "component_name": "HFC-365mfc",
         "cnumber": "0"
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1394,
+    "fields": {
+        "blend": 429,
+        "substance": 105,
+        "percentage": "0.20000",
+        "component_name": "HFC-23",
+        "cnumber": ""
     }
 },
 {
@@ -14004,6 +13960,17 @@
 },
 {
     "model": "core.blendcomponent",
+    "pk": 1395,
+    "fields": {
+        "blend": 429,
+        "substance": 307,
+        "percentage": "0.20000",
+        "component_name": "PFC-14 (Tetrafluoromethane)",
+        "cnumber": ""
+    }
+},
+{
+    "model": "core.blendcomponent",
     "pk": 1388,
     "fields": {
         "blend": 402,
@@ -14044,6 +14011,17 @@
         "percentage": "0.04000",
         "component_name": "HC-601 (Pentane)",
         "cnumber": "0"
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1396,
+    "fields": {
+        "blend": 429,
+        "substance": 306,
+        "percentage": "0.06000",
+        "component_name": "R-740 (Argon)",
+        "cnumber": ""
     }
 },
 {
@@ -14197,6 +14175,127 @@
         "substance": 365,
         "percentage": "0.30000",
         "component_name": "1-Bromopropane",
+        "cnumber": "0"
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1358,
+    "fields": {
+        "blend": 391,
+        "substance": 367,
+        "percentage": "0.90000",
+        "component_name": "Carbon tetrafluoride",
+        "cnumber": "0"
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1339,
+    "fields": {
+        "blend": 384,
+        "substance": 367,
+        "percentage": "0.44100",
+        "component_name": "Carbon tetrafluoride",
+        "cnumber": "0"
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1316,
+    "fields": {
+        "blend": 377,
+        "substance": 367,
+        "percentage": "0.22000",
+        "component_name": "Carbon tetrafluoride",
+        "cnumber": "0"
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1313,
+    "fields": {
+        "blend": 376,
+        "substance": 367,
+        "percentage": "0.10000",
+        "component_name": "Carbon tetrafluoride",
+        "cnumber": "0"
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1307,
+    "fields": {
+        "blend": 375,
+        "substance": 367,
+        "percentage": "0.20000",
+        "component_name": "Carbon tetrafluoride",
+        "cnumber": "0"
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1302,
+    "fields": {
+        "blend": 374,
+        "substance": 367,
+        "percentage": "0.20000",
+        "component_name": "Carbon tetrafluoride",
+        "cnumber": "0"
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1297,
+    "fields": {
+        "blend": 373,
+        "substance": 367,
+        "percentage": "0.10000",
+        "component_name": "Carbon tetrafluoride",
+        "cnumber": "0"
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1292,
+    "fields": {
+        "blend": 372,
+        "substance": 367,
+        "percentage": "0.25000",
+        "component_name": "Carbon tetrafluoride",
+        "cnumber": "0"
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1287,
+    "fields": {
+        "blend": 371,
+        "substance": 367,
+        "percentage": "0.25000",
+        "component_name": "Carbon tetrafluoride",
+        "cnumber": "0"
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1282,
+    "fields": {
+        "blend": 370,
+        "substance": 367,
+        "percentage": "0.21000",
+        "component_name": "Carbon tetrafluoride",
+        "cnumber": "0"
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1277,
+    "fields": {
+        "blend": 369,
+        "substance": 368,
+        "percentage": "0.20000",
+        "component_name": "HFO-1132",
         "cnumber": "0"
     }
 },

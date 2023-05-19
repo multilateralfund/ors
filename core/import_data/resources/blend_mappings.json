@@ -1,2268 +1,2389 @@
 [
-{
-    "model": "core.blendmapping",
-    "pk": 206,
-    "fields": {
-        "party": null,
-        "blend": 356,
-        "party_blend_id": "PFC-1102HC",
-        "remarks": "Found in MLFS data",
-        "created": "2023-05-12T14:49:32.012Z"
+    {
+        "model": "core.blendmapping",
+        "pk": 218,
+        "fields": {
+            "party": 49,
+            "blend": 396,
+            "party_blend_id": "R134a/1-Bromopropane (70%/30%\uff09",
+            "remarks": "Found in MLFS data",
+            "created": "2023-05-18T12:06:52.884Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 217,
+        "fields": {
+            "party": 50,
+            "blend": 156,
+            "party_blend_id": "Chesterton 296 EU: HFC-134a (40-50 %), HFC-365mfc (20-30%), HFC-245fa (20-30%) and isopropyl alcohol (1-5%)",
+            "remarks": "Found in MLFS data",
+            "created": "2023-05-18T10:13:46.144Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 216,
+        "fields": {
+            "party": 47,
+            "blend": 176,
+            "party_blend_id": "HFC-365mfc/HFC-227ea (93/7) en polioles premezclados imp.",
+            "remarks": "Found in MLFS data",
+            "created": "2023-05-17T17:24:02.721Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 215,
+        "fields": {
+            "party": 49,
+            "blend": 221,
+            "party_blend_id": "32/R125/R134a/R227ea/R236fa/R600",
+            "remarks": "Found in MLFS data",
+            "created": "2023-05-17T16:57:22.734Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 214,
+        "fields": {
+            "party": 159,
+            "blend": 208,
+            "party_blend_id": "R-YH222",
+            "remarks": "Found in MLFS data",
+            "created": "2023-05-17T16:02:03.674Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 212,
+        "fields": {
+            "party": 11,
+            "blend": 202,
+            "party_blend_id": "PFC1102 HC",
+            "remarks": "Found in MLFS data",
+            "created": "2023-05-17T15:17:42.370Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 211,
+        "fields": {
+            "party": 11,
+            "blend": 57,
+            "party_blend_id": "DYR 5",
+            "remarks": "Found in MLFS data",
+            "created": "2023-05-17T15:16:33.413Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 210,
+        "fields": {
+            "party": 50,
+            "blend": 176,
+            "party_blend_id": "HFC 365mfc/HFC 227 ea (93/7)",
+            "remarks": "Found in MLFS data",
+            "created": "2023-05-17T15:12:43.758Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 209,
+        "fields": {
+            "party": 47,
+            "blend": 176,
+            "party_blend_id": "HFC-365mfc / HFC-227ea",
+            "remarks": "Found in MLFS data",
+            "created": "2023-05-17T15:10:28.802Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 208,
+        "fields": {
+            "party": 159,
+            "blend": 184,
+            "party_blend_id": "Formacel Z6",
+            "remarks": "Found in MLFS data",
+            "created": "2023-05-17T14:30:45.373Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 207,
+        "fields": {
+            "party": 167,
+            "blend": 97,
+            "party_blend_id": "N40-R448A",
+            "remarks": "Found in MLFS data",
+            "created": "2023-05-17T14:26:10.024Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 206,
+        "fields": {
+            "party": 50,
+            "blend": 356,
+            "party_blend_id": "PFC-1102HC",
+            "remarks": "Found in MLFS data",
+            "created": "2023-05-12T14:49:32.012Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 205,
+        "fields": {
+            "party": 65,
+            "blend": 378,
+            "party_blend_id": "625",
+            "remarks": "Mix: PFC-14: 33.8%; HCFC-1233zd: 32.1%; HFC-23: 20.5%; HFC-32: 13.6%",
+            "created": "2022-09-19T10:22:36.966Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 204,
+        "fields": {
+            "party": 65,
+            "blend": 365,
+            "party_blend_id": "623",
+            "remarks": "Mix: HFC-43-10mee: 65%; HFC-365mfc: 35%",
+            "created": "2022-06-22T08:03:43.348Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 203,
+        "fields": {
+            "party": 65,
+            "blend": 364,
+            "party_blend_id": "620",
+            "remarks": "Mix: HFC-134a: 50%; Isobutane: 25%; Other (halocarbons as e.g. R12): 25%",
+            "created": "2022-06-22T08:00:15.944Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 202,
+        "fields": {
+            "party": 65,
+            "blend": 363,
+            "party_blend_id": "616",
+            "remarks": "Mix: PFC-14: 35.23%; HCFC-1233zd: 28.45%; HFC-23: 18.16%; HFC-32: 12.11%; Other (R-740 (Argon)): 6.05%",
+            "created": "2022-06-22T07:54:10.350Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 201,
+        "fields": {
+            "party": 65,
+            "blend": 362,
+            "party_blend_id": "615",
+            "remarks": "Mix: HCFC-1233zd: 44.76%; HFC-23: 28.57%; HFC-32: 26.67%",
+            "created": "2022-06-22T07:49:30.870Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 200,
+        "fields": {
+            "party": 65,
+            "blend": 361,
+            "party_blend_id": "614",
+            "remarks": "Mix: HCFC-1233zd: 31.08%; PFC-14: 29.1%; HFC-23: 17.2%; HFC-32: 15.87%; Other (R740 (Argon)): 6.75%",
+            "created": "2022-06-22T07:46:02.789Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 199,
+        "fields": {
+            "party": 65,
+            "blend": 360,
+            "party_blend_id": "613",
+            "remarks": "Mix: PFC-14: 33.77%; HCFC-1233zd: 30.01%; HFC-23: 19.76%; HFC-32: 16.46%",
+            "created": "2022-06-22T07:40:42.425Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 198,
+        "fields": {
+            "party": 65,
+            "blend": 359,
+            "party_blend_id": "612",
+            "remarks": "Mix: PFC-14: 72.46%; HFC-23: 12.08%; Other (R740 (Argon)): 10.63%; HFC-32: 4.83%",
+            "created": "2022-06-22T07:34:31.963Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 197,
+        "fields": {
+            "party": 65,
+            "blend": 358,
+            "party_blend_id": "611",
+            "remarks": "Mix: HCFC-1233zd: 32.26%; PFC-14: 30.65%; HFC-23: 20.97%; HFC-32: 12.9%; Other (R-740 (Argon)): 3.22%",
+            "created": "2022-06-22T07:27:56.438Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 196,
+        "fields": {
+            "party": 65,
+            "blend": 354,
+            "party_blend_id": "596",
+            "remarks": "Mix: Carbon dioxide: 60%; Other (R1132a): 20%; HFC-23: 10%; HFC-125: 10%",
+            "created": "2022-06-22T07:21:55.010Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 195,
+        "fields": {
+            "party": 65,
+            "blend": 62,
+            "party_blend_id": "54",
+            "remarks": "HFC-125:55%;HFC-134a:42%;HC-600a:3%",
+            "created": "2022-05-11T09:46:28.705Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 194,
+        "fields": {
+            "party": 65,
+            "blend": 69,
+            "party_blend_id": "41",
+            "remarks": "HFC-134a:93%;HFC-125:5.1%;HC-600:1.3%;HC-601a:0.6%",
+            "created": "2022-05-11T09:46:28.680Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 193,
+        "fields": {
+            "party": 65,
+            "blend": 340,
+            "party_blend_id": "586",
+            "remarks": "Mix: HFC-245fa: 39.145%; PFC-14: 24.911%; HFC-1234yf: 15.125%; HFC-23: 15.125%; Methane: 2.847%; Other (Argon): 2.847%",
+            "created": "2022-05-11T09:46:28.469Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 192,
+        "fields": {
+            "party": 65,
+            "blend": 339,
+            "party_blend_id": "585",
+            "remarks": "Mix: HFC-245fa: 31.286%; PFC-14: 30.128%; HFC-23: 19.467%; HFC-1234yf: 13.905%; Methane: 2.665%; Other (Argon): 2.549%",
+            "created": "2022-05-11T09:46:28.443Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 191,
+        "fields": {
+            "party": 65,
+            "blend": 338,
+            "party_blend_id": "584",
+            "remarks": "Mix: PFC-14: 30%; HFC-23: 20%; Other (Argon): 20%; HFC-125: 15%; HFC-245fa: 15%",
+            "created": "2022-05-11T09:46:28.413Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 190,
+        "fields": {
+            "party": 65,
+            "blend": 337,
+            "party_blend_id": "583",
+            "remarks": "Mix: PFC-14: 32.389%; HFC-245fa: 29.69%; HFC-23: 18.893%; HFC-1234yf: 13.495%; Other (Argon): 3.104%; Methane: 2.429%",
+            "created": "2022-05-11T09:46:28.376Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 189,
+        "fields": {
+            "party": 65,
+            "blend": 336,
+            "party_blend_id": "579",
+            "remarks": "Mix: Isobutane: 99.5%; HFC-1234yf: 0.5%",
+            "created": "2022-05-11T09:46:28.327Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 188,
+        "fields": {
+            "party": 65,
+            "blend": 335,
+            "party_blend_id": "577",
+            "remarks": "Mix: HFC-1234yf: 56.0%; HFC-134: 44%",
+            "created": "2022-05-11T09:46:28.312Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 187,
+        "fields": {
+            "party": 65,
+            "blend": 334,
+            "party_blend_id": "576",
+            "remarks": "Mix: HFC-236fa: 60%; HFC-23: 20%; PFC-14: 20%",
+            "created": "2022-05-11T09:46:28.295Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 186,
+        "fields": {
+            "party": 65,
+            "blend": 333,
+            "party_blend_id": "575",
+            "remarks": "Mix: PFC-14: 33.426%; HFC-245fa: 30.642%; HFC-23: 19.498%; HFC-1234yf: 13.927%; Methane: 2.507%",
+            "created": "2022-05-11T09:46:28.276Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 185,
+        "fields": {
+            "party": 65,
+            "blend": 332,
+            "party_blend_id": "574",
+            "remarks": "Mix: HFC-245fa: 32.105%; PFC-14: 30.915%; HFC-23: 19.976%; HFC-1234yf: 14.269%; Methane: 2.735%",
+            "created": "2022-05-11T09:46:28.251Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 184,
+        "fields": {
+            "party": 65,
+            "blend": 331,
+            "party_blend_id": "573",
+            "remarks": "Mix: HFC-245fa: 40.293%; PFC-14: 25.641%; HFC-23: 15.568%; HFC-1234yf: 15.568%; Methane: 2.93%",
+            "created": "2022-05-11T09:46:28.228Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 183,
+        "fields": {
+            "party": 65,
+            "blend": 330,
+            "party_blend_id": "571",
+            "remarks": "Mix: Propane: 99.5%; Other (ISOBUTANE): 0.5%",
+            "created": "2022-05-11T09:46:28.205Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 182,
+        "fields": {
+            "party": 65,
+            "blend": 329,
+            "party_blend_id": "570",
+            "remarks": "Mix: HFC-23: 44%; HFC-125: 32%; HFC-32: 10%; HFC-134: 10%; HFC-143a: 4%",
+            "created": "2022-05-11T09:46:28.188Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 181,
+        "fields": {
+            "party": 65,
+            "blend": 328,
+            "party_blend_id": "565",
+            "remarks": "Mix: HFC-1234ze: 90%; HFC-134a: 10%",
+            "created": "2022-05-11T09:46:28.141Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 180,
+        "fields": {
+            "party": 65,
+            "blend": 327,
+            "party_blend_id": "561",
+            "remarks": "Mix: HFC-1234ze: 97%; Carbon dioxide: 3%",
+            "created": "2022-05-11T09:46:28.119Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 179,
+        "fields": {
+            "party": 65,
+            "blend": 326,
+            "party_blend_id": "560",
+            "remarks": "Mix: HFC-1234ze: 97.4%; Other (Exxsol): 2.6%",
+            "created": "2022-05-11T09:46:28.104Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 178,
+        "fields": {
+            "party": 65,
+            "blend": 325,
+            "party_blend_id": "555",
+            "remarks": "Mix: Other (R4014a): 70.5%; HFC-134a: 29.5%",
+            "created": "2022-05-11T09:46:28.089Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 177,
+        "fields": {
+            "party": 65,
+            "blend": 324,
+            "party_blend_id": "554",
+            "remarks": "Mix: Other (R404a): 71.9%; HFC-134a: 28.1%",
+            "created": "2022-05-11T09:46:28.073Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 176,
+        "fields": {
+            "party": 65,
+            "blend": 323,
+            "party_blend_id": "550",
+            "remarks": "Mix: Other (R508b): 92.6%; Propane: 7.4%",
+            "created": "2022-05-11T09:46:28.058Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 175,
+        "fields": {
+            "party": 65,
+            "blend": 322,
+            "party_blend_id": "549",
+            "remarks": "Mix: Other (R404a): 52.9%; HFC-134a: 47.1%",
+            "created": "2022-05-11T09:46:28.042Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 174,
+        "fields": {
+            "party": 65,
+            "blend": 321,
+            "party_blend_id": "547",
+            "remarks": "Mix: Other (R508b): 93%; Propane: 7.0%",
+            "created": "2022-05-11T09:46:28.027Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 173,
+        "fields": {
+            "party": 65,
+            "blend": 320,
+            "party_blend_id": "543",
+            "remarks": "Mix: PFC-14: 26.5%; PFC-116: 15.9%; HFC-143a: 11.1%; HFC-23: 10.2%; HFC-245fa: 10%; HFC-125: 9.3%; Other (R-740): 6%; Methane: 5.9%; Butane: 4.2%; HFC-134a: 0.9%",
+            "created": "2022-05-11T09:46:28.010Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 172,
+        "fields": {
+            "party": 65,
+            "blend": 319,
+            "party_blend_id": "541",
+            "remarks": "Mix: PFC-14: 22.7%; PFC-116: 19.5%; HFC-143a: 13%; HFC-23: 12.4%; HFC-125: 11%; HFC-245fa: 7.4%; Methane: 5.1%; Other (R-740): 4.7%; Butane: 3.2%; HFC-134a: 1%",
+            "created": "2022-05-11T09:46:27.971Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 171,
+        "fields": {
+            "party": 65,
+            "blend": 318,
+            "party_blend_id": "540",
+            "remarks": "Mix: Other (R508b): 93.1%; Propane: 6.9%",
+            "created": "2022-05-11T09:46:27.904Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 170,
+        "fields": {
+            "party": 65,
+            "blend": 317,
+            "party_blend_id": "537",
+            "remarks": "Mix: HFC-227ea: 93%; Other (n-Propanol): 7.0%",
+            "created": "2022-05-11T09:46:27.889Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 169,
+        "fields": {
+            "party": 65,
+            "blend": 316,
+            "party_blend_id": "533",
+            "remarks": "Mix: Other (CFC-11): 26.9%; HFC-134a: 16.7%; Other (HCFC-22): 14.4%; HFC-125: 14.0%; Other (CFC-12): 7.7%; Other (CFC-13): 5.2%; Other (HCFC-123): 4.8%; Other (HCFC-114): 3.4%; Other (Cyclo Pentane): 2.7%; Other (Others): 1.7%; Other (HCFC-141b): 1.3%; Ot",
+            "created": "2022-05-11T09:46:27.874Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 168,
+        "fields": {
+            "party": 65,
+            "blend": 315,
+            "party_blend_id": "532",
+            "remarks": "Mix: HFC-125: 64%; HFC-134a: 32%; Isobutane: 4%",
+            "created": "2022-05-11T09:46:27.827Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 167,
+        "fields": {
+            "party": 65,
+            "blend": 314,
+            "party_blend_id": "530",
+            "remarks": "Mix: HFC-245fa: 42%; HFC-23: 27%; Butane: 18%; PFC-14: 8%; Pentane: 5%",
+            "created": "2022-05-11T09:46:27.809Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 166,
+        "fields": {
+            "party": 65,
+            "blend": 313,
+            "party_blend_id": "529",
+            "remarks": "Mix: HFE-245fa1: 27%; Other (R14 (Tetrafluoromethane)): 25%; HFC-134a: 21%; HFC-23: 15%; Other (R740 (Argon)): 12%",
+            "created": "2022-05-11T09:46:27.782Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 165,
+        "fields": {
+            "party": 65,
+            "blend": 312,
+            "party_blend_id": "523",
+            "remarks": "Mix: HFC-245fa: 44.5%; HFC-23: 30%; Butane: 19.1%; PFC-14: 6.4%",
+            "created": "2022-05-11T09:46:27.739Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 164,
+        "fields": {
+            "party": 65,
+            "blend": 311,
+            "party_blend_id": "522",
+            "remarks": "Mix: HFC-245fa: 42.7%; HFC-23: 28.6%; Butane: 18.2%; PFC-14: 10.5%",
+            "created": "2022-05-11T09:46:27.712Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 163,
+        "fields": {
+            "party": 65,
+            "blend": 310,
+            "party_blend_id": "520",
+            "remarks": "Mix: HFC-245fa: 35%; HFC-23: 26%; HFC-125: 15%; Other (ARGON): 15%; PFC-14: 9%",
+            "created": "2022-05-11T09:46:27.692Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 162,
+        "fields": {
+            "party": 65,
+            "blend": 276,
+            "party_blend_id": "519",
+            "remarks": "",
+            "created": "2022-05-11T09:46:27.663Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 161,
+        "fields": {
+            "party": 65,
+            "blend": 309,
+            "party_blend_id": "517",
+            "remarks": "Mix: Other (R508b): 92.5%; Propane: 7.5%",
+            "created": "2022-05-11T09:46:27.646Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 160,
+        "fields": {
+            "party": 65,
+            "blend": 308,
+            "party_blend_id": "515",
+            "remarks": "Mix: Other (R404a): 72.4%; HFC-134a: 27.6%",
+            "created": "2022-05-11T09:46:27.631Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 159,
+        "fields": {
+            "party": 65,
+            "blend": 307,
+            "party_blend_id": "514",
+            "remarks": "Mix: HFC-245fa: 45.6%; HFC-23: 22.2%; Butane: 19.5%; PFC-14: 12.7%",
+            "created": "2022-05-11T09:46:27.614Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 158,
+        "fields": {
+            "party": 65,
+            "blend": 306,
+            "party_blend_id": "513",
+            "remarks": "Mix: HFC-134a: 66.7%; Other (R404a): 33.3%",
+            "created": "2022-05-11T09:46:27.592Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 157,
+        "fields": {
+            "party": 65,
+            "blend": 305,
+            "party_blend_id": "512",
+            "remarks": "Mix: HFC-245fa: 37.1%; HFC-23: 32.4%; Butane: 15.8%; PFC-14: 14.7%",
+            "created": "2022-05-11T09:46:27.561Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 156,
+        "fields": {
+            "party": 65,
+            "blend": 304,
+            "party_blend_id": "505",
+            "remarks": "Mix: Other (R508b): 91.9%; Propane: 8.1%",
+            "created": "2022-05-11T09:46:27.530Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 155,
+        "fields": {
+            "party": 65,
+            "blend": 303,
+            "party_blend_id": "504",
+            "remarks": "Mix: HFC-245fa: 45.5%; HFC-23: 28.2%; Butane: 19.5%; PFC-14: 6.8%",
+            "created": "2022-05-11T09:46:27.514Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 154,
+        "fields": {
+            "party": 65,
+            "blend": 302,
+            "party_blend_id": "384",
+            "remarks": "Mix: HFC-245fa: 43%; HFC-23: 27%; Butane: 18%; PFC-14: 12%",
+            "created": "2022-05-11T09:46:27.492Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 153,
+        "fields": {
+            "party": 65,
+            "blend": 301,
+            "party_blend_id": "376",
+            "remarks": "Mix: HFC-1234ze: 63%; HFC-134: 37%",
+            "created": "2022-05-11T09:46:27.466Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 152,
+        "fields": {
+            "party": 65,
+            "blend": 300,
+            "party_blend_id": "366",
+            "remarks": "Mix: PFC-14: 50%; Other (Argon): 22%; HFC-125: 12%; Ethane: 9%; HFC-23: 7%",
+            "created": "2022-05-11T09:46:27.451Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 151,
+        "fields": {
+            "party": 65,
+            "blend": 299,
+            "party_blend_id": "364",
+            "remarks": "Mix: PFC-14: 25%; PFC-116: 18%; HFC-143a: 12%; HFC-23: 12%; HFC-125: 10%; HFC-245fa: 9%; Methane: 5%; Other (R-740): 4%; Butane: 4%; HFC-134a: 1%",
+            "created": "2022-05-11T09:46:27.420Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 150,
+        "fields": {
+            "party": 65,
+            "blend": 298,
+            "party_blend_id": "363",
+            "remarks": "Mix: HFC-245fa: 45%; HFC-23: 30%; Butane: 19%; PFC-14: 6%",
+            "created": "2022-05-11T09:46:27.356Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 149,
+        "fields": {
+            "party": 65,
+            "blend": 297,
+            "party_blend_id": "362",
+            "remarks": "Mix: HFC-245fa: 46%; HFC-23: 28%; Butane: 19%; PFC-14: 7%",
+            "created": "2022-05-11T09:46:27.325Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 148,
+        "fields": {
+            "party": 65,
+            "blend": 296,
+            "party_blend_id": "361",
+            "remarks": "Mix: PFC-14: 25%; PFC-116: 18%; HFC-143a: 12%; HFC-23: 12%; HFC-125: 10%; HFC-245fa: 9%; Methane: 7%; Butane: 4%; Other (R-740): 2%; HFC-134a: 1%",
+            "created": "2022-05-11T09:46:27.305Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 147,
+        "fields": {
+            "party": 65,
+            "blend": 295,
+            "party_blend_id": "360",
+            "remarks": "Mix: PFC-14: 25%; PFC-116: 18%; HFC-143a: 12%; HFC-23: 12%; HFC-125: 10%; HFC-245fa: 9%; Methane: 6%; Butane: 4%; Other (R-740): 3%; HFC-134a: 1%",
+            "created": "2022-05-11T09:46:27.256Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 146,
+        "fields": {
+            "party": 65,
+            "blend": 294,
+            "party_blend_id": "359",
+            "remarks": "Mix: HFC-245fa: 43%; HFC-23: 28%; Butane: 19%; PFC-14: 10%",
+            "created": "2022-05-11T09:46:27.216Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 145,
+        "fields": {
+            "party": 65,
+            "blend": 293,
+            "party_blend_id": "358",
+            "remarks": "Mix: PFC-14: 24%; PFC-116: 22%; HFC-143a: 11%; HFC-23: 11%; HFC-125: 10%; HFC-245fa: 9%; Methane: 6%; Butane: 4%; Other (R-740): 2%; HFC-134a: 1%",
+            "created": "2022-05-11T09:46:27.191Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 144,
+        "fields": {
+            "party": 65,
+            "blend": 292,
+            "party_blend_id": "357",
+            "remarks": "Mix: HFC-245fa: 36%; PFC-14: 23%; HFC-125: 20%; PFC-116: 13%; HFC-23: 8%",
+            "created": "2022-05-11T09:46:27.129Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 143,
+        "fields": {
+            "party": 65,
+            "blend": 291,
+            "party_blend_id": "356",
+            "remarks": "Mix: HFC-245fa: 43%; HFC-23: 26%; Butane: 19%; PFC-14: 12%",
+            "created": "2022-05-11T09:46:27.103Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 142,
+        "fields": {
+            "party": 65,
+            "blend": 290,
+            "party_blend_id": "355",
+            "remarks": "Mix: HFC-245fa: 35%; HFC-125: 23%; PFC-14: 22%; PFC-116: 13%; HFC-23: 7%",
+            "created": "2022-05-11T09:46:27.080Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 141,
+        "fields": {
+            "party": 65,
+            "blend": 289,
+            "party_blend_id": "354",
+            "remarks": "Mix: HFC-245fa: 43%; HFC-23: 27%; Butane: 19%; PFC-14: 11%",
+            "created": "2022-05-11T09:46:27.057Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 140,
+        "fields": {
+            "party": 65,
+            "blend": 288,
+            "party_blend_id": "353",
+            "remarks": "Mix: HFC-245fa: 41%; HFC-23: 28%; Butane: 18%; PFC-14: 13%",
+            "created": "2022-05-11T09:46:27.037Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 139,
+        "fields": {
+            "party": 65,
+            "blend": 287,
+            "party_blend_id": "352",
+            "remarks": "Mix: HFC-134a: 26.1%; HFC-125: 25.1%; HFC-1234yf: 24.9%; HFC-32: 23.9%",
+            "created": "2022-05-11T09:46:27.016Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 138,
+        "fields": {
+            "party": 65,
+            "blend": 286,
+            "party_blend_id": "351",
+            "remarks": "Mix: Propane: 30%; Isobutane: 30%; PFC-116: 20%; HFC-23: 20%",
+            "created": "2022-05-11T09:46:26.994Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 137,
+        "fields": {
+            "party": 65,
+            "blend": 285,
+            "party_blend_id": "348",
+            "remarks": "Mix: HFC-236fa: 35.7%; PFC-14: 27%; HFC-23: 17%; HFC-125: 14.6%; Other (Argon): 5.7%",
+            "created": "2022-05-11T09:46:26.968Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 136,
+        "fields": {
+            "party": 65,
+            "blend": 284,
+            "party_blend_id": "347",
+            "remarks": "Mix: PFC-14: 30.6%; HFC-245ca: 30.1%; HFC-23: 22.2%; HFC-125: 11.8%; Other (Argon): 5.3%",
+            "created": "2022-05-11T09:46:26.912Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 135,
+        "fields": {
+            "party": 65,
+            "blend": 283,
+            "party_blend_id": "346",
+            "remarks": "Mix: PFC-14: 33.2%; HFC-245fa: 29%; HFC-23: 19.4%; HFC-1234yf: 15.2%; Methane: 3.2%",
+            "created": "2022-05-11T09:46:26.888Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 134,
+        "fields": {
+            "party": 65,
+            "blend": 282,
+            "party_blend_id": "345",
+            "remarks": "Mix: PFC-14: 35.4%; HFC-245fa: 25.7%; HFC-23: 21%; HFC-1234yf: 14.5%; Methane: 3.4%",
+            "created": "2022-05-11T09:46:26.863Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 133,
+        "fields": {
+            "party": 65,
+            "blend": 281,
+            "party_blend_id": "344",
+            "remarks": "Mix: HFC-245fa: 33.4%; PFC-14: 29.3%; HFC-23: 16.75%; HFC-1234yf: 16.75%; Methane: 3.8%",
+            "created": "2022-05-11T09:46:26.839Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 132,
+        "fields": {
+            "party": 65,
+            "blend": 280,
+            "party_blend_id": "341",
+            "remarks": "Mix: PFC-14: 30.6%; HFC-245fa: 30.3%; HFC-23: 22.2%; HFC-125: 11.9%; Other (-AR): 5%",
+            "created": "2022-05-11T09:46:26.811Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 131,
+        "fields": {
+            "party": 65,
+            "blend": 279,
+            "party_blend_id": "340",
+            "remarks": "Mix: HFC-236fa: 37.8%; PFC-14: 27.3%; HFC-23: 17.9%; HFC-125: 11.2%; Other (-AR): 5.8%",
+            "created": "2022-05-11T09:46:26.788Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 130,
+        "fields": {
+            "party": 65,
+            "blend": 278,
+            "party_blend_id": "339",
+            "remarks": "Mix: HFC-236fa: 35.7%; PFC-14: 27%; HFC-23: 18.1%; HFC-125: 14.6%; Other (-AR): 4.6%",
+            "created": "2022-05-11T09:46:26.758Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 129,
+        "fields": {
+            "party": 65,
+            "blend": 277,
+            "party_blend_id": "331",
+            "remarks": "Mix: Other (Argon): 50%; PFC-14: 50%",
+            "created": "2022-05-11T09:46:26.719Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 128,
+        "fields": {
+            "party": 65,
+            "blend": 276,
+            "party_blend_id": "330",
+            "remarks": "Mix: Ethane: 16.7%; HFE-347\u00a0mcc3 (HFE-7000): 16.7%; PFC-14: 16.7%; HFC-23: 16.7%; HFC-125: 16.7%; Other (Argon): 16.5%",
+            "created": "2022-05-11T09:46:26.704Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 127,
+        "fields": {
+            "party": 65,
+            "blend": 275,
+            "party_blend_id": "328",
+            "remarks": "Mix: HFC-32: 78.5%; HFC-1234yf: 21.5%",
+            "created": "2022-05-11T09:46:26.678Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 126,
+        "fields": {
+            "party": 65,
+            "blend": 274,
+            "party_blend_id": "318",
+            "remarks": "Mix: HFC-125: 25%; HFC-32: 25%; HFC-1234yf: 25%; HFC-134a: 25%",
+            "created": "2022-05-11T09:46:26.663Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 125,
+        "fields": {
+            "party": 65,
+            "blend": 273,
+            "party_blend_id": "304",
+            "remarks": "Mix: HFC-125: 30%; HFE-347\u00a0mcc3 (HFE-7000): 30%; PFC-14: 27%; Other (Argon): 5%; Ethane: 4%; HFC-23: 4%",
+            "created": "2022-05-11T09:46:26.633Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 124,
+        "fields": {
+            "party": 65,
+            "blend": 272,
+            "party_blend_id": "300",
+            "remarks": "Mix: HFC-227ea: 20%; HFC-125: 20%; HFC-143a: 20%; HFC-32: 20%; HFC-134a: 20%",
+            "created": "2022-05-11T09:46:26.604Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 123,
+        "fields": {
+            "party": 65,
+            "blend": 271,
+            "party_blend_id": "299",
+            "remarks": "Mix: HFC-134a: 80.1%; HFC-125: 19.9%",
+            "created": "2022-05-11T09:46:26.568Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 122,
+        "fields": {
+            "party": 65,
+            "blend": 270,
+            "party_blend_id": "297",
+            "remarks": "Mix: HFC-125: 67.39%; HFC-134a: 32.61%",
+            "created": "2022-05-11T09:46:26.537Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 121,
+        "fields": {
+            "party": 65,
+            "blend": 269,
+            "party_blend_id": "295",
+            "remarks": "Mix: HFC-236fa: 38%; PFC-14: 28%; HFC-125: 15%; HFC-23: 15%; Other (argon): 4%",
+            "created": "2022-05-11T09:46:26.517Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 120,
+        "fields": {
+            "party": 65,
+            "blend": 268,
+            "party_blend_id": "294",
+            "remarks": "Mix: HFC-236fa: 33%; PFC-14: 30%; HFC-23: 20%; HFC-125: 13%; Other (Argon): 4%",
+            "created": "2022-05-11T09:46:26.493Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 119,
+        "fields": {
+            "party": 65,
+            "blend": 267,
+            "party_blend_id": "293",
+            "remarks": "Mix: HFC-245fa: 30%; PFC-14: 29%; HFC-23: 23%; HFC-125: 13%; Other (Argon): 5%",
+            "created": "2022-05-11T09:46:26.467Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 118,
+        "fields": {
+            "party": 65,
+            "blend": 266,
+            "party_blend_id": "290",
+            "remarks": "Mix: Other (R 22): 99%; Other (R12): 1%",
+            "created": "2022-05-11T09:46:26.443Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 117,
+        "fields": {
+            "party": 65,
+            "blend": 265,
+            "party_blend_id": "288",
+            "remarks": "Mix: PFC-14: 36.5%; HFC-245fa: 22%; PFC-218: 12.5%; HFC-23: 11%; Isobutane: 7%; Other (Argon): 4%; Methane: 3.5%; Ethane: 3.5%",
+            "created": "2022-05-11T09:46:26.427Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 116,
+        "fields": {
+            "party": 65,
+            "blend": 264,
+            "party_blend_id": "286",
+            "remarks": "Mix: HFC-43-10mee: 57%; Other (OS-10 (107-46-0)): 43%",
+            "created": "2022-05-11T09:46:26.397Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 115,
+        "fields": {
+            "party": 65,
+            "blend": 263,
+            "party_blend_id": "285",
+            "remarks": "Mix: HFC-43-10mee: 96.75%; Other (Isopropyl alcohol (IPA) (67-63-0)): 3.25%",
+            "created": "2022-05-11T09:46:26.381Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 114,
+        "fields": {
+            "party": 65,
+            "blend": 262,
+            "party_blend_id": "284",
+            "remarks": "Mix: HFC-43-10mee: 50.9%; Other (1,2 Trans DCE (156-60-5)): 43%; Other (Methanol (67-56-1)): 4%; Other (Cyclopentane (287-92-3)): 2%; Other (Nitromethane (75-52-5)): 0.1%",
+            "created": "2022-05-11T09:46:26.359Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 113,
+        "fields": {
+            "party": 65,
+            "blend": 261,
+            "party_blend_id": "283",
+            "remarks": "Mix: HFC-43-10mee: 96%; Other (Ethanol (64-17-5)): 4%",
+            "created": "2022-05-11T09:46:26.318Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 112,
+        "fields": {
+            "party": 65,
+            "blend": 260,
+            "party_blend_id": "282",
+            "remarks": "Mix: HFC-43-10mee: 61.94%; Other (1,2 Trans DCE (156-60-5)): 37.96%; Other (Surfactant 621 (74665-00-2)): 0.1%",
+            "created": "2022-05-11T09:46:26.303Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 111,
+        "fields": {
+            "party": 65,
+            "blend": 259,
+            "party_blend_id": "281",
+            "remarks": "Mix: HFC-43-10mee: 99.4%; Other (Nitromethane (75-52-5)): 0.5%; Other (Zonyl UR-BALD (206009-80-5)): 0.1%",
+            "created": "2022-05-11T09:46:26.285Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 110,
+        "fields": {
+            "party": 65,
+            "blend": 258,
+            "party_blend_id": "280",
+            "remarks": "Mix: HFC-43-10mee: 52.9%; Other (1,2 Trans DCE (156-60-5)): 43%; Other (Methanol (67-56-1)): 4%; Other (Nitromethane (75-52-5)): 0.1%",
+            "created": "2022-05-11T09:46:26.267Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 109,
+        "fields": {
+            "party": 65,
+            "blend": 257,
+            "party_blend_id": "279",
+            "remarks": "Mix: HFC-43-10mee: 50%; Other (1,2 Trans DCE (156-60-5)): 45%; Other (Cyclopentane (287-92-3)): 5%",
+            "created": "2022-05-11T09:46:26.247Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 108,
+        "fields": {
+            "party": 65,
+            "blend": 256,
+            "party_blend_id": "278",
+            "remarks": "Mix: HFC-43-10mee: 62%; Other (1,2 Trans DCE (156-60-5)): 38%",
+            "created": "2022-05-11T09:46:26.229Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 107,
+        "fields": {
+            "party": 65,
+            "blend": 255,
+            "party_blend_id": "277",
+            "remarks": "Mix: Other (1,2 Trans DCE (156-60-5)): 85%; HFC-43-10mee: 15%",
+            "created": "2022-05-11T09:46:26.214Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 106,
+        "fields": {
+            "party": 65,
+            "blend": 254,
+            "party_blend_id": "276",
+            "remarks": "Mix: Other (1,2 Trans DCE (156-60-5)): 67.2%; HFC-43-10mee: 18%; Other (Heptafluorocyclopentane (15290-77-4)): 12%; Other (Methanol (67-56-1)): 2.8%",
+            "created": "2022-05-11T09:46:26.198Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 105,
+        "fields": {
+            "party": 65,
+            "blend": 253,
+            "party_blend_id": "275",
+            "remarks": "Mix: Other (1,2 Trans DCE (156-60-5)): 83%; HFC-43-10mee: 10%; Other (Heptafluorocyclopentane (15290-77-4)): 7%",
+            "created": "2022-05-11T09:46:26.178Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 104,
+        "fields": {
+            "party": 65,
+            "blend": 252,
+            "party_blend_id": "274",
+            "remarks": "Mix: Other (1,2 Trans DCE (156-60-5)): 68.2%; HFC-43-10mee: 25.5%; Other (Ethanol): 6.3%",
+            "created": "2022-05-11T09:46:26.161Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 103,
+        "fields": {
+            "party": 65,
+            "blend": 251,
+            "party_blend_id": "273",
+            "remarks": "Mix: HFC-125: 57.2%; HFC-1234yf: 30.1%; HFC-32: 12.7%",
+            "created": "2022-05-11T09:46:26.142Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 102,
+        "fields": {
+            "party": 65,
+            "blend": 250,
+            "party_blend_id": "272",
+            "remarks": "Mix: HFC-1234yf: 55%; HFC-134a: 45%",
+            "created": "2022-05-11T09:46:26.095Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 101,
+        "fields": {
+            "party": 65,
+            "blend": 249,
+            "party_blend_id": "271",
+            "remarks": "Mix: HFC-134a: 95.7%; Dimethyl ether: 4.3%",
+            "created": "2022-05-11T09:46:26.078Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 100,
+        "fields": {
+            "party": 65,
+            "blend": 248,
+            "party_blend_id": "270",
+            "remarks": "Mix: Other (1,2 Trans DCE (156-60-5)): 95%; Other (Methoxytridecafluoroheptene isomers): 4%; HFC-43-10mee: 1%",
+            "created": "2022-05-11T09:46:26.063Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 99,
+        "fields": {
+            "party": 65,
+            "blend": 247,
+            "party_blend_id": "269",
+            "remarks": "Mix: HFC-134a: 87%; HFC-125: 13%",
+            "created": "2022-05-11T09:46:26.045Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 98,
+        "fields": {
+            "party": 65,
+            "blend": 246,
+            "party_blend_id": "268",
+            "remarks": "Mix: HFC-125: 75%; HFC-134a: 25%",
+            "created": "2022-05-11T09:46:26.030Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 97,
+        "fields": {
+            "party": 65,
+            "blend": 245,
+            "party_blend_id": "248",
+            "remarks": "Mix: HFC-134a: 89%; HFC-125: 11%",
+            "created": "2022-05-11T09:46:26.015Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 96,
+        "fields": {
+            "party": 65,
+            "blend": 244,
+            "party_blend_id": "246",
+            "remarks": "Mix: HFC-365mfc: 70%; Other (t-DCE): 30%",
+            "created": "2022-05-11T09:46:26.000Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 95,
+        "fields": {
+            "party": 65,
+            "blend": 243,
+            "party_blend_id": "228",
+            "remarks": "Mix: PFC-5-1-14: 33.334%; PFC-3-1-10: 33.333%; PFC-4-1-12: 33.333%",
+            "created": "2022-05-11T09:46:25.985Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 94,
+        "fields": {
+            "party": 65,
+            "blend": 243,
+            "party_blend_id": "227",
+            "remarks": "Mix: PFC-5-1-14: 33.334%; PFC-3-1-10: 33.333%; PFC-4-1-12: 33.333%",
+            "created": "2022-05-11T09:46:25.974Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 93,
+        "fields": {
+            "party": 65,
+            "blend": 242,
+            "party_blend_id": "224",
+            "remarks": "Mix: HFC-236fa: 39.99%; PFC-14: 25.89%; HFC-23: 17.5%; HFC-125: 10.23%; Other (Argon): 6.39%",
+            "created": "2022-05-11T09:46:25.955Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 92,
+        "fields": {
+            "party": 65,
+            "blend": 241,
+            "party_blend_id": "213",
+            "remarks": "Mix: PFC-14: 23.53%; HFC-236fa: 23.53%; HFC-125: 23.53%; HFC-23: 23.53%; Other (Argon): 5.88%",
+            "created": "2022-05-11T09:46:25.931Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 91,
+        "fields": {
+            "party": 65,
+            "blend": 240,
+            "party_blend_id": "212",
+            "remarks": "Mix: PFC-14: 31.25%; HFC-236fa: 31.25%; HFC-125: 15.63%; HFC-23: 15.63%; Other (Argon): 6.24%",
+            "created": "2022-05-11T09:46:25.908Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 90,
+        "fields": {
+            "party": 65,
+            "blend": 239,
+            "party_blend_id": "210",
+            "remarks": "Mix: PFC-14: 35.75%; HFC-245fa: 20.44%; HFC-23: 19.35%; HFC-125: 17.56%; Other (Argon): 6.9%",
+            "created": "2022-05-11T09:46:25.882Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 89,
+        "fields": {
+            "party": 65,
+            "blend": 238,
+            "party_blend_id": "209",
+            "remarks": "Mix: PFC-14: 31.14%; HFC-245fa: 30.83%; HFC-23: 23.25%; HFC-125: 12.32%; Other (Argon): 2.46%",
+            "created": "2022-05-11T09:46:25.859Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 88,
+        "fields": {
+            "party": 65,
+            "blend": 237,
+            "party_blend_id": "208",
+            "remarks": "Mix: HFC-236fa: 33.3%; PFC-14: 29.8%; HFC-23: 19.53%; HFC-125: 13.31%; Other (Argon): 4.06%",
+            "created": "2022-05-11T09:46:25.836Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 87,
+        "fields": {
+            "party": 65,
+            "blend": 236,
+            "party_blend_id": "207",
+            "remarks": "Mix: HFC-236fa: 38.42%; PFC-14: 27.99%; HFC-23: 16%; Other (Argon): 10.66%; HFC-125: 6.93%",
+            "created": "2022-05-11T09:46:25.813Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 86,
+        "fields": {
+            "party": 65,
+            "blend": 235,
+            "party_blend_id": "206",
+            "remarks": "Mix: PFC-14: 38.2%; HFC-125: 19.1%; HFC-23: 18.13%; HFC-245fa: 14.38%; Other (Argon): 10.19%",
+            "created": "2022-05-11T09:46:25.780Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 85,
+        "fields": {
+            "party": 65,
+            "blend": 234,
+            "party_blend_id": "205",
+            "remarks": "Mix: PFC-14: 40.95%; HFC-23: 29.64%; HFC-125: 13.09%; HFC-245fa: 9.85%; Other (Argon): 6.47%",
+            "created": "2022-05-11T09:46:25.740Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 84,
+        "fields": {
+            "party": 65,
+            "blend": 233,
+            "party_blend_id": "204",
+            "remarks": "Mix: PFC-14: 48.56%; HFC-125: 25.49%; HFC-23: 16.7%; Other (Argon): 9.25%",
+            "created": "2022-05-11T09:46:25.716Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 83,
+        "fields": {
+            "party": 65,
+            "blend": 232,
+            "party_blend_id": "203",
+            "remarks": "Mix: PFC-14: 31.91%; HFC-236fa: 29.52%; HFC-23: 23.94%; HFC-125: 10.73%; Other (Argon): 3.9%",
+            "created": "2022-05-11T09:46:25.696Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 82,
+        "fields": {
+            "party": 65,
+            "blend": 231,
+            "party_blend_id": "201",
+            "remarks": "Mix: PFC-14: 30.51%; HFC-236fa: 30.35%; HFC-23: 22.05%; HFC-125: 11.02%; Other (Argon): 6.07%",
+            "created": "2022-05-11T09:46:25.673Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 81,
+        "fields": {
+            "party": 65,
+            "blend": 230,
+            "party_blend_id": "200",
+            "remarks": "Mix: HFC-365mfc: 92%; HFC-227ea: 8%",
+            "created": "2022-05-11T09:46:25.650Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 80,
+        "fields": {
+            "party": 65,
+            "blend": 229,
+            "party_blend_id": "199",
+            "remarks": "Mix: HFC-134a: 87%; HFC-152a: 13%",
+            "created": "2022-05-11T09:46:25.634Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 79,
+        "fields": {
+            "party": 65,
+            "blend": 228,
+            "party_blend_id": "193",
+            "remarks": "Mix: Dimethyl ether: 60%; HFC-152a: 40%",
+            "created": "2022-05-11T09:46:25.615Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 78,
+        "fields": {
+            "party": 65,
+            "blend": 214,
+            "party_blend_id": "192",
+            "remarks": "",
+            "created": "2022-05-11T09:46:25.599Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 77,
+        "fields": {
+            "party": 65,
+            "blend": 227,
+            "party_blend_id": "140",
+            "remarks": "Mix: C2F6: 6.5%; Other (no F-gas of Regulation 517/2014): 93.5%",
+            "created": "2022-05-11T09:46:25.586Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 76,
+        "fields": {
+            "party": 65,
+            "blend": 226,
+            "party_blend_id": "136",
+            "remarks": "Mix: HFC-152a: 50%; Other (no F-gas of Regulation (EC) 842/2006): 50%;",
+            "created": "2022-05-11T09:46:25.570Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 75,
+        "fields": {
+            "party": 65,
+            "blend": 225,
+            "party_blend_id": "135",
+            "remarks": "Mix: HFC-134a: 12%; Other (no F-gas of Regulation (EC) 842/2006): 88%",
+            "created": "2022-05-11T09:46:25.550Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 74,
+        "fields": {
+            "party": 65,
+            "blend": 224,
+            "party_blend_id": "70",
+            "remarks": "Mix: HFC-227ea:13%; HFC-365mfc:87%",
+            "created": "2022-05-11T09:46:25.525Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 73,
+        "fields": {
+            "party": 65,
+            "blend": 215,
+            "party_blend_id": "34",
+            "remarks": "",
+            "created": "2022-05-11T09:46:25.494Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 72,
+        "fields": {
+            "party": 65,
+            "blend": 133,
+            "party_blend_id": "96",
+            "remarks": "PFC-116:61%;HFC-23:39%",
+            "created": "2022-05-11T09:34:34.795Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 71,
+        "fields": {
+            "party": 65,
+            "blend": 33,
+            "party_blend_id": "91",
+            "remarks": "HFC-134a:40%;HFC-125:30%;HFC-32:30%",
+            "created": "2022-05-11T09:34:34.793Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 70,
+        "fields": {
+            "party": 65,
+            "blend": 28,
+            "party_blend_id": "89",
+            "remarks": "HFC-134a:40%;HFC-125:40%;HFC-32:20%",
+            "created": "2022-05-11T09:34:34.791Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 69,
+        "fields": {
+            "party": 65,
+            "blend": 20,
+            "party_blend_id": "87",
+            "remarks": "HFC-125:60%;HCFC-22:38%;HC-290:2%",
+            "created": "2022-05-11T09:34:34.788Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 68,
+        "fields": {
+            "party": 65,
+            "blend": 18,
+            "party_blend_id": "86",
+            "remarks": "HCFC-22:61%;HCFC-124:28%;HFC-152a:11%",
+            "created": "2022-05-11T09:34:34.786Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 67,
+        "fields": {
+            "party": 65,
+            "blend": 17,
+            "party_blend_id": "85",
+            "remarks": "HCFC-22:53%;HCFC-124:34%;HFC-152a:13%",
+            "created": "2022-05-11T09:34:34.784Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 66,
+        "fields": {
+            "party": 65,
+            "blend": 66,
+            "party_blend_id": "80",
+            "remarks": "HFC-134a:52.5%;HFC-227ea:47.5%",
+            "created": "2022-05-11T09:34:34.782Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 65,
+        "fields": {
+            "party": 65,
+            "blend": 140,
+            "party_blend_id": "595",
+            "remarks": "Mix: Other (HFO-1234yf): 56%; Other (HFC-134a): 44%",
+            "created": "2022-05-11T09:34:34.780Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 64,
+        "fields": {
+            "party": 65,
+            "blend": 196,
+            "party_blend_id": "594",
+            "remarks": "Mix: HFC-134a: 50%; HFC-125: 25%; HFC-32: 25%",
+            "created": "2022-05-11T09:34:34.778Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 63,
+        "fields": {
+            "party": 65,
+            "blend": 195,
+            "party_blend_id": "593",
+            "remarks": "Mix: HFC-134a: 52%; HFC-143a: 26%; HFC-125: 22%",
+            "created": "2022-05-11T09:34:34.776Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 62,
+        "fields": {
+            "party": 65,
+            "blend": 194,
+            "party_blend_id": "592",
+            "remarks": "Mix: HFC-125: 25%; HFC-134a: 25%; HFC-143a: 25%; HFC-32: 25%",
+            "created": "2022-05-11T09:34:34.773Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 61,
+        "fields": {
+            "party": 65,
+            "blend": 193,
+            "party_blend_id": "591",
+            "remarks": "Mix: Butane: 34%; HFC-125: 33%; HFC-134a: 33%",
+            "created": "2022-05-11T09:34:34.771Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 60,
+        "fields": {
+            "party": 65,
+            "blend": 192,
+            "party_blend_id": "590",
+            "remarks": "Mix: HFC-125: 47%; HFC-143a: 26%; HFC-32: 25%; HFC-134a: 2%",
+            "created": "2022-05-11T09:34:34.769Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 59,
+        "fields": {
+            "party": 65,
+            "blend": 59,
+            "party_blend_id": "589",
+            "remarks": "HFC-125:58%;HFC-134a:42%",
+            "created": "2022-05-11T09:34:34.767Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 58,
+        "fields": {
+            "party": 65,
+            "blend": 191,
+            "party_blend_id": "588",
+            "remarks": "Mix: HFC-125: 50%; HFC-134: 50%",
+            "created": "2022-05-11T09:34:34.764Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 57,
+        "fields": {
+            "party": 65,
+            "blend": 190,
+            "party_blend_id": "587",
+            "remarks": "Mix: HFC-143a: 52%; HFC-125: 35%; HFC-32: 11%; HFC-134a: 2%",
+            "created": "2022-05-11T09:34:34.762Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 56,
+        "fields": {
+            "party": 65,
+            "blend": 165,
+            "party_blend_id": "582",
+            "remarks": "HFC-143a:73%;HFC-125:17%;HFC-32:7.0%;HFC-23:3%",
+            "created": "2022-05-11T09:34:34.760Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 55,
+        "fields": {
+            "party": 65,
+            "blend": 172,
+            "party_blend_id": "581",
+            "remarks": "HFC-134a:84.93%;HFC-125:7.51%;HFC-32:4.99%;HFC-143a:2.57%",
+            "created": "2022-05-11T09:34:34.758Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 54,
+        "fields": {
+            "party": 65,
+            "blend": 56,
+            "party_blend_id": "580",
+            "remarks": "HFC-125:77%;HFC-134a:19%;HC-E170:4%",
+            "created": "2022-05-11T09:34:34.755Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 53,
+        "fields": {
+            "party": 65,
+            "blend": 153,
+            "party_blend_id": "578",
+            "remarks": "HFO-1234ze(E):91.1%;HFC-227ea:8.9%",
+            "created": "2022-05-11T09:34:34.753Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 52,
+        "fields": {
+            "party": 65,
+            "blend": 198,
+            "party_blend_id": "569",
+            "remarks": "HFC-245fa:43.9%;HFC-23:28.5%;HC-600:18.8%;PFC-14:8.8%",
+            "created": "2022-05-11T09:34:34.751Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 51,
+        "fields": {
+            "party": 65,
+            "blend": 180,
+            "party_blend_id": "568",
+            "remarks": "PFC-14:22.2%;PFC-116:19.2%;HFC-143a:13.4%;HFC-23:12.3%;HFC-125:11.3%;HFC-245fa:7.4%;HC-50:5.3%;R-740:4.7%;HC-600:3.2%;HFC-134a:1%",
+            "created": "2022-05-11T09:34:34.749Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 50,
+        "fields": {
+            "party": 65,
+            "blend": 181,
+            "party_blend_id": "567",
+            "remarks": "PFC-14:26%;PFC-116:15.8%;HFC-143a:11.4%;HFC-23:10.1%;HFC-245fa:9.9%;HFC-125:9.6%;HC-50:6.1%;R-740:6%;HC-600:4.2%;HFC-134a:0.9%",
+            "created": "2022-05-11T09:34:34.747Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 49,
+        "fields": {
+            "party": 65,
+            "blend": 173,
+            "party_blend_id": "564",
+            "remarks": "HFC-227ea:87%;HFC-365mfc:13%",
+            "created": "2022-05-11T09:34:34.745Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 48,
+        "fields": {
+            "party": 65,
+            "blend": 170,
+            "party_blend_id": "563",
+            "remarks": "HC-600:34%;PFC-116:26%;HC-290:23%;HFC-23:17%",
+            "created": "2022-05-11T09:34:34.743Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 47,
+        "fields": {
+            "party": 65,
+            "blend": 110,
+            "party_blend_id": "559",
+            "remarks": "HFO-1234yf:78.5%;HFC-32:21.5%",
+            "created": "2022-05-11T09:34:34.740Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 46,
+        "fields": {
+            "party": 65,
+            "blend": 111,
+            "party_blend_id": "558",
+            "remarks": "HFO-1234yf:75.5%;HFC-32:21.5%;R-744:3%",
+            "created": "2022-05-11T09:34:34.738Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 45,
+        "fields": {
+            "party": 65,
+            "blend": 174,
+            "party_blend_id": "551",
+            "remarks": "HFC-245fa:43.4%;HFC-23:28.3%;HC-600:18.6%;PFC-14:9.7%",
+            "created": "2022-05-11T09:34:34.736Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 44,
+        "fields": {
+            "party": 65,
+            "blend": 46,
+            "party_blend_id": "52",
+            "remarks": "HFC-134a:88%;PFC-218:9%;HC-600a:3%",
+            "created": "2022-05-11T09:34:34.734Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 43,
+        "fields": {
+            "party": 65,
+            "blend": 101,
+            "party_blend_id": "516",
+            "remarks": "HFO-1234ze(E):58.0%;HFC-134a:42%",
+            "created": "2022-05-11T09:34:34.732Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 42,
+        "fields": {
+            "party": 65,
+            "blend": 197,
+            "party_blend_id": "507",
+            "remarks": "HFC-245fa:41.6%;HFC-23:30.6%;HC-600:17.9%;PFC-14:9.9%",
+            "created": "2022-05-11T09:34:34.730Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 41,
+        "fields": {
+            "party": 65,
+            "blend": 37,
+            "party_blend_id": "49",
+            "remarks": "HCFC-22:47%;HFC-143a:46%;HFC-125:7%",
+            "created": "2022-05-11T09:34:34.728Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 40,
+        "fields": {
+            "party": 65,
+            "blend": 31,
+            "party_blend_id": "48",
+            "remarks": "HFC-134a:70%;HFC-125:15%;HFC-32:15%",
+            "created": "2022-05-11T09:34:34.726Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 39,
+        "fields": {
+            "party": 65,
+            "blend": 134,
+            "party_blend_id": "46",
+            "remarks": "PFC-116:54%;HFC-23:46%",
+            "created": "2022-05-11T09:34:34.723Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 38,
+        "fields": {
+            "party": 65,
+            "blend": 84,
+            "party_blend_id": "45",
+            "remarks": "HFC-134a:78.5%;HFC-125:19.5%;HC-600:1.4%;HC-601:0.6%",
+            "created": "2022-05-11T09:34:34.721Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 37,
+        "fields": {
+            "party": 65,
+            "blend": 79,
+            "party_blend_id": "44",
+            "remarks": "HFC-125:63.2%;HFC-143a:18%;HFC-134a:16%;HC-600a:2.8%",
+            "created": "2022-05-11T09:34:34.719Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 36,
+        "fields": {
+            "party": 65,
+            "blend": 71,
+            "party_blend_id": "43",
+            "remarks": "HFC-125:77.5%;HFC-143a:20%;HC-600a:1.9%;HC-290:0.6%",
+            "created": "2022-05-11T09:34:34.717Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 35,
+        "fields": {
+            "party": 65,
+            "blend": 70,
+            "party_blend_id": "42",
+            "remarks": "HFC-134a:50%;HFC-125:25%;HFC-32:15%;HFC-143a:10%",
+            "created": "2022-05-11T09:34:34.715Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 34,
+        "fields": {
+            "party": 65,
+            "blend": 67,
+            "party_blend_id": "40",
+            "remarks": "HFC-125:50.5%;HFC-134a:47%;HC-600:1%;HC-600a:0.9%;HC-601a:0.6%",
+            "created": "2022-05-11T09:34:34.713Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 33,
+        "fields": {
+            "party": 65,
+            "blend": 64,
+            "party_blend_id": "39",
+            "remarks": "HFC-125:65.1%;HFC-134a:31.5%;HC-600a:3.4%",
+            "created": "2022-05-11T09:34:34.711Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 32,
+        "fields": {
+            "party": 65,
+            "blend": 61,
+            "party_blend_id": "38",
+            "remarks": "HFC-125:85.1%;HFC-134a:11.5%;HC-600a:3.4%",
+            "created": "2022-05-11T09:34:34.708Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 31,
+        "fields": {
+            "party": 65,
+            "blend": 105,
+            "party_blend_id": "377",
+            "remarks": "HFC-32:67%;HFO-1234yf:26%;HFC-125:7%",
+            "created": "2022-05-11T09:34:34.706Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 30,
+        "fields": {
+            "party": 65,
+            "blend": 109,
+            "party_blend_id": "375",
+            "remarks": "HFC-32:68.9%;HFO-1234yf:31.1%",
+            "created": "2022-05-11T09:34:34.704Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 29,
+        "fields": {
+            "party": 65,
+            "blend": 52,
+            "party_blend_id": "37",
+            "remarks": "HFC-134a:50%;HFC-125:46.6%;HC-600:3.4%",
+            "created": "2022-05-11T09:34:34.702Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 28,
+        "fields": {
+            "party": 65,
+            "blend": 68,
+            "party_blend_id": "368",
+            "remarks": "HFC-134a:69.5%;HFC-32:18.5%;HFC-227ea:12%",
+            "created": "2022-05-11T09:34:34.700Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 27,
+        "fields": {
+            "party": 65,
+            "blend": 35,
+            "party_blend_id": "365",
+            "remarks": "HFC-134a:52.5%;HFC-32:32.5%;HFC-125:15%",
+            "created": "2022-05-11T09:34:34.698Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 26,
+        "fields": {
+            "party": 65,
+            "blend": 13,
+            "party_blend_id": "35",
+            "remarks": "HFC-125:86%;PFC-218:9%;HC-290:5%",
+            "created": "2022-05-11T09:34:34.696Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 25,
+        "fields": {
+            "party": 65,
+            "blend": 38,
+            "party_blend_id": "342",
+            "remarks": "Mix: Other (R22): 60%; Other (R124): 25%; Other (R142b): 15%",
+            "created": "2022-05-11T09:34:34.694Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 24,
+        "fields": {
+            "party": 65,
+            "blend": 108,
+            "party_blend_id": "329",
+            "remarks": "HFO-1234yf:65%;HFC-32:35%",
+            "created": "2022-05-11T09:34:34.691Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 23,
+        "fields": {
+            "party": 65,
+            "blend": 175,
+            "party_blend_id": "309",
+            "remarks": "Mix: HFC-365mfc: 65%; Other (perfluoropolymethylisopropylether (PFPMIE)): 35%",
+            "created": "2022-05-11T09:34:34.689Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 22,
+        "fields": {
+            "party": 65,
+            "blend": 179,
+            "party_blend_id": "306",
+            "remarks": "HFE-347\u00a0mcc3 (HFE-7000):34%;PFC-14:31%;HFC-125:26%;R-740:3%;HC-170:3%;HFC-23:3%",
+            "created": "2022-05-11T09:34:34.687Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 21,
+        "fields": {
+            "party": 65,
+            "blend": 183,
+            "party_blend_id": "305",
+            "remarks": "PFC-14:60%;R-740:12%;HFC-125:12%;HC-170:9%;HFC-23:7%",
+            "created": "2022-05-11T09:34:34.685Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 20,
+        "fields": {
+            "party": 65,
+            "blend": 182,
+            "party_blend_id": "303",
+            "remarks": "PFC-14:37%;HFC-125:25%;HFE-347\u00a0mcc3 (HFE-7000):24%;R-740:6%;HFC-23:5%;HC-170:3%",
+            "created": "2022-05-11T09:34:34.683Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 19,
+        "fields": {
+            "party": 65,
+            "blend": 177,
+            "party_blend_id": "302",
+            "remarks": "HFE-347\u00a0mcc3 (HFE-7000):33%;PFC-14:28%;HFC-125:25%;HC-170:5%;HFC-23:5%;R-740:4%",
+            "created": "2022-05-11T09:34:34.681Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 18,
+        "fields": {
+            "party": 65,
+            "blend": 178,
+            "party_blend_id": "301",
+            "remarks": "HFE-347\u00a0MCC3(HFE-7000):34%;PFC-14:26%;HFC-125:26%;HC-170:5%;HFC-23:5%;R-740:4%",
+            "created": "2022-05-11T09:34:34.678Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 17,
+        "fields": {
+            "party": 65,
+            "blend": 98,
+            "party_blend_id": "292",
+            "remarks": "HFC-134a:25.7%;HFO-1234yf:25.3%;HFC-125:24.7%;HFC-32:24.3%",
+            "created": "2022-05-11T09:34:34.675Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 16,
+        "fields": {
+            "party": 65,
+            "blend": 40,
+            "party_blend_id": "29",
+            "remarks": "HFC-32:50%;HFC-125:50%",
+            "created": "2022-05-11T09:34:34.673Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 15,
+        "fields": {
+            "party": 65,
+            "blend": 132,
+            "party_blend_id": "28",
+            "remarks": "HFC-125:50%;HFC-143a:50%",
+            "created": "2022-05-11T09:34:34.671Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 14,
+        "fields": {
+            "party": 65,
+            "blend": 30,
+            "party_blend_id": "27",
+            "remarks": "HFC-134a:52%;HFC-125:25%;HFC-32:23%",
+            "created": "2022-05-11T09:34:34.668Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 13,
+        "fields": {
+            "party": 65,
+            "blend": 24,
+            "party_blend_id": "26",
+            "remarks": "HFC-143a:52%;HFC-125:44%;HFC-134a:4%",
+            "created": "2022-05-11T09:34:34.666Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 12,
+        "fields": {
+            "party": 65,
+            "blend": 175,
+            "party_blend_id": "245",
+            "remarks": "HFC-365mfc:65%;perfluoropolymethylisopropylether (PFPMIE):35%",
+            "created": "2022-05-11T09:34:34.664Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 11,
+        "fields": {
+            "party": 65,
+            "blend": 140,
+            "party_blend_id": "232",
+            "remarks": "HFO-1234yf:56%;HFC-134a:44%",
+            "created": "2022-05-11T09:34:34.662Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 10,
+        "fields": {
+            "party": 65,
+            "blend": 107,
+            "party_blend_id": "231",
+            "remarks": "HFC-134a:53.8%;HFC-125:20%;HFC-32:20%;HFC-227ea:5%;HC-601a:0.6%;HC-600:0.6%",
+            "created": "2022-05-11T09:34:34.659Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 9,
+        "fields": {
+            "party": 65,
+            "blend": 104,
+            "party_blend_id": "230",
+            "remarks": "HFC-125:59%;HFO-1234yf:30%;HFC-32:11%",
+            "created": "2022-05-11T09:34:34.657Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 8,
+        "fields": {
+            "party": 65,
+            "blend": 97,
+            "party_blend_id": "229",
+            "remarks": "HFC-32:26%;HFC-125:26%;HFC-134a:21%;HFO-1234yf:20%;HFO-1234ze(E):7%",
+            "created": "2022-05-11T09:34:34.654Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 7,
+        "fields": {
+            "party": 65,
+            "blend": 101,
+            "party_blend_id": "196",
+            "remarks": "R-450A",
+            "created": "2022-05-11T09:34:34.652Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 6,
+        "fields": {
+            "party": 65,
+            "blend": 176,
+            "party_blend_id": "191",
+            "remarks": "HFC-365mfc:93%;HFC-227ea:7%",
+            "created": "2022-05-11T09:34:34.649Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 5,
+        "fields": {
+            "party": 65,
+            "blend": 85,
+            "party_blend_id": "189",
+            "remarks": "HFC-125:45%;HFC-134a:44.2%;HFC-32:8.5%;HC-600:1.7%;HC-601a:0.6%",
+            "created": "2022-05-11T09:34:34.647Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 4,
+        "fields": {
+            "party": 65,
+            "blend": 89,
+            "party_blend_id": "188",
+            "remarks": "HFC-125:31%;HFC-32:31%;HFC-134a:30%;HFC-227ea:5%;HFC-152a:3%",
+            "created": "2022-05-11T09:34:34.645Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 3,
+        "fields": {
+            "party": 65,
+            "blend": 145,
+            "party_blend_id": "187",
+            "remarks": "Unspecified mix of F-gases containing HFCs for destruction",
+            "created": "2022-05-11T09:34:34.642Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 2,
+        "fields": {
+            "party": 65,
+            "blend": 53,
+            "party_blend_id": "137",
+            "remarks": "HFC-125:79%;HFC-134a:18.3%;HC-600:2.7%",
+            "created": "2022-05-11T09:34:34.640Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 1,
+        "fields": {
+            "party": 65,
+            "blend": 23,
+            "party_blend_id": "104",
+            "remarks": "HCFC-22:56%;PFC-218:39%;HC-290:5%",
+            "created": "2022-05-11T09:34:34.637Z"
+        }
     }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 205,
-    "fields": {
-        "party": 65,
-        "blend": 378,
-        "party_blend_id": "625",
-        "remarks": "Mix: PFC-14: 33.8%; HCFC-1233zd: 32.1%; HFC-23: 20.5%; HFC-32: 13.6%",
-        "created": "2022-09-19T10:22:36.966Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 204,
-    "fields": {
-        "party": 65,
-        "blend": 365,
-        "party_blend_id": "623",
-        "remarks": "Mix: HFC-43-10mee: 65%; HFC-365mfc: 35%",
-        "created": "2022-06-22T08:03:43.348Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 203,
-    "fields": {
-        "party": 65,
-        "blend": 364,
-        "party_blend_id": "620",
-        "remarks": "Mix: HFC-134a: 50%; Isobutane: 25%; Other (halocarbons as e.g. R12): 25%",
-        "created": "2022-06-22T08:00:15.944Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 202,
-    "fields": {
-        "party": 65,
-        "blend": 363,
-        "party_blend_id": "616",
-        "remarks": "Mix: PFC-14: 35.23%; HCFC-1233zd: 28.45%; HFC-23: 18.16%; HFC-32: 12.11%; Other (R-740 (Argon)): 6.05%",
-        "created": "2022-06-22T07:54:10.350Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 201,
-    "fields": {
-        "party": 65,
-        "blend": 362,
-        "party_blend_id": "615",
-        "remarks": "Mix: HCFC-1233zd: 44.76%; HFC-23: 28.57%; HFC-32: 26.67%",
-        "created": "2022-06-22T07:49:30.870Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 200,
-    "fields": {
-        "party": 65,
-        "blend": 361,
-        "party_blend_id": "614",
-        "remarks": "Mix: HCFC-1233zd: 31.08%; PFC-14: 29.1%; HFC-23: 17.2%; HFC-32: 15.87%; Other (R740 (Argon)): 6.75%",
-        "created": "2022-06-22T07:46:02.789Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 199,
-    "fields": {
-        "party": 65,
-        "blend": 360,
-        "party_blend_id": "613",
-        "remarks": "Mix: PFC-14: 33.77%; HCFC-1233zd: 30.01%; HFC-23: 19.76%; HFC-32: 16.46%",
-        "created": "2022-06-22T07:40:42.425Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 198,
-    "fields": {
-        "party": 65,
-        "blend": 359,
-        "party_blend_id": "612",
-        "remarks": "Mix: PFC-14: 72.46%; HFC-23: 12.08%; Other (R740 (Argon)): 10.63%; HFC-32: 4.83%",
-        "created": "2022-06-22T07:34:31.963Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 197,
-    "fields": {
-        "party": 65,
-        "blend": 358,
-        "party_blend_id": "611",
-        "remarks": "Mix: HCFC-1233zd: 32.26%; PFC-14: 30.65%; HFC-23: 20.97%; HFC-32: 12.9%; Other (R-740 (Argon)): 3.22%",
-        "created": "2022-06-22T07:27:56.438Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 196,
-    "fields": {
-        "party": 65,
-        "blend": 354,
-        "party_blend_id": "596",
-        "remarks": "Mix: Carbon dioxide: 60%; Other (R1132a): 20%; HFC-23: 10%; HFC-125: 10%",
-        "created": "2022-06-22T07:21:55.010Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 195,
-    "fields": {
-        "party": 65,
-        "blend": 62,
-        "party_blend_id": "54",
-        "remarks": "HFC-125:55%;HFC-134a:42%;HC-600a:3%",
-        "created": "2022-05-11T09:46:28.705Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 194,
-    "fields": {
-        "party": 65,
-        "blend": 69,
-        "party_blend_id": "41",
-        "remarks": "HFC-134a:93%;HFC-125:5.1%;HC-600:1.3%;HC-601a:0.6%",
-        "created": "2022-05-11T09:46:28.680Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 193,
-    "fields": {
-        "party": 65,
-        "blend": 340,
-        "party_blend_id": "586",
-        "remarks": "Mix: HFC-245fa: 39.145%; PFC-14: 24.911%; HFC-1234yf: 15.125%; HFC-23: 15.125%; Methane: 2.847%; Other (Argon): 2.847%",
-        "created": "2022-05-11T09:46:28.469Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 192,
-    "fields": {
-        "party": 65,
-        "blend": 339,
-        "party_blend_id": "585",
-        "remarks": "Mix: HFC-245fa: 31.286%; PFC-14: 30.128%; HFC-23: 19.467%; HFC-1234yf: 13.905%; Methane: 2.665%; Other (Argon): 2.549%",
-        "created": "2022-05-11T09:46:28.443Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 191,
-    "fields": {
-        "party": 65,
-        "blend": 338,
-        "party_blend_id": "584",
-        "remarks": "Mix: PFC-14: 30%; HFC-23: 20%; Other (Argon): 20%; HFC-125: 15%; HFC-245fa: 15%",
-        "created": "2022-05-11T09:46:28.413Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 190,
-    "fields": {
-        "party": 65,
-        "blend": 337,
-        "party_blend_id": "583",
-        "remarks": "Mix: PFC-14: 32.389%; HFC-245fa: 29.69%; HFC-23: 18.893%; HFC-1234yf: 13.495%; Other (Argon): 3.104%; Methane: 2.429%",
-        "created": "2022-05-11T09:46:28.376Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 189,
-    "fields": {
-        "party": 65,
-        "blend": 336,
-        "party_blend_id": "579",
-        "remarks": "Mix: Isobutane: 99.5%; HFC-1234yf: 0.5%",
-        "created": "2022-05-11T09:46:28.327Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 188,
-    "fields": {
-        "party": 65,
-        "blend": 335,
-        "party_blend_id": "577",
-        "remarks": "Mix: HFC-1234yf: 56.0%; HFC-134: 44%",
-        "created": "2022-05-11T09:46:28.312Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 187,
-    "fields": {
-        "party": 65,
-        "blend": 334,
-        "party_blend_id": "576",
-        "remarks": "Mix: HFC-236fa: 60%; HFC-23: 20%; PFC-14: 20%",
-        "created": "2022-05-11T09:46:28.295Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 186,
-    "fields": {
-        "party": 65,
-        "blend": 333,
-        "party_blend_id": "575",
-        "remarks": "Mix: PFC-14: 33.426%; HFC-245fa: 30.642%; HFC-23: 19.498%; HFC-1234yf: 13.927%; Methane: 2.507%",
-        "created": "2022-05-11T09:46:28.276Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 185,
-    "fields": {
-        "party": 65,
-        "blend": 332,
-        "party_blend_id": "574",
-        "remarks": "Mix: HFC-245fa: 32.105%; PFC-14: 30.915%; HFC-23: 19.976%; HFC-1234yf: 14.269%; Methane: 2.735%",
-        "created": "2022-05-11T09:46:28.251Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 184,
-    "fields": {
-        "party": 65,
-        "blend": 331,
-        "party_blend_id": "573",
-        "remarks": "Mix: HFC-245fa: 40.293%; PFC-14: 25.641%; HFC-23: 15.568%; HFC-1234yf: 15.568%; Methane: 2.93%",
-        "created": "2022-05-11T09:46:28.228Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 183,
-    "fields": {
-        "party": 65,
-        "blend": 330,
-        "party_blend_id": "571",
-        "remarks": "Mix: Propane: 99.5%; Other (ISOBUTANE): 0.5%",
-        "created": "2022-05-11T09:46:28.205Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 182,
-    "fields": {
-        "party": 65,
-        "blend": 329,
-        "party_blend_id": "570",
-        "remarks": "Mix: HFC-23: 44%; HFC-125: 32%; HFC-32: 10%; HFC-134: 10%; HFC-143a: 4%",
-        "created": "2022-05-11T09:46:28.188Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 181,
-    "fields": {
-        "party": 65,
-        "blend": 328,
-        "party_blend_id": "565",
-        "remarks": "Mix: HFC-1234ze: 90%; HFC-134a: 10%",
-        "created": "2022-05-11T09:46:28.141Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 180,
-    "fields": {
-        "party": 65,
-        "blend": 327,
-        "party_blend_id": "561",
-        "remarks": "Mix: HFC-1234ze: 97%; Carbon dioxide: 3%",
-        "created": "2022-05-11T09:46:28.119Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 179,
-    "fields": {
-        "party": 65,
-        "blend": 326,
-        "party_blend_id": "560",
-        "remarks": "Mix: HFC-1234ze: 97.4%; Other (Exxsol): 2.6%",
-        "created": "2022-05-11T09:46:28.104Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 178,
-    "fields": {
-        "party": 65,
-        "blend": 325,
-        "party_blend_id": "555",
-        "remarks": "Mix: Other (R4014a): 70.5%; HFC-134a: 29.5%",
-        "created": "2022-05-11T09:46:28.089Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 177,
-    "fields": {
-        "party": 65,
-        "blend": 324,
-        "party_blend_id": "554",
-        "remarks": "Mix: Other (R404a): 71.9%; HFC-134a: 28.1%",
-        "created": "2022-05-11T09:46:28.073Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 176,
-    "fields": {
-        "party": 65,
-        "blend": 323,
-        "party_blend_id": "550",
-        "remarks": "Mix: Other (R508b): 92.6%; Propane: 7.4%",
-        "created": "2022-05-11T09:46:28.058Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 175,
-    "fields": {
-        "party": 65,
-        "blend": 322,
-        "party_blend_id": "549",
-        "remarks": "Mix: Other (R404a): 52.9%; HFC-134a: 47.1%",
-        "created": "2022-05-11T09:46:28.042Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 174,
-    "fields": {
-        "party": 65,
-        "blend": 321,
-        "party_blend_id": "547",
-        "remarks": "Mix: Other (R508b): 93%; Propane: 7.0%",
-        "created": "2022-05-11T09:46:28.027Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 173,
-    "fields": {
-        "party": 65,
-        "blend": 320,
-        "party_blend_id": "543",
-        "remarks": "Mix: PFC-14: 26.5%; PFC-116: 15.9%; HFC-143a: 11.1%; HFC-23: 10.2%; HFC-245fa: 10%; HFC-125: 9.3%; Other (R-740): 6%; Methane: 5.9%; Butane: 4.2%; HFC-134a: 0.9%",
-        "created": "2022-05-11T09:46:28.010Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 172,
-    "fields": {
-        "party": 65,
-        "blend": 319,
-        "party_blend_id": "541",
-        "remarks": "Mix: PFC-14: 22.7%; PFC-116: 19.5%; HFC-143a: 13%; HFC-23: 12.4%; HFC-125: 11%; HFC-245fa: 7.4%; Methane: 5.1%; Other (R-740): 4.7%; Butane: 3.2%; HFC-134a: 1%",
-        "created": "2022-05-11T09:46:27.971Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 171,
-    "fields": {
-        "party": 65,
-        "blend": 318,
-        "party_blend_id": "540",
-        "remarks": "Mix: Other (R508b): 93.1%; Propane: 6.9%",
-        "created": "2022-05-11T09:46:27.904Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 170,
-    "fields": {
-        "party": 65,
-        "blend": 317,
-        "party_blend_id": "537",
-        "remarks": "Mix: HFC-227ea: 93%; Other (n-Propanol): 7.0%",
-        "created": "2022-05-11T09:46:27.889Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 169,
-    "fields": {
-        "party": 65,
-        "blend": 316,
-        "party_blend_id": "533",
-        "remarks": "Mix: Other (CFC-11): 26.9%; HFC-134a: 16.7%; Other (HCFC-22): 14.4%; HFC-125: 14.0%; Other (CFC-12): 7.7%; Other (CFC-13): 5.2%; Other (HCFC-123): 4.8%; Other (HCFC-114): 3.4%; Other (Cyclo Pentane): 2.7%; Other (Others): 1.7%; Other (HCFC-141b): 1.3%; Ot",
-        "created": "2022-05-11T09:46:27.874Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 168,
-    "fields": {
-        "party": 65,
-        "blend": 315,
-        "party_blend_id": "532",
-        "remarks": "Mix: HFC-125: 64%; HFC-134a: 32%; Isobutane: 4%",
-        "created": "2022-05-11T09:46:27.827Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 167,
-    "fields": {
-        "party": 65,
-        "blend": 314,
-        "party_blend_id": "530",
-        "remarks": "Mix: HFC-245fa: 42%; HFC-23: 27%; Butane: 18%; PFC-14: 8%; Pentane: 5%",
-        "created": "2022-05-11T09:46:27.809Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 166,
-    "fields": {
-        "party": 65,
-        "blend": 313,
-        "party_blend_id": "529",
-        "remarks": "Mix: HFE-245fa1: 27%; Other (R14 (Tetrafluoromethane)): 25%; HFC-134a: 21%; HFC-23: 15%; Other (R740 (Argon)): 12%",
-        "created": "2022-05-11T09:46:27.782Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 165,
-    "fields": {
-        "party": 65,
-        "blend": 312,
-        "party_blend_id": "523",
-        "remarks": "Mix: HFC-245fa: 44.5%; HFC-23: 30%; Butane: 19.1%; PFC-14: 6.4%",
-        "created": "2022-05-11T09:46:27.739Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 164,
-    "fields": {
-        "party": 65,
-        "blend": 311,
-        "party_blend_id": "522",
-        "remarks": "Mix: HFC-245fa: 42.7%; HFC-23: 28.6%; Butane: 18.2%; PFC-14: 10.5%",
-        "created": "2022-05-11T09:46:27.712Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 163,
-    "fields": {
-        "party": 65,
-        "blend": 310,
-        "party_blend_id": "520",
-        "remarks": "Mix: HFC-245fa: 35%; HFC-23: 26%; HFC-125: 15%; Other (ARGON): 15%; PFC-14: 9%",
-        "created": "2022-05-11T09:46:27.692Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 162,
-    "fields": {
-        "party": 65,
-        "blend": 276,
-        "party_blend_id": "519",
-        "remarks": "",
-        "created": "2022-05-11T09:46:27.663Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 161,
-    "fields": {
-        "party": 65,
-        "blend": 309,
-        "party_blend_id": "517",
-        "remarks": "Mix: Other (R508b): 92.5%; Propane: 7.5%",
-        "created": "2022-05-11T09:46:27.646Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 160,
-    "fields": {
-        "party": 65,
-        "blend": 308,
-        "party_blend_id": "515",
-        "remarks": "Mix: Other (R404a): 72.4%; HFC-134a: 27.6%",
-        "created": "2022-05-11T09:46:27.631Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 159,
-    "fields": {
-        "party": 65,
-        "blend": 307,
-        "party_blend_id": "514",
-        "remarks": "Mix: HFC-245fa: 45.6%; HFC-23: 22.2%; Butane: 19.5%; PFC-14: 12.7%",
-        "created": "2022-05-11T09:46:27.614Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 158,
-    "fields": {
-        "party": 65,
-        "blend": 306,
-        "party_blend_id": "513",
-        "remarks": "Mix: HFC-134a: 66.7%; Other (R404a): 33.3%",
-        "created": "2022-05-11T09:46:27.592Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 157,
-    "fields": {
-        "party": 65,
-        "blend": 305,
-        "party_blend_id": "512",
-        "remarks": "Mix: HFC-245fa: 37.1%; HFC-23: 32.4%; Butane: 15.8%; PFC-14: 14.7%",
-        "created": "2022-05-11T09:46:27.561Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 156,
-    "fields": {
-        "party": 65,
-        "blend": 304,
-        "party_blend_id": "505",
-        "remarks": "Mix: Other (R508b): 91.9%; Propane: 8.1%",
-        "created": "2022-05-11T09:46:27.530Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 155,
-    "fields": {
-        "party": 65,
-        "blend": 303,
-        "party_blend_id": "504",
-        "remarks": "Mix: HFC-245fa: 45.5%; HFC-23: 28.2%; Butane: 19.5%; PFC-14: 6.8%",
-        "created": "2022-05-11T09:46:27.514Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 154,
-    "fields": {
-        "party": 65,
-        "blend": 302,
-        "party_blend_id": "384",
-        "remarks": "Mix: HFC-245fa: 43%; HFC-23: 27%; Butane: 18%; PFC-14: 12%",
-        "created": "2022-05-11T09:46:27.492Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 153,
-    "fields": {
-        "party": 65,
-        "blend": 301,
-        "party_blend_id": "376",
-        "remarks": "Mix: HFC-1234ze: 63%; HFC-134: 37%",
-        "created": "2022-05-11T09:46:27.466Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 152,
-    "fields": {
-        "party": 65,
-        "blend": 300,
-        "party_blend_id": "366",
-        "remarks": "Mix: PFC-14: 50%; Other (Argon): 22%; HFC-125: 12%; Ethane: 9%; HFC-23: 7%",
-        "created": "2022-05-11T09:46:27.451Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 151,
-    "fields": {
-        "party": 65,
-        "blend": 299,
-        "party_blend_id": "364",
-        "remarks": "Mix: PFC-14: 25%; PFC-116: 18%; HFC-143a: 12%; HFC-23: 12%; HFC-125: 10%; HFC-245fa: 9%; Methane: 5%; Other (R-740): 4%; Butane: 4%; HFC-134a: 1%",
-        "created": "2022-05-11T09:46:27.420Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 150,
-    "fields": {
-        "party": 65,
-        "blend": 298,
-        "party_blend_id": "363",
-        "remarks": "Mix: HFC-245fa: 45%; HFC-23: 30%; Butane: 19%; PFC-14: 6%",
-        "created": "2022-05-11T09:46:27.356Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 149,
-    "fields": {
-        "party": 65,
-        "blend": 297,
-        "party_blend_id": "362",
-        "remarks": "Mix: HFC-245fa: 46%; HFC-23: 28%; Butane: 19%; PFC-14: 7%",
-        "created": "2022-05-11T09:46:27.325Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 148,
-    "fields": {
-        "party": 65,
-        "blend": 296,
-        "party_blend_id": "361",
-        "remarks": "Mix: PFC-14: 25%; PFC-116: 18%; HFC-143a: 12%; HFC-23: 12%; HFC-125: 10%; HFC-245fa: 9%; Methane: 7%; Butane: 4%; Other (R-740): 2%; HFC-134a: 1%",
-        "created": "2022-05-11T09:46:27.305Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 147,
-    "fields": {
-        "party": 65,
-        "blend": 295,
-        "party_blend_id": "360",
-        "remarks": "Mix: PFC-14: 25%; PFC-116: 18%; HFC-143a: 12%; HFC-23: 12%; HFC-125: 10%; HFC-245fa: 9%; Methane: 6%; Butane: 4%; Other (R-740): 3%; HFC-134a: 1%",
-        "created": "2022-05-11T09:46:27.256Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 146,
-    "fields": {
-        "party": 65,
-        "blend": 294,
-        "party_blend_id": "359",
-        "remarks": "Mix: HFC-245fa: 43%; HFC-23: 28%; Butane: 19%; PFC-14: 10%",
-        "created": "2022-05-11T09:46:27.216Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 145,
-    "fields": {
-        "party": 65,
-        "blend": 293,
-        "party_blend_id": "358",
-        "remarks": "Mix: PFC-14: 24%; PFC-116: 22%; HFC-143a: 11%; HFC-23: 11%; HFC-125: 10%; HFC-245fa: 9%; Methane: 6%; Butane: 4%; Other (R-740): 2%; HFC-134a: 1%",
-        "created": "2022-05-11T09:46:27.191Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 144,
-    "fields": {
-        "party": 65,
-        "blend": 292,
-        "party_blend_id": "357",
-        "remarks": "Mix: HFC-245fa: 36%; PFC-14: 23%; HFC-125: 20%; PFC-116: 13%; HFC-23: 8%",
-        "created": "2022-05-11T09:46:27.129Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 143,
-    "fields": {
-        "party": 65,
-        "blend": 291,
-        "party_blend_id": "356",
-        "remarks": "Mix: HFC-245fa: 43%; HFC-23: 26%; Butane: 19%; PFC-14: 12%",
-        "created": "2022-05-11T09:46:27.103Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 142,
-    "fields": {
-        "party": 65,
-        "blend": 290,
-        "party_blend_id": "355",
-        "remarks": "Mix: HFC-245fa: 35%; HFC-125: 23%; PFC-14: 22%; PFC-116: 13%; HFC-23: 7%",
-        "created": "2022-05-11T09:46:27.080Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 141,
-    "fields": {
-        "party": 65,
-        "blend": 289,
-        "party_blend_id": "354",
-        "remarks": "Mix: HFC-245fa: 43%; HFC-23: 27%; Butane: 19%; PFC-14: 11%",
-        "created": "2022-05-11T09:46:27.057Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 140,
-    "fields": {
-        "party": 65,
-        "blend": 288,
-        "party_blend_id": "353",
-        "remarks": "Mix: HFC-245fa: 41%; HFC-23: 28%; Butane: 18%; PFC-14: 13%",
-        "created": "2022-05-11T09:46:27.037Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 139,
-    "fields": {
-        "party": 65,
-        "blend": 287,
-        "party_blend_id": "352",
-        "remarks": "Mix: HFC-134a: 26.1%; HFC-125: 25.1%; HFC-1234yf: 24.9%; HFC-32: 23.9%",
-        "created": "2022-05-11T09:46:27.016Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 138,
-    "fields": {
-        "party": 65,
-        "blend": 286,
-        "party_blend_id": "351",
-        "remarks": "Mix: Propane: 30%; Isobutane: 30%; PFC-116: 20%; HFC-23: 20%",
-        "created": "2022-05-11T09:46:26.994Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 137,
-    "fields": {
-        "party": 65,
-        "blend": 285,
-        "party_blend_id": "348",
-        "remarks": "Mix: HFC-236fa: 35.7%; PFC-14: 27%; HFC-23: 17%; HFC-125: 14.6%; Other (Argon): 5.7%",
-        "created": "2022-05-11T09:46:26.968Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 136,
-    "fields": {
-        "party": 65,
-        "blend": 284,
-        "party_blend_id": "347",
-        "remarks": "Mix: PFC-14: 30.6%; HFC-245ca: 30.1%; HFC-23: 22.2%; HFC-125: 11.8%; Other (Argon): 5.3%",
-        "created": "2022-05-11T09:46:26.912Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 135,
-    "fields": {
-        "party": 65,
-        "blend": 283,
-        "party_blend_id": "346",
-        "remarks": "Mix: PFC-14: 33.2%; HFC-245fa: 29%; HFC-23: 19.4%; HFC-1234yf: 15.2%; Methane: 3.2%",
-        "created": "2022-05-11T09:46:26.888Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 134,
-    "fields": {
-        "party": 65,
-        "blend": 282,
-        "party_blend_id": "345",
-        "remarks": "Mix: PFC-14: 35.4%; HFC-245fa: 25.7%; HFC-23: 21%; HFC-1234yf: 14.5%; Methane: 3.4%",
-        "created": "2022-05-11T09:46:26.863Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 133,
-    "fields": {
-        "party": 65,
-        "blend": 281,
-        "party_blend_id": "344",
-        "remarks": "Mix: HFC-245fa: 33.4%; PFC-14: 29.3%; HFC-23: 16.75%; HFC-1234yf: 16.75%; Methane: 3.8%",
-        "created": "2022-05-11T09:46:26.839Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 132,
-    "fields": {
-        "party": 65,
-        "blend": 280,
-        "party_blend_id": "341",
-        "remarks": "Mix: PFC-14: 30.6%; HFC-245fa: 30.3%; HFC-23: 22.2%; HFC-125: 11.9%; Other (-AR): 5%",
-        "created": "2022-05-11T09:46:26.811Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 131,
-    "fields": {
-        "party": 65,
-        "blend": 279,
-        "party_blend_id": "340",
-        "remarks": "Mix: HFC-236fa: 37.8%; PFC-14: 27.3%; HFC-23: 17.9%; HFC-125: 11.2%; Other (-AR): 5.8%",
-        "created": "2022-05-11T09:46:26.788Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 130,
-    "fields": {
-        "party": 65,
-        "blend": 278,
-        "party_blend_id": "339",
-        "remarks": "Mix: HFC-236fa: 35.7%; PFC-14: 27%; HFC-23: 18.1%; HFC-125: 14.6%; Other (-AR): 4.6%",
-        "created": "2022-05-11T09:46:26.758Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 129,
-    "fields": {
-        "party": 65,
-        "blend": 277,
-        "party_blend_id": "331",
-        "remarks": "Mix: Other (Argon): 50%; PFC-14: 50%",
-        "created": "2022-05-11T09:46:26.719Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 128,
-    "fields": {
-        "party": 65,
-        "blend": 276,
-        "party_blend_id": "330",
-        "remarks": "Mix: Ethane: 16.7%; HFE-347\u00a0mcc3 (HFE-7000): 16.7%; PFC-14: 16.7%; HFC-23: 16.7%; HFC-125: 16.7%; Other (Argon): 16.5%",
-        "created": "2022-05-11T09:46:26.704Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 127,
-    "fields": {
-        "party": 65,
-        "blend": 275,
-        "party_blend_id": "328",
-        "remarks": "Mix: HFC-32: 78.5%; HFC-1234yf: 21.5%",
-        "created": "2022-05-11T09:46:26.678Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 126,
-    "fields": {
-        "party": 65,
-        "blend": 274,
-        "party_blend_id": "318",
-        "remarks": "Mix: HFC-125: 25%; HFC-32: 25%; HFC-1234yf: 25%; HFC-134a: 25%",
-        "created": "2022-05-11T09:46:26.663Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 125,
-    "fields": {
-        "party": 65,
-        "blend": 273,
-        "party_blend_id": "304",
-        "remarks": "Mix: HFC-125: 30%; HFE-347\u00a0mcc3 (HFE-7000): 30%; PFC-14: 27%; Other (Argon): 5%; Ethane: 4%; HFC-23: 4%",
-        "created": "2022-05-11T09:46:26.633Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 124,
-    "fields": {
-        "party": 65,
-        "blend": 272,
-        "party_blend_id": "300",
-        "remarks": "Mix: HFC-227ea: 20%; HFC-125: 20%; HFC-143a: 20%; HFC-32: 20%; HFC-134a: 20%",
-        "created": "2022-05-11T09:46:26.604Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 123,
-    "fields": {
-        "party": 65,
-        "blend": 271,
-        "party_blend_id": "299",
-        "remarks": "Mix: HFC-134a: 80.1%; HFC-125: 19.9%",
-        "created": "2022-05-11T09:46:26.568Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 122,
-    "fields": {
-        "party": 65,
-        "blend": 270,
-        "party_blend_id": "297",
-        "remarks": "Mix: HFC-125: 67.39%; HFC-134a: 32.61%",
-        "created": "2022-05-11T09:46:26.537Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 121,
-    "fields": {
-        "party": 65,
-        "blend": 269,
-        "party_blend_id": "295",
-        "remarks": "Mix: HFC-236fa: 38%; PFC-14: 28%; HFC-125: 15%; HFC-23: 15%; Other (argon): 4%",
-        "created": "2022-05-11T09:46:26.517Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 120,
-    "fields": {
-        "party": 65,
-        "blend": 268,
-        "party_blend_id": "294",
-        "remarks": "Mix: HFC-236fa: 33%; PFC-14: 30%; HFC-23: 20%; HFC-125: 13%; Other (Argon): 4%",
-        "created": "2022-05-11T09:46:26.493Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 119,
-    "fields": {
-        "party": 65,
-        "blend": 267,
-        "party_blend_id": "293",
-        "remarks": "Mix: HFC-245fa: 30%; PFC-14: 29%; HFC-23: 23%; HFC-125: 13%; Other (Argon): 5%",
-        "created": "2022-05-11T09:46:26.467Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 118,
-    "fields": {
-        "party": 65,
-        "blend": 266,
-        "party_blend_id": "290",
-        "remarks": "Mix: Other (R 22): 99%; Other (R12): 1%",
-        "created": "2022-05-11T09:46:26.443Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 117,
-    "fields": {
-        "party": 65,
-        "blend": 265,
-        "party_blend_id": "288",
-        "remarks": "Mix: PFC-14: 36.5%; HFC-245fa: 22%; PFC-218: 12.5%; HFC-23: 11%; Isobutane: 7%; Other (Argon): 4%; Methane: 3.5%; Ethane: 3.5%",
-        "created": "2022-05-11T09:46:26.427Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 116,
-    "fields": {
-        "party": 65,
-        "blend": 264,
-        "party_blend_id": "286",
-        "remarks": "Mix: HFC-43-10mee: 57%; Other (OS-10 (107-46-0)): 43%",
-        "created": "2022-05-11T09:46:26.397Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 115,
-    "fields": {
-        "party": 65,
-        "blend": 263,
-        "party_blend_id": "285",
-        "remarks": "Mix: HFC-43-10mee: 96.75%; Other (Isopropyl alcohol (IPA) (67-63-0)): 3.25%",
-        "created": "2022-05-11T09:46:26.381Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 114,
-    "fields": {
-        "party": 65,
-        "blend": 262,
-        "party_blend_id": "284",
-        "remarks": "Mix: HFC-43-10mee: 50.9%; Other (1,2 Trans DCE (156-60-5)): 43%; Other (Methanol (67-56-1)): 4%; Other (Cyclopentane (287-92-3)): 2%; Other (Nitromethane (75-52-5)): 0.1%",
-        "created": "2022-05-11T09:46:26.359Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 113,
-    "fields": {
-        "party": 65,
-        "blend": 261,
-        "party_blend_id": "283",
-        "remarks": "Mix: HFC-43-10mee: 96%; Other (Ethanol (64-17-5)): 4%",
-        "created": "2022-05-11T09:46:26.318Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 112,
-    "fields": {
-        "party": 65,
-        "blend": 260,
-        "party_blend_id": "282",
-        "remarks": "Mix: HFC-43-10mee: 61.94%; Other (1,2 Trans DCE (156-60-5)): 37.96%; Other (Surfactant 621 (74665-00-2)): 0.1%",
-        "created": "2022-05-11T09:46:26.303Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 111,
-    "fields": {
-        "party": 65,
-        "blend": 259,
-        "party_blend_id": "281",
-        "remarks": "Mix: HFC-43-10mee: 99.4%; Other (Nitromethane (75-52-5)): 0.5%; Other (Zonyl UR-BALD (206009-80-5)): 0.1%",
-        "created": "2022-05-11T09:46:26.285Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 110,
-    "fields": {
-        "party": 65,
-        "blend": 258,
-        "party_blend_id": "280",
-        "remarks": "Mix: HFC-43-10mee: 52.9%; Other (1,2 Trans DCE (156-60-5)): 43%; Other (Methanol (67-56-1)): 4%; Other (Nitromethane (75-52-5)): 0.1%",
-        "created": "2022-05-11T09:46:26.267Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 109,
-    "fields": {
-        "party": 65,
-        "blend": 257,
-        "party_blend_id": "279",
-        "remarks": "Mix: HFC-43-10mee: 50%; Other (1,2 Trans DCE (156-60-5)): 45%; Other (Cyclopentane (287-92-3)): 5%",
-        "created": "2022-05-11T09:46:26.247Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 108,
-    "fields": {
-        "party": 65,
-        "blend": 256,
-        "party_blend_id": "278",
-        "remarks": "Mix: HFC-43-10mee: 62%; Other (1,2 Trans DCE (156-60-5)): 38%",
-        "created": "2022-05-11T09:46:26.229Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 107,
-    "fields": {
-        "party": 65,
-        "blend": 255,
-        "party_blend_id": "277",
-        "remarks": "Mix: Other (1,2 Trans DCE (156-60-5)): 85%; HFC-43-10mee: 15%",
-        "created": "2022-05-11T09:46:26.214Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 106,
-    "fields": {
-        "party": 65,
-        "blend": 254,
-        "party_blend_id": "276",
-        "remarks": "Mix: Other (1,2 Trans DCE (156-60-5)): 67.2%; HFC-43-10mee: 18%; Other (Heptafluorocyclopentane (15290-77-4)): 12%; Other (Methanol (67-56-1)): 2.8%",
-        "created": "2022-05-11T09:46:26.198Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 105,
-    "fields": {
-        "party": 65,
-        "blend": 253,
-        "party_blend_id": "275",
-        "remarks": "Mix: Other (1,2 Trans DCE (156-60-5)): 83%; HFC-43-10mee: 10%; Other (Heptafluorocyclopentane (15290-77-4)): 7%",
-        "created": "2022-05-11T09:46:26.178Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 104,
-    "fields": {
-        "party": 65,
-        "blend": 252,
-        "party_blend_id": "274",
-        "remarks": "Mix: Other (1,2 Trans DCE (156-60-5)): 68.2%; HFC-43-10mee: 25.5%; Other (Ethanol): 6.3%",
-        "created": "2022-05-11T09:46:26.161Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 103,
-    "fields": {
-        "party": 65,
-        "blend": 251,
-        "party_blend_id": "273",
-        "remarks": "Mix: HFC-125: 57.2%; HFC-1234yf: 30.1%; HFC-32: 12.7%",
-        "created": "2022-05-11T09:46:26.142Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 102,
-    "fields": {
-        "party": 65,
-        "blend": 250,
-        "party_blend_id": "272",
-        "remarks": "Mix: HFC-1234yf: 55%; HFC-134a: 45%",
-        "created": "2022-05-11T09:46:26.095Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 101,
-    "fields": {
-        "party": 65,
-        "blend": 249,
-        "party_blend_id": "271",
-        "remarks": "Mix: HFC-134a: 95.7%; Dimethyl ether: 4.3%",
-        "created": "2022-05-11T09:46:26.078Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 100,
-    "fields": {
-        "party": 65,
-        "blend": 248,
-        "party_blend_id": "270",
-        "remarks": "Mix: Other (1,2 Trans DCE (156-60-5)): 95%; Other (Methoxytridecafluoroheptene isomers): 4%; HFC-43-10mee: 1%",
-        "created": "2022-05-11T09:46:26.063Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 99,
-    "fields": {
-        "party": 65,
-        "blend": 247,
-        "party_blend_id": "269",
-        "remarks": "Mix: HFC-134a: 87%; HFC-125: 13%",
-        "created": "2022-05-11T09:46:26.045Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 98,
-    "fields": {
-        "party": 65,
-        "blend": 246,
-        "party_blend_id": "268",
-        "remarks": "Mix: HFC-125: 75%; HFC-134a: 25%",
-        "created": "2022-05-11T09:46:26.030Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 97,
-    "fields": {
-        "party": 65,
-        "blend": 245,
-        "party_blend_id": "248",
-        "remarks": "Mix: HFC-134a: 89%; HFC-125: 11%",
-        "created": "2022-05-11T09:46:26.015Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 96,
-    "fields": {
-        "party": 65,
-        "blend": 244,
-        "party_blend_id": "246",
-        "remarks": "Mix: HFC-365mfc: 70%; Other (t-DCE): 30%",
-        "created": "2022-05-11T09:46:26.000Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 95,
-    "fields": {
-        "party": 65,
-        "blend": 243,
-        "party_blend_id": "228",
-        "remarks": "",
-        "created": "2022-05-11T09:46:25.985Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 94,
-    "fields": {
-        "party": 65,
-        "blend": 243,
-        "party_blend_id": "227",
-        "remarks": "Mix: PFC-5-1-14: 33.334%; PFC-3-1-10: 33.333%; PFC-4-1-12: 33.333%",
-        "created": "2022-05-11T09:46:25.974Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 93,
-    "fields": {
-        "party": 65,
-        "blend": 242,
-        "party_blend_id": "224",
-        "remarks": "Mix: HFC-236fa: 39.99%; PFC-14: 25.89%; HFC-23: 17.5%; HFC-125: 10.23%; Other (Argon): 6.39%",
-        "created": "2022-05-11T09:46:25.955Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 92,
-    "fields": {
-        "party": 65,
-        "blend": 241,
-        "party_blend_id": "213",
-        "remarks": "Mix: PFC-14: 23.53%; HFC-236fa: 23.53%; HFC-125: 23.53%; HFC-23: 23.53%; Other (Argon): 5.88%",
-        "created": "2022-05-11T09:46:25.931Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 91,
-    "fields": {
-        "party": 65,
-        "blend": 240,
-        "party_blend_id": "212",
-        "remarks": "Mix: PFC-14: 31.25%; HFC-236fa: 31.25%; HFC-125: 15.63%; HFC-23: 15.63%; Other (Argon): 6.24%",
-        "created": "2022-05-11T09:46:25.908Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 90,
-    "fields": {
-        "party": 65,
-        "blend": 239,
-        "party_blend_id": "210",
-        "remarks": "Mix: PFC-14: 35.75%; HFC-245fa: 20.44%; HFC-23: 19.35%; HFC-125: 17.56%; Other (Argon): 6.9%",
-        "created": "2022-05-11T09:46:25.882Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 89,
-    "fields": {
-        "party": 65,
-        "blend": 238,
-        "party_blend_id": "209",
-        "remarks": "Mix: PFC-14: 31.14%; HFC-245fa: 30.83%; HFC-23: 23.25%; HFC-125: 12.32%; Other (Argon): 2.46%",
-        "created": "2022-05-11T09:46:25.859Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 88,
-    "fields": {
-        "party": 65,
-        "blend": 237,
-        "party_blend_id": "208",
-        "remarks": "Mix: HFC-236fa: 33.3%; PFC-14: 29.8%; HFC-23: 19.53%; HFC-125: 13.31%; Other (Argon): 4.06%",
-        "created": "2022-05-11T09:46:25.836Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 87,
-    "fields": {
-        "party": 65,
-        "blend": 236,
-        "party_blend_id": "207",
-        "remarks": "Mix: HFC-236fa: 38.42%; PFC-14: 27.99%; HFC-23: 16%; Other (Argon): 10.66%; HFC-125: 6.93%",
-        "created": "2022-05-11T09:46:25.813Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 86,
-    "fields": {
-        "party": 65,
-        "blend": 235,
-        "party_blend_id": "206",
-        "remarks": "Mix: PFC-14: 38.2%; HFC-125: 19.1%; HFC-23: 18.13%; HFC-245fa: 14.38%; Other (Argon): 10.19%",
-        "created": "2022-05-11T09:46:25.780Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 85,
-    "fields": {
-        "party": 65,
-        "blend": 234,
-        "party_blend_id": "205",
-        "remarks": "Mix: PFC-14: 40.95%; HFC-23: 29.64%; HFC-125: 13.09%; HFC-245fa: 9.85%; Other (Argon): 6.47%",
-        "created": "2022-05-11T09:46:25.740Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 84,
-    "fields": {
-        "party": 65,
-        "blend": 233,
-        "party_blend_id": "204",
-        "remarks": "Mix: PFC-14: 48.56%; HFC-125: 25.49%; HFC-23: 16.7%; Other (Argon): 9.25%",
-        "created": "2022-05-11T09:46:25.716Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 83,
-    "fields": {
-        "party": 65,
-        "blend": 232,
-        "party_blend_id": "203",
-        "remarks": "Mix: PFC-14: 31.91%; HFC-236fa: 29.52%; HFC-23: 23.94%; HFC-125: 10.73%; Other (Argon): 3.9%",
-        "created": "2022-05-11T09:46:25.696Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 82,
-    "fields": {
-        "party": 65,
-        "blend": 231,
-        "party_blend_id": "201",
-        "remarks": "Mix: PFC-14: 30.51%; HFC-236fa: 30.35%; HFC-23: 22.05%; HFC-125: 11.02%; Other (Argon): 6.07%",
-        "created": "2022-05-11T09:46:25.673Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 81,
-    "fields": {
-        "party": 65,
-        "blend": 230,
-        "party_blend_id": "200",
-        "remarks": "Mix: HFC-365mfc: 92%; HFC-227ea: 8%",
-        "created": "2022-05-11T09:46:25.650Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 80,
-    "fields": {
-        "party": 65,
-        "blend": 229,
-        "party_blend_id": "199",
-        "remarks": "Mix: HFC-134a: 87%; HFC-152a: 13%",
-        "created": "2022-05-11T09:46:25.634Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 79,
-    "fields": {
-        "party": 65,
-        "blend": 228,
-        "party_blend_id": "193",
-        "remarks": "Mix: Dimethyl ether: 60%; HFC-152a: 40%",
-        "created": "2022-05-11T09:46:25.615Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 78,
-    "fields": {
-        "party": 65,
-        "blend": 214,
-        "party_blend_id": "192",
-        "remarks": "",
-        "created": "2022-05-11T09:46:25.599Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 77,
-    "fields": {
-        "party": 65,
-        "blend": 227,
-        "party_blend_id": "140",
-        "remarks": "Mix: C2F6: 6.5%; Other (no F-gas of Regulation 517/2014): 93.5%",
-        "created": "2022-05-11T09:46:25.586Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 76,
-    "fields": {
-        "party": 65,
-        "blend": 226,
-        "party_blend_id": "136",
-        "remarks": "Mix: HFC-152a: 50%; Other (no F-gas of Regulation (EC) 842/2006): 50%;",
-        "created": "2022-05-11T09:46:25.570Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 75,
-    "fields": {
-        "party": 65,
-        "blend": 225,
-        "party_blend_id": "135",
-        "remarks": "Mix: HFC-134a: 12%; Other (no F-gas of Regulation (EC) 842/2006): 88%",
-        "created": "2022-05-11T09:46:25.550Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 74,
-    "fields": {
-        "party": 65,
-        "blend": 224,
-        "party_blend_id": "70",
-        "remarks": "Mix: HFC-227ea:13%; HFC-365mfc:87%",
-        "created": "2022-05-11T09:46:25.525Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 73,
-    "fields": {
-        "party": 65,
-        "blend": 215,
-        "party_blend_id": "34",
-        "remarks": "",
-        "created": "2022-05-11T09:46:25.494Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 72,
-    "fields": {
-        "party": 65,
-        "blend": 133,
-        "party_blend_id": "96",
-        "remarks": "PFC-116:61%;HFC-23:39%",
-        "created": "2022-05-11T09:34:34.795Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 71,
-    "fields": {
-        "party": 65,
-        "blend": 33,
-        "party_blend_id": "91",
-        "remarks": "HFC-134a:40%;HFC-125:30%;HFC-32:30%",
-        "created": "2022-05-11T09:34:34.793Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 70,
-    "fields": {
-        "party": 65,
-        "blend": 28,
-        "party_blend_id": "89",
-        "remarks": "HFC-134a:40%;HFC-125:40%;HFC-32:20%",
-        "created": "2022-05-11T09:34:34.791Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 69,
-    "fields": {
-        "party": 65,
-        "blend": 20,
-        "party_blend_id": "87",
-        "remarks": "HFC-125:60%;HCFC-22:38%;HC-290:2%",
-        "created": "2022-05-11T09:34:34.788Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 68,
-    "fields": {
-        "party": 65,
-        "blend": 18,
-        "party_blend_id": "86",
-        "remarks": "HCFC-22:61%;HCFC-124:28%;HFC-152a:11%",
-        "created": "2022-05-11T09:34:34.786Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 67,
-    "fields": {
-        "party": 65,
-        "blend": 17,
-        "party_blend_id": "85",
-        "remarks": "HCFC-22:53%;HCFC-124:34%;HFC-152a:13%",
-        "created": "2022-05-11T09:34:34.784Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 66,
-    "fields": {
-        "party": 65,
-        "blend": 66,
-        "party_blend_id": "80",
-        "remarks": "HFC-134a:52.5%;HFC-227ea:47.5%",
-        "created": "2022-05-11T09:34:34.782Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 65,
-    "fields": {
-        "party": 65,
-        "blend": 140,
-        "party_blend_id": "595",
-        "remarks": "Mix: Other (HFO-1234yf): 56%; Other (HFC-134a): 44%",
-        "created": "2022-05-11T09:34:34.780Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 64,
-    "fields": {
-        "party": 65,
-        "blend": 196,
-        "party_blend_id": "594",
-        "remarks": "Mix: HFC-134a: 50%; HFC-125: 25%; HFC-32: 25%",
-        "created": "2022-05-11T09:34:34.778Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 63,
-    "fields": {
-        "party": 65,
-        "blend": 195,
-        "party_blend_id": "593",
-        "remarks": "Mix: HFC-134a: 52%; HFC-143a: 26%; HFC-125: 22%",
-        "created": "2022-05-11T09:34:34.776Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 62,
-    "fields": {
-        "party": 65,
-        "blend": 194,
-        "party_blend_id": "592",
-        "remarks": "Mix: HFC-125: 25%; HFC-134a: 25%; HFC-143a: 25%; HFC-32: 25%",
-        "created": "2022-05-11T09:34:34.773Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 61,
-    "fields": {
-        "party": 65,
-        "blend": 193,
-        "party_blend_id": "591",
-        "remarks": "Mix: Butane: 34%; HFC-125: 33%; HFC-134a: 33%",
-        "created": "2022-05-11T09:34:34.771Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 60,
-    "fields": {
-        "party": 65,
-        "blend": 192,
-        "party_blend_id": "590",
-        "remarks": "Mix: HFC-125: 47%; HFC-143a: 26%; HFC-32: 25%; HFC-134a: 2%",
-        "created": "2022-05-11T09:34:34.769Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 59,
-    "fields": {
-        "party": 65,
-        "blend": 59,
-        "party_blend_id": "589",
-        "remarks": "HFC-125:58%;HFC-134a:42%",
-        "created": "2022-05-11T09:34:34.767Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 58,
-    "fields": {
-        "party": 65,
-        "blend": 191,
-        "party_blend_id": "588",
-        "remarks": "Mix: HFC-125: 50%; HFC-134: 50%",
-        "created": "2022-05-11T09:34:34.764Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 57,
-    "fields": {
-        "party": 65,
-        "blend": 190,
-        "party_blend_id": "587",
-        "remarks": "Mix: HFC-143a: 52%; HFC-125: 35%; HFC-32: 11%; HFC-134a: 2%",
-        "created": "2022-05-11T09:34:34.762Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 56,
-    "fields": {
-        "party": 65,
-        "blend": 165,
-        "party_blend_id": "582",
-        "remarks": "HFC-143a:73%;HFC-125:17%;HFC-32:7.0%;HFC-23:3%",
-        "created": "2022-05-11T09:34:34.760Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 55,
-    "fields": {
-        "party": 65,
-        "blend": 172,
-        "party_blend_id": "581",
-        "remarks": "HFC-134a:84.93%;HFC-125:7.51%;HFC-32:4.99%;HFC-143a:2.57%",
-        "created": "2022-05-11T09:34:34.758Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 54,
-    "fields": {
-        "party": 65,
-        "blend": 56,
-        "party_blend_id": "580",
-        "remarks": "HFC-125:77%;HFC-134a:19%;HC-E170:4%",
-        "created": "2022-05-11T09:34:34.755Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 53,
-    "fields": {
-        "party": 65,
-        "blend": 153,
-        "party_blend_id": "578",
-        "remarks": "HFO-1234ze(E):91.1%;HFC-227ea:8.9%",
-        "created": "2022-05-11T09:34:34.753Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 52,
-    "fields": {
-        "party": 65,
-        "blend": 198,
-        "party_blend_id": "569",
-        "remarks": "HFC-245fa:43.9%;HFC-23:28.5%;HC-600:18.8%;PFC-14:8.8%",
-        "created": "2022-05-11T09:34:34.751Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 51,
-    "fields": {
-        "party": 65,
-        "blend": 180,
-        "party_blend_id": "568",
-        "remarks": "PFC-14:22.2%;PFC-116:19.2%;HFC-143a:13.4%;HFC-23:12.3%;HFC-125:11.3%;HFC-245fa:7.4%;HC-50:5.3%;R-740:4.7%;HC-600:3.2%;HFC-134a:1%",
-        "created": "2022-05-11T09:34:34.749Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 50,
-    "fields": {
-        "party": 65,
-        "blend": 181,
-        "party_blend_id": "567",
-        "remarks": "PFC-14:26%;PFC-116:15.8%;HFC-143a:11.4%;HFC-23:10.1%;HFC-245fa:9.9%;HFC-125:9.6%;HC-50:6.1%;R-740:6%;HC-600:4.2%;HFC-134a:0.9%",
-        "created": "2022-05-11T09:34:34.747Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 49,
-    "fields": {
-        "party": 65,
-        "blend": 173,
-        "party_blend_id": "564",
-        "remarks": "HFC-227ea:87%;HFC-365mfc:13%",
-        "created": "2022-05-11T09:34:34.745Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 48,
-    "fields": {
-        "party": 65,
-        "blend": 170,
-        "party_blend_id": "563",
-        "remarks": "HC-600:34%;PFC-116:26%;HC-290:23%;HFC-23:17%",
-        "created": "2022-05-11T09:34:34.743Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 47,
-    "fields": {
-        "party": 65,
-        "blend": 110,
-        "party_blend_id": "559",
-        "remarks": "HFO-1234yf:78.5%;HFC-32:21.5%",
-        "created": "2022-05-11T09:34:34.740Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 46,
-    "fields": {
-        "party": 65,
-        "blend": 111,
-        "party_blend_id": "558",
-        "remarks": "HFO-1234yf:75.5%;HFC-32:21.5%;R-744:3%",
-        "created": "2022-05-11T09:34:34.738Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 45,
-    "fields": {
-        "party": 65,
-        "blend": 174,
-        "party_blend_id": "551",
-        "remarks": "HFC-245fa:43.4%;HFC-23:28.3%;HC-600:18.6%;PFC-14:9.7%",
-        "created": "2022-05-11T09:34:34.736Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 44,
-    "fields": {
-        "party": 65,
-        "blend": 46,
-        "party_blend_id": "52",
-        "remarks": "HFC-134a:88%;PFC-218:9%;HC-600a:3%",
-        "created": "2022-05-11T09:34:34.734Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 43,
-    "fields": {
-        "party": 65,
-        "blend": 101,
-        "party_blend_id": "516",
-        "remarks": "HFO-1234ze(E):58.0%;HFC-134a:42%",
-        "created": "2022-05-11T09:34:34.732Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 42,
-    "fields": {
-        "party": 65,
-        "blend": 197,
-        "party_blend_id": "507",
-        "remarks": "HFC-245fa:41.6%;HFC-23:30.6%;HC-600:17.9%;PFC-14:9.9%",
-        "created": "2022-05-11T09:34:34.730Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 41,
-    "fields": {
-        "party": 65,
-        "blend": 37,
-        "party_blend_id": "49",
-        "remarks": "HCFC-22:47%;HFC-143a:46%;HFC-125:7%",
-        "created": "2022-05-11T09:34:34.728Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 40,
-    "fields": {
-        "party": 65,
-        "blend": 31,
-        "party_blend_id": "48",
-        "remarks": "HFC-134a:70%;HFC-125:15%;HFC-32:15%",
-        "created": "2022-05-11T09:34:34.726Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 39,
-    "fields": {
-        "party": 65,
-        "blend": 134,
-        "party_blend_id": "46",
-        "remarks": "PFC-116:54%;HFC-23:46%",
-        "created": "2022-05-11T09:34:34.723Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 38,
-    "fields": {
-        "party": 65,
-        "blend": 84,
-        "party_blend_id": "45",
-        "remarks": "HFC-134a:78.5%;HFC-125:19.5%;HC-600:1.4%;HC-601:0.6%",
-        "created": "2022-05-11T09:34:34.721Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 37,
-    "fields": {
-        "party": 65,
-        "blend": 79,
-        "party_blend_id": "44",
-        "remarks": "HFC-125:63.2%;HFC-143a:18%;HFC-134a:16%;HC-600a:2.8%",
-        "created": "2022-05-11T09:34:34.719Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 36,
-    "fields": {
-        "party": 65,
-        "blend": 71,
-        "party_blend_id": "43",
-        "remarks": "HFC-125:77.5%;HFC-143a:20%;HC-600a:1.9%;HC-290:0.6%",
-        "created": "2022-05-11T09:34:34.717Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 35,
-    "fields": {
-        "party": 65,
-        "blend": 70,
-        "party_blend_id": "42",
-        "remarks": "HFC-134a:50%;HFC-125:25%;HFC-32:15%;HFC-143a:10%",
-        "created": "2022-05-11T09:34:34.715Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 34,
-    "fields": {
-        "party": 65,
-        "blend": 67,
-        "party_blend_id": "40",
-        "remarks": "HFC-125:50.5%;HFC-134a:47%;HC-600:1%;HC-600a:0.9%;HC-601a:0.6%",
-        "created": "2022-05-11T09:34:34.713Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 33,
-    "fields": {
-        "party": 65,
-        "blend": 64,
-        "party_blend_id": "39",
-        "remarks": "HFC-125:65.1%;HFC-134a:31.5%;HC-600a:3.4%",
-        "created": "2022-05-11T09:34:34.711Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 32,
-    "fields": {
-        "party": 65,
-        "blend": 61,
-        "party_blend_id": "38",
-        "remarks": "HFC-125:85.1%;HFC-134a:11.5%;HC-600a:3.4%",
-        "created": "2022-05-11T09:34:34.708Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 31,
-    "fields": {
-        "party": 65,
-        "blend": 105,
-        "party_blend_id": "377",
-        "remarks": "HFC-32:67%;HFO-1234yf:26%;HFC-125:7%",
-        "created": "2022-05-11T09:34:34.706Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 30,
-    "fields": {
-        "party": 65,
-        "blend": 109,
-        "party_blend_id": "375",
-        "remarks": "HFC-32:68.9%;HFO-1234yf:31.1%",
-        "created": "2022-05-11T09:34:34.704Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 29,
-    "fields": {
-        "party": 65,
-        "blend": 52,
-        "party_blend_id": "37",
-        "remarks": "HFC-134a:50%;HFC-125:46.6%;HC-600:3.4%",
-        "created": "2022-05-11T09:34:34.702Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 28,
-    "fields": {
-        "party": 65,
-        "blend": 68,
-        "party_blend_id": "368",
-        "remarks": "HFC-134a:69.5%;HFC-32:18.5%;HFC-227ea:12%",
-        "created": "2022-05-11T09:34:34.700Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 27,
-    "fields": {
-        "party": 65,
-        "blend": 35,
-        "party_blend_id": "365",
-        "remarks": "HFC-134a:52.5%;HFC-32:32.5%;HFC-125:15%",
-        "created": "2022-05-11T09:34:34.698Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 26,
-    "fields": {
-        "party": 65,
-        "blend": 171,
-        "party_blend_id": "35",
-        "remarks": "HFC-125:86%;PFC-218:9%;HC-290:5%",
-        "created": "2022-05-11T09:34:34.696Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 25,
-    "fields": {
-        "party": 65,
-        "blend": 38,
-        "party_blend_id": "342",
-        "remarks": "Mix: Other (R22): 60%; Other (R124): 25%; Other (R142b): 15%",
-        "created": "2022-05-11T09:34:34.694Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 24,
-    "fields": {
-        "party": 65,
-        "blend": 108,
-        "party_blend_id": "329",
-        "remarks": "HFO-1234yf:65%;HFC-32:35%",
-        "created": "2022-05-11T09:34:34.691Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 23,
-    "fields": {
-        "party": 65,
-        "blend": 175,
-        "party_blend_id": "309",
-        "remarks": "Mix: HFC-365mfc: 65%; Other (perfluoropolymethylisopropylether (PFPMIE)): 35%",
-        "created": "2022-05-11T09:34:34.689Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 22,
-    "fields": {
-        "party": 65,
-        "blend": 179,
-        "party_blend_id": "306",
-        "remarks": "HFE-347\u00a0mcc3 (HFE-7000):34%;PFC-14:31%;HFC-125:26%;R-740:3%;HC-170:3%;HFC-23:3%",
-        "created": "2022-05-11T09:34:34.687Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 21,
-    "fields": {
-        "party": 65,
-        "blend": 183,
-        "party_blend_id": "305",
-        "remarks": "PFC-14:60%;R-740:12%;HFC-125:12%;HC-170:9%;HFC-23:7%",
-        "created": "2022-05-11T09:34:34.685Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 20,
-    "fields": {
-        "party": 65,
-        "blend": 182,
-        "party_blend_id": "303",
-        "remarks": "PFC-14:37%;HFC-125:25%;HFE-347\u00a0mcc3 (HFE-7000):24%;R-740:6%;HFC-23:5%;HC-170:3%",
-        "created": "2022-05-11T09:34:34.683Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 19,
-    "fields": {
-        "party": 65,
-        "blend": 177,
-        "party_blend_id": "302",
-        "remarks": "HFE-347\u00a0mcc3 (HFE-7000):33%;PFC-14:28%;HFC-125:25%;HC-170:5%;HFC-23:5%;R-740:4%",
-        "created": "2022-05-11T09:34:34.681Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 18,
-    "fields": {
-        "party": 65,
-        "blend": 178,
-        "party_blend_id": "301",
-        "remarks": "HFE-347\u00a0MCC3(HFE-7000):34%;PFC-14:26%;HFC-125:26%;HC-170:5%;HFC-23:5%;R-740:4%",
-        "created": "2022-05-11T09:34:34.678Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 17,
-    "fields": {
-        "party": 65,
-        "blend": 98,
-        "party_blend_id": "292",
-        "remarks": "HFC-134a:25.7%;HFO-1234yf:25.3%;HFC-125:24.7%;HFC-32:24.3%",
-        "created": "2022-05-11T09:34:34.675Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 16,
-    "fields": {
-        "party": 65,
-        "blend": 40,
-        "party_blend_id": "29",
-        "remarks": "HFC-32:50%;HFC-125:50%",
-        "created": "2022-05-11T09:34:34.673Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 15,
-    "fields": {
-        "party": 65,
-        "blend": 132,
-        "party_blend_id": "28",
-        "remarks": "HFC-125:50%;HFC-143a:50%",
-        "created": "2022-05-11T09:34:34.671Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 14,
-    "fields": {
-        "party": 65,
-        "blend": 30,
-        "party_blend_id": "27",
-        "remarks": "HFC-134a:52%;HFC-125:25%;HFC-32:23%",
-        "created": "2022-05-11T09:34:34.668Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 13,
-    "fields": {
-        "party": 65,
-        "blend": 24,
-        "party_blend_id": "26",
-        "remarks": "HFC-143a:52%;HFC-125:44%;HFC-134a:4%",
-        "created": "2022-05-11T09:34:34.666Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 12,
-    "fields": {
-        "party": 65,
-        "blend": 175,
-        "party_blend_id": "245",
-        "remarks": "HFC-365mfc:65%;perfluoropolymethylisopropylether (PFPMIE):35%",
-        "created": "2022-05-11T09:34:34.664Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 11,
-    "fields": {
-        "party": 65,
-        "blend": 140,
-        "party_blend_id": "232",
-        "remarks": "HFO-1234yf:56%;HFC-134a:44%",
-        "created": "2022-05-11T09:34:34.662Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 10,
-    "fields": {
-        "party": 65,
-        "blend": 107,
-        "party_blend_id": "231",
-        "remarks": "HFC-134a:53.8%;HFC-125:20%;HFC-32:20%;HFC-227ea:5%;HC-601a:0.6%;HC-600:0.6%",
-        "created": "2022-05-11T09:34:34.659Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 9,
-    "fields": {
-        "party": 65,
-        "blend": 104,
-        "party_blend_id": "230",
-        "remarks": "HFC-125:59%;HFO-1234yf:30%;HFC-32:11%",
-        "created": "2022-05-11T09:34:34.657Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 8,
-    "fields": {
-        "party": 65,
-        "blend": 97,
-        "party_blend_id": "229",
-        "remarks": "HFC-32:26%;HFC-125:26%;HFC-134a:21%;HFO-1234yf:20%;HFO-1234ze(E):7%",
-        "created": "2022-05-11T09:34:34.654Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 7,
-    "fields": {
-        "party": 65,
-        "blend": 101,
-        "party_blend_id": "196",
-        "remarks": "R-450A",
-        "created": "2022-05-11T09:34:34.652Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 6,
-    "fields": {
-        "party": 65,
-        "blend": 176,
-        "party_blend_id": "191",
-        "remarks": "HFC-365mfc:93%;HFC-227ea:7%",
-        "created": "2022-05-11T09:34:34.649Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 5,
-    "fields": {
-        "party": 65,
-        "blend": 85,
-        "party_blend_id": "189",
-        "remarks": "HFC-125:45%;HFC-134a:44.2%;HFC-32:8.5%;HC-600:1.7%;HC-601a:0.6%",
-        "created": "2022-05-11T09:34:34.647Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 4,
-    "fields": {
-        "party": 65,
-        "blend": 89,
-        "party_blend_id": "188",
-        "remarks": "HFC-125:31%;HFC-32:31%;HFC-134a:30%;HFC-227ea:5%;HFC-152a:3%",
-        "created": "2022-05-11T09:34:34.645Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 3,
-    "fields": {
-        "party": 65,
-        "blend": 145,
-        "party_blend_id": "187",
-        "remarks": "Unspecified mix of F-gases containing HFCs for destruction",
-        "created": "2022-05-11T09:34:34.642Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 2,
-    "fields": {
-        "party": 65,
-        "blend": 53,
-        "party_blend_id": "137",
-        "remarks": "HFC-125:79%;HFC-134a:18.3%;HC-600:2.7%",
-        "created": "2022-05-11T09:34:34.640Z"
-    }
-},
-{
-    "model": "core.blendmapping",
-    "pk": 1,
-    "fields": {
-        "party": 65,
-        "blend": 23,
-        "party_blend_id": "104",
-        "remarks": "HCFC-22:56%;PFC-218:39%;HC-290:5%",
-        "created": "2022-05-11T09:34:34.637Z"
-    }
-}
 ]

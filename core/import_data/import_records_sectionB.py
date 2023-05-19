@@ -40,11 +40,9 @@ REQUIRED_COLUMNS = [
 SECTION = "B"
 
 # "R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%)" => [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")]
-BLEND_COMPONENTS_RE = r"(\w{1,4}\-\w{3,6})s?=?\s?\(?(\d{,3}\.?\d{,3})\%\)?"
+BLEND_COMPONENTS_RE = r"(\w{1,4}\-?\s?\w{2,7})\s?=?-?\s?\(?(\d{1,3}\.?\,?\d{,3})\%\)?"
 # "R23/R125/CO2/HFO-1132 (10%/10%/60%/20%)"
-BLEND_COMPOSITION_RE = r"(/[a-zA-Z0-9/-]{3,9}\s?\(\d{1,3})"
-# "R448 (Assuned R-448A)" => "R-448A"
-ASSUMED_NAME_RE = r"\(Assu.ed,? (.*)\)|$"
+BLEND_COMPOSITION_RE = r"((/[a-zA-Z0-9/-]{3,15})+\s?\(\d{1,3}\.?\,?\d{,2}?%)"
 
 
 def check_headers(df):
@@ -105,27 +103,44 @@ def parse_chemical_name(chemical_name):
     Parse chemical name from row and return chemical_search_name and components list:
         e.g.:
         R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%) => ("R-404A", [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")])
-        HFC-23 (use) => ("HFC-23" , [])
-        R438 (Assumed R-438A) => ("R-438A", [])
-        HFC-365mfc in imported pre-blended polyols => ("HFC-365mfc", [])
-        R32/R125/R134a/HFO (24%/25%/26%/25%) => R32/R125/R134a/HFO (24%/25%/26%/25%), []
+        R125/R218/R290 (86%/9%/5%) =>R125/R218/R290 (86%/9%/5%),   [('R125', '86'), ('R218', '9'), ('R290', '5')]
+        R23/Other uncontrolled substances (98%/2%) => R23/Other uncontrolled substances (98%/2%), [(R23, 98), (Other substances, 2)]
+    @param chemical_name string
+    @return tuple => (chemical_search_name, components)
+        - chemical_search_name = string
+        - components = list of tuple (substance_name, percentage)
     """
     # remove Fullwidth Right Parenthesis
-    chemical_name = chemical_name.replace("）", ")")
+    chemical_name = chemical_name.replace("）", ")").strip()
 
-    # if the chemical name has an assumed name then we will search by the assumed name
-    if "Assu" in chemical_name:
-        chemical_search_name = re.findall(ASSUMED_NAME_RE, chemical_name)[0]
-        return chemical_search_name, []
-
+    # R23/Other uncontrolled substances (98%/2%)
     # R32/R125/R134a/HFO (24%/25%/26%/25%)
-    if re.search(BLEND_COMPOSITION_RE, chemical_name):
-        return chemical_name.strip(), []
+    if ("Other uncontrolled substances" in chemical_name) or (
+        re.search(BLEND_COMPOSITION_RE, chemical_name)
+    ):
+        chemical_name.replace("Other uncontrolled substances", "Other substances")
+
+        substances, percentages = chemical_name.split("(")
+        substances = substances.strip().split("/")
+
+        percentages = re.findall(r"(\d{1,3}\.?\,?\d{,3})\%", percentages)
+        if len(substances) != len(percentages):
+            return chemical_name, []
+        components = list(zip(substances, percentages))
+        return chemical_name, components
 
     components = re.findall(BLEND_COMPONENTS_RE, chemical_name)
-    chemical_search_name = chemical_name.split(" ")[0]
+    if components:
+        # check if the number of components is equal to the number of %
+        if chemical_name.count("%") != len(components):
+            # R-514A (HFO-1336mzz=74,7%, trans-Dicloroetileno=25,3%) => components = [HFO-1336mzz, 74.7]
+            components = []
 
-    return chemical_search_name, components
+        components = [(c.strip().replace(" ", "-"), p) for c, p in components]
+        chemical_search_name = chemical_name.split("(")[0].strip()
+        return chemical_search_name, components
+
+    return chemical_name, components
 
 
 def get_chemical(chemical_name, index_row):
@@ -150,8 +165,8 @@ def get_chemical(chemical_name, index_row):
 
     logger.warning(
         f"[row: {index_row}]: "
-        f"This chemical does not exist:{chemical_name}, "
-        f"Serached name:{chemical_search_name}, searched conponents:{components}"
+        f"This chemical does not exist: {chemical_name}, "
+        f"Searched name: {chemical_search_name}, searched components: {components}"
     )
     return None, None
 

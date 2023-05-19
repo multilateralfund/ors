@@ -27,6 +27,10 @@ def import_data(cls, file_path, exclude=[]):
             # set annex => 1->A; 2->B; 3->C
             instance["annex"] = chr(ord("A") + instance["annex"] - 1)
         elif cls == Blend:
+            # skip deactivated blends
+            if instance["is_deactivated"]:
+                continue
+            instance.pop("is_deactivated")
             # set blend name
             instance["name"] = instance.pop("blend_id")
         elif cls == Substance and instance["group"]:
@@ -37,10 +41,21 @@ def import_data(cls, file_path, exclude=[]):
             # set foreign key
             blend_ozone_id = instance.pop("blend")
             substance_ozone_id = instance.pop("substance")
-            instance["blend_id"] = Blend.objects.get(ozone_id=blend_ozone_id).id
-            instance["substance_id"] = Substance.objects.get(
-                ozone_id=substance_ozone_id
-            ).id
+            try:
+                instance["blend_id"] = Blend.objects.get(ozone_id=blend_ozone_id).id
+                instance["substance_id"] = Substance.objects.get(
+                    ozone_id=substance_ozone_id
+                ).id
+            except Blend.DoesNotExist:
+                logger.warning(
+                    f"⚠️ blend with ozone_id {blend_ozone_id} does not exist"
+                )
+                continue
+            except Substance.DoesNotExist:
+                logger.warning(
+                    f"⚠️ substance with ozone_id {substance_ozone_id} does not exist"
+                )
+                continue
 
         # create or update instance
         if cls == BlendComponents:
@@ -67,7 +82,9 @@ def import_groups():
     logger.info("✔ groups imported")
 
 
-def import_alternative_names(cls, cls_alt_name, file_name, chemical_name, field_name):
+def import_alternative_names(
+    cls, cls_alt_name, file_name, chemical_name, field_names, skip_cond=None
+):
     """
     Import alternative names from json file
     @param cls class
@@ -84,19 +101,28 @@ def import_alternative_names(cls, cls_alt_name, file_name, chemical_name, field_
     # create or update instance for alternative names
     for instance_data in list_data:
         # get instance data
-        instance = {
-            "name": instance_data["fields"][field_name],
-            "ozone_id": instance_data["pk"],
-        }
-        instance[f"{chemical_name}_id"] = cls.objects.get(
-            ozone_id=instance_data["fields"][chemical_name]
-        ).id
+        for field_name in field_names:
+            if skip_cond and skip_cond(instance_data["fields"][field_name]):
+                continue
+            instance = {
+                "name": instance_data["fields"][field_name],
+                "ozone_id": instance_data["pk"],
+            }
+            try:
+                instance[f"{chemical_name}_id"] = cls.objects.get(
+                    ozone_id=instance_data["fields"][chemical_name]
+                ).id
+            except cls.DoesNotExist:
+                logger.warning(
+                    f"⚠️ {chemical_name} with ozone_id {instance_data['fields'][chemical_name]} does not exist"
+                )
+                continue
 
-        # create or update name
-        cls_alt_name.objects.update_or_create(
-            name=instance["name"],
-            defaults=instance,
-        )
+            # create or update name
+            cls_alt_name.objects.update_or_create(
+                name=instance["name"],
+                defaults=instance,
+            )
 
 
 def import_substances():
@@ -118,7 +144,7 @@ def import_substances():
         SubstanceAltName,
         "blend_component_mappings.json",
         "substance",
-        "party_blend_component",
+        ["party_blend_component"],
     )
     logger.info("✔ substances alternative names imported")
 
@@ -132,7 +158,6 @@ def import_blends():
         "main_usage",
         "remark",
         "cnumber",
-        "is_deactivated",
     ]
 
     import_data(Blend, settings.IMPORT_RESOURCES_DIR / "blends.json", exclude)
@@ -142,7 +167,8 @@ def import_blends():
         BlendAltName,
         "blend_mappings.json",
         "blend",
-        "remarks",
+        ["party_blend_id", "remarks"],
+        lambda value: value == "Found in MLFS data" or value.isnumeric(),
     )
     logger.info("✔ blends alternative names imported")
 
