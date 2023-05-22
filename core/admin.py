@@ -19,6 +19,7 @@ from core.models.blend import BlendAltName
 from core.models.project_sector import ProjectSector, ProjectSubSector
 from core.models.project_submission import ProjectSubmission
 from core.models.substance import SubstanceAltName
+from core.models.usage import ExcludedUsage
 
 admin.site.register(User, UserAdmin)
 
@@ -51,6 +52,7 @@ class SubstanceAdmin(admin.ModelAdmin):
             "price",
             "countryprogrammerecord",
             "substancealtname",
+            "excludedusage",
         ]
         return get_final_display_list(Substance, exclude)
 
@@ -67,7 +69,13 @@ class BlendAdmin(admin.ModelAdmin):
     list_filter = ["type"]
 
     def get_list_display(self, request):
-        exclude = ["blendcomponents", "price", "countryprogrammerecord", "blendaltname"]
+        exclude = [
+            "blendcomponents",
+            "price",
+            "countryprogrammerecord",
+            "blendaltname",
+            "excludedusage",
+        ]
         return get_final_display_list(Blend, exclude)
 
 
@@ -159,8 +167,20 @@ class UsageAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["usage", "countryprogrammerecord"]
+        exclude = ["usage", "countryprogrammerecord", "excludedusage"]
         return get_final_display_list(Usage, exclude)
+
+
+@admin.register(ExcludedUsage)
+class ExcludedUsageAdmin(admin.ModelAdmin):
+    search_fields = [
+        "blend__name",
+        "substance__name",
+        "usage__name",
+    ]
+
+    def get_list_display(self, request):
+        return get_final_display_list(ExcludedUsage, [])
 
 
 @admin.register(CountryProgrammeRecord)

@@ -22,7 +22,7 @@ class Usage(models.Model):
         return self.name
 
 
-class ChemicalUsage(models.Model):
+class ExcludedUsage(models.Model):
     usage = models.ForeignKey(Usage, on_delete=models.CASCADE)
     substance = models.ForeignKey(
         "Substance", on_delete=models.CASCADE, null=True, blank=True
