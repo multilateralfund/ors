@@ -16,6 +16,7 @@ from core.models import (
 )
 from core.models.agency import Agency
 from core.models.blend import BlendAltName
+from core.models.project_sector import ProjectSector, ProjectSubSector
 from core.models.project_submission import ProjectSubmission
 from core.models.substance import SubstanceAltName
 
@@ -50,7 +51,6 @@ class SubstanceAdmin(admin.ModelAdmin):
             "price",
             "countryprogrammerecord",
             "substancealtname",
-            "chemicalusage",
         ]
         return get_final_display_list(Substance, exclude)
 
@@ -67,13 +67,7 @@ class BlendAdmin(admin.ModelAdmin):
     list_filter = ["type"]
 
     def get_list_display(self, request):
-        exclude = [
-            "blendcomponents",
-            "price",
-            "countryprogrammerecord",
-            "blendaltname",
-            "chemicalusage",
-        ]
+        exclude = ["blendcomponents", "price", "countryprogrammerecord", "blendaltname"]
         return get_final_display_list(Blend, exclude)
 
 
@@ -165,12 +159,7 @@ class UsageAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = [
-            "usage",
-            "countryprogrammerecord",
-            "chemicalusage",
-            "projectsubmission",
-        ]
+        exclude = ["usage", "countryprogrammerecord"]
         return get_final_display_list(Usage, exclude)
 
 
@@ -210,6 +199,31 @@ class CountryProgrammeReportAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = ["price", "countryprogrammerecord", "usage", "comment"]
         return get_final_display_list(CountryProgrammeReport, exclude)
+
+
+@admin.register(ProjectSector)
+class ProjectSectorAdmin(admin.ModelAdmin):
+    search_fields = [
+        "name",
+    ]
+
+    def get_list_display(self, request):
+        exclude = ["projectsubsector"]
+        return get_final_display_list(ProjectSector, exclude)
+
+
+@admin.register(ProjectSubSector)
+class ProjectSubSectorAdmin(admin.ModelAdmin):
+    search_fields = [
+        "name",
+    ]
+    list_filter = [
+        "sector",
+    ]
+
+    def get_list_display(self, request):
+        exclude = ["projectsubmission"]
+        return get_final_display_list(ProjectSubSector, exclude)
 
 
 @admin.register(ProjectSubmission)

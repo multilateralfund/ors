@@ -4,6 +4,7 @@ from .country import *
 from .country_programme import *
 from .group import *
 from .price import *
+from .project_sector import *
 from .project_submission import *
 from .substance import *
 from .usage import *

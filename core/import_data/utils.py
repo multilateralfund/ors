@@ -16,6 +16,9 @@ COUNTRY_NAME_MAPPING = {
     "Western Samoa": "Samoa",
 }
 
+SUBSECTOR_NAME_MAPPING = {
+    "HFC phase-down plan": "HFC phase down plan",
+}
 
 USAGE_NAME_MAPPING = {
     "Aerosal": "Aerosol",
@@ -24,8 +27,6 @@ USAGE_NAME_MAPPING = {
     "LabUse": "Lab use",
     "NoneQPS": "Non-QPS",
     "TobaccoFluffing": "Tobacco fluffing",
-    "HFC phase-down plan": "HFC phase down plan",
-    "Fumigant": "Fumigation",
 }
 
 
