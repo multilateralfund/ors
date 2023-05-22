@@ -9,7 +9,7 @@ class ProjectSectorManager(models.Manager):
 
 class ProjectSector(models.Model):
     name = models.CharField(max_length=255)
-    description = models.TextField(null=True, blank=True)
+    code = models.CharField(max_length=10, null=True, blank=True)
 
     objects = ProjectSectorManager()
 
@@ -19,7 +19,7 @@ class ProjectSector(models.Model):
 
 class ProjectSubSector(models.Model):
     name = models.CharField(max_length=255)
-    description = models.TextField(null=True, blank=True)
+    code = models.CharField(max_length=10, null=True, blank=True)
     sector = models.ForeignKey(ProjectSector, on_delete=models.CASCADE)
 
     objects = ProjectSectorManager()

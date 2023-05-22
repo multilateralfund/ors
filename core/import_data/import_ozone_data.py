@@ -82,7 +82,9 @@ def import_groups():
     logger.info("✔ groups imported")
 
 
-def import_alternative_names(cls, cls_alt_name, file_name, chemical_name, field_names, skip_cond=None):
+def import_alternative_names(
+    cls, cls_alt_name, file_name, chemical_name, field_names, skip_cond=None
+):
     """
     Import alternative names from json file
     @param cls class
@@ -166,7 +168,7 @@ def import_blends():
         "blend_mappings.json",
         "blend",
         ["party_blend_id", "remarks"],
-        lambda value : value == 'Found in MLFS data' or value.isnumeric()
+        lambda value: value == "Found in MLFS data" or value.isnumeric(),
     )
     logger.info("✔ blends alternative names imported")
 

@@ -28,7 +28,7 @@ class Substance(models.Model):
     fluorines = models.CharField(max_length=128, null=True, blank=True)
     chlorines = models.CharField(max_length=128, null=True, blank=True)
     bromines = models.CharField(max_length=128, null=True, blank=True)
-    sort_order = models.IntegerField(null=True)
+    sort_order = models.FloatField(null=True, blank=True)
     is_contained_in_polyols = models.BooleanField()
     is_captured = models.BooleanField(default=False)
     ozone_id = models.IntegerField(null=True, blank=True)

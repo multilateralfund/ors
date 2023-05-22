@@ -27,11 +27,12 @@ def parse_usage_file(file_path):
             parent = Usage.objects.get_by_name(row["parent"]).first()
             if not parent:
                 logger.warning(
-                    f"{row['parent']} usage not fount => {row['name']} not imported"
+                    f"{row['parent']} usage not found => {row['name']} not imported"
                 )
         usage_data = {
             "name": row["name"],
             "full_name": row["full name"],
+            "sort_order": row["sort_order"],
             "parent": parent,
         }
         Usage.objects.update_or_create(full_name=row["full name"], defaults=usage_data)
