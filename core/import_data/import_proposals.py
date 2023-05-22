@@ -7,18 +7,18 @@ from django.conf import settings
 
 from core.import_data.utils import (
     COUNTRY_NAME_MAPPING,
-    SUBSECTOR_NAME_MAPPING,
+    USAGE_NAME_MAPPING,
     get_object_by_name,
     parse_string,
 )
 from core.models.agency import Agency
 from core.models.country import Country
-from core.models.project_sector import ProjectSubSector
 from core.models.project_submission import (
     ProjectSubmission,
     SubmissionOdsOdp,
     SubmissionAmount,
 )
+from core.models.usage import Usage
 
 
 logger = logging.getLogger(__name__)
@@ -96,18 +96,16 @@ def parse_file(file_path, file_name):
         )
         agency = get_object_by_name(Agency, row["AGENCY"], index_row, "agency", logger)
         # get subsector name from dict if exists else use the same name from the file
-        subsect_name = SUBSECTOR_NAME_MAPPING.get(row["SUBSECTOR"], row["SUBSECTOR"])
-        subsec = get_object_by_name(
-            ProjectSubSector, subsect_name, index_row, "subsector", logger
-        )
-        # if country or agency or subsector does not exists then skip this row
-        if not country or not subsec or not agency:
+        subsect_name = USAGE_NAME_MAPPING.get(row["SUBSECTOR"], row["SUBSECTOR"])
+        usage = get_object_by_name(Usage, subsect_name, index_row, "subsector", logger)
+        # if country or agency or usage does not exists then skip this row
+        if not country or not usage or not agency:
             continue
 
         submission_data = {
             "project_number": row["PROJECT_NUMBER"],
             "country": country,
-            "subsector": subsec,
+            "usage": usage,
             "agency": agency,
             "type": parse_string(row["TYPE"]),
             "category": parse_string(row["CATEGORY_DEFINITION"]),

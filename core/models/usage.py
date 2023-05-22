@@ -12,9 +12,9 @@ class UsageManager(models.Manager):
 class Usage(models.Model):
     name = models.CharField(max_length=100)
     full_name = models.CharField(max_length=248)
-    description = models.TextField(null=True, blank=True)
     parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True)
     sort_order = models.FloatField(null=True, blank=True)
+    code = models.CharField(max_length=10, null=True, blank=True)
 
     objects = UsageManager()
 

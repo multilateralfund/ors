@@ -2,7 +2,7 @@ from django.db import models
 from core.models.agency import Agency
 
 from core.models.country import Country
-from core.models.project_sector import ProjectSubSector
+from core.models.usage import Usage
 
 
 class ProjectSubmission(models.Model):
@@ -33,7 +33,7 @@ class ProjectSubmission(models.Model):
 
     project_number = models.IntegerField()
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
-    subsector = models.ForeignKey(ProjectSubSector, on_delete=models.CASCADE)
+    usage = models.ForeignKey(Usage, on_delete=models.CASCADE)
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
     type = models.CharField(max_length=164, choices=ProjectSubmissionTypes.choices)
     category = models.CharField(
