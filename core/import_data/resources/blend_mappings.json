@@ -1,6 +1,72 @@
 [
     {
         "model": "core.blendmapping",
+        "pk": 224,
+        "fields": {
+            "party": 50,
+            "blend": 429,
+            "party_blend_id": "XC-8800",
+            "remarks": "Found in MLFS data",
+            "created": "2023-05-19T14:36:12.980Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 223,
+        "fields": {
+            "party": 99,
+            "blend": 132,
+            "party_blend_id": "HFC-507C (Assumed R-507A)",
+            "remarks": "Found in MLFS data",
+            "created": "2023-05-19T14:32:50.206Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 222,
+        "fields": {
+            "party": 62,
+            "blend": 41,
+            "party_blend_id": "R-410 (Assumed, R-410B)",
+            "remarks": "Found in MLFS data",
+            "created": "2023-05-19T14:30:54.391Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 221,
+        "fields": {
+            "party": 228,
+            "blend": 97,
+            "party_blend_id": "R448 (Assuned R-448A)",
+            "remarks": "Found in MLFS data",
+            "created": "2023-05-19T13:49:49.390Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 220,
+        "fields": {
+            "party": 228,
+            "blend": 85,
+            "party_blend_id": "R438 (Assumed R-438A)",
+            "remarks": "Found in MLFS data",
+            "created": "2023-05-19T13:49:28.850Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
+        "pk": 219,
+        "fields": {
+            "party": 228,
+            "blend": 52,
+            "party_blend_id": "R417 (Assumed R-417B)",
+            "remarks": "Found in MLFS data",
+            "created": "2023-05-19T13:49:07.263Z"
+        }
+    },
+    {
+        "model": "core.blendmapping",
         "pk": 218,
         "fields": {
             "party": 49,
