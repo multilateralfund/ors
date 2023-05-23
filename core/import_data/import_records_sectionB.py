@@ -46,9 +46,9 @@ REQUIRED_COLUMNS = [
 ]
 
 RECORD_COLUMNS_MAPPING = {
-    "import": "import_metric",
-    "export": "export_metric",
-    "production": "production_metric",
+    "import": "imports",
+    "export": "exports",
+    "production": "production",
     "manufacturing of blends": "manufacturing_blends",
     "import quotas": "import_quotas",
 }

@@ -25,21 +25,22 @@ class CountryProgrammeRecord(models.Model):
         CountryProgrammeReport, on_delete=models.CASCADE
     )
     section = models.CharField(max_length=164)
-    import_metric = models.DecimalField(
+    imports = models.DecimalField(
         max_digits=12, decimal_places=3, null=True, blank=True
     )
     import_quotas = models.DecimalField(
         max_digits=12, decimal_places=3, null=True, blank=True
     )
-    export_metric = models.DecimalField(
+    exports = models.DecimalField(
         max_digits=12, decimal_places=3, null=True, blank=True
     )
-    production_metric = models.DecimalField(
+    production = models.DecimalField(
         max_digits=12, decimal_places=3, null=True, blank=True
     )
     manufacturing_blends = models.DecimalField(
         max_digits=12, decimal_places=3, null=True, blank=True
     )
+    banned_date = models.DateField(null=True, blank=True)
     remarks = models.TextField(null=True, blank=True)
 
     source_file = models.CharField(max_length=248)

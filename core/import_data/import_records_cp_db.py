@@ -249,9 +249,9 @@ def parse_record_data(item_attributes_file, country_dict, year_dict, chemical_di
             "substance_id": substance_id,
             "blend_id": blend_id,
             "source_file": item_attributes_file,
-            "import_metric": item["Import"],
-            "export_metric": item["Export"],
-            "production_metric": item["Production"],
+            "imports": item["Import"],
+            "exports": item["Export"],
+            "production": item["Production"],
         }
         record = CountryProgrammeRecord.objects.create(**record_data)
 
