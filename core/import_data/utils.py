@@ -46,7 +46,9 @@ def delete_old_cp_records(source, logger):
     @param source: string source name
     @param logger: logger object
     """
-    CountryProgrammeRecord.objects.filter(source__iexact=source.lower()).all().delete()
+    CountryProgrammeRecord.objects.filter(
+        source_file__iexact=source.lower()
+    ).all().delete()
     logger.info(f"✔ old records from {source} deleted")
 
 
@@ -69,7 +71,14 @@ def get_substance_id_by_name(substance_name):
     return None
 
 
-def get_blend_id_by_name_or_components(blend_name, components):
+def get_blend_id_by_name(blend_name):
+    """
+    get blend id by name or alt name (case insensitive)
+    @param blend_name: string blend name
+
+    @return: int blend id
+    """
+
     blend = Blend.objects.get_by_name(blend_name).first()
     if blend:
         return blend.id
@@ -77,6 +86,21 @@ def get_blend_id_by_name_or_components(blend_name, components):
     blend = BlendAltName.objects.get_by_name(blend_name).first()
     if blend:
         return blend.blend_id
+
+    return None
+
+
+def get_blend_id_by_name_or_components(blend_name, components):
+    """
+    get blend id by name or components
+    @param blend_name: string blend name
+    @param components: list of tuples (substance_name, percentage)
+
+    @return: int blend id
+    """
+    blend_id = get_blend_id_by_name(blend_name)
+    if blend_id:
+        return blend_id
 
     if components:
         subst_prcnt = []

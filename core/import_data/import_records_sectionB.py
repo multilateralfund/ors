@@ -24,32 +24,33 @@ from core.models.country_programme import CountryProgrammeUsage
 logger = logging.getLogger(__name__)
 
 NON_USAGE_COLUMNS = {
-    "No.",
-    "Country",
-    "Status",
-    "Chemical",
-    "GWP",
-    "Year",
-    "IMPORT",
-    "EXPORT",
-    "PRODUCTION",
-    "Manufacturing of Blends",
-    "Import quotas",
+    "no.",
+    "country",
+    "status",
+    "chemical",
+    "gwp",
+    "year",
+    "total",
+    "import",
+    "export",
+    "production",
+    "manufacturing of blends",
+    "import quotas",
 }
 
 REQUIRED_COLUMNS = [
-    "Country",
-    "Chemical",
-    "Year",
-    "TOTAL",
+    "country",
+    "chemical",
+    "year",
+    "total",
 ]
 
 RECORD_COLUMNS_MAPPING = {
-    "IMPORT": "import_metric",
-    "EXPORT": "export_metric",
-    "PRODUCTION": "production_metric",
-    "Manufacturing of Blends": "manufacturing_blends",
-    "Import quotas": "import_quotas",
+    "import": "import_metric",
+    "export": "export_metric",
+    "production": "production_metric",
+    "manufacturing of blends": "manufacturing_blends",
+    "import quotas": "import_quotas",
 }
 
 SECTION = "B"
@@ -69,14 +70,6 @@ def check_headers(df):
     return True
 
 
-def get_usage_from_column_name(column_name):
-    # Refrigeration Manufacturing - AC (MT) => Refrigeration Manufacturing AC
-    # remove -
-    column_name = column_name.replace("- ", "")
-
-    return column_name
-
-
 def get_usages_from_sheet(df):
     """
     parse the df columns and extract the usages
@@ -89,7 +82,7 @@ def get_usages_from_sheet(df):
         if column_name in NON_USAGE_COLUMNS:
             continue
 
-        usage_name = get_usage_from_column_name(column_name)
+        usage_name = column_name.replace("- ", "")
 
         usage = Usage.objects.get_by_name(usage_name).first()
         if not usage:
@@ -104,6 +97,7 @@ def get_country(country_name, index_row):
     """
     get country object from country name
     @param country_name = string
+    @param index_row = int
     """
     country_name = COUNTRY_NAME_MAPPING.get(country_name, country_name)
     country = get_object_by_name(Country, country_name, index_row, "country", logger)
@@ -193,20 +187,20 @@ def parse_sheet(df, file_name):
     current_cp = None
     usages = []
     for index_row, row in df.iterrows():
-        if row["Chemical"] == "TOTAL":
+        if row["chemical"].strip().lower() == "total":
             continue
 
         # check if the row is empty
-        if not row["TOTAL"]:
+        if not row["total"]:
             continue
 
         # another country => another country program
-        if row["Country"] != current_country_name:
-            current_country_name = row["Country"]
+        if row["country"] != current_country_name:
+            current_country_name = row["country"]
             current_country_obj = get_country(current_country_name, index_row)
             if current_country_obj:
                 current_cp = get_cp_report(
-                    row["Year"], current_country_obj.name, current_country_obj.id
+                    row["year"], current_country_obj.name, current_country_obj.id
                 )
 
         if not current_country_obj:
@@ -214,15 +208,15 @@ def parse_sheet(df, file_name):
             continue
 
         # another year => another country program
-        if current_cp.year != row["Year"]:
+        if current_cp.year != row["year"]:
             current_cp = get_cp_report(
-                row["Year"], current_country_obj.name, current_country_obj.id
+                row["year"], current_country_obj.name, current_country_obj.id
             )
 
         # get chemical
         # Other1 from Cuba is R-417A
-        chemical_name = row["Chemical"]
-        if row["Chemical"] == "Other1" and current_country_obj.name == "Cuba":
+        chemical_name = row["chemical"]
+        if row["chemical"] == "Other1" and current_country_obj.name == "Cuba":
             chemical_name = "R-417A"
 
         substance_id, blend_id = get_chemical(chemical_name, index_row)
@@ -235,7 +229,7 @@ def parse_sheet(df, file_name):
             "substance_id": substance_id,
             "blend_id": blend_id,
             "section": SECTION,
-            "source": file_name,
+            "source_file": file_name,
         }
         for colummn_name in RECORD_COLUMNS_MAPPING:
             if row.get(colummn_name, None):
@@ -264,8 +258,12 @@ def parse_file(file_path, cp_name):
     all_sheets = pd.read_excel(file_path, sheet_name=None, na_values="NDR")
     for sheet_name, df in all_sheets.items():
         logger.info(f"Start parsing sheet: {sheet_name}")
-        df = df.rename(columns=lambda x: x.replace("(MT)", "").strip())
+
+        # set column names
+        df = df.rename(columns=lambda x: x.replace("(MT)", "").strip().lower())
+        # replace nan with None
         df = df.replace(np.nan, None)
+
         parse_sheet(df, cp_name)
 
 

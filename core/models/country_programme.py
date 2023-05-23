@@ -42,7 +42,7 @@ class CountryProgrammeRecord(models.Model):
     )
     remarks = models.TextField(null=True, blank=True)
 
-    source = models.CharField(max_length=248)
+    source_file = models.CharField(max_length=248)
 
     def __str__(self):
         return (

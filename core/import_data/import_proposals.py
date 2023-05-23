@@ -151,7 +151,7 @@ def parse_file(file_path, file_name):
             "issue_description": row["ISSUE_DESCRIPTION"],
             "correspondance_no": row["CORRESPONDANCE_NO"],
             "plus": row["PLUS"],
-            "source": file_name,
+            "source_file": file_name,
         }
 
         project_submission = ProjectSubmission.objects.create(**submission_data)
@@ -161,7 +161,9 @@ def parse_file(file_path, file_name):
 
 
 def drop_old_data(file_name):
-    ProjectSubmission.objects.filter(source__iexact=file_name.lower()).all().delete()
+    ProjectSubmission.objects.filter(
+        source_file__iexact=file_name.lower()
+    ).all().delete()
     logger.info("✔ old data deleted")
 
 
