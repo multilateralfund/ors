@@ -1,14 +1,10 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import {
-  FormProvider,
-  SubmitHandler,
-  Controller,
-  useForm,
-} from 'react-hook-form'
+import { FormProvider, Controller, useForm } from 'react-hook-form'
 import {
   selectSubstancesAnnexA,
   setReports,
+  deleteReport,
   updateReport,
   selectRecordsData,
 } from '@/slices/reportSlice'
@@ -79,6 +75,7 @@ export const TableData = () => {
   const [showModal, setShowModal] = useState(false)
   const [editRow, setEditRow] = useState<unknown>(false)
   const data = useSelector(selectRecordsData)
+  const dispatch = useDispatch()
 
   const columns = useMemo<ColumnDef<unknown>[]>(
     () => [
@@ -175,7 +172,12 @@ export const TableData = () => {
               >
                 <IoCreate />
               </button>
-              <button className="w-5 h-5">
+              <button
+                className="w-5 h-5"
+                onClick={() => {
+                  dispatch(deleteReport({ substance: original?.substance }))
+                }}
+              >
                 <IoTrash />
               </button>
             </div>
@@ -390,8 +392,6 @@ const AddSubstancesModal = ({
 
     dispatch(setReports(values))
   }
-
-  console.log(editValues)
 
   return (
     <Modal

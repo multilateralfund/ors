@@ -37,11 +37,21 @@ export const reportSlice = createSlice({
       )
       state.data[substanceIndex] = action.payload
     },
+    deleteReport: (state, action: PayloadAction<any>) => {
+      state.data = state.data.filter(
+        item => item.substance != action.payload.substance,
+      )
+    },
   },
 })
 
-export const { setSubstances, setUsage, setReports, updateReport } =
-  reportSlice.actions
+export const {
+  setSubstances,
+  setUsage,
+  setReports,
+  updateReport,
+  deleteReport,
+} = reportSlice.actions
 
 export const selectSubstancesAnnexA = (state: RootState) =>
   state.reports.substances
