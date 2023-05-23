@@ -1,13 +1,15 @@
-import { FC, InputHTMLAttributes } from 'react'
+import { FC } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
+import DatePicker, { ReactDatePickerProps } from 'react-datepicker'
+import { Tooltip } from 'flowbite-react'
 import { twMerge } from 'tailwind-merge'
+import { format, parseISO } from 'date-fns'
 import { InputError } from './InputError'
 import { IoHelpCircleSharp } from 'react-icons/io5'
-import { Tooltip } from 'flowbite-react'
 
 type ButtonSize = 'xs' | 'sm' | 'lg'
 
-interface IFormInputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface FormDateSelectProps extends Partial<ReactDatePickerProps> {
   name: string
   label: string
   sizing?: ButtonSize
@@ -15,7 +17,7 @@ interface IFormInputProps extends InputHTMLAttributes<HTMLInputElement> {
   inline?: boolean
 }
 
-export const FormInput: FC<IFormInputProps> = ({
+export const FormDateSelect: FC<FormDateSelectProps> = ({
   name,
   label,
   sizing = 'xs',
@@ -67,21 +69,36 @@ export const FormInput: FC<IFormInputProps> = ({
       control={control}
       defaultValue=""
       name={name}
-      render={({ field }) => (
+      render={({ field: { onChange, onBlur, value } }) => (
         <>
           {inline ? (
             <div className="flex flex-row w-full justify-between items-center">
               <div className="flex items-center mb-2 text-sm font-medium text-gray-900 dark:text-white w-1/2 ">
                 <span className="mr-1">{label}</span> {tooltip && showTooltip()}
               </div>
-              <input className={inputClasses} {...field} {...otherProps} />
+              <DatePicker
+                {...otherProps}
+                selected={value}
+                onChange={onChange}
+                onBlur={onBlur}
+                className={inputClasses}
+                dateFormat="yyyy/MM/dd"
+                showTimeInput
+              />
             </div>
           ) : (
             <>
               <div className="flex items-center mb-2 text-sm font-medium text-gray-900 dark:text-white">
                 <span className="mr-1">{label}</span> {tooltip && showTooltip()}
               </div>
-              <input className={inputClasses} {...field} {...otherProps} />
+              <DatePicker
+                {...otherProps}
+                selected={value}
+                onChange={onChange}
+                onBlur={onBlur}
+                className={inputClasses}
+                dateFormat="yyyy/MM/dd"
+              />
             </>
           )}
 

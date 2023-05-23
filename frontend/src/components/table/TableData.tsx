@@ -1,10 +1,21 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
-import { selectSubstancesAnnexA, selectUsages } from '@/slices/reportSlice'
+import {
+  FormProvider,
+  SubmitHandler,
+  Controller,
+  useForm,
+} from 'react-hook-form'
+import {
+  selectSubstancesAnnexA,
+  setReports,
+  selectRecordsData,
+} from '@/slices/reportSlice'
+import Select from 'react-select'
+
 import { Modal } from 'flowbite-react'
 import { FormInput } from '../form/FormInput'
-import Select from 'react-select'
+import { FormDateSelect } from '../form/FormDateSelect'
 
 import {
   flexRender,
@@ -67,11 +78,12 @@ const RECORDS = [
   },
 ]
 
-export const TableData = ({ isEditable = false }: { isEditable?: boolean }) => {
-  const [data, setData] = useState(() => [...defaultData])
+export const TableData = () => {
+  // const [data, setData] = useState(() => [...defaultData])
   const [showModal, setShowModal] = useState(false)
+  const data = useSelector(selectRecordsData)
 
-  const columns = useMemo<ColumnDef<any>[]>(
+  const columns = useMemo<ColumnDef<unknown>[]>(
     () => [
       {
         header: 'Substances',
@@ -169,7 +181,7 @@ export const TableData = ({ isEditable = false }: { isEditable?: boolean }) => {
     <>
       <section className="bg-gray-50 dark:bg-gray-900 py-3 sm:py-5">
         <div className="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
-          <div className="mx-auto max-w-screen-xl">
+          <div className="mx-auto">
             <TableHeaderActions onAddSubstances={() => setShowModal(true)} />
             <div className="overflow-hidden">
               <table className="w-full text-xs text-left text-gray-500 dark:text-gray-400">
@@ -257,7 +269,15 @@ const AddSubstancesModal = ({
 }) => {
   const [selectedOption, setSelectedOption] = useState<any>(null)
   const [selectedRecords, setSelectedRecords] = useState<any>(null)
+  const dispatch = useDispatch()
+
   const methods = useForm()
+  const {
+    reset,
+    handleSubmit,
+    control,
+    formState: { isSubmitSuccessful },
+  } = methods
 
   const substances = useSelector(selectSubstancesAnnexA)
 
@@ -268,6 +288,10 @@ const AddSubstancesModal = ({
     }
   }, [selectedOption])
 
+  useEffect(() => {
+    if (isSubmitSuccessful) reset()
+  }, [isSubmitSuccessful, reset])
+
   const ComposeInputsByUsage = () => {
     if (!selectedRecords) return null
 
@@ -276,10 +300,15 @@ const AddSubstancesModal = ({
         {selectedRecords.map((record: any) => {
           if (record.children) {
             return (
-              <div className="w-full text-left my-3" key={record.id}>
-                <label className="block text-sm font-bold my-2 text-gray-900 dark:text-white text-center">
-                  {record.name}
-                </label>
+              <div
+                className="w-full text-left my-3 border-b pb-4"
+                key={record.id}
+              >
+                <div className="my-1 flex items-center before:mt-0.5 before:flex-1 before:border-t before:border-neutral-300 after:mt-0.5 after:flex-1 after:border-t after:border-neutral-300">
+                  <p className="mx-2 mb-0 text-sm text-center font-semibold dark:text-neutral-200">
+                    {record.name}
+                  </p>
+                </div>
                 <div className="flex flex-row w-full ">
                   {record.children.map((child: any, i: number) => {
                     return (
@@ -290,7 +319,7 @@ const AddSubstancesModal = ({
                         key={child.id}
                       >
                         <FormInput
-                          name={child.name}
+                          name={child.name.toLowerCase()}
                           label={child.name}
                           type="number"
                         />
@@ -304,7 +333,7 @@ const AddSubstancesModal = ({
           return (
             <div key={record.id}>
               <FormInput
-                name={record.name}
+                name={record.name.toLowerCase()}
                 label={record.name}
                 inline
                 type="number"
@@ -316,68 +345,96 @@ const AddSubstancesModal = ({
     )
   }
 
+  const onSubmit = (values: any) => {
+    dispatch(setReports(values))
+  }
+
   return (
     <Modal show={show} size="2xl" onClose={onClose} position="top-center">
       <Modal.Header>Add substances</Modal.Header>
-      <Modal.Body>
-        <FormProvider {...methods}>
-          <div className="flex flex-col gap-2">
-            <div className="mb-2">
-              <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                Select substance
-              </label>
-              <Select
-                defaultValue={selectedOption}
-                onChange={setSelectedOption}
-                options={substances}
-                className="react-select-container"
-                classNamePrefix="react-select"
-              />
+      <FormProvider {...methods}>
+        <form onSubmit={handleSubmit(d => onSubmit(d))}>
+          <Modal.Body>
+            <div className="flex flex-col gap-2">
+              <div className="mb-2">
+                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  Select substance
+                </label>
+                <Controller
+                  control={control}
+                  defaultValue={selectedOption}
+                  name="substance"
+                  render={({ field: { onChange, value } }) => (
+                    <Select
+                      defaultValue={value}
+                      onChange={value => {
+                        setSelectedOption(value)
+                        onChange(value.label)
+                      }}
+                      options={substances}
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                    />
+                  )}
+                />
+              </div>
+              {selectedOption && <ComposeInputsByUsage />}
+              <div className="flex flex-col gap-2 mt-3">
+                <div>
+                  <FormInput
+                    name="import"
+                    label="Import"
+                    inline
+                    type="number"
+                  />
+                </div>
+                <div>
+                  <FormInput
+                    name="export"
+                    label="Export"
+                    inline
+                    type="number"
+                  />
+                </div>
+                <div>
+                  <FormInput
+                    name="production"
+                    label="Production"
+                    inline
+                    type="number"
+                  />
+                </div>
+                <div>
+                  <FormInput
+                    name="import_quotas"
+                    label="Import quotas"
+                    inline
+                    type="number"
+                  />
+                </div>
+                <div>
+                  <FormDateSelect
+                    name="import_banned"
+                    label="If imports are banned"
+                    tooltip="Indicate date ban commenced (DD/MM/YYYY)"
+                    showPopperArrow={false}
+                    inline
+                  />
+                </div>
+                <div>
+                  <FormInput name="remarks" label="Remarks" inline />
+                </div>
+              </div>
             </div>
-            {selectedOption && <ComposeInputsByUsage />}
-            <div className="flex flex-col gap-2 mt-3">
-              <div>
-                <FormInput name="Import" label="Import" inline type="number" />
-              </div>
-              <div>
-                <FormInput name="Export" label="Export" inline type="number" />
-              </div>
-              <div>
-                <FormInput
-                  name="Production"
-                  label="Production"
-                  inline
-                  type="number"
-                />
-              </div>
-              <div>
-                <FormInput
-                  name="Import quotas"
-                  label="Import quotas"
-                  inline
-                  type="number"
-                />
-              </div>
-              <div>
-                <FormInput
-                  name="Import quotas"
-                  label="If imports are banned"
-                  inline
-                />
-              </div>
-              <div>
-                <FormInput name="remarks" label="Remarks" inline />
-              </div>
-            </div>
-          </div>
-        </FormProvider>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button onClick={() => console.log('saved')}>
-          Add and close modal
-        </Button>
-        <Button onClick={() => console.log('saved')}>Add more</Button>
-      </Modal.Footer>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={() => console.log('saved')}>
+              Add and close modal
+            </Button>
+            <Button onClick={() => console.log('saved')}>Add more</Button>
+          </Modal.Footer>
+        </form>
+      </FormProvider>
     </Modal>
   )
 }

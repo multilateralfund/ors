@@ -13,6 +13,7 @@ import App from './App'
 import './utils/i18n'
 import './index.css'
 import 'react-toastify/dist/ReactToastify.css'
+import 'react-datepicker/dist/react-datepicker.css'
 
 const isDark = (localStorage.getItem('theme') &&
   localStorage.getItem('theme') === 'dark') as boolean
