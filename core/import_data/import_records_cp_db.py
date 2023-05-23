@@ -7,6 +7,7 @@ from core.import_data.utils import (
     COUNTRY_NAME_MAPPING,
     USAGE_NAME_MAPPING,
     delete_old_cp_records,
+    get_blend_id_by_name,
     get_substance_id_by_name,
     get_cp_report,
 )
@@ -14,9 +15,9 @@ from core.import_data.utils import (
 from core.models import (
     Country,
     CountryProgrammeRecord,
-    Blend,
     Usage,
 )
+from core.models.country_programme import CountryProgrammeUsage
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,9 @@ NON_USAGE_FIELDS = {
     "ItemAttirbutesId",
     "ItemId",
     "CountryId",
+    "Import",
+    "Export",
+    "Production",
     "ProjectDateId",
     "CreatedUserId",
     "UpdatedUserId",
@@ -124,10 +128,10 @@ def get_chemical_dict(file_name):
                 "id": substance_id,
             }
             continue
-        # get blend_id if the item is blend
-        blend = Blend.objects.get_by_name(chemical_json["Name"]).first()
 
-        if not blend:
+        # get blend_id if the item is blend
+        blend_id = get_blend_id_by_name(chemical_json["Name"])
+        if not blend_id:
             # if ItemCategoryId is not None, it means the item is for sure chemical
             # so we need to log it
             if chemical_json["ItemCategoryId"] is not None:
@@ -140,7 +144,7 @@ def get_chemical_dict(file_name):
 
         chemical_dict[chemical_json["ItemId"]] = {
             "type": "blend",
-            "id": blend.id,
+            "id": blend_id,
         }
 
     return chemical_dict
@@ -209,7 +213,7 @@ def parse_record_data(item_attributes_file, country_dict, year_dict, chemical_di
         json_data = json.load(f)
 
     current_usages_dict = {}
-    records = []
+    cp_usages = []
     for item in json_data:
         # skip for incorrect data
         if not check_item_attributes(item, country_dict, year_dict, chemical_dict):
@@ -239,21 +243,30 @@ def parse_record_data(item_attributes_file, country_dict, year_dict, chemical_di
         # get usages
         set_usages_dict(current_usages_dict, item)
 
+        # create record
+        record_data = {
+            "country_programme_report_id": cp_rep.id,
+            "substance_id": substance_id,
+            "blend_id": blend_id,
+            "source_file": item_attributes_file,
+            "imports": item["Import"],
+            "exports": item["Export"],
+            "production": item["Production"],
+        }
+        record = CountryProgrammeRecord.objects.create(**record_data)
+
         # create records
         for usage, usage_id in current_usages_dict.items():
             if not item[usage]:
                 continue
-            record_data = {
-                "substance_id": substance_id,
-                "blend_id": blend_id,
-                "country_programme_report_id": cp_rep.id,
+            cp_rep = {
+                "country_programme_record_id": record.id,
                 "usage_id": usage_id,
-                "value_metric": item[usage],
-                "source": item_attributes_file,
+                "quantity": item[usage],
             }
-            records.append(CountryProgrammeRecord(**record_data))
+            cp_usages.append(CountryProgrammeUsage(**cp_rep))
 
-    CountryProgrammeRecord.objects.bulk_create(records)
+    CountryProgrammeUsage.objects.bulk_create(cp_usages)
 
 
 def parse_db_files(db_dir_path):

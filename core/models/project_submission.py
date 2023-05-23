@@ -79,7 +79,7 @@ class ProjectSubmission(models.Model):
     issue_description = models.TextField(null=True, blank=True)
     correspondance_no = models.IntegerField(null=True, blank=True)
     plus = models.BooleanField(default=False)
-    source = models.CharField(max_length=255, null=True, blank=True)
+    source_file = models.CharField(max_length=255, null=True, blank=True)
 
 
 class SubmissionOdsOdp(models.Model):

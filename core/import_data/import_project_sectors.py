@@ -3,7 +3,7 @@ import pandas as pd
 
 from django.db import transaction
 from django.conf import settings
-from core.import_data.utils import SUBSECTOR_CODE_MAPPING, SUBSECTOR_NAME_MAPPING
+from core.import_data.utils import SUBSECTOR_NAME_MAPPING
 from core.models.project_sector import ProjectSector, ProjectSubSector
 
 
