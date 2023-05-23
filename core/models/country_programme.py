@@ -24,8 +24,37 @@ class CountryProgrammeRecord(models.Model):
     country_programme_report = models.ForeignKey(
         CountryProgrammeReport, on_delete=models.CASCADE
     )
-    usage = models.ForeignKey(Usage, on_delete=models.CASCADE)
-    value_odp = models.FloatField(null=True, blank=True)
-    value_metric = models.FloatField(null=True, blank=True)
     section = models.CharField(max_length=164)
+    import_metric = models.DecimalField(
+        max_digits=12, decimal_places=3, null=True, blank=True
+    )
+    import_quotas = models.DecimalField(
+        max_digits=12, decimal_places=3, null=True, blank=True
+    )
+    export_metric = models.DecimalField(
+        max_digits=12, decimal_places=3, null=True, blank=True
+    )
+    production_metric = models.DecimalField(
+        max_digits=12, decimal_places=3, null=True, blank=True
+    )
+    manufacturing_blends = models.DecimalField(
+        max_digits=12, decimal_places=3, null=True, blank=True
+    )
+    remarks = models.TextField(null=True, blank=True)
+
     source = models.CharField(max_length=248)
+
+    def __str__(self):
+        return (
+            self.country_programme_report.name
+            + " - "
+            + (self.blend.name if self.blend else self.substance.name)
+        )
+
+
+class CountryProgrammeUsage(models.Model):
+    country_programme_record = models.ForeignKey(
+        CountryProgrammeRecord, on_delete=models.CASCADE
+    )
+    usage = models.ForeignKey(Usage, on_delete=models.CASCADE)
+    value_metric = models.DecimalField(max_digits=12, decimal_places=3)

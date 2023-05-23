@@ -1,7 +1,7 @@
-import itertools
 import logging
 import re
 import pandas as pd
+import numpy as np
 
 from django.db import transaction
 from django.conf import settings
@@ -19,6 +19,7 @@ from core.models import (
     CountryProgrammeRecord,
     Usage,
 )
+from core.models.country_programme import CountryProgrammeUsage
 
 logger = logging.getLogger(__name__)
 
@@ -29,13 +30,27 @@ NON_USAGE_COLUMNS = {
     "Chemical",
     "GWP",
     "Year",
+    "IMPORT",
+    "EXPORT",
+    "PRODUCTION",
+    "Manufacturing of Blends",
+    "Import quotas",
 }
 
 REQUIRED_COLUMNS = [
     "Country",
     "Chemical",
     "Year",
+    "TOTAL",
 ]
+
+RECORD_COLUMNS_MAPPING = {
+    "IMPORT": "import_metric",
+    "EXPORT": "export_metric",
+    "PRODUCTION": "production_metric",
+    "Manufacturing of Blends": "manufacturing_blends",
+    "Import quotas": "import_quotas",
+}
 
 SECTION = "B"
 
@@ -56,9 +71,6 @@ def check_headers(df):
 
 def get_usage_from_column_name(column_name):
     # Refrigeration Manufacturing - AC (MT) => Refrigeration Manufacturing AC
-
-    # remove MT
-    column_name = column_name.replace(" (MT)", "")
     # remove -
     column_name = column_name.replace("- ", "")
 
@@ -136,7 +148,7 @@ def parse_chemical_name(chemical_name):
             # R-514A (HFO-1336mzz=74,7%, trans-Dicloroetileno=25,3%) => components = [HFO-1336mzz, 74.7]
             components = []
 
-        components = [(c.strip().replace(" ", "-"), p) for c, p in components]
+        components = [(c.replace(" ", "-").strip(), p) for c, p in components]
         chemical_search_name = chemical_name.split("(")[0].strip()
         return chemical_search_name, components
 
@@ -179,9 +191,13 @@ def parse_sheet(df, file_name):
     current_country_name = None
     current_country_obj = None
     current_cp = None
-    records = []
+    usages = []
     for index_row, row in df.iterrows():
         if row["Chemical"] == "TOTAL":
+            continue
+
+        # check if the row is empty
+        if not row["TOTAL"]:
             continue
 
         # another country => another country program
@@ -213,24 +229,33 @@ def parse_sheet(df, file_name):
         if not substance_id and not blend_id:
             continue
 
+        # create record
+        record_data = {
+            "country_programme_report_id": current_cp.id,
+            "substance_id": substance_id,
+            "blend_id": blend_id,
+            "section": SECTION,
+            "source": file_name,
+        }
+        for colummn_name in RECORD_COLUMNS_MAPPING:
+            if row.get(colummn_name, None):
+                record_data[RECORD_COLUMNS_MAPPING[colummn_name]] = row[colummn_name]
+        record = CountryProgrammeRecord.objects.create(**record_data)
+
         # insert records
         for usage in usage_dict:
-            if pd.isna(row[usage]) or not row[usage]:
+            if not row[usage]:
                 # if the value is empty or is 0 => skip
                 continue
 
-            record_data = {
-                "substance_id": substance_id,
-                "blend_id": blend_id,
-                "country_programme_report_id": current_cp.id,
+            usage_data = {
+                "country_programme_record_id": record.id,
                 "usage_id": usage_dict[usage].id,
                 "value_metric": row[usage],
-                "section": SECTION,
-                "source": file_name,
             }
-            records.append(CountryProgrammeRecord(**record_data))
+            usages.append(CountryProgrammeUsage(**usage_data))
 
-    CountryProgrammeRecord.objects.bulk_create(records)
+    CountryProgrammeUsage.objects.bulk_create(usages)
 
     logger.info("✔ sheet parsed")
 
@@ -239,7 +264,8 @@ def parse_file(file_path, cp_name):
     all_sheets = pd.read_excel(file_path, sheet_name=None, na_values="NDR")
     for sheet_name, df in all_sheets.items():
         logger.info(f"Start parsing sheet: {sheet_name}")
-        df = df.rename(columns=lambda x: x.strip())
+        df = df.rename(columns=lambda x: x.replace("(MT)", "").strip())
+        df = df.replace(np.nan, None)
         parse_sheet(df, cp_name)
 
 
