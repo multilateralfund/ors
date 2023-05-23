@@ -9,25 +9,22 @@ import {
 import {
   selectSubstancesAnnexA,
   setReports,
+  updateReport,
   selectRecordsData,
 } from '@/slices/reportSlice'
 import Select from 'react-select'
-
-import { Modal } from 'flowbite-react'
-import { FormInput } from '../form/FormInput'
-import { FormDateSelect } from '../form/FormDateSelect'
-
 import {
   flexRender,
   useReactTable,
   getCoreRowModel,
   ColumnDef,
 } from '@tanstack/react-table'
+import { Modal } from 'flowbite-react'
+import { IoTrash, IoCreate } from 'react-icons/io5'
+
+import { FormInput } from '../form/FormInput'
+import { FormDateSelect } from '../form/FormDateSelect'
 import { Button } from '../shared/Button'
-
-type Reporting = any
-
-const defaultData: Reporting[] = []
 
 const RECORDS = [
   {
@@ -64,23 +61,23 @@ const RECORDS = [
     usages: [
       {
         name: 'Solvent',
-        id: 12,
+        id: 12434343,
       },
       {
         name: 'Process agent',
-        id: 121,
+        id: 124343431,
       },
       {
         name: 'Lab Use',
-        id: 121,
+        id: 121435495848574,
       },
     ],
   },
 ]
 
 export const TableData = () => {
-  // const [data, setData] = useState(() => [...defaultData])
   const [showModal, setShowModal] = useState(false)
+  const [editRow, setEditRow] = useState<unknown>(false)
   const data = useSelector(selectRecordsData)
 
   const columns = useMemo<ColumnDef<unknown>[]>(
@@ -120,7 +117,7 @@ export const TableData = () => {
       },
       {
         header: 'Process agent',
-        accessorKey: 'agent',
+        accessorKey: 'process_agent',
       },
       {
         header: 'Lab Use',
@@ -135,7 +132,7 @@ export const TableData = () => {
           },
           {
             header: 'Non-QPS',
-            accessorKey: 'non-qps',
+            accessorKey: 'non_qps',
           },
         ],
       },
@@ -166,6 +163,24 @@ export const TableData = () => {
       {
         header: 'Actions',
         accessorKey: 'action',
+        cell: ({ row: { original } }) => {
+          return (
+            <div className="flex w-100 justify-between">
+              <button
+                className="w-5 h-5"
+                onClick={() => {
+                  setEditRow(original)
+                  setShowModal(true)
+                }}
+              >
+                <IoCreate />
+              </button>
+              <button className="w-5 h-5">
+                <IoTrash />
+              </button>
+            </div>
+          )
+        },
       },
     ],
     [],
@@ -240,7 +255,11 @@ export const TableData = () => {
       </section>
       <AddSubstancesModal
         show={showModal}
-        onClose={() => setShowModal(false)}
+        editValues={editRow}
+        onClose={() => {
+          setShowModal(false)
+          setEditRow(false)
+        }}
       />
     </>
   )
@@ -262,9 +281,11 @@ const TableHeaderActions = ({
 
 const AddSubstancesModal = ({
   show = false,
+  editValues,
   onClose,
 }: {
   show?: boolean
+  editValues?: boolean | unknown
   onClose?: () => void
 }) => {
   const [selectedOption, setSelectedOption] = useState<any>(null)
@@ -277,9 +298,22 @@ const AddSubstancesModal = ({
     handleSubmit,
     control,
     formState: { isSubmitSuccessful },
+    setValue,
   } = methods
 
   const substances = useSelector(selectSubstancesAnnexA)
+
+  useEffect(() => {
+    if (show && editValues) {
+      const substance = RECORDS.find(item => item.name == editValues?.substance)
+      setSelectedRecords(substance?.usages)
+
+      // Update form
+      Object.keys(editValues).forEach(item => {
+        setValue(item, editValues[item])
+      })
+    }
+  }, [editValues, show])
 
   useEffect(() => {
     if (selectedOption) {
@@ -289,7 +323,10 @@ const AddSubstancesModal = ({
   }, [selectedOption])
 
   useEffect(() => {
-    if (isSubmitSuccessful) reset()
+    if (isSubmitSuccessful) {
+      reset()
+      onClose()
+    }
   }, [isSubmitSuccessful, reset])
 
   const ComposeInputsByUsage = () => {
@@ -319,7 +356,7 @@ const AddSubstancesModal = ({
                         key={child.id}
                       >
                         <FormInput
-                          name={child.name.toLowerCase()}
+                          name={child.name.toLowerCase().replace(' ', '_')}
                           label={child.name}
                           type="number"
                         />
@@ -333,7 +370,7 @@ const AddSubstancesModal = ({
           return (
             <div key={record.id}>
               <FormInput
-                name={record.name.toLowerCase()}
+                name={record.name.toLowerCase().replace(' ', '_')}
                 label={record.name}
                 inline
                 type="number"
@@ -346,12 +383,27 @@ const AddSubstancesModal = ({
   }
 
   const onSubmit = (values: any) => {
+    if (editValues) {
+      dispatch(updateReport(values))
+      return
+    }
+
     dispatch(setReports(values))
   }
 
+  console.log(editValues)
+
   return (
-    <Modal show={show} size="2xl" onClose={onClose} position="top-center">
-      <Modal.Header>Add substances</Modal.Header>
+    <Modal
+      show={show}
+      size="2xl"
+      onClose={() => {
+        reset()
+        onClose()
+      }}
+      position="top-center"
+    >
+      <Modal.Header>{editValues ? 'Edit' : 'Add'} substances</Modal.Header>
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(d => onSubmit(d))}>
           <Modal.Body>
@@ -374,11 +426,12 @@ const AddSubstancesModal = ({
                       options={substances}
                       className="react-select-container"
                       classNamePrefix="react-select"
+                      isDisabled={editValues as boolean}
                     />
                   )}
                 />
               </div>
-              {selectedOption && <ComposeInputsByUsage />}
+              {selectedRecords && <ComposeInputsByUsage />}
               <div className="flex flex-col gap-2 mt-3">
                 <div>
                   <FormInput
@@ -428,10 +481,7 @@ const AddSubstancesModal = ({
             </div>
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={() => console.log('saved')}>
-              Add and close modal
-            </Button>
-            <Button onClick={() => console.log('saved')}>Add more</Button>
+            <Button type="submit">Submit</Button>
           </Modal.Footer>
         </form>
       </FormProvider>

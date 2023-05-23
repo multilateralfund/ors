@@ -2,10 +2,14 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Usage, GroupSubstance } from '@/types/Reports'
 import { RootState } from '../store'
 
+type ReportData = {
+  substance: string
+}
+
 interface SubstanceState {
   substances: GroupSubstance[]
   usage: Usage[]
-  data: unknown[]
+  data: Partial<ReportData>[]
 }
 
 const initialState: SubstanceState = {
@@ -24,13 +28,20 @@ export const reportSlice = createSlice({
     setUsage: (state, action: PayloadAction<Usage[]>) => {
       state.usage = action.payload
     },
-    setReports: (state, action: PayloadAction<unknown[]>) => {
+    setReports: (state, action: PayloadAction<any>) => {
       state.data.push(action.payload)
+    },
+    updateReport: (state, action: PayloadAction<any>) => {
+      const substanceIndex = state.data.findIndex(
+        item => item.substance == action.payload.substance,
+      )
+      state.data[substanceIndex] = action.payload
     },
   },
 })
 
-export const { setSubstances, setUsage, setReports } = reportSlice.actions
+export const { setSubstances, setUsage, setReports, updateReport } =
+  reportSlice.actions
 
 export const selectSubstancesAnnexA = (state: RootState) =>
   state.reports.substances

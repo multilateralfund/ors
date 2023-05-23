@@ -2,7 +2,7 @@ import { FC, InputHTMLAttributes } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 import { twMerge } from 'tailwind-merge'
 import { InputError } from './InputError'
-import { IoHelpCircleSharp } from 'react-icons/io5'
+import { IoHelpCircle } from 'react-icons/io5'
 import { Tooltip } from 'flowbite-react'
 
 type ButtonSize = 'xs' | 'sm' | 'lg'
@@ -57,7 +57,7 @@ export const FormInput: FC<IFormInputProps> = ({
   const showTooltip = () => {
     return (
       <Tooltip content={tooltip} trigger="hover">
-        <IoHelpCircleSharp />
+        <IoHelpCircle />
       </Tooltip>
     )
   }

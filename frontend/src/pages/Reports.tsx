@@ -10,7 +10,7 @@ export const ReportsPage: FC = function () {
 
   return (
     <div>
-      <TableData isEditable={true} />
+      <TableData />
     </div>
   )
 }
