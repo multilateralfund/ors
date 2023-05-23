@@ -245,7 +245,7 @@ def parse_sheet(df, file_name):
             usage_data = {
                 "country_programme_record_id": record.id,
                 "usage_id": usage_dict[usage].id,
-                "value_metric": row[usage],
+                "quantity": row[usage],
             }
             usages.append(CountryProgrammeUsage(**usage_data))
 

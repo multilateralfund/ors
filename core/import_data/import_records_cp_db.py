@@ -262,7 +262,7 @@ def parse_record_data(item_attributes_file, country_dict, year_dict, chemical_di
             cp_rep = {
                 "country_programme_record_id": record.id,
                 "usage_id": usage_id,
-                "value_metric": item[usage],
+                "quantity": item[usage],
             }
             cp_usages.append(CountryProgrammeUsage(**cp_rep))
 

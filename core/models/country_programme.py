@@ -58,4 +58,4 @@ class CountryProgrammeUsage(models.Model):
         CountryProgrammeRecord, on_delete=models.CASCADE
     )
     usage = models.ForeignKey(Usage, on_delete=models.CASCADE)
-    value_metric = models.DecimalField(max_digits=12, decimal_places=3)
+    quantity = models.DecimalField(max_digits=12, decimal_places=3)
