@@ -1,10 +1,6 @@
 from django.urls import path
-from .views import (
-    SubstanceListView,
-    UsageView
-)
+from .views import UsageListAPIView
 
 urlpatterns = [
-    path('substances/', SubstanceListView.as_view()),
-    path('usages/', UsageView.as_view()),
+    path("usages/", UsageListAPIView.as_view(), name="usages-list"),
 ]
