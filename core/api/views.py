@@ -1,23 +1,24 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework import permissions
-from core.models import (Substance, Group, Usage)
-from .serializers import (SubstanceSerializer, GroupSerializer, UsageSerializer)
+from rest_framework import mixins, generics
+from core.api.serializers import UsageSerializer
+
+from core.models import Usage
 
 
-class SubstanceListView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+class UsageListAPIView(mixins.ListModelMixin, generics.GenericAPIView):
+    """
+    API endpoint that allows usages to be viewed.
+    @param only_parents: boolean - if true, return only parent usages
+    """
+
+    serializer_class = UsageSerializer
+    queryset = Usage.objects.all()
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        only_parents = self.request.query_params.get("only_parents", None)
+        if only_parents:
+            queryset = queryset.filter(parent=None)
+        return queryset.order_by("sort_order")
 
     def get(self, request, *args, **kwargs):
-        substances = Group.objects.all()
-        output = GroupSerializer(substances, many=True)
-        return Response(output.data, status=status.HTTP_200_OK)
-    
-class UsageView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):
-        usages = Usage.objects.all()
-        output = UsageSerializer(usages, many=True)
-        return Response(output.data, status=status.HTTP_200_OK)
+        return self.list(request, *args, **kwargs)

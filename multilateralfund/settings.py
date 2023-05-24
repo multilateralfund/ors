@@ -215,6 +215,9 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
 }
 
 REST_AUTH = {
@@ -224,7 +227,7 @@ REST_AUTH = {
     "JWT_AUTH_REFRESH_COOKIE": "orsrefresh",
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "PASSWORD_RESET_USE_SITES_DOMAIN": True,
-    "PASSWORD_RESET_SERIALIZER": "core.api.serializers.CustomPasswordResetSerializer",   
+    "PASSWORD_RESET_SERIALIZER": "core.api.serializers.CustomPasswordResetSerializer",
 }
-SESSION_COOKIE_HTTPONLY=False
-CSRF_COOKIE_HTTPONLY=True
+SESSION_COOKIE_HTTPONLY = False
+CSRF_COOKIE_HTTPONLY = True
