@@ -1,6 +1,6 @@
 from rest_framework import mixins, generics
-from core.api.serializers import UsageSerializer
 
+from core.api.serializers import UsageSerializer
 from core.models import Usage
 
 

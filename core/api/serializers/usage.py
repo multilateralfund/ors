@@ -1,16 +1,6 @@
 from rest_framework import serializers
-from dj_rest_auth.serializers import PasswordResetSerializer
 
-from core.models import Substance
-from core.models import Group
 from core.models import Usage
-
-
-class CustomPasswordResetSerializer(PasswordResetSerializer):
-    def get_email_options(self):
-        return {
-            "html_email_template_name": "registration/password_reset_email.html",
-        }
 
 
 class RecursiveField(serializers.Serializer):

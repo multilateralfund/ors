@@ -1,10 +1,12 @@
 import factory.fuzzy
+from core.models.blend import Blend
 
-from core.models.usage import Usage
+from core.models.group import Group
+from core.models.substance import Substance
+from core.models.usage import ExcludedUsage, Usage
 from core.models.user import User
 
 
-# usaer factory
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
@@ -21,7 +23,6 @@ class UserFactory(factory.django.DjangoModelFactory):
     )
 
 
-# usage factory
 class UsageFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Usage
@@ -30,3 +31,34 @@ class UsageFactory(factory.django.DjangoModelFactory):
     full_name = factory.Faker("pystr", max_chars=248)
     description = factory.Faker("pystr", max_chars=248)
     sort_order = factory.Faker("random_int", min=1, max=100)
+
+
+class GroupFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Group
+
+    name = factory.Faker("pystr", max_chars=100)
+    name_alt = factory.Faker("pystr", max_chars=100)
+    description = factory.Faker("pystr", max_chars=100)
+
+
+class SubstanceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Substance
+
+    name = factory.Faker("pystr", max_chars=100)
+    formula = factory.Faker("pystr", max_chars=100)
+    odp = factory.Faker("random_int", min=1, max=100)
+    min_odp = factory.Faker("random_int", min=1, max=100)
+    max_odp = factory.Faker("random_int", min=1, max=100)
+    is_contained_in_polyols = factory.Faker("pybool")
+    is_captured = factory.Faker("pybool")
+    sort_order = factory.Faker("random_int", min=1, max=100)
+
+
+class ExcludedUsageSubstFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ExcludedUsage
+
+    usage = factory.SubFactory(UsageFactory)
+    substance = factory.SubFactory(SubstanceFactory)
