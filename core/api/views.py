@@ -2,12 +2,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
-from core.models import Substance
-from core.models import Group
-from core.models import Usage
-from .serializers import SubstanceSerializer
-from .serializers import GroupSerializer
-from .serializers import UsageSerializer
+from core.models import (Substance, Group, Usage)
+from .serializers import (SubstanceSerializer, GroupSerializer, UsageSerializer)
+
 
 class SubstanceListView(APIView):
     permission_classes = [permissions.IsAuthenticated]

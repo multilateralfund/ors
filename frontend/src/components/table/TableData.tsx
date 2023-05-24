@@ -327,7 +327,7 @@ const AddSubstancesModal = ({
   useEffect(() => {
     if (isSubmitSuccessful) {
       reset()
-      onClose()
+      if (onClose) onClose()
     }
   }, [isSubmitSuccessful, reset])
 
@@ -399,7 +399,9 @@ const AddSubstancesModal = ({
       size="2xl"
       onClose={() => {
         reset()
-        onClose()
+        setSelectedOption(null)
+        setSelectedRecords(null)
+        if (onClose) onClose()
       }}
       position="top-center"
     >

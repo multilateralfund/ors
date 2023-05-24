@@ -1,5 +1,4 @@
 import type { FC } from 'react'
-import { useSelector } from 'react-redux'
 import { TableData } from '@/components/table/TableData'
 import { useGetSubstancesQuery, useGetUsageQuery } from '@/services/api'
 import { selectSubstancesAnnexA, selectUsages } from '@/slices/reportSlice'
