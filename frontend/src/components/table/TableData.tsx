@@ -175,6 +175,8 @@ export const TableData = () => {
               <button
                 className="w-5 h-5"
                 onClick={() => {
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  //@ts-ignore
                   dispatch(deleteReport({ substance: original?.substance }))
                 }}
               >
@@ -307,11 +309,16 @@ const AddSubstancesModal = ({
 
   useEffect(() => {
     if (show && editValues) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
       const substance = RECORDS.find(item => item.name == editValues?.substance)
       setSelectedRecords(substance?.usages)
 
       // Update form
+
       Object.keys(editValues).forEach(item => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
         setValue(item, editValues[item])
       })
     }
