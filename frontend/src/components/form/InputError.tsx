@@ -1,8 +1,4 @@
-import React, { PropsWithChildren } from 'react'
-
-type Props = {
-  children?: React.ReactNode
-}
+import { PropsWithChildren, ReactNode } from 'react'
 
 export const InputError = ({ children }: PropsWithChildren) => {
   return (

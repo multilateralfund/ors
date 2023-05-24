@@ -5,10 +5,11 @@
   },
   "extends": [
     "plugin:react/recommended",
-    "airbnb",
     "plugin:@typescript-eslint/recommended",
-    "prettier/@typescript-eslint",
-    "plugin:prettier/recommended"
+    "plugin:prettier/recommended",
+    "plugin:import/typescript",
+    "plugin:import/errors",
+    "plugin:import/warnings"
   ],
   "globals": {
     "Atomics": "readonly",
@@ -34,14 +35,7 @@
       }
     ],
     "import/prefer-default-export": "off",
-    "import/extensions": [
-      "error",
-      "ignorePackages",
-      {
-        "ts": "never",
-        "tsx": "never"
-      }
-    ],
+    "import/extensions": "off",
     "no-restricted-properties": [
       "warn",
       {
@@ -49,11 +43,18 @@
         "property": "env",
         "message": "Use `/src/utils/env.ts` instead of `import.meta.env`"
       }
-    ]
+    ],
+    "react/react-in-jsx-scope": "off"
   },
   "settings": {
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    },
     "import/resolver": {
       "typescript": {}
+    },
+    "react": {
+      "version": "detect"
     }
   }
 }

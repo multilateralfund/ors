@@ -1,7 +1,7 @@
 import { EndpointBuilder } from '@reduxjs/toolkit/dist/query/endpointDefinitions'
 import { IUser } from '@/types/User'
 import { LoginInput } from '@/pages/auth/LoginPage'
-import { logout, setToken } from '@/slices/authSlice'
+import { logout } from '@/slices/authSlice'
 import { setUser } from '@/slices/userSlice'
 
 type Output = {
@@ -28,7 +28,7 @@ export const authEndpoints = (
     },
   }),
   logout: builder.mutation<void, void>({
-    query: body => ({
+    query: _ => ({
       url: '/auth/logout/',
       method: 'POST',
       // credentials: 'include',

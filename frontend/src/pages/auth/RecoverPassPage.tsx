@@ -16,7 +16,7 @@ const forgotPasswordSchema = object({
 
 export type ForgotPasswordInput = TypeOf<typeof forgotPasswordSchema>
 
-export const RecoverPassPage = () => {
+export function RecoverPassPage() {
   const methods = useForm<ForgotPasswordInput>({
     resolver: zodResolver(forgotPasswordSchema),
   })
@@ -81,7 +81,7 @@ export const RecoverPassPage = () => {
           Forgot your password?
         </h1>
         <p className="font-light text-gray-500 dark:text-gray-400">
-          We'll email you instructions to reset your password.
+          We&apos;ll email you instructions to reset your password.
         </p>
         <FormProvider {...methods}>
           <form

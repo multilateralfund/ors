@@ -1,4 +1,4 @@
-import React from 'react'
+import * as React from 'react'
 import { Routes, Route } from 'react-router-dom'
 import {
   BaseLayout,
@@ -15,9 +15,10 @@ import { EmailVerificationPage } from './pages/auth/EmailVerificationPage'
 import { HomePage } from './pages/HomePage'
 import { RequireUser } from './layouts/RequireUser'
 import { UnauthorizedPage } from './pages/UnauthorizePage'
+import { ReportsPage } from './pages/Reports'
 
-const auth = (component: React.ReactElement) => (
-  <LoggedInLayout>{component}</LoggedInLayout>
+const auth = (component: React.ReactElement, isFooter = false) => (
+  <LoggedInLayout isFooter={isFooter}>{component}</LoggedInLayout>
 )
 
 const anon = (component: React.ReactElement) => (
@@ -30,6 +31,7 @@ export default function App() {
       <Route element={<BaseLayout />}>
         <Route element={<RequireUser allowedRoles={['user', 'admin']} />}>
           <Route path="/" element={auth(<HomePage />)} />
+          <Route path="/reports" element={auth(<ReportsPage />, true)} />
         </Route>
         <Route path="/unauthorized" element={anon(<UnauthorizedPage />)} />
         <Route path="/login" element={anon(<LoginPage />)} />

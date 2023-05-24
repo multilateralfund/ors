@@ -5,13 +5,13 @@ import {
   fetchBaseQuery,
   FetchBaseQueryError,
 } from '@reduxjs/toolkit/query'
-import { RootState } from '../store'
-import { authEndpoints } from './endpoints/authEndpoints'
-import { userEndpoints } from './endpoints/userEndpoints'
-import { selectAuthToken, selectAuthState } from '@/slices/authSlice'
+import { selectAuthState, logout } from '@/slices/authSlice'
 import { Mutex } from 'async-mutex'
 import { env } from '@/utils/env'
-import { logout } from '@/slices/authSlice'
+import { userEndpoints } from './endpoints/userEndpoints'
+import { authEndpoints } from './endpoints/authEndpoints'
+import { reportEndpoints } from './endpoints/reportEndpoints'
+import { RootState } from '../store'
 
 const baseQuery = fetchBaseQuery({
   baseUrl: env.apiBaseUrl,
@@ -79,6 +79,7 @@ export const api = createApi({
   endpoints: builder => ({
     ...authEndpoints(builder),
     ...userEndpoints(builder),
+    ...reportEndpoints(builder),
   }),
 })
 
@@ -88,4 +89,6 @@ export const {
   useForgotPasswordMutation,
   useResetPasswordMutation,
   useGetMeQuery,
+  useGetSubstancesQuery,
+  useGetUsageQuery,
 } = api

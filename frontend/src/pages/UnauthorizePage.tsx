@@ -1,3 +1,3 @@
-export const UnauthorizedPage = () => {
+export function UnauthorizedPage() {
   return <div>Unauthorized</div>
 }

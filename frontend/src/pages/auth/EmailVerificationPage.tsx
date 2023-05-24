@@ -1,3 +1,3 @@
-export const EmailVerificationPage = () => {
-  return <div></div>
+export function EmailVerificationPage() {
+  return <div />
 }

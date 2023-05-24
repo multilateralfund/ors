@@ -1,4 +1,9 @@
+from rest_framework import serializers
 from dj_rest_auth.serializers import PasswordResetSerializer
+
+from core.models import Substance
+from core.models import Group
+from core.models import Usage
 
 class CustomPasswordResetSerializer(PasswordResetSerializer):
     def get_email_options(self) :
@@ -6,3 +11,24 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
         return {
             'html_email_template_name': 'registration/password_reset_email.html',
         }
+    
+class SubstanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Substance
+        fields = '__all__'
+
+class GroupSerializer(serializers.ModelSerializer):
+    substances = SubstanceSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Group
+        fields = ['id', 'name', 'name_alt', 'annex', 'description', 'substances']
+
+class UsageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Usage
+        fields = ('id', 'name', 'parent',)
+
+    def to_representation(self, instance):
+        self.fields['parent'] = UsageSerializer(read_only=True)
+        return super(UsageSerializer, self).to_representation(instance)
