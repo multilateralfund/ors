@@ -238,7 +238,7 @@ def get_chemical_and_check_gwp(chemical_name, gwp_value, index_row):
 
 def parse_sheet(df, file_details):
     """
-    parse the sheet and return a list of usages
+    parse the sheet and import the data in database
     @param df = pandas dataframe
     @param file_details = dict (file_name, session, convert_to_mt)
     """
