@@ -19,17 +19,35 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from dj_rest_auth.views import (
-    PasswordResetView, PasswordResetConfirmView,
+    PasswordResetView,
+    PasswordResetConfirmView,
 )
+
 # from api import urls as apis_urls
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/auth/", include("dj_rest_auth.urls")),
-    path('api/auth/password_reset/',
-         PasswordResetView.as_view(), name='password_reset'),
-    path('api/auth/password_reset_confirm/<uidb64>/<token>/',
-         PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('reset-password/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='reset_password_frontend'),
-    path('api/', include('core.api.urls')),
+    path(
+        "api/auth/password_reset/", PasswordResetView.as_view(), name="password_reset"
+    ),
+    path(
+        "api/auth/password_reset_confirm/<uidb64>/<token>/",
+        PasswordResetConfirmView.as_view(),
+        name="password_reset_confirm",
+    ),
+    path(
+        "reset-password/<uidb64>/<token>/",
+        PasswordResetConfirmView.as_view(),
+        name="reset_password_frontend",
+    ),
+    path("api/", include("core.api.urls")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+if settings.ENABLE_DEBUG_BAR:
+    try:
+        import debug_toolbar
+
+        urlpatterns = [path("__debug__/", include(debug_toolbar.urls))] + urlpatterns
+    except ImportError:
+        pass

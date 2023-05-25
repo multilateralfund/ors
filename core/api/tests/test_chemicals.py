@@ -17,8 +17,8 @@ class TestGroupSubstances:
 
     def test_group_substances_list(self):
         # add some groups with substances using factories
-        group1 = GroupFactory.create()
-        group2 = GroupFactory.create()
+        group1 = GroupFactory.create(name="A")
+        group2 = GroupFactory.create(name="B")
         usage1 = UsageFactory.create()
         usage2 = UsageFactory.create()
         substance1 = SubstanceFactory.create(group=group1)
