@@ -24,7 +24,7 @@ class SubstanceSerializer(serializers.ModelSerializer):
     def get_excluded_usages(self, obj):
         request = self.context.get("request")
         if request and request.query_params.get("with_usages", None):
-            return [usage.id for usage in obj.excluded_usages.all()]
+            return [usage.usage_id for usage in obj.excluded_usages.all()]
         return []
 
 

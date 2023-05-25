@@ -1,9 +1,9 @@
 import factory.fuzzy
-from core.models.blend import Blend
 
 from core.models.group import Group
 from core.models.substance import Substance
 from core.models.usage import ExcludedUsage, Usage
+from core.models.blend import Blend
 from core.models.user import User
 
 
@@ -56,9 +56,27 @@ class SubstanceFactory(factory.django.DjangoModelFactory):
     sort_order = factory.Faker("random_int", min=1, max=100)
 
 
+class BlendFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Blend
+    
+    name = factory.Faker('pystr', max_chars=64)
+    other_names = factory.Faker('pystr', max_chars=100)
+    odp = factory.Faker("random_int", min=1, max=100)
+    gwp = factory.Faker("random_int", min=1, max=100)
+    sort_order = factory.Faker("random_int", min=1, max=100)
+
+
 class ExcludedUsageSubstFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExcludedUsage
 
     usage = factory.SubFactory(UsageFactory)
     substance = factory.SubFactory(SubstanceFactory)
+
+class ExcludedUsageBlendFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ExcludedUsage
+
+    usage = factory.SubFactory(UsageFactory)
+    blend = factory.SubFactory(BlendFactory)
