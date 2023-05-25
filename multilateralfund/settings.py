@@ -218,6 +218,10 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_RENDERER_CLASSES": (
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
+    ),
 }
 
 REST_AUTH = {
@@ -231,3 +235,26 @@ REST_AUTH = {
 }
 SESSION_COOKIE_HTTPONLY = False
 CSRF_COOKIE_HTTPONLY = True
+
+ENABLE_DEBUG_BAR = DEBUG and env.get_value("ENABLE_DEBUG_BAR", default=False, cast=bool)
+if ENABLE_DEBUG_BAR:
+    try:
+        import socket
+
+        def show_toolbar(request):
+            return DEBUG and (
+                request.META.get("REMOTE_ADDR") in INTERNAL_IPS
+                or request.META.get("HTTP_X_REAL_IP") in INTERNAL_IPS
+            )
+
+        hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+        INTERNAL_IPS = [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
+        MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
+        INSTALLED_APPS += ["debug_toolbar"]
+        ALLOWED_HOSTS += ["127.0.0.1"]
+        DEBUG_TOOLBAR_CONFIG = {
+            "SHOW_COLLAPSED": True,
+            "SHOW_TOOLBAR_CALLBACK": f"{__name__}.show_toolbar",
+        }
+    except ImportError:
+        pass

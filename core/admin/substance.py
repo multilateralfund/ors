@@ -28,5 +28,6 @@ class SubstanceAdmin(admin.ModelAdmin):
             "countryprogrammerecord",
             "substancealtname",
             "excludedusage",
+            "excluded_usages",
         ]
         return get_final_display_list(Substance, exclude)

@@ -21,6 +21,7 @@ class BlendAdmin(admin.ModelAdmin):
             "countryprogrammerecord",
             "blendaltname",
             "excludedusage",
+            "excluded_usages",
         ]
         return get_final_display_list(Blend, exclude)
 

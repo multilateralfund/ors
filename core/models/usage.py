@@ -27,6 +27,16 @@ class Usage(models.Model):
 class ExcludedUsage(models.Model):
     usage = models.ForeignKey(Usage, on_delete=models.CASCADE)
     substance = models.ForeignKey(
-        "Substance", on_delete=models.CASCADE, null=True, blank=True
+        "Substance",
+        on_delete=models.CASCADE,
+        related_name="excluded_usages",
+        null=True,
+        blank=True,
     )
-    blend = models.ForeignKey("Blend", on_delete=models.CASCADE, null=True, blank=True)
+    blend = models.ForeignKey(
+        "Blend",
+        on_delete=models.CASCADE,
+        related_name="excluded_usages",
+        null=True,
+        blank=True,
+    )
