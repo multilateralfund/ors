@@ -1,3 +1,4 @@
+import decimal
 import logging
 import re
 import pandas as pd
@@ -8,10 +9,10 @@ from django.conf import settings
 from core.import_data.utils import (
     COUNTRY_NAME_MAPPING,
     delete_old_cp_records,
-    get_blend_id_by_name_or_components,
+    get_blend_by_name_or_components,
     get_cp_report,
     get_object_by_name,
-    get_substance_id_by_name,
+    get_substance_by_name,
 )
 
 from core.models import (
@@ -36,6 +37,7 @@ NON_USAGE_COLUMNS = {
     "production",
     "manufacturing of blends",
     "import quotas",
+    "ctr",
 }
 
 REQUIRED_COLUMNS = [
@@ -55,10 +57,26 @@ RECORD_COLUMNS_MAPPING = {
 
 SECTION = "B"
 
+FILE_LIST = [
+    {
+        "file_name": "SectionA.xlsx",
+        "convert_to_mt": True,
+        "section": "A",
+    },
+    {
+        "file_name": "SectionB.xlsx",
+        "convert_to_mt": False,
+        "section": "B",
+    },
+]
+
 # "R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%)" => [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")]
 BLEND_COMPONENTS_RE = r"(\w{1,4}\-?\s?\w{2,7})\s?=?-?\s?\(?(\d{1,3}\.?\,?\d{,3})\%\)?"
 # "R23/R125/CO2/HFO-1132 (10%/10%/60%/20%)"
 BLEND_COMPOSITION_RE = r"((/[a-zA-Z0-9/-]{3,15})+\s?\(\d{1,3}\.?\,?\d{,2}?%)"
+
+# error value for comparing gwp values
+GWP_EPSILON = 0.0001
 
 
 def check_headers(df):
@@ -111,6 +129,7 @@ def parse_chemical_name(chemical_name):
         R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%) => ("R-404A", [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")])
         R125/R218/R290 (86%/9%/5%) =>R125/R218/R290 (86%/9%/5%),   [('R125', '86'), ('R218', '9'), ('R290', '5')]
         R23/Other uncontrolled substances (98%/2%) => R23/Other uncontrolled substances (98%/2%), [(R23, 98), (Other substances, 2)]
+        HFC-23 (use) => HFC-23, []
     @param chemical_name string
     @return tuple => (chemical_search_name, components)
         - chemical_search_name = string
@@ -118,6 +137,11 @@ def parse_chemical_name(chemical_name):
     """
     # remove Fullwidth Right Parenthesis
     chemical_name = chemical_name.replace("）", ")").strip()
+
+    # HFC-23 (use) => HFC-23, []
+    if "(use)" in chemical_name:
+        chemical_name = chemical_name.replace("(use)", "").strip()
+        return chemical_name, []
 
     # R23/Other uncontrolled substances (98%/2%)
     # R32/R125/R134a/HFO (24%/25%/26%/25%)
@@ -149,25 +173,60 @@ def parse_chemical_name(chemical_name):
     return chemical_name, components
 
 
-def get_chemical(chemical_name, index_row):
+def check_gwp_value(obj, gwp_value, index_row):
+    """
+    check if the gwp_value is the same as chemical gwp value from database
+    @param obj = Substance or Blend
+    @param gwp_value = float
+    @param index_row = int
+
+    @return boolean
+    """
+    if type(gwp_value) == str:
+        gwp_value = gwp_value.strip()
+
+    if not gwp_value:
+        return
+
+    try:
+        gwp_value = decimal.Decimal(gwp_value)
+    except:
+        logger.warning(
+            f"⚠️ [row: {index_row}] The gwp value is not a number: {gwp_value}"
+        )
+        return
+
+    if abs(obj.gwp - gwp_value) > GWP_EPSILON:
+        logger.warning(
+            f"⚠️ [row: {index_row}] The gwp values are different "
+            f"(file_value: {gwp_value}, database_value: {obj.gwp})"
+        )
+
+
+def get_chemical_and_check_gwp(chemical_name, gwp_value, index_row):
     """
     parse chemical name from row and return substance_id or blend_id:
         - if the chemical is a substance => return (substance_id, None)
         - if the chemical is a blend => return (None, blend_id)
         - if we can't find this chemical => return (None, None)
+    and check if the gwp_value is the same as chemical gwp value from database
     @param chemical_name string
+    @param gwp_value float
+    @param index_row int
 
     @return tuple => (int, None) or (None, int) or (None, None)
     """
 
     chemical_search_name, components = parse_chemical_name(chemical_name)
-    substance_id = get_substance_id_by_name(chemical_search_name)
-    if substance_id:
-        return substance_id, None
+    substance = get_substance_by_name(chemical_search_name)
+    if substance:
+        check_gwp_value(substance, gwp_value, index_row)
+        return substance, None
 
-    blend_id = get_blend_id_by_name_or_components(chemical_search_name, components)
-    if blend_id:
-        return None, blend_id
+    blend = get_blend_by_name_or_components(chemical_search_name, components)
+    if blend:
+        check_gwp_value(blend, gwp_value, index_row)
+        return None, blend
 
     logger.warning(
         f"[row: {index_row}]: "
@@ -177,7 +236,12 @@ def get_chemical(chemical_name, index_row):
     return None, None
 
 
-def parse_sheet(df, file_name):
+def parse_sheet(df, file_details):
+    """
+    parse the sheet and import the data in database
+    @param df = pandas dataframe
+    @param file_details = dict (file_name, session, convert_to_mt)
+    """
     if not check_headers(df):
         logger.error("Couldn't parse this sheet")
         return
@@ -219,21 +283,39 @@ def parse_sheet(df, file_name):
         if row["chemical"] == "Other1" and current_country_obj.name == "Cuba":
             chemical_name = "R-417A"
 
-        substance_id, blend_id = get_chemical(chemical_name, index_row)
-        if not substance_id and not blend_id:
+        gwp_value = row.get("gwp", None)
+        substance, blend = get_chemical_and_check_gwp(
+            chemical_name, gwp_value, index_row
+        )
+        if not substance and not blend:
             continue
+
+        # get odp value
+        if file_details["convert_to_mt"]:
+            odp_value = substance.odp if substance else blend.odp
+            if not odp_value:
+                logger.error(
+                    f"[row: {index_row}] The ODP value is not defined for this chemical:"
+                    f" {chemical_name}"
+                )
+                continue
+        else:
+            odp_value = 1
 
         # create record
         record_data = {
             "country_programme_report_id": current_cp.id,
-            "substance_id": substance_id,
-            "blend_id": blend_id,
-            "section": SECTION,
-            "source_file": file_name,
+            "substance": substance,
+            "blend": blend,
+            "section": file_details["section"],
+            "display_name": row["chemical"],
+            "source_file": file_details["file_name"],
         }
         for colummn_name in RECORD_COLUMNS_MAPPING:
             if row.get(colummn_name, None):
-                record_data[RECORD_COLUMNS_MAPPING[colummn_name]] = row[colummn_name]
+                record_data[RECORD_COLUMNS_MAPPING[colummn_name]] = (
+                    decimal.Decimal(row[colummn_name]) / odp_value
+                )
         record = CountryProgrammeRecord.objects.create(**record_data)
 
         # insert records
@@ -245,7 +327,7 @@ def parse_sheet(df, file_name):
             usage_data = {
                 "country_programme_record_id": record.id,
                 "usage_id": usage_dict[usage].id,
-                "quantity": row[usage],
+                "quantity": decimal.Decimal(row[usage]) / odp_value,
             }
             usages.append(CountryProgrammeUsage(**usage_data))
 
@@ -254,9 +336,13 @@ def parse_sheet(df, file_name):
     logger.info("✔ sheet parsed")
 
 
-def parse_file(file_path, cp_name):
+def parse_file(file_path, file_details):
     all_sheets = pd.read_excel(file_path, sheet_name=None, na_values="NDR")
     for sheet_name, df in all_sheets.items():
+        # if the sheet_name is not a year => skip
+        if not sheet_name.strip().isdigit():
+            continue
+
         logger.info(f"Start parsing sheet: {sheet_name}")
 
         # set column names
@@ -264,15 +350,15 @@ def parse_file(file_path, cp_name):
         # replace nan with None
         df = df.replace(np.nan, None)
 
-        parse_sheet(df, cp_name)
+        parse_sheet(df, file_details)
 
 
 @transaction.atomic
 def import_records():
-    file_name = "CP Data-SectionB-2019-2021.xlsx"
-    file_path = settings.IMPORT_DATA_DIR / "records" / file_name
+    for file in FILE_LIST:
+        file_path = settings.IMPORT_DATA_DIR / "records" / file["file_name"]
 
-    delete_old_cp_records(file_name, logger)
-    parse_file(file_path, file_name)
+        delete_old_cp_records(file["file_name"], logger)
+        parse_file(file_path, file)
 
-    logger.info("✔ records imported")
+        logger.info(f"✔ records from {file['file_name']} imported")

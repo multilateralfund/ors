@@ -52,28 +52,28 @@ def delete_old_cp_records(source, logger):
     logger.info(f"✔ old records from {source} deleted")
 
 
-def get_substance_id_by_name(substance_name):
+def get_substance_by_name(substance_name):
     """
-    get substance id by name or alt name (case insensitive)
+    get substance by name or alt name (case insensitive)
     @param substance_name: string subsance name
 
-    @return: int substance id
+    @return: Substance object
     """
 
     substance = Substance.objects.get_by_name(substance_name).first()
     if substance:
-        return substance.id
+        return substance
 
     substance = SubstanceAltName.objects.get_by_name(substance_name).first()
     if substance:
-        return substance.substance_id
+        return substance.substance
 
     return None
 
 
-def get_blend_id_by_name(blend_name):
+def get_blend_by_name(blend_name):
     """
-    get blend id by name or alt name (case insensitive)
+    get blend by name or alt name (case insensitive)
     @param blend_name: string blend name
 
     @return: int blend id
@@ -81,44 +81,42 @@ def get_blend_id_by_name(blend_name):
 
     blend = Blend.objects.get_by_name(blend_name).first()
     if blend:
-        return blend.id
+        return blend
 
     blend = BlendAltName.objects.get_by_name(blend_name).first()
     if blend:
-        return blend.blend_id
+        return blend.blend
 
     return None
 
 
-def get_blend_id_by_name_or_components(blend_name, components):
+def get_blend_by_name_or_components(blend_name, components):
     """
-    get blend id by name or components
+    get blend by name or components
     @param blend_name: string blend name
     @param components: list of tuples (substance_name, percentage)
 
     @return: int blend id
     """
-    blend_id = get_blend_id_by_name(blend_name)
-    if blend_id:
-        return blend_id
+    blend = get_blend_by_name(blend_name)
+    if blend:
+        return blend
 
     if components:
         subst_prcnt = []
         for substance_name, percentage in components:
             try:
-                subst_id = get_substance_id_by_name(substance_name)
-                if not subst_id:
+                subst = get_substance_by_name(substance_name)
+                if not subst:
                     return None
                 prcnt = float(percentage) / 100
-                subst_prcnt.append((subst_id, prcnt))
+                subst_prcnt.append((subst.id, prcnt))
             except:
                 return None
 
         blend = BlendComponents.objects.get_blend_by_components(subst_prcnt)
-        if blend:
-            return blend.id
 
-    return None
+    return blend
 
 
 def get_cp_report(year, country_name, country_id):

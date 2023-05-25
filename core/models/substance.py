@@ -11,7 +11,7 @@ class SubstanceManager(models.Manager):
 class Substance(models.Model):
     name = models.CharField(max_length=128, unique=True)
     description = models.TextField(null=True, blank=True)
-    odp = models.DecimalField(max_digits=20, decimal_places=10)
+    odp = models.DecimalField(max_digits=20, decimal_places=10, null=True, blank=True)
     min_odp = models.DecimalField(max_digits=20, decimal_places=10)
     max_odp = models.DecimalField(max_digits=20, decimal_places=10)
     gwp = models.DecimalField(max_digits=20, decimal_places=10, null=True, blank=True)

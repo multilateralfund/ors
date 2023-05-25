@@ -69,6 +69,14 @@ def import_data(cls, file_path, exclude=[]):
                 name=instance["name"],
                 defaults=instance,
             )
+            # if the chemical is contained in pre-blended polyol, we need to create a new chemical
+            if cls in [Substance, Blend] and instance["is_contained_in_polyols"]:
+                instance["name"] += " in imported pre-blended polyol"
+                instance.pop("ozone_id")
+                cls.objects.update_or_create(
+                    name=instance["name"],
+                    defaults=instance,
+                )
 
 
 def import_groups():
@@ -91,6 +99,7 @@ def import_alternative_names(
     @param file_name string
     @param chemical_name string (substance or blend)
     @param field_name string (field from json for alternative name)
+    @param skip_cond function (optional)
     """
 
     # read data from json file

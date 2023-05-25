@@ -24,6 +24,7 @@ class CountryProgrammeRecord(models.Model):
     country_programme_report = models.ForeignKey(
         CountryProgrammeReport, on_delete=models.CASCADE
     )
+    display_name = models.CharField(max_length=248, null=True, blank=True)
     section = models.CharField(max_length=164)
     imports = models.DecimalField(
         max_digits=12, decimal_places=3, null=True, blank=True
