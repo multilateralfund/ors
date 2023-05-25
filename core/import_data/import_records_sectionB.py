@@ -1,3 +1,4 @@
+import decimal
 import logging
 import re
 import pandas as pd
@@ -8,10 +9,10 @@ from django.conf import settings
 from core.import_data.utils import (
     COUNTRY_NAME_MAPPING,
     delete_old_cp_records,
-    get_blend_id_by_name_or_components,
+    get_blend_by_name_or_components,
     get_cp_report,
     get_object_by_name,
-    get_substance_id_by_name,
+    get_substance_by_name,
 )
 
 from core.models import (
@@ -59,6 +60,9 @@ SECTION = "B"
 BLEND_COMPONENTS_RE = r"(\w{1,4}\-?\s?\w{2,7})\s?=?-?\s?\(?(\d{1,3}\.?\,?\d{,3})\%\)?"
 # "R23/R125/CO2/HFO-1132 (10%/10%/60%/20%)"
 BLEND_COMPOSITION_RE = r"((/[a-zA-Z0-9/-]{3,15})+\s?\(\d{1,3}\.?\,?\d{,2}?%)"
+
+# error value for comparing gwp values
+GWP_EPSILON = 0.0001
 
 
 def check_headers(df):
@@ -111,6 +115,7 @@ def parse_chemical_name(chemical_name):
         R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%) => ("R-404A", [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")])
         R125/R218/R290 (86%/9%/5%) =>R125/R218/R290 (86%/9%/5%),   [('R125', '86'), ('R218', '9'), ('R290', '5')]
         R23/Other uncontrolled substances (98%/2%) => R23/Other uncontrolled substances (98%/2%), [(R23, 98), (Other substances, 2)]
+        HFC-23 (use) => HFC-23, []
     @param chemical_name string
     @return tuple => (chemical_search_name, components)
         - chemical_search_name = string
@@ -118,6 +123,11 @@ def parse_chemical_name(chemical_name):
     """
     # remove Fullwidth Right Parenthesis
     chemical_name = chemical_name.replace("）", ")").strip()
+
+    # HFC-23 (use) => HFC-23, []
+    if "(use)" in chemical_name:
+        chemical_name = chemical_name.replace("(use)", "").strip()
+        return chemical_name, []
 
     # R23/Other uncontrolled substances (98%/2%)
     # R32/R125/R134a/HFO (24%/25%/26%/25%)
@@ -149,25 +159,60 @@ def parse_chemical_name(chemical_name):
     return chemical_name, components
 
 
-def get_chemical(chemical_name, index_row):
+def check_gwp_value(obj, gwp_value, index_row):
+    """
+    check if the gwp_value is the same as chemical gwp value from database
+    @param obj = Substance or Blend
+    @param gwp_value = float
+    @param index_row = int
+
+    @return boolean
+    """
+    if type(gwp_value) == str:
+        gwp_value = gwp_value.strip()
+
+    if not gwp_value:
+        return
+
+    try:
+        gwp_value = decimal.Decimal(gwp_value)
+    except:
+        logger.warning(
+            f"⚠️ [row: {index_row}] The gwp value is not a number: {gwp_value}"
+        )
+        return
+
+    if abs(obj.gwp - gwp_value) > GWP_EPSILON:
+        logger.warning(
+            f"⚠️ [row: {index_row}] The gwp values are different "
+            f"(file_value: {gwp_value}, database_value: {obj.gwp})"
+        )
+
+
+def get_chemical_and_check_gwp(chemical_name, gwp_value, index_row):
     """
     parse chemical name from row and return substance_id or blend_id:
         - if the chemical is a substance => return (substance_id, None)
         - if the chemical is a blend => return (None, blend_id)
         - if we can't find this chemical => return (None, None)
+    and check if the gwp_value is the same as chemical gwp value from database
     @param chemical_name string
+    @param gwp_value float
+    @param index_row int
 
     @return tuple => (int, None) or (None, int) or (None, None)
     """
 
     chemical_search_name, components = parse_chemical_name(chemical_name)
-    substance_id = get_substance_id_by_name(chemical_search_name)
-    if substance_id:
-        return substance_id, None
+    substance = get_substance_by_name(chemical_search_name)
+    if substance:
+        check_gwp_value(substance, gwp_value, index_row)
+        return substance.id, None
 
-    blend_id = get_blend_id_by_name_or_components(chemical_search_name, components)
-    if blend_id:
-        return None, blend_id
+    blend = get_blend_by_name_or_components(chemical_search_name, components)
+    if blend:
+        check_gwp_value(blend, gwp_value, index_row)
+        return None, blend.id
 
     logger.warning(
         f"[row: {index_row}]: "
@@ -219,7 +264,9 @@ def parse_sheet(df, file_name):
         if row["chemical"] == "Other1" and current_country_obj.name == "Cuba":
             chemical_name = "R-417A"
 
-        substance_id, blend_id = get_chemical(chemical_name, index_row)
+        substance_id, blend_id = get_chemical_and_check_gwp(
+            chemical_name, row["gwp"], index_row
+        )
         if not substance_id and not blend_id:
             continue
 
@@ -229,6 +276,7 @@ def parse_sheet(df, file_name):
             "substance_id": substance_id,
             "blend_id": blend_id,
             "section": SECTION,
+            "display_name": row["chemical"],
             "source_file": file_name,
         }
         for colummn_name in RECORD_COLUMNS_MAPPING:

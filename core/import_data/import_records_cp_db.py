@@ -7,8 +7,8 @@ from core.import_data.utils import (
     COUNTRY_NAME_MAPPING,
     USAGE_NAME_MAPPING,
     delete_old_cp_records,
-    get_blend_id_by_name,
-    get_substance_id_by_name,
+    get_blend_by_name,
+    get_substance_by_name,
     get_cp_report,
 )
 
@@ -22,6 +22,8 @@ from core.models.country_programme import CountryProgrammeUsage
 logger = logging.getLogger(__name__)
 
 DB_DIR_LIST = ["CP", "CP2012"]
+
+SECTION = "A"
 
 NON_USAGE_FIELDS = {
     "ItemAttirbutesId",
@@ -112,6 +114,7 @@ def get_chemical_dict(file_name):
             chemical_cp_id: {
                 type: "blend" | "substance",
                 id: chemical_id
+                display_name: chemical_name
             }
         }
     """
@@ -121,17 +124,18 @@ def get_chemical_dict(file_name):
 
     for chemical_json in json_data:
         # get substance_id if the item is substance
-        substance_id = get_substance_id_by_name(chemical_json["Name"])
-        if substance_id:
+        substance = get_substance_by_name(chemical_json["Name"])
+        if substance:
             chemical_dict[chemical_json["ItemId"]] = {
                 "type": "substance",
-                "id": substance_id,
+                "id": substance.id,
+                "display_name": chemical_json["Name"],
             }
             continue
 
         # get blend_id if the item is blend
-        blend_id = get_blend_id_by_name(chemical_json["Name"])
-        if not blend_id:
+        blend = get_blend_by_name(chemical_json["Name"])
+        if not blend:
             # if ItemCategoryId is not None, it means the item is for sure chemical
             # so we need to log it
             if chemical_json["ItemCategoryId"] is not None:
@@ -144,7 +148,8 @@ def get_chemical_dict(file_name):
 
         chemical_dict[chemical_json["ItemId"]] = {
             "type": "blend",
-            "id": blend_id,
+            "id": blend.id,
+            "display_name": chemical_json["Name"],
         }
 
     return chemical_dict
@@ -248,10 +253,12 @@ def parse_record_data(item_attributes_file, country_dict, year_dict, chemical_di
             "country_programme_report_id": cp_rep.id,
             "substance_id": substance_id,
             "blend_id": blend_id,
+            "section": SECTION,
             "source_file": item_attributes_file,
             "imports": item["Import"],
             "exports": item["Export"],
             "production": item["Production"],
+            "display_name": chemical_dict[item["ItemId"]]["display_name"],
         }
         record = CountryProgrammeRecord.objects.create(**record_data)
 
