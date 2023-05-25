@@ -106,4 +106,3 @@ class TestGroupSubstances:
         assert usage1.id in response.data[0]["excluded_usages"]
         assert usage3.id in response.data[0]["excluded_usages"]
         assert len(response.data[2]["excluded_usages"]) == 0
-        

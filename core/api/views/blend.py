@@ -22,4 +22,3 @@ class BlendsListAPIView(mixins.ListModelMixin, generics.GenericAPIView):
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
-    
