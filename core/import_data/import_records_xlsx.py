@@ -59,12 +59,12 @@ SECTION = "B"
 
 FILE_LIST = [
     {
-        "file_name": "SectionA(ODPTonnes)-Datafor2019-2022.xlsx",
+        "file_name": "SectionA.xlsx",
         "convert_to_mt": True,
         "section": "A",
     },
     {
-        "file_name": "SectionB(MetricTonnes)-Datafor2019-2022.xlsx",
+        "file_name": "SectionB.xlsx",
         "convert_to_mt": False,
         "section": "B",
     },

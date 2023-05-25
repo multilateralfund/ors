@@ -1,5 +1,5 @@
 from django.core.management import BaseCommand
-from core.import_data.import_records_sectionB import import_records as rec_sectonB
+from core.import_data.import_records_xlsx import import_records as rec_xlsx
 from core.import_data.import_records_cp_db import (
     import_records_from_databases as rec_cp_db,
 )
@@ -26,6 +26,6 @@ class Command(BaseCommand):
         rec_type = kwargs["type"]
 
         if rec_type in ["xlsx_files", "all"]:
-            rec_sectonB()
+            rec_xlsx()
         if rec_type in ["cp_db", "all"]:
             rec_cp_db()
