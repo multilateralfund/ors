@@ -50,3 +50,4 @@ class BlendSerializer(ChemicalsBaseSerializer):
             "excluded_usages",
             "sort_order",
         ]
+        
