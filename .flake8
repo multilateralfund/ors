@@ -15,6 +15,7 @@ require-plugins =
 
 ignore =
     DJ01,
+    DJ08,
     DJ10,
     DJ11,
     W503,
