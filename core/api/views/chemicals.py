@@ -1,9 +1,7 @@
-from django.db.models import Prefetch
 from rest_framework import mixins, generics
 from core.api.serializers import GroupSubstanceSerializer
 
 from core.models.group import Group
-from core.models.usage import ExcludedUsage
 
 
 class GroupSubstancesListAPIView(mixins.ListModelMixin, generics.GenericAPIView):

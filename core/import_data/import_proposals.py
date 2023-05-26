@@ -38,6 +38,7 @@ def create_submission_ods_odp(submission, row):
             "ods_name": row[f"ODS_NAME{i}"],
             "odp": row[f"ODP{i}"],
             "ods_replacement": row[f"ODS_REPLACEMENT{i}"],
+            "submission": submission,
         }
         if data["ods_name"] and data["odp"] and data["ods_replacement"]:
             # if all fields are not empty then create the object

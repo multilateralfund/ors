@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import environ
-import logging
 import os
 from pathlib import Path
 from datetime import timedelta
@@ -27,8 +26,8 @@ env = environ.Env()
 if os.path.exists(str(BASE_DIR / ".env")):
     env.read_env(str(BASE_DIR / ".env"))
 
-BACKEND_HOST = env.list("BACKEND_HOST")
-FRONTEND_HOST = env.list("FRONTEND_HOST")
+BACKEND_HOST = env.list("BACKEND_HOST", default=["localhost"])
+FRONTEND_HOST = env.list("FRONTEND_HOST", default=["http://localhost:3000"])
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -104,11 +103,11 @@ AUTH_USER_MODEL = "core.User"
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-POSTGRES_HOST = env.str("POSTGRES_HOST")
+POSTGRES_HOST = env.str("POSTGRES_HOST", default="localhost")
 POSTGRES_PORT = env.int("POSTGRES_PORT", default=5432)
-POSTGRES_DB = env.str("POSTGRES_DB")
-POSTGRES_USER = env.str("POSTGRES_USER")
-POSTGRES_PASSWORD = env.str("POSTGRES_PASSWORD")
+POSTGRES_DB = env.str("POSTGRES_DB", default="multilateralfund")
+POSTGRES_USER = env.str("POSTGRES_USER", default="multilateralfund")
+POSTGRES_PASSWORD = env.str("POSTGRES_PASSWORD", default="secret")
 
 DATABASES = {
     "default": {
@@ -203,10 +202,10 @@ LOGGING = {
 
 SITE_ID = 1
 
-EMAIL_HOST = env.str("EMAIL_HOST")
-EMAIL_PORT = env.int("EMAIL_PORT")
-EMAIL_HOST_USER = env.str("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD")
+EMAIL_HOST = env.str("EMAIL_HOST", default=None)
+EMAIL_PORT = env.int("EMAIL_PORT", default=None)
+EMAIL_HOST_USER = env.str("EMAIL_HOST_USER", default=None)
+EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD", default=None)
 
 # DRF Integration
 

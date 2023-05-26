@@ -1,0 +1,11 @@
+name: "Check code style"
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  lint-backend:
+    uses: ./.github/workflows/lint-backend.yml
