@@ -11,7 +11,7 @@ class UsageListAPIView(mixins.ListModelMixin, generics.GenericAPIView):
     """
 
     serializer_class = UsageSerializer
-    queryset = Usage.objects.all()
+    queryset = Usage.objects
 
     def get_queryset(self):
         queryset = super().get_queryset()
