@@ -14,6 +14,7 @@ from rest_framework.test import APIClient
 pytestmark = pytest.mark.django_db
 
 
+# pylint: disable=C8008
 class TestGroupSubstances:
     client = APIClient()
 

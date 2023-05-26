@@ -5,7 +5,7 @@ ignore=
 
 ignore-paths=
     core/migrations,
-    .venv,
+    venv,
     frontend,
 
 load-plugins=
