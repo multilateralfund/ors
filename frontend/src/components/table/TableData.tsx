@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { FormProvider, Controller, useForm } from 'react-hook-form'
 import {
   selectSubstancesAnnexA,
+  selectUsagesSectionA,
   setReports,
   deleteReport,
   updateReport,
@@ -17,59 +18,11 @@ import {
 } from '@tanstack/react-table'
 import { Modal } from 'flowbite-react'
 import { IoTrash, IoCreate } from 'react-icons/io5'
+import { Usage } from '@/types/Reports'
 
 import { FormInput } from '../form/FormInput'
 import { FormDateSelect } from '../form/FormDateSelect'
 import { Button } from '../shared/Button'
-
-const RECORDS = [
-  {
-    name: 'CFC-11',
-    id: 1,
-    usages: [
-      {
-        name: 'Aerosol',
-        id: 12,
-      },
-      {
-        name: 'Foam',
-        id: 121,
-      },
-      {
-        name: 'Refrigeration',
-        id: 122,
-        children: [
-          {
-            name: 'Manufacturing',
-            id: 1234,
-          },
-          {
-            name: 'Servicing',
-            id: 12222,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    name: 'CFC-113',
-    id: 2,
-    usages: [
-      {
-        name: 'Solvent',
-        id: 12434343,
-      },
-      {
-        name: 'Process agent',
-        id: 124343431,
-      },
-      {
-        name: 'Lab Use',
-        id: 121435495848574,
-      },
-    ],
-  },
-]
 
 export const TableData = () => {
   const [showModal, setShowModal] = useState(false)
@@ -292,8 +245,13 @@ const AddSubstancesModal = ({
   editValues?: boolean | unknown
   onClose?: () => void
 }) => {
-  const [selectedOption, setSelectedOption] = useState<any>(null)
-  const [selectedRecords, setSelectedRecords] = useState<any>(null)
+  const [selectedSubstance, setSelectedSubstance] = useState<{
+    id: number
+    label: string
+    value: string
+    excluded_usages: number[]
+  } | null>(null)
+  const [selectedUsages, setSelectedUsages] = useState<Usage[] | null>(null)
   const dispatch = useDispatch()
 
   const methods = useForm()
@@ -306,13 +264,13 @@ const AddSubstancesModal = ({
   } = methods
 
   const substances = useSelector(selectSubstancesAnnexA)
+  const usages = useSelector(selectUsagesSectionA)
 
   useEffect(() => {
     if (show && editValues) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
-      const substance = RECORDS.find(item => item.name == editValues?.substance)
-      setSelectedRecords(substance?.usages)
+      setSelectedUsages(substance.usages)
 
       // Update form
 
@@ -322,45 +280,48 @@ const AddSubstancesModal = ({
         setValue(item, editValues[item])
       })
     }
-  }, [editValues, show])
+  }, [editValues, show, setValue])
 
   useEffect(() => {
-    if (selectedOption) {
-      const substance = RECORDS.find(item => item.id === selectedOption.value)
-      setSelectedRecords(substance?.usages)
+    if (selectedSubstance) {
+      setSelectedUsages(
+        usages.filter(
+          usage => !selectedSubstance.excluded_usages.includes(usage.id),
+        ),
+      )
     }
-  }, [selectedOption])
+  }, [selectedSubstance, usages])
 
   useEffect(() => {
     if (isSubmitSuccessful) {
       reset()
       if (onClose) onClose()
     }
-  }, [isSubmitSuccessful, reset])
+  }, [isSubmitSuccessful, reset, onClose])
 
   const ComposeInputsByUsage = () => {
-    if (!selectedRecords) return null
+    if (!selectedUsages) return null
 
     return (
       <>
-        {selectedRecords.map((record: any) => {
-          if (record.children) {
+        {selectedUsages.map(usage => {
+          if (usage.children.length) {
             return (
               <div
                 className="w-full text-left my-3 border-b pb-4"
-                key={record.id}
+                key={usage.id}
               >
                 <div className="my-1 flex items-center before:mt-0.5 before:flex-1 before:border-t before:border-neutral-300 after:mt-0.5 after:flex-1 after:border-t after:border-neutral-300">
                   <p className="mx-2 mb-0 text-sm text-center font-semibold dark:text-neutral-200">
-                    {record.name}
+                    {usage.name}
                   </p>
                 </div>
                 <div className="flex flex-row w-full ">
-                  {record.children.map((child: any, i: number) => {
+                  {usage.children.map((child, i: number) => {
                     return (
                       <div
                         className={`w-full ${
-                          i + 1 === record.children.length ? '' : 'mr-3'
+                          i + 1 === usage.children.length ? '' : 'mr-3'
                         }`}
                         key={child.id}
                       >
@@ -377,10 +338,10 @@ const AddSubstancesModal = ({
             )
           }
           return (
-            <div key={record.id}>
+            <div key={usage.id}>
               <FormInput
-                name={record.name.toLowerCase().replace(' ', '_')}
-                label={record.name}
+                name={usage.name.toLowerCase().replace(' ', '_')}
+                label={usage.name}
                 inline
                 type="number"
               />
@@ -406,8 +367,8 @@ const AddSubstancesModal = ({
       size="2xl"
       onClose={() => {
         reset()
-        setSelectedOption(null)
-        setSelectedRecords(null)
+        setSelectedSubstance(null)
+        setSelectedUsages(null)
         if (onClose) onClose()
       }}
       position="top-center"
@@ -423,13 +384,13 @@ const AddSubstancesModal = ({
                 </label>
                 <Controller
                   control={control}
-                  defaultValue={selectedOption}
+                  defaultValue={selectedSubstance}
                   name="substance"
                   render={({ field: { onChange, value } }) => (
                     <Select
                       defaultValue={value}
                       onChange={value => {
-                        setSelectedOption(value)
+                        setSelectedSubstance(value)
                         onChange(value.label)
                       }}
                       options={substances}
@@ -440,7 +401,7 @@ const AddSubstancesModal = ({
                   )}
                 />
               </div>
-              {selectedRecords && <ComposeInputsByUsage />}
+              {selectedUsages && <ComposeInputsByUsage />}
               <div className="flex flex-col gap-2 mt-3">
                 <div>
                   <FormInput
