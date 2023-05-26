@@ -59,9 +59,9 @@ class SubstanceFactory(factory.django.DjangoModelFactory):
 class BlendFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Blend
-    
-    name = factory.Faker('pystr', max_chars=64)
-    other_names = factory.Faker('pystr', max_chars=100)
+
+    name = factory.Faker("pystr", max_chars=64)
+    other_names = factory.Faker("pystr", max_chars=100)
     odp = factory.Faker("random_int", min=1, max=100)
     gwp = factory.Faker("random_int", min=1, max=100)
     sort_order = factory.Faker("random_int", min=1, max=100)
@@ -73,6 +73,7 @@ class ExcludedUsageSubstFactory(factory.django.DjangoModelFactory):
 
     usage = factory.SubFactory(UsageFactory)
     substance = factory.SubFactory(SubstanceFactory)
+
 
 class ExcludedUsageBlendFactory(factory.django.DjangoModelFactory):
     class Meta:

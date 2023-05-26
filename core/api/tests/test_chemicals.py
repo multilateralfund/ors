@@ -22,8 +22,8 @@ class TestGroupSubstances:
         group1 = GroupFactory.create(name="A")
         group2 = GroupFactory.create(name="B")
         usage1 = UsageFactory.create()
-        usage2 = UsageFactory.create()
         usage3 = UsageFactory.create()
+        UsageFactory.create()
         substance1 = SubstanceFactory.create(group=group1)
         substance2 = SubstanceFactory.create(group=group1)
         substance3 = SubstanceFactory.create(group=group2)
@@ -71,8 +71,8 @@ class TestGroupSubstances:
         blend2 = BlendFactory.create(name="Blend2", sort_order=2)
         blend3 = BlendFactory.create(name="Blend3", sort_order=3)
         usage1 = UsageFactory.create()
-        usage2 = UsageFactory.create()
         usage3 = UsageFactory.create()
+        UsageFactory.create()
 
         # create excluded usages
         ExcludedUsageBlendFactory.create(blend=blend1, usage=usage1)

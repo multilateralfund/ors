@@ -82,7 +82,7 @@ GWP_EPSILON = 0.0001
 def check_headers(df):
     for c in REQUIRED_COLUMNS:
         if c not in df.columns:
-            logger.error(f"Invalid column list.")
+            logger.error("Invalid column list.")
             logger.warning(f"The following columns are required: {REQUIRED_COLUMNS}")
             return False
     return True
@@ -126,9 +126,12 @@ def parse_chemical_name(chemical_name):
     """
     Parse chemical name from row and return chemical_search_name and components list:
         e.g.:
-        R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%) => ("R-404A", [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")])
-        R125/R218/R290 (86%/9%/5%) =>R125/R218/R290 (86%/9%/5%),   [('R125', '86'), ('R218', '9'), ('R290', '5')]
-        R23/Other uncontrolled substances (98%/2%) => R23/Other uncontrolled substances (98%/2%), [(R23, 98), (Other substances, 2)]
+        R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%) =>
+            ("R-404A", [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")])
+        R125/R218/R290 (86%/9%/5%) =>
+            R125/R218/R290 (86%/9%/5%),   [('R125', '86'), ('R218', '9'), ('R290', '5')]
+        R23/Other uncontrolled substances (98%/2%) =>
+            R23/Other uncontrolled substances (98%/2%), [(R23, 98), (Other substances, 2)]
         HFC-23 (use) => HFC-23, []
     @param chemical_name string
     @return tuple => (chemical_search_name, components)
@@ -182,7 +185,7 @@ def check_gwp_value(obj, gwp_value, index_row):
 
     @return boolean
     """
-    if type(gwp_value) == str:
+    if isinstance(gwp_value, str):
         gwp_value = gwp_value.strip()
 
     if not gwp_value:
@@ -190,7 +193,7 @@ def check_gwp_value(obj, gwp_value, index_row):
 
     try:
         gwp_value = decimal.Decimal(gwp_value)
-    except:
+    except decimal.InvalidOperation:
         logger.warning(
             f"⚠️ [row: {index_row}] The gwp value is not a number: {gwp_value}"
         )
@@ -246,10 +249,12 @@ def parse_sheet(df, file_details):
         logger.error("Couldn't parse this sheet")
         return
     usage_dict = get_usages_from_sheet(df)
-    current_country_name = None
-    current_country_obj = None
+    current_country = {
+        "name": None,
+        "obj": None,
+    }
     current_cp = None
-    usages = []
+    cp_usages = []
     for index_row, row in df.iterrows():
         if row["chemical"].strip().lower() == "total":
             continue
@@ -259,28 +264,28 @@ def parse_sheet(df, file_details):
             continue
 
         # another country => another country program
-        if row["country"] != current_country_name:
-            current_country_name = row["country"]
-            current_country_obj = get_country(current_country_name, index_row)
-            if current_country_obj:
+        if row["country"] != current_country["name"]:
+            current_country["name"] = row["country"]
+            current_country["obj"] = get_country(current_country["name"], index_row)
+            if current_country["obj"]:
                 current_cp = get_cp_report(
-                    row["year"], current_country_obj.name, current_country_obj.id
+                    row["year"], current_country["obj"].name, current_country["obj"].id
                 )
 
-        if not current_country_obj:
+        if not current_country["obj"]:
             # we didn't found a country in db:
             continue
 
         # another year => another country program
         if current_cp.year != row["year"]:
             current_cp = get_cp_report(
-                row["year"], current_country_obj.name, current_country_obj.id
+                row["year"], current_country["obj"].name, current_country["obj"].id
             )
 
         # get chemical
         # Other1 from Cuba is R-417A
         chemical_name = row["chemical"]
-        if row["chemical"] == "Other1" and current_country_obj.name == "Cuba":
+        if row["chemical"] == "Other1" and current_country["obj"].name == "Cuba":
             chemical_name = "R-417A"
 
         gwp_value = row.get("gwp", None)
@@ -311,27 +316,25 @@ def parse_sheet(df, file_details):
             "display_name": row["chemical"],
             "source_file": file_details["file_name"],
         }
-        for colummn_name in RECORD_COLUMNS_MAPPING:
+        for colummn_name, filed_name in RECORD_COLUMNS_MAPPING.items():
             if row.get(colummn_name, None):
-                record_data[RECORD_COLUMNS_MAPPING[colummn_name]] = (
-                    decimal.Decimal(row[colummn_name]) / odp_value
-                )
+                record_data[filed_name] = decimal.Decimal(row[colummn_name]) / odp_value
         record = CountryProgrammeRecord.objects.create(**record_data)
 
         # insert records
-        for usage in usage_dict:
-            if not row[usage]:
+        for usage_name, usage in usage_dict.items():
+            if not row[usage_name]:
                 # if the value is empty or is 0 => skip
                 continue
 
             usage_data = {
                 "country_programme_record_id": record.id,
-                "usage_id": usage_dict[usage].id,
-                "quantity": decimal.Decimal(row[usage]) / odp_value,
+                "usage_id": usage.id,
+                "quantity": decimal.Decimal(row[usage_name]) / odp_value,
             }
-            usages.append(CountryProgrammeUsage(**usage_data))
+            cp_usages.append(CountryProgrammeUsage(**usage_data))
 
-    CountryProgrammeUsage.objects.bulk_create(usages)
+    CountryProgrammeUsage.objects.bulk_create(cp_usages)
 
     logger.info("✔ sheet parsed")
 

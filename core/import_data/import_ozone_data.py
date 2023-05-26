@@ -11,8 +11,11 @@ logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
-def import_data(cls, file_path, exclude=[]):
-    with open(file_path, "r") as f:
+def import_data(cls, file_path, exclude=None):
+    if exclude is None:
+        exclude = []
+
+    with open(file_path, "r", encoding="utf8") as f:
         list_data = json.load(f)
 
     for instance_data in list_data:
@@ -104,7 +107,7 @@ def import_alternative_names(
 
     # read data from json file
     file_name = settings.IMPORT_RESOURCES_DIR / file_name
-    with open(file_name, "r") as f:
+    with open(file_name, "r", encoding="utf8") as f:
         list_data = json.load(f)
 
     # create or update instance for alternative names

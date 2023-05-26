@@ -1,5 +1,4 @@
 from django.core.management import BaseCommand
-from django.core.management.base import CommandParser
 from core.import_data.import_agencies import import_agencies
 from core.import_data.import_countries import import_countries
 from core.import_data.import_ozone_data import (
@@ -47,19 +46,19 @@ class Command(BaseCommand):
             ozone_all_data()
             return
 
-        if resource == "groups" or resource == "all":
+        if resource in ["groups", "all"]:
             import_groups()
-        if resource == "substances" or resource == "all":
+        if resource in ["substances", "all"]:
             import_substances()
-        if resource == "blends" or resource == "all":
+        if resource in ["blends", "all"]:
             import_blends()
-        if resource == "blend_components" or resource == "all":
+        if resource in ["blend_components", "all"]:
             import_blend_components()
-        if resource == "countries" or resource == "all":
+        if resource in ["countries", "all"]:
             import_countries()
-        if resource == "usages" or resource == "all":
+        if resource in ["usages", "all"]:
             import_usages()
-        if resource == "sectors" or resource == "all":
+        if resource in ["sectors", "all"]:
             import_project_sectors()
-        if resource == "agencies" or resource == "all":
+        if resource in ["agencies", "all"]:
             import_agencies()
