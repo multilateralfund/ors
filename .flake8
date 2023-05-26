@@ -1,0 +1,20 @@
+[flake8]
+exclude = 
+    .git,
+    .venv,
+    __pycache__,
+    __init__.py,
+    frontend,
+    core/migrations,
+    core/api/tests,
+
+max-line-length = 120
+
+require-plugins =
+    flake8-django
+
+ignore =
+    DJ01,
+    DJ10,
+    DJ11,
+    W503,

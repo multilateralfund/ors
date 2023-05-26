@@ -6,6 +6,8 @@ ignore=
 ignore-paths=
     core/migrations,
     core/api/tests,
+    .venv,
+    frontend,
 
 load-plugins=
     pylint_django,
