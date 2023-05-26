@@ -1,0 +1,22 @@
+name: "Check backend code style"
+
+on:
+  workflow_call:
+
+env:
+  DJANGO_SETTINGS_MODULE: multilateralfund.settings
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+      - name: "Install requirements"
+        run: |
+          pip install -r requirements-dev.txt
+      - name: "Lint backend code"
+        run: |
+          python3 -m pylint --django-settings-module=multilateralfund.settings --rcfile ./.pylintrc **/*.py

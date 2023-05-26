@@ -1,0 +1,13 @@
+-r requirements.txt
+
+black[d]
+coverage
+django-debug-toolbar
+ipdb
+ipython
+ipython-autotime
+pylint-django
+pytest
+pytest-cov
+pytest-django
+pytest-subtests
