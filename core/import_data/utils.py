@@ -59,6 +59,8 @@ def get_substance_by_name(substance_name):
 
     @return: Substance object
     """
+    if not substance_name:
+        return None
 
     substance = Substance.objects.get_by_name(substance_name).first()
     if substance:
@@ -78,6 +80,8 @@ def get_blend_by_name(blend_name):
 
     @return: int blend id
     """
+    if not blend_name:
+        return None
 
     blend = Blend.objects.get_by_name(blend_name).first()
     if blend:
@@ -110,7 +114,7 @@ def get_blend_by_name_or_components(blend_name, components):
                 if not subst:
                     return None
                 prcnt = float(percentage) / 100
-                subst_prcnt.append((subst.id, prcnt))
+                subst_prcnt.append((subst, prcnt))
             except ValueError:
                 return None
 
