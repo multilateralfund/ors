@@ -14,8 +14,8 @@ from core.import_data.import_usages import import_usages
 
 class Command(BaseCommand):
     help = """
-        Import resources 
-        (groups, substances, blends, blend components, usages, 
+        Import resources
+        (groups, substances, blends, blend components, usages,
             sectors, agencies, countries)
     """
 
