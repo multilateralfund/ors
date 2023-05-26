@@ -16,4 +16,4 @@ jobs:
           pip install -r requirements-dev.txt
       - name: "Lint backend code"
         run: |
-          python3 -m pylint --django-settings-module=multilateralfund.settings --rcfile ./.pylintrc **/*.py
+          pylint --django-settings-module=multilateralfund.settings --rcfile ./.pylintrc "**/*.py"
