@@ -4,9 +4,12 @@ ignore=
     manage.py,
 
 ignore-paths=
-    core/migrations
+    core/migrations,
+    core/api/tests,
+
 load-plugins=
-    pylint_django
+    pylint_django,
+    pylint_secure_coding_standard,
 
 [MESSAGES CONTROL]
 

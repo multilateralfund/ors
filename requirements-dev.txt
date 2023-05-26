@@ -8,6 +8,7 @@ ipython
 ipython-autotime
 mypy-extensions
 pylint-django
+pylint-secure-coding-standard
 pytest
 pytest-cov
 pytest-django
