@@ -1,4 +1,3 @@
-from django.db.models import Prefetch
 from rest_framework import mixins, generics
 
 from core.api.serializers import GroupSubstanceSerializer

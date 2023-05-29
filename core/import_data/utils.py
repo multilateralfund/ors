@@ -30,14 +30,14 @@ USAGE_NAME_MAPPING = {
 }
 
 
-def parse_string(str):
+def parse_string(string_value):
     """
     remove white spaces and convert to lower case
     """
-    if not str:
+    if not string_value:
         return None
 
-    return str.strip().lower()
+    return string_value.strip().lower()
 
 
 def delete_old_cp_records(source, logger):
@@ -59,6 +59,8 @@ def get_substance_by_name(substance_name):
 
     @return: Substance object
     """
+    if not substance_name:
+        return None
 
     substance = Substance.objects.get_by_name(substance_name).first()
     if substance:
@@ -78,6 +80,8 @@ def get_blend_by_name(blend_name):
 
     @return: int blend id
     """
+    if not blend_name:
+        return None
 
     blend = Blend.objects.get_by_name(blend_name).first()
     if blend:
@@ -110,8 +114,8 @@ def get_blend_by_name_or_components(blend_name, components):
                 if not subst:
                     return None
                 prcnt = float(percentage) / 100
-                subst_prcnt.append((subst.id, prcnt))
-            except:
+                subst_prcnt.append((subst, prcnt))
+            except ValueError:
                 return None
 
         blend = BlendComponents.objects.get_blend_by_components(subst_prcnt)

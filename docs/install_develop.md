@@ -24,7 +24,7 @@ This document describes installation steps required to install locally for devel
   ```
 - Install dependencies
   ```shell
-  pip install -c requirements.txt
+  pip install -c requirements-dev.txt
   ```
 - Run migrations
   ```shell
@@ -63,7 +63,7 @@ This document describes installation steps required to install locally for devel
 - Update the code with the latest version
 - Update third-party packages required at runtime.
   ```shell
-  pip install -c requirements.txt
+  pip install -c requirements-dev.txt
   ```
 - Update frontend dependencies
   ```shell

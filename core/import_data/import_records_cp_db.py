@@ -54,7 +54,7 @@ def get_country_dict(file_name):
         }
     """
     country_dict = {}
-    with open(file_name, "r") as f:
+    with open(file_name, "r", encoding="utf8") as f:
         json_data = json.load(f)
 
     for country_json in json_data:
@@ -65,7 +65,7 @@ def get_country_dict(file_name):
         if "test" in country_name.lower() or "article 5" in country_name.lower():
             # set test countries to be skipped in the future
             country_dict[country_json["CountryId"]] = {
-                "id": country.id,
+                "id": None,
                 "name": "test",
             }
             continue
@@ -95,7 +95,7 @@ def get_year_dict(file_name):
         - struct: {year_cp_id: year}
     """
     year_dict = {}
-    with open(file_name, "r") as f:
+    with open(file_name, "r", encoding="utf8") as f:
         json_data = json.load(f)
 
     for year_json in json_data:
@@ -119,7 +119,7 @@ def get_chemical_dict(file_name):
         }
     """
     chemical_dict = {}
-    with open(file_name, "r") as f:
+    with open(file_name, "r", encoding="utf8") as f:
         json_data = json.load(f)
 
     for chemical_json in json_data:
@@ -214,7 +214,7 @@ def check_item_attributes(item, country_dict, year_dict, chemical_dict):
 
 
 def parse_record_data(item_attributes_file, country_dict, year_dict, chemical_dict):
-    with open(item_attributes_file, "r") as f:
+    with open(item_attributes_file, "r", encoding="utf8") as f:
         json_data = json.load(f)
 
     current_usages_dict = {}

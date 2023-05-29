@@ -1,0 +1,44 @@
+[MAIN]
+ignore=
+    wsgi.py,
+    manage.py,
+
+ignore-paths=
+    core/migrations,
+    venv,
+    frontend,
+
+load-plugins=
+    pylint_django,
+    pylint_secure_coding_standard,
+
+[MESSAGES CONTROL]
+
+disable=
+    missing-docstring,
+    too-few-public-methods,
+    wrong-import-order,
+    logging-fstring-interpolation,
+    logging-not-lazy,
+    invalid-name,
+
+[FORMAT]
+max-line-length=120
+
+[DESIGN]
+# Maximum number of arguments for function / method
+max-args=6
+
+# Maximum number of locals for function / method body
+max-locals=20
+
+# Maximum number of branch for function / method body
+max-branches=20
+
+[SIMILARITIES]
+
+# Minimum lines number of a similarity.
+min-similarity-lines=6
+
+[REPORTS]
+msg-template={path}:{line}: [{msg_id}({symbol}), {obj}] {msg}

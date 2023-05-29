@@ -4,13 +4,15 @@ from core.models import Substance
 from core.models import Group
 from core.models import Blend
 
-class ChemicalsBaseSerializer(serializers.ModelSerializer):
 
+# pylint: disable=W0223
+class ChemicalsBaseSerializer(serializers.ModelSerializer):
     def get_excluded_usages(self, obj):
-            request = self.context.get("request")
-            if request and request.query_params.get("with_usages", None):
-                return [usage.usage_id for usage in obj.excluded_usages.all()]
-            return []
+        request = self.context.get("request")
+        if request and request.query_params.get("with_usages", None):
+            return [usage.usage_id for usage in obj.excluded_usages.all()]
+        return []
+
 
 # substance serializer with excluded usages if the request has a with_usages query param
 class SubstanceSerializer(ChemicalsBaseSerializer):
@@ -36,6 +38,7 @@ class GroupSubstanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = ["id", "name", "name_alt", "substances"]
+
 
 # blend serializer with excluded usages if the request has a with_usages query param
 class BlendSerializer(ChemicalsBaseSerializer):

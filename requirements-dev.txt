@@ -1,0 +1,16 @@
+-r requirements.txt
+
+black[d]
+coverage
+django-debug-toolbar
+flake8-django
+ipdb
+ipython
+ipython-autotime
+mypy-extensions
+pylint-django
+pylint-secure-coding-standard
+pytest
+pytest-cov
+pytest-django
+pytest-subtests
