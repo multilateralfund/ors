@@ -18,20 +18,30 @@ pytestmark = pytest.mark.django_db
 class TestGroupSubstances:
     client = APIClient()
 
-    def test_group_substances_list(self):
-        # add some groups with substances using factories
-        group1 = GroupFactory.create(name="A")
-        group2 = GroupFactory.create(name="B")
-        usage1 = UsageFactory.create()
-        usage3 = UsageFactory.create()
-        UsageFactory.create()
-        substance1 = SubstanceFactory.create(group=group1)
-        substance2 = SubstanceFactory.create(group=group1)
-        substance3 = SubstanceFactory.create(group=group2)
+    def create_usages(self, count=3):
+        return [UsageFactory.create() for _ in range(count)]
 
-        # create excluded usages
-        ExcludedUsageSubstFactory.create(substance=substance1, usage=usage1)
-        ExcludedUsageSubstFactory.create(substance=substance1, usage=usage3)
+    def create_excluded_usages(self, usages, chemical, type_ch, count=2):
+        if type_ch == "substance":
+            for i in range(count):
+                ExcludedUsageSubstFactory.create(substance=chemical, usage=usages[i])
+        elif type_ch == "blend":
+            for i in range(count):
+                ExcludedUsageBlendFactory.create(blend=chemical, usage=usages[i])
+
+    def test_group_substances_list(self):
+        # add some groups with substances
+        groups = []
+        substances = []
+        for gr_name in ["A", "B"]:
+            group = GroupFactory.create(name=gr_name)
+            groups.append(group)
+            for i in range(2):
+                substances.append(SubstanceFactory.create(group=group, sort_order=i))
+        # add some usages
+        usages = self.create_usages()
+        # add excluded usages for first substance
+        self.create_excluded_usages(usages, substances[0], "substance")
 
         # test without authentication
         url = reverse("group-substances-list")
@@ -40,44 +50,41 @@ class TestGroupSubstances:
 
         self.client.force_authenticate(user=UserFactory())
 
-        # get group substances list
+        # get group substances list without usages
         url = reverse("group-substances-list")
         response = self.client.get(url)
         assert response.status_code == 200
+        # check that groups are sorted by name
         assert len(response.data) == 2
-        assert response.data[0]["id"] == group1.id
-        assert len(response.data[0]["substances"]) == 2
-        assert response.data[0]["substances"][0]["id"] == substance1.id
-        assert response.data[0]["substances"][1]["id"] == substance2.id
-        assert response.data[1]["id"] == group2.id
-        assert len(response.data[1]["substances"]) == 1
-        assert response.data[1]["substances"][0]["id"] == substance3.id
-        assert len(response.data[0]["substances"][0]["excluded_usages"]) == 0
+        for i in range(2):
+            group_data = response.data[i]
+            assert group_data["id"] == groups[i].id
+            # check that every group has 2 substances and no excluded usages
+            assert len(group_data["substances"]) == 2
+            for j in range(2):
+                assert group_data["substances"][j]["id"] == substances[i * 2 + j].id
+                assert len(group_data["substances"][j]["excluded_usages"]) == 0
 
         # get group substances list with usages
         url = reverse("group-substances-list")
         response = self.client.get(url, {"with_usages": True})
         assert response.status_code == 200
         assert len(response.data) == 2
-        assert response.data[0]["id"] == group1.id
+        assert response.data[0]["id"] == groups[0].id
         assert len(response.data[0]["substances"]) == 2
-        assert response.data[0]["substances"][0]["id"] == substance1.id
-        assert response.data[0]["substances"][1]["id"] == substance2.id
-        assert usage1.id in response.data[0]["substances"][0]["excluded_usages"]
-        assert usage3.id in response.data[0]["substances"][0]["excluded_usages"]
+        # check that excluded usages are returned
+        for i in range(2):
+            assert usages[i].id in response.data[0]["substances"][0]["excluded_usages"]
 
     def test_blends_list(self):
-        # add some blends using factories
-        blend1 = BlendFactory.create(name="Blend1", sort_order=1)
-        blend2 = BlendFactory.create(name="Blend2", sort_order=2)
-        blend3 = BlendFactory.create(name="Blend3", sort_order=3)
-        usage1 = UsageFactory.create()
-        usage3 = UsageFactory.create()
-        UsageFactory.create()
-
+        # add some blends
+        blends = []
+        for i in range(3):
+            blends.append(BlendFactory.create(name="Blend" + str(i), sort_order=i))
+        # add some usages
+        usages = self.create_usages()
         # create excluded usages
-        ExcludedUsageBlendFactory.create(blend=blend1, usage=usage1)
-        ExcludedUsageBlendFactory.create(blend=blend1, usage=usage3)
+        self.create_excluded_usages(usages, blends[0], "blend")
 
         # test without authentication
         self.client.logout()
@@ -92,9 +99,8 @@ class TestGroupSubstances:
         response = self.client.get(url)
         assert response.status_code == 200
         assert len(response.data) == 3
-        assert response.data[0]["id"] == blend1.id
-        assert response.data[1]["id"] == blend2.id
-        assert response.data[2]["id"] == blend3.id
+        for i in range(3):
+            assert response.data[i]["id"] == blends[i].id
         assert len(response.data[0]["excluded_usages"]) == 0
 
         # get blends list with usages
@@ -102,8 +108,11 @@ class TestGroupSubstances:
         response = self.client.get(url, {"with_usages": True})
         assert response.status_code == 200
         assert len(response.data) == 3
-        assert response.data[0]["id"] == blend1.id
-        assert response.data[1]["id"] == blend2.id
-        assert usage1.id in response.data[0]["excluded_usages"]
-        assert usage3.id in response.data[0]["excluded_usages"]
+        # check that blends are sorted by sort_order
+        for i in range(3):
+            assert response.data[i]["id"] == blends[i].id
+        # check that excluded usages are returned
+        for i in range(2):
+            assert usages[i].id in response.data[0]["excluded_usages"]
+        # check that excluded usages are not returned for blends without excluded usages
         assert len(response.data[2]["excluded_usages"]) == 0

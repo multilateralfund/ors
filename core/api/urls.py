@@ -13,8 +13,8 @@ urlpatterns = [
     ),
     path("blends/", BlendsListAPIView.as_view(), name="blends-list"),
     path(
-        "country-programme/records/",
+        "country-programme/reports/",
         CountryProgrammeReportListAPIView.as_view(),
-        name="country-programme-list",
+        name="country-programme-report-list",
     ),
 ]
