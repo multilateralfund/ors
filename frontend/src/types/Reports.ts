@@ -28,3 +28,9 @@ export type Usage = {
     parent: number
   }[]
 }
+
+export type SectionsType = {
+  label: string
+  key: string
+  usages: string[]
+}

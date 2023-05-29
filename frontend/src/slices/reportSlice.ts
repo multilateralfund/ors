@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Usage, GroupSubstance } from '@/types/Reports'
+import { Usage, GroupSubstance, SectionsType } from '@/types/Reports'
 import { RootState } from '../store'
-import { usagesSectionA } from '@/utils/mappings'
 
 type ReportData = {
   substance: string
@@ -71,9 +70,13 @@ export const selectSubstancesAnnexA = (state: RootState) =>
       })),
     }))
 
-export const selectUsagesSectionA = (state: RootState) => {
+export const selectUsagesSectionA = (
+  state: RootState,
+  withSection: Partial<SectionsType>,
+) => {
+  const usagesSection = withSection.usages || []
   return state.reports.usage
-    .filter(usage => usagesSectionA.includes(usage.full_name))
+    .filter(usage => usagesSection.includes(usage.full_name))
     .sort((a, b) => a.sort_order - b.sort_order)
 }
 
