@@ -242,6 +242,7 @@ def get_chemical_and_check_gwp(chemical_name, gwp_value, index_row):
     return None, None
 
 
+# pylint: disable=R0914
 def parse_sheet(df, file_details):
     """
     parse the sheet and import the data in database
