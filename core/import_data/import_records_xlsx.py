@@ -7,7 +7,9 @@ import numpy as np
 from django.db import transaction
 from django.conf import settings
 from core.import_data.utils import (
+    CHEMICAL_NAME_MAPPING,
     COUNTRY_NAME_MAPPING,
+    check_empty_row,
     delete_old_cp_records,
     get_blend_by_name_or_components,
     get_cp_report,
@@ -140,6 +142,7 @@ def parse_chemical_name(chemical_name):
     """
     # remove Fullwidth Right Parenthesis
     chemical_name = chemical_name.replace("）", ")").strip()
+    chemical_name = CHEMICAL_NAME_MAPPING.get(chemical_name, chemical_name)
 
     # HFC-23 (use) => HFC-23, []
     if "(use)" in chemical_name:
@@ -239,6 +242,7 @@ def get_chemical_and_check_gwp(chemical_name, gwp_value, index_row):
     return None, None
 
 
+# pylint: disable=R0914
 def parse_sheet(df, file_details):
     """
     parse the sheet and import the data in database
@@ -249,6 +253,7 @@ def parse_sheet(df, file_details):
         logger.error("Couldn't parse this sheet")
         return
     usage_dict = get_usages_from_sheet(df)
+    quantity_columns = list(usage_dict) + list(RECORD_COLUMNS_MAPPING)
     current_country = {
         "name": None,
         "obj": None,
@@ -260,7 +265,7 @@ def parse_sheet(df, file_details):
             continue
 
         # check if the row is empty
-        if not row["total"]:
+        if check_empty_row(row, index_row, quantity_columns, logger):
             continue
 
         # another country => another country program
@@ -323,8 +328,8 @@ def parse_sheet(df, file_details):
 
         # insert records
         for usage_name, usage in usage_dict.items():
-            if not row[usage_name]:
-                # if the value is empty or is 0 => skip
+            # check if the usage is empty or not a number
+            if not row[usage_name] or not isinstance(row[usage_name], (int, float)):
                 continue
 
             usage_data = {

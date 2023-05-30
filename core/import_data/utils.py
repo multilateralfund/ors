@@ -29,6 +29,10 @@ USAGE_NAME_MAPPING = {
     "TobaccoFluffing": "Tobacco fluffing",
 }
 
+CHEMICAL_NAME_MAPPING = {
+    "R-125 (65.1%), R-134a  -  (31.5%)": "R-422D",
+}
+
 
 def parse_string(string_value):
     """
@@ -160,3 +164,30 @@ def get_object_by_name(cls, obj_name, index_row, obj_type_name, logger):
         )
 
     return obj
+
+
+def check_empty_row(row, index_row, quantity_columns, logger):
+    """
+    check if the row has negative values and if it's empty
+    @param row = pandas series
+    @param index_row = int
+    @param usage_dict = dict (column_name: Usage obj)
+
+    @return boolean (True if the row is empty)
+    """
+    # check if the row is empty
+    is_empty = True
+    negative_values = []
+    for colummn_name in quantity_columns:
+        if row.get(colummn_name, None):
+            is_empty = False
+            # check if the value is negative
+            if isinstance(row[colummn_name], (int, float)) and row[colummn_name] < 0:
+                negative_values.append(colummn_name)
+    # log negative values
+    if negative_values:
+        logger.warning(
+            f"⚠️ [row: {index_row}] "
+            f"The following columns have negative values: {negative_values}"
+        )
+    return is_empty
