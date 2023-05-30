@@ -56,7 +56,7 @@ class CountryProgrammeRecord(models.Model):
 
 class CountryProgrammeUsage(models.Model):
     country_programme_record = models.ForeignKey(
-        CountryProgrammeRecord, on_delete=models.CASCADE
+        CountryProgrammeRecord, on_delete=models.CASCADE, related_name="record_usages"
     )
     usage = models.ForeignKey(Usage, on_delete=models.CASCADE)
     quantity = models.DecimalField(max_digits=12, decimal_places=3)
