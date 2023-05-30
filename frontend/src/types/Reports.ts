@@ -34,3 +34,10 @@ export type SectionsType = {
   key: string
   usages: string[]
 }
+
+export type TableColumnType = {
+  header: string
+  accessorKey?: string
+  cell?: () => void
+  columns?: TableColumnType[]
+}

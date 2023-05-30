@@ -2,14 +2,14 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Usage, GroupSubstance, SectionsType } from '@/types/Reports'
 import { RootState } from '../store'
 
-type ReportData = {
+export type ReportDataType = {
   substance: string
 }
 
 interface SubstanceState {
   substances: GroupSubstance[]
   usage: Usage[]
-  data: Partial<ReportData>[]
+  data: Partial<ReportDataType>[]
 }
 
 const initialState: SubstanceState = {
@@ -70,7 +70,7 @@ export const selectSubstancesAnnexA = (state: RootState) =>
       })),
     }))
 
-export const selectUsagesSectionA = (
+export const selectUsagesBySection = (
   state: RootState,
   withSection: Partial<SectionsType>,
 ) => {

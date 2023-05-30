@@ -1,4 +1,5 @@
-import { SectionsType } from '@/types/Reports'
+import { SectionsType, TableColumnType } from '@/types/Reports'
+
 export const usagesSectionA = [
   'Aerosol',
   'Foam',
@@ -30,4 +31,130 @@ export const mappingTabsWithSections: Record<
   3: { label: 'Section D', key: 'D' },
   4: { label: 'Section E', key: 'E' },
   5: { label: 'Section F', key: 'F' },
+}
+
+export const mappingTableColumns: Record<
+  number | string,
+  { columns: TableColumnType[] }
+> = {
+  0: {
+    columns: [
+      {
+        header: 'Substance',
+        accessorKey: '0',
+      },
+      {
+        header: 'Aerosol',
+        accessorKey: '1',
+      },
+      {
+        header: 'Foam',
+        accessorKey: '2',
+      },
+      {
+        header: 'Fire Fighting',
+        accessorKey: '3',
+      },
+      {
+        header: 'Refrigeration',
+        columns: [
+          {
+            header: 'Manufacturing',
+            accessorKey: '4',
+          },
+          {
+            header: 'Servicing',
+            accessorKey: '5',
+          },
+        ],
+      },
+      {
+        header: 'Solvent',
+        accessorKey: '6',
+      },
+      {
+        header: 'Process agent',
+        accessorKey: '7',
+      },
+      {
+        header: 'Lab use',
+        accessorKey: '8',
+      },
+      {
+        header: 'Methy Bromide',
+        columns: [
+          {
+            header: 'QPS',
+            accessorKey: '9',
+          },
+          {
+            header: 'Non-QPS',
+            accessorKey: '10',
+          },
+        ],
+      },
+      {
+        header: 'TOTAL',
+        accessorKey: '11',
+      },
+    ],
+  },
+  1: {
+    columns: [
+      {
+        header: 'Substance',
+        accessorKey: '0',
+      },
+      {
+        header: 'Aerosol',
+        accessorKey: '1',
+      },
+      {
+        header: 'Foam',
+        accessorKey: '2',
+      },
+      {
+        header: 'Fire Fighting',
+        accessorKey: '3',
+      },
+      {
+        header: 'Refrigeration',
+        columns: [
+          {
+            header: 'Manufacturing',
+            columns: [
+              {
+                header: 'Other',
+                accessorKey: '12',
+              },
+              {
+                header: 'AC',
+                accessorKey: '123',
+              },
+              {
+                header: 'Total',
+                accessorKey: '1234',
+              },
+            ],
+          },
+          {
+            header: 'Servicing',
+            accessorKey: '5',
+          },
+        ],
+      },
+      {
+        header: 'Solvent',
+        accessorKey: '6',
+      },
+      {
+        header: 'Other',
+        accessorKey: '7',
+      },
+      {
+        header: 'TOTAL',
+        accessorKey: '11',
+      },
+    ],
+  },
 }

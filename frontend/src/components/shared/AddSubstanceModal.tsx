@@ -1,19 +1,20 @@
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { FormProvider, Controller, useForm } from 'react-hook-form'
+import { Modal } from 'flowbite-react'
+import Select from 'react-select'
+
 import {
   selectSubstancesAnnexA,
-  selectUsagesSectionA,
+  selectUsagesBySection,
   setReports,
   updateReport,
 } from '@/slices/reportSlice'
-import Select from 'react-select'
-
-import { Modal } from 'flowbite-react'
 import { Usage, SectionsType } from '@/types/Reports'
 import { FormInput } from '../form/FormInput'
 import { FormDateSelect } from '../form/FormDateSelect'
 import { Button } from '../shared/Button'
+import { RootState } from '@/store'
 
 export const AddSubstancesModal = ({
   show = false,
@@ -45,8 +46,8 @@ export const AddSubstancesModal = ({
   } = methods
 
   const substances = useSelector(selectSubstancesAnnexA)
-  const usages = useSelector((state: any) =>
-    selectUsagesSectionA(state, withSection),
+  const usages = useSelector((state: RootState) =>
+    selectUsagesBySection(state, withSection),
   )
 
   useEffect(() => {
