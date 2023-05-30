@@ -32,11 +32,11 @@ class Country(models.Model):
 
     objects = CountryManager()
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         verbose_name_plural = "Countries"
+
+    def __str__(self):
+        return self.name
 
 
 class RegionManager(models.Manager):

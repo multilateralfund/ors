@@ -1,4 +1,6 @@
 import factory.fuzzy
+from core.models.country import Country
+from core.models.country_programme import CountryProgrammeReport
 
 from core.models.group import Group
 from core.models.substance import Substance
@@ -81,3 +83,21 @@ class ExcludedUsageBlendFactory(factory.django.DjangoModelFactory):
 
     usage = factory.SubFactory(UsageFactory)
     blend = factory.SubFactory(BlendFactory)
+
+
+class CountryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Country
+
+    name = factory.Faker("pystr", max_chars=50)
+    abbr = factory.Faker("pystr", max_chars=5)
+
+
+# country_programme_report factory
+class CountryProgrammeReportFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = CountryProgrammeReport
+
+    country = factory.SubFactory(CountryFactory)
+    name = factory.Faker("pystr", max_chars=100)
+    year = factory.Faker("random_int", min=1995, max=2030)
