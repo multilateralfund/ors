@@ -6,6 +6,7 @@ from django.conf import settings
 from core.import_data.utils import (
     COUNTRY_NAME_MAPPING,
     USAGE_NAME_MAPPING,
+    check_empty_row,
     delete_old_cp_records,
     get_blend_by_name,
     get_substance_by_name,
@@ -247,6 +248,12 @@ def parse_record_data(item_attributes_file, country_dict, year_dict, chemical_di
 
         # get usages
         set_usages_dict(current_usages_dict, item)
+        quantity_columns = ["Import", "Export", "Production"] + list(
+            current_usages_dict
+        )
+        # check if the row is empty
+        if check_empty_row(item, item["ItemAttirbutesId"], quantity_columns, logger):
+            continue
 
         # create record
         record_data = {
