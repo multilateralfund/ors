@@ -67,12 +67,6 @@ export const AddSubstancesModal = ({
 
   useEffect(() => {
     if (selectedSubstance) {
-      /* setSelectedUsages(prevState => [
-        ...(prevState || []),
-        ...usages.filter(
-          usage => !selectedSubstance.excluded_usages.includes(usage.id),
-        ),
-      ]) */
       setSelectedUsages(
         usages.filter(
           usage => !selectedSubstance.excluded_usages.includes(usage.id),
