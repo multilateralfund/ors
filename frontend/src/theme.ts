@@ -59,8 +59,9 @@ export const flowbiteTheme: CustomFlowbiteTheme = {
   },
   tab: {
     tablist: {
+      base: 'rounded-xl',
       tabitem: {
-        base: 'focus:ring-0 focus:ring-offset-0 py-3 px-3',
+        base: 'focus:ring-0 focus:ring-offset-0 py-2 px-2',
       },
     },
     tabpanel: 'p-0',

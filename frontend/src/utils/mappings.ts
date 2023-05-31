@@ -40,128 +40,97 @@ export const mappingTabsWithSections: Record<number | string, SectionsType> = {
   5: { label: 'Section F', key: 'F' },
 }
 
-export const mappingTableColumns: Record<
-  number | string,
-  { columns: TableColumnType[] }
-> = {
-  0: {
-    columns: [
+export const mappingColumnsWithState = (sectionId: number, state: any) => {
+  console.log(state)
+  const mappingTableColumns: Record<
+    number,
+    TableColumnType<{
+      substance: { id: number; label: string }
+      usage: number[]
+    }>[]
+  > = {
+    0: [
       {
         header: 'Substance',
-        accessorKey: '0',
-      },
-      {
-        header: 'Aerosol',
-        accessorKey: '1',
-      },
-      {
-        header: 'Foam',
-        accessorKey: '2',
-      },
-      {
-        header: 'Fire Fighting',
-        accessorKey: '3',
-      },
-      {
-        header: 'Refrigeration',
-        columns: [
-          {
-            header: 'Manufacturing',
-            accessorKey: '4',
-          },
-          {
-            header: 'Servicing',
-            accessorKey: '5',
-          },
-        ],
-      },
-      {
-        header: 'Solvent',
-        accessorKey: '6',
-      },
-      {
-        header: 'Process agent',
-        accessorKey: '7',
-      },
-      {
-        header: 'Lab use',
-        accessorKey: '8',
-      },
-      {
-        header: 'Methyl Bromide',
-        columns: [
-          {
-            header: 'QPS',
-            accessorKey: '9',
-          },
-          {
-            header: 'Non-QPS',
-            accessorKey: '10',
-          },
-        ],
+        accessorKey: 'substance',
+        cell: cell => {
+          return cell?.row?.original?.substance.label
+        },
       },
       {
         header: 'TOTAL',
-        accessorKey: '11',
+        accessorKey: 'total',
+        cell: cell => {
+          return cell?.row?.original?.usage
+            ?.map(item => Number(item))
+            .reduce((acc, c) => acc + c, 0)
+        },
+      },
+      {
+        header: 'Imports',
+        accessorKey: 'import',
+      },
+      {
+        header: 'Exports',
+        accessorKey: 'export',
+      },
+      {
+        header: 'Production',
+        accessorKey: 'production',
+      },
+      {
+        header: 'Import Quotas',
+        accessorKey: 'import_quotas',
+      },
+      {
+        header: 'Date ban',
+        accessorKey: 'date_ban',
+      },
+      {
+        header: 'Remarks',
+        accessorKey: 'remarks',
       },
     ],
-  },
-  1: {
-    columns: [
+
+    1: [
       {
         header: 'Substance',
-        accessorKey: '0',
-      },
-      {
-        header: 'Aerosol',
-        accessorKey: '1',
-      },
-      {
-        header: 'Foam',
-        accessorKey: '2',
-      },
-      {
-        header: 'Fire Fighting',
-        accessorKey: '3',
-      },
-      {
-        header: 'Refrigeration',
-        columns: [
-          {
-            header: 'Manufacturing',
-            columns: [
-              {
-                header: 'Other',
-                accessorKey: '12',
-              },
-              {
-                header: 'AC',
-                accessorKey: '123',
-              },
-              {
-                header: 'Total',
-                accessorKey: '1234',
-              },
-            ],
-          },
-          {
-            header: 'Servicing',
-            accessorKey: '5',
-          },
-        ],
-      },
-      {
-        header: 'Solvent',
-        accessorKey: '6',
-      },
-      {
-        header: 'Other',
-        accessorKey: '7',
+        accessorKey: 'substance',
       },
       {
         header: 'TOTAL',
-        accessorKey: '11',
+        accessorKey: 'total',
+      },
+      {
+        header: 'Imports',
+        accessorKey: 'imports',
+      },
+      {
+        header: 'Exports',
+        accessorKey: 'exports',
+      },
+      {
+        header: 'Production',
+        accessorKey: 'production',
+      },
+      {
+        header: 'Manufacturing of Blends',
+        accessorKey: 'manufacturing_of_blends',
+      },
+      {
+        header: 'Import Quotas',
+        accessorKey: 'import_quotas',
+      },
+      {
+        header: 'Date ban',
+        accessorKey: 'date_ban',
+      },
+      {
+        header: 'Remarks',
+        accessorKey: 'remarks',
       },
     ],
-  },
+  }
+
+  return mappingTableColumns[sectionId] || []
 }

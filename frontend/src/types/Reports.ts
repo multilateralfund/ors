@@ -1,3 +1,5 @@
+import { Cell } from '@tanstack/react-table'
+
 export type GroupSubstance = {
   id: number
   name: string
@@ -29,6 +31,13 @@ export type Usage = {
   }[]
 }
 
+export enum SectionsEnum {
+  SectionA = 'A',
+  SectionB = 'B',
+  SectionC = 'C',
+  SectionD = 'D',
+}
+
 export type SectionsType = {
   label: string
   key?: string
@@ -36,9 +45,9 @@ export type SectionsType = {
   substances?: string[]
 }
 
-export type TableColumnType = {
+export type TableColumnType<DataT> = {
   header: string
   accessorKey?: string
-  cell?: () => void
-  columns?: TableColumnType[]
+  cell?: (cell?: Cell<DataT, unknown>) => void
+  columns?: TableColumnType<DataT>[]
 }

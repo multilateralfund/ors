@@ -20,11 +20,13 @@ export const AddSubstancesModal = ({
   show = false,
   editValues,
   withSection,
+  sectionId,
   onClose,
 }: {
   show?: boolean
   editValues?: boolean | unknown
   withSection: Partial<SectionsType>
+  sectionId: number
   onClose?: () => void
 }) => {
   const [selectedSubstance, setSelectedSubstance] = useState<{
@@ -112,7 +114,7 @@ export const AddSubstancesModal = ({
                         key={child.id}
                       >
                         <FormInput
-                          name={child.name.toLowerCase().replace(' ', '_')}
+                          name={`usage.${child.id}`}
                           label={child.name}
                           type="number"
                         />
@@ -126,7 +128,7 @@ export const AddSubstancesModal = ({
           return (
             <div key={usage.id}>
               <FormInput
-                name={usage.name.toLowerCase().replace(' ', '_')}
+                name={`usage.${usage.id}`}
                 label={usage.name}
                 inline
                 type="number"
@@ -144,7 +146,15 @@ export const AddSubstancesModal = ({
       return
     }
 
-    dispatch(setReports(values))
+    dispatch(
+      setReports({
+        sectionId: sectionId,
+        values: {
+          ...values,
+          ...{ substance: selectedSubstance },
+        },
+      }),
+    )
   }
 
   return (

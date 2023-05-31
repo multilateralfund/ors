@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import {
   flexRender,
@@ -9,15 +9,9 @@ import {
 } from '@tanstack/react-table'
 import { IoTrash, IoCreate } from 'react-icons/io5'
 import { Button } from '../shared/Button'
-import { SectionsType } from '@/types/Reports'
-import {
-  deleteReport,
-  selectRecordsData,
-  selectUsagesBySection,
-  ReportDataType,
-} from '@/slices/reportSlice'
-import { RootState } from '@/store'
-import { mappingTableColumns } from '@/utils/mappings'
+import { SectionsType, SectionsEnum } from '@/types/Reports'
+import { deleteReport, ReportDataType } from '@/slices/reportSlice'
+import { mappingColumnsWithState } from '@/utils/mappings'
 
 const composeColumnsByUsages = (
   usages: any[],
@@ -48,45 +42,23 @@ const composeColumnsByUsages = (
 export const TableData = ({
   withSection,
   selectedTab,
+  data = [],
   showModal,
   onEditRow,
 }: {
   withSection: SectionsType
   selectedTab: number | string
+  data?: any[]
   showModal?: () => void
   onEditRow?: (row: unknown) => void
 }) => {
-  const data = useSelector(selectRecordsData)
   const dispatch = useDispatch()
 
-  const usagesColumns = mappingTableColumns[selectedTab]?.columns || []
+  console.log(data)
 
+  const columnsBySections = mappingColumnsWithState(Number(selectedTab), data)
   const defaultColumns = useMemo<ColumnDef<Partial<ReportDataType>>[]>(
     () => [
-      {
-        header: 'Imports',
-        accessorKey: 'imports',
-      },
-      {
-        header: 'Exports',
-        accessorKey: 'exports',
-      },
-      {
-        header: 'Production',
-        accessorKey: 'production',
-      },
-      {
-        header: 'Import Quotas',
-        accessorKey: 'import_quotas',
-      },
-      {
-        header: 'Date ban',
-        accessorKey: 'date_ban',
-      },
-      {
-        header: 'Remarks',
-        accessorKey: 'remarks',
-      },
       {
         header: 'Actions',
         accessorKey: 'action',
@@ -118,10 +90,9 @@ export const TableData = ({
     ],
     [],
   )
-
   const columns = useMemo<ColumnDef<Partial<ReportDataType>>[]>(
-    () => [...usagesColumns, ...defaultColumns],
-    [usagesColumns, defaultColumns],
+    () => [...(columnsBySections as unknown as []), ...defaultColumns],
+    [columnsBySections, defaultColumns],
   )
 
   const table = useReactTable({
@@ -135,6 +106,7 @@ export const TableData = ({
       <div className="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
         <div className="mx-auto">
           <TableHeaderActions
+            withSection={withSection}
             onAddSubstances={() => showModal && showModal()}
           />
           <div className="relative overflow-x-auto">
@@ -196,13 +168,20 @@ export const TableData = ({
 }
 
 const TableHeaderActions = ({
+  withSection,
   onAddSubstances,
+  onAddBlends,
 }: {
+  withSection: SectionsType
   onAddSubstances?: () => void
+  onAddBlends?: () => void
 }) => {
   return (
     <div className="flex flex-col md:flex-row items-center justify-end space-y-3 md:space-y-0 md:space-x-4 p-4">
-      <div className="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
+      <div className="w-full md:w-3/6 flex items-center md:space-x-3 ">
+        {withSection?.key == SectionsEnum.SectionB && (
+          <Button onClick={onAddBlends}>+ Add blends</Button>
+        )}
         <Button onClick={onAddSubstances}>+ Add substances</Button>
       </div>
     </div>
