@@ -53,12 +53,13 @@ export const {
   deleteReport,
 } = reportSlice.actions
 
-export const selectSubstancesAnnexA = (state: RootState) =>
+export const selectSubstancesBySection = (
+  state: RootState,
+  withSection: Partial<SectionsType>,
+) =>
   state.reports.substances
     ?.filter(substance =>
-      ['A/I', 'A/II', 'B/I', 'B/II', 'C/I', 'C/II'].includes(
-        substance?.name || '',
-      ),
+      withSection.substances?.includes(substance?.name || ''),
     )
     .map(item => ({
       label: item.name,

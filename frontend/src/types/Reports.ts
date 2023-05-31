@@ -33,6 +33,7 @@ export type SectionsType = {
   label: string
   key?: string
   usages?: string[]
+  substances?: string[]
 }
 
 export type TableColumnType = {

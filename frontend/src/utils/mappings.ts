@@ -22,8 +22,18 @@ export const usagesSectionB = [
 ]
 
 export const mappingTabsWithSections: Record<number | string, SectionsType> = {
-  0: { label: 'Section A', key: 'A', usages: usagesSectionA },
-  1: { label: 'Section B', key: 'B', usages: usagesSectionB },
+  0: {
+    label: 'Section A',
+    key: 'A',
+    usages: usagesSectionA,
+    substances: ['A/I', 'A/II', 'B/I', 'B/II', 'C/I', 'C/II'],
+  },
+  1: {
+    label: 'Section B',
+    key: 'B',
+    usages: usagesSectionB,
+    substances: ['F'],
+  },
   2: { label: 'Section C', key: 'C' },
   3: { label: 'Section D', key: 'D' },
   4: { label: 'Section E', key: 'E' },

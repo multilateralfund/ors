@@ -5,7 +5,7 @@ import { Modal } from 'flowbite-react'
 import Select from 'react-select'
 
 import {
-  selectSubstancesAnnexA,
+  selectSubstancesBySection,
   selectUsagesBySection,
   setReports,
   updateReport,
@@ -45,7 +45,9 @@ export const AddSubstancesModal = ({
     setValue,
   } = methods
 
-  const substances = useSelector(selectSubstancesAnnexA)
+  const substances = useSelector((state: RootState) =>
+    selectSubstancesBySection(state, withSection),
+  )
   const usages = useSelector((state: RootState) =>
     selectUsagesBySection(state, withSection),
   )
