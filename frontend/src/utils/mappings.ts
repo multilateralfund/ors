@@ -78,7 +78,7 @@ export const mappingTableColumns: Record<
         accessorKey: '8',
       },
       {
-        header: 'Methy Bromide',
+        header: 'Methyl Bromide',
         columns: [
           {
             header: 'QPS',
