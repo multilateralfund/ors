@@ -1,13 +1,13 @@
 import { EndpointBuilder } from '@reduxjs/toolkit/dist/query/endpointDefinitions'
 import { setSubstances, setUsage } from '@/slices/reportSlice'
-import { Substance, GroupSubstance, Usage } from '@/types/Reports'
+import { GroupSubstance, Usage } from '@/types/Reports'
 
 export const reportEndpoints = (
   builder: EndpointBuilder<ReturnType<any>, string, 'api'>,
 ) => ({
   getSubstances: builder.query<GroupSubstance[], null>({
     query: () => ({
-      url: '/substances/',
+      url: '/group-substances?with_usages=true',
       method: 'GET',
       credentials: 'include',
     }),

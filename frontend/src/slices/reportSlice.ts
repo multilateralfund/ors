@@ -1,15 +1,15 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Usage, GroupSubstance } from '@/types/Reports'
+import { Usage, GroupSubstance, SectionsType } from '@/types/Reports'
 import { RootState } from '../store'
 
-type ReportData = {
+export type ReportDataType = {
   substance: string
 }
 
 interface SubstanceState {
   substances: GroupSubstance[]
   usage: Usage[]
-  data: Partial<ReportData>[]
+  data: Partial<ReportDataType>[]
 }
 
 const initialState: SubstanceState = {
@@ -55,18 +55,29 @@ export const {
 
 export const selectSubstancesAnnexA = (state: RootState) =>
   state.reports.substances
-    ?.filter(substance => ['A', 'B', 'C'].includes(substance?.annex || ''))
+    ?.filter(substance =>
+      ['A/I', 'A/II', 'B/I', 'B/II', 'C/I', 'C/II'].includes(
+        substance?.name || '',
+      ),
+    )
     .map(item => ({
       label: item.name,
       options: item.substances?.map(subst => ({
         id: subst.id,
         value: subst.id,
         label: subst.name,
+        excluded_usages: subst.excluded_usages,
       })),
     }))
 
-export const selectUsages = (state: RootState) => {
+export const selectUsagesBySection = (
+  state: RootState,
+  withSection: Partial<SectionsType>,
+) => {
+  const usagesSection = withSection.usages || []
   return state.reports.usage
+    .filter(usage => usagesSection.includes(usage.full_name))
+    .sort((a, b) => a.sort_order - b.sort_order)
 }
 
 export const selectRecordsData = (state: RootState) => state.reports.data

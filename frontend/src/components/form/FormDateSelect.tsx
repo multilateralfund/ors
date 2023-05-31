@@ -1,11 +1,9 @@
 import { FC } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 import DatePicker, { ReactDatePickerProps } from 'react-datepicker'
-import { Tooltip } from 'flowbite-react'
 import { twMerge } from 'tailwind-merge'
-import { format, parseISO } from 'date-fns'
 import { InputError } from './InputError'
-import { IoHelpCircleSharp } from 'react-icons/io5'
+import { FormTooltip } from './FormTooltip'
 
 type ButtonSize = 'xs' | 'sm' | 'lg'
 
@@ -56,14 +54,6 @@ export const FormDateSelect: FC<FormDateSelectProps> = ({
     dark:focus:border-blue-500
   `)
 
-  const showTooltip = () => {
-    return (
-      <Tooltip content={tooltip} trigger="hover">
-        <IoHelpCircleSharp />
-      </Tooltip>
-    )
-  }
-
   return (
     <Controller
       control={control}
@@ -74,7 +64,8 @@ export const FormDateSelect: FC<FormDateSelectProps> = ({
           {inline ? (
             <div className="flex flex-row w-full justify-between items-center">
               <div className="flex items-center mb-2 text-sm font-medium text-gray-900 dark:text-white w-1/2 ">
-                <span className="mr-1">{label}</span> {tooltip && showTooltip()}
+                <span className="mr-1">{label}</span>{' '}
+                {tooltip && <FormTooltip content={tooltip} />}
               </div>
               <DatePicker
                 {...otherProps}
@@ -89,7 +80,8 @@ export const FormDateSelect: FC<FormDateSelectProps> = ({
           ) : (
             <>
               <div className="flex items-center mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                <span className="mr-1">{label}</span> {tooltip && showTooltip()}
+                <span className="mr-1">{label}</span>{' '}
+                {tooltip && <FormTooltip content={tooltip} />}
               </div>
               <DatePicker
                 {...otherProps}

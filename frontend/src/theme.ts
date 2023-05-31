@@ -57,4 +57,12 @@ export const flowbiteTheme: CustomFlowbiteTheme = {
       },
     },
   },
+  tab: {
+    tablist: {
+      tabitem: {
+        base: 'focus:ring-0 focus:ring-offset-0 py-3 px-3',
+      },
+    },
+    tabpanel: 'p-0',
+  },
 }
