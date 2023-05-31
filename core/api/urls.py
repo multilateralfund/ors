@@ -1,7 +1,10 @@
 from django.urls import path
 
 from core.api.views.chemicals import GroupSubstancesListAPIView, BlendsListAPIView
-from core.api.views.country_programme import CountryProgrammeReportListAPIView
+from core.api.views.country_programme import (
+    CountryProgrammeRecordListAPIView,
+    CountryProgrammeReportListAPIView,
+)
 from core.api.views.usages import UsageListAPIView
 
 urlpatterns = [
@@ -16,5 +19,10 @@ urlpatterns = [
         "country-programme/reports/",
         CountryProgrammeReportListAPIView.as_view(),
         name="country-programme-report-list",
+    ),
+    path(
+        "country-programme/records/",
+        CountryProgrammeRecordListAPIView.as_view(),
+        name="country-programme-record-list",
     ),
 ]

@@ -1,6 +1,10 @@
 import factory.fuzzy
 from core.models.country import Country
-from core.models.country_programme import CountryProgrammeReport
+from core.models.country_programme import (
+    CountryProgrammeRecord,
+    CountryProgrammeReport,
+    CountryProgrammeUsage,
+)
 
 from core.models.group import Group
 from core.models.substance import Substance
@@ -101,3 +105,29 @@ class CountryProgrammeReportFactory(factory.django.DjangoModelFactory):
     country = factory.SubFactory(CountryFactory)
     name = factory.Faker("pystr", max_chars=100)
     year = factory.Faker("random_int", min=1995, max=2030)
+
+
+class CountryProgrammeRecordFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = CountryProgrammeRecord
+
+    country_programme_report = factory.SubFactory(CountryProgrammeReportFactory)
+    blend = factory.SubFactory(BlendFactory)
+    substance = factory.SubFactory(SubstanceFactory)
+    display_name = factory.Faker("pystr", max_chars=100)
+    section = factory.Faker("pystr", max_chars=2)
+    imports = factory.Faker("random_int", min=1, max=100)
+    import_quotas = factory.Faker("random_int", min=1, max=100)
+    exports = factory.Faker("random_int", min=1, max=100)
+    production = factory.Faker("random_int", min=1, max=100)
+    manufacturing_blends = factory.Faker("random_int", min=1, max=100)
+    remarks = factory.Faker("pystr", max_chars=100)
+
+
+class CountryProgrammeUsageFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = CountryProgrammeUsage
+
+    country_programme_record = factory.SubFactory(CountryProgrammeRecordFactory)
+    usage = factory.SubFactory(UsageFactory)
+    quantity = factory.Faker("random_int", min=1, max=100)

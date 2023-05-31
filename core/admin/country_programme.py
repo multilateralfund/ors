@@ -37,7 +37,7 @@ class CountryProgrammeRecordAdmin(admin.ModelAdmin):
     get_year.short_description = "Year"
 
     def get_list_display(self, request):
-        exclude = ["source_file", "countryprogrammeusage"]
+        exclude = ["source_file", "countryprogrammeusage", "record_usages"]
         return get_final_display_list(CountryProgrammeRecord, exclude) + [
             "get_year",
             "get_country",
