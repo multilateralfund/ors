@@ -21,10 +21,7 @@ export const usagesSectionB = [
   'Methyl bromide',
 ]
 
-export const mappingTabsWithSections: Record<
-  number | string,
-  Partial<SectionsType>
-> = {
+export const mappingTabsWithSections: Record<number | string, SectionsType> = {
   0: { label: 'Section A', key: 'A', usages: usagesSectionA },
   1: { label: 'Section B', key: 'B', usages: usagesSectionB },
   2: { label: 'Section C', key: 'C' },

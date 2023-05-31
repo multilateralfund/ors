@@ -61,7 +61,7 @@ export const TableData = ({
 
   const usagesColumns = mappingTableColumns[selectedTab]?.columns || []
 
-  const defaultColumns = useMemo(
+  const defaultColumns = useMemo<ColumnDef<Partial<ReportDataType>>[]>(
     () => [
       {
         header: 'Imports',

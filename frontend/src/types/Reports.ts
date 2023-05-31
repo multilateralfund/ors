@@ -31,8 +31,8 @@ export type Usage = {
 
 export type SectionsType = {
   label: string
-  key: string
-  usages: string[]
+  key?: string
+  usages?: string[]
 }
 
 export type TableColumnType = {
