@@ -1,13 +1,13 @@
 import { useMemo } from 'react'
 import { useDispatch } from 'react-redux'
-
 import {
   flexRender,
   useReactTable,
   getCoreRowModel,
+  getExpandedRowModel,
   ColumnDef,
 } from '@tanstack/react-table'
-import { IoTrash, IoCreate } from 'react-icons/io5'
+import { IoTrash, IoCreate, IoCaretForward, IoCaretDown } from 'react-icons/io5'
 import { Button } from '../shared/Button'
 import { SectionsType, SectionsEnum } from '@/types/Reports'
 import { deleteReport, ReportDataType } from '@/slices/reportSlice'
@@ -48,15 +48,46 @@ export const TableData = ({
 }: {
   withSection: SectionsType
   selectedTab: number | string
-  data?: any[]
+  data?: ReportDataType[]
   showModal?: () => void
-  onEditRow?: (row: unknown) => void
+  onEditRow?: (row: Partial<ReportDataType>) => void
 }) => {
   const dispatch = useDispatch()
 
-  console.log(data)
-
-  const columnsBySections = mappingColumnsWithState(Number(selectedTab), data)
+  const columnsBySections = mappingColumnsWithState(Number(selectedTab))
+  const substancesColumns = useMemo<ColumnDef<Partial<ReportDataType>>[]>(
+    () => [
+      {
+        header: 'Substance',
+        accessorKey: 'substance',
+        cell: cell => {
+          return cell?.row.getCanExpand() ? (
+            <button
+              className="flex items-center"
+              onClick={cell.row.getToggleExpandedHandler()}
+            >
+              <span className="mr-1">
+                {cell?.row?.original?.substance?.label}{' '}
+              </span>
+              {cell.row.getIsExpanded() ? <IoCaretForward /> : <IoCaretDown />}
+            </button>
+          ) : (
+            cell?.row?.original?.substance?.label
+          )
+        },
+      },
+      {
+        header: 'TOTAL',
+        accessorKey: 'total',
+        cell: cell => {
+          return cell?.row?.original?.usage
+            ?.map(item => Number(item))
+            .reduce((acc, c) => acc + c, 0)
+        },
+      },
+    ],
+    [],
+  )
   const defaultColumns = useMemo<ColumnDef<Partial<ReportDataType>>[]>(
     () => [
       {
@@ -64,9 +95,9 @@ export const TableData = ({
         accessorKey: 'action',
         cell: ({ row: { original } }) => {
           return (
-            <div className="flex w-100 justify-between">
+            <div className="flex w-full justify-center">
               <button
-                className="w-5 h-5"
+                className="w-5 h-5 text-sm text-blue-700 hover:text-blue-800"
                 onClick={() => {
                   if (onEditRow) onEditRow(original)
                 }}
@@ -74,7 +105,7 @@ export const TableData = ({
                 <IoCreate />
               </button>
               <button
-                className="w-5 h-5"
+                className="w-5 h-5 text-sm text-red-600 hover:text-red-900"
                 onClick={() => {
                   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                   //@ts-ignore
@@ -91,14 +122,20 @@ export const TableData = ({
     [],
   )
   const columns = useMemo<ColumnDef<Partial<ReportDataType>>[]>(
-    () => [...(columnsBySections as unknown as []), ...defaultColumns],
-    [columnsBySections, defaultColumns],
+    () => [
+      ...substancesColumns,
+      ...(columnsBySections as unknown as []),
+      ...defaultColumns,
+    ],
+    [substancesColumns, columnsBySections, defaultColumns],
   )
 
   const table = useReactTable({
     data,
     columns,
+    getRowCanExpand: () => true,
     getCoreRowModel: getCoreRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
   })
 
   return (
@@ -110,8 +147,8 @@ export const TableData = ({
             onAddSubstances={() => showModal && showModal()}
           />
           <div className="relative overflow-x-auto">
-            <table className="w-full text-xs text-left text-gray-500 dark:text-gray-400">
-              <thead className="text-xs text-gray-700 bg-gray-100 dark:bg-gray-700 dark:text-gray-400  dark:border-gray-600">
+            <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+              <thead className="text-sm text-gray-700 bg-gray-100 dark:bg-gray-700 dark:text-gray-400  dark:border-gray-600">
                 {table.getHeaderGroups().map(headerGroup => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map(header => {
@@ -156,6 +193,11 @@ export const TableData = ({
                         )
                       })}
                     </tr>
+                    {row.getIsExpanded() && (
+                      <tr>
+                        <td colSpan={row.getVisibleCells().length}>Usages:</td>
+                      </tr>
+                    )}
                   </>
                 ))}
               </tbody>

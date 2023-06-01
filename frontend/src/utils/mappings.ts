@@ -40,8 +40,10 @@ export const mappingTabsWithSections: Record<number | string, SectionsType> = {
   5: { label: 'Section F', key: 'F' },
 }
 
-export const mappingColumnsWithState = (sectionId: number, state: any) => {
-  console.log(state)
+export const mappingColumnsWithState = (
+  sectionId: number,
+  defaultColumns: any[] = [],
+) => {
   const mappingTableColumns: Record<
     number,
     TableColumnType<{
@@ -50,22 +52,7 @@ export const mappingColumnsWithState = (sectionId: number, state: any) => {
     }>[]
   > = {
     0: [
-      {
-        header: 'Substance',
-        accessorKey: 'substance',
-        cell: cell => {
-          return cell?.row?.original?.substance.label
-        },
-      },
-      {
-        header: 'TOTAL',
-        accessorKey: 'total',
-        cell: cell => {
-          return cell?.row?.original?.usage
-            ?.map(item => Number(item))
-            .reduce((acc, c) => acc + c, 0)
-        },
-      },
+      ...defaultColumns,
       {
         header: 'Imports',
         accessorKey: 'import',
@@ -93,14 +80,7 @@ export const mappingColumnsWithState = (sectionId: number, state: any) => {
     ],
 
     1: [
-      {
-        header: 'Substance',
-        accessorKey: 'substance',
-      },
-      {
-        header: 'TOTAL',
-        accessorKey: 'total',
-      },
+      ...defaultColumns,
       {
         header: 'Imports',
         accessorKey: 'imports',

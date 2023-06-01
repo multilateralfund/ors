@@ -9,6 +9,7 @@ import {
   selectUsagesBySection,
   setReports,
   updateReport,
+  ReportDataType,
 } from '@/slices/reportSlice'
 import { Usage, SectionsType } from '@/types/Reports'
 import { FormInput } from '../form/FormInput'
@@ -24,7 +25,7 @@ export const AddSubstancesModal = ({
   onClose,
 }: {
   show?: boolean
-  editValues?: boolean | unknown
+  editValues?: Partial<ReportDataType>
   withSection: Partial<SectionsType>
   sectionId: number
   onClose?: () => void
@@ -56,17 +57,25 @@ export const AddSubstancesModal = ({
 
   useEffect(() => {
     if (show && editValues) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-ignore
-      setSelectedUsages(substance.usages)
+      setSelectedUsages(
+        usages.filter(
+          usage => !editValues?.substance?.excluded_usages.includes(usage.id),
+        ),
+      )
 
       // Update form
-
-      Object.keys(editValues).forEach(item => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
-        setValue(item, editValues[item])
+      Object.entries(editValues).forEach(([key, item]) => {
+        console.log(key, item)
+        if (key !== 'usage') {
+          setValue(key, item)
+        }
       })
+
+      if (editValues.usage) {
+        editValues.usage.forEach((value, key) => {
+          setValue(`usage.${key}`, value)
+        })
+      }
     }
   }, [editValues, show, setValue])
 
@@ -83,6 +92,7 @@ export const AddSubstancesModal = ({
   useEffect(() => {
     if (isSubmitSuccessful) {
       reset()
+      setSelectedSubstance(null)
       if (onClose) onClose()
     }
   }, [isSubmitSuccessful, reset, onClose])
@@ -142,7 +152,12 @@ export const AddSubstancesModal = ({
 
   const onSubmit = (values: any) => {
     if (editValues) {
-      dispatch(updateReport(values))
+      dispatch(
+        updateReport({
+          sectionId: sectionId,
+          values,
+        }),
+      )
       return
     }
 
@@ -192,7 +207,7 @@ export const AddSubstancesModal = ({
                       options={substances}
                       className="react-select-container"
                       classNamePrefix="react-select"
-                      isDisabled={editValues as boolean}
+                      isDisabled={editValues as unknown as boolean}
                     />
                   )}
                 />

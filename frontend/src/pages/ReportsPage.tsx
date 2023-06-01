@@ -4,14 +4,17 @@ import { useSelector } from 'react-redux'
 import { TableData } from '@/components/table/TableData'
 import { AddSubstancesModal } from '@/components/shared/AddSubstanceModal'
 import { useGetSubstancesQuery, useGetUsageQuery } from '@/services/api'
-import { selectRecordsDataBySection } from '@/slices/reportSlice'
+import {
+  selectRecordsDataBySection,
+  ReportDataType,
+} from '@/slices/reportSlice'
 import { mappingTabsWithSections } from '@/utils/mappings'
 import { RootState } from '@/store'
 
 export const ReportsPage: FC = function () {
   const [selectedTab, setSelectedTab] = useState(0)
   const [showModal, setShowModal] = useState(false)
-  const [editRow, setEditRow] = useState<unknown>(false)
+  const [editRow, setEditRow] = useState<Partial<ReportDataType>>()
 
   useGetSubstancesQuery(null)
   useGetUsageQuery(null)
@@ -62,7 +65,7 @@ export const ReportsPage: FC = function () {
         sectionId={selectedTab}
         onClose={() => {
           setShowModal(false)
-          setEditRow(false)
+          setEditRow(undefined)
         }}
       />
     </div>

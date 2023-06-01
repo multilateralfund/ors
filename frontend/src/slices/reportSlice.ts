@@ -3,17 +3,17 @@ import { Usage, GroupSubstance, SectionsType } from '@/types/Reports'
 import { RootState } from '../store'
 
 export type ReportDataType = {
-  substance: {
-    id: number
-    label: string
-  }
-  usages: any[]
+  substance: { id: number; label: string; excluded_usages: number[] }
+  usage: number[]
+  import: number
+  export: number
+  production: number
 }
 
 interface SubstanceState {
   substances: GroupSubstance[]
   usage: Usage[]
-  data: Record<string, any[]>
+  data: Record<string, Partial<ReportDataType>[]>
 }
 
 const initialState: SubstanceState = {
@@ -34,7 +34,10 @@ export const reportSlice = createSlice({
     },
     setReports: (
       state,
-      action: PayloadAction<{ sectionId: number; values: any }>,
+      action: PayloadAction<{
+        sectionId: number
+        values: Partial<ReportDataType>
+      }>,
     ) => {
       const { sectionId, values } = action.payload
       if (!state.data[`section-${sectionId}`]) {
@@ -45,17 +48,28 @@ export const reportSlice = createSlice({
 
       return state
     },
-    // updateReport: (state, action: PayloadAction<any>) => {
-    //   const substanceIndex = state.data.findIndex(
-    //     item => item.substance == action.payload.substance,
-    //   )
-    //   state.data[substanceIndex] = action.payload
-    // },
-    // deleteReport: (state, action: PayloadAction<any>) => {
-    //   state.data = state.data.filter(
-    //     item => item.substance != action.payload.substance,
-    //   )
-    // },
+    updateReport: (
+      state,
+      action: PayloadAction<{
+        sectionId: number
+        values: Partial<ReportDataType>
+      }>,
+    ) => {
+      const { sectionId, values } = action.payload
+      const substanceId = state.data[`section-${sectionId}`].findIndex(
+        item => item.substance?.id === values.substance?.id,
+      )
+      state.data[`section-${sectionId}`][substanceId] = values
+      // const substanceIndex = state.data.findIndex(
+      //   item => item.substance == action.payload.substance,
+      // )
+      // state.data[substanceIndex] = action.payload
+    },
+    deleteReport: (state, action: PayloadAction<any>) => {
+      // state.data = state.data.filter(
+      //   item => item.substance != action.payload.substance,
+      // )
+    },
   },
 })
 
