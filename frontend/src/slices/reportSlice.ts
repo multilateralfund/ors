@@ -3,17 +3,20 @@ import { Usage, GroupSubstance, SectionsType } from '@/types/Reports'
 import { RootState } from '../store'
 
 export type ReportDataType = {
-  substance: { id: number; label: string; excluded_usages: number[] }
-  usage: number[]
-  import: number
-  export: number
-  production: number
+  substance:
+    | { id: number; label: string; excluded_usages: number[] }
+    | null
+    | undefined
+  usage?: number[]
+  import?: number
+  export?: number
+  production?: number
 }
 
 interface SubstanceState {
   substances: GroupSubstance[]
   usage: Usage[]
-  data: Record<string, Partial<ReportDataType>[]>
+  data: Record<string, ReportDataType[]>
 }
 
 const initialState: SubstanceState = {
@@ -36,7 +39,7 @@ export const reportSlice = createSlice({
       state,
       action: PayloadAction<{
         sectionId: number
-        values: Partial<ReportDataType>
+        values: ReportDataType
       }>,
     ) => {
       const { sectionId, values } = action.payload
@@ -52,7 +55,7 @@ export const reportSlice = createSlice({
       state,
       action: PayloadAction<{
         sectionId: number
-        values: Partial<ReportDataType>
+        values: ReportDataType
       }>,
     ) => {
       const { sectionId, values } = action.payload
@@ -84,7 +87,17 @@ export const {
 export const selectSubstancesBySection = (
   state: RootState,
   withSection: Partial<SectionsType>,
-) =>
+): {
+  label: string
+  options:
+    | {
+        id: number
+        value: number
+        label: string
+        excluded_usages: number[]
+      }[]
+    | undefined
+}[] =>
   state.reports.substances
     ?.filter(substance =>
       withSection.substances?.includes(substance?.name || ''),
@@ -111,6 +124,7 @@ export const selectUsagesBySection = (
 export const selectRecordsDataBySection = (
   state: RootState,
   sectionId: number,
-) => state.reports.data[`section-${sectionId}`] || []
+): ReportDataType[] | undefined =>
+  state.reports.data[`section-${sectionId}`] || []
 
 export const reportsReducer = reportSlice.reducer

@@ -48,14 +48,14 @@ export const TableData = ({
 }: {
   withSection: SectionsType
   selectedTab: number | string
-  data?: ReportDataType[]
+  data?: ReportDataType[] | undefined
   showModal?: () => void
   onEditRow?: (row: Partial<ReportDataType>) => void
 }) => {
   const dispatch = useDispatch()
 
   const columnsBySections = mappingColumnsWithState(Number(selectedTab))
-  const substancesColumns = useMemo<ColumnDef<Partial<ReportDataType>>[]>(
+  const substancesColumns = useMemo<ColumnDef<ReportDataType>[]>(
     () => [
       {
         header: 'Substance',
@@ -88,7 +88,7 @@ export const TableData = ({
     ],
     [],
   )
-  const defaultColumns = useMemo<ColumnDef<Partial<ReportDataType>>[]>(
+  const defaultColumns = useMemo<ColumnDef<ReportDataType>[]>(
     () => [
       {
         header: 'Actions',
@@ -121,7 +121,7 @@ export const TableData = ({
     ],
     [],
   )
-  const columns = useMemo<ColumnDef<Partial<ReportDataType>>[]>(
+  const columns = useMemo<ColumnDef<ReportDataType>[]>(
     () => [
       ...substancesColumns,
       ...(columnsBySections as unknown as []),

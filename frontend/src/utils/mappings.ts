@@ -83,11 +83,11 @@ export const mappingColumnsWithState = (
       ...defaultColumns,
       {
         header: 'Imports',
-        accessorKey: 'imports',
+        accessorKey: 'import',
       },
       {
         header: 'Exports',
-        accessorKey: 'exports',
+        accessorKey: 'export',
       },
       {
         header: 'Production',

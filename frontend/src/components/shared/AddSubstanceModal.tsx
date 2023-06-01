@@ -33,13 +33,12 @@ export const AddSubstancesModal = ({
   const [selectedSubstance, setSelectedSubstance] = useState<{
     id: number
     label: string
-    value: string
     excluded_usages: number[]
-  } | null>(null)
+  } | null>()
   const [selectedUsages, setSelectedUsages] = useState<Usage[] | null>(null)
   const dispatch = useDispatch()
 
-  const methods = useForm()
+  const methods = useForm<ReportDataType>()
   const {
     reset,
     handleSubmit,
@@ -48,7 +47,7 @@ export const AddSubstancesModal = ({
     setValue,
   } = methods
 
-  const substances = useSelector((state: RootState) =>
+  const substances: any = useSelector((state: RootState) =>
     selectSubstancesBySection(state, withSection),
   )
   const usages = useSelector((state: RootState) =>
@@ -63,14 +62,13 @@ export const AddSubstancesModal = ({
         ),
       )
 
-      // Update form
-      Object.entries(editValues).forEach(([key, item]) => {
-        console.log(key, item)
+      const values = Object.keys(editValues) as (keyof typeof editValues)[]
+
+      values.forEach(key => {
         if (key !== 'usage') {
-          setValue(key, item)
+          setValue(key, editValues[key])
         }
       })
-
       if (editValues.usage) {
         editValues.usage.forEach((value, key) => {
           setValue(`usage.${key}`, value)
@@ -92,7 +90,7 @@ export const AddSubstancesModal = ({
   useEffect(() => {
     if (isSubmitSuccessful) {
       reset()
-      setSelectedSubstance(null)
+      setSelectedSubstance(undefined)
       if (onClose) onClose()
     }
   }, [isSubmitSuccessful, reset, onClose])
@@ -150,7 +148,7 @@ export const AddSubstancesModal = ({
     )
   }
 
-  const onSubmit = (values: any) => {
+  const onSubmit = handleSubmit(values => {
     if (editValues) {
       dispatch(
         updateReport({
@@ -170,7 +168,7 @@ export const AddSubstancesModal = ({
         },
       }),
     )
-  }
+  })
 
   return (
     <Modal
@@ -178,7 +176,7 @@ export const AddSubstancesModal = ({
       size="2xl"
       onClose={() => {
         reset()
-        setSelectedSubstance(null)
+        setSelectedSubstance(undefined)
         setSelectedUsages(null)
         if (onClose) onClose()
       }}
@@ -186,7 +184,7 @@ export const AddSubstancesModal = ({
     >
       <Modal.Header>{editValues ? 'Edit' : 'Add'} substances</Modal.Header>
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(d => onSubmit(d))}>
+        <form onSubmit={onSubmit}>
           <Modal.Body>
             <div className="flex flex-col gap-2">
               <div className="mb-2">
@@ -202,7 +200,7 @@ export const AddSubstancesModal = ({
                       defaultValue={value}
                       onChange={value => {
                         setSelectedSubstance(value)
-                        onChange(value.label)
+                        onChange(value?.label)
                       }}
                       options={substances}
                       className="react-select-container"
