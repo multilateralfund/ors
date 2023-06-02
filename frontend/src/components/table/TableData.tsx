@@ -1,32 +1,31 @@
 import { useMemo } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   flexRender,
   useReactTable,
   getCoreRowModel,
   getExpandedRowModel,
   ColumnDef,
+  Row,
 } from '@tanstack/react-table'
 import { IoTrash, IoCreate, IoCaretForward, IoCaretDown } from 'react-icons/io5'
 import { Button } from '../shared/Button'
 import { SectionsType, SectionsEnum } from '@/types/Reports'
-import { deleteReport, ReportDataType } from '@/slices/reportSlice'
+import { RootState } from '@/store'
+import {
+  deleteReport,
+  selectUsagesBySection,
+  ReportDataType,
+} from '@/slices/reportSlice'
 import { mappingColumnsWithState } from '@/utils/mappings'
 
-const composeColumnsByUsages = (
-  usages: any[],
-  excludedUsages: string[],
-): any[] => {
+const composeColumnsByUsages = (usages: any[]): any[] => {
   const columns = []
   for (let i = 0; i < usages.length; i++) {
-    if (!excludedUsages.includes(usages[i].full_name)) {
-      continue
-    }
-
     if (usages[i] && usages[i].children.length) {
       columns.push({
         header: usages[i].name,
-        columns: composeColumnsByUsages(usages[i].children, excludedUsages),
+        columns: composeColumnsByUsages(usages[i].children),
       })
     } else {
       columns.push({
@@ -69,7 +68,7 @@ export const TableData = ({
               <span className="mr-1">
                 {cell?.row?.original?.substance?.label}{' '}
               </span>
-              {cell.row.getIsExpanded() ? <IoCaretForward /> : <IoCaretDown />}
+              {cell.row.getIsExpanded() ? <IoCaretDown /> : <IoCaretForward />}
             </button>
           ) : (
             cell?.row?.original?.substance?.label
@@ -178,10 +177,7 @@ export const TableData = ({
               <tbody>
                 {table.getRowModel().rows.map(row => (
                   <>
-                    <tr
-                      key={row.id}
-                      className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
+                    <tr key={row.id} className="border-b dark:border-gray-600">
                       {row.getVisibleCells().map(cell => {
                         return (
                           <td key={cell.id} className="px-2 py-2">
@@ -195,7 +191,9 @@ export const TableData = ({
                     </tr>
                     {row.getIsExpanded() && (
                       <tr>
-                        <td colSpan={row.getVisibleCells().length}>Usages:</td>
+                        <td colSpan={row.getVisibleCells().length}>
+                          <TableExpandedRow row={row} />
+                        </td>
                       </tr>
                     )}
                   </>
@@ -226,6 +224,141 @@ const TableHeaderActions = ({
         )}
         <Button onClick={onAddSubstances}>+ Add substances</Button>
       </div>
+    </div>
+  )
+}
+
+const TableExpandedRow = ({ row }: { row: Row<ReportDataType> }) => {
+  // const usages = useSelector((state: RootState) =>
+  //   selectUsagesBySection(state, withSection),
+  // )
+  // console.log(row.original.usage)
+  // console.log(usages)
+
+  // const columnsUsages = usages.filter(
+  //   usage => row.original.usage && row.original.usage[usage.id],
+  // )
+
+  // const newData: any[] = []
+  const data: any = []
+  const newData: Record<string, number> = {}
+  row.original.usage?.forEach((value, index) => {
+    newData[`usage-${index}`] = Number(value)
+  })
+
+  data.push(newData)
+
+  // console.log(newData)
+
+  // Hardcoded until we have the response from API
+  const columns = useMemo(
+    () => [
+      {
+        header: 'Aerosol',
+        accessorKey: 'usage-1',
+      },
+      {
+        header: 'Foam',
+        accessorKey: 'usage-2',
+      },
+      {
+        header: 'Fire fighting',
+        accessorKey: 'usage-3',
+      },
+      {
+        header: 'Refrigeration',
+        columns: [
+          {
+            header: 'Manufacturing',
+            accessorKey: 'usage-5',
+          },
+          {
+            header: 'Servicing',
+            accessorKey: 'usage-8',
+          },
+        ],
+      },
+      {
+        header: 'Solvent',
+        accessorKey: 'usage-9',
+      },
+      {
+        header: 'Process agent',
+        accessorKey: 'usage-13',
+      },
+      {
+        header: 'Lab Use',
+        accessorKey: 'usage-14',
+      },
+      {
+        header: 'Methyl bromide',
+        columns: [
+          {
+            header: 'QPS',
+            accessorKey: 'usage-16',
+          },
+          {
+            header: 'Non-QPS',
+            accessorKey: 'usage-17',
+          },
+        ],
+      },
+    ],
+    [],
+  )
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-nocheck
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  })
+
+  return (
+    <div className="relative overflow-x-auto shadow-md p-3">
+      <table className="w-full text-xs text-left text-gray-500 dark:text-gray-400">
+        <thead className="text-xs text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          {table.getHeaderGroups().map(headerGroup => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map(header => {
+                return (
+                  <th
+                    key={header.id}
+                    colSpan={header.colSpan}
+                    scope="col"
+                    className="px-2 py-1 border text-center dark:border-gray-600"
+                  >
+                    {header.isPlaceholder ? null : (
+                      <>
+                        <div className="text-[0.65rem]">
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </th>
+                )
+              })}
+            </tr>
+          ))}
+        </thead>
+        <tbody>
+          {table.getRowModel().rows.map(row => (
+            <tr key={row.id} className="dark:border-gray-600">
+              {row.getVisibleCells().map(cell => {
+                return (
+                  <td key={cell.id} className="px-2 py-2">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                )
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
