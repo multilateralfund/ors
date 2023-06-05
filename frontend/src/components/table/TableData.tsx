@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { Fragment, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   flexRender,
@@ -176,8 +176,8 @@ export const TableData = ({
               </thead>
               <tbody>
                 {table.getRowModel().rows.map(row => (
-                  <>
-                    <tr key={row.id} className="border-b dark:border-gray-600">
+                  <Fragment key={row.id}>
+                    <tr className="border-b dark:border-gray-600">
                       {row.getVisibleCells().map(cell => {
                         return (
                           <td key={cell.id} className="px-2 py-2">
@@ -192,11 +192,11 @@ export const TableData = ({
                     {row.getIsExpanded() && (
                       <tr>
                         <td colSpan={row.getVisibleCells().length}>
-                          <TableExpandedRow row={row} />
+                          <TableExpandedRow substance={row} />
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 ))}
               </tbody>
             </table>
@@ -228,7 +228,11 @@ const TableHeaderActions = ({
   )
 }
 
-const TableExpandedRow = ({ row }: { row: Row<ReportDataType> }) => {
+const TableExpandedRow = ({
+  substance,
+}: {
+  substance: Row<ReportDataType>
+}) => {
   // const usages = useSelector((state: RootState) =>
   //   selectUsagesBySection(state, withSection),
   // )
@@ -240,15 +244,10 @@ const TableExpandedRow = ({ row }: { row: Row<ReportDataType> }) => {
   // )
 
   // const newData: any[] = []
-  const data: any = []
   const newData: Record<string, number> = {}
-  row.original.usage?.forEach((value, index) => {
+  substance.original.usage?.forEach((value, index) => {
     newData[`usage-${index}`] = Number(value)
   })
-
-  data.push(newData)
-
-  // console.log(newData)
 
   // Hardcoded until we have the response from API
   const columns = useMemo(
@@ -309,8 +308,8 @@ const TableExpandedRow = ({ row }: { row: Row<ReportDataType> }) => {
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-nocheck
-  const table = useReactTable({
-    data,
+  const usagesTable = useReactTable({
+    data: [],
     columns,
     getCoreRowModel: getCoreRowModel(),
   })
@@ -319,7 +318,7 @@ const TableExpandedRow = ({ row }: { row: Row<ReportDataType> }) => {
     <div className="relative overflow-x-auto shadow-md p-3">
       <table className="w-full text-xs text-left text-gray-500 dark:text-gray-400">
         <thead className="text-xs text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-          {table.getHeaderGroups().map(headerGroup => (
+          {usagesTable.getHeaderGroups().map(headerGroup => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map(header => {
                 return (
@@ -346,17 +345,13 @@ const TableExpandedRow = ({ row }: { row: Row<ReportDataType> }) => {
           ))}
         </thead>
         <tbody>
-          {table.getRowModel().rows.map(row => (
-            <tr key={row.id} className="dark:border-gray-600">
-              {row.getVisibleCells().map(cell => {
-                return (
-                  <td key={cell.id} className="px-2 py-2">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                )
-              })}
-            </tr>
-          ))}
+          <tr className="dark:border-gray-600">
+            {usagesTable.getHeaderGroups()[1].headers.map(header => (
+              <td key={header.id} className="border-b px-2 py-2">
+                {newData[header.id] || '-'}
+              </td>
+            ))}
+          </tr>
         </tbody>
       </table>
     </div>
