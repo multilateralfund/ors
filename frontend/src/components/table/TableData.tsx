@@ -236,14 +236,10 @@ const TableExpandedRow = ({
   // const usages = useSelector((state: RootState) =>
   //   selectUsagesBySection(state, withSection),
   // )
-  // console.log(row.original.usage)
-  // console.log(usages)
 
   // const columnsUsages = usages.filter(
   //   usage => row.original.usage && row.original.usage[usage.id],
   // )
-
-  // const newData: any[] = []
   const newData: Record<string, number> = {}
   substance.original.usage?.forEach((value, index) => {
     newData[`usage-${index}`] = Number(value)
@@ -306,8 +302,6 @@ const TableExpandedRow = ({
     [],
   )
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-nocheck
   const usagesTable = useReactTable({
     data: [],
     columns,
