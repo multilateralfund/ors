@@ -5,14 +5,16 @@ from core.models.country_programme import (
     CountryProgrammeReport,
     CountryProgrammeUsage,
 )
+from core.models.country import Country
+
+
+from admin_auto_filters.filters import AutocompleteFilterFactory
 
 
 @admin.register(CountryProgrammeReport)
 class CountryProgrammeReportAdmin(admin.ModelAdmin):
-    search_fields = [
-        "name",
-    ]
-    list_filter = ["year", "country"]
+    search_fields = ["name", "year", "country__name"]
+    list_filter = [AutocompleteFilterFactory("country", "country"), "year"]
 
     def get_list_display(self, request):
         exclude = ["price", "countryprogrammerecord", "usage", "comment"]
@@ -22,8 +24,10 @@ class CountryProgrammeReportAdmin(admin.ModelAdmin):
 @admin.register(CountryProgrammeRecord)
 class CountryProgrammeRecordAdmin(admin.ModelAdmin):
     list_filter = [
+        AutocompleteFilterFactory("country", "country_programme_report__country"),
+        AutocompleteFilterFactory("blend", "blend"),
+        AutocompleteFilterFactory("substance", "substance"),
         "country_programme_report__year",
-        "country_programme_report__country",
     ]
 
     def get_country(self, obj):
