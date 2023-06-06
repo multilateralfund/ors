@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "rest_framework_simplejwt",
     "admin_auto_filters",
+    "drf_yasg",
     "constance",
     "constance.backends.database",
     "core",
@@ -122,7 +123,7 @@ DATABASES = {
     }
 }
 
-
+POSTGRES_PORT
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
