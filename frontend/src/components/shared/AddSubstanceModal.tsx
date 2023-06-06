@@ -70,13 +70,6 @@ export const AddSubstancesModal = ({
     name: 'substance',
   })
 
-  const getSubstanceBySelection = () =>
-    substances
-      .find(item =>
-        item.options?.find(subst => subst.id === Number(selectedSubstance)),
-      )
-      ?.options?.find(subst => subst.id === Number(selectedSubstance))
-
   useEffect(() => {
     if (show && editValues) {
       setSelectedUsages(
@@ -151,7 +144,7 @@ export const AddSubstancesModal = ({
         sectionId: sectionId,
         values: {
           ...values,
-          ...{ substance: selectedSubstance },
+          ...{ substance: currentSubstance },
         },
       }),
     )

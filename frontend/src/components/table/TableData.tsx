@@ -11,12 +11,7 @@ import {
 import { IoTrash, IoCreate, IoCaretForward, IoCaretDown } from 'react-icons/io5'
 import { Button } from '../shared/Button'
 import { SectionsType, SectionsEnum } from '@/types/Reports'
-import { RootState } from '@/store'
-import {
-  deleteReport,
-  selectUsagesBySection,
-  ReportDataType,
-} from '@/slices/reportSlice'
+import { deleteReport, ReportDataType } from '@/slices/reportSlice'
 import { mappingColumnsWithState } from '@/utils/mappings'
 
 const composeColumnsByUsages = (usages: any[]): any[] => {
@@ -106,9 +101,12 @@ export const TableData = ({
               <button
                 className="w-5 h-5 text-sm text-red-600 hover:text-red-900"
                 onClick={() => {
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  //@ts-ignore
-                  dispatch(deleteReport({ substance: original?.substance }))
+                  dispatch(
+                    deleteReport({
+                      substanceId: Number(original?.substance?.id),
+                      sectionId: Number(selectedTab),
+                    }),
+                  )
                 }}
               >
                 <IoTrash />
@@ -118,7 +116,7 @@ export const TableData = ({
         },
       },
     ],
-    [],
+    [selectedTab],
   )
   const columns = useMemo<ColumnDef<ReportDataType>[]>(
     () => [

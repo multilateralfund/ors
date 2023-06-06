@@ -63,15 +63,15 @@ export const reportSlice = createSlice({
         item => item.substance?.id === values.substance?.id,
       )
       state.data[`section-${sectionId}`][substanceId] = values
-      // const substanceIndex = state.data.findIndex(
-      //   item => item.substance == action.payload.substance,
-      // )
-      // state.data[substanceIndex] = action.payload
     },
-    deleteReport: (state, action: PayloadAction<any>) => {
-      // state.data = state.data.filter(
-      //   item => item.substance != action.payload.substance,
-      // )
+    deleteReport: (
+      state,
+      action: PayloadAction<{ sectionId: number; substanceId: number }>,
+    ) => {
+      const { sectionId, substanceId } = action.payload
+      state.data[`section-${sectionId}`] = state.data[
+        `section-${sectionId}`
+      ].filter(item => item.substance?.id != substanceId)
     },
   },
 })
