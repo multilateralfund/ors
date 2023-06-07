@@ -3,19 +3,26 @@ import { Usage, GroupSubstance, SectionsType } from '@/types/Reports'
 import { RootState } from '../store'
 
 export type ReportDataType = {
-  substance: string
+  substance:
+    | { id: number; label: string; excluded_usages: number[] }
+    | null
+    | undefined
+  usage?: number[]
+  import?: number
+  export?: number
+  production?: number
 }
 
 interface SubstanceState {
   substances: GroupSubstance[]
   usage: Usage[]
-  data: Partial<ReportDataType>[]
+  data: Record<string, ReportDataType[]>
 }
 
 const initialState: SubstanceState = {
   substances: [],
   usage: [],
-  data: [],
+  data: {},
 }
 
 export const reportSlice = createSlice({
@@ -28,19 +35,43 @@ export const reportSlice = createSlice({
     setUsage: (state, action: PayloadAction<Usage[]>) => {
       state.usage = action.payload
     },
-    setReports: (state, action: PayloadAction<any>) => {
-      state.data.push(action.payload)
+    setReports: (
+      state,
+      action: PayloadAction<{
+        sectionId: number
+        values: ReportDataType
+      }>,
+    ) => {
+      const { sectionId, values } = action.payload
+      if (!state.data[`section-${sectionId}`]) {
+        state.data[`section-${sectionId}`] = []
+      }
+
+      state.data[`section-${sectionId}`].push(values)
+
+      return state
     },
-    updateReport: (state, action: PayloadAction<any>) => {
-      const substanceIndex = state.data.findIndex(
-        item => item.substance == action.payload.substance,
+    updateReport: (
+      state,
+      action: PayloadAction<{
+        sectionId: number
+        values: ReportDataType
+      }>,
+    ) => {
+      const { sectionId, values } = action.payload
+      const substanceId = state.data[`section-${sectionId}`].findIndex(
+        item => item.substance?.id === values.substance?.id,
       )
-      state.data[substanceIndex] = action.payload
+      state.data[`section-${sectionId}`][substanceId] = values
     },
-    deleteReport: (state, action: PayloadAction<any>) => {
-      state.data = state.data.filter(
-        item => item.substance != action.payload.substance,
-      )
+    deleteReport: (
+      state,
+      action: PayloadAction<{ sectionId: number; substanceId: number }>,
+    ) => {
+      const { sectionId, substanceId } = action.payload
+      state.data[`section-${sectionId}`] = state.data[
+        `section-${sectionId}`
+      ].filter(item => item.substance?.id != substanceId)
     },
   },
 })
@@ -53,12 +84,23 @@ export const {
   deleteReport,
 } = reportSlice.actions
 
-export const selectSubstancesAnnexA = (state: RootState) =>
+export const selectSubstancesBySection = (
+  state: RootState,
+  withSection: Partial<SectionsType>,
+): {
+  label: string
+  options:
+    | {
+        id: number
+        value: number
+        label: string
+        excluded_usages: number[]
+      }[]
+    | undefined
+}[] =>
   state.reports.substances
     ?.filter(substance =>
-      ['A/I', 'A/II', 'B/I', 'B/II', 'C/I', 'C/II'].includes(
-        substance?.name || '',
-      ),
+      withSection.substances?.includes(substance?.name || ''),
     )
     .map(item => ({
       label: item.name,
@@ -79,7 +121,10 @@ export const selectUsagesBySection = (
     .filter(usage => usagesSection.includes(usage.full_name))
     .sort((a, b) => a.sort_order - b.sort_order)
 }
-
-export const selectRecordsData = (state: RootState) => state.reports.data
+export const selectRecordsDataBySection = (
+  state: RootState,
+  sectionId: number,
+): ReportDataType[] | undefined =>
+  state.reports.data[`section-${sectionId}`] || []
 
 export const reportsReducer = reportSlice.reducer
