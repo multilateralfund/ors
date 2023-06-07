@@ -10,7 +10,7 @@ from core.import_data.utils import (
     CHEMICAL_NAME_MAPPING,
     COUNTRY_NAME_MAPPING,
     check_empty_row,
-    delete_old_cp_records,
+    delete_old_data,
     get_blend_by_name_or_components,
     get_cp_report,
     get_object_by_name,
@@ -366,7 +366,7 @@ def import_records():
     for file in FILE_LIST:
         file_path = settings.IMPORT_DATA_DIR / "records" / file["file_name"]
 
-        delete_old_cp_records(file["file_name"], logger)
+        delete_old_data(CountryProgrammeRecord, file["file_name"], logger)
         parse_file(file_path, file)
 
         logger.info(f"✔ records from {file['file_name']} imported")

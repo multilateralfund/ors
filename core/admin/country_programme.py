@@ -15,7 +15,7 @@ class CountryProgrammeReportAdmin(admin.ModelAdmin):
     list_filter = ["year", "country"]
 
     def get_list_display(self, request):
-        exclude = ["price", "countryprogrammerecord", "usage", "comment"]
+        exclude = ["price", "countryprogrammerecord", "usage", "comment", "adm_records"]
         return get_final_display_list(CountryProgrammeReport, exclude)
 
 
