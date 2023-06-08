@@ -456,8 +456,8 @@ def parse_db_files(dir_path, database_name):
     adm_rows = import_strings(articles_dict)
     logger.info("✔ adm rows imported")
 
-    delete_old_data(AdmColumn, "AdmB_Entries", logger)
-    columns_dict = import_columns("AdmB_Entries")
+    delete_old_data(AdmColumn, admb_file_name, logger)
+    columns_dict = import_columns(admb_file_name)
 
     admb_entries_file = dir_path / "AdmB_Entries.json"
     delete_old_data(AdmRecord, admb_entries_file, logger)
