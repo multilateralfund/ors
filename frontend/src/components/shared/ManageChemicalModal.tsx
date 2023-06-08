@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import {
   FormProvider,
@@ -12,40 +12,37 @@ import { Modal } from 'flowbite-react'
 import SelectSearch from 'react-select-search'
 
 import {
-  selectSubstancesBySection,
+  selectChemicalBySection,
   selectUsagesBySection,
+  selectBlends,
   setReports,
   updateReport,
   ReportDataType,
 } from '@/slices/reportSlice'
-import { Usage, SectionsType } from '@/types/Reports'
+import { Usage, Chemical, SectionsType } from '@/types/Reports'
 import { FormInput } from '../form/FormInput'
 import { FormDateSelect } from '../form/FormDateSelect'
-import { Button } from '../shared/Button'
+import { Button } from './Button'
 import { RootState } from '@/store'
 
-type SelectedSubstance = {
-  id: number
-  label: string
-  excluded_usages: number[]
-}
+type SelectedChemical = Chemical
 
-export const AddSubstancesModal = ({
+export const ManageChemicalModal = ({
   show = false,
   editValues,
   withSection,
   sectionId,
+  withBlends = false,
   onClose,
 }: {
   show?: boolean
   editValues?: Partial<ReportDataType>
   withSection: Partial<SectionsType>
   sectionId: number
+  withBlends?: boolean
   onClose?: () => void
 }) => {
-  const [currentSubstance, setCurrentSubstance] = useState<
-    SelectedSubstance | null | undefined
-  >()
+  const [currentChemical, setCurrentChemical] = useState<SelectedChemical>()
   const [selectedUsages, setSelectedUsages] = useState<Usage[] | null>(null)
   const dispatch = useDispatch()
 
@@ -58,14 +55,15 @@ export const AddSubstancesModal = ({
     setValue,
   } = methods
 
-  const substances = useSelector((state: RootState) =>
-    selectSubstancesBySection(state, withSection),
+  const chemicals = useSelector((state: RootState) =>
+    selectChemicalBySection(state, withSection),
   )
+  const blends = useSelector(selectBlends)
   const usages = useSelector((state: RootState) =>
     selectUsagesBySection(state, withSection),
   )
 
-  const selectedSubstance = useWatch({
+  const selectedChemical = useWatch({
     control,
     name: 'substance',
   })
@@ -100,22 +98,31 @@ export const AddSubstancesModal = ({
   }, [editValues, show, setValue])
 
   useEffect(() => {
-    if (selectedSubstance) {
-      const getSubstance = substances
-        .find(item =>
-          item.options?.find(subst => subst.id === Number(selectedSubstance)),
+    if (selectedChemical) {
+      const getChemical = withBlends
+        ? blends.find(item => item.id === Number(selectedChemical))
+        : chemicals
+            .find(item =>
+              item.options?.find(
+                subst => subst.id === Number(selectedChemical),
+              ),
+            )
+            ?.options?.find(subst => subst.id === Number(selectedChemical))
+
+      if (getChemical) {
+        setCurrentChemical({
+          ...getChemical,
+          ...{ blend: withBlends },
+        } as SelectedChemical)
+
+        setSelectedUsages(
+          usages.filter(
+            usage => !getChemical?.excluded_usages.includes(usage.id),
+          ),
         )
-        ?.options?.find(subst => subst.id === Number(selectedSubstance))
-
-      setCurrentSubstance(getSubstance)
-
-      setSelectedUsages(
-        usages.filter(
-          usage => !getSubstance?.excluded_usages.includes(usage.id),
-        ),
-      )
+      }
     }
-  }, [selectedSubstance])
+  }, [selectedChemical])
 
   useEffect(() => {
     if (isSubmitSuccessful) {
@@ -125,30 +132,23 @@ export const AddSubstancesModal = ({
   }, [isSubmitSuccessful, reset, onClose])
 
   const onSubmit = handleSubmit(values => {
-    console.log(currentSubstance)
+    const valuesToUpdate = {
+      sectionId: sectionId,
+      values: {
+        ...values,
+        ...{ substance: currentChemical },
+      },
+    }
+
     if (editValues) {
-      dispatch(
-        updateReport({
-          sectionId: sectionId,
-          values: {
-            ...values,
-            ...{ substance: currentSubstance },
-          },
-        }),
-      )
+      dispatch(updateReport(valuesToUpdate))
       return
     }
 
-    dispatch(
-      setReports({
-        sectionId: sectionId,
-        values: {
-          ...values,
-          ...{ substance: currentSubstance },
-        },
-      }),
-    )
+    dispatch(setReports(valuesToUpdate))
   })
+
+  const modalTitle = withBlends ? 'blends' : 'substances'
 
   return (
     <Modal
@@ -161,17 +161,20 @@ export const AddSubstancesModal = ({
       }}
       position="top-center"
     >
-      <Modal.Header>{editValues ? 'Edit' : 'Add'} substances</Modal.Header>
+      <Modal.Header>
+        {editValues ? 'Edit' : 'Add'} {modalTitle}
+      </Modal.Header>
       <FormProvider {...methods}>
         <form onSubmit={onSubmit}>
           <Modal.Body>
             <div className="flex flex-col gap-2">
               <div className="mb-2">
                 <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                  Select substance
+                  Select chemical
                 </label>
                 <FormSelectBox
-                  options={substances}
+                  options={withBlends ? blends : chemicals}
+                  withBlends={withBlends}
                   name="substance"
                   isDisabled={editValues as unknown as boolean}
                 />
@@ -291,66 +294,37 @@ const ComposeInputsByUsage = ({
 const FormSelectBox = ({
   name,
   options,
+  withBlends = false,
   isDisabled = false,
 }: {
   name: string
   options: any[]
+  withBlends: boolean
   isDisabled: boolean
 }) => {
   const { control } = useFormContext()
 
-  const transformedOptions = options.map(item => ({
-    name: item.label,
-    type: 'group',
-    items: item.options?.map((subst: any) => ({
-      value: subst.id,
-      name: subst.label,
-      excluded_usages: subst.excluded_usages,
-    })),
-  }))
+  const transformedOptions = withBlends
+    ? options.map(item => ({ name: item.name, value: item.id }))
+    : options.map(item => ({
+        name: item.label,
+        type: 'group',
+        items: item.options?.map((subst: any) => ({
+          value: subst.id,
+          name: subst.label,
+          excluded_usages: subst.excluded_usages,
+        })),
+      }))
 
   return (
     <Controller
       control={control}
       name={name}
       render={({ field }) => (
-        // <select
-        //   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-        //   {...field}
-        //   onChange={target => {
-        //     field.onChange(JSON.parse(target.currentTarget.value))
-        //   }}
-        // >
-        //   {options.map((option: any) => (
-        //     <>
-        //       {option?.options?.length ? (
-        //         <optgroup key={option.label} label={option.label}>
-        //           {option.options.map((opt: any) => {
-        //             return (
-        //               <option key={opt.id} value={JSON.stringify(opt)}>
-        //                 {opt.label}
-        //               </option>
-        //             )
-        //           })}
-        //         </optgroup>
-        //       ) : (
-        //         <>
-        //           {option.map((opt: any) => {
-        //             return (
-        //               <option key={opt.id} value={JSON.stringify(opt)}>
-        //                 {opt.label}
-        //               </option>
-        //             )
-        //           })}
-        //         </>
-        //       )}
-        //     </>
-        //   ))}
-        // </select>
         <SelectSearch
           {...field}
           options={transformedOptions}
-          placeholder="Choose a substance"
+          placeholder="Choose a chemical"
           disabled={isDisabled}
           search
         />
