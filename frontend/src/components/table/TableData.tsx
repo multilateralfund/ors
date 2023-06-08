@@ -1,5 +1,5 @@
 import { Fragment, useMemo } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import {
   flexRender,
   useReactTable,
@@ -14,23 +14,8 @@ import { SectionsType, SectionsEnum } from '@/types/Reports'
 import { deleteReport, ReportDataType } from '@/slices/reportSlice'
 import { mappingColumnsWithState } from '@/utils/mappings'
 
-const composeColumnsByUsages = (usages: any[]): any[] => {
-  const columns = []
-  for (let i = 0; i < usages.length; i++) {
-    if (usages[i] && usages[i].children.length) {
-      columns.push({
-        header: usages[i].name,
-        columns: composeColumnsByUsages(usages[i].children),
-      })
-    } else {
-      columns.push({
-        header: usages[i].name,
-        accessorKey: String(usages[i].id),
-      })
-    }
-  }
-
-  return columns
+type ShowModalType = {
+  hasBlends: boolean
 }
 
 export const TableData = ({
@@ -43,7 +28,7 @@ export const TableData = ({
   withSection: SectionsType
   selectedTab: number | string
   data?: ReportDataType[] | undefined
-  showModal?: () => void
+  showModal?: ({ hasBlends }: ShowModalType) => void
   onEditRow?: (row: Partial<ReportDataType>) => void
 }) => {
   const dispatch = useDispatch()
@@ -52,7 +37,7 @@ export const TableData = ({
   const substancesColumns = useMemo<ColumnDef<ReportDataType>[]>(
     () => [
       {
-        header: 'Substance',
+        header: 'Chemical',
         accessorKey: 'substance',
         cell: cell => {
           return cell?.row.getCanExpand() ? (
@@ -126,7 +111,6 @@ export const TableData = ({
     ],
     [substancesColumns, columnsBySections, defaultColumns],
   )
-
   const table = useReactTable({
     data,
     columns,
@@ -141,7 +125,8 @@ export const TableData = ({
         <div className="mx-auto">
           <TableHeaderActions
             withSection={withSection}
-            onAddSubstances={() => showModal && showModal()}
+            onAddSubstances={() => showModal && showModal({ hasBlends: false })}
+            onAddBlends={() => showModal && showModal({ hasBlends: true })}
           />
           <div className="relative overflow-x-auto">
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -348,4 +333,23 @@ const TableExpandedRow = ({
       </table>
     </div>
   )
+}
+
+const composeColumnsByUsages = (usages: any[]): any[] => {
+  const columns = []
+  for (let i = 0; i < usages.length; i++) {
+    if (usages[i] && usages[i].children.length) {
+      columns.push({
+        header: usages[i].name,
+        columns: composeColumnsByUsages(usages[i].children),
+      })
+    } else {
+      columns.push({
+        header: usages[i].name,
+        accessorKey: String(usages[i].id),
+      })
+    }
+  }
+
+  return columns
 }

@@ -91,4 +91,5 @@ export const {
   useGetMeQuery,
   useGetSubstancesQuery,
   useGetUsageQuery,
+  useGetBlendsQuery,
 } = api

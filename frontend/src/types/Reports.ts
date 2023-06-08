@@ -7,6 +7,13 @@ export type GroupSubstance = {
   substances: Substance[] | null
 }
 
+export type Chemical = {
+  id: number
+  label: string
+  excluded_usages: number[]
+  blend?: boolean
+}
+
 export type Substance = {
   id: number
   name: string
@@ -17,6 +24,14 @@ export type Substance = {
   is_contained_in_polyols: boolean
   odp: string
   excluded_usages: number[]
+}
+export type Blend = {
+  id: number
+  name: string
+  other_names: string
+  sort_order: number
+  excluded_usages: number[]
+  blend?: boolean
 }
 
 export type Usage = {

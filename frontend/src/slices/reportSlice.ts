@@ -1,12 +1,15 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Usage, GroupSubstance, SectionsType } from '@/types/Reports'
+import {
+  Usage,
+  Blend,
+  Chemical,
+  GroupSubstance,
+  SectionsType,
+} from '@/types/Reports'
 import { RootState } from '../store'
 
 export type ReportDataType = {
-  substance:
-    | { id: number; label: string; excluded_usages: number[] }
-    | null
-    | undefined
+  substance?: Chemical
   usage?: number[]
   import?: number
   export?: number
@@ -16,12 +19,14 @@ export type ReportDataType = {
 interface SubstanceState {
   substances: GroupSubstance[]
   usage: Usage[]
+  blends: Blend[]
   data: Record<string, ReportDataType[]>
 }
 
 const initialState: SubstanceState = {
   substances: [],
   usage: [],
+  blends: [],
   data: {},
 }
 
@@ -34,6 +39,9 @@ export const reportSlice = createSlice({
     },
     setUsage: (state, action: PayloadAction<Usage[]>) => {
       state.usage = action.payload
+    },
+    setBlends: (state, action: PayloadAction<Blend[]>) => {
+      state.blends = action.payload
     },
     setReports: (
       state,
@@ -80,11 +88,12 @@ export const {
   setSubstances,
   setUsage,
   setReports,
+  setBlends,
   updateReport,
   deleteReport,
 } = reportSlice.actions
 
-export const selectSubstancesBySection = (
+export const selectChemicalBySection = (
   state: RootState,
   withSection: Partial<SectionsType>,
 ): {
@@ -111,6 +120,12 @@ export const selectSubstancesBySection = (
         excluded_usages: subst.excluded_usages,
       })),
     }))
+
+export const selectBlends = (state: RootState) =>
+  state.reports.blends.map(item => ({
+    label: item.name,
+    ...item,
+  }))
 
 export const selectUsagesBySection = (
   state: RootState,

@@ -2,8 +2,12 @@ import { FC, useState, useMemo } from 'react'
 import { Tabs } from 'flowbite-react'
 import { useSelector } from 'react-redux'
 import { TableData } from '@/components/table/TableData'
-import { AddSubstancesModal } from '@/components/shared/AddSubstanceModal'
-import { useGetSubstancesQuery, useGetUsageQuery } from '@/services/api'
+import { ManageChemicalModal } from '@/components/shared/ManageChemicalModal'
+import {
+  useGetSubstancesQuery,
+  useGetUsageQuery,
+  useGetBlendsQuery,
+} from '@/services/api'
 import {
   selectRecordsDataBySection,
   ReportDataType,
@@ -14,10 +18,12 @@ import { RootState } from '@/store'
 export const ReportsPage: FC = function () {
   const [selectedTab, setSelectedTab] = useState(0)
   const [showModal, setShowModal] = useState(false)
+  const [modalWithBlends, setModalWithBlends] = useState(false)
   const [editRow, setEditRow] = useState<Partial<ReportDataType>>()
 
   useGetSubstancesQuery(null)
   useGetUsageQuery(null)
+  useGetBlendsQuery(null)
 
   const data = useSelector((state: RootState) =>
     selectRecordsDataBySection(state, Number(selectedTab)),
@@ -33,7 +39,10 @@ export const ReportsPage: FC = function () {
       <TableData
         withSection={withSection}
         selectedTab={selectedTab}
-        showModal={() => setShowModal(true)}
+        showModal={({ hasBlends }) => {
+          setModalWithBlends(hasBlends)
+          setShowModal(true)
+        }}
         data={data}
         onEditRow={row => {
           setEditRow(row)
@@ -58,11 +67,12 @@ export const ReportsPage: FC = function () {
         <Tabs.Item title="Section F">TBD</Tabs.Item>
       </Tabs.Group>
 
-      <AddSubstancesModal
+      <ManageChemicalModal
         show={showModal}
         editValues={editRow}
         withSection={withSection}
         sectionId={selectedTab}
+        withBlends={modalWithBlends}
         onClose={() => {
           setShowModal(false)
           setEditRow(undefined)
