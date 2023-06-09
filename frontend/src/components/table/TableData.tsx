@@ -1,5 +1,5 @@
 import { Fragment, useMemo } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   flexRender,
   useReactTable,
@@ -10,8 +10,12 @@ import {
 } from '@tanstack/react-table'
 import { IoTrash, IoCreate, IoCaretForward, IoCaretDown } from 'react-icons/io5'
 import { Button } from '../shared/Button'
-import { SectionsType, SectionsEnum } from '@/types/Reports'
-import { deleteReport, ReportDataType } from '@/slices/reportSlice'
+import { SectionsType, SectionsEnum, Usage } from '@/types/Reports'
+import {
+  deleteReport,
+  ReportDataType,
+  selectUsages,
+} from '@/slices/reportSlice'
 import { mappingColumnsWithState } from '@/utils/mappings'
 
 type ShowModalType = {
@@ -216,74 +220,76 @@ const TableExpandedRow = ({
 }: {
   substance: Row<ReportDataType>
 }) => {
-  // const usages = useSelector((state: RootState) =>
-  //   selectUsagesBySection(state, withSection),
-  // )
+  const usages = useSelector(selectUsages)
 
-  // const columnsUsages = usages.filter(
-  //   usage => row.original.usage && row.original.usage[usage.id],
-  // )
+  const columnsUsages = usages.filter(
+    usage => substance.original.usage && substance.original.usage[usage.id],
+  )
   const newData: Record<string, number> = {}
   substance.original.usage?.forEach((value, index) => {
     newData[`usage-${index}`] = Number(value)
   })
 
   // Hardcoded until we have the response from API
-  const columns = useMemo(
-    () => [
-      {
-        header: 'Aerosol',
-        accessorKey: 'usage-1',
-      },
-      {
-        header: 'Foam',
-        accessorKey: 'usage-2',
-      },
-      {
-        header: 'Fire fighting',
-        accessorKey: 'usage-3',
-      },
-      {
-        header: 'Refrigeration',
-        columns: [
-          {
-            header: 'Manufacturing',
-            accessorKey: 'usage-5',
-          },
-          {
-            header: 'Servicing',
-            accessorKey: 'usage-8',
-          },
-        ],
-      },
-      {
-        header: 'Solvent',
-        accessorKey: 'usage-9',
-      },
-      {
-        header: 'Process agent',
-        accessorKey: 'usage-13',
-      },
-      {
-        header: 'Lab Use',
-        accessorKey: 'usage-14',
-      },
-      {
-        header: 'Methyl bromide',
-        columns: [
-          {
-            header: 'QPS',
-            accessorKey: 'usage-16',
-          },
-          {
-            header: 'Non-QPS',
-            accessorKey: 'usage-17',
-          },
-        ],
-      },
-    ],
-    [],
-  )
+  // const columns = useMemo(
+  //   () => [
+  //     {
+  //       header: 'Aerosol',
+  //       accessorKey: 'usage-1',
+  //     },
+  //     {
+  //       header: 'Foam',
+  //       accessorKey: 'usage-2',
+  //     },
+  //     {
+  //       header: 'Fire fighting',
+  //       accessorKey: 'usage-3',
+  //     },
+  //     {
+  //       header: 'Refrigeration',
+  //       columns: [
+  //         {
+  //           header: 'Manufacturing',
+  //           accessorKey: 'usage-5',
+  //         },
+  //         {
+  //           header: 'Servicing',
+  //           accessorKey: 'usage-8',
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       header: 'Solvent',
+  //       accessorKey: 'usage-9',
+  //     },
+  //     {
+  //       header: 'Process agent',
+  //       accessorKey: 'usage-13',
+  //     },
+  //     {
+  //       header: 'Lab Use',
+  //       accessorKey: 'usage-14',
+  //     },
+  //     {
+  //       header: 'Methyl bromide',
+  //       columns: [
+  //         {
+  //           header: 'QPS',
+  //           accessorKey: 'usage-16',
+  //         },
+  //         {
+  //           header: 'Non-QPS',
+  //           accessorKey: 'usage-17',
+  //         },
+  //       ],
+  //     },
+  //   ],
+  //   [],
+  // )
+
+  const columns = composeColumnsByUsages(columnsUsages)
+
+  console.log(columns)
 
   const usagesTable = useReactTable({
     data: [],
@@ -322,33 +328,40 @@ const TableExpandedRow = ({
           ))}
         </thead>
         <tbody>
-          <tr className="dark:border-gray-600">
-            {usagesTable.getHeaderGroups()[1].headers.map(header => (
-              <td key={header.id} className="border-b px-2 py-2">
-                {newData[header.id] || '-'}
-              </td>
-            ))}
-          </tr>
+          {usagesTable.getHeaderGroups().map(headerGroup => (
+            <tr key={headerGroup.id} className="dark:border-gray-600">
+              {headerGroup.headers.map(header => (
+                <td key={header.id} className="border-b px-2 py-2">
+                  {newData[header.id] || '-'}
+                </td>
+              ))}
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
   )
 }
 
-const composeColumnsByUsages = (usages: any[]): any[] => {
+const composeColumnsByUsages = (usages: Usage[]): any[] => {
   const columns = []
   for (let i = 0; i < usages.length; i++) {
-    if (usages[i] && usages[i].children.length) {
-      columns.push({
-        header: usages[i].name,
-        columns: composeColumnsByUsages(usages[i].children),
-      })
-    } else {
-      columns.push({
-        header: usages[i].name,
-        accessorKey: String(usages[i].id),
-      })
-    }
+    // if (usages[i] && usages[i].children.length) {
+    //   columns.push({
+    //     header: usages[i].name,
+    //     columns: composeColumnsByUsages(usages[i].children),
+    //     accessorKey: `usage-${usages[i].id}`,
+    //   })
+    // } else {
+    //   columns.push({
+    //     header: usages[i].name,
+    //     accessorKey: `usage-${usages[i].id}`,
+    //   })
+    // }
+    columns.push({
+      header: usages[i].name,
+      accessorKey: `usage-${usages[i].id}`,
+    })
   }
 
   return columns

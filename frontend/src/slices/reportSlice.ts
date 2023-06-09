@@ -136,6 +136,9 @@ export const selectUsagesBySection = (
     .filter(usage => usagesSection.includes(usage.full_name))
     .sort((a, b) => a.sort_order - b.sort_order)
 }
+
+export const selectUsages = (state: RootState) => state.reports.usage
+
 export const selectRecordsDataBySection = (
   state: RootState,
   sectionId: number,
