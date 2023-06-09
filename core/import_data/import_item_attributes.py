@@ -8,17 +8,13 @@ from core.import_data.utils import (
     USAGE_NAME_MAPPING,
     check_empty_row,
     delete_old_data,
-    get_blend_by_name,
+    get_chemical_by_name_or_components,
     get_country_dict_from_db_file,
     get_cp_report_for_db_import,
-    get_substance_by_name,
     get_year_dict_from_db_file,
 )
 
-from core.models import (
-    CountryProgrammeRecord,
-    Usage,
-)
+from core.models import CountryProgrammeRecord, Usage
 from core.models.country_programme import CountryProgrammeUsage
 
 logger = logging.getLogger(__name__)
@@ -59,19 +55,11 @@ def get_chemical_dict(file_name):
         json_data = json.load(f)
 
     for chemical_json in json_data:
-        # get substance_id if the item is substance
-        substance = get_substance_by_name(chemical_json["Name"])
-        if substance:
-            chemical_dict[chemical_json["ItemId"]] = {
-                "type": "substance",
-                "id": substance.id,
-                "display_name": chemical_json["Name"],
-            }
-            continue
-
-        # get blend_id if the item is blend
-        blend = get_blend_by_name(chemical_json["Name"])
-        if not blend:
+        # get chemical by name
+        chemical, chemical_type = get_chemical_by_name_or_components(
+            chemical_json["Name"]
+        )
+        if not chemical:
             # if ItemCategoryId is not None, it means the item is for sure chemical
             # so we need to log it
             if chemical_json["ItemCategoryId"] is not None:
@@ -83,8 +71,8 @@ def get_chemical_dict(file_name):
             continue
 
         chemical_dict[chemical_json["ItemId"]] = {
-            "type": "blend",
-            "id": blend.id,
+            "type": chemical_type,
+            "id": chemical.id,
             "display_name": chemical_json["Name"],
         }
 

@@ -11,10 +11,9 @@ from core.import_data.utils import (
     COUNTRY_NAME_MAPPING,
     check_empty_row,
     delete_old_data,
-    get_blend_by_name_or_components,
+    get_chemical_by_name_or_components,
     get_cp_report,
     get_object_by_name,
-    get_substance_by_name,
 )
 
 from core.models import (
@@ -224,22 +223,23 @@ def get_chemical_and_check_gwp(chemical_name, gwp_value, index_row):
     """
 
     chemical_search_name, components = parse_chemical_name(chemical_name)
-    substance = get_substance_by_name(chemical_search_name)
-    if substance:
-        check_gwp_value(substance, gwp_value, index_row)
-        return substance, None
-
-    blend = get_blend_by_name_or_components(chemical_search_name, components)
-    if blend:
-        check_gwp_value(blend, gwp_value, index_row)
-        return None, blend
-
-    logger.warning(
-        f"[row: {index_row}]: "
-        f"This chemical does not exist: {chemical_name}, "
-        f"Searched name: {chemical_search_name}, searched components: {components}"
+    chemical, chemical_type = get_chemical_by_name_or_components(
+        chemical_search_name, components
     )
-    return None, None
+    if not chemical:
+        logger.warning(
+            f"[row: {index_row}]: "
+            f"This chemical does not exist: {chemical_name}, "
+            f"Searched name: {chemical_search_name}, searched components: {components}"
+        )
+        return None, None
+    check_gwp_value(chemical, gwp_value, index_row)
+
+    if chemical_type == "substance":
+        return chemical, None
+
+    # chemical_type == "blend"
+    return None, chemical
 
 
 # pylint: disable=R0914

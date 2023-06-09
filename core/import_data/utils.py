@@ -63,44 +63,29 @@ def delete_old_data(cls, source_file, logger):
     logger.info(f"✔ old  {cls.__name__} from {source_file} deleted")
 
 
-def get_substance_by_name(substance_name):
+def get_chemical_by_name(chemical_name, type):
     """
-    get substance by name or alt name (case insensitive)
-    @param substance_name: string subsance name
+    get chemical by name or alt name (case insensitive)
+    @param chemical_name: string chemical name
+    @param type: string chemical type (substance | blend)
 
-    @return: Substance object
+    @return: Substance object | Blend object | None
     """
-    if not substance_name:
+    if not chemical_name:
         return None
 
-    substance = Substance.objects.get_by_name(substance_name).first()
-    if substance:
-        return substance
+    if type == "substance":
+        cls, cls_alt_name = Substance, SubstanceAltName
+    elif type == "blend":
+        cls, cls_alt_name = Blend, BlendAltName
 
-    substance = SubstanceAltName.objects.get_by_name(substance_name).first()
-    if substance:
-        return substance.substance
+    chemical = cls.objects.get_by_name(chemical_name).first()
+    if chemical:
+        return chemical
 
-    return None
-
-
-def get_blend_by_name(blend_name):
-    """
-    get blend by name or alt name (case insensitive)
-    @param blend_name: string blend name
-
-    @return: int blend id
-    """
-    if not blend_name:
-        return None
-
-    blend = Blend.objects.get_by_name(blend_name).first()
-    if blend:
-        return blend
-
-    blend = BlendAltName.objects.get_by_name(blend_name).first()
-    if blend:
-        return blend.blend
+    chemical = cls_alt_name.objects.get_by_name(chemical_name).first()
+    if chemical:
+        return chemical.chemical
 
     return None
 
@@ -113,7 +98,7 @@ def get_blend_by_name_or_components(blend_name, components):
 
     @return: int blend id
     """
-    blend = get_blend_by_name(blend_name)
+    blend = get_chemical_by_name(blend_name, "blend")
     if blend:
         return blend
 
@@ -121,7 +106,7 @@ def get_blend_by_name_or_components(blend_name, components):
         subst_prcnt = []
         for substance_name, percentage in components:
             try:
-                subst = get_substance_by_name(substance_name)
+                subst = get_chemical_by_name(substance_name, "substance")
                 if not subst:
                     return None
                 prcnt = float(percentage) / 100
@@ -132,6 +117,28 @@ def get_blend_by_name_or_components(blend_name, components):
         blend = BlendComponents.objects.get_blend_by_components(subst_prcnt)
 
     return blend
+
+
+def get_chemical_by_name_or_components(chemical_name, components=None):
+    """
+    get chemical by name or alt name (case insensitive) or components (blends)
+    @param chemical_name: string chemical name
+    @param components: list of tuples (substance_name, percentage) (for blends)
+
+    @return: tuple(object, string) (substance | blend, chemical_type)
+    """
+    if not chemical_name:
+        return None, None
+
+    substance = get_chemical_by_name(chemical_name, "substance")
+    if substance:
+        return substance, "substance"
+
+    blend = get_blend_by_name_or_components(chemical_name, components)
+    if blend:
+        return blend, "blend"
+
+    return None, None
 
 
 def get_cp_report(year, country_name, country_id):
