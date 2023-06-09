@@ -378,15 +378,8 @@ def import_adm_records(
             # create adm row from notes
             adm_row = create_row_from_notes(admb_entry, articles_without_text, notes)
 
-        # skip if adm row is not found
-        if not adm_row:
-            logger.warning(
-                f"[row:{admb_entry['AdmbEntriesId']}]: "
-                f"⚠️ adm row not found for article: {admb_entry['Adm_B_Id']}"
-            )
-            continue
-
         # create adm records for each column
+        data_found = False
         for column_name in CP_COLUMNS_MAPPING[database_name]:
             # skip column if it's not using cfc
             if not is_using_cfc and column_name == "CFC":
@@ -414,6 +407,12 @@ def import_adm_records(
             if not adm_record_data:
                 continue
 
+            # skip if adm row is not found and set data found to true to log warning
+            if not adm_row:
+                if adm_record_data.get("value_bool"):
+                    data_found = True
+                continue
+
             adm_record_data.update(
                 {
                     "country_programme_report": cp_report,
@@ -423,6 +422,12 @@ def import_adm_records(
                 }
             )
             adm_records.append(AdmRecord(**adm_record_data))
+
+        if not adm_row and data_found:
+            logger.warning(
+                f"[row:{admb_entry['AdmbEntriesId']}]: "
+                f"⚠️ adm row not found for article: {admb_entry['Adm_B_Id']}"
+            )
 
     AdmRecord.objects.bulk_create(adm_records)
 
