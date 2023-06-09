@@ -230,66 +230,7 @@ const TableExpandedRow = ({
     newData[`usage-${index}`] = Number(value)
   })
 
-  // Hardcoded until we have the response from API
-  // const columns = useMemo(
-  //   () => [
-  //     {
-  //       header: 'Aerosol',
-  //       accessorKey: 'usage-1',
-  //     },
-  //     {
-  //       header: 'Foam',
-  //       accessorKey: 'usage-2',
-  //     },
-  //     {
-  //       header: 'Fire fighting',
-  //       accessorKey: 'usage-3',
-  //     },
-  //     {
-  //       header: 'Refrigeration',
-  //       columns: [
-  //         {
-  //           header: 'Manufacturing',
-  //           accessorKey: 'usage-5',
-  //         },
-  //         {
-  //           header: 'Servicing',
-  //           accessorKey: 'usage-8',
-  //         },
-  //       ],
-  //     },
-  //     {
-  //       header: 'Solvent',
-  //       accessorKey: 'usage-9',
-  //     },
-  //     {
-  //       header: 'Process agent',
-  //       accessorKey: 'usage-13',
-  //     },
-  //     {
-  //       header: 'Lab Use',
-  //       accessorKey: 'usage-14',
-  //     },
-  //     {
-  //       header: 'Methyl bromide',
-  //       columns: [
-  //         {
-  //           header: 'QPS',
-  //           accessorKey: 'usage-16',
-  //         },
-  //         {
-  //           header: 'Non-QPS',
-  //           accessorKey: 'usage-17',
-  //         },
-  //       ],
-  //     },
-  //   ],
-  //   [],
-  // )
-
   const columns = composeColumnsByUsages(columnsUsages)
-
-  console.log(columns)
 
   const usagesTable = useReactTable({
     data: [],
