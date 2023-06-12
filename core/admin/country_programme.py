@@ -6,6 +6,7 @@ from core.models.country_programme import (
     CountryProgrammeRecord,
     CountryProgrammeReport,
     CountryProgrammeUsage,
+    CountryProgrammePrices,
 )
 
 
@@ -64,3 +65,12 @@ class CountryProgrammeUsageAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request):
         return get_final_display_list(CountryProgrammeUsage, [])
+
+
+@admin.register(CountryProgrammePrices)
+class CountryProgrammePricesAdmin(admin.ModelAdmin):
+    search_fields = ["country_programme_report__name", "substance__name"]
+    list_filter = ["country_programme_report__year"]
+
+    def get_list_display(self, request):
+        return get_final_display_list(CountryProgrammePrices, ["source_file"])

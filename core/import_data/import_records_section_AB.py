@@ -1,23 +1,22 @@
 import decimal
 import logging
-import re
 import pandas as pd
 import numpy as np
 
 from django.db import transaction
 from django.conf import settings
 from core.import_data.utils import (
-    CHEMICAL_NAME_MAPPING,
-    COUNTRY_NAME_MAPPING,
     check_empty_row,
     delete_old_data,
     get_chemical_by_name_or_components,
     get_cp_report,
     get_object_by_name,
+    get_substance_by_name,
+    get_country,
+    parse_chemical_name
 )
 
 from core.models import (
-    Country,
     CountryProgrammeRecord,
     Usage,
 )
@@ -59,11 +58,11 @@ RECORD_COLUMNS_MAPPING = {
 SECTION = "B"
 
 FILE_LIST = [
-    {
-        "file_name": "SectionA.xlsx",
-        "convert_to_mt": True,
-        "section": "A",
-    },
+    # {
+    #     "file_name": "SectionA.xlsx",
+    #     "convert_to_mt": True,
+    #     "section": "A",
+    # },
     {
         "file_name": "SectionB.xlsx",
         "convert_to_mt": False,
@@ -110,72 +109,6 @@ def get_usages_from_sheet(df):
         usage_dict[column_name] = usage
 
     return usage_dict
-
-
-def get_country(country_name, index_row):
-    """
-    get country object from country name
-    @param country_name = string
-    @param index_row = int
-    """
-    country_name = COUNTRY_NAME_MAPPING.get(country_name, country_name)
-    country = get_object_by_name(Country, country_name, index_row, "country", logger)
-    return country
-
-
-def parse_chemical_name(chemical_name):
-    """
-    Parse chemical name from row and return chemical_search_name and components list:
-        e.g.:
-        R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%) =>
-            ("R-404A", [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")])
-        R125/R218/R290 (86%/9%/5%) =>
-            R125/R218/R290 (86%/9%/5%),   [('R125', '86'), ('R218', '9'), ('R290', '5')]
-        R23/Other uncontrolled substances (98%/2%) =>
-            R23/Other uncontrolled substances (98%/2%), [(R23, 98), (Other substances, 2)]
-        HFC-23 (use) => HFC-23, []
-    @param chemical_name string
-    @return tuple => (chemical_search_name, components)
-        - chemical_search_name = string
-        - components = list of tuple (substance_name, percentage)
-    """
-    # remove Fullwidth Right Parenthesis
-    chemical_name = chemical_name.replace("）", ")").strip()
-    chemical_name = CHEMICAL_NAME_MAPPING.get(chemical_name, chemical_name)
-
-    # HFC-23 (use) => HFC-23, []
-    if "(use)" in chemical_name:
-        chemical_name = chemical_name.replace("(use)", "").strip()
-        return chemical_name, []
-
-    # R23/Other uncontrolled substances (98%/2%)
-    # R32/R125/R134a/HFO (24%/25%/26%/25%)
-    if ("Other uncontrolled substances" in chemical_name) or (
-        re.search(BLEND_COMPOSITION_RE, chemical_name)
-    ):
-        chemical_name.replace("Other uncontrolled substances", "Other substances")
-
-        substances, percentages = chemical_name.split("(")
-        substances = substances.strip().split("/")
-
-        percentages = re.findall(r"(\d{1,3}\.?\,?\d{,3})\%", percentages)
-        if len(substances) != len(percentages):
-            return chemical_name, []
-        components = list(zip(substances, percentages))
-        return chemical_name, components
-
-    components = re.findall(BLEND_COMPONENTS_RE, chemical_name)
-    if components:
-        # check if the number of components is equal to the number of %
-        if chemical_name.count("%") != len(components):
-            # R-514A (HFO-1336mzz=74,7%, trans-Dicloroetileno=25,3%) => components = [HFO-1336mzz, 74.7]
-            components = []
-
-        components = [(c.replace(" ", "-").strip(), p) for c, p in components]
-        chemical_search_name = chemical_name.split("(")[0].strip()
-        return chemical_search_name, components
-
-    return chemical_name, components
 
 
 def check_gwp_value(obj, gwp_value, index_row):
@@ -270,7 +203,9 @@ def parse_sheet(df, file_details):
         # another country => another country program
         if row["country"] != current_country["name"]:
             current_country["name"] = row["country"]
-            current_country["obj"] = get_country(current_country["name"], index_row)
+            current_country["obj"] = get_country(
+                current_country["name"], index_row, logger
+            )
             if current_country["obj"]:
                 current_cp = get_cp_report(
                     row["year"], current_country["obj"].name, current_country["obj"].id

@@ -1,6 +1,7 @@
 from django.core.management import BaseCommand
 from core.import_data.import_admc import import_admc_items
-from core.import_data.import_records_xlsx import import_records as rec_xlsx
+from core.import_data.import_records_section_AB import import_records as rec_xlsx_sec_AB
+from core.import_data.import_records_section_C import import_records as rec_xlsx_sec_C
 from core.import_data.import_item_attributes import (
     import_records_from_databases as rec_cp_db,
 )
@@ -36,7 +37,8 @@ class Command(BaseCommand):
         rec_type = kwargs["type"]
 
         if rec_type in ["xlsx_files", "all"]:
-            rec_xlsx()
+            rec_xlsx_sec_AB()
+            rec_xlsx_sec_C()
         if rec_type in ["item_attributes", "all"]:
             rec_cp_db()
         if rec_type in ["admb_items", "all"]:
