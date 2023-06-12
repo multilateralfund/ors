@@ -13,7 +13,6 @@ import SelectSearch from 'react-select-search'
 
 import {
   selectChemicalBySection,
-  selectUsagesBySection,
   selectUsages,
   selectBlends,
   setReports,

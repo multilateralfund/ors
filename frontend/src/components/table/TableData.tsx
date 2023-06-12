@@ -287,18 +287,6 @@ const TableExpandedRow = ({
 const composeColumnsByUsages = (usages: Usage[]): any[] => {
   const columns = []
   for (let i = 0; i < usages.length; i++) {
-    // if (usages[i] && usages[i].children.length) {
-    //   columns.push({
-    //     header: usages[i].name,
-    //     columns: composeColumnsByUsages(usages[i].children),
-    //     accessorKey: `usage-${usages[i].id}`,
-    //   })
-    // } else {
-    //   columns.push({
-    //     header: usages[i].name,
-    //     accessorKey: `usage-${usages[i].id}`,
-    //   })
-    // }
     columns.push({
       header: usages[i].name,
       accessorKey: `usage-${usages[i].id}`,
