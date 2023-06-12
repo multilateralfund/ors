@@ -13,7 +13,7 @@ import SelectSearch from 'react-select-search'
 
 import {
   selectChemicalBySection,
-  selectUsagesBySection,
+  selectUsages,
   selectBlends,
   setReports,
   updateReport,
@@ -59,9 +59,7 @@ export const ManageChemicalModal = ({
     selectChemicalBySection(state, withSection),
   )
   const blends = useSelector(selectBlends)
-  const usages = useSelector((state: RootState) =>
-    selectUsagesBySection(state, withSection),
-  )
+  const usages = useSelector(selectUsages)
 
   const selectedChemical = useWatch({
     control,

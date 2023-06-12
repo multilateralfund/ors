@@ -39,11 +39,7 @@ export type Usage = {
   name: string
   full_name: string
   sort_order: number
-  children: {
-    id: number
-    name: string
-    parent: number
-  }[]
+  children: Usage[]
 }
 
 export enum SectionsEnum {
