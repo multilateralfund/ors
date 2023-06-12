@@ -6,11 +6,14 @@ from django.conf import settings
 
 from core.import_data.utils import (
     DB_DIR_LIST,
+    delete_old_data,
     get_chemical_by_name_or_components,
     get_country_dict_from_db_file,
+    get_cp_report_for_db_import,
     get_year_dict_from_db_file,
 )
-from core.models.adm import AdmRow
+from core.models.adm import AdmColumn, AdmRecord, AdmRow
+from core.models.country_programme import CountryProgrammeRecord
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +21,13 @@ CP_COLUMNS_MAPPING = {
     "CumulativeAmount": "Cumulative",
     "TrainedNumberHCFC": "HCFC",
     "RecoveryAmountHCFC": "HCFC",
+    "RecoveryAmount": "All other ODS",
+    "TrainedNumber": "All other ODS",
+}
+
+CP_RECORD_FIELDS_MAPPING = {
+    "ExportAmount": "export_quotas",
+    "ImportAmount": "import_quotas",
 }
 
 SECTION = "C"
@@ -26,26 +36,44 @@ ADM_RECORD_FIELDS = ["RecoveryAmount", "TrainedNumber"]
 CP_RECORD_TITLE_WORDS = ["import quotas", "export quotas", "price"]
 
 
-def create_adm_row(row_data, articles_dict=None, article_parent_id=None):
+def import_columns(file_name):
+    """
+    Import adm columns for amdC using CP_COLUMNS_MAPPING
+    @param file_name = str (file path for import file) used for source_file field
+
+    @return columns_dict = dict
+        - struct: {
+            field_name: AdmColumn object
+        }
+    """
+    columns_dict = {}
+    for field_name, column_name in CP_COLUMNS_MAPPING.items():
+        column_data = {
+            "name": column_name,
+            "source_file": file_name,
+        }
+        column, _ = AdmColumn.objects.get_or_create(
+            name=column_name, defaults=column_data
+        )
+        columns_dict[field_name] = column
+
+    return columns_dict
+
+
+def create_adm_row(row_data):
     """
     Add adm row to items dict
-    - if article parent id is set, get row parent from articles dict and add it as parent row
+    - if parent row set, get row parent from articles dict and add it as parent row
     @param row_data = dict (row data)
-    @param articles_dict = dict (article dict)
-    @param article_parent_id = int (article parent id)
 
     @return AdmRow object
     """
-    if article_parent_id:
-        # if article parent id is set, get article id from articles dict
-        row_data.update(
-            {
-                "parent_row": articles_dict[article_parent_id],
-                "type": AdmRow.AdmRowType.QUESTION,
-            }
-        )
-    else:
-        row_data["type"] = AdmRow.AdmRowType.TITLE
+    # if article parent id is set, get article id from articles dict
+    row_data["type"] = (
+        AdmRow.AdmRowType.QUESTION
+        if row_data.get("parent_row", None)
+        else AdmRow.AdmRowType.TITLE
+    )
 
     # add adm row to items dict
     row, _ = AdmRow.objects.get_or_create(text=row_data["text"], defaults=row_data)
@@ -53,39 +81,38 @@ def create_adm_row(row_data, articles_dict=None, article_parent_id=None):
     return row
 
 
-def get_itmes_dict(file_name):
+def create_adm_rows_for_articles(file_name):
     """
-    Parse items json file and create a dictionary
-    - the items that are text will be inserted as adm rows
-
+    Parse admc_Layout json file and create adm rows for articles
     @param file_name = str (file path for import file)
 
-    @return tuple (items_dict, article_dict)
-        - struct items_dict: {
-            item_cp_id: {
-                type: "blend" | "substance" | "text",
-                value: chemical_id | item_text
-                display_name: item_name
-                fields: {
-                    field_name: article_id
-            }
+    @return article_dict = dict
+        - struct: {
+            article_id: AdmRow object
         }
-        - struct article_dict: { article_id: AdmRow object }
+
     """
-    items_dict = {}
     article_dict = {}
     with open(file_name, "r", encoding="utf8") as f:
         json_data = json.load(f)
 
     for item_json in json_data:
-        # skip items that will be parsed later for cp records / prices
+        # skip oitems that are not titles
+        if not item_json["IsTitle"]:
+            continue
+
+        # skip articles that are substances titles
+        chemical_title = False
         for word in CP_RECORD_TITLE_WORDS:
             if word in item_json["Label"].lower():
-                continue
+                chemical_title = True
+        if chemical_title:
+            continue
 
         item_json_id = item_json["ItemId"]
         # if item is title, add it as adm row
         if item_json["IsTitle"]:
+            item_json_id = item_json["ArticleId"]
             row_data = {
                 "text": item_json["Label"],
                 "cp_id": item_json_id,
@@ -93,34 +120,199 @@ def get_itmes_dict(file_name):
                 "sort_order": item_json["SortOrder"],
             }
             article_dict[item_json_id] = create_adm_row(row_data)
+
+    return article_dict
+
+
+def get_itmes_dict(file_name, articles_dict):
+    """
+    Parse items json file and create a dictionary
+    - the items that are text will be inserted as adm rows
+
+    @param file_name = str (file path for import file)
+    @param articles_dict = dict (article dict)
+
+    @return items_dict)
+        - struct items_dict: {
+            item_cp_id: {
+                type: "blend" | "substance" | "text",
+                value: chemical_id | item_text
+                display_name: item_name
+                field: field_name
+                article: AdmRow object
+            }
+        }
+    """
+    items_dict = {}
+    with open(file_name, "r", encoding="utf8") as f:
+        json_data = json.load(f)
+
+    for item_json in json_data:
+        # skip titles
+        if item_json["IsTitle"]:
             continue
 
-        # if item is not in dict, add it
-        if item_json_id not in items_dict:
-            # check if item is chemical
-            chemical, chemical_type = get_chemical_by_name_or_components(
-                item_json["Label"]
-            )
+        item_json_id = item_json["ItemId"]
+
+        if item_json["ArticleId"] not in articles_dict:
+            # This Item is Chemical
+            chemical_name = item_json["Label"].replace("(Optional)", "").strip()
+            chemical, chemical_type = get_chemical_by_name_or_components(chemical_name)
+            if not chemical:
+                logger.warning(
+                    f"Chemical not found: {chemical_name} "
+                    f"(ItemId: {item_json['ItemId']})",
+                )
+                continue
+
             # add item to items dict
             items_dict[item_json_id] = {
                 "display_name": item_json["Label"],
-                "type": chemical_type if chemical_type else "text",
-                "value": chemical.id if chemical else item_json["Label"],
-                "fields": {},
+                "type": chemical_type,
+                "value": chemical.id,
             }
+            continue
 
-        # add field to item
-        field_name = item_json["ItemField"]
-        hcfc_field_name = item_json["ItemField"] + "HCFC"
-        if str(field_name).lower() in ADM_RECORD_FIELDS:
-            items_dict[item_json_id]["fields"].update(
-                {
-                    field_name: item_json["ArticleId"],
-                    hcfc_field_name: item_json["ArticleId"],
-                }
+        items_dict[item_json_id] = {
+            "display_name": item_json["Label"],
+            "type": "text",
+            "value": item_json["Label"],
+            "field_name": item_json["ItemField"],
+            "article": articles_dict[item_json["ArticleId"]],
+        }
+
+    return items_dict
+
+
+def udate_cp_record(cp, admc_entry, items_dict, items_file):
+    """
+    Update cp record for admC entry
+    @param cp = CountryProgrammeReport object
+    @param admc_entry = dict (admC entry)
+    @param items_dict = dict (admC items dict)
+    @param items_file = str (file path for items file) used for source_file field
+    """
+    item = items_dict[admc_entry["ItemId"]]
+    record_data = {
+        "country_programme_report": cp,
+        "source_file": items_file,
+    }
+
+    # set substance_id or blend_id for cp_record
+    record_data["substance_id"] = item["value"] if item["type"] == "substance" else None
+    record_data["blend_id"] = item["value"] if item["type"] == "blend" else None
+
+    for entry_field, record_field in CP_RECORD_FIELDS_MAPPING.items():
+        if admc_entry[entry_field]:
+            record_data[record_field] = admc_entry[entry_field]
+
+    try:
+        cp_record, created = CountryProgrammeRecord.objects.update_or_create(
+            country_programme_report_id=cp.id,
+            substance_id=record_data["substance_id"],
+            blend_id=record_data["blend_id"],
+            defaults=record_data,
+        )
+    except CountryProgrammeRecord.MultipleObjectsReturned:
+        logger.warning(
+            f"[row {admc_entry['Adm_CId']}]: Too many records for "
+            f"{cp.name} substance: {record_data['substance_id']} blend:{record_data['blend_id']}"
+        )
+        return
+
+    if created:
+        cp_record.section = SECTION
+        cp_record.display_name = item["display_name"]
+        cp_record.save()
+
+
+def create_cp_price(cp, admc_entry, items_dict):
+    pass
+
+
+def create_adm_record(cp, file_name, admc_entry, items_dict, column_dict):
+    """
+    Create adm record for admC entry
+    @param cp = CountryProgrammeReport object
+    @param admc_entry = dict (admC entry)
+    @param items_dict = dict (admC items dict)
+    @param column_dict = dict (admC columns dict)
+
+    @return adm_records = list (adm records)
+    """
+    if admc_entry["ItemId"] not in items_dict:
+        print(f"vezi ca nu a gasit item-ul {admc_entry['ItemId']}")
+        return []
+
+    item = items_dict[admc_entry["ItemId"]]
+
+    if not item.get("article"):
+        print(f"aloooooooo ce ai facut aici {admc_entry['ItemId']}")
+        return []
+
+    adm_row_data = {
+        "text": item["display_name"],
+        "cp_id": admc_entry["ItemId"],
+        "source_file": file_name,
+        "parent_row": item["article"],
+    }
+    adm_row = create_adm_row(adm_row_data)
+    adm_records = []
+    hcfc_field = item["field_name"] + "HCFC"
+    for field in [item["field_name"], hcfc_field, "CumulativeAmount"]:
+        if not admc_entry.get(field, None):
+            continue
+        adm_record_data = {
+            "country_programme_report": cp,
+            "row": adm_row,
+            "column": column_dict[field],
+            "value_float": admc_entry[field],
+            "section": SECTION,
+        }
+        adm_records.append(AdmRecord(**adm_record_data))
+
+    return adm_records
+
+
+def import_admc_entries(
+    file_name,
+    items_dict,
+    year_dict,
+    country_dict,
+    column_dict,
+    items_file,
+):
+    with open(file_name, "r", encoding="utf8") as f:
+        json_data = json.load(f)
+
+    admc_records = []
+    for admc_entry in json_data:
+        if admc_entry["ItemId"] not in items_dict:
+            # chemical not found
+            continue
+
+        cp = get_cp_report_for_db_import(
+            year_dict,
+            country_dict,
+            admc_entry,
+            logger,
+            admc_entry["Adm_CId"],
+        )
+
+        if not cp:
+            continue
+
+        # update cp_record
+        if items_dict[admc_entry["ItemId"]]["type"] == "text":
+            admc_records.extend(
+                create_adm_record(cp, file_name, admc_entry, items_dict, column_dict)
             )
+            continue
 
-    return items_dict, article_dict
+        udate_cp_record(cp, admc_entry, items_dict, items_file)
+        create_cp_price(cp, admc_entry, items_dict)
+
+    AdmRecord.objects.bulk_create(admc_records)
 
 
 def parse_db_files(dir_path):
@@ -134,8 +326,28 @@ def parse_db_files(dir_path):
     year_dict = get_year_dict_from_db_file(f"{dir_path}/ProjectYear.json")
     logger.info("✔ year file parsed")
 
-    items_dict, articles_dict = get_itmes_dict(dir_path / "Item.json")
+    admc_layout_file = f"{dir_path}/AdmCLayout.json"
+    delete_old_data(AdmRow, admc_layout_file, logger)
+    articles_dict = create_adm_rows_for_articles(admc_layout_file)
+
+    items_dict = get_itmes_dict(f"{dir_path}/AdmCLayout.json", articles_dict)
     logger.info("✔ item file parsed")
+
+    admc_file = f"{dir_path}/AdmC.json"
+    column_dict = import_columns(admc_file)
+    logger.info("✔ columns file parsed")
+
+    items_file = f"{dir_path}/ItemAttributes.json"
+    delete_old_data(AdmRecord, admc_file, logger)
+    import_admc_entries(
+        admc_file,
+        items_dict,
+        year_dict,
+        country_dict,
+        column_dict,
+        items_file,
+    )
+    logger.info("✔ admC entries imported")
 
 
 @transaction.atomic

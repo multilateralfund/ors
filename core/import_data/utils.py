@@ -85,7 +85,9 @@ def get_chemical_by_name(chemical_name, type):
 
     chemical = cls_alt_name.objects.get_by_name(chemical_name).first()
     if chemical:
-        return chemical.chemical
+        if type == "substance":
+            return chemical.substance
+        return chemical.blend
 
     return None
 

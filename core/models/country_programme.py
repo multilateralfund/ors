@@ -27,19 +27,22 @@ class CountryProgrammeRecord(models.Model):
     display_name = models.CharField(max_length=248, null=True, blank=True)
     section = models.CharField(max_length=164)
     imports = models.DecimalField(
-        max_digits=12, decimal_places=3, null=True, blank=True
+        max_digits=25, decimal_places=15, null=True, blank=True
     )
     import_quotas = models.DecimalField(
-        max_digits=12, decimal_places=3, null=True, blank=True
+        max_digits=25, decimal_places=15, null=True, blank=True
     )
     exports = models.DecimalField(
-        max_digits=12, decimal_places=3, null=True, blank=True
+        max_digits=25, decimal_places=15, null=True, blank=True
+    )
+    export_quotas = models.DecimalField(
+        max_digits=25, decimal_places=15, null=True, blank=True
     )
     production = models.DecimalField(
-        max_digits=12, decimal_places=3, null=True, blank=True
+        max_digits=25, decimal_places=15, null=True, blank=True
     )
     manufacturing_blends = models.DecimalField(
-        max_digits=12, decimal_places=3, null=True, blank=True
+        max_digits=25, decimal_places=15, null=True, blank=True
     )
     banned_date = models.DateField(null=True, blank=True)
     remarks = models.TextField(null=True, blank=True)
@@ -48,7 +51,9 @@ class CountryProgrammeRecord(models.Model):
 
     def __str__(self):
         return (
-            self.country_programme_report.name
+            str(self.id)
+            + " "
+            + self.country_programme_report.name
             + " - "
             + (self.blend.name if self.blend else self.substance.name)
         )
@@ -59,4 +64,4 @@ class CountryProgrammeUsage(models.Model):
         CountryProgrammeRecord, on_delete=models.CASCADE, related_name="record_usages"
     )
     usage = models.ForeignKey(Usage, on_delete=models.CASCADE)
-    quantity = models.DecimalField(max_digits=12, decimal_places=3)
+    quantity = models.DecimalField(max_digits=25, decimal_places=15)

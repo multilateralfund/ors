@@ -22,6 +22,7 @@ class BlendAdmin(admin.ModelAdmin):
             "blendaltname",
             "excludedusage",
             "excluded_usages",
+            "admrecord",
         ]
         return get_final_display_list(Blend, exclude)
 
