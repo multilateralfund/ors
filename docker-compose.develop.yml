@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: docker/app.docker
+    entrypoint: ["/usr/bin/tail", "-f", "/dev/null"]
+    container_name: "mlf.app"
     volumes:
       - ./:/app
       - ./static:/app/static
@@ -13,8 +15,12 @@ services:
     build:
       context: .
       dockerfile: docker/nginx.docker
+    container_name: "mlf.nginx"
     ports:
       - 8080:80
+
+  postgres:
+    container_name: "mlf.postgres"
 
 volumes:
   pg-data:
