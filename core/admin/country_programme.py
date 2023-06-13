@@ -5,8 +5,6 @@ from core.models.country_programme import (
     CountryProgrammeReport,
     CountryProgrammeUsage,
 )
-from core.models.country import Country
-
 
 from admin_auto_filters.filters import AutocompleteFilterFactory
 
@@ -51,7 +49,10 @@ class CountryProgrammeRecordAdmin(admin.ModelAdmin):
 @admin.register(CountryProgrammeUsage)
 class CountryProgrammeUsageAdmin(admin.ModelAdmin):
     list_filter = [
-        "usage",
+        AutocompleteFilterFactory(
+            "country", "country_programme_record__country_programme_report__country"
+        ),
+        AutocompleteFilterFactory("usage", "usage"),
     ]
     search_fields = [
         "usage__name",
