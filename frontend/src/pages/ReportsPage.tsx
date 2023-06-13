@@ -1,83 +1,187 @@
-import { FC, useState, useMemo } from 'react'
-import { Tabs } from 'flowbite-react'
-import { useSelector } from 'react-redux'
-import { TableData } from '@/components/table/TableData'
-import { ManageChemicalModal } from '@/components/shared/ManageChemicalModal'
+import { FC, Fragment, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Card, Button as FlowButton } from 'flowbite-react'
 import {
-  useGetSubstancesQuery,
-  useGetUsageQuery,
-  useGetBlendsQuery,
-} from '@/services/api'
-import {
-  selectRecordsDataBySection,
-  ReportDataType,
-} from '@/slices/reportSlice'
-import { mappingTabsWithSections } from '@/utils/mappings'
-import { RootState } from '@/store'
+  flexRender,
+  useReactTable,
+  getCoreRowModel,
+  getExpandedRowModel,
+  ColumnDef,
+  Row,
+} from '@tanstack/react-table'
+import { Button } from '@/components/shared/Button'
 
 export const ReportsPage: FC = function () {
-  const [selectedTab, setSelectedTab] = useState(0)
-  const [showModal, setShowModal] = useState(false)
-  const [modalWithBlends, setModalWithBlends] = useState(false)
-  const [editRow, setEditRow] = useState<Partial<ReportDataType>>()
-
-  useGetSubstancesQuery(null)
-  useGetUsageQuery(null)
-  useGetBlendsQuery(null)
-
-  const data = useSelector((state: RootState) =>
-    selectRecordsDataBySection(state, Number(selectedTab)),
-  )
-
-  const withSection = useMemo(
-    () => mappingTabsWithSections[selectedTab] || undefined,
-    [selectedTab],
-  )
-
-  const tableComponent = useMemo(() => {
-    return (
-      <TableData
-        withSection={withSection}
-        selectedTab={selectedTab}
-        showModal={({ hasBlends }) => {
-          setModalWithBlends(hasBlends)
-          setShowModal(true)
-        }}
-        data={data}
-        onEditRow={row => {
-          setEditRow(row)
-          setShowModal(true)
-        }}
-      />
-    )
-  }, [withSection, data])
+  const navigate = useNavigate()
 
   return (
-    <div className="mt-2">
-      <Tabs.Group
-        style="fullWidth"
-        onActiveTabChange={setSelectedTab}
-        className="mt-3"
-      >
-        <Tabs.Item title="Section A">{tableComponent}</Tabs.Item>
-        <Tabs.Item title="Section B">{tableComponent}</Tabs.Item>
-        <Tabs.Item title="Section C">{tableComponent}</Tabs.Item>
-        <Tabs.Item title="Section D">TBD</Tabs.Item>
-        <Tabs.Item title="Section E">TBD</Tabs.Item>
-        <Tabs.Item title="Section F">TBD</Tabs.Item>
-      </Tabs.Group>
+    <div className="mt-2 flex flex-col">
+      <div className="cards flex justify-between">
+        <Card className="max-w-fit mr-5">
+          <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+            <p>Create submission {new Date().getFullYear()}</p>
+          </h5>
+          <p className="font-normal text-gray-700 dark:text-gray-400">
+            Create a submission
+          </p>
+          <Button onClick={() => navigate('/reports/create')}>Create</Button>
+        </Card>
+        {/* <Card className="max-w-fit">
+          <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+            <p>Noteworthy technology acquisitions 2021</p>
+          </h5>
+          <p className="font-normal text-gray-700 dark:text-gray-400">
+            <p>
+              Here are the biggest enterprise technology acquisitions of 2021 so
+              far, in reverse chronological order.
+            </p>
+          </p>
+          <Button>
+            <p>Read more</p>
+          </Button>
+        </Card> */}
+      </div>
+      <Table />
+    </div>
+  )
+}
 
-      <ManageChemicalModal
-        show={showModal}
-        editValues={editRow}
-        withSection={withSection}
-        sectionId={selectedTab}
-        withBlends={modalWithBlends}
-        onClose={() => {
-          setShowModal(false)
-          setEditRow(undefined)
-        }}
-      />
+export const Table = () => {
+  const columns = useMemo<ColumnDef<any>[]>(
+    () => [
+      {
+        header: 'Period',
+        accessorKey: 'period',
+      },
+      {
+        header: 'Status',
+        accessorKey: 'status',
+      },
+      {
+        header: 'Last updated',
+        accessorKey: 'last_updated',
+      },
+      {
+        header: 'Created by',
+        accessorKey: 'created_by',
+      },
+      {
+        header: 'Actions',
+        accessorKey: 'action',
+        cell: ({ row: { original } }) => {
+          return (
+            <div className="flex w-full justify-center">
+              {original.status === 'Submitted' ? (
+                <FlowButton size={'xs'} color="gray">
+                  View
+                </FlowButton>
+              ) : (
+                <FlowButton size={'xs'} color="gray">
+                  Edit
+                </FlowButton>
+              )}
+            </div>
+          )
+        },
+      },
+    ],
+    [],
+  )
+
+  const data: any[] = [
+    {
+      period: 2023,
+      status: 'In progress',
+      last_updated: '02 June 2023',
+      created_by: 'Secretariat',
+    },
+    {
+      period: 2023,
+      status: 'Submitted',
+      last_updated: '01 June 2023',
+      created_by: 'Party',
+    },
+  ]
+
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+  })
+
+  return (
+    <section className="bg-gray-50 dark:bg-gray-900 py-3 sm:py-5">
+      <div className="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
+        <div className="mx-auto">
+          <TableHeaderActions />
+          <div className="relative overflow-x-auto">
+            <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+              <thead className="text-sm text-gray-700 bg-gray-100 dark:bg-gray-700 dark:text-gray-400  dark:border-gray-600">
+                {table.getHeaderGroups().map(headerGroup => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map(header => {
+                      return (
+                        <th
+                          key={header.id}
+                          colSpan={header.colSpan}
+                          scope="col"
+                          className="px-2 py-1 border text-center dark:border-gray-600"
+                        >
+                          {header.isPlaceholder ? null : (
+                            <>
+                              <div className="text-[0.65rem]">
+                                {flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
+                              </div>
+                            </>
+                          )}
+                        </th>
+                      )
+                    })}
+                  </tr>
+                ))}
+              </thead>
+              <tbody>
+                {table.getRowModel().rows.map(row => (
+                  <Fragment key={row.id}>
+                    <tr className="border-b dark:border-gray-600">
+                      {row.getVisibleCells().map(cell => {
+                        return (
+                          <td key={cell.id} className="px-2 py-2">
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  </Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+const TableHeaderActions = ({
+  onAddSubstances,
+  onAddBlends,
+}: {
+  onAddSubstances?: () => void
+  onAddBlends?: () => void
+}) => {
+  return (
+    <div className="flex flex-col md:flex-row items-center justify-end space-y-3 md:space-y-0 md:space-x-4 p-4">
+      <div className="w-full flex items-center">
+        <h4 className="text-lg dark:text-white">All submissions</h4>
+      </div>
     </div>
   )
 }
