@@ -16,7 +16,13 @@ class CountryProgrammeReportAdmin(admin.ModelAdmin):
     list_filter = [AutocompleteFilterFactory("country", "country"), "year"]
 
     def get_list_display(self, request):
-        exclude = ["price", "countryprogrammerecord", "usage", "comment", "adm_records"]
+        exclude = [
+            "countryprogrammerecord",
+            "countryprogrammeprices",
+            "usage",
+            "comment",
+            "adm_records"
+        ]
         return get_final_display_list(CountryProgrammeReport, exclude)
 
 
