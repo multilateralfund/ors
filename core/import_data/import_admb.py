@@ -352,13 +352,10 @@ def import_adm_records(
     @param adm_rows = dict
     @param articles_without_text = dict
     @param notes = dict
-    @param year_dict = dict
-    @param country_dict = dict
 
     """
     country_dict, year_dict = get_country_and_year_dict(file_data["dir_path"], logger)
     columns_dict = import_columns(file_data["admb_entries_file"])
-    db_columns = CP_COLUMNS_MAPPING[file_data["database_name"]]
 
     with open(file_data["admb_entries_file"], "r", encoding="utf8") as f:
         admb_entries_json = json.load(f)
@@ -402,7 +399,9 @@ def import_adm_records(
             continue
 
         # create adm records for each column
-        for column_name, column_attributes in db_columns.items():
+        for column_name, column_attributes in CP_COLUMNS_MAPPING[
+            file_data["database_name"]
+        ].items():
             # skip column if it's not using cfc
             if not is_using_cfc and column_name == "CFC":
                 continue
