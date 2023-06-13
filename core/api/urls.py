@@ -16,7 +16,6 @@ schema_view = get_schema_view(
         title="Multilateral Fund API",
         default_version="v1",
         description="API docs for mlf",
-        license=openapi.License(name="EDW License"),
     ),
     public=True,
     permission_classes=[permissions.AllowAny],
