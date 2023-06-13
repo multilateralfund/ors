@@ -26,7 +26,6 @@ class AdmRow(models.Model):
     index = models.CharField(
         max_length=248, null=True, blank=True, verbose_name="row index"
     )
-    cp_id = models.IntegerField(null=True, blank=True)
     parent_row = models.ForeignKey(
         "self", on_delete=models.CASCADE, related_name="children", null=True, blank=True
     )

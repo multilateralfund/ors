@@ -60,23 +60,23 @@ def delete_old_data(cls, source_file, logger):
     @param logger: logger object
     """
     cls.objects.filter(source_file__iexact=str(source_file).lower()).all().delete()
-    logger.info(f"✔ old  {cls.__name__} from {source_file} deleted")
+    logger.info(f"✔ old {cls.__name__} from {source_file} deleted")
 
 
-def get_chemical_by_name(chemical_name, type):
+def get_chemical_by_name(chemical_name, chemical_type):
     """
     get chemical by name or alt name (case insensitive)
     @param chemical_name: string chemical name
-    @param type: string chemical type (substance | blend)
+    @param chemical_type: string chemical type (substance | blend)
 
     @return: Substance object | Blend object | None
     """
     if not chemical_name:
         return None
 
-    if type == "substance":
+    if chemical_type == "substance":
         cls, cls_alt_name = Substance, SubstanceAltName
-    elif type == "blend":
+    elif chemical_type == "blend":
         cls, cls_alt_name = Blend, BlendAltName
 
     chemical = cls.objects.get_by_name(chemical_name).first()
@@ -85,7 +85,7 @@ def get_chemical_by_name(chemical_name, type):
 
     chemical = cls_alt_name.objects.get_by_name(chemical_name).first()
     if chemical:
-        if type == "substance":
+        if chemical_type == "substance":
             return chemical.substance
         return chemical.blend
 
@@ -245,6 +245,33 @@ def get_cp_report_for_db_import(year_dict, country_dict, json_entry, logger, ent
     # get cp report id
     cp_report = get_cp_report(year, country["name"], country["id"])
     return cp_report
+
+
+def get_country_and_year_dict(dir_path, logger):
+    """
+    Parse country and year json files and create dictionaries
+    @param country_file = str (file path for country import file)
+    @param year_file = str (file path for year import file)
+    @param logger = logger object
+
+    @return tuple(country_dict, year_dict) = tuple(dict, dict)
+        - struct: country_dict = {
+            country_cp_id: {
+                "id": county_id,
+                "name": country_name
+            }
+        }
+        - struct: year_dict = {year_cp_id: year}
+    """
+    country_file = dir_path / "Country.json"
+    country_dict = get_country_dict_from_db_file(country_file, logger)
+    logger.info("✔ country file parsed")
+
+    year_file = dir_path / "ProjectYear.json"
+    year_dict = get_year_dict_from_db_file(year_file)
+    logger.info("✔ year file parsed")
+
+    return country_dict, year_dict
 
 
 def get_country_dict_from_db_file(file_name, logger):
