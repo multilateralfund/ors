@@ -68,4 +68,4 @@ class AdmRecord(models.Model):
     source_file = models.CharField(max_length=248, null=True, blank=True)
 
     def __str__(self):
-        return self.row.name + " - " + self.column.name
+        return self.row.text + " - " + self.column.name

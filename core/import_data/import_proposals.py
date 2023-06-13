@@ -165,7 +165,7 @@ def parse_file(file_path, file_name):
 def import_proposals():
     file_names = ["tbProposalsNew90.xlsx", "tbProposalsNew91.xlsx"]
     for file_name in file_names:
-        logger.info(f"importing {file_name}")
+        logger.info(f"⏳ importing {file_name}")
         file_path = settings.IMPORT_DATA_DIR / "proposals" / file_name
 
         delete_old_data(ProjectSubmission, file_name, logger)

@@ -366,6 +366,7 @@ def import_records():
     for file in FILE_LIST:
         file_path = settings.IMPORT_DATA_DIR / "records" / file["file_name"]
 
+        logger.info(f"⏳ parsing file: {file['file_name']}")
         delete_old_data(CountryProgrammeRecord, file["file_name"], logger)
         parse_file(file_path, file)
 

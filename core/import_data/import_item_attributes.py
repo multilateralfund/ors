@@ -216,4 +216,5 @@ def import_records_from_databases():
     """
     db_dir_path = settings.IMPORT_DATA_DIR / "databases"
     for dir_name in DB_DIR_LIST:
+        logger.info(f"⏳ importing records from {dir_name}")
         parse_db_files(db_dir_path / dir_name)
