@@ -6,8 +6,8 @@ import {
   useReactTable,
   getCoreRowModel,
   getExpandedRowModel,
+  getPaginationRowModel,
   ColumnDef,
-  Row,
 } from '@tanstack/react-table'
 import { Button } from '@/components/shared/Button'
 
@@ -15,7 +15,7 @@ export const ReportsPage: FC = function () {
   const navigate = useNavigate()
 
   return (
-    <div className="mt-2 flex flex-col">
+    <div className="mt-4 flex flex-col">
       <div className="cards flex justify-between">
         <Card className="max-w-fit mr-5">
           <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
@@ -108,6 +108,7 @@ export const Table = () => {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
   })
 
   return (
@@ -163,6 +164,7 @@ export const Table = () => {
                 ))}
               </tbody>
             </table>
+            <TablePagination table={table} />
           </div>
         </div>
       </div>
@@ -183,5 +185,86 @@ const TableHeaderActions = ({
         <h4 className="text-lg dark:text-white">All submissions</h4>
       </div>
     </div>
+  )
+}
+
+const TablePagination = ({ table }: { table: any }) => {
+  return (
+    <nav
+      className="flex items-center justify-between pt-4 px-2 pb-4"
+      aria-label="Table navigation"
+    >
+      <div className="flex items-center text-sm font-normal text-gray-500 dark:text-gray-400 w-">
+        <span>Rows per page</span>
+        <select
+          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-16 p-1 mx-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+          value={table.getState().pagination.pageSize}
+          onChange={e => {
+            table.setPageSize(Number(e.target.value))
+          }}
+        >
+          {[10, 20, 30, 40, 50].map(pageSize => (
+            <option key={pageSize} value={pageSize}>
+              {pageSize}
+            </option>
+          ))}
+        </select>
+        <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+          <span className="font-semibold text-gray-900 dark:text-white">
+            1-10
+          </span>{' '}
+          of{' '}
+          <span className="font-semibold text-gray-900 dark:text-white">
+            1000
+          </span>
+        </span>
+      </div>
+      <ul className="inline-flex items-center -space-x-px">
+        <li>
+          <button
+            disabled={!table.getCanPreviousPage()}
+            onClick={() => table.previousPage()}
+            className="block px-2 py-1 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+          >
+            <span className="sr-only">Previous</span>
+            <svg
+              className="w-5 h-5"
+              aria-hidden="true"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fillRule="evenodd"
+                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                clipRule="evenodd"
+              ></path>
+            </svg>
+          </button>
+        </li>
+        <li>
+          <button
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+            className="block px-2 py-1 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+          >
+            <span className="sr-only">Next</span>
+            <svg
+              className="w-5 h-5"
+              aria-hidden="true"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fillRule="evenodd"
+                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                clipRule="evenodd"
+              ></path>
+            </svg>
+          </button>
+        </li>
+      </ul>
+    </nav>
   )
 }

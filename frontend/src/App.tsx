@@ -27,7 +27,7 @@ export default function App() {
       <Route element={<BaseLayout />}>
         <Route element={<RequireUser allowedRoles={['user', 'admin']} />}>
           <Route path="/" element={auth(<HomePage />)} />
-          <Route path="/reports" element={auth(<ReportsPage />, true)} />
+          <Route path="/reports" element={auth(<ReportsPage />, false)} />
           <Route
             path="/reports/create"
             element={auth(<CreateReportsPage />, true)}
