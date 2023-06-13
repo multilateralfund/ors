@@ -70,7 +70,13 @@ class CountryProgrammeUsageAdmin(admin.ModelAdmin):
 @admin.register(CountryProgrammePrices)
 class CountryProgrammePricesAdmin(admin.ModelAdmin):
     search_fields = ["country_programme_report__name", "substance__name"]
-    list_filter = ["country_programme_report__year"]
+    list_filter = [
+        AutocompleteFilterFactory("country", "country_programme_report__country"),
+        AutocompleteFilterFactory("blend", "blend"),
+        AutocompleteFilterFactory("substance", "substance"),
+        "country_programme_report__year",
+    ]
 
     def get_list_display(self, request):
-        return get_final_display_list(CountryProgrammePrices, ["source_file"])
+        exclude = ["id", "source_file", "display_name"]
+        return get_final_display_list(CountryProgrammePrices, exclude)

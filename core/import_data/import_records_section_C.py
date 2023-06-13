@@ -110,12 +110,16 @@ def parse_sheet(df):
             continue
 
         chemical_name = row["Controlled Substances"]
+
+        # I dont know what to do with this.
         if chemical_name == "HFC-365mfc (93%)/HFC-227ea (7%) - mezcla":
             continue
+
         substance, blend = get_chemical(chemical_name, index_row)
         if not substance and not blend:
             continue
 
+        previous_year_prices_obj = None
         for report_details in REPORT_COLUMNS:
             cp_report = get_cp_report(
                 report_details["year"],
@@ -143,7 +147,44 @@ def parse_sheet(df):
                     )
             # some price values are not decimals. skip them for now
             except ValueError:
-                logger.warning(f"⚠️ [row: {index_row}] Price value is not a number  ")
+                logger.warning(f"⚠️ [row: {index_row}] Price value is not a number.")
+
+            # try to complete some missing data from previous year report
+            if previous_year_price:
+                if previous_year_prices_obj:
+                    if previous_year_prices_obj.current_year_price:
+                        if (
+                            previous_year_prices_obj.current_year_price
+                            != previous_year_price
+                        ):
+                            logger.warning(
+                                f"⚠️  [row: {index_row}][country: {current_country['obj'].name}][substance: {chemical_name}]"
+                                f"[year: {report_details['year']}] Mismatch in price declaration."
+                            )
+                    else:
+                        previous_year_prices_obj.current_year_price = (
+                            previous_year_price
+                        )
+                        previous_year_prices_obj.save()
+                else:
+                    previous_year_cp_report = get_cp_report(
+                        report_details["year"] - 1,
+                        current_country["obj"].name,
+                        current_country["obj"].id,
+                    )
+                    prev_record_data = {
+                        "country_programme_report_id": previous_year_cp_report.id,
+                        "substance": substance,
+                        "blend": blend,
+                        "previous_year_price": None,
+                        "previous_year_text": "",
+                        "current_year_price": previous_year_price,
+                        "current_year_text": row[report_details["previous"]],
+                        "remarks": "",
+                        "display_name": chemical_name,
+                        "source_file": FILE_NAME,
+                    }
+                    CountryProgrammePrices.objects.create(**prev_record_data)
 
             # create prices record
             record_data = {
@@ -159,7 +200,9 @@ def parse_sheet(df):
                 "source_file": FILE_NAME,
             }
 
-            CountryProgrammePrices.objects.create(**record_data)
+            previous_year_prices_obj = CountryProgrammePrices.objects.create(
+                **record_data
+            )
     logger.info("✔ sheet parsed")
 
 

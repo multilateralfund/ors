@@ -90,6 +90,9 @@ class CountryProgrammePrices(models.Model):
     )
     current_year_text = models.CharField(max_length=248, null=True, blank=True)
 
+    class Meta:
+        verbose_name_plural = "Country programme prices"
+
     def __str__(self):
         return (
             self.country_programme_report.name

@@ -13,7 +13,7 @@ from core.import_data.utils import (
     get_object_by_name,
     get_substance_by_name,
     get_country,
-    parse_chemical_name
+    parse_chemical_name,
 )
 
 from core.models import (
@@ -58,22 +58,17 @@ RECORD_COLUMNS_MAPPING = {
 SECTION = "B"
 
 FILE_LIST = [
-    # {
-    #     "file_name": "SectionA.xlsx",
-    #     "convert_to_mt": True,
-    #     "section": "A",
-    # },
+    {
+        "file_name": "SectionA.xlsx",
+        "convert_to_mt": True,
+        "section": "A",
+    },
     {
         "file_name": "SectionB.xlsx",
         "convert_to_mt": False,
         "section": "B",
     },
 ]
-
-# "R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%)" => [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")]
-BLEND_COMPONENTS_RE = r"(\w{1,4}\-?\s?\w{2,7})\s?=?-?\s?\(?(\d{1,3}\.?\,?\d{,3})\%\)?"
-# "R23/R125/CO2/HFO-1132 (10%/10%/60%/20%)"
-BLEND_COMPOSITION_RE = r"((/[a-zA-Z0-9/-]{3,15})+\s?\(\d{1,3}\.?\,?\d{,2}?%)"
 
 # error value for comparing gwp values
 GWP_EPSILON = 0.0001
