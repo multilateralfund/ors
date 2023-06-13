@@ -39,6 +39,12 @@ CHEMICAL_NAME_MAPPING = {
 # --- list of db names ---
 DB_DIR_LIST = ["CP", "CP2012"]
 
+# --- list of country names that can be skipped ---
+SKIP_COUNTRY_LIST = [
+    "global",
+    "zaire",
+]
+
 
 # --- import utils ---
 def parse_string(string_value):
@@ -295,6 +301,10 @@ def get_country_dict_from_db_file(file_name, logger):
         country_name = COUNTRY_NAME_MAPPING.get(
             country_json["Country"].strip(), country_json["Country"]
         )
+
+        # skip countries
+        if country_name.lower() in SKIP_COUNTRY_LIST:
+            continue
 
         if "test" in country_name.lower() or "article 5" in country_name.lower():
             # set test countries to be skipped in the future

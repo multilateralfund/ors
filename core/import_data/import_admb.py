@@ -47,6 +47,9 @@ CP_COLUMNS_MAPPING = {
     },
 }
 
+ARTICLES_WITH_USER_TEXT = ["1.6.1", "1.6.2"]
+ITEM_NOT_FOUND_IDS = [61]
+
 
 def import_columns(source_file):
     """
@@ -59,8 +62,8 @@ def import_columns(source_file):
     """
 
     columns_dict = {}
-    for database_name in CP_COLUMNS_MAPPING:
-        for column_name in CP_COLUMNS_MAPPING[database_name]:
+    for _, columns in CP_COLUMNS_MAPPING.items():
+        for column_name in columns:
             column_data = {
                 "name": column_name,
                 "source_file": source_file,
@@ -198,6 +201,12 @@ def parse_admb_file(file_name, strings_dict):
                 "type": AdmRow.AdmRowType.USER_TEXT,
                 **article_data,
             }
+            if index in ARTICLES_WITH_USER_TEXT:
+                articles[index] = {
+                    "text": "N/A",
+                    "using_cfc": False,
+                    **article_data,
+                }
 
     set_type(articles)
 
@@ -331,30 +340,27 @@ def create_row_from_notes(admb_entry, articles_without_text, notes):
 
 
 def import_adm_records(
-    dir_path,
-    admb_entries_file,
-    database_name,
+    file_data,
     adm_rows,
-    columns_dict,
     articles_without_text,
     notes,
 ):
     """
     Import admB records from json file
 
-    @param admb_entries_file = str (file path for import file)
-    @param database_name = str (database name)
+    @param file_data = dict
     @param adm_rows = dict
-    @param columns_dict = dict
     @param articles_without_text = dict
     @param notes = dict
     @param year_dict = dict
     @param country_dict = dict
 
     """
-    country_dict, year_dict = get_country_and_year_dict(dir_path, logger)
+    country_dict, year_dict = get_country_and_year_dict(file_data["dir_path"], logger)
+    columns_dict = import_columns(file_data["admb_entries_file"])
+    db_columns = CP_COLUMNS_MAPPING[file_data["database_name"]]
 
-    with open(admb_entries_file, "r", encoding="utf8") as f:
+    with open(file_data["admb_entries_file"], "r", encoding="utf8") as f:
         admb_entries_json = json.load(f)
 
     adm_records = []
@@ -370,20 +376,33 @@ def import_adm_records(
         if not cp_report:
             continue
 
-        # get adm row
+        # get or create adm row
         adm_row = None
         is_using_cfc = False
+        if admb_entry["Adm_B_Id"] in ITEM_NOT_FOUND_IDS:
+            continue
+
         if admb_entry["Adm_B_Id"] in adm_rows:
             # get adm row from adm rows
             adm_row = adm_rows[admb_entry["Adm_B_Id"]]["object"]
             is_using_cfc = adm_rows[admb_entry["Adm_B_Id"]]["using_cfc"]
-        else:
-            # create adm row from notes
-            adm_row = create_row_from_notes(admb_entry, articles_without_text, notes)
+
+        if not adm_row or adm_row.text == "N/A":
+            # create adm row from notes for articles without text
+            row_from_notes = create_row_from_notes(
+                admb_entry, articles_without_text, notes
+            )
+            adm_row = row_from_notes if row_from_notes else adm_row
+
+        if not adm_row:
+            logger.warning(
+                f"[row:{admb_entry['AdmbEntriesId']}]: "
+                f"⚠️ adm row not found for article: {admb_entry['Adm_B_Id']}"
+            )
+            continue
 
         # create adm records for each column
-        data_found = False
-        for column_name in CP_COLUMNS_MAPPING[database_name]:
+        for column_name, column_attributes in db_columns.items():
             # skip column if it's not using cfc
             if not is_using_cfc and column_name == "CFC":
                 continue
@@ -391,7 +410,6 @@ def import_adm_records(
                 continue
 
             # get column attributes
-            column_attributes = CP_COLUMNS_MAPPING[database_name][column_name]
             adm_record_data = {}
             for json_attribute, model_attribute in column_attributes.items():
                 if admb_entry[json_attribute] is None:
@@ -410,10 +428,8 @@ def import_adm_records(
             if not adm_record_data:
                 continue
 
-            # skip if adm row is not found and set data found to true to log warning
-            if not adm_row:
-                if adm_record_data.get("value_bool"):
-                    data_found = True
+            if adm_row.text == "N/A" and "value_bool" not in adm_record_data:
+                # skip adm records for articles without text if there is no value
                 continue
 
             adm_record_data.update(
@@ -421,16 +437,10 @@ def import_adm_records(
                     "country_programme_report": cp_report,
                     "row": adm_row,
                     "column": columns_dict[column_name],
-                    "source_file": admb_entries_file,
+                    "source_file": file_data["admb_entries_file"],
                 }
             )
             adm_records.append(AdmRecord(**adm_record_data))
-
-        if not adm_row and data_found:
-            logger.warning(
-                f"[row:{admb_entry['AdmbEntriesId']}]: "
-                f"⚠️ adm row not found for article: {admb_entry['Adm_B_Id']}"
-            )
 
     AdmRecord.objects.bulk_create(adm_records)
 
@@ -455,20 +465,19 @@ def parse_db_files(dir_path, database_name):
             f"✔ notes file parsed, needed notes for articles: {articles_without_text.keys()}"
         )
 
-    delete_old_data(AdmRow, admb_file_name, logger)
     adm_rows = import_strings(articles_dict)
     logger.info("✔ adm rows imported")
 
-    columns_dict = import_columns(admb_file_name)
-
     admb_entries_file = dir_path / "AdmB_Entries.json"
     delete_old_data(AdmRecord, admb_entries_file, logger)
+    file_data = {
+        "admb_entries_file": admb_entries_file,
+        "database_name": database_name,
+        "dir_path": dir_path,
+    }
     import_adm_records(
-        dir_path,
-        admb_entries_file,
-        database_name,
+        file_data,
         adm_rows,
-        columns_dict,
         articles_without_text,
         notes,
     )

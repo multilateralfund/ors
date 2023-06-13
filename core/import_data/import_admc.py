@@ -119,14 +119,13 @@ def create_adm_rows_for_articles(file_name):
         if chemical_title:
             continue
 
-        item_json_id = item_json["ItemId"]
+        item_json_id = item_json["ArticleId"]
         # if item is title, add it as adm row
-        if item_json["IsTitle"]:
-            article_dict[item_json_id] = create_adm_row(
-                item_json["Label"],
-                file_name,
-                item_json["SortOrder"],
-            )
+        article_dict[item_json_id] = create_adm_row(
+            item_json["Label"],
+            file_name,
+            item_json["SortOrder"],
+        )
 
     return article_dict
 
@@ -248,9 +247,6 @@ def create_adm_record(cp, file_name, admc_entry, items_dict, column_dict):
 
     @return adm_records = list (adm records)
     """
-    if admc_entry["ItemId"] not in items_dict:
-        print(f"vezi ca nu a gasit item-ul {admc_entry['ItemId']}")
-        return []
 
     item = items_dict[admc_entry["ItemId"]]
 
