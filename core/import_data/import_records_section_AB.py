@@ -12,7 +12,7 @@ from core.import_data.utils import (
     get_cp_report,
     get_country,
     parse_chemical_name,
-    OFFSET
+    OFFSET,
 )
 
 from core.models import (

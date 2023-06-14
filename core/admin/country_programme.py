@@ -21,7 +21,7 @@ class CountryProgrammeReportAdmin(admin.ModelAdmin):
             "countryprogrammeprices",
             "usage",
             "comment",
-            "adm_records"
+            "adm_records",
         ]
         return get_final_display_list(CountryProgrammeReport, exclude)
 

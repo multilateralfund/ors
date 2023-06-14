@@ -9,7 +9,7 @@ from core.import_data.utils import (
     get_chemical_by_name_or_components,
     parse_chemical_name,
     get_country,
-    OFFSET
+    OFFSET,
 )
 from core.models import CountryProgrammePrices
 
@@ -149,7 +149,9 @@ def parse_sheet(df):
                     )
             # some price values are not decimals. skip them for now
             except ValueError:
-                logger.warning(f"⚠️ [row: {index_row + OFFSET}] Price value is not a number.")
+                logger.warning(
+                    f"⚠️ [row: {index_row + OFFSET}] Price value is not a number."
+                )
 
             # try to complete some missing data from previous year report
             if previous_year_price:
