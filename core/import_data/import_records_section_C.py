@@ -53,6 +53,7 @@ def check_headers(df):
     return True
 
 
+# pylint: disable=R1702
 def parse_sheet(df):
     """
     parse the sheet and import the data in database
