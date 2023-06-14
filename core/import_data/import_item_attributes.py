@@ -4,25 +4,24 @@ import logging
 from django.db import transaction
 from django.conf import settings
 from core.import_data.utils import (
-    COUNTRY_NAME_MAPPING,
+    DB_DIR_LIST,
     USAGE_NAME_MAPPING,
     check_empty_row,
-    delete_old_cp_records,
+    delete_old_data,
     get_blend_by_name,
+    get_country_dict_from_db_file,
+    get_cp_report_for_db_import,
     get_substance_by_name,
-    get_cp_report,
+    get_year_dict_from_db_file,
 )
 
 from core.models import (
-    Country,
     CountryProgrammeRecord,
     Usage,
 )
 from core.models.country_programme import CountryProgrammeUsage
 
 logger = logging.getLogger(__name__)
-
-DB_DIR_LIST = ["CP", "CP2012"]
 
 SECTION = "A"
 
@@ -39,70 +38,6 @@ NON_USAGE_FIELDS = {
     "DateCreated",
     "DateUpdated",
 }
-
-
-def get_country_dict(file_name):
-    """
-    Parse country json file and create a dictionary
-    @param file_name = str (file path for import file)
-
-    @return country_dict = dict
-        - struct: {
-            country_cp_id: {
-                "id": county_id,
-                "name": country_name
-            }
-        }
-    """
-    country_dict = {}
-    with open(file_name, "r", encoding="utf8") as f:
-        json_data = json.load(f)
-
-    for country_json in json_data:
-        country_name = COUNTRY_NAME_MAPPING.get(
-            country_json["Country"].strip(), country_json["Country"]
-        )
-
-        if "test" in country_name.lower() or "article 5" in country_name.lower():
-            # set test countries to be skipped in the future
-            country_dict[country_json["CountryId"]] = {
-                "id": None,
-                "name": "test",
-            }
-            continue
-
-        country = Country.objects.get_by_name(country_name).first()
-        if not country:
-            logger.warning(
-                f"Country not found: {country_json['Country']} "
-                f"(CountryId: {country_json['CountryId']})",
-            )
-            continue
-
-        country_dict[country_json["CountryId"]] = {
-            "id": country.id,
-            "name": country.name,
-        }
-
-    return country_dict
-
-
-def get_year_dict(file_name):
-    """
-    Parse year json file and create a dictionary
-    @param file_name = str (file path for import file)
-
-    @return year_dict = dict
-        - struct: {year_cp_id: year}
-    """
-    year_dict = {}
-    with open(file_name, "r", encoding="utf8") as f:
-        json_data = json.load(f)
-
-    for year_json in json_data:
-        year_dict[year_json["ProjectDateId"]] = year_json["ProjectDate"]
-
-    return year_dict
 
 
 def get_chemical_dict(file_name):
@@ -183,37 +118,6 @@ def set_usages_dict(current_usages_dict, item_attributes):
         current_usages_dict[usage_key] = usage.id
 
 
-def check_item_attributes(item, country_dict, year_dict, chemical_dict):
-    """
-    Check if item attributes are valid
-    @param item = dict
-    @param country_dict = dict
-    @param year_dict = dict
-    @param chemical_dict = dict
-
-    @return is_valid = bool
-    """
-    if item["CountryId"] not in country_dict:
-        logger.warning(
-            f"Country not found: {item['CountryId']} "
-            f"(ItemAttirbutesId: {item['ItemAttirbutesId']})"
-        )
-        return False
-    if item["ProjectDateId"] not in year_dict:
-        logger.warning(
-            f"Year not found: {item['ProjectDateId']} "
-            f"(ItemAttirbutesId: {item['ItemAttirbutesId']})"
-        )
-        return False
-    if item["ItemId"] not in chemical_dict:
-        logger.warning(
-            f"Chemical not found: {item['ItemId']} "
-            f"(ItemAttirbutesId: {item['ItemAttirbutesId']})"
-        )
-        return False
-    return True
-
-
 def parse_record_data(item_attributes_file, country_dict, year_dict, chemical_dict):
     with open(item_attributes_file, "r", encoding="utf8") as f:
         json_data = json.load(f)
@@ -221,22 +125,24 @@ def parse_record_data(item_attributes_file, country_dict, year_dict, chemical_di
     current_usages_dict = {}
     cp_usages = []
     for item in json_data:
-        # skip for incorrect data
-        if not check_item_attributes(item, country_dict, year_dict, chemical_dict):
-            continue
-        year = year_dict[item["ProjectDateId"]]
-        country = country_dict[item["CountryId"]]
-
-        # skip test country
-        if country["name"] == "test":
+        # check if chemical exists in dictionary
+        if item["ItemId"] not in chemical_dict:
+            logger.warning(
+                f"Chemical not found: {item['ItemId']} "
+                f"(EntryID: {item['ItemAttirbutesId']})"
+            )
             continue
 
         # get country programme report
-        cp_rep = get_cp_report(
-            year,
-            country["name"],
-            country["id"],
+        cp_rep = get_cp_report_for_db_import(
+            year_dict,
+            country_dict,
+            item,
+            logger,
+            item["ItemAttirbutesId"],
         )
+        if not cp_rep:
+            continue
 
         # get chemical
         substance_id = None
@@ -288,17 +194,17 @@ def parse_db_files(db_dir_path):
     Parse database files
     @param db_dir_path = str (directory path for database files)
     """
-    country_dict = get_country_dict(f"{db_dir_path}/Country.json")
+    country_dict = get_country_dict_from_db_file(f"{db_dir_path}/Country.json", logger)
     logger.info("✔ country file parsed" + str(len(country_dict)))
 
-    year_dict = get_year_dict(f"{db_dir_path}/ProjectYear.json")
+    year_dict = get_year_dict_from_db_file(f"{db_dir_path}/ProjectYear.json")
     logger.info("✔ year file parsed")
 
     chemical_dict = get_chemical_dict(f"{db_dir_path}/Item.json")
     logger.info("✔ chemical file parsed" + str(len(chemical_dict)))
 
     item_attributes_file = f"{db_dir_path}/ItemAttributes.json"
-    delete_old_cp_records(item_attributes_file, logger)
+    delete_old_data(CountryProgrammeRecord, item_attributes_file, logger)
     parse_record_data(item_attributes_file, country_dict, year_dict, chemical_dict)
     logger.info(f"✔ records from {db_dir_path} imported")
 
@@ -310,4 +216,5 @@ def import_records_from_databases():
     """
     db_dir_path = settings.IMPORT_DATA_DIR / "databases"
     for dir_name in DB_DIR_LIST:
+        logger.info(f"⏳ importing records from {dir_name}")
         parse_db_files(db_dir_path / dir_name)

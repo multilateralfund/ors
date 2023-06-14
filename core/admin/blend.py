@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from core.admin.utils import get_final_display_list
 from core.models.blend import Blend, BlendAltName, BlendComponents
 
@@ -22,6 +23,7 @@ class BlendAdmin(admin.ModelAdmin):
             "blendaltname",
             "excludedusage",
             "excluded_usages",
+            "admrecord",
         ]
         return get_final_display_list(Blend, exclude)
 

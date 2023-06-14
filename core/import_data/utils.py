@@ -1,8 +1,11 @@
+import json
 from core.models.blend import Blend, BlendAltName, BlendComponents
-from core.models.country_programme import CountryProgrammeReport, CountryProgrammeRecord
+from core.models.country import Country
+from core.models.country_programme import CountryProgrammeReport
 from core.models.substance import Substance, SubstanceAltName
 
 
+# --- mapping dictionaries ---
 COUNTRY_NAME_MAPPING = {
     "Brunei Darussalan": "Brunei Darussalam",
     "Cap Verde": "Cabo Verde",
@@ -33,7 +36,17 @@ CHEMICAL_NAME_MAPPING = {
     "R-125 (65.1%), R-134a  -  (31.5%)": "R-422D",
 }
 
+# --- list of db names ---
+DB_DIR_LIST = ["CP", "CP2012"]
 
+# --- list of country names that can be skipped ---
+SKIP_COUNTRY_LIST = [
+    "global",
+    "zaire",
+]
+
+
+# --- import utils ---
 def parse_string(string_value):
     """
     remove white spaces and convert to lower case
@@ -44,16 +57,16 @@ def parse_string(string_value):
     return string_value.strip().lower()
 
 
-def delete_old_cp_records(source, logger):
+def delete_old_data(cls, source_file, logger):
     """
-    delete old records from db
-    @param source: string source name
+    Delete old data from db for a specific source file
+
+    @param cls: Class instance
+    @param source_file: string source file name
     @param logger: logger object
     """
-    CountryProgrammeRecord.objects.filter(
-        source_file__iexact=source.lower()
-    ).all().delete()
-    logger.info(f"✔ old records from {source} deleted")
+    cls.objects.filter(source_file__iexact=str(source_file).lower()).all().delete()
+    logger.info(f"✔ old  {cls.__name__} from {source_file} deleted")
 
 
 def get_substance_by_name(substance_name):
@@ -166,6 +179,7 @@ def get_object_by_name(cls, obj_name, index_row, obj_type_name, logger):
     return obj
 
 
+# --- xlsx import utils ---
 def check_empty_row(row, index_row, quantity_columns, logger):
     """
     check if the row has negative values and if it's empty
@@ -191,3 +205,114 @@ def check_empty_row(row, index_row, quantity_columns, logger):
             f"The following columns have negative values: {negative_values}"
         )
     return is_empty
+
+
+# --- cp databases import utils ---
+def get_cp_report_for_db_import(year_dict, country_dict, json_entry, logger, entry_id):
+    """
+    get or create country program report object by year and country
+    @param year_dict = dict
+    @param country_dict = dict
+    @param json_entry = dict (json entry)
+    @param logger = logger object
+    @param entry_id = int
+
+    @return country_program = CountryProgrammeReport object
+    """
+
+    # check if year and country exists in dictioanries
+    if json_entry["CountryId"] not in country_dict:
+        logger.warning(
+            f"Country not found: {json_entry['CountryId']} (EntryID: {entry_id})"
+        )
+        return None
+    if json_entry["ProjectDateId"] not in year_dict:
+        logger.warning(
+            f"Year not found: {json_entry['ProjectDateId']} (EntryID: {entry_id})"
+        )
+        return None
+
+    year = year_dict[json_entry["ProjectDateId"]]
+    country = country_dict[json_entry["CountryId"]]
+
+    # skip test country
+    if country["name"] == "test":
+        return None
+
+    # get cp report id
+    cp_report = get_cp_report(year, country["name"], country["id"])
+    return cp_report
+
+
+def get_country_dict_from_db_file(file_name, logger):
+    """
+    Parse country json file and create a dictionary
+    @param file_name = str (file path for import file)
+
+    @return country_dict = dict
+        - struct: {
+            country_cp_id: {
+                "id": county_id,
+                "name": country_name
+            }
+        }
+    """
+    country_dict = {}
+    with open(file_name, "r", encoding="utf8") as f:
+        json_data = json.load(f)
+
+    for country_json in json_data:
+        country_name = COUNTRY_NAME_MAPPING.get(
+            country_json["Country"].strip(), country_json["Country"]
+        )
+
+        # skip countries
+        if country_name.lower() in SKIP_COUNTRY_LIST:
+            continue
+
+        if "test" in country_name.lower() or "article 5" in country_name.lower():
+            # set test countries to be skipped in the future
+            country_dict[country_json["CountryId"]] = {
+                "id": None,
+                "name": "test",
+            }
+            continue
+
+        country = Country.objects.get_by_name(country_name).first()
+        if not country:
+            logger.warning(
+                f"Country not found: {country_json['Country']} "
+                f"(CountryId: {country_json['CountryId']})",
+            )
+            continue
+
+        country_dict[country_json["CountryId"]] = {
+            "id": country.id,
+            "name": country.name,
+        }
+
+    # add test country with id = 0
+    country_dict[0] = {
+        "id": None,
+        "name": "test",
+    }
+
+    return country_dict
+
+
+def get_year_dict_from_db_file(file_name):
+    """
+    Parse year json file and create a dictionary
+    @param file_name = str (file path for import file)
+
+    @return year_dict = dict
+        - struct: {year_cp_id: year}
+    """
+    year_dict = {}
+    with open(file_name, "r", encoding="utf8") as f:
+        json_data = json.load(f)
+
+    for year_json in json_data:
+        year_dict[year_json["ProjectDateId"]] = year_json["ProjectDate"]
+
+    return year_dict

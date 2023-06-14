@@ -8,6 +8,7 @@ from django.conf import settings
 from core.import_data.utils import (
     COUNTRY_NAME_MAPPING,
     SUBSECTOR_NAME_MAPPING,
+    delete_old_data,
     get_object_by_name,
     parse_string,
 )
@@ -161,20 +162,13 @@ def parse_file(file_path, file_name):
         create_submission_amount(project_submission, row)
 
 
-def drop_old_data(file_name):
-    ProjectSubmission.objects.filter(
-        source_file__iexact=file_name.lower()
-    ).all().delete()
-    logger.info("✔ old data deleted")
-
-
 def import_proposals():
     file_names = ["tbProposalsNew90.xlsx", "tbProposalsNew91.xlsx"]
     for file_name in file_names:
-        logger.info(f"importing {file_name}")
+        logger.info(f"⏳ importing {file_name}")
         file_path = settings.IMPORT_DATA_DIR / "proposals" / file_name
 
-        drop_old_data(file_name)
+        delete_old_data(ProjectSubmission, file_name, logger)
         parse_file(file_path, file_name)
 
     logger.info("✔ proposals imported")

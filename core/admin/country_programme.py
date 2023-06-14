@@ -1,12 +1,12 @@
+from admin_auto_filters.filters import AutocompleteFilterFactory
 from django.contrib import admin
+
 from core.admin.utils import get_final_display_list
 from core.models.country_programme import (
     CountryProgrammeRecord,
     CountryProgrammeReport,
     CountryProgrammeUsage,
 )
-
-from admin_auto_filters.filters import AutocompleteFilterFactory
 
 
 @admin.register(CountryProgrammeReport)
@@ -15,7 +15,7 @@ class CountryProgrammeReportAdmin(admin.ModelAdmin):
     list_filter = [AutocompleteFilterFactory("country", "country"), "year"]
 
     def get_list_display(self, request):
-        exclude = ["price", "countryprogrammerecord", "usage", "comment"]
+        exclude = ["price", "countryprogrammerecord", "usage", "comment", "adm_records"]
         return get_final_display_list(CountryProgrammeReport, exclude)
 
 
