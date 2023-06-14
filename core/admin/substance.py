@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from core.admin.utils import get_final_display_list
 from core.models.substance import Substance, SubstanceAltName
 
@@ -29,5 +30,6 @@ class SubstanceAdmin(admin.ModelAdmin):
             "substancealtname",
             "excludedusage",
             "excluded_usages",
+            "admrecord",
         ]
         return get_final_display_list(Substance, exclude)
