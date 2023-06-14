@@ -15,7 +15,7 @@ import { EmailVerificationPage } from './pages/auth/EmailVerificationPage'
 import { HomePage } from './pages/HomePage'
 import { RequireUser } from './layouts/RequireUser'
 import { UnauthorizedPage } from './pages/UnauthorizePage'
-import { ReportsPage } from './pages/Reports'
+import { ReportsPage } from './pages/ReportsPage'
 
 const auth = (component: React.ReactElement, isFooter = false) => (
   <LoggedInLayout isFooter={isFooter}>{component}</LoggedInLayout>

@@ -5,6 +5,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
+        ("core", "0024_merge_20230614_0758"),
         ("core", "0024_countryprogrammerecord_export_quotas_and_more"),
     ]
 

@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from core.admin.utils import get_final_display_list
 from core.models.country import Country, Region, Subregion
 

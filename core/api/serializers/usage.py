@@ -15,4 +15,4 @@ class UsageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Usage
-        fields = ["id", "name", "sort_order", "children"]
+        fields = ["id", "name", "full_name", "sort_order", "children"]

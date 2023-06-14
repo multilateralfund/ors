@@ -80,7 +80,7 @@ def import_columns(source_file):
 def parse_strings_file(strings_file_name):
     """
     Import strings from json file
-    ! this strings represents the text for admB rows
+    ! these strings represents the text for admB rows
 
     @param strings_file_name = str (file path for import file)
 

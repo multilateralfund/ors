@@ -1,10 +1,17 @@
+import { Cell } from '@tanstack/react-table'
+
 export type GroupSubstance = {
   id: number
   name: string
-  annex: string
   name_alt: string
-  description: string
   substances: Substance[] | null
+}
+
+export type Chemical = {
+  id: number
+  label: string
+  excluded_usages: number[]
+  blend?: boolean
 }
 
 export type Substance = {
@@ -13,17 +20,45 @@ export type Substance = {
   description: string
   formula: string
   sort_order: number
-  group: GroupSubstance | null
+  is_captured: boolean
+  is_contained_in_polyols: boolean
+  odp: string
+  excluded_usages: number[]
+}
+export type Blend = {
+  id: number
+  name: string
+  other_names: string
+  sort_order: number
+  excluded_usages: number[]
+  blend?: boolean
 }
 
 export type Usage = {
   id: number
   name: string
   full_name: string
-  description: string | null | undefined
-  parent: {
-    id: number
-    name: string
-    parent: number
-  }
+  sort_order: number
+  children: Usage[]
+}
+
+export enum SectionsEnum {
+  SectionA = 'A',
+  SectionB = 'B',
+  SectionC = 'C',
+  SectionD = 'D',
+}
+
+export type SectionsType = {
+  label: string
+  key?: string
+  usages?: string[]
+  substances?: string[]
+}
+
+export type TableColumnType<DataT> = {
+  header: string
+  accessorKey?: string
+  cell?: (cell?: Cell<DataT, unknown>) => void
+  columns?: TableColumnType<DataT>[]
 }

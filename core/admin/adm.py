@@ -1,4 +1,6 @@
+from admin_auto_filters.filters import AutocompleteFilterFactory
 from django.contrib import admin
+
 from core.admin.utils import get_final_display_list
 from core.models.adm import AdmColumn, AdmRecord, AdmRow, AdmChoice
 
@@ -20,6 +22,10 @@ class AdmRecordAdmin(admin.ModelAdmin):
         "country_programme_report__name",
         "row__text",
     ]
+    list_filter = [
+        AutocompleteFilterFactory("country", "country_programme_report__country"),
+        "country_programme_report__year",
+    ]
 
     def get_list_display(self, request):
         return get_final_display_list(AdmRecord, [])
@@ -29,9 +35,9 @@ class AdmRecordAdmin(admin.ModelAdmin):
 class AdmRowAdmin(admin.ModelAdmin):
     search_fields = [
         "text",
-        "type",
         "index",
     ]
+    list_filter = ["type"]
 
     def get_list_display(self, request):
         exclude = ["admrecord", "children"]
