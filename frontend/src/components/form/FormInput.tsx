@@ -2,8 +2,7 @@ import { FC, InputHTMLAttributes } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 import { twMerge } from 'tailwind-merge'
 import { InputError } from './InputError'
-import { IoHelpCircle } from 'react-icons/io5'
-import { Tooltip } from 'flowbite-react'
+import { FormTooltip } from './FormTooltip'
 
 type ButtonSize = 'xs' | 'sm' | 'lg'
 
@@ -54,14 +53,6 @@ export const FormInput: FC<IFormInputProps> = ({
     dark:focus:border-blue-500
   `)
 
-  const showTooltip = () => {
-    return (
-      <Tooltip content={tooltip} trigger="hover">
-        <IoHelpCircle />
-      </Tooltip>
-    )
-  }
-
   return (
     <Controller
       control={control}
@@ -72,14 +63,16 @@ export const FormInput: FC<IFormInputProps> = ({
           {inline ? (
             <div className="flex flex-row w-full justify-between items-center">
               <div className="flex items-center mb-2 text-sm font-medium text-gray-900 dark:text-white w-1/2 ">
-                <span className="mr-1">{label}</span> {tooltip && showTooltip()}
+                <span className="mr-1">{label}</span>{' '}
+                {tooltip && <FormTooltip content={tooltip} />}
               </div>
               <input className={inputClasses} {...field} {...otherProps} />
             </div>
           ) : (
             <>
               <div className="flex items-center mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                <span className="mr-1">{label}</span> {tooltip && showTooltip()}
+                <span className="mr-1">{label}</span>{' '}
+                {tooltip && <FormTooltip content={tooltip} />}
               </div>
               <input className={inputClasses} {...field} {...otherProps} />
             </>

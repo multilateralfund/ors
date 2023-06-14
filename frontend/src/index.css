@@ -55,3 +55,23 @@
   @apply bg-gray-100;
   @apply dark:bg-gray-600;
 }
+
+.select-search-container {
+  @apply w-full !important;
+}
+
+.select-search-input {
+  @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg !important;
+  @apply dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 !important;
+  @apply h-9 !important;
+}
+.select-search-select {
+  @apply top-10 !important;
+}
+
+.select-search-option,
+.select-search-not-found {
+  @apply text-sm !important;
+  @apply px-2 !important;
+  @apply h-9 !important;
+}
