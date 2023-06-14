@@ -238,7 +238,6 @@ def get_chemical_and_check_gwp(chemical_name, gwp_value, index_row):
     if chemical_type == "substance":
         return chemical, None
 
-    # chemical_type == "blend"
     return None, chemical
 
 

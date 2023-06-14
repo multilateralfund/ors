@@ -107,7 +107,7 @@ def create_adm_rows_for_articles(file_name):
         json_data = json.load(f)
 
     for item_json in json_data:
-        # skip oitems that are not titles
+        # skip items that are not titles
         if not item_json["IsTitle"]:
             continue
 
