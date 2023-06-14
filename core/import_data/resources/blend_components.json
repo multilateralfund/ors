@@ -13025,6 +13025,17 @@
 },
 {
     "model": "core.blendcomponent",
+    "pk": 1416,
+    "fields": {
+        "blend": 497,
+        "substance": 111,
+        "percentage": "0.06100",
+        "component_name": "HFC-32",
+        "cnumber": ""
+    }
+},
+{
+    "model": "core.blendcomponent",
     "pk": 1387,
     "fields": {
         "blend": 402,
@@ -13109,6 +13120,28 @@
         "percentage": "0.24000",
         "component_name": "HFC-32",
         "cnumber": "0"
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1415,
+    "fields": {
+        "blend": 497,
+        "substance": 97,
+        "percentage": "0.09000",
+        "component_name": "HFC-125",
+        "cnumber": ""
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1406,
+    "fields": {
+        "blend": 495,
+        "substance": 97,
+        "percentage": "0.38000",
+        "component_name": "HFC-125",
+        "cnumber": ""
     }
 },
 {
@@ -13377,6 +13410,28 @@
 },
 {
     "model": "core.blendcomponent",
+    "pk": 1414,
+    "fields": {
+        "blend": 497,
+        "substance": 99,
+        "percentage": "0.84900",
+        "component_name": "HFC-134a",
+        "cnumber": ""
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1407,
+    "fields": {
+        "blend": 495,
+        "substance": 99,
+        "percentage": "0.49200",
+        "component_name": "HFC-134a",
+        "cnumber": ""
+    }
+},
+{
+    "model": "core.blendcomponent",
     "pk": 1399,
     "fields": {
         "blend": 493,
@@ -13575,6 +13630,17 @@
 },
 {
     "model": "core.blendcomponent",
+    "pk": 1408,
+    "fields": {
+        "blend": 495,
+        "substance": 101,
+        "percentage": "0.10000",
+        "component_name": "HFC-143a",
+        "cnumber": ""
+    }
+},
+{
+    "model": "core.blendcomponent",
     "pk": 1342,
     "fields": {
         "blend": 385,
@@ -13615,6 +13681,28 @@
         "percentage": "0.90000",
         "component_name": "HFC-152a",
         "cnumber": "0"
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1410,
+    "fields": {
+        "blend": 496,
+        "substance": 104,
+        "percentage": "0.95000",
+        "component_name": "HFC-227ea",
+        "cnumber": ""
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1401,
+    "fields": {
+        "blend": 494,
+        "substance": 104,
+        "percentage": "0.62000",
+        "component_name": "HFC-227ea",
+        "cnumber": ""
     }
 },
 {
@@ -13971,6 +14059,17 @@
 },
 {
     "model": "core.blendcomponent",
+    "pk": 1409,
+    "fields": {
+        "blend": 495,
+        "substance": 294,
+        "percentage": "0.02800",
+        "component_name": "HC-600a (isobutane)",
+        "cnumber": ""
+    }
+},
+{
+    "model": "core.blendcomponent",
     "pk": 1388,
     "fields": {
         "blend": 402,
@@ -14297,6 +14396,72 @@
         "percentage": "0.20000",
         "component_name": "HFO-1132",
         "cnumber": "0"
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1412,
+    "fields": {
+        "blend": 496,
+        "substance": 369,
+        "percentage": "0.02000",
+        "component_name": "Dodecafluorocyclohexane",
+        "cnumber": ""
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1405,
+    "fields": {
+        "blend": 494,
+        "substance": 369,
+        "percentage": "0.01000",
+        "component_name": "Dodecafluorocyclohexane",
+        "cnumber": ""
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1411,
+    "fields": {
+        "blend": 496,
+        "substance": 370,
+        "percentage": "0.02000",
+        "component_name": "1H-Perfluorohexane",
+        "cnumber": ""
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1403,
+    "fields": {
+        "blend": 494,
+        "substance": 370,
+        "percentage": "0.01000",
+        "component_name": "1H-Perfluorohexane",
+        "cnumber": ""
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1413,
+    "fields": {
+        "blend": 496,
+        "substance": 281,
+        "percentage": "0.01000",
+        "component_name": "Other (other halogenated Compounds)",
+        "cnumber": ""
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1402,
+    "fields": {
+        "blend": 494,
+        "substance": 281,
+        "percentage": "0.36000",
+        "component_name": "R-1327, R-1216, halocarbons",
+        "cnumber": ""
     }
 },
 {

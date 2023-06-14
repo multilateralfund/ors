@@ -27,6 +27,9 @@ class CountryProgrammeRecordAdmin(admin.ModelAdmin):
         AutocompleteFilterFactory("substance", "substance"),
         "country_programme_report__year",
     ]
+    search_fields = [
+        "country_programme_report__name",
+    ]
 
     def get_country(self, obj):
         return obj.country_programme_report.country
@@ -56,6 +59,7 @@ class CountryProgrammeUsageAdmin(admin.ModelAdmin):
     ]
     search_fields = [
         "usage__name",
+        "country_programme_record__country_programme_report__name",
     ]
 
     def get_list_display(self, request):

@@ -7,9 +7,8 @@ from django.conf import settings
 from core.import_data.utils import (
     DB_DIR_LIST,
     delete_old_data,
-    get_country_dict_from_db_file,
+    get_country_and_year_dict,
     get_cp_report_for_db_import,
-    get_year_dict_from_db_file,
 )
 
 from core.models.adm import AdmColumn, AdmRecord, AdmRow
@@ -263,13 +262,14 @@ def create_row(index, articles_dict, adm_rows):
     adm_row_data = articles_dict[index].copy()
     parent_index = adm_row_data.pop("parent_index")
     using_cfc = adm_row_data.pop("using_cfc")
+    cp_id = adm_row_data.pop("cp_id")
 
     adm_row, _ = AdmRow.objects.get_or_create(
         text=adm_row_data["text"],
         index=adm_row_data["index"],
         defaults=adm_row_data,
     )
-    adm_rows[adm_row_data["cp_id"]] = {
+    adm_rows[cp_id] = {
         "object": adm_row,
         "using_cfc": using_cfc,
     }
@@ -327,6 +327,8 @@ def create_row_from_notes(admb_entry, articles_without_text, notes):
         "text": text,
         **articles_without_text[admb_entry["Adm_B_Id"]],
     }
+    adm_row_data.pop("cp_id")
+
     parent_index = adm_row_data.pop("parent_index")
     adm_row_data["parent_row"] = AdmRow.objects.filter(index=parent_index).first()
     adm_row, _ = AdmRow.objects.get_or_create(
@@ -342,8 +344,6 @@ def import_adm_records(
     adm_rows,
     articles_without_text,
     notes,
-    year_dict,
-    country_dict,
 ):
     """
     Import admB records from json file
@@ -352,10 +352,9 @@ def import_adm_records(
     @param adm_rows = dict
     @param articles_without_text = dict
     @param notes = dict
-    @param year_dict = dict
-    @param country_dict = dict
 
     """
+    country_dict, year_dict = get_country_and_year_dict(file_data["dir_path"], logger)
     columns_dict = import_columns(file_data["admb_entries_file"])
 
     with open(file_data["admb_entries_file"], "r", encoding="utf8") as f:
@@ -450,11 +449,6 @@ def parse_db_files(dir_path, database_name):
     Import records from db files
     @param dir_path = str (directory path for import files)
     """
-    country_dict = get_country_dict_from_db_file(f"{dir_path}/Country.json", logger)
-    logger.info("✔ country file parsed" + str(len(country_dict)))
-
-    year_dict = get_year_dict_from_db_file(f"{dir_path}/ProjectYear.json")
-    logger.info("✔ year file parsed")
 
     strings_file_name = dir_path / "Strings.json"
     strings_dict = parse_strings_file(strings_file_name)
@@ -478,14 +472,13 @@ def parse_db_files(dir_path, database_name):
     file_data = {
         "admb_entries_file": admb_entries_file,
         "database_name": database_name,
+        "dir_path": dir_path,
     }
     import_adm_records(
         file_data,
         adm_rows,
         articles_without_text,
         notes,
-        year_dict,
-        country_dict,
     )
     logger.info("✔ admB records imported")
 

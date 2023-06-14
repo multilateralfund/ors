@@ -66,47 +66,34 @@ def delete_old_data(cls, source_file, logger):
     @param logger: logger object
     """
     cls.objects.filter(source_file__iexact=str(source_file).lower()).all().delete()
-    logger.info(f"✔ old  {cls.__name__} from {source_file} deleted")
+    logger.info(f"✔ old {cls.__name__} from {source_file} deleted")
 
 
-def get_substance_by_name(substance_name):
+def get_chemical_by_name(chemical_name, chemical_type):
     """
-    get substance by name or alt name (case insensitive)
-    @param substance_name: string subsance name
+    get chemical by name or alt name (case insensitive)
+    @param chemical_name: string chemical name
+    @param chemical_type: string chemical type (substance | blend)
 
-    @return: Substance object
+    @return: Substance object | Blend object | None
     """
-    if not substance_name:
+    if not chemical_name:
         return None
 
-    substance = Substance.objects.get_by_name(substance_name).first()
-    if substance:
-        return substance
+    if chemical_type == "substance":
+        cls, cls_alt_name = Substance, SubstanceAltName
+    elif chemical_type == "blend":
+        cls, cls_alt_name = Blend, BlendAltName
 
-    substance = SubstanceAltName.objects.get_by_name(substance_name).first()
-    if substance:
-        return substance.substance
+    chemical = cls.objects.get_by_name(chemical_name).first()
+    if chemical:
+        return chemical
 
-    return None
-
-
-def get_blend_by_name(blend_name):
-    """
-    get blend by name or alt name (case insensitive)
-    @param blend_name: string blend name
-
-    @return: int blend id
-    """
-    if not blend_name:
-        return None
-
-    blend = Blend.objects.get_by_name(blend_name).first()
-    if blend:
-        return blend
-
-    blend = BlendAltName.objects.get_by_name(blend_name).first()
-    if blend:
-        return blend.blend
+    chemical = cls_alt_name.objects.get_by_name(chemical_name).first()
+    if chemical:
+        if chemical_type == "substance":
+            return chemical.substance
+        return chemical.blend
 
     return None
 
@@ -119,7 +106,7 @@ def get_blend_by_name_or_components(blend_name, components):
 
     @return: int blend id
     """
-    blend = get_blend_by_name(blend_name)
+    blend = get_chemical_by_name(blend_name, "blend")
     if blend:
         return blend
 
@@ -127,7 +114,7 @@ def get_blend_by_name_or_components(blend_name, components):
         subst_prcnt = []
         for substance_name, percentage in components:
             try:
-                subst = get_substance_by_name(substance_name)
+                subst = get_chemical_by_name(substance_name, "substance")
                 if not subst:
                     return None
                 prcnt = float(percentage) / 100
@@ -138,6 +125,28 @@ def get_blend_by_name_or_components(blend_name, components):
         blend = BlendComponents.objects.get_blend_by_components(subst_prcnt)
 
     return blend
+
+
+def get_chemical_by_name_or_components(chemical_name, components=None):
+    """
+    get chemical by name or alt name (case insensitive) or components (blends)
+    @param chemical_name: string chemical name
+    @param components: list of tuples (substance_name, percentage) (for blends)
+
+    @return: tuple(object, string) (substance | blend, chemical_type)
+    """
+    if not chemical_name:
+        return None, None
+
+    substance = get_chemical_by_name(chemical_name, "substance")
+    if substance:
+        return substance, "substance"
+
+    blend = get_blend_by_name_or_components(chemical_name, components)
+    if blend:
+        return blend, "blend"
+
+    return None, None
 
 
 def get_cp_report(year, country_name, country_id):
@@ -242,6 +251,33 @@ def get_cp_report_for_db_import(year_dict, country_dict, json_entry, logger, ent
     # get cp report id
     cp_report = get_cp_report(year, country["name"], country["id"])
     return cp_report
+
+
+def get_country_and_year_dict(dir_path, logger):
+    """
+    Parse country and year json files and create dictionaries
+    @param country_file = str (file path for country import file)
+    @param year_file = str (file path for year import file)
+    @param logger = logger object
+
+    @return tuple(country_dict, year_dict) = tuple(dict, dict)
+        - struct: country_dict = {
+            country_cp_id: {
+                "id": county_id,
+                "name": country_name
+            }
+        }
+        - struct: year_dict = {year_cp_id: year}
+    """
+    country_file = dir_path / "Country.json"
+    country_dict = get_country_dict_from_db_file(country_file, logger)
+    logger.info("✔ country file parsed")
+
+    year_file = dir_path / "ProjectYear.json"
+    year_dict = get_year_dict_from_db_file(year_file)
+    logger.info("✔ year file parsed")
+
+    return country_dict, year_dict
 
 
 def get_country_dict_from_db_file(file_name, logger):

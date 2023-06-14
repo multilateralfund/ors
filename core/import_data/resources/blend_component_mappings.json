@@ -1,6 +1,28 @@
 [
 {
     "model": "core.blendcomponentmapping",
+    "pk": 146,
+    "fields": {
+        "party": null,
+        "party_blend_component": "Propane (HC-290)",
+        "substance": 291,
+        "remarks": "Found in MLFS data",
+        "created": "2023-06-12T14:48:26.903Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 145,
+    "fields": {
+        "party": null,
+        "party_blend_component": "Isobutane (HC-600a)",
+        "substance": 294,
+        "remarks": "Found in MLFS data",
+        "created": "2023-06-12T14:48:04.254Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
     "pk": 144,
     "fields": {
         "party": 50,
