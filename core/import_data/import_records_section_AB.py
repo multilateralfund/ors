@@ -8,10 +8,9 @@ from django.conf import settings
 from core.import_data.utils import (
     check_empty_row,
     delete_old_data,
-    get_chemical_by_name_or_components,
     get_cp_report,
     get_country,
-    parse_chemical_name,
+    get_chemical,
     OFFSET,
 )
 
@@ -111,8 +110,6 @@ def check_gwp_value(obj, gwp_value, index_row):
     @param obj = Substance or Blend
     @param gwp_value = float
     @param index_row = int
-
-    @return boolean
     """
     if isinstance(gwp_value, str):
         gwp_value = gwp_value.strip()
@@ -133,40 +130,6 @@ def check_gwp_value(obj, gwp_value, index_row):
             f"⚠️ [row: {index_row + OFFSET}] The gwp values are different "
             f"(file_value: {gwp_value}, database_value: {obj.gwp})"
         )
-
-
-def get_chemical_and_check_gwp(chemical_name, gwp_value, index_row):
-    """
-    parse chemical name from row and return substance_id or blend_id:
-        - if the chemical is a substance => return (substance_id, None)
-        - if the chemical is a blend => return (None, blend_id)
-        - if we can't find this chemical => return (None, None)
-    and check if the gwp_value is the same as chemical gwp value from database
-    @param chemical_name string
-    @param gwp_value float
-    @param index_row int
-
-    @return tuple => (int, None) or (None, int) or (None, None)
-    """
-
-    chemical_search_name, components = parse_chemical_name(chemical_name)
-    chemical, chemical_type = get_chemical_by_name_or_components(
-        chemical_search_name, components
-    )
-
-    if not chemical:
-        logger.warning(
-            f"[row: {index_row + OFFSET}]: "
-            f"This chemical does not exist: {chemical_name}, "
-            f"Searched name: {chemical_search_name}, searched components: {components}"
-        )
-        return None, None
-    check_gwp_value(chemical, gwp_value, index_row)
-
-    if chemical_type == "substance":
-        return chemical, None
-
-    return None, chemical
 
 
 # pylint: disable=R0914
@@ -223,11 +186,13 @@ def parse_sheet(df, file_details):
             chemical_name = "R-417A"
 
         gwp_value = row.get("gwp", None)
-        substance, blend = get_chemical_and_check_gwp(
-            chemical_name, gwp_value, index_row
+        substance, blend = get_chemical(
+            chemical_name, index_row, logger
         )
         if not substance and not blend:
             continue
+
+        check_gwp_value(substance or blend, gwp_value, index_row)
 
         # get odp value
         if file_details["convert_to_mt"]:

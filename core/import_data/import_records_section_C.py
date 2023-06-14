@@ -6,9 +6,8 @@ from django.conf import settings
 
 from core.import_data.utils import (
     get_cp_report,
-    get_chemical_by_name_or_components,
-    parse_chemical_name,
     get_country,
+    get_chemical,
     OFFSET,
 )
 from core.models import CountryProgrammePrices
@@ -54,37 +53,6 @@ def check_headers(df):
     return True
 
 
-def get_chemical(chemical_name, index_row):
-    """
-    parse chemical name from row and return substance_id or blend_id:
-        - if the chemical is a substance => return (substance_id, None)
-        - if the chemical is a blend => return (None, blend_id)
-        - if we can't find this chemical => return (None, None)
-    @param chemical_name string
-    @param index_row int
-
-    @return tuple => (int, None) or (None, int) or (None, None)
-    """
-
-    chemical_search_name, components = parse_chemical_name(chemical_name)
-    chemical, chemical_type = get_chemical_by_name_or_components(
-        chemical_search_name, components
-    )
-
-    if not chemical:
-        logger.warning(
-            f"[row: {index_row + OFFSET}]: "
-            f"This chemical does not exist: {chemical_name}, "
-            f"Searched name: {chemical_search_name}, searched components: {components}"
-        )
-        return None, None
-
-    if chemical_type == "substance":
-        return chemical, None
-
-    return None, chemical
-
-
 def parse_sheet(df):
     """
     parse the sheet and import the data in database
@@ -117,7 +85,7 @@ def parse_sheet(df):
         if chemical_name == "HFC-365mfc (93%)/HFC-227ea (7%) - mezcla":
             continue
 
-        substance, blend = get_chemical(chemical_name, index_row)
+        substance, blend = get_chemical(chemical_name, index_row, logger)
         if not substance and not blend:
             continue
 
