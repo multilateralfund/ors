@@ -14,6 +14,7 @@ from core.import_data.utils import (
     get_substance_by_name,
     get_country,
     parse_chemical_name,
+    OFFSET
 )
 
 from core.models import (
@@ -125,13 +126,13 @@ def check_gwp_value(obj, gwp_value, index_row):
         gwp_value = decimal.Decimal(gwp_value)
     except decimal.InvalidOperation:
         logger.warning(
-            f"⚠️ [row: {index_row}] The gwp value is not a number: {gwp_value}"
+            f"⚠️ [row: {index_row + OFFSET}] The gwp value is not a number: {gwp_value}"
         )
         return
 
     if abs(obj.gwp - gwp_value) > GWP_EPSILON:
         logger.warning(
-            f"⚠️ [row: {index_row}] The gwp values are different "
+            f"⚠️ [row: {index_row + OFFSET}] The gwp values are different "
             f"(file_value: {gwp_value}, database_value: {obj.gwp})"
         )
 
@@ -154,9 +155,10 @@ def get_chemical_and_check_gwp(chemical_name, gwp_value, index_row):
     chemical, chemical_type = get_chemical_by_name_or_components(
         chemical_search_name, components
     )
+
     if not chemical:
         logger.warning(
-            f"[row: {index_row}]: "
+            f"[row: {index_row + OFFSET}]: "
             f"This chemical does not exist: {chemical_name}, "
             f"Searched name: {chemical_search_name}, searched components: {components}"
         )
@@ -234,7 +236,7 @@ def parse_sheet(df, file_details):
             odp_value = substance.odp if substance else blend.odp
             if not odp_value:
                 logger.error(
-                    f"[row: {index_row}] The ODP value is not defined for this chemical:"
+                    f"[row: {index_row + OFFSET}] The ODP value is not defined for this chemical:"
                     f" {chemical_name}"
                 )
                 continue

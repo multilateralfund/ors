@@ -10,6 +10,7 @@ from core.import_data.utils import (
     get_blend_by_name_or_components,
     parse_chemical_name,
     get_country,
+    OFFSET
 )
 from core.models import CountryProgrammePrices
 
@@ -76,7 +77,7 @@ def get_chemical(chemical_name, index_row):
         return None, blend
 
     logger.warning(
-        f"[row: {index_row}]: "
+        f"[row: {index_row + OFFSET}]: "
         f"This chemical does not exist: {chemical_name}, "
         f"Searched name: {chemical_search_name}, searched components: {components}"
     )
@@ -147,7 +148,7 @@ def parse_sheet(df):
                     )
             # some price values are not decimals. skip them for now
             except ValueError:
-                logger.warning(f"⚠️ [row: {index_row}] Price value is not a number.")
+                logger.warning(f"⚠️ [row: {index_row + OFFSET}] Price value is not a number.")
 
             # try to complete some missing data from previous year report
             if previous_year_price:
@@ -158,7 +159,8 @@ def parse_sheet(df):
                             != previous_year_price
                         ):
                             logger.warning(
-                                f"⚠️  [row: {index_row}][country: {current_country['obj'].name}][substance: {chemical_name}]"
+                                f"⚠️  [row: {index_row + OFFSET}]"
+                                f"[country: {current_country['obj'].name}][substance: {chemical_name}]"
                                 f"[year: {report_details['year']}] Mismatch in price declaration."
                             )
                     else:

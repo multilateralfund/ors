@@ -7,6 +7,13 @@ from core.models.substance import Substance, SubstanceAltName
 from core.models.country import Country
 
 
+"""
+When we parse excel files, "index_row" is two steps behind. Because of this, the
+excel files are hard to check.
+Used only for logs.
+"""
+OFFSET = 2
+
 # --- mapping dictionaries ---
 COUNTRY_NAME_MAPPING = {
     "Brunei Darussalan": "Brunei Darussalam",
@@ -191,7 +198,7 @@ def get_object_by_name(cls, obj_name, index_row, obj_type_name, logger):
     obj = cls.objects.get_by_name(obj_name).first()
     if not obj:
         logger.info(
-            f"[row: {index_row}]: This {obj_type_name} does not exists in data base: {obj_name}"
+            f"[row: {index_row + OFFSET}]: This {obj_type_name} does not exists in data base: {obj_name}"
         )
 
     return obj
@@ -219,7 +226,7 @@ def check_empty_row(row, index_row, quantity_columns, logger):
     # log negative values
     if negative_values:
         logger.warning(
-            f"⚠️ [row: {index_row}] "
+            f"⚠️ [row: {index_row + OFFSET}] "
             f"The following columns have negative values: {negative_values}"
         )
     return is_empty
