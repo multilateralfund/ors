@@ -6,8 +6,7 @@ from django.conf import settings
 
 from core.import_data.utils import (
     get_cp_report,
-    get_substance_by_name,
-    get_blend_by_name_or_components,
+    get_chemical_by_name_or_components,
     parse_chemical_name,
     get_country,
     OFFSET
@@ -68,20 +67,22 @@ def get_chemical(chemical_name, index_row):
     """
 
     chemical_search_name, components = parse_chemical_name(chemical_name)
-    substance = get_substance_by_name(chemical_search_name)
-    if substance:
-        return substance, None
-
-    blend = get_blend_by_name_or_components(chemical_search_name, components)
-    if blend:
-        return None, blend
-
-    logger.warning(
-        f"[row: {index_row + OFFSET}]: "
-        f"This chemical does not exist: {chemical_name}, "
-        f"Searched name: {chemical_search_name}, searched components: {components}"
+    chemical, chemical_type = get_chemical_by_name_or_components(
+        chemical_search_name, components
     )
-    return None, None
+
+    if not chemical:
+        logger.warning(
+            f"[row: {index_row + OFFSET}]: "
+            f"This chemical does not exist: {chemical_name}, "
+            f"Searched name: {chemical_search_name}, searched components: {components}"
+        )
+        return None, None
+
+    if chemical_type == "substance":
+        return chemical, None
+
+    return None, chemical
 
 
 def parse_sheet(df):

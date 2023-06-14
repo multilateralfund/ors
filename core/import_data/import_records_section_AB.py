@@ -10,8 +10,6 @@ from core.import_data.utils import (
     delete_old_data,
     get_chemical_by_name_or_components,
     get_cp_report,
-    get_object_by_name,
-    get_substance_by_name,
     get_country,
     parse_chemical_name,
     OFFSET
