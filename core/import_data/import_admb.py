@@ -81,7 +81,7 @@ def import_columns(source_file):
 def parse_strings_file(strings_file_name):
     """
     Import strings from json file
-    ! this strings represents the text for admB rows
+    ! these strings represents the text for admB rows
 
     @param strings_file_name = str (file path for import file)
 
@@ -363,7 +363,7 @@ def import_adm_records(
 
     adm_records = []
     for admb_entry in admb_entries_json:
-        # get cp report id
+        # get cp report
         cp_report = get_cp_report_for_db_import(
             year_dict,
             country_dict,
