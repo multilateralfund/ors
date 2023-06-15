@@ -42,6 +42,11 @@ export type Usage = {
   children: Usage[]
 }
 
+export type Country = {
+  id: number
+  name: string
+}
+
 export enum SectionsEnum {
   SectionA = 'A',
   SectionB = 'B',

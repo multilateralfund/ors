@@ -5,6 +5,7 @@ import {
   Chemical,
   GroupSubstance,
   SectionsType,
+  Country,
 } from '@/types/Reports'
 import { RootState } from '../store'
 
@@ -20,6 +21,7 @@ interface SubstanceState {
   substances: GroupSubstance[]
   usage: Usage[]
   blends: Blend[]
+  countries: Country[]
   data: Record<string, ReportDataType[]>
 }
 
@@ -28,6 +30,7 @@ const initialState: SubstanceState = {
   usage: [],
   blends: [],
   data: {},
+  countries: [],
 }
 
 export const reportSlice = createSlice({
@@ -39,6 +42,9 @@ export const reportSlice = createSlice({
     },
     setUsage: (state, action: PayloadAction<Usage[]>) => {
       state.usage = action.payload
+    },
+    setCountries: (state, action: PayloadAction<Country[]>) => {
+      state.countries = action.payload
     },
     setBlends: (state, action: PayloadAction<Blend[]>) => {
       state.blends = action.payload
@@ -89,6 +95,7 @@ export const {
   setUsage,
   setReports,
   setBlends,
+  setCountries,
   updateReport,
   deleteReport,
 } = reportSlice.actions

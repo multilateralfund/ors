@@ -1,6 +1,11 @@
 import { EndpointBuilder } from '@reduxjs/toolkit/dist/query/endpointDefinitions'
-import { setSubstances, setUsage, setBlends } from '@/slices/reportSlice'
-import { Blend, GroupSubstance, Usage } from '@/types/Reports'
+import {
+  setSubstances,
+  setUsage,
+  setBlends,
+  setCountries,
+} from '@/slices/reportSlice'
+import { Blend, GroupSubstance, Usage, Country } from '@/types/Reports'
 
 export const reportEndpoints = (
   builder: EndpointBuilder<ReturnType<any>, string, 'api'>,
@@ -41,6 +46,19 @@ export const reportEndpoints = (
       try {
         const { data } = await queryFulfilled
         dispatch(setUsage(data))
+      } catch (error) {}
+    },
+  }),
+  getCountries: builder.query<Country[], null>({
+    query: () => ({
+      url: '/countries/',
+      method: 'GET',
+      credentials: 'include',
+    }),
+    async onQueryStarted(args, { dispatch, queryFulfilled }) {
+      try {
+        const { data } = await queryFulfilled
+        dispatch(setCountries(data))
       } catch (error) {}
     },
   }),

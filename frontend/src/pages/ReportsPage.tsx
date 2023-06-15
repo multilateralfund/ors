@@ -1,4 +1,11 @@
-import { FC, Fragment, useMemo } from 'react'
+import {
+  FC,
+  Fragment,
+  useMemo,
+  useState,
+  useEffect,
+  InputHTMLAttributes,
+} from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, Button as FlowButton } from 'flowbite-react'
 import {
@@ -7,7 +14,10 @@ import {
   getCoreRowModel,
   getExpandedRowModel,
   getPaginationRowModel,
+  getFilteredRowModel,
   ColumnDef,
+  Column,
+  Table as ReactTable,
 } from '@tanstack/react-table'
 import { Button } from '@/components/shared/Button'
 
@@ -50,16 +60,29 @@ export const Table = () => {
   const columns = useMemo<ColumnDef<any>[]>(
     () => [
       {
+        header: 'Country',
+        accessorKey: 'country',
+      },
+      {
         header: 'Period',
         accessorKey: 'period',
+        meta: {
+          filter: 'year',
+        },
       },
       {
         header: 'Status',
         accessorKey: 'status',
+        meta: {
+          filter: 'status',
+        },
       },
       {
         header: 'Last updated',
         accessorKey: 'last_updated',
+        meta: {
+          filter: 'date',
+        },
       },
       {
         header: 'Created by',
@@ -68,6 +91,7 @@ export const Table = () => {
       {
         header: 'Actions',
         accessorKey: 'action',
+        enableColumnFilter: false,
         cell: ({ row: { original } }) => {
           return (
             <div className="flex w-full justify-center">
@@ -90,12 +114,14 @@ export const Table = () => {
 
   const data: any[] = [
     {
+      country: 'Romania',
       period: 2023,
       status: 'In progress',
       last_updated: '02 June 2023',
       created_by: 'Secretariat',
     },
     {
+      country: 'France',
       period: 2023,
       status: 'Submitted',
       last_updated: '01 June 2023',
@@ -109,6 +135,7 @@ export const Table = () => {
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
   })
 
   return (
@@ -180,15 +207,67 @@ const TableHeaderActions = ({
   onAddBlends?: () => void
 }) => {
   return (
-    <div className="flex flex-col md:flex-row items-center justify-end space-y-3 md:space-y-0 md:space-x-4 p-4">
-      <div className="w-full flex items-center">
-        <h4 className="text-lg dark:text-white">All submissions</h4>
+    <div className="flex flex-col p-4">
+      <div className="w-full mb-2">
+        <h4 className="text-sm dark:text-white">All submissions</h4>
+      </div>
+      <div className="filters flex flex-wrap">
+        <div className="flex w-2/5 mr-2">
+          <label className="flex-shrink-0 z-10 inline-flex items-center py-1 px-2 text-sm font-medium text-center text-gray-500 bg-gray-100 border border-gray-300 rounded-l-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
+            Party
+          </label>
+          <select
+            id="states"
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-lg border-l-gray-100 dark:border-l-gray-700 border-l-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          >
+            <option selected>Choose a state</option>
+            <option value="CA">Europe</option>
+            <option value="TX">Romania</option>
+            <option value="WH">France</option>
+            <option value="FL">Spain</option>
+            <option value="VG">Germany</option>
+            <option value="GE">Italy</option>
+            <option value="MI">Finland</option>
+          </select>
+        </div>
+        <div className="flex w-2/5 mr-2">
+          <label className="flex-shrink-0 z-10 inline-flex items-center py-1 px-2 text-sm font-medium text-center text-gray-500 bg-gray-100 border border-gray-300 rounded-l-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
+            Status
+          </label>
+          <select
+            id="states"
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-lg border-l-gray-100 dark:border-l-gray-700 border-l-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          >
+            <option selected>Any</option>
+            <option value="TX">Data entry in progress</option>
+            <option value="FL">Submitted</option>
+            <option value="FL">Recalled</option>
+            <option value="FL">Processing</option>
+            <option value="WH">Finalized</option>
+          </select>
+        </div>
+        <div className="flex w-2/5 mr-2 mt-2">
+          <label className="flex-shrink-0 z-10 inline-flex items-center py-1 px-2 text-sm font-medium text-center text-gray-500 bg-gray-100 border border-gray-300 rounded-l-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
+            Status
+          </label>
+          <select
+            id="states"
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-lg border-l-gray-100 dark:border-l-gray-700 border-l-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          >
+            <option selected>Any</option>
+            <option value="TX">Data entry in progress</option>
+            <option value="FL">Submitted</option>
+            <option value="FL">Recalled</option>
+            <option value="FL">Processing</option>
+            <option value="WH">Finalized</option>
+          </select>
+        </div>
       </div>
     </div>
   )
 }
 
-const TablePagination = ({ table }: { table: any }) => {
+const TablePagination = ({ table }: { table: ReactTable<any> }) => {
   return (
     <nav
       className="flex items-center justify-between pt-4 px-2 pb-4"
@@ -200,7 +279,7 @@ const TablePagination = ({ table }: { table: any }) => {
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-16 p-1 mx-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
           value={table.getState().pagination.pageSize}
           onChange={e => {
-            table.setPageSize(Number(e.target.value))
+            // table.setPageSize(Number(e.target.value))
           }}
         >
           {[10, 20, 30, 40, 50].map(pageSize => (
@@ -266,5 +345,128 @@ const TablePagination = ({ table }: { table: any }) => {
         </li>
       </ul>
     </nav>
+  )
+}
+
+function Filter({
+  column,
+  table,
+}: {
+  column: Column<any, unknown>
+  table: ReactTable<any>
+}) {
+  const firstValue = table
+    .getPreFilteredRowModel()
+    .flatRows[0]?.getValue(column.id)
+
+  const columnFilterValue = column.getFilterValue()
+
+  // console.log(column.columnDef.meta)
+
+  const sortedUniqueValues = useMemo(
+    () =>
+      typeof firstValue === 'number'
+        ? []
+        : Array.from(column.getFacetedUniqueValues().keys()).sort(),
+    [column.getFacetedUniqueValues()],
+  )
+
+  return typeof firstValue === 'number' ? (
+    <div>
+      <div className="flex space-x-2">
+        <DebouncedInput
+          type="number"
+          min={Number(column.getFacetedMinMaxValues()?.[0] ?? '')}
+          max={Number(column.getFacetedMinMaxValues()?.[1] ?? '')}
+          value={(columnFilterValue as [number, number])?.[0] ?? ''}
+          onChange={value =>
+            column.setFilterValue((old: [number, number]) => [value, old?.[1]])
+          }
+          className="w-30"
+          placeholder="Min"
+        />
+        <DebouncedInput
+          type="number"
+          min={Number(column.getFacetedMinMaxValues()?.[0] ?? '')}
+          max={Number(column.getFacetedMinMaxValues()?.[1] ?? '')}
+          value={(columnFilterValue as [number, number])?.[1] ?? ''}
+          onChange={value =>
+            column.setFilterValue((old: [number, number]) => [old?.[0], value])
+          }
+          placeholder="Max"
+        />
+      </div>
+      <div className="h-1" />
+    </div>
+  ) : (
+    <>
+      <datalist id={column.id + 'list'}>
+        {sortedUniqueValues.slice(0, 5000).map((value: any) => (
+          <option value={value} key={value} />
+        ))}
+      </datalist>
+      <DebouncedInput
+        type="text"
+        value={(columnFilterValue ?? '') as string}
+        onChange={value => column.setFilterValue(value)}
+        placeholder={`Search...`}
+        list={column.id + 'list'}
+      />
+      <div className="h-1" />
+    </>
+  )
+}
+
+function DebouncedInput({
+  value: initialValue,
+  onChange,
+  debounce = 500,
+  ...props
+}: {
+  value: string | number
+  onChange: (value: string | number) => void
+  debounce?: number
+} & Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'>) {
+  const [value, setValue] = useState(initialValue)
+
+  const inputClasses = `
+    bg-gray-50
+    border
+    border-gray-300
+    text-gray-900
+    sm:text-xs
+    rounded-lg
+    focus:ring-primary-600
+    focus:border-primary-600
+    block
+    w-full
+    p-1.5
+    dark:bg-gray-700
+    dark:border-gray-600
+    dark:placeholder-gray-400
+    dark:text-white
+    dark:focus:ring-blue-500
+    dark:focus:border-blue-500
+  `
+
+  useEffect(() => {
+    setValue(initialValue)
+  }, [initialValue])
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      onChange(value)
+    }, debounce)
+
+    return () => clearTimeout(timeout)
+  }, [value])
+
+  return (
+    <input
+      {...props}
+      className={inputClasses}
+      value={value}
+      onChange={e => setValue(e.target.value)}
+    />
   )
 }
