@@ -75,26 +75,12 @@ def parse_sheet(df):
 
         chemical_name = row["Controlled Substances"]
 
-        # I dont know what to do with this.
-        if chemical_name == "HFC-365mfc (93%)/HFC-227ea (7%) - mezcla":
-            logger.warning(
-                f"[row: {index_row + OFFSET}]: "
-                f"This chemical does not exist: {chemical_name}"
-            )
-            continue
-
         substance, blend = get_chemical(chemical_name, index_row, logger)
         if not substance and not blend:
             continue
 
         previous_year_prices_obj = None
         for report_details in REPORT_COLUMNS:
-            cp_report = get_cp_report(
-                int(report_details["year"]),
-                current_country["obj"].name,
-                current_country["obj"].id,
-            )
-
             try:
                 previous_year_text = row[report_details["previous"]]
                 previous_year_price = (
@@ -118,6 +104,26 @@ def parse_sheet(df):
                     f"⚠️ [row: {index_row + OFFSET}][year: {report_details['year']}] "
                     "Price value is not a number for current year"
                 )
+
+            remarks = row[report_details["remarks"]]
+
+            if not any(
+                [
+                    previous_year_price,
+                    previous_year_text,
+                    current_year_price,
+                    current_year_text,
+                    remarks,
+                ]
+            ):
+                # there is no data available for the current year
+                continue
+
+            cp_report = get_cp_report(
+                int(report_details["year"]),
+                current_country["obj"].name,
+                current_country["obj"].id,
+            )
 
             # try to complete some missing data from previous year report
             if previous_year_price:
@@ -166,7 +172,7 @@ def parse_sheet(df):
                 "previous_year_text": row[report_details["previous"]],
                 "current_year_price": current_year_price,
                 "current_year_text": current_year_text,
-                "remarks": row[report_details["remarks"]],
+                "remarks": remarks,
                 "display_name": chemical_name,
                 "source_file": FILE_NAME,
             }
@@ -178,14 +184,12 @@ def parse_sheet(df):
 
 
 def parse_file(file_path):
-    all_sheets = pd.read_excel(file_path, sheet_name=None)
-    for sheet_name, df in all_sheets.items():
-        if sheet_name.strip() == "Section C":
-            # replace nan with None
-            df = df.replace(np.nan, None)
-            # set column names to strings
-            df.columns = df.columns.astype(str)
-            parse_sheet(df)
+    df = pd.read_excel(file_path, sheet_name="Section C")
+    # replace nan with None
+    df = df.replace(np.nan, None)
+    # set column names to strings
+    df.columns = df.columns.astype(str)
+    parse_sheet(df)
 
 
 @transaction.atomic
@@ -193,7 +197,6 @@ def import_records():
     file_path = settings.IMPORT_DATA_DIR / "records" / FILE_NAME
 
     logger.info(f"⏳ parsing file: {FILE_NAME}")
-
     # before we import anything, we should delete all prices from previous imports
     delete_old_data(CountryProgrammePrices, FILE_NAME, logger)
 

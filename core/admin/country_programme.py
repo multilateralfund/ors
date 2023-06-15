@@ -82,6 +82,8 @@ class CountryProgrammePricesAdmin(admin.ModelAdmin):
         AutocompleteFilterFactory("substance", "substance"),
         "country_programme_report__year",
     ]
+    readonly_fields = ["country_programme_report"]
+    autocomplete_fields = ["blend", "substance"]
 
     def get_list_display(self, request):
         exclude = ["id", "source_file", "display_name"]

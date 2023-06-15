@@ -40,6 +40,7 @@ USAGE_NAME_MAPPING = {
 
 CHEMICAL_NAME_MAPPING = {
     "R-125 (65.1%), R-134a  -  (31.5%)": "R-422D",
+    "HFC-365mfc (93%)/HFC-227ea (7%) - mezcla": "CustMix-134",
 }
 
 # --- list of db names ---
