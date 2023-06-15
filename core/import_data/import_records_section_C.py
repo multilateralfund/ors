@@ -5,6 +5,8 @@ from django.db import transaction
 from django.conf import settings
 
 from core.import_data.utils import (
+    check_headers,
+    delete_old_data,
     get_cp_report,
     get_country,
     get_chemical,
@@ -19,22 +21,22 @@ REQUIRED_COLUMNS = [
 REPORT_COLUMNS = [
     {
         "previous": "2019 Previous year price",
-        "year": 2019,
+        "year": "2019",
         "remarks": "2019 Remarks",
     },
     {
         "previous": "2020 Previous year price",
-        "year": 2020,
+        "year": "2020",
         "remarks": "2020 Remarks",
     },
     {
         "previous": "2021 Previous year price",
-        "year": 2021,
+        "year": "2021",
         "remarks": "2021 Remarks",
     },
     {
         "previous": "2022 Previous year price",
-        "year": 2022,
+        "year": "2022",
         "remarks": "2022 Remarks",
     },
 ]
@@ -44,15 +46,6 @@ logger = logging.getLogger(__name__)
 FILE_NAME = "SectionC.xlsx"
 
 
-def check_headers(df):
-    for c in REQUIRED_COLUMNS:
-        if c not in df.columns:
-            logger.error("Invalid column list.")
-            logger.warning(f"The following columns are required: {REQUIRED_COLUMNS}")
-            return False
-    return True
-
-
 # pylint: disable=R1702
 def parse_sheet(df):
     """
@@ -60,7 +53,7 @@ def parse_sheet(df):
     @param df = pandas dataframe
     @param file_details = dict (file_name, session, convert_to_mt)
     """
-    if not check_headers(df):
+    if not check_headers(df, REQUIRED_COLUMNS, logger):
         logger.error("Couldn't parse this sheet")
         return
 
@@ -84,6 +77,10 @@ def parse_sheet(df):
 
         # I dont know what to do with this.
         if chemical_name == "HFC-365mfc (93%)/HFC-227ea (7%) - mezcla":
+            logger.warning(
+                f"[row: {index_row + OFFSET}]: "
+                f"This chemical does not exist: {chemical_name}"
+            )
             continue
 
         substance, blend = get_chemical(chemical_name, index_row, logger)
@@ -93,33 +90,33 @@ def parse_sheet(df):
         previous_year_prices_obj = None
         for report_details in REPORT_COLUMNS:
             cp_report = get_cp_report(
-                report_details["year"],
+                int(report_details["year"]),
                 current_country["obj"].name,
                 current_country["obj"].id,
             )
 
             try:
+                previous_year_text = row[report_details["previous"]]
                 previous_year_price = (
-                    float(row[report_details["previous"]])
-                    if row[report_details["previous"]]
-                    else None
+                    float(previous_year_text) if previous_year_text else None
                 )
-                # some years are digits and some are strings
-                current_year = report_details["year"]
-                try:
-                    current_year_text = row[current_year]
-                    current_year_price = (
-                        float(current_year_text) if current_year_text else None
-                    )
-                except KeyError:
-                    current_year_text = row[str(current_year)]
-                    current_year_price = (
-                        float(current_year_text) if current_year_text else None
-                    )
             # some price values are not decimals. skip them for now
             except ValueError:
                 logger.warning(
-                    f"⚠️ [row: {index_row + OFFSET}] Price value is not a number."
+                    f"⚠️ [row: {index_row + OFFSET}][year: {report_details['year']}] "
+                    "Price value is not a number for previous year"
+                )
+
+            try:
+                current_year_text = row[report_details["year"]]
+                current_year_price = (
+                    float(current_year_text) if current_year_text else None
+                )
+            # some price values are not decimals. skip them for now
+            except ValueError:
+                logger.warning(
+                    f"⚠️ [row: {index_row + OFFSET}][year: {report_details['year']}] "
+                    "Price value is not a number for current year"
                 )
 
             # try to complete some missing data from previous year report
@@ -142,7 +139,7 @@ def parse_sheet(df):
                         previous_year_prices_obj.save()
                 else:
                     previous_year_cp_report = get_cp_report(
-                        report_details["year"] - 1,
+                        int(report_details["year"]) - 1,
                         current_country["obj"].name,
                         current_country["obj"].id,
                     )
@@ -184,13 +181,21 @@ def parse_file(file_path):
     all_sheets = pd.read_excel(file_path, sheet_name=None)
     for sheet_name, df in all_sheets.items():
         if sheet_name.strip() == "Section C":
+            # replace nan with None
             df = df.replace(np.nan, None)
+            # set column names to strings
+            df.columns = df.columns.astype(str)
             parse_sheet(df)
 
 
 @transaction.atomic
 def import_records():
     file_path = settings.IMPORT_DATA_DIR / "records" / FILE_NAME
-    CountryProgrammePrices.objects.all().delete()
+
+    logger.info(f"⏳ parsing file: {FILE_NAME}")
+
+    # before we import anything, we should delete all prices from previous imports
+    delete_old_data(CountryProgrammePrices, FILE_NAME, logger)
+
     parse_file(file_path)
     logger.info(f"✔ records from {FILE_NAME} imported")

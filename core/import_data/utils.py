@@ -340,6 +340,23 @@ def get_year_dict_from_db_file(file_name):
 
 
 # --- xlsx import utils ---
+def check_headers(df, required_columns, logger):
+    """
+    check if the df has all the required columns
+    @param df = pandas dataFrame
+    @param required_columns = list
+    @param logger = logger object
+
+    @return boolean
+    """
+    for c in required_columns:
+        if c not in df.columns:
+            logger.error("Invalid column list.")
+            logger.warning(f"The following columns are required: {required_columns}")
+            return False
+    return True
+
+
 def check_empty_row(row, index_row, quantity_columns, logger):
     """
     check if the row has negative values and if it's empty
@@ -435,12 +452,13 @@ def get_country(country_name, index_row, logger):
 
 def get_chemical(chemical_name, index_row, logger):
     """
-    parse chemical name from row and return substance_id or blend_id:
-        - if the chemical is a substance => return (substance_id, None)
-        - if the chemical is a blend => return (None, blend_id)
+    parse chemical name from row and return substance or blend:
+        - if the chemical is a substance => return (substance, None)
+        - if the chemical is a blend => return (None, blend)
         - if we can't find this chemical => return (None, None)
-    @param chemical_name string
-    @param index_row int
+    @param chemical_name = string
+    @param index_row = int
+    @param logger = logger object
 
     @return tuple => (int, None) or (None, int) or (None, None)
     """

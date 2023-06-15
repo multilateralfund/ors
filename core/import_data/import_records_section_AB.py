@@ -7,6 +7,7 @@ from django.db import transaction
 from django.conf import settings
 from core.import_data.utils import (
     check_empty_row,
+    check_headers,
     delete_old_data,
     get_cp_report,
     get_country,
@@ -72,15 +73,6 @@ FILE_LIST = [
 GWP_EPSILON = 0.0001
 
 
-def check_headers(df):
-    for c in REQUIRED_COLUMNS:
-        if c not in df.columns:
-            logger.error("Invalid column list.")
-            logger.warning(f"The following columns are required: {REQUIRED_COLUMNS}")
-            return False
-    return True
-
-
 def get_usages_from_sheet(df):
     """
     parse the df columns and extract the usages
@@ -139,7 +131,7 @@ def parse_sheet(df, file_details):
     @param df = pandas dataframe
     @param file_details = dict (file_name, session, convert_to_mt)
     """
-    if not check_headers(df):
+    if not check_headers(df, REQUIRED_COLUMNS, logger):
         logger.error("Couldn't parse this sheet")
         return
     usage_dict = get_usages_from_sheet(df)
@@ -186,9 +178,7 @@ def parse_sheet(df, file_details):
             chemical_name = "R-417A"
 
         gwp_value = row.get("gwp", None)
-        substance, blend = get_chemical(
-            chemical_name, index_row, logger
-        )
+        substance, blend = get_chemical(chemical_name, index_row, logger)
         if not substance and not blend:
             continue
 
