@@ -1,9 +1,15 @@
 import json
+import re
 from core.models.blend import Blend, BlendAltName, BlendComponents
 from core.models.country import Country
 from core.models.country_programme import CountryProgrammeReport
 from core.models.substance import Substance, SubstanceAltName
 
+
+# When we parse excel files, "index_row" is two steps behind. Because of this, the
+# excel files are hard to check.
+# Used only for logs.
+OFFSET = 2
 
 # --- mapping dictionaries ---
 COUNTRY_NAME_MAPPING = {
@@ -34,6 +40,7 @@ USAGE_NAME_MAPPING = {
 
 CHEMICAL_NAME_MAPPING = {
     "R-125 (65.1%), R-134a  -  (31.5%)": "R-422D",
+    "HFC-365mfc (93%)/HFC-227ea (7%) - mezcla": "CustMix-134",
 }
 
 # --- list of db names ---
@@ -45,8 +52,15 @@ SKIP_COUNTRY_LIST = [
     "zaire",
 ]
 
+# "R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%)" => [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")]
+BLEND_COMPONENTS_RE = r"(\w{1,4}\-?\s?\w{2,7})\s?=?-?\s?\(?(\d{1,3}\.?\,?\d{,3})\%\)?"
+# "R23/R125/CO2/HFO-1132 (10%/10%/60%/20%)"
+BLEND_COMPOSITION_RE = r"((/[a-zA-Z0-9/-]{3,15})+\s?\(\d{1,3}\.?\,?\d{,2}?%)"
+
 
 # --- import utils ---
+
+
 def parse_string(string_value):
     """
     remove white spaces and convert to lower case
@@ -182,38 +196,10 @@ def get_object_by_name(cls, obj_name, index_row, obj_type_name, logger):
     obj = cls.objects.get_by_name(obj_name).first()
     if not obj:
         logger.info(
-            f"[row: {index_row}]: This {obj_type_name} does not exists in data base: {obj_name}"
+            f"[row: {index_row + OFFSET}]: This {obj_type_name} does not exists in data base: {obj_name}"
         )
 
     return obj
-
-
-# --- xlsx import utils ---
-def check_empty_row(row, index_row, quantity_columns, logger):
-    """
-    check if the row has negative values and if it's empty
-    @param row = pandas series
-    @param index_row = int
-    @param usage_dict = dict (column_name: Usage obj)
-
-    @return boolean (True if the row is empty)
-    """
-    # check if the row is empty
-    is_empty = True
-    negative_values = []
-    for colummn_name in quantity_columns:
-        if row.get(colummn_name, None):
-            is_empty = False
-            # check if the value is negative
-            if isinstance(row[colummn_name], (int, float)) and row[colummn_name] < 0:
-                negative_values.append(colummn_name)
-    # log negative values
-    if negative_values:
-        logger.warning(
-            f"⚠️ [row: {index_row}] "
-            f"The following columns have negative values: {negative_values}"
-        )
-    return is_empty
 
 
 # --- cp databases import utils ---
@@ -352,3 +338,149 @@ def get_year_dict_from_db_file(file_name):
         year_dict[year_json["ProjectDateId"]] = year_json["ProjectDate"]
 
     return year_dict
+
+
+# --- xlsx import utils ---
+def check_headers(df, required_columns, logger):
+    """
+    check if the df has all the required columns
+    @param df = pandas dataFrame
+    @param required_columns = list
+    @param logger = logger object
+
+    @return boolean
+    """
+    for c in required_columns:
+        if c not in df.columns:
+            logger.error("Invalid column list.")
+            logger.warning(f"The following columns are required: {required_columns}")
+            return False
+    return True
+
+
+def check_empty_row(row, index_row, quantity_columns, logger):
+    """
+    check if the row has negative values and if it's empty
+    @param row = pandas series
+    @param index_row = int
+    @param usage_dict = dict (column_name: Usage obj)
+
+    @return boolean (True if the row is empty)
+    """
+    # check if the row is empty
+    is_empty = True
+    negative_values = []
+    for colummn_name in quantity_columns:
+        if row.get(colummn_name, None):
+            is_empty = False
+            # check if the value is negative
+            if isinstance(row[colummn_name], (int, float)) and row[colummn_name] < 0:
+                negative_values.append(colummn_name)
+    # log negative values
+    if negative_values:
+        logger.warning(
+            f"⚠️ [row: {index_row + OFFSET}] "
+            f"The following columns have negative values: {negative_values}"
+        )
+    return is_empty
+
+
+def parse_chemical_name(chemical_name):
+    """
+    Parse chemical name from row and return chemical_search_name and components list:
+        e.g.:
+        R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%) =>
+            ("R-404A", [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")])
+        R125/R218/R290 (86%/9%/5%) =>
+            R125/R218/R290 (86%/9%/5%),   [('R125', '86'), ('R218', '9'), ('R290', '5')]
+        R23/Other uncontrolled substances (98%/2%) =>
+            R23/Other uncontrolled substances (98%/2%), [(R23, 98), (Other substances, 2)]
+        HFC-23 (use) => HFC-23, []
+    @param chemical_name string
+    @return tuple => (chemical_search_name, components)
+        - chemical_search_name = string
+        - components = list of tuple (substance_name, percentage)
+    """
+    # remove Fullwidth Right Parenthesis
+    chemical_name = chemical_name.replace("）", ")").strip()
+    chemical_name = CHEMICAL_NAME_MAPPING.get(chemical_name, chemical_name)
+
+    # HFC-23 (use) => HFC-23, []
+    if "(use)" in chemical_name:
+        chemical_name = chemical_name.replace("(use)", "").strip()
+        return chemical_name, []
+
+    # R23/Other uncontrolled substances (98%/2%)
+    # R32/R125/R134a/HFO (24%/25%/26%/25%)
+    if ("Other uncontrolled substances" in chemical_name) or (
+        re.search(BLEND_COMPOSITION_RE, chemical_name)
+    ):
+        chemical_name.replace("Other uncontrolled substances", "Other substances")
+
+        substances, percentages = chemical_name.split("(")
+        substances = substances.strip().split("/")
+
+        percentages = re.findall(r"(\d{1,3}\.?\,?\d{,3})\%", percentages)
+        if len(substances) != len(percentages):
+            return chemical_name, []
+        components = list(zip(substances, percentages))
+        return chemical_name, components
+
+    components = re.findall(BLEND_COMPONENTS_RE, chemical_name)
+    if components:
+        # check if the number of components is equal to the number of %
+        if chemical_name.count("%") != len(components):
+            # R-514A (HFO-1336mzz=74,7%, trans-Dicloroetileno=25,3%) => components = [HFO-1336mzz, 74.7]
+            components = []
+
+        components = [(c.replace(" ", "-").strip(), p) for c, p in components]
+        chemical_search_name = chemical_name.split("(")[0].strip()
+        return chemical_search_name, components
+
+    return chemical_name, components
+
+
+def get_country_by_name(country_name, index_row, logger):
+    """
+    get country object from country name
+    @param country_name = string
+    @param index_row = int
+    @param logger = logger object
+
+    @return Country object
+    """
+    country_name = COUNTRY_NAME_MAPPING.get(country_name, country_name)
+    country = get_object_by_name(Country, country_name, index_row, "country", logger)
+    return country
+
+
+def get_chemical(chemical_name, index_row, logger):
+    """
+    parse chemical name from row and return substance or blend:
+        - if the chemical is a substance => return (substance, None)
+        - if the chemical is a blend => return (None, blend)
+        - if we can't find this chemical => return (None, None)
+    @param chemical_name = string
+    @param index_row = int
+    @param logger = logger object
+
+    @return tuple => (int, None) or (None, int) or (None, None)
+    """
+
+    chemical_search_name, components = parse_chemical_name(chemical_name)
+    chemical, chemical_type = get_chemical_by_name_or_components(
+        chemical_search_name, components
+    )
+
+    if not chemical:
+        logger.warning(
+            f"[row: {index_row + OFFSET}]: "
+            f"This chemical does not exist: {chemical_name}, "
+            f"Searched name: {chemical_search_name}, searched components: {components}"
+        )
+        return None, None
+
+    if chemical_type == "substance":
+        return chemical, None
+
+    return None, chemical

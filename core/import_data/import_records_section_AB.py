@@ -1,23 +1,21 @@
 import decimal
 import logging
-import re
 import pandas as pd
 import numpy as np
 
 from django.db import transaction
 from django.conf import settings
 from core.import_data.utils import (
-    CHEMICAL_NAME_MAPPING,
-    COUNTRY_NAME_MAPPING,
     check_empty_row,
+    check_headers,
     delete_old_data,
-    get_chemical_by_name_or_components,
     get_cp_report,
-    get_object_by_name,
+    get_country_by_name,
+    get_chemical,
+    OFFSET,
 )
 
 from core.models import (
-    Country,
     CountryProgrammeRecord,
     Usage,
 )
@@ -71,22 +69,8 @@ FILE_LIST = [
     },
 ]
 
-# "R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%)" => [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")]
-BLEND_COMPONENTS_RE = r"(\w{1,4}\-?\s?\w{2,7})\s?=?-?\s?\(?(\d{1,3}\.?\,?\d{,3})\%\)?"
-# "R23/R125/CO2/HFO-1132 (10%/10%/60%/20%)"
-BLEND_COMPOSITION_RE = r"((/[a-zA-Z0-9/-]{3,15})+\s?\(\d{1,3}\.?\,?\d{,2}?%)"
-
 # error value for comparing gwp values
 GWP_EPSILON = 0.0001
-
-
-def check_headers(df):
-    for c in REQUIRED_COLUMNS:
-        if c not in df.columns:
-            logger.error("Invalid column list.")
-            logger.warning(f"The following columns are required: {REQUIRED_COLUMNS}")
-            return False
-    return True
 
 
 def get_usages_from_sheet(df):
@@ -112,80 +96,12 @@ def get_usages_from_sheet(df):
     return usage_dict
 
 
-def get_country(country_name, index_row):
-    """
-    get country object from country name
-    @param country_name = string
-    @param index_row = int
-    """
-    country_name = COUNTRY_NAME_MAPPING.get(country_name, country_name)
-    country = get_object_by_name(Country, country_name, index_row, "country", logger)
-    return country
-
-
-def parse_chemical_name(chemical_name):
-    """
-    Parse chemical name from row and return chemical_search_name and components list:
-        e.g.:
-        R-404A (HFC-125=44%, HFC-134a=4%, HFC-143a=52%) =>
-            ("R-404A", [("HFC-125", "44"), ("HFC-134a", "4"), ("HFC-143a", "52")])
-        R125/R218/R290 (86%/9%/5%) =>
-            R125/R218/R290 (86%/9%/5%),   [('R125', '86'), ('R218', '9'), ('R290', '5')]
-        R23/Other uncontrolled substances (98%/2%) =>
-            R23/Other uncontrolled substances (98%/2%), [(R23, 98), (Other substances, 2)]
-        HFC-23 (use) => HFC-23, []
-    @param chemical_name string
-    @return tuple => (chemical_search_name, components)
-        - chemical_search_name = string
-        - components = list of tuple (substance_name, percentage)
-    """
-    # remove Fullwidth Right Parenthesis
-    chemical_name = chemical_name.replace("）", ")").strip()
-    chemical_name = CHEMICAL_NAME_MAPPING.get(chemical_name, chemical_name)
-
-    # HFC-23 (use) => HFC-23, []
-    if "(use)" in chemical_name:
-        chemical_name = chemical_name.replace("(use)", "").strip()
-        return chemical_name, []
-
-    # R23/Other uncontrolled substances (98%/2%)
-    # R32/R125/R134a/HFO (24%/25%/26%/25%)
-    if ("Other uncontrolled substances" in chemical_name) or (
-        re.search(BLEND_COMPOSITION_RE, chemical_name)
-    ):
-        chemical_name.replace("Other uncontrolled substances", "Other substances")
-
-        substances, percentages = chemical_name.split("(")
-        substances = substances.strip().split("/")
-
-        percentages = re.findall(r"(\d{1,3}\.?\,?\d{,3})\%", percentages)
-        if len(substances) != len(percentages):
-            return chemical_name, []
-        components = list(zip(substances, percentages))
-        return chemical_name, components
-
-    components = re.findall(BLEND_COMPONENTS_RE, chemical_name)
-    if components:
-        # check if the number of components is equal to the number of %
-        if chemical_name.count("%") != len(components):
-            # R-514A (HFO-1336mzz=74,7%, trans-Dicloroetileno=25,3%) => components = [HFO-1336mzz, 74.7]
-            components = []
-
-        components = [(c.replace(" ", "-").strip(), p) for c, p in components]
-        chemical_search_name = chemical_name.split("(")[0].strip()
-        return chemical_search_name, components
-
-    return chemical_name, components
-
-
 def check_gwp_value(obj, gwp_value, index_row):
     """
     check if the gwp_value is the same as chemical gwp value from database
     @param obj = Substance or Blend
     @param gwp_value = float
     @param index_row = int
-
-    @return boolean
     """
     if isinstance(gwp_value, str):
         gwp_value = gwp_value.strip()
@@ -197,48 +113,15 @@ def check_gwp_value(obj, gwp_value, index_row):
         gwp_value = decimal.Decimal(gwp_value)
     except decimal.InvalidOperation:
         logger.warning(
-            f"⚠️ [row: {index_row}] The gwp value is not a number: {gwp_value}"
+            f"⚠️ [row: {index_row + OFFSET}] The gwp value is not a number: {gwp_value}"
         )
         return
 
     if abs(obj.gwp - gwp_value) > GWP_EPSILON:
         logger.warning(
-            f"⚠️ [row: {index_row}] The gwp values are different "
+            f"⚠️ [row: {index_row + OFFSET}] The gwp values are different "
             f"(file_value: {gwp_value}, database_value: {obj.gwp})"
         )
-
-
-def get_chemical_and_check_gwp(chemical_name, gwp_value, index_row):
-    """
-    parse chemical name from row and return substance_id or blend_id:
-        - if the chemical is a substance => return (substance_id, None)
-        - if the chemical is a blend => return (None, blend_id)
-        - if we can't find this chemical => return (None, None)
-    and check if the gwp_value is the same as chemical gwp value from database
-    @param chemical_name string
-    @param gwp_value float
-    @param index_row int
-
-    @return tuple => (int, None) or (None, int) or (None, None)
-    """
-
-    chemical_search_name, components = parse_chemical_name(chemical_name)
-    chemical, chemical_type = get_chemical_by_name_or_components(
-        chemical_search_name, components
-    )
-    if not chemical:
-        logger.warning(
-            f"[row: {index_row}]: "
-            f"This chemical does not exist: {chemical_name}, "
-            f"Searched name: {chemical_search_name}, searched components: {components}"
-        )
-        return None, None
-    check_gwp_value(chemical, gwp_value, index_row)
-
-    if chemical_type == "substance":
-        return chemical, None
-
-    return None, chemical
 
 
 # pylint: disable=R0914
@@ -248,7 +131,7 @@ def parse_sheet(df, file_details):
     @param df = pandas dataframe
     @param file_details = dict (file_name, session, convert_to_mt)
     """
-    if not check_headers(df):
+    if not check_headers(df, REQUIRED_COLUMNS, logger):
         logger.error("Couldn't parse this sheet")
         return
     usage_dict = get_usages_from_sheet(df)
@@ -270,7 +153,9 @@ def parse_sheet(df, file_details):
         # another country => another country program
         if row["country"] != current_country["name"]:
             current_country["name"] = row["country"]
-            current_country["obj"] = get_country(current_country["name"], index_row)
+            current_country["obj"] = get_country_by_name(
+                current_country["name"], index_row, logger
+            )
             if current_country["obj"]:
                 current_cp = get_cp_report(
                     row["year"], current_country["obj"].name, current_country["obj"].id
@@ -293,18 +178,18 @@ def parse_sheet(df, file_details):
             chemical_name = "R-417A"
 
         gwp_value = row.get("gwp", None)
-        substance, blend = get_chemical_and_check_gwp(
-            chemical_name, gwp_value, index_row
-        )
+        substance, blend = get_chemical(chemical_name, index_row, logger)
         if not substance and not blend:
             continue
+
+        check_gwp_value(substance or blend, gwp_value, index_row)
 
         # get odp value
         if file_details["convert_to_mt"]:
             odp_value = substance.odp if substance else blend.odp
             if not odp_value:
                 logger.error(
-                    f"[row: {index_row}] The ODP value is not defined for this chemical:"
+                    f"[row: {index_row + OFFSET}] The ODP value is not defined for this chemical:"
                     f" {chemical_name}"
                 )
                 continue

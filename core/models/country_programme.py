@@ -65,3 +65,37 @@ class CountryProgrammeUsage(models.Model):
     )
     usage = models.ForeignKey(Usage, on_delete=models.CASCADE)
     quantity = models.DecimalField(max_digits=25, decimal_places=15)
+
+
+class CountryProgrammePrices(models.Model):
+    country_programme_report = models.ForeignKey(
+        CountryProgrammeReport,
+        on_delete=models.CASCADE,
+    )
+    blend = models.ForeignKey(Blend, on_delete=models.CASCADE, null=True, blank=True)
+    substance = models.ForeignKey(
+        Substance, on_delete=models.CASCADE, null=True, blank=True
+    )
+    display_name = models.CharField(max_length=248, null=True, blank=True)
+    remarks = models.TextField(null=True, blank=True)
+    source_file = models.CharField(max_length=248)
+
+    previous_year_price = models.DecimalField(
+        max_digits=12, decimal_places=3, null=True, blank=True
+    )
+    previous_year_text = models.CharField(max_length=248, null=True, blank=True)
+
+    current_year_price = models.DecimalField(
+        max_digits=12, decimal_places=3, null=True, blank=True
+    )
+    current_year_text = models.CharField(max_length=248, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Country programme prices"
+
+    def __str__(self):
+        return (
+            self.country_programme_report.name
+            + " - "
+            + (self.blend.name if self.blend else self.substance.name)
+        )

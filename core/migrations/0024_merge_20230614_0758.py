@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0023_admchoice_admcolumn_admrow_admrecord'),
-        ('core', '0023_alter_country_options'),
+        ("core", "0023_admchoice_admcolumn_admrow_admrecord"),
+        ("core", "0023_alter_country_options"),
     ]
 
-    operations = [
-    ]
+    operations = []
