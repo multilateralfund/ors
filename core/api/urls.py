@@ -6,6 +6,7 @@ from core.api.views.country_programme import (
     CountryProgrammeReportListAPIView,
 )
 from core.api.views.usages import UsageListAPIView
+from core.api.views.countries import CountryListAPIView
 
 urlpatterns = [
     path("usages/", UsageListAPIView.as_view(), name="usages-list"),
@@ -24,5 +25,10 @@ urlpatterns = [
         "country-programme/records/",
         CountryProgrammeRecordListAPIView.as_view(),
         name="country-programme-record-list",
+    ),
+    path(
+        "countries",
+        CountryListAPIView.as_view(),
+        name="countries-list",
     ),
 ]
