@@ -116,7 +116,10 @@ def parse_sheet(df):
                     remarks,
                 ]
             ):
-                # there is no data available for the current year
+                # there is no data available for the current year.
+                # set previous_year_prices_obj to None to avoid the case in the
+                # next year has values that we can use for the curent year.
+                previous_year_prices_obj = None
                 continue
 
             cp_report = get_cp_report(
