@@ -8,7 +8,7 @@ from core.import_data.utils import (
     check_headers,
     delete_old_data,
     get_cp_report,
-    get_country,
+    get_country_by_name,
     get_chemical,
     OFFSET,
 )
@@ -65,7 +65,7 @@ def parse_sheet(df):
         # another country => another country program
         if row["Country"] != current_country["name"]:
             current_country["name"] = row["Country"]
-            current_country["obj"] = get_country(
+            current_country["obj"] = get_country_by_name(
                 current_country["name"], index_row, logger
             )
 

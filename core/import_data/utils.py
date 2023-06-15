@@ -439,11 +439,14 @@ def parse_chemical_name(chemical_name):
     return chemical_name, components
 
 
-def get_country(country_name, index_row, logger):
+def get_country_by_name(country_name, index_row, logger):
     """
     get country object from country name
     @param country_name = string
     @param index_row = int
+    @param logger = logger object
+
+    @return Country object
     """
     country_name = COUNTRY_NAME_MAPPING.get(country_name, country_name)
     country = get_object_by_name(Country, country_name, index_row, "country", logger)
