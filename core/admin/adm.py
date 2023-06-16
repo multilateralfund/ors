@@ -26,6 +26,8 @@ class AdmRecordAdmin(admin.ModelAdmin):
         AutocompleteFilterFactory("country", "country_programme_report__country"),
         "country_programme_report__year",
     ]
+    readonly_fields = ["country_programme_report"]
+    autocomplete_fields = ["row", "substance", "blend"]
 
     def get_list_display(self, request):
         return get_final_display_list(AdmRecord, [])
@@ -38,6 +40,7 @@ class AdmRowAdmin(admin.ModelAdmin):
         "index",
     ]
     list_filter = ["type"]
+    autocomplete_fields = ["parent_row"]
 
     def get_list_display(self, request):
         exclude = ["admrecord", "children"]

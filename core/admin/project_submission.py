@@ -14,6 +14,7 @@ class ProjectSubmissionAdmin(admin.ModelAdmin):
         "agency",
         "category",
     ]
+    autocomplete_fields = ["country", "subsector"]
 
     def get_list_display(self, request):
         exclude = ["submissionodsodp", "submissionamount"]

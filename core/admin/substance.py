@@ -10,6 +10,7 @@ class SubstanceAltNameAdmin(admin.ModelAdmin):
         "name",
         "substance__name",
     ]
+    autocomplete_fields = ["substance"]
 
     def get_list_display(self, request):
         return get_final_display_list(SubstanceAltName, [])

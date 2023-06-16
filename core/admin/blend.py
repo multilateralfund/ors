@@ -34,6 +34,7 @@ class BlendAltNameAdmin(admin.ModelAdmin):
         "name",
         "blend__name",
     ]
+    autocomplete_fields = ["blend"]
 
     def get_list_display(self, request):
         return get_final_display_list(BlendAltName, [])
@@ -45,6 +46,7 @@ class BlendComponentsAdmin(admin.ModelAdmin):
         "blend__name",
         "substance__name",
     ]
+    autocomplete_fields = ["blend", "substance"]
 
     def get_list_display(self, request):
         return get_final_display_list(BlendComponents, [])

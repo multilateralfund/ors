@@ -23,6 +23,7 @@ class ProjectSubSectorAdmin(admin.ModelAdmin):
     list_filter = [
         "sector",
     ]
+    autocomplete_fields = ["sector"]
 
     def get_list_display(self, request):
         exclude = ["projectsubmission"]
