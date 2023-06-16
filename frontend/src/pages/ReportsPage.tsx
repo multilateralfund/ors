@@ -262,7 +262,7 @@ const Filters = () => {
   const now = new Date().getUTCFullYear() + 1
   const years = Array(now - (now - 38))
     .fill('')
-    .map((v, idx) => now - idx) as Array<number>
+    .map((_, idx) => now - idx) as Array<number>
 
   return (
     <>
@@ -330,8 +330,15 @@ const Filters = () => {
           <select
             id="states"
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-lg border-l-gray-100 dark:border-l-gray-700 border-l-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            onChange={ev => {
+              dispatch(
+                setCountryReportsFilters({
+                  year: Number(ev.target.value),
+                }),
+              )
+            }}
           >
-            <option selected>Any</option>
+            <option>Any</option>
             {years.map(year => (
               <option key={`from-${year}`} value={year}>
                 {year}
@@ -347,7 +354,7 @@ const Filters = () => {
             id="states"
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-lg border-l-gray-100 dark:border-l-gray-700 border-l-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
           >
-            <option selected>Any</option>
+            <option>Any</option>
             {years.map(year => (
               <option key={`to-${year}`} value={year}>
                 {year}

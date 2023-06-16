@@ -62,7 +62,10 @@ export const reportSlice = createSlice({
       state,
       action: PayloadAction<CountryReportsFilters>,
     ) => {
-      state.countryReportsFilters = action.payload
+      state.countryReportsFilters = {
+        ...state.countryReportsFilters,
+        ...action.payload,
+      }
     },
     setReports: (
       state,
