@@ -1,11 +1,4 @@
-import {
-  FC,
-  Fragment,
-  useMemo,
-  useState,
-  useEffect,
-  InputHTMLAttributes,
-} from 'react'
+import { FC, Fragment, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, Button as FlowButton } from 'flowbite-react'
 import {
@@ -20,14 +13,25 @@ import {
   Table as ReactTable,
 } from '@tanstack/react-table'
 import { Button } from '@/components/shared/Button'
-import { useGetCountriesQuery } from '@/services/api'
-import { useSelector } from 'react-redux'
-import { selectCountries } from '@/slices/reportSlice'
+import { useGetCountriesQuery, useGetCountyReportsQuery } from '@/services/api'
+import { useSelector, useDispatch } from 'react-redux'
+import {
+  selectCountries,
+  selectCountryReports,
+  selectCountryReportsFilters,
+  setCountryReportsFilters,
+} from '@/slices/reportSlice'
+import { CountryReports, CountryReportsFilters } from '@/types/Reports'
 
 export const ReportsPage: FC = function () {
   const navigate = useNavigate()
-
   useGetCountriesQuery(null)
+
+  const filters = useSelector(selectCountryReportsFilters)
+
+  useGetCountyReportsQuery(filters)
+
+  const data = useSelector(selectCountryReports)
 
   return (
     <div className="mt-4 flex flex-col">
@@ -41,36 +45,26 @@ export const ReportsPage: FC = function () {
           </p>
           <Button onClick={() => navigate('/reports/create')}>Create</Button>
         </Card>
-        {/* <Card className="max-w-fit">
-          <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-            <p>Noteworthy technology acquisitions 2021</p>
-          </h5>
-          <p className="font-normal text-gray-700 dark:text-gray-400">
-            <p>
-              Here are the biggest enterprise technology acquisitions of 2021 so
-              far, in reverse chronological order.
-            </p>
-          </p>
-          <Button>
-            <p>Read more</p>
-          </Button>
-        </Card> */}
       </div>
-      <Table />
+      <Table data={data || []} />
     </div>
   )
 }
 
-export const Table = () => {
-  const columns = useMemo<ColumnDef<any>[]>(
+export const Table = ({ data }: { data: CountryReports[] }) => {
+  const columns = useMemo<ColumnDef<CountryReports>[]>(
     () => [
+      {
+        header: 'Report name',
+        accessorKey: 'name',
+      },
       {
         header: 'Country',
         accessorKey: 'country',
       },
       {
         header: 'Period',
-        accessorKey: 'period',
+        accessorKey: 'year',
         meta: {
           filter: 'year',
         },
@@ -81,17 +75,6 @@ export const Table = () => {
         meta: {
           filter: 'status',
         },
-      },
-      {
-        header: 'Last updated',
-        accessorKey: 'last_updated',
-        meta: {
-          filter: 'date',
-        },
-      },
-      {
-        header: 'Created by',
-        accessorKey: 'created_by',
       },
       {
         header: 'Actions',
@@ -117,23 +100,6 @@ export const Table = () => {
     [],
   )
 
-  const data: any[] = [
-    {
-      country: 'Romania',
-      period: 2023,
-      status: 'In progress',
-      last_updated: '02 June 2023',
-      created_by: 'Secretariat',
-    },
-    {
-      country: 'France',
-      period: 2023,
-      status: 'Submitted',
-      last_updated: '01 June 2023',
-      created_by: 'Party',
-    },
-  ]
-
   const table = useReactTable({
     data,
     columns,
@@ -147,7 +113,12 @@ export const Table = () => {
     <section className="bg-gray-50 dark:bg-gray-900 py-3 sm:py-5">
       <div className="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
         <div className="mx-auto">
-          <TableHeaderActions />
+          <div className="flex flex-col p-4">
+            <div className="w-full mb-2">
+              <h4 className="text-sm dark:text-white">All submissions</h4>
+            </div>
+            <Filters />
+          </div>
           <div className="relative overflow-x-auto">
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
               <thead className="text-sm text-gray-700 bg-gray-100 dark:bg-gray-700 dark:text-gray-400  dark:border-gray-600">
@@ -201,23 +172,6 @@ export const Table = () => {
         </div>
       </div>
     </section>
-  )
-}
-
-const TableHeaderActions = ({
-  onAddSubstances,
-  onAddBlends,
-}: {
-  onAddSubstances?: () => void
-  onAddBlends?: () => void
-}) => {
-  return (
-    <div className="flex flex-col p-4">
-      <div className="w-full mb-2">
-        <h4 className="text-sm dark:text-white">All submissions</h4>
-      </div>
-      <Filters />
-    </div>
   )
 }
 
@@ -303,7 +257,8 @@ const TablePagination = ({ table }: { table: ReactTable<any> }) => {
 }
 
 const Filters = () => {
-  const countries = useSelector(selectCountries)
+  const dispatch = useDispatch()
+  const countries = useSelector(selectCountries) || []
   const now = new Date().getUTCFullYear() + 1
   const years = Array(now - (now - 38))
     .fill('')
@@ -319,8 +274,15 @@ const Filters = () => {
           <select
             id="states"
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-lg border-l-gray-100 dark:border-l-gray-700 border-l-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            onChange={ev => {
+              dispatch(
+                setCountryReportsFilters({
+                  country_id: Number(ev.target.value),
+                }),
+              )
+            }}
           >
-            <option value="">Choose a state</option>
+            <option>Choose a state</option>
             {countries.map(country => (
               <option value={country.id} key={country.id}>
                 {country.name}
@@ -395,59 +357,5 @@ const Filters = () => {
         </div>
       </div>
     </>
-  )
-}
-
-function DebouncedInput({
-  value: initialValue,
-  onChange,
-  debounce = 500,
-  ...props
-}: {
-  value: string | number
-  onChange: (value: string | number) => void
-  debounce?: number
-} & Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'>) {
-  const [value, setValue] = useState(initialValue)
-
-  const inputClasses = `
-    bg-gray-50
-    border
-    border-gray-300
-    text-gray-900
-    sm:text-xs
-    rounded-lg
-    focus:ring-primary-600
-    focus:border-primary-600
-    block
-    w-full
-    p-1.5
-    dark:bg-gray-700
-    dark:border-gray-600
-    dark:placeholder-gray-400
-    dark:text-white
-    dark:focus:ring-blue-500
-    dark:focus:border-blue-500
-  `
-
-  useEffect(() => {
-    setValue(initialValue)
-  }, [initialValue])
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      onChange(value)
-    }, debounce)
-
-    return () => clearTimeout(timeout)
-  }, [value])
-
-  return (
-    <input
-      {...props}
-      className={inputClasses}
-      value={value}
-      onChange={e => setValue(e.target.value)}
-    />
   )
 }

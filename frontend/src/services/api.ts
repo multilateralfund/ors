@@ -93,4 +93,5 @@ export const {
   useGetUsageQuery,
   useGetBlendsQuery,
   useGetCountriesQuery,
+  useGetCountyReportsQuery,
 } = api

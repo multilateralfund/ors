@@ -6,6 +6,8 @@ import {
   GroupSubstance,
   SectionsType,
   Country,
+  CountryReports,
+  CountryReportsFilters,
 } from '@/types/Reports'
 import { RootState } from '../store'
 
@@ -21,8 +23,10 @@ interface SubstanceState {
   substances: GroupSubstance[]
   usage: Usage[]
   blends: Blend[]
-  countries: Country[]
+  countries?: Country[]
   data: Record<string, ReportDataType[]>
+  countryReports?: CountryReports[]
+  countryReportsFilters: CountryReportsFilters | null
 }
 
 const initialState: SubstanceState = {
@@ -31,6 +35,8 @@ const initialState: SubstanceState = {
   blends: [],
   data: {},
   countries: [],
+  countryReports: [],
+  countryReportsFilters: null,
 }
 
 export const reportSlice = createSlice({
@@ -48,6 +54,15 @@ export const reportSlice = createSlice({
     },
     setBlends: (state, action: PayloadAction<Blend[]>) => {
       state.blends = action.payload
+    },
+    setCountryReports: (state, action: PayloadAction<CountryReports[]>) => {
+      state.countryReports = action.payload
+    },
+    setCountryReportsFilters: (
+      state,
+      action: PayloadAction<CountryReportsFilters>,
+    ) => {
+      state.countryReportsFilters = action.payload
     },
     setReports: (
       state,
@@ -96,6 +111,8 @@ export const {
   setReports,
   setBlends,
   setCountries,
+  setCountryReports,
+  setCountryReportsFilters,
   updateReport,
   deleteReport,
 } = reportSlice.actions
@@ -153,5 +170,11 @@ export const selectRecordsDataBySection = (
   state.reports.data[`section-${sectionId}`] || []
 
 export const selectCountries = (state: RootState) => state.reports.countries
+
+export const selectCountryReports = (state: RootState) =>
+  state.reports.countryReports
+
+export const selectCountryReportsFilters = (state: RootState) =>
+  state.reports.countryReportsFilters
 
 export const reportsReducer = reportSlice.reducer

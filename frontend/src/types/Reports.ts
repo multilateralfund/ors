@@ -47,6 +47,21 @@ export type Country = {
   name: string
 }
 
+export type CountryReports = {
+  id: number
+  name: string
+  year: number
+  country: string
+  comment?: string
+  status?: string
+}
+
+export interface CountryReportsFilters {
+  country_id?: number
+  name?: string
+  year?: number
+}
+
 export enum SectionsEnum {
   SectionA = 'A',
   SectionB = 'B',

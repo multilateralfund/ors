@@ -4,8 +4,16 @@ import {
   setUsage,
   setBlends,
   setCountries,
+  setCountryReports,
 } from '@/slices/reportSlice'
-import { Blend, GroupSubstance, Usage, Country } from '@/types/Reports'
+import {
+  Blend,
+  GroupSubstance,
+  Usage,
+  Country,
+  CountryReports,
+  CountryReportsFilters,
+} from '@/types/Reports'
 
 export const reportEndpoints = (
   builder: EndpointBuilder<ReturnType<any>, string, 'api'>,
@@ -59,6 +67,23 @@ export const reportEndpoints = (
       try {
         const { data } = await queryFulfilled
         dispatch(setCountries(data))
+      } catch (error) {}
+    },
+  }),
+  getCountyReports: builder.query<
+    CountryReports[],
+    CountryReportsFilters | null
+  >({
+    query: params => ({
+      url: 'country-programme/reports/',
+      method: 'GET',
+      params,
+      credentials: 'include',
+    }),
+    async onQueryStarted(args, { dispatch, queryFulfilled }) {
+      try {
+        const { data } = await queryFulfilled
+        dispatch(setCountryReports(data))
       } catch (error) {}
     },
   }),
