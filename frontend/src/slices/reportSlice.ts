@@ -152,4 +152,6 @@ export const selectRecordsDataBySection = (
 ): ReportDataType[] | undefined =>
   state.reports.data[`section-${sectionId}`] || []
 
+export const selectCountries = (state: RootState) => state.reports.countries
+
 export const reportsReducer = reportSlice.reducer

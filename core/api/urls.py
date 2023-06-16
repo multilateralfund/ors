@@ -27,7 +27,7 @@ urlpatterns = [
         name="country-programme-record-list",
     ),
     path(
-        "countries",
+        "countries/",
         CountryListAPIView.as_view(),
         name="countries-list",
     ),

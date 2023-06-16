@@ -20,9 +20,14 @@ import {
   Table as ReactTable,
 } from '@tanstack/react-table'
 import { Button } from '@/components/shared/Button'
+import { useGetCountriesQuery } from '@/services/api'
+import { useSelector } from 'react-redux'
+import { selectCountries } from '@/slices/reportSlice'
 
 export const ReportsPage: FC = function () {
   const navigate = useNavigate()
+
+  useGetCountriesQuery(null)
 
   return (
     <div className="mt-4 flex flex-col">
@@ -211,58 +216,7 @@ const TableHeaderActions = ({
       <div className="w-full mb-2">
         <h4 className="text-sm dark:text-white">All submissions</h4>
       </div>
-      <div className="filters flex flex-wrap">
-        <div className="flex w-2/5 mr-2">
-          <label className="flex-shrink-0 z-10 inline-flex items-center py-1 px-2 text-sm font-medium text-center text-gray-500 bg-gray-100 border border-gray-300 rounded-l-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
-            Party
-          </label>
-          <select
-            id="states"
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-lg border-l-gray-100 dark:border-l-gray-700 border-l-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-          >
-            <option selected>Choose a state</option>
-            <option value="CA">Europe</option>
-            <option value="TX">Romania</option>
-            <option value="WH">France</option>
-            <option value="FL">Spain</option>
-            <option value="VG">Germany</option>
-            <option value="GE">Italy</option>
-            <option value="MI">Finland</option>
-          </select>
-        </div>
-        <div className="flex w-2/5 mr-2">
-          <label className="flex-shrink-0 z-10 inline-flex items-center py-1 px-2 text-sm font-medium text-center text-gray-500 bg-gray-100 border border-gray-300 rounded-l-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
-            Status
-          </label>
-          <select
-            id="states"
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-lg border-l-gray-100 dark:border-l-gray-700 border-l-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-          >
-            <option selected>Any</option>
-            <option value="TX">Data entry in progress</option>
-            <option value="FL">Submitted</option>
-            <option value="FL">Recalled</option>
-            <option value="FL">Processing</option>
-            <option value="WH">Finalized</option>
-          </select>
-        </div>
-        <div className="flex w-2/5 mr-2 mt-2">
-          <label className="flex-shrink-0 z-10 inline-flex items-center py-1 px-2 text-sm font-medium text-center text-gray-500 bg-gray-100 border border-gray-300 rounded-l-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
-            Status
-          </label>
-          <select
-            id="states"
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-lg border-l-gray-100 dark:border-l-gray-700 border-l-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-          >
-            <option selected>Any</option>
-            <option value="TX">Data entry in progress</option>
-            <option value="FL">Submitted</option>
-            <option value="FL">Recalled</option>
-            <option value="FL">Processing</option>
-            <option value="WH">Finalized</option>
-          </select>
-        </div>
-      </div>
+      <Filters />
     </div>
   )
 }
@@ -348,71 +302,98 @@ const TablePagination = ({ table }: { table: ReactTable<any> }) => {
   )
 }
 
-function Filter({
-  column,
-  table,
-}: {
-  column: Column<any, unknown>
-  table: ReactTable<any>
-}) {
-  const firstValue = table
-    .getPreFilteredRowModel()
-    .flatRows[0]?.getValue(column.id)
+const Filters = () => {
+  const countries = useSelector(selectCountries)
+  const now = new Date().getUTCFullYear() + 1
+  const years = Array(now - (now - 38))
+    .fill('')
+    .map((v, idx) => now - idx) as Array<number>
 
-  const columnFilterValue = column.getFilterValue()
-
-  // console.log(column.columnDef.meta)
-
-  const sortedUniqueValues = useMemo(
-    () =>
-      typeof firstValue === 'number'
-        ? []
-        : Array.from(column.getFacetedUniqueValues().keys()).sort(),
-    [column.getFacetedUniqueValues()],
-  )
-
-  return typeof firstValue === 'number' ? (
-    <div>
-      <div className="flex space-x-2">
-        <DebouncedInput
-          type="number"
-          min={Number(column.getFacetedMinMaxValues()?.[0] ?? '')}
-          max={Number(column.getFacetedMinMaxValues()?.[1] ?? '')}
-          value={(columnFilterValue as [number, number])?.[0] ?? ''}
-          onChange={value =>
-            column.setFilterValue((old: [number, number]) => [value, old?.[1]])
-          }
-          className="w-30"
-          placeholder="Min"
-        />
-        <DebouncedInput
-          type="number"
-          min={Number(column.getFacetedMinMaxValues()?.[0] ?? '')}
-          max={Number(column.getFacetedMinMaxValues()?.[1] ?? '')}
-          value={(columnFilterValue as [number, number])?.[1] ?? ''}
-          onChange={value =>
-            column.setFilterValue((old: [number, number]) => [old?.[0], value])
-          }
-          placeholder="Max"
-        />
-      </div>
-      <div className="h-1" />
-    </div>
-  ) : (
+  return (
     <>
-      <datalist id={column.id + 'list'}>
-        {sortedUniqueValues.slice(0, 5000).map((value: any) => (
-          <option value={value} key={value} />
-        ))}
-      </datalist>
-      <DebouncedInput
-        type="text"
-        value={(columnFilterValue ?? '') as string}
-        onChange={value => column.setFilterValue(value)}
-        placeholder={`Search...`}
-        list={column.id + 'list'}
-      />
-      <div className="h-1" />
+      <div className="filters grid grid-cols-3 gap-2">
+        <div className="flex">
+          <label className="flex-shrink-0 z-10 inline-flex items-center py-1 px-2 text-sm font-medium text-center text-gray-500 bg-gray-100 border border-gray-300 rounded-l-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
+            Party
+          </label>
+          <select
+            id="states"
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-lg border-l-gray-100 dark:border-l-gray-700 border-l-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          >
+            <option value="">Choose a state</option>
+            {countries.map(country => (
+              <option value={country.id} key={country.id}>
+                {country.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex">
+          <label className="flex-shrink-0 z-10 inline-flex items-center py-1 px-2 text-sm font-medium text-center text-gray-500 bg-gray-100 border border-gray-300 rounded-l-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
+            Status
+          </label>
+          <select
+            id="states"
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-lg border-l-gray-100 dark:border-l-gray-700 border-l-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          >
+            <option>Any</option>
+            <option value="TX">Data entry in progress</option>
+            <option value="FL">Submitted</option>
+            <option value="FL">Recalled</option>
+            <option value="FL">Processing</option>
+            <option value="WH">Finalized</option>
+          </select>
+        </div>
+        <div className="flex">
+          <label className="flex-shrink-0 z-10 inline-flex items-center py-1 px-2 text-sm font-medium text-center text-gray-500 bg-gray-100 border border-gray-300 rounded-l-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
+            Status
+          </label>
+          <select
+            id="states"
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-lg border-l-gray-100 dark:border-l-gray-700 border-l-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          >
+            <option selected>Any</option>
+            <option value="TX">Data entry in progress</option>
+            <option value="FL">Submitted</option>
+            <option value="FL">Recalled</option>
+            <option value="FL">Processing</option>
+            <option value="WH">Finalized</option>
+          </select>
+        </div>
+
+        <div className="flex">
+          <label className="flex-shrink-0 z-10 inline-flex items-center py-1 px-2 text-sm font-medium text-center text-gray-500 bg-gray-100 border border-gray-300 rounded-l-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
+            From
+          </label>
+          <select
+            id="states"
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-lg border-l-gray-100 dark:border-l-gray-700 border-l-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          >
+            <option selected>Any</option>
+            {years.map(year => (
+              <option key={`from-${year}`} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex">
+          <label className="flex-shrink-0 z-10 inline-flex items-center py-1 px-2 text-sm font-medium text-center text-gray-500 bg-gray-100 border border-gray-300 rounded-l-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
+            To
+          </label>
+          <select
+            id="states"
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-lg border-l-gray-100 dark:border-l-gray-700 border-l-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          >
+            <option selected>Any</option>
+            {years.map(year => (
+              <option key={`to-${year}`} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
     </>
   )
 }
