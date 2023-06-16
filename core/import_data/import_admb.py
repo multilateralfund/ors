@@ -16,6 +16,7 @@ from core.models.adm import AdmColumn, AdmRecord, AdmRow
 logger = logging.getLogger(__name__)
 
 SECTION = "B"
+
 CP_COLUMNS_MAPPING = {
     "CP": {
         "Other ODS": {
@@ -436,6 +437,7 @@ def import_adm_records(
                     "country_programme_report": cp_report,
                     "row": adm_row,
                     "column": columns_dict[column_name],
+                    "section": SECTION,
                     "source_file": file_data["admb_entries_file"],
                 }
             )
