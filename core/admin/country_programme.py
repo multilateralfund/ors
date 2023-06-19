@@ -90,5 +90,5 @@ class CountryProgrammePricesAdmin(admin.ModelAdmin):
     autocomplete_fields = ["blend", "substance"]
 
     def get_list_display(self, request):
-        exclude = ["source_file", "display_name"]
+        exclude = ["display_name"]
         return get_final_display_list(CountryProgrammePrices, exclude)

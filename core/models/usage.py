@@ -24,8 +24,20 @@ class Usage(models.Model):
         return self.name
 
 
+class ExcludedUsageManager(models.Manager):
+    def get_for_year(self, year):
+        if not year:
+            return self.all()
+        return self.filter(
+            (models.Q(start_year__lte=year) | models.Q(start_year__isnull=True)),
+            (models.Q(end_year__gte=year) | models.Q(end_year__isnull=True)),
+        )
+
+
 class ExcludedUsage(models.Model):
     usage = models.ForeignKey(Usage, on_delete=models.CASCADE)
+    start_year = models.IntegerField(null=True, blank=True)
+    end_year = models.IntegerField(null=True, blank=True)
     substance = models.ForeignKey(
         "Substance",
         on_delete=models.CASCADE,
@@ -40,3 +52,5 @@ class ExcludedUsage(models.Model):
         null=True,
         blank=True,
     )
+
+    objects = ExcludedUsageManager()
