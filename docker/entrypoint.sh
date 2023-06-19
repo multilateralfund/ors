@@ -3,7 +3,7 @@
 set -e
 RUN_COMMAND="run"
 
-while ! nc -z "$POSTGRES_HOST" 5432; do
+while netstat -tulpn | grep LISTEN | grep :5432; do
   echo "Waiting for PostgreSQL server at 5432 to accept connections on port 5432..."
   sleep 1s
 done

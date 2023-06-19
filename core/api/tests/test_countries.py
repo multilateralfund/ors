@@ -7,10 +7,10 @@ pytestmark = pytest.mark.django_db
 
 
 # pylint: disable=C8008
-class TestUsages:
+class TestCountries:
     client = APIClient()
 
-    def test_usages_list(self):
+    def test_countries_list(self):
         # add some countries using factory
         for country in ["Romania", "France"]:
             country = CountryFactory.create(name=country)
@@ -22,7 +22,7 @@ class TestUsages:
 
         self.client.force_authenticate(user=UserFactory())
 
-        # get usages list
+        # get countries list
         url = reverse("countries-list")
         response = self.client.get(url)
         assert response.status_code == 200
