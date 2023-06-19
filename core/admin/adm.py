@@ -23,6 +23,7 @@ class AdmRecordAdmin(admin.ModelAdmin):
         "row__text",
     ]
     list_filter = [
+        "section",
         AutocompleteFilterFactory("country", "country_programme_report__country"),
         "country_programme_report__year",
     ]
@@ -43,7 +44,11 @@ class AdmRowAdmin(admin.ModelAdmin):
     autocomplete_fields = ["parent_row"]
 
     def get_list_display(self, request):
-        exclude = ["admrecord", "children"]
+        exclude = [
+            "admrecord",
+            "children",
+            "admchoice",
+        ]
         return get_final_display_list(AdmRow, exclude)
 
 
