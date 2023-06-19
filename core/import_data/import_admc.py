@@ -12,7 +12,7 @@ from core.import_data.utils import (
     get_cp_report_for_db_import,
 )
 from core.models.adm import AdmColumn, AdmRecord, AdmRow
-from core.models.country_programme import CountryProgrammeRecord
+from core.models.country_programme import CountryProgrammePrices, CountryProgrammeRecord
 
 logger = logging.getLogger(__name__)
 
@@ -233,8 +233,29 @@ def udate_cp_record(cp, admc_entry, items_dict, source_file):
         cp_record.save()
 
 
-def create_cp_price():
-    pass
+def create_cp_price(cp, admc_entry, items_dict, source_file):
+    """
+    Create cp price for admC entry
+    @param cp = CountryProgrammeReport object
+    @param admc_entry = dict (admC entry)
+    @param items_dict = dict (admC items dict)
+    @param items_file = str (file path for items file) used for source_file field
+
+    @return CountryProgrammePrices object
+    """
+
+    item = items_dict[admc_entry["ItemId"]]
+    price_data = {
+        "country_programme_report": cp,
+        "current_year_price": admc_entry["AvgODSPrice"],
+        "current_year_text": str(admc_entry["AvgODSPrice"]),
+        "display_name": item["display_name"],
+        "source_file": source_file,
+    }
+    price_data["substance_id"] = item["value"] if item["type"] == "substance" else None
+    price_data["blend_id"] = item["value"] if item["type"] == "blend" else None
+
+    return CountryProgrammePrices(**price_data)
 
 
 def create_adm_record(cp, file_name, admc_entry, items_dict, column_dict):
@@ -289,6 +310,7 @@ def import_admc_entries(dir_path, file_name, items_dict, column_dict):
         json_data = json.load(f)
 
     admc_records = []
+    prices = []
     for admc_entry in json_data:
         if admc_entry["ItemId"] not in items_dict:
             # chemical not found
@@ -313,9 +335,11 @@ def import_admc_entries(dir_path, file_name, items_dict, column_dict):
             continue
 
         udate_cp_record(cp, admc_entry, items_dict, file_name)
-        create_cp_price()
+        if admc_entry["AvgODSPrice"]:
+            prices.append(create_cp_price(cp, admc_entry, items_dict, file_name))
 
     AdmRecord.objects.bulk_create(admc_records)
+    CountryProgrammePrices.objects.bulk_create(prices)
 
 
 def parse_db_files(dir_path):
@@ -335,6 +359,7 @@ def parse_db_files(dir_path):
     logger.info("✔ columns file parsed")
 
     delete_old_data(AdmRecord, admc_file, logger)
+    delete_old_data(CountryProgrammePrices, admc_file, logger)
     import_admc_entries(
         dir_path,
         admc_file,
