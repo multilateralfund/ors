@@ -38,8 +38,12 @@ class AdmRow(models.Model):
 
 class AdmChoice(models.Model):
     value = models.CharField(max_length=248)
+    adm_row = models.ForeignKey(AdmRow, on_delete=models.CASCADE)
     sort_order = models.FloatField(null=True, blank=True)
     source_file = models.CharField(max_length=248, null=True, blank=True)
+
+    def __str__(self):
+        return self.value
 
 
 class AdmRecord(models.Model):
@@ -49,7 +53,9 @@ class AdmRecord(models.Model):
         related_name="adm_records",
     )
     row = models.ForeignKey(AdmRow, on_delete=models.CASCADE)
-    column = models.ForeignKey(AdmColumn, on_delete=models.CASCADE)
+    column = models.ForeignKey(
+        AdmColumn, on_delete=models.CASCADE, null=True, blank=True
+    )
 
     substance = models.ForeignKey(
         Substance, on_delete=models.CASCADE, null=True, blank=True
@@ -67,4 +73,7 @@ class AdmRecord(models.Model):
     source_file = models.CharField(max_length=248, null=True, blank=True)
 
     def __str__(self):
-        return self.row.text + " - " + self.column.name
+        if self.column:
+            return self.row.text + " - " + self.column.name
+
+        return self.row.text
