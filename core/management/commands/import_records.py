@@ -3,15 +3,13 @@ from django.core.management import BaseCommand
 from core.import_data.import_admb import import_admb_items
 from core.import_data.import_admc import import_admc_items
 from core.import_data.import_admde import import_admde_items
-from core.import_data.import_records_section_AB import import_records as rec_xlsx_sec_AB
-from core.import_data.import_records_section_C import import_records as rec_xlsx_sec_C
-from core.import_data.import_records_section_D import import_records as rec_xlsx_sec_D
-from core.import_data.import_records_section_E import import_records as rec_xlsx_sec_E
 from core.import_data.import_item_attributes import (
     import_records_from_databases as rec_cp_db,
 )
 from core.import_data.import_records_section_AB import import_records as rec_xlsx_sec_AB
 from core.import_data.import_records_section_C import import_records as rec_xlsx_sec_C
+from core.import_data.import_records_section_D import import_records as rec_xlsx_sec_D
+from core.import_data.import_records_section_E import import_records as rec_xlsx_sec_E
 
 
 class Command(BaseCommand):
