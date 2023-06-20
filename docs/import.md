@@ -39,6 +39,8 @@ docker-compose exec app ./manage.py import_records cp_db
 - xlsx_files -> records from xlsx files
 - section_ab -> records from section A and B (xlsx files)
 - section_c -> records from section C (xlsx files)
+- section_d -> records from section D (xlsx files)
+- section_e -> records from section E (xlsx files)
 - cp_db_records -> records from country programme databases
 - item_attributes -> item_attributes from databases
 - admb_items -> admb items from databases
@@ -56,7 +58,7 @@ docker-compose exec app ./manage.py import_records cp_db
     | :----    | :----:  |
     | SectionA(ODPTonnes)-Datafor2019-2022(May 10, 2023).xlsx | SectionA.xlsx |
     | SectionB(MetricTonnes)-Datafor2019-2022(May 10, 2023)withGWP.xlsx | SectionB.xlsx |
-    | SectionC,D,E-2019-2022(May 10, 2023).xlsx | SectionC.xlsx |
+    | SectionC,D,E-2019-2022(May 10, 2023).xlsx | SectionCDE.xlsx |
 
 - cp_db_records
 : download folders from nexcloud

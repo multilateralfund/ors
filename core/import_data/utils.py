@@ -180,6 +180,24 @@ def get_cp_report(year, country_name, country_id):
     return cp
 
 
+def get_cp_report_by_country_name(country_name, year, index_row, logger):
+    """
+    get or create country program report object by year and country name
+    @param country_name = string
+    @param year = int
+    @param index_row = int
+    @param logger = logger obj
+
+    @return country_program = CountryProgrammeReport object
+    """
+    country = get_country_by_name(country_name, index_row, logger)
+
+    if not country:
+        return None
+
+    return get_cp_report(year, country.name, country.id)
+
+
 def get_object_by_name(cls, obj_name, index_row, obj_type_name, logger):
     """
     get object by name or log error if not found in db

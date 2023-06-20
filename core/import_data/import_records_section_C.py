@@ -43,7 +43,7 @@ REPORT_COLUMNS = [
 
 
 logger = logging.getLogger(__name__)
-FILE_NAME = "SectionC.xlsx"
+FILE_NAME = "SectionCDE.xlsx"
 
 
 # pylint: disable=R1702
@@ -51,7 +51,6 @@ def parse_sheet(df):
     """
     parse the sheet and import the data in database
     @param df = pandas dataframe
-    @param file_details = dict (file_name, session, convert_to_mt)
     """
     if not check_headers(df, REQUIRED_COLUMNS, logger):
         logger.error("Couldn't parse this sheet")
@@ -204,4 +203,4 @@ def import_records():
     delete_old_data(CountryProgrammePrices, FILE_NAME, logger)
 
     parse_file(file_path)
-    logger.info(f"✔ records from {FILE_NAME} imported")
+    logger.info(f"✔ section C records from {FILE_NAME} imported")

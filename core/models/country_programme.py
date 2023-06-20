@@ -99,3 +99,105 @@ class CountryProgrammePrices(models.Model):
             + " - "
             + (self.blend.name if self.blend else self.substance.name)
         )
+
+
+class CountryProgrammeSectionDRecord(models.Model):
+    country_programme_report = models.ForeignKey(
+        CountryProgrammeReport,
+        on_delete=models.CASCADE,
+    )
+    substance = models.ForeignKey(
+        Substance, on_delete=models.CASCADE, null=True, blank=True
+    )
+    all_uses = models.DecimalField(
+        max_digits=25,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Captured for all uses",
+    )
+    feedstock = models.DecimalField(
+        max_digits=25,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Captured for feedstock uses within your country",
+    )
+    destruction = models.DecimalField(
+        max_digits=25,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Captured for destruction",
+    )
+
+    source_file = models.CharField(max_length=248)
+
+    def __str__(self):
+        return self.country_programme_report.name
+
+
+class CountryProgrammeSectionERecord(models.Model):
+    country_programme_report = models.ForeignKey(
+        CountryProgrammeReport,
+        on_delete=models.CASCADE,
+    )
+    substance = models.ForeignKey(
+        Substance, on_delete=models.CASCADE, null=True, blank=True
+    )
+    facility = models.CharField(max_length=256, help_text="Facility name or identifier")
+    total = models.DecimalField(
+        max_digits=25,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Total amount generated",
+    )
+    all_uses = models.DecimalField(
+        max_digits=25,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Amount generated and captured - For all uses",
+    )
+    feedstock_gc = models.DecimalField(
+        max_digits=25,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Amount generated and captured - For feedstock use in your country",
+    )
+    destruction = models.DecimalField(
+        max_digits=25,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Amount generated and captured - For destruction",
+    )
+    feedstock_wpc = models.DecimalField(
+        max_digits=25,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Captured for feedstock uses within your country",
+    )
+    destruction_wpc = models.DecimalField(
+        max_digits=25,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Amount used for feedstock without prior capture",
+    )
+    generated_emissions = models.DecimalField(
+        max_digits=25,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Captured for destruction",
+    )
+
+    remarks = models.TextField(null=True, blank=True)
+    source_file = models.CharField(max_length=248)
+
+    def __str__(self):
+        return self.country_programme_report.name

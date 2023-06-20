@@ -7,6 +7,8 @@ from core.models.country_programme import (
     CountryProgrammeReport,
     CountryProgrammeUsage,
     CountryProgrammePrices,
+    CountryProgrammeSectionDRecord,
+    CountryProgrammeSectionERecord,
 )
 
 
@@ -92,3 +94,31 @@ class CountryProgrammePricesAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = ["source_file", "display_name"]
         return get_final_display_list(CountryProgrammePrices, exclude)
+
+
+@admin.register(CountryProgrammeSectionDRecord)
+class CountryProgrammeSectionDRecordAdmin(admin.ModelAdmin):
+    search_fields = ["country_programme_report__name"]
+    list_filter = [
+        AutocompleteFilterFactory("country", "country_programme_report__country"),
+        "country_programme_report__year",
+    ]
+    readonly_fields = ["country_programme_report", "substance"]
+
+    def get_list_display(self, request):
+        exclude = ["source_file", "display_name"]
+        return get_final_display_list(CountryProgrammeSectionDRecord, exclude)
+
+
+@admin.register(CountryProgrammeSectionERecord)
+class CountryProgrammeSectionERecordAdmin(admin.ModelAdmin):
+    search_fields = ["country_programme_report__name"]
+    list_filter = [
+        AutocompleteFilterFactory("country", "country_programme_report__country"),
+        "country_programme_report__year",
+    ]
+    readonly_fields = ["country_programme_report", "substance"]
+
+    def get_list_display(self, request):
+        exclude = ["source_file", "display_name"]
+        return get_final_display_list(CountryProgrammeSectionERecord, exclude)
