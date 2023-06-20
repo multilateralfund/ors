@@ -10,7 +10,7 @@ RUN mkdir /.fs /app
 WORKDIR /app
 VOLUME ["/.fs"]
 
-RUN runDeps="netcat gettext build-essential gcc" \
+RUN runDeps="netcat-traditional gettext build-essential gcc" \
     && apt-get update -y \
     && apt-get install -y --no-install-recommends $runDeps \
     && apt-get clean \

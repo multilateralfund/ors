@@ -92,4 +92,6 @@ export const {
   useGetSubstancesQuery,
   useGetUsageQuery,
   useGetBlendsQuery,
+  useGetCountriesQuery,
+  useGetCountyReportsQuery,
 } = api

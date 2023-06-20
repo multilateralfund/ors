@@ -9,6 +9,7 @@ from core.api.views.country_programme import (
     CountryProgrammeReportListAPIView,
 )
 from core.api.views.usages import UsageListAPIView
+from core.api.views.countries import CountryListAPIView
 
 
 schema_view = get_schema_view(
@@ -51,5 +52,10 @@ urlpatterns = [
         "country-programme/records/",
         CountryProgrammeRecordListAPIView.as_view(),
         name="country-programme-record-list",
+    ),
+    path(
+        "countries/",
+        CountryListAPIView.as_view(),
+        name="countries-list",
     ),
 ]

@@ -1,11 +1,6 @@
 import * as React from 'react'
 import { Routes, Route } from 'react-router-dom'
-import {
-  BaseLayout,
-  RequireAuth,
-  RequireAnonym,
-  LoggedInLayout,
-} from './layouts'
+import { BaseLayout, RequireAnonym, LoggedInLayout } from './layouts'
 
 import { LoginPage } from './pages/auth/LoginPage'
 import { ProfilePage } from './pages/ProfilePage'
@@ -16,6 +11,7 @@ import { HomePage } from './pages/HomePage'
 import { RequireUser } from './layouts/RequireUser'
 import { UnauthorizedPage } from './pages/UnauthorizePage'
 import { ReportsPage } from './pages/ReportsPage'
+import { CreateReportsPage } from './pages/CreateReportPage'
 
 const auth = (component: React.ReactElement, isFooter = false) => (
   <LoggedInLayout isFooter={isFooter}>{component}</LoggedInLayout>
@@ -31,7 +27,11 @@ export default function App() {
       <Route element={<BaseLayout />}>
         <Route element={<RequireUser allowedRoles={['user', 'admin']} />}>
           <Route path="/" element={auth(<HomePage />)} />
-          <Route path="/reports" element={auth(<ReportsPage />, true)} />
+          <Route path="/reports" element={auth(<ReportsPage />, false)} />
+          <Route
+            path="/reports/create"
+            element={auth(<CreateReportsPage />, true)}
+          />
         </Route>
         <Route path="/unauthorized" element={anon(<UnauthorizedPage />)} />
         <Route path="/login" element={anon(<LoginPage />)} />
