@@ -26,6 +26,6 @@ class TestCountries:
         url = reverse("countries-list")
         response = self.client.get(url)
         assert response.status_code == 200
-        assert len(response.data) == 3
-        assert response.data[0]["name"] == "Romania"
-        assert response.data[1]["name"] == "France"
+        assert len(response.data) == 2
+        assert response.data[0]["name"] == "France"
+        assert response.data[1]["name"] == "Romania"

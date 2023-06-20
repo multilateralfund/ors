@@ -10,11 +10,7 @@ class CountryListAPIView(mixins.ListModelMixin, generics.GenericAPIView):
     """
 
     serializer_class = CountrySerializer
-    queryset = Country.objects
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        return queryset.order_by("name")
+    queryset = Country.objects.order_by("name")
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
