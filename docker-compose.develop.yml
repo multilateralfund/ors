@@ -4,8 +4,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: docker/app.docker
-    entrypoint: ["/usr/bin/tail", "-f", "/dev/null"]
+      dockerfile: docker/dev.docker
     container_name: "mlf.app"
     volumes:
       - ./:/app
