@@ -101,13 +101,11 @@ class CountryProgrammePrices(models.Model):
         )
 
 
-class CountryProgrammeSectionDRecord(models.Model):
+# model used for data regarding only HFC-23 substance
+class CPGeneration(models.Model):
     country_programme_report = models.ForeignKey(
         CountryProgrammeReport,
         on_delete=models.CASCADE,
-    )
-    substance = models.ForeignKey(
-        Substance, on_delete=models.CASCADE, null=True, blank=True
     )
     all_uses = models.DecimalField(
         max_digits=25,
@@ -137,13 +135,11 @@ class CountryProgrammeSectionDRecord(models.Model):
         return self.country_programme_report.name
 
 
-class CountryProgrammeSectionERecord(models.Model):
+# model used for data regarding only HFC-23 substance
+class CPEmission(models.Model):
     country_programme_report = models.ForeignKey(
         CountryProgrammeReport,
         on_delete=models.CASCADE,
-    )
-    substance = models.ForeignKey(
-        Substance, on_delete=models.CASCADE, null=True, blank=True
     )
     facility = models.CharField(max_length=256, help_text="Facility name or identifier")
     total = models.DecimalField(

@@ -7,8 +7,8 @@ from core.models.country_programme import (
     CountryProgrammeReport,
     CountryProgrammeUsage,
     CountryProgrammePrices,
-    CountryProgrammeSectionDRecord,
-    CountryProgrammeSectionERecord,
+    CPGeneration,
+    CPEmission,
 )
 
 
@@ -96,29 +96,29 @@ class CountryProgrammePricesAdmin(admin.ModelAdmin):
         return get_final_display_list(CountryProgrammePrices, exclude)
 
 
-@admin.register(CountryProgrammeSectionDRecord)
-class CountryProgrammeSectionDRecordAdmin(admin.ModelAdmin):
+@admin.register(CPGeneration)
+class CPGenerationAdmin(admin.ModelAdmin):
     search_fields = ["country_programme_report__name"]
     list_filter = [
         AutocompleteFilterFactory("country", "country_programme_report__country"),
         "country_programme_report__year",
     ]
-    readonly_fields = ["country_programme_report", "substance"]
+    readonly_fields = ["country_programme_report"]
 
     def get_list_display(self, request):
         exclude = ["source_file", "display_name"]
-        return get_final_display_list(CountryProgrammeSectionDRecord, exclude)
+        return get_final_display_list(CPGeneration, exclude)
 
 
-@admin.register(CountryProgrammeSectionERecord)
-class CountryProgrammeSectionERecordAdmin(admin.ModelAdmin):
+@admin.register(CPEmission)
+class CPEmissionAdmin(admin.ModelAdmin):
     search_fields = ["country_programme_report__name"]
     list_filter = [
         AutocompleteFilterFactory("country", "country_programme_report__country"),
         "country_programme_report__year",
     ]
-    readonly_fields = ["country_programme_report", "substance"]
+    readonly_fields = ["country_programme_report"]
 
     def get_list_display(self, request):
         exclude = ["source_file", "display_name", "remarks"]
-        return get_final_display_list(CountryProgrammeSectionERecord, exclude)
+        return get_final_display_list(CPEmission, exclude)

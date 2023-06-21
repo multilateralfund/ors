@@ -9,7 +9,7 @@ from core.import_data.utils import (
     delete_old_data,
     get_cp_report,
 )
-from core.models import CountryProgrammeSectionERecord, Substance
+from core.models import CPEmission
 
 
 REQUIRED_COLUMNS = [
@@ -42,14 +42,6 @@ def parse_sheet(df):
         logger.error("Couldn't parse this sheet")
         return
 
-    # we have a single substance for the whole sheet
-    substance = Substance.objects.filter(name="HFC-23").first()
-    if not substance:
-        logger.warning(
-            "⚠️ Substance 'HFC-23 not found. Please run `./manage.py import_resources` command before this one."
-        )
-        return
-
     cp_report = None
     records_list = []
 
@@ -71,7 +63,6 @@ def parse_sheet(df):
 
         record_data = {
             "country_programme_report_id": cp_report.id,
-            "substance": substance,
             "facility": row[REPORT_COLUMNS["facility"]],
             "total": row[REPORT_COLUMNS["total"]],
             "all_uses": row[REPORT_COLUMNS["all_uses"]],
@@ -83,8 +74,8 @@ def parse_sheet(df):
             "remarks": row["Remarks"],
             "source_file": FILE_NAME,
         }
-        records_list.append(CountryProgrammeSectionERecord(**record_data))
-    CountryProgrammeSectionERecord.objects.bulk_create(records_list)
+        records_list.append(CPEmission(**record_data))
+    CPEmission.objects.bulk_create(records_list)
     logger.info("✔ sheet parsed")
 
 
@@ -101,7 +92,7 @@ def import_records():
 
     logger.info(f"⏳ parsing file: {FILE_NAME}")
     # before we import anything, we should delete all prices from previous imports
-    delete_old_data(CountryProgrammeSectionERecord, FILE_NAME, logger)
+    delete_old_data(CPEmission, FILE_NAME, logger)
 
     parse_file(file_path)
     logger.info(f"✔ section E records from {FILE_NAME} imported")

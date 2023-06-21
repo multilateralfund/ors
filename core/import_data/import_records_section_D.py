@@ -8,9 +8,8 @@ from core.import_data.utils import (
     check_headers,
     delete_old_data,
     get_cp_report,
-    get_chemical,
 )
-from core.models import CountryProgrammeSectionDRecord
+from core.models import CPGeneration
 
 REQUIRED_COLUMNS = [
     "Country",
@@ -38,13 +37,8 @@ def parse_sheet(df):
         logger.error("Couldn't parse this sheet")
         return
 
-    substance = None
     records_list = []
     for index_row, row in df.iterrows():
-        # we have a single substance for the whole sheet
-        if not substance:
-            substance, _ = get_chemical(row["Substance"], index_row, logger)
-
         cp_report = get_cp_report(
             int(row["Year"]), row["Country"], None, index_row, logger
         )
@@ -52,14 +46,13 @@ def parse_sheet(df):
         if cp_report:
             record_data = {
                 "country_programme_report_id": cp_report.id,
-                "substance": substance,
                 "all_uses": row[REPORT_COLUMNS["use"]],
                 "feedstock": row[REPORT_COLUMNS["feedstock"]],
                 "destruction": row[REPORT_COLUMNS["destruction"]],
                 "source_file": FILE_NAME,
             }
-            records_list.append(CountryProgrammeSectionDRecord(**record_data))
-    CountryProgrammeSectionDRecord.objects.bulk_create(records_list)
+            records_list.append(CPGeneration(**record_data))
+    CPGeneration.objects.bulk_create(records_list)
     logger.info("✔ sheet parsed")
 
 
@@ -76,7 +69,7 @@ def import_records():
 
     logger.info(f"⏳ parsing file: {FILE_NAME}")
     # before we import anything, we should delete all prices from previous imports
-    delete_old_data(CountryProgrammeSectionDRecord, FILE_NAME, logger)
+    delete_old_data(CPGeneration, FILE_NAME, logger)
 
     parse_file(file_path)
     logger.info(f"✔ section D records from {FILE_NAME} imported")
