@@ -7,7 +7,7 @@ from django.conf import settings
 from core.import_data.utils import (
     check_headers,
     delete_old_data,
-    get_cp_report_by_country_name,
+    get_cp_report,
     get_chemical,
 )
 from core.models import CountryProgrammeSectionDRecord
@@ -39,13 +39,14 @@ def parse_sheet(df):
         return
 
     substance = None
+    records_list = []
     for index_row, row in df.iterrows():
         # we have a single substance for the whole sheet
         if not substance:
             substance, _ = get_chemical(row["Substance"], index_row, logger)
 
-        cp_report = get_cp_report_by_country_name(
-            row["Country"], int(row["Year"]), index_row, logger
+        cp_report = get_cp_report(
+            int(row["Year"]), row["Country"], None, index_row, logger
         )
 
         if cp_report:
@@ -57,7 +58,8 @@ def parse_sheet(df):
                 "destruction": row[REPORT_COLUMNS["destruction"]],
                 "source_file": FILE_NAME,
             }
-            CountryProgrammeSectionDRecord.objects.create(**record_data)
+            records_list.append(CountryProgrammeSectionDRecord(**record_data))
+    CountryProgrammeSectionDRecord.objects.bulk_create(records_list)
     logger.info("✔ sheet parsed")
 
 

@@ -7,7 +7,7 @@ from django.conf import settings
 from core.import_data.utils import (
     check_headers,
     delete_old_data,
-    get_cp_report_by_country_name,
+    get_cp_report,
 )
 from core.models import CountryProgrammeSectionERecord, Substance
 
@@ -48,7 +48,10 @@ def parse_sheet(df):
         logger.warning(
             "⚠️ Substance 'HFC-23 not found. Please run `./manage.py import_resources` command before this one."
         )
+        return
+
     cp_report = None
+    records_list = []
 
     for index_row, row in df.iterrows():
         year = row["Year"]
@@ -59,8 +62,8 @@ def parse_sheet(df):
             or cp_report.year != year
             or cp_report.country.name != country_name
         ):
-            cp_report = get_cp_report_by_country_name(
-                row["Country"], int(row["Year"]), index_row, logger
+            cp_report = get_cp_report(
+                int(row["Year"]), row["Country"], None, index_row, logger
             )
 
             if not cp_report:
@@ -80,7 +83,8 @@ def parse_sheet(df):
             "remarks": row["Remarks"],
             "source_file": FILE_NAME,
         }
-        CountryProgrammeSectionERecord.objects.create(**record_data)
+        records_list.append(CountryProgrammeSectionERecord(**record_data))
+    CountryProgrammeSectionERecord.objects.bulk_create(records_list)
     logger.info("✔ sheet parsed")
 
 

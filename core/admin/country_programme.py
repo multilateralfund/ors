@@ -120,5 +120,5 @@ class CountryProgrammeSectionERecordAdmin(admin.ModelAdmin):
     readonly_fields = ["country_programme_report", "substance"]
 
     def get_list_display(self, request):
-        exclude = ["source_file", "display_name"]
+        exclude = ["source_file", "display_name", "remarks"]
         return get_final_display_list(CountryProgrammeSectionERecord, exclude)
