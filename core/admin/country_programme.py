@@ -106,7 +106,7 @@ class CPGenerationAdmin(admin.ModelAdmin):
     readonly_fields = ["country_programme_report"]
 
     def get_list_display(self, request):
-        exclude = ["source_file", "display_name"]
+        exclude = ["source_file"]
         return get_final_display_list(CPGeneration, exclude)
 
 
@@ -120,5 +120,5 @@ class CPEmissionAdmin(admin.ModelAdmin):
     readonly_fields = ["country_programme_report"]
 
     def get_list_display(self, request):
-        exclude = ["source_file", "display_name", "remarks"]
+        exclude = ["source_file", "remarks"]
         return get_final_display_list(CPEmission, exclude)

@@ -131,6 +131,10 @@ class CPGeneration(models.Model):
 
     source_file = models.CharField(max_length=248)
 
+    class Meta:
+        verbose_name = "Country programme generation"
+        verbose_name_plural = "Country programme generations"
+
     def __str__(self):
         return self.country_programme_report.name
 
@@ -194,6 +198,10 @@ class CPEmission(models.Model):
 
     remarks = models.TextField(null=True, blank=True)
     source_file = models.CharField(max_length=248)
+
+    class Meta:
+        verbose_name = "Country programme emission"
+        verbose_name_plural = "Country programme emissions"
 
     def __str__(self):
         return self.country_programme_report.name
