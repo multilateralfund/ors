@@ -163,15 +163,21 @@ def get_chemical_by_name_or_components(chemical_name, components=None):
     return None, None
 
 
-def get_cp_report(year, country_name, country_id):
+def get_cp_report(year, country_name, country_id=None, index_row=None, logger=None):
     """
     get or create country program report object by year and country
     @param year = int
     @param country_name = string
     @param country_id = int
+    @param index_row = int
+    @param logger = logger obj
 
     @return country_program = CountryProgrammeReport object
     """
+    if not country_id:
+        country = get_country_by_name(country_name, index_row, logger)
+        country_id = country.id
+
     cp_name = f"{country_name} {year}"
     cp, _ = CountryProgrammeReport.objects.get_or_create(
         name=cp_name, year=year, country_id=country_id
