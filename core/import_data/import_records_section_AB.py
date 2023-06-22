@@ -13,6 +13,7 @@ from core.import_data.utils import (
     get_country_by_name,
     get_chemical,
     OFFSET,
+    get_decimal_from_excel_string,
 )
 
 from core.models import (
@@ -206,20 +207,22 @@ def parse_sheet(df, file_details):
             "source_file": file_details["file_name"],
         }
         for colummn_name, filed_name in RECORD_COLUMNS_MAPPING.items():
-            if row.get(colummn_name, None):
-                record_data[filed_name] = decimal.Decimal(row[colummn_name]) / odp_value
+            column_value = get_decimal_from_excel_string(row.get(colummn_name, None))
+            if column_value:
+                record_data[filed_name] = column_value / odp_value
         record = CountryProgrammeRecord.objects.create(**record_data)
 
         # insert records
         for usage_name, usage in usage_dict.items():
             # check if the usage is empty or not a number
-            if not row[usage_name] or not isinstance(row[usage_name], (int, float)):
+            quantity = get_decimal_from_excel_string(row.get(usage_name, None))
+            if not quantity:
                 continue
 
             usage_data = {
                 "country_programme_record_id": record.id,
                 "usage_id": usage.id,
-                "quantity": decimal.Decimal(row[usage_name]) / odp_value,
+                "quantity": quantity / odp_value,
             }
             cp_usages.append(CountryProgrammeUsage(**usage_data))
 
@@ -229,7 +232,7 @@ def parse_sheet(df, file_details):
 
 
 def parse_file(file_path, file_details):
-    all_sheets = pd.read_excel(file_path, sheet_name=None, na_values="NDR")
+    all_sheets = pd.read_excel(file_path, sheet_name=None, na_values="NDR", dtype=str)
     for sheet_name, df in all_sheets.items():
         # if the sheet_name is not a year => skip
         if not sheet_name.strip().isdigit():
