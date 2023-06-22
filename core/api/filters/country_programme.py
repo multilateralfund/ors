@@ -1,9 +1,9 @@
 from django_filters import rest_framework as filters
 
-from core.models.country_programme import CountryProgrammeRecord, CountryProgrammeReport
+from core.models.country_programme import CPRecord, CPReport
 
 
-class CountryProgrammeReportFilter(filters.FilterSet):
+class CPReportFilter(filters.FilterSet):
     """
     Filter for country programme reports
     """
@@ -13,11 +13,11 @@ class CountryProgrammeReportFilter(filters.FilterSet):
     year = filters.NumberFilter(field_name="year", lookup_expr="exact")
 
     class Meta:
-        model = CountryProgrammeReport
+        model = CPReport
         fields = ["country_id", "name", "year"]
 
 
-class CountryProgrammeRecordFilter(filters.FilterSet):
+class CPRecordFilter(filters.FilterSet):
     """
     Filter for country programme records
     """
@@ -36,7 +36,7 @@ class CountryProgrammeRecordFilter(filters.FilterSet):
     )
 
     class Meta:
-        model = CountryProgrammeRecord
+        model = CPRecord
         fields = [
             "country_programme_report_id",
             "substance_id",

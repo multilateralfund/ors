@@ -1,18 +1,18 @@
 from rest_framework import serializers
 
 from core.models.country_programme import (
-    CountryProgrammeRecord,
-    CountryProgrammeReport,
-    CountryProgrammeUsage,
+    CPRecord,
+    CPReport,
+    CPUsage,
 )
 
 
 # countryProgramReport serializer
-class CountryProgrammeReportSerializer(serializers.ModelSerializer):
+class CPReportSerializer(serializers.ModelSerializer):
     country = serializers.StringRelatedField()
 
     class Meta:
-        model = CountryProgrammeReport
+        model = CPReport
         fields = [
             "id",
             "name",
@@ -22,25 +22,25 @@ class CountryProgrammeReportSerializer(serializers.ModelSerializer):
         ]
 
 
-class CountryProgrammeUsageSerializer(serializers.ModelSerializer):
+class CPUsageSerializer(serializers.ModelSerializer):
     usage = serializers.StringRelatedField()
     quantity = serializers.DecimalField(max_digits=12, decimal_places=3)
 
     class Meta:
-        model = CountryProgrammeUsage
+        model = CPUsage
         fields = [
             "usage",
             "quantity",
         ]
 
 
-class CountryProgrammeRecordSerializer(serializers.ModelSerializer):
+class CPRecordSerializer(serializers.ModelSerializer):
     blend = serializers.StringRelatedField()
     substance = serializers.StringRelatedField()
-    record_usages = CountryProgrammeUsageSerializer(many=True)
+    record_usages = CPUsageSerializer(many=True)
 
     class Meta:
-        model = CountryProgrammeRecord
+        model = CPRecord
         fields = [
             "id",
             "blend",

@@ -13,7 +13,7 @@ from core.import_data.utils import (
     OFFSET,
     get_decimal_from_excel_string,
 )
-from core.models import CountryProgrammePrices
+from core.models import CPPrices
 
 REQUIRED_COLUMNS = [
     "Country",
@@ -157,7 +157,7 @@ def parse_sheet(df):
                         "display_name": chemical_name,
                         "source_file": FILE_NAME,
                     }
-                    CountryProgrammePrices.objects.create(**prev_record_data)
+                    CPPrices.objects.create(**prev_record_data)
 
             # create prices record
             record_data = {
@@ -173,9 +173,7 @@ def parse_sheet(df):
                 "source_file": FILE_NAME,
             }
 
-            previous_year_prices_obj = CountryProgrammePrices.objects.create(
-                **record_data
-            )
+            previous_year_prices_obj = CPPrices.objects.create(**record_data)
     logger.info("✔ sheet parsed")
 
 
@@ -194,7 +192,7 @@ def import_records():
 
     logger.info(f"⏳ parsing file: {FILE_NAME}")
     # before we import anything, we should delete all prices from previous imports
-    delete_old_data(CountryProgrammePrices, FILE_NAME, logger)
+    delete_old_data(CPPrices, FILE_NAME, logger)
 
     parse_file(file_path)
     logger.info(f"✔ section C records from {FILE_NAME} imported")

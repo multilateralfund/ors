@@ -1,9 +1,9 @@
 from core.api.tests.factories import (
     BlendFactory,
     CountryFactory,
-    CountryProgrammeRecordFactory,
-    CountryProgrammeReportFactory,
-    CountryProgrammeUsageFactory,
+    CPRecordFactory,
+    CPReportFactory,
+    CPUsageFactory,
     SubstanceFactory,
     UserFactory,
 )
@@ -15,7 +15,7 @@ pytestmark = pytest.mark.django_db
 
 
 # pylint: disable=C8008
-class TestCountryProgrammeReport:
+class TestCPReport:
     client = APIClient()
 
     def test_get_cp_report_list(self):
@@ -37,7 +37,7 @@ class TestCountryProgrammeReport:
             country = CountryFactory.create(name=country)
             for i in range(3):
                 year = 2010 + i
-                CountryProgrammeReportFactory.create(
+                CPReportFactory.create(
                     country=country, name=country.name + str(year), year=year
                 )
 
@@ -69,7 +69,7 @@ class TestCountryProgrammeReport:
         assert response.data[0]["year"] == 2011
 
 
-class TestCountryProgrammeRecord:
+class TestCPRecord:
     client = APIClient()
 
     def test_get_cp_record_list(self):
@@ -91,18 +91,16 @@ class TestCountryProgrammeRecord:
         blend = BlendFactory.create()
         for i, country in enumerate(["Romania", "Bulgaria"]):
             country = CountryFactory.create(name=country)
-            cp_report = CountryProgrammeReportFactory.create(
-                country=country, year=2010 + i
-            )
-            CountryProgrammeRecordFactory.create(
+            cp_report = CPReportFactory.create(country=country, year=2010 + i)
+            CPRecordFactory.create(
                 country_programme_report=cp_report, section="A", substance=substance
             )
-            cp_rec = CountryProgrammeRecordFactory.create(
+            cp_rec = CPRecordFactory.create(
                 country_programme_report=cp_report, section="B", blend=blend
             )
             # add 3 usages for one record
             for _ in range(3):
-                CountryProgrammeUsageFactory.create(country_programme_record=cp_rec)
+                CPUsageFactory.create(country_programme_record=cp_rec)
 
         # get cp records list
         response = self.client.get(url)

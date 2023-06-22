@@ -17,10 +17,10 @@ from core.import_data.utils import (
 )
 
 from core.models import (
-    CountryProgrammeRecord,
+    CPRecord,
     Usage,
 )
-from core.models.country_programme import CountryProgrammeUsage
+from core.models.country_programme import CPUsage
 
 logger = logging.getLogger(__name__)
 
@@ -210,7 +210,7 @@ def parse_sheet(df, file_details):
             column_value = get_decimal_from_excel_string(row.get(colummn_name, None))
             if column_value:
                 record_data[filed_name] = column_value / odp_value
-        record = CountryProgrammeRecord.objects.create(**record_data)
+        record = CPRecord.objects.create(**record_data)
 
         # insert records
         for usage_name, usage in usage_dict.items():
@@ -224,9 +224,9 @@ def parse_sheet(df, file_details):
                 "usage_id": usage.id,
                 "quantity": quantity / odp_value,
             }
-            cp_usages.append(CountryProgrammeUsage(**usage_data))
+            cp_usages.append(CPUsage(**usage_data))
 
-    CountryProgrammeUsage.objects.bulk_create(cp_usages)
+    CPUsage.objects.bulk_create(cp_usages)
 
     logger.info("✔ sheet parsed")
 
@@ -254,7 +254,7 @@ def import_records():
         file_path = settings.IMPORT_DATA_DIR / "records" / file["file_name"]
 
         logger.info(f"⏳ parsing file: {file['file_name']}")
-        delete_old_data(CountryProgrammeRecord, file["file_name"], logger)
+        delete_old_data(CPRecord, file["file_name"], logger)
         parse_file(file_path, file)
 
         logger.info(f"✔ records from {file['file_name']} imported")

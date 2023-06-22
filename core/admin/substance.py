@@ -26,8 +26,8 @@ class SubstanceAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = [
             "blendcomponents",
-            "countryprogrammeprices",
-            "countryprogrammerecord",
+            "cpprices",
+            "cprecord",
             "substancealtname",
             "excludedusage",
             "excluded_usages",

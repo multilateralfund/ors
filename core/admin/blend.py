@@ -18,12 +18,12 @@ class BlendAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = [
             "blendcomponents",
-            "countryprogrammerecord",
+            "cprecord",
             "blendaltname",
             "excludedusage",
             "excluded_usages",
             "admrecord",
-            "countryprogrammeprices",
+            "cpprices",
         ]
         return get_final_display_list(Blend, exclude)
 

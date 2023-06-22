@@ -1,18 +1,18 @@
 from rest_framework import mixins, generics
 from core.api.filters.country_programme import (
-    CountryProgrammeReportFilter,
-    CountryProgrammeRecordFilter,
+    CPReportFilter,
+    CPRecordFilter,
 )
 
 from core.api.serializers import (
-    CountryProgrammeReportSerializer,
-    CountryProgrammeRecordSerializer,
+    CPReportSerializer,
+    CPRecordSerializer,
 )
-from core.models.country_programme import CountryProgrammeRecord, CountryProgrammeReport
+from core.models.country_programme import CPRecord, CPReport
 
 
 # view for country programme reports
-class CountryProgrammeReportListAPIView(mixins.ListModelMixin, generics.GenericAPIView):
+class CPReportListAPIView(mixins.ListModelMixin, generics.GenericAPIView):
     """
     API endpoint that allows country programmes to be viewed.
     @param country_id: int - query filter for country id (exact)
@@ -20,16 +20,16 @@ class CountryProgrammeReportListAPIView(mixins.ListModelMixin, generics.GenericA
     @param year: int - query filter for year (exact)
     """
 
-    queryset = CountryProgrammeReport.objects.select_related("country").order_by("name")
-    filterset_class = CountryProgrammeReportFilter
-    serializer_class = CountryProgrammeReportSerializer
+    queryset = CPReport.objects.select_related("country").order_by("name")
+    filterset_class = CPReportFilter
+    serializer_class = CPReportSerializer
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
 
 # view for country programme record list
-class CountryProgrammeRecordListAPIView(mixins.ListModelMixin, generics.GenericAPIView):
+class CPRecordListAPIView(mixins.ListModelMixin, generics.GenericAPIView):
     """
     API endpoint that allows country programme records to be viewed.
     @param country_programme_id: int - query filter for country programme id (exact)
@@ -37,12 +37,12 @@ class CountryProgrammeRecordListAPIView(mixins.ListModelMixin, generics.GenericA
     @param year: int - query filter for year (exact)
     """
 
-    filterset_class = CountryProgrammeRecordFilter
-    serializer_class = CountryProgrammeRecordSerializer
+    filterset_class = CPRecordFilter
+    serializer_class = CPRecordSerializer
 
     def get_queryset(self):
         return (
-            CountryProgrammeRecord.objects.select_related("substance", "blend")
+            CPRecord.objects.select_related("substance", "blend")
             .prefetch_related("record_usages")
             .order_by(
                 "section",
