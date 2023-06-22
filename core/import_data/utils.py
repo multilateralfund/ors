@@ -1,3 +1,4 @@
+import decimal
 import json
 import re
 from core.models.blend import Blend, BlendAltName, BlendComponents
@@ -56,6 +57,12 @@ SKIP_COUNTRY_LIST = [
 BLEND_COMPONENTS_RE = r"(\w{1,4}\-?\s?\w{2,7})\s?=?-?\s?\(?(\d{1,3}\.?\,?\d{,3})\%\)?"
 # "R23/R125/CO2/HFO-1132 (10%/10%/60%/20%)"
 BLEND_COMPOSITION_RE = r"((/[a-zA-Z0-9/-]{3,15})+\s?\(\d{1,3}\.?\,?\d{,2}?%)"
+
+# this will find if the value is one of the excel annomally
+# where the value of the floating point calculation is not accurate
+# e.g. 1.252795 => 1.2527949999999999;
+# e.g. 3143.32 ==> 3143.320000000001
+EXCEL_BUG_RE = r"[09]{5,}\d$"
 
 
 # --- import utils ---
@@ -347,6 +354,24 @@ def get_year_dict_from_db_file(file_name):
 
 
 # --- xlsx import utils ---
+def get_decimal_from_excel_string(string_value):
+    """
+    get decimal from string
+    """
+    if not string_value:
+        return None
+
+    try:
+        decimal_value = decimal.Decimal(string_value)
+        # check if the value is one of the excel annomally
+        if re.search(EXCEL_BUG_RE, string_value):
+            # round the value to 11 digits to avoid the excel annomally
+            decimal_value = round(decimal_value, 11)
+        return decimal_value
+    except decimal.InvalidOperation:
+        return None
+
+
 def check_headers(df, required_columns, logger):
     """
     check if the df has all the required columns

@@ -11,6 +11,7 @@ from core.import_data.utils import (
     get_country_by_name,
     get_chemical,
     OFFSET,
+    get_decimal_from_excel_string,
 )
 from core.models import CountryProgrammePrices
 
@@ -80,28 +81,21 @@ def parse_sheet(df):
 
         previous_year_prices_obj = None
         for report_details in REPORT_COLUMNS:
-            try:
-                previous_year_text = row[report_details["previous"]]
-                previous_year_price = (
-                    float(previous_year_text) if previous_year_text else None
-                )
-            # some price values are not decimals. skip them for now
-            except ValueError:
+            # get previous year price
+            previous_year_text = row[report_details["previous"]]
+            previous_year_price = get_decimal_from_excel_string(previous_year_text)
+            if previous_year_text and previous_year_price is None:
                 logger.warning(
                     f"⚠️ [row: {index_row + OFFSET}][year: {report_details['year']}] "
-                    "Price value is not a number for previous year"
+                    f"Incorrect price value for previous year {previous_year_text}"
                 )
-
-            try:
-                current_year_text = row[report_details["year"]]
-                current_year_price = (
-                    float(current_year_text) if current_year_text else None
-                )
-            # some price values are not decimals. skip them for now
-            except ValueError:
+            # get current year price
+            current_year_text = row[report_details["year"]]
+            current_year_price = get_decimal_from_excel_string(current_year_text)
+            if current_year_text and current_year_price is None:
                 logger.warning(
                     f"⚠️ [row: {index_row + OFFSET}][year: {report_details['year']}] "
-                    "Price value is not a number for current year"
+                    f"Incorrect price value for current year {current_year_text}"
                 )
 
             remarks = row[report_details["remarks"]]
@@ -186,7 +180,7 @@ def parse_sheet(df):
 
 
 def parse_file(file_path):
-    df = pd.read_excel(file_path, sheet_name="Section C")
+    df = pd.read_excel(file_path, sheet_name="Section C", dtype=str)
     # replace nan with None
     df = df.replace(np.nan, None)
     # set column names to strings
