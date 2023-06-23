@@ -155,3 +155,31 @@ class TestGroupSubstances:
         # blend1 2 excluded usages (no years)
         excluded_usages_list = response.data[1]["excluded_usages"]
         assert len(excluded_usages_list) == 2
+
+    def test_group_substances_section_C_list(self):
+        groups = []
+
+        for gr_name in ["A", "B", "C", "E", "F", "unknown"]:
+            group = GroupFactory.create(name=gr_name, annex=gr_name)
+            groups.append(group)
+            for i in range(2):
+                SubstanceFactory.create(group=group, sort_order=i)
+
+        # test without authentication
+        self.client.logout()
+        url = reverse("group-substances-section-c-list")
+        response = self.client.get(url)
+        assert response.status_code == 403
+
+        self.client.force_authenticate(user=UserFactory())
+
+        # get group substances list without usages
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert len(response.data) == 4
+
+        for i in range(4):
+            group_data = response.data[i]
+            assert group_data["id"] == groups[i + 2].id
+            # check that every group has 2 substances
+            assert len(group_data["substances"]) == 2

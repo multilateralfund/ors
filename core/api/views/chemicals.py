@@ -50,6 +50,18 @@ class GroupSubstancesListAPIView(ChemicalBaseListAPIView):
         return queryset.order_by("name")
 
 
+class GroupSubstancesSectionCListView(GroupSubstancesListAPIView):
+    """
+    API endpoint that allows the substances needed for `Section C` to be viewed.
+    The substances are grouped by group.
+    This is a new view instead of a filter for the previous one because it will
+    require some changes in the future that we don't know yet and we don't want
+    to change the frontend later.
+    """
+
+    queryset = Group.objects.filter(annex__in=["C", "E", "F", "unknown"])
+
+
 class BlendsListAPIView(ChemicalBaseListAPIView):
     """
     API endpoint that allows blends to be viewed.

@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from core.admin.utils import get_final_display_list
 from core.models.substance import Substance, SubstanceAltName
+from admin_auto_filters.filters import AutocompleteFilterFactory
 
 
 @admin.register(SubstanceAltName)
@@ -22,6 +23,7 @@ class SubstanceAdmin(admin.ModelAdmin):
         "name",
         "formula",
     ]
+    list_filter = [AutocompleteFilterFactory("group", "group")]
 
     def get_list_display(self, request):
         exclude = [

@@ -15,7 +15,7 @@ def create_uncontrolled_group():
         "group_id": "uncontrolled",
         "annex": "unknown",
         "name": "Other",
-        "name_alt": "",
+        "name_alt": "Other",
         "description": "Substances not controlled under the Montreal Protocol.",
         "description_alt": "",
         "is_odp": False,
@@ -49,9 +49,9 @@ def import_data(cls, file_path, exclude=None, uncontrolled_group_id=None):
             instance.pop(k)
 
         # set custom fields
-        if cls == Group and instance["annex"]:
-            # set annex => 1->A; 2->B; 3->C
-            instance["annex"] = chr(ord("A") + instance["annex"] - 1)
+        if cls == Group:
+            # the annex is the first letter of the name
+            instance["annex"] = instance["name"][0]
         elif cls == Blend:
             # skip deactivated blends
             if instance["is_deactivated"]:

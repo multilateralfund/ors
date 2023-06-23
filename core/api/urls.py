@@ -3,7 +3,11 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
-from core.api.views.chemicals import GroupSubstancesListAPIView, BlendsListAPIView
+from core.api.views.chemicals import (
+    GroupSubstancesListAPIView,
+    GroupSubstancesSectionCListView,
+    BlendsListAPIView,
+)
 from core.api.views.country_programme import (
     CountryProgrammeRecordListAPIView,
     CountryProgrammeReportListAPIView,
@@ -41,6 +45,11 @@ urlpatterns = [
         "group-substances/",
         GroupSubstancesListAPIView.as_view(),
         name="group-substances-list",
+    ),
+    path(
+        "group-substances-section-c/",
+        GroupSubstancesSectionCListView.as_view(),
+        name="group-substances-section-c-list",
     ),
     path("blends/", BlendsListAPIView.as_view(), name="blends-list"),
     path(
