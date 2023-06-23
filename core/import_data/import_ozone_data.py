@@ -10,8 +10,31 @@ from core.models.substance import SubstanceAltName
 logger = logging.getLogger(__name__)
 
 
+def create_uncontrolled_group():
+    group_data = {
+        "group_id": "uncontrolled",
+        "annex": "unknown",
+        "name": "Other",
+        "name_alt": "",
+        "description": "Substances not controlled under the Montreal Protocol.",
+        "description_alt": "",
+        "is_odp": False,
+        "is_gwp": False,
+        "ozone_id": None,
+    }
+    group, _ = Group.objects.update_or_create(**group_data)
+    return group.id
+
+
+def get_uncontrolled_group_id():
+    try:
+        return Group.objects.get(group_id="uncontrolled").id
+    except Group.DoesNotExist:
+        return create_uncontrolled_group()
+
+
 @transaction.atomic
-def import_data(cls, file_path, exclude=None):
+def import_data(cls, file_path, exclude=None, uncontrolled_group_id=None):
     if exclude is None:
         exclude = []
 
@@ -36,10 +59,12 @@ def import_data(cls, file_path, exclude=None):
             instance.pop("is_deactivated")
             # set blend name
             instance["name"] = instance.pop("blend_id")
-        elif cls == Substance and instance["group"]:
-            # set foreign key
-            group_ozone_id = instance.pop("group")
-            instance["group_id"] = Group.objects.get(ozone_id=group_ozone_id).id
+        elif cls == Substance:
+            if instance["group"]:
+                group_ozone_id = instance.pop("group")
+                instance["group_id"] = Group.objects.get(ozone_id=group_ozone_id).id
+            else:
+                instance["group_id"] = uncontrolled_group_id
         elif cls == BlendComponents:
             # set foreign key
             blend_ozone_id = instance.pop("blend")
@@ -90,6 +115,8 @@ def import_groups():
         "phase_out_year_non_article_5",
     ]
     import_data(Group, settings.IMPORT_RESOURCES_DIR / "groups.json", exclude)
+    # create a group for substances that don't have a group
+    create_uncontrolled_group()
     logger.info("✔ groups imported")
 
 
@@ -149,7 +176,13 @@ def import_substances():
         "main_usage",
         "has_critical_uses",
     ]
-    import_data(Substance, settings.IMPORT_RESOURCES_DIR / "substances.json", exclude)
+    uncontrolled_group_id = get_uncontrolled_group_id()
+    import_data(
+        Substance,
+        settings.IMPORT_RESOURCES_DIR / "substances.json",
+        exclude,
+        uncontrolled_group_id,
+    )
     logger.info("✔ substances imported")
     import_alternative_names(
         Substance,
