@@ -180,52 +180,54 @@ export const ManageChemicalModal = ({
               {selectedUsages && (
                 <ComposeInputsByUsage selectedUsages={selectedUsages} />
               )}
-              <div className="flex flex-col gap-2 mt-3">
-                <div>
-                  <FormInput
-                    name="import"
-                    label="Import"
-                    inline
-                    type="number"
-                  />
+              {sectionId < 2 && (
+                <div className="flex flex-col gap-2 mt-3">
+                  <div>
+                    <FormInput
+                      name="import"
+                      label="Import"
+                      inline
+                      type="number"
+                    />
+                  </div>
+                  <div>
+                    <FormInput
+                      name="export"
+                      label="Export"
+                      inline
+                      type="number"
+                    />
+                  </div>
+                  <div>
+                    <FormInput
+                      name="production"
+                      label="Production"
+                      inline
+                      type="number"
+                    />
+                  </div>
+                  <div>
+                    <FormInput
+                      name="import_quotas"
+                      label="Import quotas"
+                      inline
+                      type="number"
+                    />
+                  </div>
+                  <div>
+                    <FormDateSelect
+                      name="import_banned"
+                      label="If imports are banned"
+                      tooltip="Indicate date ban commenced (DD/MM/YYYY)"
+                      showPopperArrow={false}
+                      inline
+                    />
+                  </div>
+                  <div>
+                    <FormInput name="remarks" label="Remarks" inline />
+                  </div>
                 </div>
-                <div>
-                  <FormInput
-                    name="export"
-                    label="Export"
-                    inline
-                    type="number"
-                  />
-                </div>
-                <div>
-                  <FormInput
-                    name="production"
-                    label="Production"
-                    inline
-                    type="number"
-                  />
-                </div>
-                <div>
-                  <FormInput
-                    name="import_quotas"
-                    label="Import quotas"
-                    inline
-                    type="number"
-                  />
-                </div>
-                <div>
-                  <FormDateSelect
-                    name="import_banned"
-                    label="If imports are banned"
-                    tooltip="Indicate date ban commenced (DD/MM/YYYY)"
-                    showPopperArrow={false}
-                    inline
-                  />
-                </div>
-                <div>
-                  <FormInput name="remarks" label="Remarks" inline />
-                </div>
-              </div>
+              )}
             </div>
           </Modal.Body>
           <Modal.Footer>
