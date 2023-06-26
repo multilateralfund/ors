@@ -50,7 +50,7 @@ export const CreateReportsPage: FC = function () {
         }}
       />
     )
-  }, [withSection, data])
+  }, [withSection, data, selectedTab])
 
   return (
     <div className="mt-2">

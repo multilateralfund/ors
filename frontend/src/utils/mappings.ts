@@ -20,6 +20,11 @@ export const usagesSectionB = [
   'Lab use',
   'Methyl bromide',
 ]
+export const usagesSectionC = [
+  'Previous year price',
+  'Current prices',
+  'Remarks',
+]
 
 export const mappingTabsWithSections: Record<number | string, SectionsType> = {
   0: {
@@ -34,7 +39,7 @@ export const mappingTabsWithSections: Record<number | string, SectionsType> = {
     usages: usagesSectionB,
     substances: ['F'],
   },
-  2: { label: 'Section C', key: 'C' },
+  2: { label: 'Section C', key: 'C', usages: usagesSectionB },
   3: { label: 'Section D', key: 'D' },
   4: { label: 'Section E', key: 'E' },
   5: { label: 'Section F', key: 'F' },
@@ -104,6 +109,20 @@ export const mappingColumnsWithState = (
       {
         header: 'Date ban',
         accessorKey: 'date_ban',
+      },
+      {
+        header: 'Remarks',
+        accessorKey: 'remarks',
+      },
+    ],
+    2: [
+      {
+        header: 'Previous year price',
+        accessorKey: 'previous_year_price',
+      },
+      {
+        header: 'Current prices',
+        accessorKey: 'current_price',
       },
       {
         header: 'Remarks',

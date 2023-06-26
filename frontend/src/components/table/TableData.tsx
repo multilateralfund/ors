@@ -38,6 +38,20 @@ export const TableData = ({
   const dispatch = useDispatch()
 
   const columnsBySections = mappingColumnsWithState(Number(selectedTab))
+  const totalColumn = useMemo<ColumnDef<ReportDataType>[]>(
+    () => [
+      {
+        header: 'TOTAL',
+        accessorKey: 'total',
+        cell: cell => {
+          return cell?.row?.original?.usage
+            ?.map(item => Number(item))
+            .reduce((acc, c) => acc + c, 0)
+        },
+      },
+    ],
+    [],
+  )
   const substancesColumns = useMemo<ColumnDef<ReportDataType>[]>(
     () => [
       {
@@ -57,15 +71,6 @@ export const TableData = ({
           ) : (
             cell?.row?.original?.substance?.label
           )
-        },
-      },
-      {
-        header: 'TOTAL',
-        accessorKey: 'total',
-        cell: cell => {
-          return cell?.row?.original?.usage
-            ?.map(item => Number(item))
-            .reduce((acc, c) => acc + c, 0)
         },
       },
     ],
@@ -110,10 +115,17 @@ export const TableData = ({
   const columns = useMemo<ColumnDef<ReportDataType>[]>(
     () => [
       ...substancesColumns,
+      ...(Number(selectedTab) < 2 ? totalColumn : ([] as unknown as [])),
       ...(columnsBySections as unknown as []),
       ...defaultColumns,
     ],
-    [substancesColumns, columnsBySections, defaultColumns],
+    [
+      selectedTab,
+      substancesColumns,
+      columnsBySections,
+      defaultColumns,
+      totalColumn,
+    ],
   )
   const table = useReactTable({
     data,
