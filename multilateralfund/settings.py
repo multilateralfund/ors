@@ -250,6 +250,7 @@ SESSION_COOKIE_HTTPONLY = False
 CSRF_COOKIE_HTTPONLY = True
 
 if DEBUG:
+    SECRET_KEY = "secret"
     ALLOWED_HOSTS.extend(["localhost", "127.0.0.1"])
 
 ENABLE_DEBUG_BAR = DEBUG and env.get_value("ENABLE_DEBUG_BAR", default=False, cast=bool)
