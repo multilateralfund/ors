@@ -45,6 +45,7 @@ class GroupFactory(factory.django.DjangoModelFactory):
 
     name = factory.Faker("pystr", max_chars=100)
     name_alt = factory.Faker("pystr", max_chars=100)
+    annex = factory.Faker("pystr", max_chars=50)
     description = factory.Faker("pystr", max_chars=100)
 
 
