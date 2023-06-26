@@ -12,7 +12,7 @@ class UsageAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["usage", "countryprogrammeusage", "excludedusage", "children"]
+        exclude = ["usage", "cpusage", "excludedusage", "children"]
         return get_final_display_list(Usage, exclude)
 
 

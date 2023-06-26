@@ -26,9 +26,9 @@ def import_data(cls, file_path, exclude=None):
             instance.pop(k)
 
         # set custom fields
-        if cls == Group and instance["annex"]:
-            # set annex => 1->A; 2->B; 3->C
-            instance["annex"] = chr(ord("A") + instance["annex"] - 1)
+        if cls == Group:
+            # the annex is the first letter of the name
+            instance["annex"] = instance["name"][0]
         elif cls == Blend:
             # skip deactivated blends
             if instance["is_deactivated"]:

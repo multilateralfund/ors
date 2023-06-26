@@ -14,8 +14,8 @@ from core.import_data.utils import (
     get_year_dict_from_db_file,
 )
 
-from core.models import CountryProgrammeRecord, Usage
-from core.models.country_programme import CountryProgrammeUsage
+from core.models import CPRecord, Usage
+from core.models.country_programme import CPUsage
 
 logger = logging.getLogger(__name__)
 
@@ -161,7 +161,7 @@ def parse_record_data(item_attributes_file, country_dict, year_dict, chemical_di
             "production": item["Production"],
             "display_name": chemical_dict[item["ItemId"]]["display_name"],
         }
-        record = CountryProgrammeRecord.objects.create(**record_data)
+        record = CPRecord.objects.create(**record_data)
 
         # create records
         for usage, usage_id in current_usages_dict.items():
@@ -172,9 +172,9 @@ def parse_record_data(item_attributes_file, country_dict, year_dict, chemical_di
                 "usage_id": usage_id,
                 "quantity": item[usage],
             }
-            cp_usages.append(CountryProgrammeUsage(**cp_rep))
+            cp_usages.append(CPUsage(**cp_rep))
 
-    CountryProgrammeUsage.objects.bulk_create(cp_usages)
+    CPUsage.objects.bulk_create(cp_usages)
 
 
 def parse_db_files(db_dir_path):
@@ -192,7 +192,7 @@ def parse_db_files(db_dir_path):
     logger.info("✔ chemical file parsed" + str(len(chemical_dict)))
 
     item_attributes_file = f"{db_dir_path}/ItemAttributes.json"
-    delete_old_data(CountryProgrammeRecord, item_attributes_file, logger)
+    delete_old_data(CPRecord, item_attributes_file, logger)
     parse_record_data(item_attributes_file, country_dict, year_dict, chemical_dict)
     logger.info(f"✔ records from {db_dir_path} imported")
 
