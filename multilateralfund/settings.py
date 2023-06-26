@@ -26,7 +26,7 @@ env = environ.Env()
 if os.path.exists(str(BASE_DIR / ".env")):
     env.read_env(str(BASE_DIR / ".env"))
 
-BACKEND_HOST = env.list("BACKEND_HOST", default=["localhost"])
+BACKEND_HOST = env.get_value("BACKEND_HOST", default="localhost")
 FRONTEND_HOST = env.list("FRONTEND_HOST", default=["http://localhost:3000"])
 
 # Quick-start development settings - unsuitable for production
@@ -38,7 +38,7 @@ SECRET_KEY = "django-insecure-9ty_tzwdfjg%7sam=d2c70zo!9t1c_d$6empgpct0%a%&9w4h=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [_host.rsplit(":", 1)[0] for _host in BACKEND_HOST]
+ALLOWED_HOSTS = [BACKEND_HOST]
 
 # CORS allowed origins
 CORS_ALLOWED_ORIGINS = [_host.rsplit(",", 1)[0] for _host in FRONTEND_HOST]
@@ -242,6 +242,9 @@ REST_AUTH = {
 SESSION_COOKIE_HTTPONLY = False
 CSRF_COOKIE_HTTPONLY = True
 
+if DEBUG:
+    ALLOWED_HOSTS.extend(["localhost", "127.0.0.1"])
+
 ENABLE_DEBUG_BAR = DEBUG and env.get_value("ENABLE_DEBUG_BAR", default=False, cast=bool)
 if ENABLE_DEBUG_BAR:
     try:
@@ -257,7 +260,6 @@ if ENABLE_DEBUG_BAR:
         INTERNAL_IPS = [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
         MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
         INSTALLED_APPS += ["debug_toolbar"]
-        ALLOWED_HOSTS += ["127.0.0.1"]
         DEBUG_TOOLBAR_CONFIG = {
             "SHOW_COLLAPSED": True,
             "SHOW_TOOLBAR_CALLBACK": f"{__name__}.show_toolbar",

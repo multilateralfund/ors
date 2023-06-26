@@ -19,6 +19,7 @@ settings. See [code style workflow](https://github.com/digital-agenda-data/digit
   - [react](https://react.dev/)
   - [react-router](https://reactrouter.com/en/main)
   - [vite](https://vitejs.dev/)
+- API documentation can be found at [here](http://localhost:8080/api/docs/) while running locally or [here](https://multilateralfund.edw.ro/api/docs/) for staging environment.
 
 ## Adding a new backend dependency
 
