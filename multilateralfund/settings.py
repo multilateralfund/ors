@@ -33,7 +33,7 @@ FRONTEND_HOST = env.list("FRONTEND_HOST", default=["http://localhost:3000"])
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-9ty_tzwdfjg%7sam=d2c70zo!9t1c_d$6empgpct0%a%&9w4h="
+SECRET_KEY = env.get_value("DJANGO_SECRET_KEY", default="")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -42,10 +42,17 @@ ALLOWED_HOSTS = [BACKEND_HOST]
 
 # CORS allowed origins
 CORS_ALLOWED_ORIGINS = [_host.rsplit(",", 1)[0] for _host in FRONTEND_HOST]
+CORS_ORIGIN_WHITELIST = [_host.rsplit(",", 1)[0] for _host in FRONTEND_HOST]
 CORS_ALLOW_CREDENTIALS = True
 
 # CSRF allowed origins
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+
+# SECURITY
+HAS_HTTPS = env.get_value("HAS_HTTPS", default=False, cast=bool)
+SECURE_SSL_REDIRECT = HAS_HTTPS
+CSRF_COOKIE_SECURE = HAS_HTTPS
+SESSION_COOKIE_SECURE = HAS_HTTPS
 
 # Application definition
 
@@ -243,6 +250,7 @@ SESSION_COOKIE_HTTPONLY = False
 CSRF_COOKIE_HTTPONLY = True
 
 if DEBUG:
+    SECRET_KEY = "secret"
     ALLOWED_HOSTS.extend(["localhost", "127.0.0.1"])
 
 ENABLE_DEBUG_BAR = DEBUG and env.get_value("ENABLE_DEBUG_BAR", default=False, cast=bool)
