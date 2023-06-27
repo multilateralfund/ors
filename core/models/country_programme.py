@@ -9,6 +9,9 @@ from core.models.usage import Usage
 class CPReport(models.Model):
     name = models.CharField(max_length=248)
     year = models.IntegerField()
+    reporting_entry = models.CharField(max_length=248, null=True, blank=True)
+    reporting_email = models.CharField(max_length=248, null=True, blank=True)
+    submission_date = models.DateField(null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
 

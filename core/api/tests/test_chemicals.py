@@ -15,8 +15,9 @@ pytestmark = pytest.mark.django_db
 
 
 # pylint: disable=C8008
-class TestGroupSubstances:
+class TestChemicals:
     client = APIClient()
+    group_list = ["A", "B", "C", "D", "E", "F", "unknown"]
 
     def create_usages(self, count=3):
         return [UsageFactory.create() for _ in range(count)]
@@ -42,15 +43,20 @@ class TestGroupSubstances:
                 **create_data,
             )
 
-    def test_group_substances_list(self):
+    def test_substances_list(self):
         # add 2 groups with 2 substances each
         groups = []
         substances = []
-        for gr_name in ["A", "B"]:
-            group = GroupFactory.create(name=gr_name)
+        for gr_name in self.group_list:
+            group = GroupFactory.create(name=gr_name, annex=gr_name)
             groups.append(group)
             for i in range(2):
-                substances.append(SubstanceFactory.create(group=group, sort_order=i))
+                substances.append(
+                    SubstanceFactory.create(
+                        group=group,
+                        sort_order=i,
+                    )
+                )
         # add 3 usages
         usages = self.create_usages()
         # add excluded usages for first group substances
@@ -60,7 +66,7 @@ class TestGroupSubstances:
         )
 
         # test without authentication
-        url = reverse("group-substances-list")
+        url = reverse("substances-list")
         response = self.client.get(url)
         assert response.status_code == 403
 
@@ -70,37 +76,41 @@ class TestGroupSubstances:
         response = self.client.get(url)
         assert response.status_code == 200
         # check that groups are sorted by name
-        assert len(response.data) == 2
-        for i in range(2):
-            group_data = response.data[i]
-            assert group_data["id"] == groups[i].id
-            # check that every group has 2 substances and no excluded usages
-            assert len(group_data["substances"]) == 2
-            for j in range(2):
-                assert group_data["substances"][j]["id"] == substances[i * 2 + j].id
-                assert len(group_data["substances"][j]["excluded_usages"]) == 0
+        count_substances = len(response.data)
+        assert count_substances == 14
+        for i in range(count_substances):
+            assert response.data[i]["group_name"] == self.group_list[int(i / 2)]
 
-        # get group substances list with usages
+        # get substances list with usages
         response = self.client.get(url, {"with_usages": True})
         assert response.status_code == 200
-        assert len(response.data) == 2
-        assert response.data[0]["id"] == groups[0].id
-        assert len(response.data[0]["substances"]) == 2
+        assert len(response.data) == 14
         # check that excluded usages are returned
         for i in range(2):
-            assert usages[i].id in response.data[0]["substances"][0]["excluded_usages"]
+            assert usages[i].id in response.data[0]["excluded_usages"]
 
         # check for_year filter for excluded usages
-        # for_year = 2000
+        # for_year = 2000 => 1 excluded usage
         response = self.client.get(url, {"with_usages": True, "for_year": 2000})
         assert response.status_code == 200
         # substance0 1 excluded usage (2000-2010)
-        excluded_usages_list = response.data[0]["substances"][0]["excluded_usages"]
+        excluded_usages_list = response.data[0]["excluded_usages"]
         assert len(excluded_usages_list) == 1
         assert excluded_usages_list[0] == usages[0].id
-        # substance1 2 excluded usages (no years)
-        excluded_usages_list = response.data[0]["substances"][1]["excluded_usages"]
-        assert len(excluded_usages_list) == 2
+
+        # check section filter
+        # section A => annex in ["A", "B", "C", "D", "E"] => 10 substances
+        response = self.client.get(url, {"section": "A"})
+        assert response.status_code == 200
+        assert len(response.data) == 10
+        # section B => annex in ["F"] => 2 substances
+        response = self.client.get(url, {"section": "B"})
+        assert response.status_code == 200
+        assert len(response.data) == 2
+        # section C => annex in ["C", "E", "F", "unknown"] => 4 substances
+        response = self.client.get(url, {"section": "C"})
+        assert response.status_code == 200
+        assert len(response.data) == 8
 
     def test_blends_list(self):
         # add some blends

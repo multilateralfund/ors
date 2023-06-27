@@ -47,6 +47,10 @@ CHEMICAL_NAME_MAPPING = {
 # --- list of db names ---
 DB_DIR_LIST = ["CP", "CP2012"]
 
+# the max year for the cp reports to be imported
+# if the year is greater than this value, the cp report will not be imported
+DB_MAX_YEAR = 2018
+
 # --- list of country names that can be skipped ---
 SKIP_COUNTRY_LIST = [
     "global",
@@ -170,7 +174,9 @@ def get_chemical_by_name_or_components(chemical_name, components=None):
     return None, None
 
 
-def get_cp_report(year, country_name, country_id=None, index_row=None, logger=None):
+def get_cp_report(
+    year, country_name, country_id=None, index_row=None, logger=None, other_args=None
+):
     """
     get or create country program report object by year and country
     @param year = int
@@ -178,6 +184,7 @@ def get_cp_report(year, country_name, country_id=None, index_row=None, logger=No
     @param country_id = int
     @param index_row = int
     @param logger = logger obj
+    @param other_args = dict (other arguments for CPReport object)
 
     @return country_program = CPReport object
     """
@@ -186,8 +193,16 @@ def get_cp_report(year, country_name, country_id=None, index_row=None, logger=No
         country_id = country.id
 
     cp_name = f"{country_name} {year}"
-    cp, _ = CPReport.objects.get_or_create(
-        name=cp_name, year=year, country_id=country_id
+    data = {
+        "name": cp_name,
+        "year": year,
+        "country_id": country_id,
+    }
+    if other_args:
+        data.update(other_args)
+
+    cp, _ = CPReport.objects.update_or_create(
+        name=cp_name, year=year, country_id=country_id, defaults=data
     )
 
     return cp
@@ -216,7 +231,9 @@ def get_object_by_name(cls, obj_name, index_row, obj_type_name, logger):
 
 
 # --- cp databases import utils ---
-def get_cp_report_for_db_import(year_dict, country_dict, json_entry, logger, entry_id):
+def get_cp_report_for_db_import(
+    year_dict, country_dict, json_entry, logger, entry_id, other_args=None
+):
     """
     get or create country program report object by year and country
     @param year_dict = dict
@@ -224,19 +241,26 @@ def get_cp_report_for_db_import(year_dict, country_dict, json_entry, logger, ent
     @param json_entry = dict (json entry)
     @param logger = logger object
     @param entry_id = int
+    @param other_args = dict (other arguments for CPReport object)
 
     @return country_program = CPReport object
     """
 
-    # check if year and country exists in dictioanries
-    if json_entry["CountryId"] not in country_dict:
-        logger.warning(
-            f"Country not found: {json_entry['CountryId']} (EntryID: {entry_id})"
-        )
-        return None
+    # check if year and country
     if json_entry["ProjectDateId"] not in year_dict:
         logger.warning(
             f"Year not found: {json_entry['ProjectDateId']} (EntryID: {entry_id})"
+        )
+        return None
+
+    # skip years greater than DB_MAX_YEAR
+    year = year_dict[json_entry["ProjectDateId"]]
+    if year > DB_MAX_YEAR:
+        return None
+
+    if json_entry["CountryId"] not in country_dict:
+        logger.warning(
+            f"Country not found: {json_entry['CountryId']} (EntryID: {entry_id})"
         )
         return None
 
@@ -248,7 +272,9 @@ def get_cp_report_for_db_import(year_dict, country_dict, json_entry, logger, ent
         return None
 
     # get cp report id
-    cp_report = get_cp_report(year, country["name"], country["id"])
+    cp_report = get_cp_report(
+        year, country["name"], country["id"], other_args=other_args
+    )
     return cp_report
 
 
