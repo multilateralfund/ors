@@ -15,33 +15,3 @@ class CPReportFilter(filters.FilterSet):
     class Meta:
         model = CPReport
         fields = ["country_id", "name", "year"]
-
-
-class CPRecordFilter(filters.FilterSet):
-    """
-    Filter for country programme records
-    """
-
-    country_programme_report_id = filters.NumberFilter(
-        field_name="country_programme_report_id", lookup_expr="exact"
-    )
-    substance_id = filters.NumberFilter(field_name="substance_id", lookup_expr="exact")
-    blend_id = filters.NumberFilter(field_name="blend_id", lookup_expr="exact")
-    section = filters.CharFilter(field_name="section", lookup_expr="iexact")
-    country_id = filters.NumberFilter(
-        field_name="country_programme_report__country_id", lookup_expr="exact"
-    )
-    year = filters.NumberFilter(
-        field_name="country_programme_report__year", lookup_expr="exact"
-    )
-
-    class Meta:
-        model = CPRecord
-        fields = [
-            "country_programme_report_id",
-            "substance_id",
-            "blend_id",
-            "section",
-            "country_id",
-            "year",
-        ]

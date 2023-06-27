@@ -5,13 +5,18 @@ from rest_framework.response import Response
 
 from core.api.filters.country_programme import (
     CPReportFilter,
-    CPRecordFilter,
 )
 from core.api.serializers import (
     CPReportSerializer,
     CPRecordSerializer,
 )
-from core.models.country_programme import CPRecord, CPReport
+from core.models.country_programme import (
+    CPEmission,
+    CPGeneration,
+    CPPrices,
+    CPRecord,
+    CPReport,
+)
 
 
 # view for country programme reports
@@ -40,22 +45,44 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
     @param year: int - query filter for year (exact)
     """
 
-    filterset_class = CPRecordFilter
-    serializer_class = CPRecordSerializer
-
-    def get_queryset(self):
+    def _get_cp_record(self, cp_report_id, section):
         return (
-            CPRecord.objects.select_related("substance", "blend")
+            CPRecord.objects.select_related("substance", "blend", "group")
             .prefetch_related("record_usages")
+            .filter(country_programme_report_id=cp_report_id, section=section)
             .order_by(
                 "section",
                 "substance__group__name",
                 "substance__name",
             )
+            .all()
         )
 
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
+    def _get_items_filtered_by_report(self, cls, cp_report_id):
+        return cls.objects.filter(country_programme_report=cp_report_id).all()
+
+    def get(self, *args, **kwargs):
+        cp_report_id = self.request.query_params.get("cp_report_id", None)
+        if not cp_report_id:
+            raise ValueError("cp_report_id is required")
+
+        # section = self.request.query_params.get("section", None)
+
+        section_a = self._get_cp_record(cp_report_id, "A")
+        section_b = self._get_cp_record(cp_report_id, "B")
+        section_c = self._get_items_filtered_by_report(CPPrices, cp_report_id)
+        section_d = self._get_items_filtered_by_report(CPGeneration, cp_report_id)
+        section_e = self._get_items_filtered_by_report(CPEmission, cp_report_id)
+
+        return Response(
+            {
+                "section_a": CPRecordSerializer(section_a, many=True).data,
+                "section_b": CPRecordSerializer(section_b, many=True).data,
+                "section_c": CPRecordSerializer(section_c, many=True).data,
+                "section_d": CPRecordSerializer(section_d, many=True).data,
+                "section_e": CPRecordSerializer(section_e, many=True).data,
+            }
+        )
 
 
 # view for country programme settings
