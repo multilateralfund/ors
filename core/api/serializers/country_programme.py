@@ -35,13 +35,14 @@ class CPUsageSerializer(serializers.ModelSerializer):
         model = CPUsage
         fields = [
             "usage",
+            "usage_id",
             "quantity",
         ]
 
 
 class CPRecordSerializer(serializers.ModelSerializer):
     chemical_name = serializers.SerializerMethodField()
-    chemical_group_name = serializers.SerializerMethodField()
+    annex_group = serializers.SerializerMethodField()
     record_usages = CPUsageSerializer(many=True)
 
     class Meta:
@@ -49,7 +50,9 @@ class CPRecordSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "chemical_name",
-            "chemical_group_name",
+            "substance_id",
+            "blend_id",
+            "annex_group",
             "display_name",
             "section",
             "imports",
@@ -66,7 +69,7 @@ class CPRecordSerializer(serializers.ModelSerializer):
     def get_chemical_name(self, obj):
         return obj.substance.name if obj.substance else obj.blend.name
 
-    def get_chemical_group_name(self, obj):
+    def get_annex_group(self, obj):
         return (
             obj.substance.group.name if obj.substance and obj.substance.group else None
         )
@@ -74,13 +77,17 @@ class CPRecordSerializer(serializers.ModelSerializer):
 
 class CPPricesSerializer(serializers.ModelSerializer):
     chemical_name = serializers.SerializerMethodField()
+    annex_group = serializers.SerializerMethodField()
 
     class Meta:
         model = CPPrices
         fields = [
             "id",
             "chemical_name",
+            "substance_id",
+            "blend_id",
             "display_name",
+            "annex_group",
             "previous_year_price",
             "previous_year_text",
             "current_year_price",
@@ -90,6 +97,11 @@ class CPPricesSerializer(serializers.ModelSerializer):
 
     def get_chemical_name(self, obj):
         return obj.substance.name if obj.substance else obj.blend.name
+
+    def get_annex_group(self, obj):
+        return (
+            obj.substance.group.name if obj.substance and obj.substance.group else None
+        )
 
 
 class CPGenerationSerializer(serializers.ModelSerializer):

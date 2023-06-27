@@ -54,7 +54,7 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
     def _get_cp_record(self, cp_report_id, section):
         return (
             CPRecord.objects.select_related("substance__group", "blend")
-            .prefetch_related("record_usages")
+            .prefetch_related("record_usages__usage")
             .filter(country_programme_report_id=cp_report_id, section=section)
             .order_by(
                 "section",
@@ -79,7 +79,15 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
         if cp_report.year > IMPORT_DB_MAX_YEAR:
             section_a = self._get_cp_record(cp_report_id, "A")
             section_b = self._get_cp_record(cp_report_id, "B")
-            section_c = self._get_items_filtered_by_report(CPPrices, cp_report_id)
+            section_c = (
+                CPPrices.objects.select_related("substance__group", "blend")
+                .filter(country_programme_report=cp_report_id)
+                .order_by(
+                    "substance__group__name",
+                    "substance__name",
+                )
+                .all()
+            )
             section_d = self._get_items_filtered_by_report(CPGeneration, cp_report_id)
             section_e = self._get_items_filtered_by_report(CPEmission, cp_report_id)
             section_f = {
