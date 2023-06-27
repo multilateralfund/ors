@@ -10,6 +10,11 @@ from core.api.serializers import (
     CPReportSerializer,
     CPRecordSerializer,
 )
+from core.api.serializers.country_programme import (
+    CPEmissionSerializer,
+    CPGenerationSerializer,
+    CPPricesSerializer,
+)
 from core.models.country_programme import (
     CPEmission,
     CPGeneration,
@@ -17,6 +22,7 @@ from core.models.country_programme import (
     CPRecord,
     CPReport,
 )
+from core.utils import IMPORT_DB_MAX_YEAR
 
 
 # view for country programme reports
@@ -47,7 +53,7 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
 
     def _get_cp_record(self, cp_report_id, section):
         return (
-            CPRecord.objects.select_related("substance", "blend", "group")
+            CPRecord.objects.select_related("substance__group", "blend")
             .prefetch_related("record_usages")
             .filter(country_programme_report_id=cp_report_id, section=section)
             .order_by(
@@ -64,25 +70,34 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
     def get(self, *args, **kwargs):
         cp_report_id = self.request.query_params.get("cp_report_id", None)
         if not cp_report_id:
-            raise ValueError("cp_report_id is required")
+            return Response({"error": "cp_report_id is required"}, status=400)
 
-        # section = self.request.query_params.get("section", None)
+        cp_report = CPReport.objects.filter(id=cp_report_id).first()
+        if not cp_report:
+            return Response({"error": "cp_report_id is invalid"}, status=400)
 
-        section_a = self._get_cp_record(cp_report_id, "A")
-        section_b = self._get_cp_record(cp_report_id, "B")
-        section_c = self._get_items_filtered_by_report(CPPrices, cp_report_id)
-        section_d = self._get_items_filtered_by_report(CPGeneration, cp_report_id)
-        section_e = self._get_items_filtered_by_report(CPEmission, cp_report_id)
-
-        return Response(
-            {
-                "section_a": CPRecordSerializer(section_a, many=True).data,
-                "section_b": CPRecordSerializer(section_b, many=True).data,
-                "section_c": CPRecordSerializer(section_c, many=True).data,
-                "section_d": CPRecordSerializer(section_d, many=True).data,
-                "section_e": CPRecordSerializer(section_e, many=True).data,
+        if cp_report.year > IMPORT_DB_MAX_YEAR:
+            section_a = self._get_cp_record(cp_report_id, "A")
+            section_b = self._get_cp_record(cp_report_id, "B")
+            section_c = self._get_items_filtered_by_report(CPPrices, cp_report_id)
+            section_d = self._get_items_filtered_by_report(CPGeneration, cp_report_id)
+            section_e = self._get_items_filtered_by_report(CPEmission, cp_report_id)
+            section_f = {
+                "remarks": cp_report.comment,
             }
-        )
+
+            return Response(
+                {
+                    "section_a": CPRecordSerializer(section_a, many=True).data,
+                    "section_b": CPRecordSerializer(section_b, many=True).data,
+                    "section_c": CPPricesSerializer(section_c, many=True).data,
+                    "section_d": CPGenerationSerializer(section_d, many=True).data,
+                    "section_e": CPEmissionSerializer(section_e, many=True).data,
+                    "section_f": section_f,
+                }
+            )
+
+        return Response({"message": "Not implemented"}, status=200)
 
 
 # view for country programme settings

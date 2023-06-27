@@ -1,6 +1,6 @@
 from django_filters import rest_framework as filters
 
-from core.models.country_programme import CPRecord, CPReport
+from core.models.country_programme import CPReport
 
 
 class CPReportFilter(filters.FilterSet):
