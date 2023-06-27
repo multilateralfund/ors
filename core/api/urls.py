@@ -4,8 +4,8 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
 from core.api.views.chemicals import (
-    GroupSubstancesListView,
     BlendsListView,
+    SubstancesListView,
 )
 from core.api.views.country_programme import (
     CPRecordListView,
@@ -38,9 +38,9 @@ urlpatterns = [
     ),
     path("usages/", UsageListView.as_view(), name="usages-list"),
     path(
-        "group-substances/",
-        GroupSubstancesListView.as_view(),
-        name="group-substances-list",
+        "substances/",
+        SubstancesListView.as_view(),
+        name="substances-list",
     ),
     path("blends/", BlendsListView.as_view(), name="blends-list"),
     path(

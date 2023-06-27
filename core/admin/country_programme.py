@@ -14,8 +14,11 @@ from core.models.country_programme import (
 
 @admin.register(CPReport)
 class CPReportAdmin(admin.ModelAdmin):
-    search_fields = ["name", "year", "country__name"]
-    list_filter = [AutocompleteFilterFactory("country", "country"), "year"]
+    search_fields = ["name", "year", "country__name", "reporting_email"]
+    list_filter = [
+        AutocompleteFilterFactory("country", "country"),
+        "year",
+    ]
     autocomplete_fields = ["country"]
 
     def get_list_display(self, request):
