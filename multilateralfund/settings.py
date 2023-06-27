@@ -265,7 +265,8 @@ if ENABLE_DEBUG_BAR:
             )
 
         hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-        INTERNAL_IPS = [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
+        INTERNAL_IPS = ["127.0.0.1"]
+        INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
         MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
         INSTALLED_APPS += ["debug_toolbar"]
         DEBUG_TOOLBAR_CONFIG = {
