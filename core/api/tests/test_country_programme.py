@@ -146,3 +146,20 @@ class TestCPRecord:
         response = self.client.get(url, {"year": 2011})
         assert response.status_code == 200
         assert len(response.data) == 2
+
+
+class TestCPSettings:
+    client = APIClient()
+
+    def test_get_cp_settings(self):
+        url = reverse("country-programme-settings")
+
+        # test without authentication
+        response = self.client.get(url)
+        assert response.status_code == 403
+
+        self.client.force_authenticate(user=UserFactory())
+
+        # get cp settings
+        response = self.client.get(url)
+        assert response.status_code == 200

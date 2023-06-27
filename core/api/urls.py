@@ -4,15 +4,16 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
 from core.api.views.chemicals import (
-    BlendsListAPIView,
-    SubstancesListAPIView,
+    BlendsListView,
+    SubstancesListView,
 )
 from core.api.views.country_programme import (
-    CPRecordListAPIView,
-    CPReportListAPIView,
+    CPRecordListView,
+    CPReportListView,
+    CPSettingsView,
 )
-from core.api.views.usages import UsageListAPIView
-from core.api.views.countries import CountryListAPIView
+from core.api.views.usages import UsageListView
+from core.api.views.countries import CountryListView
 
 
 schema_view = get_schema_view(
@@ -35,26 +36,31 @@ urlpatterns = [
         schema_view.with_ui("swagger", cache_timeout=0),
         name="schema-swagger-ui",
     ),
-    path("usages/", UsageListAPIView.as_view(), name="usages-list"),
+    path("usages/", UsageListView.as_view(), name="usages-list"),
     path(
         "substances/",
-        SubstancesListAPIView.as_view(),
+        SubstancesListView.as_view(),
         name="substances-list",
     ),
-    path("blends/", BlendsListAPIView.as_view(), name="blends-list"),
+    path("blends/", BlendsListView.as_view(), name="blends-list"),
     path(
         "country-programme/reports/",
-        CPReportListAPIView.as_view(),
+        CPReportListView.as_view(),
         name="country-programme-report-list",
     ),
     path(
         "country-programme/records/",
-        CPRecordListAPIView.as_view(),
+        CPRecordListView.as_view(),
         name="country-programme-record-list",
     ),
     path(
+        "country-programme/settings/",
+        CPSettingsView.as_view(),
+        name="country-programme-settings",
+    ),
+    path(
         "countries/",
-        CountryListAPIView.as_view(),
+        CountryListView.as_view(),
         name="countries-list",
     ),
 ]

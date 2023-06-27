@@ -17,7 +17,7 @@ SECTION_ANNEX_MAPPING = {
 }
 
 
-class ChemicalBaseListAPIView(mixins.ListModelMixin, generics.GenericAPIView):
+class ChemicalBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
     """
     API endpoint that allows chemicals to be viewed.
     """
@@ -47,7 +47,7 @@ class ChemicalBaseListAPIView(mixins.ListModelMixin, generics.GenericAPIView):
         return self.list(request, *args, **kwargs)
 
 
-class SubstancesListAPIView(ChemicalBaseListAPIView):
+class SubstancesListView(ChemicalBaseListView):
     """
     API endpoint that allows substancesto be viewed.
     """
@@ -96,7 +96,7 @@ class SubstancesListAPIView(ChemicalBaseListAPIView):
         return super().get(request, *args, **kwargs)
 
 
-class BlendsListAPIView(ChemicalBaseListAPIView):
+class BlendsListView(ChemicalBaseListView):
     """
     API endpoint that allows blends to be viewed.
     @param with_usages: boolean - if true, return blends with excluded usages ids list
