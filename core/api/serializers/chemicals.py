@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from core.models import Substance
-from core.models import Group
 from core.models import Blend
 
 
@@ -17,12 +16,15 @@ class ChemicalsBaseSerializer(serializers.ModelSerializer):
 # substance serializer with excluded usages if the request has a with_usages query param
 class SubstanceSerializer(ChemicalsBaseSerializer):
     excluded_usages = serializers.SerializerMethodField()
+    group_name = serializers.SlugField(source="group.name", read_only=True)
 
     class Meta:
         model = Substance
         fields = [
             "id",
             "name",
+            "group_id",
+            "group_name",
             "formula",
             "odp",
             "is_contained_in_polyols",
@@ -30,14 +32,6 @@ class SubstanceSerializer(ChemicalsBaseSerializer):
             "excluded_usages",
             "sort_order",
         ]
-
-
-class GroupSubstanceSerializer(serializers.ModelSerializer):
-    substances = SubstanceSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Group
-        fields = ["id", "name", "name_alt", "substances"]
 
 
 # blend serializer with excluded usages if the request has a with_usages query param

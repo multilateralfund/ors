@@ -1,5 +1,6 @@
 import json
 import logging
+from dateutil import parser
 
 from django.db import transaction
 from django.conf import settings
@@ -106,7 +107,45 @@ def set_usages_dict(current_usages_dict, item_attributes):
         current_usages_dict[usage_key] = usage.id
 
 
-def parse_record_data(item_attributes_file, country_dict, year_dict, chemical_dict):
+def get_users_dict(users_file):
+    """
+    Parse users json file and create a dictionary
+    @param users_file = str (file path for import file)
+
+    @return users_dict = dict
+        - struct: {
+            user_id: {
+                user_name: user_name,
+                uset_email: user_email
+            }
+        }
+    """
+    users_dict = {}
+    with open(users_file, "r", encoding="utf8") as f:
+        json_data = json.load(f)
+
+    for user_json in json_data:
+        user_name = f"{user_json['FName']} {user_json['LName']}"
+        users_dict[user_json["UserID"]] = {
+            "reporting_entry": user_name.strip(),
+            "reporting_email": user_json["Email"],
+        }
+
+    return users_dict
+
+
+def parse_record_data(
+    item_attributes_file, country_dict, year_dict, chemical_dict, users_dict
+):
+    """
+    Parse item_attributes json file and import the data in database
+    @param item_attributes_file = str (file path for import file)
+    @param country_dict = dict
+    @param year_dict = dict
+    @param chemical_dict = dict
+    @param users_dict = dict
+    """
+
     with open(item_attributes_file, "r", encoding="utf8") as f:
         json_data = json.load(f)
 
@@ -121,6 +160,11 @@ def parse_record_data(item_attributes_file, country_dict, year_dict, chemical_di
             )
             continue
 
+        cp_rep_data = {
+            "submission_date": parser.parse(item["DateCreated"]),
+            **users_dict[item["CreatedUserId"]],
+        }
+
         # get country programme report
         cp_rep = get_cp_report_for_db_import(
             year_dict,
@@ -128,6 +172,7 @@ def parse_record_data(item_attributes_file, country_dict, year_dict, chemical_di
             item,
             logger,
             item["ItemAttirbutesId"],
+            cp_rep_data,
         )
         if not cp_rep:
             continue
@@ -183,17 +228,22 @@ def parse_db_files(db_dir_path):
     @param db_dir_path = str (directory path for database files)
     """
     country_dict = get_country_dict_from_db_file(f"{db_dir_path}/Country.json", logger)
-    logger.info("✔ country file parsed" + str(len(country_dict)))
+    logger.info("✔ country file parsed")
 
     year_dict = get_year_dict_from_db_file(f"{db_dir_path}/ProjectYear.json")
     logger.info("✔ year file parsed")
 
     chemical_dict = get_chemical_dict(f"{db_dir_path}/Item.json")
-    logger.info("✔ chemical file parsed" + str(len(chemical_dict)))
+    logger.info("✔ chemical file parsed")
+
+    users_dict = get_users_dict(f"{db_dir_path}/Users.json")
+    logger.info("✔ users file parsed")
 
     item_attributes_file = f"{db_dir_path}/ItemAttributes.json"
     delete_old_data(CPRecord, item_attributes_file, logger)
-    parse_record_data(item_attributes_file, country_dict, year_dict, chemical_dict)
+    parse_record_data(
+        item_attributes_file, country_dict, year_dict, chemical_dict, users_dict
+    )
     logger.info(f"✔ records from {db_dir_path} imported")
 
 
