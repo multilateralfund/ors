@@ -8,7 +8,7 @@ from core.models.group import Group
 from core.models.usage import ExcludedUsage
 
 
-class ChemicalBaseListAPIView(mixins.ListModelMixin, generics.GenericAPIView):
+class ChemicalBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
     """
     API endpoint that allows chemicals to be viewed.
     """
@@ -34,7 +34,7 @@ class ChemicalBaseListAPIView(mixins.ListModelMixin, generics.GenericAPIView):
         return self.list(request, *args, **kwargs)
 
 
-class GroupSubstancesListAPIView(ChemicalBaseListAPIView):
+class GroupSubstancesListView(ChemicalBaseListView):
     """
     API endpoint that allows substances grouped by group to be viewed.
     @param with_usages: boolean - if true, return substances with excluded usages ids list
@@ -50,7 +50,7 @@ class GroupSubstancesListAPIView(ChemicalBaseListAPIView):
         return queryset.order_by("name")
 
 
-class BlendsListAPIView(ChemicalBaseListAPIView):
+class BlendsListView(ChemicalBaseListView):
     """
     API endpoint that allows blends to be viewed.
     @param with_usages: boolean - if true, return blends with excluded usages ids list

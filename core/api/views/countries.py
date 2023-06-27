@@ -4,7 +4,7 @@ from core.api.serializers import CountrySerializer
 from core.models import Country
 
 
-class CountryListAPIView(mixins.ListModelMixin, generics.GenericAPIView):
+class CountryListView(mixins.ListModelMixin, generics.GenericAPIView):
     """
     API endpoint that allows countries to be viewed.
     """
