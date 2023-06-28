@@ -20,7 +20,7 @@ server {
     }
 
 
-    location ~ ^/(admin|api)/ {
+    location ~ ^/(admin|api|__debug__)/ {
         client_max_body_size 1m;
         include /etc/nginx/conf.d/proxy_pass_backend;
     }

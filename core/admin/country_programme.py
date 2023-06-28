@@ -21,6 +21,10 @@ class CPReportAdmin(admin.ModelAdmin):
     ]
     autocomplete_fields = ["country"]
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("country")
+
     def get_list_display(self, request):
         exclude = [
             "cprecord",
@@ -47,6 +51,12 @@ class CPRecordAdmin(admin.ModelAdmin):
     ]
     readonly_fields = ["country_programme_report"]
     autocomplete_fields = ["blend", "substance"]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related(
+            "blend", "substance", "country_programme_report__country"
+        )
 
     def get_country(self, obj):
         return obj.country_programme_report.country
@@ -80,6 +90,15 @@ class CPUsageAdmin(admin.ModelAdmin):
     ]
     readonly_fields = ["country_programme_record"]
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related(
+            "usage",
+            "country_programme_record__country_programme_report__country",
+            "country_programme_record__substance",
+            "country_programme_record__blend",
+        )
+
     def get_list_display(self, request):
         return get_final_display_list(CPUsage, [])
 
@@ -96,6 +115,12 @@ class CPPricesAdmin(admin.ModelAdmin):
     readonly_fields = ["country_programme_report"]
     autocomplete_fields = ["blend", "substance"]
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related(
+            "blend", "substance", "country_programme_report__country"
+        )
+
     def get_list_display(self, request):
         exclude = ["source_file", "display_name"]
         return get_final_display_list(CPPrices, exclude)
@@ -110,6 +135,10 @@ class CPGenerationAdmin(admin.ModelAdmin):
     ]
     readonly_fields = ["country_programme_report"]
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("country_programme_report__country")
+
     def get_list_display(self, request):
         exclude = ["source_file"]
         return get_final_display_list(CPGeneration, exclude)
@@ -123,6 +152,10 @@ class CPEmissionAdmin(admin.ModelAdmin):
         "country_programme_report__year",
     ]
     readonly_fields = ["country_programme_report"]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("country_programme_report__country")
 
     def get_list_display(self, request):
         exclude = ["source_file", "remarks"]

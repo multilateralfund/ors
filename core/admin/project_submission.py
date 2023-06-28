@@ -16,6 +16,10 @@ class ProjectSubmissionAdmin(admin.ModelAdmin):
     ]
     autocomplete_fields = ["country", "subsector"]
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("country", "subsector", "agency")
+
     def get_list_display(self, request):
         exclude = ["submissionodsodp", "submissionamount"]
         return get_final_display_list(ProjectSubmission, exclude)
