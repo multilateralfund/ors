@@ -212,6 +212,11 @@ LOGGING = {
 
 SITE_ID = 1
 
+# https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
+EMAIL_BACKEND = env.get_value(
+    "DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
+)
+
 EMAIL_HOST = env.str("EMAIL_HOST", default=None)
 EMAIL_PORT = env.int("EMAIL_PORT", default=None)
 EMAIL_HOST_USER = env.str("EMAIL_HOST_USER", default=None)

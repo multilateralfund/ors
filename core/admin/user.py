@@ -1,6 +1,62 @@
+from django.conf import settings
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
+from django.contrib import messages
+from django.contrib.auth.forms import PasswordResetForm
 
 from core.models.user import User
 
-admin.site.register(User, UserAdmin)
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = [
+        "email",
+        "first_name",
+        "last_name",
+        "username",
+        "is_staff",
+        "is_active",
+    ]
+
+    fields = (
+        "email",
+        "first_name",
+        "last_name",
+        "username",
+        "is_staff",
+        "is_active",
+        "last_login",
+        "date_joined",
+    )
+
+    search_fields = (
+        "email",
+        "username",
+        "first_name",
+        "last_name",
+    )
+
+    readonly_fields = (
+        "last_login",
+        "date_joined",
+    )
+    ordering = ("email",)
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.password = User.objects.make_random_password()
+        super(UserAdmin, self).save_model(request, obj, form, change)
+
+        # send reset password email
+        if not change:
+            form = PasswordResetForm({"email": obj.email})
+            form.is_valid()
+            form.save(
+                domain_override=settings.FRONTEND_HOST,
+                use_https=settings.HAS_HTTPS,
+                email_template_name="registration/password_reset_email.html",
+            )
+            self.message_user(
+                request,
+                ("Email sent to %s for password reset" % obj.email),
+                level=messages.SUCCESS,
+            )
