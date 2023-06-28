@@ -22,6 +22,10 @@ class SubregionAdmin(admin.ModelAdmin):
     ]
     list_filter = ["region"]
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("region")
+
     def get_list_display(self, request):
         exclude = ["country"]
         return get_final_display_list(Subregion, exclude)
@@ -38,6 +42,10 @@ class CountryAdmin(admin.ModelAdmin):
         "abbr_alt",
     ]
     list_filter = ["subregion", "subregion__region"]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("subregion__region")
 
     def get_list_display(self, request):
         exclude = ["cpreport", "projectsubmission"]

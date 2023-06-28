@@ -5,6 +5,7 @@ from core.models.blend import Blend, BlendAltName, BlendComponents
 from core.models.country import Country
 from core.models.country_programme import CPReport
 from core.models.substance import Substance, SubstanceAltName
+from core.utils import IMPORT_DB_MAX_YEAR
 
 
 # When we parse excel files, "index_row" is two steps behind. Because of this, the
@@ -46,10 +47,6 @@ CHEMICAL_NAME_MAPPING = {
 
 # --- list of db names ---
 DB_DIR_LIST = ["CP", "CP2012"]
-
-# the max year for the cp reports to be imported
-# if the year is greater than this value, the cp report will not be imported
-DB_MAX_YEAR = 2018
 
 # --- list of country names that can be skipped ---
 SKIP_COUNTRY_LIST = [
@@ -255,7 +252,7 @@ def get_cp_report_for_db_import(
 
     # skip years greater than DB_MAX_YEAR
     year = year_dict[json_entry["ProjectDateId"]]
-    if year > DB_MAX_YEAR:
+    if year > IMPORT_DB_MAX_YEAR:
         return None
 
     if json_entry["CountryId"] not in country_dict:

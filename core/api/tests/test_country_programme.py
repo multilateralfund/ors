@@ -1,5 +1,11 @@
+import pytest
+from django.urls import reverse
+from rest_framework.test import APIClient
+
 from core.api.tests.factories import (
     BlendFactory,
+    CPGenerationFactory,
+    CPPricesFactory,
     CountryFactory,
     CPRecordFactory,
     CPReportFactory,
@@ -7,9 +13,7 @@ from core.api.tests.factories import (
     SubstanceFactory,
     UserFactory,
 )
-import pytest
-from django.urls import reverse
-from rest_framework.test import APIClient
+from core.models.country_programme import CPEmission
 
 pytestmark = pytest.mark.django_db
 
@@ -81,71 +85,59 @@ class TestCPRecord:
 
         self.client.force_authenticate(user=UserFactory())
 
-        # get cp records list
+        # create chemicals
+        substance = SubstanceFactory.create(name="substance123")
+        blend = BlendFactory.create(name="blend123")
+
+        # create country and cp report
+        ro = CountryFactory.create(name="Romania")
+        cp_report = CPReportFactory.create(
+            country=ro, year=2020, comment="Si daca e rau, tot e bine"
+        )
+
+        # section A
+        CPRecordFactory.create(
+            country_programme_report=cp_report, section="A", substance=substance
+        )
+        # section B
+        cp_rec = CPRecordFactory.create(
+            country_programme_report=cp_report, section="B", blend=blend
+        )
+        # add 3 usages for one record
+        for _ in range(3):
+            CPUsageFactory.create(country_programme_record=cp_rec)
+
+        # section C (prices)
+        CPPricesFactory.create(country_programme_report=cp_report, blend=blend)
+        CPPricesFactory.create(country_programme_report=cp_report, substance=substance)
+
+        # section D (generation)
+        CPGenerationFactory.create(country_programme_report=cp_report)
+
+        # section E (emissions)
+        for _ in range(2):
+            CPEmission.objects.create(country_programme_report=cp_report)
+
+        # try get cp records list without cp report id
         response = self.client.get(url)
-        assert response.status_code == 200
-        assert len(response.data) == 0
+        assert response.status_code == 400
 
-        # add 2 country programme reports with 2 record each
-        substance = SubstanceFactory.create()
-        blend = BlendFactory.create()
-        for i, country in enumerate(["Romania", "Bulgaria"]):
-            country = CountryFactory.create(name=country)
-            cp_report = CPReportFactory.create(country=country, year=2010 + i)
-            CPRecordFactory.create(
-                country_programme_report=cp_report, section="A", substance=substance
-            )
-            cp_rec = CPRecordFactory.create(
-                country_programme_report=cp_report, section="B", blend=blend
-            )
-            # add 3 usages for one record
-            for _ in range(3):
-                CPUsageFactory.create(country_programme_record=cp_rec)
+        # try get cp records list with invalid cp report id
+        response = self.client.get(url, {"cp_report_id": 999})
 
         # get cp records list
-        response = self.client.get(url)
+        response = self.client.get(url, {"cp_report_id": cp_report.id})
         assert response.status_code == 200
-        assert len(response.data) == 4
-        assert response.data[0]["section"] == "A"
-        assert response.data[0]["substance"] == str(substance)
-        assert response.data[3]["section"] == "B"
-        assert response.data[3]["blend"] == str(blend)
-        assert len(response.data[3]["record_usages"]) == 3
-
-        # get cp records list with filters
-        # filter by country programme id (country programme = Bulgaria2011)
-        response = self.client.get(url, {"country_programme_report_id": cp_report.id})
-        assert response.status_code == 200
-        assert len(response.data) == 2
-        assert response.data[0]["country_programme_report_id"] == cp_report.id
-
-        # filter by section (section = A)
-        response = self.client.get(url, {"section": "A"})
-        assert response.status_code == 200
-        assert len(response.data) == 2
-        assert response.data[0]["section"] == "A"
-
-        # filter by substance id (substance = substance)
-        response = self.client.get(url, {"substance_id": substance.id})
-        assert response.status_code == 200
-        assert len(response.data) == 2
-        assert response.data[0]["substance"] == str(substance)
-
-        # filter by blend id (blend = blend)
-        response = self.client.get(url, {"blend_id": blend.id})
-        assert response.status_code == 200
-        assert len(response.data) == 2
-        assert response.data[0]["blend"] == str(blend)
-
-        # filter by country_id (country = Bulgaria)
-        response = self.client.get(url, {"country_id": country.id})
-        assert response.status_code == 200
-        assert len(response.data) == 2
-
-        # filter by year (year = 2011)
-        response = self.client.get(url, {"year": 2011})
-        assert response.status_code == 200
-        assert len(response.data) == 2
+        assert len(response.data["section_a"]) == 1
+        assert response.data["section_a"][0]["chemical_name"] == "substance123"
+        assert len(response.data["section_b"]) == 1
+        assert response.data["section_b"][0]["chemical_name"] == "blend123"
+        assert len(response.data["section_b"][0]["record_usages"]) == 3
+        assert len(response.data["section_c"]) == 2
+        assert len(response.data["section_d"]) == 1
+        assert response.data["section_d"][0]["chemical_name"] == "HFC-23"
+        assert len(response.data["section_e"]) == 2
+        assert response.data["section_f"]["remarks"] == "Si daca e rau, tot e bine"
 
 
 class TestCPSettings:

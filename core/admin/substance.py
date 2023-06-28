@@ -13,6 +13,10 @@ class SubstanceAltNameAdmin(admin.ModelAdmin):
     ]
     autocomplete_fields = ["substance"]
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("substance")
+
     def get_list_display(self, request):
         return get_final_display_list(SubstanceAltName, [])
 
@@ -24,6 +28,10 @@ class SubstanceAdmin(admin.ModelAdmin):
         "formula",
     ]
     list_filter = [AutocompleteFilterFactory("group", "group")]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("group")
 
     def get_list_display(self, request):
         exclude = [

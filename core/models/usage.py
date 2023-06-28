@@ -21,7 +21,7 @@ class Usage(models.Model):
     objects = UsageManager()
 
     def __str__(self):
-        return self.name
+        return self.full_name
 
 
 class ExcludedUsageManager(models.Manager):
