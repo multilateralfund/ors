@@ -44,7 +44,7 @@ class UserAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if not change:
             obj.password = User.objects.make_random_password()
-        super(UserAdmin, self).save_model(request, obj, form, change)
+        super().save_model(request, obj, form, change)
 
         # send reset password email
         if not change:
@@ -57,6 +57,6 @@ class UserAdmin(admin.ModelAdmin):
             )
             self.message_user(
                 request,
-                ("Email sent to %s for password reset" % obj.email),
+                f"Email sent to {obj.email} for password reset",
                 level=messages.SUCCESS,
             )
