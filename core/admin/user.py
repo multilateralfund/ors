@@ -53,7 +53,7 @@ class UserAdmin(admin.ModelAdmin):
             form.save(
                 domain_override=settings.FRONTEND_HOST,
                 use_https=settings.HAS_HTTPS,
-                email_template_name="registration/password_reset_email.html",
+                email_template_name="registration/create_new_user_email.html",
             )
             self.message_user(
                 request,
