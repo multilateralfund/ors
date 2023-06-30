@@ -248,7 +248,6 @@ def create_cp_price(cp, admc_entry, items_dict, source_file):
     price_data = {
         "country_programme_report": cp,
         "current_year_price": admc_entry["AvgODSPrice"],
-        "current_year_text": str(admc_entry["AvgODSPrice"]),
         "display_name": item["display_name"],
         "source_file": source_file,
     }
