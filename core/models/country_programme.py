@@ -96,15 +96,8 @@ class CPPrices(models.Model):
     remarks = models.TextField(null=True, blank=True)
     source_file = models.CharField(max_length=248)
 
-    previous_year_price = models.DecimalField(
-        max_digits=12, decimal_places=3, null=True, blank=True
-    )
-    previous_year_text = models.CharField(max_length=248, null=True, blank=True)
-
-    current_year_price = models.DecimalField(
-        max_digits=12, decimal_places=3, null=True, blank=True
-    )
-    current_year_text = models.CharField(max_length=248, null=True, blank=True)
+    previous_year_price = models.CharField(max_length=248, null=True, blank=True)
+    current_year_price = models.CharField(max_length=248, null=True, blank=True)
 
     class Meta:
         verbose_name = "CP price"
