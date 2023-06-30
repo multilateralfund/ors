@@ -4,7 +4,12 @@
 {% block content %}
 <p>Dear {{ user.first_name }} {{user.last_name}},</p>
 <p>
-  Your account has been successfully created.
+  Your account has been successfully created.Below are your account details:
+</p>
+<p>
+  Username: {{ username }}
+  <br />
+  Password: {{ password }}
 </p>
 <p>
   To ensure the security of your account,

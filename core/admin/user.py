@@ -43,7 +43,8 @@ class UserAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         if not change:
-            obj.password = User.objects.make_random_password()
+            password = User.objects.make_random_password(length=8)
+            obj.set_password(password)
         super().save_model(request, obj, form, change)
 
         # send reset password email
@@ -54,6 +55,10 @@ class UserAdmin(admin.ModelAdmin):
                 domain_override=settings.FRONTEND_HOST,
                 use_https=settings.HAS_HTTPS,
                 email_template_name="registration/create_new_user_email.html",
+                extra_email_context={
+                    "username": obj.username,
+                    "password": password,
+                },
             )
             self.message_user(
                 request,
