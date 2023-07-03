@@ -96,7 +96,7 @@ def set_usages_dict(current_usages_dict, item_attributes):
         if usage_name in current_usages_dict:
             continue
 
-        usage = Usage.objects.get_by_name(usage_name).first()
+        usage = Usage.objects.find_by_name(usage_name)
         if not usage:
             logger.warning(
                 f"This usage is not exists: {usage_key} "

@@ -37,12 +37,12 @@ def get_country(country_data):
     @param country_data = dict
     @return country = Country object or None
     """
-    country = Country.objects.get_by_name(country_data["name"])
+    country = Country.objects.find_by_name(country_data["name"])
     if country:
         return country
 
     if country_data.get("full_name"):
-        country = Country.objects.get_by_name(country_data["full_name"])
+        country = Country.objects.find_by_name(country_data["full_name"])
 
     return country
 
@@ -123,7 +123,7 @@ def parse_countries_xlsx_file(file_path, country_lvc):
             continue
 
         # get subregion
-        subregion = Subregion.objects.get_by_name(row["SUBREGION"]).first()
+        subregion = Subregion.objects.find_by_name(row["SUBREGION"])
 
         # update country
         country_data = {
@@ -165,7 +165,7 @@ def parse_subregions_file(file_path):
         json_data = json.load(f)
 
     for subregion_json in json_data:
-        region = Region.objects.get_by_name(subregion_json["region"]).first()
+        region = Region.objects.find_by_name(subregion_json["region"])
         subregion_data = {
             "name": subregion_json["name"],
             "abbr": subregion_json["abbr"],

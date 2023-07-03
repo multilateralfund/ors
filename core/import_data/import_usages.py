@@ -24,7 +24,7 @@ def parse_usage_file(file_path):
     for _, row in df.iterrows():
         parent = None
         if row["parent"]:
-            parent = Usage.objects.get_by_name(row["parent"]).first()
+            parent = Usage.objects.find_by_name(row["parent"])
             if not parent:
                 logger.warning(
                     f"{row['parent']} usage not found => {row['name']} not imported"
