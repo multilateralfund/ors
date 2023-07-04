@@ -68,7 +68,9 @@ def update_or_create_country(country_data, country_lvc):
     if country:
         # remove name from country_data to avoid update name
         country_data.pop("name")
-        country.update(**country_data)
+        for attr, value in country_data.items():
+            setattr(country, attr, value)
+        country.save()
     else:
         Country.objects.create(**country_data)
 

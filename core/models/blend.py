@@ -1,7 +1,10 @@
+import re
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 from core.models.substance import Substance
+
+CUST_MIX_NUMBER_REGEX = r"CustMix\-(\d+)$"
 
 
 class BlendManager(models.Manager):
@@ -57,7 +60,7 @@ class BlendManager(models.Manager):
         blend = BlendComponents.objects.get_blend_by_components(subst_prcnt)
         return blend
 
-    def find_by_name_or_components(self, name, components=[]):
+    def find_by_name_or_components(self, name, components=None):
         """
         Get a blend by name or components
 
@@ -76,6 +79,16 @@ class BlendManager(models.Manager):
             return self.find_by_components(components)
 
         return None
+
+    def get_next_cust_mx_name(self):
+        last_blend = self.filter(name__startswith="Cust").order_by("-name").first()
+        if last_blend:
+            match = re.match(CUST_MIX_NUMBER_REGEX, last_blend.name)
+            if match:
+                return "CustMix-" + str(int(match.group(1)) + 1)
+
+        # if no custom blends exist, start from 0
+        return "CustMix-0"
 
 
 class Blend(models.Model):
@@ -161,19 +174,23 @@ class BlendComponentManager(models.Manager):
         queryset = (
             self.values("blend_id")
             .filter(filters)
-            .annotate(total=models.Count("substance_id"))
+            .annotate(total=models.Count("id"))
             .filter(models.Q(total=len(components_list)))
         )
 
-        # if the queryset is not empty return the blend
         if queryset:
-            return Blend.objects.get(id=queryset[0]["blend_id"])
+            blend = Blend.objects.get(id=queryset[0]["blend_id"])
+            # check if the blend has the same number of components as the components list
+            if blend.components.count() == len(components_list):
+                return blend
 
         return None
 
 
 class BlendComponents(models.Model):
-    blend = models.ForeignKey(Blend, on_delete=models.CASCADE)
+    blend = models.ForeignKey(
+        Blend, on_delete=models.CASCADE, related_name="components"
+    )
     substance = models.ForeignKey(Substance, on_delete=models.CASCADE)
     percentage = models.DecimalField(
         max_digits=6,

@@ -4,6 +4,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
 from core.api.views.chemicals import (
+    BlendCreateView,
     BlendsListView,
     SubstancesListView,
 )
@@ -43,6 +44,7 @@ urlpatterns = [
         name="substances-list",
     ),
     path("blends/", BlendsListView.as_view(), name="blends-list"),
+    path("blends/create/", BlendCreateView.as_view(), name="blends-create"),
     path(
         "country-programme/reports/",
         CPReportListView.as_view(),
