@@ -5,19 +5,21 @@ from django.db import transaction
 from django.conf import settings
 from core.import_data.utils import (
     DB_DIR_LIST,
+    DB_YEAR_MAPPING,
     delete_old_data,
     get_country_and_year_dict,
     get_cp_report_for_db_import,
+    get_or_create_adm_row,
 )
 
-from core.models.adm import AdmRecord, AdmRow, AdmChoice
+from core.models.adm import AdmRecord, AdmChoice
 
 logger = logging.getLogger(__name__)
 
-SECTION = "DE"
+SECTION = "D"
 
 
-def create_adm_rows_for_articles(article_file, layout_file):
+def create_adm_rows_for_articles(article_file, layout_file, db_name):
     """
     Create AdmRow objects for each article in the article file.
 
@@ -45,13 +47,12 @@ def create_adm_rows_for_articles(article_file, layout_file):
         row_data = {
             "text": article["Name"].strip(),
             "type": "title",
+            "section": SECTION,
             "sort_order": article_order_dict[article["AdmDEArticlesId"]],
             "source_file": article_file,
+            **DB_YEAR_MAPPING[db_name],
         }
-        article_dict[article["AdmDEArticlesId"]], _ = AdmRow.objects.get_or_create(
-            text=row_data["text"],
-            defaults=row_data,
-        )
+        article_dict[article["AdmDEArticlesId"]] = get_or_create_adm_row(row_data)
 
     return article_dict
 
@@ -138,7 +139,7 @@ def create_adm_records(file_name, dir_path, article_dict, opt_dict):
     AdmRecord.objects.bulk_create(adm_records)
 
 
-def parse_db_files(dir_path):
+def parse_db_files(dir_path, db_name):
     """
     Parse all files in the directory.
 
@@ -146,7 +147,7 @@ def parse_db_files(dir_path):
     """
     article_file = dir_path / "AdmDEArticles.json"
     layout_file = dir_path / "AdmDELayout.json"
-    article_dict = create_adm_rows_for_articles(article_file, layout_file)
+    article_dict = create_adm_rows_for_articles(article_file, layout_file, db_name)
     logger.info(f"✔ {article_file} parsed, AdmRows imported")
 
     opt_file = dir_path / "AdmDEArticleOpts.json"
@@ -166,5 +167,5 @@ def import_admde_items():
     db_dir_path = settings.IMPORT_DATA_DIR / "databases"
     for database_name in DB_DIR_LIST:
         logger.info(f"⏳ importing admDE records from {database_name}")
-        parse_db_files(db_dir_path / database_name)
+        parse_db_files(db_dir_path / database_name, database_name)
         logger.info(f"✔ admDE records from {database_name} imported")
