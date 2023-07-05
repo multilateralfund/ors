@@ -2,9 +2,9 @@ from django.db import models
 
 
 class AgencyManager(models.Manager):
-    def get_by_name(self, name):
+    def find_by_name(self, name):
         name_str = name.strip()
-        return self.filter(name__iexact=name_str)
+        return self.filter(name__iexact=name_str).first()
 
 
 class Agency(models.Model):
@@ -13,8 +13,8 @@ class Agency(models.Model):
 
     objects = AgencyManager()
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         verbose_name_plural = "Agencies"
+
+    def __str__(self):
+        return self.name

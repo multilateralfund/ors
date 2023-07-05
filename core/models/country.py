@@ -2,13 +2,13 @@ from django.db import models
 
 
 class CountryManager(models.Manager):
-    def get_by_name(self, name):
+    def find_by_name(self, name):
         name_str = name.strip()
         return self.filter(
             models.Q(name__iexact=name_str)
             | models.Q(full_name__iexact=name_str)
             | models.Q(name_alt__iexact=name_str)
-        )
+        ).first()
 
 
 # country model; contains name, m49 code, and iso code
@@ -41,9 +41,9 @@ class Country(models.Model):
 
 
 class RegionManager(models.Manager):
-    def get_by_name(self, name):
+    def find_by_name(self, name):
         name_str = name.strip()
-        return self.filter(name__iexact=name_str)
+        return self.filter(name__iexact=name_str).first()
 
 
 class Region(models.Model):

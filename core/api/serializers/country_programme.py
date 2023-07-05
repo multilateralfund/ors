@@ -89,9 +89,7 @@ class CPPricesSerializer(serializers.ModelSerializer):
             "display_name",
             "annex_group",
             "previous_year_price",
-            "previous_year_text",
             "current_year_price",
-            "current_year_text",
             "remarks",
         ]
 

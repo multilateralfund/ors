@@ -88,7 +88,7 @@ def get_usages_from_sheet(df):
 
         usage_name = column_name.replace("- ", "")
 
-        usage = Usage.objects.get_by_name(usage_name).first()
+        usage = Usage.objects.find_by_name(usage_name)
         if not usage:
             logger.warning(f"This usage is not exists: {column_name} ({usage_name})")
             continue

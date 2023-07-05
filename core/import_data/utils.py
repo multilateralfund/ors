@@ -1,10 +1,10 @@
 import decimal
 import json
 import re
-from core.models.blend import Blend, BlendAltName, BlendComponents
+from core.models.blend import Blend
 from core.models.country import Country
 from core.models.country_programme import CPReport
-from core.models.substance import Substance, SubstanceAltName
+from core.models.substance import Substance
 from core.utils import IMPORT_DB_MAX_YEAR
 
 
@@ -91,64 +91,6 @@ def delete_old_data(cls, source_file, logger):
     logger.info(f"✔ old {cls.__name__} from {source_file} deleted")
 
 
-def get_chemical_by_name(chemical_name, chemical_type):
-    """
-    get chemical by name or alt name (case insensitive)
-    @param chemical_name: string chemical name
-    @param chemical_type: string chemical type (substance | blend)
-
-    @return: Substance object | Blend object | None
-    """
-    if not chemical_name:
-        return None
-
-    if chemical_type == "substance":
-        cls, cls_alt_name = Substance, SubstanceAltName
-    elif chemical_type == "blend":
-        cls, cls_alt_name = Blend, BlendAltName
-
-    chemical = cls.objects.get_by_name(chemical_name).first()
-    if chemical:
-        return chemical
-
-    chemical = cls_alt_name.objects.get_by_name(chemical_name).first()
-    if chemical:
-        if chemical_type == "substance":
-            return chemical.substance
-        return chemical.blend
-
-    return None
-
-
-def get_blend_by_name_or_components(blend_name, components):
-    """
-    get blend by name or components
-    @param blend_name: string blend name
-    @param components: list of tuples (substance_name, percentage)
-
-    @return: int blend id
-    """
-    blend = get_chemical_by_name(blend_name, "blend")
-    if blend:
-        return blend
-
-    if components:
-        subst_prcnt = []
-        for substance_name, percentage in components:
-            try:
-                subst = get_chemical_by_name(substance_name, "substance")
-                if not subst:
-                    return None
-                prcnt = float(percentage) / 100
-                subst_prcnt.append((subst, prcnt))
-            except ValueError:
-                return None
-
-        blend = BlendComponents.objects.get_blend_by_components(subst_prcnt)
-
-    return blend
-
-
 def get_chemical_by_name_or_components(chemical_name, components=None):
     """
     get chemical by name or alt name (case insensitive) or components (blends)
@@ -160,11 +102,11 @@ def get_chemical_by_name_or_components(chemical_name, components=None):
     if not chemical_name:
         return None, None
 
-    substance = get_chemical_by_name(chemical_name, "substance")
+    substance = Substance.objects.find_by_name(chemical_name)
     if substance:
         return substance, "substance"
 
-    blend = get_blend_by_name_or_components(chemical_name, components)
+    blend = Blend.objects.find_by_name_or_components(chemical_name, components)
     if blend:
         return blend, "blend"
 
@@ -218,7 +160,8 @@ def get_object_by_name(cls, obj_name, index_row, obj_type_name, logger):
     """
     if not obj_name:
         return None
-    obj = cls.objects.get_by_name(obj_name).first()
+    obj = cls.objects.find_by_name(obj_name)
+
     if not obj:
         logger.info(
             f"[row: {index_row + OFFSET}]: This {obj_type_name} does not exists in data base: {obj_name}"
@@ -336,7 +279,7 @@ def get_country_dict_from_db_file(file_name, logger):
             }
             continue
 
-        country = Country.objects.get_by_name(country_name).first()
+        country = Country.objects.find_by_name(country_name)
         if not country:
             logger.warning(
                 f"Country not found: {country_json['Country']} "

@@ -1,18 +1,94 @@
+import re
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 from core.models.substance import Substance
 
+CUST_MIX_NUMBER_REGEX = r"CustMix\-(\d+)$"
+
 
 class BlendManager(models.Manager):
-    def get_by_name(self, name):
+    def find_by_name(self, name):
+        """
+        Get a blend by name (search in blend and blend_alt_name tables)
+
+        @param name: blend name
+
+        @return: Blend object or None
+        """
         name_str = name.strip()
-        return self.filter(
+
+        # try to find the blend by name
+        blend = self.filter(
             models.Q(name__iexact=name_str)
             | models.Q(other_names__iexact=name_str)
             | models.Q(composition__iexact=name_str)
             | models.Q(composition_alt__iexact=name_str)
-        )
+        ).first()
+
+        if blend:
+            return blend
+
+        # try to find the blend by alternative name
+        blend_alt_name = BlendAltName.objects.find_by_name(name)
+
+        if blend_alt_name:
+            return blend_alt_name.blend
+
+        return None
+
+    def find_by_components(self, components):
+        """
+        get a blend by components
+
+        @param components: list of tuples (substance_name, percentage)
+
+        @return: Blend object or None
+        """
+        subst_prcnt = []
+        for substance_name, percentage in components:
+            try:
+                subst = Substance.objects.find_by_name(substance_name)
+                if not subst:
+                    return None
+                prcnt = float(percentage) / 100
+                subst_prcnt.append((subst, prcnt))
+            except ValueError:
+                # if the percentage is not a number return None
+                return None
+
+        blend = BlendComponents.objects.get_blend_by_components(subst_prcnt)
+        return blend
+
+    def find_by_name_or_components(self, name, components=None):
+        """
+        Get a blend by name or components
+
+        @param name: blend name
+        @param components: list of tuples (substance_name, percentage)
+
+        @return: Blend object or None
+        """
+        # find by name
+        blend = self.find_by_name(name)
+        if blend:
+            return blend
+
+        # find by components
+        if components:
+            return self.find_by_components(components)
+
+        return None
+
+    def get_next_cust_mx_name(self):
+        last_blend = self.filter(name__startswith="Cust").order_by("-name").first()
+        if last_blend:
+            match = re.match(CUST_MIX_NUMBER_REGEX, last_blend.name)
+            if match:
+                return "CustMix-" + str(int(match.group(1)) + 1)
+
+        # if no custom blends exist, start from 0
+        return "CustMix-0"
 
 
 class Blend(models.Model):
@@ -59,9 +135,9 @@ class Blend(models.Model):
 
 
 class BlendAltNameManager(models.Manager):
-    def get_by_name(self, name):
+    def find_by_name(self, name):
         name_str = name.strip()
-        return self.filter(name__iexact=name_str)
+        return self.filter(name__iexact=name_str).first()
 
 
 class BlendAltName(models.Model):
@@ -98,19 +174,23 @@ class BlendComponentManager(models.Manager):
         queryset = (
             self.values("blend_id")
             .filter(filters)
-            .annotate(total=models.Count("substance_id"))
+            .annotate(total=models.Count("id"))
             .filter(models.Q(total=len(components_list)))
         )
 
-        # if the queryset is not empty return the blend
         if queryset:
-            return Blend.objects.get(id=queryset[0]["blend_id"])
+            blend = Blend.objects.get(id=queryset[0]["blend_id"])
+            # check if the blend has the same number of components as the components list
+            if blend.components.count() == len(components_list):
+                return blend
 
         return None
 
 
 class BlendComponents(models.Model):
-    blend = models.ForeignKey(Blend, on_delete=models.CASCADE)
+    blend = models.ForeignKey(
+        Blend, on_delete=models.CASCADE, related_name="components"
+    )
     substance = models.ForeignKey(Substance, on_delete=models.CASCADE)
     percentage = models.DecimalField(
         max_digits=6,
@@ -122,8 +202,8 @@ class BlendComponents(models.Model):
 
     objects = BlendComponentManager()
 
-    def __str__(self):
-        return self.blend.name + " " + self.substance.name + " " + str(self.percentage)
-
     class Meta:
         verbose_name_plural = "Blend components"
+
+    def __str__(self):
+        return self.blend.name + " " + self.substance.name + " " + str(self.percentage)

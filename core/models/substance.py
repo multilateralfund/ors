@@ -2,9 +2,25 @@ from django.db import models
 
 
 class SubstanceManager(models.Manager):
-    def get_by_name(self, name):
+    def find_by_name(self, name):
+        """
+        Get a substance by name (search in substance and substance_alt_name tables)
+
+        @param name: substance name
+
+        @return: Substance object or None
+        """
         name_str = name.strip()
-        return self.filter(models.Q(name__iexact=name_str))
+        substance = self.filter(models.Q(name__iexact=name_str)).first()
+
+        if substance:
+            return substance
+
+        substance_alt_name = SubstanceAltName.objects.find_by_name(name)
+        if substance_alt_name:
+            return substance_alt_name.substance
+
+        return None
 
 
 # substance model
@@ -46,12 +62,18 @@ class Substance(models.Model):
         return self.name
 
 
+class SubstanceAltNameManager(models.Manager):
+    def find_by_name(self, name):
+        name_str = name.strip()
+        return self.filter(name__iexact=name_str).first()
+
+
 class SubstanceAltName(models.Model):
     substance = models.ForeignKey(Substance, on_delete=models.CASCADE)
     name = models.CharField(max_length=128, unique=True)
     ozone_id = models.IntegerField(null=True, blank=True)
 
-    objects = SubstanceManager()
+    objects = SubstanceAltNameManager()
 
     def __str__(self):
         return self.name
