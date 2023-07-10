@@ -206,9 +206,16 @@ def udate_cp_record(cp, admc_entry, items_dict, source_file):
     record_data["substance_id"] = item["value"] if item["type"] == "substance" else None
     record_data["blend_id"] = item["value"] if item["type"] == "blend" else None
 
+    new_data = {}
     for entry_field, record_field in CP_RECORD_FIELDS_MAPPING.items():
         if admc_entry[entry_field]:
-            record_data[record_field] = admc_entry[entry_field]
+            new_data[record_field] = admc_entry[entry_field]
+
+    if not new_data:
+        # skip if there is no new data to be updated/ created
+        return
+
+    record_data.update(new_data)
 
     try:
         cp_record, created = CPRecord.objects.update_or_create(
@@ -225,7 +232,7 @@ def udate_cp_record(cp, admc_entry, items_dict, source_file):
         return
 
     if created:
-        cp_record.section = SECTION
+        cp_record.section = "A"
         cp_record.display_name = item["display_name"]
         cp_record.source_file = source_file
         cp_record.save()
