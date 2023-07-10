@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "constance",
     "constance.backends.database",
+    "mptt",
     "core",
 ]
 

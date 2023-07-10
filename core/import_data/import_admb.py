@@ -238,19 +238,21 @@ def create_row(index, articles_dict, adm_rows, db_name):
         }
     @param db_name = str (database name)
     """
+    # skip if adm row is already created
     if index in adm_rows:
         return
 
     adm_row_data = articles_dict[index].copy()
+    adm_row_data["parent"] = None
     parent_index = adm_row_data.pop("parent_index")
     using_cfc = adm_row_data.pop("using_cfc")
-    cp_id = adm_row_data.pop("internal_id")
+    internal_id = adm_row_data.pop("internal_id")
 
     # add min/ max year
     adm_row_data.update(DB_YEAR_MAPPING[db_name])
 
     adm_row = get_or_create_adm_row(adm_row_data)
-    adm_rows[cp_id] = {
+    adm_rows[internal_id] = {
         "object": adm_row,
         "using_cfc": using_cfc,
     }
@@ -258,7 +260,10 @@ def create_row(index, articles_dict, adm_rows, db_name):
     if adm_row_data["type"] != AdmRow.AdmRowType.TITLE:
         create_row(parent_index, articles_dict, adm_rows, db_name)
         parent_id = articles_dict[parent_index]["internal_id"]
-        adm_row.parent_row = adm_rows[parent_id]["object"]
+        adm_row.parent = adm_rows[parent_id]["object"]
+        adm_row.save()
+    else:
+        adm_row.parent = None
         adm_row.save()
 
 
@@ -274,6 +279,7 @@ def import_strings(articles_dict, db_name):
         }
     """
     adm_rows = {}
+
     for index in articles_dict:
         create_row(index, articles_dict, adm_rows, db_name)
 
@@ -318,7 +324,7 @@ def create_row_from_notes(
     adm_row_data.pop("internal_id")
 
     parent_index = adm_row_data.pop("parent_index")
-    adm_row_data["parent_row"] = AdmRow.objects.filter(index=parent_index).first()
+    adm_row_data["parent"] = AdmRow.objects.filter(index=parent_index).first()
     adm_row = get_or_create_adm_row(adm_row_data)
     return adm_row
 
@@ -480,6 +486,9 @@ def import_admb_items():
     """
     Import records from databases
     """
+    # delete all admRows and admRecords
+    AdmRow.objects.filter(source_file__contains="Adm_B.json", section=SECTION).delete()
+
     db_dir_path = settings.IMPORT_DATA_DIR / "databases"
     for database_name in DB_DIR_LIST:
         logger.info(f"⏳ importing admB records from {database_name}")

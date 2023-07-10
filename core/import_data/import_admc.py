@@ -75,14 +75,14 @@ def create_adm_row(text, file_data, sort_order, parent_row=None):
         "text": text,
         "source_file": str(file_data["file_name"]),
         "sort_order": sort_order,
-        "parent_row": parent_row,
+        "parent": parent_row,
         "section": SECTION,
         **DB_YEAR_MAPPING[file_data["db_name"]],
     }
 
     row_data["type"] = (
         AdmRow.AdmRowType.QUESTION
-        if row_data.get("parent_row", None)
+        if row_data.get("parent", None)
         else AdmRow.AdmRowType.TITLE
     )
 
@@ -382,6 +382,11 @@ def import_admc_items():
     """
     Import records from databases
     """
+    # delete all admRows and admRecords
+    AdmRow.objects.filter(
+        source_file__contains="AdmCLayout.json", section=SECTION
+    ).delete()
+
     db_dir_path = settings.IMPORT_DATA_DIR / "databases"
     for database_name in DB_DIR_LIST:
         logger.info(f"⏳ importing admC records from {database_name}")

@@ -53,12 +53,12 @@ class AdmRowAdmin(admin.ModelAdmin):
         "index",
     ]
     list_filter = ["type", "section"]
-    autocomplete_fields = ["parent_row"]
+    autocomplete_fields = ["parent"]
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         return queryset.select_related(
-            "parent_row",
+            "parent",
             "country_programme_report__country",
         )
 
@@ -66,7 +66,7 @@ class AdmRowAdmin(admin.ModelAdmin):
         exclude = [
             "admrecord",
             "children",
-            "admchoice",
+            "choices",
         ]
         return get_final_display_list(AdmRow, exclude)
 

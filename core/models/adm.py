@@ -1,6 +1,7 @@
 from django.db import models
-from core.models.blend import Blend
+from mptt.models import MPTTModel, TreeForeignKey
 
+from core.models.blend import Blend
 from core.models.country_programme import CPReport
 from core.models.substance import Substance
 
@@ -33,7 +34,7 @@ class AdmColumn(models.Model):
         return f"{self.display_name} - {self.type}"
 
 
-class AdmRow(models.Model):
+class AdmRow(MPTTModel):
     class AdmRowType(models.TextChoices):
         TITLE = "title", "Title"
         SUBTITLE = "subtitle", "Subtitle"
@@ -53,8 +54,12 @@ class AdmRow(models.Model):
     index = models.CharField(
         max_length=248, null=True, blank=True, verbose_name="row index"
     )
-    parent_row = models.ForeignKey(
-        "self", on_delete=models.CASCADE, related_name="children", null=True, blank=True
+    parent = TreeForeignKey(
+        to="self",
+        related_name="children",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
     )
     sort_order = models.IntegerField(null=True, blank=True)
     source_file = models.CharField(max_length=248, null=True, blank=True)
@@ -78,7 +83,9 @@ class AdmRow(models.Model):
 
 class AdmChoice(models.Model):
     value = models.CharField(max_length=248)
-    adm_row = models.ForeignKey(AdmRow, on_delete=models.CASCADE)
+    adm_row = models.ForeignKey(
+        AdmRow, on_delete=models.CASCADE, related_name="choices"
+    )
     sort_order = models.FloatField(null=True, blank=True)
     source_file = models.CharField(max_length=248, null=True, blank=True)
 

@@ -1,5 +1,3 @@
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework import mixins, generics, views
 from rest_framework.response import Response
 
@@ -114,7 +112,6 @@ class CPSettingsView(views.APIView):
     API endpoint that allows country programme settings to be viewed.
     """
 
-    @method_decorator(ensure_csrf_cookie)
     def get(self, *args, **kwargs):
         settings = {
             "year_section_mapping": [

@@ -12,7 +12,7 @@ from core.import_data.utils import (
     get_or_create_adm_row,
 )
 
-from core.models.adm import AdmRecord, AdmChoice
+from core.models.adm import AdmRecord, AdmChoice, AdmRow
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ def create_adm_rows_for_articles(article_file, layout_file, db_name):
     for article in json_data:
         row_data = {
             "text": article["Name"].strip(),
-            "type": "title",
+            "type": AdmRow.AdmRowType.QUESTION,
             "section": SECTION,
             "sort_order": article_order_dict[article["AdmDEArticlesId"]],
             "source_file": article_file,
@@ -164,6 +164,11 @@ def import_admde_items():
     """
     Import admDE records.
     """
+    # delete all admRows and admRecords
+    AdmRow.objects.filter(
+        source_file__contains="AdmDEArticles.json", section=SECTION
+    ).delete()
+
     db_dir_path = settings.IMPORT_DATA_DIR / "databases"
     for database_name in DB_DIR_LIST:
         logger.info(f"⏳ importing admDE records from {database_name}")
