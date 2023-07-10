@@ -35,16 +35,27 @@ class AdmEmptyFormView(views.APIView):
             min_year__lte=cp_report.year, max_year__gte=cp_report.year
         ).order_by("section", "sort_order")
 
-        section_cols = {
-            "admB": [],
-            "admC": [],
+        sections = {
+            "admB": {
+                "columns": [],
+                "rows": [],
+            },
+            "admC": {
+                "columns": [],
+                "rows": [],
+            },
+            "admD": {
+                "columns": [],
+                "rows": [],
+            },
         }
+
         for col in columns:
             serial_col = AdmColumnSerializer(col).data
             if col.section == AdmColumn.AdmColumnSection.B:
-                section_cols["admB"].append(serial_col)
+                sections["admB"]["columns"].append(serial_col)
             elif col.section == AdmColumn.AdmColumnSection.C:
-                section_cols["admC"].append(serial_col)
+                sections["admC"]["columns"].append(serial_col)
 
         # set rows
         rows = (
@@ -62,14 +73,9 @@ class AdmEmptyFormView(views.APIView):
                 ),
             )
             .prefetch_related("choices")
-            .order_by("sort_order")
+            .order_by("sort_order", "level")
         )
 
-        section_rows = {
-            "admB": [],
-            "admC": [],
-            "admD": [],
-        }
         # admb 1.6.1 and 1.6,2 is special case
         # if there is an 1.6.1 with user text then we will not displai 1.6.1 for N/A
         # same for 1.6.2
@@ -79,34 +85,29 @@ class AdmEmptyFormView(views.APIView):
             serial_row = AdmRowSerializer(row).data
             if row.section == AdmRow.AdmRowSection.B:
                 if row.index not in ["1.6.1", "1.6.2"]:
-                    section_rows["admB"].append(serial_row)
+                    sections["admB"]["rows"].append(serial_row)
                     continue
                 # row.index in ["1.6.1", "1.6.2"]
                 if row.index == "1.6.1":
                     if row.text.lower() != "n/a":
                         # set admb_161 to True so we will not display 1.6.1 for N/A
                         admb_161 = True
-                        section_rows["admB"].append(serial_row)
+                        sections["admB"]["rows"].append(serial_row)
                     elif not admb_161:
                         # row.text.lower() == "n/a" and admb_161 is False
-                        section_rows["admB"].append(serial_row)
+                        sections["admB"]["rows"].append(serial_row)
                 elif row.index == "1.6.2":
                     if row.text.lower() != "n/a":
                         # set admb_162 to True so we will not display 1.6.2 for N/A
                         admb_162 = True
-                        section_rows["admB"].append(serial_row)
+                        sections["admB"]["rows"].append(serial_row)
                     elif not admb_162:
                         # row.text.lower() == "n/a" and admb_162 is False
-                        section_rows["admB"].append(serial_row)
+                        sections["admB"]["rows"].append(serial_row)
 
             elif row.section == AdmRow.AdmRowSection.C:
-                section_rows["admC"].append(serial_row)
+                sections["admC"]["rows"].append(serial_row)
             elif row.section == AdmRow.AdmRowSection.D:
-                section_rows["admD"].append(serial_row)
+                sections["admD"]["rows"].append(serial_row)
 
-        return Response(
-            {
-                "columns": section_cols,
-                "rows": section_rows,
-            }
-        )
+        return Response(sections)

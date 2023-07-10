@@ -183,10 +183,12 @@ def parse_admb_file(file_name, strings_dict):
                 **article_data,
             }
             if index in ARTICLES_WITH_USER_TEXT:
+                na_data = article_data.copy()
+                na_data["sort_order"] = article_data["sort_order"] + 50
                 articles[index] = {
                     "text": "N/A",
                     "using_cfc": False,
-                    **article_data,
+                    **na_data,
                 }
 
     set_type(articles)
