@@ -53,6 +53,8 @@ HAS_HTTPS = env.get_value("HAS_HTTPS", default=False, cast=bool)
 SECURE_SSL_REDIRECT = HAS_HTTPS
 CSRF_COOKIE_SECURE = HAS_HTTPS
 SESSION_COOKIE_SECURE = HAS_HTTPS
+# https://docs.djangoproject.com/en/4.1/ref/settings/#secure-proxy-ssl-header
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Application definition
 
