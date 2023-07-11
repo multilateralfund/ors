@@ -259,34 +259,41 @@ class BlendCreateView(generics.CreateAPIView):
         return None
 
     @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "components",
-                openapi.IN_BODY,
-                description="List of tuples (substance_id, component_name, percentage)",
-                type=openapi.TYPE_ARRAY,
-                items=openapi.Items(
-                    type=openapi.TYPE_ARRAY,
-                    items=[
-                        openapi.Items(type=openapi.TYPE_INTEGER),
-                        openapi.Items(type=openapi.TYPE_STRING),
-                        openapi.Items(type=openapi.TYPE_NUMBER),
-                    ],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["other_names", "components", "composition"],
+            properties={
+                "other_names": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Blend name",
                 ),
-            ),
-            openapi.Parameter(
-                "other_names",
-                openapi.IN_BODY,
-                description="Blend name",
-                type=openapi.TYPE_STRING,
-            ),
-            openapi.Parameter(
-                "composition",
-                openapi.IN_BODY,
-                description="Blend composition",
-                type=openapi.TYPE_STRING,
-            ),
-        ]
+                "components": openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    description="List of tuples (substance_id, component_name, percentage)",
+                    items=openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        items=[
+                            openapi.Schema(
+                                type=openapi.TYPE_INTEGER,
+                                description="Substance id",
+                            ),
+                            openapi.Schema(
+                                type=openapi.TYPE_STRING,
+                                description="Component name",
+                            ),
+                            openapi.Schema(
+                                type=openapi.TYPE_NUMBER,
+                                description="Percentage",
+                            ),
+                        ],
+                    ),
+                ),
+                "composition": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Plain-text description of the composition of the blend",
+                ),
+            },
+        ),
     )
     def post(self, request, *args, **kwargs):
         data = request.data

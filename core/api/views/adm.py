@@ -1,8 +1,10 @@
 from django.db import models
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import views
 from rest_framework.response import Response
-from core.api.serializers.adm import AdmColumnSerializer, AdmRowSerializer
 
+from core.api.serializers.adm import AdmColumnSerializer, AdmRowSerializer
 from core.models.adm import AdmColumn, AdmRow
 from core.models.country_programme import CPReport
 from core.utils import IMPORT_DB_MAX_YEAR
@@ -13,6 +15,16 @@ class AdmEmptyFormView(views.APIView):
     API endpoint that allows to get empty form for ADM
     """
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "cp_report_id",
+                openapi.IN_QUERY,
+                description="Country programme report id",
+                type=openapi.TYPE_INTEGER,
+            ),
+        ],
+    )
     def get(self, request, *args, **kwargs):
         cp_report_id = request.query_params.get(
             "cp_report_id",
