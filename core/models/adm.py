@@ -103,7 +103,7 @@ class AdmRecord(models.Model):
         on_delete=models.CASCADE,
         related_name="adm_records",
     )
-    row = models.ForeignKey(AdmRow, on_delete=models.CASCADE, related_name="records")
+    row = models.ForeignKey(AdmRow, on_delete=models.CASCADE)
     column = models.ForeignKey(
         AdmColumn, on_delete=models.CASCADE, null=True, blank=True
     )
