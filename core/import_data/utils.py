@@ -1,6 +1,7 @@
 import decimal
 import json
 import re
+from core.models.adm import AdmColumn, AdmRow
 from core.models.blend import Blend
 from core.models.country import Country
 from core.models.country_programme import CPReport
@@ -45,8 +46,20 @@ CHEMICAL_NAME_MAPPING = {
     "HFC-365mfc (93%)/HFC-227ea (7%) - mezcla": "CustMix-134",
 }
 
+DB_YEAR_MAPPING = {
+    "CP": {
+        "min_year": 2000,
+        "max_year": 2011,
+    },
+    "CP2012": {
+        "min_year": 2012,
+        "max_year": 2018,
+    },
+}
+
 # --- list of db names ---
 DB_DIR_LIST = ["CP", "CP2012"]
+
 
 # --- list of country names that can be skipped ---
 SKIP_COUNTRY_LIST = [
@@ -171,6 +184,43 @@ def get_object_by_name(cls, obj_name, index_row, obj_type_name, logger):
 
 
 # --- cp databases import utils ---
+def get_adm_column(column_name, section, logger):
+    column = AdmColumn.objects.filter(name=column_name, section=section).first()
+    if not column:
+        logger.error(
+            f"Column {column_name} not found. "
+            "Make sure that you imported adm columns "
+            "(check import resources from import_docs.md)"
+        )
+        return None
+
+    return column
+
+
+def get_or_create_adm_row(row_data):
+    """
+    get or create adm row object
+        - if the row exists in db, update min_year and max_year
+        - if the row doesn't exist in db, create it
+    @param row_data = dict (row data)
+
+    @return AdmRow object
+    """
+    existing_row = AdmRow.objects.filter(
+        text=row_data["text"],
+        section=row_data["section"],
+        country_programme_report_id=row_data.get("country_programme_report_id", None),
+    ).first()
+
+    if existing_row:
+        existing_row.min_year = min(existing_row.min_year, row_data["min_year"])
+        existing_row.max_year = max(existing_row.max_year, row_data["max_year"])
+        existing_row.save()
+        return existing_row
+
+    return AdmRow.objects.create(**row_data)
+
+
 def get_cp_report_for_db_import(
     year_dict, country_dict, json_entry, logger, entry_id, other_args=None
 ):

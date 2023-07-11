@@ -23,7 +23,7 @@ docker-compose exec app ./manage.py import_resources usages
 - usages -> import only the usages
 - sectors -> import the sectors and subsectors
 - agencies -> import only the agencies
-
+- adm_columns -> import adm columns
 ---
 
 ## Records

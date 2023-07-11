@@ -6,22 +6,25 @@ from django.conf import settings
 
 from core.import_data.utils import (
     DB_DIR_LIST,
+    DB_YEAR_MAPPING,
     delete_old_data,
+    get_adm_column,
     get_chemical_by_name_or_components,
     get_country_and_year_dict,
     get_cp_report_for_db_import,
+    get_or_create_adm_row,
 )
-from core.models.adm import AdmColumn, AdmRecord, AdmRow
+from core.models.adm import AdmRecord, AdmRow
 from core.models.country_programme import CPPrices, CPRecord
 
 logger = logging.getLogger(__name__)
 
 CP_COLUMNS_MAPPING = {
-    "CumulativeAmount": "Cumulative",
-    "TrainedNumberHCFC": "HCFC",
-    "RecoveryAmountHCFC": "HCFC",
-    "RecoveryAmount": "All other ODS",
-    "TrainedNumber": "All other ODS",
+    "CumulativeAmount": "Cumulative float",
+    "TrainedNumberHCFC": "HCFC float",
+    "RecoveryAmountHCFC": "HCFC float",
+    "RecoveryAmount": "ALL OTHER ODS float",
+    "TrainedNumber": "ALL OTHER ODS float",
 }
 
 CP_RECORD_FIELDS_MAPPING = {
@@ -35,9 +38,9 @@ ADM_RECORD_FIELDS = ["RecoveryAmount", "TrainedNumber"]
 CP_RECORD_TITLE_WORDS = ["import quotas", "export quotas", "price"]
 
 
-def import_columns(file_name):
+def get_columns_dict():
     """
-    Import adm columns for amdC using CP_COLUMNS_MAPPING
+    Get admC columns dict
     @param file_name = str (file path for import file) used for source_file field
 
     @return columns_dict = dict
@@ -47,24 +50,20 @@ def import_columns(file_name):
     """
     columns_dict = {}
     for field_name, column_name in CP_COLUMNS_MAPPING.items():
-        column_data = {
-            "name": column_name,
-            "source_file": file_name,
-        }
-        column, _ = AdmColumn.objects.get_or_create(
-            name=column_name, defaults=column_data
-        )
+        column = get_adm_column(column_name, SECTION, logger)
+        if not column:
+            return None
         columns_dict[field_name] = column
 
     return columns_dict
 
 
-def create_adm_row(text, source_file, sort_order, parent_row=None):
+def create_adm_row(text, file_data, sort_order, parent_row=None):
     """
     Add adm row to items dict
     - if parent row set, the type will be QUESTION
     @param text = str (row text)
-    @param source_file = str (file path for import file)
+    @param source_data = dict (file data)
     @param sort_order = int (row sort order)
     @param parent_row = AdmRow object (admC parent row)
 
@@ -74,27 +73,26 @@ def create_adm_row(text, source_file, sort_order, parent_row=None):
 
     row_data = {
         "text": text,
-        "source_file": str(source_file),
+        "source_file": str(file_data["file_name"]),
         "sort_order": sort_order,
-        "parent_row": parent_row,
+        "parent": parent_row,
+        "section": SECTION,
+        **DB_YEAR_MAPPING[file_data["db_name"]],
     }
 
     row_data["type"] = (
         AdmRow.AdmRowType.QUESTION
-        if row_data.get("parent_row", None)
+        if row_data.get("parent", None)
         else AdmRow.AdmRowType.TITLE
     )
 
-    # add adm row to items dict
-    row, _ = AdmRow.objects.get_or_create(text=row_data["text"], defaults=row_data)
-
-    return row
+    return get_or_create_adm_row(row_data)
 
 
-def create_adm_rows_for_articles(file_name):
+def create_adm_rows_for_articles(file_data):
     """
     Parse admc_Layout json file and create adm rows for articles
-    @param file_name = str (file path for import file)
+    @param file_data = dict (file data)
 
     @return article_dict = dict
         - struct: {
@@ -103,7 +101,7 @@ def create_adm_rows_for_articles(file_name):
 
     """
     article_dict = {}
-    with open(file_name, "r", encoding="utf8") as f:
+    with open(file_data["file_name"], "r", encoding="utf8") as f:
         json_data = json.load(f)
 
     for item_json in json_data:
@@ -123,7 +121,7 @@ def create_adm_rows_for_articles(file_name):
         # if item is title, add it as adm row
         article_dict[item_json_id] = create_adm_row(
             item_json["Label"],
-            file_name,
+            file_data,
             item_json["SortOrder"],
         )
 
@@ -208,9 +206,16 @@ def udate_cp_record(cp, admc_entry, items_dict, source_file):
     record_data["substance_id"] = item["value"] if item["type"] == "substance" else None
     record_data["blend_id"] = item["value"] if item["type"] == "blend" else None
 
+    new_data = {}
     for entry_field, record_field in CP_RECORD_FIELDS_MAPPING.items():
         if admc_entry[entry_field]:
-            record_data[record_field] = admc_entry[entry_field]
+            new_data[record_field] = admc_entry[entry_field]
+
+    if not new_data:
+        # skip if there is no new data to be updated/ created
+        return
+
+    record_data.update(new_data)
 
     try:
         cp_record, created = CPRecord.objects.update_or_create(
@@ -227,7 +232,7 @@ def udate_cp_record(cp, admc_entry, items_dict, source_file):
         return
 
     if created:
-        cp_record.section = SECTION
+        cp_record.section = "A"
         cp_record.display_name = item["display_name"]
         cp_record.source_file = source_file
         cp_record.save()
@@ -257,10 +262,11 @@ def create_cp_price(cp, admc_entry, items_dict, source_file):
     return CPPrices(**price_data)
 
 
-def create_adm_record(cp, file_name, admc_entry, items_dict, column_dict):
+def create_adm_record(cp, file_data, admc_entry, items_dict, column_dict):
     """
     Create adm record for admC entry
     @param cp = CPReport object
+    @param file_data = dict (file data)
     @param admc_entry = dict (admC entry)
     @param items_dict = dict (admC items dict)
     @param column_dict = dict (admC columns dict)
@@ -272,7 +278,7 @@ def create_adm_record(cp, file_name, admc_entry, items_dict, column_dict):
 
     adm_row = create_adm_row(
         item["display_name"],
-        file_name,
+        file_data,
         item["sort_order"],
         item["article"],
     )
@@ -285,27 +291,26 @@ def create_adm_record(cp, file_name, admc_entry, items_dict, column_dict):
             "country_programme_report": cp,
             "row": adm_row,
             "column": column_dict[field],
-            "value_float": admc_entry[field],
+            "value_text": admc_entry[field],
             "section": SECTION,
-            "source_file": file_name,
+            "source_file": file_data["file_name"],
         }
         adm_records.append(AdmRecord(**adm_record_data))
 
     return adm_records
 
 
-def import_admc_entries(dir_path, file_name, items_dict, column_dict):
+def import_admc_entries(file_data, items_dict, column_dict):
     """
     Import admC entries from json file
-    @param dir_path = str (directory path for import files)
-    @param file_name = str (file path for import file)
+    @param file_data = dict (file data)
     @param items_dict = dict (admC items dict)
     @param column_dict = dict (admC columns dict)
     """
 
-    country_dict, year_dict = get_country_and_year_dict(dir_path, logger)
+    country_dict, year_dict = get_country_and_year_dict(file_data["dir_path"], logger)
 
-    with open(file_name, "r", encoding="utf8") as f:
+    with open(file_data["file_name"], "r", encoding="utf8") as f:
         json_data = json.load(f)
 
     admc_records = []
@@ -329,39 +334,51 @@ def import_admc_entries(dir_path, file_name, items_dict, column_dict):
         # update cp_record
         if items_dict[admc_entry["ItemId"]]["type"] == "text":
             admc_records.extend(
-                create_adm_record(cp, file_name, admc_entry, items_dict, column_dict)
+                create_adm_record(cp, file_data, admc_entry, items_dict, column_dict)
             )
             continue
 
-        udate_cp_record(cp, admc_entry, items_dict, file_name)
+        udate_cp_record(cp, admc_entry, items_dict, file_data["file_name"])
         if admc_entry["AvgODSPrice"]:
-            prices.append(create_cp_price(cp, admc_entry, items_dict, file_name))
+            prices.append(
+                create_cp_price(cp, admc_entry, items_dict, file_data["file_name"])
+            )
 
     AdmRecord.objects.bulk_create(admc_records)
     CPPrices.objects.bulk_create(prices)
 
 
-def parse_db_files(dir_path):
+def parse_db_files(dir_path, db_name):
     """
     Parse db files and import data
     @param dir_path = str (directory path for import files)
     """
 
     admc_layout_file = f"{dir_path}/AdmCLayout.json"
-    articles_dict = create_adm_rows_for_articles(admc_layout_file)
+    file_data = {
+        "file_name": admc_layout_file,
+        "db_name": db_name,
+    }
+    articles_dict = create_adm_rows_for_articles(file_data)
 
     items_dict = get_itmes_dict(f"{dir_path}/AdmCLayout.json", articles_dict)
     logger.info("✔ item file parsed")
 
     admc_file = f"{dir_path}/AdmC.json"
-    column_dict = import_columns(admc_file)
+    column_dict = get_columns_dict()
+    if not column_dict:
+        return
     logger.info("✔ columns file parsed")
 
     delete_old_data(AdmRecord, admc_file, logger)
     delete_old_data(CPPrices, admc_file, logger)
+    file_data = {
+        "file_name": admc_file,
+        "dir_path": dir_path,
+        "db_name": db_name,
+    }
     import_admc_entries(
-        dir_path,
-        admc_file,
+        file_data,
         items_dict,
         column_dict,
     )
@@ -372,8 +389,13 @@ def import_admc_items():
     """
     Import records from databases
     """
+    # delete all admRows and admRecords
+    AdmRow.objects.filter(
+        source_file__contains="AdmCLayout.json", section=SECTION
+    ).delete()
+
     db_dir_path = settings.IMPORT_DATA_DIR / "databases"
     for database_name in DB_DIR_LIST:
         logger.info(f"⏳ importing admC records from {database_name}")
-        parse_db_files(db_dir_path / database_name)
+        parse_db_files(db_dir_path / database_name, database_name)
         logger.info(f"✔ admC records from {database_name} imported")

@@ -1,4 +1,5 @@
 from django.core.management import BaseCommand
+from core.import_data.import_adm_columns import import_adm_columns
 from core.import_data.import_agencies import import_agencies
 from core.import_data.import_countries import import_countries
 from core.import_data.import_ozone_data import (
@@ -36,6 +37,7 @@ class Command(BaseCommand):
                 "sectors",
                 "agencies",
                 "countries",
+                "adm_columns",
             ],
         )
 
@@ -62,3 +64,5 @@ class Command(BaseCommand):
             import_project_sectors()
         if resource in ["agencies", "all"]:
             import_agencies()
+        if resource in ["adm_columns", "all"]:
+            import_adm_columns()
