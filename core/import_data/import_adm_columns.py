@@ -17,7 +17,7 @@ def parse_columns_file(file_path):
 
     @param file_path = str (file path for import file)
     """
-    with open(file_path) as f:
+    with open(file_path, encoding="utf8") as f:
         json_data = json.load(f)
 
     columns = []

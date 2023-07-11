@@ -136,7 +136,7 @@ class TestCPRecord:
         assert response.data["section_a"][0]["chemical_name"] == "substance123"
         assert len(response.data["section_b"]) == 1
         assert response.data["section_b"][0]["chemical_name"] == "blend123"
-        assert len(response.data["section_b"][0]["record_usages"]) == 3
+        assert len(response.data["section_b"][0]["usages"]) == 3
         assert len(response.data["section_c"]) == 2
         assert len(response.data["section_d"]) == 1
         assert response.data["section_d"][0]["chemical_name"] == "HFC-23"

@@ -43,7 +43,7 @@ class CPUsageSerializer(serializers.ModelSerializer):
 class CPRecordSerializer(serializers.ModelSerializer):
     chemical_name = serializers.SerializerMethodField()
     annex_group = serializers.SerializerMethodField()
-    record_usages = CPUsageSerializer(many=True)
+    usages = CPUsageSerializer(source="record_usages", many=True)
 
     class Meta:
         model = CPRecord
@@ -63,7 +63,7 @@ class CPRecordSerializer(serializers.ModelSerializer):
             "manufacturing_blends",
             "banned_date",
             "remarks",
-            "record_usages",
+            "usages",
         ]
 
     def get_chemical_name(self, obj):

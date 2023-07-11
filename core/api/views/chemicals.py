@@ -7,16 +7,10 @@ from rest_framework.response import Response
 
 
 from core.api.serializers.chemicals import BlendSerializer, SubstanceSerializer
+from core.api.utils import SECTION_ANNEX_MAPPING
 from core.models.blend import Blend, BlendComponents
 from core.models.substance import Substance
 from core.models.usage import ExcludedUsage
-
-
-SECTION_ANNEX_MAPPING = {
-    "A": ["A", "B", "C", "D", "E"],
-    "B": ["F"],
-    "C": ["C", "E", "F", "unknown"],
-}
 
 
 class ChemicalBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
