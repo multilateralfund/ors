@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from core.admin.utils import get_final_display_list
 from core.models.substance import Substance, SubstanceAltName
+from admin_auto_filters.filters import AutocompleteFilterFactory
 
 
 @admin.register(SubstanceAltName)
@@ -11,6 +12,10 @@ class SubstanceAltNameAdmin(admin.ModelAdmin):
         "substance__name",
     ]
     autocomplete_fields = ["substance"]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("substance")
 
     def get_list_display(self, request):
         return get_final_display_list(SubstanceAltName, [])
@@ -22,12 +27,17 @@ class SubstanceAdmin(admin.ModelAdmin):
         "name",
         "formula",
     ]
+    list_filter = [AutocompleteFilterFactory("group", "group")]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("group")
 
     def get_list_display(self, request):
         exclude = [
             "blendcomponents",
-            "countryprogrammeprices",
-            "countryprogrammerecord",
+            "cpprices",
+            "cprecord",
             "substancealtname",
             "excludedusage",
             "excluded_usages",

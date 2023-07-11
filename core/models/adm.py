@@ -1,7 +1,7 @@
 from django.db import models
 from core.models.blend import Blend
 
-from core.models.country_programme import CountryProgrammeReport
+from core.models.country_programme import CPReport
 from core.models.substance import Substance
 
 
@@ -9,6 +9,9 @@ class AdmColumn(models.Model):
     name = models.CharField(max_length=248)
     sort_order = models.IntegerField(null=True, blank=True)
     source_file = models.CharField(max_length=248, null=True, blank=True)
+
+    class Meta:
+        db_table = "cp_admcolumn"
 
     def __str__(self):
         return self.name
@@ -32,6 +35,9 @@ class AdmRow(models.Model):
     sort_order = models.IntegerField(null=True, blank=True)
     source_file = models.CharField(max_length=248, null=True, blank=True)
 
+    class Meta:
+        db_table = "cp_admrow"
+
     def __str__(self):
         return f"{self.index} {self.text}"
 
@@ -42,13 +48,16 @@ class AdmChoice(models.Model):
     sort_order = models.FloatField(null=True, blank=True)
     source_file = models.CharField(max_length=248, null=True, blank=True)
 
+    class Meta:
+        db_table = "cp_admchoice"
+
     def __str__(self):
         return self.value
 
 
 class AdmRecord(models.Model):
     country_programme_report = models.ForeignKey(
-        CountryProgrammeReport,
+        CPReport,
         on_delete=models.CASCADE,
         related_name="adm_records",
     )
@@ -71,6 +80,9 @@ class AdmRecord(models.Model):
     )
     section = models.CharField(max_length=10)
     source_file = models.CharField(max_length=248, null=True, blank=True)
+
+    class Meta:
+        db_table = "cp_admrecord"
 
     def __str__(self):
         if self.column:

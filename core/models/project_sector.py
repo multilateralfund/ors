@@ -2,9 +2,9 @@ from django.db import models
 
 
 class ProjectSectorManager(models.Manager):
-    def get_by_name(self, name):
+    def find_by_name(self, name):
         name_str = name.strip()
-        return self.filter(name__iexact=name_str)
+        return self.filter(name__iexact=name_str).first()
 
 
 class ProjectSector(models.Model):

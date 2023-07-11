@@ -18,12 +18,13 @@ class BlendAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = [
             "blendcomponents",
-            "countryprogrammerecord",
+            "cprecord",
             "blendaltname",
             "excludedusage",
             "excluded_usages",
             "admrecord",
-            "countryprogrammeprices",
+            "cpprices",
+            "components",
         ]
         return get_final_display_list(Blend, exclude)
 
@@ -36,6 +37,10 @@ class BlendAltNameAdmin(admin.ModelAdmin):
     ]
     autocomplete_fields = ["blend"]
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("blend")
+
     def get_list_display(self, request):
         return get_final_display_list(BlendAltName, [])
 
@@ -47,6 +52,10 @@ class BlendComponentsAdmin(admin.ModelAdmin):
         "substance__name",
     ]
     autocomplete_fields = ["blend", "substance"]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("blend", "substance")
 
     def get_list_display(self, request):
         return get_final_display_list(BlendComponents, [])

@@ -26,26 +26,35 @@ env = environ.Env()
 if os.path.exists(str(BASE_DIR / ".env")):
     env.read_env(str(BASE_DIR / ".env"))
 
-BACKEND_HOST = env.list("BACKEND_HOST", default=["localhost"])
+BACKEND_HOST = env.get_value("BACKEND_HOST", default="localhost")
 FRONTEND_HOST = env.list("FRONTEND_HOST", default=["http://localhost:3000"])
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-9ty_tzwdfjg%7sam=d2c70zo!9t1c_d$6empgpct0%a%&9w4h="
+SECRET_KEY = env.get_value("DJANGO_SECRET_KEY", default="")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DJANGO_DEBUG", default=False)
 
-ALLOWED_HOSTS = [_host.rsplit(":", 1)[0] for _host in BACKEND_HOST]
+ALLOWED_HOSTS = [BACKEND_HOST]
 
 # CORS allowed origins
 CORS_ALLOWED_ORIGINS = [_host.rsplit(",", 1)[0] for _host in FRONTEND_HOST]
+CORS_ORIGIN_WHITELIST = [_host.rsplit(",", 1)[0] for _host in FRONTEND_HOST]
 CORS_ALLOW_CREDENTIALS = True
 
 # CSRF allowed origins
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+
+# SECURITY
+HAS_HTTPS = env.get_value("HAS_HTTPS", default=False, cast=bool)
+SECURE_SSL_REDIRECT = HAS_HTTPS
+CSRF_COOKIE_SECURE = HAS_HTTPS
+SESSION_COOKIE_SECURE = HAS_HTTPS
+# https://docs.djangoproject.com/en/4.1/ref/settings/#secure-proxy-ssl-header
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Application definition
 
@@ -205,6 +214,11 @@ LOGGING = {
 
 SITE_ID = 1
 
+# https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
+EMAIL_BACKEND = env.get_value(
+    "DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
+)
+
 EMAIL_HOST = env.str("EMAIL_HOST", default=None)
 EMAIL_PORT = env.int("EMAIL_PORT", default=None)
 EMAIL_HOST_USER = env.str("EMAIL_HOST_USER", default=None)
@@ -242,6 +256,10 @@ REST_AUTH = {
 SESSION_COOKIE_HTTPONLY = False
 CSRF_COOKIE_HTTPONLY = True
 
+if DEBUG:
+    SECRET_KEY = "secret"
+    ALLOWED_HOSTS.extend(["localhost", "127.0.0.1"])
+
 ENABLE_DEBUG_BAR = DEBUG and env.get_value("ENABLE_DEBUG_BAR", default=False, cast=bool)
 if ENABLE_DEBUG_BAR:
     try:
@@ -254,10 +272,10 @@ if ENABLE_DEBUG_BAR:
             )
 
         hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-        INTERNAL_IPS = [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
+        INTERNAL_IPS = ["127.0.0.1"]
+        INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
         MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
         INSTALLED_APPS += ["debug_toolbar"]
-        ALLOWED_HOSTS += ["127.0.0.1"]
         DEBUG_TOOLBAR_CONFIG = {
             "SHOW_COLLAPSED": True,
             "SHOW_TOOLBAR_CALLBACK": f"{__name__}.show_toolbar",

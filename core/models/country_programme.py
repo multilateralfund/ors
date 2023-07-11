@@ -6,24 +6,30 @@ from core.models.substance import Substance
 from core.models.usage import Usage
 
 
-class CountryProgrammeReport(models.Model):
+class CPReport(models.Model):
     name = models.CharField(max_length=248)
     year = models.IntegerField()
+    reporting_entry = models.CharField(max_length=248, null=True, blank=True)
+    reporting_email = models.CharField(max_length=248, null=True, blank=True)
+    submission_date = models.DateField(null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "CP report"
+        verbose_name_plural = "CP reports"
+        db_table = "cp_report"
 
     def __str__(self):
         return self.name
 
 
-class CountryProgrammeRecord(models.Model):
+class CPRecord(models.Model):
     blend = models.ForeignKey(Blend, on_delete=models.CASCADE, null=True, blank=True)
     substance = models.ForeignKey(
         Substance, on_delete=models.CASCADE, null=True, blank=True
     )
-    country_programme_report = models.ForeignKey(
-        CountryProgrammeReport, on_delete=models.CASCADE
-    )
+    country_programme_report = models.ForeignKey(CPReport, on_delete=models.CASCADE)
     display_name = models.CharField(max_length=248, null=True, blank=True)
     section = models.CharField(max_length=164)
     imports = models.DecimalField(
@@ -49,6 +55,11 @@ class CountryProgrammeRecord(models.Model):
 
     source_file = models.CharField(max_length=248)
 
+    class Meta:
+        verbose_name = "CP record"
+        verbose_name_plural = "CP records"
+        db_table = "cp_record"
+
     def __str__(self):
         return (
             str(self.id)
@@ -59,17 +70,22 @@ class CountryProgrammeRecord(models.Model):
         )
 
 
-class CountryProgrammeUsage(models.Model):
+class CPUsage(models.Model):
     country_programme_record = models.ForeignKey(
-        CountryProgrammeRecord, on_delete=models.CASCADE, related_name="record_usages"
+        CPRecord, on_delete=models.CASCADE, related_name="record_usages"
     )
     usage = models.ForeignKey(Usage, on_delete=models.CASCADE)
     quantity = models.DecimalField(max_digits=25, decimal_places=15)
 
+    class Meta:
+        verbose_name = "CP usage"
+        verbose_name_plural = "CP usages"
+        db_table = "cp_usage"
 
-class CountryProgrammePrices(models.Model):
+
+class CPPrices(models.Model):
     country_programme_report = models.ForeignKey(
-        CountryProgrammeReport,
+        CPReport,
         on_delete=models.CASCADE,
     )
     blend = models.ForeignKey(Blend, on_delete=models.CASCADE, null=True, blank=True)
@@ -80,18 +96,13 @@ class CountryProgrammePrices(models.Model):
     remarks = models.TextField(null=True, blank=True)
     source_file = models.CharField(max_length=248)
 
-    previous_year_price = models.DecimalField(
-        max_digits=12, decimal_places=3, null=True, blank=True
-    )
-    previous_year_text = models.CharField(max_length=248, null=True, blank=True)
-
-    current_year_price = models.DecimalField(
-        max_digits=12, decimal_places=3, null=True, blank=True
-    )
-    current_year_text = models.CharField(max_length=248, null=True, blank=True)
+    previous_year_price = models.CharField(max_length=248, null=True, blank=True)
+    current_year_price = models.CharField(max_length=248, null=True, blank=True)
 
     class Meta:
-        verbose_name_plural = "Country programme prices"
+        verbose_name = "CP price"
+        verbose_name_plural = "CP prices"
+        db_table = "cp_prices"
 
     def __str__(self):
         return (
@@ -104,7 +115,7 @@ class CountryProgrammePrices(models.Model):
 # model used for data regarding only HFC-23 substance
 class CPGeneration(models.Model):
     country_programme_report = models.ForeignKey(
-        CountryProgrammeReport,
+        CPReport,
         on_delete=models.CASCADE,
     )
     all_uses = models.DecimalField(
@@ -132,8 +143,9 @@ class CPGeneration(models.Model):
     source_file = models.CharField(max_length=248)
 
     class Meta:
-        verbose_name = "Country programme generation"
-        verbose_name_plural = "Country programme generations"
+        verbose_name = "CP generation"
+        verbose_name_plural = "CP generations"
+        db_table = "cp_generation"
 
     def __str__(self):
         return self.country_programme_report.name
@@ -142,7 +154,7 @@ class CPGeneration(models.Model):
 # model used for data regarding only HFC-23 substance
 class CPEmission(models.Model):
     country_programme_report = models.ForeignKey(
-        CountryProgrammeReport,
+        CPReport,
         on_delete=models.CASCADE,
     )
     facility = models.CharField(max_length=256, help_text="Facility name or identifier")
@@ -200,8 +212,9 @@ class CPEmission(models.Model):
     source_file = models.CharField(max_length=248)
 
     class Meta:
-        verbose_name = "Country programme emission"
-        verbose_name_plural = "Country programme emissions"
+        verbose_name = "CP emission"
+        verbose_name_plural = "CP emissions"
+        db_table = "cp_emission"
 
     def __str__(self):
         return self.country_programme_report.name

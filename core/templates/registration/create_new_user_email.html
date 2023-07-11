@@ -2,10 +2,18 @@
 {% load settings_value %}
 
 {% block content %}
-<p>Hi {{ user.get_username }},</p>
+<p>Dear {{ user.first_name }} {{user.last_name}},</p>
 <p>
-  You're receiving this email because you requested a
-  password reset for your user account
+  Your account has been successfully created.Below are your account details:
+</p>
+<p>
+  Username: {{ username }}
+  <br />
+  Password: {{ password }}
+</p>
+<p>
+  To ensure the security of your account,
+  we have generated a temporary password for you.
 </p>
 <br />
 <p>

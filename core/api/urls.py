@@ -3,20 +3,24 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
-from core.api.views.chemicals import GroupSubstancesListAPIView, BlendsListAPIView
-from core.api.views.country_programme import (
-    CountryProgrammeRecordListAPIView,
-    CountryProgrammeReportListAPIView,
+from core.api.views.chemicals import (
+    BlendCreateView,
+    BlendsListView,
+    SubstancesListView,
 )
-from core.api.views.usages import UsageListAPIView
-from core.api.views.countries import CountryListAPIView
+from core.api.views.country_programme import (
+    CPRecordListView,
+    CPReportListView,
+    CPSettingsView,
+)
+from core.api.views.usages import UsageListView
+from core.api.views.countries import CountryListView
 
 
 schema_view = get_schema_view(
     openapi.Info(
         title="Multilateral Fund API",
         default_version="v1",
-        description="API docs for mlf",
     ),
     public=True,
     permission_classes=[permissions.AllowAny],
@@ -24,38 +28,41 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     re_path(
-        r"^swagger(?P<format>\.json|\.yaml)$",
+        r"^docs(?P<format>\.json|\.yaml)$",
         schema_view.without_ui(cache_timeout=0),
         name="schema-json",
     ),
     re_path(
-        r"^swagger/$",
+        r"^docs/$",
         schema_view.with_ui("swagger", cache_timeout=0),
         name="schema-swagger-ui",
     ),
-    re_path(
-        r"^redoc/$", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"
-    ),
-    path("usages/", UsageListAPIView.as_view(), name="usages-list"),
+    path("usages/", UsageListView.as_view(), name="usages-list"),
     path(
-        "group-substances/",
-        GroupSubstancesListAPIView.as_view(),
-        name="group-substances-list",
+        "substances/",
+        SubstancesListView.as_view(),
+        name="substances-list",
     ),
-    path("blends/", BlendsListAPIView.as_view(), name="blends-list"),
+    path("blends/", BlendsListView.as_view(), name="blends-list"),
+    path("blends/create/", BlendCreateView.as_view(), name="blends-create"),
     path(
         "country-programme/reports/",
-        CountryProgrammeReportListAPIView.as_view(),
+        CPReportListView.as_view(),
         name="country-programme-report-list",
     ),
     path(
         "country-programme/records/",
-        CountryProgrammeRecordListAPIView.as_view(),
+        CPRecordListView.as_view(),
         name="country-programme-record-list",
     ),
     path(
+        "country-programme/settings/",
+        CPSettingsView.as_view(),
+        name="country-programme-settings",
+    ),
+    path(
         "countries/",
-        CountryListAPIView.as_view(),
+        CountryListView.as_view(),
         name="countries-list",
     ),
 ]

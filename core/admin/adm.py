@@ -30,6 +30,16 @@ class AdmRecordAdmin(admin.ModelAdmin):
     readonly_fields = ["country_programme_report"]
     autocomplete_fields = ["row", "substance", "blend"]
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related(
+            "row",
+            "substance",
+            "blend",
+            "country_programme_report__country",
+            "value_choice",
+        )
+
     def get_list_display(self, request):
         return get_final_display_list(AdmRecord, [])
 
@@ -42,6 +52,10 @@ class AdmRowAdmin(admin.ModelAdmin):
     ]
     list_filter = ["type"]
     autocomplete_fields = ["parent_row"]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("parent_row")
 
     def get_list_display(self, request):
         exclude = [

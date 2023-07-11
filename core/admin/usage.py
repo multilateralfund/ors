@@ -11,8 +11,12 @@ class UsageAdmin(admin.ModelAdmin):
         "full_name",
     ]
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("parent")
+
     def get_list_display(self, request):
-        exclude = ["usage", "countryprogrammeusage", "excludedusage", "children"]
+        exclude = ["usage", "cpusage", "excludedusage", "children"]
         return get_final_display_list(Usage, exclude)
 
 
@@ -23,6 +27,10 @@ class ExcludedUsageAdmin(admin.ModelAdmin):
         "substance__name",
         "usage__name",
     ]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("blend", "substance", "usage")
 
     def get_list_display(self, request):
         return get_final_display_list(ExcludedUsage, [])

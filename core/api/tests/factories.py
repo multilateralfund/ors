@@ -1,9 +1,12 @@
 import factory.fuzzy
 from core.models.country import Country
 from core.models.country_programme import (
-    CountryProgrammeRecord,
-    CountryProgrammeReport,
-    CountryProgrammeUsage,
+    CPEmission,
+    CPGeneration,
+    CPPrices,
+    CPRecord,
+    CPReport,
+    CPUsage,
 )
 
 from core.models.group import Group
@@ -45,6 +48,7 @@ class GroupFactory(factory.django.DjangoModelFactory):
 
     name = factory.Faker("pystr", max_chars=100)
     name_alt = factory.Faker("pystr", max_chars=100)
+    annex = factory.Faker("pystr", max_chars=50)
     description = factory.Faker("pystr", max_chars=100)
 
 
@@ -98,22 +102,20 @@ class CountryFactory(factory.django.DjangoModelFactory):
 
 
 # country_programme_report factory
-class CountryProgrammeReportFactory(factory.django.DjangoModelFactory):
+class CPReportFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = CountryProgrammeReport
+        model = CPReport
 
     country = factory.SubFactory(CountryFactory)
     name = factory.Faker("pystr", max_chars=100)
     year = factory.Faker("random_int", min=1995, max=2030)
 
 
-class CountryProgrammeRecordFactory(factory.django.DjangoModelFactory):
+class CPRecordFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = CountryProgrammeRecord
+        model = CPRecord
 
-    country_programme_report = factory.SubFactory(CountryProgrammeReportFactory)
-    blend = factory.SubFactory(BlendFactory)
-    substance = factory.SubFactory(SubstanceFactory)
+    country_programme_report = factory.SubFactory(CPReportFactory)
     display_name = factory.Faker("pystr", max_chars=100)
     section = factory.Faker("pystr", max_chars=2)
     imports = factory.Faker("random_int", min=1, max=100)
@@ -124,10 +126,46 @@ class CountryProgrammeRecordFactory(factory.django.DjangoModelFactory):
     remarks = factory.Faker("pystr", max_chars=100)
 
 
-class CountryProgrammeUsageFactory(factory.django.DjangoModelFactory):
+class CPUsageFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = CountryProgrammeUsage
+        model = CPUsage
 
-    country_programme_record = factory.SubFactory(CountryProgrammeRecordFactory)
+    country_programme_record = factory.SubFactory(CPRecordFactory)
     usage = factory.SubFactory(UsageFactory)
     quantity = factory.Faker("random_int", min=1, max=100)
+
+
+class CPPricesFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = CPPrices
+
+    country_programme_report = factory.SubFactory(CPReportFactory)
+    display_name = factory.Faker("pystr", max_chars=100)
+    previous_year_price = factory.Faker("random_int", min=1, max=100)
+    current_year_price = factory.Faker("random_int", min=1, max=100)
+
+
+class CPGenerationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = CPGeneration
+
+    country_programme_report = factory.SubFactory(CPReportFactory)
+    all_uses = factory.Faker("random_int", min=1, max=100)
+    feedstock = factory.Faker("random_int", min=1, max=100)
+    destruction = factory.Faker("random_int", min=1, max=100)
+
+
+class CPEmissionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = CPEmission
+
+    country_programme_report = factory.SubFactory(CPReportFactory)
+    facility = factory.Faker("rpyst", max_chars=100)
+    total = factory.Faker("random_int", min=1, max=100)
+    all_uses = factory.Faker("random_int", min=1, max=100)
+    feedstock_gc = factory.Faker("random_int", min=1, max=100)
+    destruction = factory.Faker("random_int", min=1, max=100)
+    feedstock_wpc = factory.Faker("random_int", min=1, max=100)
+    destruction_wpc = factory.Faker("random_int", min=1, max=100)
+    generated_emissions = factory.Faker("random_int", min=1, max=100)
+    remarks = factory.Faker("pystr", max_chars=100)

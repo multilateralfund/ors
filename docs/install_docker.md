@@ -49,7 +49,7 @@ docker-compose up -d
 
 ### View logs in real time
 
-In order to view the logs in real time run the command `docker-compose logs -f <service>`:
+In order to view the logs in real time, run the command `docker-compose logs -f <service>`:
 
 ```shell
 docker-compose logs -f <service>

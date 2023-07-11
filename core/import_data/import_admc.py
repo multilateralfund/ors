@@ -12,7 +12,7 @@ from core.import_data.utils import (
     get_cp_report_for_db_import,
 )
 from core.models.adm import AdmColumn, AdmRecord, AdmRow
-from core.models.country_programme import CountryProgrammePrices, CountryProgrammeRecord
+from core.models.country_programme import CPPrices, CPRecord
 
 logger = logging.getLogger(__name__)
 
@@ -194,7 +194,7 @@ def get_itmes_dict(file_name, articles_dict):
 def udate_cp_record(cp, admc_entry, items_dict, source_file):
     """
     Update cp record for admC entry
-    @param cp = CountryProgrammeReport object
+    @param cp = CPReport object
     @param admc_entry = dict (admC entry)
     @param items_dict = dict (admC items dict)
     @param items_file = str (file path for items file) used for source_file field
@@ -213,13 +213,13 @@ def udate_cp_record(cp, admc_entry, items_dict, source_file):
             record_data[record_field] = admc_entry[entry_field]
 
     try:
-        cp_record, created = CountryProgrammeRecord.objects.update_or_create(
+        cp_record, created = CPRecord.objects.update_or_create(
             country_programme_report_id=cp.id,
             substance_id=record_data["substance_id"],
             blend_id=record_data["blend_id"],
             defaults=record_data,
         )
-    except CountryProgrammeRecord.MultipleObjectsReturned:
+    except CPRecord.MultipleObjectsReturned:
         logger.warning(
             f"[row {admc_entry['Adm_CId']}]: Too many records for "
             f"{cp.name} substance: {record_data['substance_id']} blend:{record_data['blend_id']}"
@@ -236,32 +236,31 @@ def udate_cp_record(cp, admc_entry, items_dict, source_file):
 def create_cp_price(cp, admc_entry, items_dict, source_file):
     """
     Create cp price for admC entry
-    @param cp = CountryProgrammeReport object
+    @param cp = CPReport object
     @param admc_entry = dict (admC entry)
     @param items_dict = dict (admC items dict)
     @param items_file = str (file path for items file) used for source_file field
 
-    @return CountryProgrammePrices object
+    @return CPPrices object
     """
 
     item = items_dict[admc_entry["ItemId"]]
     price_data = {
         "country_programme_report": cp,
         "current_year_price": admc_entry["AvgODSPrice"],
-        "current_year_text": str(admc_entry["AvgODSPrice"]),
         "display_name": item["display_name"],
         "source_file": source_file,
     }
     price_data["substance_id"] = item["value"] if item["type"] == "substance" else None
     price_data["blend_id"] = item["value"] if item["type"] == "blend" else None
 
-    return CountryProgrammePrices(**price_data)
+    return CPPrices(**price_data)
 
 
 def create_adm_record(cp, file_name, admc_entry, items_dict, column_dict):
     """
     Create adm record for admC entry
-    @param cp = CountryProgrammeReport object
+    @param cp = CPReport object
     @param admc_entry = dict (admC entry)
     @param items_dict = dict (admC items dict)
     @param column_dict = dict (admC columns dict)
@@ -339,7 +338,7 @@ def import_admc_entries(dir_path, file_name, items_dict, column_dict):
             prices.append(create_cp_price(cp, admc_entry, items_dict, file_name))
 
     AdmRecord.objects.bulk_create(admc_records)
-    CountryProgrammePrices.objects.bulk_create(prices)
+    CPPrices.objects.bulk_create(prices)
 
 
 def parse_db_files(dir_path):
@@ -359,7 +358,7 @@ def parse_db_files(dir_path):
     logger.info("✔ columns file parsed")
 
     delete_old_data(AdmRecord, admc_file, logger)
-    delete_old_data(CountryProgrammePrices, admc_file, logger)
+    delete_old_data(CPPrices, admc_file, logger)
     import_admc_entries(
         dir_path,
         admc_file,

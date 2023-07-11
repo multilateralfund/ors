@@ -11,8 +11,9 @@ from core.import_data.utils import (
     get_country_by_name,
     get_chemical,
     OFFSET,
+    get_decimal_from_excel_string,
 )
-from core.models import CountryProgrammePrices
+from core.models import CPPrices
 
 REQUIRED_COLUMNS = [
     "Country",
@@ -46,7 +47,24 @@ logger = logging.getLogger(__name__)
 FILE_NAME = "SectionCDE.xlsx"
 
 
-# pylint: disable=R1702
+def create_cp_price(
+    cp_report,
+    substance,
+    blend,
+    chemical_name,
+    prices_data,
+):
+    record_data = {
+        "country_programme_report_id": cp_report.id,
+        "substance": substance,
+        "blend": blend,
+        "display_name": chemical_name,
+        "source_file": FILE_NAME,
+        **prices_data,
+    }
+    return CPPrices.objects.create(**record_data)
+
+
 def parse_sheet(df):
     """
     parse the sheet and import the data in database
@@ -80,28 +98,21 @@ def parse_sheet(df):
 
         previous_year_prices_obj = None
         for report_details in REPORT_COLUMNS:
-            try:
-                previous_year_text = row[report_details["previous"]]
-                previous_year_price = (
-                    float(previous_year_text) if previous_year_text else None
-                )
-            # some price values are not decimals. skip them for now
-            except ValueError:
+            # get previous year price
+            previous_year_price = row[report_details["previous"]]
+            decimal_price = get_decimal_from_excel_string(previous_year_price)
+            if previous_year_price and decimal_price is None:
                 logger.warning(
                     f"⚠️ [row: {index_row + OFFSET}][year: {report_details['year']}] "
-                    "Price value is not a number for previous year"
+                    f"Incorrect price value for previous year {previous_year_price}"
                 )
-
-            try:
-                current_year_text = row[report_details["year"]]
-                current_year_price = (
-                    float(current_year_text) if current_year_text else None
-                )
-            # some price values are not decimals. skip them for now
-            except ValueError:
+            # get current year price
+            current_year_price = row[report_details["year"]]
+            decimal_price = get_decimal_from_excel_string(current_year_price)
+            if current_year_price and decimal_price is None:
                 logger.warning(
                     f"⚠️ [row: {index_row + OFFSET}][year: {report_details['year']}] "
-                    "Price value is not a number for current year"
+                    f"Incorrect price value for current year {current_year_price}"
                 )
 
             remarks = row[report_details["remarks"]]
@@ -109,9 +120,7 @@ def parse_sheet(df):
             if not any(
                 [
                     previous_year_price,
-                    previous_year_text,
                     current_year_price,
-                    current_year_text,
                     remarks,
                 ]
             ):
@@ -127,66 +136,72 @@ def parse_sheet(df):
                 current_country["obj"].id,
             )
 
-            # try to complete some missing data from previous year report
-            if previous_year_price:
-                if previous_year_prices_obj:
-                    if previous_year_prices_obj.current_year_price:
-                        if (
-                            previous_year_prices_obj.current_year_price
-                            != previous_year_price
-                        ):
-                            logger.warning(
-                                f"⚠️  [row: {index_row + OFFSET}]"
-                                f"[country: {current_country['obj'].name}][substance: {chemical_name}]"
-                                f"[year: {report_details['year']}] Mismatch in price declaration."
-                            )
-                    else:
-                        previous_year_prices_obj.current_year_price = (
-                            previous_year_price
-                        )
-                        previous_year_prices_obj.save()
-                else:
-                    previous_year_cp_report = get_cp_report(
-                        int(report_details["year"]) - 1,
-                        current_country["obj"].name,
-                        current_country["obj"].id,
-                    )
-                    prev_record_data = {
-                        "country_programme_report_id": previous_year_cp_report.id,
-                        "substance": substance,
-                        "blend": blend,
-                        "previous_year_price": None,
-                        "previous_year_text": "",
-                        "current_year_price": previous_year_price,
-                        "current_year_text": row[report_details["previous"]],
-                        "remarks": "",
-                        "display_name": chemical_name,
-                        "source_file": FILE_NAME,
-                    }
-                    CountryProgrammePrices.objects.create(**prev_record_data)
-
-            # create prices record
-            record_data = {
-                "country_programme_report_id": cp_report.id,
-                "substance": substance,
-                "blend": blend,
+            # create current year price
+            prices_data = {
                 "previous_year_price": previous_year_price,
-                "previous_year_text": row[report_details["previous"]],
                 "current_year_price": current_year_price,
-                "current_year_text": current_year_text,
                 "remarks": remarks,
-                "display_name": chemical_name,
-                "source_file": FILE_NAME,
             }
-
-            previous_year_prices_obj = CountryProgrammePrices.objects.create(
-                **record_data
+            current_year_price_obj = create_cp_price(
+                cp_report,
+                substance,
+                blend,
+                chemical_name,
+                prices_data,
             )
+
+            # if there is no previous year price data continue to the next year
+            if not previous_year_price:
+                previous_year_prices_obj = current_year_price_obj
+                continue
+
+            # using previous year price data from the current year
+            # create previous year price object if it doesn't exist
+            if not previous_year_prices_obj:
+                previous_year_cp_report = get_cp_report(
+                    int(report_details["year"]) - 1,
+                    current_country["obj"].name,
+                    current_country["obj"].id,
+                )
+                prices_data = {
+                    "current_year_price": previous_year_price,
+                }
+                create_cp_price(
+                    previous_year_cp_report,
+                    substance,
+                    blend,
+                    chemical_name,
+                    prices_data,
+                )
+
+                previous_year_prices_obj = current_year_price_obj
+                continue
+
+            # if the previous year price is not set, set it
+            if not previous_year_prices_obj.current_year_price:
+                previous_year_prices_obj.current_year_price = previous_year_price
+                previous_year_prices_obj.save()
+
+                previous_year_prices_obj = current_year_price_obj
+                continue
+
+            # if the previous year price is set,
+            # check if it matches the current data about the previous year price
+            if previous_year_prices_obj.current_year_price != previous_year_price:
+                logger.warning(
+                    f"⚠️  [row: {index_row + OFFSET}]"
+                    f"[country: {current_country['obj'].name}][substance: {chemical_name}]"
+                    f"[year: {report_details['year']}] Mismatch in price declaration."
+                )
+
+            # set the previous year price object to the current year price object
+            previous_year_prices_obj = current_year_price_obj
+
     logger.info("✔ sheet parsed")
 
 
 def parse_file(file_path):
-    df = pd.read_excel(file_path, sheet_name="Section C")
+    df = pd.read_excel(file_path, sheet_name="Section C", dtype=str)
     # replace nan with None
     df = df.replace(np.nan, None)
     # set column names to strings
@@ -200,7 +215,7 @@ def import_records():
 
     logger.info(f"⏳ parsing file: {FILE_NAME}")
     # before we import anything, we should delete all prices from previous imports
-    delete_old_data(CountryProgrammePrices, FILE_NAME, logger)
+    delete_old_data(CPPrices, FILE_NAME, logger)
 
     parse_file(file_path)
     logger.info(f"✔ section C records from {FILE_NAME} imported")

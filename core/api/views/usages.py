@@ -4,7 +4,7 @@ from core.api.serializers import UsageSerializer
 from core.models import Usage
 
 
-class UsageListAPIView(mixins.ListModelMixin, generics.GenericAPIView):
+class UsageListView(mixins.ListModelMixin, generics.GenericAPIView):
     """
     API endpoint that allows usages to be viewed.
     @param only_parents: boolean - if true, return only parent usages
