@@ -26,13 +26,10 @@ class AdmRowSerializer(serializers.ModelSerializer):
             "index",
             "text",
             "type",
-            "min_year",
-            "max_year",
             "sort_order",
             "parent_id",
             "level",
             "choices",
-            "country_programme_report_id",
         ]
 
 
@@ -43,33 +40,17 @@ class AdmColumnSerializer(serializers.ModelSerializer):
             "id",
             "display_name",
             "type",
-            "min_year",
-            "max_year",
             "sort_order",
         ]
 
 
 class AdmRecordSerializer(serializers.ModelSerializer):
-    row_name = serializers.StringRelatedField(source="row")
-    column_name = serializers.SerializerMethodField()
-
     class Meta:
         model = AdmRecord
         fields = [
             "id",
             "column_id",
             "row_id",
-            "row_name",
-            "column_name",
             "value_text",
             "value_choice_id",
-            "country_programme_report_id",
         ]
-
-    def get_row_name(self, obj):
-        return obj.row
-
-    def get_column_name(self, obj):
-        if obj.column is None:
-            return None
-        return obj.column.name

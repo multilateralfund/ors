@@ -145,6 +145,7 @@ class TestCPRecord:
 
     def test_get_old_cp_record_list(self):
         url = reverse("country-programme-record-list")
+        self.client.force_authenticate(user=UserFactory())
 
         # create chemicals
         substance = SubstanceFactory.create(name="substance123")
@@ -184,6 +185,7 @@ class TestCPRecord:
 
             rows[section] = AdmRowFactory.create(
                 text=f"row{section}",
+                index=None,
                 type="question",
                 parent=None,
                 **data,
@@ -215,6 +217,8 @@ class TestCPRecord:
         assert response.status_code == 200
         assert len(response.data["section_a"]) == 1
         assert len(response.data["adm_b"]) == 1
+        assert response.data["adm_b"][0]["row_text"] == "rowB"
+        assert response.data["adm_b"][0]["values"][0]["value_text"] == "record_B"
         assert len(response.data["section_c"]) == 2
         assert len(response.data["adm_c"]) == 1
         assert len(response.data["adm_d"]) == 1

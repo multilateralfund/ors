@@ -112,19 +112,34 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
             }
         )
 
+    def _get_regroupped_adm_records(self, adm_records):
+        result = {}
+        for adm_record in adm_records:
+            row_id = adm_record.row_id
+            if row_id not in result:
+                result[row_id] = {
+                    "row_id": row_id,
+                    "row_text": str(adm_record.row),
+                    "values": [],
+                }
+            result[row_id]["values"].append(AdmRecordSerializer(adm_record).data)
+        return list(result.values())
+
     def _get_old_cp_records(self, cp_report):
         section_a = self._get_cp_record(cp_report.id, "A")
         adm_b = self._get_adm_records(cp_report.id, "B")
+        adm_b = self._get_regroupped_adm_records(adm_b)
         section_c = self._get_cp_prices(cp_report.id)
         adm_c = self._get_adm_records(cp_report.id, "C")
+        adm_c = self._get_regroupped_adm_records(adm_c)
         adm_d = self._get_adm_records(cp_report.id, "D")
 
         return Response(
             {
                 "section_a": CPRecordSerializer(section_a, many=True).data,
-                "adm_b": AdmRecordSerializer(adm_b, many=True).data,
+                "adm_b": adm_b,
                 "section_c": CPPricesSerializer(section_c, many=True).data,
-                "adm_c": AdmRecordSerializer(adm_c, many=True).data,
+                "adm_c": adm_c,
                 "adm_d": AdmRecordSerializer(adm_d, many=True).data,
             }
         )
