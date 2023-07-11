@@ -167,15 +167,28 @@ export const ManageChemicalModal = ({
           <Modal.Body>
             <div className="flex flex-col gap-2">
               <div className="mb-2">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                  Select chemical
-                </label>
-                <FormSelectBox
-                  options={withBlends ? blends : chemicals}
-                  withBlends={withBlends}
-                  name="substance"
-                  isDisabled={editValues as unknown as boolean}
-                />
+                {sectionId === 3 ? (
+                  <FormInput
+                    name="substance"
+                    label="Substance"
+                    tooltip="HFC-23 generation that is captured, whether for destruction, feedstock or any other use, shall be reported in this form"
+                    value={'HFC-23'}
+                    disabled
+                    inline
+                  />
+                ) : (
+                  <>
+                    <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                      Select chemical
+                    </label>
+                    <FormSelectBox
+                      options={withBlends ? blends : chemicals}
+                      withBlends={withBlends}
+                      name="substance"
+                      isDisabled={editValues as unknown as boolean}
+                    />
+                  </>
+                )}
               </div>
               {selectedUsages && (
                 <ComposeInputsByUsage selectedUsages={selectedUsages} />
@@ -225,6 +238,61 @@ export const ManageChemicalModal = ({
                   </div>
                   <div>
                     <FormInput name="remarks" label="Remarks" inline />
+                  </div>
+                </div>
+              )}
+              {sectionId === 2 && (
+                <div className="flex flex-col gap-2 mt-3">
+                  <div>
+                    <FormInput
+                      name="previous_year_price"
+                      tooltip="prefilled - online submission, if available"
+                      label="Previous year price"
+                      type="number"
+                      inline
+                    />
+                  </div>
+                  <div>
+                    <FormInput
+                      name="current_price"
+                      label="Current Price"
+                      type="number"
+                      inline
+                    />
+                  </div>
+                  <div>
+                    <FormInput name="remarks" label="Remarks" />
+                  </div>
+                </div>
+              )}
+              {sectionId === 3 && (
+                <div className="flex flex-col gap-2 mt-3">
+                  <div>
+                    <FormInput
+                      name="captured_for_all_uses"
+                      tooltip="HFC-23 generation that is captured, whether for destruction, feedstock or any other use, shall be reported in this form"
+                      label="Captured for all uses"
+                      type="number"
+                      inline
+                    />
+                  </div>
+                  <div>
+                    <FormInput
+                      name="captured_for_feed_stock"
+                      tooltip="Amounts of HFC-23 captured for destruction or feedstock use will not be counted as production as per Article 1 of the Montreal Protocol"
+                      label="Captured for feedstock uses within your country"
+                      type="number"
+                      inline
+                    />
+                  </div>
+                  <div>
+                    <FormInput
+                      name="captured_for_destruction"
+                      tooltip="Amounts of HFC-23 captured for destruction or feedstock use will not be counted as production as per Article 1 of the Montreal Protocol"
+                      label="Captured for destruction"
+                      type="number"
+                      inline
+                    />
                   </div>
                 </div>
               )}

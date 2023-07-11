@@ -62,7 +62,7 @@ export const CreateReportsPage: FC = function () {
         <Tabs.Item title="Section A">{tableComponent}</Tabs.Item>
         <Tabs.Item title="Section B">{tableComponent}</Tabs.Item>
         <Tabs.Item title="Section C">{tableComponent}</Tabs.Item>
-        <Tabs.Item title="Section D">TBD</Tabs.Item>
+        <Tabs.Item title="Section D">{tableComponent}</Tabs.Item>
         <Tabs.Item title="Section E">TBD</Tabs.Item>
         <Tabs.Item title="Section F">TBD</Tabs.Item>
       </Tabs.Group>
