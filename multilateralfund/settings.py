@@ -36,7 +36,7 @@ FRONTEND_HOST = env.list("FRONTEND_HOST", default=["http://localhost:3000"])
 SECRET_KEY = env.get_value("DJANGO_SECRET_KEY", default="")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DJANGO_DEBUG", default=False)
 
 ALLOWED_HOSTS = [BACKEND_HOST]
 
@@ -53,6 +53,8 @@ HAS_HTTPS = env.get_value("HAS_HTTPS", default=False, cast=bool)
 SECURE_SSL_REDIRECT = HAS_HTTPS
 CSRF_COOKIE_SECURE = HAS_HTTPS
 SESSION_COOKIE_SECURE = HAS_HTTPS
+# https://docs.djangoproject.com/en/4.1/ref/settings/#secure-proxy-ssl-header
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Application definition
 

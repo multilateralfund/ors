@@ -37,6 +37,10 @@ This document describes installation steps required to install locally for devel
   ```shell
   cd frontend
   ```
+- Configure local settings:
+  ```shell
+  echo "VITE_API_BASE_URL=http://localhost:8000/api/" > .env.local 
+  ```
 - Install dependencies
   ```shell
   npm install
@@ -51,11 +55,11 @@ This document describes installation steps required to install locally for devel
 - Start the frontend with hot-reload (from frontend directory)
 
   ```shell
-  cd /frontend
+  cd frontend
   npm run dev
   ```
 
-- Check frontend is running correctly at <http://localhost:8080>
+- Check frontend is running correctly at <http://localhost:3000>
 - Check backend is running correctly at <http://localhost:8000/admin/>
 
 ## Updating the application
@@ -76,4 +80,4 @@ This document describes installation steps required to install locally for devel
 
 ## Where to go from here?
 
-the [development guide](./development_guide.md) to help you get started.
+Check the [development guide](./development_guide.md) to help you get started.
