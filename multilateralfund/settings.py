@@ -36,7 +36,7 @@ FRONTEND_HOST = env.list("FRONTEND_HOST", default=["http://localhost:3000"])
 SECRET_KEY = env.get_value("DJANGO_SECRET_KEY", default="")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DJANGO_DEBUG", default=False)
 
 ALLOWED_HOSTS = [BACKEND_HOST]
 
