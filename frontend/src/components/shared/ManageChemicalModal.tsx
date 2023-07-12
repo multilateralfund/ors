@@ -375,13 +375,9 @@ const FormSelectBox = ({
   const transformedOptions = withBlends
     ? options.map(item => ({ name: item.name, value: item.id }))
     : options.map(item => ({
+        value: item.id,
         name: item.label,
-        type: 'group',
-        items: item.options?.map((subst: any) => ({
-          value: subst.id,
-          name: subst.label,
-          excluded_usages: subst.excluded_usages,
-        })),
+        excluded_usages: item.excluded_usages,
       }))
 
   return (

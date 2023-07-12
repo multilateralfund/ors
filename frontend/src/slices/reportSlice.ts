@@ -3,13 +3,14 @@ import {
   Usage,
   Blend,
   Chemical,
-  GroupSubstance,
+  Substance,
   SectionsType,
   Country,
   CountryReports,
   CountryReportsFilters,
 } from '@/types/Reports'
 import { RootState } from '../store'
+import { groupBy } from '@/utils/helpers'
 
 export type ReportDataType = {
   substance?: Chemical
@@ -20,7 +21,8 @@ export type ReportDataType = {
 }
 
 interface SubstanceState {
-  substances: GroupSubstance[]
+  substances: Substance[]
+  substanceGroups: []
   usage: Usage[]
   blends: Blend[]
   countries?: Country[]
@@ -43,7 +45,8 @@ export const reportSlice = createSlice({
   initialState,
   name: 'reportSlice',
   reducers: {
-    setSubstances: (state, action: PayloadAction<GroupSubstance[]>) => {
+    setSubstances: (state, action: PayloadAction<Substance[]>) => {
+      const groups = groupBy(action.payload, subst => subst.group_name)
       state.substances = action.payload
     },
     setUsage: (state, action: PayloadAction<Usage[]>) => {
@@ -124,28 +127,20 @@ export const selectChemicalBySection = (
   state: RootState,
   withSection: Partial<SectionsType>,
 ): {
+  id: number
+  value: number
   label: string
-  options:
-    | {
-        id: number
-        value: number
-        label: string
-        excluded_usages: number[]
-      }[]
-    | undefined
+  excluded_usages: number[]
 }[] =>
   state.reports.substances
     ?.filter(substance =>
-      withSection.substances?.includes(substance?.name || ''),
+      withSection.substances?.includes(substance?.group_name || ''),
     )
     .map(item => ({
+      id: item.id,
+      value: item.id,
       label: item.name,
-      options: item.substances?.map(subst => ({
-        id: subst.id,
-        value: subst.id,
-        label: subst.name,
-        excluded_usages: subst.excluded_usages,
-      })),
+      excluded_usages: item.excluded_usages,
     }))
 
 export const selectBlends = (state: RootState) =>

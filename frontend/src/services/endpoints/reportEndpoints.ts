@@ -20,7 +20,7 @@ export const reportEndpoints = (
 ) => ({
   getSubstances: builder.query<GroupSubstance[], null>({
     query: () => ({
-      url: '/group-substances?with_usages=true',
+      url: '/substances?with_usages=true',
       method: 'GET',
       credentials: 'include',
     }),

@@ -17,6 +17,8 @@ export type Chemical = {
 export type Substance = {
   id: number
   name: string
+  group_id?: number
+  group_name?: string
   display_name?: string
   chemical_name?: string
   chemical_name_group_name?: string
