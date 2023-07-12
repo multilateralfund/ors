@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from core.api.utils import SECTION_ANNEX_MAPPING
 
 from core.models import Substance
 from core.models import Blend
@@ -17,6 +18,8 @@ class ChemicalsBaseSerializer(serializers.ModelSerializer):
 class SubstanceSerializer(ChemicalsBaseSerializer):
     excluded_usages = serializers.SerializerMethodField()
     group_name = serializers.SlugField(source="group.name", read_only=True)
+    annex_name = serializers.SlugField(source="group.annex", read_only=True)
+    sections = serializers.SerializerMethodField()
 
     class Meta:
         model = Substance
@@ -25,12 +28,22 @@ class SubstanceSerializer(ChemicalsBaseSerializer):
             "name",
             "group_id",
             "group_name",
+            "annex_name",
+            "sections",
             "formula",
             "odp",
             "is_contained_in_polyols",
             "excluded_usages",
             "sort_order",
         ]
+
+    def get_sections(self, obj):
+        sections = []
+        for section, annexes in SECTION_ANNEX_MAPPING.items():
+            if obj.group.annex in annexes:
+                sections.append(section)
+
+        return sections
 
 
 # blend serializer with excluded usages if the request has a with_usages query param

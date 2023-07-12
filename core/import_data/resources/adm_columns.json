@@ -1,0 +1,101 @@
+[
+    {
+        "name": "ALL OTHER ODS bool",
+        "display_name": "ALL OTHER ODS (Yes / No)",
+        "sort_order": 1,
+        "type": "boolean",
+        "section": "B",
+        "min_year": 2000,
+        "max_year": 2011
+    },
+    {
+        "name": "ALL OTHER ODS date",
+        "display_name": "ALL OTHER ODS (Since when (Date MM/DD/YYYY))",
+        "sort_order": 2,
+        "type": "date",
+        "section": "B",
+        "min_year": 2000,
+        "max_year": 2011
+    },
+    {
+        "name": "ALL OTHER ODS float",
+        "display_name": "ALL OTHER ODS (Yes / No)",
+        "sort_order": 3,
+        "type": "float",
+        "section": "B",
+        "min_year": 2000,
+        "max_year": 2011
+    },
+    {
+        "name": "CFC bool",
+        "display_name": "CFC (Yes / No)",
+        "sort_order": 1.1,
+        "type": "boolean",
+        "section": "B",
+        "min_year": 2000,
+        "max_year": 2018
+    },
+    {
+        "name": "CFC date",
+        "display_name": "CFC (If Yes, since when (Date) / If No, Planned Date)",
+        "sort_order": 1.2,
+        "type": "date",
+        "section": "B",
+        "min_year": 2000,
+        "max_year": 2018
+    },
+    {
+        "name": "HCFC bool",
+        "display_name": "HCFC (Yes / No)",
+        "sort_order": 4,
+        "type": "boolean",
+        "section": "B",
+        "min_year": 2000,
+        "max_year": 2018
+    },
+    {
+        "name": "HCFC date",
+        "display_name": "HCFC (If Yes, since when (Date) / If No, Planned Date)",
+        "sort_order": 4,
+        "type": "date",
+        "section": "B",
+        "min_year": 2000,
+        "max_year": 2018
+    },
+    {
+        "name": "HCFC float",
+        "display_name": "HCFC (Yes / No)",
+        "sort_order": 5,
+        "type": "float",
+        "section": "B",
+        "min_year": 2000,
+        "max_year": 2011
+    },
+    {
+        "name": "ALL OTHER ODS float",
+        "display_name": "ALL OTHER ODS",
+        "sort_order": 1,
+        "type": "float",
+        "section": "C",
+        "min_year": 2000,
+        "max_year": 2011
+    },
+    {
+        "name": "HCFC float",
+        "display_name": "HCFC",
+        "sort_order": 2,
+        "type": "float",
+        "section": "C",
+        "min_year": 2012,
+        "max_year": 2018
+    },
+    {
+        "name": "Cumulative float",
+        "display_name": "Cumulative",
+        "sort_order": 3,
+        "type": "float",
+        "section": "C",
+        "min_year": 2012,
+        "max_year": 2018
+    }
+]

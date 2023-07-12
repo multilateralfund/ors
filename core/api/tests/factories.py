@@ -1,4 +1,5 @@
 import factory.fuzzy
+from core.models.adm import AdmChoice, AdmColumn, AdmRecord, AdmRow
 from core.models.country import Country
 from core.models.country_programme import (
     CPEmission,
@@ -169,3 +170,48 @@ class CPEmissionFactory(factory.django.DjangoModelFactory):
     destruction_wpc = factory.Faker("random_int", min=1, max=100)
     generated_emissions = factory.Faker("random_int", min=1, max=100)
     remarks = factory.Faker("pystr", max_chars=100)
+
+
+class AdmColumnFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AdmColumn
+
+    name = factory.Faker("pystr", max_chars=248)
+    display_name = factory.Faker("pystr", max_chars=248)
+    type = factory.fuzzy.FuzzyChoice(AdmColumn.AdmColumnType.choices)
+    section = factory.fuzzy.FuzzyChoice(AdmColumn.AdmColumnSection.choices)
+    min_year = factory.Faker("random_int", min=1990, max=2000)
+    max_year = factory.Faker("random_int", min=2001, max=2010)
+    sort_order = factory.Faker("random_int", min=1, max=100)
+
+
+class AdmRowFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AdmRow
+
+    text = factory.Faker("pystr", max_chars=100)
+    type = factory.fuzzy.FuzzyChoice(AdmRow.AdmRowType.choices)
+    section = factory.fuzzy.FuzzyChoice(AdmRow.AdmRowSection.choices)
+    min_year = factory.Faker("random_int", min=1990, max=2000)
+    max_year = factory.Faker("random_int", min=2001, max=2010)
+    index = factory.Faker("pystr", max_chars=10)
+    sort_order = factory.Faker("random_int", min=1, max=100)
+
+
+class AdmChoiceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AdmChoice
+
+    adm_row = factory.SubFactory(AdmRowFactory)
+    value = factory.Faker("pystr", max_chars=100)
+    sort_order = factory.Faker("random_int", min=1, max=100)
+
+
+class AdmRecordFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AdmRecord
+
+    country_programme_report = factory.SubFactory(CPReportFactory)
+    column = factory.SubFactory(AdmColumnFactory)
+    row = factory.SubFactory(AdmRowFactory)
+    value_text = factory.Faker("pystr", max_chars=100)

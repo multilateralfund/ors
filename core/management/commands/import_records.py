@@ -60,7 +60,7 @@ class Command(BaseCommand):
             rec_xlsx_sec_D()
         if rec_type in ["section_e", "xlsx_files", "all"]:
             rec_xlsx_sec_E()
-        if rec_type in ["item_attributes", "all"]:
+        if rec_type in ["item_attributes", "cp_db_records", "all"]:
             rec_cp_db()
         if rec_type in ["admb_items", "cp_db_records", "all"]:
             import_admb_items()

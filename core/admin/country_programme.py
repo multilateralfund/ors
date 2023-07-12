@@ -34,6 +34,7 @@ class CPReportAdmin(admin.ModelAdmin):
             "usage",
             "comment",
             "adm_records",
+            "adm_rows",
         ]
         return get_final_display_list(CPReport, exclude)
 

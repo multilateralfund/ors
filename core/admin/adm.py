@@ -25,6 +25,7 @@ class AdmRecordAdmin(admin.ModelAdmin):
     list_filter = [
         "section",
         AutocompleteFilterFactory("country", "country_programme_report__country"),
+        AutocompleteFilterFactory("column", "column"),
         "country_programme_report__year",
     ]
     readonly_fields = ["country_programme_report"]
@@ -38,6 +39,7 @@ class AdmRecordAdmin(admin.ModelAdmin):
             "blend",
             "country_programme_report__country",
             "value_choice",
+            "column",
         )
 
     def get_list_display(self, request):
@@ -50,18 +52,21 @@ class AdmRowAdmin(admin.ModelAdmin):
         "text",
         "index",
     ]
-    list_filter = ["type"]
-    autocomplete_fields = ["parent_row"]
+    list_filter = ["type", "section"]
+    autocomplete_fields = ["parent"]
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        return queryset.select_related("parent_row")
+        return queryset.select_related(
+            "parent",
+            "country_programme_report__country",
+        )
 
     def get_list_display(self, request):
         exclude = [
             "admrecord",
             "children",
-            "admchoice",
+            "choices",
         ]
         return get_final_display_list(AdmRow, exclude)
 

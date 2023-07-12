@@ -2,6 +2,7 @@ from django.urls import path, re_path
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from core.api.views.adm import AdmEmptyFormView
 
 from core.api.views.chemicals import (
     BlendCreateView,
@@ -59,6 +60,11 @@ urlpatterns = [
         "country-programme/settings/",
         CPSettingsView.as_view(),
         name="country-programme-settings",
+    ),
+    path(
+        "country-programme/adm/empty-form/",
+        AdmEmptyFormView.as_view(),
+        name="adm-empty-form",
     ),
     path(
         "countries/",

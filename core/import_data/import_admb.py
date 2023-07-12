@@ -6,9 +6,12 @@ from django.db import transaction
 from django.conf import settings
 from core.import_data.utils import (
     DB_DIR_LIST,
+    DB_YEAR_MAPPING,
     delete_old_data,
+    get_adm_column,
     get_country_and_year_dict,
     get_cp_report_for_db_import,
+    get_or_create_adm_row,
 )
 
 from core.models.adm import AdmColumn, AdmRecord, AdmRow
@@ -19,32 +22,18 @@ SECTION = "B"
 
 CP_COLUMNS_MAPPING = {
     "CP": {
-        "Other ODS": {
-            "Date": "value_date",
-            "Ongoing": "value_bool",
-            "Amount": "value_float",
-            "EntryText": "value_text",
-        },
-        "HCFC": {
-            "DateHCFC": "value_date",
-            "OngoingHCFC": "value_bool",
-            "Amount": "value_float",
-            "EntryText": "value_text",
-        },
-        "CFC": {
-            "Date": "value_date",
-            "Ongoing": "value_bool",
-            "Amount": "value_float",
-            "EntryText": "value_text",
-        },
+        "ALL OTHER ODS date": "Date",
+        "ALL OTHER ODS bool": "Ongoing",
+        "ALL OTHER ODS float": "Amount",
+        "HCFC date": "DateHCFC",
+        "HCFC bool": "OngoingHCFC",
+        "HCFC float": "Amount",
+        "CFC date": "Date",
+        "CFC bool": "Ongoing",
     },
     "CP2012": {
-        "HCFC": {
-            "DateHCFC": "value_date",
-            "OngoingHCFC": "value_bool",
-            "Amount": "value_float",
-            "EntryText": "value_text",
-        },
+        "HCFC date": "DateHCFC",
+        "HCFC bool": "OngoingHCFC",
     },
 }
 
@@ -52,9 +41,9 @@ ARTICLES_WITH_USER_TEXT = ["1.6.1", "1.6.2"]
 ITEM_NOT_FOUND_IDS = [61]
 
 
-def import_columns(source_file):
+def get_columns_dict():
     """
-    Import columns for admB records
+    Get columns dictionary
     @return columns_dict = dict
         - struct: {
             column_name: AdmColumn object
@@ -65,14 +54,9 @@ def import_columns(source_file):
     columns_dict = {}
     for _, columns in CP_COLUMNS_MAPPING.items():
         for column_name in columns:
-            column_data = {
-                "name": column_name,
-                "source_file": source_file,
-            }
-            column_obj, _ = AdmColumn.objects.get_or_create(
-                name=column_name,
-                defaults=column_data,
-            )
+            column_obj = get_adm_column(column_name, SECTION, logger)
+            if not column_obj:
+                return None
             columns_dict[column_name] = column_obj
 
     return columns_dict
@@ -87,10 +71,7 @@ def parse_strings_file(strings_file_name):
 
     @return strings = dict
         - struct: {
-            string_id: {
-                "string": string_text,
-                "using_cfc": bool -> if this row will have cfc column or not
-            }
+            string_id: string_text
         }
     """
     with open(strings_file_name, "r", encoding="utf8") as f:
@@ -99,10 +80,7 @@ def parse_strings_file(strings_file_name):
     strings = {}
     for string_data in strings_json:
         if string_data["ObjectType"] == 1 and string_data["LanguageId"] == 1:
-            strings[string_data["ObjectId"]] = {
-                "string": string_data["StringText"],
-                "using_cfc": "using cfc" in string_data["LangDefault"].lower(),
-            }
+            strings[string_data["ObjectId"]] = string_data["StringText"]
 
     return strings
 
@@ -161,9 +139,10 @@ def parse_admb_file(file_name, strings_dict):
             index: {
                 "text": admb_text,
                 "sort_order": admb_sort_order,
-                "cp_id": admb_cp_id,
-                "parent_index": admb_parent_index
-                "index": admb_index
+                "internal_id": admb_cp_id,
+                "parent_index": admb_parent_index,
+                "index": admb_index,
+                "section": B,
                 "using_cfc": admb_using_cfc (bool)
             }
         }
@@ -171,7 +150,7 @@ def parse_admb_file(file_name, strings_dict):
             ArticleId: {
                 "type": AdmRow.AdmRowType.USER_TEXT,
                 "sort_order": admb_sort_order,
-                "cp_id": admb_cp_id,
+                "internal_id": admb_cp_id,
                 "parent_index": admb_parent_index
                 "index": admb_index
             }
@@ -186,15 +165,16 @@ def parse_admb_file(file_name, strings_dict):
         index = article["IndexId"].strip(".")
         article_data = {
             "sort_order": article["SortOrder"],
-            "cp_id": article["Id"],
+            "internal_id": article["Id"],
             "parent_index": get_parent_index(index),
             "source_file": file_name,
             "index": index,
+            "section": SECTION,
         }
         if article["ArticleId"] in strings_dict:
             articles[index] = {
-                "text": strings_dict[article["ArticleId"]]["string"].strip(),
-                "using_cfc": strings_dict[article["ArticleId"]]["using_cfc"],
+                "text": strings_dict[article["ArticleId"]].strip(),
+                "using_cfc": index.startswith("1.3") or index.startswith("1.5"),
                 **article_data,
             }
         else:
@@ -203,10 +183,12 @@ def parse_admb_file(file_name, strings_dict):
                 **article_data,
             }
             if index in ARTICLES_WITH_USER_TEXT:
+                na_data = article_data.copy()
+                na_data["sort_order"] = article_data["sort_order"] + 50
                 articles[index] = {
                     "text": "N/A",
                     "using_cfc": False,
-                    **article_data,
+                    **na_data,
                 }
 
     set_type(articles)
@@ -243,7 +225,7 @@ def parse_notes_file(file_name, articles_without_text):
     return notes
 
 
-def create_row(index, articles_dict, adm_rows):
+def create_row(index, articles_dict, adm_rows, db_name):
     """
     Recursively create adm row for each article with text
 
@@ -256,36 +238,42 @@ def create_row(index, articles_dict, adm_rows):
                 "using_cfc": using_cfc (bool)
             }
         }
+    @param db_name = str (database name)
     """
+    # skip if adm row is already created
     if index in adm_rows:
         return
 
     adm_row_data = articles_dict[index].copy()
+    adm_row_data["parent"] = None
     parent_index = adm_row_data.pop("parent_index")
     using_cfc = adm_row_data.pop("using_cfc")
-    cp_id = adm_row_data.pop("cp_id")
+    internal_id = adm_row_data.pop("internal_id")
 
-    adm_row, _ = AdmRow.objects.get_or_create(
-        text=adm_row_data["text"],
-        index=adm_row_data["index"],
-        defaults=adm_row_data,
-    )
-    adm_rows[cp_id] = {
+    # add min/ max year
+    adm_row_data.update(DB_YEAR_MAPPING[db_name])
+
+    adm_row = get_or_create_adm_row(adm_row_data)
+    adm_rows[internal_id] = {
         "object": adm_row,
         "using_cfc": using_cfc,
     }
 
     if adm_row_data["type"] != AdmRow.AdmRowType.TITLE:
-        create_row(parent_index, articles_dict, adm_rows)
-        parent_id = articles_dict[parent_index]["cp_id"]
-        adm_row.parent_row = adm_rows[parent_id]["object"]
+        create_row(parent_index, articles_dict, adm_rows, db_name)
+        parent_id = articles_dict[parent_index]["internal_id"]
+        adm_row.parent = adm_rows[parent_id]["object"]
+        adm_row.save()
+    else:
+        adm_row.parent = None
         adm_row.save()
 
 
-def import_strings(articles_dict):
+def import_strings(articles_dict, db_name):
     """
     Create adm rows from articles dictionary
     @param articles_dict = dict (articles dictionary)
+    @param db_name = str (database name)
 
     @return admb = dict
         - struct: {
@@ -293,13 +281,16 @@ def import_strings(articles_dict):
         }
     """
     adm_rows = {}
+
     for index in articles_dict:
-        create_row(index, articles_dict, adm_rows)
+        create_row(index, articles_dict, adm_rows, db_name)
 
     return adm_rows
 
 
-def create_row_from_notes(admb_entry, articles_without_text, notes):
+def create_row_from_notes(
+    admb_entry, articles_without_text, notes, db_name, cp_report_id
+):
     """
     Create adm row from notes
     ! we use notes to create adm rows for articles without text
@@ -307,6 +298,8 @@ def create_row_from_notes(admb_entry, articles_without_text, notes):
     @param admb_entry = dict
     @param articles_without_text = dict (articles without text dictionary)
     @param notes = dict (notes dictionary)
+    @param db_name = str (database name)
+    @param cp_report_id = int (country programme report id)
 
     @return adm_row = AdmRow object
     """
@@ -326,17 +319,15 @@ def create_row_from_notes(admb_entry, articles_without_text, notes):
 
     adm_row_data = {
         "text": text,
+        "country_programme_report_id": cp_report_id,
+        **DB_YEAR_MAPPING[db_name],
         **articles_without_text[admb_entry["Adm_B_Id"]],
     }
-    adm_row_data.pop("cp_id")
+    adm_row_data.pop("internal_id")
 
     parent_index = adm_row_data.pop("parent_index")
-    adm_row_data["parent_row"] = AdmRow.objects.filter(index=parent_index).first()
-    adm_row, _ = AdmRow.objects.get_or_create(
-        text=adm_row_data["text"],
-        index=adm_row_data["index"],
-        defaults=adm_row_data,
-    )
+    adm_row_data["parent"] = AdmRow.objects.filter(index=parent_index).first()
+    adm_row = get_or_create_adm_row(adm_row_data)
     return adm_row
 
 
@@ -356,7 +347,9 @@ def import_adm_records(
 
     """
     country_dict, year_dict = get_country_and_year_dict(file_data["dir_path"], logger)
-    columns_dict = import_columns(file_data["admb_entries_file"])
+    columns_dict = get_columns_dict()
+    if not columns_dict:
+        return
 
     with open(file_data["admb_entries_file"], "r", encoding="utf8") as f:
         admb_entries_json = json.load(f)
@@ -388,7 +381,11 @@ def import_adm_records(
         if not adm_row or adm_row.text == "N/A":
             # create adm row from notes for articles without text
             row_from_notes = create_row_from_notes(
-                admb_entry, articles_without_text, notes
+                admb_entry,
+                articles_without_text,
+                notes,
+                db_name=file_data["database_name"],
+                cp_report_id=cp_report.id,
             )
             adm_row = row_from_notes if row_from_notes else adm_row
 
@@ -400,35 +397,36 @@ def import_adm_records(
             continue
 
         # create adm records for each column
-        for column_name, column_attributes in CP_COLUMNS_MAPPING[
+        for column_name, json_attribute in CP_COLUMNS_MAPPING[
             file_data["database_name"]
         ].items():
-            # skip column if it's not using cfc
-            if not is_using_cfc and column_name == "CFC":
+            # skip cfc columns if it's not using cfc
+            if not is_using_cfc and column_name.startswith("CFC"):
                 continue
-            if is_using_cfc and column_name == "Other ODS":
+            # skip ods columns if it's using cfc
+            if is_using_cfc and "ODS" in column_name:
                 continue
+            column_obj = columns_dict[column_name]
 
             # get column attributes
             adm_record_data = {}
-            for json_attribute, model_attribute in column_attributes.items():
-                if admb_entry[json_attribute] is None:
-                    continue
-                if model_attribute == "value_date":
-                    adm_record_data[model_attribute] = parser.parse(
-                        admb_entry[json_attribute]
-                    )
-                elif model_attribute == "value_bool":
-                    # 1 = Yes, 2 = No
-                    adm_record_data[model_attribute] = admb_entry[json_attribute] == 1
-                else:
-                    adm_record_data[model_attribute] = admb_entry[json_attribute]
+            if admb_entry[json_attribute] is None:
+                continue
+            if column_obj.type == AdmColumn.AdmColumnType.DATE:
+                adm_record_data["value_text"] = parser.parse(
+                    admb_entry[json_attribute]
+                ).strftime("%m/%d/%Y")
+            elif column_obj.type == AdmColumn.AdmColumnType.BOOLEAN:
+                # 1 = Yes, 2 = No
+                adm_record_data["value_text"] = admb_entry[json_attribute] == 1
+            else:
+                adm_record_data["value_text"] = admb_entry[json_attribute]
 
             # insert only if there is data for the column
             if not adm_record_data:
                 continue
 
-            if adm_row.text == "N/A" and "value_bool" not in adm_record_data:
+            if adm_row.text == "N/A" and "value_text" not in adm_record_data:
                 # skip adm records for articles without text if there is no value
                 continue
 
@@ -436,7 +434,7 @@ def import_adm_records(
                 {
                     "country_programme_report": cp_report,
                     "row": adm_row,
-                    "column": columns_dict[column_name],
+                    "column": column_obj,
                     "section": SECTION,
                     "source_file": file_data["admb_entries_file"],
                 }
@@ -466,7 +464,7 @@ def parse_db_files(dir_path, database_name):
             f"✔ notes file parsed, needed notes for articles: {articles_without_text.keys()}"
         )
 
-    adm_rows = import_strings(articles_dict)
+    adm_rows = import_strings(articles_dict, database_name)
     logger.info("✔ adm rows imported")
 
     admb_entries_file = dir_path / "AdmB_Entries.json"
@@ -490,6 +488,9 @@ def import_admb_items():
     """
     Import records from databases
     """
+    # delete all admRows and admRecords
+    AdmRow.objects.filter(source_file__contains="Adm_B.json", section=SECTION).delete()
+
     db_dir_path = settings.IMPORT_DATA_DIR / "databases"
     for database_name in DB_DIR_LIST:
         logger.info(f"⏳ importing admB records from {database_name}")

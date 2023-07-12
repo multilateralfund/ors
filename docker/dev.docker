@@ -11,7 +11,7 @@ RUN mkdir /.fs /app
 WORKDIR /app
 VOLUME ["/.fs"]
 
-RUN runDeps="netcat-traditional gettext build-essential gcc" \
+RUN runDeps="wait-for-it gettext build-essential gcc" \
     && apt-get update -y \
     && apt-get install -y --no-install-recommends $runDeps \
     && apt-get clean \
@@ -24,6 +24,7 @@ RUN pip install --no-cache-dir -r $REQFILEDEV
 
 COPY . /app
 
+COPY docker/wait_for_services.sh /usr/local/bin/wait_for_services.sh
 COPY docker/entrypoint.sh /usr/local/bin/
 
 ENTRYPOINT ["entrypoint.sh"]
