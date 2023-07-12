@@ -6,7 +6,6 @@ from core.api.tests.factories import (
     ExcludedUsageSubstFactory,
     ExcludedUsageBlendFactory,
     UsageFactory,
-    UserFactory,
     GroupFactory,
     SubstanceFactory,
     BlendFactory,
@@ -45,7 +44,7 @@ class TestChemicalsList:
                 **create_data,
             )
 
-    def test_substances_list(self):
+    def test_substances_list(self, user):
         # add 2 groups with 2 substances each
         groups = []
         substances = []
@@ -72,7 +71,7 @@ class TestChemicalsList:
         response = self.client.get(url)
         assert response.status_code == 403
 
-        self.client.force_authenticate(user=UserFactory())
+        self.client.force_authenticate(user=user)
 
         # get group substances list without usages
         response = self.client.get(url)
@@ -114,7 +113,7 @@ class TestChemicalsList:
         assert response.status_code == 200
         assert len(response.data) == 8
 
-    def test_blends_list(self):
+    def test_blends_list(self, user):
         # add some blends
         blends = []
         for i in range(3):
@@ -131,7 +130,7 @@ class TestChemicalsList:
         response = self.client.get(url)
         assert response.status_code == 403
 
-        self.client.force_authenticate(user=UserFactory())
+        self.client.force_authenticate(user=user)
 
         # get blends list
         url = reverse("blends-list")
@@ -290,10 +289,9 @@ class TestCreateBlend:
         assert float(response.data["gwp"]) == subst_otherF.gwp * 0.8
         assert (Blend.objects.count()) == initial_count + 1
 
-    def test_create_blend(self):
-        self.client.force_authenticate(user=UserFactory())
+    def test_create_blend(self, user, groupA):
+        self.client.force_authenticate(user=user)
         # create group
-        groupA = GroupFactory.create(name="GroupA", annex="A")
         groupF = GroupFactory.create(name="GroupF", annex="F")
 
         # create substance

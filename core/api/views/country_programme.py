@@ -178,7 +178,7 @@ class CPSettingsView(views.APIView):
     def get(self, *args, **kwargs):
         settings = {
             "year_section_mapping": [
-                {"max_year": 2018, "sections": ["A", "C", "AdmB", "AdmC", "AdmDE"]},
+                {"max_year": 2018, "sections": ["A", "C", "AdmB", "AdmC", "AdmD"]},
                 {"max_year": 2022, "sections": ["A", "B", "C", "D", "E", "F"]},
             ]
         }

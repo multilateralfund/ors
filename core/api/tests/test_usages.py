@@ -1,4 +1,4 @@
-from core.api.tests.factories import UsageFactory, UserFactory
+from core.api.tests.factories import UsageFactory
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -10,7 +10,7 @@ pytestmark = pytest.mark.django_db
 class TestUsages:
     client = APIClient()
 
-    def test_usages_list(self):
+    def test_usages_list(self, user):
         # add some usages using usage factory
         usage1 = UsageFactory.create(sort_order=2)
         usage2 = UsageFactory.create(sort_order=2.1, parent=usage1)
@@ -22,7 +22,7 @@ class TestUsages:
         response = self.client.get(url)
         assert response.status_code == 403
 
-        self.client.force_authenticate(user=UserFactory())
+        self.client.force_authenticate(user=user)
 
         # get usages list
         url = reverse("usages-list")
