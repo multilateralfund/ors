@@ -33,6 +33,7 @@ interface SubstanceState {
 
 const initialState: SubstanceState = {
   substances: [],
+  substanceGroups: [],
   usage: [],
   blends: [],
   data: {},
@@ -133,9 +134,7 @@ export const selectChemicalBySection = (
   excluded_usages: number[]
 }[] =>
   state.reports.substances
-    ?.filter(substance =>
-      withSection.substances?.includes(substance?.group_name || ''),
-    )
+    ?.filter(substance => substance.sections?.includes(withSection?.key))
     .map(item => ({
       id: item.id,
       value: item.id,

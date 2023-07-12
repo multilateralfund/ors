@@ -8,7 +8,7 @@ import {
 } from '@/slices/reportSlice'
 import {
   Blend,
-  GroupSubstance,
+  Substance,
   Usage,
   Country,
   CountryReports,
@@ -18,7 +18,7 @@ import {
 export const reportEndpoints = (
   builder: EndpointBuilder<ReturnType<any>, string, 'api'>,
 ) => ({
-  getSubstances: builder.query<GroupSubstance[], null>({
+  getSubstances: builder.query<Substance[], null>({
     query: () => ({
       url: '/substances?with_usages=true',
       method: 'GET',

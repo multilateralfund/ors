@@ -27,6 +27,7 @@ export type Substance = {
   sort_order: number
   is_captured: boolean
   is_contained_in_polyols: boolean
+  sections?: []
   odp: string
   excluded_usages: number[]
 }
@@ -72,6 +73,15 @@ export enum SectionsEnum {
   SectionB = 'B',
   SectionC = 'C',
   SectionD = 'D',
+}
+
+export enum SectionsTabs {
+  SectionA = 0,
+  SectionB = 1,
+  SectionC = 2,
+  SectionD = 3,
+  SectionE = 4,
+  SectionF = 5,
 }
 
 export type SectionsType = {

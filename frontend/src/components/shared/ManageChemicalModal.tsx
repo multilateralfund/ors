@@ -19,7 +19,7 @@ import {
   updateReport,
   ReportDataType,
 } from '@/slices/reportSlice'
-import { Usage, Chemical, SectionsType } from '@/types/Reports'
+import { Usage, Chemical, SectionsType, SectionsTabs } from '@/types/Reports'
 import { FormInput } from '../form/FormInput'
 import { FormDateSelect } from '../form/FormDateSelect'
 import { Button } from './Button'
@@ -58,6 +58,7 @@ export const ManageChemicalModal = ({
   const chemicals = useSelector((state: RootState) =>
     selectChemicalBySection(state, withSection),
   )
+
   const blends = useSelector(selectBlends)
   const usages = useSelector(selectUsages)
 
@@ -99,13 +100,7 @@ export const ManageChemicalModal = ({
     if (selectedChemical) {
       const getChemical = withBlends
         ? blends.find(item => item.id === Number(selectedChemical))
-        : chemicals
-            .find(item =>
-              item.options?.find(
-                subst => subst.id === Number(selectedChemical),
-              ),
-            )
-            ?.options?.find(subst => subst.id === Number(selectedChemical))
+        : chemicals.find(item => item.id === Number(selectedChemical))
 
       if (getChemical) {
         setCurrentChemical({
@@ -167,7 +162,7 @@ export const ManageChemicalModal = ({
           <Modal.Body>
             <div className="flex flex-col gap-2">
               <div className="mb-2">
-                {sectionId === 3 ? (
+                {sectionId === SectionsTabs.SectionD ? (
                   <FormInput
                     name="substance"
                     label="Substance"
@@ -190,10 +185,10 @@ export const ManageChemicalModal = ({
                   </>
                 )}
               </div>
-              {selectedUsages && (
+              {selectedUsages && sectionId < SectionsTabs.SectionC && (
                 <ComposeInputsByUsage selectedUsages={selectedUsages} />
               )}
-              {sectionId < 2 && (
+              {sectionId < SectionsTabs.SectionC && (
                 <div className="flex flex-col gap-2 mt-3">
                   <div>
                     <FormInput
@@ -241,7 +236,7 @@ export const ManageChemicalModal = ({
                   </div>
                 </div>
               )}
-              {sectionId === 2 && (
+              {sectionId === SectionsTabs.SectionC && (
                 <div className="flex flex-col gap-2 mt-3">
                   <div>
                     <FormInput
@@ -265,7 +260,7 @@ export const ManageChemicalModal = ({
                   </div>
                 </div>
               )}
-              {sectionId === 3 && (
+              {sectionId === SectionsTabs.SectionD && (
                 <div className="flex flex-col gap-2 mt-3">
                   <div>
                     <FormInput
