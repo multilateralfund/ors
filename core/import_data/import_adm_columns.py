@@ -2,9 +2,8 @@ import json
 import logging
 
 from django.db import transaction
-from django.conf import settings
 
-from core.import_data.utils import delete_old_data
+from core.import_data.utils import IMPORT_RESOURCES_DIR, delete_old_data
 from core.models.adm import AdmColumn
 
 logger = logging.getLogger(__name__)
@@ -31,7 +30,7 @@ def parse_columns_file(file_path):
 
 
 def import_adm_columns():
-    file_path = settings.IMPORT_RESOURCES_DIR / "adm_columns.json"
+    file_path = IMPORT_RESOURCES_DIR / "adm_columns.json"
     delete_old_data(AdmColumn, file_path, logger)
     parse_columns_file(file_path)
     logger.info("✔ adm columns imported")

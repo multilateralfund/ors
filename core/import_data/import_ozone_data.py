@@ -2,7 +2,7 @@ import json
 import logging
 
 from django.db import transaction
-from django.conf import settings
+from core.import_data.utils import IMPORT_RESOURCES_DIR
 
 from core.models import Blend, BlendComponents, Group, Substance, BlendAltName
 from core.models.substance import SubstanceAltName
@@ -114,7 +114,7 @@ def import_groups():
         "phase_out_year_article_5",
         "phase_out_year_non_article_5",
     ]
-    import_data(Group, settings.IMPORT_RESOURCES_DIR / "groups.json", exclude)
+    import_data(Group, IMPORT_RESOURCES_DIR / "groups.json", exclude)
     # create a group for substances that don't have a group
     create_uncontrolled_group()
     logger.info("✔ groups imported")
@@ -133,7 +133,7 @@ def import_alternative_names(
     """
 
     # read data from json file
-    file_name = settings.IMPORT_RESOURCES_DIR / file_name
+    file_name = IMPORT_RESOURCES_DIR / file_name
     with open(file_name, "r", encoding="utf8") as f:
         list_data = json.load(f)
 
@@ -179,7 +179,7 @@ def import_substances():
     uncontrolled_group_id = get_uncontrolled_group_id()
     import_data(
         Substance,
-        settings.IMPORT_RESOURCES_DIR / "substances.json",
+        IMPORT_RESOURCES_DIR / "substances.json",
         exclude,
         uncontrolled_group_id,
     )
@@ -205,7 +205,7 @@ def import_blends():
         "cnumber",
     ]
 
-    import_data(Blend, settings.IMPORT_RESOURCES_DIR / "blends.json", exclude)
+    import_data(Blend, IMPORT_RESOURCES_DIR / "blends.json", exclude)
     logger.info("✔ blends imported")
     import_alternative_names(
         Blend,
@@ -222,7 +222,7 @@ def import_blend_components():
     exclude = ["cnumber"]
     import_data(
         BlendComponents,
-        settings.IMPORT_RESOURCES_DIR / "blend_components.json",
+        IMPORT_RESOURCES_DIR / "blend_components.json",
         exclude,
     )
     logger.info("✔ blend components imported")

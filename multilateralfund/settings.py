@@ -19,7 +19,6 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 ROOT_DIR = BASE_DIR / "core"
 IMPORT_DATA_DIR = ROOT_DIR / "import_data"
-IMPORT_RESOURCES_DIR = ROOT_DIR / "import_data" / "resources"
 
 env = environ.Env()
 

@@ -21,9 +21,9 @@ docker-compose exec app ./manage.py import_resources usages
 - blend_components -> import only the blend_components
 - countries -> import only the countries
 - usages -> import only the usages
-- sectors -> import the sectors and subsectors
-- agencies -> import only the agencies
 - adm_columns -> import adm columns
+- project-resources -> import agencies, sectors, subsectors,
+    project statuses and project types
 ---
 
 ## Records

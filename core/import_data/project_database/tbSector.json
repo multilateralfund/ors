@@ -1,0 +1,82 @@
+[
+  {
+    "SEC": "ARS",
+    "SECTOR": "Aerosol",
+    "SORT_SECTOR": 1
+  },
+  {
+    "SEC": "DES",
+    "SECTOR": "Destruction",
+    "SORT_SECTOR": 15
+  },
+  {
+    "SEC": "FFI",
+    "SECTOR": "Fire fighting",
+    "SORT_SECTOR": 12
+  },
+  {
+    "SEC": "FOA",
+    "SECTOR": "Foam",
+    "SORT_SECTOR": 2
+  },
+  {
+    "SEC": "FUM",
+    "SECTOR": "Fumigant",
+    "SORT_SECTOR": 3
+  },
+  {
+    "SEC": "HAL",
+    "SECTOR": "Halon",
+    "SORT_SECTOR": 4
+  },
+  {
+    "SEC": "KIP",
+    "SECTOR": "HFC plan",
+    "SORT_SECTOR": 14
+  },
+  {
+    "SEC": "MUS",
+    "SECTOR": "Multi-sector",
+    "SORT_SECTOR": 5
+  },
+  {
+    "SEC": "OTH",
+    "SECTOR": "Other",
+    "SORT_SECTOR": 6
+  },
+  {
+    "SEC": "PAG",
+    "SECTOR": "Process agent",
+    "SORT_SECTOR": 7
+  },
+  {
+    "SEC": "PHA",
+    "SECTOR": "Phaseout plan",
+    "SORT_SECTOR": 13
+  },
+  {
+    "SEC": "PRO",
+    "SECTOR": "Production",
+    "SORT_SECTOR": 8
+  },
+  {
+    "SEC": "REF",
+    "SECTOR": "Refrigeration",
+    "SORT_SECTOR": 9
+  },
+  {
+    "SEC": "SEV",
+    "SECTOR": "Several",
+    "SORT_SECTOR": 16
+  },
+  {
+    "SEC": "SOL",
+    "SECTOR": "Solvent",
+    "SORT_SECTOR": 10
+  },
+  {
+    "SEC": "STE",
+    "SECTOR": "Sterilant",
+    "SORT_SECTOR": 11
+  }
+]

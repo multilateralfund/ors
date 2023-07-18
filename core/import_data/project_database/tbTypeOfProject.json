@@ -1,0 +1,37 @@
+[
+  {
+    "TYPE": "CPG",
+    "TYPE_PRO": "Country programme preparation",
+    "SORT_TYPE": 6
+  },
+  {
+    "TYPE": "DEM",
+    "TYPE_PRO": "Demonstration",
+    "SORT_TYPE": 2
+  },
+  {
+    "TYPE": "INS",
+    "TYPE_PRO": "Institutional strengthening",
+    "SORT_TYPE": 7
+  },
+  {
+    "TYPE": "INV",
+    "TYPE_PRO": "Investment",
+    "SORT_TYPE": 1
+  },
+  {
+    "TYPE": "PRP",
+    "TYPE_PRO": "Project preparation",
+    "SORT_TYPE": 5
+  },
+  {
+    "TYPE": "TAS",
+    "TYPE_PRO": "Technical assistance",
+    "SORT_TYPE": 3
+  },
+  {
+    "TYPE": "TRA",
+    "TYPE_PRO": "Training",
+    "SORT_TYPE": 4
+  }
+]

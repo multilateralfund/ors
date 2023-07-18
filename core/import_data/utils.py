@@ -1,6 +1,9 @@
 import decimal
 import json
 import re
+
+from django.conf import settings
+
 from core.models.adm import AdmColumn, AdmRow
 from core.models.blend import Blend
 from core.models.country import Country
@@ -8,6 +11,8 @@ from core.models.country_programme import CPReport
 from core.models.substance import Substance
 from core.utils import IMPORT_DB_MAX_YEAR
 
+IMPORT_RESOURCES_DIR = settings.ROOT_DIR / "import_data" / "resources"
+IMPORT_PROJECTS_DIR = settings.ROOT_DIR / "import_data" / "project_database"
 
 # When we parse excel files, "index_row" is two steps behind. Because of this, the
 # excel files are hard to check.

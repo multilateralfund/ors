@@ -2,7 +2,7 @@ import logging
 import pandas as pd
 
 from django.db import transaction
-from django.conf import settings
+from core.import_data.utils import IMPORT_RESOURCES_DIR
 
 from core.models import Usage
 
@@ -39,6 +39,6 @@ def parse_usage_file(file_path):
 
 
 def import_usages():
-    file_path = settings.IMPORT_RESOURCES_DIR / "usages.xlsx"
+    file_path = IMPORT_RESOURCES_DIR / "usages.xlsx"
     parse_usage_file(file_path)
     logger.info("✔ usages imported")

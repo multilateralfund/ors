@@ -1,6 +1,6 @@
 from django.core.management import BaseCommand
 from core.import_data.import_adm_columns import import_adm_columns
-from core.import_data.import_agencies import import_agencies
+from core.import_data.import_project_resources import import_project_resources
 from core.import_data.import_countries import import_countries
 from core.import_data.import_ozone_data import (
     import_all_data as ozone_all_data,
@@ -9,7 +9,6 @@ from core.import_data.import_ozone_data import (
     import_groups,
     import_substances,
 )
-from core.import_data.import_project_sectors import import_project_sectors
 from core.import_data.import_usages import import_usages
 
 
@@ -17,7 +16,7 @@ class Command(BaseCommand):
     help = """
         Import resources
         (groups, substances, blends, blend components, usages,
-            sectors, agencies, countries)
+            countries, project-resources)
     """
 
     def add_arguments(self, parser):
@@ -34,10 +33,9 @@ class Command(BaseCommand):
                 "blends",
                 "blend_components",
                 "usages",
-                "sectors",
-                "agencies",
                 "countries",
                 "adm_columns",
+                "project-resources",
             ],
         )
 
@@ -60,9 +58,7 @@ class Command(BaseCommand):
             import_countries()
         if resource in ["usages", "all"]:
             import_usages()
-        if resource in ["sectors", "all"]:
-            import_project_sectors()
-        if resource in ["agencies", "all"]:
-            import_agencies()
         if resource in ["adm_columns", "all"]:
             import_adm_columns()
+        if resource in ["project-resources", "all"]:
+            import_project_resources()
