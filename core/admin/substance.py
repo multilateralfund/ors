@@ -42,6 +42,7 @@ class SubstanceAdmin(admin.ModelAdmin):
             "excludedusage",
             "excluded_usages",
             "admrecord",
-            "projectodsodp",
+            "project_ods",
+            "ods_replacement",
         ]
         return get_final_display_list(Substance, exclude)

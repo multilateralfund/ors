@@ -38,6 +38,9 @@ class ProjectStatus(models.Model):
 
     objects = ProjectStatusManager()
 
+    class Meta:
+        verbose_name_plural = "Project statuses"
+
     def __str__(self):
         return self.name
 
@@ -119,6 +122,9 @@ class Project(models.Model):
     status = models.ForeignKey(ProjectStatus, on_delete=models.CASCADE)
     remarks = models.TextField(null=True, blank=True)
     source_file = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return self.title
 
 
 class ProjectOdsOdp(models.Model):
