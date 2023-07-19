@@ -26,6 +26,13 @@ docker-compose exec app ./manage.py import_resources usages
     project statuses and project types
 ---
 
+### Import files
+- project-resources
+: download files from nextclod
+    - **nextcloud path** OzoneMlf/Projects inventory/data/json
+    - **local path** core/import_data/project_database
+
+
 ## Records
 - To import all records, run (from xlsx and databases):
 ```shell
