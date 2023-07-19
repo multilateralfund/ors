@@ -9,7 +9,12 @@ module.exports = {
   },
   important: '#__next',
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        primary: 'rgb(var(--color-primary) / <alpha-value>)',
+        secondary: 'rgb(var(--color-secondary) / <alpha-value>)',
+      },
+    },
   },
   darkMode: 'class',
   plugins: [],

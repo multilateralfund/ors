@@ -1,13 +1,20 @@
 import Image from 'next/image'
+import Link from 'next/link'
 
-import { Button } from '@mui/material'
 import LanguageSelector from '@ors/components/theme/LanguageSelector/LanguageSelector'
+import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
 
-export const Header = () => {
+export default function Header() {
   return (
-    <nav>
-      <div className="nav-container mx-auto flex justify-between p-4">
-        <div className="logo flex items-center">
+    <nav
+      id="header"
+      className="border-b border-solid border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+    >
+      <div className="flex w-full justify-between p-4">
+        <Link
+          href="/"
+          className="logo flex items-center text-secondary no-underline"
+        >
           <Image
             src="/assets/logos/mlf_icon.png"
             alt="Multilateral Fund"
@@ -15,43 +22,12 @@ export const Header = () => {
             height="40"
           />
           <span className="pl-2">MLFS</span>
-        </div>
-        <div>
-          <Button variant="contained" className="bg-slate-500">
-            Press
-          </Button>
-          {/* <LanguageSelector /> */}
+        </Link>
+        <div className="flex">
+          <LanguageSelector />
+          <ProfileDropdown />
         </div>
       </div>
     </nav>
-    // <Navbar fluid>
-    //   <div className="w-full p-3 lg:px-5 lg:pl-3">
-    //     <div className="flex items-center justify-between">
-    //       <Navbar.Brand to="/">
-    //         <div className="self-center whitespace-nowrap text-xl font-semibold dark:text-white w-10">
-    //           <img
-    //             src={imgSrc('/assets/logos/mlf_icon.png')}
-    //             alt="logo"
-    //             className="w-auto h-auto"
-    //           />
-    //         </div>
-    //         <span className="pl-2 dark:text-white">MLFS</span>
-    //       </Navbar.Brand>
-    //       <div className="flex md:order-2 items-center dark:text-white">
-    //         <LangSwitcher />
-    //         {user && (
-    //           <div className="ml-4">
-    //             <UserInfo user={user} onLogout={onConfirmLogout} />
-    //           </div>
-    //         )}
-    //         <div className="ml-2">
-    //           <DarkThemeToggle />
-    //         </div>
-    //         <Navbar.Toggle />
-    //       </div>
-    //     </div>
-    //   </div>
-    //   <Navbar.Collapse />
-    // </Navbar>
   )
 }
