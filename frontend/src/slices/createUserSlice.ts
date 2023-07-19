@@ -1,6 +1,13 @@
+import Cookies from 'js-cookie'
 import { StoreApi } from 'zustand'
 
 import api from '@ors/helpers/Api/Api'
+
+function removeCookies() {
+  Cookies.remove('csrftoken')
+  Cookies.remove('orsauth')
+  Cookies.remove('orsrefresh')
+}
 
 export interface UserSlice {
   user: {
@@ -49,10 +56,11 @@ export const createUserSlice = (
       try {
         await api('api/auth/logout/', {
           method: 'post',
-          credentials: 'omit',
         })
+        removeCookies()
         get().user?.setUser?.(null)
       } catch (error) {
+        removeCookies()
         get().user?.setUser?.(null)
         throw error
       }

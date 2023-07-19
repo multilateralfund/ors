@@ -1,6 +1,8 @@
+import Cookies from 'js-cookie'
+
 import config from '@ors/registry'
 
-const cookies = require('next/headers').cookies
+const nextCookies = require('next/headers').cookies
 const nextHeaders = require('next/headers').headers
 const redirect = require('next/navigation').redirect
 
@@ -56,7 +58,8 @@ async function api(
     credentials: 'include',
     headers: {
       Accept: 'application/json',
-      ...(__SERVER__ ? { Cookie: cookies().toString() } : {}),
+      ...(!__SERVER__ ? { 'X-CSRFToken': Cookies.get('csrftoken') } : {}),
+      ...(__SERVER__ ? { Cookie: nextCookies().toString() } : {}),
       ...defaultHeaders['common'],
       ...defaultHeaders[method.toLowerCase()],
       ...headers,
