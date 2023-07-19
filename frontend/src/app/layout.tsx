@@ -3,8 +3,7 @@ import { cookies } from 'next/headers'
 import React from 'react'
 
 import GuardRoutes from '@ors/components/theme/GuardRoutes/GuardRoutes'
-import Header from '@ors/components/theme/Header/Header'
-import Sidebar from '@ors/components/theme/Sidebar/Sidebar'
+import View from '@ors/components/theme/Views/View'
 import api from '@ors/helpers/Api/Api'
 import { Provider } from '@ors/store'
 import '@ors/theme/global.css'
@@ -29,17 +28,15 @@ export default async function RootLayout({
 
   return (
     <html lang="en" {...(theme.value ? { 'data-mode': theme.value } : {})}>
-      <body className={inter.className} id="__next">
-        <Provider initialState={{ theme: theme.value, user: { data: user } }}>
-          <ThemeProvider>
-            <GuardRoutes />
-            <Header />
-            <main className="flex w-full">
-              <Sidebar />
-              {children}
-            </main>
-          </ThemeProvider>
-        </Provider>
+      <body className={inter.className}>
+        <div id="__next">
+          <Provider initialState={{ theme: theme.value, user: { data: user } }}>
+            <ThemeProvider>
+              <GuardRoutes />
+              <View>{children}</View>
+            </ThemeProvider>
+          </Provider>
+        </div>
       </body>
     </html>
   )

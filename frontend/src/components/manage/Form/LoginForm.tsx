@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React from 'react'
 
+import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import useStore from '@ors/store'
 
@@ -20,7 +21,8 @@ export default function LoginForm() {
   }, [user, router])
 
   return (
-    <form
+    <Box
+      component="form"
       onSubmit={async (e) => {
         e.preventDefault()
         const form = new FormData(e.currentTarget)
@@ -33,21 +35,19 @@ export default function LoginForm() {
           }
         }
       }}
-      className="flex w-full flex-col rounded-lg bg-white p-8 shadow"
+      className="flex w-full flex-col rounded-lg p-8"
     >
-      <h1 className="text-xl font-bold leading-tight tracking-tight md:text-2xl">
+      <h1 className="text-2xl font-bold leading-tight tracking-tight md:text-3xl">
         Sign in to your account
       </h1>
       <Field label="Username" name="username" />
       <Field label="Password" name="password" type="password" />
       <p className="mt-0 text-right">
-        <Link href="forgot-password" className="text-primary">
-          Forgot password?
-        </Link>
+        <Link href="forgot-password">Forgot password?</Link>
       </p>
       <Button variant="contained" type="submit">
         Submit
       </Button>
-    </form>
+    </Box>
   )
 }

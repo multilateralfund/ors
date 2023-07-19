@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 import type { Metadata } from 'next'
@@ -7,10 +8,8 @@ export const metadata: Metadata = {
 
 export default async function Dashboard() {
   return (
-    <PageWrapper className="mx-4 mt-4 w-full">
-      <div className="rounded bg-white p-4 shadow">
-        <h1>Dashboard</h1>
-      </div>
-    </PageWrapper>
+    <Box component={PageWrapper} className="mx-4 mt-4 rounded p-8">
+      <h1>Dashboard</h1>
+    </Box>
   )
 }

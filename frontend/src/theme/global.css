@@ -2,37 +2,38 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+@import './preflight';
+@import './typography';
+
+@import './components/mui/MuiBox';
+
 @import './components/image';
 @import './components/widget';
 
 * {
-  @apply transition-colors duration-300;
   box-sizing: border-box;
+  @apply duration-300;
+  transition-property: background-color, border-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 :root {
-  --background-color: 249 250 251;
   @apply h-full;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background-color: 17 24 39;
-  }
+body {
+  @apply bg-gray-50 dark:bg-gray-900;
+  @apply m-0 h-full overflow-hidden;
 }
 
-body {
-  @apply m-0 flex h-full flex-col bg-gray-50 dark:bg-gray-900;
+#__next {
+  @apply grid h-full grid-rows-[auto_1fr];
 }
 
 main {
-  flex: 1;
+  @apply grid overflow-hidden;
 }
 
-a {
-  @apply text-primary dark:text-white;
-}
-
-.MuiMenu-paper {
+/* .MuiMenu-paper {
   @apply shadow;
-}
+} */
