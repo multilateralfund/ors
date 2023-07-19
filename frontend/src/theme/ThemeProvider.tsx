@@ -4,7 +4,7 @@ import React from 'react'
 import MUIThemeProvider from '@mui/material/styles/ThemeProvider'
 import usePrevious from '@ors/hooks/usePrevious'
 import useStore from '@ors/store'
-import { theme } from '@ors/theme'
+import { createTheme } from '@ors/theme'
 
 export default function ThemeProvider({
   children,
@@ -32,5 +32,9 @@ export default function ThemeProvider({
     }
   }, [themeManager, prevTheme])
 
-  return <MUIThemeProvider theme={theme}>{children}</MUIThemeProvider>
+  return (
+    <MUIThemeProvider theme={createTheme(themeManager.theme)}>
+      {children}
+    </MUIThemeProvider>
+  )
 }

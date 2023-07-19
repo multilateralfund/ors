@@ -1,3 +1,4 @@
+import cx from 'classnames'
 import React from 'react'
 
 import Button from '@mui/material/Button'
@@ -7,9 +8,11 @@ import MenuItem from '@mui/material/MenuItem'
 export default function Dropdown({
   children,
   label,
+  className,
 }: {
   children: React.ReactNode
   label: React.ReactNode
+  className: string
 }) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
@@ -34,14 +37,14 @@ export default function Dropdown({
   })
 
   return (
-    <div>
+    <>
       <Button
         id="basic-button"
         aria-controls={open ? 'basic-menu' : undefined}
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
-        className="normal-case dark:text-white"
+        className={cx('normal-case', className)}
       >
         {label}
       </Button>
@@ -56,7 +59,7 @@ export default function Dropdown({
       >
         {childrenWithProps}
       </Menu>
-    </div>
+    </>
   )
 }
 

@@ -1,4 +1,3 @@
-import { defaultView, errorViews, layoutViews } from './Views'
 import { defaultWidget, widgetMapping } from './Widgets'
 
 const _DEVELOPMENT_ = process.env.NODE_ENV !== 'production'
@@ -12,11 +11,6 @@ const config = {
     apiPath,
     apiPathTraversal,
     _DEVELOPMENT_,
-  },
-  views: {
-    layoutViews,
-    defaultView,
-    errorViews,
   },
   widgets: {
     ...widgetMapping,

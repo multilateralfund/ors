@@ -1,17 +1,15 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
+import Box from '@mui/material/Box'
 import LanguageSelector from '@ors/components/theme/LanguageSelector/LanguageSelector'
 import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
 import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
 
 export default function Header() {
   return (
-    <nav
-      id="header"
-      className="border-b border-solid border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
-    >
-      <div className="flex w-full justify-between p-4">
+    <Box id="header" component="nav" className="border-0 border-b">
+      <div className="flex w-full justify-between">
         <Link href="/" className="logo flex items-center no-underline">
           <Image
             src="/assets/logos/mlf_icon.png"
@@ -23,11 +21,11 @@ export default function Header() {
           <span className="pl-2">MLFS</span>
         </Link>
         <div className="flex">
-          <LanguageSelector />
+          <LanguageSelector className="mr-2" />
           <ProfileDropdown />
           <ThemeSelector />
         </div>
       </div>
-    </nav>
+    </Box>
   )
 }

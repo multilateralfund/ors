@@ -13,13 +13,18 @@ module.exports = {
       colors: {
         primary: {
           DEFAULT: '#0f82cc',
-          light: '#0f82cc',
-          dark: '#00ff00',
+          contrast: '#ffffff',
         },
         secondary: {
           DEFAULT: '#333333',
+          contrast: '#ffffff',
+        },
+        base: {
+          DEFAULT: '#333333',
           light: '#333333',
-          dark: '#333333',
+          dark: '#ffffff',
+          contrast: '#ffffff',
+          'dark-contrast': '#333333',
         },
       },
     },
