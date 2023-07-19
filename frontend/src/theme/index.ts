@@ -29,10 +29,9 @@ function getPalette(color, contrastText, defaultColor = '#000') {
   }
 }
 
-console.log('HERE')
-
 export const theme = createTheme({
   palette: {
+    mode: 'light',
     primary: getPalette(
       tailwindTheme.colors?.primary,
       '#fff',

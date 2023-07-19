@@ -23,7 +23,6 @@ const Field = (props: any) => {
     // getWidgetByChoices(props) ||
     // getWidgetByType(props.type) ||
     getWidgetDefault()
-  console.log('HERE', Widget)
   return <Widget {...props} />
 }
 
