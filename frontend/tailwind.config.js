@@ -11,8 +11,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: 'rgb(var(--color-primary) / <alpha-value>)',
-        secondary: 'rgb(var(--color-secondary) / <alpha-value>)',
+        primary: {
+          DEFAULT: '#0f82cc',
+          light: '#0f82cc',
+          dark: '#0f82cc',
+        },
+        secondary: {
+          DEFAULT: '#333333',
+          light: '#333333',
+          dark: '#333333',
+        },
       },
     },
   },

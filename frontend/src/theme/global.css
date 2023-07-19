@@ -1,23 +1,21 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
-/* @import './components/button.css'; */
+
+@import './components/image';
+@import './components/widget';
 
 * {
   box-sizing: border-box;
 }
 
 :root {
-  --color-primary: 15 130 204;
-  --color-secondary: 51 51 51;
   --background-color: 249 250 251;
   @apply h-full;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-primary: 15 130 204;
-    --color-secondary: 51 51 51;
     --background-color: 17 24 39;
   }
 }
@@ -28,6 +26,10 @@ body {
 
 main {
   flex: 1;
+}
+
+a {
+  @apply text-primary;
 }
 
 .MuiMenu-paper {

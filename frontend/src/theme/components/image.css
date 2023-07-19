@@ -1,0 +1,13 @@
+.image-container {
+  width: 100%;
+}
+
+.image-container > div {
+  position: unset !important;
+}
+
+.image-container img {
+  width: 100% !important;
+  position: relative !important;
+  height: unset !important;
+}

@@ -1,7 +1,6 @@
 import React from 'react'
 
 import LoginForm from '@ors/components/manage/Form/LoginForm'
-import Logo from '@ors/components/theme/Logo/Logo'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 import type { Metadata } from 'next'
@@ -11,8 +10,7 @@ export const metadata: Metadata = {
 
 export default function Login() {
   return (
-    <PageWrapper className="mx-auto flex h-full w-full max-w-screen-sm flex-col items-center justify-center px-4">
-      <Logo />
+    <PageWrapper className="flex h-full w-full items-center justify-center">
       <LoginForm />
     </PageWrapper>
   )
