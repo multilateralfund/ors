@@ -50,6 +50,7 @@ async function api(
     next = {},
     ...opts
   } = options || {}
+  const csrftoken = !__SERVER__ ? Cookies.get('csrftoken') : null
   const pathname = __SERVER__
     ? nextHeaders().get('x-next-pathname')
     : window.location.pathname
@@ -58,8 +59,8 @@ async function api(
     credentials: 'include',
     headers: {
       Accept: 'application/json',
-      ...(!__SERVER__ ? { 'X-CSRFToken': Cookies.get('csrftoken') } : {}),
       ...(__SERVER__ ? { Cookie: nextCookies().toString() } : {}),
+      ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
       ...defaultHeaders['common'],
       ...defaultHeaders[method.toLowerCase()],
       ...headers,
