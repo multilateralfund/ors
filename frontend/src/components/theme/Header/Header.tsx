@@ -3,6 +3,7 @@ import Link from 'next/link'
 
 import LanguageSelector from '@ors/components/theme/LanguageSelector/LanguageSelector'
 import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
+import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
 
 export default function Header() {
   return (
@@ -24,6 +25,7 @@ export default function Header() {
         <div className="flex">
           <LanguageSelector />
           <ProfileDropdown />
+          <ThemeSelector />
         </div>
       </div>
     </nav>

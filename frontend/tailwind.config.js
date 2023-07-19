@@ -14,7 +14,7 @@ module.exports = {
         primary: {
           DEFAULT: '#0f82cc',
           light: '#0f82cc',
-          dark: '#0f82cc',
+          dark: '#00ff00',
         },
         secondary: {
           DEFAULT: '#333333',
@@ -24,6 +24,6 @@ module.exports = {
       },
     },
   },
-  darkMode: 'class',
+  darkMode: ['class', '[data-mode="dark"]'],
   plugins: [],
 }

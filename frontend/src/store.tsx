@@ -4,11 +4,16 @@ import { createStore, StoreApi, useStore as useZustandStore } from 'zustand'
 
 import { createUserSlice, UserSlice } from './slices/createUserSlice'
 
-type StoreState = UserSlice
+type StoreState = {
+  theme?: any
+  setTheme?: (theme: string) => void
+} & UserSlice
 
 const store = (initialState?: StoreState) => {
   return createStore<StoreState>((set, get) => ({
     ...createUserSlice(set, get, initialState),
+    theme: initialState?.theme || null,
+    setTheme: (theme: string) => set((state) => ({ ...state, theme })),
   }))
 }
 

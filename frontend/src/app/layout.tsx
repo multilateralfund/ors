@@ -1,4 +1,5 @@
 import { Inter } from 'next/font/google'
+import { cookies } from 'next/headers'
 import React from 'react'
 
 import GuardRoutes from '@ors/components/theme/GuardRoutes/GuardRoutes'
@@ -24,11 +25,12 @@ export default async function RootLayout({
   children: React.ReactNode
 }) {
   const user = await api('api/auth/user/', {}, false)
+  const theme = cookies().get('theme') || { value: null }
 
   return (
-    <html lang="en">
+    <html lang="en" {...(theme.value ? { 'data-mode': theme.value } : {})}>
       <body className={inter.className} id="__next">
-        <Provider initialState={{ user: { data: user } }}>
+        <Provider initialState={{ theme: theme.value, user: { data: user } }}>
           <ThemeProvider>
             <GuardRoutes />
             <Header />

@@ -6,6 +6,7 @@
 @import './components/widget';
 
 * {
+  @apply transition-colors duration-300;
   box-sizing: border-box;
 }
 
@@ -29,7 +30,7 @@ main {
 }
 
 a {
-  @apply text-primary;
+  @apply text-primary dark:text-white;
 }
 
 .MuiMenu-paper {

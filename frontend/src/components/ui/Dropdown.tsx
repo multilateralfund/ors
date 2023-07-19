@@ -41,7 +41,7 @@ export default function Dropdown({
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
-        className="normal-case"
+        className="normal-case dark:text-white"
       >
         {label}
       </Button>
