@@ -1,4 +1,3 @@
-import { Cookies } from 'react-cookie'
 import { StoreApi } from 'zustand'
 
 import api from '@ors/helpers/Api/Api'
@@ -52,11 +51,6 @@ export const createUserSlice = (
           method: 'post',
           credentials: 'omit',
         })
-        const cookie = new Cookies()
-        cookie.remove('sessionid')
-        cookie.remove('orsrefresh')
-        cookie.remove('orsauth')
-        cookie.remove('csrftoken')
         get().user?.setUser?.(null)
       } catch (error) {
         get().user?.setUser?.(null)
