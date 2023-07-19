@@ -71,5 +71,10 @@ class ProjectAdmin(admin.ModelAdmin):
     autocomplete_fields = ["country", "subsector", "agency"]
 
     def get_list_display(self, request):
-        exclude = ["projectsubmission", "projectodsodp", "projectfund"]
+        exclude = [
+            "projectsubmission",
+            "ods_odp",
+            "funds",
+            "submissions",
+        ]
         return get_final_display_list(Project, exclude)

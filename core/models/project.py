@@ -5,18 +5,38 @@ from core.models.country import Country
 from core.models.substance import Substance
 
 
+class ProjectTypeManager(models.Manager):
+    def find_by_name(self, name):
+        name_str = name.strip()
+        return self.filter(
+            models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str)
+        ).first()
+
+
 class ProjectType(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=10, null=True, blank=True)
     sort_order = models.FloatField(null=True, blank=True)
 
+    objects = ProjectTypeManager()
+
     def __str__(self):
         return self.name
+
+
+class ProjectStatusManager(models.Manager):
+    def find_by_name(self, name):
+        name_str = name.strip()
+        return self.filter(
+            models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str)
+        ).first()
 
 
 class ProjectStatus(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=10, null=True, blank=True)
+
+    objects = ProjectStatusManager()
 
     def __str__(self):
         return self.name
@@ -59,7 +79,8 @@ class Project(models.Model):
 
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
-    number = models.IntegerField()
+    national_agency = models.CharField(max_length=255, null=True, blank=True)
+    number = models.IntegerField(null=True, blank=True)
     code = models.CharField(max_length=10, null=True, blank=True)
     approval_meeting_no = models.IntegerField(null=True, blank=True)
     project_type = models.ForeignKey(ProjectType, on_delete=models.CASCADE)
@@ -101,15 +122,23 @@ class Project(models.Model):
 
 
 class ProjectOdsOdp(models.Model):
-    ods = models.ForeignKey(Substance, on_delete=models.CASCADE, related_name="ods")
+    ods = models.ForeignKey(
+        Substance, on_delete=models.CASCADE, related_name="project_ods"
+    )
     odp = models.FloatField(null=True, blank=True)
     ods_replacement = models.ForeignKey(
-        Substance, on_delete=models.CASCADE, null=True, blank=True
+        Substance,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="ods_replacement",
     )
     co2_mt = models.FloatField(null=True, blank=True)
     is_production = models.BooleanField(default=False)
     is_indirect = models.BooleanField(default=False)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="ods_odp"
+    )
 
     def __str__(self):
         return_str = self.ods.name

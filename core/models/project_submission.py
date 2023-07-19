@@ -32,6 +32,7 @@ class ProjectSubmission(models.Model):
     category = models.CharField(
         max_length=164, choices=ProjectSubmissionCategories.choices
     )
+    submission_number = models.IntegerField(null=True, blank=True)
     programme_officer = models.CharField(max_length=255, null=True, blank=True)
     impact_tranche = models.TextField(null=True, blank=True)
     funds_allocated = models.FloatField(null=True, blank=True)
@@ -49,7 +50,6 @@ class ProjectSubmission(models.Model):
     issue_description = models.TextField(null=True, blank=True)
     incomplete = models.BooleanField(default=False)
     reviewed_mfs = models.BooleanField(default=False)
-    national_agency = models.TextField(null=True, blank=True)
     correspondance_no = models.IntegerField(null=True, blank=True)
     plus = models.BooleanField(default=False)
     source_file = models.CharField(max_length=255, null=True, blank=True)

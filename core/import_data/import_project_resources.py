@@ -22,6 +22,14 @@ NEW_SUBSECTORS = [
     }
 ]
 
+NEW_TYPES = [
+    {
+        "TYPE": "DOC",
+        "TYPE_PRO": "DOC",
+        "SORT_TYPE": 20,
+    },
+]
+
 
 def import_agency(file_path):
     """
@@ -136,6 +144,9 @@ def import_project_type(file_path):
     """
     with open(file_path, "r", encoding="utf8") as f:
         types_json = json.load(f)
+
+    # add other types that are not in the file
+    types_json.extend(NEW_TYPES)
 
     for type_json in types_json:
         type_data = {
