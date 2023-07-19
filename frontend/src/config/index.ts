@@ -1,4 +1,4 @@
-import { layoutViews, defaultView, errorViews } from './Views'
+import { defaultView, errorViews, layoutViews } from './Views'
 import { defaultWidget, widgetMapping } from './Widgets'
 
 const _DEVELOPMENT_ = process.env.NODE_ENV !== 'production'
@@ -8,6 +8,7 @@ const apiPathTraversal = process.env.NEXT_PUBLIC_API_PATH_TRAVERSAL
 const config = {
   defaultTheme: 'light',
   settings: {
+    unguardedRoutes: ['/login'],
     apiPath,
     apiPathTraversal,
     _DEVELOPMENT_,
