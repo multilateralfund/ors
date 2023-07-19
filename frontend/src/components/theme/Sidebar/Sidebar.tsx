@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { IoBarChart, IoPieChart } from 'react-icons/io5'
 
+import config from '@ors/registry'
 import useStore from '@ors/store'
 
 const items = [
@@ -15,8 +16,10 @@ const items = [
 export default function Sidebar() {
   const pathname = usePathname()
   const user = useStore((state) => state.user)
+  const isGuardedRoute = !config.settings.unguardedRoutes.includes(pathname)
 
   return (
+    isGuardedRoute &&
     !!user.data && (
       <motion.div
         initial={{ opacity: 0 }}

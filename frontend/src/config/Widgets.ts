@@ -1,3 +1,5 @@
+import dynamic from 'next/dynamic'
+
 // Widgets mapping
 export const widgetMapping = {
   // widget: {
@@ -16,5 +18,6 @@ export const widgetMapping = {
 }
 
 // Default Widget
-// export const defaultWidget = TextWidget;
-export const defaultWidget = null
+export const defaultWidget = dynamic(
+  () => import('@ors/components/manage/Widgets/TextWidget'),
+)

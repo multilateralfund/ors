@@ -11,15 +11,13 @@ export default function Header() {
       className="border-b border-solid border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
     >
       <div className="flex w-full justify-between p-4">
-        <Link
-          href="/"
-          className="logo flex items-center text-secondary no-underline"
-        >
+        <Link href="/" className="logo flex items-center no-underline">
           <Image
             src="/assets/logos/mlf_icon.png"
             alt="Multilateral Fund"
-            width="40"
-            height="40"
+            width={40}
+            height={40}
+            priority
           />
           <span className="pl-2">MLFS</span>
         </Link>

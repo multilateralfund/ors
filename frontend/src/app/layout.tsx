@@ -7,9 +7,9 @@ import Sidebar from '@ors/components/theme/Sidebar/Sidebar'
 import api from '@ors/helpers/Api/Api'
 import { Provider } from '@ors/store'
 import '@ors/theme/global.css'
+import ThemeProvider from '@ors/theme/ThemeProvider'
 
 import type { Metadata } from 'next'
-
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
@@ -29,12 +29,14 @@ export default async function RootLayout({
     <html lang="en">
       <body className={inter.className} id="__next">
         <Provider initialState={{ user: { data: user } }}>
-          <GuardRoutes />
-          <Header />
-          <main className="flex w-full">
-            <Sidebar />
-            {children}
-          </main>
+          <ThemeProvider>
+            <GuardRoutes />
+            <Header />
+            <main className="flex w-full">
+              <Sidebar />
+              {children}
+            </main>
+          </ThemeProvider>
         </Provider>
       </body>
     </html>

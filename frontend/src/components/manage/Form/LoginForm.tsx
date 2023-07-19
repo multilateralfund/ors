@@ -1,8 +1,12 @@
 'use client'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-
-import useStore from '@ors/store'
 import React from 'react'
+
+import Button from '@mui/material/Button'
+import useStore from '@ors/store'
+
+import Field from './Field'
 
 export default function LoginForm() {
   const router = useRouter()
@@ -29,15 +33,21 @@ export default function LoginForm() {
           }
         }
       }}
-      className="flex flex-col"
+      className="flex w-full flex-col rounded-lg bg-white p-8 shadow"
     >
-      <label htmlFor="username">Username</label>
-      <input type="text" name="username" />
-      <br />
-      <label htmlFor="password">Password</label>
-      <input type="password" name="password" />
-      <br />
-      <input type="submit" value="Submit" />
+      <h1 className="text-xl font-bold leading-tight tracking-tight md:text-2xl">
+        Sign in to your account
+      </h1>
+      <Field label="Username" name="username" />
+      <Field label="Password" name="password" type="password" />
+      <p className="mt-0 text-right">
+        <Link href="forgot-password" className="text-primary">
+          Forgot password?
+        </Link>
+      </p>
+      <Button variant="contained" type="submit">
+        Submit
+      </Button>
     </form>
   )
 }
