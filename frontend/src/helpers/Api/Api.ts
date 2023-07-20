@@ -1,5 +1,6 @@
 import Cookies from 'js-cookie'
 
+import { AnyObject } from '@ors/@types/primitives'
 import config from '@ors/registry'
 
 const nextCookies = require('next/headers').cookies
@@ -7,8 +8,6 @@ const nextHeaders = require('next/headers').headers
 const redirect = require('next/navigation').redirect
 
 const __SERVER__ = typeof window === 'undefined'
-
-type Object = null | { [key: string]: any }
 
 const defaultHeaders: { [key: string]: { [key: string]: any } } = {
   get: {},
@@ -36,9 +35,9 @@ async function api(
   path: string,
   options?: {
     method?: string
-    data?: Object
-    headers?: Object
-    next?: Object
+    data?: AnyObject
+    headers?: AnyObject
+    next?: AnyObject
     [key: string]: any
   },
   throwError = true,

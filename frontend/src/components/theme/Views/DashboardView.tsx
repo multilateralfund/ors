@@ -1,3 +1,6 @@
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+
 import Header from '../Header/Header'
 import Sidebar from '../Sidebar/Sidebar'
 
@@ -11,7 +14,11 @@ export default function DashboardView({
       <Header />
       <main className="grid-cols-[auto_1fr]">
         <Sidebar />
-        {children}
+        <div className="content grid grid-rows-[auto_1fr_auto] overflow-hidden">
+          <div id="top-control" className="z-10" />
+          {children}
+          <div id="bottom-control" className="z-10" />
+        </div>
       </main>
     </>
   )

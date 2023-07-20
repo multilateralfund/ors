@@ -12,7 +12,7 @@ export default function Dropdown({
 }: {
   children: React.ReactNode
   label: React.ReactNode
-  className: string
+  className?: string
 }) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
@@ -44,7 +44,7 @@ export default function Dropdown({
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
-        className={cx('normal-case', className)}
+        className={className}
       >
         {label}
       </Button>

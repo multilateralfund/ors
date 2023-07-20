@@ -2,7 +2,6 @@
 import React from 'react'
 
 import MUIThemeProvider from '@mui/material/styles/ThemeProvider'
-import usePrevious from '@ors/hooks/usePrevious'
 import useStore from '@ors/store'
 import { createTheme } from '@ors/theme'
 
@@ -15,25 +14,26 @@ export default function ThemeProvider({
     theme: state.theme,
     setTheme: state.setTheme,
   }))
-  const prevTheme = usePrevious(themeManager.theme)
+
+  const currentTheme = React.useMemo(() => {
+    const prefersDark =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches
+    if (!themeManager.theme && prefersDark) {
+      return 'dark'
+    }
+    return themeManager.theme || 'light'
+  }, [themeManager.theme])
 
   React.useEffect(() => {
-    const prefersDark = window.matchMedia(
-      '(prefers-color-scheme: dark)',
-    ).matches
-    if (themeManager.theme || prefersDark) {
-      document.documentElement.setAttribute(
-        'data-mode',
-        themeManager.theme || 'dark',
-      )
+    document.documentElement.setAttribute('data-mode', currentTheme)
+    if (!themeManager.theme) {
+      themeManager.setTheme(currentTheme)
     }
-    if (!themeManager.theme && prefersDark) {
-      themeManager.setTheme('dark')
-    }
-  }, [themeManager, prevTheme])
+  }, [currentTheme, themeManager])
 
   return (
-    <MUIThemeProvider theme={createTheme(themeManager.theme)}>
+    <MUIThemeProvider theme={createTheme(currentTheme)}>
       {children}
     </MUIThemeProvider>
   )

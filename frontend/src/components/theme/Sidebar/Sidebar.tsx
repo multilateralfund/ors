@@ -8,8 +8,8 @@ import { IoBarChart, IoPieChart } from 'react-icons/io5'
 import Box from '@mui/material/Box'
 
 const items = [
-  { title: 'Dashboard', href: '/', Icon: IoBarChart },
-  { title: 'Reports', href: '/reports', Icon: IoPieChart },
+  { title: 'Dashboard', href: '/', Icon: IoPieChart, isExact: true },
+  { title: 'Reports', href: '/reports', Icon: IoBarChart, isExact: false },
 ]
 
 export default function Sidebar() {
@@ -22,7 +22,7 @@ export default function Sidebar() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
-      className="h-full border-0 px-4 py-8 shadow"
+      className="sidebar h-full border-0 border-r px-4 py-8"
     >
       {items.map((item, index) => (
         <Link
@@ -32,7 +32,9 @@ export default function Sidebar() {
             'flex flex-col items-center rounded p-2 text-primary no-underline',
             {
               'mb-6': index < items.length - 1,
-              'bg-primary text-white transition-colors': pathname === item.href,
+              'bg-primary text-white transition-colors': item.isExact
+                ? pathname === item.href
+                : pathname.includes(item.href),
             },
           )}
         >

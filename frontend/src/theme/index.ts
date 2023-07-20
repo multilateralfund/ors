@@ -69,6 +69,8 @@ function getColor(palette: any, mode = 'light', defaultValue: string): string {
   return palette?.[mode] || defaultValue
 }
 
+console.log('HERE', tailwindTheme?.boxShadow)
+
 export const createTheme = (mode: 'light' | 'dark' = 'light') =>
   MUICreateTheme({
     palette: {
@@ -92,6 +94,37 @@ export const createTheme = (mode: 'light' | 'dark' = 'light') =>
           mode === 'light'
             ? tailwindTheme?.colors?.white
             : tailwindTheme?.colors?.gray?.[800],
+      },
+    },
+    components: {
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            textTransform: 'unset',
+          },
+        },
+      },
+      MuiInputBase: {
+        styleOverrides: {
+          root: {
+            backgroundColor:
+              mode === 'light' ? 'rgb(243 244 246)' : 'rgb(55 65 81)',
+          },
+        },
+      },
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            boxShadow: tailwindTheme?.boxShadow?.sm,
+          },
+        },
+      },
+      MuiMenu: {
+        styleOverrides: {
+          list: {
+            padding: 0,
+          },
+        },
       },
     },
   })

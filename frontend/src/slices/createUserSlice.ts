@@ -1,6 +1,7 @@
 import Cookies from 'js-cookie'
 import { StoreApi } from 'zustand'
 
+import { AnyObject } from '@ors/@types/primitives'
 import api from '@ors/helpers/Api/Api'
 
 function removeCookies() {
@@ -11,7 +12,7 @@ function removeCookies() {
 
 export interface UserSlice {
   user: {
-    data: null
+    data: AnyObject
     getUser?: () => void
     setUser?: (data: any) => void
     login?: (username: string, password: string) => void
@@ -26,6 +27,10 @@ export const createUserSlice = (
 ): UserSlice => ({
   user: {
     data: null,
+    // Set user
+    setUser: (data) => {
+      set((state) => ({ user: { ...state.user, data } }))
+    },
     // Get user
     getUser: async () => {
       try {
@@ -34,10 +39,6 @@ export const createUserSlice = (
       } catch (error) {
         get().user?.setUser?.(null)
       }
-    },
-    // Set user
-    setUser: (data) => {
-      set((state) => ({ ...state, user: { ...state.user, data } }))
     },
     // Login
     login: async (username, password) => {
@@ -52,6 +53,7 @@ export const createUserSlice = (
         throw error
       }
     },
+    // Logout
     logout: async () => {
       try {
         await api('api/auth/logout/', {

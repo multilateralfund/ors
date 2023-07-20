@@ -9,7 +9,7 @@ export default function PageWrapper({
   className?: string
 }) {
   return (
-    <div className="page-content overflow-auto">
+    <div className="page-content relative overflow-auto">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
