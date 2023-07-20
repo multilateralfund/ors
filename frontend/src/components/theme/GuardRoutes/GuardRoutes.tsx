@@ -1,9 +1,9 @@
 'use client'
 import { usePathname, useRouter } from 'next/navigation'
+import React from 'react'
 
 import config from '@ors/registry'
 import useStore from '@ors/store'
-import React from 'react'
 
 export default function GuardRoutes() {
   const pathname = usePathname()

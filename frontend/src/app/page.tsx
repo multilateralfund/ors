@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default async function Dashboard() {
   return (
-    <Box component={PageWrapper} className="mx-4 mt-4 rounded p-8">
+    <Box component={PageWrapper} className="mx-4 mt-4">
       <h1>Dashboard</h1>
     </Box>
   )

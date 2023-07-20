@@ -1,6 +1,6 @@
 import React from 'react'
 
-import LoginForm from '@ors/components/manage/Form/LoginForm'
+import LoginForm from '@ors/components/theme/LoginForm/LoginForm'
 import Logo from '@ors/components/theme/Logo/Logo'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 

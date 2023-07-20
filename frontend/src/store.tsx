@@ -1,23 +1,30 @@
 'use client'
-import { createContext, useContext } from 'react'
-import { createStore, StoreApi, useStore as useZustandStore } from 'zustand'
+import React, { createContext, useContext } from 'react'
+import {
+  createStore as zustandCreateStore,
+  StoreApi,
+  useStore as useZustandStore,
+} from 'zustand'
 
+import { createReportsSlice, ReportsSlice } from './slices/createReportsSlice'
 import { createUserSlice, UserSlice } from './slices/createUserSlice'
 
 type StoreState = {
   theme?: any
   setTheme?: (theme: string) => void
-} & UserSlice
+} & UserSlice &
+  ReportsSlice
 
-const store = (initialState?: StoreState) => {
-  return createStore<StoreState>((set, get) => ({
+const createStore = (initialState?: StoreState) => {
+  return zustandCreateStore<StoreState>((set, get) => ({
     ...createUserSlice(set, get, initialState),
+    ...createReportsSlice(set),
     theme: initialState?.theme || null,
-    setTheme: (theme: string) => set((state) => ({ ...state, theme })),
+    setTheme: (theme: string) => set(() => ({ theme })),
   }))
 }
 
-export const ZustandContext = createContext<StoreApi<StoreState>>(store())
+export const ZustandContext = createContext<StoreApi<StoreState>>(createStore())
 
 export const Provider = ({
   children,
@@ -26,10 +33,10 @@ export const Provider = ({
   children: React.ReactNode
   initialState: StoreState
 }) => {
+  const [store] = React.useState(createStore(initialState))
+
   return (
-    <ZustandContext.Provider value={store(initialState)}>
-      {children}
-    </ZustandContext.Provider>
+    <ZustandContext.Provider value={store}>{children}</ZustandContext.Provider>
   )
 }
 

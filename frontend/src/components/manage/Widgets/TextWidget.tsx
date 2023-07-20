@@ -1,19 +1,35 @@
 import cx from 'classnames'
 
+import MUIInputLabel, { InputLabelProps } from '@mui/material/InputLabel'
 import TextField, { TextFieldProps } from '@mui/material/TextField'
 
-export default function TextWidget({
+function Label({
   label,
   className,
+  id,
   ...rest
-}: TextFieldProps) {
+}: InputLabelProps & { label?: React.ReactNode }) {
+  return (
+    !!label && (
+      <MUIInputLabel htmlFor={id} className={cx('mb-2', className)} {...rest}>
+        {label}
+      </MUIInputLabel>
+    )
+  )
+}
+
+export type TextWidgetProps = TextFieldProps & {
+  InputLabel?: InputLabelProps & { label?: React.ReactNode }
+}
+
+export default function TextWidget({
+  InputLabel,
+  className,
+  ...rest
+}: TextWidgetProps) {
   return (
     <div className="widget text-widget">
-      {!!label && (
-        <p className="label mb-2">
-          <label htmlFor={rest.name}>{label}</label>
-        </p>
-      )}
+      <Label {...InputLabel} id={rest.id} />
       <TextField
         variant="outlined"
         size="small"

@@ -11,7 +11,9 @@ export default function ProfileDropdown() {
 
   return (
     !!user.data && (
-      <Dropdown label={<IoPerson size={24} />}>
+      <Dropdown
+        label={<IoPerson size={24} className="text-primary dark:text-white" />}
+      >
         <Dropdown.Item
           onClick={() => {
             router.push('/profile')

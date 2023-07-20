@@ -1,6 +1,7 @@
 'use client'
 import { usePathname } from 'next/navigation'
 
+import Loading from '@ors/app/loading'
 import config from '@ors/registry'
 import useStore from '@ors/store'
 
@@ -13,8 +14,11 @@ export default function View({ children }: { children: React.ReactNode }) {
   const isGuardedRoute = !config.settings.unguardedRoutes.includes(pathname)
 
   function getView() {
-    if (isGuardedRoute && user) {
+    if (isGuardedRoute && !!user.data) {
       return DashboardView
+    }
+    if (isGuardedRoute && !user.data) {
+      return Loading
     }
     return DefaultView
   }

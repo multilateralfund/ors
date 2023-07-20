@@ -6,10 +6,12 @@ import GuardRoutes from '@ors/components/theme/GuardRoutes/GuardRoutes'
 import View from '@ors/components/theme/Views/View'
 import api from '@ors/helpers/Api/Api'
 import { Provider } from '@ors/store'
-import '@ors/theme/global.css'
 import ThemeProvider from '@ors/theme/ThemeProvider'
 
+import '@ors/theme/global.css'
+
 import type { Metadata } from 'next'
+
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {

@@ -20,7 +20,7 @@ figure,
 p,
 pre,
 li {
-  @apply m-0 mb-4 text-base;
+  @apply m-0 text-base;
 }
 
 h1,
