@@ -8,11 +8,21 @@ import Button from '@mui/material/Button'
 import useStore from '@ors/store'
 
 import Field from './Field'
+import { Alert, Collapse, InputAdornment } from '@mui/material'
+import IconButton from '@mui/material/IconButton'
+import { IoEye, IoEyeOff } from 'react-icons/io5'
 
 export default function LoginForm() {
   const router = useRouter()
-  const [errors, setErrors] = React.useState({})
+  const emptyErrors = {
+    username: '',
+    password: '',
+    non_field_errors: '',
+  }
+  const [errors, setErrors] = React.useState(emptyErrors)
+  const [showPassword, setShowPassword] = React.useState(false)
   const user = useStore((state) => state.user)
+  const handleClickShowPassword = () => setShowPassword((show) => !show)
 
   React.useEffect(() => {
     if (user.data) {
@@ -28,10 +38,13 @@ export default function LoginForm() {
         const form = new FormData(e.currentTarget)
         try {
           await user.login(form.get('username'), form.get('password'))
-          setErrors({})
+          setErrors(emptyErrors)
         } catch (error) {
           if (error.status === 400) {
-            setErrors(await error.json())
+            setErrors({
+              ...emptyErrors,
+              ...(await error.json()),
+            })
           }
         }
       }}
@@ -40,11 +53,42 @@ export default function LoginForm() {
       <h1 className="text-2xl font-bold leading-tight tracking-tight md:text-3xl">
         Sign in to your account
       </h1>
-      <Field label="Username" name="username" />
-      <Field label="Password" name="password" type="password" />
+      <Field
+        label="Username"
+        name="username"
+        autoComplete="username"
+        error={!!errors.username}
+        helperText={errors.username}
+      />
+      <Field
+        label="Password"
+        name="password"
+        type={showPassword ? 'text' : 'password'}
+        autoComplete="current-password"
+        error={!!errors.password}
+        helperText={errors.password}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton
+                aria-label="toggle password visibility"
+                onClick={handleClickShowPassword}
+                edge="end"
+              >
+                {showPassword ? <IoEyeOff /> : <IoEye />}
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
+      />
       <p className="mt-0 text-right">
         <Link href="forgot-password">Forgot password?</Link>
       </p>
+      <Collapse in={!!errors.non_field_errors}>
+        <Alert severity="error" className="mb-2">
+          {errors.non_field_errors}
+        </Alert>
+      </Collapse>
       <Button variant="contained" type="submit">
         Submit
       </Button>
