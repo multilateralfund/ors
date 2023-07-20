@@ -17,7 +17,9 @@ export const widgetMapping: {
     // boolean: CheckboxWidget,
     // date: DatePickerWidget,
     // datetime: DateTimePickerWidget,
-    // password: TextWidget,
+    password: dynamic(
+      () => import('@ors/components/manage/Widgets/PasswordWidget'),
+    ),
     // tel: PhoneNumberWidget
   },
 }

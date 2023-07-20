@@ -8,9 +8,6 @@ import api from '@ors/helpers/Api/Api'
 import { Alert, Collapse } from '@mui/material'
 import Field from '@ors/components/manage/Form/Field'
 import { useRouter, useSearchParams } from 'next/navigation'
-import InputAdornment from '@mui/material/InputAdornment'
-import IconButton from '@mui/material/IconButton'
-import { IoEye, IoEyeOff } from 'react-icons/io5'
 
 const emptyErrors = {
   new_password1: '',
@@ -24,11 +21,6 @@ export default function ResetPasswordForm() {
   const params = useSearchParams()
 
   const [errors, setErrors] = React.useState(emptyErrors)
-  const [showPassword, setShowPassword] = React.useState(false)
-
-  function handleClickShowPassword() {
-    setShowPassword((show) => !show)
-  }
 
   return (
     <Box
@@ -70,49 +62,23 @@ export default function ResetPasswordForm() {
         InputLabel={{
           label: 'Password',
         }}
-        id="new_password1"
+        id="new-password1"
         name="new_password1"
-        type={showPassword ? 'text' : 'password'}
+        type="password"
         autoComplete="new-password"
         error={!!errors.new_password1}
         helperText={errors.new_password1}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                aria-label="toggle password visibility"
-                onClick={handleClickShowPassword}
-                edge="end"
-              >
-                {showPassword ? <IoEyeOff /> : <IoEye />}
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
       />
       <Field
         InputLabel={{
           label: 'Confirm Password',
         }}
-        id="new_password2"
+        id="new-password2"
         name="new_password2"
-        type={showPassword ? 'text' : 'password'}
+        type="password"
         autoComplete="new-password"
         error={!!errors.new_password2}
         helperText={errors.new_password2}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                aria-label="toggle password visibility"
-                onClick={handleClickShowPassword}
-                edge="end"
-              >
-                {showPassword ? <IoEyeOff /> : <IoEye />}
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
       />
       <Collapse in={!!(errors.non_field_errors || errors.token)}>
         <Alert severity="error" className="mb-2">
