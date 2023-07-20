@@ -1,4 +1,5 @@
 'use client'
+import { motion } from 'framer-motion'
 import React, { useMemo } from 'react'
 
 import Button from '@mui/material/Button'
@@ -40,7 +41,10 @@ export default function ReportsTable() {
   return (
     <div className="reports relative overflow-x-auto">
       {loading && (
-        <Loading className="z-10 bg-gray-600/10 dark:bg-gray-600/10" />
+        <Loading
+          className="z-10 bg-gray-600/10 dark:bg-gray-600/10"
+          ProgressStyle={{ animationDuration: '0.3s' }}
+        />
       )}
       <div className="px-4 pt-4">
         <p className="mb-4">All submissions</p>
@@ -65,7 +69,16 @@ export default function ReportsTable() {
         <TableBody>
           {results.map((row: any) => {
             return (
-              <TableRow hover tabIndex={-1} key={row.id}>
+              <TableRow
+                component={motion.div}
+                hover
+                tabIndex={-1}
+                key={row.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              >
                 <TableCell align="left">{row.name}</TableCell>
                 <TableCell align="left">{row.country}</TableCell>
                 <TableCell align="center">{row.year}</TableCell>
