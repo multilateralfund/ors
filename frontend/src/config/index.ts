@@ -7,7 +7,7 @@ const apiPathTraversal = process.env.NEXT_PUBLIC_API_PATH_TRAVERSAL
 const config = {
   defaultTheme: 'light',
   settings: {
-    unguardedRoutes: ['/login', '/forgot-password'],
+    unguardedRoutes: ['/login', '/forgot-password', '/reset-password'],
     apiPath,
     apiPathTraversal,
     _DEVELOPMENT_,
