@@ -3,8 +3,8 @@ import React from 'react'
 
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
+import ReportsTable from '@ors/components/manage/Blocks/Table/ReportsTable'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-import ReportsTable from '@ors/components/visualizations/ReportsTable'
 
 import type { Metadata } from 'next'
 

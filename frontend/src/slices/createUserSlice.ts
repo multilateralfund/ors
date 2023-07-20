@@ -3,6 +3,7 @@ import { StoreApi } from 'zustand'
 
 import { AnyObject } from '@ors/@types/primitives'
 import api from '@ors/helpers/Api/Api'
+import { InitialStoreState, StoreState } from '@ors/store'
 
 function removeCookies() {
   Cookies.remove('csrftoken')
@@ -11,62 +12,58 @@ function removeCookies() {
 }
 
 export interface UserSlice {
-  user: {
-    data: AnyObject
-    getUser?: () => void
-    setUser?: (data: any) => void
-    login?: (username: string, password: string) => void
-    logout?: () => void
-  }
+  data: AnyObject | Array<any> | null | undefined
+  getUser?: () => void
+  setUser?: (data: any) => void
+  login?: (username: string, password: string) => void
+  logout?: () => void
 }
 
 export const createUserSlice = (
-  set: StoreApi<UserSlice>['setState'],
-  get: StoreApi<UserSlice>['getState'],
-  initialState?: any,
+  set: StoreApi<StoreState>['setState'],
+  get: StoreApi<StoreState>['getState'],
+  initialState?: InitialStoreState,
 ): UserSlice => ({
-  user: {
-    data: null,
-    // Set user
-    setUser: (data) => {
-      set((state) => ({ user: { ...state.user, data } }))
-    },
-    // Get user
-    getUser: async () => {
-      try {
-        const user = await api('api/auth/user/')
-        get().user?.setUser?.(user)
-      } catch (error) {
-        get().user?.setUser?.(null)
-      }
-    },
-    // Login
-    login: async (username, password) => {
-      try {
-        const login = await api('api/auth/login/', {
-          method: 'post',
-          data: { username, password },
-        })
-        get().user?.setUser?.(login.user)
-      } catch (error) {
-        get().user?.setUser?.(null)
-        throw error
-      }
-    },
-    // Logout
-    logout: async () => {
-      try {
-        await api('api/auth/logout/', {
-          method: 'post',
-        })
-        removeCookies()
-        get().user?.setUser?.(null)
-      } catch (error) {
-        removeCookies()
-        get().user?.setUser?.(null)
-        throw error
-      }
-    },
-    ...(initialState?.user || {}),
+  data: null,
+  // Set user
+  setUser: (data) => {
+    set((state) => ({ user: { ...state.user, data } }))
   },
+  // Get user
+  getUser: async () => {
+    try {
+      const user = await api('api/auth/user/')
+      get().user.setUser?.(user)
+    } catch (error) {
+      get().user.setUser?.(null)
+    }
+  },
+  // Login
+  login: async (username, password) => {
+    try {
+      const login = await api('api/auth/login/', {
+        method: 'post',
+        data: { username, password },
+      })
+      get().user.setUser?.(login.user)
+    } catch (error) {
+      get().user.setUser?.(null)
+      throw error
+    }
+  },
+  // Logout
+  logout: async () => {
+    try {
+      await api('api/auth/logout/', {
+        method: 'post',
+      })
+      removeCookies()
+      get().user.setUser?.(null)
+    } catch (error) {
+      removeCookies()
+      get().user.setUser?.(null)
+      throw error
+    }
+  },
+  ...(initialState?.user || {}),
 })

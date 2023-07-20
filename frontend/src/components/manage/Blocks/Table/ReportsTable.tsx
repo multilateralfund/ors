@@ -10,28 +10,26 @@ import TableHead from '@mui/material/TableHead'
 import TablePagination from '@mui/material/TablePagination'
 import TableRow from '@mui/material/TableRow'
 import Loading from '@ors/app/loading'
+import { getResults } from '@ors/helpers/Api/Api'
+import { ReportsSlice } from '@ors/slices/createReportsSlice'
 import useStore from '@ors/store'
 
-import Field from '../manage/Form/Field'
+import Field from '../../Form/Field'
 
 export default function ReportsTable() {
   const [page, setPage] = React.useState(1)
   const [rowsPerPage, setRowsPerPage] = React.useState(10)
-  const reportsManager = useStore((state) => state.reports)
-  const { loading = false, loaded = false } = reportsManager.get || {}
+  const reportsManager: ReportsSlice = useStore((state) => state.reports)
+  const { loading = false } = reportsManager.get || {}
 
   const reports = useMemo(() => {
-    const data = reportsManager.get.data
-    return {
-      count: data?.count || 0,
-      results: data?.results || [],
-    }
+    return getResults(reportsManager.get.data)
   }, [reportsManager.get])
 
   const { count, results } = reports
 
   React.useEffect(() => {
-    reportsManager.getReports({
+    reportsManager.getReports?.({
       limit: rowsPerPage,
       offset: (page - 1) * rowsPerPage,
     })
@@ -42,7 +40,7 @@ export default function ReportsTable() {
     <div className="reports relative overflow-x-auto">
       {loading && (
         <Loading
-          className="z-10 bg-gray-600/10 dark:bg-gray-600/10"
+          className="z-10 !bg-gray-600/10 dark:!bg-gray-600/20"
           ProgressStyle={{ animationDuration: '0.3s' }}
         />
       )}
@@ -70,7 +68,7 @@ export default function ReportsTable() {
           {results.map((row: any) => {
             return (
               <TableRow
-                component={motion.div}
+                component={motion.tr}
                 hover
                 tabIndex={-1}
                 key={row.id}

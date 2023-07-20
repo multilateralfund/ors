@@ -1,8 +1,8 @@
 export type AnyObject = { [key: string]: any }
 
 export type SliceData = {
-  data: AnyObject | null | undefined
-  error: AnyObject | null | undefined
+  data: AnyObject | Array<any> | null | undefined
+  error: AnyObject | Array<any> | null | undefined
   loading: Boolean
   loaded: Boolean
 }

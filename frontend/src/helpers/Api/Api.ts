@@ -96,13 +96,30 @@ async function api(
         try {
           return await response.json()
         } catch {
-          return response
+          if (throwError) {
+            return response
+          }
+          return null
         }
       } else if (throwError) {
         throw response
       } else {
         return null
       }
+  }
+}
+
+export function getResults(data: any) {
+  if (Array.isArray(data)) {
+    return {
+      count: data.length,
+      results: data,
+    }
+  }
+  return {
+    ...(data || {}),
+    count: data?.count || 0,
+    results: data?.results || [],
   }
 }
 
