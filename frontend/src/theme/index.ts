@@ -69,8 +69,6 @@ function getColor(palette: any, mode = 'light', defaultValue: string): string {
   return palette?.[mode] || defaultValue
 }
 
-console.log('HERE', tailwindTheme?.boxShadow)
-
 export const createTheme = (mode: 'light' | 'dark' = 'light') =>
   MUICreateTheme({
     palette: {
