@@ -253,8 +253,8 @@ REST_AUTH = {
     "PASSWORD_RESET_USE_SITES_DOMAIN": True,
     "PASSWORD_RESET_SERIALIZER": "core.api.serializers.CustomPasswordResetSerializer",
 }
-SESSION_COOKIE_HTTPONLY = False
-CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False
 
 if DEBUG:
     SECRET_KEY = "secret"
