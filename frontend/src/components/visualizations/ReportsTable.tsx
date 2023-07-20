@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React, { useMemo } from 'react'
 
 import Button from '@mui/material/Button'
 import Table from '@mui/material/Table'
@@ -8,6 +8,7 @@ import TableCell from '@mui/material/TableCell'
 import TableHead from '@mui/material/TableHead'
 import TablePagination from '@mui/material/TablePagination'
 import TableRow from '@mui/material/TableRow'
+import Loading from '@ors/app/loading'
 import useStore from '@ors/store'
 
 import Field from '../manage/Form/Field'
@@ -15,16 +16,32 @@ import Field from '../manage/Form/Field'
 export default function ReportsTable() {
   const [page, setPage] = React.useState(1)
   const [rowsPerPage, setRowsPerPage] = React.useState(10)
-  const reports = useStore((state) => state.reports)
+  const reportsManager = useStore((state) => state.reports)
+  const { loading = false, loaded = false } = reportsManager.get || {}
+
+  const reports = useMemo(() => {
+    const data = reportsManager.get.data
+    return {
+      count: data?.count || 0,
+      results: data?.results || [],
+    }
+  }, [reportsManager.get])
+
+  const { count, results } = reports
 
   React.useEffect(() => {
-    reports.getReports()
-
+    reportsManager.getReports({
+      limit: rowsPerPage,
+      offset: (page - 1) * rowsPerPage,
+    })
     /* eslint-disable-next-line */
-  }, [])
+  }, [page, rowsPerPage])
 
   return (
-    <div className="reports overflow-x-auto">
+    <div className="reports relative overflow-x-auto">
+      {loading && (
+        <Loading className="z-10 bg-gray-600/10 dark:bg-gray-600/10" />
+      )}
       <div className="px-4 pt-4">
         <p className="mb-4">All submissions</p>
         <div className="grid grid-cols-3 gap-x-4">
@@ -46,33 +63,30 @@ export default function ReportsTable() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {!!reports.data &&
-            reports.data
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((row: any) => {
-                return (
-                  <TableRow hover tabIndex={-1} key={row.id}>
-                    <TableCell align="left">{row.name}</TableCell>
-                    <TableCell align="left">{row.country}</TableCell>
-                    <TableCell align="center">{row.year}</TableCell>
-                    <TableCell align="center"></TableCell>
-                    <TableCell align="center">
-                      <Button variant="outlined" size="small">
-                        Edit
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
+          {results.map((row: any) => {
+            return (
+              <TableRow hover tabIndex={-1} key={row.id}>
+                <TableCell align="left">{row.name}</TableCell>
+                <TableCell align="left">{row.country}</TableCell>
+                <TableCell align="center">{row.year}</TableCell>
+                <TableCell align="center"></TableCell>
+                <TableCell align="center">
+                  <Button variant="outlined" size="small">
+                    Edit
+                  </Button>
+                </TableCell>
+              </TableRow>
+            )
+          })}
         </TableBody>
       </Table>
       <TablePagination
         component="div"
         rowsPerPageOptions={[10, 20, 30, 40, 50]}
-        count={reports.data?.length}
-        page={page}
+        count={count}
+        page={page - 1}
         onPageChange={(_, page) => {
-          setPage(page)
+          setPage(page + 1)
         }}
         rowsPerPage={rowsPerPage}
         onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => {

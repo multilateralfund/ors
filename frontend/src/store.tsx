@@ -18,7 +18,7 @@ type StoreState = {
 const createStore = (initialState?: StoreState) => {
   return zustandCreateStore<StoreState>((set, get) => ({
     ...createUserSlice(set, get, initialState),
-    ...createReportsSlice(set),
+    ...createReportsSlice(set, get),
     theme: initialState?.theme || null,
     setTheme: (theme: string) => set(() => ({ theme })),
   }))

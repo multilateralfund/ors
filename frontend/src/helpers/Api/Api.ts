@@ -22,6 +22,12 @@ const defaultHeaders: { [key: string]: { [key: string]: any } } = {
   },
 }
 
+function delayExecution(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
+
 function formatUrl(path: string) {
   if (path.startsWith('http://') || path.startsWith('https://')) return path
 
@@ -38,6 +44,7 @@ async function api(
     data?: AnyObject
     headers?: AnyObject
     next?: AnyObject
+    delay?: number | undefined
     [key: string]: any
   },
   throwError = true,
@@ -47,12 +54,14 @@ async function api(
     data = null,
     headers = {},
     next = {},
+    delay,
     ...opts
   } = options || {}
   const csrftoken = !__SERVER__ ? Cookies.get('csrftoken') : null
   const pathname = __SERVER__
     ? nextHeaders().get('x-next-pathname')
     : window.location.pathname
+  const sendRequest = new Date().getTime()
   const response = await fetch(formatUrl(path), {
     method: method.toUpperCase(),
     credentials: 'include',
@@ -68,6 +77,12 @@ async function api(
     ...next,
     ...opts,
   })
+  const receiveResponse = new Date().getTime()
+  const responseTimeMs = receiveResponse - sendRequest
+  // Delay response time
+  if (delay && delay - responseTimeMs > 0) {
+    await delayExecution(delay - responseTimeMs)
+  }
   switch (response.status) {
     case 403:
       // if (pathname !== '/login' && __SERVER__) {
