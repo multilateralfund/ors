@@ -22,6 +22,7 @@ export default function PasswordWidget({ ...rest }: TextWidgetProps) {
             aria-label="toggle password visibility"
             onClick={handleClickShowPassword}
             edge="end"
+            tabIndex={-1}
           >
             {showPassword ? <IoEyeOff /> : <IoEye />}
           </IconButton>

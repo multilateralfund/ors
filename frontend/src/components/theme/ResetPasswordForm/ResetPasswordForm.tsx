@@ -16,7 +16,9 @@ const emptyErrors = {
   non_field_errors: '',
 }
 
-export default function ResetPasswordForm() {
+export default function ResetPasswordForm({
+  endpoint = '/api/auth/password/reset/confirm/',
+}) {
   const router = useRouter()
   const params = useSearchParams()
 
@@ -29,7 +31,7 @@ export default function ResetPasswordForm() {
         e.preventDefault()
         const form = new FormData(e.currentTarget)
         try {
-          await api('/api/auth/password/reset/confirm/', {
+          await api(endpoint, {
             method: 'post',
             data: {
               uid: params.get('uid'),
@@ -52,7 +54,7 @@ export default function ResetPasswordForm() {
       className="flex w-full flex-col rounded-lg p-8"
     >
       <h1 className="text-2xl font-bold leading-tight tracking-tight md:text-3xl">
-        Reset password
+        Change password
       </h1>
       <p className="my-2">
         Please enter your new password twice so we can verify you typed it in
@@ -60,7 +62,7 @@ export default function ResetPasswordForm() {
       </p>
       <Field
         InputLabel={{
-          label: 'Password',
+          label: 'New Password',
         }}
         id="new-password1"
         name="new_password1"
