@@ -4,6 +4,7 @@ import { IoPerson } from 'react-icons/io5'
 
 import Dropdown from '@ors/components/ui/Dropdown'
 import useStore from '@ors/store'
+import config from '@ors/config'
 
 export default function ProfileDropdown() {
   const router = useRouter()
@@ -16,14 +17,14 @@ export default function ProfileDropdown() {
       >
         <Dropdown.Item
           onClick={() => {
-            router.push('/profile')
+            router.push('/change-password')
           }}
         >
-          Profile
+          Change Password
         </Dropdown.Item>
         <Dropdown.Item
           onClick={() => {
-            router.push('/admin')
+            router.push(config.settings.apiPath + '/admin/')
           }}
         >
           Admin
