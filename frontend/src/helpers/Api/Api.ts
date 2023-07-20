@@ -61,7 +61,7 @@ async function api(
   const pathname = __SERVER__
     ? nextHeaders().get('x-next-pathname')
     : window.location.pathname
-  const sendRequest = new Date().getTime()
+  const sendRequest = delay ? new Date().getTime() : 0
   const response = await fetch(formatUrl(path), {
     method: method.toUpperCase(),
     credentials: 'include',
@@ -77,7 +77,7 @@ async function api(
     ...next,
     ...opts,
   })
-  const receiveResponse = new Date().getTime()
+  const receiveResponse = delay ? new Date().getTime() : 0
   const responseTimeMs = receiveResponse - sendRequest
   // Delay response time
   if (delay && delay - responseTimeMs > 0) {

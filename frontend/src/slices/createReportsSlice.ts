@@ -40,7 +40,7 @@ export const createReportsSlice = (
           `api/country-programme/reports/${
             params ? `?${new URLSearchParams(params).toString()}` : ''
           }`,
-          { delay: 500 },
+          { delay: 300 },
         )
         set((state) => ({
           reports: {
