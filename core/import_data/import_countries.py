@@ -3,8 +3,7 @@ import logging
 import pandas as pd
 
 from django.db import transaction
-from django.conf import settings
-from core.import_data.utils import COUNTRY_NAME_MAPPING
+from core.import_data.utils import COUNTRY_NAME_MAPPING, IMPORT_RESOURCES_DIR
 
 from core.models import Country, Subregion, Region
 
@@ -182,19 +181,13 @@ def parse_subregions_file(file_path):
 
 @transaction.atomic
 def import_countries():
-    country_lvc = parse_country_lvc_file(
-        settings.IMPORT_RESOURCES_DIR / "countries_lvc.xlsx"
-    )
+    country_lvc = parse_country_lvc_file(IMPORT_RESOURCES_DIR / "countries_lvc.xlsx")
     logger.info("✔ lvc clasification file parse")
-    parse_regions_file(settings.IMPORT_RESOURCES_DIR / "regions.json")
+    parse_regions_file(IMPORT_RESOURCES_DIR / "regions.json")
     logger.info("✔ regions imported")
-    parse_subregions_file(settings.IMPORT_RESOURCES_DIR / "subregions.json")
+    parse_subregions_file(IMPORT_RESOURCES_DIR / "subregions.json")
     logger.info("✔ subregions imported")
-    parse_countries_json_file(
-        settings.IMPORT_RESOURCES_DIR / "countries.json", country_lvc
-    )
+    parse_countries_json_file(IMPORT_RESOURCES_DIR / "countries.json", country_lvc)
     logger.info("✔ countries json parsed")
-    parse_countries_xlsx_file(
-        settings.IMPORT_RESOURCES_DIR / "countries.xlsx", country_lvc
-    )
+    parse_countries_xlsx_file(IMPORT_RESOURCES_DIR / "countries.xlsx", country_lvc)
     logger.info("✔ countries xlsx parsed")

@@ -48,5 +48,5 @@ class CountryAdmin(admin.ModelAdmin):
         return queryset.select_related("subregion__region")
 
     def get_list_display(self, request):
-        exclude = ["cpreport", "projectsubmission"]
+        exclude = ["cpreport", "project"]
         return get_final_display_list(Country, exclude)

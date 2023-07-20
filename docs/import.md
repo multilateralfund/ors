@@ -21,10 +21,17 @@ docker-compose exec app ./manage.py import_resources usages
 - blend_components -> import only the blend_components
 - countries -> import only the countries
 - usages -> import only the usages
-- sectors -> import the sectors and subsectors
-- agencies -> import only the agencies
 - adm_columns -> import adm columns
+- project-resources -> import agencies, sectors, subsectors,
+    project statuses and project types
 ---
+
+### Import files
+- project-resources
+: download files from nextclod
+    - **nextcloud path** OzoneMlf/Projects inventory/data/json
+    - **local path** core/import_data/project_database
+
 
 ## Records
 - To import all records, run (from xlsx and databases):
