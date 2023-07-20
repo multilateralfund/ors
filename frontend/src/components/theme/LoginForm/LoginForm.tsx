@@ -2,14 +2,10 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React from 'react'
-import { IoEye, IoEyeOff } from 'react-icons/io5'
-
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Collapse from '@mui/material/Collapse'
-import IconButton from '@mui/material/IconButton'
-import InputAdornment from '@mui/material/InputAdornment'
 import Field from '@ors/components/manage/Form/Field'
 import useStore from '@ors/store'
 
@@ -22,12 +18,7 @@ const emptyErrors = {
 export default function LoginForm() {
   const router = useRouter()
   const [errors, setErrors] = React.useState(emptyErrors)
-  const [showPassword, setShowPassword] = React.useState(false)
   const user = useStore((state) => state.user)
-
-  function handleClickShowPassword() {
-    setShowPassword((show) => !show)
-  }
 
   React.useEffect(() => {
     if (user.data) {
@@ -74,23 +65,10 @@ export default function LoginForm() {
         }}
         id="password"
         name="password"
-        type={showPassword ? 'text' : 'password'}
+        type="password"
         autoComplete="current-password"
         error={!!errors.password}
         helperText={errors.password}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                aria-label="toggle password visibility"
-                onClick={handleClickShowPassword}
-                edge="end"
-              >
-                {showPassword ? <IoEyeOff /> : <IoEye />}
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
       />
       <p className="mb-4 text-right">
         <Link href="forgot-password">Forgot password?</Link>

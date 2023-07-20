@@ -65,7 +65,7 @@ export default function ForgotPasswordForm() {
         }}
         name="email"
         type="email"
-        id="user_email"
+        id="user-email"
         autoComplete="email"
         placeholder="user@example.com"
         error={!!errors.email}
