@@ -1,18 +1,26 @@
 import { AnyObject } from '@ors/@types/primitives'
 
-export function getDefaultSliceData(): {
+export const defaultSliceData = {
+  data: null,
+  error: null,
+  loading: false,
+  loaded: false,
+}
+
+export function getInitialSliceData(data: AnyObject | null | undefined): {
   data: AnyObject | null | undefined
   error: AnyObject | null | undefined
   loading: Boolean
   loaded: Boolean
 } {
   return {
-    data: null,
+    data,
     error: null,
     loading: false,
-    loaded: false,
+    loaded: !!data,
   }
 }
+
 export function getPendingSliceData(): { loading: Boolean; loaded: Boolean } {
   return {
     loading: true,

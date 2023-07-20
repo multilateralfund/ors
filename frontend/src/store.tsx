@@ -6,19 +6,30 @@ import {
   useStore as useZustandStore,
 } from 'zustand'
 
-import { createReportsSlice, ReportsSlice } from './slices/createReportsSlice'
+import {
+  createReportsSlice,
+  InitialReportsSlice,
+  ReportsSlice,
+} from './slices/createReportsSlice'
 import { createUserSlice, UserSlice } from './slices/createUserSlice'
 
-type StoreState = {
-  theme?: any
+export type StoreState = {
+  user: UserSlice
+  reports: ReportsSlice
+  theme: any
   setTheme?: (theme: string) => void
-} & UserSlice &
-  ReportsSlice
+}
 
-const createStore = (initialState?: StoreState) => {
+export type InitialStoreState = {
+  user?: Partial<UserSlice>
+  reports?: InitialReportsSlice
+  theme?: any
+}
+
+const createStore = (initialState?: InitialStoreState) => {
   return zustandCreateStore<StoreState>((set, get) => ({
-    ...createUserSlice(set, get, initialState),
-    ...createReportsSlice(set, get),
+    user: { ...createUserSlice(set, get, initialState) },
+    reports: { ...createReportsSlice(set, get, initialState) },
     theme: initialState?.theme || null,
     setTheme: (theme: string) => set(() => ({ theme })),
   }))
@@ -31,7 +42,7 @@ export const Provider = ({
   initialState,
 }: {
   children: React.ReactNode
-  initialState: StoreState
+  initialState: InitialStoreState
 }) => {
   const [store] = React.useState(createStore(initialState))
 
