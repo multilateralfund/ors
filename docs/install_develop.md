@@ -37,10 +37,6 @@ This document describes installation steps required to install locally for devel
   ```shell
   cd frontend
   ```
-- Configure local settings:
-  ```shell
-  echo "VITE_API_BASE_URL=http://localhost:8000/api/" > .env.local 
-  ```
 - Install dependencies
   ```shell
   npm install
