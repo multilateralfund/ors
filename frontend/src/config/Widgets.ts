@@ -1,5 +1,15 @@
-import type { AutocompleteWidget } from '@ors/components/manage/Widgets/AutocompleteWidget'
-import type { TextWidget } from '@ors/components/manage/Widgets/TextWidget'
+import type {
+  AutocompleteWidget,
+  // AutocompleteWidgetProps,
+} from '@ors/components/manage/Widgets/AutocompleteWidget'
+import type {
+  PasswordWidget,
+  // PasswordWidgetProps,
+} from '@ors/components/manage/Widgets/PasswordWidget'
+import type {
+  TextWidget,
+  // TextWidgetProps,
+} from '@ors/components/manage/Widgets/TextWidget'
 
 import dynamic from 'next/dynamic'
 
@@ -24,7 +34,13 @@ export type BaseWidgetProps = {
 }
 
 // TODO: Find a way to pass combined types. For now let's use any
-export type WidgetProps = BaseWidgetProps & any
+export type WidgetProps = any
+// export type WidgetProps = (
+//   | ({ type?: 'email' | 'text' } & TextWidgetProps)
+//   | ({ type?: 'password' } & PasswordWidgetProps)
+//   | ({ widget?: 'autocomplete' } & AutocompleteWidgetProps)
+// ) &
+//   (({ type?: string } | { widget?: string }) & TextWidgetProps)
 
 // Widgets mapping
 export const widgetsMapping: WidgetsMapping = {
@@ -34,7 +50,7 @@ export const widgetsMapping: WidgetsMapping = {
     ) as TextWidget,
     password: dynamic(
       () => import('@ors/components/manage/Widgets/PasswordWidget'),
-    ) as TextWidget,
+    ) as PasswordWidget,
     text: dynamic(
       () => import('@ors/components/manage/Widgets/TextWidget'),
     ) as TextWidget,
