@@ -34,8 +34,9 @@ function formatUrl(path: string) {
 
   const { settings } = config
   const adjustedPath = path[0] !== '/' ? `/${path}` : path
+  const apiPath = __SERVER__ ? settings.apiPrivatePath : settings.apiPath
 
-  return `${settings.apiPath}${adjustedPath}`
+  return `${apiPath}${adjustedPath}`
 }
 
 async function api(

@@ -19,6 +19,10 @@ server {
         expires 365d;
     }
 
+    location /_next/static {
+        alias /.next/static;
+        expires 365d;
+    }
 
     location ~ ^/(admin|api|__debug__)/ {
         client_max_body_size 1m;
@@ -26,11 +30,13 @@ server {
     }
 
     location / {
-        location ~* (\.html)$ {
-             expires off;
-        }
         expires 365d;
 
-        try_files $uri $uri/ /index.html;
+        proxy_pass http://nextjs:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
     }
 }
