@@ -1,15 +1,16 @@
 'use client'
+import { Box } from '@mui/material'
 import cx from 'classnames'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { IoBarChart, IoPieChart } from 'react-icons/io5'
 
-import Box from '@mui/material/Box'
+import { IoBarChart } from '@react-icons/all-files/io5/IoBarChart'
+import { IoPieChart } from '@react-icons/all-files/io5/IoPieChart'
 
 const items = [
-  { title: 'Dashboard', href: '/', Icon: IoPieChart, isExact: true },
-  { title: 'Reports', href: '/reports', Icon: IoBarChart, isExact: false },
+  { Icon: IoPieChart, href: '/', isExact: true, title: 'Dashboard' },
+  { Icon: IoBarChart, href: '/reports', isExact: false, title: 'Reports' },
 ]
 
 export default function Sidebar() {
@@ -17,28 +18,28 @@ export default function Sidebar() {
 
   return (
     <Box
-      component={motion.div}
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
       className="sidebar h-full border-0 border-r px-4 py-8"
+      component={motion.div}
     >
       {items.map((item, index) => (
         <Link
           key={item.href}
-          href={item.href}
           className={cx(
             'flex flex-col items-center rounded p-2 text-primary no-underline',
             {
-              'mb-6': index < items.length - 1,
               'bg-primary text-white transition-colors': item.isExact
                 ? pathname === item.href
                 : pathname.includes(item.href),
+              'mb-6': index < items.length - 1,
             },
           )}
+          href={item.href}
         >
-          <item.Icon size={24} className="mb-1" />
+          <item.Icon className="mb-1" size={24} />
           <span>{item.title}</span>
         </Link>
       ))}

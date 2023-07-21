@@ -1,3 +1,96 @@
 {
-  "extends": ["next/core-web-vitals", "prettier"]
+  "root": true,
+  "extends": [
+    "next/core-web-vitals",
+    "prettier",
+    "plugin:perfectionist/recommended-natural",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "plugins": ["perfectionist", "@typescript-eslint"],
+  "parser": "@typescript-eslint/parser",
+  "ignorePatterns": ["src/@types/theme.d.ts"],
+  "rules": {
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-var-requires": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "perfectionist/sort-array-includes": "error",
+    "perfectionist/sort-enums": "error",
+    "perfectionist/sort-exports": "error",
+    "perfectionist/sort-interfaces": "error",
+    "perfectionist/sort-jsx-props": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc",
+        "always-on-top": [
+          "key",
+          "id",
+          "name",
+          "initial",
+          "exit",
+          "animate",
+          "transition",
+          "className"
+        ],
+        "shorthand": "last",
+        "callback": "last",
+        "multiline": "last"
+      }
+    ],
+    "perfectionist/sort-imports": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc",
+        "groups": [
+          [
+            "type",
+            "parent-type",
+            "sibling-type",
+            "index-type",
+            "internal-type"
+          ],
+          "react",
+          ["builtin", "external"],
+          "internal",
+          ["parent", "sibling", "index"],
+          "side-effect",
+          "icons",
+          "files",
+          "object",
+          "unknown"
+        ],
+        "custom-groups": {
+          "value": {
+            "react": ["react", "react-*"],
+            "icons": ["@react-icons/**"],
+            "files": [
+              "*.css",
+              "*.png",
+              "*.jpg",
+              "*.jpeg",
+              "*.json",
+              "@ors/**/*.css",
+              "@ors/**/*.png",
+              "@ors/**/*.jpg",
+              "@ors/**/*.jpeg",
+              "@ors/**/*.json"
+            ]
+          },
+          "type": {
+            "react": ["react react-* next"]
+          }
+        },
+        "internal-pattern": ["@ors/**"],
+        "newlines-between": "always",
+        "read-tsconfig": false
+      }
+    ],
+    "perfectionist/sort-named-exports": "error",
+    "perfectionist/sort-named-imports": "error",
+    "perfectionist/sort-object-types": "error",
+    "perfectionist/sort-objects": "error",
+    "perfectionist/sort-union-types": "error"
+  }
 }

@@ -1,37 +1,38 @@
 'use client'
 import React, { createContext, useContext } from 'react'
+
 import {
-  createStore as zustandCreateStore,
   StoreApi,
   useStore as useZustandStore,
+  createStore as zustandCreateStore,
 } from 'zustand'
 
 import {
-  createReportsSlice,
   InitialReportsSlice,
   ReportsSlice,
+  createReportsSlice,
 } from './slices/createReportsSlice'
-import { createUserSlice, UserSlice } from './slices/createUserSlice'
+import { UserSlice, createUserSlice } from './slices/createUserSlice'
 
 export type StoreState = {
-  user: UserSlice
   reports: ReportsSlice
-  theme: any
   setTheme?: (theme: string) => void
+  theme: any
+  user: UserSlice
 }
 
 export type InitialStoreState = {
-  user?: Partial<UserSlice>
   reports?: InitialReportsSlice
   theme?: any
+  user?: Partial<UserSlice>
 }
 
 const createStore = (initialState?: InitialStoreState) => {
   return zustandCreateStore<StoreState>((set, get) => ({
-    user: { ...createUserSlice(set, get, initialState) },
     reports: { ...createReportsSlice(set, get, initialState) },
-    theme: initialState?.theme || null,
     setTheme: (theme: string) => set(() => ({ theme })),
+    theme: initialState?.theme || null,
+    user: { ...createUserSlice(set, get, initialState) },
   }))
 }
 
@@ -51,6 +52,7 @@ export const Provider = ({
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function useStore(selector: (state: StoreState) => any) {
   return useZustandStore(useContext(ZustandContext), selector)
 }

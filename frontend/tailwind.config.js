@@ -7,10 +7,19 @@ module.exports = {
   corePlugins: {
     preflight: false,
   },
-  important: '#__next',
+  darkMode: ['class', '[data-mode="dark"]'],
+  important: '#next-app',
+  plugins: [],
   theme: {
     extend: {
       colors: {
+        base: {
+          DEFAULT: '#333333',
+          contrast: '#ffffff',
+          dark: '#ffffff',
+          'dark-contrast': '#333333',
+          light: '#333333',
+        },
         primary: {
           DEFAULT: '#0f82cc',
           contrast: '#ffffff',
@@ -19,16 +28,7 @@ module.exports = {
           DEFAULT: '#333333',
           contrast: '#ffffff',
         },
-        base: {
-          DEFAULT: '#333333',
-          light: '#333333',
-          dark: '#ffffff',
-          contrast: '#ffffff',
-          'dark-contrast': '#333333',
-        },
       },
     },
   },
-  darkMode: ['class', '[data-mode="dark"]'],
-  plugins: [],
 }

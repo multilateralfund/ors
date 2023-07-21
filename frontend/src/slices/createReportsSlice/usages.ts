@@ -1,6 +1,6 @@
 import { StoreApi } from 'zustand'
 
-import { AnyObject, SliceData } from '@ors/@types/primitives'
+import { Params, SliceData } from '@ors/@types/primitives'
 import api from '@ors/helpers/Api/Api'
 import {
   defaultSliceData,
@@ -12,7 +12,7 @@ import { InitialStoreState, StoreState } from '@ors/store'
 
 export interface UsagesSlice {
   get: SliceData
-  getUsages?: (params?: AnyObject | undefined) => void
+  getUsages?: (params?: Params) => void
 }
 
 export interface InitialUsagesSlice {

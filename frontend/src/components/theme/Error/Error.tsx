@@ -1,9 +1,9 @@
 export default function Error({
-  statusCode,
   message,
+  statusCode,
 }: {
-  statusCode: React.ReactNode
   message: React.ReactNode
+  statusCode: React.ReactNode
 }) {
   return (
     <div className="flex h-full w-full items-center justify-center">

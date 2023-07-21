@@ -1,24 +1,24 @@
 'use client'
-import { motion } from 'framer-motion'
+import cx from 'classnames'
 
-export default function PageWrapper({
+import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
+
+function PageWrapper({
   children,
   className,
+  ...rest
 }: {
   children: React.ReactNode
-  className?: string
+  className: string
 }) {
   return (
-    <div className="page-content relative overflow-auto">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.5 }}
-        className={className}
-      >
-        {children}
-      </motion.div>
-    </div>
+    <FadeInOut
+      className={cx('page-content relative overflow-auto', className)}
+      {...rest}
+    >
+      {children}
+    </FadeInOut>
   )
 }
+
+export default PageWrapper

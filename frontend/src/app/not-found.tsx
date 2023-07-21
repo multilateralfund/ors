@@ -3,5 +3,5 @@
 import Error from '@ors/components/theme/Error/Error'
 
 export default function NotFound() {
-  return <Error statusCode={404} message="Page not found" />
+  return <Error message="Page not found" statusCode={404} />
 }

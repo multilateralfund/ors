@@ -1,6 +1,8 @@
-import { Inter } from 'next/font/google'
-import { cookies } from 'next/headers'
+import type { Metadata } from 'next'
+
 import React from 'react'
+
+import { cookies } from 'next/headers'
 
 import GuardRoutes from '@ors/components/theme/GuardRoutes/GuardRoutes'
 import View from '@ors/components/theme/Views/View'
@@ -11,13 +13,10 @@ import ThemeProvider from '@ors/theme/ThemeProvider'
 
 import '@ors/theme/global.css'
 
-import type { Metadata } from 'next'
-const inter = Inter({ subsets: ['latin'] })
-
 export const metadata: Metadata = {
-  title: 'ORS',
   description:
     'Multilateral Fund for the Implementation of the Montreal Protocol',
+  title: 'ORS',
 }
 
 export default async function RootLayout({
@@ -38,26 +37,26 @@ export default async function RootLayout({
 
   return (
     <html lang="en" {...(theme.value ? { 'data-mode': theme.value } : {})}>
-      <body className={inter.className}>
-        <div id="__next">
+      <body>
+        <div id="next-app">
           <Provider
             initialState={{
-              theme: theme.value,
-              user: { data: user },
               reports: {
                 blends: {
                   get: getInitialSliceData(blends),
                 },
-                substances: {
-                  get: getInitialSliceData(substances),
-                },
                 countries: {
                   get: getInitialSliceData(countries),
+                },
+                substances: {
+                  get: getInitialSliceData(substances),
                 },
                 usages: {
                   get: getInitialSliceData(usages),
                 },
               },
+              theme: theme.value,
+              user: { data: user },
             }}
           >
             <ThemeProvider>

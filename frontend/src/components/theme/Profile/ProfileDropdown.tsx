@@ -1,10 +1,13 @@
 'use client'
+import React from 'react'
+
 import { useRouter } from 'next/navigation'
-import { IoPerson } from 'react-icons/io5'
 
 import Dropdown from '@ors/components/ui/Dropdown'
-import useStore from '@ors/store'
 import config from '@ors/config'
+import useStore from '@ors/store'
+
+import { IoPerson } from '@react-icons/all-files/io5/IoPerson'
 
 export default function ProfileDropdown() {
   const router = useRouter()
@@ -13,7 +16,7 @@ export default function ProfileDropdown() {
   return (
     !!user.data && (
       <Dropdown
-        label={<IoPerson size={24} className="text-primary dark:text-white" />}
+        label={<IoPerson className="text-primary dark:text-white" size={24} />}
       >
         <Dropdown.Item
           onClick={() => {

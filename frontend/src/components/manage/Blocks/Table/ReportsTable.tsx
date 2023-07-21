@@ -1,24 +1,31 @@
 'use client'
-import { motion } from 'framer-motion'
 import React, { useMemo } from 'react'
 
-import Button from '@mui/material/Button'
-import Table from '@mui/material/Table'
-import TableBody from '@mui/material/TableBody'
-import TableCell from '@mui/material/TableCell'
-import TableHead from '@mui/material/TableHead'
-import TablePagination from '@mui/material/TablePagination'
-import TableRow from '@mui/material/TableRow'
+import {
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TablePagination,
+  TableRow,
+} from '@mui/material'
+import { motion } from 'framer-motion'
+
 import Loading from '@ors/app/loading'
+import Field from '@ors/components/manage/Form/Field'
 import { getResults } from '@ors/helpers/Api/Api'
 import { ReportsSlice } from '@ors/slices/createReportsSlice'
 import useStore from '@ors/store'
 
-import Field from '../../Form/Field'
+type Filters = { country_id?: number | string }
+type CountryOption = { id: number; label: string | undefined; name?: string }
+type Report = { country: string; id: number; name: string; year: number }
 
 export default function ReportsTable() {
   const [page, setPage] = React.useState(1)
   const [rowsPerPage, setRowsPerPage] = React.useState(10)
+  const [filters, setFilters] = React.useState<Filters>({})
   const reportsManager: ReportsSlice = useStore((state) => state.reports)
   const { loading = false } = reportsManager.get || {}
 
@@ -26,15 +33,53 @@ export default function ReportsTable() {
     return getResults(reportsManager.get.data)
   }, [reportsManager.get])
 
+  const countries = useMemo(() => {
+    return getResults(reportsManager.countries.get.data)
+  }, [reportsManager.countries])
+
+  const countriesOptions: CountryOption[] = useMemo(() => {
+    return [
+      { id: 0, label: 'Any' },
+      ...countries.results.map((country: CountryOption) => ({
+        id: country.id,
+        label: country.name,
+      })),
+    ]
+  }, [countries])
+
   const { count, results } = reports
+
+  function handleFilterChange(
+    key: keyof Filters,
+    value: number | string,
+    deleteFilter: boolean,
+  ): void {
+    setFilters((prevFilters) => {
+      const newFilters = { ...prevFilters }
+      if (deleteFilter) {
+        delete newFilters[key]
+      } else {
+        newFilters[key] = value
+      }
+      return newFilters
+    })
+  }
 
   React.useEffect(() => {
     reportsManager.getReports?.({
       limit: rowsPerPage,
       offset: (page - 1) * rowsPerPage,
+      ...filters,
     })
     /* eslint-disable-next-line */
-  }, [page, rowsPerPage])
+  }, [page, rowsPerPage, filters])
+
+  React.useEffect(() => {
+    const { loaded, loading } = reportsManager.countries.get
+    if (!loading && !loaded) {
+      reportsManager.countries.getCountries?.()
+    }
+  }, [reportsManager.countries])
 
   return (
     <div className="reports relative overflow-x-auto">
@@ -47,11 +92,19 @@ export default function ReportsTable() {
       <div className="px-4 pt-4">
         <p className="mb-4">All submissions</p>
         <div className="grid grid-cols-3 gap-x-4">
-          <Field widget="autocomplete" Input={{ label: 'Party' }} />
-          <Field widget="autocomplete" Input={{ label: 'Status' }} />
-          <Field widget="autocomplete" Input={{ label: 'Status' }} />
-          <Field widget="autocomplete" Input={{ label: 'From' }} />
-          <Field widget="autocomplete" Input={{ label: 'To' }} />
+          <Field
+            Input={{ label: 'Party' }}
+            defaultValue="Any"
+            options={countriesOptions}
+            widget="autocomplete"
+            onChange={(_: any, value: CountryOption) => {
+              handleFilterChange('country_id', value?.id, !value?.id)
+            }}
+          />
+          <Field Input={{ label: 'Status' }} widget="autocomplete" />
+          <Field Input={{ label: 'Status' }} widget="autocomplete" />
+          <Field Input={{ label: 'From' }} widget="autocomplete" />
+          <Field Input={{ label: 'To' }} widget="autocomplete" />
         </div>
       </div>
       <Table size="small">
@@ -65,24 +118,24 @@ export default function ReportsTable() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {results.map((row: any) => {
+          {results.map((row: Report) => {
             return (
               <TableRow
-                component={motion.tr}
-                hover
-                tabIndex={-1}
                 key={row.id}
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
                 exit={{ opacity: 1 }}
+                animate={{ opacity: 1 }}
                 transition={{ duration: 0.5 }}
+                component={motion.tr}
+                tabIndex={-1}
+                hover
               >
                 <TableCell align="left">{row.name}</TableCell>
                 <TableCell align="left">{row.country}</TableCell>
                 <TableCell align="center">{row.year}</TableCell>
                 <TableCell align="center"></TableCell>
                 <TableCell align="center">
-                  <Button variant="outlined" size="small">
+                  <Button size="small" variant="outlined">
                     Edit
                   </Button>
                 </TableCell>
@@ -92,18 +145,18 @@ export default function ReportsTable() {
         </TableBody>
       </Table>
       <TablePagination
+        className="pr-2"
         component="div"
-        rowsPerPageOptions={[10, 20, 30, 40, 50]}
         count={count}
         page={page - 1}
+        rowsPerPage={rowsPerPage}
+        rowsPerPageOptions={[10, 20, 30, 40, 50]}
         onPageChange={(_, page) => {
           setPage(page + 1)
         }}
-        rowsPerPage={rowsPerPage}
         onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => {
           setRowsPerPage(parseInt(event.target.value, 10))
         }}
-        className="pr-2"
       />
     </div>
   )

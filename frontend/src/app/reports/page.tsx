@@ -1,12 +1,12 @@
-import Link from 'next/link'
+import type { Metadata } from 'next'
+
 import React from 'react'
 
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
+import { Box, Button } from '@mui/material'
+import Link from 'next/link'
+
 import ReportsTable from '@ors/components/manage/Blocks/Table/ReportsTable'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-
-import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Reports',
@@ -23,7 +23,7 @@ export default async function Reports() {
           Create a submission
         </p>
         <Link href="/reports/create">
-          <Button variant="contained" className="w-full">
+          <Button className="w-full" variant="contained">
             Create
           </Button>
         </Link>

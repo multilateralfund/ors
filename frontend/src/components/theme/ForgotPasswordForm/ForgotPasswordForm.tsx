@@ -1,12 +1,10 @@
 'use client'
 import React from 'react'
 
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
+import { Alert, AlertTitle, Box, Button, Collapse } from '@mui/material'
 
-import api from '@ors/helpers/Api/Api'
-import { Alert, AlertTitle, Collapse } from '@mui/material'
 import Field from '@ors/components/manage/Form/Field'
+import api from '@ors/helpers/Api/Api'
 
 const emptyErrors = {
   email: '',
@@ -19,7 +17,7 @@ export default function ForgotPasswordForm() {
 
   if (isSuccess) {
     return (
-      <Alert severity="success" className="mb-2">
+      <Alert className="mb-2" severity="success">
         <AlertTitle>Password reset successfully requested</AlertTitle>
         We have emailed you instructions for setting your password, if an
         account exists with the email you entered. You should receive them
@@ -30,14 +28,15 @@ export default function ForgotPasswordForm() {
 
   return (
     <Box
+      className="flex w-full flex-col rounded-lg p-8"
       component="form"
       onSubmit={async (e) => {
         e.preventDefault()
         const form = new FormData(e.currentTarget)
         try {
           await api('/api/auth/password/reset/', {
-            method: 'post',
             data: { email: form.get('email') },
+            method: 'post',
           })
           setErrors(emptyErrors)
           setSuccess(true)
@@ -50,7 +49,6 @@ export default function ForgotPasswordForm() {
           }
         }
       }}
-      className="flex w-full flex-col rounded-lg p-8"
     >
       <h1 className="text-2xl font-bold leading-tight tracking-tight md:text-3xl">
         Reset password
@@ -60,23 +58,23 @@ export default function ForgotPasswordForm() {
         instructions for setting a new one.
       </p>
       <Field
+        id="user-email"
+        name="email"
+        autoComplete="email"
+        error={!!errors.email}
+        helperText={errors.email}
+        placeholder="user@example.com"
+        type="email"
         InputLabel={{
           label: 'Email',
         }}
-        name="email"
-        type="email"
-        id="user-email"
-        autoComplete="email"
-        placeholder="user@example.com"
-        error={!!errors.email}
-        helperText={errors.email}
       />
       <Collapse in={!!errors.non_field_errors}>
-        <Alert severity="error" className="mb-2">
+        <Alert className="mb-2" severity="error">
           {errors.non_field_errors}
         </Alert>
       </Collapse>
-      <Button variant="contained" type="submit">
+      <Button type="submit" variant="contained">
         Submit
       </Button>
     </Box>

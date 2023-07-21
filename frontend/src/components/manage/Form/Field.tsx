@@ -1,27 +1,35 @@
-import config from '@ors/registry'
+import type { ByType, ByWidget, WidgetProps } from '@ors/config/Widgets'
 
-const getWidgetDefault = () => config.widgets.default
+import cx from 'classnames'
 
-const getWidgetByType = (type: string) => config.widgets.type[type] || null
+import config from '@ors/config'
 
-// const getWidgetByChoices = (props: any) => {
-//   if (props.choices) {
-//     return config.widgets.choices;
-//   }
+export type Field =
+  | (typeof config.widgets.type)[keyof typeof config.widgets.type]
+  | (typeof config.widgets.widget)[keyof typeof config.widgets.widget]
+  | null
+  | typeof config.widgets.default
 
-//   return null;
-// };
+function getWidgetDefault() {
+  return config.widgets.default
+}
 
-const getWidgetByName = (widget: string) =>
-  config.widgets.widget[widget] || null
+function getWidgetByName(widget?: keyof ByWidget) {
+  return widget ? config.widgets.widget[widget] : null
+}
 
-const Field = (props: any) => {
+function getWidgetByType(type?: keyof ByType) {
+  return type ? config.widgets.type[type] : null
+}
+
+function Field({ type, widget, ...props }: WidgetProps): React.ReactElement {
   const Widget =
-    getWidgetByName(props.widget) ||
-    // getWidgetByChoices(props) ||
-    getWidgetByType(props.type) ||
-    getWidgetDefault()
-  return <Widget {...props} />
+    getWidgetByName(widget) || getWidgetByType(type) || getWidgetDefault()
+  return (
+    <div className={cx('widget', `${widget || type || 'text'}-widget`)}>
+      <Widget {...props} />
+    </div>
+  )
 }
 
 export default Field

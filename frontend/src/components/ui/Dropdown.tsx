@@ -1,20 +1,20 @@
-import cx from 'classnames'
+// @ts-nocheck
 import React from 'react'
 
-import Button from '@mui/material/Button'
-import Menu from '@mui/material/Menu'
-import MenuItem from '@mui/material/MenuItem'
+import { Button, Menu, MenuItem } from '@mui/material'
+
+import { AnyObject } from '@ors/@types/primitives'
 
 export default function Dropdown({
   children,
-  label,
   className,
+  label,
 }: {
   children: React.ReactNode
-  label: React.ReactNode
   className?: string
+  label: React.ReactNode
 }) {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
+  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null)
   const open = Boolean(anchorEl)
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -29,7 +29,7 @@ export default function Dropdown({
     // Checking isValidElement is the safe way and avoids a
     // typescript error too.
     if (React.isValidElement(child)) {
-      return React.cloneElement(child as React.ReactElement<any>, {
+      return React.cloneElement(child as React.ReactElement<AnyObject>, {
         handleClose,
       })
     }
@@ -40,11 +40,11 @@ export default function Dropdown({
     <>
       <Button
         id="basic-button"
-        aria-controls={open ? 'basic-menu' : undefined}
-        aria-haspopup="true"
-        aria-expanded={open ? 'true' : undefined}
-        onClick={handleClick}
         className={className}
+        aria-controls={open ? 'basic-menu' : undefined}
+        aria-expanded={open ? 'true' : undefined}
+        aria-haspopup="true"
+        onClick={handleClick}
       >
         {label}
       </Button>
@@ -52,10 +52,10 @@ export default function Dropdown({
         id="basic-menu"
         anchorEl={anchorEl}
         open={open}
-        onClose={handleClose}
         MenuListProps={{
           'aria-labelledby': 'basic-button',
         }}
+        onClose={handleClose}
       >
         {childrenWithProps}
       </Menu>
@@ -66,12 +66,12 @@ export default function Dropdown({
 // eslint-disable-next-line react/display-name
 Dropdown.Item = ({
   children,
-  onClick,
   handleClose,
+  onClick,
 }: {
   children: React.ReactNode
-  onClick: Function
-  handleClose?: Function
+  handleClose?: () => void
+  onClick: (e: React.MouseEvent) => void
 }) => {
   return (
     <MenuItem

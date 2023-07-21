@@ -1,6 +1,6 @@
-import NextImage from 'next/image'
+import NextImage, { ImageProps } from 'next/image'
 
-export default function Logo(props: any) {
+export default function Image(props: ImageProps) {
   return (
     <div className="image-container">
       <NextImage fill {...props} />
