@@ -1,6 +1,4 @@
-import { StoreApi } from 'zustand'
-
-import { AnyObject, SliceData } from '@ors/@types/primitives'
+import { Params, SliceData } from '@ors/@types/primitives'
 import api from '@ors/helpers/Api/Api'
 import {
   defaultSliceData,
@@ -10,32 +8,36 @@ import {
 } from '@ors/helpers/Store/Store'
 import { InitialStoreState, StoreState } from '@ors/store'
 
-import { BlendsSlice, createBlendsSlice, InitialBlendsSlice } from './blends'
+import { BlendsSlice, InitialBlendsSlice, createBlendsSlice } from './blends'
 import {
   CountriesSlice,
-  createCountriesSlice,
   InitialCountriesSlice,
+  createCountriesSlice,
 } from './countries'
 import {
-  createSubstancesSlice,
   InitialSubstancesSlice,
   SubstancesSlice,
+  createSubstancesSlice,
 } from './substances'
-import { createUsagesSlice, InitialUsagesSlice, UsagesSlice } from './usages'
+import { InitialUsagesSlice, UsagesSlice, createUsagesSlice } from './usages'
+// import { isEmpty, omitBy } from 'lodash'
+// import isEmpty from 'lodash/isEmpty'
+// import omitBy from 'lodash/omitBy'
+import { StoreApi } from 'zustand'
 
 export interface ReportsSlice {
-  get: SliceData
   blends: BlendsSlice
   countries: CountriesSlice
+  get: SliceData
+  getReports?: (params?: Params) => void
   substances: SubstancesSlice
   usages: UsagesSlice
-  getReports?: (params?: AnyObject | undefined) => void
 }
 
 export interface InitialReportsSlice {
-  get?: Partial<SliceData>
   blends?: InitialBlendsSlice
   countries?: InitialCountriesSlice
+  get?: Partial<SliceData>
   substances?: InitialSubstancesSlice
   usages?: InitialUsagesSlice
 }
@@ -45,13 +47,11 @@ export const createReportsSlice = (
   get: StoreApi<StoreState>['getState'],
   initialState?: InitialStoreState,
 ): ReportsSlice => ({
+  blends: createBlendsSlice(set, get, initialState),
+  countries: createCountriesSlice(set, get, initialState),
   get: {
     ...defaultSliceData,
   },
-  blends: createBlendsSlice(set, get, initialState),
-  countries: createCountriesSlice(set, get, initialState),
-  substances: createSubstancesSlice(set, get, initialState),
-  usages: createUsagesSlice(set, get, initialState),
   // Get reports
   getReports: async (params) => {
     const getSliceData = {
@@ -85,4 +85,6 @@ export const createReportsSlice = (
       }))
     }
   },
+  substances: createSubstancesSlice(set, get, initialState),
+  usages: createUsagesSlice(set, get, initialState),
 })

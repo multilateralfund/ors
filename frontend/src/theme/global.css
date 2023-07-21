@@ -1,20 +1,23 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
-
 @import './preflight';
 @import './typography';
-
 @import './components/mui/MuiBox';
-
 @import './components/image';
 @import './components/widget';
 
+@layer base {
+  html {
+    font-family: Inter, system-ui, sans-serif;
+  }
+}
+
 * {
-  box-sizing: border-box;
-  @apply duration-300;
-  transition-property: background-color, border-color;
+  @apply box-border duration-300;
+
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-property: background-color, border-color;
 }
 
 :root {
@@ -26,14 +29,10 @@ body {
   @apply m-0 h-full overflow-hidden;
 }
 
-#__next {
+#next-app {
   @apply grid h-full grid-rows-[auto_1fr];
 }
 
 main {
   @apply grid overflow-hidden;
 }
-
-/* .MuiMenu-paper {
-  @apply shadow;
-} */

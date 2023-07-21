@@ -1,57 +1,57 @@
-import { AnyObject } from '@ors/@types/primitives'
+import { DataType, ErrorType } from '@ors/@types/primitives'
 
 export const defaultSliceData = {
   data: null,
   error: null,
-  loading: false,
   loaded: false,
+  loading: false,
 }
 
-export function getInitialSliceData(data: AnyObject | null | undefined): {
-  data: AnyObject | null | undefined
-  error: AnyObject | null | undefined
-  loading: Boolean
-  loaded: Boolean
+export function getInitialSliceData(data: DataType): {
+  data: DataType
+  error: ErrorType
+  loaded: boolean
+  loading: boolean
 } {
   return {
     data,
     error: null,
-    loading: false,
     loaded: !!data,
+    loading: false,
   }
 }
 
-export function getPendingSliceData(): { loading: Boolean; loaded: Boolean } {
+export function getPendingSliceData(): { loaded: boolean; loading: boolean } {
   return {
-    loading: true,
     loaded: false,
+    loading: true,
   }
 }
 
-export function getSuccessSliceData(data: AnyObject | null | undefined): {
-  data: AnyObject | null | undefined
-  error: AnyObject | null | undefined
-  loading: Boolean
-  loaded: Boolean
+export function getSuccessSliceData(data: DataType): {
+  data: DataType
+  error: ErrorType
+  loaded: boolean
+  loading: boolean
 } {
   return {
     data,
     error: null,
-    loading: false,
     loaded: true,
+    loading: false,
   }
 }
 
-export function getErrorSliceData(error: AnyObject | null | undefined): {
-  data: AnyObject | null | undefined
-  error: AnyObject | null | undefined
-  loading: Boolean
-  loaded: Boolean
+export function getErrorSliceData(error: ErrorType): {
+  data: DataType
+  error: ErrorType
+  loaded: boolean
+  loading: boolean
 } {
   return {
-    error,
     data: null,
-    loading: false,
+    error,
     loaded: false,
+    loading: false,
   }
 }

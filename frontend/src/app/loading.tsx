@@ -1,15 +1,14 @@
-import cx from 'classnames'
 import { CSSProperties } from 'react'
 
-import Box from '@mui/material/Box'
-import CircularProgress from '@mui/material/CircularProgress'
+import { Box, CircularProgress } from '@mui/material'
+import cx from 'classnames'
 
 export default function Loading({
-  className,
   ProgressStyle,
+  className,
 }: {
-  className?: string
   ProgressStyle?: CSSProperties | undefined
+  className?: string
 }) {
   return (
     <Box

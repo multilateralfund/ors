@@ -1,8 +1,8 @@
+import type { Metadata } from 'next'
+
 import React from 'react'
 
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-
-import type { Metadata } from 'next'
 import ResetPasswordForm from '@ors/components/theme/ResetPasswordForm/ResetPasswordForm'
 
 export const metadata: Metadata = {

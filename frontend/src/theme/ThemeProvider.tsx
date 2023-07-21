@@ -2,6 +2,7 @@
 import React from 'react'
 
 import MUIThemeProvider from '@mui/material/styles/ThemeProvider'
+
 import useStore from '@ors/store'
 import { createTheme } from '@ors/theme'
 
@@ -11,8 +12,8 @@ export default function ThemeProvider({
   children: React.ReactNode
 }) {
   const themeManager = useStore((state) => ({
-    theme: state.theme,
     setTheme: state.setTheme,
+    theme: state.theme,
   }))
 
   const currentTheme = React.useMemo(() => {

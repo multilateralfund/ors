@@ -1,10 +1,11 @@
+import type { Metadata } from 'next'
+
 import React from 'react'
 
 import LoginForm from '@ors/components/theme/LoginForm/LoginForm'
 import Logo from '@ors/components/theme/Logo/Logo'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
-import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Login',
 }

@@ -1,12 +1,12 @@
 'use client'
 import Dropdown from '@ors/components/ui/Dropdown'
-import { LANGUAGES, LanguagesKeys } from '@ors/constants'
+import { LANGUAGES } from '@ors/constants'
 
 const LanguageSelector = ({ className }: { className: string }) => {
   return (
-    <Dropdown label={'English'} className={className}>
+    <Dropdown className={className} label={'English'}>
       {Object.entries(LANGUAGES).map(([key, lang]) => (
-        <Dropdown.Item onClick={() => {}} key={key}>
+        <Dropdown.Item key={key} onClick={() => {}}>
           {lang.nativeName}
         </Dropdown.Item>
       ))}

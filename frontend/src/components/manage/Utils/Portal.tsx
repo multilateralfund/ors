@@ -7,7 +7,7 @@ export default function Portal({
   key,
 }: {
   children: React.ReactNode
-  domNode?: Element | DocumentFragment | string
+  domNode?: DocumentFragment | Element | string
   key?: null | string
 }) {
   if (typeof window === 'undefined' || !domNode) return children

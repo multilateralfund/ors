@@ -1,4 +1,4 @@
-import { defaultWidget, widgetMapping } from './Widgets'
+import { defaultWidget, widgetsMapping } from './Widgets'
 
 const _DEVELOPMENT_ = process.env.NODE_ENV !== 'production'
 const apiPath = process.env.NEXT_PUBLIC_API_PATH
@@ -7,13 +7,13 @@ const apiPathTraversal = process.env.NEXT_PUBLIC_API_PATH_TRAVERSAL
 const config = {
   defaultTheme: 'light',
   settings: {
-    unguardedRoutes: ['/login', '/forgot-password', '/reset-password'],
+    _DEVELOPMENT_,
     apiPath,
     apiPathTraversal,
-    _DEVELOPMENT_,
+    unguardedRoutes: ['/login', '/forgot-password', '/reset-password'],
   },
   widgets: {
-    ...widgetMapping,
+    ...widgetsMapping,
     default: defaultWidget,
   },
 }

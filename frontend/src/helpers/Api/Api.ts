@@ -1,25 +1,26 @@
+import type { DataType } from '@ors/@types/primitives'
+
 import Cookies from 'js-cookie'
 
-import { AnyObject } from '@ors/@types/primitives'
-import config from '@ors/registry'
+import config from '@ors/config'
 
 const nextCookies = require('next/headers').cookies
-const nextHeaders = require('next/headers').headers
-const redirect = require('next/navigation').redirect
+// const nextHeaders = require('next/headers').headers
+// const redirect = require('next/navigation').redirect
 
 const __SERVER__ = typeof window === 'undefined'
 
 const defaultHeaders: { [key: string]: { [key: string]: any } } = {
+  common: {
+    Accept: 'application/json',
+  },
+  del: {},
   get: {},
+  patch: {},
   post: {
     'Content-Type': 'application/json',
   },
   put: {},
-  patch: {},
-  del: {},
-  common: {
-    Accept: 'application/json',
-  },
 }
 
 function delayExecution(ms: number) {
@@ -40,30 +41,28 @@ function formatUrl(path: string) {
 async function api(
   path: string,
   options?: {
-    method?: string
-    data?: AnyObject
-    headers?: AnyObject
-    next?: AnyObject
+    data?: any
     delay?: number | undefined
-    [key: string]: any
+    headers?: any
+    method?: string
+    next?: any
   },
   throwError = true,
 ) {
   const {
-    method = 'get',
     data = null,
-    headers = {},
-    next = {},
     delay,
+    headers = {},
+    method = 'get',
+    next = {},
     ...opts
   } = options || {}
   const csrftoken = !__SERVER__ ? Cookies.get('csrftoken') : null
-  const pathname = __SERVER__
-    ? nextHeaders().get('x-next-pathname')
-    : window.location.pathname
+  // const pathname = __SERVER__
+  //   ? nextHeaders().get('x-next-pathname')
+  //   : window.location.pathname
   const sendRequest = delay ? new Date().getTime() : 0
   const response = await fetch(formatUrl(path), {
-    method: method.toUpperCase(),
     credentials: 'include',
     headers: {
       Accept: 'application/json',
@@ -73,6 +72,7 @@ async function api(
       ...defaultHeaders[method.toLowerCase()],
       ...headers,
     },
+    method: method.toUpperCase(),
     ...(data ? { body: JSON.stringify(data) } : {}),
     ...next,
     ...opts,
@@ -109,17 +109,26 @@ async function api(
   }
 }
 
-export function getResults(data: any) {
+export function getResults(data: DataType): {
+  count: number
+  results: Array<any>
+} {
   if (Array.isArray(data)) {
     return {
       count: data.length,
       results: data,
     }
   }
+  if (data && typeof data === 'object' && Array.isArray(data.results)) {
+    return {
+      ...(data || {}),
+      count: typeof data.count === 'number' ? data.count : 0,
+      results: data.results || [],
+    }
+  }
   return {
-    ...(data || {}),
-    count: data?.count || 0,
-    results: data?.results || [],
+    count: 0,
+    results: [],
   }
 }
 

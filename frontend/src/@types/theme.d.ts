@@ -1,7 +1,7 @@
-import {
-  Palette as MuiPallete,
+import type {
+  PaletteOptions as MUIPaletteOptions,
+  Palette as MUIPallete,
   PaletteColorOptions,
-  PaletteOptions as MuiPaletteOptions,
 } from '@mui/material/styles/createPalette'
 
 declare module '@mui/material/styles/createPalette' {

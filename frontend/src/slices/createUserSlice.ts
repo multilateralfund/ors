@@ -1,7 +1,7 @@
 import Cookies from 'js-cookie'
 import { StoreApi } from 'zustand'
 
-import { AnyObject } from '@ors/@types/primitives'
+import { DataType } from '@ors/@types/primitives'
 import api from '@ors/helpers/Api/Api'
 import { InitialStoreState, StoreState } from '@ors/store'
 
@@ -12,11 +12,11 @@ function removeCookies() {
 }
 
 export interface UserSlice {
-  data: AnyObject | Array<any> | null | undefined
+  data: DataType
   getUser?: () => void
-  setUser?: (data: any) => void
   login?: (username: string, password: string) => void
   logout?: () => void
+  setUser?: (data: DataType) => void
 }
 
 export const createUserSlice = (
@@ -25,10 +25,6 @@ export const createUserSlice = (
   initialState?: InitialStoreState,
 ): UserSlice => ({
   data: null,
-  // Set user
-  setUser: (data) => {
-    set((state) => ({ user: { ...state.user, data } }))
-  },
   // Get user
   getUser: async () => {
     try {
@@ -42,8 +38,8 @@ export const createUserSlice = (
   login: async (username, password) => {
     try {
       const login = await api('api/auth/login/', {
+        data: { password, username },
         method: 'post',
-        data: { username, password },
       })
       get().user.setUser?.(login.user)
     } catch (error) {
@@ -64,6 +60,10 @@ export const createUserSlice = (
       get().user.setUser?.(null)
       throw error
     }
+  },
+  // Set user
+  setUser: (data) => {
+    set((state) => ({ user: { ...state.user, data } }))
   },
   ...(initialState?.user || {}),
 })

@@ -20,7 +20,6 @@
       }
     ],
     "paths": {
-      "@ors/registry": ["./src/config"],
       "@ors/*": ["./src/*"]
     },
     "useUnknownInCatchVariables": false
