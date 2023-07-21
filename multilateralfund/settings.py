@@ -25,19 +25,24 @@ env = environ.Env()
 if os.path.exists(str(BASE_DIR / ".env")):
     env.read_env(str(BASE_DIR / ".env"))
 
-BACKEND_HOST = env.get_value("BACKEND_HOST", default="localhost")
+BACKEND_HOST = env.str("BACKEND_HOST", default="localhost")
 FRONTEND_HOST = env.list("FRONTEND_HOST", default=["http://localhost:3000"])
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env.get_value("DJANGO_SECRET_KEY", default="")
+SECRET_KEY = env.str("DJANGO_SECRET_KEY", default="")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
 
-ALLOWED_HOSTS = [BACKEND_HOST]
+ALLOWED_HOSTS = [
+    # Allow direct access from the docker network to the backend API
+    "app",
+    # Allow access from the outs
+    BACKEND_HOST.rsplit(":", 1)[0].split("/")[-1]
+]
 
 # CORS allowed origins
 CORS_ALLOWED_ORIGINS = [_host.rsplit(",", 1)[0] for _host in FRONTEND_HOST]
@@ -209,6 +214,10 @@ LOGGING = {
             "level": LOG_LEVEL,
             "propagate": False,
         },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "WARNING",
     },
 }
 

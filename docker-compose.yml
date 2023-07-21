@@ -26,12 +26,21 @@ services:
     depends_on:
       - postgres
 
+  nextjs:
+    image: ghcr.io/multilateralfund/multilateralfund-nextjs:${DOCKER_TAG:-main}
+    volumes:
+      - nextjs_data:/frontend/.next/
+    expose:
+      - 3000
+
   nginx:
     image: ghcr.io/multilateralfund/multilateralfund-nginx:${DOCKER_TAG:-main}
     volumes:
       - app_data:/.fs
+      - nextjs_data:/.next
     depends_on:
       - app
+      - nextjs
     ports:
       - "3000:80"
 
@@ -39,4 +48,6 @@ volumes:
   pg-data:
     driver: local
   app_data:
+    driver: local
+  nextjs_data:
     driver: local

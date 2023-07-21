@@ -6,6 +6,11 @@ services:
     environment:
       - GUNICORN_CMD_ARGS=--workers=2 --threads=2
 
+  nextjs:
+    build:
+      context: .
+      dockerfile: docker/nextjs.docker
+
   nginx:
     build:
       context: .
