@@ -40,7 +40,7 @@ DEBUG = env.bool("DJANGO_DEBUG", default=False)
 ALLOWED_HOSTS = [
     # Allow direct access from the docker network to the backend API
     "app",
-    # Allow access from the outs
+    # Allow access from the outside
     BACKEND_HOST.rsplit(":", 1)[0].split("/")[-1]
 ]
 
