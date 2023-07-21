@@ -2,12 +2,15 @@ import decimal
 import json
 import re
 
+from dateutil.parser import parse, ParserError
 from django.conf import settings
 
 from core.models.adm import AdmColumn, AdmRow
+from core.models.agency import Agency
 from core.models.blend import Blend
 from core.models.country import Country
 from core.models.country_programme import CPReport
+from core.models.project import ProjectStatus, ProjectSubSector, ProjectType
 from core.models.substance import Substance
 from core.utils import IMPORT_DB_MAX_YEAR
 
@@ -31,6 +34,8 @@ COUNTRY_NAME_MAPPING = {
     "Turkiye": "Turkey",
     "USA": "United States of America",
     "Western Samoa": "Samoa",
+    "Moldova, Rep": "Moldova",
+    "Micronesia": "Micronesia (Federated States of)",
 }
 
 SUBSECTOR_NAME_MAPPING = {
@@ -97,6 +102,23 @@ def parse_string(string_value):
     return string_value.strip().lower()
 
 
+def parse_date(date_string, logger):
+    """
+    Parse date string
+
+    @param date_string: string date
+    @return: date object
+    """
+    if not date_string:
+        return None
+
+    try:
+        return parse(date_string)
+    except ParserError:
+        logger.warning(f"⚠️ Invalid date: {date_string}")
+        return None
+
+
 def delete_old_data(cls, source_file, logger):
     """
     Delete old data from db for a specific source file
@@ -132,7 +154,13 @@ def get_chemical_by_name_or_components(chemical_name, components=None):
 
 
 def get_cp_report(
-    year, country_name, country_id=None, index_row=None, logger=None, other_args=None
+    year,
+    country_name,
+    country_id=None,
+    index_row=None,
+    logger=None,
+    other_args=None,
+    use_offset=True,
 ):
     """
     get or create country program report object by year and country
@@ -142,11 +170,14 @@ def get_cp_report(
     @param index_row = int
     @param logger = logger obj
     @param other_args = dict (other arguments for CPReport object)
+    @param use_offset = boolean (if the index_row should be increased with OFFSET)
 
     @return country_program = CPReport object
     """
     if not country_id:
-        country = get_country_by_name(country_name, index_row, logger)
+        country = get_country_by_name(
+            country_name, index_row, logger, use_offset=use_offset
+        )
         country_id = country.id
 
     cp_name = f"{country_name} {year}"
@@ -165,7 +196,9 @@ def get_cp_report(
     return cp
 
 
-def get_object_by_name(cls, obj_name, index_row, obj_type_name, logger):
+def get_object_by_name(
+    cls, obj_name, index_row, obj_type_name, logger, use_offset=True
+):
     """
     get object by name or log error if not found in db
     @param cls: Class instance
@@ -173,6 +206,7 @@ def get_object_by_name(cls, obj_name, index_row, obj_type_name, logger):
     @param index_row: integer -> index row
     @param obj_type_name: string -> object type name (for logging)
     @param logger: logger object
+    @param use_offset: boolean (if the index_row should be increased with OFFSET)
 
     @return: object or None
     """
@@ -181,8 +215,10 @@ def get_object_by_name(cls, obj_name, index_row, obj_type_name, logger):
     obj = cls.objects.find_by_name(obj_name)
 
     if not obj:
+        if use_offset:
+            index_row += OFFSET
         logger.info(
-            f"[row: {index_row + OFFSET}]: This {obj_type_name} does not exists in data base: {obj_name}"
+            f"[row: {index_row}]: This {obj_type_name} does not exists in data base: {obj_name}"
         )
 
     return obj
@@ -268,7 +304,11 @@ def get_cp_report_for_db_import(
 
     # get cp report id
     cp_report = get_cp_report(
-        year, country["name"], country["id"], other_args=other_args
+        year,
+        country["name"],
+        country["id"],
+        other_args=other_args,
+        use_offset=False,
     )
     return cp_report
 
@@ -492,17 +532,25 @@ def parse_chemical_name(chemical_name):
     return chemical_name, components
 
 
-def get_country_by_name(country_name, index_row, logger):
+def get_country_by_name(country_name, index_row, logger, use_offset=True):
     """
     get country object from country name
     @param country_name = string
     @param index_row = int
     @param logger = logger object
+    @param use_offset = boolean (if the index_row should be increased with OFFSET)
 
     @return Country object
     """
     country_name = COUNTRY_NAME_MAPPING.get(country_name, country_name)
-    country = get_object_by_name(Country, country_name, index_row, "country", logger)
+    country = get_object_by_name(
+        Country,
+        country_name,
+        index_row,
+        "country",
+        logger,
+        use_offset=use_offset,
+    )
     return country
 
 
@@ -536,3 +584,132 @@ def get_chemical(chemical_name, index_row, logger):
         return chemical, None
 
     return None, chemical
+
+
+# --- projects import ---
+def get_project_base_data(item, item_index, logger, is_submissions=True):
+    """
+    Get project base data
+    ! if tehre is an empty value for country, agency, subsector, type or status return None
+    @param item = dict (row data)
+    @param item_index = int (index row)
+    @param logger = logger object
+    @param is_submissions = boolean (if the data is for a project submissions xlsx file)
+
+    @return dict = {
+        "country": Country object,
+        "agency": Agency object,
+        "subsector": ProjectSubSector object,
+        "project_type": ProjectType object,
+        "status": ProjectStatus object,
+        "title": string,
+        "description": string,
+        "impact": string,
+        "date_completion": string,
+        "intersessional_approval": string,
+        "retroactive_finance": string,
+        "umbrella_project": string,
+        "loan": string,
+        "excom_provision": string,
+        "products_manufactured": string,
+        "operating_cost": string,
+        "cost_effectiveness": string,
+        "local_ownership": string,
+        "export_to": string,
+    }
+    """
+
+    country = get_country_by_name(
+        item["COUNTRY"],
+        item_index,
+        logger,
+        use_offset=is_submissions,
+    )
+    agency = get_object_by_name(
+        Agency,
+        item["AGENCY"],
+        item_index,
+        "agency",
+        logger,
+        use_offset=is_submissions,
+    )
+    # get subsector name from dict if exists else use the same name from the file
+    subsect_name = SUBSECTOR_NAME_MAPPING.get(
+        item["SUBSECTOR"],
+        item["SUBSECTOR"],
+    )
+    subsec = get_object_by_name(
+        ProjectSubSector,
+        subsect_name,
+        item_index,
+        "subsector",
+        logger,
+        use_offset=is_submissions,
+    )
+
+    proj_type = get_object_by_name(
+        ProjectType,
+        item["TYPE"],
+        item_index,
+        "type",
+        logger,
+        use_offset=is_submissions,
+    )
+
+    status_str = item["STATUS_CODE"]
+    if is_submissions and not status_str:
+        status_str = "NEW"
+
+    project_status = get_object_by_name(
+        ProjectStatus,
+        status_str,
+        item_index,
+        "status",
+        logger,
+        use_offset=is_submissions,
+    )
+
+    # if country or agency or subsector does not exists then skip this row
+    if not all([country, agency, subsec, proj_type, project_status]):
+        return None
+
+    date_completion = item["DATE_COMPLETION"]
+    if not is_submissions:
+        date_completion = parse_date(date_completion, logger)
+
+    project_data = {
+        "country": country,
+        "agency": agency,
+        "subsector": subsec,
+        "project_type": proj_type,
+        "status": project_status,
+        "title": item["PROJECT_TITLE"],
+        "description": item.get("PROJECT_DESCRIPTION"),
+        "impact": item["IMPACT"],
+        "date_completion": date_completion,
+        "intersessional_approval": item["INTERSESSIONAL_APPROVAL"],
+        "retroactive_finance": item["RETROACTIVE_FINANCE"],
+        "umbrella_project": item["UMBRELLA_PROJECT"],
+        "loan": item["LOAN"],
+    }
+
+    optional_fields = [
+        "EXCOM_PROVISION",
+        "PRODUCTS_MANUFACTURED",
+        "OPERATING_COST",
+        "COST_EFFECTIVENESS",
+        "LOCAL_OWNERSHIP",
+        "EXPORT_TO",
+        "CAPITAL_COST",
+        "OPERATING_COST",
+    ]
+    for field in optional_fields:
+        if field not in item:
+            continue
+
+        if field == "COST_EFFECTIVENESS":
+            project_data["effectiveness_cost"] = item["COST_EFFECTIVENESS"]
+        else:
+            project_data[field.lower()] = item[field]
+
+    return project_data

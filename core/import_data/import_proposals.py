@@ -6,15 +6,11 @@ from django.db import transaction
 from django.conf import settings
 
 from core.import_data.utils import (
-    COUNTRY_NAME_MAPPING,
-    SUBSECTOR_NAME_MAPPING,
     delete_old_data,
-    get_object_by_name,
+    get_project_base_data,
     parse_string,
 )
-from core.models.agency import Agency
-from core.models.country import Country
-from core.models.project import Project, ProjectStatus, ProjectSubSector, ProjectType
+from core.models.project import Project
 from core.models.project_submission import (
     ProjectSubmission,
     SubmissionAmount,
@@ -67,28 +63,9 @@ def parse_file(file_path, file_name, meeting_no):
     df = pd.read_excel(file_path).replace({np.nan: None})
 
     for index_row, row in df.iterrows():
-        country_name = COUNTRY_NAME_MAPPING.get(row["COUNTRY"], row["COUNTRY"])
-        country = get_object_by_name(
-            Country, country_name, index_row, "country", logger
-        )
-        agency = get_object_by_name(Agency, row["AGENCY"], index_row, "agency", logger)
-        # get subsector name from dict if exists else use the same name from the file
-        subsect_name = SUBSECTOR_NAME_MAPPING.get(row["SUBSECTOR"], row["SUBSECTOR"])
-        subsec = get_object_by_name(
-            ProjectSubSector, subsect_name, index_row, "subsector", logger
-        )
+        project_data = get_project_base_data(row, index_row, logger)
 
-        proj_type = get_object_by_name(
-            ProjectType, row["TYPE"], index_row, "type", logger
-        )
-
-        status_str = row["STATUS_CODE"] if row["STATUS_CODE"] else "NEW"
-        project_status = get_object_by_name(
-            ProjectStatus, status_str, index_row, "status", logger
-        )
-
-        # if country or agency or subsector does not exists then skip this row
-        if not all([country, agency, subsec, proj_type, project_status]):
+        if not project_data:
             continue
 
         # set substance type
@@ -96,32 +73,15 @@ def parse_file(file_path, file_name, meeting_no):
         if row["HFC"]:
             substance_type = "HFC"
 
-        project_data = {
-            "country": country,
-            "subsector": subsec,
-            "agency": agency,
-            "project_type": proj_type,
-            "title": row["PROJECT_TITLE"],
-            "description": row["PROJECT_DESCRIPTION"],
-            "approval_meeting_no": meeting_no,
-            "project_duration": row["PROJECT_DURATION"],
-            "products_manufactured": row["PRODUCTS_MANUFACTURED"],
-            "excom_provision": row["EXCOM_PROVISION"],
-            "impact": row["IMPACT"],
-            "substance_type": substance_type,
-            "capital_cost": row["CAPITAL_COST"],
-            "operating_cost": row["OPERATING_COST"],
-            "effectiveness_cost": row["COST_EFFECTIVENESS"],
-            "date_completion": row["DATE_COMPLETION"],
-            "umbrella_project": row["UMBRELLA_PROJECT"],
-            "loan": row["LOAN"],
-            "intersessional_approval": row["INTERSESSIONAL_APPROVAL"],
-            "retroactive_finance": row["RETROACTIVE_FINANCE"],
-            "local_ownership": row["LOCAL_OWNERSHIP"],
-            "export_to": row["EXPORT_TO"],
-            "national_agency": row["NATIONAL_AGENCY"],
-            "status": project_status,
-        }
+        project_data.update(
+            {
+                "approval_meeting_no": meeting_no,
+                "project_duration": row["PROJECT_DURATION"],
+                "substance_type": substance_type,
+                "capital_cost": row["CAPITAL_COST"],
+                "national_agency": row["NATIONAL_AGENCY"],
+            }
+        )
 
         # get or create project
         project, _ = Project.objects.get_or_create(
