@@ -10,7 +10,7 @@ from core.models.agency import Agency
 from core.models.blend import Blend
 from core.models.country import Country
 from core.models.country_programme import CPReport
-from core.models.project import ProjectStatus, ProjectSubSector, ProjectType
+from core.models.project import Project, ProjectStatus, ProjectSubSector, ProjectType
 from core.models.substance import Substance
 from core.utils import IMPORT_DB_MAX_YEAR
 
@@ -153,6 +153,7 @@ def get_chemical_by_name_or_components(chemical_name, components=None):
     return None, None
 
 
+# pylint: disable=R0913
 def get_cp_report(
     year,
     country_name,
@@ -713,3 +714,16 @@ def get_project_base_data(item, item_index, logger, is_submissions=True):
             project_data[field.lower()] = item[field]
 
     return project_data
+
+
+def update_or_create_project(project_data):
+    project, _ = Project.objects.update_or_create(
+        title=project_data["title"],
+        country=project_data["country"],
+        subsector=project_data["subsector"],
+        agency=project_data["agency"],
+        project_type=project_data["project_type"],
+        approval_meeting_no=project_data["approval_meeting_no"],
+        defaults=project_data,
+    )
+    return project

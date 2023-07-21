@@ -9,8 +9,8 @@ from core.import_data.utils import (
     delete_old_data,
     get_project_base_data,
     parse_string,
+    update_or_create_project,
 )
-from core.models.project import Project
 from core.models.project_submission import (
     ProjectSubmission,
     SubmissionAmount,
@@ -84,15 +84,7 @@ def parse_file(file_path, file_name, meeting_no):
         )
 
         # get or create project
-        project, _ = Project.objects.get_or_create(
-            title=project_data["title"],
-            country=project_data["country"],
-            subsector=project_data["subsector"],
-            agency=project_data["agency"],
-            project_type=project_data["project_type"],
-            approval_meeting_no=project_data["approval_meeting_no"],
-            defaults=project_data,
-        )
+        project = update_or_create_project(project_data)
 
         submission_data = {
             "submission_number": row["PROJECT_NUMBER"],

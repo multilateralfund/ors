@@ -156,7 +156,7 @@ class ProjectOdsOdp(models.Model):
     sort_order = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
-        return_str = self.ods.name
+        return_str = self.ods_display_name
         if self.ods_replacement:
             return_str += " replacement: " + self.ods_replacement.name
         return return_str

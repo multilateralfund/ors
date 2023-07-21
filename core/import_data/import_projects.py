@@ -8,8 +8,9 @@ from core.import_data.utils import (
     get_chemical_by_name_or_components,
     get_project_base_data,
     parse_date,
+    update_or_create_project,
 )
-from core.models.project import Project, ProjectFund, ProjectOdsOdp
+from core.models.project import ProjectFund, ProjectOdsOdp
 from core.models.substance import Substance
 
 
@@ -254,15 +255,7 @@ def parse_file(file_path):
         )
 
         # get or create project
-        project, _ = Project.objects.update_or_create(
-            title=project_data["title"],
-            country=project_data["country"],
-            subsector=project_data["subsector"],
-            agency=project_data["agency"],
-            project_type=project_data["project_type"],
-            approval_meeting_no=project_data["approval_meeting_no"],
-            defaults=project_data,
-        )
+        project = update_or_create_project(project_data)
 
         parse_project_ODS_ODP(project, project_json)
         parse_project_funds(project, project_json)
