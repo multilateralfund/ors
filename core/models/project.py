@@ -1,5 +1,6 @@
 from django.db import models
 from core.models.agency import Agency
+from core.models.blend import Blend
 
 from core.models.country import Country
 from core.models.substance import Substance
@@ -84,7 +85,7 @@ class Project(models.Model):
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
     national_agency = models.CharField(max_length=255, null=True, blank=True)
     number = models.IntegerField(null=True, blank=True)
-    code = models.CharField(max_length=10, null=True, blank=True)
+    code = models.CharField(max_length=128, null=True, blank=True)
     approval_meeting_no = models.IntegerField(null=True, blank=True)
     project_type = models.ForeignKey(ProjectType, on_delete=models.CASCADE)
     project_duration = models.IntegerField(null=True, blank=True)
@@ -117,7 +118,7 @@ class Project(models.Model):
     loan = models.BooleanField(default=False)
     intersessional_approval = models.BooleanField(default=False)
     retroactive_finance = models.BooleanField(default=False)
-    local_ownership = models.BooleanField(default=False)
+    local_ownership = models.FloatField(null=True, blank=True)
     export_to = models.FloatField(null=True, blank=True)
     status = models.ForeignKey(ProjectStatus, on_delete=models.CASCADE)
     remarks = models.TextField(null=True, blank=True)
@@ -128,26 +129,34 @@ class Project(models.Model):
 
 
 class ProjectOdsOdp(models.Model):
-    ods = models.ForeignKey(
-        Substance, on_delete=models.CASCADE, related_name="project_ods"
-    )
-    odp = models.FloatField(null=True, blank=True)
-    ods_replacement = models.ForeignKey(
+    ods_substance = models.ForeignKey(
         Substance,
         on_delete=models.CASCADE,
+        related_name="project_ods",
         null=True,
         blank=True,
-        related_name="ods_replacement",
     )
+    ods_blend = models.ForeignKey(
+        Blend,
+        on_delete=models.CASCADE,
+        related_name="project_ods",
+        null=True,
+        blank=True,
+    )
+
+    ods_display_name = models.CharField(max_length=256, null=True, blank=True)
+    odp = models.FloatField()
+    ods_replacement = models.CharField(max_length=256, null=True, blank=True)
     co2_mt = models.FloatField(null=True, blank=True)
     is_production = models.BooleanField(default=False)
     is_indirect = models.BooleanField(default=False)
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, related_name="ods_odp"
     )
+    sort_order = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
-        return_str = self.ods.name
+        return_str = self.ods_display_name
         if self.ods_replacement:
             return_str += " replacement: " + self.ods_replacement.name
         return return_str
@@ -161,10 +170,11 @@ class ProjectFund(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="funds")
     amount = models.FloatField()
     support_13 = models.FloatField(default=0, null=True)
-    meeting = models.IntegerField()
+    meeting = models.IntegerField(null=True, blank=True)
     interest = models.FloatField(default=0, null=True)
-    date = models.DateField()
+    date = models.DateField(null=True, blank=True)
     fund_type = models.CharField(max_length=256, choices=FundType.choices)
+    sort_order = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.project.title} {self.amount} {self.date}"

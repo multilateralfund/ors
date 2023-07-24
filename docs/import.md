@@ -38,7 +38,7 @@ docker-compose exec app ./manage.py import_resources usages
 ```shell
 docker-compose exec app ./manage.py import_records all
 ```
-- To run the import only for onetype of records(ex. databases), run:
+- To run the import only for one type of records(ex. databases), run:
 ```shell
 docker-compose exec app ./manage.py import_records cp_db
 ```
@@ -80,12 +80,19 @@ docker-compose exec app ./manage.py import_records cp_db
 
 ---
 
-## Project proposals
-To import project proposals, run:
+## Projects 
+To import project and project proposals:
 ```shell
-docker-compose exec app ./manage.py import_proposals
+docker-compose exec app ./manage.py import_projects all
 ```
-
+To run the import only for one type (ex. proposals), run:
+```shell
+docker-compose exec app ./manage.py import_projects proposals
+```
+### Command options:
+- proposals -> project proposals xlsx files
+- projects -> projects from tbInventory
+            
 ### Import files
 
 - proposals
@@ -97,3 +104,8 @@ docker-compose exec app ./manage.py import_proposals
     | :----:    | :----:  |
     | tbProposalsNew90.xlsx | tbProposalsNew90.xlsx |
     | tbProposalsNew91.xlsx | tbProposalsNew91.xlsx |
+
+- projects
+: download files from nextclod
+    - **nextcloud path** OzoneMlf/Projects inventory/data/json/tbINVENTORY.json
+    - **local path** core/import_data/project_database
