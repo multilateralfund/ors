@@ -2,9 +2,9 @@
 import { createPortal } from 'react-dom'
 
 export default function Portal({
+  key,
   children,
   domNode,
-  key,
 }: {
   children: React.ReactNode
   domNode?: DocumentFragment | Element | string

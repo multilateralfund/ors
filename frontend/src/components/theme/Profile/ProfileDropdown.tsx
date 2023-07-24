@@ -3,7 +3,7 @@ import React from 'react'
 
 import { useRouter } from 'next/navigation'
 
-import Dropdown from '@ors/components/ui/Dropdown'
+import { Dropdown } from '@ors/components'
 import config from '@ors/config'
 import useStore from '@ors/store'
 

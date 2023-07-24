@@ -42,18 +42,19 @@ export type WidgetProps = any
 // ) &
 //   (({ type?: string } | { widget?: string }) & TextWidgetProps)
 
+// Default Widget
+export const defaultWidget = dynamic(
+  () => import('@ors/components/manage/Widgets/TextWidget'),
+) as TextWidget
+
 // Widgets mapping
 export const widgetsMapping: WidgetsMapping = {
   type: {
-    email: dynamic(
-      () => import('@ors/components/manage/Widgets/TextWidget'),
-    ) as TextWidget,
+    email: defaultWidget,
     password: dynamic(
       () => import('@ors/components/manage/Widgets/PasswordWidget'),
     ) as PasswordWidget,
-    text: dynamic(
-      () => import('@ors/components/manage/Widgets/TextWidget'),
-    ) as TextWidget,
+    text: defaultWidget,
   },
   widget: {
     autocomplete: dynamic(
@@ -61,8 +62,3 @@ export const widgetsMapping: WidgetsMapping = {
     ) as AutocompleteWidget,
   },
 }
-
-// Default Widget
-export const defaultWidget = dynamic(
-  () => import('@ors/components/manage/Widgets/TextWidget'),
-) as TextWidget

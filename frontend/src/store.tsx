@@ -27,13 +27,17 @@ export type InitialStoreState = {
   user?: Partial<UserSlice>
 }
 
+let storeInstance: StoreApi<StoreState>
+
 const createStore = (initialState?: InitialStoreState) => {
-  return zustandCreateStore<StoreState>((set, get) => ({
+  storeInstance = zustandCreateStore<StoreState>((set, get) => ({
     reports: { ...createReportsSlice(set, get, initialState) },
     setTheme: (theme: string) => set(() => ({ theme })),
     theme: initialState?.theme || null,
     user: { ...createUserSlice(set, get, initialState) },
   }))
+
+  return storeInstance
 }
 
 export const ZustandContext = createContext<StoreApi<StoreState>>(createStore())
@@ -51,6 +55,8 @@ export const Provider = ({
     <ZustandContext.Provider value={store}>{children}</ZustandContext.Provider>
   )
 }
+
+export const getStore = () => storeInstance
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function useStore(selector: (state: StoreState) => any) {

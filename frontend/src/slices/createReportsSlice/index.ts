@@ -1,5 +1,7 @@
+import { StoreApi } from 'zustand'
+
 import { Params, SliceData } from '@ors/@types/primitives'
-import api from '@ors/helpers/Api/Api'
+import { api } from '@ors/helpers'
 import {
   defaultSliceData,
   getErrorSliceData,
@@ -20,10 +22,6 @@ import {
   createSubstancesSlice,
 } from './substances'
 import { InitialUsagesSlice, UsagesSlice, createUsagesSlice } from './usages'
-// import { isEmpty, omitBy } from 'lodash'
-// import isEmpty from 'lodash/isEmpty'
-// import omitBy from 'lodash/omitBy'
-import { StoreApi } from 'zustand'
 
 export interface ReportsSlice {
   blends: BlendsSlice

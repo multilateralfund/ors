@@ -4,7 +4,7 @@ import React from 'react'
 
 import { IconButton, InputAdornment } from '@mui/material'
 
-import TextWidget from '@ors/components/manage/Widgets/TextWidget'
+import { TextWidget } from '@ors/components'
 
 import { IoEye } from '@react-icons/all-files/io5/IoEye'
 import { IoEyeOff } from '@react-icons/all-files/io5/IoEyeOff'
@@ -22,22 +22,24 @@ export default function PasswordWidget(
     setShowPassword((show) => !show)
   }
 
-  return TextWidget({
-    ...props,
-    InputProps: {
-      endAdornment: (
-        <InputAdornment position="end">
-          <IconButton
-            aria-label="toggle password visibility"
-            edge="end"
-            tabIndex={-1}
-            onClick={handleClickShowPassword}
-          >
-            {showPassword ? <IoEyeOff /> : <IoEye />}
-          </IconButton>
-        </InputAdornment>
-      ),
-    },
-    type: showPassword ? 'text' : 'password',
-  })
+  return (
+    <TextWidget
+      {...props}
+      type={showPassword ? 'text' : 'password'}
+      InputProps={{
+        endAdornment: (
+          <InputAdornment position="end">
+            <IconButton
+              aria-label="toggle password visibility"
+              edge="end"
+              tabIndex={-1}
+              onClick={handleClickShowPassword}
+            >
+              {showPassword ? <IoEyeOff /> : <IoEye />}
+            </IconButton>
+          </InputAdornment>
+        ),
+      }}
+    />
+  )
 }

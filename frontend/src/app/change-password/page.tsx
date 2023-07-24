@@ -1,10 +1,11 @@
-import Logo from '@ors/components/theme/Logo/Logo'
-import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-import ResetPasswordForm from '@ors/components/theme/ResetPasswordForm/ResetPasswordForm'
+import { Logo, PageWrapper, ResetPasswordForm } from '@ors/components'
 
 export default function ChangePassword() {
   return (
-    <PageWrapper className="mx-auto flex h-full w-full max-w-screen-sm flex-col items-center justify-center px-4">
+    <PageWrapper
+      className="mx-auto flex w-full max-w-screen-sm flex-col items-center justify-center"
+      fill
+    >
       <Logo />
       <ResetPasswordForm endpoint="/api/auth/password/change/" />
     </PageWrapper>

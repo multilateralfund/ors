@@ -9,14 +9,16 @@ import {
   TableHead,
   TablePagination,
   TableRow,
+  Typography,
 } from '@mui/material'
-import { motion } from 'framer-motion'
 
 import Loading from '@ors/app/loading'
-import Field from '@ors/components/manage/Form/Field'
-import { getResults } from '@ors/helpers/Api/Api'
+import { Field } from '@ors/components'
+import { getResults } from '@ors/helpers'
 import { ReportsSlice } from '@ors/slices/createReportsSlice'
 import useStore from '@ors/store'
+
+import FadeInOut from '../../Utils/FadeInOut'
 
 type Filters = { country_id?: number | string }
 type CountryOption = { id: number; label: string | undefined; name?: string }
@@ -90,7 +92,7 @@ export default function ReportsTable() {
         />
       )}
       <div className="px-4 pt-4">
-        <p className="mb-4">All submissions</p>
+        <Typography className="mb-4">All submissions</Typography>
         <div className="grid grid-cols-3 gap-x-4">
           <Field
             Input={{ label: 'Party' }}
@@ -126,7 +128,8 @@ export default function ReportsTable() {
                 exit={{ opacity: 1 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5 }}
-                component={motion.tr}
+                FadeInOut={{ component: 'tr' }}
+                component={FadeInOut}
                 tabIndex={-1}
                 hover
               >

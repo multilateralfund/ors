@@ -1,0 +1,44 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+@import './preflight';
+
+/* @import './typography'; */
+@import './views.css';
+@import './components/image';
+@import './components/widget';
+
+/* Material ui components */
+@import './components/mui/index.css';
+
+@layer base {
+  * {
+    @apply duration-300;
+
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-property: background-color, border-color;
+  }
+
+  :root {
+    @apply h-full;
+  }
+
+  body {
+    @apply h-full;
+  }
+
+  body::-webkit-scrollbar,
+  body *::-webkit-scrollbar {
+    @apply transition-all duration-300;
+  }
+
+  body::-webkit-scrollbar-corner,
+  body *::-webkit-scrollbar-corner {
+    @apply transition-all duration-300;
+  }
+
+  body::-webkit-scrollbar-thumb,
+  body *::-webkit-scrollbar-thumb {
+    @apply transition-all duration-300;
+  }
+}

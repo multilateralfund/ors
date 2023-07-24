@@ -1,15 +1,11 @@
 import type {
-  PaletteOptions as MUIPaletteOptions,
-  Palette as MUIPallete,
+  PaletteOptions as MuiPaletteOptions,
+  Palette as MuiPallete,
   PaletteColorOptions,
 } from '@mui/material/styles/createPalette'
 
 declare module '@mui/material/styles/createPalette' {
-  interface Palette extends MuiPallete {
-    base: PaletteColorOptions
-  }
+  interface Palette extends MuiPallete {}
 
-  interface PaletteOptions extends MuiPaletteOptions {
-    base?: PaletteColorOptions
-  }
+  interface PaletteOptions extends MuiPaletteOptions {}
 }

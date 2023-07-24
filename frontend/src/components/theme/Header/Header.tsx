@@ -1,22 +1,23 @@
-import { Box } from '@mui/material'
+import { Box, Link } from '@mui/material'
 import Image from 'next/image'
-import Link from 'next/link'
 
-import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
-import LanguageSelector from '@ors/components/theme/LanguageSelector/LanguageSelector'
-import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
-import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
+import {
+  FadeInOut,
+  LanguageSelector,
+  ProfileDropdown,
+  ThemeSelector,
+} from '@ors/components'
 
 export default function Header() {
   return (
     <Box
       id="header"
-      className="border-0 border-b"
+      className="rounded-none border-0 border-b"
       FadeInOut={{ component: 'nav' }}
       component={FadeInOut}
     >
       <div className="flex w-full justify-between">
-        <Link className="logo flex items-center no-underline" href="/">
+        <Link className="logo mb-0 flex items-center" href="/" underline="none">
           <Image
             alt="Multilateral Fund"
             height={40}
@@ -24,7 +25,7 @@ export default function Header() {
             width={40}
             priority
           />
-          <span className="pl-2">MLFS</span>
+          <span className="pl-2 dark:text-white">MLFS</span>
         </Link>
         <div className="flex">
           <LanguageSelector className="mr-2" />

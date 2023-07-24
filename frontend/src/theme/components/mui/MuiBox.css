@@ -1,4 +1,0 @@
-.MuiBox-root {
-  @apply border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800;
-  @apply border border-solid p-4 shadow-sm transition-colors duration-300;
-}

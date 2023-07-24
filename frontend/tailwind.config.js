@@ -1,3 +1,7 @@
+import grey from '@mui/material/colors/grey'
+
+const colors = require('tailwindcss/colors')
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -13,20 +17,32 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        base: {
-          DEFAULT: '#333333',
-          contrast: '#ffffff',
-          dark: '#ffffff',
-          'dark-contrast': '#333333',
-          light: '#333333',
+        error: {
+          DEFAULT: colors.red[500],
+        },
+        grey: {
+          ...colors.gray,
+          A100: grey.A100,
+          A200: grey.A200,
+          A400: grey.A400,
+          A700: grey.A700,
+        },
+        info: {
+          DEFAULT: colors.blue[500],
         },
         primary: {
           DEFAULT: '#0f82cc',
-          contrast: '#ffffff',
+          contrastText: '#ffffff',
         },
         secondary: {
           DEFAULT: '#333333',
-          contrast: '#ffffff',
+          contrastText: '#ffffff',
+        },
+        success: {
+          DEFAULT: colors.green[500],
+        },
+        warning: {
+          DEFAULT: colors.orange[500],
         },
       },
     },

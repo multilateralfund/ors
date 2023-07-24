@@ -3,12 +3,9 @@ import type { DataType } from '@ors/@types/primitives'
 import Cookies from 'js-cookie'
 
 import config from '@ors/config'
+import { getStore } from '@ors/store'
 
 const nextCookies = require('next/headers').cookies
-// const nextHeaders = require('next/headers').headers
-// const redirect = require('next/navigation').redirect
-
-const __SERVER__ = typeof window === 'undefined'
 
 const defaultHeaders: { [key: string]: { [key: string]: any } } = {
   common: {
@@ -29,7 +26,7 @@ function delayExecution(ms: number) {
   })
 }
 
-function formatUrl(path: string) {
+export function formatApiUrl(path: string) {
   if (path.startsWith('http://') || path.startsWith('https://')) return path
 
   const { settings } = config
@@ -50,6 +47,7 @@ async function api(
   },
   throwError = true,
 ) {
+  const store = __CLIENT__ ? getStore() : null
   const {
     data = null,
     delay,
@@ -59,11 +57,8 @@ async function api(
     ...opts
   } = options || {}
   const csrftoken = !__SERVER__ ? Cookies.get('csrftoken') : null
-  // const pathname = __SERVER__
-  //   ? nextHeaders().get('x-next-pathname')
-  //   : window.location.pathname
   const sendRequest = delay ? new Date().getTime() : 0
-  const response = await fetch(formatUrl(path), {
+  const response = await fetch(formatApiUrl(path), {
     credentials: 'include',
     headers: {
       Accept: 'application/json',
@@ -86,11 +81,12 @@ async function api(
   }
   switch (response.status) {
     case 403:
-      // if (pathname !== '/login' && __SERVER__) {
-      //   redirect('/login')
-      // } else if (pathname !== '/login') {
-      //   window.location.href = '/login'
-      // }
+      if (store) {
+        store.setState((state) => ({
+          ...state,
+          user: { ...state.user, data: null },
+        }))
+      }
       break
     default:
       if (response.ok) {

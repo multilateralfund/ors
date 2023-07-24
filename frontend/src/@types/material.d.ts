@@ -1,7 +1,7 @@
-import type { AutocompleteProps as MUIAutocompleteProps } from '@mui/material'
+import type { AutocompleteProps as MuiAutocompleteProps } from '@mui/material'
 
 declare module '@mui/material' {
-  interface AutocompleteProps extends MUIAutocompleteProps {
+  interface AutocompleteProps extends MuiAutocompleteProps {
     options?: Array<any> | undefined
     renderInput?: (params: AutocompleteRenderInputParams) => React.ReactNode
   }

@@ -1,17 +1,24 @@
+/* eslint-disable @next/next/no-css-tags */
 import type { Metadata } from 'next'
 
 import React from 'react'
 
-import { cookies } from 'next/headers'
+import { Roboto } from 'next/font/google'
+import { cookies as nextCookies, headers as nextHeaders } from 'next/headers'
 
-import GuardRoutes from '@ors/components/theme/GuardRoutes/GuardRoutes'
-import View from '@ors/components/theme/Views/View'
-import api from '@ors/helpers/Api/Api'
-import { getInitialSliceData } from '@ors/helpers/Store/Store'
-import { Provider } from '@ors/store'
-import ThemeProvider from '@ors/theme/ThemeProvider'
+import { Header, View } from '@ors/components'
+import { api, getCurrentView, getInitialSliceData } from '@ors/helpers'
+import { Provider as StoreProvider } from '@ors/store'
+import ThemeProvider from '@ors/themes/ThemeProvider'
 
-import '@ors/theme/global.css'
+import '@ors/themes/styles/global.css'
+
+const roboto = Roboto({
+  display: 'swap',
+  style: ['normal', 'italic'],
+  subsets: ['latin'],
+  weight: ['100', '300', '400', '500', '700', '900'],
+})
 
 export const metadata: Metadata = {
   description:
@@ -24,9 +31,14 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const cookies = nextCookies()
+  const headers = nextHeaders()
   let blends, countries, substances, usages
+  const pathname = headers.get('x-next-pathname')
+  const theme = cookies.get('theme') || { value: null }
+  const currentView = getCurrentView(pathname || '')
+
   const user = await api('api/auth/user/', {}, false)
-  const theme = cookies().get('theme') || { value: null }
 
   if (user) {
     blends = await api('api/blends/', {}, false)
@@ -36,10 +48,14 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en" {...(theme.value ? { 'data-mode': theme.value } : {})}>
-      <body>
+    <html
+      lang="en"
+      {...(theme.value ? { 'data-mode': theme.value } : {})}
+      data-layout={currentView.layout}
+    >
+      <body className={roboto.className}>
         <div id="next-app">
-          <Provider
+          <StoreProvider
             initialState={{
               reports: {
                 blends: {
@@ -59,12 +75,15 @@ export default async function RootLayout({
               user: { data: user },
             }}
           >
-            <ThemeProvider>
-              <GuardRoutes />
+            <ThemeProvider options={{ key: 'tw', prepend: true }}>
+              <Header />
               <View>{children}</View>
             </ThemeProvider>
-          </Provider>
+          </StoreProvider>
         </div>
+        <noscript>
+          <link href="/no-script.css" rel="stylesheet" type="text/css" />
+        </noscript>
       </body>
     </html>
   )

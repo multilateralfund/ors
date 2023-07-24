@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 
-import { Box } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 
-import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
+import { PageWrapper } from '@ors/components'
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -10,8 +10,10 @@ export const metadata: Metadata = {
 
 export default function Dashboard() {
   return (
-    <Box className="mx-4 mt-4" component={PageWrapper}>
-      <h1>Dashboard</h1>
-    </Box>
+    <PageWrapper>
+      <Box>
+        <Typography>Dashboard</Typography>
+      </Box>
+    </PageWrapper>
   )
 }

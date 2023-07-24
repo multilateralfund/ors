@@ -1,4 +1,4 @@
-import Image from '@ors/components/ui/Image'
+import { Image } from '@ors/components'
 
 export default function Logo() {
   return (

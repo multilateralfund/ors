@@ -1,19 +1,19 @@
 import type { InputLabelProps, TextFieldProps } from '@mui/material'
 
-import { InputLabel as MUIInputLabel, TextField } from '@mui/material'
+import { InputLabel as MuiInputLabel, TextField } from '@mui/material'
 import cx from 'classnames'
 
 function Label({
-  className,
   id,
+  className,
   label,
   ...rest
 }: InputLabelProps & { label?: React.ReactNode }) {
   return (
     !!label && (
-      <MUIInputLabel className={cx('mb-2', className)} htmlFor={id} {...rest}>
+      <MuiInputLabel className={cx('mb-2', className)} htmlFor={id} {...rest}>
         {label}
-      </MUIInputLabel>
+      </MuiInputLabel>
     )
   )
 }

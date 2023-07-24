@@ -1,36 +1,27 @@
 'use client'
+import type { ByLayout } from '@ors/config/Views'
+
 import React from 'react'
 
-// import { isEmpty, omitBy } from 'lodash'
 import { usePathname } from 'next/navigation'
 
-import Loading from '@ors/app/loading'
 import config from '@ors/config'
-import useStore from '@ors/store'
+import { getCurrentView } from '@ors/helpers'
 
-import DashboardView from './DashboardView'
-import DefaultView from './DefaultView'
+const getViewByLayout = (layout?: keyof ByLayout) => {
+  return layout ? config.views.layoutViews[layout] : null
+}
+
+const getViewDefault = () => {
+  return config.views.default
+}
 
 export default function View({ children }: { children: React.ReactNode }) {
-  const user = useStore((state) => state.user)
   const pathname = usePathname()
-  const isGuardedRoute = !config.settings.unguardedRoutes.includes(pathname)
 
-  // React.useEffect(() => {
-  //   omitBy({}, isEmpty)
-  // })
+  const view = React.useMemo(() => getCurrentView(pathname), [pathname])
 
-  function getView() {
-    if (isGuardedRoute && !!user.data) {
-      return DashboardView
-    }
-    if (isGuardedRoute && !user.data) {
-      return Loading
-    }
-    return DefaultView
-  }
+  const RenderedView = getViewByLayout(view?.layout) || getViewDefault()
 
-  const RenderView = getView() || null
-
-  return <RenderView>{children}</RenderView>
+  return <RenderedView>{children}</RenderedView>
 }

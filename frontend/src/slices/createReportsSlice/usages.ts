@@ -1,7 +1,7 @@
 import { StoreApi } from 'zustand'
 
 import { Params, SliceData } from '@ors/@types/primitives'
-import api from '@ors/helpers/Api/Api'
+import { api } from '@ors/helpers'
 import {
   defaultSliceData,
   getErrorSliceData,

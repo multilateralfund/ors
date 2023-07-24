@@ -1,9 +1,9 @@
 'use client'
-import { Box } from '@mui/material'
+import { Box, Link } from '@mui/material'
 import cx from 'classnames'
-import { motion } from 'framer-motion'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+
+import { FadeInOut } from '@ors/components'
 
 import { IoBarChart } from '@react-icons/all-files/io5/IoBarChart'
 import { IoPieChart } from '@react-icons/all-files/io5/IoPieChart'
@@ -22,14 +22,15 @@ export default function Sidebar() {
       exit={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="sidebar h-full border-0 border-r px-4 py-8"
-      component={motion.div}
+      className="sidebar h-full rounded-none border-0 border-r px-4 py-8"
+      FadeInOut={{ component: 'div' }}
+      component={FadeInOut}
     >
       {items.map((item, index) => (
         <Link
           key={item.href}
           className={cx(
-            'flex flex-col items-center rounded p-2 text-primary no-underline',
+            'flex flex-col items-center rounded p-2 dark:text-white',
             {
               'bg-primary text-white transition-colors': item.isExact
                 ? pathname === item.href
@@ -38,6 +39,7 @@ export default function Sidebar() {
             },
           )}
           href={item.href}
+          underline="none"
         >
           <item.Icon className="mb-1" size={24} />
           <span>{item.title}</span>

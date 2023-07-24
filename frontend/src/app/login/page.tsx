@@ -2,9 +2,7 @@ import type { Metadata } from 'next'
 
 import React from 'react'
 
-import LoginForm from '@ors/components/theme/LoginForm/LoginForm'
-import Logo from '@ors/components/theme/Logo/Logo'
-import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
+import { LoginForm, Logo, PageWrapper } from '@ors/components'
 
 export const metadata: Metadata = {
   title: 'Login',
@@ -12,7 +10,10 @@ export const metadata: Metadata = {
 
 export default function Login() {
   return (
-    <PageWrapper className="mx-auto flex h-full w-full max-w-screen-sm flex-col items-center justify-center px-4">
+    <PageWrapper
+      className="mx-auto flex w-full max-w-screen-sm flex-col items-center justify-center"
+      fill
+    >
       <Logo />
       <LoginForm />
     </PageWrapper>

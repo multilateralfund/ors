@@ -1,5 +1,5 @@
 'use client'
-import Dropdown from '@ors/components/ui/Dropdown'
+import { Dropdown } from '@ors/components'
 import { LANGUAGES } from '@ors/constants'
 
 const LanguageSelector = ({ className }: { className: string }) => {
