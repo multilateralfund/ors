@@ -591,7 +591,7 @@ def get_chemical(chemical_name, index_row, logger):
 def get_project_base_data(item, item_index, logger, is_submissions=True):
     """
     Get project base data
-    ! if tehre is an empty value for country, agency, subsector, type or status return None
+    ! if there is an empty value for country, agency, subsector, type or status return None
     @param item = dict (row data)
     @param item_index = int (index row)
     @param logger = logger object
