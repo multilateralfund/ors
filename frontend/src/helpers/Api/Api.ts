@@ -1,4 +1,4 @@
-import type { DataType } from '@ors/@types/primitives'
+import type { DataType } from '@ors/types/primitives'
 
 import Cookies from 'js-cookie'
 

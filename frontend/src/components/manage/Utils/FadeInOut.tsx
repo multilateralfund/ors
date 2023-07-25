@@ -7,7 +7,7 @@ import cx from 'classnames'
 import { LazyMotion, domAnimation, m } from 'framer-motion'
 import { get } from 'lodash'
 
-import { AnyObject } from '@ors/@types/primitives'
+import { AnyObject } from '@ors/types/primitives'
 
 function FadeInOut({
   FadeInOut,

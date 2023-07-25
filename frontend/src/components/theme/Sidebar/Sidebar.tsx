@@ -1,9 +1,9 @@
 'use client'
-import { Box, Link } from '@mui/material'
+import { Box } from '@mui/material'
 import cx from 'classnames'
 import { usePathname } from 'next/navigation'
 
-import { FadeInOut } from '@ors/components'
+import { FadeInOut, Link } from '@ors/components'
 
 import { IoBarChart } from '@react-icons/all-files/io5/IoBarChart'
 import { IoPieChart } from '@react-icons/all-files/io5/IoPieChart'

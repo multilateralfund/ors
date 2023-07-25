@@ -4,7 +4,7 @@ import React from 'react'
 import { Alert, Button, Collapse, Paper, Typography } from '@mui/material'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-import { Field, Link } from '@ors/components'
+import { Field, Link, Trans } from '@ors/components'
 import useStore from '@ors/store'
 
 const emptyErrors = {
@@ -50,7 +50,7 @@ export default function LoginForm() {
         component="h1"
         variant="h4"
       >
-        Sign in to your account
+        <Trans id="signin">Sign in to your account</Trans>
       </Typography>
       <Field
         id="username"
@@ -59,7 +59,7 @@ export default function LoginForm() {
         error={!!errors.username}
         helperText={errors.username}
         InputLabel={{
-          label: 'Username',
+          label: <Trans id="username">Username</Trans>,
         }}
       />
       <Field
@@ -70,12 +70,12 @@ export default function LoginForm() {
         helperText={errors.password}
         type="password"
         InputLabel={{
-          label: 'Password',
+          label: <Trans id="password">Password</Trans>,
         }}
       />
       <Typography className="mb-4 text-right">
         <Link href="forgot-password" underline="hover">
-          Forgot password?
+          <Trans id="forgot-password">Forgot password?</Trans>
         </Link>
       </Typography>
       <Collapse in={!!errors.non_field_errors}>
@@ -84,7 +84,7 @@ export default function LoginForm() {
         </Alert>
       </Collapse>
       <Button type="submit" variant="contained">
-        Submit
+        <Trans id="submit">Submit</Trans>
       </Button>
     </Paper>
   )

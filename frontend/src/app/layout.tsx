@@ -1,15 +1,19 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @next/next/no-css-tags */
 import type { Metadata } from 'next'
 
 import React from 'react'
 
+import { dir } from 'i18next'
 import { Roboto } from 'next/font/google'
 import { cookies as nextCookies, headers as nextHeaders } from 'next/headers'
 
 import { Header, View } from '@ors/components'
+import config from '@ors/config'
 import { api, getCurrentView, getInitialSliceData } from '@ors/helpers'
 import { Provider as StoreProvider } from '@ors/store'
 import ThemeProvider from '@ors/themes/ThemeProvider'
+import { Language } from '@ors/types/locales'
 
 import '@ors/themes/styles/global.css'
 
@@ -35,7 +39,9 @@ export default async function RootLayout({
   const headers = nextHeaders()
   let blends, countries, substances, usages
   const pathname = headers.get('x-next-pathname')
-  const theme = cookies.get('theme') || { value: null }
+  const lang = (headers.get('x-next-lang') ||
+    config.i18n.defaultLanguage) as Language
+  const theme = cookies.get(config.cookies.theme) || { value: null }
   const currentView = getCurrentView(pathname || '')
 
   const user = await api('api/auth/user/', {}, false)
@@ -49,14 +55,18 @@ export default async function RootLayout({
 
   return (
     <html
-      lang="en"
+      lang={lang}
       {...(theme.value ? { 'data-mode': theme.value } : {})}
-      data-layout={currentView.layout}
+      data-layout={currentView?.layout}
+      dir={dir(lang)}
     >
       <body className={roboto.className}>
         <div id="next-app">
           <StoreProvider
             initialState={{
+              i18n: {
+                lang,
+              },
               reports: {
                 blends: {
                   get: getInitialSliceData(blends),
@@ -71,7 +81,9 @@ export default async function RootLayout({
                   get: getInitialSliceData(usages),
                 },
               },
-              theme: theme.value,
+              theme: {
+                mode: theme.value as 'dark' | 'light' | null,
+              },
               user: { data: user },
             }}
           >

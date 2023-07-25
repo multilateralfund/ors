@@ -16,6 +16,8 @@ const emptyErrors = {
 
 export default function ResetPasswordForm({
   endpoint = '/api/auth/password/reset/confirm/',
+}: {
+  endpoint?: string
 }) {
   const router = useRouter()
   const params = useSearchParams()

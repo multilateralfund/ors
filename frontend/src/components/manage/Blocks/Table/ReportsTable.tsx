@@ -12,7 +12,7 @@ import {
   Typography,
 } from '@mui/material'
 
-import Loading from '@ors/app/loading'
+// import Loading from '@ors/app/loading'
 import { Field } from '@ors/components'
 import { getResults } from '@ors/helpers'
 import { ReportsSlice } from '@ors/slices/createReportsSlice'
@@ -29,7 +29,7 @@ export default function ReportsTable() {
   const [rowsPerPage, setRowsPerPage] = React.useState(10)
   const [filters, setFilters] = React.useState<Filters>({})
   const reportsManager: ReportsSlice = useStore((state) => state.reports)
-  const { loading = false } = reportsManager.get || {}
+  // const { loading = false } = reportsManager.get || {}
 
   const reports = useMemo(() => {
     return getResults(reportsManager.get.data)
@@ -85,12 +85,12 @@ export default function ReportsTable() {
 
   return (
     <div className="reports relative overflow-x-auto">
-      {loading && (
+      {/* {loading && (
         <Loading
           className="z-10 !bg-gray-600/10 dark:!bg-gray-600/20"
           ProgressStyle={{ animationDuration: '0.3s' }}
         />
-      )}
+      )} */}
       <div className="px-4 pt-4">
         <Typography className="mb-4">All submissions</Typography>
         <div className="grid grid-cols-3 gap-x-4">

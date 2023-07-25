@@ -22,12 +22,14 @@ export type AutocompleteWidget = (props: AutocompleteWidgetProps) => JSX.Element
 
 export default function AutocompleteWidget({
   Input,
+  options,
   renderInput,
   renderOption,
   ...rest
 }: AutocompleteWidgetProps): JSX.Element {
   return (
     <Autocomplete
+      options={options || []}
       renderInput={
         !!renderInput
           ? renderInput

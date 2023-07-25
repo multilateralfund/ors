@@ -20,6 +20,8 @@
       }
     ],
     "paths": {
+      "@ors/types": ["./src/@types"],
+      "@ors/types/*": ["./src/@types/*"],
       "@ors/*": ["./src/*"]
     },
     "useUnknownInCatchVariables": false

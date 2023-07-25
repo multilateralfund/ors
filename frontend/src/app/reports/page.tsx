@@ -3,9 +3,8 @@ import type { Metadata } from 'next'
 import React from 'react'
 
 import { Box, Button, Typography } from '@mui/material'
-import Link from 'next/link'
 
-import { PageWrapper, ReportsTable } from '@ors/components'
+import { Link, PageWrapper, ReportsTable } from '@ors/components'
 
 export const metadata: Metadata = {
   title: 'Reports',

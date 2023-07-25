@@ -1,12 +1,15 @@
 'use client'
+import type { ThemeSlice } from '@ors/slices/createThemeSlice'
+
 import React from 'react'
 
 import createCache from '@emotion/cache'
 import { CacheProvider } from '@emotion/react'
 import { CssBaseline } from '@mui/material'
 import MuiThemeProvider from '@mui/material/styles/ThemeProvider'
-import Cookies from 'js-cookie'
 import { useServerInsertedHTML } from 'next/navigation'
+import { prefixer } from 'stylis'
+import rtlPlugin from 'stylis-plugin-rtl'
 
 import useStore from '@ors/store'
 import { createTheme } from '@ors/themes'
@@ -18,14 +21,15 @@ export default function ThemeProvider({
   children: React.ReactNode
   options: any
 }) {
-  const themeManager = useStore((state) => ({
-    setTheme: state.setTheme,
-    theme: state.theme,
-  }))
+  const theme: ThemeSlice = useStore((state) => state.theme)
+  const dir = useStore((state) => state.i18n.dir)
 
   // https://github.com/emotion-js/emotion/issues/2928#issuecomment-1636030444
   const [{ cache, flush }] = React.useState(() => {
-    const cache = createCache(options)
+    const cache = createCache({
+      ...options,
+      stylisPlugins: [...(options.stylisPlugins || []), prefixer, rtlPlugin],
+    })
     cache.compat = true
     const prevInsert = cache.insert
     let inserted: { isGlobal: boolean; name: string }[] = []
@@ -98,26 +102,22 @@ export default function ThemeProvider({
     )
   })
 
-  const currentTheme = React.useMemo(
-    () => themeManager.theme || 'light',
-    [themeManager.theme],
-  )
+  const currentTheme = React.useMemo(() => theme.mode || 'light', [theme.mode])
 
   React.useEffect(() => {
     document.documentElement.setAttribute('data-mode', currentTheme)
     const prefersDark =
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-color-scheme: dark)').matches
-    if (!themeManager.theme) {
-      const newTheme = prefersDark ? 'dark' : currentTheme
-      themeManager.setTheme(newTheme)
-      Cookies.set('theme', newTheme)
+    if (!theme.mode) {
+      const newMode = prefersDark ? 'dark' : currentTheme
+      theme.setMode?.(newMode)
     }
-  }, [currentTheme, themeManager])
+  }, [currentTheme, theme])
 
   return (
     <CacheProvider value={cache}>
-      <MuiThemeProvider theme={createTheme(themeManager.theme || 'light')}>
+      <MuiThemeProvider theme={createTheme(theme.mode || 'light', dir)}>
         <CssBaseline enableColorScheme />
         {children}
       </MuiThemeProvider>

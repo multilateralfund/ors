@@ -1,11 +1,14 @@
 import type { ThemeOptions } from '@mui/material'
-import type { ThemeConfig } from '@ors/@types/tailwind'
+import type { ThemeConfig } from '@ors/types/tailwind'
 
 import { getPaletteColor } from '@ors/helpers'
 
 const contrastThreshold = 4.5
 
-const commonTheme = (tailwindTheme: ThemeConfig): ThemeOptions => ({
+const commonTheme = (
+  tailwindTheme: ThemeConfig,
+  direction: 'ltr' | 'rtl',
+): ThemeOptions => ({
   components: {
     MuiMenu: {
       styleOverrides: {
@@ -15,6 +18,7 @@ const commonTheme = (tailwindTheme: ThemeConfig): ThemeOptions => ({
       },
     },
   },
+  direction,
   palette: {
     action: {
       active: 'rgba(0, 0, 0, 0.54)',

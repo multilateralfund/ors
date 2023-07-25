@@ -44,6 +44,7 @@
         "type": "natural",
         "order": "asc",
         "groups": [
+          "server",
           [
             "type",
             "parent-type",
@@ -55,6 +56,7 @@
           ["builtin", "external"],
           "internal",
           ["parent", "sibling", "index"],
+          "i18n",
           "side-effect",
           "icons",
           "files",
@@ -63,8 +65,10 @@
         ],
         "custom-groups": {
           "value": {
+            "server": ["server-only"],
             "react": ["react", "react-*"],
             "icons": ["@react-icons/**"],
+            "i18n": ["@ors/i18n", "@ors/i18n/client", "@ors/i18n/settings"],
             "files": [
               "*.css",
               "*.png",
@@ -82,7 +86,7 @@
             "react": ["react react-* next"]
           }
         },
-        "internal-pattern": ["@ors/**"],
+        "internal-pattern": ["@ors/**", "~/**"],
         "newlines-between": "always",
         "read-tsconfig": false
       }

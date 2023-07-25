@@ -1,7 +1,8 @@
 import { StoreApi } from 'zustand'
 
-import { Params, SliceData } from '@ors/@types/primitives'
+import { Params, SliceData } from '@ors/types/primitives'
 import { api } from '@ors/helpers'
+// TODO: Fix strange behaviour when importin defaultSliceData from '@ors/helpers'
 import {
   defaultSliceData,
   getErrorSliceData,

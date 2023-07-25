@@ -4,7 +4,7 @@ import type {
   Params,
   PathMatch,
   PathPattern,
-} from '@ors/@types/url'
+} from '@ors/types/url'
 
 import { warning } from '../Log/Log'
 

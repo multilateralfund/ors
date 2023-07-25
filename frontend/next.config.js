@@ -1,5 +1,10 @@
 const transformModulesMapper = require('./transform.modules.json')
 
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+  openAnalyzer: true,
+})
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   webpack: (config, { dev, isServer, webpack }) => {
@@ -54,10 +59,5 @@ const nextConfig = {
     return config
   },
 }
-
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-  openAnalyzer: true,
-})
 
 module.exports = withBundleAnalyzer(nextConfig)

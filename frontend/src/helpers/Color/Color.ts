@@ -3,7 +3,7 @@
 
 import type { PaletteColorOptions } from '@mui/material'
 
-import { ColorRecordType } from '@ors/@types/tailwind'
+import { ColorRecordType } from '@ors/types/tailwind'
 
 import { warning } from '../Log/Log'
 

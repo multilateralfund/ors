@@ -1,4 +1,4 @@
-import { DataType, ErrorType } from '@ors/@types/primitives'
+import type { DataType, ErrorType } from '@ors/types/primitives'
 
 export const defaultSliceData = {
   data: null,
