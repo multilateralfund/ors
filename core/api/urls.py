@@ -14,6 +14,7 @@ from core.api.views.country_programme import (
     CPReportListView,
     CPSettingsView,
 )
+from core.api.views.projects import ProjectListView
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView
 
@@ -70,5 +71,10 @@ urlpatterns = [
         "countries/",
         CountryListView.as_view(),
         name="countries-list",
+    ),
+    path(
+        "projects/",
+        ProjectListView.as_view(),
+        name="project-list",
     ),
 ]

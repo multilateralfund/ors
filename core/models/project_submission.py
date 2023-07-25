@@ -26,8 +26,8 @@ class ProjectSubmission(models.Model):
             "Other doc: CPG, policy paper, business plan",
         )
 
-    project = models.ForeignKey(
-        Project, on_delete=models.CASCADE, related_name="submissions"
+    project = models.OneToOneField(
+        Project, on_delete=models.CASCADE, related_name="submission"
     )
     category = models.CharField(
         max_length=164, choices=ProjectSubmissionCategories.choices

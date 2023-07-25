@@ -30,6 +30,13 @@ NEW_TYPES = [
     },
 ]
 
+NEW_STATUSES = [
+    {
+        "STATUS": "New Submission",
+        "STATUS_CODE": "NEWSUB",
+    }
+]
+
 
 def import_agency(file_path):
     """
@@ -125,6 +132,9 @@ def import_project_status(file_path):
 
     with open(file_path, "r", encoding="utf8") as f:
         statuses_json = json.load(f)
+
+    # add other statuses that are not in the file
+    statuses_json.extend(NEW_STATUSES)
 
     for status_json in statuses_json:
         status_data = {
