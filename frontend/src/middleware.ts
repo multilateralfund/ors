@@ -4,9 +4,9 @@ import type { NextRequest } from 'next/server'
 import { pick } from 'accept-language-parser'
 import { NextResponse } from 'next/server'
 
-import appConfig from '@ors/config'
+import appConfig from '@ors/config/base'
 
-import { removeTrailingSlash } from './helpers'
+import { removeTrailingSlash } from './helpers/Url/Url'
 
 const { cookies, i18n } = appConfig
 const { defaultLanguage, locales } = i18n

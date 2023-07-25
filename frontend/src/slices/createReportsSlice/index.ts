@@ -1,6 +1,5 @@
 import { StoreApi } from 'zustand'
 
-import { Params, SliceData } from '@ors/types/primitives'
 import { api } from '@ors/helpers'
 // TODO: Fix strange behaviour when importin defaultSliceData from '@ors/helpers'
 import {
@@ -10,6 +9,7 @@ import {
   getSuccessSliceData,
 } from '@ors/helpers/Store/Store'
 import { InitialStoreState, StoreState } from '@ors/store'
+import { Params, SliceData } from '@ors/types/primitives'
 
 import { BlendsSlice, InitialBlendsSlice, createBlendsSlice } from './blends'
 import {

@@ -399,7 +399,6 @@
     "components": "/Users/amadeus/Work/ors/frontend/src/components",
     "ReportsTable": "/Users/amadeus/Work/ors/frontend/src/components/manage/Blocks/Table/ReportsTable",
     "Field": "/Users/amadeus/Work/ors/frontend/src/components/manage/Form/Field",
-    "manage": "/Users/amadeus/Work/ors/frontend/src/components/manage",
     "FadeInOut": "/Users/amadeus/Work/ors/frontend/src/components/manage/Utils/FadeInOut",
     "Portal": "/Users/amadeus/Work/ors/frontend/src/components/manage/Utils/Portal",
     "AutocompleteWidget": "/Users/amadeus/Work/ors/frontend/src/components/manage/Widgets/AutocompleteWidget",
@@ -410,7 +409,6 @@
     "LoginForm": "/Users/amadeus/Work/ors/frontend/src/components/theme/Forms/LoginForm/LoginForm",
     "ResetPasswordForm": "/Users/amadeus/Work/ors/frontend/src/components/theme/Forms/ResetPasswordForm/ResetPasswordForm",
     "Header": "/Users/amadeus/Work/ors/frontend/src/components/theme/Header/Header",
-    "theme": "/Users/amadeus/Work/ors/frontend/src/components/theme",
     "LanguageSelector": "/Users/amadeus/Work/ors/frontend/src/components/theme/LanguageSelector/LanguageSelector",
     "Logo": "/Users/amadeus/Work/ors/frontend/src/components/theme/Logo/Logo",
     "PageWrapper": "/Users/amadeus/Work/ors/frontend/src/components/theme/PageWrapper/PageWrapper",
@@ -422,7 +420,9 @@
     "View": "/Users/amadeus/Work/ors/frontend/src/components/theme/Views/View",
     "Dropdown": "/Users/amadeus/Work/ors/frontend/src/components/ui/Dropdown",
     "Image": "/Users/amadeus/Work/ors/frontend/src/components/ui/Image",
-    "ui": "/Users/amadeus/Work/ors/frontend/src/components/ui",
-    "Link": "/Users/amadeus/Work/ors/frontend/src/components/ui/Link"
+    "Link": "/Users/amadeus/Work/ors/frontend/src/components/ui/Link",
+    "CSRTrans": "/Users/amadeus/Work/ors/frontend/src/components/ui/Trans/CSRTrans",
+    "SSRTrans": "/Users/amadeus/Work/ors/frontend/src/components/ui/Trans/SSRTrans",
+    "Trans": "/Users/amadeus/Work/ors/frontend/src/components/ui/Trans/Trans"
   }
 }

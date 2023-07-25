@@ -1,6 +1,5 @@
 import { StoreApi } from 'zustand'
 
-import { Params, SliceData } from '@ors/types/primitives'
 import { api } from '@ors/helpers'
 import {
   defaultSliceData,
@@ -9,6 +8,7 @@ import {
   getSuccessSliceData,
 } from '@ors/helpers/Store/Store'
 import { InitialStoreState, StoreState } from '@ors/store'
+import { Params, SliceData } from '@ors/types/primitives'
 
 export interface BlendsSlice {
   get: SliceData

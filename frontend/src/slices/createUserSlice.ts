@@ -1,9 +1,9 @@
 import Cookies from 'js-cookie'
 import { StoreApi } from 'zustand'
 
-import { DataType } from '@ors/types/primitives'
 import { api } from '@ors/helpers'
 import { InitialStoreState, StoreState } from '@ors/store'
+import { DataType } from '@ors/types/primitives'
 
 function removeCookies() {
   Cookies.remove('csrftoken')
