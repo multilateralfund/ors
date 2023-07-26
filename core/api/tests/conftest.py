@@ -2,12 +2,17 @@
 import pytest
 
 from core.api.tests.factories import (
+    AgencyFactory,
     BlendFactory,
     CPReportFactory,
     CountryFactory,
     ExcludedUsageBlendFactory,
     ExcludedUsageSubstFactory,
     GroupFactory,
+    ProjectSectorFactory,
+    ProjectStatusFactory,
+    ProjectSubSectorFactory,
+    ProjectTypeFactory,
     SubstanceFactory,
     UsageFactory,
     UserFactory,
@@ -80,3 +85,28 @@ def blend(excluded_usage):
         end_year=3000,
     )
     return blend
+
+
+@pytest.fixture
+def agency():
+    return AgencyFactory.create(name="Agency")
+
+
+@pytest.fixture
+def project_type():
+    return ProjectTypeFactory.create(name="Project Type", code="PT")
+
+
+@pytest.fixture
+def project_status():
+    return ProjectStatusFactory.create(name="Project Status", code="PS")
+
+
+@pytest.fixture
+def sector():
+    return ProjectSectorFactory.create(name="Sector", code="SEC")
+
+
+@pytest.fixture
+def subsector(sector):
+    return ProjectSubSectorFactory.create(name="Subsector", code="SUB", sector=sector)

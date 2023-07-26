@@ -659,7 +659,7 @@ def get_project_base_data(item, item_index, logger, is_submissions=True):
 
     status_str = item["STATUS_CODE"]
     if is_submissions and not status_str:
-        status_str = "NEW"
+        status_str = "NEWSUB"
 
     project_status = get_object_by_name(
         ProjectStatus,

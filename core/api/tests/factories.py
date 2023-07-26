@@ -1,5 +1,6 @@
 import factory.fuzzy
 from core.models.adm import AdmChoice, AdmColumn, AdmRecord, AdmRow
+from core.models.agency import Agency
 from core.models.country import Country
 from core.models.country_programme import (
     CPEmission,
@@ -11,6 +12,14 @@ from core.models.country_programme import (
 )
 
 from core.models.group import Group
+from core.models.project import (
+    Project,
+    ProjectSector,
+    ProjectStatus,
+    ProjectSubSector,
+    ProjectType,
+)
+from core.models.project_submission import ProjectSubmission
 from core.models.substance import Substance
 from core.models.usage import ExcludedUsage, Usage
 from core.models.blend import Blend
@@ -215,3 +224,70 @@ class AdmRecordFactory(factory.django.DjangoModelFactory):
     column = factory.SubFactory(AdmColumnFactory)
     row = factory.SubFactory(AdmRowFactory)
     value_text = factory.Faker("pystr", max_chars=100)
+
+
+class AgencyFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Agency
+
+    name = factory.Faker("pystr", max_chars=100)
+    description = factory.Faker("pystr", max_chars=200)
+
+
+class ProjectTypeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProjectType
+
+    name = factory.Faker("pystr", max_chars=100)
+    code = factory.Faker("pystr", max_chars=10)
+    sort_order = factory.Faker("random_int", min=1, max=100)
+
+
+class ProjectStatusFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProjectStatus
+
+    name = factory.Faker("pystr", max_chars=100)
+    code = factory.Faker("pystr", max_chars=10)
+
+
+class ProjectSectorFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProjectSector
+
+    name = factory.Faker("pystr", max_chars=100)
+    code = factory.Faker("pystr", max_chars=10)
+    sort_order = factory.Faker("random_int", min=1, max=100)
+
+
+class ProjectSubSectorFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProjectSubSector
+
+    name = factory.Faker("pystr", max_chars=100)
+    code = factory.Faker("pystr", max_chars=10)
+    sort_order = factory.Faker("random_int", min=1, max=100)
+    sector = factory.SubFactory(ProjectSectorFactory)
+
+
+class ProjectFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Project
+
+    title = factory.Faker("pystr", max_chars=100)
+    description = factory.Faker("pystr", max_chars=200)
+    project_type = factory.SubFactory(ProjectTypeFactory)
+    status = factory.SubFactory(ProjectStatusFactory)
+    subsector = factory.SubFactory(ProjectSubSectorFactory)
+    agency = factory.SubFactory(AgencyFactory)
+    country = factory.SubFactory(CountryFactory)
+    approval_meeting_no = factory.Faker("random_int", min=1, max=100)
+
+
+class ProjectSubmissionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProjectSubmission
+
+    project = factory.SubFactory(ProjectFactory)
+    category = "bilateral cooperation"
+    submission_number = factory.Faker("random_int", min=1, max=100)

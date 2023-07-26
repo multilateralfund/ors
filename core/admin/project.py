@@ -75,6 +75,6 @@ class ProjectAdmin(admin.ModelAdmin):
             "projectsubmission",
             "ods_odp",
             "funds",
-            "submissions",
+            "submission",
         ]
         return get_final_display_list(Project, exclude)
