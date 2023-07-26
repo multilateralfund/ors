@@ -9,5 +9,6 @@ RUN npm install
 
 COPY frontend/ .
 RUN npm run build
+RUN cp /frontend/.next/BUILD_ID /frontend/.next/static/BUILD_ID
 
 CMD ["npm", "run", "start"]
