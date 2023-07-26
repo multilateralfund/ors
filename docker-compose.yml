@@ -14,7 +14,7 @@ services:
     restart: always
 
   app:
-    image: ghcr.io/multilateralfund/multilateralfund-app:${DOCKER_TAG:-main}
+    image: ghcr.io/multilateralfund/multilateralfund-app:${DOCKER_TAG:-latest}
     env_file:
       - .env
     environment:
@@ -27,14 +27,14 @@ services:
       - postgres
 
   nextjs:
-    image: ghcr.io/multilateralfund/multilateralfund-nextjs:${DOCKER_TAG:-main}
+    image: ghcr.io/multilateralfund/multilateralfund-nextjs:${DOCKER_TAG:-latest}
     volumes:
-      - nextjs_data:/frontend/.next/
+      - nextjs_data:/frontend/.shared
     expose:
       - 3000
 
   nginx:
-    image: ghcr.io/multilateralfund/multilateralfund-nginx:${DOCKER_TAG:-main}
+    image: ghcr.io/multilateralfund/multilateralfund-nginx:${DOCKER_TAG:-latest}
     volumes:
       - app_data:/.fs
       - nextjs_data:/.next

@@ -1,7 +1,8 @@
 FROM node:18-alpine
 
 WORKDIR /frontend
-VOLUME ["/frontend/.next/"]
+VOLUME ["/frontend/.shared/"]
+RUN mkdir -p "/frontend/.shared/"
 
 COPY frontend/package.json .
 COPY frontend/package-lock.json .
@@ -9,6 +10,8 @@ RUN npm install
 
 COPY frontend/ .
 RUN npm run build
-RUN cp /frontend/.next/BUILD_ID /frontend/.next/static/BUILD_ID
+RUN cat /frontend/.next/BUILD_ID && cp /frontend/.next/BUILD_ID /frontend/.next/static/BUILD_ID
 
-CMD ["npm", "run", "start"]
+COPY docker/entrypoint-nextjs.sh /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["entrypoint.sh"]
