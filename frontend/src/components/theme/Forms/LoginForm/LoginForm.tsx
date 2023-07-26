@@ -22,6 +22,8 @@ export default function LoginForm() {
   React.useEffect(() => {
     if (user.data) {
       router.push(searchParams.get('redirect') || '/')
+      // router.refresh()
+      // window.location.replace(searchParams.get('redirect') || '/')
     }
   }, [user, router, searchParams])
 

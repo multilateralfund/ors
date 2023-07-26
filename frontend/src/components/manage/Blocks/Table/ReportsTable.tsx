@@ -103,10 +103,10 @@ export default function ReportsTable() {
               handleFilterChange('country_id', value?.id, !value?.id)
             }}
           />
-          <Field Input={{ label: 'Status' }} widget="autocomplete" />
+          {/* <Field Input={{ label: 'Status' }} widget="autocomplete" />
           <Field Input={{ label: 'Status' }} widget="autocomplete" />
           <Field Input={{ label: 'From' }} widget="autocomplete" />
-          <Field Input={{ label: 'To' }} widget="autocomplete" />
+          <Field Input={{ label: 'To' }} widget="autocomplete" /> */}
         </div>
       </div>
       <Table size="small">

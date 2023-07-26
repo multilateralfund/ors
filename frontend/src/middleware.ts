@@ -44,10 +44,15 @@ export default function middleware(request: NextRequest) {
   const pathname = removeTrailingSlash(request.nextUrl.pathname)
   const host = request.nextUrl.host
 
+  console.log('==== Middleware ====')
+  console.log('nextUrl = ', request.nextUrl)
+  console.log('headers = ', {
+    'X-Forwarded-Host': headers.get('X-Forwarded-Host'),
+  })
+
   headers.set('x-next-host', host)
   headers.set('x-next-pathname', pathname)
   headers.set('x-next-lang', locale.code)
-  headers.set('x-next-lang-native-name', locale.nativeName)
 
   return NextResponse.next({ request: { headers } })
 }

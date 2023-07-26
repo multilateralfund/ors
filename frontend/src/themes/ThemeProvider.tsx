@@ -25,10 +25,14 @@ export default function ThemeProvider({
   const dir = useStore((state) => state.i18n.dir)
 
   // https://github.com/emotion-js/emotion/issues/2928#issuecomment-1636030444
-  const [{ cache, flush }] = React.useState(() => {
+  const initCache = () => {
     const cache = createCache({
       ...options,
-      stylisPlugins: [...(options.stylisPlugins || []), prefixer, rtlPlugin],
+      stylisPlugins: [
+        ...(options.stylisPlugins || []),
+        prefixer,
+        ...(dir === 'rtl' ? [rtlPlugin] : []),
+      ],
     })
     cache.compat = true
     const prevInsert = cache.insert
@@ -49,7 +53,9 @@ export default function ThemeProvider({
       return prevInserted
     }
     return { cache, flush }
-  })
+  }
+
+  const [{ cache, flush }] = React.useState(initCache)
 
   useServerInsertedHTML(() => {
     const inserted = flush()

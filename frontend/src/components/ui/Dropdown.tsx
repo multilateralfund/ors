@@ -1,8 +1,9 @@
 'use client'
-import { useEffect, useId, useRef } from 'react'
 import React from 'react'
+import { useEffect, useId, useRef } from 'react'
 
 import { Button, Menu, MenuItem } from '@mui/material'
+import cx from 'classnames'
 
 const DropdownContext = React.createContext({ handleClose: () => {} })
 
@@ -48,7 +49,7 @@ export default function Dropdown({
   return (
     <DropdownContext.Provider value={{ handleClose }}>
       <Button
-        className={className}
+        className={cx('text-base', className)}
         aria-controls={open ? menuId : undefined}
         aria-expanded={open ? 'true' : undefined}
         aria-haspopup="true"
