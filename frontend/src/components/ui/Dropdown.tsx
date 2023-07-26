@@ -1,5 +1,5 @@
 'use client'
-import { useId } from 'react'
+import { useEffect, useId, useRef } from 'react'
 import React from 'react'
 
 import { Button, Menu, MenuItem } from '@mui/material'
@@ -18,6 +18,8 @@ export default function Dropdown({
   label: React.ReactNode
 }) {
   const uniqueId = useId()
+  const buttonRef = useRef<any>()
+  const menuRef = useRef<any>()
   const buttonId = `${id || uniqueId}-button`
   const menuId = `${id || uniqueId}-menu`
   const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null)
@@ -31,22 +33,34 @@ export default function Dropdown({
     setAnchorEl(null)
   }
 
+  useEffect(() => {
+    if (buttonRef.current) {
+      buttonRef.current.setAttribute('id', buttonId)
+    }
+  }, [buttonId])
+
+  useEffect(() => {
+    if (menuRef.current) {
+      menuRef.current.setAttribute('id', menuId)
+    }
+  }, [menuId])
+
   return (
     <DropdownContext.Provider value={{ handleClose }}>
       <Button
-        id={buttonId}
         className={className}
         aria-controls={open ? menuId : undefined}
         aria-expanded={open ? 'true' : undefined}
         aria-haspopup="true"
+        ref={buttonRef}
         onClick={handleClick}
       >
         {label}
       </Button>
       <Menu
-        id={menuId}
         anchorEl={anchorEl}
         open={open}
+        ref={menuRef}
         MenuListProps={{
           'aria-labelledby': buttonId,
         }}

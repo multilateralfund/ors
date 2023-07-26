@@ -5,6 +5,8 @@ import Cookies from 'js-cookie'
 import config from '@ors/config'
 import { getStore } from '@ors/store'
 
+import { addTrailingSlash, removeFirstSlash } from '../Url/Url'
+
 const nextCookies = require('next/headers').cookies
 
 const defaultHeaders: { [key: string]: { [key: string]: any } } = {
@@ -27,11 +29,24 @@ function delayExecution(ms: number) {
 }
 
 export function formatApiUrl(path: string) {
+  // Check if path is external
   if (path.startsWith('http://') || path.startsWith('https://')) return path
-
   const { settings } = config
-  const adjustedPath = path[0] !== '/' ? `/${path}` : path
-  const apiPath = __SERVER__ ? settings.apiPrivatePath : settings.apiPath
+  let apiPath, adjustedPath
+
+  if (__DEVELOPMENT__) {
+    apiPath = settings.apiPath || 'http://127.0.0.1:8000'
+  } else if (__SERVER__) {
+    const headers = require('next/headers').headers()
+    apiPath = headers.get('x-next-host')
+  } else if (__CLIENT__) {
+    apiPath = window.location.origin
+  }
+
+  apiPath = addTrailingSlash(apiPath)
+  adjustedPath = removeFirstSlash(path)
+  adjustedPath =
+    adjustedPath !== '/' ? addTrailingSlash(adjustedPath) : adjustedPath
 
   return `${apiPath}${adjustedPath}`
 }

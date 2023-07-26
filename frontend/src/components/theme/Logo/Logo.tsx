@@ -8,8 +8,8 @@ export default function Logo() {
   const logoUrl = `/assets/logos/logo_${lang}.png`
 
   return (
-    <div className="logo relative mb-5 block w-60 items-center">
-      <Image alt="Multilateral Fund" src={logoUrl} />
+    <div className="logo relative mb-5 block h-[100px] w-[240px] items-center">
+      <Image id="logo" alt="Multilateral Fund" src={logoUrl} />
     </div>
   )
 }

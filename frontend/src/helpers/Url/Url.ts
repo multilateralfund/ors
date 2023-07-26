@@ -12,6 +12,28 @@ export function removeTrailingSlash(path: string): string {
   return path.replace(/\/+$/, '')
 }
 
+export function removeFirstSlash(path: string): string {
+  // Check if the string starts with a slash
+  if (path.startsWith('/')) {
+    // Remove the first slash
+    return path.slice(1)
+  }
+
+  // Return the original string if it doesn't start with a slash
+  return path
+}
+
+export function addTrailingSlash(path: string): string {
+  // Check if the string already ends with a slash
+  if (!path.endsWith('/')) {
+    // Add the trailing slash
+    return path + '/'
+  }
+
+  // Return the original string if it already has a trailing slash
+  return path
+}
+
 function compilePath(
   path: string,
   caseSensitive = false,

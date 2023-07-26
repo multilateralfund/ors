@@ -17,6 +17,14 @@ const commonTheme = (
         },
       },
     },
+    MuiSkeleton: {
+      styleOverrides: {
+        root: {
+          transform: 'scale(1)',
+          transformOrigin: 'top',
+        },
+      },
+    },
   },
   direction,
   palette: {
