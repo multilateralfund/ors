@@ -1,7 +1,7 @@
 'use client'
 import type { ThemeSlice } from '@ors/slices/createThemeSlice'
 
-import React from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import createCache from '@emotion/cache'
 import { CacheProvider } from '@emotion/react'
@@ -11,6 +11,8 @@ import { useServerInsertedHTML } from 'next/navigation'
 import { prefixer } from 'stylis'
 import rtlPlugin from 'stylis-plugin-rtl'
 
+import Loading from '@ors/app/loading'
+import { FadeInOut } from '@ors/components'
 import useStore from '@ors/store'
 import { createTheme } from '@ors/themes'
 
@@ -21,8 +23,14 @@ export default function ThemeProvider({
   children: React.ReactNode
   options: any
 }) {
+  const [loadingDir, setLoadingDir] = useState<boolean>(false)
   const theme: ThemeSlice = useStore((state) => state.theme)
   const dir = useStore((state) => state.i18n.dir)
+  const prevDir = useRef(dir)
+
+  const muiTheme = useMemo(() => {
+    return createTheme(theme.mode || 'light', dir)
+  }, [theme.mode, dir])
 
   // https://github.com/emotion-js/emotion/issues/2928#issuecomment-1636030444
   const initCache = () => {
@@ -110,7 +118,20 @@ export default function ThemeProvider({
 
   const currentTheme = React.useMemo(() => theme.mode || 'light', [theme.mode])
 
-  React.useEffect(() => {
+  useEffect(() => {
+    if (dir !== prevDir.current) {
+      setLoadingDir(true)
+    }
+    prevDir.current = dir
+  }, [dir])
+
+  useEffect(() => {
+    if (loadingDir) {
+      window.location.reload()
+    }
+  }, [loadingDir])
+
+  useEffect(() => {
     document.documentElement.setAttribute('data-mode', currentTheme)
     const prefersDark =
       typeof window !== 'undefined' &&
@@ -123,8 +144,18 @@ export default function ThemeProvider({
 
   return (
     <CacheProvider value={cache}>
-      <MuiThemeProvider theme={createTheme(theme.mode || 'light', dir)}>
+      <MuiThemeProvider theme={muiTheme}>
         <CssBaseline enableColorScheme />
+
+        {loadingDir && (
+          <FadeInOut
+            transition={{ duration: 0.3 }}
+            className="absolute z-absolute h-full w-full"
+            style={{ backgroundColor: muiTheme.palette.background.default }}
+          >
+            <Loading />
+          </FadeInOut>
+        )}
         {children}
       </MuiThemeProvider>
     </CacheProvider>

@@ -30,6 +30,10 @@ export const errorViews = {
 export const routes = [
   {
     layout: 'document',
+    path: '/econnrefused',
+  },
+  {
+    layout: 'document',
     path: '/login',
   },
   {

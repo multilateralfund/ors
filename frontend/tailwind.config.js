@@ -6,6 +6,7 @@ const colors = require('tailwindcss/colors')
 module.exports = {
   content: [
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/themes/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   corePlugins: {
@@ -45,6 +46,9 @@ module.exports = {
           DEFAULT: colors.orange[500],
         },
       },
+      zIndex: {
+        'absolute': '9999',
+      }
     },
   },
 }

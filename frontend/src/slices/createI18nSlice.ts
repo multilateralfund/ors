@@ -30,7 +30,8 @@ export const createI18nSlice = (
         // Set html attributes
         if (__CLIENT__) {
           document.documentElement.setAttribute('lang', lang)
-          document.documentElement.setAttribute('dir', newDir)
+          // Set dir only on ssr
+          // document.documentElement.setAttribute('dir', newDir)
         }
         // Save language cookie
         Cookies.set(config.cookies.language, lang)
