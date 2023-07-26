@@ -33,7 +33,7 @@ FRONTEND_HOST = env.list("FRONTEND_HOST", default=["http://localhost:3000"])
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env.str("DJANGO_SECRET_KEY", default="")
-
+ca
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
 
@@ -280,7 +280,10 @@ if ENABLE_DEBUG_BAR:
                 or request.META.get("HTTP_X_REAL_IP") in INTERNAL_IPS
             )
 
-        hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+        try:
+            hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+        except socket.gaierror:
+            ips = []
         INTERNAL_IPS = ["127.0.0.1"]
         INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
         MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
