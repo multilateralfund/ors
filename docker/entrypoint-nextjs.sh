@@ -1,6 +1,5 @@
-#!/bin/bash
+#!/bin/sh
 set -e
-shopt -s dotglob
 
 # Volume is persisted so remove old build and copy new one
 mkdir -p /frontend/.shared
