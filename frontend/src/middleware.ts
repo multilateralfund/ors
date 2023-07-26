@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server'
 import { pick } from 'accept-language-parser'
 import { NextResponse } from 'next/server'
 
-import appConfig from '@ors/config/base'
+import appConfig from '@ors/registry'
 
 import { removeTrailingSlash } from './helpers/Url/Url'
 

@@ -4,7 +4,7 @@ import React from 'react'
 import { useRouter } from 'next/navigation'
 
 import { Dropdown } from '@ors/components'
-import config from '@ors/config'
+import config from '@ors/registry'
 import useStore from '@ors/store'
 
 import { IoPerson } from '@react-icons/all-files/io5/IoPerson'

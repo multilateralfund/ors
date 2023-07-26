@@ -1,6 +1,6 @@
 import type { AnyObject } from '@ors/types/primitives'
 
-import config from '@ors/config'
+import config from '@ors/registry'
 
 import { useTranslation } from '@ors/i18n/client'
 

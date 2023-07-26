@@ -2,7 +2,7 @@ import type { DataType } from '@ors/types/primitives'
 
 import Cookies from 'js-cookie'
 
-import config from '@ors/config'
+import config from '@ors/registry'
 import { getStore } from '@ors/store'
 
 import { addTrailingSlash, removeFirstSlash } from '../Url/Url'
