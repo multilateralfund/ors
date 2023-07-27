@@ -1,9 +1,8 @@
 import type { DataType } from '@ors/types/primitives'
 
-// import { cache } from 'react'
-
 import Cookies from 'js-cookie'
 import { redirect } from 'next/navigation'
+import hash from 'object-hash'
 
 import {
   addTrailingSlash,
@@ -69,24 +68,32 @@ export default async function api(
     headers?: any
     method?: string
     next?: any
+    withStoreCache?: boolean
   },
   throwError = true,
 ) {
   const nextHeaders = __SERVER__ ? require('next/headers').headers() : null
   const store = __CLIENT__ ? getStore() : null
+  const storeState = store ? store.getState() : null
   const {
     data = null,
     delay,
     headers = {},
     method = 'get',
     next = {},
+    withStoreCache = false,
     ...opts
   } = options || {}
+  const id = withStoreCache ? hash({ options, path }) : ''
   const pathname = __SERVER__
     ? nextHeaders.get('x-next-pathname')
     : removeTrailingSlash(window.location.pathname)
   const csrftoken = !__SERVER__ ? Cookies.get('csrftoken') : null
   const sendRequest = delay ? new Date().getTime() : 0
+
+  if (withStoreCache && storeState?.cache.data[id]) {
+    return storeState.cache.data[id]
+  }
 
   function handleEconnrefused(error: any) {
     console.log('ECONNREFUSED for endpoint:', formatApiUrl(path))
@@ -143,7 +150,6 @@ export default async function api(
   }
 
   try {
-    // const cachedFetcher = __CLIENT__ ? cache(fetcher) : fetcher
     const cachedFetcher = fetcher
     const response = await cachedFetcher()
     const receiveResponse = delay ? new Date().getTime() : 0
@@ -154,7 +160,11 @@ export default async function api(
     }
     if (response.ok) {
       try {
-        return await response.json()
+        const data = await response.json()
+        if (withStoreCache) {
+          storeState?.cache.setCache(id, data)
+        }
+        return data
       } catch {
         if (throwError) {
           return response

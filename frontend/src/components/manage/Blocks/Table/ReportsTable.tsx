@@ -18,6 +18,7 @@ import Field from '@ors/components/manage/Form/Field'
 import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { getResults } from '@ors/helpers'
+import { CacheSlice } from '@ors/slices/createCacheSlice'
 import { ReportsSlice } from '@ors/slices/createReportsSlice'
 import useStore from '@ors/store'
 
@@ -36,7 +37,10 @@ export default function ReportsTable() {
   const [rowsPerPage, setRowsPerPage] = React.useState(10)
   const [filters, setFilters] = React.useState<Filters>({})
   const reportsManager: ReportsSlice = useStore((state) => state.reports)
+  const cache: CacheSlice = useStore((state) => state.cache)
   const { loading = false } = reportsManager.get || {}
+
+  console.log('HERE', cache)
 
   const reports = useMemo(() => {
     const { count, results } = getResults(reportsManager.get.data)

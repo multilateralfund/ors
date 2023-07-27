@@ -67,7 +67,7 @@ export const createReportsSlice = (
         `api/country-programme/reports/${
           params ? `?${new URLSearchParams(params).toString()}` : ''
         }`,
-        { delay: 500 },
+        { delay: 500, withStoreCache: true },
       )
       set((state) => ({
         reports: {
@@ -76,6 +76,7 @@ export const createReportsSlice = (
         },
       }))
     } catch (error) {
+      console.log('HERE ERROR', error)
       set((state) => ({
         reports: {
           ...state.reports,
