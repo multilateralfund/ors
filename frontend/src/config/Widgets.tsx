@@ -58,6 +58,9 @@ export const widgetsMapping: WidgetsMapping = {
   widget: {
     autocomplete: dynamic(
       () => import('@ors/components/manage/Widgets/AutocompleteWidget'),
+      {
+        loading: () => <TextWidgetLoading />,
+      },
     ) as AutocompleteWidget,
   },
 }

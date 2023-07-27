@@ -24,14 +24,6 @@ const darkTheme = (
           }),
         },
       },
-      // MuiInputBase: {
-      //   styleOverrides: {
-      //     root: {
-      //       backgroundColor: 'rgb(55, 65, 81)',
-      //       borderWidth: '1px',
-      //     },
-      //   },
-      // },
     },
     palette: {
       ...commonTheme.palette,

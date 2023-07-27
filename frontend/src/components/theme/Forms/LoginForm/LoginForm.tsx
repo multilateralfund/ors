@@ -56,11 +56,15 @@ export default function LoginForm() {
           await user.login(form.get('username'), form.get('password'))
           setErrors(emptyErrors)
         } catch (error) {
-          if (error.status === 400) {
-            setErrors({
-              ...emptyErrors,
-              ...(await error.json()),
-            })
+          switch (error.status) {
+            case 400:
+              setErrors({
+                ...emptyErrors,
+                ...(await error.json()),
+              })
+              break
+            default:
+              setErrors(emptyErrors)
           }
         }
       }}

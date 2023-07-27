@@ -23,13 +23,6 @@ const lightTheme = (
           }),
         },
       },
-      // MuiInputBase: {
-      //   styleOverrides: {
-      //     root: {
-      //       backgroundColor: 'rgb(243, 244, 246)',
-      //     },
-      //   },
-      // },
     },
     palette: {
       ...commonTheme.palette,

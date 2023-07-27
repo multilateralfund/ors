@@ -1,5 +1,7 @@
 import type { DataType } from '@ors/types/primitives'
 
+// import { cache } from 'react'
+
 import Cookies from 'js-cookie'
 import { redirect } from 'next/navigation'
 
@@ -85,8 +87,45 @@ export default async function api(
     : removeTrailingSlash(window.location.pathname)
   const csrftoken = !__SERVER__ ? Cookies.get('csrftoken') : null
   const sendRequest = delay ? new Date().getTime() : 0
-  try {
-    const response = await fetch(formatApiUrl(path), {
+
+  function handleEconnrefused(error: any) {
+    console.log('ECONNREFUSED for endpoint:', formatApiUrl(path))
+    console.log(error)
+    if (pathname !== '/econnrefused') {
+      redirect('/econnrefused')
+    }
+  }
+
+  function handleError(error: any) {
+    switch (error.status || error.name) {
+      case undefined:
+        handleEconnrefused(error)
+        break
+      case 'TypeError':
+        handleEconnrefused(error)
+        break
+      case 'ECONNREFUSED':
+        handleEconnrefused(error)
+        break
+      case 403:
+        if (store) {
+          store.setState((state) => ({
+            ...state,
+            user: { ...state.user, data: null },
+          }))
+        }
+        break
+      default:
+        if (throwError) {
+          throw error
+        } else {
+          return null
+        }
+    }
+  }
+
+  async function fetcher() {
+    return await fetch(formatApiUrl(path), {
       credentials: 'include',
       headers: {
         Accept: 'application/json',
@@ -101,44 +140,33 @@ export default async function api(
       ...next,
       ...opts,
     })
+  }
+
+  try {
+    // const cachedFetcher = __CLIENT__ ? cache(fetcher) : fetcher
+    const cachedFetcher = fetcher
+    const response = await cachedFetcher()
     const receiveResponse = delay ? new Date().getTime() : 0
     const responseTimeMs = receiveResponse - sendRequest
     // Delay response time
     if (delay && delay - responseTimeMs > 0) {
       await delayExecution(delay - responseTimeMs)
     }
-    switch (response.status) {
-      case 403:
-        if (store) {
-          store.setState((state) => ({
-            ...state,
-            user: { ...state.user, data: null },
-          }))
+    if (response.ok) {
+      try {
+        return await response.json()
+      } catch {
+        if (throwError) {
+          return response
         }
-        break
-      default:
-        if (response.ok) {
-          try {
-            return await response.json()
-          } catch {
-            if (throwError) {
-              return response
-            }
-            return null
-          }
-        } else if (throwError) {
-          throw response
-        } else {
-          return null
-        }
+        return null
+      }
+    } else {
+      handleError(response)
     }
   } catch (error) {
-    // Handle ECONNREFUSED
-    console.log('ECONNREFUSED for endpoint:', formatApiUrl(path))
-    console.log(error)
-    if (pathname !== '/econnrefused') {
-      redirect('/econnrefused')
-    }
+    console.log('HERE ERROR', error)
+    return handleError(error)
   }
 }
 

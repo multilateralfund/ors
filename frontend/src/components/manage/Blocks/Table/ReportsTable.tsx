@@ -159,10 +159,16 @@ export default function ReportsTable() {
                   {row.type === 'skeleton' ? <Skeleton /> : row.country}
                 </TableCell>
                 <TableCell align="center">
-                  {row.type === 'skeleton' ? <Skeleton /> : row.year}
+                  {row.type === 'skeleton' ? (
+                    <Skeleton className="mx-auto w-[80px]" />
+                  ) : (
+                    row.year
+                  )}
                 </TableCell>
                 <TableCell align="center">
-                  {row.type === 'skeleton' ? <Skeleton /> : null}
+                  {row.type === 'skeleton' ? (
+                    <Skeleton className="mx-auto w-[80px]" />
+                  ) : null}
                 </TableCell>
                 <TableCell align="center">
                   <Button
