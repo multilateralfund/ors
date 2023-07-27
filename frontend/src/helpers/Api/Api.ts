@@ -68,6 +68,7 @@ export default async function api(
     headers?: any
     method?: string
     next?: any
+    params?: Record<string, any>
     withStoreCache?: boolean
   },
   throwError = true,
@@ -81,6 +82,7 @@ export default async function api(
     headers = {},
     method = 'get',
     next = {},
+    params = undefined,
     withStoreCache = false,
     ...opts
   } = options || {}
@@ -90,13 +92,17 @@ export default async function api(
     : removeTrailingSlash(window.location.pathname)
   const csrftoken = !__SERVER__ ? Cookies.get('csrftoken') : null
   const sendRequest = delay ? new Date().getTime() : 0
+  let fullPath = formatApiUrl(path)
+  if (params) {
+    fullPath += '?' + new URLSearchParams(params).toString()
+  }
 
   if (withStoreCache && storeState?.cache.data[id]) {
     return storeState.cache.data[id]
   }
 
   function handleEconnrefused(error: any) {
-    console.log('ECONNREFUSED for endpoint:', formatApiUrl(path))
+    console.log('ECONNREFUSED for endpoint:', fullPath)
     console.log(error)
     if (pathname !== '/econnrefused') {
       redirect('/econnrefused')
@@ -132,7 +138,7 @@ export default async function api(
   }
 
   async function fetcher() {
-    return await fetch(formatApiUrl(path), {
+    return await fetch(fullPath, {
       credentials: 'include',
       headers: {
         Accept: 'application/json',

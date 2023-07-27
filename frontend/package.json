@@ -23,6 +23,7 @@
     "@emotion/server": "^11.11.0",
     "@emotion/styled": "^11.11.0",
     "@mui/material": "^5.14.0",
+    "@mui/x-data-grid": "^6.10.1",
     "@react-icons/all-files": "^4.1.0",
     "@types/node": "20.4.2",
     "@types/react": "18.2.15",
