@@ -44,7 +44,9 @@ export function formatApiUrl(path: string) {
   } else if (__SERVER__) {
     const headers = require('next/headers').headers()
     apiPath =
-      headers.get('x-next-protocol') + '://' + headers.get('x-next-host')
+      headers.get('x-next-protocol').split(',')[0] +
+      '://' +
+      headers.get('x-next-host')
   } else if (__CLIENT__) {
     apiPath = window.location.origin
   }
