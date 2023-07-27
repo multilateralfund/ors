@@ -5,7 +5,7 @@ import type { FlatNamespace } from 'i18next'
 import type { FallbackNs, UseTranslationOptions } from 'react-i18next'
 import type { $Tuple } from 'react-i18next/helpers'
 
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import {
   initReactI18next,
   useTranslation as useTranslationOrg,
@@ -19,7 +19,7 @@ import useStore, { getStore } from '@ors/store'
 
 import { getLocale, getOptions, languages } from './settings'
 
-const store = __SERVER__ ? getStore() : null
+const store = getStore()
 
 i18next
   .use(ICU)
@@ -35,7 +35,7 @@ i18next
     detection: {
       order: ['path', 'htmlTag', 'cookie', 'navigator'],
     },
-    lng: store ? store.getState().i18n.lang : undefined,
+    lng: store.getState().i18n.lang,
     preload: __SERVER__ ? languages : [],
   })
 
@@ -47,8 +47,12 @@ export function useTranslation(
     lang: state.i18n.lang,
     setLang: state.i18n.setLang,
   }))
-  const ret = useTranslationOrg(ns, options)
+  const ret = useTranslationOrg(ns, { lng: lang, ...options })
   const { i18n } = ret
+
+  if (lang !== i18n.language) {
+    i18n.changeLanguage(lang)
+  }
 
   const locale = useMemo(() => {
     return getLocale(lang)
@@ -61,13 +65,6 @@ export function useTranslation(
     },
     [setLang, i18n],
   )
-
-  useEffect(() => {
-    // Make sure i18n language is always equal to store language
-    if (lang !== i18n.language) {
-      i18n.changeLanguage(lang)
-    }
-  }, [lang, i18n])
 
   return { changeLanguage, lang, locale, ...ret } as UseTranslationResponse<
     FallbackNs<$Tuple<FlatNamespace> | FlatNamespace | undefined>,

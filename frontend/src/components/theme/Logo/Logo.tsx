@@ -1,5 +1,6 @@
 'use client'
-import { Image } from '@ors/components'
+
+import Image from '@ors/components/ui/Image'
 
 import { useTranslation } from '@ors/i18n/client'
 
@@ -9,7 +10,13 @@ export default function Logo() {
 
   return (
     <div className="logo relative mb-5 block h-[100px] w-[240px] items-center">
-      <Image id="logo" alt="Multilateral Fund" src={logoUrl} />
+      <Image
+        id="logo"
+        alt="Multilateral Fund"
+        priority={true}
+        sizes="240px"
+        src={logoUrl}
+      />
     </div>
   )
 }

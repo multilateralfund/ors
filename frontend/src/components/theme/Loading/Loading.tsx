@@ -1,7 +1,9 @@
 import { CSSProperties } from 'react'
 
-import { Box, CircularProgress } from '@mui/material'
+import { CircularProgress } from '@mui/material'
 import cx from 'classnames'
+
+import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
 
 export default function Loading({
   ProgressStyle,
@@ -13,14 +15,15 @@ export default function Loading({
   style?: React.CSSProperties
 }) {
   return (
-    <Box
+    <FadeInOut
+      transition={{ duration: 0.3 }}
       className={cx(
-        'absolute left-0 top-0 z-absolute flex h-full w-full items-center justify-center bg-transparent theme-dark:bg-transparent',
+        'loading absolute left-0 top-0 z-absolute flex h-full w-full items-center justify-center',
         className,
       )}
       style={style}
     >
       <CircularProgress style={ProgressStyle} />
-    </Box>
+    </FadeInOut>
   )
 }

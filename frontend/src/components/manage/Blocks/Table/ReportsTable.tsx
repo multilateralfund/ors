@@ -3,6 +3,7 @@ import React, { useMemo } from 'react'
 
 import {
   Button,
+  Skeleton,
   Table,
   TableBody,
   TableCell,
@@ -11,28 +12,45 @@ import {
   TableRow,
   Typography,
 } from '@mui/material'
+import { times } from 'lodash'
 
-// import Loading from '@ors/app/loading'
-import { Field } from '@ors/components'
+import Field from '@ors/components/manage/Form/Field'
+import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
+import Loading from '@ors/components/theme/Loading/Loading'
 import { getResults } from '@ors/helpers'
 import { ReportsSlice } from '@ors/slices/createReportsSlice'
 import useStore from '@ors/store'
 
-import FadeInOut from '../../Utils/FadeInOut'
-
 type Filters = { country_id?: number | string }
 type CountryOption = { id: number; label: string | undefined; name?: string }
-type Report = { country: string; id: number; name: string; year: number }
+type Report = {
+  country: string
+  id: number
+  name: string
+  type?: string
+  year: number
+}
 
 export default function ReportsTable() {
   const [page, setPage] = React.useState(1)
   const [rowsPerPage, setRowsPerPage] = React.useState(10)
   const [filters, setFilters] = React.useState<Filters>({})
   const reportsManager: ReportsSlice = useStore((state) => state.reports)
-  // const { loading = false } = reportsManager.get || {}
+  const { loading = false } = reportsManager.get || {}
 
   const reports = useMemo(() => {
-    return getResults(reportsManager.get.data)
+    const { count, results } = getResults(reportsManager.get.data)
+    const resultsWithSkeleton =
+      results.length === 0
+        ? times(rowsPerPage, (index) => {
+            return {
+              id: `${page}-${index}`,
+              type: 'skeleton',
+            }
+          })
+        : results
+    return { count, results: resultsWithSkeleton }
+    /* eslint-disable-next-line */
   }, [reportsManager.get])
 
   const countries = useMemo(() => {
@@ -56,6 +74,7 @@ export default function ReportsTable() {
     value: number | string,
     deleteFilter: boolean,
   ): void {
+    setPage(1)
     setFilters((prevFilters) => {
       const newFilters = { ...prevFilters }
       if (deleteFilter) {
@@ -85,12 +104,12 @@ export default function ReportsTable() {
 
   return (
     <div className="reports relative overflow-x-auto">
-      {/* {loading && (
+      {loading && (
         <Loading
-          className="z-10 !bg-gray-600/10 dark:!bg-gray-600/20"
+          className="z-10 bg-action-disabledBackground/5"
           ProgressStyle={{ animationDuration: '0.3s' }}
         />
-      )} */}
+      )}
       <div className="px-4 pt-4">
         <Typography className="mb-4">All submissions</Typography>
         <div className="grid grid-cols-3 gap-x-4">
@@ -110,7 +129,7 @@ export default function ReportsTable() {
         </div>
       </div>
       <Table size="small">
-        <TableHead className="bg-gray-100 dark:bg-gray-700">
+        <TableHead className="bg-action-highlight">
           <TableRow>
             <TableCell align="left">Report name</TableCell>
             <TableCell align="left">Country</TableCell>
@@ -133,13 +152,34 @@ export default function ReportsTable() {
                 tabIndex={-1}
                 hover
               >
-                <TableCell align="left">{row.name}</TableCell>
-                <TableCell align="left">{row.country}</TableCell>
-                <TableCell align="center">{row.year}</TableCell>
-                <TableCell align="center"></TableCell>
+                <TableCell align="left">
+                  {row.type === 'skeleton' ? <Skeleton /> : row.name}
+                </TableCell>
+                <TableCell align="left">
+                  {row.type === 'skeleton' ? <Skeleton /> : row.country}
+                </TableCell>
                 <TableCell align="center">
-                  <Button size="small" variant="outlined">
-                    Edit
+                  {row.type === 'skeleton' ? <Skeleton /> : row.year}
+                </TableCell>
+                <TableCell align="center">
+                  {row.type === 'skeleton' ? <Skeleton /> : null}
+                </TableCell>
+                <TableCell align="center">
+                  <Button
+                    className={
+                      row.type === 'skeleton'
+                        ? 'border-transparent hover:border-transparent hover:bg-transparent'
+                        : undefined
+                    }
+                    disableRipple={row.type === 'skeleton'}
+                    size="small"
+                    variant="outlined"
+                  >
+                    {row.type === 'skeleton' ? (
+                      <Skeleton className="mx-auto w-[80px]" />
+                    ) : (
+                      'Edit'
+                    )}
                   </Button>
                 </TableCell>
               </TableRow>
@@ -154,6 +194,23 @@ export default function ReportsTable() {
         page={page - 1}
         rowsPerPage={rowsPerPage}
         rowsPerPageOptions={[10, 20, 30, 40, 50]}
+        SelectProps={{
+          disabled: loading,
+        }}
+        backIconButtonProps={
+          loading
+            ? {
+                disabled: true,
+              }
+            : undefined
+        }
+        nextIconButtonProps={
+          loading
+            ? {
+                disabled: true,
+              }
+            : undefined
+        }
         onPageChange={(_, page) => {
           setPage(page + 1)
         }}

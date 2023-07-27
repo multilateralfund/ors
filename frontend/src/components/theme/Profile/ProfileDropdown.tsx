@@ -3,7 +3,7 @@ import React from 'react'
 
 import { useRouter } from 'next/navigation'
 
-import { Dropdown } from '@ors/components'
+import Dropdown from '@ors/components/ui/Dropdown'
 import config from '@ors/registry'
 import useStore from '@ors/store'
 
@@ -16,7 +16,9 @@ export default function ProfileDropdown() {
   return (
     !!user.data && (
       <Dropdown
-        label={<IoPerson className="text-primary dark:text-white" size={24} />}
+        label={
+          <IoPerson className="text-primary theme-dark:text-white" size={24} />
+        }
       >
         <Dropdown.Item
           onClick={() => {

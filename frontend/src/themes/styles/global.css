@@ -23,6 +23,18 @@
     @apply h-full;
   }
 
+  :root[data-connection='slow'] .motion.fade-in-out {
+    opacity: 1 !important;
+  }
+
+  :root[data-theme='dark'] * {
+    @apply theme-dark;
+  }
+
+  :root[data-theme='light'] * {
+    @apply theme-light;
+  }
+
   body {
     @apply h-full;
   }
@@ -40,5 +52,9 @@
   body::-webkit-scrollbar-thumb,
   body *::-webkit-scrollbar-thumb {
     @apply transition-all duration-300;
+  }
+
+  main {
+    @apply relative;
   }
 }

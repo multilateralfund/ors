@@ -59,7 +59,7 @@ export function formatApiUrl(path: string) {
   return `${apiPath}${adjustedPath}`
 }
 
-async function api(
+export default async function api(
   path: string,
   options?: {
     data?: any
@@ -132,9 +132,10 @@ async function api(
           return null
         }
     }
-  } catch (e) {
-    console.log(e)
+  } catch (error) {
     // Handle ECONNREFUSED
+    console.log('ECONNREFUSED for endpoint:', formatApiUrl(path))
+    console.log(error)
     if (pathname !== '/econnrefused') {
       redirect('/econnrefused')
     }
@@ -163,5 +164,3 @@ export function getResults(data: DataType): {
     results: [],
   }
 }
-
-export default api

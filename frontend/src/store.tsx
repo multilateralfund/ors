@@ -17,6 +17,7 @@ import { ThemeSlice, createThemeSlice } from './slices/createThemeSlice'
 import { UserSlice, createUserSlice } from './slices/createUserSlice'
 
 export type StoreState = {
+  connection: null | string
   i18n: I18nSlice
   reports: ReportsSlice
   theme: ThemeSlice
@@ -24,6 +25,7 @@ export type StoreState = {
 }
 
 export type InitialStoreState = {
+  connection?: null | string
   i18n?: Partial<I18nSlice>
   reports?: InitialReportsSlice
   theme?: Partial<ThemeSlice>
@@ -33,12 +35,23 @@ export type InitialStoreState = {
 let storeInstance: StoreApi<StoreState>
 
 const createStore = (initialState?: InitialStoreState) => {
-  storeInstance = zustandCreateStore<StoreState>((set, get) => ({
-    i18n: { ...createI18nSlice(set, get, initialState) },
-    reports: { ...createReportsSlice(set, get, initialState) },
-    theme: { ...createThemeSlice(set, get, initialState) },
-    user: { ...createUserSlice(set, get, initialState) },
-  }))
+  storeInstance = zustandCreateStore<StoreState>((set, get) => {
+    const args: [
+      StoreApi<StoreState>['setState'],
+      StoreApi<StoreState>['getState'],
+      InitialStoreState | undefined,
+    ] = [set, get, initialState]
+    return {
+      connection: __CLIENT__
+        ? // @ts-ignore
+          navigator?.connection?.effectiveType || null
+        : null,
+      i18n: { ...createI18nSlice(...args) },
+      reports: { ...createReportsSlice(...args) },
+      theme: { ...createThemeSlice(...args) },
+      user: { ...createUserSlice(...args) },
+    }
+  })
 
   return storeInstance
 }

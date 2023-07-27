@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@mui/material'
 
-import { Field } from '@ors/components'
+import Field from '@ors/components/manage/Form/Field'
 import { api } from '@ors/helpers'
 
 const emptyErrors = {

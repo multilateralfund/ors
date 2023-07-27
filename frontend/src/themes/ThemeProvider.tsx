@@ -11,8 +11,8 @@ import { useServerInsertedHTML } from 'next/navigation'
 import { prefixer } from 'stylis'
 import rtlPlugin from 'stylis-plugin-rtl'
 
-import Loading from '@ors/app/loading'
-import { FadeInOut } from '@ors/components'
+import LoadingBuffer from '@ors/components/theme/Loading/LoadingBuffer'
+import Trans from '@ors/components/ui/Trans/Trans'
 import useStore from '@ors/store'
 import { createTheme } from '@ors/themes'
 
@@ -127,12 +127,14 @@ export default function ThemeProvider({
 
   useEffect(() => {
     if (loadingDir) {
-      window.location.reload()
+      setTimeout(() => {
+        window.location.reload()
+      }, 500)
     }
   }, [loadingDir])
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-mode', currentTheme)
+    document.documentElement.setAttribute('data-theme', currentTheme)
     const prefersDark =
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -146,15 +148,12 @@ export default function ThemeProvider({
     <CacheProvider value={cache}>
       <MuiThemeProvider theme={muiTheme}>
         <CssBaseline enableColorScheme />
-
         {loadingDir && (
-          <FadeInOut
-            transition={{ duration: 0.3 }}
-            className="absolute z-absolute h-full w-full"
+          <LoadingBuffer
             style={{ backgroundColor: muiTheme.palette.background.default }}
-          >
-            <Loading />
-          </FadeInOut>
+            text={<Trans id="update-dir">Updating language direction</Trans>}
+            time={350}
+          />
         )}
         {children}
       </MuiThemeProvider>

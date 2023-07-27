@@ -1,4 +1,6 @@
-import { Logo, PageWrapper, ResetPasswordForm } from '@ors/components'
+import ResetPasswordForm from '@ors/components/theme/Forms/ResetPasswordForm/ResetPasswordForm'
+import Logo from '@ors/components/theme/Logo/Logo'
+import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export default function ChangePassword() {
   return (

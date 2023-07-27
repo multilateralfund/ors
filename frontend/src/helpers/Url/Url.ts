@@ -24,10 +24,13 @@ export function removeFirstSlash(path: string): string {
 }
 
 export function addTrailingSlash(path: string): string {
+  const url = new URL(
+    `http://trailingslash:3000${path[0] === '/' ? path : `/${path}`}`,
+  )
   // Check if the string already ends with a slash
-  if (!path.endsWith('/')) {
+  if (!url.pathname.endsWith('/')) {
     // Add the trailing slash
-    return path + '/'
+    return removeFirstSlash(url.pathname + '/' + url.search + url.hash)
   }
 
   // Return the original string if it already has a trailing slash

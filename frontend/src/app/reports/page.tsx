@@ -4,7 +4,9 @@ import React from 'react'
 
 import { Box, Button, Typography } from '@mui/material'
 
-import { Link, PageWrapper, ReportsTable } from '@ors/components'
+import ReportsTable from '@ors/components/manage/Blocks/Table/ReportsTable'
+import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
+import Link from '@ors/components/ui/Link'
 
 export const metadata: Metadata = {
   title: 'Reports',

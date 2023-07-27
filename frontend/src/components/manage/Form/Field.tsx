@@ -22,7 +22,11 @@ function getWidgetByType(type?: keyof ByType) {
   return type ? config.widgets.type[type] : null
 }
 
-function Field({ type, widget, ...props }: WidgetProps): React.ReactElement {
+export default function Field({
+  type,
+  widget,
+  ...props
+}: WidgetProps): React.ReactElement {
   const Widget =
     getWidgetByName(widget) || getWidgetByType(type) || getWidgetDefault()
   return (
@@ -31,5 +35,3 @@ function Field({ type, widget, ...props }: WidgetProps): React.ReactElement {
     </div>
   )
 }
-
-export default Field

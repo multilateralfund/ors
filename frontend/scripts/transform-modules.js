@@ -15,7 +15,7 @@ const modulesPaths = {
       `${root}/node_modules/@mui/material/legacy/**/*.js`,
     ],
   }),
-  '@ors/components': glob.sync(`${root}/src/components/**/*.{ts,tsx}`),
+  // '@ors/components': glob.sync(`${root}/src/components/**/*.{ts,tsx}`),
 }
 
 const getComponentName = (path) => {

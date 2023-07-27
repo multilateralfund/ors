@@ -1,7 +1,5 @@
 import { notFound } from 'next/navigation'
 
-const NotFound = () => {
+export default function NotFound() {
   return notFound()
 }
-
-export default NotFound

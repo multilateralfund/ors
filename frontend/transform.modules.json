@@ -410,6 +410,8 @@
     "ResetPasswordForm": "/Users/amadeus/Work/ors/frontend/src/components/theme/Forms/ResetPasswordForm/ResetPasswordForm",
     "Header": "/Users/amadeus/Work/ors/frontend/src/components/theme/Header/Header",
     "LanguageSelector": "/Users/amadeus/Work/ors/frontend/src/components/theme/LanguageSelector/LanguageSelector",
+    "Loading": "/Users/amadeus/Work/ors/frontend/src/components/theme/Loading/Loading",
+    "TextWidgetLoading": "/Users/amadeus/Work/ors/frontend/src/components/theme/Loading/TextWidgetLoading",
     "Logo": "/Users/amadeus/Work/ors/frontend/src/components/theme/Logo/Logo",
     "PageWrapper": "/Users/amadeus/Work/ors/frontend/src/components/theme/PageWrapper/PageWrapper",
     "ProfileDropdown": "/Users/amadeus/Work/ors/frontend/src/components/theme/Profile/ProfileDropdown",

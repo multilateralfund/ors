@@ -3,5 +3,6 @@
   "username": "Nom d'utilisateur",
   "password": "Mot de passe",
   "forgot-password": "Mot de passe oublié",
-  "submit": "Soumettre"
+  "submit": "Soumettre",
+  "update-dir": "Mise à jour de l'orientation linguistique"
 }

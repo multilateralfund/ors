@@ -1,10 +1,16 @@
 'use client'
-import React from 'react'
+import type { Theme } from '@mui/material'
 
+import React, { useEffect, useState } from 'react'
+
+import styled from '@emotion/styled'
 import { Alert, Button, Collapse, Paper, Typography } from '@mui/material'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-import { Field, Link, Trans } from '@ors/components'
+import Field from '@ors/components/manage/Form/Field'
+import OrsLoadingBuffer from '@ors/components/theme/Loading/LoadingBuffer'
+import Link from '@ors/components/ui/Link'
+import Trans from '@ors/components/ui/Trans/Trans'
 import useStore from '@ors/store'
 
 const emptyErrors = {
@@ -13,19 +19,31 @@ const emptyErrors = {
   username: '',
 }
 
+const LoadingBuffer = styled(OrsLoadingBuffer)(
+  ({ theme }: { theme?: Theme }) => `
+    background-color: ${theme?.palette.background.default};
+  `,
+)
+
 export default function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [errors, setErrors] = React.useState(emptyErrors)
+  const [errors, setErrors] = useState(emptyErrors)
   const user = useStore((state) => state.user)
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (user.data) {
-      router.push(searchParams.get('redirect') || '/')
-      // router.refresh()
-      // window.location.replace(searchParams.get('redirect') || '/')
+      setTimeout(() => {
+        window.location.replace(searchParams.get('redirect') || '/')
+      }, 500)
     }
   }, [user, router, searchParams])
+
+  if (user.data) {
+    return (
+      <LoadingBuffer text={<Trans id="loading">Stay tuned</Trans>} time={350} />
+    )
+  }
 
   return (
     <Paper
