@@ -33,16 +33,18 @@ function delayExecution(ms: number) {
 }
 
 export function formatApiUrl(path: string) {
-  // Check if path is external
+  // Check if the path is external
   if (path.startsWith('http://') || path.startsWith('https://')) return path
   const { settings } = config
-  let apiPath, adjustedPath
+  let apiPath = ''
+  let adjustedPath
 
   if (__DEVELOPMENT__) {
     apiPath = settings.apiPath || 'http://127.0.0.1:8000'
   } else if (__SERVER__) {
     const headers = require('next/headers').headers()
-    apiPath = headers.get('x-next-host')
+    apiPath =
+      headers.get('x-next-protocol') + '://' + headers.get('x-next-host')
   } else if (__CLIENT__) {
     apiPath = window.location.origin
   }

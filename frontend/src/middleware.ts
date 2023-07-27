@@ -42,10 +42,12 @@ export default function middleware(request: NextRequest) {
   const headers = new Headers(request.headers)
   const locale = getLocale(request, headers) ?? defaultLanguage
   const pathname = removeTrailingSlash(request.nextUrl.pathname)
+  const protocol = headers.get('X-Forwarded-Proto') || request.nextUrl.protocol
   const host = headers.get('X-Forwarded-Host') || request.nextUrl.host
 
   headers.set('x-next-host', host)
   headers.set('x-next-pathname', pathname)
+  headers.set('x-next-protocol', protocol)
   headers.set('x-next-lang', locale.code)
 
   return NextResponse.next({ request: { headers } })
