@@ -8,10 +8,17 @@ import Link from '@ors/components/ui/Link'
 
 import { IoBarChart } from '@react-icons/all-files/io5/IoBarChart'
 import { IoPieChart } from '@react-icons/all-files/io5/IoPieChart'
+import { IoReaderOutline } from '@react-icons/all-files/io5/IoReaderOutline'
 
 const items = [
   { Icon: IoPieChart, href: '/', isExact: true, title: 'Dashboard' },
   { Icon: IoBarChart, href: '/reports', isExact: false, title: 'Reports' },
+  {
+    Icon: IoReaderOutline,
+    href: '/projects',
+    isExact: false,
+    title: 'Projects',
+  },
 ]
 
 export default function Sidebar() {
