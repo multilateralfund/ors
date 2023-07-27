@@ -104,7 +104,7 @@ export default function ReportsTable() {
 
   return (
     <div className="reports relative overflow-x-auto">
-      {loading && (
+      {loading && results[0]?.type !== 'skeleton' && (
         <Loading
           className="z-10 bg-action-disabledBackground/5"
           ProgressStyle={{ animationDuration: '0.3s' }}
