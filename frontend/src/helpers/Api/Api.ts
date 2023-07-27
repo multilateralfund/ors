@@ -128,7 +128,8 @@ async function api(
           return null
         }
     }
-  } catch {
+  } catch (e) {
+    console.log(e)
     // Handle ECONNREFUSED
     if (pathname !== '/econnrefused') {
       redirect('/econnrefused')
