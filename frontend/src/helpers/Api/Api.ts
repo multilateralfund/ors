@@ -12,6 +12,21 @@ import {
 import config from '@ors/registry'
 import { getStore } from '@ors/store'
 
+export type Api = {
+  options?: {
+    data?: any
+    delay?: number | undefined
+    headers?: any
+    method?: string
+    next?: any
+    params?: Record<string, any>
+    updateSliceData?: string
+    withStoreCache?: boolean
+  }
+  path: string
+  throwError?: boolean
+}
+
 const nextCookies = require('next/headers').cookies
 
 const defaultHeaders: { [key: string]: { [key: string]: any } } = {
@@ -60,18 +75,10 @@ export function formatApiUrl(path: string) {
   return `${apiPath}${adjustedPath}`
 }
 
-export default async function api(
-  path: string,
-  options?: {
-    data?: any
-    delay?: number | undefined
-    headers?: any
-    method?: string
-    next?: any
-    params?: Record<string, any>
-    withStoreCache?: boolean
-  },
-  throwError = true,
+async function api(
+  path: Api['path'],
+  options: Api['options'],
+  throwError: Api['throwError'] = true,
 ) {
   const nextHeaders = __SERVER__ ? require('next/headers').headers() : null
   const store = __CLIENT__ ? getStore() : null
@@ -83,6 +90,7 @@ export default async function api(
     method = 'get',
     next = {},
     params = undefined,
+    // updateSliceData = undefined,
     withStoreCache = false,
     ...opts
   } = options || {}
@@ -91,7 +99,8 @@ export default async function api(
     ? nextHeaders.get('x-next-pathname')
     : removeTrailingSlash(window.location.pathname)
   const csrftoken = !__SERVER__ ? Cookies.get('csrftoken') : null
-  const sendRequest = delay ? new Date().getTime() : 0
+  const sendRequestTime = delay ? new Date().getTime() : 0
+  // const sliceData = updateSliceData ? {} : null
   let fullPath = formatApiUrl(path)
   if (params) {
     fullPath += '?' + new URLSearchParams(params).toString()
@@ -158,8 +167,8 @@ export default async function api(
   try {
     const cachedFetcher = fetcher
     const response = await cachedFetcher()
-    const receiveResponse = delay ? new Date().getTime() : 0
-    const responseTimeMs = receiveResponse - sendRequest
+    const receiveResponseTime = delay ? new Date().getTime() : 0
+    const responseTimeMs = receiveResponseTime - sendRequestTime
     // Delay response time
     if (delay && delay - responseTimeMs > 0) {
       await delayExecution(delay - responseTimeMs)
@@ -208,3 +217,38 @@ export function getResults(data: DataType): {
     results: [],
   }
 }
+
+export async function fetcher({
+  onError = () => {},
+  onPending = () => {},
+  onSuccess = () => {},
+  onSuccessNoCatch = () => {},
+  options,
+  path,
+  throwError,
+}: {
+  onError?: (...args: any) => void
+  onPending?: (...args: any) => void
+  onSuccess?: (...args: any) => void
+  onSuccessNoCatch?: (...args: any) => void
+  options?: Api['options']
+  path: Api['path']
+  throwError?: Api['throwError']
+}) {
+  if (!throwError) {
+    const data = await api(path, options, throwError)
+    onSuccessNoCatch(data)
+    return data
+  }
+  onPending()
+  try {
+    const data = await api(path, options, throwError)
+    onSuccess(data)
+    return data
+  } catch (error) {
+    onError(error)
+    return error
+  }
+}
+
+export default api
