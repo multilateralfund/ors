@@ -16,7 +16,7 @@ const getViewDefault = () => {
   return config.views.default
 }
 
-function View({ children }: { children: React.ReactNode }) {
+export default function View({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
   const view = React.useMemo(() => getCurrentView(pathname), [pathname])
@@ -25,5 +25,3 @@ function View({ children }: { children: React.ReactNode }) {
 
   return <RenderedView>{children}</RenderedView>
 }
-
-export default View

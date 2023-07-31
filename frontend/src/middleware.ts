@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server'
 import { pick } from 'accept-language-parser'
 import { NextResponse } from 'next/server'
 
-import appConfig from '@ors/config/base'
+import appConfig from '@ors/registry'
 
 import { removeTrailingSlash } from './helpers/Url/Url'
 
@@ -42,10 +42,14 @@ export default function middleware(request: NextRequest) {
   const headers = new Headers(request.headers)
   const locale = getLocale(request, headers) ?? defaultLanguage
   const pathname = removeTrailingSlash(request.nextUrl.pathname)
+  const protocol =
+    headers.get('X-Forwarded-Proto') || request.nextUrl.protocol || ''
+  const host = headers.get('X-Forwarded-Host') || request.nextUrl.host
 
+  headers.set('x-next-host', host)
   headers.set('x-next-pathname', pathname)
+  headers.set('x-next-protocol', protocol)
   headers.set('x-next-lang', locale.code)
-  headers.set('x-next-lang-native-name', locale.nativeName)
 
   return NextResponse.next({ request: { headers } })
 }

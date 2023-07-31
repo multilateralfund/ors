@@ -30,12 +30,12 @@ const baseConfig: BaseConfig = {
     defaultLanguage: 'en',
     defaultNamespace: 'common',
     locales: [
-      { code: 'ar', nativeName: 'Arabic' },
-      { code: 'cn', nativeName: 'Chinese' },
+      { code: 'ar', nativeName: 'العربية' },
+      { code: 'cn', nativeName: '中文' },
       { code: 'en', nativeName: 'English' },
-      { code: 'es', nativeName: 'Spain' },
+      { code: 'es', nativeName: 'Español' },
       { code: 'fr', nativeName: 'Français' },
-      { code: 'ru', nativeName: 'Russian' },
+      { code: 'ru', nativeName: 'Русский' },
     ],
   },
   settings: {

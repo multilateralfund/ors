@@ -3,9 +3,8 @@ import React from 'react'
 
 import { usePathname, useRouter } from 'next/navigation'
 
+import Sidebar from '@ors/components/theme/Sidebar/Sidebar'
 import useStore from '@ors/store'
-
-import Sidebar from '../Sidebar/Sidebar'
 
 export default function AuthorizedView({
   children,

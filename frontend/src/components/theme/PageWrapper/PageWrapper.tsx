@@ -1,9 +1,9 @@
 'use client'
 import cx from 'classnames'
 
-import { FadeInOut } from '@ors/components'
+import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
 
-function PageWrapper({
+export default function PageWrapper({
   children,
   className,
   fill,
@@ -26,5 +26,3 @@ function PageWrapper({
     </FadeInOut>
   )
 }
-
-export default PageWrapper

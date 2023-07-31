@@ -2,7 +2,8 @@ import type { Metadata } from 'next'
 
 import React from 'react'
 
-import { ForgotPasswordForm, PageWrapper } from '@ors/components'
+import ForgotPasswordForm from '@ors/components/theme/Forms/ForgotPasswordForm/ForgotPasswordForm'
+import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export const metadata: Metadata = {
   title: 'Reset password',

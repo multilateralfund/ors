@@ -3,5 +3,7 @@
   "username": "Username",
   "password": "Password",
   "forgot-password": "Forgot password",
-  "submit": "Submit"
+  "submit": "Submit",
+  "update-dir": "Updating language direction",
+  "loading": "Stay tuned"
 }

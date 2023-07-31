@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-before-interactive-script-outside-document */
 /* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @next/next/no-css-tags */
 import type { Metadata } from 'next'
@@ -7,10 +8,12 @@ import React from 'react'
 import { dir } from 'i18next'
 import { Roboto } from 'next/font/google'
 import { cookies as nextCookies, headers as nextHeaders } from 'next/headers'
+import Script from 'next/script'
 
-import { Header, View } from '@ors/components'
-import config from '@ors/config'
+import Header from '@ors/components/theme/Header/Header'
+import View from '@ors/components/theme/Views/View'
 import { api, getCurrentView, getInitialSliceData } from '@ors/helpers'
+import config from '@ors/registry'
 import { Provider as StoreProvider } from '@ors/store'
 import ThemeProvider from '@ors/themes/ThemeProvider'
 import { Language } from '@ors/types/locales'
@@ -37,6 +40,7 @@ export default async function RootLayout({
 }) {
   const cookies = nextCookies()
   const headers = nextHeaders()
+  let user
   let blends, countries, substances, usages
   const pathname = headers.get('x-next-pathname')
   const lang = (headers.get('x-next-lang') ||
@@ -44,7 +48,9 @@ export default async function RootLayout({
   const theme = cookies.get(config.cookies.theme) || { value: null }
   const currentView = getCurrentView(pathname || '')
 
-  const user = await api('api/auth/user/', {}, false)
+  if (pathname !== '/econnrefused') {
+    user = await api('api/auth/user/', {}, false)
+  }
 
   if (user) {
     blends = await api('api/blends/', {}, false)
@@ -56,11 +62,12 @@ export default async function RootLayout({
   return (
     <html
       lang={lang}
-      {...(theme.value ? { 'data-mode': theme.value } : {})}
+      {...(theme.value ? { 'data-theme': theme.value } : {})}
       data-layout={currentView?.layout}
       dir={dir(lang)}
     >
       <body className={roboto.className}>
+        <Script src="/critical.js" strategy="beforeInteractive" />
         <div id="next-app">
           <StoreProvider
             initialState={{

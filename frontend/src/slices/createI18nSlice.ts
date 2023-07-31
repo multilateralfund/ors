@@ -4,7 +4,7 @@ import { dir } from 'i18next'
 import Cookies from 'js-cookie'
 import { StoreApi } from 'zustand'
 
-import config from '@ors/config'
+import config from '@ors/registry'
 import { InitialStoreState, StoreState } from '@ors/store'
 
 export interface I18nSlice {
@@ -30,7 +30,8 @@ export const createI18nSlice = (
         // Set html attributes
         if (__CLIENT__) {
           document.documentElement.setAttribute('lang', lang)
-          document.documentElement.setAttribute('dir', newDir)
+          // Set dir only on ssr
+          // document.documentElement.setAttribute('dir', newDir)
         }
         // Save language cookie
         Cookies.set(config.cookies.language, lang)

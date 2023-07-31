@@ -9,7 +9,12 @@
 @import './components/widget';
 
 /* Material ui components */
-@import './components/mui/index.css';
+@import './components/mui/_index.css';
+
+/* AG grid */
+@import './components/ag-grid/_index.css';
+@import 'ag-grid-community/styles/ag-grid.css';
+@import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 @layer base {
   * {
@@ -21,6 +26,18 @@
 
   :root {
     @apply h-full;
+  }
+
+  :root[data-connection='slow'] .motion.fade-in-out {
+    opacity: 1 !important;
+  }
+
+  :root[data-theme='dark'] {
+    @apply theme-dark;
+  }
+
+  :root[data-theme='light'] {
+    @apply theme-light;
   }
 
   body {
@@ -40,5 +57,9 @@
   body::-webkit-scrollbar-thumb,
   body *::-webkit-scrollbar-thumb {
     @apply transition-all duration-300;
+  }
+
+  main {
+    @apply relative;
   }
 }

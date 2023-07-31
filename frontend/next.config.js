@@ -37,16 +37,16 @@ const nextConfig = {
                       return '@mui/material'
                     },
                   },
-                  '@ors/components': {
-                    transform: (importName) => {
-                      const componentsTranstormer =
-                        transformModulesMapper['@ors/components']
-                      if (componentsTranstormer[importName]) {
-                        return componentsTranstormer[importName]
-                      }
-                      return '@ors/components'
-                    },
-                  },
+                  // '@ors/components': {
+                  //   transform: (importName) => {
+                  //     const componentsTranstormer =
+                  //       transformModulesMapper['@ors/components']
+                  //     if (componentsTranstormer[importName]) {
+                  //       return componentsTranstormer[importName]
+                  //     }
+                  //     return '@ors/components'
+                  //   },
+                  // },
                 },
               ],
             ],

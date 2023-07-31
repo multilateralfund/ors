@@ -1,13 +1,11 @@
 import { Box } from '@mui/material'
 import Image from 'next/image'
 
-import {
-  FadeInOut,
-  LanguageSelector,
-  Link,
-  ProfileDropdown,
-  ThemeSelector,
-} from '@ors/components'
+import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
+import LanguageSelector from '@ors/components/theme/LanguageSelector/LanguageSelector'
+import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
+import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
+import Link from '@ors/components/ui/Link'
 
 export default function Header() {
   return (
@@ -26,7 +24,10 @@ export default function Header() {
             width={40}
             priority
           />
-          <span className="ltr:pl-2 rtl:pr-2 dark:text-white">MLFS</span>
+          <span className="theme-dark:text-white ltr:pl-2 rtl:pr-2">MLFS</span>
+          <span className="theme-dark:text-white ltr:pl-2 rtl:pr-2">
+            V{process.env.NEXT_PUBLIC_VERSION}
+          </span>
         </Link>
         <div className="flex">
           <LanguageSelector className="mr-2" />

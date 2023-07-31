@@ -1,0 +1,23 @@
+#next-app .ag-cell {
+  @apply flex items-center;
+}
+
+#next-app .ag-cell > .ag-cell-wrapper {
+  @apply w-full;
+}
+
+/* :root[dir='ltr'] #next-app .ag-cell > .ag-cell-wrapper > .ag-cell-value {
+  @apply flex items-center justify-start;
+}
+
+:root[dir='rtl'] #next-app .ag-cell > .ag-cell-wrapper > .ag-cell-value {
+  @apply flex items-center justify-end;
+}
+
+#next-app .ag-cell.text-center > .ag-cell-wrapper > .ag-cell-value {
+  @apply justify-center;
+}
+
+#next-app .ag-cell.text-center > .ag-cell-wrapper > .ag-cell-value > * {
+  @apply w-full;
+} */

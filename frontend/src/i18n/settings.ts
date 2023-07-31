@@ -1,6 +1,6 @@
 import type { Language } from '@ors/types/locales'
 
-import config from '@ors/config'
+import config from '@ors/registry'
 
 export const fallbackLng = config.i18n.defaultLanguage
 export const languages = config.i18n.locales.map((locale) => locale.code)

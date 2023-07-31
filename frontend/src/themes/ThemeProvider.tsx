@@ -1,7 +1,7 @@
 'use client'
 import type { ThemeSlice } from '@ors/slices/createThemeSlice'
 
-import React from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import createCache from '@emotion/cache'
 import { CacheProvider } from '@emotion/react'
@@ -11,6 +11,8 @@ import { useServerInsertedHTML } from 'next/navigation'
 import { prefixer } from 'stylis'
 import rtlPlugin from 'stylis-plugin-rtl'
 
+import LoadingBuffer from '@ors/components/theme/Loading/LoadingBuffer'
+import Trans from '@ors/components/ui/Trans/Trans'
 import useStore from '@ors/store'
 import { createTheme } from '@ors/themes'
 
@@ -21,14 +23,24 @@ export default function ThemeProvider({
   children: React.ReactNode
   options: any
 }) {
+  const [loadingDir, setLoadingDir] = useState<boolean>(false)
   const theme: ThemeSlice = useStore((state) => state.theme)
   const dir = useStore((state) => state.i18n.dir)
+  const prevDir = useRef(dir)
+
+  const muiTheme = useMemo(() => {
+    return createTheme(theme.mode || 'light', dir)
+  }, [theme.mode, dir])
 
   // https://github.com/emotion-js/emotion/issues/2928#issuecomment-1636030444
-  const [{ cache, flush }] = React.useState(() => {
+  const initCache = () => {
     const cache = createCache({
       ...options,
-      stylisPlugins: [...(options.stylisPlugins || []), prefixer, rtlPlugin],
+      stylisPlugins: [
+        ...(options.stylisPlugins || []),
+        prefixer,
+        ...(dir === 'rtl' ? [rtlPlugin] : []),
+      ],
     })
     cache.compat = true
     const prevInsert = cache.insert
@@ -49,7 +61,9 @@ export default function ThemeProvider({
       return prevInserted
     }
     return { cache, flush }
-  })
+  }
+
+  const [{ cache, flush }] = React.useState(initCache)
 
   useServerInsertedHTML(() => {
     const inserted = flush()
@@ -104,8 +118,23 @@ export default function ThemeProvider({
 
   const currentTheme = React.useMemo(() => theme.mode || 'light', [theme.mode])
 
-  React.useEffect(() => {
-    document.documentElement.setAttribute('data-mode', currentTheme)
+  useEffect(() => {
+    if (dir !== prevDir.current) {
+      setLoadingDir(true)
+    }
+    prevDir.current = dir
+  }, [dir])
+
+  useEffect(() => {
+    if (loadingDir) {
+      setTimeout(() => {
+        window.location.reload()
+      }, 500)
+    }
+  }, [loadingDir])
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', currentTheme)
     const prefersDark =
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -117,8 +146,15 @@ export default function ThemeProvider({
 
   return (
     <CacheProvider value={cache}>
-      <MuiThemeProvider theme={createTheme(theme.mode || 'light', dir)}>
+      <MuiThemeProvider theme={muiTheme}>
         <CssBaseline enableColorScheme />
+        {loadingDir && (
+          <LoadingBuffer
+            style={{ backgroundColor: muiTheme.palette.background.default }}
+            text={<Trans id="update-dir">Updating language direction</Trans>}
+            time={350}
+          />
+        )}
         {children}
       </MuiThemeProvider>
     </CacheProvider>

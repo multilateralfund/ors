@@ -4,9 +4,9 @@ import { api } from '@ors/helpers'
 // TODO: Fix strange behaviour when importin defaultSliceData from '@ors/helpers'
 import {
   defaultSliceData,
-  getErrorSliceData,
-  getPendingSliceData,
-  getSuccessSliceData,
+  // getErrorSliceData,
+  // getPendingSliceData,
+  // getSuccessSliceData,
 } from '@ors/helpers/Store/Store'
 import { InitialStoreState, StoreState } from '@ors/store'
 import { Params, SliceData } from '@ors/types/primitives'
@@ -53,36 +53,48 @@ export const createReportsSlice = (
   },
   // Get reports
   getReports: async (params) => {
-    const getSliceData = {
-      ...(get().reports?.get || defaultSliceData),
-    }
-    try {
-      set((state) => ({
-        reports: {
-          ...state.reports,
-          get: { ...getSliceData, ...getPendingSliceData() },
-        },
-      }))
-      const reports = await api(
-        `api/country-programme/reports/${
-          params ? `?${new URLSearchParams(params).toString()}` : ''
-        }`,
-        { delay: 300 },
-      )
-      set((state) => ({
-        reports: {
-          ...state.reports,
-          get: { ...getSliceData, ...getSuccessSliceData(reports) },
-        },
-      }))
-    } catch (error) {
-      set((state) => ({
-        reports: {
-          ...state.reports,
-          get: { ...getSliceData, ...getErrorSliceData(error) },
-        },
-      }))
-    }
+    // const reports = get().reports
+    await api(
+      `api/country-programme/reports/${
+        params ? `?${new URLSearchParams(params).toString()}` : ''
+      }`,
+      {
+        delay: 500,
+        updateSliceData: 'reports.get',
+        withStoreCache: true,
+      },
+    )
+    // const getSliceData = {
+    //   ...(get().reports?.get || defaultSliceData),
+    // }
+    // try {
+    //   set((state) => ({
+    //     reports: {
+    //       ...state.reports,
+    //       get: { ...getSliceData, ...getPendingSliceData() },
+    //     },
+    //   }))
+    //   const reports = await api(
+    //     `api/country-programme/reports/${
+    //       params ? `?${new URLSearchParams(params).toString()}` : ''
+    //     }`,
+    //     { delay: 500, withStoreCache: true },
+    //   )
+    //   set((state) => ({
+    //     reports: {
+    //       ...state.reports,
+    //       get: { ...getSliceData, ...getSuccessSliceData(reports) },
+    //     },
+    //   }))
+    // } catch (error) {
+    //   console.log('HERE ERROR', error)
+    //   set((state) => ({
+    //     reports: {
+    //       ...state.reports,
+    //       get: { ...getSliceData, ...getErrorSliceData(error) },
+    //     },
+    //   }))
+    // }
   },
   substances: createSubstancesSlice(set, get, initialState),
   usages: createUsagesSlice(set, get, initialState),

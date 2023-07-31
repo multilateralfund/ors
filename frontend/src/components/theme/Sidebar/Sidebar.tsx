@@ -3,14 +3,22 @@ import { Box } from '@mui/material'
 import cx from 'classnames'
 import { usePathname } from 'next/navigation'
 
-import { FadeInOut, Link } from '@ors/components'
+import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
+import Link from '@ors/components/ui/Link'
 
 import { IoBarChart } from '@react-icons/all-files/io5/IoBarChart'
 import { IoPieChart } from '@react-icons/all-files/io5/IoPieChart'
+import { IoReaderOutline } from '@react-icons/all-files/io5/IoReaderOutline'
 
 const items = [
   { Icon: IoPieChart, href: '/', isExact: true, title: 'Dashboard' },
   { Icon: IoBarChart, href: '/reports', isExact: false, title: 'Reports' },
+  {
+    Icon: IoReaderOutline,
+    href: '/projects',
+    isExact: false,
+    title: 'Projects',
+  },
 ]
 
 export default function Sidebar() {
@@ -30,7 +38,7 @@ export default function Sidebar() {
         <Link
           key={item.href}
           className={cx(
-            'flex flex-col items-center rounded p-2 dark:text-white',
+            'flex flex-col items-center rounded p-2 theme-dark:text-white',
             {
               'bg-primary text-white transition-colors': item.isExact
                 ? pathname === item.href

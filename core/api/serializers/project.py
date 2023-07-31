@@ -14,6 +14,21 @@ from core.models.project_submission import ProjectSubmission
 from core.models.substance import Substance
 
 
+class ProjectStatusSerializer(serializers.ModelSerializer):
+    """
+    ProjectStatusSerializer class
+    """
+
+    class Meta:
+        model = ProjectStatus
+        fields = [
+            "id",
+            "code",
+            "name",
+            "color",
+        ]
+
+
 class ProjectSubmissionSerializer(serializers.ModelSerializer):
     """
     ProjectSubmissionSerializer class
