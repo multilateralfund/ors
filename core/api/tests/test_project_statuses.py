@@ -8,10 +8,7 @@ pytestmark = pytest.mark.django_db
 # pylint: disable=C8008,R0913
 class TestProjectsStatus:
     client = APIClient()
-
-    @property
-    def url(self):
-        return reverse("project-status-list")
+    url = reverse("project-status-list")
 
     def test_project_status_list_anon(self):
         response = self.client.get(self.url)
