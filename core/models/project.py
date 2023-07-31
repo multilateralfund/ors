@@ -1,3 +1,4 @@
+from colorfield.fields import ColorField
 from django.db import models
 from core.models.agency import Agency
 from core.models.blend import Blend
@@ -36,6 +37,7 @@ class ProjectStatusManager(models.Manager):
 class ProjectStatus(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=10, null=True, blank=True)
+    color = ColorField(default='#CCCCCC')
 
     objects = ProjectStatusManager()
 

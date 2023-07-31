@@ -1,11 +1,8 @@
-'use client'
-
 import type { AnyObject } from '@ors/types/primitives'
 
-import useStore from '@ors/store'
+import config from '@ors/registry'
 
-import CSRTrans from './CSRTrans'
-import SSRTrans from './SSRTrans'
+import { useTranslation } from '@ors/i18n/client'
 
 export default function Trans({
   id,
@@ -13,23 +10,16 @@ export default function Trans({
   ns,
   options,
 }: {
-  children?: React.ReactNode
+  children: React.ReactNode
   id?: string
   ns?: string
   options?: AnyObject
 }) {
-  const lang = useStore((state) => state.i18n.lang)
+  const { i18n, t } = useTranslation(ns || config.i18n.defaultNamespace)
 
-  if (__SERVER__) {
-    return (
-      <SSRTrans id={id} lang={lang} ns={ns} options={options}>
-        {children}
-      </SSRTrans>
-    )
+  if (id && i18n.exists(`${ns || config.i18n.defaultNamespace}:${id}`)) {
+    return t(id, options)
   }
-  return (
-    <CSRTrans id={id} ns={ns} options={options}>
-      {children}
-    </CSRTrans>
-  )
+
+  return children
 }

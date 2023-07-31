@@ -17,6 +17,14 @@ export const createTheme = (
   direction: 'ltr' | 'rtl',
 ) => {
   return responsiveFontSizes(
-    MuiCreateTheme(themes[mode](tailwindTheme, direction)),
+    MuiCreateTheme(
+      themes[mode](
+        {
+          ...tailwindTheme,
+          originalColors: tailwindConfig.originalColors[mode],
+        },
+        direction,
+      ),
+    ),
   )
 }

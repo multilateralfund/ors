@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     "dj_rest_auth",
     "django_filters",
     "corsheaders",
+    "colorfield",
     "rest_framework.authtoken",
     "rest_framework_simplejwt",
     "admin_auto_filters",
@@ -280,7 +281,10 @@ if ENABLE_DEBUG_BAR:
                 or request.META.get("HTTP_X_REAL_IP") in INTERNAL_IPS
             )
 
-        hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+        try:
+            hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+        except socket.gaierror:
+            ips = []
         INTERNAL_IPS = ["127.0.0.1"]
         INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
         MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]

@@ -1,0 +1,12 @@
+#next-app .ag-row-animation .ag-row {
+  transition:
+    transform 400ms,
+    top 400ms,
+    background-color 300ms,
+    border-color 300ms,
+    opacity 200ms;
+}
+
+#next-app .ag-center-cols-container {
+  /* @apply min-w-full; */
+}

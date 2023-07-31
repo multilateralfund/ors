@@ -1,7 +1,7 @@
 import Cookies from 'js-cookie'
 import { StoreApi } from 'zustand'
 
-import config from '@ors/config'
+import config from '@ors/registry'
 import { InitialStoreState, StoreState } from '@ors/store'
 
 export interface ThemeSlice {

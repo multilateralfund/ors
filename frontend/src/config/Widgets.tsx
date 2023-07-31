@@ -1,17 +1,10 @@
-import type {
-  AutocompleteWidget,
-  // AutocompleteWidgetProps,
-} from '@ors/components/manage/Widgets/AutocompleteWidget'
-import type {
-  PasswordWidget,
-  // PasswordWidgetProps,
-} from '@ors/components/manage/Widgets/PasswordWidget'
-import type {
-  TextWidget,
-  // TextWidgetProps,
-} from '@ors/components/manage/Widgets/TextWidget'
+import type { AutocompleteWidget } from '@ors/components/manage/Widgets/AutocompleteWidget'
+import type { PasswordWidget } from '@ors/components/manage/Widgets/PasswordWidget'
+import type { TextWidget } from '@ors/components/manage/Widgets/TextWidget'
 
 import dynamic from 'next/dynamic'
+
+import TextWidgetLoading from '@ors/components/theme/Loading/TextWidgetLoading'
 
 export interface ByType {
   email?: TextWidget
@@ -45,6 +38,9 @@ export type WidgetProps = any
 // Default Widget
 export const defaultWidget = dynamic(
   () => import('@ors/components/manage/Widgets/TextWidget'),
+  {
+    loading: () => <TextWidgetLoading />,
+  },
 ) as TextWidget
 
 // Widgets mapping
@@ -53,12 +49,18 @@ export const widgetsMapping: WidgetsMapping = {
     email: defaultWidget,
     password: dynamic(
       () => import('@ors/components/manage/Widgets/PasswordWidget'),
+      {
+        loading: () => <TextWidgetLoading />,
+      },
     ) as PasswordWidget,
     text: defaultWidget,
   },
   widget: {
     autocomplete: dynamic(
       () => import('@ors/components/manage/Widgets/AutocompleteWidget'),
+      {
+        loading: () => <TextWidgetLoading />,
+      },
     ) as AutocompleteWidget,
   },
 }

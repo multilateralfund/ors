@@ -1,20 +1,17 @@
-import dynamic from 'next/dynamic'
+import AuthorizedView from '@ors/components/theme/Views/AuthorizedView'
+import DefaultView from '@ors/components/theme/Views/DefaultView'
 
 export interface ByLayout {
-  authorized_document?: React.ComponentType<{ children: React.ReactNode }>
-  document?: React.ComponentType<{ children: React.ReactNode }>
+  authorized_document?: typeof AuthorizedView
+  document?: typeof DefaultView
 }
 
 // Default view
-export const defaultView = dynamic(
-  () => import('@ors/components/theme/Views/DefaultView'),
-)
+export const defaultView = DefaultView
 
 // Layout View Registry
 export const layoutViews: ByLayout = {
-  authorized_document: dynamic(
-    () => import('@ors/components/theme/Views/AuthorizedView'),
-  ),
+  authorized_document: AuthorizedView,
   document: defaultView,
 }
 
@@ -28,6 +25,10 @@ export const errorViews = {
 }
 
 export const routes = [
+  {
+    layout: 'document',
+    path: '/econnrefused',
+  },
   {
     layout: 'document',
     path: '/login',

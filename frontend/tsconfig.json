@@ -22,6 +22,7 @@
     "paths": {
       "@ors/types": ["./src/@types"],
       "@ors/types/*": ["./src/@types/*"],
+      "@ors/registry": ["./src/config/base"],
       "@ors/*": ["./src/*"]
     },
     "useUnknownInCatchVariables": false

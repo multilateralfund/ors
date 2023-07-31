@@ -17,19 +17,45 @@ type ColorIndex =
   | dark
   | light
 
-export type ColorRecordType = Record<ColorIndex, string>
+export type ColorRecordType = Record<
+  ColorIndex,
+  ({
+    opacityValue,
+    opacityVariable,
+  }: {
+    opacityValue: string
+    opacityVariable: string
+  }) => string,
+  string
+>
 
-export interface ThemeConfig extends DefaultTheme {
-  colors: DefaultColors & {
-    common: {
-      black: string
-      white: string
-    }
-    error: ColorRecordType
-    info: ColorRecordType
+export type Colors = DefaultColors & {
+  action: {
+    active: ColorRecordType
+    disabled: ColorRecordType
+    disabledBackground: ColorRecordType
+    highlight: ColorRecordType
+    hover: ColorRecordType
+    selected: ColorRecordType
+  }
+  background: ColorRecordType & {
+    paper: ColorRecordType
+  }
+  divider: ColorRecordType
+  error: ColorRecordType
+  info: ColorRecordType
+  primary: ColorRecordType
+  secondary: ColorRecordType
+  success: ColorRecordType
+  typography: ColorRecordType & {
+    disabled: ColorRecordType
     primary: ColorRecordType
     secondary: ColorRecordType
-    success: ColorRecordType
-    warning: ColorRecordType
   }
+  warning: ColorRecordType
+}
+
+export interface ThemeConfig extends DefaultTheme {
+  colors: Colors
+  originalColors: Colors
 }

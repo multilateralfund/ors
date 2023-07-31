@@ -4,7 +4,7 @@ import React from 'react'
 
 import { IconButton, InputAdornment } from '@mui/material'
 
-import { TextWidget } from '@ors/components'
+import TextWidget from '@ors/components/manage/Widgets/TextWidget'
 
 import { IoEye } from '@react-icons/all-files/io5/IoEye'
 import { IoEyeOff } from '@react-icons/all-files/io5/IoEyeOff'
