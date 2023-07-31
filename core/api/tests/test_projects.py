@@ -1,3 +1,7 @@
+import pytest
+from django.urls import reverse
+from rest_framework.test import APIClient
+
 from core.api.tests.factories import (
     AgencyFactory,
     CountryFactory,
@@ -8,9 +12,7 @@ from core.api.tests.factories import (
     ProjectSubmissionFactory,
     ProjectTypeFactory,
 )
-import pytest
-from django.urls import reverse
-from rest_framework.test import APIClient
+from core.models.project import ProjectOdsOdp
 
 pytestmark = pytest.mark.django_db
 
@@ -56,6 +58,16 @@ def setup_project_list(country_ro, agency, project_type, project_status, subsect
                 approval_meeting_no=i + 1,
             )
         ProjectSubmissionFactory.create(project=project)
+
+
+@pytest.fixture(name="_setup_project_create")
+def setup_project_create():
+    statuses = [
+        {"name": "New Submission", "code": "NEWSUB"},
+        {"name": "New", "code": "NEW"},
+    ]
+    for status in statuses:
+        ProjectStatusFactory.create(**status)
 
 
 # pylint: disable=C8008,R0913
@@ -148,3 +160,109 @@ class TestProjects:
         assert len(response.data) == 2
         for project in response.data:
             assert project["approval_meeting_no"] == 1
+
+    def test_create_project(
+        self,
+        user,
+        country_ro,
+        agency,
+        substance,
+        blend,
+        project_type,
+        subsector,
+        _setup_project_create,
+    ):
+        url = reverse("projectn-create")
+        data = {
+            "title": "Project",
+            "description": "Description",
+            "country_id": country_ro.id,
+            "agency_id": agency.id,
+            "subsector_id": subsector.id,
+            "project_type_id": project_type.id,
+            "status_id": 1,
+            "substance_type": "HCFC",
+            "approval_meeting_no": 1,
+            "national_agency": "National Agency",
+            "submission": {
+                "category": "bilateral cooperation",
+                "funds_allocated": 1234,
+                "support_cost_13": 12.3,
+            },
+            "ods_odp": [
+                {
+                    "odp": 3.14,
+                    "ods_substance_id": substance.id,
+                    "ods_replacement": "replacement",
+                    "ods_type": ProjectOdsOdp.ProjectOdsOdpType.GENERAL,
+                },
+                {
+                    "odp": 3.14,
+                    "ods_blend_id": blend.id,
+                    "ods_replacement": "replacement",
+                    "ods_type": ProjectOdsOdp.ProjectOdsOdpType.PRODUCTION,
+                },
+            ],
+        }
+
+        # test without authentication
+        self.client.force_authenticate(user=None)
+        response = self.client.post(url, data, format="json")
+        assert response.status_code == 403
+
+        self.client.force_authenticate(user=user)
+
+        # create project
+        response = self.client.post(url, data, format="json")
+        assert response.status_code == 201
+        assert response.data["title"] == data["title"]
+        assert response.data["country"] == country_ro.name
+        assert response.data["agency"] == agency.name
+        assert response.data["sector"] == subsector.sector.name
+        assert response.data["subsector"] == subsector.name
+        assert response.data["project_type"] == project_type.name
+        assert response.data["status"] == "New Submission"
+        assert response.data["substance_type"] == "HCFC"
+        assert response.data["national_agency"] == "National Agency"
+        submission = response.data["submission"]
+        assert submission["category"] == "bilateral cooperation"
+        ods_odp = response.data["ods_odp"]
+        assert len(ods_odp) == 2
+        assert ods_odp[0]["odp"] == 3.14
+        assert ods_odp[0]["ods_display_name"] == substance.name
+        assert ods_odp[0]["ods_replacement"] == "replacement"
+        assert ods_odp[0]["ods_type"] == "general"
+        assert ods_odp[1]["ods_display_name"] == blend.name
+
+        # invalid country id
+        data["country_id"] = 999
+        response = self.client.post(url, data, format="json")
+        assert response.status_code == 400
+        assert "country_id" in response.data
+        data["country_id"] = country_ro.id
+
+        # invalid agency, subsector, project_type ids
+        for field in ["agency_id", "subsector_id", "project_type_id"]:
+            initial_value = data[field]
+            data[field] = 999
+            # test with invalid id
+            response = self.client.post(url, data, format="json")
+            assert response.status_code == 400
+            assert field in response.data
+            data[field] = initial_value
+
+        # invalid substance, blend ids
+        for index, field in [(0, "ods_substance_id"), (1, "ods_blend_id")]:
+            initial_value = data["ods_odp"][index][field]
+            data["ods_odp"][index][field] = 999
+            response = self.client.post(url, data, format="json")
+            assert response.status_code == 400
+            assert field in response.data["ods_odp"][index]
+            data["ods_odp"][index][field] = initial_value
+
+        # invalid submission category
+        data["submission"]["category"] = "invalid"
+        response = self.client.post(url, data, format="json")
+        assert response.status_code == 400
+        assert "submission" in response.data
+        assert "category" in response.data["submission"]

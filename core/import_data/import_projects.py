@@ -68,8 +68,7 @@ def create_project_ODS_ODP(project, project_json, fields_mapping):
             "co2_mt": project_json.get(co2mt_field),
             "ods_replacement": project_json.get(ods_repl_field),
             "sort_order": i,
-            "is_production": fields_mapping["is_production"],
-            "is_indirect": fields_mapping["is_indirect"],
+            "ods_type": fields_mapping["ods_type"],
         }
         if ods_type == "substance":
             ods_odp_data["ods_substance"] = ods
@@ -79,8 +78,7 @@ def create_project_ODS_ODP(project, project_json, fields_mapping):
         ProjectOdsOdp.objects.update_or_create(
             project=project,
             sort_order=i,
-            is_production=ods_odp_data["is_production"],
-            is_indirect=ods_odp_data["is_indirect"],
+            ods_type=ods_odp_data["ods_type"],
             defaults=ods_odp_data,
         )
 
@@ -99,8 +97,7 @@ def parse_project_ODS_ODP(project, project_json):
         "odp": "ODP",
         "co2mt": "CO2MT",
         "ods_replacement": "ODS_REPLACEMENT",
-        "is_production": False,
-        "is_indirect": False,
+        "ods_type": ProjectOdsOdp.ProjectOdsOdpType.GENERAL,
     }
     create_project_ODS_ODP(project, project_json, ods_fields)
 
@@ -110,8 +107,7 @@ def parse_project_ODS_ODP(project, project_json):
         "odp": "ODP_PRODUCTION",
         "co2mt": "CO2MT_PRODUCTION",
         "ods_replacement": "ODS_ProRepla",
-        "is_production": True,
-        "is_indirect": False,
+        "ods_type": ProjectOdsOdp.ProjectOdsOdpType.PRODUCTION,
     }
     create_project_ODS_ODP(project, project_json, ods_prod_fields)
 
@@ -121,8 +117,7 @@ def parse_project_ODS_ODP(project, project_json):
         "odp": "ODP_INDIRECT",
         "co2mt": "N/A",
         "ods_replacement": "ODS_INDIRECTREPLACE",
-        "is_production": False,
-        "is_indirect": True,
+        "ods_type": ProjectOdsOdp.ProjectOdsOdpType.INDIRECT,
     }
     create_project_ODS_ODP(project, project_json, ods_indirect_fields)
 

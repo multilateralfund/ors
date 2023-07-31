@@ -3,7 +3,10 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, generics
 
 from core.api.filters.project import ProjectFilter
-from core.api.serializers.project import ProjectSerializer
+from core.api.serializers.project import (
+    ProjectDetailsSerializer,
+    ProjectListSerializer,
+)
 from core.models.project import Project
 
 
@@ -17,7 +20,7 @@ class ProjectListView(mixins.ListModelMixin, generics.GenericAPIView):
         "country", "agency", "subsector__sector", "project_type", "status", "submission"
     )
     filterset_class = ProjectFilter
-    serializer_class = ProjectSerializer
+    serializer_class = ProjectListSerializer
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -31,3 +34,15 @@ class ProjectListView(mixins.ListModelMixin, generics.GenericAPIView):
     )
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
+
+
+class ProjectCreateView(mixins.CreateModelMixin, generics.GenericAPIView):
+    """
+    API endpoint that allows projects submission
+    """
+
+    queryset = Project.objects.select_related("submission")
+    serializer_class = ProjectDetailsSerializer
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
