@@ -90,11 +90,6 @@ class TestProjectList:
     def test_project_list_w_submission(
         self,
         user,
-        agency,
-        project_type,
-        project_status,
-        sector,
-        subsector,
         _setup_project_list,
     ):
         self.client.force_authenticate(user=user)

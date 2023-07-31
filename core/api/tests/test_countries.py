@@ -16,7 +16,7 @@ class TestCountries:
     client = APIClient()
     url = reverse("countries-list")
 
-    def test_countries_list_annon(self, country_ro):
+    def test_countries_list_annon(self, _setup_countries):
         response = self.client.get(self.url)
         assert response.status_code == 403
 

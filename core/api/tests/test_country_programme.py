@@ -168,15 +168,11 @@ class TestCPRecordList:
     client = APIClient()
     url = reverse("country-programme-record-list")
 
-    def test_get_cp_record_list_annon(
-        self, user, substance, blend, cp_report_2019, _setup_new_cp_report
-    ):
+    def test_get_cp_record_list_annon(self, cp_report_2019, _setup_new_cp_report):
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 403
 
-    def test_get_cp_record_list__invalid_cp_rep_id(
-        self, user, substance, blend, cp_report_2019, _setup_new_cp_report
-    ):
+    def test_get_cp_record_list__invalid_cp_rep_id(self, user, _setup_new_cp_report):
         self.client.force_authenticate(user=user)
 
         # try get cp records list without cp report id

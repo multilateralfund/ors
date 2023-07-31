@@ -130,7 +130,7 @@ class TestAdmEmptyFormView:
         assert len(response.data["admD"]["rows"][0]["choices"]) == 3
         assert len(response.data["admD"]["rows"][1]["choices"]) == 3
 
-    def test_get_empty_form_2017(self, user, cp_report_2005, _setup_empty_form):
+    def test_get_empty_form_2017(self, user, _setup_empty_form):
         self.client.force_authenticate(user=user)
         cp_report_17 = _setup_empty_form
 
