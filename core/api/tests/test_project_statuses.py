@@ -27,4 +27,5 @@ class TestProjectsStatus:
             "id": project_status.id,
             "name": project_status.name,
             "code": project_status.code,
+            "color": project_status.color,
         }]
