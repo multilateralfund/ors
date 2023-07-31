@@ -172,7 +172,7 @@ class TestProjects:
         subsector,
         _setup_project_create,
     ):
-        url = reverse("projectn-create")
+        url = reverse("project-create")
         data = {
             "title": "Project",
             "description": "Description",

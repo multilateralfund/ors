@@ -80,6 +80,6 @@ urlpatterns = [
     path(
         "projects/create/",
         ProjectCreateView.as_view(),
-        name="projectn-create",
+        name="project-create",
     ),
 ]
