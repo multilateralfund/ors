@@ -38,7 +38,7 @@ function Table(
     onPaginationChanged = () => {},
     paginationPageSize = 10,
     rowCount = 0,
-    rowData = undefined,
+    rowData = [],
     withSkeleton = false,
     ...rest
   }: TableProps,
