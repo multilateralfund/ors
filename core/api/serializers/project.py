@@ -1,7 +1,23 @@
 from rest_framework import serializers
 
 from core.models.project import Project
+from core.models.project import ProjectStatus
 from core.models.project_submission import ProjectSubmission
+
+
+class ProjectStatusSerializer(serializers.ModelSerializer):
+    """
+    ProjectStatusSerializer class
+    """
+
+    class Meta:
+        model = ProjectStatus
+        fields = [
+            "id",
+            "code",
+            "name",
+            "color",
+        ]
 
 
 class ProjectSubmissionSerializer(serializers.ModelSerializer):
