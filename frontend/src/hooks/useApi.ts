@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 
 import { fetcher } from '@ors/helpers/Api/Api'
 
-export default function useApi(props: Api) {
+export default function useApi(props: Api): [any, any, boolean, boolean] {
   const { options, path, throwError = true } = props
   const [data, setData] = useState<DataType>(undefined)
   const [error, setError] = useState<ErrorType>(undefined)
