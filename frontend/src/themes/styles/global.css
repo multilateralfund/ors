@@ -9,7 +9,12 @@
 @import './components/widget';
 
 /* Material ui components */
-@import './components/mui/index.css';
+@import './components/mui/_index.css';
+
+/* AG grid */
+@import './components/ag-grid/_index.css';
+@import 'ag-grid-community/styles/ag-grid.css';
+@import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 @layer base {
   * {
@@ -27,11 +32,11 @@
     opacity: 1 !important;
   }
 
-  :root[data-theme='dark'] * {
+  :root[data-theme='dark'] {
     @apply theme-dark;
   }
 
-  :root[data-theme='light'] * {
+  :root[data-theme='light'] {
     @apply theme-light;
   }
 

@@ -1,0 +1,13 @@
+#next-app .ag-header-cell.text-center .ag-header-cell-label {
+  justify-content: center;
+}
+
+#next-app .ag-header-cell.text-center .ag-header-cell-comp-wrapper {
+  justify-content: center;
+}
+
+#next-app .ag-header {
+  transition:
+    background-color 300ms,
+    border-color 300ms;
+}

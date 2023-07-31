@@ -77,7 +77,7 @@ export function formatApiUrl(path: string) {
 
 async function api(
   path: Api['path'],
-  options: Api['options'] = {},
+  options?: Api['options'],
   throwError: Api['throwError'] = true,
 ) {
   const nextHeaders = __SERVER__ ? require('next/headers').headers() : null

@@ -1,11 +1,16 @@
 import type { Api } from '@ors/helpers/Api/Api'
-import type { DataType, ErrorType } from '@ors/types/primitives'
 
 import { useEffect, useState } from 'react'
 
 import { fetcher } from '@ors/helpers/Api/Api'
+import { DataType, ErrorType } from '@ors/types/primitives'
 
-export default function useApi(props: Api): [any, any, boolean, boolean] {
+export default function useApi(props: Api): {
+  data: DataType
+  error: ErrorType
+  loaded: boolean
+  loading: boolean
+} {
   const { options, path, throwError = true } = props
   const [data, setData] = useState<DataType>(undefined)
   const [error, setError] = useState<ErrorType>(undefined)
@@ -24,7 +29,7 @@ export default function useApi(props: Api): [any, any, boolean, boolean] {
     setLoaded(true)
   }
 
-  function onError(error: DataType) {
+  function onError(error: ErrorType) {
     setData(null)
     setError(error)
     setLoading(false)
@@ -50,5 +55,5 @@ export default function useApi(props: Api): [any, any, boolean, boolean] {
     })
   }, [path, options, throwError])
 
-  return [data, error, loading, loaded]
+  return { data, error, loaded, loading }
 }

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default async function Reports() {
   return (
     <PageWrapper>
-      <Box className="mb-4 w-full max-w-sm rounded">Projects</Box>
+      <Box className="mb-4 w-full max-w-lg rounded">Projects</Box>
       <ProjectsTable />
     </PageWrapper>
   )
