@@ -35,7 +35,7 @@ function Table(
     enablePagination = true,
     loading = false,
     onFirstDataRendered = () => {},
-    onPaginationChanged = () => {},
+    onPaginationChanged = ({}: { page: number; rowsPerPage: number }) => {},
     paginationPageSize = 10,
     rowCount = 0,
     rowData = [],
