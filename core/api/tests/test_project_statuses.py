@@ -13,7 +13,7 @@ class TestProjectsStatus:
     def url(self):
         return reverse("project-status-list")
 
-    def test_project_status_list_anon(self, project_status):
+    def test_project_status_list_anon(self):
         response = self.client.get(self.url)
         assert response.status_code == 403
 
