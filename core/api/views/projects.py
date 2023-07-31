@@ -4,7 +4,17 @@ from rest_framework import mixins, generics
 
 from core.api.filters.project import ProjectFilter
 from core.api.serializers.project import ProjectSerializer
+from core.api.serializers.project import ProjectStatusSerializer
 from core.models.project import Project
+from core.models.project import ProjectStatus
+
+
+class ProjectStatusListView(generics.ListAPIView):
+    """
+    List project status
+    """
+    queryset = ProjectStatus.objects.all()
+    serializer_class = ProjectStatusSerializer
 
 
 # view for country programme reports

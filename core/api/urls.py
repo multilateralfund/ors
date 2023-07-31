@@ -2,6 +2,7 @@ from django.urls import path, re_path
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+
 from core.api.views.adm import AdmEmptyFormView
 
 from core.api.views.chemicals import (
@@ -14,6 +15,7 @@ from core.api.views.country_programme import (
     CPReportListView,
     CPSettingsView,
 )
+from core.api.views.projects import ProjectStatusListView
 from core.api.views.projects import ProjectListView
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView
@@ -76,5 +78,10 @@ urlpatterns = [
         "projects/",
         ProjectListView.as_view(),
         name="project-list",
+    ),
+    path(
+        "project-statuses/",
+        ProjectStatusListView.as_view(),
+        name="project-status-list",
     ),
 ]
