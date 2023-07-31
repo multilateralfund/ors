@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     "dj_rest_auth",
     "django_filters",
     "corsheaders",
+    "colorfield",
     "rest_framework.authtoken",
     "rest_framework_simplejwt",
     "admin_auto_filters",
