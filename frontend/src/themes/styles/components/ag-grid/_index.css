@@ -1,0 +1,8 @@
+@import './variables.css';
+@import './header.css';
+@import './row.css';
+@import './cell.css';
+
+.ag-root-wrapper {
+  @apply rounded rounded-bl-none rounded-br-none;
+}

@@ -25,6 +25,9 @@ export default function Header() {
             priority
           />
           <span className="theme-dark:text-white ltr:pl-2 rtl:pr-2">MLFS</span>
+          <span className="theme-dark:text-white ltr:pl-2 rtl:pr-2">
+            V{process.env.NEXT_PUBLIC_VERSION}
+          </span>
         </Link>
         <div className="flex">
           <LanguageSelector className="mr-2" />

@@ -6,6 +6,7 @@ import { Box, Grid } from '@mui/material'
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid'
 
 import Field from '@ors/components/manage/Form/Field'
+import { getResults } from '@ors/helpers/Api/Api'
 import useApi from '@ors/hooks/useApi'
 
 import { IoPencil } from '@react-icons/all-files/io5/IoPencil'
@@ -79,10 +80,11 @@ export default function ProjectsTable() {
     }
   }, [params.pageSize, params.page, params.substanceTypeFilter])
 
-  const [data, , loading] = useApi({
+  const { data, loading } = useApi({
     options,
     path: '/api/projects/',
   })
+  const { count, results } = getResults(data)
 
   return (
     <Grid spacing={2} container>
@@ -94,8 +96,8 @@ export default function ProjectsTable() {
             pageSizeOptions={[10, 20, 30, 40, 50]}
             paginationMode="server"
             paginationModel={params}
-            rowCount={data?.count ?? 0}
-            rows={data?.results ?? []}
+            rowCount={count}
+            rows={results}
             disableColumnFilter
             disableColumnMenu
             disableColumnSelector
