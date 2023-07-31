@@ -60,21 +60,34 @@ def setup_project_list(country_ro, agency, project_type, project_status, subsect
         ProjectSubmissionFactory.create(project=project)
 
 
-@pytest.fixture(name="_setup_project_create")
-def setup_project_create():
-    statuses = [
-        {"name": "New Submission", "code": "NEWSUB"},
-        {"name": "New", "code": "NEW"},
-    ]
-    for status in statuses:
-        ProjectStatusFactory.create(**status)
-
-
 # pylint: disable=C8008,R0913
-class TestProjects:
+class TestProjectList:
     client = APIClient()
+    url = reverse("project-list")
+
+    def test_project_list_annon(
+        self,
+        _setup_project_list,
+    ):
+        response = self.client.get(self.url)
+        assert response.status_code == 403
 
     def test_project_list(
+        self,
+        user,
+        _setup_project_list,
+    ):
+        self.client.force_authenticate(user=user)
+
+        # get project list
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 4
+        # check if there is no submission data
+        for project in response.data:
+            assert not project["submission"]
+
+    def test_project_list_w_submission(
         self,
         user,
         agency,
@@ -84,24 +97,9 @@ class TestProjects:
         subsector,
         _setup_project_list,
     ):
-        url = reverse("project-list")
-
-        # test without authentication
-        response = self.client.get(url)
-        assert response.status_code == 403
-
         self.client.force_authenticate(user=user)
 
-        # get project list
-        response = self.client.get(url)
-        assert response.status_code == 200
-        assert len(response.data) == 4
-        # check if there is no submission data
-        for project in response.data:
-            assert not project["submission"]
-
-        # get project list with submission data
-        response = self.client.get(url, {"get_submission": True})
+        response = self.client.get(self.url, {"get_submission": True})
         assert response.status_code == 200
         assert len(response.data) == 4
         # check if there is submission data
@@ -111,55 +109,146 @@ class TestProjects:
                 projects_with_submission += 1
         assert projects_with_submission == 2
 
-        # get project list with filters
-        # filter by agency id
-        response = self.client.get(url, {"agency_id": agency.id})
+    def test_project_list_agency_filter(
+        self,
+        user,
+        agency,
+        _setup_project_list,
+    ):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.url, {"agency_id": agency.id})
         assert response.status_code == 200
         assert len(response.data) == 2
         for project in response.data:
             assert project["agency"] == agency.name
 
-        # filter by project type id
-        response = self.client.get(url, {"project_type_id": project_type.id})
+    def test_project_list_type_filter(
+        self,
+        user,
+        project_type,
+        _setup_project_list,
+    ):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.url, {"project_type_id": project_type.id})
         assert response.status_code == 200
         assert len(response.data) == 2
         for project in response.data:
             assert project["project_type"] == project_type.name
 
-        # filter by project status id
-        response = self.client.get(url, {"status_id": project_status.id})
+    def test_project_list_status_filter(
+        self,
+        user,
+        project_status,
+        _setup_project_list,
+    ):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.url, {"status_id": project_status.id})
         assert response.status_code == 200
         assert len(response.data) == 2
         for project in response.data:
             assert project["status"] == project_status.name
 
-        # filter by sector id
-        response = self.client.get(url, {"sector_id": sector.id})
+    def test_project_list_sector_filter(
+        self,
+        user,
+        sector,
+        _setup_project_list,
+    ):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.url, {"sector_id": sector.id})
         assert response.status_code == 200
         assert len(response.data) == 2
         for project in response.data:
             assert project["sector"] == sector.name
 
-        # filter by subsector id
-        response = self.client.get(url, {"subsector_id": subsector.id})
+    def test_project_list_subsector_filter(
+        self,
+        user,
+        subsector,
+        _setup_project_list,
+    ):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.url, {"subsector_id": subsector.id})
         assert response.status_code == 200
         assert len(response.data) == 2
         for project in response.data:
             assert project["subsector"] == subsector.name
 
-        # filter by substance_type
-        response = self.client.get(url, {"substance_type": "HCFC"})
+    def test_project_list_subs_type_filter(
+        self,
+        user,
+        _setup_project_list,
+    ):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.url, {"substance_type": "HCFC"})
         assert response.status_code == 200
         assert len(response.data) == 2
         for project in response.data:
             assert project["substance_type"] == "HCFC"
 
-        # filter by meeting number
-        response = self.client.get(url, {"approval_meeting_no": 1})
+    def test_project_list_meet_no_filter(
+        self,
+        user,
+        _setup_project_list,
+    ):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.url, {"approval_meeting_no": 1})
         assert response.status_code == 200
         assert len(response.data) == 2
         for project in response.data:
             assert project["approval_meeting_no"] == 1
+
+
+@pytest.fixture(name="_setup_project_create")
+def setup_project_create(country_ro, agency, project_type, subsector, substance, blend):
+    statuses = [
+        {"name": "New Submission", "code": "NEWSUB"},
+        {"name": "New", "code": "NEW"},
+    ]
+    for status in statuses:
+        ProjectStatusFactory.create(**status)
+
+    return {
+        "title": "Project",
+        "description": "Description",
+        "country_id": country_ro.id,
+        "agency_id": agency.id,
+        "subsector_id": subsector.id,
+        "project_type_id": project_type.id,
+        "status_id": 1,
+        "substance_type": "HCFC",
+        "approval_meeting_no": 1,
+        "national_agency": "National Agency",
+        "submission": {
+            "category": "bilateral cooperation",
+            "funds_allocated": 1234,
+            "support_cost_13": 12.3,
+        },
+        "ods_odp": [
+            {
+                "odp": 3.14,
+                "ods_substance_id": substance.id,
+                "ods_replacement": "replacement",
+                "ods_type": ProjectOdsOdp.ProjectOdsOdpType.GENERAL,
+            },
+            {
+                "odp": 3.14,
+                "ods_blend_id": blend.id,
+                "ods_replacement": "replacement",
+                "ods_type": ProjectOdsOdp.ProjectOdsOdpType.PRODUCTION,
+            },
+        ],
+    }
+
+
+class TestCreateProjects:
+    client = APIClient()
+    url = reverse("project-create")
+
+    def test_create_project_annon(self, _setup_project_create):
+        data = _setup_project_create
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 403
 
     def test_create_project(
         self,
@@ -172,48 +261,11 @@ class TestProjects:
         subsector,
         _setup_project_create,
     ):
-        url = reverse("project-create")
-        data = {
-            "title": "Project",
-            "description": "Description",
-            "country_id": country_ro.id,
-            "agency_id": agency.id,
-            "subsector_id": subsector.id,
-            "project_type_id": project_type.id,
-            "status_id": 1,
-            "substance_type": "HCFC",
-            "approval_meeting_no": 1,
-            "national_agency": "National Agency",
-            "submission": {
-                "category": "bilateral cooperation",
-                "funds_allocated": 1234,
-                "support_cost_13": 12.3,
-            },
-            "ods_odp": [
-                {
-                    "odp": 3.14,
-                    "ods_substance_id": substance.id,
-                    "ods_replacement": "replacement",
-                    "ods_type": ProjectOdsOdp.ProjectOdsOdpType.GENERAL,
-                },
-                {
-                    "odp": 3.14,
-                    "ods_blend_id": blend.id,
-                    "ods_replacement": "replacement",
-                    "ods_type": ProjectOdsOdp.ProjectOdsOdpType.PRODUCTION,
-                },
-            ],
-        }
-
-        # test without authentication
-        self.client.force_authenticate(user=None)
-        response = self.client.post(url, data, format="json")
-        assert response.status_code == 403
-
+        data = _setup_project_create
         self.client.force_authenticate(user=user)
 
         # create project
-        response = self.client.post(url, data, format="json")
+        response = self.client.post(self.url, data, format="json")
         assert response.status_code == 201
         assert response.data["title"] == data["title"]
         assert response.data["country"] == country_ro.name
@@ -234,35 +286,37 @@ class TestProjects:
         assert ods_odp[0]["ods_type"] == "general"
         assert ods_odp[1]["ods_display_name"] == blend.name
 
-        # invalid country id
-        data["country_id"] = 999
-        response = self.client.post(url, data, format="json")
-        assert response.status_code == 400
-        assert "country_id" in response.data
-        data["country_id"] = country_ro.id
-
-        # invalid agency, subsector, project_type ids
-        for field in ["agency_id", "subsector_id", "project_type_id"]:
+    def test_create_project_project_fk(self, user, _setup_project_create):
+        data = _setup_project_create
+        self.client.force_authenticate(user=user)
+        # invalid country, agency, subsector, project_type ids
+        for field in ["agency_id", "subsector_id", "project_type_id", "country_id"]:
             initial_value = data[field]
             data[field] = 999
             # test with invalid id
-            response = self.client.post(url, data, format="json")
+            response = self.client.post(self.url, data, format="json")
             assert response.status_code == 400
             assert field in response.data
             data[field] = initial_value
 
+    def test_create_project_ods_fk(self, user, _setup_project_create):
+        data = _setup_project_create
+        self.client.force_authenticate(user=user)
         # invalid substance, blend ids
         for index, field in [(0, "ods_substance_id"), (1, "ods_blend_id")]:
             initial_value = data["ods_odp"][index][field]
             data["ods_odp"][index][field] = 999
-            response = self.client.post(url, data, format="json")
+            response = self.client.post(self.url, data, format="json")
             assert response.status_code == 400
             assert field in response.data["ods_odp"][index]
             data["ods_odp"][index][field] = initial_value
 
-        # invalid submission category
+    def test_create_project_submission_category(self, user, _setup_project_create):
+        data = _setup_project_create
+        self.client.force_authenticate(user=user)
+
         data["submission"]["category"] = "invalid"
-        response = self.client.post(url, data, format="json")
+        response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
         assert "submission" in response.data
         assert "category" in response.data["submission"]

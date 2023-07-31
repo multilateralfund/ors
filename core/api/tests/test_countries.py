@@ -6,24 +6,24 @@ from rest_framework.test import APIClient
 pytestmark = pytest.mark.django_db
 
 
+@pytest.fixture(name="_setup_countries")
+def setup_countries():
+    CountryFactory.create(name="France")
+
+
 # pylint: disable=C8008
 class TestCountries:
     client = APIClient()
+    url = reverse("countries-list")
 
-    def test_countries_list(self, user, country_ro):
-        # add some countries using factory
-        CountryFactory.create(name="France")
-
-        # test without authentication
-        url = reverse("countries-list")
-        response = self.client.get(url)
+    def test_countries_list_annon(self, country_ro):
+        response = self.client.get(self.url)
         assert response.status_code == 403
 
+    def test_countries_list(self, user, country_ro, _setup_countries):
         self.client.force_authenticate(user=user)
 
-        # get countries list
-        url = reverse("countries-list")
-        response = self.client.get(url)
+        response = self.client.get(self.url)
         assert response.status_code == 200
         assert len(response.data) == 2
         assert response.data[0]["name"] == "France"

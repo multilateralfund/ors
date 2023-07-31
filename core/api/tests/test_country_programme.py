@@ -19,55 +19,59 @@ from core.models.country_programme import CPEmission
 pytestmark = pytest.mark.django_db
 
 
+@pytest.fixture(name="_setup_cp_report_list")
+def setup_cp_report_list():
+    for country in ["Romania", "Bulgaria", "Hungary"]:
+        country = CountryFactory.create(name=country)
+        for i in range(3):
+            year = 2010 + i
+            CPReportFactory.create(
+                country=country, name=country.name + str(year), year=year
+            )
+
+    return country
+
+
 # pylint: disable=C8008
 class TestCPReport:
     client = APIClient()
+    url = reverse("country-programme-report-list")
 
-    def test_get_cp_report_list(self, user):
-        url = reverse("country-programme-report-list")
-
-        # test without authentication
-        response = self.client.get(url)
+    def test_get_cp_report_list_annon(self):
+        response = self.client.get(self.url)
         assert response.status_code == 403
 
+    def test_get_cp_report_list(self, user, _setup_cp_report_list):
         self.client.force_authenticate(user=user)
 
         # get cp reports list
-        response = self.client.get(url)
-        assert response.status_code == 200
-        assert len(response.data) == 0
-
-        # add some cp reports using factories
-        for country in ["Romania", "Bulgaria", "Hungary"]:
-            country = CountryFactory.create(name=country)
-            for i in range(3):
-                year = 2010 + i
-                CPReportFactory.create(
-                    country=country, name=country.name + str(year), year=year
-                )
-
-        # get cp reports list
-        response = self.client.get(url)
+        response = self.client.get(self.url)
         assert response.status_code == 200
         assert len(response.data) == 9
         assert response.data[0]["name"] == "Bulgaria2010"
         assert response.data[8]["name"] == "Romania2012"
 
-        # get cp reports list with filters
+    def test_get_cp_report_list_country_filter(self, user, _setup_cp_report_list):
+        self.client.force_authenticate(user=user)
+        country = _setup_cp_report_list
         # filter by country id (country = Hungary)
-        response = self.client.get(url, {"country_id": country.id})
+        response = self.client.get(self.url, {"country_id": country.id})
         assert response.status_code == 200
         assert len(response.data) == 3
-        assert response.data[0]["name"] == "Hungary2010"
+        assert country.name in response.data[0]["name"]
 
-        # filter by name (name contains "man")
-        response = self.client.get(url, {"name": "man"})
+    def test_get_cp_report_list_name_filter(self, user, _setup_cp_report_list):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"name": "man"})
         assert response.status_code == 200
         assert len(response.data) == 3
         assert response.data[0]["name"] == "Romania2010"
 
-        # filter by year (year = 2011)
-        response = self.client.get(url, {"year": 2011})
+    def test_get_cp_report_list_year_filter(self, user, _setup_cp_report_list):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"year": 2011})
         assert response.status_code == 200
         assert len(response.data) == 3
         assert response.data[0]["name"] == "Bulgaria2011"
@@ -160,30 +164,36 @@ def setup_old_cp_report(cp_report_2005, substance, blend):
     return last_choice
 
 
-class TestCPRecord:
+class TestCPRecordList:
     client = APIClient()
+    url = reverse("country-programme-record-list")
+
+    def test_get_cp_record_list_annon(
+        self, user, substance, blend, cp_report_2019, _setup_new_cp_report
+    ):
+        response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
+        assert response.status_code == 403
+
+    def test_get_cp_record_list__invalid_cp_rep_id(
+        self, user, substance, blend, cp_report_2019, _setup_new_cp_report
+    ):
+        self.client.force_authenticate(user=user)
+
+        # try get cp records list without cp report id
+        response = self.client.get(self.url)
+        assert response.status_code == 400
+
+        # try get cp records list with invalid cp report id
+        response = self.client.get(self.url, {"cp_report_id": 999})
+        assert response.status_code == 400
 
     def test_get_new_cp_record_list(
         self, user, substance, blend, cp_report_2019, _setup_new_cp_report
     ):
-        url = reverse("country-programme-record-list")
-
-        # test without authentication
-        response = self.client.get(url)
-        assert response.status_code == 403
-
         self.client.force_authenticate(user=user)
 
-        # try get cp records list without cp report id
-        response = self.client.get(url)
-        assert response.status_code == 400
-
-        # try get cp records list with invalid cp report id
-        response = self.client.get(url, {"cp_report_id": 999})
-        assert response.status_code == 400
-
         # get cp records list
-        response = self.client.get(url, {"cp_report_id": cp_report_2019.id})
+        response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 200
         assert len(response.data["section_a"]) == 1
         assert response.data["section_a"][0]["chemical_name"] == substance.name
@@ -198,12 +208,10 @@ class TestCPRecord:
 
     def test_get_old_cp_record_list(self, user, cp_report_2005, _setup_old_cp_report):
         last_choice = _setup_old_cp_report
-
-        url = reverse("country-programme-record-list")
         self.client.force_authenticate(user=user)
 
         # check response
-        response = self.client.get(url, {"cp_report_id": cp_report_2005.id})
+        response = self.client.get(self.url, {"cp_report_id": cp_report_2005.id})
         assert response.status_code == 200
         assert len(response.data["section_a"]) == 1
         assert len(response.data["adm_b"]) == 1

@@ -97,24 +97,20 @@ def setup_empty_form(country_ro, cp_report_2005):
 
 
 # pylint: disable=C8008
-class TestAdm:
+class TestAdmEmptyFormView:
     client = APIClient()
+    url = reverse("adm-empty-form")
 
-    def test_get_empty_form(self, user, cp_report_2005, _setup_empty_form):
-        cp_report_17 = _setup_empty_form
-
-        # get adm form
-        url = reverse("adm-empty-form")
-
+    def test_get_empty_form_annon(self, cp_report_2005):
         # test without authentication
-        response = self.client.get(url, {"cp_report_id": cp_report_2005.id})
+        response = self.client.get(self.url, {"cp_report_id": cp_report_2005.id})
         assert response.status_code == 403
 
-        # test with authentication
+    def test_get_empty_form_2005(self, user, cp_report_2005, _setup_empty_form):
         self.client.force_authenticate(user=user)
 
         # get adm form for 2005 cp report
-        response = self.client.get(url, {"cp_report_id": cp_report_2005.id})
+        response = self.client.get(self.url, {"cp_report_id": cp_report_2005.id})
         assert response.status_code == 200
         assert len(response.data["admB"]["columns"]) == 2
         assert len(response.data["admB"]["rows"]) == 5
@@ -134,8 +130,11 @@ class TestAdm:
         assert len(response.data["admD"]["rows"][0]["choices"]) == 3
         assert len(response.data["admD"]["rows"][1]["choices"]) == 3
 
-        # get adm form for 2020 cp report
-        response = self.client.get(url, {"cp_report_id": cp_report_17.id})
+    def test_get_empty_form_2017(self, user, cp_report_2005, _setup_empty_form):
+        self.client.force_authenticate(user=user)
+        cp_report_17 = _setup_empty_form
+
+        response = self.client.get(self.url, {"cp_report_id": cp_report_17.id})
         assert response.status_code == 200
         assert len(response.data["admB"]["columns"]) == 0
         assert len(response.data["admB"]["rows"]) == 0
