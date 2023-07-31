@@ -1,61 +1,19 @@
 'use client'
+import React, { useState } from 'react'
 
-import React from 'react'
-
-import { Box, Grid } from '@mui/material'
-import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid'
+import { Box, Button, Grid, Skeleton, Typography } from '@mui/material'
+import dynamic from 'next/dynamic'
 
 import Field from '@ors/components/manage/Form/Field'
 import { getResults } from '@ors/helpers/Api/Api'
 import useApi from '@ors/hooks/useApi'
 
-import { IoPencil } from '@react-icons/all-files/io5/IoPencil'
-
-const COLUMNS = [
+const Table = dynamic(
+  () => import('@ors/components/manage/Blocks/Table/Table'),
   {
-    field: 'title',
-    flex: 2,
-    headerName: 'Project title/code',
-    sortable: false,
+    ssr: false,
   },
-  { field: 'country', flex: 1, headerName: 'Country', sortable: false },
-  { field: 'agency', flex: 1, headerName: 'Agency', sortable: false },
-  { field: 'status', flex: 1, headerName: 'Status', sortable: false },
-  { field: 'sector', flex: 1, headerName: 'Sector', sortable: false },
-  { field: 'subsector', flex: 1, headerName: 'Subsector', sortable: false },
-  {
-    field: 'project_type',
-    flex: 1,
-    headerName: 'Project Type',
-    sortable: false,
-  },
-  {
-    field: 'substance_type',
-    flex: 1,
-    headerName: 'Substance Type',
-    sortable: false,
-  },
-  {
-    field: 'approval_meeting_no',
-    flex: 1,
-    headerName: 'Approval meeting',
-    sortable: false,
-  },
-  {
-    field: 'actions',
-    getActions: () => [
-      <GridActionsCellItem
-        key="edit"
-        icon={<IoPencil />}
-        label="Edit"
-        onClick={() => {}}
-      />,
-    ],
-    sortable: false,
-    type: 'actions',
-    width: 50,
-  },
-]
+)
 
 const SUBSTANCE_TYPE_OPTIONS = [
   { id: '', label: 'Any' },
@@ -64,49 +22,94 @@ const SUBSTANCE_TYPE_OPTIONS = [
   { id: 'HFC_Plus', label: 'HFC_Plus' },
 ]
 
-export default function ProjectsTable() {
-  const [params, setParams] = React.useState({
-    page: 1,
-    pageSize: 10,
-    substanceTypeFilter: '',
-  })
-  const options = React.useMemo(() => {
-    return {
+export default function ReportsTable() {
+  const [apiSettings, setApiSettings] = useState({
+    options: {
       params: {
-        limit: params.pageSize,
-        offset: (params.page - 1) * params.pageSize,
-        substance_type: params.substanceTypeFilter,
+        limit: 10,
+        offset: 0,
+        substanceTypeFilter: '',
       },
-    }
-  }, [params.pageSize, params.page, params.substanceTypeFilter])
-
-  const { data, loading } = useApi({
-    options,
-    path: '/api/projects/',
+    },
+    path: 'api/projects',
   })
+  const { data, loading } = useApi(apiSettings)
   const { count, results } = getResults(data)
+
+  const [columnDefs] = useState([
+    {
+      field: 'title',
+      flex: 2,
+      headerName: 'Project title/code',
+    },
+    { field: 'country', flex: 1, headerName: 'Country' },
+    { field: 'agency', flex: 1, headerName: 'Agency' },
+    { field: 'status', flex: 1, headerName: 'Status' },
+    { field: 'sector', flex: 1, headerName: 'Sector' },
+    { field: 'subsector', flex: 1, headerName: 'Subsector' },
+    {
+      field: 'project_type',
+      flex: 1,
+      headerName: 'Project Type',
+    },
+    {
+      field: 'substance_type',
+      flex: 1,
+      headerName: 'Substance Type',
+    },
+    {
+      field: 'approval_meeting_no',
+      flex: 1,
+      headerName: 'Approval meeting',
+    },
+    {
+      cellClass: 'text-center',
+      cellRenderer: (props: any) => {
+        return (
+          <Typography>
+            {props.data.isSkeleton ? (
+              <Skeleton />
+            ) : (
+              <Button variant="text">Edit</Button>
+            )}
+          </Typography>
+        )
+      },
+      field: 'action',
+      headerClass: 'text-center',
+      headerName: 'Action',
+    },
+  ])
+
+  function handleParamsChange(newParams: { [key: string]: any }) {
+    setApiSettings((prevApiSettings) => ({
+      ...prevApiSettings,
+      options: {
+        ...prevApiSettings.options,
+        params: {
+          ...prevApiSettings.options.params,
+          ...newParams,
+        },
+      },
+    }))
+  }
 
   return (
     <Grid spacing={2} container>
       <Grid xs={9} item>
-        <Box className="rounded p-0">
-          <DataGrid
-            columns={COLUMNS}
-            loading={loading}
-            pageSizeOptions={[10, 20, 30, 40, 50]}
-            paginationMode="server"
-            paginationModel={params}
-            rowCount={count}
-            rows={results}
-            disableColumnFilter
-            disableColumnMenu
-            disableColumnSelector
-            disableRowSelectionOnClick
-            onPaginationModelChange={(value) =>
-              setParams({ ...params, ...value })
-            }
-          />
-        </Box>
+        <Table
+          columnDefs={columnDefs}
+          loading={loading}
+          rowCount={count}
+          rowData={results}
+          onPaginationChanged={({ page, rowsPerPage }) => {
+            handleParamsChange({
+              limit: rowsPerPage,
+              offset: page * rowsPerPage,
+            })
+          }}
+          withSkeleton
+        />
       </Grid>
       <Grid xs={3} item>
         <Box className="rounded py-0">
@@ -118,7 +121,7 @@ export default function ProjectsTable() {
             widget="autocomplete"
             disableClearable
             onChange={(_: any, value: any) => {
-              setParams({ ...params, substanceTypeFilter: value.id })
+              handleParamsChange({ substanceTypeFilter: value.id })
             }}
           />
         </Box>
