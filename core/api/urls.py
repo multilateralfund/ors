@@ -16,7 +16,6 @@ from core.api.views.country_programme import (
     CPSettingsView,
 )
 from core.api.views.projects import (
-    ProjectCreateView,
     ProjectListView,
     ProjectStatusListView,
 )
@@ -81,11 +80,6 @@ urlpatterns = [
         "projects/",
         ProjectListView.as_view(),
         name="project-list",
-    ),
-    path(
-        "projects/create/",
-        ProjectCreateView.as_view(),
-        name="project-create",
     ),
     path(
         "project-statuses/",

@@ -12,7 +12,7 @@ from core.api.tests.factories import (
     ProjectSubmissionFactory,
     ProjectTypeFactory,
 )
-from core.models.project import ProjectOdsOdp
+from core.models.project import Project, ProjectOdsOdp
 
 pytestmark = pytest.mark.django_db
 
@@ -238,7 +238,7 @@ def setup_project_create(country_ro, agency, project_type, subsector, substance,
 
 class TestCreateProjects:
     client = APIClient()
-    url = reverse("project-create")
+    url = reverse("project-list")
 
     def test_create_project_annon(self, _setup_project_create):
         data = _setup_project_create
@@ -294,6 +294,9 @@ class TestCreateProjects:
             assert field in response.data
             data[field] = initial_value
 
+        # check project count
+        assert Project.objects.count() == 0
+
     def test_create_project_ods_fk(self, user, _setup_project_create):
         data = _setup_project_create
         self.client.force_authenticate(user=user)
@@ -306,6 +309,9 @@ class TestCreateProjects:
             assert field in response.data["ods_odp"][index]
             data["ods_odp"][index][field] = initial_value
 
+        # check project count
+        assert Project.objects.count() == 0
+
     def test_create_project_submission_category(self, user, _setup_project_create):
         data = _setup_project_create
         self.client.force_authenticate(user=user)
@@ -315,3 +321,6 @@ class TestCreateProjects:
         assert response.status_code == 400
         assert "submission" in response.data
         assert "category" in response.data["submission"]
+
+        # check project count
+        assert Project.objects.count() == 0
