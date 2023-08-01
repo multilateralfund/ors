@@ -15,7 +15,7 @@ from core.models.substance import Substance
 from core.utils import IMPORT_DB_MAX_YEAR
 
 IMPORT_RESOURCES_DIR = settings.ROOT_DIR / "import_data" / "resources"
-IMPORT_PROJECTS_DIR = settings.ROOT_DIR / "import_data" / "project_database"
+IMPORT_PROJECTS_DIR = settings.IMPORT_DATA_DIR / "project_database"
 
 # When we parse excel files, "index_row" is two steps behind. Because of this, the
 # excel files are hard to check.

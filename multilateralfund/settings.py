@@ -18,7 +18,6 @@ from datetime import timedelta
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 ROOT_DIR = BASE_DIR / "core"
-IMPORT_DATA_DIR = ROOT_DIR / "import_data"
 
 env = environ.Env()
 
@@ -177,6 +176,7 @@ FS_DIR = BASE_DIR / ".fs"
 
 STATIC_URL = "static/"
 STATIC_ROOT = FS_DIR / "static"
+IMPORT_DATA_DIR = FS_DIR / "import_files"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
