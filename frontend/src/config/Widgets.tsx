@@ -1,4 +1,5 @@
 import type { AutocompleteWidget } from '@ors/components/manage/Widgets/AutocompleteWidget'
+import type { ChipToggleWidget } from '@ors/components/manage/Widgets/ChipToggleWidget'
 import type { PasswordWidget } from '@ors/components/manage/Widgets/PasswordWidget'
 import type { TextWidget } from '@ors/components/manage/Widgets/TextWidget'
 
@@ -14,6 +15,7 @@ export interface ByType {
 
 export interface ByWidget {
   autocomplete?: AutocompleteWidget
+  chipToggle?: ChipToggleWidget
 }
 
 export interface WidgetsMapping {
@@ -62,5 +64,11 @@ export const widgetsMapping: WidgetsMapping = {
         loading: () => <TextWidgetLoading />,
       },
     ) as AutocompleteWidget,
+    chipToggle: dynamic(
+      () => import('@ors/components/manage/Widgets/ChipToggleWidget'),
+      {
+        loading: () => <TextWidgetLoading />,
+      },
+    ) as ChipToggleWidget,
   },
 }
