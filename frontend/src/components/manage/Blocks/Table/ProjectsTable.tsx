@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic'
 import Field from '@ors/components/manage/Form/Field'
 import { getResults } from '@ors/helpers/Api/Api'
 import useApi from '@ors/hooks/useApi'
+import useStore from '@ors/store'
 
 const Table = dynamic(
   () => import('@ors/components/manage/Blocks/Table/Table'),
@@ -28,13 +29,16 @@ export default function ReportsTable() {
       params: {
         limit: 10,
         offset: 0,
-        substanceTypeFilter: '',
+        status_id: '',
+        substance_type: '',
       },
     },
     path: 'api/projects',
   })
   const { data, loading } = useApi(apiSettings)
   const { count, results } = getResults(data)
+
+  const projectStatuses = useStore((state) => state.projects.statuses.data)
 
   const [columnDefs] = useState([
     {
@@ -96,7 +100,7 @@ export default function ReportsTable() {
 
   return (
     <Grid spacing={2} container>
-      <Grid xs={9} item>
+      <Grid xs={10} item>
         <Table
           columnDefs={columnDefs}
           loading={loading}
@@ -111,9 +115,16 @@ export default function ReportsTable() {
           withSkeleton
         />
       </Grid>
-      <Grid xs={3} item>
+      <Grid xs={2} item>
         <Box className="rounded py-0">
           <h2>Filter projects by</h2>
+          <Field
+            options={projectStatuses}
+            widget="chipToggle"
+            onChange={(value: null | number) =>
+              handleParamsChange({ status_id: value ?? '' })
+            }
+          />
           <Field
             Input={{ label: 'Substance Type' }}
             defaultValue="Any"
@@ -121,7 +132,7 @@ export default function ReportsTable() {
             widget="autocomplete"
             disableClearable
             onChange={(_: any, value: any) => {
-              handleParamsChange({ substanceTypeFilter: value.id })
+              handleParamsChange({ substance_type: value.id })
             }}
           />
         </Box>
