@@ -1,5 +1,15 @@
 # Import data
 
+## All data
+
+To import all data with a single command use:
+
+```shell
+docker-compose exec app ./manage.py import_all
+```
+
+The files required for the imports are described in the next sections below.
+
 ## Resources
 
 - To import all resources (groups, substances, blends, blend components, usages, 
@@ -30,7 +40,7 @@ docker-compose exec app ./manage.py import_resources usages
 - project-resources
 : download files from nextclod
     - **nextcloud path** OzoneMlf/Projects inventory/data/json
-    - **local path** core/import_data/project_database
+    - **local path** .fs/import_files/project_database
 
 
 ## Records
@@ -59,7 +69,7 @@ docker-compose exec app ./manage.py import_records cp_db
 - xlsx_files
 : download files from nextclod
     - **nextcloud path** OzoneMlf/Country Programme/data
-    - **local path** core/import_data/records
+    - **local path** .fs/import_files/records
 
     |nextcloud name | local name |
     | :----    | :----:  |
@@ -70,7 +80,7 @@ docker-compose exec app ./manage.py import_records cp_db
 - cp_db_records
 : download folders from nexcloud
     - **nextcloud path** OzoneMlf/Country Programme/data/json
-    - **local path** core/import_data/databases
+    - **local path** .fs/import_files/databases
 
     |nextcloud name | local name |
     | :----    | :----  |
@@ -98,7 +108,7 @@ docker-compose exec app ./manage.py import_projects proposals
 - proposals
 : download files from nextclod
     - **nextcloud path** OzoneMlf/Project submissions/data
-    - **local path** core/import_data/proposals
+    - **local path** .fs/import_files/proposals
 
     |nextcloud name | local name |
     | :----:    | :----:  |
@@ -108,4 +118,4 @@ docker-compose exec app ./manage.py import_projects proposals
 - projects
 : download files from nextclod
     - **nextcloud path** OzoneMlf/Projects inventory/data/json/tbINVENTORY.json
-    - **local path** core/import_data/project_database
+    - **local path** .fs/import_files/project_database
