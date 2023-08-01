@@ -37,7 +37,7 @@ class ProjectStatusManager(models.Manager):
 class ProjectStatus(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=10, null=True, blank=True)
-    color = ColorField(default='#CCCCCC')
+    color = ColorField(default="#CCCCCC")
 
     objects = ProjectStatusManager()
 

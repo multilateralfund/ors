@@ -22,7 +22,9 @@ class ProjectStatusListView(generics.ListAPIView):
 
 
 # view for country programme reports
-class ProjectListView(mixins.ListModelMixin, generics.GenericAPIView):
+class ProjectListView(
+    mixins.CreateModelMixin, mixins.ListModelMixin, generics.GenericAPIView
+):
     """
     API endpoint that allows projects to be viewed.
     """
@@ -31,7 +33,11 @@ class ProjectListView(mixins.ListModelMixin, generics.GenericAPIView):
         "country", "agency", "subsector__sector", "project_type", "status", "submission"
     )
     filterset_class = ProjectFilter
-    serializer_class = ProjectListSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return ProjectListSerializer
+        return ProjectDetailsSerializer
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -45,15 +51,6 @@ class ProjectListView(mixins.ListModelMixin, generics.GenericAPIView):
     )
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
-
-
-class ProjectCreateView(mixins.CreateModelMixin, generics.GenericAPIView):
-    """
-    API endpoint that allows projects submission
-    """
-
-    queryset = Project.objects.select_related("submission")
-    serializer_class = ProjectDetailsSerializer
 
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
