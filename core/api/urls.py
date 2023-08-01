@@ -15,8 +15,10 @@ from core.api.views.country_programme import (
     CPReportListView,
     CPSettingsView,
 )
-from core.api.views.projects import ProjectStatusListView
-from core.api.views.projects import ProjectListView
+from core.api.views.projects import (
+    ProjectListView,
+    ProjectStatusListView,
+)
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView
 

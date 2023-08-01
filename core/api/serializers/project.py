@@ -1,8 +1,18 @@
+from django.db import transaction
 from rest_framework import serializers
 
-from core.models.project import Project
-from core.models.project import ProjectStatus
+from core.models.agency import Agency
+from core.models.blend import Blend
+from core.models.country import Country
+from core.models.project import (
+    Project,
+    ProjectOdsOdp,
+    ProjectStatus,
+    ProjectSubSector,
+    ProjectType,
+)
 from core.models.project_submission import ProjectSubmission
+from core.models.substance import Substance
 
 
 class ProjectStatusSerializer(serializers.ModelSerializer):
@@ -24,6 +34,10 @@ class ProjectSubmissionSerializer(serializers.ModelSerializer):
     """
     ProjectSubmissionSerializer class
     """
+
+    id = serializers.IntegerField(read_only=True)
+    funds_allocated = serializers.FloatField(required=True)
+    support_cost_13 = serializers.FloatField(required=True)
 
     class Meta:
         model = ProjectSubmission
@@ -53,7 +67,56 @@ class ProjectSubmissionSerializer(serializers.ModelSerializer):
         ]
 
 
-class ProjectSerializer(serializers.ModelSerializer):
+class ProjectOdsOdpSerializer(serializers.ModelSerializer):
+    """
+    ProjectOdsOdpSerializer class
+    """
+
+    ods_display_name = serializers.SerializerMethodField()
+    ods_substance_id = serializers.PrimaryKeyRelatedField(
+        required=False, queryset=Substance.objects.all().values_list("id", flat=True)
+    )
+    ods_blend_id = serializers.PrimaryKeyRelatedField(
+        required=False, queryset=Blend.objects.all().values_list("id", flat=True)
+    )
+    ods_type = serializers.ChoiceField(
+        required=True, choices=ProjectOdsOdp.ProjectOdsOdpType.choices
+    )
+
+    class Meta:
+        model = ProjectOdsOdp
+        fields = [
+            "id",
+            "project_id",
+            "ods_display_name",
+            "odp",
+            "ods_replacement",
+            "co2_mt",
+            "ods_type",
+            "ods_substance_id",
+            "ods_blend_id",
+            "sort_order",
+        ]
+        read_only_fields = ["id"]
+
+    def get_ods_display_name(self, obj):
+        if obj.ods_display_name:
+            return obj.ods_display_name
+        if obj.ods_substance:
+            return obj.ods_substance.name
+        if obj.ods_blend:
+            return obj.ods_blend.name
+        return None
+
+    def validate(self, attrs):
+        if not attrs.get("ods_substance_id") and not attrs.get("ods_blend_id"):
+            raise serializers.ValidationError(
+                "Either ods_substance_id or ods_blend_id is required"
+            )
+        return super().validate(attrs)
+
+
+class ProjectListSerializer(serializers.ModelSerializer):
     """
     ProjectSerializer class
     """
@@ -64,6 +127,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     subsector = serializers.SlugRelatedField("name", read_only=True)
     project_type = serializers.SlugRelatedField("name", read_only=True)
     status = serializers.SlugRelatedField("name", read_only=True)
+    title = serializers.CharField(required=True)
     submission = serializers.SerializerMethodField()
 
     class Meta:
@@ -94,3 +158,61 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     def get_sector(self, obj):
         return obj.subsector.sector.name
+
+
+class ProjectDetailsSerializer(ProjectListSerializer):
+    """
+    ProjectSerializer class
+    """
+
+    submission = ProjectSubmissionSerializer()
+    ods_odp = ProjectOdsOdpSerializer(many=True)
+    agency_id = serializers.PrimaryKeyRelatedField(
+        required=True, queryset=Agency.objects.all().values_list("id", flat=True)
+    )
+    country_id = serializers.PrimaryKeyRelatedField(
+        required=True, queryset=Country.objects.all().values_list("id", flat=True)
+    )
+    subsector_id = serializers.PrimaryKeyRelatedField(
+        required=True,
+        queryset=ProjectSubSector.objects.all().values_list("id", flat=True),
+    )
+    project_type_id = serializers.PrimaryKeyRelatedField(
+        required=True, queryset=ProjectType.objects.all().values_list("id", flat=True)
+    )
+
+    class Meta:
+        model = Project
+        fields = ProjectListSerializer.Meta.fields + [
+            "description",
+            "country_id",
+            "agency_id",
+            "national_agency",
+            "subsector_id",
+            "project_type_id",
+            "approval_meeting_no",
+            "submission",
+            "ods_odp",
+        ]
+
+    @transaction.atomic
+    def create(self, validated_data):
+        submission_data = validated_data.pop("submission")
+        ods_odp_data = validated_data.pop("ods_odp")
+
+        if submission_data:
+            status = ProjectStatus.objects.get(code="NEWSUB")
+            validated_data["status_id"] = status.id
+        else:
+            status = ProjectStatus.objects.get(code="NEW")
+            validated_data["status_id"] = status.id
+
+        # create project
+        project = Project.objects.create(**validated_data)
+        # create submission
+        if submission_data:
+            ProjectSubmission.objects.create(project=project, **submission_data)
+        # create ods_odp
+        for ods_odp in ods_odp_data:
+            ProjectOdsOdp.objects.create(project=project, **ods_odp)
+        return project

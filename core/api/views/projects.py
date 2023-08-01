@@ -3,8 +3,11 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, generics
 
 from core.api.filters.project import ProjectFilter
-from core.api.serializers.project import ProjectSerializer
-from core.api.serializers.project import ProjectStatusSerializer
+from core.api.serializers.project import (
+    ProjectDetailsSerializer,
+    ProjectListSerializer,
+    ProjectStatusSerializer,
+)
 from core.models.project import Project
 from core.models.project import ProjectStatus
 
@@ -13,12 +16,15 @@ class ProjectStatusListView(generics.ListAPIView):
     """
     List project status
     """
+
     queryset = ProjectStatus.objects.all()
     serializer_class = ProjectStatusSerializer
 
 
 # view for country programme reports
-class ProjectListView(mixins.ListModelMixin, generics.GenericAPIView):
+class ProjectListView(
+    mixins.CreateModelMixin, mixins.ListModelMixin, generics.GenericAPIView
+):
     """
     API endpoint that allows projects to be viewed.
     """
@@ -27,7 +33,11 @@ class ProjectListView(mixins.ListModelMixin, generics.GenericAPIView):
         "country", "agency", "subsector__sector", "project_type", "status", "submission"
     )
     filterset_class = ProjectFilter
-    serializer_class = ProjectSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return ProjectListSerializer
+        return ProjectDetailsSerializer
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -41,3 +51,6 @@ class ProjectListView(mixins.ListModelMixin, generics.GenericAPIView):
     )
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
