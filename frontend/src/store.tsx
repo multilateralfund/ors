@@ -9,6 +9,7 @@ import {
 
 import { createCacheSlice } from './slices/createCacheSlice'
 import { I18nSlice, createI18nSlice } from './slices/createI18nSlice'
+import { ProjectsSlice, createProjectSlice } from './slices/createProjectSlice'
 import {
   InitialReportsSlice,
   ReportsSlice,
@@ -21,6 +22,7 @@ export type StoreState = {
   cache: { [key: string]: any }
   connection: null | string
   i18n: I18nSlice
+  projects: ProjectsSlice
   reports: ReportsSlice
   theme: ThemeSlice
   user: UserSlice
@@ -30,6 +32,7 @@ export type InitialStoreState = {
   cache?: { [key: string]: any }
   connection?: null | string
   i18n?: Partial<I18nSlice>
+  projects?: Partial<ProjectsSlice>
   reports?: InitialReportsSlice
   theme?: Partial<ThemeSlice>
   user?: Partial<UserSlice>
@@ -51,6 +54,7 @@ const createStore = (initialState?: InitialStoreState) => {
           navigator?.connection?.effectiveType || null
         : null,
       i18n: { ...createI18nSlice(...args) },
+      projects: { ...createProjectSlice(...args) },
       reports: { ...createReportsSlice(...args) },
       theme: { ...createThemeSlice(...args) },
       user: { ...createUserSlice(...args) },

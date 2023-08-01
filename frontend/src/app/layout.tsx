@@ -41,7 +41,7 @@ export default async function RootLayout({
   const cookies = nextCookies()
   const headers = nextHeaders()
   let user
-  let blends, countries, substances, usages
+  let blends, countries, substances, usages, projectStatuses
   const pathname = headers.get('x-next-pathname')
   const lang = (headers.get('x-next-lang') ||
     config.i18n.defaultLanguage) as Language
@@ -53,10 +53,14 @@ export default async function RootLayout({
   }
 
   if (user) {
-    blends = await api('api/blends/', {}, false)
-    countries = await api('api/countries/', {}, false)
-    substances = await api('api/substances/', {}, false)
-    usages = await api('api/usages/', {}, false)
+    ;[projectStatuses, blends, countries, substances, usages] =
+      await Promise.all([
+        await api('api/project-statuses/', {}, false),
+        await api('api/blends/', {}, false),
+        await api('api/countries/', {}, false),
+        await api('api/substances/', {}, false),
+        await api('api/usages/', {}, false),
+      ])
   }
 
   return (
@@ -73,6 +77,9 @@ export default async function RootLayout({
             initialState={{
               i18n: {
                 lang,
+              },
+              projects: {
+                statuses: getInitialSliceData(projectStatuses),
               },
               reports: {
                 blends: {
