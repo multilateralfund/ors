@@ -24,7 +24,7 @@ from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView
 
 router = routers.SimpleRouter()
-router.register('project', ProjectViewSet)
+router.register('projects', ProjectViewSet)
 
 
 schema_view = get_schema_view(
