@@ -1,6 +1,6 @@
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import mixins, generics
+from rest_framework import mixins, generics, viewsets
 
 from core.api.filters.project import ProjectFilter
 from core.api.serializers.project import (
@@ -22,8 +22,13 @@ class ProjectStatusListView(generics.ListAPIView):
 
 
 # view for country programme reports
-class ProjectListView(
-    mixins.CreateModelMixin, mixins.ListModelMixin, generics.GenericAPIView
+# pylint: disable-next=R0901
+class ProjectViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
 ):
     """
     API endpoint that allows projects to be viewed.
@@ -35,7 +40,7 @@ class ProjectListView(
     filterset_class = ProjectFilter
 
     def get_serializer_class(self):
-        if self.request.method == "GET":
+        if self.action == "list":
             return ProjectListSerializer
         return ProjectDetailsSerializer
 
@@ -49,8 +54,5 @@ class ProjectListView(
             )
         ],
     )
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)

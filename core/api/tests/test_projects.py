@@ -1,3 +1,5 @@
+# pylint: disable=C8008,R0913
+
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -15,6 +17,41 @@ from core.api.tests.factories import (
 from core.models.project import Project, ProjectOdsOdp
 
 pytestmark = pytest.mark.django_db
+
+
+@pytest.fixture(name="project_url")
+def project_detail_url(project):
+    return reverse("project-detail", args=(project.id,))
+
+
+class TestProjectsRetrieve:
+    client = APIClient()
+
+    def test_project_get_anon(self, project_url):
+        response = self.client.get(project_url)
+        assert response.status_code == 403
+
+    def test_project_get(self, user, project_url, project):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(project_url)
+        assert response.status_code == 200
+        assert response.data["id"] == project.id
+
+
+class TestProjectsUpdate:
+    client = APIClient()
+
+    def test_project_patch_anon(self, project_url):
+        response = self.client.patch(project_url, {"title": "Into the Spell"})
+        assert response.status_code == 403
+
+    def test_project_patch(self, user, project_url, project):
+        self.client.force_authenticate(user=user)
+        response = self.client.patch(project_url, {"title": "Into the Spell"})
+        assert response.status_code == 200
+
+        project.refresh_from_db()
+        assert project.title == "Into the Spell"
 
 
 @pytest.fixture(name="_setup_project_list")
@@ -60,12 +97,11 @@ def setup_project_list(country_ro, agency, project_type, project_status, subsect
         ProjectSubmissionFactory.create(project=project)
 
 
-# pylint: disable=C8008,R0913
 class TestProjectList:
     client = APIClient()
     url = reverse("project-list")
 
-    def test_project_list_annon(
+    def test_project_list_anon(
         self,
         _setup_project_list,
     ):
@@ -240,7 +276,7 @@ class TestCreateProjects:
     client = APIClient()
     url = reverse("project-list")
 
-    def test_create_project_annon(self, _setup_project_create):
+    def test_create_project_anon(self, _setup_project_create):
         data = _setup_project_create
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 403
