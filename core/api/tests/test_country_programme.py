@@ -1,6 +1,6 @@
 import pytest
 from django.urls import reverse
-from rest_framework.test import APIClient
+from core.api.tests.base import BaseTest
 
 from core.api.tests.factories import (
     AdmChoiceFactory,
@@ -17,6 +17,7 @@ from core.api.tests.factories import (
 from core.models.country_programme import CPEmission
 
 pytestmark = pytest.mark.django_db
+# pylint: disable=C8008, W0221
 
 
 @pytest.fixture(name="_setup_cp_report_list")
@@ -32,14 +33,8 @@ def setup_cp_report_list():
     return country
 
 
-# pylint: disable=C8008
-class TestCPReport:
-    client = APIClient()
+class TestCPReport(BaseTest):
     url = reverse("country-programme-report-list")
-
-    def test_get_cp_report_list_annon(self):
-        response = self.client.get(self.url)
-        assert response.status_code == 403
 
     def test_get_cp_report_list(self, user, _setup_cp_report_list):
         self.client.force_authenticate(user=user)
@@ -164,11 +159,11 @@ def setup_old_cp_report(cp_report_2005, substance, blend):
     return last_choice
 
 
-class TestCPRecordList:
-    client = APIClient()
+class TestCPRecordList(BaseTest):
     url = reverse("country-programme-record-list")
 
-    def test_get_cp_record_list_annon(self, cp_report_2019, _setup_new_cp_report):
+    def test_without_login(self, cp_report_2019, _setup_new_cp_report):
+        self.client.force_authenticate(user=None)
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 403
 
@@ -217,20 +212,3 @@ class TestCPRecordList:
         assert len(response.data["adm_c"]) == 1
         assert len(response.data["adm_d"]) == 1
         assert response.data["adm_d"][0]["value_choice_id"] == last_choice.id
-
-
-class TestCPSettings:
-    client = APIClient()
-
-    def test_get_cp_settings(self, user):
-        url = reverse("country-programme-settings")
-
-        # test without authentication
-        response = self.client.get(url)
-        assert response.status_code == 403
-
-        self.client.force_authenticate(user=user)
-
-        # get cp settings
-        response = self.client.get(url)
-        assert response.status_code == 200

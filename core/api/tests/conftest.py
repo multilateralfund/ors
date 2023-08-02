@@ -95,7 +95,7 @@ def agency():
 
 @pytest.fixture
 def project_type():
-    return ProjectTypeFactory.create(name="Project Type", code="PT")
+    return ProjectTypeFactory.create(name="Project Type", code="PT", sort_order=1)
 
 
 @pytest.fixture
@@ -105,12 +105,14 @@ def project_status():
 
 @pytest.fixture
 def sector():
-    return ProjectSectorFactory.create(name="Sector", code="SEC")
+    return ProjectSectorFactory.create(name="Sector", code="SEC", sort_order=1)
 
 
 @pytest.fixture
 def subsector(sector):
-    return ProjectSubSectorFactory.create(name="Subsector", code="SUB", sector=sector)
+    return ProjectSubSectorFactory.create(
+        name="Subsector", code="SUB", sector=sector, sort_order=1
+    )
 
 
 @pytest.fixture

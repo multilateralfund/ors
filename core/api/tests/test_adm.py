@@ -1,3 +1,4 @@
+from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
     AdmChoiceFactory,
     AdmColumnFactory,
@@ -6,10 +7,10 @@ from core.api.tests.factories import (
 )
 import pytest
 from django.urls import reverse
-from rest_framework.test import APIClient
 
 
 pytestmark = pytest.mark.django_db
+# pylint: disable=C8008
 
 
 @pytest.fixture(name="_setup_empty_form")
@@ -96,9 +97,7 @@ def setup_empty_form(country_ro, cp_report_2005):
     return cp_report_17
 
 
-# pylint: disable=C8008
-class TestAdmEmptyFormView:
-    client = APIClient()
+class TestAdmEmptyFormView(BaseTest):
     url = reverse("adm-empty-form")
 
     def test_get_empty_form_annon(self, cp_report_2005):

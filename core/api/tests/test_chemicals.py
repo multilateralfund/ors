@@ -1,6 +1,7 @@
 from django.urls import reverse
 import pytest
 from rest_framework.test import APIClient
+from core.api.tests.base import BaseTest
 
 from core.api.tests.factories import (
     ExcludedUsageSubstFactory,
@@ -13,6 +14,7 @@ from core.api.tests.factories import (
 from core.models.blend import Blend
 
 pytestmark = pytest.mark.django_db
+# pylint: disable=C8008
 
 GROUP_LIST = ["A", "B", "C", "D", "E", "F", "unknown"]
 
@@ -63,15 +65,9 @@ def setup_substances_list():
     return usages
 
 
-# pylint: disable=C8008
-class TestSubstancesList:
-    client = APIClient()
+class TestSubstancesList(BaseTest):
     group_list = ["A", "B", "C", "D", "E", "F", "unknown"]
     url = reverse("substances-list")
-
-    def test_subs_list_annon(self, _setup_substances_list):
-        response = self.client.get(self.url)
-        assert response.status_code == 403
 
     def test_subs_list(self, user, _setup_substances_list):
         self.client.force_authenticate(user=user)
@@ -139,13 +135,8 @@ def setup_blend_list():
     return blends, usages
 
 
-class TestBlendList:
-    client = APIClient()
+class TestBlendList(BaseTest):
     url = reverse("blends-list")
-
-    def test_blends_list_annon(self, _setup_blend_list):
-        response = self.client.get(self.url)
-        assert response.status_code == 403
 
     def test_blends_list(self, user, _setup_blend_list):
         self.client.force_authenticate(user=user)
@@ -208,7 +199,6 @@ def setup_blend_create(groupA):
     return substA, substF, subst_otherF
 
 
-# pylint: disable=C8008
 class TestCreateBlend:
     client = APIClient()
     url = reverse("blends-create")

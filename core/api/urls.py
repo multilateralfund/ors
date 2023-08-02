@@ -5,6 +5,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
 from core.api.views.adm import AdmEmptyFormView
+from core.api.views.agency import AgencyListView
 
 from core.api.views.chemicals import (
     BlendCreateView,
@@ -14,17 +15,21 @@ from core.api.views.chemicals import (
 from core.api.views.country_programme import (
     CPRecordListView,
     CPReportListView,
-    CPSettingsView,
 )
 from core.api.views.projects import (
     ProjectViewSet,
+    ProjectMeetingListView,
+    ProjectSectorListView,
     ProjectStatusListView,
+    ProjectSubSectorListView,
+    ProjectTypeListView,
 )
+from core.api.views.settings import SettingsView
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView
 
 router = routers.SimpleRouter()
-router.register('projects', ProjectViewSet)
+router.register("projects", ProjectViewSet)
 
 
 schema_view = get_schema_view(
@@ -48,7 +53,21 @@ urlpatterns = [
         name="schema-swagger-ui",
     ),
     *router.urls,
-    path("usages/", UsageListView.as_view(), name="usages-list"),
+    path(
+        "settings/",
+        SettingsView.as_view(),
+        name="settings",
+    ),
+    path(
+        "agencies/",
+        AgencyListView.as_view(),
+        name="agency-list",
+    ),
+    path(
+        "usages/",
+        UsageListView.as_view(),
+        name="usages-list",
+    ),
     path(
         "substances/",
         SubstancesListView.as_view(),
@@ -67,11 +86,6 @@ urlpatterns = [
         name="country-programme-record-list",
     ),
     path(
-        "country-programme/settings/",
-        CPSettingsView.as_view(),
-        name="country-programme-settings",
-    ),
-    path(
         "country-programme/adm/empty-form/",
         AdmEmptyFormView.as_view(),
         name="adm-empty-form",
@@ -85,5 +99,25 @@ urlpatterns = [
         "project-statuses/",
         ProjectStatusListView.as_view(),
         name="project-status-list",
+    ),
+    path(
+        "project-sectors/",
+        ProjectSectorListView.as_view(),
+        name="project-sector-list",
+    ),
+    path(
+        "project-subsectors/",
+        ProjectSubSectorListView.as_view(),
+        name="project-subsector-list",
+    ),
+    path(
+        "project-types/",
+        ProjectTypeListView.as_view(),
+        name="project-type-list",
+    ),
+    path(
+        "project-meetings/",
+        ProjectMeetingListView.as_view(),
+        name="project-meeting-list",
     ),
 ]
