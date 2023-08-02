@@ -1,5 +1,6 @@
 from django.urls import path, re_path
 from rest_framework import permissions
+from rest_framework import routers
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
@@ -16,11 +17,14 @@ from core.api.views.country_programme import (
     CPSettingsView,
 )
 from core.api.views.projects import (
-    ProjectListView,
+    ProjectViewSet,
     ProjectStatusListView,
 )
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView
+
+router = routers.SimpleRouter()
+router.register('project', ProjectViewSet)
 
 
 schema_view = get_schema_view(
@@ -43,6 +47,7 @@ urlpatterns = [
         schema_view.with_ui("swagger", cache_timeout=0),
         name="schema-swagger-ui",
     ),
+    *router.urls,
     path("usages/", UsageListView.as_view(), name="usages-list"),
     path(
         "substances/",
@@ -75,11 +80,6 @@ urlpatterns = [
         "countries/",
         CountryListView.as_view(),
         name="countries-list",
-    ),
-    path(
-        "projects/",
-        ProjectListView.as_view(),
-        name="project-list",
     ),
     path(
         "project-statuses/",
