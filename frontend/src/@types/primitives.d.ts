@@ -1,6 +1,7 @@
-export declare type AnyObject = {
-  [key: string]: Array<any> | boolean | number | string
-}
+export declare type AnyObject = Record<
+  string,
+  Array<any> | boolean | number | string | undefined
+>
 
 export declare type DataType = AnyObject | Array<any> | null | undefined
 

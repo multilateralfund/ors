@@ -18,10 +18,10 @@
 
 @layer base {
   * {
-    @apply duration-300;
+    @apply !duration-300;
 
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-property: background-color, border-color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition-property: background-color, border-color !important;
   }
 
   :root {

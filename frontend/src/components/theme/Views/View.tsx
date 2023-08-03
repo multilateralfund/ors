@@ -6,7 +6,7 @@ import React from 'react'
 import { usePathname } from 'next/navigation'
 
 import config from '@ors/config'
-import { getCurrentView } from '@ors/helpers'
+import { getCurrentView } from '@ors/helpers/View/View'
 
 const getViewByLayout = (layout?: keyof ByLayout) => {
   return layout ? config.views.layoutViews[layout] : null

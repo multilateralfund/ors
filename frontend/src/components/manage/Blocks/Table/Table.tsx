@@ -2,9 +2,14 @@
 import type { I18nSlice } from '@ors/slices/createI18nSlice'
 import type { ThemeSlice } from '@ors/slices/createThemeSlice'
 
-import { forwardRef, useMemo, useRef, useState } from 'react'
+import { Fragment, MutableRefObject, useMemo, useRef, useState } from 'react'
 
-import { Skeleton, TablePagination, Typography } from '@mui/material'
+import {
+  Tooltip as MuiTooltip,
+  Skeleton,
+  TablePagination,
+  Typography,
+} from '@mui/material'
 import { ColDef } from 'ag-grid-community'
 import { AgGridReact, AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
@@ -16,6 +21,7 @@ import useStore from '@ors/store'
 
 type TableProps = {
   enablePagination?: boolean
+  gridRef?: MutableRefObject<any>
   loading?: boolean
   onPaginationChanged?: ({
     page,
@@ -29,10 +35,13 @@ type TableProps = {
   withSkeleton?: boolean
 } & Omit<AgGridReactProps, 'onPaginationChanged'>
 
-function Table(
-  {
+export default function Table(props: TableProps) {
+  const grid = useRef<any>()
+  const {
+    className,
     defaultColDef = {},
     enablePagination = true,
+    gridRef,
     loading = false,
     onFirstDataRendered = () => {},
     onPaginationChanged = ({}: { page: number; rowsPerPage: number }) => {},
@@ -41,10 +50,7 @@ function Table(
     rowData = [],
     withSkeleton = false,
     ...rest
-  }: TableProps,
-  ref: any,
-) {
-  const grid = useRef<any>()
+  } = props
   const [pagination, setPagination] = useState<{
     page: number
     rowsPerPage: number
@@ -59,16 +65,20 @@ function Table(
   const baseColDef: ColDef = useMemo(
     () => ({
       cellRenderer: (props: any) => {
+        const Tooltip = props.colDef.tooltip ? MuiTooltip : Fragment
         return (
-          <Typography component="span">
-            {props.data.isSkeleton ? <Skeleton /> : props.value}
-          </Typography>
+          <Tooltip enterDelay={300} placement="top-start" title={props.value}>
+            <Typography component="span">
+              {props.data.isSkeleton ? <Skeleton /> : props.value}
+            </Typography>
+          </Tooltip>
         )
       },
       headerComponent: (props: any) => {
         return <Typography component="span">{props.displayName}</Typography>
       },
       sortable: true,
+      tooltip: true,
     }),
     [],
   )
@@ -77,7 +87,7 @@ function Table(
   const results = useMemo(() => {
     if (!withSkeleton) return rowData
     if (Array.isArray(rowData)) {
-      return rowData.length === 0
+      return rowData.length === 0 && loading
         ? times(pagination.rowsPerPage, () => {
             return {
               isSkeleton: true,
@@ -89,16 +99,20 @@ function Table(
     /* eslint-disable-next-line */
   }, [withSkeleton, rowData])
 
-  function handlePageChange(page: number) {
+  function handlePageChange(page: number, triggerEvent = true) {
     setPagination((prevPagination) => {
       const newPagination = { ...prevPagination, page: page }
-      onPaginationChanged(newPagination)
+      if (triggerEvent) {
+        onPaginationChanged(newPagination)
+      }
       return { ...prevPagination, page: page }
     })
-    grid.current.api.paginationGoToPage(page)
   }
 
-  function handleRowsPerPageChange(rowsPerPage: number | string) {
+  function handleRowsPerPageChange(
+    rowsPerPage: number | string,
+    triggerEvent = true,
+  ) {
     setPagination(() => {
       const newPagination = {
         page: 0,
@@ -107,24 +121,29 @@ function Table(
             ? parseInt(rowsPerPage, 10)
             : rowsPerPage,
       }
-      onPaginationChanged(newPagination)
+      if (triggerEvent) {
+        onPaginationChanged(newPagination)
+      }
       return newPagination
     })
-    grid.current.api.paginationGoToPage(0)
   }
 
   return (
     <FadeInOut
-      className={cx('relative table w-full rounded', {
-        'ag-theme-alpine': theme.mode !== 'dark',
-        'ag-theme-alpine-dark': theme.mode === 'dark',
-      })}
+      className={cx(
+        'relative table w-full rounded border border-solid border-mui-box-border bg-mui-box-background',
+        {
+          'ag-theme-alpine': theme.mode !== 'dark',
+          'ag-theme-alpine-dark': theme.mode === 'dark',
+        },
+        className,
+      )}
     >
       {loading && !(withSkeleton && results?.[0]?.isSkeleton) && (
         <Loading className="bg-action-disabledBackground/5" />
       )}
       <AgGridReact
-        animateRows={true}
+        animateRows={false}
         defaultColDef={{ ...baseColDef, ...defaultColDef }}
         domLayout="autoHeight"
         enableCellChangeFlash={false}
@@ -133,6 +152,7 @@ function Table(
         pagination={enablePagination}
         paginationPageSize={pagination.rowsPerPage}
         rowData={results}
+        suppressAnimationFrame={true}
         suppressCellFocus={true}
         suppressDragLeaveHidesColumns={true}
         suppressLoadingOverlay={true}
@@ -140,21 +160,35 @@ function Table(
         suppressPaginationPanel={true}
         suppressRowClickSelection={true}
         suppressRowHoverHighlight={true}
-        onFirstDataRendered={(event) => {
-          onFirstDataRendered(event)
-          // event.columnApi.autoSizeAllColumns()
+        noRowsOverlayComponent={() => {
+          return <Typography component="span">No Rows To Show</Typography>
         }}
-        ref={(gridRef) => {
-          grid.current = gridRef
-          if (ref) {
-            ref.current = gridRef
+        onFirstDataRendered={(agGrid) => {
+          onFirstDataRendered(agGrid)
+          // agGrid.columnApi.sizeColumnsToFit()
+        }}
+        ref={(agGrid) => {
+          grid.current = agGrid
+          if (!agGrid && gridRef) {
+            gridRef.current = null
+          }
+          if (agGrid && gridRef) {
+            gridRef.current = {
+              ...agGrid,
+              api: {
+                ...agGrid.api,
+                paginationGoToPage: (page: number, triggerEvent = false) => {
+                  handlePageChange(page, triggerEvent)
+                },
+              },
+            }
           }
         }}
         {...rest}
       />
       {enablePagination && (
         <TablePagination
-          className="rounded rounded-tl-none rounded-tr-none border border-t-0 border-solid border-mui-box-border bg-mui-box-background pr-2"
+          className="pr-2"
           backIconButtonProps={{ disabled: loading || pagination.page <= 0 }}
           component="div"
           count={rowCount}
@@ -181,5 +215,3 @@ function Table(
     </FadeInOut>
   )
 }
-
-export default forwardRef(Table)

@@ -1,7 +1,7 @@
 import Cookies from 'js-cookie'
 import { StoreApi } from 'zustand'
 
-import { api } from '@ors/helpers'
+import api from '@ors/helpers/Api/Api'
 import { InitialStoreState, StoreState } from '@ors/store'
 import { DataType } from '@ors/types/primitives'
 

@@ -1,6 +1,6 @@
 import { StoreApi } from 'zustand'
 
-import { api } from '@ors/helpers'
+import api from '@ors/helpers/Api/Api'
 // TODO: Fix strange behaviour when importin defaultSliceData from '@ors/helpers'
 import {
   defaultSliceData,
