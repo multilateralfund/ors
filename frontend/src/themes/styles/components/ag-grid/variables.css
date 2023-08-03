@@ -1,12 +1,17 @@
 #next-app [class*='ag-theme-'] {
   @apply duration-300;
 
-  --ag-background-color: theme(colors.mui-box-background);
+  /* --ag-background-color: theme(colors.mui-box-background); */
+  --ag-background-color: transparent;
   --ag-border-color: theme(colors.mui-box-border);
   --ag-secondary-border-color: theme(colors.mui-box-border / 50%);
-  --ag-header-background-color: theme(colors.mui-box-background);
+
+  /* --ag-header-background-color: theme(colors.mui-box-background); */
+  --ag-header-background-color: transparent;
   --ag-tooltip-background-color: theme(colors.mui-box-background);
-  --ag-odd-row-background-color: theme(colors.mui-box-background);
+
+  /* --ag-odd-row-background-color: theme(colors.mui-box-background); */
+  --ag-odd-row-background-color: transparent;
   --ag-control-panel-background-color: theme(colors.mui-box-background);
   --ag-modal-overlay-background-color: theme(
     colors.action-disabledBackground / 1%

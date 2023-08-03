@@ -1,6 +1,6 @@
 import { StoreApi } from 'zustand'
 
-import { api } from '@ors/helpers'
+import api from '@ors/helpers/Api/Api'
 import {
   defaultSliceData,
   getErrorSliceData,

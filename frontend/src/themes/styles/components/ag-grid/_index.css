@@ -4,5 +4,5 @@
 @import './cell.css';
 
 .ag-root-wrapper {
-  @apply rounded rounded-bl-none rounded-br-none;
+  @apply !border-b !border-l-0 !border-r-0 !border-t-0;
 }

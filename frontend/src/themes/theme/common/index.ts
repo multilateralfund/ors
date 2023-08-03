@@ -1,7 +1,7 @@
 import type { ThemeOptions } from '@mui/material'
 import type { ThemeConfig } from '@ors/types/tailwind'
 
-import { getPaletteColor } from '@ors/helpers'
+import { getPaletteColor } from '@ors/helpers/Color/Color'
 
 const contrastThreshold = 4.5
 
@@ -10,6 +10,15 @@ const commonTheme = (
   direction: 'ltr' | 'rtl',
 ): ThemeOptions => {
   return {
+    breakpoints: {
+      values: {
+        lg: parseInt(tailwindTheme.screens.lg.replace('px', '')),
+        md: parseInt(tailwindTheme.screens.md.replace('px', '')),
+        sm: parseInt(tailwindTheme.screens.sm.replace('px', '')),
+        xl: parseInt(tailwindTheme.screens.xl.replace('px', '')),
+        xs: 0,
+      },
+    },
     components: {
       MuiMenu: {
         styleOverrides: {

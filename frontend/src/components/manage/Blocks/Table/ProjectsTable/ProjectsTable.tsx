@@ -1,13 +1,15 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 
-import { Box, Button, Grid, Skeleton, Typography } from '@mui/material'
+import { Box, Grid } from '@mui/material'
 import dynamic from 'next/dynamic'
 
 import Field from '@ors/components/manage/Form/Field'
 import { getResults } from '@ors/helpers/Api/Api'
 import useApi from '@ors/hooks/useApi'
 import useStore from '@ors/store'
+
+import { columnSchema } from './schema'
 
 const Table = dynamic(
   () => import('@ors/components/manage/Blocks/Table/Table'),
@@ -24,6 +26,7 @@ const SUBSTANCE_TYPE_OPTIONS = [
 ]
 
 export default function ReportsTable() {
+  const grid = useRef<any>()
   const [apiSettings, setApiSettings] = useState({
     options: {
       params: {
@@ -40,50 +43,7 @@ export default function ReportsTable() {
 
   const projectStatuses = useStore((state) => state.projects.statuses.data)
 
-  const [columnDefs] = useState([
-    {
-      field: 'title',
-      flex: 2,
-      headerName: 'Project title/code',
-    },
-    { field: 'country', flex: 1, headerName: 'Country' },
-    { field: 'agency', flex: 1, headerName: 'Agency' },
-    { field: 'status', flex: 1, headerName: 'Status' },
-    { field: 'sector', flex: 1, headerName: 'Sector' },
-    { field: 'subsector', flex: 1, headerName: 'Subsector' },
-    {
-      field: 'project_type',
-      flex: 1,
-      headerName: 'Project Type',
-    },
-    {
-      field: 'substance_type',
-      flex: 1,
-      headerName: 'Substance Type',
-    },
-    {
-      field: 'approval_meeting_no',
-      flex: 1,
-      headerName: 'Approval meeting',
-    },
-    {
-      cellClass: 'text-center',
-      cellRenderer: (props: any) => {
-        return (
-          <Typography>
-            {props.data.isSkeleton ? (
-              <Skeleton />
-            ) : (
-              <Button variant="text">Edit</Button>
-            )}
-          </Typography>
-        )
-      },
-      field: 'action',
-      headerClass: 'text-center',
-      headerName: 'Action',
-    },
-  ])
+  const [columnDefs] = useState(columnSchema)
 
   function handleParamsChange(newParams: { [key: string]: any }) {
     setApiSettings((prevApiSettings) => ({
@@ -99,10 +59,11 @@ export default function ReportsTable() {
   }
 
   return (
-    <Grid spacing={2} container>
-      <Grid xs={10} item>
+    <Grid className="flex-col-reverse md:flex-row" spacing={2} container>
+      <Grid md={8} sm={12} xl={10} item>
         <Table
           columnDefs={columnDefs}
+          gridRef={grid}
           loading={loading}
           rowCount={count}
           rowData={results}
@@ -115,15 +76,16 @@ export default function ReportsTable() {
           withSkeleton
         />
       </Grid>
-      <Grid xs={2} item>
+      <Grid md={4} sm={12} xl={2} item>
         <Box className="rounded py-0">
           <h2>Filter projects by</h2>
           <Field
             options={projectStatuses}
             widget="chipToggle"
-            onChange={(value: null | number) =>
-              handleParamsChange({ status_id: value ?? '' })
-            }
+            onChange={(value: null | number) => {
+              grid.current.api.paginationGoToPage(0)
+              handleParamsChange({ offset: 0, status_id: value ?? '' })
+            }}
           />
           <Field
             Input={{ label: 'Substance Type' }}
@@ -132,7 +94,8 @@ export default function ReportsTable() {
             widget="autocomplete"
             disableClearable
             onChange={(_: any, value: any) => {
-              handleParamsChange({ substance_type: value.id })
+              grid.current.api.paginationGoToPage(0)
+              handleParamsChange({ offset: 0, substance_type: value.id })
             }}
           />
         </Box>

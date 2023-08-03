@@ -1,6 +1,6 @@
 import { StoreApi } from 'zustand/esm'
 
-import { defaultSliceData } from '@ors/helpers'
+import { defaultSliceData } from '@ors/helpers/Store/Store'
 import { InitialStoreState, StoreState } from '@ors/store'
 import { SliceData } from '@ors/types/primitives'
 
