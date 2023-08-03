@@ -5,4 +5,12 @@ declare module '@mui/material' {
     options?: Array<any> | undefined
     renderInput?: (params: AutocompleteRenderInputParams) => React.ReactNode
   }
+  interface BreakpointOverrides {
+    '2xl': true
+    lg: true
+    md: true
+    sm: true
+    xl: true
+    xs: true
+  }
 }

@@ -12,6 +12,7 @@ const commonTheme = (
   return {
     breakpoints: {
       values: {
+        '2xl': parseInt(tailwindTheme.screens['2xl'].replace('px', '')),
         lg: parseInt(tailwindTheme.screens.lg.replace('px', '')),
         md: parseInt(tailwindTheme.screens.md.replace('px', '')),
         sm: parseInt(tailwindTheme.screens.sm.replace('px', '')),
