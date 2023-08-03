@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 
 import { Box, Typography } from '@mui/material'
 import dynamic from 'next/dynamic'
@@ -19,6 +19,7 @@ const Table = dynamic(
 )
 
 export default function ReportsTable() {
+  const grid = useRef<any>()
   const [apiSettings, setApiSettings] = useState<{
     options: { params: Record<string, any> }
     path: string
@@ -73,6 +74,7 @@ export default function ReportsTable() {
               } else {
                 newParams.country_id = value.id
               }
+              grid.current.api.paginationGoToPage(0)
               handleParamsChange({ ...newParams, offset: 0 })
             }}
           />
@@ -85,6 +87,7 @@ export default function ReportsTable() {
       <Table
         className="rounded-t-none"
         columnDefs={columnDefs}
+        gridRef={grid}
         loading={loading}
         rowCount={count}
         rowData={results}

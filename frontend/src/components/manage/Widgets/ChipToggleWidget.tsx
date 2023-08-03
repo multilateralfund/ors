@@ -4,6 +4,7 @@ import { Box, Chip } from '@mui/material'
 
 export type ChipData = {
   color: string
+  contrastText: string
   id: number
   name: string
 }
@@ -28,20 +29,26 @@ export default function ChipToggleWidget(
 
   return (
     <Box className="flex flex-wrap justify-center p-1">
-      {props.options.map((chipData) => (
-        <Chip
-          key={chipData.id}
-          className="m-1"
-          label={chipData.name}
-          variant={selected == chipData.id ? 'filled' : 'outlined'}
-          onClick={() => handleClick(chipData.id)}
-          style={{
-            backgroundColor:
-              selected == chipData.id ? chipData.color : 'inherit',
-            borderColor: chipData.color,
-          }}
-        />
-      ))}
+      {props.options.map((chipData) => {
+        return (
+          <Chip
+            key={chipData.id}
+            className="m-1"
+            label={chipData.name}
+            variant={selected == chipData.id ? 'filled' : 'outlined'}
+            onClick={() => handleClick(chipData.id)}
+            style={
+              selected == chipData.id
+                ? {
+                    backgroundColor: chipData.color,
+                    borderColor: chipData.color,
+                    color: chipData.contrastText || 'inherit',
+                  }
+                : {}
+            }
+          />
+        )
+      })}
     </Box>
   )
 }
