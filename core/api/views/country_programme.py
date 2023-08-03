@@ -1,6 +1,6 @@
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import mixins, generics, views
+from rest_framework import mixins, generics
 from rest_framework.response import Response
 
 from core.api.filters.country_programme import (
@@ -167,19 +167,3 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
             return self._get_new_cp_records(cp_report)
 
         return self._get_old_cp_records(cp_report)
-
-
-# view for country programme settings
-class CPSettingsView(views.APIView):
-    """
-    API endpoint that allows country programme settings to be viewed.
-    """
-
-    def get(self, *args, **kwargs):
-        settings = {
-            "year_section_mapping": [
-                {"max_year": 2018, "sections": ["A", "C", "AdmB", "AdmC", "AdmD"]},
-                {"max_year": 2022, "sections": ["A", "B", "C", "D", "E", "F"]},
-            ]
-        }
-        return Response(settings)

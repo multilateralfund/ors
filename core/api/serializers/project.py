@@ -7,6 +7,7 @@ from core.models.country import Country
 from core.models.project import (
     Project,
     ProjectOdsOdp,
+    ProjectSector,
     ProjectStatus,
     ProjectSubSector,
     ProjectType,
@@ -27,6 +28,54 @@ class ProjectStatusSerializer(serializers.ModelSerializer):
             "code",
             "name",
             "color",
+        ]
+
+
+class ProjectSectorSerializer(serializers.ModelSerializer):
+    """
+    ProjectSectorSerializer class
+    """
+
+    class Meta:
+        model = ProjectSector
+        fields = [
+            "id",
+            "name",
+            "code",
+            "sort_order",
+        ]
+
+
+class ProjectSubSectorSerializer(serializers.ModelSerializer):
+    """
+    ProjectSubSectorSerializer class
+    """
+
+    sector_id = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = ProjectSubSector
+        fields = [
+            "id",
+            "name",
+            "code",
+            "sort_order",
+            "sector_id",
+        ]
+
+
+class ProjectTypeSerializer(serializers.ModelSerializer):
+    """
+    ProjectTypeSerializer class
+    """
+
+    class Meta:
+        model = ProjectType
+        fields = [
+            "id",
+            "name",
+            "code",
+            "sort_order",
         ]
 
 

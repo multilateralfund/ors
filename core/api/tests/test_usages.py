@@ -1,9 +1,10 @@
+from core.api.tests.base import BaseTest
 from core.api.tests.factories import UsageFactory
 import pytest
 from django.urls import reverse
-from rest_framework.test import APIClient
 
 pytestmark = pytest.mark.django_db
+# pylint: disable=C8008
 
 
 @pytest.fixture(name="_setup_usages")
@@ -16,14 +17,8 @@ def setup_usages():
     return usage1, usage2, usage3, usage4
 
 
-# pylint: disable=C8008
-class TestUsages:
-    client = APIClient()
+class TestUsages(BaseTest):
     url = reverse("usages-list")
-
-    def test_usages_list_annon(self, _setup_usages):
-        response = self.client.get(self.url)
-        assert response.status_code == 403
 
     def test_usages_list(self, user, _setup_usages):
         self.client.force_authenticate(user=user)

@@ -1,8 +1,7 @@
-# pylint: disable=C8008,R0913
-
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
+from core.api.tests.base import BaseTest
 
 from core.api.tests.factories import (
     AgencyFactory,
@@ -17,6 +16,7 @@ from core.api.tests.factories import (
 from core.models.project import Project, ProjectOdsOdp
 
 pytestmark = pytest.mark.django_db
+# pylint: disable=C8008,W0221,R0913
 
 
 @pytest.fixture(name="project_url")
@@ -97,22 +97,10 @@ def setup_project_list(country_ro, agency, project_type, project_status, subsect
         ProjectSubmissionFactory.create(project=project)
 
 
-class TestProjectList:
-    client = APIClient()
+class TestProjectList(BaseTest):
     url = reverse("project-list")
 
-    def test_project_list_anon(
-        self,
-        _setup_project_list,
-    ):
-        response = self.client.get(self.url)
-        assert response.status_code == 403
-
-    def test_project_list(
-        self,
-        user,
-        _setup_project_list,
-    ):
+    def test_project_list(self, user, _setup_project_list):
         self.client.force_authenticate(user=user)
 
         # get project list
@@ -123,11 +111,7 @@ class TestProjectList:
         for project in response.data:
             assert not project["submission"]
 
-    def test_project_list_w_submission(
-        self,
-        user,
-        _setup_project_list,
-    ):
+    def test_project_list_w_submission(self, user, _setup_project_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"get_submission": True})
@@ -140,26 +124,18 @@ class TestProjectList:
                 projects_with_submission += 1
         assert projects_with_submission == 2
 
-    def test_project_list_agency_filter(
-        self,
-        user,
-        agency,
-        _setup_project_list,
-    ):
+    def test_project_list_agency_filter(self, user, agency, _setup_project_list):
         self.client.force_authenticate(user=user)
+
         response = self.client.get(self.url, {"agency_id": agency.id})
         assert response.status_code == 200
         assert len(response.data) == 2
         for project in response.data:
             assert project["agency"] == agency.name
 
-    def test_project_list_type_filter(
-        self,
-        user,
-        project_type,
-        _setup_project_list,
-    ):
+    def test_project_list_type_filter(self, user, project_type, _setup_project_list):
         self.client.force_authenticate(user=user)
+
         response = self.client.get(self.url, {"project_type_id": project_type.id})
         assert response.status_code == 200
         assert len(response.data) == 2
@@ -167,62 +143,46 @@ class TestProjectList:
             assert project["project_type"] == project_type.name
 
     def test_project_list_status_filter(
-        self,
-        user,
-        project_status,
-        _setup_project_list,
+        self, user, project_status, _setup_project_list
     ):
         self.client.force_authenticate(user=user)
+
         response = self.client.get(self.url, {"status_id": project_status.id})
         assert response.status_code == 200
         assert len(response.data) == 2
         for project in response.data:
             assert project["status"] == project_status.name
 
-    def test_project_list_sector_filter(
-        self,
-        user,
-        sector,
-        _setup_project_list,
-    ):
+    def test_project_list_sector_filter(self, user, sector, _setup_project_list):
         self.client.force_authenticate(user=user)
+
         response = self.client.get(self.url, {"sector_id": sector.id})
         assert response.status_code == 200
         assert len(response.data) == 2
         for project in response.data:
             assert project["sector"] == sector.name
 
-    def test_project_list_subsector_filter(
-        self,
-        user,
-        subsector,
-        _setup_project_list,
-    ):
+    def test_project_list_subsector_filter(self, user, subsector, _setup_project_list):
         self.client.force_authenticate(user=user)
+
         response = self.client.get(self.url, {"subsector_id": subsector.id})
         assert response.status_code == 200
         assert len(response.data) == 2
         for project in response.data:
             assert project["subsector"] == subsector.name
 
-    def test_project_list_subs_type_filter(
-        self,
-        user,
-        _setup_project_list,
-    ):
+    def test_project_list_subs_type_filter(self, user, _setup_project_list):
         self.client.force_authenticate(user=user)
+
         response = self.client.get(self.url, {"substance_type": "HCFC"})
         assert response.status_code == 200
         assert len(response.data) == 2
         for project in response.data:
             assert project["substance_type"] == "HCFC"
 
-    def test_project_list_meet_no_filter(
-        self,
-        user,
-        _setup_project_list,
-    ):
+    def test_project_list_meet_no_filter(self, user, _setup_project_list):
         self.client.force_authenticate(user=user)
+
         response = self.client.get(self.url, {"approval_meeting_no": 1})
         assert response.status_code == 200
         assert len(response.data) == 2
@@ -272,12 +232,13 @@ def setup_project_create(country_ro, agency, project_type, subsector, substance,
     }
 
 
-class TestCreateProjects:
-    client = APIClient()
+class TestCreateProjects(BaseTest):
     url = reverse("project-list")
 
-    def test_create_project_anon(self, _setup_project_create):
+    def test_without_login(self, _setup_project_create):
         data = _setup_project_create
+        self.client.force_authenticate(user=None)
+
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 403
 

@@ -1,14 +1,18 @@
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import mixins, generics, viewsets
+from rest_framework import mixins, generics, views, viewsets
+from rest_framework.response import Response
 
 from core.api.filters.project import ProjectFilter
 from core.api.serializers.project import (
     ProjectDetailsSerializer,
     ProjectListSerializer,
+    ProjectSectorSerializer,
     ProjectStatusSerializer,
+    ProjectSubSectorSerializer,
+    ProjectTypeSerializer,
 )
-from core.models.project import Project
+from core.models.project import Project, ProjectSector, ProjectSubSector, ProjectType
 from core.models.project import ProjectStatus
 
 
@@ -19,6 +23,44 @@ class ProjectStatusListView(generics.ListAPIView):
 
     queryset = ProjectStatus.objects.all()
     serializer_class = ProjectStatusSerializer
+
+
+class ProjectSectorListView(generics.ListAPIView):
+    """
+    List project sector
+    """
+
+    queryset = ProjectSector.objects.order_by("sort_order").all()
+    serializer_class = ProjectSectorSerializer
+
+
+class ProjectSubSectorListView(generics.ListAPIView):
+    """
+    List project subsector
+    """
+
+    queryset = ProjectSubSector.objects.order_by("sort_order").all()
+    serializer_class = ProjectSubSectorSerializer
+
+
+class ProjectTypeListView(generics.ListAPIView):
+    """
+    List project type
+    """
+
+    queryset = ProjectType.objects.order_by("sort_order").all()
+    serializer_class = ProjectTypeSerializer
+
+
+class ProjectMeetingListView(views.APIView):
+    def get(self, request, *args, **kwargs):
+        meetings = (
+            Project.objects.filter(approval_meeting_no__isnull=False)
+            .values_list("approval_meeting_no", flat=True)
+            .distinct()
+            .order_by("approval_meeting_no")
+        )
+        return Response(list(meetings))
 
 
 # view for country programme reports
