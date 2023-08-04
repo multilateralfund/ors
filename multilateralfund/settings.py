@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import environ
+import socket
 import os
 from pathlib import Path
 from datetime import timedelta
@@ -233,6 +234,11 @@ EMAIL_HOST = env.str("EMAIL_HOST", default=None)
 EMAIL_PORT = env.int("EMAIL_PORT", default=None)
 EMAIL_HOST_USER = env.str("EMAIL_HOST_USER", default=None)
 EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD", default=None)
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=False)
+
+DJANGO_DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", default="")
+# Even if no default is set default to noreply@
+DEFAULT_FROM_EMAIL = DJANGO_DEFAULT_FROM_EMAIL or ("noreply@" + socket.gethostname())
 
 # DRF Integration
 
@@ -273,8 +279,6 @@ if DEBUG:
 ENABLE_DEBUG_BAR = DEBUG and env.get_value("ENABLE_DEBUG_BAR", default=False, cast=bool)
 if ENABLE_DEBUG_BAR:
     try:
-        import socket
-
         def show_toolbar(request):
             return DEBUG and (
                 request.META.get("REMOTE_ADDR") in INTERNAL_IPS
