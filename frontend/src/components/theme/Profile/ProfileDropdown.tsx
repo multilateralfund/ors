@@ -4,7 +4,7 @@ import React from 'react'
 import { useRouter } from 'next/navigation'
 
 import Dropdown from '@ors/components/ui/Dropdown'
-import config from '@ors/registry'
+import { formatApiUrl } from '@ors/helpers/Api/Api'
 import useStore from '@ors/store'
 
 import { IoPerson } from '@react-icons/all-files/io5/IoPerson'
@@ -29,7 +29,7 @@ export default function ProfileDropdown() {
         </Dropdown.Item>
         <Dropdown.Item
           onClick={() => {
-            router.push(config.settings.apiPath + '/admin/')
+            router.push(formatApiUrl('/admin/'))
           }}
         >
           Admin

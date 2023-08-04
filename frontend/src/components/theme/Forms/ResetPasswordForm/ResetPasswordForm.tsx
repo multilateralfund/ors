@@ -42,7 +42,7 @@ export default function ResetPasswordForm({
             method: 'post',
           })
           setErrors(emptyErrors)
-          router.push('/')
+          router.push('/login')
         } catch (error) {
           if (error.status === 400) {
             setErrors({
