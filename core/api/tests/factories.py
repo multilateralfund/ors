@@ -14,6 +14,7 @@ from core.models.country_programme import (
 from core.models.group import Group
 from core.models.project import (
     Project,
+    ProjectOdsOdp,
     ProjectSector,
     ProjectStatus,
     ProjectSubSector,
@@ -291,3 +292,14 @@ class ProjectSubmissionFactory(factory.django.DjangoModelFactory):
     project = factory.SubFactory(ProjectFactory)
     category = "bilateral cooperation"
     submission_number = factory.Faker("random_int", min=1, max=100)
+
+
+class ProjectOdsOdpFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProjectOdsOdp
+
+    project = factory.SubFactory(ProjectFactory)
+    odp = factory.Faker("random_int", min=1, max=100)
+    ods_replacement = factory.Faker("pystr", max_chars=100)
+    co2_mt = factory.Faker("random_int", min=1, max=100)
+    sort_order = factory.Faker("random_int", min=1, max=100)

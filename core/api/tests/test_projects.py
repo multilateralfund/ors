@@ -199,11 +199,15 @@ def setup_project_create(country_ro, agency, project_type, subsector, substance,
     for status in statuses:
         ProjectStatusFactory.create(**status)
 
+    # create coop agencies
+    coop_agencies = [AgencyFactory.create().id for i in range(2)]
+
     return {
         "title": "Project",
         "description": "Description",
         "country_id": country_ro.id,
         "agency_id": agency.id,
+        "coop_agencies_id": coop_agencies,
         "subsector_id": subsector.id,
         "project_type_id": project_type.id,
         "status_id": 1,
@@ -262,6 +266,7 @@ class TestCreateProjects(BaseTest):
         assert response.data["title"] == data["title"]
         assert response.data["country"] == country_ro.name
         assert response.data["agency"] == agency.name
+        assert len(response.data["coop_agencies"]) == 2
         assert response.data["sector"] == subsector.sector.name
         assert response.data["subsector"] == subsector.name
         assert response.data["project_type"] == project_type.name

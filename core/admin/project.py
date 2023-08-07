@@ -3,6 +3,8 @@ from django.contrib import admin
 from core.admin.utils import get_final_display_list
 from core.models.project import (
     Project,
+    ProjectFund,
+    ProjectOdsOdp,
     ProjectSector,
     ProjectStatus,
     ProjectSubSector,
@@ -78,3 +80,31 @@ class ProjectAdmin(admin.ModelAdmin):
             "submission",
         ]
         return get_final_display_list(Project, exclude)
+
+
+@admin.register(ProjectOdsOdp)
+class ProjectOdsOdpAdmin(admin.ModelAdmin):
+    search_fields = [
+        "project__title",
+    ]
+    list_filter = [
+        "ods_type",
+    ]
+
+    def get_list_display(self, request):
+        exclude = ["project"]
+        return get_final_display_list(ProjectOdsOdp, exclude)
+
+
+@admin.register(ProjectFund)
+class ProjectFundAdmin(admin.ModelAdmin):
+    search_fields = [
+        "project__title",
+    ]
+    list_filter = [
+        "fund_type",
+    ]
+
+    def get_list_display(self, request):
+        exclude = ["project"]
+        return get_final_display_list(ProjectFund, exclude)
