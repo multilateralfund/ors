@@ -103,7 +103,13 @@ async function api(
   // const sliceData = updateSliceData ? {} : null
   let fullPath = formatApiUrl(path)
   if (params) {
-    fullPath += '?' + new URLSearchParams(params).toString()
+    fullPath +=
+      '?' +
+      new URLSearchParams(
+        Object.entries(params).filter(
+          ([, value]) => value !== null && value !== undefined && value !== '',
+        ),
+      ).toString()
   }
 
   if (withStoreCache && storeState?.cache.data[id]) {

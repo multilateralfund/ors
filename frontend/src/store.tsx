@@ -7,6 +7,8 @@ import {
   createStore as zustandCreateStore,
 } from 'zustand'
 
+import { CommonSlice, createCommonSlice } from '@ors/slices/createCommonSlice'
+
 import { createCacheSlice } from './slices/createCacheSlice'
 import { I18nSlice, createI18nSlice } from './slices/createI18nSlice'
 import { ProjectsSlice, createProjectSlice } from './slices/createProjectSlice'
@@ -20,6 +22,7 @@ import { UserSlice, createUserSlice } from './slices/createUserSlice'
 
 export type StoreState = {
   cache: { [key: string]: any }
+  common: CommonSlice
   connection: null | string
   i18n: I18nSlice
   projects: ProjectsSlice
@@ -30,9 +33,10 @@ export type StoreState = {
 
 export type InitialStoreState = {
   cache?: { [key: string]: any }
+  common?: CommonSlice
   connection?: null | string
   i18n?: Partial<I18nSlice>
-  projects?: Partial<ProjectsSlice>
+  projects?: ProjectsSlice
   reports?: InitialReportsSlice
   theme?: Partial<ThemeSlice>
   user?: Partial<UserSlice>
@@ -49,6 +53,7 @@ const createStore = (initialState?: InitialStoreState) => {
     ] = [set, get, initialState]
     return {
       cache: { ...createCacheSlice(...args) },
+      common: { ...createCommonSlice(...args) },
       connection: __CLIENT__
         ? // @ts-ignore
           navigator?.connection?.effectiveType || null
