@@ -7,12 +7,19 @@ from core.api.filters.project import ProjectFilter
 from core.api.serializers.project import (
     ProjectDetailsSerializer,
     ProjectListSerializer,
+    ProjectOdsOdpSerializer,
     ProjectSectorSerializer,
     ProjectStatusSerializer,
     ProjectSubSectorSerializer,
     ProjectTypeSerializer,
 )
-from core.models.project import Project, ProjectSector, ProjectSubSector, ProjectType
+from core.models.project import (
+    Project,
+    ProjectOdsOdp,
+    ProjectSector,
+    ProjectSubSector,
+    ProjectType,
+)
 from core.models.project import ProjectStatus
 
 
@@ -98,3 +105,16 @@ class ProjectViewSet(
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+
+class ProjectOdsOdpViewSet(
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    API endpoint that allows project ods odp to be update and delete.
+    """
+
+    queryset = ProjectOdsOdp.objects.all()
+    serializer_class = ProjectOdsOdpSerializer

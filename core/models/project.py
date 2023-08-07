@@ -86,6 +86,7 @@ class Project(models.Model):
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
     national_agency = models.CharField(max_length=255, null=True, blank=True)
+    coop_agencies = models.ManyToManyField(Agency, related_name="coop_projects")
     number = models.IntegerField(null=True, blank=True)
     code = models.CharField(max_length=128, null=True, blank=True)
     approval_meeting_no = models.IntegerField(null=True, blank=True)
@@ -152,7 +153,7 @@ class ProjectOdsOdp(models.Model):
     )
 
     ods_display_name = models.CharField(max_length=256, null=True, blank=True)
-    odp = models.FloatField()
+    odp = models.FloatField(null=True, blank=True)
     ods_replacement = models.CharField(max_length=256, null=True, blank=True)
     co2_mt = models.FloatField(null=True, blank=True)
     ods_type = models.CharField(

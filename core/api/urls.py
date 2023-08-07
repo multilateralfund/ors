@@ -6,7 +6,6 @@ from drf_yasg import openapi
 
 from core.api.views.adm import AdmEmptyFormView
 from core.api.views.agency import AgencyListView
-
 from core.api.views.chemicals import (
     BlendCreateView,
     BlendsListView,
@@ -17,6 +16,7 @@ from core.api.views.country_programme import (
     CPReportListView,
 )
 from core.api.views.projects import (
+    ProjectOdsOdpViewSet,
     ProjectViewSet,
     ProjectMeetingListView,
     ProjectSectorListView,
@@ -30,6 +30,7 @@ from core.api.views.countries import CountryListView
 
 router = routers.SimpleRouter()
 router.register("projects", ProjectViewSet)
+router.register("project-ods-odp", ProjectOdsOdpViewSet)
 
 
 schema_view = get_schema_view(
