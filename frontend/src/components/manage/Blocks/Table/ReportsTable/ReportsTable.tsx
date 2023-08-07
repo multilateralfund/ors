@@ -33,7 +33,7 @@ export default function ReportsTable() {
     path: 'api/country-programme/reports/',
   })
   const countries = useStore((state) =>
-    getResults(state.reports.countries.get.data).results.map((country) => ({
+    getResults(state.common.countries.data).results.map((country) => ({
       id: country.id,
       label: country.name,
     })),

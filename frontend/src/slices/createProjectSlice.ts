@@ -5,7 +5,11 @@ import { InitialStoreState, StoreState } from '@ors/store'
 import { SliceData } from '@ors/types/primitives'
 
 export interface ProjectsSlice {
+  meetings: SliceData
+  sectors: SliceData
   statuses: SliceData
+  subsectors: SliceData
+  types: SliceData
 }
 
 export const createProjectSlice = (
@@ -14,9 +18,25 @@ export const createProjectSlice = (
   initialState?: InitialStoreState,
 ): ProjectsSlice => {
   return {
+    meetings: {
+      ...defaultSliceData,
+      ...(initialState?.projects?.meetings || {}),
+    },
+    sectors: {
+      ...defaultSliceData,
+      ...(initialState?.projects?.sectors || {}),
+    },
     statuses: {
       ...defaultSliceData,
       ...(initialState?.projects?.statuses || {}),
+    },
+    subsectors: {
+      ...defaultSliceData,
+      ...(initialState?.projects?.subsectors || {}),
+    },
+    types: {
+      ...defaultSliceData,
+      ...(initialState?.projects?.types || {}),
     },
   }
 }

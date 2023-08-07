@@ -13,9 +13,7 @@ export interface AutocompleteWidgetProps
     boolean | undefined
   > {
   Input?: TextWidgetProps
-  options?: Array<
-    { [key: string]: any; id: number; label?: string } | undefined
-  >
+  options?: Array<any> | undefined
 }
 
 export type AutocompleteWidget = (props: AutocompleteWidgetProps) => JSX.Element
@@ -24,7 +22,7 @@ export default function AutocompleteWidget({
   Input,
   options,
   renderInput,
-  renderOption,
+  // renderOption,
   ...rest
 }: AutocompleteWidgetProps): JSX.Element {
   return (
@@ -37,17 +35,17 @@ export default function AutocompleteWidget({
               <TextWidget {...params} size="small" {...(Input || {})} />
             )
       }
-      renderOption={(props, option, ...args) => {
-        if (!option) return null
-        if (!!renderOption) {
-          return renderOption(props, option, ...args)
-        }
-        return (
-          <li {...props} key={option.id}>
-            {option.label}
-          </li>
-        )
-      }}
+      // renderOption={(props, option, ...args) => {
+      //   if (!option) return null
+      //   if (!!renderOption) {
+      //     return renderOption(props, option, ...args)
+      //   }
+      //   return (
+      //     <li {...props} key={option?.id}>
+      //       {rest.getOptionLabel?.(option) ?? option.label}
+      //     </li>
+      //   )
+      // }}
       {...rest}
     />
   )

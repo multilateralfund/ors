@@ -16,6 +16,9 @@ import api from '@ors/helpers/Api/Api'
 import { getInitialSliceData } from '@ors/helpers/Store/Store'
 import { getCurrentView } from '@ors/helpers/View/View'
 import config from '@ors/registry'
+import { CommonSlice } from '@ors/slices/createCommonSlice'
+import { ProjectsSlice } from '@ors/slices/createProjectSlice'
+import { ReportsSlice } from '@ors/slices/createReportsSlice'
 import { Provider as StoreProvider } from '@ors/store'
 import ThemeProvider from '@ors/themes/ThemeProvider'
 import { Language } from '@ors/types/locales'
@@ -35,6 +38,53 @@ export const metadata: Metadata = {
   title: 'ORS',
 }
 
+async function getInitialProjectsData(): Promise<ProjectsSlice> {
+  const statuses = api('api/project-statuses/', {}, false)
+  const sectors = api('api/project-sectors/', {}, false)
+  const subsectors = api('api/project-subsectors/', {}, false)
+  const types = api('api/project-types/', {}, false)
+  const meetings = api('api/project-meetings/', {}, false)
+
+  return {
+    meetings: getInitialSliceData(await meetings),
+    sectors: getInitialSliceData(await sectors),
+    statuses: getInitialSliceData(await statuses),
+    subsectors: getInitialSliceData(await subsectors),
+    types: getInitialSliceData(await types),
+  }
+}
+
+async function getInitialReportsData(): Promise<ReportsSlice> {
+  const blends = api('api/blends/', {}, false)
+  const substances = api('api/substances/', {}, false)
+  const usages = api('api/usages/', {}, false)
+
+  return {
+    blends: {
+      get: getInitialSliceData(await blends),
+    },
+    get: getInitialSliceData(null),
+    substances: {
+      get: getInitialSliceData(await substances),
+    },
+    usages: {
+      get: getInitialSliceData(await usages),
+    },
+  }
+}
+
+async function getInitialCommonData(): Promise<CommonSlice> {
+  const agencies = api('api/agencies/', {}, false)
+  const countries = api('api/countries/', {}, false)
+  const settings = api('api/settings/', {}, false)
+
+  return {
+    agencies: getInitialSliceData(await agencies),
+    countries: getInitialSliceData(await countries),
+    settings: getInitialSliceData(await settings),
+  }
+}
+
 export default async function RootLayout({
   children,
 }: {
@@ -43,7 +93,7 @@ export default async function RootLayout({
   const cookies = nextCookies()
   const headers = nextHeaders()
   let user
-  let blends, countries, substances, usages, projectStatuses
+  let reports, projects, common
   const pathname = headers.get('x-next-pathname')
   const lang = (headers.get('x-next-lang') ||
     config.i18n.defaultLanguage) as Language
@@ -55,14 +105,9 @@ export default async function RootLayout({
   }
 
   if (user) {
-    ;[projectStatuses, blends, countries, substances, usages] =
-      await Promise.all([
-        await api('api/project-statuses/', {}, false),
-        await api('api/blends/', {}, false),
-        await api('api/countries/', {}, false),
-        await api('api/substances/', {}, false),
-        await api('api/usages/', {}, false),
-      ])
+    projects = await getInitialProjectsData()
+    reports = await getInitialReportsData()
+    common = await getInitialCommonData()
   }
 
   return (
@@ -77,26 +122,12 @@ export default async function RootLayout({
         <div id="next-app">
           <StoreProvider
             initialState={{
+              common,
               i18n: {
                 lang,
               },
-              projects: {
-                statuses: getInitialSliceData(projectStatuses),
-              },
-              reports: {
-                blends: {
-                  get: getInitialSliceData(blends),
-                },
-                countries: {
-                  get: getInitialSliceData(countries),
-                },
-                substances: {
-                  get: getInitialSliceData(substances),
-                },
-                usages: {
-                  get: getInitialSliceData(usages),
-                },
-              },
+              projects,
+              reports,
               theme: {
                 mode: theme.value as 'dark' | 'light' | null,
               },

@@ -13,11 +13,6 @@ import { Params, SliceData } from '@ors/types/primitives'
 
 import { BlendsSlice, InitialBlendsSlice, createBlendsSlice } from './blends'
 import {
-  CountriesSlice,
-  InitialCountriesSlice,
-  createCountriesSlice,
-} from './countries'
-import {
   InitialSubstancesSlice,
   SubstancesSlice,
   createSubstancesSlice,
@@ -26,7 +21,6 @@ import { InitialUsagesSlice, UsagesSlice, createUsagesSlice } from './usages'
 
 export interface ReportsSlice {
   blends: BlendsSlice
-  countries: CountriesSlice
   get: SliceData
   getReports?: (params?: Params) => void
   substances: SubstancesSlice
@@ -35,7 +29,6 @@ export interface ReportsSlice {
 
 export interface InitialReportsSlice {
   blends?: InitialBlendsSlice
-  countries?: InitialCountriesSlice
   get?: Partial<SliceData>
   substances?: InitialSubstancesSlice
   usages?: InitialUsagesSlice
@@ -47,7 +40,6 @@ export const createReportsSlice = (
   initialState?: InitialStoreState,
 ): ReportsSlice => ({
   blends: createBlendsSlice(set, get, initialState),
-  countries: createCountriesSlice(set, get, initialState),
   get: {
     ...defaultSliceData,
   },
