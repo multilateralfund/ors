@@ -14,6 +14,7 @@ from core.api.tests.factories import (
     ProjectSectorFactory,
     ProjectStatusFactory,
     ProjectSubSectorFactory,
+    ProjectSubmissionFactory,
     ProjectTypeFactory,
     SubstanceFactory,
     UsageFactory,
@@ -118,7 +119,7 @@ def subsector(sector):
 
 @pytest.fixture
 def project(country_ro, agency, project_type, project_status, subsector):
-    return ProjectFactory.create(
+    project = ProjectFactory.create(
         title="Karma to Burn",
         country=country_ro,
         agency=agency,
@@ -128,6 +129,11 @@ def project(country_ro, agency, project_type, project_status, subsector):
         substance_type="HCFC",
         approval_meeting_no=1,
     )
+
+    # add submission
+    ProjectSubmissionFactory.create(project=project)
+
+    return project
 
 
 @pytest.fixture

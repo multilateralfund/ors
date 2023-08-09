@@ -45,13 +45,46 @@ class TestProjectsUpdate:
         response = self.client.patch(project_url, {"title": "Into the Spell"})
         assert response.status_code == 403
 
-    def test_project_patch(self, user, project_url, project):
+    def test_project_patch(self, user, project_url, project, agency):
         self.client.force_authenticate(user=user)
-        response = self.client.patch(project_url, {"title": "Into the Spell"})
+
+        update_data = {
+            "title": "Into the Spell",
+            "submission_data": {
+                "category": "investment project",
+            },
+            "coop_agencies_id": [agency.id],
+        }
+        response = self.client.patch(project_url, update_data)
         assert response.status_code == 200
 
         project.refresh_from_db()
         assert project.title == "Into the Spell"
+        assert project.submission_data["category"] == "investment project"
+        assert project.coop_agencies.count() == 1
+
+    def test_project_patch_ods_odp(
+        self, user, project_url, project, project_ods_odp_subst
+    ):
+        self.client.force_authenticate(user=user)
+
+        update_data = {
+            "title": "Crocodile wearing a vest",
+            "ods_odp": [
+                {
+                    "id": project_ods_odp_subst.id,
+                    "odp": project_ods_odp_subst.odp + 5,
+                }
+            ],
+        }
+        response = self.client.patch(project_url, update_data)
+        # fails silently -> update nothing
+        assert response.status_code == 200
+
+        project.refresh_from_db()
+        assert project.title == project.title
+        assert project.ods_odp.count() == 1
+        assert project.ods_odp.first().odp == project_ods_odp_subst.odp
 
 
 @pytest.fixture(name="_setup_project_list")

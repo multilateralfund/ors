@@ -67,6 +67,7 @@ class ProjectAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         "project_type",
+        "status",
         "agency",
         "subsector",
     ]

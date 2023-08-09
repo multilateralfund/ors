@@ -255,6 +255,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         many=True,
         write_only=True,
     )
+    title = serializers.CharField(read_only=True)
 
     class Meta:
         model = Project
@@ -270,6 +271,16 @@ class ProjectDetailsSerializer(ProjectListSerializer):
             "submission",
             "ods_odp",
         ]
+
+    def __init__(self, instance=None, data=..., **kwargs):
+        super().__init__(instance, data, **kwargs)
+        request = self.context.get("request")
+
+        if request.method not in ["GET", "POST"]:
+            # set ods odps read only for PUT, PATCH, DELETE
+            self.fields["ods_odp"].read_only = True
+        else:
+            self.fields["ods_odp"].read_only = False
 
     @transaction.atomic
     def create(self, validated_data):
@@ -296,3 +307,25 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         for coop_agency in coop_agencies_id:
             project.coop_agencies.add(coop_agency)
         return project
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        submission_data = validated_data.pop("submission", None)
+        coop_agencies_id = validated_data.pop("coop_agencies_id", None)
+
+        super().update(instance, validated_data)
+
+        # update submission
+        if submission_data:
+            submission = instance.submission
+            for attr, value in submission_data.items():
+                setattr(submission, attr, value)
+            submission.save()
+
+        # update coop_agencies
+        if coop_agencies_id:
+            instance.coop_agencies.clear()
+            for coop_agency in coop_agencies_id:
+                instance.coop_agencies.add(coop_agency)
+
+        return instance
