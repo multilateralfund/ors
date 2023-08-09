@@ -1,7 +1,8 @@
 from django.db import transaction
 from rest_framework import serializers
-from core.api.serializers.agency import AgencySerializer
+from rest_framework.fields import empty
 
+from core.api.serializers.agency import AgencySerializer
 from core.models.agency import Agency
 from core.models.blend import Blend
 from core.models.country import Country
@@ -255,7 +256,6 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         many=True,
         write_only=True,
     )
-    title = serializers.CharField(read_only=True)
 
     class Meta:
         model = Project
@@ -272,7 +272,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
             "ods_odp",
         ]
 
-    def __init__(self, instance=None, data=..., **kwargs):
+    def __init__(self, instance=None, data=empty, **kwargs):
         super().__init__(instance, data, **kwargs)
         request = self.context.get("request")
 
@@ -310,6 +310,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
+        print("baaaaa", validated_data)
         submission_data = validated_data.pop("submission", None)
         coop_agencies_id = validated_data.pop("coop_agencies_id", None)
 
