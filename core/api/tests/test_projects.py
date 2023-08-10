@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -14,14 +16,40 @@ from core.api.tests.factories import (
     ProjectTypeFactory,
 )
 from core.models.project import Project, ProjectOdsOdp
+from core.models.project import ProjectFile
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008,W0221,R0913
 
 
 @pytest.fixture(name="project_url")
-def project_detail_url(project):
+def _project_url(project):
     return reverse("project-detail", args=(project.id,))
+
+
+@pytest.fixture(name="project_upload_url")
+def _project_upload_url(project):
+    return reverse("project-upload", args=(project.id,))
+
+
+@pytest.fixture(name="test_file")
+def _test_file(tmp_path):
+    p = tmp_path / "scott.txt"
+    p.write_text("Living on a Prayer!")
+    return p
+
+
+@pytest.fixture(name="project_file")
+def _project_file(project, test_file):
+    project_file = ProjectFile(project=project)
+    project_file.file.save("scott.txt", test_file.open())
+    project_file.save()
+    return project_file
+
+
+@pytest.fixture(name="project_file_url")
+def _project_file_url(project_file):
+    return reverse("project-files", args=(project_file.id,))
 
 
 class TestProjectsRetrieve:
@@ -36,6 +64,40 @@ class TestProjectsRetrieve:
         response = self.client.get(project_url)
         assert response.status_code == 200
         assert response.data["id"] == project.id
+
+    def test_project_files_get(self, user, project_url, project_file):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(project_url)
+        assert response.status_code == 200
+        assert len(response.data["files"]) == 1
+        assert response.data["files"][0]["id"] == project_file.id
+        assert response.data["files"][0]["name"] == project_file.file.name
+
+
+class TestProjectFiles:
+    client = APIClient()
+
+    def test_project_file_get_anon(self, project_file_url):
+        response = self.client.get(project_file_url)
+        assert response.status_code == 403
+
+    def test_project_file_delete_anon(self, project_file_url):
+        response = self.client.delete(project_file_url)
+        assert response.status_code == 403
+
+    def test_project_file_get(self, user, project_file_url):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(project_file_url)
+        assert response.status_code == 200
+        assert response.getvalue() == b"Living on a Prayer!"
+
+    def test_project_file_delete(self, user, project_file, project_file_url):
+        self.client.force_authenticate(user=user)
+        response = self.client.delete(project_file_url)
+        assert response.status_code == 204
+
+        assert not ProjectFile.objects.filter(pk=project_file.pk).exists()
+        assert not Path(project_file.file.path).is_file()
 
 
 class TestProjectsUpdate:
@@ -52,6 +114,26 @@ class TestProjectsUpdate:
 
         project.refresh_from_db()
         assert project.title == "Into the Spell"
+
+
+class TestProjectUpload:
+    client = APIClient()
+
+    def test_upload_file_anon(self, project_upload_url):
+        response = self.client.post(project_upload_url, {})
+        assert response.status_code == 403
+
+    def test_upload_file(self, user, project_upload_url, project, test_file):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.post(
+            project_upload_url, {"file": test_file.open()}, format="multipart"
+        )
+        assert response.status_code == 201
+
+        project.refresh_from_db()
+        project_file = project.files.first()
+        assert project_file.file.open().read() == b"Living on a Prayer!"
 
 
 @pytest.fixture(name="_setup_project_list")

@@ -12,6 +12,7 @@ from core.models.project import (
     ProjectSubSector,
     ProjectType,
 )
+from core.models.project import ProjectFile
 from core.models.project_submission import ProjectSubmission
 from core.models.substance import Substance
 
@@ -165,6 +166,21 @@ class ProjectOdsOdpSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
 
+class ProjectFileSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectFile
+        fields = [
+            "id",
+            "name",
+            "date_created",
+        ]
+
+    def get_name(self, obj):
+        return obj.file.name
+
+
 class ProjectListSerializer(serializers.ModelSerializer):
     """
     ProjectSerializer class
@@ -229,6 +245,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
     project_type_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=ProjectType.objects.all().values_list("id", flat=True)
     )
+    files = ProjectFileSerializer(many=True, read_only=True)
 
     class Meta:
         model = Project
@@ -242,6 +259,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
             "approval_meeting_no",
             "submission",
             "ods_odp",
+            "files",
         ]
 
     @transaction.atomic
