@@ -10,9 +10,11 @@ from core.api.tests.factories import (
     ExcludedUsageSubstFactory,
     GroupFactory,
     ProjectFactory,
+    ProjectOdsOdpFactory,
     ProjectSectorFactory,
     ProjectStatusFactory,
     ProjectSubSectorFactory,
+    ProjectSubmissionFactory,
     ProjectTypeFactory,
     SubstanceFactory,
     UsageFactory,
@@ -117,7 +119,7 @@ def subsector(sector):
 
 @pytest.fixture
 def project(country_ro, agency, project_type, project_status, subsector):
-    return ProjectFactory.create(
+    project = ProjectFactory.create(
         title="Karma to Burn",
         country=country_ro,
         agency=agency,
@@ -126,4 +128,31 @@ def project(country_ro, agency, project_type, project_status, subsector):
         subsector=subsector,
         substance_type="HCFC",
         approval_meeting_no=1,
+    )
+
+    # add submission
+    ProjectSubmissionFactory.create(project=project)
+
+    return project
+
+
+@pytest.fixture
+def project_ods_odp_subst(project, substance):
+    return ProjectOdsOdpFactory(
+        project=project,
+        ods_substance=substance,
+        odp=0.02,
+        co2_mt=0.05,
+        sort_order=1,
+    )
+
+
+@pytest.fixture
+def project_ods_odp_blend(project, blend):
+    return ProjectOdsOdpFactory(
+        project=project,
+        ods_blend=blend,
+        odp=0.02,
+        co2_mt=0.05,
+        sort_order=1,
     )

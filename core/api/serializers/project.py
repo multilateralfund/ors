@@ -1,6 +1,8 @@
 from django.db import transaction
 from rest_framework import serializers
+from rest_framework.fields import empty
 
+from core.api.serializers.agency import AgencySerializer
 from core.models.agency import Agency
 from core.models.blend import Blend
 from core.models.country import Country
@@ -124,14 +126,13 @@ class ProjectOdsOdpSerializer(serializers.ModelSerializer):
 
     ods_display_name = serializers.SerializerMethodField()
     ods_substance_id = serializers.PrimaryKeyRelatedField(
-        required=False, queryset=Substance.objects.all().values_list("id", flat=True)
+        required=False,
+        queryset=Substance.objects.all().values_list("id", flat=True),
     )
     ods_blend_id = serializers.PrimaryKeyRelatedField(
         required=False, queryset=Blend.objects.all().values_list("id", flat=True)
     )
-    ods_type = serializers.ChoiceField(
-        required=True, choices=ProjectOdsOdp.ProjectOdsOdpType.choices
-    )
+    project_id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = ProjectOdsOdp
@@ -163,6 +164,25 @@ class ProjectOdsOdpSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Either ods_substance_id or ods_blend_id is required"
             )
+        if attrs.get("ods_substance_id") and attrs.get("ods_blend_id"):
+            raise serializers.ValidationError(
+                "Only one of ods_substance_id or ods_blend_id is required"
+            )
+
+        # validate partial updates
+        if self.instance:
+            # set ods_substance_id wile ods_blend_id is set
+            if attrs.get("ods_substance_id") and self.instance.ods_blend_id:
+                raise serializers.ValidationError(
+                    "Cannot update ods_substance_id when ods_blend_id is set"
+                )
+
+            # set ods_blend_id wile ods_substance_id is set
+            if attrs.get("ods_blend_id") and self.instance.ods_substance_id:
+                raise serializers.ValidationError(
+                    "Cannot update ods_blend_id when ods_substance_id is set"
+                )
+
         return super().validate(attrs)
 
 
@@ -188,6 +208,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
 
     country = serializers.SlugRelatedField("name", read_only=True)
     agency = serializers.SlugRelatedField("name", read_only=True)
+    coop_agencies = AgencySerializer(many=True, read_only=True)
     sector = serializers.SerializerMethodField()
     subsector = serializers.SlugRelatedField("name", read_only=True)
     project_type = serializers.SlugRelatedField("name", read_only=True)
@@ -202,6 +223,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "title",
             "country",
             "agency",
+            "coop_agencies",
             "sector",
             "subsector",
             "project_type",
@@ -245,6 +267,11 @@ class ProjectDetailsSerializer(ProjectListSerializer):
     project_type_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=ProjectType.objects.all().values_list("id", flat=True)
     )
+    coop_agencies_id = serializers.PrimaryKeyRelatedField(
+        queryset=Agency.objects.all().values_list("id", flat=True),
+        many=True,
+        write_only=True,
+    )
     files = ProjectFileSerializer(many=True, read_only=True)
 
     class Meta:
@@ -253,6 +280,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
             "description",
             "country_id",
             "agency_id",
+            "coop_agencies_id",
             "national_agency",
             "subsector_id",
             "project_type_id",
@@ -262,10 +290,21 @@ class ProjectDetailsSerializer(ProjectListSerializer):
             "files",
         ]
 
+    def __init__(self, instance=None, data=empty, **kwargs):
+        super().__init__(instance, data, **kwargs)
+        request = self.context.get("request")
+
+        if request.method not in ["GET", "POST"]:
+            # set ods odps read only for PUT, PATCH, DELETE
+            self.fields["ods_odp"].read_only = True
+        else:
+            self.fields["ods_odp"].read_only = False
+
     @transaction.atomic
     def create(self, validated_data):
         submission_data = validated_data.pop("submission")
         ods_odp_data = validated_data.pop("ods_odp")
+        coop_agencies_id = validated_data.pop("coop_agencies_id")
 
         if submission_data:
             status = ProjectStatus.objects.get(code="NEWSUB")
@@ -282,4 +321,30 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         # create ods_odp
         for ods_odp in ods_odp_data:
             ProjectOdsOdp.objects.create(project=project, **ods_odp)
+        # add coop_agencies
+        for coop_agency in coop_agencies_id:
+            project.coop_agencies.add(coop_agency)
         return project
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        print("baaaaa", validated_data)
+        submission_data = validated_data.pop("submission", None)
+        coop_agencies_id = validated_data.pop("coop_agencies_id", None)
+
+        super().update(instance, validated_data)
+
+        # update submission
+        if submission_data:
+            submission = instance.submission
+            for attr, value in submission_data.items():
+                setattr(submission, attr, value)
+            submission.save()
+
+        # update coop_agencies
+        if coop_agencies_id:
+            instance.coop_agencies.clear()
+            for coop_agency in coop_agencies_id:
+                instance.coop_agencies.add(coop_agency)
+
+        return instance

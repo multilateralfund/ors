@@ -15,13 +15,20 @@ from core.api.filters.project import ProjectFilter
 from core.api.serializers.project import (
     ProjectDetailsSerializer,
     ProjectListSerializer,
+    ProjectOdsOdpSerializer,
     ProjectSectorSerializer,
     ProjectStatusSerializer,
     ProjectSubSectorSerializer,
     ProjectTypeSerializer,
 )
-from core.models.project import Project, ProjectSector, ProjectSubSector, ProjectType
-from core.models.project import ProjectFile
+from core.models.project import (
+    Project,
+    ProjectOdsOdp,
+    ProjectSector,
+    ProjectSubSector,
+    ProjectType,
+    ProjectFile,
+)
 from core.models.project import ProjectStatus
 
 
@@ -135,3 +142,16 @@ class ProjectFileView(APIView):
             pass
         project_file.delete()
         return Response({}, status.HTTP_204_NO_CONTENT)
+
+
+class ProjectOdsOdpViewSet(
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    API endpoint that allows project ods odp to be update and delete.
+    """
+
+    queryset = ProjectOdsOdp.objects.all()
+    serializer_class = ProjectOdsOdpSerializer

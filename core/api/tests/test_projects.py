@@ -107,13 +107,46 @@ class TestProjectsUpdate:
         response = self.client.patch(project_url, {"title": "Into the Spell"})
         assert response.status_code == 403
 
-    def test_project_patch(self, user, project_url, project):
+    def test_project_patch(self, user, project_url, project, agency):
         self.client.force_authenticate(user=user)
-        response = self.client.patch(project_url, {"title": "Into the Spell"})
+
+        update_data = {
+            "title": "Into the Spell",
+            "submission": {
+                "category": "investment project",
+            },
+            "coop_agencies_id": [agency.id],
+        }
+        response = self.client.patch(project_url, update_data, format="json")
         assert response.status_code == 200
 
         project.refresh_from_db()
         assert project.title == "Into the Spell"
+        assert project.submission.category == "investment project"
+        assert project.coop_agencies.count() == 1
+
+    def test_project_patch_ods_odp(
+        self, user, project_url, project, project_ods_odp_subst
+    ):
+        self.client.force_authenticate(user=user)
+
+        update_data = {
+            "title": "Crocodile wearing a vest",
+            "ods_odp": [
+                {
+                    "id": project_ods_odp_subst.id,
+                    "odp": project_ods_odp_subst.odp + 5,
+                }
+            ],
+        }
+        response = self.client.patch(project_url, update_data, format="json")
+        # fails silently -> update only the title
+        assert response.status_code == 200
+
+        project.refresh_from_db()
+        assert project.title == "Crocodile wearing a vest"
+        assert project.ods_odp.count() == 1
+        assert project.ods_odp.first().odp == project_ods_odp_subst.odp
 
 
 class TestProjectUpload:
@@ -281,11 +314,15 @@ def setup_project_create(country_ro, agency, project_type, subsector, substance,
     for status in statuses:
         ProjectStatusFactory.create(**status)
 
+    # create coop agencies
+    coop_agencies = [AgencyFactory.create().id for i in range(2)]
+
     return {
         "title": "Project",
         "description": "Description",
         "country_id": country_ro.id,
         "agency_id": agency.id,
+        "coop_agencies_id": coop_agencies,
         "subsector_id": subsector.id,
         "project_type_id": project_type.id,
         "status_id": 1,
@@ -344,6 +381,7 @@ class TestCreateProjects(BaseTest):
         assert response.data["title"] == data["title"]
         assert response.data["country"] == country_ro.name
         assert response.data["agency"] == agency.name
+        assert len(response.data["coop_agencies"]) == 2
         assert response.data["sector"] == subsector.sector.name
         assert response.data["subsector"] == subsector.name
         assert response.data["project_type"] == project_type.name
