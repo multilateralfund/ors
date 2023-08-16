@@ -272,7 +272,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         many=True,
         write_only=True,
     )
-    files = ProjectFileSerializer(many=True, read_only=True)
+    latest_file = ProjectFileSerializer(many=False, read_only=True)
 
     class Meta:
         model = Project
@@ -287,7 +287,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
             "approval_meeting_no",
             "submission",
             "ods_odp",
-            "files",
+            "latest_file",
         ]
 
     def __init__(self, instance=None, data=empty, **kwargs):

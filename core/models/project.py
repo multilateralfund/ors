@@ -133,6 +133,13 @@ class Project(models.Model):
     def __str__(self):
         return self.title
 
+    @property
+    def latest_file(self):
+        try:
+            return self.files.latest()
+        except ProjectFile.DoesNotExist:
+            return None
+
 
 class ProjectFile(models.Model):
     file = models.FileField(
@@ -141,6 +148,9 @@ class ProjectFile(models.Model):
     )
     project = models.ForeignKey("core.Project", on_delete=models.CASCADE, related_name="files")
     date_created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        get_latest_by = "date_created"
 
 
 class ProjectOdsOdp(models.Model):
