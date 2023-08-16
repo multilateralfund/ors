@@ -32,12 +32,13 @@ export default function ReportsTable() {
     },
     path: 'api/country-programme/reports/',
   })
-  const countries = useStore((state) =>
-    getResults(state.common.countries.data).results.map((country) => ({
+  const countries = useStore((state) => [
+    { id: 0, label: 'Any' },
+    ...getResults(state.common.countries.data).results.map((country) => ({
       id: country.id,
       label: country.name,
     })),
-  )
+  ])
   const { data, loading } = useApi(apiSettings)
   const { count, results } = getResults(data)
 

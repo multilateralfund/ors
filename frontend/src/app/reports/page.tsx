@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default async function Reports() {
   return (
     <PageWrapper>
-      <Box className="mb-4 w-full max-w-sm">
+      <Box className="mb-4 w-full md:max-w-sm">
         <Typography className="mb-4" variant="h4">
           Create submission {new Date().getFullYear()}
         </Typography>

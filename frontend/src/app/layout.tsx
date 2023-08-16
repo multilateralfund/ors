@@ -115,6 +115,7 @@ export default async function RootLayout({
       lang={lang}
       {...(theme.value ? { 'data-theme': theme.value } : {})}
       data-layout={currentView?.layout}
+      data-ssr="yes"
       dir={dir(lang)}
     >
       <body className={roboto.className}>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { StoreApi } from 'zustand'
 
 // import config from '@ors/registry'
@@ -14,7 +15,6 @@ export interface CacheSlice {
 export const createCacheSlice = (
   set: StoreApi<StoreState>['setState'],
   get: StoreApi<StoreState>['getState'],
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   initialState?: InitialStoreState,
 ): CacheSlice => ({
   data: {},
