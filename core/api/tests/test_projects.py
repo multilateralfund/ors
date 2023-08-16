@@ -266,6 +266,16 @@ def setup_project_create(country_ro, agency, project_type, subsector, substance,
                 "ods_type": ProjectOdsOdp.ProjectOdsOdpType.PRODUCTION,
             },
         ],
+        "funds": [
+            {
+                "amount": 41,
+                "fund_type": "allocated",
+            },
+            {
+                "amount": 42,
+                "fund_type": "transferred",
+            },
+        ],
     }
 
 
@@ -308,6 +318,7 @@ class TestCreateProjects(BaseTest):
         assert response.data["national_agency"] == "National Agency"
         submission = response.data["submission"]
         assert submission["category"] == "bilateral cooperation"
+
         ods_odp = response.data["ods_odp"]
         assert len(ods_odp) == 2
         assert ods_odp[0]["odp"] == 3.14
@@ -315,6 +326,13 @@ class TestCreateProjects(BaseTest):
         assert ods_odp[0]["ods_replacement"] == "replacement"
         assert ods_odp[0]["ods_type"] == "general"
         assert ods_odp[1]["ods_display_name"] == blend.name
+
+        funds = response.data["funds"]
+        assert len(funds) == 2
+        assert funds[0]["amount"] == 41
+        assert funds[0]["fund_type"] == "allocated"
+        assert funds[1]["amount"] == 42
+        assert funds[1]["fund_type"] == "transferred"
 
     def test_create_project_project_fk(self, user, _setup_project_create):
         data = _setup_project_create

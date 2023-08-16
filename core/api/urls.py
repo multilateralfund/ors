@@ -4,6 +4,7 @@ from rest_framework import routers
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+from core.api.views import ProjectFundViewSet
 from core.api.views.adm import AdmEmptyFormView
 from core.api.views.agency import AgencyListView
 from core.api.views.chemicals import (
@@ -30,6 +31,7 @@ from core.api.views.countries import CountryListView
 
 router = routers.SimpleRouter()
 router.register("projects", ProjectViewSet)
+router.register("project-fund", ProjectFundViewSet)
 router.register("project-ods-odp", ProjectOdsOdpViewSet)
 
 
