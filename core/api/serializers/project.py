@@ -15,6 +15,7 @@ from core.models.project import (
     ProjectType,
 )
 from core.models.project import ProjectFund
+from core.models.project import ProjectFile
 from core.models.project_submission import ProjectSubmission
 from core.models.substance import Substance
 
@@ -207,6 +208,21 @@ class ProjectOdsOdpSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
 
+class ProjectFileSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectFile
+        fields = [
+            "id",
+            "name",
+            "date_created",
+        ]
+
+    def get_name(self, obj):
+        return obj.file.name
+
+
 class ProjectListSerializer(serializers.ModelSerializer):
     """
     ProjectSerializer class
@@ -279,6 +295,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         many=True,
         write_only=True,
     )
+    latest_file = ProjectFileSerializer(many=False, read_only=True)
 
     class Meta:
         model = Project
@@ -294,6 +311,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
             "submission",
             "ods_odp",
             "funds",
+            "latest_file",
         ]
 
     def __init__(self, instance=None, data=empty, **kwargs):

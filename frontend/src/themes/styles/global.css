@@ -32,6 +32,10 @@
     opacity: 1 !important;
   }
 
+  :root[data-ssr='yes'] .portal {
+    display: none !important;
+  }
+
   :root[data-theme='dark'] {
     @apply theme-dark;
   }
@@ -61,5 +65,18 @@
 
   main {
     @apply relative;
+  }
+
+  .sidebar::before {
+    content: '';
+    background-color: rgb(0 0 0 / 40%);
+    height: 100%;
+    display: block;
+    position: absolute;
+    top: 2rem;
+    left: calc(100% + 1rem);
+    margin-left: -1rem;
+    margin-top: -2rem;
+    width: 100vw;
   }
 }

@@ -1,10 +1,10 @@
+'use client'
 import { Box } from '@mui/material'
 import Image from 'next/image'
 
 import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
 import LanguageSelector from '@ors/components/theme/LanguageSelector/LanguageSelector'
 import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
-import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
 import Link from '@ors/components/ui/Link'
 
 export default function Header() {
@@ -32,7 +32,7 @@ export default function Header() {
         <div className="flex">
           <LanguageSelector className="mr-2" />
           <ProfileDropdown />
-          <ThemeSelector />
+          <div id="header-control" />
         </div>
       </div>
     </Box>

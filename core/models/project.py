@@ -1,10 +1,14 @@
 from colorfield.fields import ColorField
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 from django.db import models
 from core.models.agency import Agency
 from core.models.blend import Blend
 
 from core.models.country import Country
 from core.models.substance import Substance
+
+PROTECTED_STORAGE = FileSystemStorage(location=settings.PROTECTED_MEDIA_ROOT)
 
 
 class ProjectTypeManager(models.Manager):
@@ -125,10 +129,28 @@ class Project(models.Model):
     export_to = models.FloatField(null=True, blank=True)
     status = models.ForeignKey(ProjectStatus, on_delete=models.CASCADE)
     remarks = models.TextField(null=True, blank=True)
-    project_file = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return self.title
+
+    @property
+    def latest_file(self):
+        try:
+            return self.files.latest()
+        except ProjectFile.DoesNotExist:
+            return None
+
+
+class ProjectFile(models.Model):
+    file = models.FileField(
+        storage=PROTECTED_STORAGE,
+        upload_to="project_files/",
+    )
+    project = models.ForeignKey("core.Project", on_delete=models.CASCADE, related_name="files")
+    date_created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        get_latest_by = "date_created"
 
 
 class ProjectOdsOdp(models.Model):

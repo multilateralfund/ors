@@ -119,6 +119,10 @@ export default function ThemeProvider({
   const currentTheme = React.useMemo(() => theme.mode || 'light', [theme.mode])
 
   useEffect(() => {
+    document.documentElement.setAttribute('data-ssr', 'no')
+  }, [])
+
+  useEffect(() => {
     if (dir !== prevDir.current) {
       setLoadingDir(true)
     }
