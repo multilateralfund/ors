@@ -178,6 +178,7 @@ FS_DIR = BASE_DIR / ".fs"
 STATIC_URL = "static/"
 STATIC_ROOT = FS_DIR / "static"
 IMPORT_DATA_DIR = FS_DIR / "import_files"
+PROTECTED_MEDIA_ROOT = FS_DIR / "protected_media"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

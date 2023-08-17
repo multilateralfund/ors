@@ -4,6 +4,7 @@ from rest_framework import routers
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+from core.api.views import ProjectFileView
 from core.api.views.adm import AdmEmptyFormView
 from core.api.views.agency import AgencyListView
 from core.api.views.chemicals import (
@@ -120,5 +121,10 @@ urlpatterns = [
         "project-meetings/",
         ProjectMeetingListView.as_view(),
         name="project-meeting-list",
+    ),
+    re_path(
+        "^project-files/(?P<pk>[^/]+)/$",
+        ProjectFileView.as_view(),
+        name="project-files",
     ),
 ]

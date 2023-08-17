@@ -10,6 +10,7 @@ from core.models.project import (
     ProjectSubSector,
     ProjectType,
 )
+from core.models.project import ProjectFile
 
 
 @admin.register(ProjectSector)
@@ -60,8 +61,14 @@ class ProjectStatusAdmin(admin.ModelAdmin):
         return get_final_display_list(ProjectStatus, exclude)
 
 
+class ProjectFileInline(admin.TabularInline):
+    model = ProjectFile
+    extra = 1
+
+
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
+    inlines = [ProjectFileInline]
     search_fields = [
         "title",
     ]
@@ -79,6 +86,7 @@ class ProjectAdmin(admin.ModelAdmin):
             "ods_odp",
             "funds",
             "submission",
+            "files"
         ]
         return get_final_display_list(Project, exclude)
 
