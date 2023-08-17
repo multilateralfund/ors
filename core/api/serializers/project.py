@@ -14,6 +14,7 @@ from core.models.project import (
     ProjectSubSector,
     ProjectType,
 )
+from core.models.project import ProjectFund
 from core.models.project import ProjectFile
 from core.models.project_submission import ProjectSubmission
 from core.models.substance import Substance
@@ -117,6 +118,27 @@ class ProjectSubmissionSerializer(serializers.ModelSerializer):
             "correspondance_no",
             "plus",
         ]
+
+
+class ProjectFundSerializer(serializers.ModelSerializer):
+    """
+    ProjectFundSerializer class
+    """
+
+    class Meta:
+        model = ProjectFund
+        fields = [
+            "id",
+            "project_id",
+            "amount",
+            "support_13",
+            "meeting",
+            "interest",
+            "date",
+            "fund_type",
+            "sort_order",
+        ]
+        read_only_fields = ["id"]
 
 
 class ProjectOdsOdpSerializer(serializers.ModelSerializer):
@@ -254,6 +276,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
 
     submission = ProjectSubmissionSerializer()
     ods_odp = ProjectOdsOdpSerializer(many=True)
+    funds = ProjectFundSerializer(many=True)
     agency_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Agency.objects.all().values_list("id", flat=True)
     )
@@ -287,6 +310,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
             "approval_meeting_no",
             "submission",
             "ods_odp",
+            "funds",
             "latest_file",
         ]
 
@@ -294,16 +318,15 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         super().__init__(instance, data, **kwargs)
         request = self.context.get("request")
 
-        if request.method not in ["GET", "POST"]:
+        for field in ("ods_odp", "funds"):
             # set ods odps read only for PUT, PATCH, DELETE
-            self.fields["ods_odp"].read_only = True
-        else:
-            self.fields["ods_odp"].read_only = False
+            self.fields[field].read_only = request.method not in ["GET", "POST"]
 
     @transaction.atomic
     def create(self, validated_data):
         submission_data = validated_data.pop("submission")
-        ods_odp_data = validated_data.pop("ods_odp")
+        ods_odp_data = validated_data.pop("ods_odp", [])
+        funds = validated_data.pop("funds", [])
         coop_agencies_id = validated_data.pop("coop_agencies_id")
 
         if submission_data:
@@ -321,6 +344,9 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         # create ods_odp
         for ods_odp in ods_odp_data:
             ProjectOdsOdp.objects.create(project=project, **ods_odp)
+        # create funds
+        for fund in funds:
+            ProjectFund.objects.create(project=project, **fund)
         # add coop_agencies
         for coop_agency in coop_agencies_id:
             project.coop_agencies.add(coop_agency)
@@ -328,7 +354,6 @@ class ProjectDetailsSerializer(ProjectListSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        print("baaaaa", validated_data)
         submission_data = validated_data.pop("submission", None)
         coop_agencies_id = validated_data.pop("coop_agencies_id", None)
 

@@ -20,6 +20,7 @@ from core.api.serializers.project import (
     ProjectStatusSerializer,
     ProjectSubSectorSerializer,
     ProjectTypeSerializer,
+    ProjectFundSerializer,
 )
 from core.models.project import (
     Project,
@@ -29,7 +30,7 @@ from core.models.project import (
     ProjectType,
     ProjectFile,
 )
-from core.models.project import ProjectStatus
+from core.models.project import ProjectStatus, ProjectFund
 
 
 class ProjectStatusListView(generics.ListAPIView):
@@ -150,8 +151,21 @@ class ProjectOdsOdpViewSet(
     viewsets.GenericViewSet,
 ):
     """
-    API endpoint that allows project ods odp to be update and delete.
+    API endpoint that allows project ods odp to be updated and deleted.
     """
 
     queryset = ProjectOdsOdp.objects.all()
     serializer_class = ProjectOdsOdpSerializer
+
+
+class ProjectFundViewSet(
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    API endpoint that allows project fund to be updated and deleted.
+    """
+
+    queryset = ProjectFund.objects.all()
+    serializer_class = ProjectFundSerializer
