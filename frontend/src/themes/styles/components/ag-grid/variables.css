@@ -7,6 +7,8 @@
   --ag-modal-overlay-background-color: theme(
     colors.action-disabledBackground / 0.01
   );
+  --ag-value-change-value-highlight-background-color: theme(colors.primary);
+  --ag-value-change-value-highlight-color: theme(colors.primary-contrastText);
 
   /* disable all borders */
   --ag-borders: 0 solid;

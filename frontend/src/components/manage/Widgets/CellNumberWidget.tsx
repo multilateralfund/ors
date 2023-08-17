@@ -74,15 +74,6 @@ export const CellNumberWidget = memo(
           eInput.select()
 
           setHighlightAllOnFocus(false)
-        } else {
-          // when we started editing, we want the caret at the end, not the start.
-          // this comes into play in two scenarios:
-          //   a) when user hits F2
-          //   b) when user hits a printable character
-          const length = eInput.value ? eInput.value.length : 0
-          if (length > 0) {
-            eInput.setSelectionRange(length, length)
-          }
         }
         // eslint-disable-next-line
       }, [])
@@ -137,6 +128,7 @@ export const CellNumberWidget = memo(
       }
 
       const onKeyDown = (event: any) => {
+        console.log('HERE', event.key)
         if (isArrowKey(event) || isBackspace(event) || isSelectAll(event)) {
           event.stopPropagation()
           return

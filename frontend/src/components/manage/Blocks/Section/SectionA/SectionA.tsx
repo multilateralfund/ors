@@ -23,10 +23,15 @@ export default function SectionA() {
               setRowData([
                 ...rowData,
                 {
+                  aerosol: 0,
                   exports: 0,
+                  fire_fighting: 0,
+                  foam: 0,
                   import_quotas: 0,
                   imports: 0,
+                  manufacturing: 0,
                   production: 0,
+                  servicing: 0,
                   substance: { id: 0, label: 'Select substance' },
                 },
               ])

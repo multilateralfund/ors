@@ -64,9 +64,12 @@ export default function CreateSubmissionForm() {
         />
       ))}
       <Portal domNode="bottom-control">
-        <Box className="w-full justify-between rounded-none border-0 border-t px-4">
-          <Button color="error" size="small" variant="contained">
+        <Box className="flex w-full justify-between rounded-none border-0 border-t px-4">
+          <Button color="secondary" size="small" variant="contained">
             Close
+          </Button>
+          <Button color="primary" size="small" variant="contained">
+            Submit
           </Button>
         </Box>
       </Portal>

@@ -1,8 +1,7 @@
 @import './variables.css';
 @import './header.css';
 @import './row.css';
-
-/* @import './cell.css'; */
+@import './cell.css';
 
 #next-app [class*='ag-theme-'] {
   @apply duration-300;

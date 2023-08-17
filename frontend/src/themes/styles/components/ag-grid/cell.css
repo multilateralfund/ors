@@ -1,4 +1,4 @@
-#next-app .ag-cell {
+/* #next-app .ag-cell {
   @apply flex items-center;
 }
 
@@ -40,4 +40,11 @@
 #next-app .ag-rtl .ag-cell-range-single-cell,
 #next-app .ag-rtl .ag-cell-range-single-cell.ag-cell-range-handle {
   @apply !border-l;
+} */
+
+#next-app [class*='ag-theme-'] .ag-cell-data-changed {
+  background-color: var(
+    --ag-value-change-value-highlight-background-color
+  ) !important;
+  color: var(--ag-value-change-value-highlight-color) !important;
 }

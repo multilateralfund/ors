@@ -78,12 +78,10 @@ export default function Table(props: TableProps) {
           </Tooltip>
         )
       },
-      enableCellChangeFlash: false,
       headerComponent: (props: any) => {
         return <Typography component="span">{props.displayName}</Typography>
       },
       sortable: true,
-      suppressCellFlash: true,
       suppressKeyboardEvent: (params) => {
         const key = params.event.key
         return params.editing && key === KEY_ENTER
@@ -159,7 +157,6 @@ export default function Table(props: TableProps) {
         animateRows={false}
         defaultColDef={{ ...baseColDef, ...defaultColDef }}
         domLayout="autoHeight"
-        enableCellChangeFlash={false}
         enableCellTextSelection={true}
         enableRtl={i18n.dir === 'rtl'}
         pagination={enablePagination}

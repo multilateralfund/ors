@@ -38,28 +38,71 @@ export const gridOptions: GridOptions = {
     },
     {
       children: [
-        { field: 'aerosol', headerName: 'Aerosol' },
-        { field: 'foam', headerName: 'Foam' },
-        { field: 'fire_fighting', headerName: 'Fire Fighting' },
+        {
+          cellEditor: CellNumberWidget,
+          cellEditorParams: {
+            min: '0',
+          },
+          field: 'aerosol',
+          headerName: 'Aerosol',
+        },
+        {
+          cellEditor: CellNumberWidget,
+          cellEditorParams: {
+            min: '0',
+          },
+          field: 'foam',
+          headerName: 'Foam',
+        },
+        {
+          cellEditor: CellNumberWidget,
+          cellEditorParams: {
+            min: '0',
+          },
+          field: 'fire_fighting',
+          headerName: 'Fire Fighting',
+        },
         {
           children: [
-            { field: 'manufacturing', headerName: 'Manufacturing' },
-            { field: 'servicing', headerName: 'Servicing' },
+            {
+              cellEditor: CellNumberWidget,
+              cellEditorParams: {
+                min: '0',
+              },
+              field: 'manufacturing',
+              headerName: 'Manufacturing',
+            },
+            {
+              cellEditor: CellNumberWidget,
+              cellEditorParams: {
+                min: '0',
+              },
+              field: 'servicing',
+              headerName: 'Servicing',
+            },
           ],
           headerClass: 'text-center',
           headerName: 'Refrigeration',
           marryChildren: true,
         },
+        {
+          editable: false,
+          field: 'country',
+          headerName: 'TOTAL',
+          valueGetter: (props) => {
+            return (
+              props.data.aerosol +
+              props.data.foam +
+              props.data.fire_fighting +
+              props.data.manufacturing +
+              props.data.servicing
+            ).toFixed(2)
+          },
+        },
       ],
       headerClass: 'text-center',
       headerName: 'Use by Sector',
       marryChildren: true,
-    },
-    {
-      editable: false,
-      field: 'country',
-      headerName: 'TOTAL',
-      valueGetter: 'data.imports + data.exports',
     },
     {
       cellEditor: CellNumberWidget,
@@ -115,5 +158,10 @@ export const gridOptions: GridOptions = {
       headerName: 'Remarks',
     },
   ],
-  defaultColDef: { editable: true, flex: 1, minWidth: 200, resizable: true },
+  defaultColDef: {
+    editable: true,
+    flex: 1,
+    minWidth: 200,
+    resizable: true,
+  },
 }
