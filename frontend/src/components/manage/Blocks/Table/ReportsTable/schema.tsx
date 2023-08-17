@@ -1,4 +1,6 @@
-import { Button, Skeleton, Typography } from '@mui/material'
+import { Skeleton, Typography } from '@mui/material'
+
+import Link from '@ors/components/ui/Link'
 
 export const columnSchema = [
   {
@@ -20,12 +22,6 @@ export const columnSchema = [
     minWidth: 100,
   },
   {
-    field: 'status',
-    flex: 1,
-    headerName: 'Status',
-    minWidth: 100,
-  },
-  {
     cellClass: 'text-center',
     cellRenderer: (props: any) => {
       return (
@@ -33,7 +29,9 @@ export const columnSchema = [
           {props.data.isSkeleton ? (
             <Skeleton />
           ) : (
-            <Button variant="text">Edit</Button>
+            <Link className="no-underline" href={`/reports/${props.data.id}`}>
+              Edit
+            </Link>
           )}
         </Typography>
       )

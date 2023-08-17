@@ -118,29 +118,27 @@ export default async function RootLayout({
       data-ssr="yes"
       dir={dir(lang)}
     >
-      <body className={roboto.className}>
+      <body id="next-app" className={roboto.className}>
         <Script src="/critical.js" strategy="beforeInteractive" />
-        <div id="next-app">
-          <StoreProvider
-            initialState={{
-              common,
-              i18n: {
-                lang,
-              },
-              projects,
-              reports,
-              theme: {
-                mode: theme.value as 'dark' | 'light' | null,
-              },
-              user: { data: user },
-            }}
-          >
-            <ThemeProvider options={{ key: 'tw', prepend: true }}>
-              <Header />
-              <View>{children}</View>
-            </ThemeProvider>
-          </StoreProvider>
-        </div>
+        <StoreProvider
+          initialState={{
+            common,
+            i18n: {
+              lang,
+            },
+            projects,
+            reports,
+            theme: {
+              mode: theme.value as 'dark' | 'light' | null,
+            },
+            user: { data: user },
+          }}
+        >
+          <ThemeProvider options={{ key: 'tw', prepend: true }}>
+            <Header />
+            <View>{children}</View>
+          </ThemeProvider>
+        </StoreProvider>
         <noscript>
           <link href="/no-script.css" rel="stylesheet" type="text/css" />
         </noscript>

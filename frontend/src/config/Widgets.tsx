@@ -2,6 +2,7 @@ import type { AutocompleteWidget } from '@ors/components/manage/Widgets/Autocomp
 import type { ChipToggleWidget } from '@ors/components/manage/Widgets/ChipToggleWidget'
 import type { PasswordWidget } from '@ors/components/manage/Widgets/PasswordWidget'
 import type { TextWidget } from '@ors/components/manage/Widgets/TextWidget'
+import type { TextareaWidget } from '@ors/components/manage/Widgets/TextareaWidget'
 
 import dynamic from 'next/dynamic'
 
@@ -11,6 +12,7 @@ export interface ByType {
   email?: TextWidget
   password?: TextWidget
   text?: TextWidget
+  textarea?: TextareaWidget
 }
 
 export interface ByWidget {
@@ -56,6 +58,12 @@ export const widgetsMapping: WidgetsMapping = {
       },
     ) as PasswordWidget,
     text: defaultWidget,
+    textarea: dynamic(
+      () => import('@ors/components/manage/Widgets/TextareaWidget'),
+      {
+        loading: () => <TextWidgetLoading />,
+      },
+    ) as TextareaWidget,
   },
   widget: {
     autocomplete: dynamic(

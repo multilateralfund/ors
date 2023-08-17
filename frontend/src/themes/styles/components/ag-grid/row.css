@@ -7,6 +7,6 @@
     opacity 200ms;
 }
 
-#next-app .ag-center-cols-container {
-  /* @apply min-w-full; */
+#next-app [class*='ag-theme-']:not(.with-pagination) .ag-row-last {
+  @apply border-b-0;
 }

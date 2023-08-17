@@ -17,6 +17,7 @@ import { times } from 'lodash'
 
 import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
 import Loading from '@ors/components/theme/Loading/Loading'
+import { KEY_ENTER } from '@ors/constants'
 import useStore from '@ors/store'
 
 type TableProps = {
@@ -32,6 +33,7 @@ type TableProps = {
   }) => void
   rowCount?: number
   rowData?: Array<any> | null
+  withSeparators?: boolean
   withSkeleton?: boolean
 } & Omit<AgGridReactProps, 'onPaginationChanged'>
 
@@ -48,6 +50,7 @@ export default function Table(props: TableProps) {
     paginationPageSize = 10,
     rowCount = 0,
     rowData = [],
+    withSeparators = false,
     withSkeleton = false,
     ...rest
   } = props
@@ -64,6 +67,7 @@ export default function Table(props: TableProps) {
   // baseColDef sets props common to all Columns
   const baseColDef: ColDef = useMemo(
     () => ({
+      autoHeaderHeight: true,
       cellRenderer: (props: any) => {
         const Tooltip = props.colDef.tooltip ? MuiTooltip : Fragment
         return (
@@ -74,11 +78,18 @@ export default function Table(props: TableProps) {
           </Tooltip>
         )
       },
+      enableCellChangeFlash: false,
       headerComponent: (props: any) => {
         return <Typography component="span">{props.displayName}</Typography>
       },
       sortable: true,
+      suppressCellFlash: true,
+      suppressKeyboardEvent: (params) => {
+        const key = params.event.key
+        return params.editing && key === KEY_ENTER
+      },
       tooltip: true,
+      wrapHeaderText: true,
     }),
     [],
   )
@@ -135,6 +146,8 @@ export default function Table(props: TableProps) {
         {
           'ag-theme-alpine': theme.mode !== 'dark',
           'ag-theme-alpine-dark': theme.mode === 'dark',
+          'with-pagination': enablePagination,
+          'with-separators': withSeparators,
         },
         className,
       )}
@@ -152,6 +165,7 @@ export default function Table(props: TableProps) {
         pagination={enablePagination}
         paginationPageSize={pagination.rowsPerPage}
         rowData={results}
+        stopEditingWhenCellsLoseFocus={true}
         suppressAnimationFrame={true}
         suppressCellFocus={true}
         suppressDragLeaveHidesColumns={true}
@@ -161,7 +175,11 @@ export default function Table(props: TableProps) {
         suppressRowClickSelection={true}
         suppressRowHoverHighlight={true}
         noRowsOverlayComponent={() => {
-          return <Typography component="span">No Rows To Show</Typography>
+          return (
+            <Typography id="no-rows" component="span">
+              No Rows To Show
+            </Typography>
+          )
         }}
         onFirstDataRendered={(agGrid) => {
           onFirstDataRendered(agGrid)

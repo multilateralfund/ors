@@ -7,6 +7,8 @@ import createCache from '@emotion/cache'
 import { CacheProvider } from '@emotion/react'
 import { CssBaseline } from '@mui/material'
 import MuiThemeProvider from '@mui/material/styles/ThemeProvider'
+import { LocalizationProvider } from '@mui/x-date-pickers'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { useServerInsertedHTML } from 'next/navigation'
 import { prefixer } from 'stylis'
 import rtlPlugin from 'stylis-plugin-rtl'
@@ -159,7 +161,9 @@ export default function ThemeProvider({
             time={350}
           />
         )}
-        {children}
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          {children}
+        </LocalizationProvider>
       </MuiThemeProvider>
     </CacheProvider>
   )

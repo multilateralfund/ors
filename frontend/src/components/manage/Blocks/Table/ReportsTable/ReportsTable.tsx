@@ -11,12 +11,9 @@ import useStore from '@ors/store'
 
 import { columnSchema } from './schema'
 
-const Table = dynamic(
-  () => import('@ors/components/manage/Blocks/Table/Table'),
-  {
-    ssr: false,
-  },
-)
+const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
+  ssr: false,
+})
 
 export default function ReportsTable() {
   const grid = useRef<any>()
@@ -65,7 +62,7 @@ export default function ReportsTable() {
         <div className="grid grid-cols-3 gap-x-4">
           <Field
             Input={{ label: 'Party' }}
-            defaultValue="Any"
+            defaultValue={{ id: 0, label: 'Any' }}
             options={countries}
             widget="autocomplete"
             onChange={(_: any, value: any) => {
@@ -98,6 +95,7 @@ export default function ReportsTable() {
             offset: page * rowsPerPage,
           })
         }}
+        withSeparators
         withSkeleton
       />
     </>

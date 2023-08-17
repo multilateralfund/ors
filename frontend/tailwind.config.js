@@ -30,6 +30,7 @@ const originalColors = {
     },
     error: {
       DEFAULT: colors.red[500],
+      contrastText: '#ffffff',
     },
     gray,
     info: {
