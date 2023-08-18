@@ -102,6 +102,7 @@ docker-compose exec app ./manage.py import_projects proposals
 ### Command options:
 - proposals -> project proposals xlsx files
 - projects -> projects from tbInventory
+- multi_year_projects -> multi year projects from MultiYear-Projects
             
 ### Import files
 
@@ -119,3 +120,8 @@ docker-compose exec app ./manage.py import_projects proposals
 : download files from nextclod
     - **nextcloud path** OzoneMlf/Projects inventory/data/json/tbINVENTORY.json
     - **local path** .fs/import_files/project_database
+
+- multi_year_projects
+: download files from nextclod
+    - **nextcloud path** OzoneMlf/Progress reports/data/json/MultiYear-Projects.json
+    - **local path** .fs/import_files/progress_report
