@@ -1,9 +1,9 @@
 /* eslint-disable react/display-name */
-import type { InputLabelProps, TextFieldProps } from '@mui/material'
+import type { InputLabelProps, TextareaAutosizeProps } from '@mui/material'
 
 import { forwardRef } from 'react'
 
-import { InputLabel as MuiInputLabel, TextField } from '@mui/material'
+import { InputLabel as MuiInputLabel, TextareaAutosize } from '@mui/material'
 import cx from 'classnames'
 
 function Label({
@@ -20,25 +20,24 @@ function Label({
     )
   )
 }
-export type TextWidgetProps = TextFieldProps & {
+export type TextareaWidgetProps = TextareaAutosizeProps & {
   InputLabel?: InputLabelProps & { label?: React.ReactNode }
 }
 
-export type TextWidget = (props: TextWidgetProps) => JSX.Element
+export type TextareaWidget = (props: TextareaWidgetProps) => JSX.Element
 
-const TextWidget = forwardRef(
+const TextareaWidget = forwardRef(
   (
-    { InputLabel, className, ...rest }: TextWidgetProps,
+    { InputLabel, className, ...rest }: TextareaWidgetProps,
     ref: any,
   ): JSX.Element => {
     return (
       <>
         <Label {...(InputLabel || {})} id={rest.id} />
-        <TextField
+        <TextareaAutosize
           className={cx('w-full', className)}
+          minRows={2}
           ref={ref}
-          size="small"
-          variant="outlined"
           {...rest}
         />
       </>
@@ -46,4 +45,4 @@ const TextWidget = forwardRef(
   },
 )
 
-export default TextWidget
+export default TextareaWidget

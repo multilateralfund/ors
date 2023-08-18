@@ -30,6 +30,7 @@ const originalColors = {
     },
     error: {
       DEFAULT: colors.red[500],
+      contrastText: '#ffffff',
     },
     gray,
     info: {
@@ -107,6 +108,7 @@ const originalColors = {
     },
     success: {
       DEFAULT: colors.green[500],
+      contrastText: '#000000',
     },
     typography: {
       DEFAULT: 'rgba(0, 0, 0, 0.87)',

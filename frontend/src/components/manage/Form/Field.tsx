@@ -23,6 +23,7 @@ function getWidgetByType(type?: keyof ByType) {
 }
 
 export default function Field({
+  FieldProps = {},
   type,
   widget,
   ...props
@@ -30,7 +31,14 @@ export default function Field({
   const Widget =
     getWidgetByName(widget) || getWidgetByType(type) || getWidgetDefault()
   return (
-    <div className={cx('widget', `${widget || type || 'text'}-widget`)}>
+    <div
+      {...FieldProps}
+      className={cx(
+        'widget',
+        `${widget || type || 'text'}-widget`,
+        FieldProps?.className,
+      )}
+    >
       <Widget {...props} />
     </div>
   )
