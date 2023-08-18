@@ -1,4 +1,5 @@
 from django.core.management import BaseCommand
+from core.import_data.import_multi_year_projects import import_multi_year_projects
 from core.import_data.import_proposals import import_proposals
 from core.import_data.import_projects import import_projects
 
@@ -9,6 +10,7 @@ class Command(BaseCommand):
         params:
             - type = proposals => project proposals xlsx files
             - type = projects => projects from tbInventory
+            - type = multi_year_projects => multi year projects from MultiYear-Projects
             - type all => projects + proposals
     """
 
@@ -21,6 +23,7 @@ class Command(BaseCommand):
             choices=[
                 "proposals",
                 "projects",
+                "multi_year_projects",
                 "all",
             ],
         )
@@ -32,3 +35,5 @@ class Command(BaseCommand):
             import_projects()
         if imp_type in ["proposals", "all"]:
             import_proposals()
+        if imp_type in ["multi_year_projects", "all"]:
+            import_multi_year_projects()

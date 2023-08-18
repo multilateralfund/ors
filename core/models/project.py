@@ -73,6 +73,7 @@ class ProjectSubSector(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=10, null=True, blank=True)
     sector = models.ForeignKey(ProjectSector, on_delete=models.CASCADE)
+    multi_year = models.BooleanField(default=False)
     sort_order = models.FloatField(null=True, blank=True)
 
     objects = ProjectSectorManager()
@@ -93,9 +94,12 @@ class Project(models.Model):
     coop_agencies = models.ManyToManyField(Agency, related_name="coop_projects")
     number = models.IntegerField(null=True, blank=True)
     code = models.CharField(max_length=128, null=True, blank=True)
+    mya_code = models.CharField(max_length=128, null=True, blank=True)
     approval_meeting_no = models.IntegerField(null=True, blank=True)
     project_type = models.ForeignKey(ProjectType, on_delete=models.CASCADE)
+    multi_year = models.BooleanField(default=False)
     project_duration = models.IntegerField(null=True, blank=True)
+    stage = models.IntegerField(null=True, blank=True)
     subsector = models.ForeignKey(ProjectSubSector, on_delete=models.CASCADE)
     application = models.CharField(max_length=256, null=True, blank=True)
     title = models.CharField(max_length=256)
@@ -121,6 +125,7 @@ class Project(models.Model):
     date_actual = models.DateField(null=True, blank=True)
     date_comp_revised = models.DateField(null=True, blank=True)
     date_per_agreement = models.DateField(null=True, blank=True)
+    date_per_decision = models.DateField(null=True, blank=True)
     umbrella_project = models.BooleanField(default=False)
     loan = models.BooleanField(default=False)
     intersessional_approval = models.BooleanField(default=False)
@@ -129,6 +134,7 @@ class Project(models.Model):
     export_to = models.FloatField(null=True, blank=True)
     status = models.ForeignKey(ProjectStatus, on_delete=models.CASCADE)
     remarks = models.TextField(null=True, blank=True)
+    decisions = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -146,7 +152,9 @@ class ProjectFile(models.Model):
         storage=PROTECTED_STORAGE,
         upload_to="project_files/",
     )
-    project = models.ForeignKey("core.Project", on_delete=models.CASCADE, related_name="files")
+    project = models.ForeignKey(
+        "core.Project", on_delete=models.CASCADE, related_name="files"
+    )
     date_created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
