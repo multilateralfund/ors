@@ -716,14 +716,25 @@ def get_project_base_data(item, item_index, logger, is_submissions=True):
     return project_data
 
 
-def update_or_create_project(project_data):
-    project, _ = Project.objects.update_or_create(
+def update_or_create_project(project_data, update_status=True):
+    project = Project.objects.filter(
         title=project_data["title"],
         country=project_data["country"],
         subsector=project_data["subsector"],
         agency=project_data["agency"],
         project_type=project_data["project_type"],
         approval_meeting_no=project_data["approval_meeting_no"],
-        defaults=project_data,
-    )
+    ).first()
+
+    if not project:
+        project = Project.objects.create(**project_data)
+        return project
+
+    if not update_status:
+        project_data.pop("status", None)
+
+    for key, value in project_data.items():
+        setattr(project, key, value)
+    project.save()
+
     return project
