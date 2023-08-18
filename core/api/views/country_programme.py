@@ -167,3 +167,64 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
             return self._get_new_cp_records(cp_report)
 
         return self._get_old_cp_records(cp_report)
+
+
+class CPCreateView(generics.CreateAPIView):
+    """
+    API endpoint that allows country programme to be created.
+    """
+
+    queryset = CPReport.objects.all()
+    serializer_class = CPReportSerializer
+
+    def _create_cp_records(self, cp_report, section_data, section):
+        for record in section_data:
+            record["country_programme_report_id"] = cp_report.id
+            record["section"] = section
+            record_serializer = CPRecordSerializer(data=record)
+            record_serializer.is_valid(raise_exception=True)
+            record_serializer.save()
+
+    def _create_prices(self, cp_report, section_data):
+        for price in section_data:
+            price["country_programme_report_id"] = cp_report.id
+            price_serializer = CPPricesSerializer(data=price)
+            price_serializer.is_valid(raise_exception=True)
+            price_serializer.save()
+
+    def _create_generation(self, cp_report, section_data):
+        for generation in section_data:
+            generation["country_programme_report_id"] = cp_report.id
+            generation_serializer = CPGenerationSerializer(data=generation)
+            generation_serializer.is_valid(raise_exception=True)
+            generation_serializer.save()
+
+    def _create_emission(self, cp_report, section_data):
+        for emission in section_data:
+            emission["country_programme_report_id"] = cp_report.id
+            emission_serializer = CPEmissionSerializer(data=emission)
+            emission_serializer.is_valid(raise_exception=True)
+            emission_serializer.save()
+
+    def _add_remarks(self, cp_report, section_data):
+        cp_report.comment = section_data.get("remarks", "")
+        cp_report.save()
+
+    def post(self, request, *args, **kwargs):
+        # create cp report
+        cp_report_data = {
+            "name": request.data.get("name"),
+            "year": request.data.get("year"),
+            "country_id": request.data.get("country_id"),
+        }
+        cp_report_serializer = CPReportSerializer(data=cp_report_data)
+        cp_report_serializer.is_valid(raise_exception=True)
+        cp_report = cp_report_serializer.save()
+
+        # create records
+        self._create_cp_records(cp_report, request.data.get("section_a", []), "A")
+        self._create_cp_records(cp_report, request.data.get("section_b", []), "B")
+        self._create_prices(cp_report, request.data.get("section_c", []))
+        self._create_generation(cp_report, request.data.get("section_d", []))
+        self._create_emission(cp_report, request.data.get("section_e", []))
+        self._add_remarks(cp_report, request.data.get("section_f", {}))
