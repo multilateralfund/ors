@@ -109,7 +109,6 @@ export default async function RootLayout({
     reports = await getInitialReportsData()
     common = await getInitialCommonData()
   }
-  console.log('U', user, currentView)
 
   return (
     <html
