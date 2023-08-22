@@ -9,8 +9,10 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture(name="_setup_usages")
 def setup_usages():
-    usage1 = UsageFactory.create(sort_order=2)
-    usage2 = UsageFactory.create(sort_order=2.1, parent=usage1)
+    usage1 = UsageFactory.create(name="Chef", full_name="Chef", sort_order=2)
+    usage2 = UsageFactory.create(
+        name="de Chef", full_name="Chef de Chef", sort_order=2.1, parent=usage1
+    )
     usage3 = UsageFactory.create(sort_order=2.12, parent=usage2)
     usage4 = UsageFactory.create(sort_order=1)
 
@@ -29,7 +31,9 @@ class TestUsages(BaseTest):
         assert len(response.data) == 4
         assert response.data[0]["id"] == usage4.id
         assert response.data[1]["id"] == usage1.id
+        assert response.data[1]["field"] == "usage_chef"
         assert response.data[1]["children"][0]["id"] == usage2.id
+        assert response.data[1]["children"][0]["field"] == "usage_chef_de_chef"
         assert response.data[1]["children"][0]["children"][0]["id"] == usage3.id
 
     def test_usages_list_parents(self, user, _setup_usages):
