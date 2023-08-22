@@ -73,7 +73,6 @@ class ProjectSubSector(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=10, null=True, blank=True)
     sector = models.ForeignKey(ProjectSector, on_delete=models.CASCADE)
-    multi_year = models.BooleanField(default=False)
     sort_order = models.FloatField(null=True, blank=True)
 
     objects = ProjectSectorManager()
@@ -101,6 +100,7 @@ class Project(models.Model):
     project_duration = models.IntegerField(null=True, blank=True)
     stage = models.IntegerField(null=True, blank=True)
     subsector = models.ForeignKey(ProjectSubSector, on_delete=models.CASCADE)
+    mya_subsector = models.CharField(max_length=256, null=True, blank=True)
     application = models.CharField(max_length=256, null=True, blank=True)
     title = models.CharField(max_length=256)
     description = models.TextField(null=True, blank=True)

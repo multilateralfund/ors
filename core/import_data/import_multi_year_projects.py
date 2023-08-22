@@ -12,7 +12,7 @@ from core.import_data.utils import (
     update_or_create_project,
 )
 from core.models.agency import Agency
-from core.models.project import ProjectStatus, ProjectSubSector, ProjectType
+from core.models.project import ProjectStatus, ProjectType
 
 logger = logging.getLogger(__name__)
 
@@ -65,17 +65,8 @@ def parse_file(file_path):
         subs_name = subs_name.strip()
         stage = stage.count("I")
 
-        subsector = get_object_by_name(
-            ProjectSubSector,
-            subs_name,
-            project_json["Code"],
-            "subsector",
-            logger,
-            use_offset=False,
-        )
-
         # skip project with missing data
-        if not all([country, agency, project_type, subsector]):
+        if not all([country, agency, project_type]):
             continue
 
         date_agree = project_json.get("Date Completion Per Agreement")
@@ -94,7 +85,7 @@ def parse_file(file_path):
             "code": project_json["Code"],
             "mya_code": project_json.get("MYA Code"),
             "project_type": project_type,
-            "subsector": subsector,
+            "mya_subsector": subs_name,
             "title": project_json["Project Title"],
             "stage": stage,
             "date_per_agreement": parse(date_agree) if date_agree else None,

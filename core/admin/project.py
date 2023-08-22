@@ -71,6 +71,7 @@ class ProjectAdmin(admin.ModelAdmin):
     inlines = [ProjectFileInline]
     search_fields = [
         "title",
+        "code",
     ]
     list_filter = [
         "project_type",
@@ -86,7 +87,7 @@ class ProjectAdmin(admin.ModelAdmin):
             "ods_odp",
             "funds",
             "submission",
-            "files"
+            "files",
         ]
         return get_final_display_list(Project, exclude)
 
