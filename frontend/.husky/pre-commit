@@ -2,4 +2,6 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 cd frontend
+node ./scripts/update-version.js
+git add ./version.json
 npx lint-staged

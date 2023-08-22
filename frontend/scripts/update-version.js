@@ -8,7 +8,7 @@ const newVersion = {
 }
 
 fs.writeFile(
-  'version.json',
+  process.cwd() + '/version.json',
   JSON.stringify(newVersion, null, 2),
   'utf8',
   (err) => {
