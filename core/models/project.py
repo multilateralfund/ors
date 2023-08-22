@@ -92,7 +92,7 @@ class Project(models.Model):
     national_agency = models.CharField(max_length=255, null=True, blank=True)
     coop_agencies = models.ManyToManyField(Agency, related_name="coop_projects")
     number = models.IntegerField(null=True, blank=True)
-    code = models.CharField(max_length=128, null=True, blank=True)
+    code = models.CharField(max_length=128, unique=True, null=True, blank=True)
     mya_code = models.CharField(max_length=128, null=True, blank=True)
     approval_meeting_no = models.IntegerField(null=True, blank=True)
     project_type = models.ForeignKey(ProjectType, on_delete=models.CASCADE)
