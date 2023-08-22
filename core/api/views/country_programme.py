@@ -1,3 +1,4 @@
+from django.db import transaction
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, generics, status
@@ -73,6 +74,7 @@ class CPReportView(generics.ListAPIView, generics.CreateAPIView):
         cp_report.comment = section_data.get("remarks", "")
         cp_report.save()
 
+    @transaction.atomic
     def post(self, request, *args, **kwargs):
         # create cp report
         cp_report_data = {
@@ -80,6 +82,11 @@ class CPReportView(generics.ListAPIView, generics.CreateAPIView):
             "year": request.data.get("year"),
             "country_id": request.data.get("country_id"),
         }
+        if cp_report_data["year"] <= IMPORT_DB_MAX_YEAR:
+            return Response(
+                {"error": f"Not implemented for years <= {IMPORT_DB_MAX_YEAR}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         cp_report_serializer = CPReportSerializer(data=cp_report_data)
         cp_report_serializer.is_valid(raise_exception=True)
         cp_report = cp_report_serializer.save()
