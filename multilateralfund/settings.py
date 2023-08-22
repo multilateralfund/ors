@@ -185,6 +185,8 @@ PROTECTED_MEDIA_ROOT = FS_DIR / "protected_media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+MIN_VALID_YEAR = 1985
+
 # CONSTANCE
 # https://django-constance.readthedocs.io/en/latest/
 

@@ -1,5 +1,7 @@
 from django.core.management import BaseCommand
 from core.import_data.import_multi_year_projects import import_multi_year_projects
+
+from core.import_data.import_progress_reports import import_progress_reports
 from core.import_data.import_proposals import import_proposals
 from core.import_data.import_projects import import_projects
 
@@ -24,6 +26,7 @@ class Command(BaseCommand):
                 "proposals",
                 "projects",
                 "multi_year_projects",
+                "progress",
                 "all",
             ],
         )
@@ -37,3 +40,5 @@ class Command(BaseCommand):
             import_proposals()
         if imp_type in ["multi_year_projects", "all"]:
             import_multi_year_projects()
+        if imp_type in ["progress", "all"]:
+            import_progress_reports()

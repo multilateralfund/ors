@@ -11,6 +11,7 @@ from core.models.project import (
     ProjectType,
 )
 from core.models.project import ProjectFile
+from core.models.project import ProjectProgressReport
 
 
 @admin.register(ProjectSector)
@@ -90,6 +91,23 @@ class ProjectAdmin(admin.ModelAdmin):
             "files",
         ]
         return get_final_display_list(Project, exclude)
+
+
+@admin.register(ProjectProgressReport)
+class ProjectProgressReportAdmin(admin.ModelAdmin):
+    list_filter = [
+        "project_type",
+        "status",
+        "agency",
+    ]
+    search_fields = [
+        "title",
+    ]
+    list_per_page = 20
+
+    def get_list_display(self, request):
+        exclude = ["remarks_1", "remarks_2"]
+        return get_final_display_list(ProjectProgressReport, exclude)
 
 
 @admin.register(ProjectOdsOdp)

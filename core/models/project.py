@@ -1,7 +1,10 @@
 from colorfield.fields import ColorField
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
+from django.core.validators import MinValueValidator
 from django.db import models
+
+from core.models import Region
 from core.models.agency import Agency
 from core.models.blend import Blend
 
@@ -219,3 +222,62 @@ class ProjectFund(models.Model):
 
     def __str__(self):
         return f"{self.project.title} {self.amount} {self.date}"
+
+
+class ProjectProgressReport(models.Model):
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="progress_reports"
+    )
+    mtg = models.PositiveIntegerField(null=True, blank=True)
+    status = models.ForeignKey(
+        ProjectStatus, on_delete=models.CASCADE, related_name="+"
+    )
+    latest_status = models.ForeignKey(
+        ProjectStatus, on_delete=models.CASCADE, related_name="+"
+    )
+    agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
+    title = models.CharField(max_length=256)
+    category = models.CharField(max_length=100, null=True, blank=True)
+    region = models.ForeignKey(Region, on_delete=models.CASCADE)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    sector = models.ForeignKey(ProjectSector, on_delete=models.CASCADE)
+    project_type = models.ForeignKey(ProjectType, on_delete=models.CASCADE)
+    num = models.PositiveIntegerField(null=True, blank=True)
+    a_n = models.CharField(max_length=1, null=True, blank=True)
+    irdx = models.CharField(max_length=1, null=True, blank=True)
+    chemical = models.CharField(max_length=100, null=True, blank=True)
+    consumption_odp_out_proposal = models.FloatField(null=True, blank=True)
+    consumption_odp_out_actual = models.FloatField(null=True, blank=True)
+    production_odp_out_proposal = models.FloatField(null=True, blank=True)
+    production_odp_out_actual = models.FloatField(null=True, blank=True)
+    date_approved = models.DateField(null=True, blank=True)
+    date_first_disbursement = models.DateField(null=True, blank=True)
+    date_comp_proposal = models.DateField(null=True, blank=True)
+    date_comp_actual = models.DateField(null=True, blank=True)
+    funds_approved = models.FloatField(null=True, blank=True)
+    funds_adjustment = models.FloatField(null=True, blank=True)
+    funds_net = models.FloatField(null=True, blank=True)
+    funds_disbursed = models.FloatField(null=True, blank=True)
+    percent_disbursed = models.FloatField(null=True, blank=True)
+    balance = models.FloatField(null=True, blank=True)
+    funds_obligated = models.FloatField(null=True, blank=True)
+    funds_current_year = models.FloatField(null=True, blank=True)
+    support_approved = models.FloatField(null=True, blank=True)
+    support_adjustment = models.FloatField(null=True, blank=True)
+    support_disbursed = models.FloatField(null=True, blank=True)
+    support_obligated = models.FloatField(null=True, blank=True)
+    support_returned = models.FloatField(null=True, blank=True)
+    year_approved = models.PositiveIntegerField(
+        null=True, blank=True, validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
+    )
+    year_of_contribution = models.PositiveIntegerField(
+        null=True, blank=True, validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
+    )
+    months_first_disbursement = models.IntegerField(null=True, blank=True)
+    months_comp_proposal = models.IntegerField(null=True, blank=True)
+    months_comp_plan = models.IntegerField(null=True, blank=True)
+    months_comp_actual = models.IntegerField(null=True, blank=True)
+    remarks_1 = models.TextField(null=True, blank=True)
+    remarks_2 = models.TextField(null=True, blank=True)
+    BP_allocation = models.CharField(max_length=100, null=True, blank=True)
+    meeting_of_report = models.CharField(max_length=100, null=True, blank=True)

@@ -38,7 +38,7 @@ docker-compose exec app ./manage.py import_resources usages
 
 ### Import files
 - project-resources
-: download files from nextclod
+: download files from nextcloud
     - **nextcloud path** OzoneMlf/Projects inventory/data/json
     - **local path** .fs/import_files/project_database
 
@@ -67,7 +67,7 @@ docker-compose exec app ./manage.py import_records cp_db
 ### Import files
 
 - xlsx_files
-: download files from nextclod
+: download files from nextcloud
     - **nextcloud path** OzoneMlf/Country Programme/data
     - **local path** .fs/import_files/records
 
@@ -107,7 +107,7 @@ docker-compose exec app ./manage.py import_projects proposals
 ### Import files
 
 - proposals
-: download files from nextclod
+: download files from nextcloud
     - **nextcloud path** OzoneMlf/Project submissions/data
     - **local path** .fs/import_files/proposals
 
@@ -117,11 +117,16 @@ docker-compose exec app ./manage.py import_projects proposals
     | tbProposalsNew91.xlsx | tbProposalsNew91.xlsx |
 
 - projects
-: download files from nextclod
+: download files from nextcloud
     - **nextcloud path** OzoneMlf/Projects inventory/data/json/tbINVENTORY.json
     - **local path** .fs/import_files/project_database
 
 - multi_year_projects
-: download files from nextclod
+: download files from nextcloud
     - **nextcloud path** OzoneMlf/Progress reports/data/json/MultiYear-Projects.json
+    - **local path** .fs/import_files/progress_report
+
+- progress
+: download files from nextcloud
+    - **nextcloud path** OzoneMlf/Progress reports/data/csv/tbProgress.csv
     - **local path** .fs/import_files/progress_report
