@@ -15,7 +15,7 @@ from core.api.views.chemicals import (
 )
 from core.api.views.country_programme import (
     CPRecordListView,
-    CPReportListView,
+    CPReportView,
 )
 from core.api.views.projects import (
     ProjectOdsOdpViewSet,
@@ -81,8 +81,8 @@ urlpatterns = [
     path("blends/create/", BlendCreateView.as_view(), name="blends-create"),
     path(
         "country-programme/reports/",
-        CPReportListView.as_view(),
-        name="country-programme-report-list",
+        CPReportView.as_view(),
+        name="country-programme-reports",
     ),
     path(
         "country-programme/records/",
