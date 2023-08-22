@@ -4,6 +4,7 @@ import re
 
 from dateutil.parser import parse, ParserError
 from django.conf import settings
+from django.db import models
 
 from core.models.adm import AdmColumn, AdmRow
 from core.models.agency import Agency
@@ -717,16 +718,27 @@ def get_project_base_data(item, item_index, logger, is_submissions=True):
 
 
 def update_or_create_project(project_data, update_status=True):
-    project = Project.objects.filter(
+    # try to find the project by its code
+    if "code" in project_data:
+        code_filter = models.Q(code=project_data["code"])
+    else:
+        code_filter = models.Q()
+
+    # some projects do not have the code set so we try to find them by other fields
+    fields_filter = models.Q(
         title=project_data["title"],
         country=project_data["country"],
-        subsector=project_data["subsector"],
         agency=project_data["agency"],
         project_type=project_data["project_type"],
         approval_meeting_no=project_data["approval_meeting_no"],
-    ).first()
+    )
+    if "subsector" in project_data:
+        fields_filter &= models.Q(subsector=project_data["subsector"])
+
+    project = Project.objects.filter(code_filter | fields_filter).first()
 
     if not project:
+        # if the project does not exists then create it
         project = Project.objects.create(**project_data)
         return project
 
