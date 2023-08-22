@@ -103,6 +103,7 @@ docker-compose exec app ./manage.py import_projects proposals
 - proposals -> project proposals xlsx files
 - projects -> projects from tbInventory
 - multi_year_projects -> multi year projects from MultiYear-Projects
+- progress -> progress reports from tbProgress 
             
 ### Import files
 
