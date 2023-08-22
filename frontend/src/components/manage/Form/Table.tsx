@@ -2,7 +2,7 @@
 import type { I18nSlice } from '@ors/slices/createI18nSlice'
 import type { ThemeSlice } from '@ors/slices/createThemeSlice'
 
-import { Fragment, MutableRefObject, useMemo, useRef, useState } from 'react'
+import { Fragment, useMemo, useRef, useState } from 'react'
 
 import {
   Tooltip as MuiTooltip,
@@ -13,34 +13,52 @@ import {
 import { ColDef } from 'ag-grid-community'
 import { AgGridReact, AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
+import dayjs from 'dayjs'
 import { times } from 'lodash'
 
 import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
+import CellAutocompleteWidget from '@ors/components/manage/Widgets/CellAutocompleteWidget'
+import CellDateWidget from '@ors/components/manage/Widgets/CellDateWidget'
+import CellNumberWidget from '@ors/components/manage/Widgets/CellNumberWidget'
+import CellTextareaWidget from '@ors/components/manage/Widgets/CellTextareaWidget'
 import Loading from '@ors/components/theme/Loading/Loading'
-import { KEY_ENTER } from '@ors/constants'
+import { KEY_BACKSPACE, KEY_ENTER } from '@ors/constants'
 import useStore from '@ors/store'
 
-type TableProps = {
-  enablePagination?: boolean
-  gridRef?: MutableRefObject<any>
-  loading?: boolean
-  onPaginationChanged?: ({
-    page,
-    rowsPerPage,
-  }: {
-    page: number
-    rowsPerPage: number
-  }) => void
-  rowCount?: number
-  rowData?: Array<any> | null
-  withSeparators?: boolean
-  withSkeleton?: boolean
-} & Omit<AgGridReactProps, 'onPaginationChanged'>
+function AgHeaderComponent(props: any) {
+  return <Typography component="span">{props.displayName}</Typography>
+}
 
-export default function Table(props: TableProps) {
+function AgHeaderGroupComponent(props: any) {
+  return <Typography component="span">{props.displayName}</Typography>
+}
+
+function AgTextCellRenderer(props: any) {
+  const Tooltip = props.colDef.tooltip ? MuiTooltip : Fragment
+  return (
+    <Tooltip enterDelay={300} placement="top-start" title={props.value}>
+      <Typography component="span">
+        {props.data.isSkeleton ? <Skeleton /> : props.value}
+      </Typography>
+    </Tooltip>
+  )
+}
+
+function AgDateCellRenderer(props: any) {
+  return (
+    !!props.value && (
+      <Typography component="span">
+        {dayjs(props.value).format('DD/MM/YYYY')}
+      </Typography>
+    )
+  )
+}
+
+export default function Table(props: AgGridReactProps) {
   const grid = useRef<any>()
   const {
     className,
+    components = {},
     defaultColDef = {},
     enablePagination = true,
     gridRef,
@@ -68,23 +86,21 @@ export default function Table(props: TableProps) {
   const baseColDef: ColDef = useMemo(
     () => ({
       autoHeaderHeight: true,
-      cellRenderer: (props: any) => {
-        const Tooltip = props.colDef.tooltip ? MuiTooltip : Fragment
-        return (
-          <Tooltip enterDelay={300} placement="top-start" title={props.value}>
-            <Typography component="span">
-              {props.data.isSkeleton ? <Skeleton /> : props.value}
-            </Typography>
-          </Tooltip>
-        )
+      cellClass: (props) => {
+        return cx({
+          disabled: props.colDef.disabled,
+        })
       },
-      headerComponent: (props: any) => {
-        return <Typography component="span">{props.displayName}</Typography>
-      },
+      cellRenderer: 'agTextCellRenderer',
       sortable: true,
-      suppressKeyboardEvent: (params) => {
-        const key = params.event.key
-        return params.editing && key === KEY_ENTER
+      suppressKeyboardEvent: (props) => {
+        const key = props.event.key
+        const cellEditorParams = props.colDef.cellEditorParams || {}
+
+        return (
+          (props.editing && key === KEY_ENTER) ||
+          (!props.editing && cellEditorParams.disableClearable && KEY_BACKSPACE)
+        )
       },
       tooltip: true,
       wrapHeaderText: true,
@@ -171,6 +187,17 @@ export default function Table(props: TableProps) {
         suppressPaginationPanel={true}
         suppressRowClickSelection={true}
         suppressRowHoverHighlight={true}
+        components={{
+          agColumnHeader: AgHeaderComponent,
+          agColumnHeaderGroup: AgHeaderGroupComponent,
+          agDateCellEditor: CellDateWidget,
+          agDateCellRenderer: AgDateCellRenderer,
+          agNumberCellEditor: CellNumberWidget,
+          agSelectCellEditor: CellAutocompleteWidget,
+          agTextCellEditor: CellTextareaWidget,
+          agTextCellRenderer: AgTextCellRenderer,
+          ...components,
+        }}
         noRowsOverlayComponent={() => {
           return (
             <Typography id="no-rows" component="span">
@@ -180,7 +207,6 @@ export default function Table(props: TableProps) {
         }}
         onFirstDataRendered={(agGrid) => {
           onFirstDataRendered(agGrid)
-          // agGrid.columnApi.sizeColumnsToFit()
         }}
         ref={(agGrid) => {
           grid.current = agGrid

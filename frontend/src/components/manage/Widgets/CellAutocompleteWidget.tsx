@@ -1,5 +1,6 @@
 /* eslint-disable react/display-name */
 import {
+  ReactNode,
   forwardRef,
   memo,
   useEffect,
@@ -25,7 +26,13 @@ export const CellAutocompleteWidget = memo(
   forwardRef(
     (
       props: {
+        disableClearable?: boolean
+        getOptionLabel?: (option: any) => string
         options?: Array<any>
+        renderOption?: (
+          props: React.HTMLAttributes<HTMLLIElement>,
+          option: any,
+        ) => ReactNode
       } & ICellEditorParams,
       ref,
     ) => {
@@ -101,7 +108,7 @@ export const CellAutocompleteWidget = memo(
           // Gets called once before editing starts, to give editor a chance to
           // If you return true, then the result of the edit will be ignored.
           isCancelAfterEnd() {
-            if (!value) return true
+            if (!!props.disableClearable && !value) return true
             return false
           },
 
@@ -115,8 +122,11 @@ export const CellAutocompleteWidget = memo(
 
       return (
         <AutocompleteWidget
+          disableClearable={props.disableClearable}
+          getOptionLabel={props.getOptionLabel}
           options={props.options || []}
           ref={refInput}
+          renderOption={props.renderOption}
           value={value}
           onChange={(event: any, value) => {
             setValue(value)

@@ -60,16 +60,10 @@ async function getInitialReportsData(): Promise<ReportsSlice> {
   const usages = api('api/usages/', {}, false)
 
   return {
-    blends: {
-      get: getInitialSliceData(await blends),
-    },
+    blends: getInitialSliceData(await blends),
     get: getInitialSliceData(null),
-    substances: {
-      get: getInitialSliceData(await substances),
-    },
-    usages: {
-      get: getInitialSliceData(await usages),
-    },
+    substances: getInitialSliceData(await substances),
+    usages: getInitialSliceData(await usages),
   }
 }
 
@@ -109,6 +103,8 @@ export default async function RootLayout({
     reports = await getInitialReportsData()
     common = await getInitialCommonData()
   }
+
+  console.log('LAYOUT', user, currentView)
 
   return (
     <html

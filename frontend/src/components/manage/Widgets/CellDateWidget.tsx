@@ -26,6 +26,7 @@ export const CellDateWidget = memo(
   forwardRef(
     (
       props: {
+        disableClearable?: boolean
         options?: Array<any>
       } & ICellEditorParams,
       ref,
@@ -78,7 +79,7 @@ export const CellDateWidget = memo(
           // Gets called once before editing starts, to give editor a chance to
           // If you return true, then the result of the edit will be ignored.
           isCancelAfterEnd() {
-            if (!value) return true
+            if (!!props.disableClearable && !value) return true
             return false
           },
 

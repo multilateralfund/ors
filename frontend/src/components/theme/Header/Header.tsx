@@ -1,5 +1,6 @@
 'use client'
 import { Box } from '@mui/material'
+import version from '@ors/../version.json'
 import Image from 'next/image'
 
 import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
@@ -26,7 +27,7 @@ export default function Header() {
           />
           <span className="theme-dark:text-white ltr:pl-2 rtl:pr-2">MLFS</span>
           <span className="theme-dark:text-white ltr:pl-2 rtl:pr-2">
-            V{process.env.NEXT_PUBLIC_VERSION}
+            V{version.major}.{version.minor}.{version.patch}
           </span>
         </Link>
         <div className="flex">

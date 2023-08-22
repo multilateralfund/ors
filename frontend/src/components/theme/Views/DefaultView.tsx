@@ -7,11 +7,5 @@ export default function DefaultView({
 }: {
   children: React.ReactNode
 }) {
-  React.useEffect(() => {
-    window.requestAnimationFrame(() => {
-      document.documentElement.setAttribute('data-layout', 'document')
-    })
-  }, [])
-
   return <main className="grid-cols-1">{children}</main>
 }

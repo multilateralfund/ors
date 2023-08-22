@@ -1,167 +1,184 @@
 /* eslint-disable react/display-name */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import {
-  forwardRef,
-  memo,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react'
+import { useMemo } from 'react'
 
 import { Typography } from '@mui/material'
 import { GridOptions } from 'ag-grid-community'
-import dayjs from 'dayjs'
+import cx from 'classnames'
 
-import CellAutocompleteWidget from '@ors/components/manage/Widgets/CellAutocompleteWidget'
-import CellDateWidget from '@ors/components/manage/Widgets/CellDateWidget'
-import CellNumberWidget from '@ors/components/manage/Widgets/CellNumberWidget'
-import CellTextareaWidget from '@ors/components/manage/Widgets/CellTextareaWidget'
+type GridOptionsProps = {
+  showUsages: boolean
+  substances: Array<any>
+}
 
-export const gridOptions: GridOptions = {
-  columnDefs: [
-    {
-      cellEditor: CellAutocompleteWidget,
-      cellEditorParams: {
-        options: [
-          { id: 0, label: 'Select substance' },
-          { id: 1, label: 'H2O' },
-          { id: 2, label: 'CO2' },
-        ],
-      },
-      cellRenderer: (props: any) => {
-        return <Typography component="span">{props.value.label}</Typography>
-      },
-      field: 'substance',
-      headerName: 'Substance',
-    },
-    {
-      children: [
+function useGridOptions({ showUsages, substances }: GridOptionsProps) {
+  const gridOptions: GridOptions = useMemo(() => {
+    return {
+      columnDefs: [
         {
-          cellEditor: CellNumberWidget,
+          cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
-            min: '0',
-          },
-          field: 'aerosol',
-          headerName: 'Aerosol',
-        },
-        {
-          cellEditor: CellNumberWidget,
-          cellEditorParams: {
-            min: '0',
-          },
-          field: 'foam',
-          headerName: 'Foam',
-        },
-        {
-          cellEditor: CellNumberWidget,
-          cellEditorParams: {
-            min: '0',
-          },
-          field: 'fire_fighting',
-          headerName: 'Fire Fighting',
-        },
-        {
-          children: [
-            {
-              cellEditor: CellNumberWidget,
-              cellEditorParams: {
-                min: '0',
-              },
-              field: 'manufacturing',
-              headerName: 'Manufacturing',
+            disableClearable: true,
+            getOptionLabel: (option: any) => {
+              if (!option) return ''
+              return option.formula
             },
-            {
-              cellEditor: CellNumberWidget,
-              cellEditorParams: {
-                min: '0',
-              },
-              field: 'servicing',
-              headerName: 'Servicing',
-            },
-          ],
-          headerClass: 'text-center',
-          headerName: 'Refrigeration',
-          marryChildren: true,
-        },
-        {
-          editable: false,
-          field: 'country',
-          headerName: 'TOTAL',
-          valueGetter: (props) => {
+            options: substances,
+          },
+          cellRenderer: (props: any) => {
             return (
-              props.data.aerosol +
-              props.data.foam +
-              props.data.fire_fighting +
-              props.data.manufacturing +
-              props.data.servicing
-            ).toFixed(2)
+              <Typography component="span">{props.value?.formula}</Typography>
+            )
           },
+          field: 'substance',
+          headerName: 'Substance',
+        },
+        ...(showUsages
+          ? [
+              {
+                children: [
+                  {
+                    id: 10,
+                    cellEditor: 'agNumberCellEditor',
+                    cellEditorParams: {
+                      min: '0',
+                    },
+                    field: 'aerosol',
+                    headerName: 'Aerosol',
+                    type: 'usages',
+                  },
+                  {
+                    cellEditor: 'agNumberCellEditor',
+                    cellEditorParams: {
+                      min: '0',
+                    },
+                    field: 'foam',
+                    headerName: 'Foam',
+                  },
+                  {
+                    cellEditor: 'agNumberCellEditor',
+                    cellEditorParams: {
+                      min: '0',
+                    },
+                    field: 'fire_fighting',
+                    headerName: 'Fire Fighting',
+                  },
+                  {
+                    children: [
+                      {
+                        cellEditor: 'agNumberCellEditor',
+                        cellEditorParams: {
+                          min: '0',
+                        },
+                        field: 'manufacturing',
+                        headerName: 'Manufacturing',
+                      },
+                      {
+                        cellEditor: 'agNumberCellEditor',
+                        cellEditorParams: {
+                          min: '0',
+                        },
+                        field: 'servicing',
+                        headerName: 'Servicing',
+                      },
+                    ],
+                    headerClass: 'text-center',
+                    headerGroupComponent: 'agColumnHeaderGroup',
+                    headerName: 'Refrigeration',
+                    marryChildren: true,
+                  },
+                  {
+                    disabled: true,
+                    editable: false,
+                    field: 'country',
+                    headerName: 'TOTAL',
+                    valueGetter:
+                      '((data.aerosol || 0) + (data.foam || 0) + (data.fire_fighting || 0) + (data.manufacturing || 0) + (data.servicing || 0)).toFixed(2)',
+                  },
+                ],
+                groupId: 'usages',
+                headerClass: 'text-center usages-group',
+                headerGroupComponent: 'agColumnHeaderGroup',
+                headerName: 'Use by Sector',
+                marryChildren: true,
+              },
+            ]
+          : []),
+        {
+          cellEditor: 'agNumberCellEditor',
+          cellEditorParams: {
+            min: '0',
+          },
+          field: 'imports',
+          headerName: 'Imports',
+        },
+        {
+          cellEditor: 'agNumberCellEditor',
+          cellEditorParams: {
+            min: '0',
+          },
+          field: 'exports',
+          headerName: 'Exports',
+        },
+        {
+          cellEditor: 'agNumberCellEditor',
+          cellEditorParams: {
+            min: '0',
+          },
+          field: 'production',
+          headerName: 'Production',
+        },
+        {
+          cellEditor: 'agNumberCellEditor',
+          cellEditorParams: {
+            min: '0',
+          },
+          field: 'import_quotas',
+          headerName: 'Import Quotas',
+        },
+        {
+          cellEditor: 'agDateCellEditor',
+          cellRenderer: 'agDateCellRenderer',
+          field: 'banned_date',
+          headerName:
+            'If imports are banned, indicate date ban commenced (DD/MM/YYYY)',
+        },
+        {
+          cellEditor: 'agTextCellEditor',
+          cellEditorPopup: true,
+          field: 'remarks',
+          headerName: 'Remarks',
         },
       ],
-      headerClass: 'text-center',
-      headerName: 'Use by Sector',
-      marryChildren: true,
-    },
-    {
-      cellEditor: CellNumberWidget,
-      cellEditorParams: {
-        min: '0',
+      defaultColDef: {
+        cellClass: (props) => {
+          return cx({
+            disabled:
+              props.colDef.disabled ||
+              (props.colDef.type === 'usages' &&
+                props.data.substance?.excluded_usages?.includes(
+                  props.colDef.id,
+                )),
+          })
+        },
+        editable: (props) => {
+          if (
+            props.colDef.type === 'usages' &&
+            props.data.substance?.excluded_usages?.includes(props.colDef.id)
+          ) {
+            return false
+          }
+          return true
+        },
+        flex: 1,
+        minWidth: 200,
+        resizable: true,
       },
-      field: 'imports',
-      headerName: 'Imports',
-    },
-    {
-      cellEditor: CellNumberWidget,
-      cellEditorParams: {
-        min: '0',
-      },
-      field: 'exports',
-      headerName: 'Exports',
-    },
-    {
-      cellEditor: CellNumberWidget,
-      cellEditorParams: {
-        min: '0',
-      },
-      field: 'production',
-      headerName: 'Production',
-    },
-    {
-      cellEditor: CellNumberWidget,
-      cellEditorParams: {
-        min: '0',
-      },
-      field: 'import_quotas',
-      headerName: 'Import Quotas',
-    },
-    {
-      cellEditor: CellDateWidget,
-      cellRenderer: (props: any) => {
-        return (
-          !!props.value && (
-            <Typography component="span">
-              {dayjs(props.value).format('DD/MM/YYYY')}
-            </Typography>
-          )
-        )
-      },
-      field: 'banned_date',
-      headerName:
-        'If imports are banned, indicate date ban commenced (DD/MM/YYYY)',
-    },
-    {
-      cellEditor: CellTextareaWidget,
-      cellEditorPopup: true,
-      field: 'remarks',
-      headerName: 'Remarks',
-    },
-  ],
-  defaultColDef: {
-    editable: true,
-    flex: 1,
-    minWidth: 200,
-    resizable: true,
-  },
+    }
+  }, [substances, showUsages])
+
+  return gridOptions
 }
+
+export default useGridOptions

@@ -25,7 +25,7 @@ export const columnSchema = [
     cellClass: 'text-center',
     cellRenderer: (props: any) => {
       return (
-        <Typography>
+        <Typography component="span">
           {props.data.isSkeleton ? (
             <Skeleton />
           ) : (

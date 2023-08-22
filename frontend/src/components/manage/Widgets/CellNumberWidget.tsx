@@ -128,7 +128,6 @@ export const CellNumberWidget = memo(
       }
 
       const onKeyDown = (event: any) => {
-        console.log('HERE', event.key)
         if (isArrowKey(event) || isBackspace(event) || isSelectAll(event)) {
           event.stopPropagation()
           return
@@ -149,11 +148,11 @@ export const CellNumberWidget = memo(
           // the final value to send to the grid, on completion of editing
           getValue() {
             const finalValue =
-              value === '' || value == null ? 0 : parseFloat(value)
+              value === '' || value == null ? null : parseFloat(value)
             const min = parseFloat(props.min)
             const max = parseFloat(props.max)
-            if (isNumber(min) && finalValue < min) return min
-            if (isNumber(max) && finalValue > max) return max
+            if (finalValue && isNumber(min) && finalValue < min) return min
+            if (finalValue && isNumber(max) && finalValue > max) return max
             return finalValue
           },
 

@@ -4,6 +4,7 @@ import baseConfig, { BaseConfig } from './base'
 
 export interface Config extends BaseConfig {
   settings: BaseConfig['settings'] & {
+    defaultView: { layout: string; path: string }
     views: Array<{ layout: string; path: string }>
   }
   views: {
@@ -21,6 +22,10 @@ const config: Config = {
   ...baseConfig,
   settings: {
     ...baseConfig.settings,
+    defaultView: {
+      layout: 'authorized_document',
+      path: '*',
+    },
     views: routes,
   },
   views: {

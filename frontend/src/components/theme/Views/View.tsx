@@ -21,7 +21,13 @@ export default function View({ children }: { children: React.ReactNode }) {
 
   const view = React.useMemo(() => getCurrentView(pathname), [pathname])
 
-  const RenderedView = getViewByLayout(view?.layout) || getViewDefault()
+  const RenderedView = getViewByLayout(view.layout) || getViewDefault()
+
+  React.useEffect(() => {
+    window.requestAnimationFrame(() => {
+      document.documentElement.setAttribute('data-layout', view.layout)
+    })
+  }, [view.layout])
 
   return <RenderedView>{children}</RenderedView>
 }

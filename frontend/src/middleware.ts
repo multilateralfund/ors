@@ -43,7 +43,7 @@ export default function middleware(request: NextRequest) {
   const locale = getLocale(request, headers) ?? defaultLanguage
   const pathname = removeTrailingSlash(request.nextUrl.pathname)
   const protocol =
-    headers.get('X-Forwarded-Proto') || request.nextUrl.protocol || ''
+    headers.get('X-Forwarded-Proto') || request.nextUrl.protocol || 'http'
   const host = headers.get('X-Forwarded-Host') || request.nextUrl.host
 
   headers.set('x-next-host', host)

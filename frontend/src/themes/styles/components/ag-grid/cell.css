@@ -1,8 +1,4 @@
-/* #next-app .ag-cell {
-  @apply flex items-center;
-}
-
-#next-app .ag-cell > .ag-cell-wrapper {
+/* #next-app .ag-cell > .ag-cell-wrapper {
   @apply w-full;
 }
 
@@ -41,6 +37,11 @@
 #next-app .ag-rtl .ag-cell-range-single-cell.ag-cell-range-handle {
   @apply !border-l;
 } */
+
+#next-app [class*='ag-theme-'] .ag-cell.disabled {
+  background-color: var(--ag-cell-disabled-background);
+  color: var(--ag-cell-disabled-color);
+}
 
 #next-app [class*='ag-theme-'] .ag-cell-data-changed {
   background-color: var(

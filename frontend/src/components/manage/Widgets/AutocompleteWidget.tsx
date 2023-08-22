@@ -6,6 +6,7 @@ import { forwardRef } from 'react'
 
 import { Autocomplete } from '@mui/material'
 import cx from 'classnames'
+import { isObject, isString } from 'lodash'
 
 import TextWidget from './TextWidget'
 
@@ -17,7 +18,9 @@ export interface AutocompleteWidgetProps
     boolean | undefined
   > {
   Input?: TextWidgetProps
-  options?: Array<any> | undefined
+  options?:
+    | Array<{ [key: string]: any; id: number; label?: string } | undefined>
+    | undefined
 }
 
 export type AutocompleteWidget = (props: AutocompleteWidgetProps) => JSX.Element
@@ -27,6 +30,8 @@ const AutocompleteWidget = forwardRef(
     {
       Input,
       className,
+      getOptionLabel,
+      isOptionEqualToValue,
       options,
       renderInput,
       renderOption,
@@ -39,6 +44,26 @@ const AutocompleteWidget = forwardRef(
         className={cx('w-full', className)}
         options={options || []}
         ref={ref}
+        getOptionLabel={(option) => {
+          if (!option) return ''
+          if (!!getOptionLabel) {
+            return getOptionLabel(option)
+          }
+          if (isString(option)) return option
+          return option.label || ''
+        }}
+        isOptionEqualToValue={(option, value) => {
+          if (isOptionEqualToValue) {
+            return isOptionEqualToValue(option, value)
+          }
+          if (isObject(option) && isObject(value)) {
+            return option.label === value.label
+          }
+          if (isObject(option) && isString(value)) {
+            return option.label === value
+          }
+          return option === value
+        }}
         renderInput={
           !!renderInput
             ? renderInput
@@ -52,8 +77,8 @@ const AutocompleteWidget = forwardRef(
             return renderOption(props, option, ...args)
           }
           return (
-            <li {...props} key={option?.id}>
-              {rest.getOptionLabel?.(option) ?? option.label}
+            <li {...props} key={option.id}>
+              {getOptionLabel?.(option) ?? option.label}
             </li>
           )
         }}

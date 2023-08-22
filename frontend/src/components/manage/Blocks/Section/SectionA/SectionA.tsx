@@ -1,38 +1,51 @@
-import { useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import { Box, Button } from '@mui/material'
 import dynamic from 'next/dynamic'
 
-import { gridOptions as options } from './schema'
+import { getResults } from '@ors/helpers/Api/Api'
+import { ReportsSlice } from '@ors/slices/createReportsSlice'
+import useStore from '@ors/store'
+
+import useGridOptions from './schema'
 
 const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
   ssr: false,
 })
 
 export default function SectionA() {
-  const [gridOptions] = useState(options)
+  const grid = useRef<any>()
+  const [showUsages, setShowUsages] = useState(false)
   const [rowData, setRowData] = useState<Array<Record<string, any>>>([])
+  const reports: ReportsSlice = useStore((state) => state.reports)
+
+  const substances = useMemo(() => {
+    const { results } = getResults(reports.substances.data)
+    return results
+    // return results.filter((substance) => substance.sections.includes('A'))
+  }, [reports])
+
+  const gridOptions = useGridOptions({ showUsages, substances })
 
   return (
     <>
       <Box className="rounded-b-none border-b-0">
         <div id="section-control" className="text-right">
           <Button
+            onClick={() => {
+              setShowUsages(!showUsages)
+            }}
+          >
+            Toggle usages
+          </Button>
+          <Button
             variant="contained"
             onClick={() => {
               setRowData([
                 ...rowData,
                 {
-                  aerosol: 0,
-                  exports: 0,
-                  fire_fighting: 0,
-                  foam: 0,
-                  import_quotas: 0,
-                  imports: 0,
-                  manufacturing: 0,
-                  production: 0,
-                  servicing: 0,
-                  substance: { id: 0, label: 'Select substance' },
+                  substance: { id: 0, formula: 'Select substance' },
+                  usages: [{ quantity: 29 }, { quantity: 2.1 }],
                 },
               ])
             }}
@@ -48,15 +61,13 @@ export default function SectionA() {
         defaultColDef={gridOptions.defaultColDef}
         enableCellChangeFlash={true}
         enablePagination={false}
+        gridRef={grid}
         rowData={rowData}
         suppressCellFocus={false}
         suppressRowHoverHighlight={false}
-        // onCellEditingStarted={(event) => {
-        //   console.log('onCellEditingStarted', event)
-        // }}
-        // onCellEditingStopped={(event) => {
-        //   console.log('onCellEditingStopped', event)
-        // }}
+        onGridReady={() => {
+          setShowUsages(true)
+        }}
         withSeparators
       />
     </>

@@ -16,11 +16,7 @@ import {
 } from './slices/createControlsSlice'
 import { I18nSlice, createI18nSlice } from './slices/createI18nSlice'
 import { ProjectsSlice, createProjectSlice } from './slices/createProjectSlice'
-import {
-  InitialReportsSlice,
-  ReportsSlice,
-  createReportsSlice,
-} from './slices/createReportsSlice'
+import { ReportsSlice, createReportsSlice } from './slices/createReportsSlice'
 import { ThemeSlice, createThemeSlice } from './slices/createThemeSlice'
 import { UserSlice, createUserSlice } from './slices/createUserSlice'
 
@@ -43,7 +39,7 @@ export type InitialStoreState = {
   controls?: Partial<ControlsSlice>
   i18n?: Partial<I18nSlice>
   projects?: ProjectsSlice
-  reports?: InitialReportsSlice
+  reports?: ReportsSlice
   theme?: Partial<ThemeSlice>
   user?: Partial<UserSlice>
 }

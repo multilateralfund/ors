@@ -20,6 +20,8 @@
   --ag-row-border-style: solid;
   --ag-row-border-width: 1px;
   --ag-row-border-color: var(--ag-secondary-border-color);
+  --ag-cell-disabled-background: theme(colors.action-disabledBackground);
+  --ag-cell-disabled-color: theme(colors.typography-primary);
 
   /* resize habdle */
   --ag-header-column-resize-handle-color: var(--ag-border-color);

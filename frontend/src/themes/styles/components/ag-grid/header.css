@@ -25,3 +25,8 @@
 #next-app .ag-header-cell.text-center .ag-header-cell-comp-wrapper {
   justify-content: center;
 }
+
+#next-app [class*='ag-theme-alpine'] .usages-group {
+  background-color: theme(colors.primary);
+  color: #fff;
+}

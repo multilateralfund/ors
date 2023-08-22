@@ -28,15 +28,6 @@ export default function AuthorizedView({
     }
   }, [user, pathname, router])
 
-  React.useEffect(() => {
-    window.requestAnimationFrame(() => {
-      document.documentElement.setAttribute(
-        'data-layout',
-        'authorized_document',
-      )
-    })
-  }, [])
-
   return (
     !!user && (
       <main className="grid-cols-[auto] md:grid-cols-[auto_1fr]">
