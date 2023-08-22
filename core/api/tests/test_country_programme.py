@@ -1,7 +1,7 @@
 import pytest
 from django.urls import reverse
-from core.api.tests.base import BaseTest
 
+from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
     AdmChoiceFactory,
     AdmColumnFactory,
@@ -13,8 +13,11 @@ from core.api.tests.factories import (
     CPRecordFactory,
     CPReportFactory,
     CPUsageFactory,
+    GroupFactory,
+    SubstanceFactory,
+    UsageFactory,
 )
-from core.models.country_programme import CPEmission
+from core.models.country_programme import CPEmission, CPGeneration, CPPrices, CPRecord
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008, W0221
@@ -33,8 +36,8 @@ def setup_cp_report_list():
     return country
 
 
-class TestCPReport(BaseTest):
-    url = reverse("country-programme-report-list")
+class TestCPReportList(BaseTest):
+    url = reverse("country-programme-reports")
 
     def test_get_cp_report_list(self, user, _setup_cp_report_list):
         self.client.force_authenticate(user=user)
@@ -71,6 +74,151 @@ class TestCPReport(BaseTest):
         assert len(response.data) == 3
         assert response.data[0]["name"] == "Bulgaria2011"
         assert response.data[0]["year"] == 2011
+
+
+@pytest.fixture(name="_setup_cp_report_create")
+def setup_cp_report_create(substance, blend, country_ro, usage):
+    usage2 = UsageFactory.create(name="usage2")
+    groupB = GroupFactory.create(name="group B", annex="B")
+    substance2 = SubstanceFactory.create(name="substance2", group=groupB)
+
+    cp_record_data = {
+        "imports": 12.3,
+        "exports": 13.3,
+        "export_quotas": 14.3,
+        "production": 20.3,
+        "manufacturing_blends": 15.3,
+        "banned_date": "2019-11-21",
+        "remarks": "Se vede din departare",
+        "record_usages": [
+            {"usage_id": usage.id, "quantity": 12.1},
+            {"usage_id": usage2.id, "quantity": 12.1},
+        ],
+    }
+
+    report_data = {
+        "country_id": country_ro.id,
+        "name": "Romania2019",
+        "year": 2019,
+        "section_a": [
+            {
+                "substance_id": substance.id,
+                **cp_record_data,
+            },
+            {
+                "substance_id": substance2.id,
+                **cp_record_data,
+            },
+        ],
+        "section_b": [
+            {
+                "blend_id": blend.id,
+                **cp_record_data,
+            }
+        ],
+        "section_c": [
+            {
+                "substance_id": substance.id,
+                "current_year_price": 25.5,
+                "remarks": "Mama mea cand mi-a dat viata",
+            },
+            {
+                "blend_id": blend.id,
+                "previous_year_price": 12.4,
+                "current_year_price": 25.5,
+                "remarks": "Smecheri au luat vacanta",
+            },
+        ],
+        "section_d": [
+            {
+                "all_uses": "80.570",
+                "destruction": "80.570",
+            }
+        ],
+        "section_e": [
+            {
+                "facility": "Facility",
+                "total": 12.4,
+                "all_uses": 15.4,
+                "generated_emissions": 31.887,
+                "remarks": "Dumnezeul le-a dat un semn",
+            },
+        ],
+        "section_f": {
+            "remarks": "S-a nascut un fenomen",
+        },
+    }
+
+    return report_data
+
+
+class TestCPReportCreate(BaseTest):
+    url = reverse("country-programme-reports")
+
+    def test_without_login(self, _setup_cp_report_create):
+        self.client.force_authenticate(user=None)
+        response = self.client.post(self.url, _setup_cp_report_create, format="json")
+        assert response.status_code == 403
+
+    def test_create_cp_report(self, user, _setup_cp_report_create):
+        self.client.force_authenticate(user=user)
+        response = self.client.post(self.url, _setup_cp_report_create, format="json")
+        print(response.data)
+        assert response.status_code == 200
+        assert response.data["name"] == "Romania2019"
+        assert response.data["year"] == 2019
+        assert response.data["country"] == "Romania"
+        assert response.data["comment"] == "S-a nascut un fenomen"
+        cp_report_id = response.data["id"]
+
+        # check cp records
+        records = CPRecord.objects.filter(country_programme_report_id=cp_report_id)
+        assert records.count() == 3
+        assert records.filter(section="A", substance_id__isnull=False).count() == 2
+        assert records.filter(section="B", blend_id__isnull=False).count() == 1
+        for record in records:
+            assert float(record.imports) == 12.3
+            assert record.banned_date.strftime("%Y-%m-%d") == "2019-11-21"
+            assert record.record_usages.count() == 2
+            for usage in record.record_usages.all():
+                assert float(usage.quantity) == 12.1
+
+        # check cp prices
+        prices = CPPrices.objects.filter(country_programme_report_id=cp_report_id)
+        assert prices.count() == 2
+        assert prices.filter(substance_id__isnull=False).count() == 1
+        assert prices.filter(blend_id__isnull=False).count() == 1
+        for price in prices:
+            assert float(price.current_year_price) == 25.5
+
+        # check cp generation
+        generation = CPGeneration.objects.filter(
+            country_programme_report_id=cp_report_id
+        )
+        assert generation.count() == 1
+        assert float(generation[0].all_uses) == 80.570
+
+        # check cp emissions
+        emissions = CPEmission.objects.filter(country_programme_report_id=cp_report_id)
+        assert emissions.count() == 1
+        assert float(emissions[0].total) == 12.4
+
+    def test_invalid_usage_id(self, user, _setup_cp_report_create):
+        self.client.force_authenticate(user=user)
+        data = _setup_cp_report_create
+        data["section_a"][0]["record_usages"][0]["usage_id"] = 999
+        response = self.client.post(self.url, _setup_cp_report_create, format="json")
+        assert response.status_code == 400
+        assert "record_usages" in response.data
+        assert "usage_id" in response.data["record_usages"][0]
+
+    def test_invalid_substance_id(self, user, _setup_cp_report_create):
+        self.client.force_authenticate(user=user)
+        data = _setup_cp_report_create
+        data["section_a"][0]["substance_id"] = 999
+        response = self.client.post(self.url, _setup_cp_report_create, format="json")
+        assert response.status_code == 400
+        assert "substance_id" in response.data
 
 
 @pytest.fixture(name="_setup_new_cp_report")
@@ -190,7 +338,7 @@ class TestCPRecordList(BaseTest):
         assert response.data["section_a"][0]["chemical_name"] == substance.name
         assert len(response.data["section_b"]) == 1
         assert response.data["section_b"][0]["chemical_name"] == blend.name
-        assert len(response.data["section_b"][0]["usages"]) == 3
+        assert len(response.data["section_b"][0]["record_usages"]) == 3
         assert len(response.data["section_c"]) == 2
         assert len(response.data["section_d"]) == 1
         assert response.data["section_d"][0]["chemical_name"] == "HFC-23"

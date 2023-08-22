@@ -62,6 +62,8 @@ class BaseWChemicalSerializer(serializers.ModelSerializer):
                 "Only one of substance_id or blend_id is required"
             )
 
+        return super().validate(attrs)
+
 
 # countryProgramReport serializer
 class CPReportSerializer(serializers.ModelSerializer):
@@ -103,7 +105,7 @@ class CPUsageSerializer(serializers.ModelSerializer):
 
 class CPRecordSerializer(BaseWChemicalSerializer):
     annex_group = serializers.SerializerMethodField()
-    usages = CPUsageSerializer(source="record_usages", many=True)
+    record_usages = CPUsageSerializer(many=True)
 
     class Meta:
         model = CPRecord
@@ -118,7 +120,7 @@ class CPRecordSerializer(BaseWChemicalSerializer):
             "manufacturing_blends",
             "banned_date",
             "remarks",
-            "usages",
+            "record_usages",
         ]
 
     @transaction.atomic
