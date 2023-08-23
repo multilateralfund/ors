@@ -4,10 +4,10 @@ from django.core.files.storage import FileSystemStorage
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from core.models import Region
 from core.models.agency import Agency
 from core.models.blend import Blend
 
+from core.models.country import Region
 from core.models.country import Country
 from core.models.substance import Substance
 
