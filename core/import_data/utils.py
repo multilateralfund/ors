@@ -120,6 +120,20 @@ def parse_date(date_string, logger):
         return None
 
 
+# pylint: disable-next=W0613
+def parse_noop(value, logger):
+    """
+    NOOP return value, coalesce empty string to None
+
+    @param value: any value
+    @param logger: logger
+    @return: value or None
+    """
+    if value == "":
+        return None
+    return value
+
+
 def delete_old_data(cls, source_file, logger):
     """
     Delete old data from db for a specific source file
@@ -224,6 +238,28 @@ def get_object_by_name(
         )
 
     return obj
+
+
+def get_object_by_code(cls, code, column, index_row, logger):
+    """
+    get object by code or log error if not found in db
+    @param cls: Class instance
+    @param code: string -> unique code (filter value)
+    @param column: string -> column name (filter column)
+    @param index_row: integer -> index row
+    @param logger: logger object
+
+    @return: object or None
+    """
+    if not code:
+        return None
+    try:
+        return cls.objects.get(**{column: code})
+    except cls.DoesNotExist:
+        logger.info(
+            f"[row: {index_row}]: This {cls.__name__} does not exists in data base: {column}={code}"
+        )
+        return None
 
 
 # --- cp databases import utils ---

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
@@ -23,8 +24,12 @@ class AdmColumn(models.Model):
     display_name = models.CharField(max_length=248)
     type = models.CharField(max_length=248, choices=AdmColumnType.choices)
     section = models.CharField(max_length=10, choices=AdmColumnSection.choices)
-    min_year = models.PositiveIntegerField(validators=[MinValueValidator(1985)])
-    max_year = models.PositiveIntegerField(validators=[MinValueValidator(1985)])
+    min_year = models.PositiveIntegerField(
+        validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
+    )
+    max_year = models.PositiveIntegerField(
+        validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
+    )
     sort_order = models.FloatField(null=True, blank=True)
     source_file = models.CharField(max_length=248, null=True, blank=True)
 
@@ -50,8 +55,12 @@ class AdmRow(MPTTModel):
     text = models.TextField()
     type = models.CharField(max_length=10, choices=AdmRowType.choices)
     section = models.CharField(max_length=10, choices=AdmRowSection.choices)
-    min_year = models.PositiveIntegerField(validators=[MinValueValidator(1985)])
-    max_year = models.PositiveIntegerField(validators=[MinValueValidator(1985)])
+    min_year = models.PositiveIntegerField(
+        validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
+    )
+    max_year = models.PositiveIntegerField(
+        validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
+    )
     index = models.CharField(
         max_length=248, null=True, blank=True, verbose_name="row index"
     )
