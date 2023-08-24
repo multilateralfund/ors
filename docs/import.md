@@ -131,3 +131,8 @@ docker-compose exec app ./manage.py import_projects proposals
 : download files from nextcloud
     - **nextcloud path** OzoneMlf/Progress reports/data/csv/tbProgress.csv
     - **local path** .fs/import_files/progress_report
+
+- countries 
+: download files from nextcloud
+    - **nextcloud path** OzoneMlf/Progress reports/data/json/tbCountryID.json
+    - **local path** .fs/import_files/progress_report
