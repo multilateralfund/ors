@@ -84,6 +84,7 @@ class ProjectAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request):
         exclude = [
+            "progress_reports",
             "projectsubmission",
             "ods_odp",
             "funds",
@@ -96,9 +97,7 @@ class ProjectAdmin(admin.ModelAdmin):
 @admin.register(ProjectProgressReport)
 class ProjectProgressReportAdmin(admin.ModelAdmin):
     list_filter = [
-        "project_type",
         "status",
-        "agency",
     ]
     search_fields = [
         "title",

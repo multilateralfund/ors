@@ -120,6 +120,20 @@ def parse_date(date_string, logger):
         return None
 
 
+# pylint: disable-next=W0613
+def parse_noop(value, logger):
+    """
+    NOOP return value, coalesce empty string to None
+
+    @param value: any value
+    @param logger: logger
+    @return: value or None
+    """
+    if value == "":
+        return None
+    return value
+
+
 def delete_old_data(cls, source_file, logger):
     """
     Delete old data from db for a specific source file

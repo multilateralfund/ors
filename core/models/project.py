@@ -7,7 +7,6 @@ from django.db import models
 from core.models.agency import Agency
 from core.models.blend import Blend
 
-from core.models.country import Region
 from core.models.country import Country
 from core.models.substance import Substance
 
@@ -225,25 +224,29 @@ class ProjectFund(models.Model):
 
 
 class ProjectProgressReport(models.Model):
+    source_file = models.CharField(max_length=255, null=True, blank=True)
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, related_name="progress_reports"
     )
-    mtg = models.PositiveIntegerField(null=True, blank=True)
     status = models.ForeignKey(
         ProjectStatus, on_delete=models.CASCADE, related_name="+"
     )
     latest_status = models.ForeignKey(
         ProjectStatus, on_delete=models.CASCADE, related_name="+"
     )
-    agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
-    title = models.CharField(max_length=256)
-    category = models.CharField(max_length=100, null=True, blank=True)
-    region = models.ForeignKey(Region, on_delete=models.CASCADE)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE)
-    sector = models.ForeignKey(ProjectSector, on_delete=models.CASCADE)
-    project_type = models.ForeignKey(ProjectType, on_delete=models.CASCADE)
+    meeting_of_report = models.CharField(max_length=255, null=True, blank=True)
+    category = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        help_text="multi-year/one-off phaseout/individual/rmp/rmp update",
+    )
+    assessment_of_progress = models.TextField(null=True, blank=True)
+    latest_progress = models.CharField(max_length=255, null=True, blank=True)
+    mtg = models.PositiveIntegerField(null=True, blank=True)
     num = models.PositiveIntegerField(null=True, blank=True)
     a_n = models.CharField(max_length=1, null=True, blank=True)
+    o_t = models.CharField(max_length=1, null=True, blank=True)
     irdx = models.CharField(max_length=1, null=True, blank=True)
     chemical = models.CharField(max_length=100, null=True, blank=True)
     consumption_odp_out_proposal = models.FloatField(null=True, blank=True)
@@ -253,7 +256,9 @@ class ProjectProgressReport(models.Model):
     date_approved = models.DateField(null=True, blank=True)
     date_first_disbursement = models.DateField(null=True, blank=True)
     date_comp_proposal = models.DateField(null=True, blank=True)
+    date_comp_plan = models.DateField(null=True, blank=True)
     date_comp_actual = models.DateField(null=True, blank=True)
+    date_comp_financial = models.DateField(null=True, blank=True)
     funds_approved = models.FloatField(null=True, blank=True)
     funds_adjustment = models.FloatField(null=True, blank=True)
     funds_net = models.FloatField(null=True, blank=True)
@@ -265,6 +270,7 @@ class ProjectProgressReport(models.Model):
     support_approved = models.FloatField(null=True, blank=True)
     support_adjustment = models.FloatField(null=True, blank=True)
     support_disbursed = models.FloatField(null=True, blank=True)
+    support_balance = models.FloatField(null=True, blank=True)
     support_obligated = models.FloatField(null=True, blank=True)
     support_returned = models.FloatField(null=True, blank=True)
     year_approved = models.PositiveIntegerField(
@@ -279,5 +285,27 @@ class ProjectProgressReport(models.Model):
     months_comp_actual = models.IntegerField(null=True, blank=True)
     remarks_1 = models.TextField(null=True, blank=True)
     remarks_2 = models.TextField(null=True, blank=True)
+    date_comp_plan_22 = models.DateField(null=True, blank=True)
+    date_comp_plan_28 = models.DateField(null=True, blank=True)
+    date_comp_plan_31 = models.DateField(null=True, blank=True)
+    date_comp_plan_34 = models.DateField(null=True, blank=True)
+    date_comp_plan_37 = models.DateField(null=True, blank=True)
+    date_comp_plan_40 = models.DateField(null=True, blank=True)
+    date_comp_plan_43 = models.DateField(null=True, blank=True)
+    date_comp_plan_46 = models.DateField(null=True, blank=True)
+    date_comp_plan_52 = models.DateField(null=True, blank=True)
+    latest_planned_date = models.DateField(null=True, blank=True)
+    BP_year = models.CharField(max_length=255, null=True, blank=True)
     BP_allocation = models.CharField(max_length=100, null=True, blank=True)
-    meeting_of_report = models.CharField(max_length=100, null=True, blank=True)
+    disbursements_to_final = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Disbursements made to final beneficiaries from FECO/ MEP",
+    )
+    MY_consumption_performance_target = models.FloatField(null=True, blank=True)
+    MY_actual_consumption = models.FloatField(null=True, blank=True)
+    MY_production_performance_target = models.FloatField(null=True, blank=True)
+    MY_actual_production = models.FloatField(null=True, blank=True)
+    MY_annual_target_met = models.CharField(max_length=255, null=True, blank=True)
+    MY_verification_completed = models.CharField(max_length=255, null=True, blank=True)
+    MY_verification_report = models.CharField(max_length=255, null=True, blank=True)
