@@ -1,4 +1,5 @@
-.MuiInputBase-root {
+.MuiInputBase-root,
+textarea {
   @apply bg-action-highlight;
 }
 

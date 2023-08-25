@@ -8,7 +8,7 @@ export default function ChangePassword() {
       className="mx-auto flex w-full max-w-screen-sm flex-col items-center justify-center"
       fill
     >
-      <Logo />
+      <Logo className="mb-5" />
       <ResetPasswordForm endpoint="/api/auth/password/change/" />
     </PageWrapper>
   )

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 import React from 'react'
 
-import CreateSubmissionForm from '@ors/components/theme/Forms/CreateSubmissionForm/CreateSubmissionForm'
+import CreateReportForm from '@ors/components/theme/Forms/CreateReportForm/CreateReportForm'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export const metadata: Metadata = {
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default async function CreateReport() {
   return (
     <PageWrapper>
-      <CreateSubmissionForm />
+      <CreateReportForm />
     </PageWrapper>
   )
 }

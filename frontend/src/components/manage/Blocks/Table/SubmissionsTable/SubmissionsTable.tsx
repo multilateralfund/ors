@@ -15,7 +15,7 @@ const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
   ssr: false,
 })
 
-export default function ProjectsTable() {
+export default function SubmissionsTable() {
   const grid = useRef<any>()
   const [apiSettings, setApiSettings] = useState({
     options: {

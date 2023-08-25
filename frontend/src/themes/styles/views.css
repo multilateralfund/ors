@@ -6,10 +6,10 @@
   @apply grid;
 }
 
-:root[data-layout='authorized_document'] {
+/* :root[data-layout='authorized_document'] {
   @apply overflow-hidden;
 }
 
 :root[data-layout='authorized_document'] main {
   @apply overflow-hidden;
-}
+} */

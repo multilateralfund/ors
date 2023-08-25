@@ -16,7 +16,7 @@ export default function Login() {
       className="mx-auto flex w-full max-w-screen-sm flex-col items-center justify-center"
       fill
     >
-      <Logo />
+      <Logo className="mb-5" />
       <LoginForm />
     </PageWrapper>
   )

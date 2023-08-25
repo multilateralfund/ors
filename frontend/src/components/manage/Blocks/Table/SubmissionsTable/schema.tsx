@@ -65,7 +65,10 @@ export const columnSchema = [
           {props.data.isSkeleton ? (
             <Skeleton />
           ) : (
-            <Link className="no-underline" href={`/projects/${props.data.id}`}>
+            <Link
+              className="no-underline"
+              href={`/submissions/${props.data.id}`}
+            >
               View
             </Link>
           )}

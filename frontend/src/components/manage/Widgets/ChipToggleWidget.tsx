@@ -10,7 +10,8 @@ export type ChipData = {
 }
 
 export type ChipToggleWidgetProps = {
-  onChange?: (id: null | number) => void
+  multiple?: boolean
+  onChange?: (ids: Array<number> | null | number) => void
   options: ChipData[]
 }
 
@@ -19,12 +20,25 @@ export type ChipToggleWidget = (props: ChipToggleWidgetProps) => JSX.Element
 export default function ChipToggleWidget(
   props: ChipToggleWidgetProps,
 ): JSX.Element {
-  const [selected, setSelected] = React.useState<null | number>(null)
+  const [selected, setSelected] = React.useState<Array<number> | null>(null)
 
-  function handleClick(chipId: null | number) {
-    const newSelected = selected === chipId ? null : chipId
-    setSelected(newSelected)
-    props.onChange?.(newSelected)
+  function handleClick(chipId: number) {
+    const chipIndex = (selected || []).indexOf(chipId)
+
+    if (!props.multiple) {
+      const newSelected = chipIndex > -1 ? null : [chipId]
+      setSelected(newSelected)
+      props.onChange?.(newSelected?.[0] || null)
+      return
+    }
+    let newSelected = [...(selected || [])]
+    if (chipIndex > -1) {
+      newSelected.splice(chipIndex, 1)
+    } else {
+      newSelected = [...(selected || []), chipId]
+    }
+    setSelected(newSelected.length > 0 ? newSelected : null)
+    props.onChange?.(props.multiple ? selected : selected?.[0] || null)
   }
 
   return (
@@ -35,16 +49,20 @@ export default function ChipToggleWidget(
             key={chipData.id}
             className="m-1"
             label={chipData.name}
-            variant={selected == chipData.id ? 'filled' : 'outlined'}
             onClick={() => handleClick(chipData.id)}
             style={
-              selected == chipData.id
+              selected && selected?.indexOf?.(chipData.id) !== -1
                 ? {
                     backgroundColor: chipData.color,
                     borderColor: chipData.color,
                     color: chipData.contrastText || 'inherit',
                   }
                 : {}
+            }
+            variant={
+              selected && selected?.indexOf?.(chipData.id) !== -1
+                ? 'filled'
+                : 'outlined'
             }
           />
         )

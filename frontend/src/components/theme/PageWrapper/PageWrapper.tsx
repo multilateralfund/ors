@@ -16,7 +16,7 @@ export default function PageWrapper({
   return (
     <FadeInOut
       className={cx(
-        'page-content relative p-4',
+        'page-content container relative p-4',
         { 'h-fit': !fill, 'h-full': !!fill },
         className,
       )}

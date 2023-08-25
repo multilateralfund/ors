@@ -55,11 +55,6 @@ export function formatApiUrl(path: string) {
   let apiPath = ''
   let adjustedPath
 
-  if (__SERVER__) {
-    const headers = require('next/headers').headers()
-    console.log('API x-next-protocol', path, headers.get('x-next-protocol'))
-  }
-
   if (__DEVELOPMENT__ || settings.apiPath) {
     apiPath = settings.apiPath || 'http://127.0.0.1:8000'
   } else if (__SERVER__) {

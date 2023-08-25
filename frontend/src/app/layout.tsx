@@ -10,7 +10,6 @@ import { Roboto } from 'next/font/google'
 import { cookies as nextCookies, headers as nextHeaders } from 'next/headers'
 import Script from 'next/script'
 
-import Header from '@ors/components/theme/Header/Header'
 import View from '@ors/components/theme/Views/View'
 import api from '@ors/helpers/Api/Api'
 import { getInitialSliceData } from '@ors/helpers/Store/Store'
@@ -104,8 +103,6 @@ export default async function RootLayout({
     common = await getInitialCommonData()
   }
 
-  console.log('LAYOUT', user, currentView)
-
   return (
     <html
       lang={lang}
@@ -131,7 +128,6 @@ export default async function RootLayout({
           }}
         >
           <ThemeProvider options={{ key: 'tw', prepend: true }}>
-            <Header />
             <View>{children}</View>
           </ThemeProvider>
         </StoreProvider>

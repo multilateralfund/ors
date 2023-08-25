@@ -1,4 +1,5 @@
 import grey from '@mui/material/colors/grey'
+import { Config } from 'tailwindcss'
 import { createThemes } from 'tw-colors'
 
 const colors = require('tailwindcss/colors')
@@ -57,9 +58,9 @@ const originalColors = {
       DEFAULT: colors.green[500],
     },
     typography: {
-      DEFAULT: 'rgba(0, 0, 0, 0.87)',
+      DEFAULT: 'rgba(255, 255, 255, 1)',
       disabled: 'rgba(255, 255, 255, 0.5)',
-      primary: colors.white,
+      primary: 'rgba(255, 255, 255, 1)',
       secondary: 'rgba(255, 255, 255, 0.7)',
     },
     warning: {
@@ -122,7 +123,6 @@ const originalColors = {
   },
 }
 
-/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -141,6 +141,10 @@ module.exports = {
     })),
   ],
   theme: {
+    container: {
+      center: true,
+      padding: '1rem',
+    },
     extend: {
       colors: {
         gray,
@@ -150,4 +154,4 @@ module.exports = {
       },
     },
   },
-}
+} as Config
