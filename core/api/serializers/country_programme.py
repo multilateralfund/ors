@@ -1,5 +1,6 @@
 from django.db import transaction
 from rest_framework import serializers
+from core.api.serializers.adm import AdmRecordSerializer
 
 from core.models.blend import Blend
 from core.models.country import Country
@@ -13,6 +14,7 @@ from core.models.country_programme import (
 )
 from core.models.substance import Substance
 from core.models.usage import Usage
+from core.utils import IMPORT_DB_MAX_YEAR
 
 CP_GENERATION_CHEMICAL = "HFC-23"
 
@@ -193,3 +195,53 @@ class CPEmissionSerializer(serializers.ModelSerializer):
             "remarks",
             "country_programme_report_id",
         ]
+
+
+class CPPostBodySerializer(serializers.Serializer):
+    name = serializers.CharField()
+    year = serializers.IntegerField()
+    country_id = serializers.PrimaryKeyRelatedField(
+        queryset=Country.objects.all().values_list("id", flat=True),
+    )
+    section_a = CPRecordSerializer(many=True)
+    section_b = CPRecordSerializer(many=True, required=False)
+    section_c = CPPricesSerializer(many=True)
+    section_d = CPGenerationSerializer(many=True, required=False)
+    section_e = CPEmissionSerializer(many=True, required=False)
+    section_f = serializers.DictField(
+        required=False, help_text="Only one key (remarks) is allowed)"
+    )
+    adm_b = AdmRecordSerializer(many=True, required=False)
+    adm_c = AdmRecordSerializer(many=True, required=False)
+    adm_d = AdmRecordSerializer(many=True, required=False)
+
+    def validate(self, attrs):
+        if attrs["year"] > IMPORT_DB_MAX_YEAR:
+            if not all(
+                [
+                    attrs.get("section_b"),
+                    attrs.get("section_d"),
+                    attrs.get("section_e"),
+                    attrs.get("section_f"),
+                ]
+            ):
+                raise serializers.ValidationError(
+                    f"Sections B, D, E and F are required for years after {IMPORT_DB_MAX_YEAR}"
+                )
+            if attrs["section_f"].get("remarks") is None:
+                raise serializers.ValidationError(
+                    f"Remarks are required for years after {IMPORT_DB_MAX_YEAR}"
+                )
+        else:
+            if not all(
+                [
+                    attrs.get("adm_b"),
+                    attrs.get("adm_c"),
+                    attrs.get("adm_d"),
+                ]
+            ):
+                raise serializers.ValidationError(
+                    f"Adm B, C and D are required for years before {IMPORT_DB_MAX_YEAR}"
+                )
+
+        return super().validate(attrs)

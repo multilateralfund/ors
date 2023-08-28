@@ -15,6 +15,7 @@ from core.api.serializers.adm import AdmRecordSerializer
 from core.api.serializers.country_programme import (
     CPEmissionSerializer,
     CPGenerationSerializer,
+    CPPostBodySerializer,
     CPPricesSerializer,
 )
 from core.models.adm import AdmRecord
@@ -31,10 +32,7 @@ from core.utils import IMPORT_DB_MAX_YEAR
 # view for country programme reports
 class CPReportView(generics.ListAPIView, generics.CreateAPIView):
     """
-    API endpoint that allows country programmes to be viewed.
-    @param country_id: int - query filter for country id (exact)
-    @param name: str - query filter for name (contains)
-    @param year: int - query filter for year (exact)
+    API endpoint that allows country programmes to be viewed or created.
     """
 
     queryset = CPReport.objects.select_related("country").order_by("name")
@@ -74,6 +72,19 @@ class CPReportView(generics.ListAPIView, generics.CreateAPIView):
         cp_report.comment = section_data.get("remarks", "")
         cp_report.save()
 
+    def _create_adm_records(self, cp_report, section_data, section):
+        for record in section_data:
+            record["country_programme_report_id"] = cp_report.id
+            record["section"] = section
+            record_serializer = AdmRecordSerializer(data=record)
+            record_serializer.is_valid(raise_exception=True)
+            record_serializer.save()
+
+    @swagger_auto_schema(
+        operation_description="year < 2019 => required: section_a, adm_b, section_c, adm_c, adm_d\n"
+        "year >= 2019 => required: section_a, section_b, section_c, section_d, section_e, section_f",
+        request_body=CPPostBodySerializer,
+    )
     @transaction.atomic
     def post(self, request, *args, **kwargs):
         # create cp report
@@ -82,22 +93,25 @@ class CPReportView(generics.ListAPIView, generics.CreateAPIView):
             "year": request.data.get("year"),
             "country_id": request.data.get("country_id"),
         }
-        if cp_report_data["year"] <= IMPORT_DB_MAX_YEAR:
-            return Response(
-                {"error": f"Not implemented for years <= {IMPORT_DB_MAX_YEAR}"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+
         cp_report_serializer = CPReportSerializer(data=cp_report_data)
         cp_report_serializer.is_valid(raise_exception=True)
         cp_report = cp_report_serializer.save()
 
         # create records
-        self._create_cp_records(cp_report, request.data.get("section_a", []), "A")
-        self._create_cp_records(cp_report, request.data.get("section_b", []), "B")
-        self._create_prices(cp_report, request.data.get("section_c", []))
-        self._create_generation(cp_report, request.data.get("section_d", []))
-        self._create_emission(cp_report, request.data.get("section_e", []))
-        self._add_remarks(cp_report, request.data.get("section_f", {}))
+        if cp_report_data["year"] > IMPORT_DB_MAX_YEAR:
+            self._create_cp_records(cp_report, request.data.get("section_a", []), "A")
+            self._create_cp_records(cp_report, request.data.get("section_b", []), "B")
+            self._create_prices(cp_report, request.data.get("section_c", []))
+            self._create_generation(cp_report, request.data.get("section_d", []))
+            self._create_emission(cp_report, request.data.get("section_e", []))
+            self._add_remarks(cp_report, request.data.get("section_f", {}))
+        else:
+            self._create_cp_records(cp_report, request.data.get("section_a", []), "A")
+            self._create_adm_records(cp_report, request.data.get("adm_b", []), "B")
+            self._create_prices(cp_report, request.data.get("section_c", []))
+            self._create_adm_records(cp_report, request.data.get("adm_c", []), "C")
+            self._create_adm_records(cp_report, request.data.get("adm_d", []), "D")
 
         response = CPReportSerializer(cp_report).data
         return Response(response, status=status.HTTP_200_OK)
