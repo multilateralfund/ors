@@ -3,9 +3,10 @@ import os
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.views.static import serve
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import mixins, generics, views, viewsets
+from rest_framework import mixins, generics, views, viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -94,9 +95,21 @@ class ProjectViewSet(
     """
 
     queryset = Project.objects.select_related(
-        "country", "agency", "subsector__sector", "project_type", "status", "submission"
-    )
+        "country",
+        "agency",
+        "subsector__sector",
+        "project_type",
+        "status",
+        "submission",
+    ).prefetch_related("coop_agencies__agency")
     filterset_class = ProjectFilter
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.OrderingFilter,
+        filters.SearchFilter,
+    ]
+    ordering_fields = "__all__"
+    search_fields = ["title"]
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -108,9 +121,23 @@ class ProjectViewSet(
             openapi.Parameter(
                 "get_submission",
                 openapi.IN_QUERY,
-                description="Add submission data to the response",
+                description="True: Return only submissions; False: Return only projects",
                 type=openapi.TYPE_BOOLEAN,
-            )
+            ),
+            openapi.Parameter(
+                "date_received_after",
+                openapi.IN_QUERY,
+                description="Returns the projects with date_received equal or after this date",
+                type=openapi.TYPE_STRING,
+                format=openapi.FORMAT_DATE,
+            ),
+            openapi.Parameter(
+                "date_received_before",
+                openapi.IN_QUERY,
+                description="Returns the projects with date_received equal or before this date",
+                type=openapi.TYPE_STRING,
+                format=openapi.FORMAT_DATE,
+            ),
         ],
     )
     def list(self, request, *args, **kwargs):
@@ -132,7 +159,9 @@ class ProjectFileView(APIView):
     def get(self, request, pk):
         """Get project file"""
         project_file = get_object_or_404(ProjectFile, pk=pk)
-        return serve(request, project_file.file.name, document_root=settings.PROTECTED_MEDIA_ROOT)
+        return serve(
+            request, project_file.file.name, document_root=settings.PROTECTED_MEDIA_ROOT
+        )
 
     def delete(self, request, pk):
         """Delete project file"""
