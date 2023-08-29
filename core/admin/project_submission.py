@@ -13,6 +13,7 @@ class ProjectSubmissionAdmin(admin.ModelAdmin):
         "project__project_type",
         "project__agency",
         "category",
+        "date_received",
     ]
 
     def get_queryset(self, request):

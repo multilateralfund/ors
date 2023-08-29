@@ -3,3 +3,5 @@ SECTION_ANNEX_MAPPING = {
     "B": ["F"],
     "C": ["C", "E", "F", "unknown"],
 }
+
+SUBMISSION_STATUSE_CODES = ["NEWSUB", "UNK"]
