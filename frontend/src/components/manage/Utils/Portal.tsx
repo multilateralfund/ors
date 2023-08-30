@@ -1,4 +1,5 @@
 'use client'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 export default function Portal({
@@ -10,13 +11,20 @@ export default function Portal({
   domNode?: DocumentFragment | Element | string
   key?: null | string
 }) {
-  if (typeof window === 'undefined' || !domNode) return children
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!domNode) return children
+  if (__SERVER__ || !mounted) return null
   if (typeof domNode === 'string') {
     const element = document.getElementById(domNode)
     if (element) {
       return createPortal(children, element, key)
     }
-    return children
+    return null
   }
   return createPortal(children, domNode, key)
 }

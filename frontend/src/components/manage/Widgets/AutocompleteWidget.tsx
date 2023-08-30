@@ -56,10 +56,10 @@ const AutocompleteWidget = forwardRef(
           if (isOptionEqualToValue) {
             return isOptionEqualToValue(option, value)
           }
-          if (isObject(option) && isObject(value)) {
+          if (isObject(option) && isObject(value) && option.label) {
             return option.label === value.label
           }
-          if (isObject(option) && isString(value)) {
+          if (isObject(option) && isString(value) && option.label) {
             return option.label === value
           }
           return option === value

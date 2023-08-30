@@ -1,40 +1,136 @@
 'use client'
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react'
 
-import { Box, Grid } from '@mui/material'
-import dynamic from 'next/dynamic'
+// import dynamic from 'next/dynamic'
+import {
+  Box,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  FormGroup,
+  Grid,
+  IconButton,
+  InputAdornment,
+  Popover,
+  Typography,
+} from '@mui/material'
+import {
+  BaseSingleInputFieldProps,
+  DateValidationError,
+  FieldSection,
+  UseDateFieldProps,
+} from '@mui/x-date-pickers'
+import { DatePicker } from '@mui/x-date-pickers/DatePicker/DatePicker'
+import { SortChangedEvent } from 'ag-grid-community'
+import cx from 'classnames'
+import { Dayjs } from 'dayjs'
+import { isNumber, sumBy } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
+import Table from '@ors/components/manage/Form/Table'
+import TextWidget from '@ors/components/manage/Widgets/TextWidget'
+import Link from '@ors/components/ui/Link'
+import { KEY_ENTER } from '@ors/constants'
 import { getResults } from '@ors/helpers/Api/Api'
 import useApi from '@ors/hooks/useApi'
 import useStore from '@ors/store'
 
-import { columnSchema } from './schema'
+import useGridOptions from './schema'
 
-const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
-  ssr: false,
-})
+import { IoCalendar } from '@react-icons/all-files/io5/IoCalendar'
+import { IoSearchOutline } from '@react-icons/all-files/io5/IoSearchOutline'
+import { IoSettingsSharp } from '@react-icons/all-files/io5/IoSettingsSharp'
+
+// const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
+//   ssr: false,
+// })
+
+interface ButtonFieldProps
+  extends UseDateFieldProps<Dayjs>,
+    BaseSingleInputFieldProps<
+      Dayjs | null,
+      Dayjs,
+      FieldSection,
+      DateValidationError
+    > {
+  setOpen?: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+const initialFilters = {
+  agency_id: null,
+  approval_meeting_no: null,
+  country_id: null,
+  project_type_id: null,
+  search: '',
+  sector_id: null,
+  status_id: null,
+  subsector_id: null,
+  substance_type: null,
+}
+
+function Label({
+  children,
+  className,
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
+  return (
+    <Typography className={cx('font-semibold text-primary', className)}>
+      {children}
+    </Typography>
+  )
+}
+
+function ButtonField(props: ButtonFieldProps) {
+  const {
+    id,
+    InputProps: { ref } = {},
+    disabled,
+    inputProps: { 'aria-label': ariaLabel } = {},
+    label,
+    setOpen,
+  } = props
+
+  return (
+    <Button
+      id={id}
+      className="text-typography-primary"
+      aria-label={ariaLabel}
+      disabled={disabled}
+      ref={ref}
+      variant="text"
+      disableRipple
+      onClick={() => setOpen?.((prev) => !prev)}
+    >
+      <IoCalendar className="ltr:mr-2 rtl:ml-2" />
+      {label ?? 'Pick a date'}
+    </Button>
+  )
+}
 
 export default function SubmissionsTable() {
   const grid = useRef<any>()
+  const form = useRef<any>()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [ignored, forceUpdate] = useReducer((x) => x + 1, 0)
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
+  const [filters, setFilters] = useState({ ...initialFilters })
+  const [datepickerOpen, setDatepickerOpen] = useState(false)
   const [apiSettings, setApiSettings] = useState({
     options: {
+      delay: 500,
       params: {
-        agency_id: null,
-        approval_meeting_no: null,
+        get_submission: true,
         limit: 10,
         offset: 0,
-        project_type_id: null,
-        sector_id: null,
-        status_id: null,
-        subsector_id: null,
-        substance_type: null,
+        ...initialFilters,
       },
     },
     path: 'api/projects',
   })
-  const { data, loading } = useApi(apiSettings)
-  const { count, results } = getResults(data)
+  const [collapsedRows, setCollapsedRows] = useState<Array<number>>([])
+  const { data, loaded, loading } = useApi(apiSettings)
 
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
@@ -42,7 +138,58 @@ export default function SubmissionsTable() {
     (obj: Array<string>) => ({ id: obj[0], label: obj[1] }),
   )
 
-  const [columnDefs] = useState(columnSchema)
+  const gridOptions = useGridOptions({
+    collapsedRows,
+    setCollapsedRows,
+    statuses: projectSlice.statuses.data,
+  })
+
+  const { count, results } = useMemo(() => {
+    const { count, results } = getResults(data)
+    return {
+      count,
+      results: results.map((row, index) => ({ ...row, rowIndex: index })),
+    }
+  }, [data])
+
+  const updatedResults = useMemo(() => {
+    const updatedResults = []
+
+    for (let i = 0; i < results.length; i++) {
+      updatedResults.push(results[i])
+
+      // Check if this index is in collapsedRows
+      if (collapsedRows.includes(i)) {
+        // Insert extra rows just below the collapsed row
+        updatedResults.push({ collapsedRow: true, ...results[i] })
+      }
+    }
+
+    return updatedResults
+  }, [results, collapsedRows])
+
+  const columnApi = grid.current?.columnApi
+  const columnState = columnApi?.getColumnState?.() || []
+  const visibleColumns = sumBy(columnState, (state: any) => {
+    return state.hide ? 0 : 1
+  })
+
+  const open = Boolean(anchorEl)
+  const id = open ? 'table-settings' : undefined
+
+  useEffect(() => {
+    if (loaded) {
+      setCollapsedRows([])
+    }
+  }, [loaded])
+
+  const handleSettingsClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleSettingsClose = () => {
+    setAnchorEl(null)
+  }
 
   function handleParamsChange(newParams: { [key: string]: any }) {
     setApiSettings((prevApiSettings) => ({
@@ -57,96 +204,322 @@ export default function SubmissionsTable() {
     }))
   }
 
+  function handleFilterChange(newFilters: { [key: string]: any }) {
+    grid.current.api.paginationGoToPage(0)
+    setFilters((filters) => ({ ...filters, ...newFilters }))
+  }
+
   return (
-    <Grid className="flex-col-reverse md:flex-row" spacing={2} container>
-      <Grid md={8} sm={12} xl={9} item>
-        <Table
-          columnDefs={columnDefs}
-          gridRef={grid}
-          loading={loading}
-          rowCount={count}
-          rowData={results}
-          onPaginationChanged={({ page, rowsPerPage }) => {
-            handleParamsChange({
-              limit: rowsPerPage,
-              offset: page * rowsPerPage,
-            })
-          }}
-          withSkeleton
-        />
+    <form
+      className="submission-table"
+      ref={form}
+      onSubmit={(event: any) => {
+        event.stopPropagation()
+        event.preventDefault()
+      }}
+    >
+      <Grid spacing={2} container>
+        <Grid
+          className="mb-4 flex justify-between gap-4"
+          md={8}
+          sm={12}
+          xl={9}
+          xs={12}
+          item
+        >
+          <TextWidget
+            name="search"
+            className="max-w-[240px] sm:max-w-xs lg:max-w-sm"
+            placeholder="Search by keyword..."
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <IconButton
+                    aria-label="search submission table"
+                    edge="start"
+                    tabIndex={-1}
+                    onClick={() => {
+                      handleParamsChange({
+                        offset: 0,
+                        search: form.current.search.value,
+                      })
+                    }}
+                  >
+                    <IoSearchOutline />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            onKeyDown={(event) => {
+              if (event.key === KEY_ENTER) {
+                handleParamsChange({
+                  offset: 0,
+                  search: form.current.search.value,
+                })
+              }
+            }}
+          />
+          <DatePicker
+            className="w-full max-w-sm"
+            closeOnSelect={false}
+            format="DD/MM/YYYY"
+            label="Date range"
+            open={datepickerOpen}
+            slotProps={{ field: { setOpen: setDatepickerOpen } as any }}
+            autoFocus
+            onClose={() => setDatepickerOpen(false)}
+            onOpen={() => setDatepickerOpen(true)}
+            slots={{
+              field: ButtonField,
+            }}
+          />
+        </Grid>
       </Grid>
-      <Grid md={4} sm={12} xl={3} item>
-        <Box className="rounded py-0">
-          <h2>Filter projects by</h2>
-          <Field
-            options={projectSlice.statuses.data}
-            widget="chipToggle"
-            onChange={(value: null | number) => {
-              grid.current.api.paginationGoToPage(0)
-              handleParamsChange({ offset: 0, status_id: value })
+      <Grid className="flex-col-reverse md:flex-row" spacing={2} container>
+        <Grid md={8} sm={12} xl={9} item>
+          <Table
+            className="mb-4"
+            collapsedRows={collapsedRows}
+            columnDefs={gridOptions.columnDefs}
+            gridRef={grid}
+            loading={loading}
+            rowCount={count}
+            rowData={updatedResults}
+            fullWidthCellRenderer={(props: any) => {
+              const funds = parseFloat(props.data.submission.funds_allocated)
+
+              return (
+                <Grid spacing={4} container>
+                  <Grid item>
+                    <Label>Subsector</Label>
+                    <Typography>{props.data.subsector || '-'}</Typography>
+                  </Grid>
+                  <Grid item>
+                    <Label>HFC/HCFC</Label>
+                    <Typography>{props.data.substance_type || '-'}</Typography>
+                  </Grid>
+                  <Grid item>
+                    <Label>Funds requested</Label>
+                    <Typography>
+                      {!isNaN(funds) && isNumber(funds)
+                        ? funds.toLocaleString()
+                        : '-'}
+                    </Typography>
+                  </Grid>
+                  <Grid item>
+                    <Label>Approval meeting</Label>
+                    <Typography>
+                      {props.data.approval_meeting_no || '-'}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              )
             }}
-          />
-          <Field
-            Input={{ label: 'Sector' }}
-            getOptionLabel={(option: any) => option?.name}
-            options={projectSlice.sectors.data}
-            widget="autocomplete"
-            onChange={(_: any, value: any) => {
-              grid.current.api.paginationGoToPage(0)
-              handleParamsChange({ offset: 0, sector_id: value?.id })
+            getRowHeight={(props: any) => {
+              if (props.data.collapsedRow) {
+                return 100
+              }
             }}
-          />
-          <Field
-            Input={{ label: 'Subsector' }}
-            getOptionLabel={(option: any) => option?.name}
-            options={projectSlice.subsectors.data}
-            widget="autocomplete"
-            onChange={(_: any, value: any) => {
-              grid.current.api.paginationGoToPage(0)
-              handleParamsChange({ offset: 0, subsector_id: value?.id })
+            isFullWidthRow={(params: any) => {
+              return !!params.rowNode.data.collapsedRow
             }}
-          />
-          <Field
-            Input={{ label: 'Type' }}
-            getOptionLabel={(option: any) => option?.name}
-            options={projectSlice.types.data}
-            widget="autocomplete"
-            onChange={(_: any, value: any) => {
-              grid.current.api.paginationGoToPage(0)
-              handleParamsChange({ offset: 0, project_type_id: value?.id })
+            onPaginationChanged={({ page, rowsPerPage }) => {
+              handleParamsChange({
+                limit: rowsPerPage,
+                offset: page * rowsPerPage,
+              })
             }}
-          />
-          <Field
-            Input={{ label: 'Substance Type' }}
-            options={substanceTypes}
-            widget="autocomplete"
-            onChange={(_: any, value: any) => {
-              grid.current.api.paginationGoToPage(0)
-              handleParamsChange({ offset: 0, substance_type: value?.id })
+            onSortChanged={(event: SortChangedEvent<any>) => {
+              handleParamsChange({
+                offset: 0,
+                ordering: event.columnApi
+                  .getColumnState()
+                  .filter((state) => state.sort !== null)
+                  .map(
+                    (state) =>
+                      `${state.sort === 'desc' ? '-' : ''}${state.colId}`,
+                  )
+                  .join(','),
+              })
             }}
+            withSkeleton
           />
-          <Field
-            Input={{ label: 'Agency' }}
-            getOptionLabel={(option: any) => option?.name}
-            options={commonSlice.agencies.data}
-            widget="autocomplete"
-            onChange={(_: any, value: any) => {
-              grid.current.api.paginationGoToPage(0)
-              handleParamsChange({ agency_id: value?.id, offset: 0 })
-            }}
-          />
-          <Field
-            Input={{ label: 'Meeting' }}
-            getOptionLabel={(option: any) => option.toString()}
-            options={projectSlice.meetings.data}
-            widget="autocomplete"
-            onChange={(_: any, value: any) => {
-              grid.current.api.paginationGoToPage(0)
-              handleParamsChange({ approval_meeting_no: value, offset: 0 })
-            }}
-          />
-        </Box>
+          <Typography>
+            <Link href="/submissions/create" variant="contained" button>
+              Add new submission
+            </Link>
+          </Typography>
+        </Grid>
+        <Grid md={4} sm={12} xl={3} item>
+          <Box>
+            <div className="mb-4 flex items-center justify-between">
+              <Typography component="h2" variant="h4">
+                Filters
+                <IconButton
+                  aria-describedby={id}
+                  disableRipple
+                  onClick={handleSettingsClick}
+                >
+                  <IoSettingsSharp size={20} />
+                </IconButton>
+                <Popover
+                  id={id}
+                  anchorEl={anchorEl}
+                  open={open}
+                  anchorOrigin={{
+                    horizontal: 'left',
+                    vertical: 'bottom',
+                  }}
+                  onClose={handleSettingsClose}
+                  transformOrigin={{
+                    horizontal: 'left',
+                    vertical: 'top',
+                  }}
+                >
+                  <div className="p-4">
+                    <FormGroup aria-label="position">
+                      {(columnApi?.getAllColumns?.() || []).map(
+                        (column: any) => {
+                          return (
+                            <FormControlLabel
+                              key={column.colId}
+                              label={column.colDef.headerName}
+                              labelPlacement="end"
+                              control={
+                                <Checkbox
+                                  checked={column.visible}
+                                  disableRipple
+                                  disabled={
+                                    column.visible && visibleColumns <= 1
+                                  }
+                                  onChange={(event: any) => {
+                                    columnApi.applyColumnState({
+                                      state: columnState.map((state: any) => {
+                                        return {
+                                          ...state,
+                                          hide:
+                                            state.colId === column.colId
+                                              ? !event.target.checked
+                                              : state.hide,
+                                        }
+                                      }),
+                                    })
+                                    forceUpdate()
+                                  }}
+                                />
+                              }
+                            />
+                          )
+                        },
+                      )}
+                    </FormGroup>
+                  </div>
+                </Popover>
+              </Typography>
+              <Button
+                onClick={() => {
+                  form.current.search.value = ''
+                  handleParamsChange({ offset: 0, ...initialFilters })
+                  handleFilterChange({ ...initialFilters })
+                }}
+              >
+                Clear all
+              </Button>
+            </div>
+            <Field
+              options={projectSlice.statuses.data}
+              value={filters.status_id}
+              widget="chipToggle"
+              onChange={(value: null | number) => {
+                handleFilterChange({ status_id: [value] })
+                handleParamsChange({ offset: 0, status_id: value })
+              }}
+            />
+            <Field
+              Input={{ label: 'Country' }}
+              getOptionLabel={(option: any) => option?.name}
+              options={commonSlice.countries.data}
+              value={filters.country_id}
+              widget="autocomplete"
+              onChange={(_: any, value: any) => {
+                handleFilterChange({ country_id: value })
+                handleParamsChange({ country_id: value?.id, offset: 0 })
+              }}
+            />
+            <Field
+              Input={{ label: 'Sector' }}
+              getOptionLabel={(option: any) => option?.name}
+              options={projectSlice.sectors.data}
+              value={filters.sector_id}
+              widget="autocomplete"
+              onChange={(_: any, value: any) => {
+                handleFilterChange({ sector_id: value })
+                handleParamsChange({ offset: 0, sector_id: value?.id })
+              }}
+            />
+            <Field
+              Input={{ label: 'Subsector' }}
+              getOptionLabel={(option: any) => option?.name}
+              options={projectSlice.subsectors.data}
+              value={filters.subsector_id}
+              widget="autocomplete"
+              onChange={(_: any, value: any) => {
+                handleFilterChange({ subsector_id: value })
+                handleParamsChange({ offset: 0, subsector_id: value?.id })
+              }}
+            />
+            <Field
+              Input={{ label: 'Type' }}
+              getOptionLabel={(option: any) => option?.name}
+              options={projectSlice.types.data}
+              value={filters.project_type_id}
+              widget="autocomplete"
+              isOptionEqualToValue={(option: any, value: any) =>
+                option.id === value
+              }
+              onChange={(_: any, value: any) => {
+                handleFilterChange({ project_type_id: value })
+                handleParamsChange({ offset: 0, project_type_id: value?.id })
+              }}
+            />
+            <Field
+              Input={{ label: 'Substance Type' }}
+              options={substanceTypes}
+              value={filters.substance_type}
+              widget="autocomplete"
+              onChange={(_: any, value: any) => {
+                handleFilterChange({ substance_type: value })
+                handleParamsChange({ offset: 0, substance_type: value?.id })
+              }}
+            />
+            <Field
+              Input={{ label: 'Agency' }}
+              getOptionLabel={(option: any) => option?.name}
+              options={commonSlice.agencies.data}
+              value={filters.agency_id}
+              widget="autocomplete"
+              onChange={(_: any, value: any) => {
+                handleFilterChange({ agency_id: value })
+                handleParamsChange({ agency_id: value?.id, offset: 0 })
+              }}
+            />
+            <Field
+              Input={{ label: 'Meeting' }}
+              getOptionLabel={(option: any) => option.toString()}
+              options={projectSlice.meetings.data}
+              value={filters.approval_meeting_no}
+              widget="autocomplete"
+              onChange={(_: any, value: any) => {
+                handleFilterChange({ approval_meeting_no: value })
+                handleParamsChange({
+                  approval_meeting_no: value?.id,
+                  offset: 0,
+                })
+              }}
+            />
+          </Box>
+        </Grid>
       </Grid>
-    </Grid>
+    </form>
   )
 }

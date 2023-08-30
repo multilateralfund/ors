@@ -26,6 +26,7 @@ declare module 'ag-grid-react' {
     }) => void
     rowCount?: number
     rowData?: Array<any> | null
+    withMenu?: boolean
     withSeparators?: boolean
     withSkeleton?: boolean
   }

@@ -40,7 +40,7 @@ export default function Header() {
   return (
     <Box
       id="header"
-      className="rounded-none border-0 px-0 pb-0 pt-4"
+      className="mb-6 rounded-none border-0 px-0 pb-0 pt-4"
       FadeInOut={{ component: 'nav' }}
       component={FadeInOut}
     >
