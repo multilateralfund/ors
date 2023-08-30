@@ -104,6 +104,7 @@ docker-compose exec app ./manage.py import_projects proposals
 - projects -> projects from tbInventory
 - multi_year_projects -> multi year projects from MultiYear-Projects
 - progress -> progress reports from tbProgress 
+- comments -> project comments 
             
 ### Import files
 
@@ -136,3 +137,9 @@ docker-compose exec app ./manage.py import_projects proposals
 : download files from nextcloud
     - **nextcloud path** OzoneMlf/Progress reports/data/json/tbCountryID.json
     - **local path** .fs/import_files/progress_report
+
+- comments 
+: download files from nextcloud
+    - **nextcloud path** OzoneMlf/Progress reports/data/json/tbComment.json
+    - **local path** .fs/import_files/progress_report
+
