@@ -54,7 +54,10 @@ export default function ChipToggleWidget(
   }
 
   function handleClick(chipId: number) {
-    const newSelected = getSelected(selected, chipId)
+    const newSelected = getSelected(
+      !isControlled ? selected : props.value || null,
+      chipId,
+    )
     if (!isControlled) {
       setSelected(newSelected)
       props.onChange?.(props.multiple ? newSelected : newSelected?.[0] || null)

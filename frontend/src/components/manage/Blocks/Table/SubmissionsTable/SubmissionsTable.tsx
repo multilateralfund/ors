@@ -56,7 +56,7 @@ interface ButtonFieldProps
   setOpen?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const initialFilters = {
+const initialParams = {
   agency_id: null,
   approval_meeting_no: null,
   country_id: null,
@@ -66,6 +66,17 @@ const initialFilters = {
   status_id: null,
   subsector_id: null,
   substance_type: null,
+}
+
+const initialFilters = {
+  agency_id: [],
+  approval_meeting_no: [],
+  country_id: [],
+  project_type_id: [],
+  sector_id: [],
+  status_id: [],
+  subsector_id: [],
+  substance_type: [],
 }
 
 function Label({
@@ -124,7 +135,7 @@ export default function SubmissionsTable() {
         get_submission: true,
         limit: 10,
         offset: 0,
-        ...initialFilters,
+        ...initialParams,
       },
     },
     path: 'api/projects',
@@ -419,7 +430,7 @@ export default function SubmissionsTable() {
               <Button
                 onClick={() => {
                   form.current.search.value = ''
-                  handleParamsChange({ offset: 0, ...initialFilters })
+                  handleParamsChange({ offset: 0, ...initialParams })
                   handleFilterChange({ ...initialFilters })
                 }}
               >
@@ -430,9 +441,10 @@ export default function SubmissionsTable() {
               options={projectSlice.statuses.data}
               value={filters.status_id}
               widget="chipToggle"
-              onChange={(value: null | number) => {
-                handleFilterChange({ status_id: [value] })
-                handleParamsChange({ offset: 0, status_id: value })
+              multiple
+              onChange={(value: Array<number> | null) => {
+                handleFilterChange({ status_id: value })
+                handleParamsChange({ offset: 0, status_id: value?.join(',') })
               }}
             />
             <Field
@@ -441,9 +453,13 @@ export default function SubmissionsTable() {
               options={commonSlice.countries.data}
               value={filters.country_id}
               widget="autocomplete"
+              multiple
               onChange={(_: any, value: any) => {
                 handleFilterChange({ country_id: value })
-                handleParamsChange({ country_id: value?.id, offset: 0 })
+                handleParamsChange({
+                  country_id: value.map((item: any) => item.id).join(','),
+                  offset: 0,
+                })
               }}
             />
             <Field
@@ -452,9 +468,13 @@ export default function SubmissionsTable() {
               options={projectSlice.sectors.data}
               value={filters.sector_id}
               widget="autocomplete"
+              multiple
               onChange={(_: any, value: any) => {
                 handleFilterChange({ sector_id: value })
-                handleParamsChange({ offset: 0, sector_id: value?.id })
+                handleParamsChange({
+                  offset: 0,
+                  sector_id: value.map((item: any) => item.id).join(','),
+                })
               }}
             />
             <Field
@@ -463,9 +483,13 @@ export default function SubmissionsTable() {
               options={projectSlice.subsectors.data}
               value={filters.subsector_id}
               widget="autocomplete"
+              multiple
               onChange={(_: any, value: any) => {
                 handleFilterChange({ subsector_id: value })
-                handleParamsChange({ offset: 0, subsector_id: value?.id })
+                handleParamsChange({
+                  offset: 0,
+                  subsector_id: value.map((item: any) => item.id).join(','),
+                })
               }}
             />
             <Field
@@ -477,9 +501,13 @@ export default function SubmissionsTable() {
               isOptionEqualToValue={(option: any, value: any) =>
                 option.id === value
               }
+              multiple
               onChange={(_: any, value: any) => {
                 handleFilterChange({ project_type_id: value })
-                handleParamsChange({ offset: 0, project_type_id: value?.id })
+                handleParamsChange({
+                  offset: 0,
+                  project_type_id: value.map((item: any) => item.id).join(','),
+                })
               }}
             />
             <Field
@@ -487,9 +515,13 @@ export default function SubmissionsTable() {
               options={substanceTypes}
               value={filters.substance_type}
               widget="autocomplete"
+              multiple
               onChange={(_: any, value: any) => {
                 handleFilterChange({ substance_type: value })
-                handleParamsChange({ offset: 0, substance_type: value?.id })
+                handleParamsChange({
+                  offset: 0,
+                  substance_type: value.map((item: any) => item.id).join(','),
+                })
               }}
             />
             <Field
@@ -498,9 +530,13 @@ export default function SubmissionsTable() {
               options={commonSlice.agencies.data}
               value={filters.agency_id}
               widget="autocomplete"
+              multiple
               onChange={(_: any, value: any) => {
                 handleFilterChange({ agency_id: value })
-                handleParamsChange({ agency_id: value?.id, offset: 0 })
+                handleParamsChange({
+                  agency_id: value.map((item: any) => item.id).join(','),
+                  offset: 0,
+                })
               }}
             />
             <Field
@@ -509,10 +545,13 @@ export default function SubmissionsTable() {
               options={projectSlice.meetings.data}
               value={filters.approval_meeting_no}
               widget="autocomplete"
+              multiple
               onChange={(_: any, value: any) => {
                 handleFilterChange({ approval_meeting_no: value })
                 handleParamsChange({
-                  approval_meeting_no: value?.id,
+                  approval_meeting_no: value
+                    .map((item: any) => item.id)
+                    .join(','),
                   offset: 0,
                 })
               }}
