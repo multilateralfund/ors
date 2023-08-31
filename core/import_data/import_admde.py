@@ -100,7 +100,7 @@ def create_adm_records(file_name, dir_path, article_dict, opt_dict):
     @param article_dict: dictionary of article_id: AdmRow object
     @param opt_dict: dictionary of (option_id, article_id): AdmChoice object
     """
-    country_dict, year_dict = get_country_and_year_dict(dir_path, logger)
+    country_dict, year_dict = get_country_and_year_dict(dir_path)
 
     with open(file_name, "r", encoding="utf8") as f:
         json_data = json.load(f)
@@ -112,11 +112,7 @@ def create_adm_records(file_name, dir_path, article_dict, opt_dict):
             continue
 
         cp = get_cp_report_for_db_import(
-            year_dict,
-            country_dict,
-            entry_json,
-            logger,
-            entry_json["AdmDEArtEntriesId"],
+            year_dict, country_dict, entry_json, entry_json["AdmDEArtEntriesId"]
         )
 
         if not cp:
@@ -155,7 +151,7 @@ def parse_db_files(dir_path, db_name):
     logger.info(f"✔ {opt_file} parsed, AdmChoices imported")
 
     file_name = dir_path / "AdmDEArticleEntries.json"
-    delete_old_data(AdmRecord, file_name, logger)
+    delete_old_data(AdmRecord, file_name)
     create_adm_records(file_name, dir_path, article_dict, opt_dict)
 
 

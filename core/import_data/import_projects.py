@@ -154,7 +154,7 @@ def create_project_funds(project, project_json, fields_mapping):
             "support_13": project_json[support_13_field],
             "meeting": project_json.get(meeting_field),
             "interest": project_json.get(interest_field),
-            "date": parse_date(project_json.get(date_field), logger),
+            "date": parse_date(project_json.get(date_field)),
             "fund_type": fields_mapping["fund_type"],
             "sort_order": i,
         }
@@ -200,7 +200,7 @@ def parse_file(file_path):
 
     for project_json in json_data:
         project_data = get_project_base_data(
-            project_json, project_json["CODE"], logger, is_submissions=False
+            project_json, project_json["CODE"], is_submissions=False
         )
 
         if not project_data:
@@ -235,15 +235,11 @@ def parse_file(file_path):
                 "hcfc_stage": project_json.get("HCFCStage"),
                 "fund_disbursed": project_json.get("FUND_DISBURSED"),
                 "fund_disbursed_13": project_json.get("FUND_DISB1_13%"),
-                "date_completion": parse_date(
-                    project_json.get("DATE_COMPLETION"), logger
-                ),
-                "date_actual": parse_date(project_json.get("DATE_ACTUAL"), logger),
-                "date_comp_revised": parse_date(
-                    project_json.get("DATE_COMP_REVISED"), logger
-                ),
+                "date_completion": parse_date(project_json.get("DATE_COMPLETION")),
+                "date_actual": parse_date(project_json.get("DATE_ACTUAL")),
+                "date_comp_revised": parse_date(project_json.get("DATE_COMP_REVISED")),
                 "date_per_agreement": parse_date(
-                    project_json.get("DATE_PER_AGREEMENT"), logger
+                    project_json.get("DATE_PER_AGREEMENT")
                 ),
                 "remarks": project_json.get("REMARKS"),
             }

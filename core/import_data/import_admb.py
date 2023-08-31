@@ -54,7 +54,7 @@ def get_columns_dict():
     columns_dict = {}
     for _, columns in CP_COLUMNS_MAPPING.items():
         for column_name in columns:
-            column_obj = get_adm_column(column_name, SECTION, logger)
+            column_obj = get_adm_column(column_name, SECTION)
             if not column_obj:
                 return None
             columns_dict[column_name] = column_obj
@@ -346,7 +346,7 @@ def import_adm_records(
     @param notes = dict
 
     """
-    country_dict, year_dict = get_country_and_year_dict(file_data["dir_path"], logger)
+    country_dict, year_dict = get_country_and_year_dict(file_data["dir_path"])
     columns_dict = get_columns_dict()
     if not columns_dict:
         return
@@ -358,11 +358,7 @@ def import_adm_records(
     for admb_entry in admb_entries_json:
         # get cp report
         cp_report = get_cp_report_for_db_import(
-            year_dict,
-            country_dict,
-            admb_entry,
-            logger,
-            admb_entry["AdmbEntriesId"],
+            year_dict, country_dict, admb_entry, admb_entry["AdmbEntriesId"]
         )
         if not cp_report:
             continue
@@ -468,7 +464,7 @@ def parse_db_files(dir_path, database_name):
     logger.info("✔ adm rows imported")
 
     admb_entries_file = dir_path / "AdmB_Entries.json"
-    delete_old_data(AdmRecord, admb_entries_file, logger)
+    delete_old_data(AdmRecord, admb_entries_file)
     file_data = {
         "admb_entries_file": admb_entries_file,
         "database_name": database_name,

@@ -14,13 +14,13 @@ logger = logging.getLogger(__name__)
 
 def import_project_comments():
     file_path = settings.IMPORT_DATA_DIR / "progress_report" / "tbComment.json"
-    delete_old_data(ProjectComment, file_path, logger)
+    delete_old_data(ProjectComment, file_path)
 
     with file_path.open("r") as f:
         comments = json.load(f)
 
     for index, item in enumerate(comments):
-        project = get_object_by_code(Project, item["Code"], "code", index, logger)
+        project = get_object_by_code(Project, item["Code"], "code", index)
         if not project:
             continue
 

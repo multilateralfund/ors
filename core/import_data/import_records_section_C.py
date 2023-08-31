@@ -70,7 +70,7 @@ def parse_sheet(df):
     parse the sheet and import the data in database
     @param df = pandas dataframe
     """
-    if not check_headers(df, REQUIRED_COLUMNS, logger):
+    if not check_headers(df, REQUIRED_COLUMNS):
         logger.error("Couldn't parse this sheet")
         return
 
@@ -83,7 +83,7 @@ def parse_sheet(df):
         if row["Country"] != current_country["name"]:
             current_country["name"] = row["Country"]
             current_country["obj"] = get_country_by_name(
-                current_country["name"], index_row, logger
+                current_country["name"], index_row
             )
 
         # we didn't found a country in db:
@@ -92,7 +92,7 @@ def parse_sheet(df):
 
         chemical_name = row["Controlled Substances"]
 
-        substance, blend = get_chemical(chemical_name, index_row, logger)
+        substance, blend = get_chemical(chemical_name, index_row)
         if not substance and not blend:
             continue
 
@@ -215,7 +215,7 @@ def import_records():
 
     logger.info(f"⏳ parsing file: {FILE_NAME}")
     # before we import anything, we should delete all prices from previous imports
-    delete_old_data(CPPrices, FILE_NAME, logger)
+    delete_old_data(CPPrices, FILE_NAME)
 
     parse_file(file_path)
     logger.info(f"✔ section C records from {FILE_NAME} imported")
