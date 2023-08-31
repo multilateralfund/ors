@@ -31,6 +31,6 @@ def parse_columns_file(file_path):
 
 def import_adm_columns():
     file_path = IMPORT_RESOURCES_DIR / "adm_columns.json"
-    delete_old_data(AdmColumn, file_path, logger)
+    delete_old_data(AdmColumn, file_path)
     parse_columns_file(file_path)
     logger.info("✔ adm columns imported")

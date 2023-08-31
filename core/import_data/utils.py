@@ -1,5 +1,6 @@
 import decimal
 import json
+import logging
 import re
 
 from dateutil.parser import parse, ParserError
@@ -14,6 +15,8 @@ from core.models.country_programme import CPReport
 from core.models.project import Project, ProjectStatus, ProjectSubSector, ProjectType
 from core.models.substance import Substance
 from core.utils import IMPORT_DB_MAX_YEAR
+
+logger = logging.getLogger(__name__)
 
 IMPORT_RESOURCES_DIR = settings.ROOT_DIR / "import_data" / "resources"
 IMPORT_PROJECTS_DIR = settings.IMPORT_DATA_DIR / "project_database"
@@ -103,7 +106,7 @@ def parse_string(string_value):
     return string_value.strip().lower()
 
 
-def parse_date(date_string, logger):
+def parse_date(date_string):
     """
     Parse date string
 
@@ -121,12 +124,11 @@ def parse_date(date_string, logger):
 
 
 # pylint: disable-next=W0613
-def parse_noop(value, logger):
+def parse_noop(value):
     """
     NOOP return value, coalesce empty string to None
 
     @param value: any value
-    @param logger: logger
     @return: value or None
     """
     if value == "":
@@ -134,13 +136,12 @@ def parse_noop(value, logger):
     return value
 
 
-def delete_old_data(cls, source_file, logger):
+def delete_old_data(cls, source_file):
     """
     Delete old data from db for a specific source file
 
     @param cls: Class instance
     @param source_file: string source file name
-    @param logger: logger object
     """
     cls.objects.filter(source_file__iexact=str(source_file).lower()).all().delete()
     logger.info(f"✔ old {cls.__name__} from {source_file} deleted")
@@ -174,7 +175,6 @@ def get_cp_report(
     country_name,
     country_id=None,
     index_row=None,
-    logger=None,
     other_args=None,
     use_offset=True,
 ):
@@ -184,16 +184,13 @@ def get_cp_report(
     @param country_name = string
     @param country_id = int
     @param index_row = int
-    @param logger = logger obj
     @param other_args = dict (other arguments for CPReport object)
     @param use_offset = boolean (if the index_row should be increased with OFFSET)
 
     @return country_program = CPReport object
     """
     if not country_id:
-        country = get_country_by_name(
-            country_name, index_row, logger, use_offset=use_offset
-        )
+        country = get_country_by_name(country_name, index_row, use_offset=use_offset)
         country_id = country.id
 
     cp_name = f"{country_name} {year}"
@@ -212,16 +209,13 @@ def get_cp_report(
     return cp
 
 
-def get_object_by_name(
-    cls, obj_name, index_row, obj_type_name, logger, use_offset=True
-):
+def get_object_by_name(cls, obj_name, index_row, obj_type_name, use_offset=True):
     """
     get object by name or log error if not found in db
     @param cls: Class instance
     @param obj_name: string -> object name (filter value)
     @param index_row: integer -> index row
     @param obj_type_name: string -> object type name (for logging)
-    @param logger: logger object
     @param use_offset: boolean (if the index_row should be increased with OFFSET)
 
     @return: object or None
@@ -240,15 +234,13 @@ def get_object_by_name(
     return obj
 
 
-def get_object_by_code(cls, code, column, index_row, logger):
+def get_object_by_code(cls, code, column, index_row):
     """
     get object by code or log error if not found in db
     @param cls: Class instance
     @param code: string -> unique code (filter value)
     @param column: string -> column name (filter column)
     @param index_row: integer -> index row
-    @param logger: logger object
-
     @return: object or None
     """
     if not code:
@@ -263,7 +255,7 @@ def get_object_by_code(cls, code, column, index_row, logger):
 
 
 # --- cp databases import utils ---
-def get_adm_column(column_name, section, logger):
+def get_adm_column(column_name, section):
     column = AdmColumn.objects.filter(name=column_name, section=section).first()
     if not column:
         logger.error(
@@ -301,14 +293,13 @@ def get_or_create_adm_row(row_data):
 
 
 def get_cp_report_for_db_import(
-    year_dict, country_dict, json_entry, logger, entry_id, other_args=None
+    year_dict, country_dict, json_entry, entry_id, other_args=None
 ):
     """
     get or create country program report object by year and country
     @param year_dict = dict
     @param country_dict = dict
     @param json_entry = dict (json entry)
-    @param logger = logger object
     @param entry_id = int
     @param other_args = dict (other arguments for CPReport object)
 
@@ -342,22 +333,16 @@ def get_cp_report_for_db_import(
 
     # get cp report id
     cp_report = get_cp_report(
-        year,
-        country["name"],
-        country["id"],
-        other_args=other_args,
-        use_offset=False,
+        year, country["name"], country["id"], other_args=other_args, use_offset=False
     )
     return cp_report
 
 
-def get_country_and_year_dict(dir_path, logger):
+def get_country_and_year_dict(dir_path):
     """
     Parse country and year json files and create dictionaries
     @param country_file = str (file path for country import file)
     @param year_file = str (file path for year import file)
-    @param logger = logger object
-
     @return tuple(country_dict, year_dict) = tuple(dict, dict)
         - struct: country_dict = {
             country_cp_id: {
@@ -368,7 +353,7 @@ def get_country_and_year_dict(dir_path, logger):
         - struct: year_dict = {year_cp_id: year}
     """
     country_file = dir_path / "Country.json"
-    country_dict = get_country_dict_from_db_file(country_file, logger)
+    country_dict = get_country_dict_from_db_file(country_file)
     logger.info("✔ country file parsed")
 
     year_file = dir_path / "ProjectYear.json"
@@ -378,7 +363,7 @@ def get_country_and_year_dict(dir_path, logger):
     return country_dict, year_dict
 
 
-def get_country_dict_from_db_file(file_name, logger):
+def get_country_dict_from_db_file(file_name):
     """
     Parse country json file and create a dictionary
     @param file_name = str (file path for import file)
@@ -471,13 +456,11 @@ def get_decimal_from_excel_string(string_value):
         return None
 
 
-def check_headers(df, required_columns, logger):
+def check_headers(df, required_columns):
     """
     check if the df has all the required columns
     @param df = pandas dataFrame
     @param required_columns = list
-    @param logger = logger object
-
     @return boolean
     """
     for c in required_columns:
@@ -488,7 +471,7 @@ def check_headers(df, required_columns, logger):
     return True
 
 
-def check_empty_row(row, index_row, quantity_columns, logger):
+def check_empty_row(row, index_row, quantity_columns):
     """
     check if the row has negative values and if it's empty
     @param row = pandas series
@@ -570,29 +553,23 @@ def parse_chemical_name(chemical_name):
     return chemical_name, components
 
 
-def get_country_by_name(country_name, index_row, logger, use_offset=True):
+def get_country_by_name(country_name, index_row, use_offset=True):
     """
     get country object from country name
     @param country_name = string
     @param index_row = int
-    @param logger = logger object
     @param use_offset = boolean (if the index_row should be increased with OFFSET)
 
     @return Country object
     """
     country_name = COUNTRY_NAME_MAPPING.get(country_name, country_name)
     country = get_object_by_name(
-        Country,
-        country_name,
-        index_row,
-        "country",
-        logger,
-        use_offset=use_offset,
+        Country, country_name, index_row, "country", use_offset=use_offset
     )
     return country
 
 
-def get_chemical(chemical_name, index_row, logger):
+def get_chemical(chemical_name, index_row):
     """
     parse chemical name from row and return substance or blend:
         - if the chemical is a substance => return (substance, None)
@@ -600,8 +577,6 @@ def get_chemical(chemical_name, index_row, logger):
         - if we can't find this chemical => return (None, None)
     @param chemical_name = string
     @param index_row = int
-    @param logger = logger object
-
     @return tuple => (int, None) or (None, int) or (None, None)
     """
 
@@ -625,13 +600,12 @@ def get_chemical(chemical_name, index_row, logger):
 
 
 # --- projects import ---
-def get_project_base_data(item, item_index, logger, is_submissions=True):
+def get_project_base_data(item, item_index, is_submissions=True):
     """
     Get project base data
     ! if there is an empty value for country, agency, subsector, type or status return None
     @param item = dict (row data)
     @param item_index = int (index row)
-    @param logger = logger object
     @param is_submissions = boolean (if the data is for a project submissions xlsx file)
 
     @return dict = {
@@ -658,18 +632,10 @@ def get_project_base_data(item, item_index, logger, is_submissions=True):
     """
 
     country = get_country_by_name(
-        item["COUNTRY"],
-        item_index,
-        logger,
-        use_offset=is_submissions,
+        item["COUNTRY"], item_index, use_offset=is_submissions
     )
     agency = get_object_by_name(
-        Agency,
-        item["AGENCY"],
-        item_index,
-        "agency",
-        logger,
-        use_offset=is_submissions,
+        Agency, item["AGENCY"], item_index, "agency", use_offset=is_submissions
     )
     # get subsector name from dict if exists else use the same name from the file
     subsect_name = SUBSECTOR_NAME_MAPPING.get(
@@ -681,17 +647,11 @@ def get_project_base_data(item, item_index, logger, is_submissions=True):
         subsect_name,
         item_index,
         "subsector",
-        logger,
         use_offset=is_submissions,
     )
 
     proj_type = get_object_by_name(
-        ProjectType,
-        item["TYPE"],
-        item_index,
-        "type",
-        logger,
-        use_offset=is_submissions,
+        ProjectType, item["TYPE"], item_index, "type", use_offset=is_submissions
     )
 
     status_str = item["STATUS_CODE"]
@@ -699,12 +659,7 @@ def get_project_base_data(item, item_index, logger, is_submissions=True):
         status_str = "NEWSUB"
 
     project_status = get_object_by_name(
-        ProjectStatus,
-        status_str,
-        item_index,
-        "status",
-        logger,
-        use_offset=is_submissions,
+        ProjectStatus, status_str, item_index, "status", use_offset=is_submissions
     )
 
     # if country or agency or subsector does not exists then skip this row
@@ -713,7 +668,7 @@ def get_project_base_data(item, item_index, logger, is_submissions=True):
 
     date_completion = item["DATE_COMPLETION"]
     if not is_submissions:
-        date_completion = parse_date(date_completion, logger)
+        date_completion = parse_date(date_completion)
 
     project_data = {
         "country": country,

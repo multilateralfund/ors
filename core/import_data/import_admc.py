@@ -50,7 +50,7 @@ def get_columns_dict():
     """
     columns_dict = {}
     for field_name, column_name in CP_COLUMNS_MAPPING.items():
-        column = get_adm_column(column_name, SECTION, logger)
+        column = get_adm_column(column_name, SECTION)
         if not column:
             return None
         columns_dict[field_name] = column
@@ -308,7 +308,7 @@ def import_admc_entries(file_data, items_dict, column_dict):
     @param column_dict = dict (admC columns dict)
     """
 
-    country_dict, year_dict = get_country_and_year_dict(file_data["dir_path"], logger)
+    country_dict, year_dict = get_country_and_year_dict(file_data["dir_path"])
 
     with open(file_data["file_name"], "r", encoding="utf8") as f:
         json_data = json.load(f)
@@ -321,11 +321,7 @@ def import_admc_entries(file_data, items_dict, column_dict):
             continue
 
         cp = get_cp_report_for_db_import(
-            year_dict,
-            country_dict,
-            admc_entry,
-            logger,
-            admc_entry["Adm_CId"],
+            year_dict, country_dict, admc_entry, admc_entry["Adm_CId"]
         )
 
         if not cp:
@@ -370,8 +366,8 @@ def parse_db_files(dir_path, db_name):
         return
     logger.info("✔ columns file parsed")
 
-    delete_old_data(AdmRecord, admc_file, logger)
-    delete_old_data(CPPrices, admc_file, logger)
+    delete_old_data(AdmRecord, admc_file)
+    delete_old_data(CPPrices, admc_file)
     file_data = {
         "file_name": admc_file,
         "dir_path": dir_path,
