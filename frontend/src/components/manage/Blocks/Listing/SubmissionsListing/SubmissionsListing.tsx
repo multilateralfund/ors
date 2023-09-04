@@ -13,12 +13,13 @@ import {
   ListItem,
   Pagination,
   Popover,
+  Skeleton,
   Slider,
   Typography,
 } from '@mui/material'
 import cx from 'classnames'
 import dayjs from 'dayjs'
-import { capitalize, isArray, isNumber } from 'lodash'
+import { capitalize, isArray, isNumber, times } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
 import TextWidget from '@ors/components/manage/Widgets/TextWidget'
@@ -99,7 +100,7 @@ const orderings = [
   { field: 'substance_type', label: 'Substance type' },
 ]
 
-export default function SubmissionsTable() {
+export default function SubmissionsListing() {
   const form = useRef<any>()
   const currentYear = useMemo(() => dayjs().year(), [])
   const minDateRange = 1990
@@ -135,7 +136,21 @@ export default function SubmissionsTable() {
   const substanceTypes = commonSlice.settings.data.project_substance_types.map(
     (obj: Array<string>) => ({ id: obj[0], label: obj[1] }),
   )
-  const { count, results } = getResults(data)
+  const { count, loaded, results } = getResults(data)
+
+  const rows = useMemo(() => {
+    if (!loaded) {
+      return times(pagination.rowsPerPage, (num) => {
+        return {
+          id: num + 1,
+          isSkeleton: true,
+        }
+      })
+    }
+    return results
+  }, [results, loaded, pagination.rowsPerPage])
+
+  const pages = Math.ceil(count / pagination.rowsPerPage)
 
   function handleParamsChange(newParams: { [key: string]: any }) {
     setApiSettings((prevApiSettings) => ({
@@ -155,8 +170,6 @@ export default function SubmissionsTable() {
     setPagination({ ...pagination, page: 1 })
     setFilters((filters) => ({ ...filters, ...newFilters }))
   }
-
-  const pages = Math.ceil(count / pagination.rowsPerPage)
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setDateRangeEl(event.currentTarget)
@@ -398,7 +411,7 @@ export default function SubmissionsTable() {
                 className="bg-action-disabledBackground/5"
                 active={loading}
               />
-              {!results.length && (
+              {!rows.length && (
                 <>
                   <Divider className="mb-3 w-full border-gray-200" />
                   <ListItem className="block w-full py-4 text-center">
@@ -407,7 +420,7 @@ export default function SubmissionsTable() {
                   <Divider className="mt-3 w-full" />
                 </>
               )}
-              {results.map((item, index) => {
+              {rows.map((item, index) => {
                 const odd = index % 2 !== 0
                 const isCollapsed = !!collapsedRows[index]
                 const funds = parseFloat(item.submission?.funds_allocated)
@@ -416,7 +429,7 @@ export default function SubmissionsTable() {
                     ? funds.toLocaleString()
                     : '-'
 
-                const dateAdded = dayjs(item.submission.date_received).format(
+                const dateAdded = dayjs(item.submission?.date_received).format(
                   'll',
                 )
 
@@ -433,240 +446,250 @@ export default function SubmissionsTable() {
                     {!index && (
                       <Divider className="mb-3 w-full border-gray-200" />
                     )}
-                    <div className="mb-2 grid w-full grid-cols-[2fr_1fr] items-center justify-between px-4">
-                      <div>
-                        <IconButton
-                          className="inline p-0 align-middle ltr:mr-2 rtl:ml-2"
-                          aria-label="expand-collapse-row"
-                          disableRipple
-                          onClick={() => {}}
-                        >
-                          <StyledIoEllipseOutline
-                            className={cx('text-primary', {
-                              'fill-primary':
-                                display === 'detailed' || isCollapsed,
-                              'fill-primary/10':
-                                display === 'simple' && !isCollapsed,
-                            })}
-                            size="1rem"
-                          />
-                        </IconButton>
-                        <Link
-                          className={cx(
-                            'align-middle text-typography no-underline decoration-primary group-hover:text-primary group-hover:underline',
-                          )}
-                          href={`/submissions/${item.id}`}
-                        >
-                          {item.title}
-                        </Link>
-                      </div>
-                      <div className="flex items-center justify-end gap-4">
-                        <Typography component="span">
-                          {dateAdded.toLowerCase() !== 'invalid date'
-                            ? dateAdded
-                            : '-'}
-                        </Typography>
-                        {display === 'simple' && (
-                          <IconButton
-                            className={cx(
-                              'rounded-sm bg-white text-gray-900 group-hover:block',
-                              { hidden: !collapsedRows[index] },
+                    <div className="grid w-full grid-cols-[2fr_1fr] items-center justify-between gap-x-4 px-4">
+                      {item.isSkeleton ? (
+                        <>
+                          <Skeleton />
+                          <Skeleton />
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <IconButton
+                              className="inline p-0"
+                              aria-label="expand-collapse-row"
+                              disableRipple
+                              onClick={() => {}}
+                            >
+                              <StyledIoEllipseOutline
+                                className={cx('text-primary', {
+                                  'fill-primary':
+                                    display === 'detailed' || isCollapsed,
+                                  'fill-primary/10':
+                                    display === 'simple' && !isCollapsed,
+                                })}
+                                size="1rem"
+                              />
+                            </IconButton>
+                            <Link
+                              className={cx(
+                                'align-middle text-typography no-underline decoration-primary group-hover:text-primary group-hover:underline',
+                              )}
+                              href={`/submissions/${item.id}`}
+                            >
+                              {item.title}
+                            </Link>
+                          </div>
+                          <div className="flex items-center justify-end gap-4">
+                            <Typography component="span">
+                              {dateAdded.toLowerCase() !== 'invalid date'
+                                ? dateAdded
+                                : '-'}
+                            </Typography>
+                            {display === 'simple' && (
+                              <IconButton
+                                className={cx(
+                                  'rounded-sm bg-white text-gray-900 group-hover:block',
+                                  { hidden: !collapsedRows[index] },
+                                )}
+                                size="small"
+                                disableRipple
+                                onClick={() =>
+                                  setCollapsedRows((prevCollapsedRows) => ({
+                                    ...prevCollapsedRows,
+                                    [index]: !prevCollapsedRows[index],
+                                  }))
+                                }
+                              >
+                                {isCollapsed && <IoCaretUp size={14} />}
+                                {!isCollapsed && <IoCaretDown size={14} />}
+                              </IconButton>
                             )}
-                            size="small"
-                            disableRipple
-                            onClick={() =>
-                              setCollapsedRows((prevCollapsedRows) => ({
-                                ...prevCollapsedRows,
-                                [index]: !prevCollapsedRows[index],
-                              }))
-                            }
-                          >
-                            {isCollapsed && <IoCaretUp size={14} />}
-                            {!isCollapsed && <IoCaretDown size={14} />}
-                          </IconButton>
-                        )}
-                      </div>
+                          </div>
+                        </>
+                      )}
                     </div>
-                    {(display === 'detailed' || isCollapsed) && (
-                      <div className="flex flex-wrap gap-4 px-10">
-                        <div
-                          className={cx(
-                            'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
-                            {
-                              'bg-gray-50': display === 'simple' || !odd,
-                              'bg-white': display === 'detailed' && odd,
-                            },
-                          )}
-                        >
-                          <Typography
-                            className="text-gray-500"
-                            component="span"
+                    {(display === 'detailed' || isCollapsed) &&
+                      !item.isSkeleton && (
+                        <div className="mt-2 flex flex-wrap gap-4 px-10">
+                          <div
+                            className={cx(
+                              'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
+                              {
+                                'bg-gray-50': display === 'simple' || !odd,
+                                'bg-white': display === 'detailed' && odd,
+                              },
+                            )}
                           >
-                            Status
-                          </Typography>
-                          <Typography
-                            className="text-gray-900"
-                            component="span"
+                            <Typography
+                              className="text-gray-500"
+                              component="span"
+                            >
+                              Status
+                            </Typography>
+                            <Typography
+                              className="text-gray-900"
+                              component="span"
+                            >
+                              {item.status || '-'}
+                            </Typography>
+                          </div>
+                          <div
+                            className={cx(
+                              'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
+                              {
+                                'bg-gray-50': display === 'simple' || !odd,
+                                'bg-white': display === 'detailed' && odd,
+                              },
+                            )}
                           >
-                            {item.status || '-'}
-                          </Typography>
+                            <Typography
+                              className="text-gray-500"
+                              component="span"
+                            >
+                              Country
+                            </Typography>
+                            <Typography
+                              className="text-gray-900"
+                              component="span"
+                            >
+                              {item.country || '-'}
+                            </Typography>
+                          </div>
+                          <div
+                            className={cx(
+                              'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
+                              {
+                                'bg-gray-50': display === 'simple' || !odd,
+                                'bg-white': display === 'detailed' && odd,
+                              },
+                            )}
+                          >
+                            <Typography
+                              className="text-gray-500"
+                              component="span"
+                            >
+                              Agency
+                            </Typography>
+                            <Typography
+                              className="text-gray-900"
+                              component="span"
+                            >
+                              {item.agency || '-'}
+                            </Typography>
+                          </div>
+                          <div
+                            className={cx(
+                              'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
+                              {
+                                'bg-gray-50': display === 'simple' || !odd,
+                                'bg-white': display === 'detailed' && odd,
+                              },
+                            )}
+                          >
+                            <Typography
+                              className="text-gray-500"
+                              component="span"
+                            >
+                              Project type
+                            </Typography>
+                            <Typography
+                              className="text-gray-900"
+                              component="span"
+                            >
+                              {item.project_type || '-'}
+                            </Typography>
+                          </div>
+                          <div
+                            className={cx(
+                              'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
+                              {
+                                'bg-gray-50': display === 'simple' || !odd,
+                                'bg-white': display === 'detailed' && odd,
+                              },
+                            )}
+                          >
+                            <Typography
+                              className="text-gray-500"
+                              component="span"
+                            >
+                              Substance type
+                            </Typography>
+                            <Typography
+                              className="text-gray-900"
+                              component="span"
+                            >
+                              {item.substance_type || '-'}
+                            </Typography>
+                          </div>
+                          <div
+                            className={cx(
+                              'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
+                              {
+                                'bg-gray-50': display === 'simple' || !odd,
+                                'bg-white': display === 'detailed' && odd,
+                              },
+                            )}
+                          >
+                            <Typography
+                              className="text-gray-500"
+                              component="span"
+                            >
+                              Sector
+                            </Typography>
+                            <Typography
+                              className="text-gray-900"
+                              component="span"
+                            >
+                              {item.sector || '-'}
+                            </Typography>
+                          </div>
+                          <div
+                            className={cx(
+                              'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
+                              {
+                                'bg-gray-50': display === 'simple' || !odd,
+                                'bg-white': display === 'detailed' && odd,
+                              },
+                            )}
+                          >
+                            <Typography
+                              className="text-gray-500"
+                              component="span"
+                            >
+                              Subsector
+                            </Typography>
+                            <Typography
+                              className="text-gray-900"
+                              component="span"
+                            >
+                              {item.subsector || '-'}
+                            </Typography>
+                          </div>
+                          <div
+                            className={cx(
+                              'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
+                              {
+                                'bg-gray-50': display === 'simple' || !odd,
+                                'bg-white': display === 'detailed' && odd,
+                              },
+                            )}
+                          >
+                            <Typography
+                              className="text-gray-500"
+                              component="span"
+                            >
+                              Funds requested
+                            </Typography>
+                            <Typography
+                              className="text-gray-900"
+                              component="span"
+                            >
+                              {parsedFunds}
+                            </Typography>
+                          </div>
                         </div>
-                        <div
-                          className={cx(
-                            'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
-                            {
-                              'bg-gray-50': display === 'simple' || !odd,
-                              'bg-white': display === 'detailed' && odd,
-                            },
-                          )}
-                        >
-                          <Typography
-                            className="text-gray-500"
-                            component="span"
-                          >
-                            Country
-                          </Typography>
-                          <Typography
-                            className="text-gray-900"
-                            component="span"
-                          >
-                            {item.country || '-'}
-                          </Typography>
-                        </div>
-                        <div
-                          className={cx(
-                            'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
-                            {
-                              'bg-gray-50': display === 'simple' || !odd,
-                              'bg-white': display === 'detailed' && odd,
-                            },
-                          )}
-                        >
-                          <Typography
-                            className="text-gray-500"
-                            component="span"
-                          >
-                            Agency
-                          </Typography>
-                          <Typography
-                            className="text-gray-900"
-                            component="span"
-                          >
-                            {item.agency || '-'}
-                          </Typography>
-                        </div>
-                        <div
-                          className={cx(
-                            'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
-                            {
-                              'bg-gray-50': display === 'simple' || !odd,
-                              'bg-white': display === 'detailed' && odd,
-                            },
-                          )}
-                        >
-                          <Typography
-                            className="text-gray-500"
-                            component="span"
-                          >
-                            Project type
-                          </Typography>
-                          <Typography
-                            className="text-gray-900"
-                            component="span"
-                          >
-                            {item.project_type || '-'}
-                          </Typography>
-                        </div>
-                        <div
-                          className={cx(
-                            'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
-                            {
-                              'bg-gray-50': display === 'simple' || !odd,
-                              'bg-white': display === 'detailed' && odd,
-                            },
-                          )}
-                        >
-                          <Typography
-                            className="text-gray-500"
-                            component="span"
-                          >
-                            Substance type
-                          </Typography>
-                          <Typography
-                            className="text-gray-900"
-                            component="span"
-                          >
-                            {item.substance_type || '-'}
-                          </Typography>
-                        </div>
-                        <div
-                          className={cx(
-                            'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
-                            {
-                              'bg-gray-50': display === 'simple' || !odd,
-                              'bg-white': display === 'detailed' && odd,
-                            },
-                          )}
-                        >
-                          <Typography
-                            className="text-gray-500"
-                            component="span"
-                          >
-                            Sector
-                          </Typography>
-                          <Typography
-                            className="text-gray-900"
-                            component="span"
-                          >
-                            {item.sector || '-'}
-                          </Typography>
-                        </div>
-                        <div
-                          className={cx(
-                            'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
-                            {
-                              'bg-gray-50': display === 'simple' || !odd,
-                              'bg-white': display === 'detailed' && odd,
-                            },
-                          )}
-                        >
-                          <Typography
-                            className="text-gray-500"
-                            component="span"
-                          >
-                            Subsector
-                          </Typography>
-                          <Typography
-                            className="text-gray-900"
-                            component="span"
-                          >
-                            {item.subsector || '-'}
-                          </Typography>
-                        </div>
-                        <div
-                          className={cx(
-                            'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
-                            {
-                              'bg-gray-50': display === 'simple' || !odd,
-                              'bg-white': display === 'detailed' && odd,
-                            },
-                          )}
-                        >
-                          <Typography
-                            className="text-gray-500"
-                            component="span"
-                          >
-                            Funds requested
-                          </Typography>
-                          <Typography
-                            className="text-gray-900"
-                            component="span"
-                          >
-                            {parsedFunds}
-                          </Typography>
-                        </div>
-                      </div>
-                    )}
+                      )}
                     <Divider className="mt-3 w-full" />
                   </ListItem>
                 )
@@ -680,6 +703,7 @@ export default function SubmissionsTable() {
                 page={pagination.page}
                 siblingCount={1}
                 onChange={(event, page) => {
+                  if (page === pagination.page) return
                   setPagination({ ...pagination, page })
                   handleParamsChange({
                     limit: pagination.rowsPerPage,
@@ -696,7 +720,7 @@ export default function SubmissionsTable() {
                   return (
                     <Button
                       className={cx(
-                        'flex min-w-fit border-collapse gap-2 rounded-none border-y border-r border-solid border-mui-box-border px-3 py-3 text-xs leading-none',
+                        'flex min-w-fit border-collapse gap-2 rounded-none border-y border-r border-solid border-mui-box-border p-3 text-xs leading-none',
                         {
                           'bg-gray-100': item.selected,
                           'border-l': item.type === 'previous',
@@ -713,8 +737,11 @@ export default function SubmissionsTable() {
                       onClick={isEllipsis ? () => {} : item.onClick}
                     >
                       {item.type === 'previous' && <IoArrowBack />}
-                      {['next', 'previous'].includes(item.type) &&
-                        capitalize(item.type)}
+                      {['next', 'previous'].includes(item.type) && (
+                        <span className="hidden md:inline">
+                          {capitalize(item.type)}
+                        </span>
+                      )}
                       {item.type === 'page' && item.page}
                       {isEllipsis && '...'}
                       {item.type === 'next' && <IoArrowForward />}

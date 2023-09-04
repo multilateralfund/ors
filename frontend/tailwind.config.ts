@@ -19,8 +19,6 @@ const gray = {
   A700: grey.A700,
 }
 
-console.log('HERE', gray)
-
 const originalColors = {
   dark: {
     action: {

@@ -3,7 +3,7 @@ import React from 'react'
 import { Typography } from '@mui/material'
 import { Metadata } from 'next'
 
-import SubmissionsTable from '@ors/components/manage/Blocks/Table/SubmissionsTable/SubmissionsTable'
+import SubmissionsListing from '@ors/components/manage/Blocks/Listing/SubmissionsListing/SubmissionsListing'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
@@ -19,7 +19,7 @@ export default async function Reports() {
           Project submissions
         </Typography>
       </HeaderTitle>
-      <SubmissionsTable />
+      <SubmissionsListing />
     </PageWrapper>
   )
 }

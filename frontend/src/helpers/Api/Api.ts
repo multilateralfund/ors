@@ -203,11 +203,13 @@ async function api(
 
 export function getResults(data: DataType): {
   count: number
+  loaded: boolean
   results: Array<any>
 } {
   if (Array.isArray(data)) {
     return {
       count: data.length,
+      loaded: true,
       results: data,
     }
   }
@@ -215,11 +217,13 @@ export function getResults(data: DataType): {
     return {
       ...(data || {}),
       count: typeof data.count === 'number' ? data.count : 0,
+      loaded: true,
       results: data.results || [],
     }
   }
   return {
     count: 0,
+    loaded: false,
     results: [],
   }
 }

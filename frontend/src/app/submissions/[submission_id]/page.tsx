@@ -34,8 +34,6 @@ function Divider() {
 export default async function Submission({ params }: ProjectProps) {
   const data = await api(`api/projects/${params.submission_id}/`, {}, false)
 
-  console.log('HERE', data)
-
   return (
     <PageWrapper>
       <HeaderTitle>
