@@ -1,7 +1,6 @@
-from django.db import transaction
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import mixins, generics, status
+from rest_framework import mixins, generics
 from rest_framework.response import Response
 
 from core.api.filters.country_programme import (
@@ -16,6 +15,7 @@ from core.api.serializers.country_programme import (
     CPEmissionSerializer,
     CPGenerationSerializer,
     CPPricesSerializer,
+    CPReportCreateSerializer,
 )
 from core.models.adm import AdmRecord
 from core.models.country_programme import (
@@ -31,76 +31,24 @@ from core.utils import IMPORT_DB_MAX_YEAR
 # view for country programme reports
 class CPReportView(generics.ListAPIView, generics.CreateAPIView):
     """
-    API endpoint that allows country programmes to be viewed.
-    @param country_id: int - query filter for country id (exact)
-    @param name: str - query filter for name (contains)
-    @param year: int - query filter for year (exact)
+    API endpoint that allows country programmes to be viewed or created.
     """
 
     queryset = CPReport.objects.select_related("country").order_by("name")
     filterset_class = CPReportFilter
-    serializer_class = CPReportSerializer
 
-    def _create_cp_records(self, cp_report, section_data, section):
-        for record in section_data:
-            record["country_programme_report_id"] = cp_report.id
-            record["section"] = section
-            record_serializer = CPRecordSerializer(data=record)
-            record_serializer.is_valid(raise_exception=True)
-            record_serializer.save()
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return CPReportCreateSerializer
+        return CPReportSerializer
 
-    def _create_prices(self, cp_report, section_data):
-        for price in section_data:
-            price["country_programme_report_id"] = cp_report.id
-            price_serializer = CPPricesSerializer(data=price)
-            price_serializer.is_valid(raise_exception=True)
-            price_serializer.save()
-
-    def _create_generation(self, cp_report, section_data):
-        for generation in section_data:
-            generation["country_programme_report_id"] = cp_report.id
-            generation_serializer = CPGenerationSerializer(data=generation)
-            generation_serializer.is_valid(raise_exception=True)
-            generation_serializer.save()
-
-    def _create_emission(self, cp_report, section_data):
-        for emission in section_data:
-            emission["country_programme_report_id"] = cp_report.id
-            emission_serializer = CPEmissionSerializer(data=emission)
-            emission_serializer.is_valid(raise_exception=True)
-            emission_serializer.save()
-
-    def _add_remarks(self, cp_report, section_data):
-        cp_report.comment = section_data.get("remarks", "")
-        cp_report.save()
-
-    @transaction.atomic
+    @swagger_auto_schema(
+        operation_description="year < 2019 => required: section_a, adm_b, section_c, adm_c, adm_d\n"
+        "year >= 2019 => required: section_a, section_b, section_c, section_d, section_e, section_f",
+        request_body=CPReportCreateSerializer,
+    )
     def post(self, request, *args, **kwargs):
-        # create cp report
-        cp_report_data = {
-            "name": request.data.get("name"),
-            "year": request.data.get("year"),
-            "country_id": request.data.get("country_id"),
-        }
-        if cp_report_data["year"] <= IMPORT_DB_MAX_YEAR:
-            return Response(
-                {"error": f"Not implemented for years <= {IMPORT_DB_MAX_YEAR}"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        cp_report_serializer = CPReportSerializer(data=cp_report_data)
-        cp_report_serializer.is_valid(raise_exception=True)
-        cp_report = cp_report_serializer.save()
-
-        # create records
-        self._create_cp_records(cp_report, request.data.get("section_a", []), "A")
-        self._create_cp_records(cp_report, request.data.get("section_b", []), "B")
-        self._create_prices(cp_report, request.data.get("section_c", []))
-        self._create_generation(cp_report, request.data.get("section_d", []))
-        self._create_emission(cp_report, request.data.get("section_e", []))
-        self._add_remarks(cp_report, request.data.get("section_f", {}))
-
-        response = CPReportSerializer(cp_report).data
-        return Response(response, status=status.HTTP_200_OK)
+        return super().post(request, *args, **kwargs)
 
 
 # view for country programme record list

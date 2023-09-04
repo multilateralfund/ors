@@ -1,4 +1,5 @@
 from decimal import Decimal
+from django.db import transaction
 from django.db.models import Prefetch
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -289,6 +290,7 @@ class BlendCreateView(generics.CreateAPIView):
             },
         ),
     )
+    @transaction.atomic
     def post(self, request, *args, **kwargs):
         data = request.data
 

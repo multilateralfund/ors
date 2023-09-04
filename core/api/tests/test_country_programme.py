@@ -17,6 +17,7 @@ from core.api.tests.factories import (
     SubstanceFactory,
     UsageFactory,
 )
+from core.models.adm import AdmRecord
 from core.models.country_programme import CPEmission, CPGeneration, CPPrices, CPRecord
 
 pytestmark = pytest.mark.django_db
@@ -76,8 +77,8 @@ class TestCPReportList(BaseTest):
         assert response.data[0]["year"] == 2011
 
 
-@pytest.fixture(name="_setup_cp_report_create")
-def setup_cp_report_create(substance, blend, country_ro, usage):
+@pytest.fixture(name="_setup_section_a_c")
+def setup_section_a_c(substance, blend, usage):
     usage2 = UsageFactory.create(name="usage2")
     groupB = GroupFactory.create(name="group B", annex="B")
     substance2 = SubstanceFactory.create(name="substance2", group=groupB)
@@ -95,40 +96,48 @@ def setup_cp_report_create(substance, blend, country_ro, usage):
             {"usage_id": usage2.id, "quantity": 12.1},
         ],
     }
+    section_a = [
+        {
+            "substance_id": substance.id,
+            **cp_record_data,
+        },
+        {
+            "substance_id": substance2.id,
+            **cp_record_data,
+        },
+    ]
+    section_c = [
+        {
+            "substance_id": substance.id,
+            "current_year_price": 25.5,
+            "remarks": "Mama mea cand mi-a dat viata",
+        },
+        {
+            "blend_id": blend.id,
+            "previous_year_price": 12.4,
+            "current_year_price": 25.5,
+            "remarks": "Smecheri au luat vacanta",
+        },
+    ]
+    return cp_record_data, section_a, section_c
+
+
+@pytest.fixture(name="_setup_new_cp_report_create")
+def setup_new_cp_report_create(blend, country_ro, _setup_section_a_c):
+    cp_record_data, section_a, section_c = _setup_section_a_c
 
     report_data = {
         "country_id": country_ro.id,
         "name": "Romania2019",
         "year": 2019,
-        "section_a": [
-            {
-                "substance_id": substance.id,
-                **cp_record_data,
-            },
-            {
-                "substance_id": substance2.id,
-                **cp_record_data,
-            },
-        ],
+        "section_a": section_a,
         "section_b": [
             {
                 "blend_id": blend.id,
                 **cp_record_data,
             }
         ],
-        "section_c": [
-            {
-                "substance_id": substance.id,
-                "current_year_price": 25.5,
-                "remarks": "Mama mea cand mi-a dat viata",
-            },
-            {
-                "blend_id": blend.id,
-                "previous_year_price": 12.4,
-                "current_year_price": 25.5,
-                "remarks": "Smecheri au luat vacanta",
-            },
-        ],
+        "section_c": section_c,
         "section_d": [
             {
                 "all_uses": "80.570",
@@ -152,19 +161,60 @@ def setup_cp_report_create(substance, blend, country_ro, usage):
     return report_data
 
 
+@pytest.fixture(name="_setup_old_cp_report_create")
+def setup_old_cp_report_create(country_ro, _setup_section_a_c, adm_rows, adm_columns):
+    _, section_a, section_c = _setup_section_a_c
+    b_row, c_row, d_row = adm_rows
+    b_column, c_column = adm_columns
+
+    report_data = {
+        "country_id": country_ro.id,
+        "name": "Romania2000",
+        "year": 2000,
+        "section_a": section_a,
+        "adm_b": [
+            {
+                "row_id": b_row.id,
+                "column_id": b_column.id,
+                "value_text": "Am fost locu-ntai la scoala",
+            }
+        ],
+        "section_c": section_c,
+        "adm_c": [
+            {
+                "row_id": c_row.id,
+                "column_id": c_column.id,
+                "value_text": "Scoala vietii, scoala vietii",
+            }
+        ],
+        "adm_d": [
+            {
+                "row_id": d_row.id,
+                "value_choice_id": d_row.choices.first().id,
+                "value_text": "La orele de vrajeala",
+            }
+        ],
+    }
+
+    return report_data
+
+
 class TestCPReportCreate(BaseTest):
     url = reverse("country-programme-reports")
 
-    def test_without_login(self, _setup_cp_report_create):
+    def test_without_login(self, _setup_new_cp_report_create):
         self.client.force_authenticate(user=None)
-        response = self.client.post(self.url, _setup_cp_report_create, format="json")
+        response = self.client.post(
+            self.url, _setup_new_cp_report_create, format="json"
+        )
         assert response.status_code == 403
 
-    def test_create_cp_report(self, user, _setup_cp_report_create):
+    def test_create_new_cp_report(self, user, _setup_new_cp_report_create):
         self.client.force_authenticate(user=user)
-        response = self.client.post(self.url, _setup_cp_report_create, format="json")
-        print(response.data)
-        assert response.status_code == 200
+        response = self.client.post(
+            self.url, _setup_new_cp_report_create, format="json"
+        )
+        assert response.status_code == 201
         assert response.data["name"] == "Romania2019"
         assert response.data["year"] == 2019
         assert response.data["country"] == "Romania"
@@ -203,22 +253,96 @@ class TestCPReportCreate(BaseTest):
         assert emissions.count() == 1
         assert float(emissions[0].total) == 12.4
 
-    def test_invalid_usage_id(self, user, _setup_cp_report_create):
+    def test_create_old_cp_report(self, user, _setup_old_cp_report_create):
         self.client.force_authenticate(user=user)
-        data = _setup_cp_report_create
-        data["section_a"][0]["record_usages"][0]["usage_id"] = 999
-        response = self.client.post(self.url, _setup_cp_report_create, format="json")
-        assert response.status_code == 400
-        assert "record_usages" in response.data
-        assert "usage_id" in response.data["record_usages"][0]
 
-    def test_invalid_substance_id(self, user, _setup_cp_report_create):
+        response = self.client.post(
+            self.url, _setup_old_cp_report_create, format="json"
+        )
+        assert response.status_code == 201
+        assert response.data["name"] == "Romania2000"
+        assert response.data["year"] == 2000
+        assert response.data["country"] == "Romania"
+        cp_report_id = response.data["id"]
+
+        # check cp records
+        records = CPRecord.objects.filter(country_programme_report_id=cp_report_id)
+        assert records.count() == 2
+
+        # check cp prices
+        prices = CPPrices.objects.filter(country_programme_report_id=cp_report_id)
+        assert prices.count() == 2
+
+        # check adm records
+        adm_records = AdmRecord.objects.filter(country_programme_report_id=cp_report_id)
+        assert adm_records.count() == 3
+        for section in ["B", "C", "D"]:
+            assert adm_records.filter(section=section).count() == 1
+
+        # check question with column
+        b_record = adm_records.get(section="B")
+        assert b_record.column.display_name == "adm_column_b"
+        assert b_record.row.text == "adm_row_b"
+        assert b_record.value_text == "Am fost locu-ntai la scoala"
+
+        # check question without choice
+        d_record = adm_records.get(section="D")
+        assert d_record.column is None
+        assert d_record.value_choice_id == d_record.row.choices.first().id
+        assert d_record.value_text == "La orele de vrajeala"
+
+    def test_invalid_usage_id(self, user, _setup_new_cp_report_create):
         self.client.force_authenticate(user=user)
-        data = _setup_cp_report_create
-        data["section_a"][0]["substance_id"] = 999
-        response = self.client.post(self.url, _setup_cp_report_create, format="json")
+        data = _setup_new_cp_report_create
+        data["section_a"][0]["record_usages"][0]["usage_id"] = 999
+        response = self.client.post(
+            self.url, _setup_new_cp_report_create, format="json"
+        )
         assert response.status_code == 400
-        assert "substance_id" in response.data
+        assert "usage_id" in response.data["section_a"][0]["record_usages"][0]
+
+    def test_invalid_substance_id(self, user, _setup_new_cp_report_create):
+        self.client.force_authenticate(user=user)
+        data = _setup_new_cp_report_create
+        data["section_a"][0]["substance_id"] = 999
+        response = self.client.post(
+            self.url, _setup_new_cp_report_create, format="json"
+        )
+        assert response.status_code == 400
+        assert "substance_id" in response.data["section_a"][0]
+
+    def test_invalid_adm_row_id(self, user, _setup_old_cp_report_create):
+        self.client.force_authenticate(user=user)
+        data = _setup_old_cp_report_create
+        data["adm_b"][0]["row_id"] = 999
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 400
+        assert "row_id" in response.data["adm_b"][0]
+
+    def test_invalid_adm_column_id(self, user, _setup_old_cp_report_create):
+        self.client.force_authenticate(user=user)
+        data = _setup_old_cp_report_create
+        data["adm_b"][0]["column_id"] = 999
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 400
+        assert "column_id" in response.data["adm_b"][0]
+
+    def test_invalid_adm_choice_id(self, user, _setup_old_cp_report_create):
+        self.client.force_authenticate(user=user)
+        data = _setup_old_cp_report_create
+        data["adm_d"][0]["value_choice_id"] = 999
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 400
+        assert "value_choice_id" in response.data["adm_d"][0]
+
+    def test_invalid_adm_record(self, user, _setup_old_cp_report_create):
+        self.client.force_authenticate(user=user)
+        data = _setup_old_cp_report_create
+        data["adm_b"][0].pop("column_id")
+
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 400
+        assert "non_field_errors" in response.data["adm_b"][0]
 
 
 @pytest.fixture(name="_setup_new_cp_report")
