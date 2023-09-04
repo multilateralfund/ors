@@ -422,6 +422,18 @@ def setup_project_create(country_ro, agency, project_type, subsector, substance,
                 "fund_type": "transferred",
             },
         ],
+        "comments": [
+            {
+                "meeting_of_report": 1,
+                "secretariat_comment": "Well watch out. It's a sickly air that fills the place.",
+                "agency_response": "Perhaps dreams aren't such great things after all..."
+            },
+            {
+                "meeting_of_report": 2,
+                "secretariat_comment": "Don't look so glum, coz.",
+                "agency_response": "Uncle Alexander said he won't be back again."
+            }
+        ]
     }
 
 
@@ -479,6 +491,11 @@ class TestCreateProjects(BaseTest):
         assert funds[0]["fund_type"] == "allocated"
         assert funds[1]["amount"] == 42
         assert funds[1]["fund_type"] == "transferred"
+
+        comments = response.data["comments"]
+        assert len(comments) == 2
+        assert comments[0]["meeting_of_report"] == "1"
+        assert comments[1]["meeting_of_report"] == "2"
 
     def test_create_project_project_fk(self, user, _setup_project_create):
         data = _setup_project_create

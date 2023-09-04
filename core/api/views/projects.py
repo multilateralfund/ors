@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 
 from core.api.filters.project import ProjectFilter
+from core.api.serializers.project import ProjectCommentSerializer
 from core.api.serializers.project import (
     ProjectDetailsSerializer,
     ProjectListSerializer,
@@ -31,6 +32,7 @@ from core.models.project import (
     ProjectType,
     ProjectFile,
 )
+from core.models.project import ProjectComment
 from core.models.project import ProjectStatus, ProjectFund
 
 
@@ -198,3 +200,16 @@ class ProjectFundViewSet(
 
     queryset = ProjectFund.objects.all()
     serializer_class = ProjectFundSerializer
+
+
+class ProjectCommentViewSet(
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    API endpoint that allows comment to be updated and deleted.
+    """
+
+    queryset = ProjectComment.objects.all()
+    serializer_class = ProjectCommentSerializer

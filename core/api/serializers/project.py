@@ -14,6 +14,7 @@ from core.models.project import (
     ProjectSubSector,
     ProjectType,
 )
+from core.models.project import ProjectComment
 from core.models.project import ProjectFund
 from core.models.project import ProjectFile
 from core.models.project_submission import ProjectSubmission
@@ -139,6 +140,22 @@ class ProjectFundSerializer(serializers.ModelSerializer):
             "sort_order",
         ]
         read_only_fields = ["id"]
+
+
+class ProjectCommentSerializer(serializers.ModelSerializer):
+    """
+    ProjectCommentSerializer class
+    """
+
+    class Meta:
+        model = ProjectComment
+        fields = [
+            "id",
+            "project_id",
+            "meeting_of_report",
+            "secretariat_comment",
+            "agency_response",
+        ]
 
 
 class ProjectOdsOdpSerializer(serializers.ModelSerializer):
@@ -306,6 +323,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
     submission = ProjectSubmissionSerializer()
     ods_odp = ProjectOdsOdpSerializer(many=True)
     funds = ProjectFundSerializer(many=True)
+    comments = ProjectCommentSerializer(many=True)
     agency_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Agency.objects.all().values_list("id", flat=True)
     )
@@ -336,6 +354,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
             "project_type_id",
             "ods_odp",
             "funds",
+            "comments",
             "latest_file",
         ]
 
@@ -343,7 +362,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         super().__init__(instance, data, **kwargs)
         request = self.context.get("request")
 
-        for field in ("ods_odp", "funds"):
+        for field in ("ods_odp", "funds", "comments"):
             # set ods odps read only for PUT, PATCH, DELETE
             self.fields[field].read_only = request.method not in ["GET", "POST"]
 
@@ -352,6 +371,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         submission_data = validated_data.pop("submission")
         ods_odp_data = validated_data.pop("ods_odp", [])
         funds = validated_data.pop("funds", [])
+        comments = validated_data.pop("comments", [])
         coop_agencies_id = validated_data.pop("coop_agencies_id")
 
         if submission_data:
@@ -372,6 +392,9 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         # create funds
         for fund in funds:
             ProjectFund.objects.create(project=project, **fund)
+        # create comments
+        for comment in comments:
+            ProjectComment.objects.create(project=project, **comment)
         # add coop_agencies
         for coop_agency in coop_agencies_id:
             project.coop_agencies.add(coop_agency)
