@@ -72,7 +72,7 @@ export default function ReportsTable() {
               } else {
                 newParams.country_id = value.id
               }
-              grid.current.api.paginationGoToPage(0)
+              grid.current.paginationGoToPage(0)
               handleParamsChange({ ...newParams, offset: 0 })
             }}
           />

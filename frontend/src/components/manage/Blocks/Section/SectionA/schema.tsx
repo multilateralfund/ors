@@ -171,7 +171,6 @@ function useGridOptions({ showUsages, substances }: GridOptionsProps) {
           }
           return true
         },
-        flex: 1,
         minWidth: 200,
         resizable: true,
       },

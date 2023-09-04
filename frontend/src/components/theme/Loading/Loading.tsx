@@ -7,23 +7,27 @@ import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
 
 export default function Loading({
   ProgressStyle,
+  active = true,
   className,
   style,
 }: {
   ProgressStyle?: CSSProperties | undefined
+  active?: boolean
   className?: string
   style?: React.CSSProperties
 }) {
   return (
-    <FadeInOut
-      transition={{ duration: 0.3 }}
-      className={cx(
-        'loading absolute left-0 top-0 z-absolute flex h-full w-full items-center justify-center',
-        className,
-      )}
-      style={style}
-    >
-      <CircularProgress style={ProgressStyle} />
-    </FadeInOut>
+    !!active && (
+      <FadeInOut
+        transition={{ duration: 0.3 }}
+        className={cx(
+          'loading absolute left-0 top-0 z-absolute flex h-full w-full items-center justify-center',
+          className,
+        )}
+        style={style}
+      >
+        <CircularProgress style={ProgressStyle} />
+      </FadeInOut>
+    )
   )
 }

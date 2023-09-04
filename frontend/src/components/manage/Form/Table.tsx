@@ -74,16 +74,26 @@ function AgHeaderGroupComponent(props: any) {
 }
 
 function AgTextCellRenderer(props: any) {
+  const { maxWidth } = props.colDef
   const Tooltip = props.colDef.tooltip ? MuiTooltip : Fragment
   return (
     <Tooltip enterDelay={300} placement="top-start" title={props.value}>
-      <Typography component="span">
+      <span
+        className="ag-cell-custom-value"
+        style={
+          maxWidth && {
+            maxWidth: `calc(${maxWidth}px - 2 * (var(--ag-cell-horizontal-padding) - 1px))`,
+          }
+        }
+      >
         {props.data.isSkeleton ? (
-          <Skeleton className="inline-block w-full" />
+          <Typography component="span">
+            <Skeleton className="inline-block w-full" />
+          </Typography>
         ) : (
-          props.value
+          <Typography component="span">{props.value}</Typography>
         )}
-      </Typography>
+      </span>
     </Tooltip>
   )
 }
@@ -137,8 +147,20 @@ export default function Table(props: AgGridReactProps) {
         })
       },
       cellRenderer: 'agTextCellRenderer',
+      cellStyle: (params) => {
+        const { maxWidth } = params.colDef
+        return {
+          ...(maxWidth
+            ? {
+                '--ag-cell-max-width': `calc(${maxWidth}px - 2 * (var(--ag-cell-horizontal-padding) - 1px))`,
+              }
+            : { '--ag-cell-max-width': '100%' }),
+        }
+      },
       comparator: () => 0,
       filter: true,
+      // flex: 1,
+      // minWidth: 100,
       sortable: false,
       sortingOrder: ['asc', 'desc', null],
       suppressKeyboardEvent: (props) => {
@@ -218,7 +240,7 @@ export default function Table(props: AgGridReactProps) {
         <Loading className="bg-action-disabledBackground/5" />
       )}
       <AgGridReact
-        animateRows={false}
+        animateRows={true}
         defaultColDef={{ ...baseColDef, ...defaultColDef }}
         domLayout="autoHeight"
         enableCellTextSelection={true}
@@ -228,7 +250,6 @@ export default function Table(props: AgGridReactProps) {
         rowData={results}
         sortingOrder={['asc']}
         stopEditingWhenCellsLoseFocus={true}
-        suppressAnimationFrame={true}
         suppressCellFocus={true}
         suppressDragLeaveHidesColumns={true}
         suppressLoadingOverlay={true}
@@ -266,11 +287,8 @@ export default function Table(props: AgGridReactProps) {
           if (agGrid && gridRef) {
             gridRef.current = {
               ...agGrid,
-              api: {
-                ...agGrid.api,
-                paginationGoToPage: (page: number, triggerEvent = false) => {
-                  handlePageChange(page, triggerEvent)
-                },
+              paginationGoToPage: (page: number, triggerEvent = false) => {
+                handlePageChange(page, triggerEvent)
               },
             }
           }

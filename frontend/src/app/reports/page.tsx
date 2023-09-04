@@ -6,7 +6,7 @@ import { Box, Button, Typography } from '@mui/material'
 
 import ReportsTable from '@ors/components/manage/Blocks/Table/ReportsTable/ReportsTable'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-import Link from '@ors/components/ui/Link'
+import Link from '@ors/components/ui/Link/Link'
 
 export const metadata: Metadata = {
   title: 'Reports',

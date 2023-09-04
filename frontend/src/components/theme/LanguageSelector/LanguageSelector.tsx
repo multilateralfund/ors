@@ -1,6 +1,6 @@
 'use client'
 
-import Dropdown from '@ors/components/ui/Dropdown'
+import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import config from '@ors/registry'
 
 import { getLocale, useTranslation } from '@ors/i18n/client'

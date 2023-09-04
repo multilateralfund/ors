@@ -5,7 +5,7 @@ import cx from 'classnames'
 import { isNumber } from 'lodash'
 import resolveConfig from 'tailwindcss/resolveConfig'
 
-import Link from '@ors/components/ui/Link'
+import Link from '@ors/components/ui/Link/Link'
 import { convertHexToRGBA, getContrastText } from '@ors/helpers/Color/Color'
 import useStore from '@ors/store'
 
@@ -31,6 +31,7 @@ function useGridOptions({
       {
         cellRenderer: (props: any) => {
           const theme = useStore((state) => state.theme)
+          const { maxWidth } = props.colDef
           const rowIndex = props.data.rowIndex
           const isCollapsed = collapsedRows.includes(rowIndex)
           const statusColor =
@@ -57,98 +58,103 @@ function useGridOptions({
               placement="top-start"
               title={props.data.title}
             >
-              <Typography component="span">
-                {props.data.isSkeleton ? (
+              {props.data.isSkeleton ? (
+                <Typography component="span">
                   <Skeleton className="inline-block w-full" />
-                ) : (
-                  <>
-                    <IconButton
-                      className="inline p-0 align-middle ltr:mr-2 rtl:ml-2"
-                      aria-label="expand-collapse-row"
-                      disableRipple
-                      onClick={() => {
-                        const newCollapsedRows = [...collapsedRows]
-                        if (isCollapsed) {
-                          const index = collapsedRows.indexOf(rowIndex)
-                          newCollapsedRows.splice(index, 1)
-                          setCollapsedRows(newCollapsedRows)
-                        } else {
-                          newCollapsedRows.push(rowIndex)
-                          setCollapsedRows(newCollapsedRows)
-                        }
-                      }}
-                    >
-                      {isCollapsed ? (
-                        <IoRemoveCircleSharp color={statusColor} size="1rem" />
-                      ) : (
-                        <StyledIoAddCircleOutline
-                          color={statusColor}
-                          size="1rem"
-                        />
-                      )}
-                    </IconButton>
+                </Typography>
+              ) : (
+                <span
+                  className="ag-cell-custom-value"
+                  style={{
+                    maxWidth: `calc(${maxWidth}px - 2 * (var(--ag-cell-horizontal-padding) - 1px))`,
+                  }}
+                >
+                  <IconButton
+                    className="inline p-0 align-middle ltr:mr-2 rtl:ml-2"
+                    aria-label="expand-collapse-row"
+                    disableRipple
+                    onClick={() => {
+                      const newCollapsedRows = [...collapsedRows]
+                      if (isCollapsed) {
+                        const index = collapsedRows.indexOf(rowIndex)
+                        newCollapsedRows.splice(index, 1)
+                        setCollapsedRows(newCollapsedRows)
+                      } else {
+                        newCollapsedRows.push(rowIndex)
+                        setCollapsedRows(newCollapsedRows)
+                      }
+                    }}
+                  >
+                    {isCollapsed ? (
+                      <IoRemoveCircleSharp color={statusColor} size="1rem" />
+                    ) : (
+                      <StyledIoAddCircleOutline
+                        color={statusColor}
+                        size="1rem"
+                      />
+                    )}
+                  </IconButton>
 
-                    <StyledLink
-                      className={cx(
-                        'text-typography no-underline hover:underline',
-                      )}
-                      href={`/submissions/${props.data.id}`}
-                    >
-                      {props.data.title}
-                    </StyledLink>
-                  </>
-                )}
-              </Typography>
+                  <StyledLink
+                    className={cx(
+                      'align-middle text-typography no-underline hover:underline',
+                    )}
+                    href={`/submissions/${props.data.id}`}
+                  >
+                    {props.data.title}
+                  </StyledLink>
+                </span>
+              )}
             </Tooltip>
           )
         },
         field: 'title',
-        flex: 2,
         headerName: 'Project Title/Code',
+        maxWidth: 400,
         minWidth: 400,
         sortable: true,
       },
       {
         field: 'country',
-        flex: 1,
         headerName: 'Country',
+        maxWidth: 140,
         minWidth: 140,
         sortable: true,
       },
       {
         field: 'agency',
-        flex: 1,
         headerName: 'Agency',
+        maxWidth: 120,
         minWidth: 120,
         sortable: true,
       },
       {
         field: 'sector',
-        flex: 1,
         headerName: 'Sector',
+        maxWidth: 120,
         minWidth: 120,
         sortable: true,
       },
       {
         field: 'subsector',
-        flex: 1,
         headerName: 'Subsector',
         initialHide: true,
+        maxWidth: 200,
         minWidth: 200,
         sortable: true,
       },
       {
         field: 'project_type',
-        flex: 1,
         headerName: 'Type',
+        maxWidth: 100,
         minWidth: 100,
         sortable: true,
       },
       {
         field: 'substance_type',
-        flex: 1,
         headerName: 'HFC/HCFC',
         initialHide: true,
+        maxWidth: 140,
         minWidth: 140,
         sortable: true,
       },
@@ -171,7 +177,6 @@ function useGridOptions({
           )
         },
         field: 'submission',
-        flex: 1,
         headerName: 'Funds requested',
         initialHide: true,
         minWidth: 120,
@@ -179,7 +184,6 @@ function useGridOptions({
       },
       {
         field: 'approval_meeting_no',
-        flex: 1,
         headerName: 'Mtg',
         initialHide: true,
         minWidth: 100,
@@ -224,18 +228,10 @@ function useGridOptions({
           )
         },
         field: 'status',
-        flex: 1,
         headerName: 'Status',
         minWidth: 160,
         sortable: true,
       },
-
-      // {
-      //   field: 'approval_meeting_no',
-      //   flex: 1,
-      //   headerName: 'Approval meeting',
-      //   minWidth: 100,
-      // },
     ],
   }
 }

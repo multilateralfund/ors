@@ -1,65 +1,73 @@
 'use client'
-import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 
-// import dynamic from 'next/dynamic'
+import styled from '@emotion/styled'
 import {
   Box,
   Button,
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
+  Divider,
   Grid,
   IconButton,
   InputAdornment,
+  List,
+  ListItem,
+  Pagination,
   Popover,
+  Slider,
   Typography,
 } from '@mui/material'
-import {
-  BaseSingleInputFieldProps,
-  DateValidationError,
-  FieldSection,
-  UseDateFieldProps,
-} from '@mui/x-date-pickers'
-import { DatePicker } from '@mui/x-date-pickers/DatePicker/DatePicker'
-import { SortChangedEvent } from 'ag-grid-community'
 import cx from 'classnames'
-import { Dayjs } from 'dayjs'
-import { isNumber, sumBy } from 'lodash'
+import dayjs from 'dayjs'
+import { capitalize, isArray, isNumber } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
-import Table from '@ors/components/manage/Form/Table'
 import TextWidget from '@ors/components/manage/Widgets/TextWidget'
-import Link from '@ors/components/ui/Link'
+import Loading from '@ors/components/theme/Loading/Loading'
+import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
+import Link from '@ors/components/ui/Link/Link'
 import { KEY_ENTER } from '@ors/constants'
 import { getResults } from '@ors/helpers/Api/Api'
 import useApi from '@ors/hooks/useApi'
 import useStore from '@ors/store'
 
-import useGridOptions from './schema'
-
-import { IoCalendar } from '@react-icons/all-files/io5/IoCalendar'
+import { IoArrowBack } from '@react-icons/all-files/io5/IoArrowBack'
+import { IoArrowDown } from '@react-icons/all-files/io5/IoArrowDown'
+import { IoArrowForward } from '@react-icons/all-files/io5/IoArrowForward'
+import { IoArrowUp } from '@react-icons/all-files/io5/IoArrowUp'
+import { IoCalendarClearOutline } from '@react-icons/all-files/io5/IoCalendarClearOutline'
+import { IoCaretDown } from '@react-icons/all-files/io5/IoCaretDown'
+import { IoCaretUp } from '@react-icons/all-files/io5/IoCaretUp'
+import { IoClose } from '@react-icons/all-files/io5/IoClose'
+import { IoEllipseOutline } from '@react-icons/all-files/io5/IoEllipseOutline'
+import { IoRemove } from '@react-icons/all-files/io5/IoRemove'
+import { IoReorderTwo } from '@react-icons/all-files/io5/IoReorderTwo'
 import { IoSearchOutline } from '@react-icons/all-files/io5/IoSearchOutline'
-import { IoSettingsSharp } from '@react-icons/all-files/io5/IoSettingsSharp'
 
-// const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
-//   ssr: false,
-// })
+const dayOfYear = require('dayjs/plugin/dayOfYear')
+dayjs.extend(dayOfYear)
 
-interface ButtonFieldProps
-  extends UseDateFieldProps<Dayjs>,
-    BaseSingleInputFieldProps<
-      Dayjs | null,
-      Dayjs,
-      FieldSection,
-      DateValidationError
-    > {
-  setOpen?: React.Dispatch<React.SetStateAction<boolean>>
+let timer: any
+
+const debounce = (func: () => void) => {
+  if (timer) clearTimeout(timer)
+  timer = setTimeout(func, 300, event)
 }
+
+const StyledIoEllipseOutline = styled(IoEllipseOutline)(() => ({
+  circle: {
+    fill: 'inherit',
+  },
+}))
 
 const initialParams = {
   agency_id: null,
   approval_meeting_no: null,
   country_id: null,
+  // @ts-ignore
+  date_received_after: dayjs().year(1990).dayOfYear(1).format('YYYY-MM-DD'),
+  // @ts-ignore
+  date_received_before: dayjs().dayOfYear(365).format('YYYY-MM-DD'),
+  ordering: 'date_received',
   project_type_id: null,
   search: '',
   sector_id: null,
@@ -73,61 +81,41 @@ const initialFilters = {
   approval_meeting_no: [],
   country_id: [],
   project_type_id: [],
+  search: '',
   sector_id: [],
   status_id: [],
   subsector_id: [],
   substance_type: [],
 }
 
-function Label({
-  children,
-  className,
-}: {
-  children: React.ReactNode
-  className?: string
-}) {
-  return (
-    <Typography className={cx('font-semibold text-primary', className)}>
-      {children}
-    </Typography>
-  )
-}
-
-function ButtonField(props: ButtonFieldProps) {
-  const {
-    id,
-    InputProps: { ref } = {},
-    disabled,
-    inputProps: { 'aria-label': ariaLabel } = {},
-    label,
-    setOpen,
-  } = props
-
-  return (
-    <Button
-      id={id}
-      className="text-typography-primary"
-      aria-label={ariaLabel}
-      disabled={disabled}
-      ref={ref}
-      variant="text"
-      disableRipple
-      onClick={() => setOpen?.((prev) => !prev)}
-    >
-      <IoCalendar className="ltr:mr-2 rtl:ml-2" />
-      {label ?? 'Pick a date'}
-    </Button>
-  )
-}
+const orderings = [
+  { field: 'date_received', label: 'Date added' },
+  { field: 'title', label: 'Title' },
+  { field: 'county', label: 'Country' },
+  { field: 'agency', label: 'Agency' },
+  { field: 'sector', label: 'Sector' },
+  { field: 'subsector', label: 'Subsector' },
+  { field: 'project_type', label: 'Project type' },
+  { field: 'substance_type', label: 'Substance type' },
+]
 
 export default function SubmissionsTable() {
-  const grid = useRef<any>()
   const form = useRef<any>()
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [ignored, forceUpdate] = useReducer((x) => x + 1, 0)
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
+  const currentYear = useMemo(() => dayjs().year(), [])
+  const minDateRange = 1990
+  const maxDateRange = currentYear
+  const [dateRangeEl, setDateRangeEl] =
+    React.useState<HTMLButtonElement | null>(null)
+  const [dateRange, setDateRange] = useState([minDateRange, currentYear])
+  const [display, setDisplay] = useState('simple')
+  const [ordering, setOrdering] = useState({
+    direction: 'asc',
+    field: 'date_received',
+    label: 'Date added',
+  })
+  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 10 })
+  const [collapsedRows, setCollapsedRows] = useState<Record<string, any>>({})
   const [filters, setFilters] = useState({ ...initialFilters })
-  const [datepickerOpen, setDatepickerOpen] = useState(false)
   const [apiSettings, setApiSettings] = useState({
     options: {
       delay: 500,
@@ -140,67 +128,14 @@ export default function SubmissionsTable() {
     },
     path: 'api/projects',
   })
-  const [collapsedRows, setCollapsedRows] = useState<Array<number>>([])
-  const { data, loaded, loading } = useApi(apiSettings)
+  const { data, loading } = useApi(apiSettings)
 
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
   const substanceTypes = commonSlice.settings.data.project_substance_types.map(
     (obj: Array<string>) => ({ id: obj[0], label: obj[1] }),
   )
-
-  const gridOptions = useGridOptions({
-    collapsedRows,
-    setCollapsedRows,
-    statuses: projectSlice.statuses.data,
-  })
-
-  const { count, results } = useMemo(() => {
-    const { count, results } = getResults(data)
-    return {
-      count,
-      results: results.map((row, index) => ({ ...row, rowIndex: index })),
-    }
-  }, [data])
-
-  const updatedResults = useMemo(() => {
-    const updatedResults = []
-
-    for (let i = 0; i < results.length; i++) {
-      updatedResults.push(results[i])
-
-      // Check if this index is in collapsedRows
-      if (collapsedRows.includes(i)) {
-        // Insert extra rows just below the collapsed row
-        updatedResults.push({ collapsedRow: true, ...results[i] })
-      }
-    }
-
-    return updatedResults
-  }, [results, collapsedRows])
-
-  const columnApi = grid.current?.columnApi
-  const columnState = columnApi?.getColumnState?.() || []
-  const visibleColumns = sumBy(columnState, (state: any) => {
-    return state.hide ? 0 : 1
-  })
-
-  const open = Boolean(anchorEl)
-  const id = open ? 'table-settings' : undefined
-
-  useEffect(() => {
-    if (loaded) {
-      setCollapsedRows([])
-    }
-  }, [loaded])
-
-  const handleSettingsClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget)
-  }
-
-  const handleSettingsClose = () => {
-    setAnchorEl(null)
-  }
+  const { count, results } = getResults(data)
 
   function handleParamsChange(newParams: { [key: string]: any }) {
     setApiSettings((prevApiSettings) => ({
@@ -213,12 +148,25 @@ export default function SubmissionsTable() {
         },
       },
     }))
+    setCollapsedRows({})
   }
 
   function handleFilterChange(newFilters: { [key: string]: any }) {
-    grid.current.api.paginationGoToPage(0)
+    setPagination({ ...pagination, page: 1 })
     setFilters((filters) => ({ ...filters, ...newFilters }))
   }
+
+  const pages = Math.ceil(count / pagination.rowsPerPage)
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setDateRangeEl(event.currentTarget)
+  }
+
+  const handleClose = () => {
+    setDateRangeEl(null)
+  }
+
+  const open = Boolean(dateRangeEl)
 
   return (
     <form
@@ -229,224 +177,581 @@ export default function SubmissionsTable() {
         event.preventDefault()
       }}
     >
-      <Grid spacing={2} container>
-        <Grid
-          className="mb-4 flex justify-between gap-4"
-          md={8}
-          sm={12}
-          xl={9}
-          xs={12}
-          item
-        >
-          <TextWidget
-            name="search"
-            className="max-w-[240px] sm:max-w-xs lg:max-w-sm"
-            placeholder="Search by keyword..."
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
+      <Grid className="flex-col-reverse md:flex-row" spacing={2} container>
+        <Grid md={8} sm={12} xl={9} item>
+          <Box>
+            <div className="mb-4 flex flex-wrap justify-between gap-4">
+              <TextWidget
+                name="search"
+                className="min-w-[240px] max-w-[240px] sm:max-w-xs lg:max-w-sm"
+                placeholder="Search by keyword..."
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <IconButton
+                        aria-label="search submission table"
+                        edge="start"
+                        tabIndex={-1}
+                        onClick={() => {
+                          const search = form.current.search.value
+                          handleParamsChange({
+                            offset: 0,
+                            search,
+                          })
+                          handleFilterChange({ search })
+                        }}
+                      >
+                        <IoSearchOutline />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                onKeyDown={(event) => {
+                  const search = form.current.search.value
+                  if (event.key === KEY_ENTER) {
+                    handleParamsChange({
+                      offset: 0,
+                      search,
+                    })
+                    handleFilterChange({ search })
+                  }
+                }}
+              />
+              <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+                <div className="display-control flex items-center gap-2">
+                  <Typography
+                    className="text-typography-secondary"
+                    component="span"
+                  >
+                    Display
+                  </Typography>
                   <IconButton
-                    aria-label="search submission table"
-                    edge="start"
-                    tabIndex={-1}
+                    className={cx('rounded-sm', {
+                      'bg-gray-100 text-[#999]': display !== 'simple',
+                      'bg-gray-200 text-gray-700': display === 'simple',
+                    })}
+                    size="small"
+                    disableRipple
+                    onClick={() => setDisplay('simple')}
+                  >
+                    <IoRemove />
+                  </IconButton>
+                  <IconButton
+                    className={cx('rounded-sm', {
+                      'bg-gray-100 text-[#999]': display !== 'detailed',
+                      'bg-gray-200 text-gray-700': display === 'detailed',
+                    })}
+                    size="small"
+                    disableRipple
+                    onClick={() => setDisplay('detailed')}
+                  >
+                    <IoReorderTwo />
+                  </IconButton>
+                </div>
+                <div className="datarange-control flex items-center gap-2">
+                  <Typography
+                    className="text-typography-secondary"
+                    component="span"
+                  >
+                    Data range
+                  </Typography>
+
+                  <IconButton
+                    className="rounded-sm bg-gray-200 text-gray-700"
+                    aria-describedby={open ? 'date-range' : undefined}
+                    size="small"
+                    disableRipple
+                    onClick={handleClick}
+                  >
+                    <IoCalendarClearOutline />
+                  </IconButton>
+                  <Popover
+                    id={open ? 'date-range' : undefined}
+                    anchorEl={dateRangeEl}
+                    open={open}
+                    anchorOrigin={{
+                      horizontal: 'center',
+                      vertical: 'top',
+                    }}
+                    onClose={handleClose}
+                    slotProps={{
+                      paper: {
+                        className:
+                          'min-w-[200px] bg-transparent border-none shadow-none overflow-visible',
+                      },
+                    }}
+                    transformOrigin={{
+                      horizontal: 'center',
+                      vertical: 'bottom',
+                    }}
+                  >
+                    <Slider
+                      getAriaLabel={() => 'Date range'}
+                      max={maxDateRange}
+                      min={minDateRange}
+                      value={dateRange}
+                      valueLabelDisplay="auto"
+                      onChange={(event, value) => {
+                        if (isArray(value) && value[1] - value[0] >= 1) {
+                          setDateRange(value)
+                          debounce(() => {
+                            handleParamsChange({
+                              date_received_after: dayjs()
+                                .year(value[0])
+                                // @ts-ignore
+                                .dayOfYear(1)
+                                .format('YYYY-MM-DD'),
+                              date_received_before: dayjs()
+                                .year(value[1])
+                                // @ts-ignore
+                                .dayOfYear(365)
+                                .format('YYYY-MM-DD'),
+                            })
+                          })
+                        }
+                      }}
+                    />
+                  </Popover>
+                </div>
+                <div className="datarange-control flex items-center gap-2">
+                  <Typography
+                    className="text-typography-secondary"
+                    component="span"
+                  >
+                    Ordering
+                  </Typography>
+                  <Dropdown
+                    className="rounded-sm bg-gray-200 text-gray-700"
+                    label={(props) => {
+                      return (
+                        <Typography className="flex items-center gap-2 leading-none">
+                          {ordering.label}
+                          {props.open ? <IoCaretUp /> : <IoCaretDown />}
+                        </Typography>
+                      )
+                    }}
+                  >
+                    {orderings.map((item) => (
+                      <Dropdown.Item
+                        key={item.field}
+                        onClick={() => {
+                          setOrdering({
+                            ...ordering,
+                            field: item.field,
+                            label: item.label,
+                          })
+                          handleParamsChange({
+                            ordering: `${
+                              ordering.direction === 'asc' ? '' : '-'
+                            }${item.field}`,
+                          })
+                        }}
+                      >
+                        {item.label}
+                      </Dropdown.Item>
+                    ))}
+                  </Dropdown>
+                  <IconButton
+                    className={cx('rounded-sm bg-gray-200 text-gray-700')}
+                    size="small"
+                    disableRipple
                     onClick={() => {
+                      const direction =
+                        ordering.direction === 'asc' ? 'desc' : 'asc'
+                      setOrdering({
+                        ...ordering,
+                        direction,
+                      })
                       handleParamsChange({
-                        offset: 0,
-                        search: form.current.search.value,
+                        ordering: `${direction === 'asc' ? '' : '-'}${
+                          ordering.field
+                        }`,
                       })
                     }}
                   >
-                    <IoSearchOutline />
+                    {ordering.direction === 'asc' ? (
+                      <IoArrowUp />
+                    ) : (
+                      <IoArrowDown />
+                    )}
                   </IconButton>
-                </InputAdornment>
-              ),
-            }}
-            onKeyDown={(event) => {
-              if (event.key === KEY_ENTER) {
-                handleParamsChange({
-                  offset: 0,
-                  search: form.current.search.value,
-                })
-              }
-            }}
-          />
-          <DatePicker
-            className="w-full max-w-sm"
-            closeOnSelect={false}
-            format="DD/MM/YYYY"
-            label="Date range"
-            open={datepickerOpen}
-            slotProps={{ field: { setOpen: setDatepickerOpen } as any }}
-            autoFocus
-            onClose={() => setDatepickerOpen(false)}
-            onOpen={() => setDatepickerOpen(true)}
-            slots={{
-              field: ButtonField,
-            }}
-          />
-        </Grid>
-      </Grid>
-      <Grid className="flex-col-reverse md:flex-row" spacing={2} container>
-        <Grid md={8} sm={12} xl={9} item>
-          <Table
-            className="mb-4"
-            collapsedRows={collapsedRows}
-            columnDefs={gridOptions.columnDefs}
-            gridRef={grid}
-            loading={loading}
-            rowCount={count}
-            rowData={updatedResults}
-            fullWidthCellRenderer={(props: any) => {
-              const funds = parseFloat(props.data.submission.funds_allocated)
+                </div>
+              </div>
+            </div>
+            {!!filters.search && (
+              <div className="mb-4">
+                <Typography className="inline-flex items-center gap-2  rounded-sm bg-gray-100 px-2 py-1 italic">
+                  {filters.search}
+                  <IoClose
+                    className="cursor-pointer rounded-sm bg-gray-50"
+                    onClick={() => {
+                      form.current.search.value = ''
+                      handleParamsChange({ offset: 0, search: '' })
+                      handleFilterChange({ search: '' })
+                    }}
+                  />
+                </Typography>
+              </div>
+            )}
+            <List className="mb-6" disablePadding>
+              <Loading
+                className="bg-action-disabledBackground/5"
+                active={loading}
+              />
+              {!results.length && (
+                <>
+                  <Divider className="mb-3 w-full border-gray-200" />
+                  <ListItem className="block w-full py-4 text-center">
+                    No rows to show
+                  </ListItem>
+                  <Divider className="mt-3 w-full" />
+                </>
+              )}
+              {results.map((item, index) => {
+                const odd = index % 2 !== 0
+                const isCollapsed = !!collapsedRows[index]
+                const funds = parseFloat(item.submission?.funds_allocated)
+                const parsedFunds =
+                  !isNaN(funds) && isNumber(funds)
+                    ? funds.toLocaleString()
+                    : '-'
 
-              return (
-                <Grid spacing={4} container>
-                  <Grid item>
-                    <Label>Subsector</Label>
-                    <Typography>{props.data.subsector || '-'}</Typography>
-                  </Grid>
-                  <Grid item>
-                    <Label>HFC/HCFC</Label>
-                    <Typography>{props.data.substance_type || '-'}</Typography>
-                  </Grid>
-                  <Grid item>
-                    <Label>Funds requested</Label>
-                    <Typography>
-                      {!isNaN(funds) && isNumber(funds)
-                        ? funds.toLocaleString()
-                        : '-'}
-                    </Typography>
-                  </Grid>
-                  <Grid item>
-                    <Label>Approval meeting</Label>
-                    <Typography>
-                      {props.data.approval_meeting_no || '-'}
-                    </Typography>
-                  </Grid>
-                </Grid>
-              )
-            }}
-            getRowHeight={(props: any) => {
-              if (props.data.collapsedRow) {
-                return 100
-              }
-            }}
-            isFullWidthRow={(params: any) => {
-              return !!params.rowNode.data.collapsedRow
-            }}
-            onPaginationChanged={({ page, rowsPerPage }) => {
-              handleParamsChange({
-                limit: rowsPerPage,
-                offset: page * rowsPerPage,
-              })
-            }}
-            onSortChanged={(event: SortChangedEvent<any>) => {
-              handleParamsChange({
-                offset: 0,
-                ordering: event.columnApi
-                  .getColumnState()
-                  .filter((state) => state.sort !== null)
-                  .map(
-                    (state) =>
-                      `${state.sort === 'desc' ? '-' : ''}${state.colId}`,
+                const dateAdded = dayjs(item.submission.date_received).format(
+                  'll',
+                )
+
+                return (
+                  <ListItem
+                    key={item.id}
+                    className={cx('group flex flex-col items-start', {
+                      'bg-gray-50': display === 'detailed' && odd,
+                      'hover:bg-gray-50': display === 'simple',
+                      'pt-2': !!index,
+                    })}
+                    disablePadding
+                  >
+                    {!index && (
+                      <Divider className="mb-3 w-full border-gray-200" />
+                    )}
+                    <div className="mb-2 grid w-full grid-cols-[2fr_1fr] items-center justify-between px-4">
+                      <div>
+                        <IconButton
+                          className="inline p-0 align-middle ltr:mr-2 rtl:ml-2"
+                          aria-label="expand-collapse-row"
+                          disableRipple
+                          onClick={() => {}}
+                        >
+                          <StyledIoEllipseOutline
+                            className={cx('text-primary', {
+                              'fill-primary':
+                                display === 'detailed' || isCollapsed,
+                              'fill-primary/10':
+                                display === 'simple' && !isCollapsed,
+                            })}
+                            size="1rem"
+                          />
+                        </IconButton>
+                        <Link
+                          className={cx(
+                            'align-middle text-typography no-underline decoration-primary group-hover:text-primary group-hover:underline',
+                          )}
+                          href={`/submissions/${item.id}`}
+                        >
+                          {item.title}
+                        </Link>
+                      </div>
+                      <div className="flex items-center justify-end gap-4">
+                        <Typography component="span">
+                          {dateAdded.toLowerCase() !== 'invalid date'
+                            ? dateAdded
+                            : '-'}
+                        </Typography>
+                        {display === 'simple' && (
+                          <IconButton
+                            className={cx(
+                              'rounded-sm bg-white text-gray-900 group-hover:block',
+                              { hidden: !collapsedRows[index] },
+                            )}
+                            size="small"
+                            disableRipple
+                            onClick={() =>
+                              setCollapsedRows((prevCollapsedRows) => ({
+                                ...prevCollapsedRows,
+                                [index]: !prevCollapsedRows[index],
+                              }))
+                            }
+                          >
+                            {isCollapsed && <IoCaretUp size={14} />}
+                            {!isCollapsed && <IoCaretDown size={14} />}
+                          </IconButton>
+                        )}
+                      </div>
+                    </div>
+                    {(display === 'detailed' || isCollapsed) && (
+                      <div className="flex flex-wrap gap-4 px-10">
+                        <div
+                          className={cx(
+                            'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
+                            {
+                              'bg-gray-50': display === 'simple' || !odd,
+                              'bg-white': display === 'detailed' && odd,
+                            },
+                          )}
+                        >
+                          <Typography
+                            className="text-gray-500"
+                            component="span"
+                          >
+                            Status
+                          </Typography>
+                          <Typography
+                            className="text-gray-900"
+                            component="span"
+                          >
+                            {item.status || '-'}
+                          </Typography>
+                        </div>
+                        <div
+                          className={cx(
+                            'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
+                            {
+                              'bg-gray-50': display === 'simple' || !odd,
+                              'bg-white': display === 'detailed' && odd,
+                            },
+                          )}
+                        >
+                          <Typography
+                            className="text-gray-500"
+                            component="span"
+                          >
+                            Country
+                          </Typography>
+                          <Typography
+                            className="text-gray-900"
+                            component="span"
+                          >
+                            {item.country || '-'}
+                          </Typography>
+                        </div>
+                        <div
+                          className={cx(
+                            'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
+                            {
+                              'bg-gray-50': display === 'simple' || !odd,
+                              'bg-white': display === 'detailed' && odd,
+                            },
+                          )}
+                        >
+                          <Typography
+                            className="text-gray-500"
+                            component="span"
+                          >
+                            Agency
+                          </Typography>
+                          <Typography
+                            className="text-gray-900"
+                            component="span"
+                          >
+                            {item.agency || '-'}
+                          </Typography>
+                        </div>
+                        <div
+                          className={cx(
+                            'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
+                            {
+                              'bg-gray-50': display === 'simple' || !odd,
+                              'bg-white': display === 'detailed' && odd,
+                            },
+                          )}
+                        >
+                          <Typography
+                            className="text-gray-500"
+                            component="span"
+                          >
+                            Project type
+                          </Typography>
+                          <Typography
+                            className="text-gray-900"
+                            component="span"
+                          >
+                            {item.project_type || '-'}
+                          </Typography>
+                        </div>
+                        <div
+                          className={cx(
+                            'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
+                            {
+                              'bg-gray-50': display === 'simple' || !odd,
+                              'bg-white': display === 'detailed' && odd,
+                            },
+                          )}
+                        >
+                          <Typography
+                            className="text-gray-500"
+                            component="span"
+                          >
+                            Substance type
+                          </Typography>
+                          <Typography
+                            className="text-gray-900"
+                            component="span"
+                          >
+                            {item.substance_type || '-'}
+                          </Typography>
+                        </div>
+                        <div
+                          className={cx(
+                            'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
+                            {
+                              'bg-gray-50': display === 'simple' || !odd,
+                              'bg-white': display === 'detailed' && odd,
+                            },
+                          )}
+                        >
+                          <Typography
+                            className="text-gray-500"
+                            component="span"
+                          >
+                            Sector
+                          </Typography>
+                          <Typography
+                            className="text-gray-900"
+                            component="span"
+                          >
+                            {item.sector || '-'}
+                          </Typography>
+                        </div>
+                        <div
+                          className={cx(
+                            'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
+                            {
+                              'bg-gray-50': display === 'simple' || !odd,
+                              'bg-white': display === 'detailed' && odd,
+                            },
+                          )}
+                        >
+                          <Typography
+                            className="text-gray-500"
+                            component="span"
+                          >
+                            Subsector
+                          </Typography>
+                          <Typography
+                            className="text-gray-900"
+                            component="span"
+                          >
+                            {item.subsector || '-'}
+                          </Typography>
+                        </div>
+                        <div
+                          className={cx(
+                            'flex gap-2 rounded-sm px-2 py-1 group-hover:bg-white',
+                            {
+                              'bg-gray-50': display === 'simple' || !odd,
+                              'bg-white': display === 'detailed' && odd,
+                            },
+                          )}
+                        >
+                          <Typography
+                            className="text-gray-500"
+                            component="span"
+                          >
+                            Funds requested
+                          </Typography>
+                          <Typography
+                            className="text-gray-900"
+                            component="span"
+                          >
+                            {parsedFunds}
+                          </Typography>
+                        </div>
+                      </div>
+                    )}
+                    <Divider className="mt-3 w-full" />
+                  </ListItem>
+                )
+              })}
+            </List>
+            {!!pages && (
+              <Pagination
+                className="mb-8 inline-block flex-nowrap rounded-sm"
+                count={pages}
+                disabled={loading}
+                page={pagination.page}
+                siblingCount={1}
+                onChange={(event, page) => {
+                  setPagination({ ...pagination, page })
+                  handleParamsChange({
+                    limit: pagination.rowsPerPage,
+                    offset: (page - 1) * pagination.rowsPerPage,
+                  })
+                }}
+                renderItem={(item) => {
+                  const disabled = loading || item.disabled
+                  const isEllipsis = [
+                    'end-ellipsis',
+                    'start-ellipsis',
+                  ].includes(item.type)
+
+                  return (
+                    <Button
+                      className={cx(
+                        'flex min-w-fit border-collapse gap-2 rounded-none border-y border-r border-solid border-mui-box-border px-3 py-3 text-xs leading-none',
+                        {
+                          'bg-gray-100': item.selected,
+                          'border-l': item.type === 'previous',
+                          'cursor-default': isEllipsis,
+                          'rounded-sm': ['next', 'previous'].includes(
+                            item.type,
+                          ),
+                          'text-gray-500': disabled,
+                          'text-gray-900': !disabled,
+                        },
+                      )}
+                      disabled={disabled}
+                      disableRipple
+                      onClick={isEllipsis ? () => {} : item.onClick}
+                    >
+                      {item.type === 'previous' && <IoArrowBack />}
+                      {['next', 'previous'].includes(item.type) &&
+                        capitalize(item.type)}
+                      {item.type === 'page' && item.page}
+                      {isEllipsis && '...'}
+                      {item.type === 'next' && <IoArrowForward />}
+                    </Button>
                   )
-                  .join(','),
-              })
-            }}
-            withSkeleton
-          />
-          <Typography>
-            <Link href="/submissions/create" variant="contained" button>
-              Add new submission
-            </Link>
-          </Typography>
+                }}
+              />
+            )}
+            <Typography>
+              <Link href="/submissions/create" variant="contained" button>
+                Add new submission
+              </Link>
+            </Typography>
+          </Box>
         </Grid>
         <Grid md={4} sm={12} xl={3} item>
           <Box>
             <div className="mb-4 flex items-center justify-between">
-              <Typography component="h2" variant="h4">
+              <Typography component="h2" variant="h5">
                 Filters
-                <IconButton
-                  aria-describedby={id}
-                  disableRipple
-                  onClick={handleSettingsClick}
-                >
-                  <IoSettingsSharp size={20} />
-                </IconButton>
-                <Popover
-                  id={id}
-                  anchorEl={anchorEl}
-                  open={open}
-                  anchorOrigin={{
-                    horizontal: 'left',
-                    vertical: 'bottom',
-                  }}
-                  onClose={handleSettingsClose}
-                  transformOrigin={{
-                    horizontal: 'left',
-                    vertical: 'top',
-                  }}
-                >
-                  <div className="p-4">
-                    <FormGroup aria-label="position">
-                      {(columnApi?.getAllColumns?.() || []).map(
-                        (column: any) => {
-                          return (
-                            <FormControlLabel
-                              key={column.colId}
-                              label={column.colDef.headerName}
-                              labelPlacement="end"
-                              control={
-                                <Checkbox
-                                  checked={column.visible}
-                                  disableRipple
-                                  disabled={
-                                    column.visible && visibleColumns <= 1
-                                  }
-                                  onChange={(event: any) => {
-                                    columnApi.applyColumnState({
-                                      state: columnState.map((state: any) => {
-                                        return {
-                                          ...state,
-                                          hide:
-                                            state.colId === column.colId
-                                              ? !event.target.checked
-                                              : state.hide,
-                                        }
-                                      }),
-                                    })
-                                    forceUpdate()
-                                  }}
-                                />
-                              }
-                            />
-                          )
-                        },
-                      )}
-                    </FormGroup>
-                  </div>
-                </Popover>
               </Typography>
               <Button
                 onClick={() => {
                   form.current.search.value = ''
                   handleParamsChange({ offset: 0, ...initialParams })
                   handleFilterChange({ ...initialFilters })
+                  setOrdering({
+                    direction: 'asc',
+                    field: 'date_received',
+                    label: 'Date added',
+                  })
+                  setDateRange([minDateRange, maxDateRange])
                 }}
               >
                 Clear all
               </Button>
             </div>
-            <Field
-              options={projectSlice.statuses.data}
-              value={filters.status_id}
-              widget="chipToggle"
-              multiple
-              onChange={(value: Array<number> | null) => {
-                handleFilterChange({ status_id: value })
-                handleParamsChange({ offset: 0, status_id: value?.join(',') })
-              }}
-            />
             <Field
               Input={{ label: 'Country' }}
               getOptionLabel={(option: any) => option?.name}
@@ -535,23 +840,6 @@ export default function SubmissionsTable() {
                 handleFilterChange({ agency_id: value })
                 handleParamsChange({
                   agency_id: value.map((item: any) => item.id).join(','),
-                  offset: 0,
-                })
-              }}
-            />
-            <Field
-              Input={{ label: 'Meeting' }}
-              getOptionLabel={(option: any) => option.toString()}
-              options={projectSlice.meetings.data}
-              value={filters.approval_meeting_no}
-              widget="autocomplete"
-              multiple
-              onChange={(_: any, value: any) => {
-                handleFilterChange({ approval_meeting_no: value })
-                handleParamsChange({
-                  approval_meeting_no: value
-                    .map((item: any) => item.id)
-                    .join(','),
                   offset: 0,
                 })
               }}
