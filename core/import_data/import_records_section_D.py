@@ -33,15 +33,13 @@ def parse_sheet(df):
     parse the sheet and import the data in database
     @param df = pandas dataframe
     """
-    if not check_headers(df, REQUIRED_COLUMNS, logger):
+    if not check_headers(df, REQUIRED_COLUMNS):
         logger.error("Couldn't parse this sheet")
         return
 
     records_list = []
     for index_row, row in df.iterrows():
-        cp_report = get_cp_report(
-            int(row["Year"]), row["Country"], None, index_row, logger
-        )
+        cp_report = get_cp_report(int(row["Year"]), row["Country"], None, index_row)
 
         if cp_report:
             record_data = {
@@ -69,7 +67,7 @@ def import_records():
 
     logger.info(f"⏳ parsing file: {FILE_NAME}")
     # before we import anything, we should delete all prices from previous imports
-    delete_old_data(CPGeneration, FILE_NAME, logger)
+    delete_old_data(CPGeneration, FILE_NAME)
 
     parse_file(file_path)
     logger.info(f"✔ section D records from {FILE_NAME} imported")

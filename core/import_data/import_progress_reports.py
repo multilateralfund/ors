@@ -107,26 +107,10 @@ def country_ids():
 
 
 def check_project_consistency(project, item, index):
-    country = get_country_by_name(
-        country_ids().get(item["country"]),
-        index,
-        logger,
-    )
-    project_sector = get_object_by_code(
-        ProjectSector,
-        item["sector"],
-        "code",
-        index,
-        logger,
-    )
-    project_type = get_object_by_code(ProjectType, item["type"], "code", index, logger)
-    agency = get_object_by_name(
-        Agency,
-        item["agency"],
-        index,
-        "agency",
-        logger,
-    )
+    country = get_country_by_name(country_ids().get(item["country"]), index)
+    project_sector = get_object_by_code(ProjectSector, item["sector"], "code", index)
+    project_type = get_object_by_code(ProjectType, item["type"], "code", index)
+    agency = get_object_by_name(Agency, item["agency"], index, "agency")
 
     for name, current_value, value in (
         ("country", project.country, country),
@@ -146,7 +130,7 @@ def import_progress_reports():
     logger.info("⏳ importing progress reports")
     file_path = settings.IMPORT_DATA_DIR / "progress_report" / "tbProgress.csv"
 
-    delete_old_data(ProjectProgressReport, file_path, logger)
+    delete_old_data(ProjectProgressReport, file_path)
     parsers = {
         field.name: parse_date if isinstance(field, models.DateField) else parse_noop
         for field in ProjectProgressReport._meta.local_fields
@@ -155,12 +139,12 @@ def import_progress_reports():
     with file_path.open("r") as csvfile:
         reader = csv.DictReader(csvfile)
         for index, item in enumerate(reader):
-            project = get_object_by_code(Project, item["code"], "code", index, logger)
+            project = get_object_by_code(Project, item["code"], "code", index)
             project_status = get_object_by_code(
-                ProjectStatus, item["status"], "code", index, logger
+                ProjectStatus, item["status"], "code", index
             )
             latest_status = get_object_by_code(
-                ProjectStatus, item["Latest Status"], "code", index, logger
+                ProjectStatus, item["Latest Status"], "code", index
             )
 
             if not all([project, project_status, latest_status]):
@@ -178,7 +162,7 @@ def import_progress_reports():
             for field in FIELDS:
                 value = item[FIELD_MAPPING.get(field, field)]
                 parse_func = parsers[field]
-                data[field] = parse_func(value, logger)
+                data[field] = parse_func(value)
 
             ProjectProgressReport.objects.create(**data)
 

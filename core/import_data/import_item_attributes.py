@@ -167,12 +167,7 @@ def parse_record_data(
 
         # get country programme report
         cp_rep = get_cp_report_for_db_import(
-            year_dict,
-            country_dict,
-            item,
-            logger,
-            item["ItemAttirbutesId"],
-            cp_rep_data,
+            year_dict, country_dict, item, item["ItemAttirbutesId"], cp_rep_data
         )
         if not cp_rep:
             continue
@@ -191,7 +186,7 @@ def parse_record_data(
             current_usages_dict
         )
         # check if the row is empty
-        if check_empty_row(item, item["ItemAttirbutesId"], quantity_columns, logger):
+        if check_empty_row(item, item["ItemAttirbutesId"], quantity_columns):
             continue
 
         # create record
@@ -227,7 +222,7 @@ def parse_db_files(db_dir_path):
     Parse database files
     @param db_dir_path = str (directory path for database files)
     """
-    country_dict = get_country_dict_from_db_file(f"{db_dir_path}/Country.json", logger)
+    country_dict = get_country_dict_from_db_file(f"{db_dir_path}/Country.json")
     logger.info("✔ country file parsed")
 
     year_dict = get_year_dict_from_db_file(f"{db_dir_path}/ProjectYear.json")
@@ -240,7 +235,7 @@ def parse_db_files(db_dir_path):
     logger.info("✔ users file parsed")
 
     item_attributes_file = f"{db_dir_path}/ItemAttributes.json"
-    delete_old_data(CPRecord, item_attributes_file, logger)
+    delete_old_data(CPRecord, item_attributes_file)
     parse_record_data(
         item_attributes_file, country_dict, year_dict, chemical_dict, users_dict
     )

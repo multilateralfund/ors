@@ -10,6 +10,7 @@ from core.models.project import (
     ProjectSubSector,
     ProjectType,
 )
+from core.models.project import ProjectComment
 from core.models.project import ProjectFile
 from core.models.project import ProjectProgressReport
 
@@ -90,6 +91,7 @@ class ProjectAdmin(admin.ModelAdmin):
             "funds",
             "submission",
             "files",
+            "comments",
         ]
         return get_final_display_list(Project, exclude)
 
@@ -107,6 +109,19 @@ class ProjectProgressReportAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = ["remarks_1", "remarks_2"]
         return get_final_display_list(ProjectProgressReport, exclude)
+
+
+@admin.register(ProjectComment)
+class ProjectCommentAdmin(admin.ModelAdmin):
+    list_filter = []
+    search_fields = [
+        "project__title",
+    ]
+    list_per_page = 20
+
+    def get_list_display(self, request):
+        exclude = ["source_file"]
+        return get_final_display_list(ProjectComment, exclude)
 
 
 @admin.register(ProjectOdsOdp)

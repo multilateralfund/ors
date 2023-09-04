@@ -171,34 +171,34 @@ class TestProjectUpload:
 
 @pytest.fixture(name="_setup_project_list")
 def setup_project_list(country_ro, agency, project_type, project_status, subsector):
-    new_country = CountryFactory.create()
-    new_agency = AgencyFactory.create()
-    new_project_type = ProjectTypeFactory.create()
-    new_project_status = ProjectStatusFactory.create()
-    new_sector = ProjectSectorFactory.create()
-    new_subsector = ProjectSubSectorFactory.create(sector=new_sector)
+    for i in range(4):
+        new_country = CountryFactory.create()
+        new_agency = AgencyFactory.create()
+        new_project_type = ProjectTypeFactory.create()
+        new_project_status = ProjectStatusFactory.create(code="NEWSUB")
+        new_sector = ProjectSectorFactory.create()
+        new_subsector = ProjectSubSectorFactory.create(sector=new_sector)
 
-    projects_data = [
-        (
-            country_ro,
-            agency,
-            project_type,
-            project_status,
-            subsector,
-            "HCFC",
-        ),
-        (
-            new_country,
-            new_agency,
-            new_project_type,
-            new_project_status,
-            new_subsector,
-            "CFC",
-        ),
-    ]
+        projects_data = [
+            (
+                country_ro,
+                agency,
+                project_type,
+                project_status,
+                subsector,
+                "HCFC",
+            ),
+            (
+                new_country,
+                new_agency,
+                new_project_type,
+                new_project_status,
+                new_subsector,
+                "CFC",
+            ),
+        ]
 
-    for project_data in projects_data:
-        for i in range(2):
+        for project_data in projects_data:
             project = ProjectFactory.create(
                 title=f"Project {i}",
                 country=project_data[0],
@@ -209,7 +209,12 @@ def setup_project_list(country_ro, agency, project_type, project_status, subsect
                 substance_type=project_data[5],
                 approval_meeting_no=i + 1,
             )
-        ProjectSubmissionFactory.create(project=project)
+            if project_data[3].code == "NEWSUB":
+                ProjectSubmissionFactory.create(
+                    project=project, date_received=f"2020-01-{i+1}"
+                )
+
+    return new_agency, new_project_status, new_sector
 
 
 class TestProjectList(BaseTest):
@@ -221,10 +226,13 @@ class TestProjectList(BaseTest):
         # get project list
         response = self.client.get(self.url)
         assert response.status_code == 200
-        assert len(response.data) == 4
-        # check if there is no submission data
+        assert len(response.data) == 8
+        # check if there is submission data
+        projects_with_submission = 0
         for project in response.data:
-            assert not project["submission"]
+            if project["submission"]:
+                projects_with_submission += 1
+        assert projects_with_submission == 4
 
     def test_project_list_w_submission(self, user, _setup_project_list):
         self.client.force_authenticate(user=user)
@@ -232,57 +240,83 @@ class TestProjectList(BaseTest):
         response = self.client.get(self.url, {"get_submission": True})
         assert response.status_code == 200
         assert len(response.data) == 4
-        # check if there is submission data
-        projects_with_submission = 0
         for project in response.data:
-            if project["submission"]:
-                projects_with_submission += 1
-        assert projects_with_submission == 2
+            assert project["submission"] is not None
+
+    def test_project_list_wout_submission(self, user, _setup_project_list):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"get_submission": False})
+        assert response.status_code == 200
+        assert len(response.data) == 4
+        for project in response.data:
+            assert not project["submission"]
 
     def test_project_list_agency_filter(self, user, agency, _setup_project_list):
+        new_agency, _, _ = _setup_project_list
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"agency_id": agency.id})
         assert response.status_code == 200
-        assert len(response.data) == 2
+        assert len(response.data) == 4
         for project in response.data:
             assert project["agency"] == agency.name
+
+        response = self.client.get(
+            self.url, {"agency_id": f"{agency.id},{new_agency.id}"}
+        )
+        assert response.status_code == 200
+        assert len(response.data) == 5
 
     def test_project_list_type_filter(self, user, project_type, _setup_project_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"project_type_id": project_type.id})
         assert response.status_code == 200
-        assert len(response.data) == 2
+        assert len(response.data) == 4
         for project in response.data:
             assert project["project_type"] == project_type.name
 
     def test_project_list_status_filter(
         self, user, project_status, _setup_project_list
     ):
+        _, new_project_status, _ = _setup_project_list
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"status_id": project_status.id})
         assert response.status_code == 200
-        assert len(response.data) == 2
+        assert len(response.data) == 4
         for project in response.data:
             assert project["status"] == project_status.name
 
+        response = self.client.get(
+            self.url, {"status_id": f"{project_status.id},{new_project_status.id}"}
+        )
+        assert response.status_code == 200
+        assert len(response.data) == 5
+
     def test_project_list_sector_filter(self, user, sector, _setup_project_list):
+        _, _, new_sector = _setup_project_list
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"sector_id": sector.id})
         assert response.status_code == 200
-        assert len(response.data) == 2
+        assert len(response.data) == 4
         for project in response.data:
             assert project["sector"] == sector.name
+
+        response = self.client.get(
+            self.url, {"sector_id": f"{sector.id},{new_sector.id}"}
+        )
+        assert response.status_code == 200
+        assert len(response.data) == 5
 
     def test_project_list_subsector_filter(self, user, subsector, _setup_project_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"subsector_id": subsector.id})
         assert response.status_code == 200
-        assert len(response.data) == 2
+        assert len(response.data) == 4
         for project in response.data:
             assert project["subsector"] == subsector.name
 
@@ -291,7 +325,7 @@ class TestProjectList(BaseTest):
 
         response = self.client.get(self.url, {"substance_type": "HCFC"})
         assert response.status_code == 200
-        assert len(response.data) == 2
+        assert len(response.data) == 4
         for project in response.data:
             assert project["substance_type"] == "HCFC"
 
@@ -303,6 +337,36 @@ class TestProjectList(BaseTest):
         assert len(response.data) == 2
         for project in response.data:
             assert project["approval_meeting_no"] == 1
+
+        response = self.client.get(self.url, {"approval_meeting_no": "1,2"})
+        assert response.status_code == 200
+        assert len(response.data) == 4
+
+    def test_project_list_country_filter(self, user, country_ro, _setup_project_list):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"country_id": country_ro.id})
+        assert response.status_code == 200
+        assert len(response.data) == 4
+        for project in response.data:
+            assert project["country"] == country_ro.name
+
+    def test_project_list_date_received_filter(self, user, _setup_project_list):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"date_received_after": "2020-01-03"})
+        assert response.status_code == 200
+        assert len(response.data) == 2
+        for project in response.data:
+            assert project["submission"]["date_received"] in [
+                "2020-01-03",
+                "2020-01-04",
+            ]
+
+        response = self.client.get(self.url, {"date_received_before": "2020-01-01"})
+        assert response.status_code == 200
+        assert len(response.data) == 1
+        assert response.data[0]["submission"]["date_received"] == "2020-01-01"
 
 
 @pytest.fixture(name="_setup_project_create")

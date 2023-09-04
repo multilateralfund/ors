@@ -25,8 +25,48 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import { KEY_BACKSPACE, KEY_ENTER } from '@ors/constants'
 import useStore from '@ors/store'
 
+import { FaSort } from '@react-icons/all-files/fa/FaSort'
+import { FaSortDown } from '@react-icons/all-files/fa/FaSortDown'
+import { FaSortUp } from '@react-icons/all-files/fa/FaSortUp'
+
 function AgHeaderComponent(props: any) {
-  return <Typography component="span">{props.displayName}</Typography>
+  const { column, displayName, enableSorting } = props
+
+  const { sortingOrder } = column.getColDef()
+  const sort = column.getSort() || null
+  const sortIndex = sortingOrder.indexOf(sort)
+
+  const nextSort = useMemo(() => {
+    if (sortIndex === -1) return null
+    return sortIndex < sortingOrder.length - 1
+      ? sortingOrder[sortIndex + 1]
+      : sortingOrder[0]
+  }, [sortIndex, sortingOrder])
+
+  return (
+    <div className="group flex items-center justify-between break-words">
+      <Typography
+        className={cx('inline-flex items-center', {
+          'cursor-pointer gap-2': !!enableSorting,
+        })}
+        onClick={() => {
+          props.setSort(nextSort)
+        }}
+      >
+        {displayName}
+        {!!enableSorting && sort && (
+          <Typography component="span">
+            {sort === 'asc' ? <FaSortUp /> : <FaSortDown />}
+          </Typography>
+        )}
+        {!!enableSorting && !sort && (
+          <Typography component="span">
+            <FaSort />
+          </Typography>
+        )}
+      </Typography>
+    </div>
+  )
 }
 
 function AgHeaderGroupComponent(props: any) {
@@ -38,7 +78,11 @@ function AgTextCellRenderer(props: any) {
   return (
     <Tooltip enterDelay={300} placement="top-start" title={props.value}>
       <Typography component="span">
-        {props.data.isSkeleton ? <Skeleton /> : props.value}
+        {props.data.isSkeleton ? (
+          <Skeleton className="inline-block w-full" />
+        ) : (
+          props.value
+        )}
       </Typography>
     </Tooltip>
   )
@@ -58,6 +102,7 @@ export default function Table(props: AgGridReactProps) {
   const grid = useRef<any>()
   const {
     className,
+    collapsedRows = [],
     components = {},
     defaultColDef = {},
     enablePagination = true,
@@ -92,7 +137,10 @@ export default function Table(props: AgGridReactProps) {
         })
       },
       cellRenderer: 'agTextCellRenderer',
-      sortable: true,
+      comparator: () => 0,
+      filter: true,
+      sortable: false,
+      sortingOrder: ['asc', 'desc', null],
       suppressKeyboardEvent: (props) => {
         const key = props.event.key
         const cellEditorParams = props.colDef.cellEditorParams || {}
@@ -122,7 +170,7 @@ export default function Table(props: AgGridReactProps) {
     }
     return rowData
     /* eslint-disable-next-line */
-  }, [withSkeleton, rowData])
+  }, [withSkeleton, rowData, loading])
 
   function handlePageChange(page: number, triggerEvent = true) {
     setPagination((prevPagination) => {
@@ -176,14 +224,16 @@ export default function Table(props: AgGridReactProps) {
         enableCellTextSelection={true}
         enableRtl={i18n.dir === 'rtl'}
         pagination={enablePagination}
-        paginationPageSize={pagination.rowsPerPage}
+        paginationPageSize={pagination.rowsPerPage + collapsedRows.length}
         rowData={results}
+        sortingOrder={['asc']}
         stopEditingWhenCellsLoseFocus={true}
         suppressAnimationFrame={true}
         suppressCellFocus={true}
         suppressDragLeaveHidesColumns={true}
         suppressLoadingOverlay={true}
         suppressMovableColumns={true}
+        suppressMultiSort={true}
         suppressPaginationPanel={true}
         suppressRowClickSelection={true}
         suppressRowHoverHighlight={true}

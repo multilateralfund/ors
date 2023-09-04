@@ -236,34 +236,63 @@ class ProjectListSerializer(serializers.ModelSerializer):
     project_type = serializers.SlugRelatedField("name", read_only=True)
     status = serializers.SlugRelatedField("name", read_only=True)
     title = serializers.CharField(required=True)
-    submission = serializers.SerializerMethodField()
+    submission = ProjectSubmissionSerializer(read_only=True)
 
     class Meta:
         model = Project
         fields = [
             "id",
             "title",
+            "code",
+            "mya_code",
+            "number",
+            "description",
             "country",
             "agency",
+            "national_agency",
             "coop_agencies",
             "sector",
             "subsector",
             "project_type",
+            "multi_year",
+            "mya_subsector",
+            "stage",
             "status",
             "substance_type",
             "approval_meeting_no",
             "submission",
+            "project_duration",
+            "application",
+            "products_manufactured",
+            "plan",
+            "excom_provision",
+            "technology",
+            "impact",
+            "impact_co2mt",
+            "impact_production",
+            "impact_prod_co2mt",
+            "ods_phasedout",
+            "ods_phasedout_co2mt",
+            "hcfc_stage",
+            "capital_cost",
+            "operating_cost",
+            "effectiveness_cost",
+            "fund_disbursed",
+            "fund_disbursed_13",
+            "date_completion",
+            "date_actual",
+            "date_comp_revised",
+            "date_per_agreement",
+            "date_per_decision",
+            "umbrella_project",
+            "loan",
+            "intersessional_approval",
+            "retroactive_finance",
+            "local_ownership",
+            "export_to",
+            "remarks",
+            "decisions",
         ]
-
-    def get_submission(self, obj):
-        request = self.context.get("request")
-        if (
-            request
-            and request.query_params.get("get_submission", None)
-            and hasattr(obj, "submission")
-        ):
-            return ProjectSubmissionSerializer(obj.submission).data
-        return None
 
     def get_sector(self, obj):
         return obj.subsector.sector.name
@@ -300,15 +329,11 @@ class ProjectDetailsSerializer(ProjectListSerializer):
     class Meta:
         model = Project
         fields = ProjectListSerializer.Meta.fields + [
-            "description",
             "country_id",
             "agency_id",
             "coop_agencies_id",
-            "national_agency",
             "subsector_id",
             "project_type_id",
-            "approval_meeting_no",
-            "submission",
             "ods_odp",
             "funds",
             "latest_file",

@@ -1,10 +1,16 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 
 import { Box, Chip } from '@mui/material'
+import { isUndefined } from 'lodash'
+import resolveConfig from 'tailwindcss/resolveConfig'
+
+import { getContrastText } from '@ors/helpers/Color/Color'
+
+const tailwindConfigModule = require('@ors/../tailwind.config')
+const tailwindConfig = resolveConfig(tailwindConfigModule)
 
 export type ChipData = {
   color: string
-  contrastText: string
   id: number
   name: string
 }
@@ -13,6 +19,7 @@ export type ChipToggleWidgetProps = {
   multiple?: boolean
   onChange?: (ids: Array<number> | null | number) => void
   options: ChipData[]
+  value?: Array<number> | null
 }
 
 export type ChipToggleWidget = (props: ChipToggleWidgetProps) => JSX.Element
@@ -22,14 +29,20 @@ export default function ChipToggleWidget(
 ): JSX.Element {
   const [selected, setSelected] = React.useState<Array<number> | null>(null)
 
-  function handleClick(chipId: number) {
+  const isControlled = useMemo(() => {
+    return !isUndefined(props.value)
+  }, [props.value])
+
+  const items = useMemo(() => {
+    return isControlled ? props.value : selected
+  }, [props.value, isControlled, selected])
+
+  function getSelected(selected: Array<number> | null, chipId: number) {
     const chipIndex = (selected || []).indexOf(chipId)
 
     if (!props.multiple) {
       const newSelected = chipIndex > -1 ? null : [chipId]
-      setSelected(newSelected)
-      props.onChange?.(newSelected?.[0] || null)
-      return
+      return newSelected
     }
     let newSelected = [...(selected || [])]
     if (chipIndex > -1) {
@@ -37,8 +50,20 @@ export default function ChipToggleWidget(
     } else {
       newSelected = [...(selected || []), chipId]
     }
-    setSelected(newSelected.length > 0 ? newSelected : null)
-    props.onChange?.(props.multiple ? selected : selected?.[0] || null)
+    return newSelected.length > 0 ? newSelected : null
+  }
+
+  function handleClick(chipId: number) {
+    const newSelected = getSelected(
+      !isControlled ? selected : props.value || null,
+      chipId,
+    )
+    if (!isControlled) {
+      setSelected(newSelected)
+      props.onChange?.(props.multiple ? newSelected : newSelected?.[0] || null)
+    } else {
+      props.onChange?.(props.multiple ? newSelected : newSelected?.[0] || null)
+    }
   }
 
   return (
@@ -49,18 +74,29 @@ export default function ChipToggleWidget(
             key={chipData.id}
             className="m-1"
             label={chipData.name}
-            onClick={() => handleClick(chipData.id)}
+            onClick={() => {
+              handleClick(chipData.id)
+            }}
             style={
-              selected && selected?.indexOf?.(chipData.id) !== -1
+              items && items?.indexOf?.(chipData.id) !== -1
                 ? {
                     backgroundColor: chipData.color,
                     borderColor: chipData.color,
-                    color: chipData.contrastText || 'inherit',
+                    color: chipData.color
+                      ? getContrastText({
+                          background: chipData.color,
+                          dark: tailwindConfig.originalColors.dark.typography
+                            .primary,
+                          light:
+                            tailwindConfig.originalColors.light.typography
+                              .primary,
+                        })
+                      : 'inherit',
                   }
                 : {}
             }
             variant={
-              selected && selected?.indexOf?.(chipData.id) !== -1
+              items && items?.indexOf?.(chipData.id) !== -1
                 ? 'filled'
                 : 'outlined'
             }

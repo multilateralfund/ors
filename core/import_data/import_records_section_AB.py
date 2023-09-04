@@ -132,7 +132,7 @@ def parse_sheet(df, file_details):
     @param df = pandas dataframe
     @param file_details = dict (file_name, session, convert_to_mt)
     """
-    if not check_headers(df, REQUIRED_COLUMNS, logger):
+    if not check_headers(df, REQUIRED_COLUMNS):
         logger.error("Couldn't parse this sheet")
         return
     usage_dict = get_usages_from_sheet(df)
@@ -148,14 +148,14 @@ def parse_sheet(df, file_details):
             continue
 
         # check if the row is empty
-        if check_empty_row(row, index_row, quantity_columns, logger):
+        if check_empty_row(row, index_row, quantity_columns):
             continue
 
         # another country => another country program
         if row["country"] != current_country["name"]:
             current_country["name"] = row["country"]
             current_country["obj"] = get_country_by_name(
-                current_country["name"], index_row, logger
+                current_country["name"], index_row
             )
             if current_country["obj"]:
                 current_cp = get_cp_report(
@@ -179,7 +179,7 @@ def parse_sheet(df, file_details):
             chemical_name = "R-417A"
 
         gwp_value = row.get("gwp", None)
-        substance, blend = get_chemical(chemical_name, index_row, logger)
+        substance, blend = get_chemical(chemical_name, index_row)
         if not substance and not blend:
             continue
 
@@ -254,7 +254,7 @@ def import_records():
         file_path = settings.IMPORT_DATA_DIR / "records" / file["file_name"]
 
         logger.info(f"⏳ parsing file: {file['file_name']}")
-        delete_old_data(CPRecord, file["file_name"], logger)
+        delete_old_data(CPRecord, file["file_name"])
         parse_file(file_path, file)
 
         logger.info(f"✔ records from {file['file_name']} imported")

@@ -41,7 +41,7 @@ ALLOWED_HOSTS = [
     # Allow direct access from the docker network to the backend API
     "app",
     # Allow access from the outside
-    BACKEND_HOST.rsplit(":", 1)[0].split("/")[-1]
+    BACKEND_HOST.rsplit(":", 1)[0].split("/")[-1],
 ]
 
 # CORS allowed origins
@@ -282,6 +282,7 @@ if DEBUG:
 ENABLE_DEBUG_BAR = DEBUG and env.get_value("ENABLE_DEBUG_BAR", default=False, cast=bool)
 if ENABLE_DEBUG_BAR:
     try:
+
         def show_toolbar(request):
             return DEBUG and (
                 request.META.get("REMOTE_ADDR") in INTERNAL_IPS

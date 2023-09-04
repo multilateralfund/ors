@@ -63,7 +63,7 @@ def parse_file(file_path, file_name, meeting_no):
     df = pd.read_excel(file_path).replace({np.nan: None})
 
     for index_row, row in df.iterrows():
-        project_data = get_project_base_data(row, index_row, logger)
+        project_data = get_project_base_data(row, index_row)
 
         if not project_data:
             continue
@@ -124,7 +124,7 @@ def import_proposals():
         logger.info(f"⏳ importing {file_name}")
         file_path = settings.IMPORT_DATA_DIR / "proposals" / file_name
 
-        delete_old_data(ProjectSubmission, file_name, logger)
+        delete_old_data(ProjectSubmission, file_name)
         parse_file(file_path, file_name, meeting_no)
 
     logger.info("✔ proposals imported")

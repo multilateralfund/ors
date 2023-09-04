@@ -145,3 +145,19 @@ export function convertHexToRGB(color: string) {
 
   return colors ? `rgb(${colors.map((n) => parseInt(n, 16)).join(', ')})` : ''
 }
+
+export function convertHexToRGBA(color: string, opacity: number = 1) {
+  const parsedColor = color.substring(1)
+
+  const re = new RegExp(`.{1,${parsedColor.length / 3}}`, 'g')
+  let colors = parsedColor.match(re)
+
+  if (colors && colors[0].length === 1) {
+    // @ts-ignore
+    colors = colors.map((n) => n + n)
+  }
+
+  return colors
+    ? `rgba(${colors.map((n) => parseInt(n, 16)).join(', ')}, ${opacity})`
+    : ''
+}

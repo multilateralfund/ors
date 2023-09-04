@@ -309,3 +309,17 @@ class ProjectProgressReport(models.Model):
     MY_annual_target_met = models.CharField(max_length=255, null=True, blank=True)
     MY_verification_completed = models.CharField(max_length=255, null=True, blank=True)
     MY_verification_report = models.CharField(max_length=255, null=True, blank=True)
+
+
+class ProjectComment(models.Model):
+    source_file = models.CharField(max_length=255, null=True, blank=True)
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="comments"
+    )
+    meeting_of_report = models.CharField(max_length=255, null=True, blank=True)
+    secretariat_comment = models.TextField(
+        null=True, blank=True, verbose_name="Secretariat's Comment"
+    )
+    agency_response = models.TextField(
+        null=True, blank=True, verbose_name="Agency's Response"
+    )

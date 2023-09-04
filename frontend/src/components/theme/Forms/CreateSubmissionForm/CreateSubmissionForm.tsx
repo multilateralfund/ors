@@ -21,7 +21,7 @@ export default function CreateSubmissionForm() {
 
   return (
     <Grid spacing={2} container>
-      <Grid lg={8} xs={12} item>
+      <Grid lg={9} xs={12} item>
         <Box>
           <Field InputLabel={{ label: 'Project title' }} />
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
@@ -63,7 +63,7 @@ export default function CreateSubmissionForm() {
           <Button variant="contained">Submit proposal</Button>
         </Box>
       </Grid>
-      <Grid lg={4} xs={12} item>
+      <Grid lg={3} xs={12} item>
         <Box className="lg:border-none lg:bg-transparent lg:shadow-none">
           <Typography className="mb-4 text-typography-secondary" variant="h5">
             Project submission instructions

@@ -49,3 +49,9 @@
   ) !important;
   color: var(--ag-value-change-value-highlight-color) !important;
 }
+
+#next-app [class*='ag-theme-'] .ag-full-width-container .ag-row {
+  padding: calc(var(--ag-cell-horizontal-padding) - 1px);
+  display: flex;
+  align-items: center;
+}

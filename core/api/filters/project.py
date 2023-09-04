@@ -1,7 +1,16 @@
 from django_filters import rest_framework as filters
+from django_filters.fields import CSVWidget
+from core.api.utils import SUBMISSION_STATUSE_CODES
 
-
-from core.models.project import Project
+from core.models.agency import Agency
+from core.models.country import Country
+from core.models.project import (
+    Project,
+    ProjectSector,
+    ProjectStatus,
+    ProjectSubSector,
+    ProjectType,
+)
 
 
 class ProjectFilter(filters.FilterSet):
@@ -9,23 +18,52 @@ class ProjectFilter(filters.FilterSet):
     Filter for country programme reports
     """
 
-    status_id = filters.NumberFilter(field_name="status_id", lookup_expr="exact")
-    sector_id = filters.NumberFilter(
-        field_name="subsector__sector_id", lookup_expr="exact"
+    country_id = filters.ModelMultipleChoiceFilter(
+        field_name="country",
+        queryset=Country.objects.all(),
+        widget=CSVWidget,
     )
-    subsector_id = filters.NumberFilter(field_name="subsector_id", lookup_expr="exact")
-    project_type_id = filters.NumberFilter(
-        field_name="project_type_id", lookup_expr="exact"
+    status_id = filters.ModelMultipleChoiceFilter(
+        field_name="status",
+        queryset=ProjectStatus.objects.all(),
+        widget=CSVWidget,
     )
-    substance_type = filters.CharFilter(
-        field_name="substance_type", lookup_expr="iexact"
+    sector_id = filters.ModelMultipleChoiceFilter(
+        field_name="subsector__sector_id",
+        queryset=ProjectSector.objects.all(),
+        widget=CSVWidget,
     )
-    agency_id = filters.NumberFilter(field_name="agency_id", lookup_expr="exact")
-    approval_meeting_no = filters.NumberFilter(field_name="approval_meeting_no")
+    subsector_id = filters.ModelMultipleChoiceFilter(
+        field_name="subsector",
+        queryset=ProjectSubSector.objects.all(),
+        widget=CSVWidget,
+    )
+    project_type_id = filters.ModelMultipleChoiceFilter(
+        field_name="project_type",
+        queryset=ProjectType.objects.all(),
+        widget=CSVWidget,
+    )
+    substance_type = filters.MultipleChoiceFilter(
+        choices=Project.SubstancesType.choices,
+        widget=CSVWidget,
+    )
+    agency_id = filters.ModelMultipleChoiceFilter(
+        field_name="agency",
+        queryset=Agency.objects.all(),
+        widget=CSVWidget,
+    )
+    approval_meeting_no = filters.AllValuesMultipleFilter(widget=CSVWidget)
+
+    get_submission = filters.BooleanFilter(method="filter_submission")
+
+    date_received = filters.DateFromToRangeFilter(
+        field_name="submission__date_received"
+    )
 
     class Meta:
         model = Project
         fields = [
+            "country_id",
             "status_id",
             "sector_id",
             "subsector_id",
@@ -33,4 +71,10 @@ class ProjectFilter(filters.FilterSet):
             "substance_type",
             "agency_id",
             "approval_meeting_no",
+            "date_received",
         ]
+
+    def filter_submission(self, queryset, _name, value):
+        if value:
+            return queryset.filter(status__code__in=SUBMISSION_STATUSE_CODES)
+        return queryset.exclude(status__code__in=SUBMISSION_STATUSE_CODES)

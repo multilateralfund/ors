@@ -22,27 +22,18 @@ def parse_file(file_path):
         json_data = json.load(f)
 
     unk_status = get_object_by_name(
-        ProjectStatus,
-        "Unknow",
-        "UNK",
-        "project status",
-        logger,
-        use_offset=False,
+        ProjectStatus, "Unknow", "UNK", "project status", use_offset=False
     )
 
     for project_json in json_data:
         country = get_country_by_name(
-            project_json["Country"],
-            project_json["Code"],
-            logger,
-            use_offset=False,
+            project_json["Country"], project_json["Code"], use_offset=False
         )
         agency = get_object_by_name(
             Agency,
             project_json["Agency"],
             project_json["Code"],
             "agency",
-            logger,
             use_offset=False,
         )
         project_type = get_object_by_name(
@@ -50,7 +41,6 @@ def parse_file(file_path):
             project_json["Type"],
             project_json["Code"],
             "project type",
-            logger,
             use_offset=False,
         )
 

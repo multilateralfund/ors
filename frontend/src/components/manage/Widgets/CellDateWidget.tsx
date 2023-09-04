@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react'
 
-import { DatePicker } from '@mui/x-date-pickers/DatePicker'
+import { DatePicker } from '@mui/x-date-pickers/DatePicker/DatePicker'
 import { ICellEditorParams } from 'ag-grid-community'
 import dayjs from 'dayjs'
 import { isString } from 'lodash'
