@@ -48,6 +48,7 @@ class AdmColumnSerializer(serializers.ModelSerializer):
 class AdmRecordSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     column_id = serializers.PrimaryKeyRelatedField(
+        required=False,
         queryset=AdmColumn.objects.all().values_list("id", flat=True),
     )
     row_id = serializers.PrimaryKeyRelatedField(
@@ -55,14 +56,15 @@ class AdmRecordSerializer(serializers.ModelSerializer):
         queryset=AdmRow.objects.all().values_list("id", flat=True),
     )
     value_choice_id = serializers.PrimaryKeyRelatedField(
+        required=False,
         queryset=AdmChoice.objects.all().values_list("id", flat=True),
     )
     country_programme_report_id = serializers.PrimaryKeyRelatedField(
-        required=True,
+        required=False,
         queryset=CPReport.objects.all().values_list("id", flat=True),
         write_only=True,
     )
-    section = serializers.CharField(required=True, write_only=True)
+    section = serializers.CharField(required=False, write_only=True)
 
     class Meta:
         model = AdmRecord
