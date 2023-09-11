@@ -11,3 +11,4 @@ class Command(BaseCommand):
         call_command("import_resources", "all")
         call_command("import_records", "all")
         call_command("import_projects", "all")
+        call_command("import_business_plans")

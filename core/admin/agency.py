@@ -11,5 +11,5 @@ class AgencyAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["project", "coop_projects"]
+        exclude = ["project", "coop_projects", "businessplan"]
         return get_final_display_list(Agency, exclude)

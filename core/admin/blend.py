@@ -26,6 +26,7 @@ class BlendAdmin(admin.ModelAdmin):
             "cpprices",
             "components",
             "project_ods",
+            "businessplan",
         ]
         return get_final_display_list(Blend, exclude)
 
