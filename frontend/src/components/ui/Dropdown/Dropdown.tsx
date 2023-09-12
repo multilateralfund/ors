@@ -4,6 +4,7 @@ import { useEffect, useId, useRef } from 'react'
 
 import { Button, Menu, MenuItem } from '@mui/material'
 import cx from 'classnames'
+import { isFunction } from 'lodash'
 
 const DropdownContext = React.createContext({ handleClose: () => {} })
 
@@ -16,7 +17,7 @@ export default function Dropdown({
   children: React.ReactNode
   className?: string
   id?: string
-  label: React.ReactNode
+  label: ((props?: any) => React.ReactElement) | React.ReactNode
 }) {
   const uniqueId = useId()
   const buttonRef = useRef<any>()
@@ -56,7 +57,7 @@ export default function Dropdown({
         ref={buttonRef}
         onClick={handleClick}
       >
-        {label}
+        {isFunction(label) ? label({ open }) : label}
       </Button>
       <Menu
         anchorEl={anchorEl}

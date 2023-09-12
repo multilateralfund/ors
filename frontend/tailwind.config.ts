@@ -6,6 +6,13 @@ const colors = require('tailwindcss/colors')
 
 const gray = {
   ...colors.gray,
+  50: '#F9FAFB',
+  100: '#F2F4F7',
+  200: '#EAECF0',
+  400: '#98A2B3',
+  500: '#667085',
+  700: '#344054',
+  900: '#101828',
   A100: grey.A100,
   A200: grey.A200,
   A400: grey.A400,
@@ -23,8 +30,8 @@ const originalColors = {
       selected: 'rgba(255, 255, 255, 0.16)',
     },
     background: {
-      DEFAULT: colors.gray[900],
-      paper: colors.gray[900],
+      DEFAULT: gray[900],
+      paper: gray[900],
     },
     divider: {
       DEFAULT: 'rgba(255, 255, 255, 0.12)',
@@ -39,11 +46,11 @@ const originalColors = {
     },
     mui: {
       box: {
-        background: colors.gray[800],
-        border: colors.gray[700],
+        background: gray[800],
+        border: gray[700],
       },
       paper: {
-        border: colors.gray[700],
+        border: gray[700],
       },
     },
     primary: {
@@ -77,11 +84,11 @@ const originalColors = {
       selected: 'rgba(0, 0, 0, 0.08)',
     },
     background: {
-      DEFAULT: colors.gray[50],
+      DEFAULT: gray[50],
       paper: colors.white,
     },
     divider: {
-      DEFAULT: 'rgba(0, 0, 0, 0.12)',
+      DEFAULT: gray[100],
     },
     error: {
       DEFAULT: colors.red[500],
@@ -93,10 +100,10 @@ const originalColors = {
     mui: {
       box: {
         background: colors.white,
-        border: colors.gray[200],
+        border: gray[200],
       },
       paper: {
-        border: colors.gray[200],
+        border: gray[200],
       },
     },
     primary: {
@@ -104,7 +111,7 @@ const originalColors = {
       contrastText: '#ffffff',
     },
     secondary: {
-      DEFAULT: '#333333',
+      DEFAULT: gray[700],
       contrastText: '#ffffff',
     },
     success: {
@@ -112,10 +119,10 @@ const originalColors = {
       contrastText: '#000000',
     },
     typography: {
-      DEFAULT: 'rgba(0, 0, 0, 0.87)',
-      disabled: 'rgba(0, 0, 0, 0.38)',
-      primary: 'rgba(0, 0, 0, 0.87)',
-      secondary: 'rgba(0, 0, 0, 0.6)',
+      DEFAULT: gray[900],
+      disabled: gray[400],
+      primary: gray[900],
+      secondary: gray[500],
     },
     warning: {
       DEFAULT: colors.orange[500],

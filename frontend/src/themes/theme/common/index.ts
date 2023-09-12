@@ -21,6 +21,11 @@ const commonTheme = (
       },
     },
     components: {
+      MuiDivider: {
+        defaultProps: {
+          className: 'bg-red',
+        },
+      },
       MuiMenu: {
         styleOverrides: {
           list: {

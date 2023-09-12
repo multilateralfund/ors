@@ -2,6 +2,9 @@
 import pytest
 
 from core.api.tests.factories import (
+    AdmChoiceFactory,
+    AdmColumnFactory,
+    AdmRowFactory,
     AgencyFactory,
     BlendFactory,
     CPReportFactory,
@@ -44,6 +47,60 @@ def cp_report_2019(country_ro):
     return CPReportFactory.create(
         country=country_ro, year=2019, comment="Daca ploua nu ma ploua"
     )
+
+
+@pytest.fixture
+def adm_rows():
+    row_data = {
+        "type": "question",
+        "min_year": 2000,
+        "max_year": 2010,
+        "parent": None,
+    }
+    b_row = AdmRowFactory.create(
+        text="adm_row_b",
+        section="B",
+        **row_data,
+    )
+    c_row = AdmRowFactory.create(
+        text="adm_row_c",
+        section="C",
+        **row_data,
+    )
+    d_row = AdmRowFactory.create(
+        text="adm_row_d",
+        section="D",
+        **row_data,
+    )
+
+    for i in range(3):
+        AdmChoiceFactory.create(
+            adm_row=d_row,
+            value=f"d_row_choice_{i}",
+            sort_order=i,
+        )
+
+    return b_row, c_row, d_row
+
+
+@pytest.fixture
+def adm_columns():
+    column_data = {
+        "min_year": 2000,
+        "max_year": 2010,
+    }
+    b_column = AdmColumnFactory.create(
+        display_name="adm_column_b",
+        section="B",
+        **column_data,
+    )
+    c_column = AdmColumnFactory.create(
+        display_name="adm_column_c",
+        section="C",
+        **column_data,
+    )
+
+    return b_column, c_column
 
 
 @pytest.fixture

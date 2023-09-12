@@ -9,7 +9,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 
 import Field from '@ors/components/manage/Form/Field'
 import OrsLoadingBuffer from '@ors/components/theme/Loading/LoadingBuffer'
-import Link from '@ors/components/ui/Link'
+import Link from '@ors/components/ui/Link/Link'
 import Trans from '@ors/components/ui/Trans/Trans'
 import useStore from '@ors/store'
 

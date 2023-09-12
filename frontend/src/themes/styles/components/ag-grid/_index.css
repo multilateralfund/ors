@@ -24,3 +24,12 @@
   .ag-overlay-no-rows-wrapper.ag-layout-auto-height {
   padding-top: 240px;
 }
+
+.ag-cell-wrapper,
+.ag-cell-value {
+  @apply h-full;
+}
+
+.ag-cell-custom-value {
+  @apply inline-block w-full overflow-hidden text-ellipsis;
+}

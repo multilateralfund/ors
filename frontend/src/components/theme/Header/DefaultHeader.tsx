@@ -8,7 +8,7 @@ import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
 import LanguageSelector from '@ors/components/theme/LanguageSelector/LanguageSelector'
 import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
 import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
-import UnstyledLink, { LinkProps } from '@ors/components/ui/Link'
+import UnstyledLink, { LinkProps } from '@ors/components/ui/Link/Link'
 import { matchPath } from '@ors/helpers/Url/Url'
 
 function Link({

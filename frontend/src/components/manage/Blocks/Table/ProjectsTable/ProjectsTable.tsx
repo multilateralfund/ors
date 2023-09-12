@@ -82,7 +82,7 @@ export default function ProjectsTable() {
             options={projectSlice.statuses.data}
             widget="chipToggle"
             onChange={(value: null | number) => {
-              grid.current.api.paginationGoToPage(0)
+              grid.current.paginationGoToPage(0)
               handleParamsChange({ offset: 0, status_id: value })
             }}
           />
@@ -92,7 +92,7 @@ export default function ProjectsTable() {
             options={projectSlice.sectors.data}
             widget="autocomplete"
             onChange={(_: any, value: any) => {
-              grid.current.api.paginationGoToPage(0)
+              grid.current.paginationGoToPage(0)
               handleParamsChange({ offset: 0, sector_id: value?.id })
             }}
           />
@@ -102,7 +102,7 @@ export default function ProjectsTable() {
             options={projectSlice.subsectors.data}
             widget="autocomplete"
             onChange={(_: any, value: any) => {
-              grid.current.api.paginationGoToPage(0)
+              grid.current.paginationGoToPage(0)
               handleParamsChange({ offset: 0, subsector_id: value?.id })
             }}
           />
@@ -112,7 +112,7 @@ export default function ProjectsTable() {
             options={projectSlice.types.data}
             widget="autocomplete"
             onChange={(_: any, value: any) => {
-              grid.current.api.paginationGoToPage(0)
+              grid.current.paginationGoToPage(0)
               handleParamsChange({ offset: 0, project_type_id: value?.id })
             }}
           />
@@ -121,7 +121,7 @@ export default function ProjectsTable() {
             options={substanceTypes}
             widget="autocomplete"
             onChange={(_: any, value: any) => {
-              grid.current.api.paginationGoToPage(0)
+              grid.current.paginationGoToPage(0)
               handleParamsChange({ offset: 0, substance_type: value?.id })
             }}
           />
@@ -131,7 +131,7 @@ export default function ProjectsTable() {
             options={commonSlice.agencies.data}
             widget="autocomplete"
             onChange={(_: any, value: any) => {
-              grid.current.api.paginationGoToPage(0)
+              grid.current.paginationGoToPage(0)
               handleParamsChange({ agency_id: value?.id, offset: 0 })
             }}
           />
@@ -141,7 +141,7 @@ export default function ProjectsTable() {
             options={projectSlice.meetings.data}
             widget="autocomplete"
             onChange={(_: any, value: any) => {
-              grid.current.api.paginationGoToPage(0)
+              grid.current.paginationGoToPage(0)
               handleParamsChange({ approval_meeting_no: value, offset: 0 })
             }}
           />

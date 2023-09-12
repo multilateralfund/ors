@@ -57,7 +57,9 @@ class ProjectStatus(models.Model):
 class ProjectSectorManager(models.Manager):
     def find_by_name(self, name):
         name_str = name.strip()
-        return self.filter(name__iexact=name_str).first()
+        return self.filter(
+            models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str)
+        ).first()
 
 
 class ProjectSector(models.Model):
@@ -71,13 +73,28 @@ class ProjectSector(models.Model):
         return self.name
 
 
+class ProjectSubSectorManager(models.Manager):
+    def find_by_name(self, name):
+        name_str = name.strip()
+        return self.filter(
+            models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str)
+        ).first()
+
+    def find_by_name_and_sector(self, name, sector):
+        name_str = name.strip()
+        return self.filter(
+            models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str),
+            sector=sector,
+        ).first()
+
+
 class ProjectSubSector(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=10, null=True, blank=True)
     sector = models.ForeignKey(ProjectSector, on_delete=models.CASCADE)
     sort_order = models.FloatField(null=True, blank=True)
 
-    objects = ProjectSectorManager()
+    objects = ProjectSubSectorManager()
 
     def __str__(self):
         return self.name

@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 
 import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
 import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
-import Link from '@ors/components/ui/Link'
+import Link from '@ors/components/ui/Link/Link'
 import useStore from '@ors/store'
 
 import { IoBarChart } from '@react-icons/all-files/io5/IoBarChart'

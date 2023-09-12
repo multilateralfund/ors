@@ -1,6 +1,7 @@
 from .adm import *
 from .agency import *
 from .blend import *
+from .business_plan import *
 from .country import *
 from .country_programme import *
 from .group import *

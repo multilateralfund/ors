@@ -1,23 +1,20 @@
 import { Skeleton, Typography } from '@mui/material'
 
-import Link from '@ors/components/ui/Link'
+import Link from '@ors/components/ui/Link/Link'
 
 export const columnSchema = [
   {
     field: 'name',
-    flex: 1,
     headerName: 'Report name',
     minWidth: 200,
   },
   {
     field: 'country',
-    flex: 1,
     headerName: 'Country',
     minWidth: 140,
   },
   {
     field: 'year',
-    flex: 1,
     headerName: 'Period',
     minWidth: 100,
   },
@@ -37,7 +34,6 @@ export const columnSchema = [
       )
     },
     field: 'action',
-    flex: 1,
     headerClass: 'text-center',
     headerName: 'Action',
     minWidth: 100,

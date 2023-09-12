@@ -2,7 +2,7 @@
 
 import cx from 'classnames'
 
-import Image from '@ors/components/ui/Image'
+import Image from '@ors/components/ui/Image/Image'
 
 import { useTranslation } from '@ors/i18n/client'
 

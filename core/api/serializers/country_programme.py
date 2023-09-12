@@ -1,5 +1,6 @@
 from django.db import transaction
 from rest_framework import serializers
+from core.api.serializers.adm import AdmRecordSerializer
 
 from core.models.blend import Blend
 from core.models.country import Country
@@ -13,6 +14,10 @@ from core.models.country_programme import (
 )
 from core.models.substance import Substance
 from core.models.usage import Usage
+from core.utils import IMPORT_DB_MAX_YEAR
+
+
+# pylint: disable=W0223
 
 CP_GENERATION_CHEMICAL = "HFC-23"
 
@@ -29,7 +34,7 @@ class BaseWChemicalSerializer(serializers.ModelSerializer):
         queryset=Blend.objects.all().values_list("id", flat=True),
     )
     country_programme_report_id = serializers.PrimaryKeyRelatedField(
-        required=True,
+        required=False,
         queryset=CPReport.objects.all().values_list("id", flat=True),
         write_only=True,
     )
@@ -106,6 +111,7 @@ class CPUsageSerializer(serializers.ModelSerializer):
 class CPRecordSerializer(BaseWChemicalSerializer):
     annex_group = serializers.SerializerMethodField()
     record_usages = CPUsageSerializer(many=True)
+    section = serializers.CharField(required=False, write_only=True)
 
     class Meta:
         model = CPRecord
@@ -147,7 +153,7 @@ class CPGenerationSerializer(serializers.ModelSerializer):
     chemical_name = serializers.SerializerMethodField()
     display_name = serializers.SerializerMethodField()
     country_programme_report_id = serializers.PrimaryKeyRelatedField(
-        required=True,
+        required=False,
         queryset=CPReport.objects.all().values_list("id", flat=True),
         write_only=True,
     )
@@ -173,7 +179,7 @@ class CPGenerationSerializer(serializers.ModelSerializer):
 
 class CPEmissionSerializer(serializers.ModelSerializer):
     country_programme_report_id = serializers.PrimaryKeyRelatedField(
-        required=True,
+        required=False,
         queryset=CPReport.objects.all().values_list("id", flat=True),
         write_only=True,
     )
@@ -193,3 +199,140 @@ class CPEmissionSerializer(serializers.ModelSerializer):
             "remarks",
             "country_programme_report_id",
         ]
+
+
+class CPReportCreateSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    year = serializers.IntegerField()
+    country_id = serializers.PrimaryKeyRelatedField(
+        queryset=Country.objects.all().values_list("id", flat=True),
+    )
+    section_a = CPRecordSerializer(many=True)
+    section_b = CPRecordSerializer(many=True, required=False)
+    section_c = CPPricesSerializer(many=True)
+    section_d = CPGenerationSerializer(many=True, required=False)
+    section_e = CPEmissionSerializer(many=True, required=False)
+    section_f = serializers.DictField(
+        required=False, help_text="Only one key (remarks) is allowed)"
+    )
+    adm_b = AdmRecordSerializer(many=True, required=False)
+    adm_c = AdmRecordSerializer(many=True, required=False)
+    adm_d = AdmRecordSerializer(many=True, required=False)
+
+    class Meta:
+        fields = [
+            "name",
+            "year",
+            "country_id",
+            "section_a",
+            "section_b",
+            "section_c",
+            "section_d",
+            "section_e",
+            "section_f",
+            "adm_b",
+            "adm_c",
+            "adm_d",
+        ]
+
+    def to_representation(self, instance):
+        return CPReportSerializer(instance).data
+
+    def validate(self, attrs):
+        if attrs["year"] > IMPORT_DB_MAX_YEAR:
+            if not all(
+                [
+                    attrs.get("section_b"),
+                    attrs.get("section_d"),
+                    attrs.get("section_e"),
+                    attrs.get("section_f"),
+                ]
+            ):
+                raise serializers.ValidationError(
+                    f"Sections B, D, E and F are required for years after {IMPORT_DB_MAX_YEAR}"
+                )
+            if attrs["section_f"].get("remarks") is None:
+                raise serializers.ValidationError(
+                    f"Remarks are required for years after {IMPORT_DB_MAX_YEAR}"
+                )
+        else:
+            if not all(
+                [
+                    attrs.get("adm_b"),
+                    attrs.get("adm_c"),
+                    attrs.get("adm_d"),
+                ]
+            ):
+                raise serializers.ValidationError(
+                    f"Adm B, C and D are required for years before {IMPORT_DB_MAX_YEAR}"
+                )
+
+        return super().validate(attrs)
+
+    def _create_cp_records(self, cp_report, section_data, section):
+        for record in section_data:
+            record["country_programme_report_id"] = cp_report.id
+            record["section"] = section
+            record_serializer = CPRecordSerializer(data=record)
+            record_serializer.is_valid(raise_exception=True)
+            record_serializer.save()
+
+    def _create_prices(self, cp_report, section_data):
+        for price in section_data:
+            price["country_programme_report_id"] = cp_report.id
+            price_serializer = CPPricesSerializer(data=price)
+            price_serializer.is_valid(raise_exception=True)
+            price_serializer.save()
+
+    def _create_generation(self, cp_report, section_data):
+        for generation in section_data:
+            generation["country_programme_report_id"] = cp_report.id
+            generation_serializer = CPGenerationSerializer(data=generation)
+            generation_serializer.is_valid(raise_exception=True)
+            generation_serializer.save()
+
+    def _create_emission(self, cp_report, section_data):
+        for emission in section_data:
+            emission["country_programme_report_id"] = cp_report.id
+            emission_serializer = CPEmissionSerializer(data=emission)
+            emission_serializer.is_valid(raise_exception=True)
+            emission_serializer.save()
+
+    def _add_remarks(self, cp_report, section_data):
+        cp_report.comment = section_data.get("remarks", "")
+        cp_report.save()
+
+    def _create_adm_records(self, cp_report, section_data, section):
+        for record in section_data:
+            record["country_programme_report_id"] = cp_report.id
+            record["section"] = section
+            record_serializer = AdmRecordSerializer(data=record)
+            record_serializer.is_valid(raise_exception=True)
+            record_serializer.save()
+
+    @transaction.atomic
+    def create(self, validated_data):
+        cp_report_data = {
+            "name": validated_data.get("name"),
+            "year": validated_data.get("year"),
+            "country_id": validated_data.get("country_id"),
+        }
+
+        cp_report_serializer = CPReportSerializer(data=cp_report_data)
+        cp_report_serializer.is_valid(raise_exception=True)
+        cp_report = cp_report_serializer.save()
+
+        self._create_cp_records(cp_report, validated_data.get("section_a", []), "A")
+        self._create_prices(cp_report, validated_data.get("section_c", []))
+
+        if cp_report_data["year"] > IMPORT_DB_MAX_YEAR:
+            self._create_cp_records(cp_report, validated_data.get("section_b", []), "B")
+            self._create_generation(cp_report, validated_data.get("section_d", []))
+            self._create_emission(cp_report, validated_data.get("section_e", []))
+            self._add_remarks(cp_report, validated_data.get("section_f", {}))
+        else:
+            self._create_adm_records(cp_report, validated_data.get("adm_b", []), "B")
+            self._create_adm_records(cp_report, validated_data.get("adm_c", []), "C")
+            self._create_adm_records(cp_report, validated_data.get("adm_d", []), "D")
+
+        return cp_report
