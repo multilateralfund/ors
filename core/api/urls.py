@@ -5,6 +5,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
 from core.api.views import ProjectFundViewSet
+from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
 from core.api.views.adm import AdmEmptyFormView
 from core.api.views.agency import AgencyListView
@@ -34,6 +35,7 @@ router = routers.SimpleRouter()
 router.register("projects", ProjectViewSet)
 router.register("project-fund", ProjectFundViewSet)
 router.register("project-ods-odp", ProjectOdsOdpViewSet)
+router.register("project-comment", ProjectCommentViewSet)
 
 
 schema_view = get_schema_view(
