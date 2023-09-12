@@ -209,7 +209,9 @@ def get_cp_report(
     return cp
 
 
-def get_object_by_name(cls, obj_name, index_row, obj_type_name, use_offset=True):
+def get_object_by_name(
+    cls, obj_name, index_row, obj_type_name, use_offset=True, with_log=True
+):
     """
     get object by name or log error if not found in db
     @param cls: Class instance
@@ -217,6 +219,7 @@ def get_object_by_name(cls, obj_name, index_row, obj_type_name, use_offset=True)
     @param index_row: integer -> index row
     @param obj_type_name: string -> object type name (for logging)
     @param use_offset: boolean (if the index_row should be increased with OFFSET)
+    @param with_log: boolean (if the error should be logged)
 
     @return: object or None
     """
@@ -224,7 +227,7 @@ def get_object_by_name(cls, obj_name, index_row, obj_type_name, use_offset=True)
         return None
     obj = cls.objects.find_by_name(obj_name)
 
-    if not obj:
+    if not obj and with_log:
         if use_offset:
             index_row += OFFSET
         logger.info(
@@ -562,6 +565,10 @@ def get_country_by_name(country_name, index_row, use_offset=True):
 
     @return Country object
     """
+
+    if country_name and country_name.endswith("(the)"):
+        country_name = country_name[:-5]
+
     country_name = COUNTRY_NAME_MAPPING.get(country_name, country_name)
     country = get_object_by_name(
         Country, country_name, index_row, "country", use_offset=use_offset

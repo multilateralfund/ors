@@ -28,6 +28,11 @@ NEW_TYPES = [
         "TYPE_PRO": "DOC",
         "SORT_TYPE": 20,
     },
+    {
+        "TYPE": "PHA",
+        "TYPE_PRO": "Phase Out",
+        "SORT_TYPE": 90,
+    },
 ]
 
 NEW_STATUSES = [
