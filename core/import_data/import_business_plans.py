@@ -316,9 +316,8 @@ def parse_file(file_path, file_name):
 @transaction.atomic
 def import_business_plans():
     dir_path = settings.IMPORT_DATA_DIR / "business_plans"
-    directory = os.fsencode(dir_path)
 
-    for file in os.listdir(directory):
+    for file in dir_path.glob("*.xls"):
         file_name = os.fsdecode(file)
         file_path = dir_path / file_name
         if file_name.endswith(".xls"):
