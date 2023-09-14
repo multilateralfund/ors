@@ -117,9 +117,8 @@ def check_project_consistency(project, item, index):
         ("sector", project.subsector.sector, project_sector),
         ("type", project.project_type, project_type),
         ("agency", project.agency, agency),
-        ("title", project.title, item["project_title"]),
     ):
-        if current_value != value:
+        if current_value != value and value is not None:
             logger.warning(
                 f"[row: {index}]: Inconsistent project attribute {name!r} found for code={project.code}: "
                 f"{current_value} != {value}"
@@ -139,7 +138,9 @@ def import_progress_reports():
     with file_path.open("r") as csvfile:
         reader = csv.DictReader(csvfile)
         for index, item in enumerate(reader):
-            project = get_object_by_code(Project, item["code"], "code", index)
+            project = get_object_by_code(
+                Project, item["code"], "code", index, with_log=False
+            )
             project_status = get_object_by_code(
                 ProjectStatus, item["status"], "code", index
             )

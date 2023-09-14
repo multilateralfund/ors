@@ -20,6 +20,16 @@ NEW_SUBSECTORS = [
         "SUBSECTOR": "Policy paper",
         "SORT_SUBSECTOR": 99,
     },
+    {
+        "SEC": "KIP",
+        "SUBSECTOR": "Preparation of project proposal",
+        "SORT_SUBSECTOR": 99,
+    },
+    {
+        "SEC": "PHA",
+        "SUBSECTOR": "HFC phase down plan",
+        "SORT_SUBSECTOR": 99,
+    },
 ]
 
 NEW_TYPES = [
@@ -125,11 +135,10 @@ def import_subsector(file_path):
             "code": subsector_code,
             "sector": sector,
             "sort_order": subsector_json["SORT_SUBSECTOR"],
-            "multi_year": subsector_json.get("MULTIYEAR", False),
         }
 
         ProjectSubSector.objects.update_or_create(
-            name=subsector_data["name"], defaults=subsector_data
+            name=subsector_data["name"], sector_id=sector.id, defaults=subsector_data
         )
 
 

@@ -12,7 +12,13 @@ from core.models.agency import Agency
 from core.models.blend import Blend
 from core.models.country import Country
 from core.models.country_programme import CPReport
-from core.models.project import Project, ProjectStatus, ProjectSubSector, ProjectType
+from core.models.project import (
+    Project,
+    ProjectSector,
+    ProjectStatus,
+    ProjectSubSector,
+    ProjectType,
+)
 from core.models.substance import Substance
 from core.utils import IMPORT_DB_MAX_YEAR
 
@@ -40,6 +46,7 @@ COUNTRY_NAME_MAPPING = {
     "Western Samoa": "Samoa",
     "Moldova, Rep": "Moldova",
     "Micronesia": "Micronesia (Federated States of)",
+    "Macedonia": "The Former Yugoslav Republic of Macedonia",
 }
 
 SUBSECTOR_NAME_MAPPING = {
@@ -237,7 +244,7 @@ def get_object_by_name(
     return obj
 
 
-def get_object_by_code(cls, code, column, index_row):
+def get_object_by_code(cls, code, column, index_row, with_log=True):
     """
     get object by code or log error if not found in db
     @param cls: Class instance
@@ -251,9 +258,10 @@ def get_object_by_code(cls, code, column, index_row):
     try:
         return cls.objects.get(**{column: code})
     except cls.DoesNotExist:
-        logger.info(
-            f"[row: {index_row}]: This {cls.__name__} does not exists in data base: {column}={code}"
-        )
+        if with_log:
+            logger.info(
+                f"[row: {index_row}]: This {cls.__name__} does not exists in data base: {column}={code}"
+            )
         return None
 
 
@@ -644,18 +652,25 @@ def get_project_base_data(item, item_index, is_submissions=True):
     agency = get_object_by_name(
         Agency, item["AGENCY"], item_index, "agency", use_offset=is_submissions
     )
+    # get sector
+    sector = get_object_by_name(
+        ProjectSector, item["SEC"], item_index, "sector", use_offset=is_submissions
+    )
+    if not sector:
+        return None
+
     # get subsector name from dict if exists else use the same name from the file
     subsect_name = SUBSECTOR_NAME_MAPPING.get(
         item["SUBSECTOR"],
         item["SUBSECTOR"],
     )
-    subsec = get_object_by_name(
-        ProjectSubSector,
-        subsect_name,
-        item_index,
-        "subsector",
-        use_offset=is_submissions,
-    )
+    subsec = ProjectSubSector.objects.find_by_name_and_sector(subsect_name, sector)
+    if not subsec:
+        index = item_index + OFFSET if is_submissions else item_index
+        logger.warning(
+            f"[row: {index}]: "
+            f"This subsector does not exist: {item['SUBSECTOR']} (sector = {item['SEC']}))"
+        )
 
     proj_type = get_object_by_name(
         ProjectType, item["TYPE"], item_index, "type", use_offset=is_submissions
@@ -717,23 +732,33 @@ def get_project_base_data(item, item_index, is_submissions=True):
 
 def update_or_create_project(project_data, update_status=True):
     # try to find the project by its code
+    project = None
     if "code" in project_data:
-        code_filter = models.Q(code=project_data["code"])
-    else:
-        code_filter = models.Q()
+        project = Project.objects.filter(code__iexact=project_data["code"]).first()
 
     # some projects do not have the code set so we try to find them by other fields
-    fields_filter = models.Q(
-        title=project_data["title"],
-        country=project_data["country"],
-        agency=project_data["agency"],
-        project_type=project_data["project_type"],
-        approval_meeting_no=project_data["approval_meeting_no"],
-    )
-    if "subsector" in project_data:
-        fields_filter &= models.Q(subsector=project_data["subsector"])
+    if not project:
+        fields_filter = models.Q(
+            title=project_data["title"],
+            country=project_data["country"],
+            agency=project_data["agency"],
+            project_type=project_data["project_type"],
+            approval_meeting_no=project_data["approval_meeting_no"],
+        )
+        if "subsector" in project_data:
+            fields_filter &= models.Q(subsector=project_data["subsector"])
 
-    project = Project.objects.filter(code_filter | fields_filter).first()
+        project = Project.objects.filter(fields_filter).first()
+
+    # there are some projects that have the same title and country but different code
+    # so we need to check if the code is different and if it is then we need to create a new project
+    if (
+        project
+        and project_data.get("code")
+        and project.code
+        and project.code != project_data["code"]
+    ):
+        project = None
 
     if not project:
         # if the project does not exists then create it
