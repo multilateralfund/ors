@@ -138,9 +138,7 @@ def import_progress_reports():
     with file_path.open("r") as csvfile:
         reader = csv.DictReader(csvfile)
         for index, item in enumerate(reader):
-            project = get_object_by_code(
-                Project, item["code"], "code", index, with_log=False
-            )
+            project = get_object_by_code(Project, item["code"], "code", index)
             project_status = get_object_by_code(
                 ProjectStatus, item["status"], "code", index
             )
