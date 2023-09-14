@@ -25,7 +25,7 @@ export default function FadeInOut({
         initial={{ opacity: 0 }}
         exit={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3 }}
         className={cx('motion fade-in-out', className)}
         {...rest}
       >

@@ -116,6 +116,9 @@ export default async function RootLayout({
         <StoreProvider
           initialState={{
             common,
+            header: {
+              HeaderTitle: null,
+            },
             i18n: {
               lang,
             },

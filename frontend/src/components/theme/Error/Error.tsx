@@ -3,15 +3,19 @@ import cx from 'classnames'
 
 export default function Error({
   children,
+  component,
   message,
   statusCode,
 }: {
   children?: React.ReactNode
+  component?: React.ElementType
   message?: number | string
   statusCode?: number | string
 }) {
+  const Renderer = component || 'div'
+
   return (
-    <div
+    <Renderer
       className={cx(
         'error mx-auto flex h-full w-full max-w-md flex-col justify-center px-4',
         statusCode,
@@ -39,6 +43,6 @@ export default function Error({
         </div>
         {children}
       </Box>
-    </div>
+    </Renderer>
   )
 }

@@ -3,7 +3,7 @@ import { CSSProperties } from 'react'
 import { CircularProgress } from '@mui/material'
 import cx from 'classnames'
 
-import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
+import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 
 export default function Loading({
   ProgressStyle,

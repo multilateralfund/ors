@@ -4,7 +4,7 @@ import cx from 'classnames'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 
-import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
+import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import LanguageSelector from '@ors/components/theme/LanguageSelector/LanguageSelector'
 import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
 import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'

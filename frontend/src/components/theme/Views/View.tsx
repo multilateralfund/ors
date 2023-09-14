@@ -3,6 +3,7 @@ import type { ByLayout } from '@ors/config/Views'
 
 import React from 'react'
 
+import { AnimatePresence } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 
 import config from '@ors/config'
@@ -29,5 +30,9 @@ export default function View({ children }: { children: React.ReactNode }) {
     })
   }, [view.layout])
 
-  return <RenderedView>{children}</RenderedView>
+  return (
+    <RenderedView>
+      <AnimatePresence mode="popLayout">{children}</AnimatePresence>
+    </RenderedView>
+  )
 }

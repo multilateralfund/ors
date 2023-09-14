@@ -20,9 +20,11 @@ import {
 } from '@mui/material'
 import cx from 'classnames'
 import dayjs from 'dayjs'
+import { AnimatePresence } from 'framer-motion'
 import { capitalize, isArray, isNumber, isUndefined, times } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
+import CollapseInOut from '@ors/components/manage/Transitions/CollapseInOut'
 import TextWidget from '@ors/components/manage/Widgets/TextWidget'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
@@ -224,21 +226,28 @@ function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
           </>
         )}
       </div>
-      {(display === 'detailed' || isCollapsed) && !item.isSkeleton && (
-        <div className="mb-2 mt-4 flex flex-wrap gap-4 px-10">
-          <ItemDetail label="Status" value={item.status || '-'} />
-          <ItemDetail label="Country" value={item.country || '-'} />
-          <ItemDetail label="Agency" value={item.agency || '-'} />
-          <ItemDetail label="Project type" value={item.project_type || '-'} />
-          <ItemDetail
-            label="Substance type"
-            value={item.substance_type || '-'}
-          />
-          <ItemDetail label="Sector" value={item.sector || '-'} />
-          <ItemDetail label="Subsector" value={item.subsector || '-'} />
-          <ItemDetail label="Funds requested" value={parsedFunds || '-'} />
-        </div>
-      )}
+      <AnimatePresence>
+        {(display === 'detailed' || isCollapsed) && !item.isSkeleton && (
+          <CollapseInOut>
+            <div className="mb-2 mt-4 flex flex-wrap gap-4 px-10">
+              <ItemDetail label="Status" value={item.status || '-'} />
+              <ItemDetail label="Country" value={item.country || '-'} />
+              <ItemDetail label="Agency" value={item.agency || '-'} />
+              <ItemDetail
+                label="Project type"
+                value={item.project_type || '-'}
+              />
+              <ItemDetail
+                label="Substance type"
+                value={item.substance_type || '-'}
+              />
+              <ItemDetail label="Sector" value={item.sector || '-'} />
+              <ItemDetail label="Subsector" value={item.subsector || '-'} />
+              <ItemDetail label="Funds requested" value={parsedFunds || '-'} />
+            </div>
+          </CollapseInOut>
+        )}
+      </AnimatePresence>
       <Divider className="mt-3 w-full" />
     </ListItem>
   )

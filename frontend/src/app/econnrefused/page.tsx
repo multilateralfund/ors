@@ -1,6 +1,6 @@
 import { Typography } from '@mui/material'
 
-import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
+import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Error from '@ors/components/theme/Error/Error'
 
 export default function Econnrefused() {

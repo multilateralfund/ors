@@ -4,7 +4,7 @@ import useMediaQuery from '@mui/material/useMediaQuery'
 import cx from 'classnames'
 import { usePathname } from 'next/navigation'
 
-import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
+import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
 import Link from '@ors/components/ui/Link/Link'
 import useStore from '@ors/store'

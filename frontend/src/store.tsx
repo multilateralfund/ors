@@ -14,6 +14,7 @@ import {
   ControlsSlice,
   createControlsSlice,
 } from './slices/createControlsSlice'
+import { HeaderSlice, createHeaderSlice } from './slices/createHeaderSlice'
 import { I18nSlice, createI18nSlice } from './slices/createI18nSlice'
 import { ProjectsSlice, createProjectSlice } from './slices/createProjectSlice'
 import { ReportsSlice, createReportsSlice } from './slices/createReportsSlice'
@@ -25,6 +26,7 @@ export type StoreState = {
   common: CommonSlice
   connection: null | string
   controls: ControlsSlice
+  header: HeaderSlice
   i18n: I18nSlice
   projects: ProjectsSlice
   reports: ReportsSlice
@@ -37,6 +39,7 @@ export type InitialStoreState = {
   common?: CommonSlice
   connection?: null | string
   controls?: Partial<ControlsSlice>
+  header?: Partial<HeaderSlice>
   i18n?: Partial<I18nSlice>
   projects?: ProjectsSlice
   reports?: ReportsSlice
@@ -61,6 +64,7 @@ const createStore = (initialState?: InitialStoreState) => {
           navigator?.connection?.effectiveType || null
         : null,
       controls: { ...createControlsSlice(...args) },
+      header: { ...createHeaderSlice(...args) },
       i18n: { ...createI18nSlice(...args) },
       projects: { ...createProjectSlice(...args) },
       reports: { ...createReportsSlice(...args) },

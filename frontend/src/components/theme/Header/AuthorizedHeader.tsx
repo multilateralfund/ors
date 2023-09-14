@@ -1,15 +1,18 @@
 'use client'
 import { Box } from '@mui/material'
 import cx from 'classnames'
+import { AnimatePresence } from 'framer-motion'
+import { isFunction } from 'lodash'
 import { usePathname } from 'next/navigation'
 
-import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
+import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import LanguageSelector from '@ors/components/theme/LanguageSelector/LanguageSelector'
 import Logo from '@ors/components/theme/Logo/Logo'
 import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
 import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
 import UnstyledLink, { LinkProps } from '@ors/components/ui/Link/Link'
 import { matchPath } from '@ors/helpers/Url/Url'
+import useStore from '@ors/store'
 
 function Link({
   children,
@@ -37,6 +40,10 @@ function Link({
 }
 
 export default function Header() {
+  const { HeaderTitle, navigationBackground } = useStore(
+    (state) => state.header,
+  )
+
   return (
     <Box
       id="header"
@@ -55,7 +62,10 @@ export default function Header() {
           <div id="header-control" />
         </div>
       </div>
-      <Box className="rounded-none border-0 bg-primary shadow-none">
+      <Box
+        className={'rounded-none border-0 shadow-none'}
+        style={{ backgroundColor: navigationBackground }}
+      >
         <div className="container">
           <div id="header-nav">
             <Link href="/business-plans" path="/business-plans/*">
@@ -74,7 +84,12 @@ export default function Header() {
               Enterprises
             </Link>
           </div>
-          <div id="header-title" />
+          <div id="header-title">
+            <AnimatePresence>
+              {isFunction(HeaderTitle) && <HeaderTitle />}
+              {!!HeaderTitle && HeaderTitle}
+            </AnimatePresence>
+          </div>
         </div>
       </Box>
     </Box>

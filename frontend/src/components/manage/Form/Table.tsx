@@ -16,7 +16,7 @@ import cx from 'classnames'
 import dayjs from 'dayjs'
 import { times } from 'lodash'
 
-import FadeInOut from '@ors/components/manage/Utils/FadeInOut'
+import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import CellAutocompleteWidget from '@ors/components/manage/Widgets/CellAutocompleteWidget'
 import CellDateWidget from '@ors/components/manage/Widgets/CellDateWidget'
 import CellNumberWidget from '@ors/components/manage/Widgets/CellNumberWidget'
