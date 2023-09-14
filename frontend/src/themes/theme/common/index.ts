@@ -3,12 +3,33 @@ import type { ThemeConfig } from '@ors/types/tailwind'
 
 import { getPaletteColor } from '@ors/helpers/Color/Color'
 
+type TypographyType =
+  | '2xl'
+  | '3xl'
+  | '4xl'
+  | '5xl'
+  | '6xl'
+  | '7xl'
+  | '8xl'
+  | '9xl'
+  | 'base'
+  | 'lg'
+  | 'sm'
+  | 'xl'
+  | 'xs'
+
 const contrastThreshold = 4.5
 
 const commonTheme = (
   tailwindTheme: ThemeConfig,
   direction: 'ltr' | 'rtl',
 ): ThemeOptions => {
+  function getTypography(size: TypographyType) {
+    return {
+      fontSize: tailwindTheme.fontSize[size][0],
+      // lineHeight: tailwindTheme.fontSize[size][1].lineHeight,
+    }
+  }
   return {
     breakpoints: {
       values: {
@@ -53,8 +74,8 @@ const commonTheme = (
         selected: tailwindTheme.originalColors.action.selected,
       },
       background: {
-        default: tailwindTheme.originalColors.background.DEFAULT,
-        paper: tailwindTheme.originalColors.background.paper,
+        default: tailwindTheme.originalColors.mui.default.background,
+        paper: tailwindTheme.originalColors.mui.paper.background,
       },
       common: {
         black: tailwindTheme.colors.black,
@@ -77,51 +98,51 @@ const commonTheme = (
     },
     typography: {
       body1: {
-        fontSize: tailwindTheme.fontSize['base'][0],
+        ...getTypography('base'),
       },
       body2: {
-        fontSize: tailwindTheme.fontSize['sm'][0],
+        ...getTypography('sm'),
       },
       button: {
-        fontSize: tailwindTheme.fontSize['sm'][0],
+        ...getTypography('sm'),
         textTransform: 'unset',
       },
       caption: {
-        fontSize: tailwindTheme.fontSize['xs'][0],
+        ...getTypography('xs'),
       },
       fontFamily: 'inherit',
       h1: {
-        fontSize: tailwindTheme.fontSize['6xl'][0],
+        ...getTypography('6xl'),
         fontWeight: 'bold',
       },
       h2: {
-        fontSize: tailwindTheme.fontSize['5xl'][0],
+        ...getTypography('5xl'),
         fontWeight: 'bold',
       },
       h3: {
-        fontSize: tailwindTheme.fontSize['4xl'][0],
+        ...getTypography('4xl'),
         fontWeight: 'bold',
       },
       h4: {
-        fontSize: tailwindTheme.fontSize['3xl'][0],
+        ...getTypography('3xl'),
         fontWeight: 'bold',
       },
       h5: {
-        fontSize: tailwindTheme.fontSize['2xl'][0],
+        ...getTypography('2xl'),
         fontWeight: 'bold',
       },
       h6: {
-        fontSize: tailwindTheme.fontSize['xl'][0],
+        ...getTypography('xl'),
         fontWeight: 'bold',
       },
       overline: {
-        fontSize: tailwindTheme.fontSize['sm'][0],
+        ...getTypography('sm'),
       },
       subtitle1: {
-        fontSize: tailwindTheme.fontSize['base'][0],
+        ...getTypography('base'),
       },
       subtitle2: {
-        fontSize: tailwindTheme.fontSize['sm'][0],
+        ...getTypography('sm'),
       },
     },
   }

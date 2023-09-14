@@ -37,7 +37,7 @@ export default async function Project({ params }: ProjectProps) {
   return (
     <PageWrapper>
       <HeaderTitle>
-        <Label className="theme-dark">Project title</Label>
+        <Label className="dark">Project title</Label>
         <Typography className="text-white" component="h1" variant="h3">
           {data.title}
         </Typography>

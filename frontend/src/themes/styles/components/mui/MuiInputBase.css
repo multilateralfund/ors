@@ -3,6 +3,13 @@ textarea {
   @apply bg-action-highlight;
 }
 
+.MuiInputBase-root:has(input:-webkit-autofill),
+.MuiInputBase-root input:-webkit-autofill {
+  box-shadow: 0 0 0 100px #e7f0fe inset;
+  -webkit-text-fill-color: theme(colors.typography);
+  caret-color: theme(colors.typography);
+}
+
 :root[data-theme='dark'] .MuiInputBase-root:has(input:-webkit-autofill),
 :root[data-theme='dark'] .MuiInputBase-root input:-webkit-autofill {
   box-shadow: 0 0 0 100px theme(colors.primary) inset;

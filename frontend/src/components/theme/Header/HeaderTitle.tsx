@@ -11,7 +11,7 @@ export default function HeaderTitle({ children }: HeaderTitleProps) {
   return (
     <Portal domNode="header-title">
       <FadeInOut>
-        <Divider className="-ml-4 mb-12 mt-4 w-[calc(100%+2rem)]" />
+        <Divider className="-ml-4 mb-12 mt-4 w-[calc(100%+2rem)] border-gray-200" />
         {children}
         <div className="mb-4" />
       </FadeInOut>

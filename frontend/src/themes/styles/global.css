@@ -21,7 +21,10 @@
     @apply !duration-300;
 
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
-    transition-property: background-color, border-color !important;
+    transition-property: background-color, border-color, text-decoration-color !important;
+
+    /* transition-property: background-color, border-color, text-decoration-color,
+      fill, stroke !important; */
   }
 
   :root {

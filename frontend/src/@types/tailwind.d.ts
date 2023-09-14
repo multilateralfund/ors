@@ -38,12 +38,14 @@ export type Colors = DefaultColors & {
     hover: ColorRecordType
     selected: ColorRecordType
   }
-  background: ColorRecordType & {
-    paper: ColorRecordType
-  }
   divider: ColorRecordType
   error: ColorRecordType
   info: ColorRecordType
+  mui: {
+    box: any
+    default: any
+    paper: any
+  }
   primary: ColorRecordType
   secondary: ColorRecordType
   success: ColorRecordType
