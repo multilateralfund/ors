@@ -17,7 +17,29 @@ class BPChemicalType(models.Model):
 
 
 class BusinessPlan(models.Model):
-    class HCFCStatus(models.TextChoices):
+    class Status(models.TextChoices):
+        draft = "Draft", "Draft"
+        submitted = "Submitted", "Submitted"
+        approved = "Approved", "Approved"
+        rejected = "Rejected", "Rejected"
+
+    year_start = models.IntegerField(
+        validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
+    )
+    year_end = models.IntegerField(
+        validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
+    )
+    agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
+    status = models.CharField(
+        max_length=32, choices=Status.choices, default=Status.draft
+    )
+
+    def __str__(self):
+        return f"{self.agency.name} {self.year_start}-{self.year_end}"
+
+
+class BPRecord(models.Model):
+    class LVCStatus(models.TextChoices):
         lvc = "LVC", "LVC"
         non_lvc = "Non-LVC", "Non-LVC"
         regional = "Regional", "Regional"
@@ -28,19 +50,15 @@ class BusinessPlan(models.Model):
         planned = "P", "Planned"
         undefined = "U", "Undefined"
 
+    business_plan = models.ForeignKey(BusinessPlan, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
-    cluster = models.CharField(max_length=255, null=True, blank=True)
-    year_start = models.IntegerField(
-        validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
-    )
-    year_end = models.IntegerField(
-        validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
-    )
+    required_by_model = models.CharField(max_length=255, null=True, blank=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
-    agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
-    hcfc_status = models.CharField(max_length=32, choices=HCFCStatus.choices)
+    lvc_status = models.CharField(max_length=32, choices=LVCStatus.choices)
     project_type = models.ForeignKey(ProjectType, on_delete=models.CASCADE)
-    bp_chemical_type = models.ForeignKey(BPChemicalType, on_delete=models.CASCADE)
+    bp_chemical_type = models.ForeignKey(
+        BPChemicalType, on_delete=models.CASCADE
+    )  # cluster
     substances = models.ManyToManyField(Substance)
     blends = models.ManyToManyField(Blend)
     amount_polyol = models.DecimalField(
@@ -63,8 +81,8 @@ class BusinessPlan(models.Model):
         return self.title
 
 
-class BPValue(models.Model):
-    business_plan = models.ForeignKey(BusinessPlan, on_delete=models.CASCADE)
+class BPRecordValue(models.Model):
+    bp_record = models.ForeignKey(BPRecord, on_delete=models.CASCADE)
     year = models.IntegerField(validators=[MinValueValidator(settings.MIN_VALID_YEAR)])
     value_usd = models.DecimalField(
         max_digits=25, decimal_places=15, null=True, blank=True
