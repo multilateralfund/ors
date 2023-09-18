@@ -117,9 +117,8 @@ def check_project_consistency(project, item, index):
         ("sector", project.subsector.sector, project_sector),
         ("type", project.project_type, project_type),
         ("agency", project.agency, agency),
-        ("title", project.title, item["project_title"]),
     ):
-        if current_value != value:
+        if current_value != value and value is not None:
             logger.warning(
                 f"[row: {index}]: Inconsistent project attribute {name!r} found for code={project.code}: "
                 f"{current_value} != {value}"
