@@ -15,7 +15,12 @@ from core.import_data.utils import (
     get_object_by_name,
 )
 from core.models.agency import Agency
-from core.models.business_plan import BPChemicalType, BPValue, BusinessPlan
+from core.models.business_plan import (
+    BPChemicalType,
+    BPRecord,
+    BPRecordValue,
+    BusinessPlan,
+)
 from core.models.project import ProjectSector, ProjectSubSector, ProjectType
 
 logger = logging.getLogger(__name__)
@@ -163,6 +168,43 @@ def get_sector_subsector(sector_subsector, index_row):
     return sector, subsector
 
 
+def get_or_create_bp(row, index_row, start_year, end_year):
+    """
+    Get or create BusinessPlan object
+
+    @param row: dataframe row
+    @param index_row: int (row index)
+    @param start_year: int (start year)
+    @param end_year: int (end year)
+
+    @return: BusinessPlan object or None
+    """
+    agency = get_object_by_name(
+        Agency, row["Agency"], index_row, "agency", use_offset=False
+    )
+    if not agency:
+        logger.warning(
+            f"[row: {index_row}]: Missing agency: {row['Agency']} => business plan not created"
+        )
+        return None
+
+    bp_data = {
+        "agency": agency,
+        "year_start": start_year,
+        "year_end": end_year,
+        "status": BusinessPlan.Status.submitted,
+    }
+
+    bp, _ = BusinessPlan.objects.update_or_create(
+        agency=agency,
+        year_start=start_year,
+        year_end=end_year,
+        defaults=bp_data,
+    )
+
+    return bp
+
+
 def create_business_plan(row, index_row, year_start, year_end):
     """
     Create BusinessPlan object
@@ -174,31 +216,32 @@ def create_business_plan(row, index_row, year_start, year_end):
     @return: BusinessPlan object or None
     """
     country = get_country_by_name(row["Country"], index_row, use_offset=False)
-    agency = get_object_by_name(
-        Agency, row["Agency"], index_row, "agency", use_offset=False
-    )
     project_type = get_object_by_code(ProjectType, row["Type"], "code", index_row)
 
     # skip project with missing data
-    if not all([country, agency, project_type]):
+    if not all([country, project_type]):
         logger.warning(
-            f"[row: {index_row}]: Missing required data (country, agency or project_type))"
-            " => business plan not created"
+            f"[row: {index_row}]: Missing required data (country or project_type))"
+            " => business plan record not created"
         )
+        return None
+
+    # get or create business plan
+    bp = get_or_create_bp(row, index_row, year_start, year_end)
+    if not bp:
+        # business plan not created
         return None
 
     bp_chemical_type = get_or_create_bp_chemical_type(row["Chemical"])
     sector, subsector = get_sector_subsector(row["Sector and Subsector"], index_row)
 
     # create business plan data
-    bp_data = {
+    bp_record_data = {
+        "business_plan": bp,
         "title": row["Title"] if row["Title"] else "Undefined",
-        "cluster": row.get("Required by Model"),
-        "year_start": year_start,
-        "year_end": year_end,
+        "required_by_model": row.get("Required by Model"),
         "country": country,
-        "agency": agency,
-        "hcfc_status": row["HCFC Status"] if row["HCFC Status"] else "Undefined",
+        "lvc_status": row["HCFC Status"] if row["HCFC Status"] else "Undefined",
         "project_type": project_type,
         "bp_chemical_type": bp_chemical_type,
         "amount_polyol": get_decimal_from_excel_string(
@@ -214,18 +257,17 @@ def create_business_plan(row, index_row, year_start, year_end):
         "remarks_additional": row["Remarks (Additional)"],
     }
 
-    business_plan, _ = BusinessPlan.objects.update_or_create(
-        title=bp_data["title"],
-        year_start=bp_data["year_start"],
-        year_end=bp_data["year_end"],
-        country=bp_data["country"],
-        defaults=bp_data,
+    bp_record, _ = BPRecord.objects.update_or_create(
+        business_plan=bp,
+        title=bp_record_data["title"],
+        country=bp_record_data["country"],
+        defaults=bp_record_data,
     )
 
-    return business_plan
+    return bp_record
 
 
-def add_business_plan_values(business_plan, row, columns_dict):
+def add_business_plan_values(bp_record, row, columns_dict):
     """
     Add business plan values
 
@@ -250,20 +292,20 @@ def add_business_plan_values(business_plan, row, columns_dict):
             continue
         value_data.update(
             {
-                "business_plan_id": business_plan.id,
+                "bp_record_id": bp_record.id,
                 "year": year,
             }
         )
-        values.append(BPValue(**value_data))
+        values.append(BPRecordValue(**value_data))
 
-    BPValue.objects.bulk_create(values)
+    BPRecordValue.objects.bulk_create(values)
 
 
-def add_chemicals(business_plan, row, index_row):
+def add_chemicals(bp_record, row, index_row):
     """
     Add chemicals to business plan
 
-    @param business_plan: BusinessPlan object
+    @param bp_record: BPRecord object
     @param row: row data
     @param index_row: row index
     """
@@ -286,8 +328,8 @@ def add_chemicals(business_plan, row, index_row):
         elif ch_type == "blend":
             blends.append(chemical)
 
-    business_plan.substances.add(*substances)
-    business_plan.blends.add(*blends)
+    bp_record.substances.add(*substances)
+    bp_record.blends.add(*blends)
 
 
 def parse_file(file_path, file_name):
@@ -297,11 +339,15 @@ def parse_file(file_path, file_name):
     @param file_path: file path
     @param file_name: file name
     """
-    df = pd.read_excel(file_path, dtype=str).replace({np.nan: None})
 
     # get prerequisites data
     year_start, year_end = re.search(YEAR_REGEX, file_name).groups()
     year_start, year_end = int(year_start), int(year_end)
+    sheet_name = f"{year_start}-{year_end}AdjustedBusinessPlan"
+
+    df = pd.read_excel(file_path, dtype=str, sheet_name=sheet_name).replace(
+        {np.nan: None}
+    )
     df = rename_columns(df)
     year_columns_dict = get_values_columns(df, year_start, year_end)
 
