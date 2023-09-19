@@ -15,6 +15,23 @@ export interface HeaderSlice {
   setNavigationBackground?: (value: string) => void
 }
 
+let timer: any
+
+const debounce = (func: () => void) => {
+  if (timer) {
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      func()
+      timer = undefined
+    }, 300)
+  } else {
+    func()
+    timer = setTimeout(() => {
+      timer = undefined
+    }, 300)
+  }
+}
+
 export const createHeaderSlice = (
   set: StoreApi<StoreState>['setState'],
   get: StoreApi<StoreState>['getState'],
@@ -28,13 +45,15 @@ export const createHeaderSlice = (
     HeaderTitle: initialState?.header?.HeaderTitle || null,
     navigationBackground: initialNavigationBackground,
     setHeaderTitleComponent: (component) => {
-      set((state) => {
-        return {
-          header: {
-            ...state.header,
-            HeaderTitle: component || null,
-          },
-        }
+      debounce(() => {
+        set((state) => {
+          return {
+            header: {
+              ...state.header,
+              HeaderTitle: component || null,
+            },
+          }
+        })
       })
     },
     setNavigationBackground: (value) => {

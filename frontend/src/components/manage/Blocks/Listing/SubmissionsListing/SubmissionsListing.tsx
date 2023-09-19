@@ -54,7 +54,7 @@ let timer: any
 
 const debounce = (func: () => void) => {
   if (timer) clearTimeout(timer)
-  timer = setTimeout(func, 300, event)
+  timer = setTimeout(func, 300)
 }
 
 const StyledIoEllipseOutline = styled(IoEllipseOutline)(() => ({
@@ -194,6 +194,7 @@ function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
               <Link
                 className={cx(
                   'align-middle text-typography no-underline decoration-primary group-hover:text-primary group-hover:underline',
+                  { 'font-semibold': display === 'detailed' },
                 )}
                 href={`/submissions/${item.id}`}
               >
@@ -346,46 +347,68 @@ export default function SubmissionsListing() {
       <Grid className="flex-col-reverse md:flex-row" spacing={2} container>
         <Grid md={8} sm={12} xl={9} item>
           <Box>
-            <div className="mb-4 flex flex-wrap justify-between gap-4">
-              <TextWidget
-                name="search"
-                className="min-w-[240px] max-w-[240px] sm:max-w-xs lg:max-w-sm"
-                placeholder="Search by keyword..."
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <MuiIconButton
-                        aria-label="search submission table"
-                        edge="start"
-                        tabIndex={-1}
-                        disableRipple
-                        onClick={() => {
-                          const search = form.current.search.value
-                          handleParamsChange({
-                            offset: 0,
-                            search,
-                          })
-                          handleFilterChange({ search })
-                        }}
-                      >
-                        <IoSearchOutline />
-                      </MuiIconButton>
-                    </InputAdornment>
-                  ),
-                }}
-                onKeyDown={(event) => {
-                  const search = form.current.search.value
-                  if (event.key === KEY_ENTER) {
-                    handleParamsChange({
-                      offset: 0,
-                      search,
-                    })
-                    handleFilterChange({ search })
-                  }
-                }}
-              />
-              <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
-                <div className="display-control flex items-center gap-2">
+            <div className="mb-4 block flex-wrap justify-between gap-4 lg:flex">
+              <div className="mb-4 flex justify-between gap-4 lg:mb-0">
+                <TextWidget
+                  name="search"
+                  className="min-w-[240px] max-w-[240px] sm:max-w-xs lg:max-w-sm"
+                  placeholder="Search by keyword..."
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <MuiIconButton
+                          aria-label="search submission table"
+                          edge="start"
+                          tabIndex={-1}
+                          disableRipple
+                          onClick={() => {
+                            const search = form.current.search.value
+                            handleParamsChange({
+                              offset: 0,
+                              search,
+                            })
+                            handleFilterChange({ search })
+                          }}
+                        >
+                          <IoSearchOutline />
+                        </MuiIconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  onKeyDown={(event) => {
+                    const search = form.current.search.value
+                    if (event.key === KEY_ENTER) {
+                      handleParamsChange({
+                        offset: 0,
+                        search,
+                      })
+                      handleFilterChange({ search })
+                    }
+                  }}
+                />
+                <div className="display-control flex items-center gap-2 lg:hidden">
+                  <Typography
+                    className="text-typography-secondary"
+                    component="span"
+                  >
+                    Display
+                  </Typography>
+                  <IconButton
+                    active={display === 'simple'}
+                    onClick={() => setDisplay('simple')}
+                  >
+                    <IoRemove size="1rem" />
+                  </IconButton>
+                  <IconButton
+                    active={display === 'detailed'}
+                    onClick={() => setDisplay('detailed')}
+                  >
+                    <IoReorderTwo size="1rem" />
+                  </IconButton>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-4 lg:justify-normal">
+                <div className="display-control hidden items-center gap-2 lg:flex">
                   <Typography
                     className="text-typography-secondary"
                     component="span"

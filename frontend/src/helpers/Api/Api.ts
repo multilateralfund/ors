@@ -156,7 +156,6 @@ async function api(
     return await fetch(fullPath, {
       credentials: 'include',
       headers: {
-        Accept: 'application/json',
         ...(__SERVER__ ? { Cookie: nextCookies().toString() } : {}),
         ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
         ...defaultHeaders['common'],
