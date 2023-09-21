@@ -74,7 +74,7 @@ export function formatApiUrl(path: string) {
     apiPath = window.location.origin
   }
 
-  console.log('apiPath =', apiPath)
+  // console.log('apiPath =', apiPath)
   console.log('===========')
   apiPath = 'https://multilateralfund.edw.ro'
 
