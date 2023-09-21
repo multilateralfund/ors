@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation'
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Logo from '@ors/components/theme/Logo/Logo'
 import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
-// import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
+import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
 import UnstyledLink, { LinkProps } from '@ors/components/ui/Link/Link'
 import { formatApiUrl } from '@ors/helpers/Api/Api'
 import { matchPath } from '@ors/helpers/Url/Url'
@@ -27,7 +27,7 @@ function Link({
   return (
     <UnstyledLink
       className={cx(
-        'font-bold no-underline theme-dark hover:text-white ltr:mr-8 rtl:ml-8',
+        'font-bold no-underline theme-dark hover:text-white',
         { 'text-typography-secondary': !active, 'text-white': active },
         className,
       )}
@@ -52,15 +52,25 @@ export default function Header() {
       component={FadeInOut}
     >
       <div className="container flex w-full items-center justify-between pb-4">
-        <Link className="logo mb-0 flex items-center" href="/" underline="none">
+        <UnstyledLink
+          className="logo mb-0 flex items-center gap-x-4"
+          href="/"
+          underline="none"
+        >
           <Logo />
-          <span className="font-bold ltr:ml-4 rtl:mr-4">Data portal</span>
-        </Link>
+          <span className="font-bold">Data portal</span>
+        </UnstyledLink>
         <div>
           {/* <LanguageSelector className="ltr:mr-2 rtl:ml-2" /> */}
-          <Link href={formatApiUrl('/admin/')}>Admin</Link>
+          <UnstyledLink
+            className="theme-dark:text-white"
+            href={formatApiUrl('/admin/')}
+            button
+          >
+            Admin
+          </UnstyledLink>
           <ProfileDropdown className="ltr:mr-2 rtl:ml-2" />
-          {/* <ThemeSelector /> */}
+          {__DEVELOPMENT__ && <ThemeSelector />}
           <div id="header-control" />
         </div>
       </div>
@@ -69,7 +79,7 @@ export default function Header() {
         style={{ backgroundColor: navigationBackground }}
       >
         <div className="container">
-          <div id="header-nav">
+          <div id="header-nav" className="flex flex-wrap gap-x-8 gap-y-4">
             <Link href="/business-plans" path="/business-plans/*">
               Business plans
             </Link>

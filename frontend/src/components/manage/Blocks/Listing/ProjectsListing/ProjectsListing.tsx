@@ -253,7 +253,7 @@ function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
   )
 }
 
-export default function SubmissionsListing() {
+export default function ProjectsListing() {
   const form = useRef<any>()
   const currentYear = useMemo(() => dayjs().year(), [])
   const minDateRange = 1990
@@ -274,7 +274,7 @@ export default function SubmissionsListing() {
     options: {
       delay: 500,
       params: {
-        get_submission: true,
+        get_submission: false,
         limit: 50,
         offset: 0,
         ...initialParams,
@@ -567,7 +567,7 @@ export default function SubmissionsListing() {
                 </Typography>
               </div>
             )}
-            <List className="mb-6" disablePadding>
+            <List className={cx({ 'mb-4': !!pages })} disablePadding>
               <Loading
                 className="bg-mui-box-background/70 !duration-0"
                 active={loading}
@@ -596,7 +596,7 @@ export default function SubmissionsListing() {
             </List>
             {!!pages && (
               <Pagination
-                className="mb-8 inline-block flex-nowrap rounded-sm"
+                className="inline-block flex-nowrap rounded-sm"
                 count={pages}
                 disabled={loading}
                 page={pagination.page}
@@ -650,11 +650,6 @@ export default function SubmissionsListing() {
                 }}
               />
             )}
-            <Typography>
-              <Link href="/submissions/create" variant="contained" button>
-                Add new submission
-              </Link>
-            </Typography>
           </Box>
         </Grid>
         <Grid md={4} sm={12} xl={3} item>
@@ -680,6 +675,18 @@ export default function SubmissionsListing() {
                 Clear all
               </Button>
             </div>
+            <Field
+              options={projectSlice.statuses.data}
+              widget="chipToggle"
+              multiple
+              onChange={(value: Array<number> | null) => {
+                handleFilterChange({ status_id: value })
+                handleParamsChange({
+                  offset: 0,
+                  status_id: (value || initialFilters.status_id).join(','),
+                })
+              }}
+            />
             <Field
               Input={{ label: 'Country' }}
               getOptionLabel={(option: any) => option?.name}

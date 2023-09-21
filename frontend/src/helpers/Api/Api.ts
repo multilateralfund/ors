@@ -52,22 +52,30 @@ export function formatApiUrl(path: string) {
   // Check if the path is external
   if (path.startsWith('http://') || path.startsWith('https://')) return path
   const { settings } = config
-  let apiPath = 'https://multilateralfund.edw.ro'
+  let apiPath = ''
   let adjustedPath
 
-  console.log('HERE', settings.apiPath)
+  console.log('=== API ===')
 
-  // if (__DEVELOPMENT__ || settings.apiPath) {
-  //   apiPath = settings.apiPath || 'http://127.0.0.1:8000'
-  // } else if (__SERVER__) {
-  //   const headers = require('next/headers').headers()
-  //   apiPath =
-  //     headers.get('x-next-protocol').split(',')[0] +
-  //     '://' +
-  //     headers.get('x-next-host')
-  // } else if (__CLIENT__) {
-  //   apiPath = window.location.origin
-  // }
+  if (__DEVELOPMENT__ || settings.apiPath) {
+    console.log('Condition I')
+    console.log('__DEVELOPMENT__ =', __DEVELOPMENT__)
+    console.log('settings.apiPath =', settings.apiPath)
+    apiPath = settings.apiPath || 'http://127.0.0.1:8000'
+  } else if (__SERVER__) {
+    console.log('Condition II')
+    const headers = require('next/headers').headers()
+    apiPath =
+      headers.get('x-next-protocol').split(',')[0] +
+      '://' +
+      headers.get('x-next-host')
+  } else if (__CLIENT__) {
+    console.log('Condition III')
+    apiPath = window.location.origin
+  }
+
+  console.log('apiPath =', apiPath)
+  console.log('===========')
 
   apiPath = addTrailingSlash(apiPath)
   adjustedPath = removeFirstSlash(path)

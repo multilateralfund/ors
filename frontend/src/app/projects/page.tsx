@@ -2,17 +2,17 @@ import React from 'react'
 
 import { Metadata } from 'next'
 
-import ProjectsTable from '@ors/components/manage/Blocks/Table/ProjectsTable/ProjectsTable'
+import ProjectsListing from '@ors/components/manage/Blocks/Listing/ProjectsListing/ProjectsListing'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export const metadata: Metadata = {
   title: 'Projects',
 }
 
-export default async function Reports() {
+export default async function Projects() {
   return (
     <PageWrapper>
-      <ProjectsTable />
+      <ProjectsListing />
     </PageWrapper>
   )
 }

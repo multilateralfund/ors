@@ -1,7 +1,6 @@
 import type { Language, Locales } from '@ors/types/locales'
 
 const apiPath = process.env.NEXT_PUBLIC_API_PATH
-const apiPrivatePath = process.env.NEXT_PRIVATE_API_PATH
 
 export type BaseConfig = {
   cookies: {
@@ -16,7 +15,6 @@ export type BaseConfig = {
   }
   settings: {
     apiPath?: string
-    apiPrivatePath?: string
   }
 }
 
@@ -40,7 +38,6 @@ const baseConfig: BaseConfig = {
   },
   settings: {
     apiPath,
-    apiPrivatePath,
   },
 }
 

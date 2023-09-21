@@ -46,6 +46,11 @@ export default function middleware(request: NextRequest) {
     headers.get('X-Forwarded-Proto') || request.nextUrl.protocol || 'http'
   const host = headers.get('X-Forwarded-Host') || request.nextUrl.host
 
+  console.log('=== middleware ===')
+  console.log('X-Forwarded-Host =', headers.get('X-Forwarded-Host'))
+  console.log('host-fallback =', request.nextUrl.host)
+  console.log('==================')
+
   headers.set('x-next-host', host)
   headers.set('x-next-pathname', pathname)
   headers.set('x-next-protocol', protocol)
