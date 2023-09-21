@@ -52,20 +52,22 @@ export function formatApiUrl(path: string) {
   // Check if the path is external
   if (path.startsWith('http://') || path.startsWith('https://')) return path
   const { settings } = config
-  let apiPath = ''
+  let apiPath = 'https://multilateralfund.edw.ro'
   let adjustedPath
 
-  if (__DEVELOPMENT__ || settings.apiPath) {
-    apiPath = settings.apiPath || 'http://127.0.0.1:8000'
-  } else if (__SERVER__) {
-    const headers = require('next/headers').headers()
-    apiPath =
-      headers.get('x-next-protocol').split(',')[0] +
-      '://' +
-      headers.get('x-next-host')
-  } else if (__CLIENT__) {
-    apiPath = window.location.origin
-  }
+  console.log('HERE', settings.apiPath)
+
+  // if (__DEVELOPMENT__ || settings.apiPath) {
+  //   apiPath = settings.apiPath || 'http://127.0.0.1:8000'
+  // } else if (__SERVER__) {
+  //   const headers = require('next/headers').headers()
+  //   apiPath =
+  //     headers.get('x-next-protocol').split(',')[0] +
+  //     '://' +
+  //     headers.get('x-next-host')
+  // } else if (__CLIENT__) {
+  //   apiPath = window.location.origin
+  // }
 
   apiPath = addTrailingSlash(apiPath)
   adjustedPath = removeFirstSlash(path)
