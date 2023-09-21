@@ -6,11 +6,11 @@ import { isFunction } from 'lodash'
 import { usePathname } from 'next/navigation'
 
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
-import LanguageSelector from '@ors/components/theme/LanguageSelector/LanguageSelector'
 import Logo from '@ors/components/theme/Logo/Logo'
 import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
-import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
+// import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
 import UnstyledLink, { LinkProps } from '@ors/components/ui/Link/Link'
+import { formatApiUrl } from '@ors/helpers/Api/Api'
 import { matchPath } from '@ors/helpers/Url/Url'
 import useStore from '@ors/store'
 
@@ -54,11 +54,13 @@ export default function Header() {
       <div className="container flex w-full items-center justify-between pb-4">
         <Link className="logo mb-0 flex items-center" href="/" underline="none">
           <Logo />
+          <span className="font-bold ltr:ml-4 rtl:mr-4">Data portal</span>
         </Link>
         <div>
-          <LanguageSelector className="ltr:mr-2 rtl:ml-2" />
+          {/* <LanguageSelector className="ltr:mr-2 rtl:ml-2" /> */}
+          <Link href={formatApiUrl('/admin/')}>Admin</Link>
           <ProfileDropdown className="ltr:mr-2 rtl:ml-2" />
-          <ThemeSelector />
+          {/* <ThemeSelector /> */}
           <div id="header-control" />
         </div>
       </div>
@@ -77,7 +79,7 @@ export default function Header() {
             <Link href="/projects" path="/projects/*">
               Projects
             </Link>
-            <Link href="/reports" path="/reports/*">
+            <Link href="/country-programme" path="/country-programme/*">
               Country programme
             </Link>
             <Link href="/enterprises" path="/enterprises/*">

@@ -3,7 +3,7 @@ export declare type AnyObject = Record<
   Array<any> | boolean | number | string | undefined
 >
 
-export declare type DataType = AnyObject | Array<any> | null | undefined
+export declare type DataType = Array<any> | any | null | undefined
 
 export declare type ErrorType = AnyObject | Array<any> | null | undefined
 

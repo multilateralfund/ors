@@ -15,7 +15,7 @@ const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
   ssr: false,
 })
 
-export default function ReportsTable() {
+export default function CountryProgrammeTable() {
   const grid = useRef<any>()
   const [apiSettings, setApiSettings] = useState<{
     options: { params: Record<string, any> }
@@ -23,8 +23,9 @@ export default function ReportsTable() {
   }>({
     options: {
       params: {
-        limit: 10,
+        limit: 50,
         offset: 0,
+        year: 2022,
       },
     },
     path: 'api/country-programme/reports/',
@@ -76,10 +77,28 @@ export default function ReportsTable() {
               handleParamsChange({ ...newParams, offset: 0 })
             }}
           />
-          {/* <Field Input={{ label: 'Status' }} widget="autocomplete" />
-          <Field Input={{ label: 'Status' }} widget="autocomplete" />
-          <Field Input={{ label: 'From' }} widget="autocomplete" />
-          <Field Input={{ label: 'To' }} widget="autocomplete" /> */}
+          <Field
+            Input={{ label: 'Period' }}
+            defaultValue={{ id: 1, label: 2022 }}
+            widget="autocomplete"
+            onChange={(_: any, value: any) => {
+              const newParams = apiSettings.options.params
+              if (!value?.label) {
+                delete newParams.year
+              } else {
+                newParams.year = value.label
+              }
+              grid.current.paginationGoToPage(0)
+              handleParamsChange({ ...newParams, offset: 0 })
+            }}
+            options={[
+              { id: 1, label: 2022 },
+              { id: 2, label: 2021 },
+              { id: 3, label: 2020 },
+              { id: 4, label: 2019 },
+              { id: 5, label: 2018 },
+            ]}
+          />
         </div>
       </Box>
       <Table
@@ -87,6 +106,7 @@ export default function ReportsTable() {
         columnDefs={columnDefs}
         gridRef={grid}
         loading={loading}
+        paginationPageSize={50}
         rowCount={count}
         rowData={results}
         onPaginationChanged={({ page, rowsPerPage }) => {

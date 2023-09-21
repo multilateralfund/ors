@@ -19,8 +19,6 @@ function setSlowConnection() {
       // Network is slow, you may choose to handle this situation accordingly
       // For example, reduce the complexity of animations or load lighter resources
       document.documentElement.setAttribute('data-connection', 'slow')
-    } else if (effectiveType) {
-      document.documentElement.setAttribute('data-connection', effectiveType)
     }
   }
 }

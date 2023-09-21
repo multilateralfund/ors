@@ -25,7 +25,6 @@ import { capitalize, isArray, isNumber, isUndefined, times } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
 import CollapseInOut from '@ors/components/manage/Transitions/CollapseInOut'
-import TextWidget from '@ors/components/manage/Widgets/TextWidget'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
@@ -268,7 +267,7 @@ export default function SubmissionsListing() {
     field: 'date_received',
     label: 'Date added',
   })
-  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 10 })
+  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 50 })
   const [collapsedRows, setCollapsedRows] = useState<Record<string, any>>({})
   const [filters, setFilters] = useState({ ...initialFilters })
   const [apiSettings, setApiSettings] = useState({
@@ -349,9 +348,10 @@ export default function SubmissionsListing() {
           <Box>
             <div className="mb-4 block flex-wrap justify-between gap-4 lg:flex">
               <div className="mb-4 flex justify-between gap-4 lg:mb-0">
-                <TextWidget
+                <Field
                   name="search"
                   className="min-w-[240px] max-w-[240px] sm:max-w-xs lg:max-w-sm"
+                  FieldProps={{ className: 'mb-0' }}
                   placeholder="Search by keyword..."
                   InputProps={{
                     startAdornment: (
@@ -375,7 +375,7 @@ export default function SubmissionsListing() {
                       </InputAdornment>
                     ),
                   }}
-                  onKeyDown={(event) => {
+                  onKeyDown={(event: any) => {
                     const search = form.current.search.value
                     if (event.key === KEY_ENTER) {
                       handleParamsChange({

@@ -24,8 +24,6 @@ export type TextareaWidgetProps = TextareaAutosizeProps & {
   InputLabel?: InputLabelProps & { label?: React.ReactNode }
 }
 
-export type TextareaWidget = (props: TextareaWidgetProps) => JSX.Element
-
 const TextareaWidget = forwardRef(
   (
     { InputLabel, className, ...rest }: TextareaWidgetProps,

@@ -23,8 +23,6 @@ export interface AutocompleteWidgetProps
     | undefined
 }
 
-export type AutocompleteWidget = (props: AutocompleteWidgetProps) => JSX.Element
-
 const AutocompleteWidget = forwardRef(
   (
     {

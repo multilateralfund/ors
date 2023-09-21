@@ -11,8 +11,6 @@ import { IoEyeOff } from '@react-icons/all-files/io5/IoEyeOff'
 
 export type PasswordWidgetProps = TextWidgetProps
 
-export type PasswordWidget = (props: PasswordWidgetProps) => JSX.Element
-
 export default function PasswordWidget(
   props: PasswordWidgetProps,
 ): JSX.Element {

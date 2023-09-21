@@ -1,23 +1,19 @@
-import type { AutocompleteWidget } from '@ors/components/manage/Widgets/AutocompleteWidget'
-import type { ChipToggleWidget } from '@ors/components/manage/Widgets/ChipToggleWidget'
-import type { PasswordWidget } from '@ors/components/manage/Widgets/PasswordWidget'
-import type { TextWidget } from '@ors/components/manage/Widgets/TextWidget'
-import type { TextareaWidget } from '@ors/components/manage/Widgets/TextareaWidget'
-
-import dynamic from 'next/dynamic'
-
-import TextWidgetLoading from '@ors/components/theme/Loading/TextWidgetLoading'
+import AutocompleteWidget from '@ors/components/manage/Widgets/AutocompleteWidget'
+import ChipToggleWidget from '@ors/components/manage/Widgets/ChipToggleWidget'
+import PasswordWidget from '@ors/components/manage/Widgets/PasswordWidget'
+import TextWidget from '@ors/components/manage/Widgets/TextWidget'
+import TextareaWidget from '@ors/components/manage/Widgets/TextareaWidget'
 
 export interface ByType {
-  email?: TextWidget
-  password?: TextWidget
-  text?: TextWidget
-  textarea?: TextareaWidget
+  email?: typeof TextWidget
+  password?: typeof PasswordWidget
+  text?: typeof TextWidget
+  textarea?: typeof TextareaWidget
 }
 
 export interface ByWidget {
-  autocomplete?: AutocompleteWidget
-  chipToggle?: ChipToggleWidget
+  autocomplete?: typeof AutocompleteWidget
+  chipToggle?: typeof ChipToggleWidget
 }
 
 export interface WidgetsMapping {
@@ -25,58 +21,20 @@ export interface WidgetsMapping {
   widget: ByWidget
 }
 
-export type BaseWidgetProps = {
-  type?: keyof ByType
-  widget?: keyof ByWidget
-}
-
-// TODO: Find a way to pass combined types. For now let's use any
 export type WidgetProps = any
-// export type WidgetProps = (
-//   | ({ type?: 'email' | 'text' } & TextWidgetProps)
-//   | ({ type?: 'password' } & PasswordWidgetProps)
-//   | ({ widget?: 'autocomplete' } & AutocompleteWidgetProps)
-// ) &
-//   (({ type?: string } | { widget?: string }) & TextWidgetProps)
-
 // Default Widget
-export const defaultWidget = dynamic(
-  () => import('@ors/components/manage/Widgets/TextWidget'),
-  {
-    loading: () => <TextWidgetLoading />,
-  },
-) as TextWidget
+export const defaultWidget = TextWidget
 
 // Widgets mapping
-export const widgetsMapping: WidgetsMapping = {
+export const widgetsMapping = {
   type: {
     email: defaultWidget,
-    password: dynamic(
-      () => import('@ors/components/manage/Widgets/PasswordWidget'),
-      {
-        loading: () => <TextWidgetLoading />,
-      },
-    ) as PasswordWidget,
+    password: PasswordWidget,
     text: defaultWidget,
-    textarea: dynamic(
-      () => import('@ors/components/manage/Widgets/TextareaWidget'),
-      {
-        loading: () => <TextWidgetLoading />,
-      },
-    ) as TextareaWidget,
+    textarea: TextareaWidget,
   },
   widget: {
-    autocomplete: dynamic(
-      () => import('@ors/components/manage/Widgets/AutocompleteWidget'),
-      {
-        loading: () => <TextWidgetLoading />,
-      },
-    ) as AutocompleteWidget,
-    chipToggle: dynamic(
-      () => import('@ors/components/manage/Widgets/ChipToggleWidget'),
-      {
-        loading: () => <TextWidgetLoading />,
-      },
-    ) as ChipToggleWidget,
+    autocomplete: AutocompleteWidget,
+    chipToggle: ChipToggleWidget,
   },
 }

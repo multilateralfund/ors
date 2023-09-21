@@ -5,10 +5,10 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
-import LanguageSelector from '@ors/components/theme/LanguageSelector/LanguageSelector'
 import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
-import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
+// import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
 import UnstyledLink, { LinkProps } from '@ors/components/ui/Link/Link'
+import { formatApiUrl } from '@ors/helpers/Api/Api'
 import { matchPath } from '@ors/helpers/Url/Url'
 
 function Link({
@@ -56,9 +56,10 @@ export default function Header() {
           <span className="theme-dark:text-white ltr:pl-2 rtl:pr-2">MLFS</span>
         </Link>
         <div>
-          <LanguageSelector className="ltr:mr-2 rtl:ml-2" />
+          {/* <LanguageSelector className="ltr:mr-2 rtl:ml-2" /> */}
+          <Link href={formatApiUrl('/admin/')}>Admin</Link>
           <ProfileDropdown className="ltr:mr-2 rtl:ml-2" />
-          <ThemeSelector />
+          {/* <ThemeSelector /> */}
           <div id="header-control" />
         </div>
       </div>

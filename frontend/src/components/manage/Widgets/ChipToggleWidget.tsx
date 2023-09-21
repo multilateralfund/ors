@@ -22,8 +22,6 @@ export type ChipToggleWidgetProps = {
   value?: Array<number> | null
 }
 
-export type ChipToggleWidget = (props: ChipToggleWidgetProps) => JSX.Element
-
 export default function ChipToggleWidget(
   props: ChipToggleWidgetProps,
 ): JSX.Element {

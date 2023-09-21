@@ -24,8 +24,6 @@ export type TextWidgetProps = TextFieldProps & {
   InputLabel?: InputLabelProps & { label?: React.ReactNode }
 }
 
-export type TextWidget = (props: TextWidgetProps) => JSX.Element
-
 const TextWidget = forwardRef(
   (
     { InputLabel, className, ...rest }: TextWidgetProps,
