@@ -55,28 +55,17 @@ export function formatApiUrl(path: string) {
   let apiPath = ''
   let adjustedPath
 
-  console.log('=== API ===')
-
   if (__DEVELOPMENT__ || settings.apiPath) {
-    console.log('Condition I')
-    console.log('__DEVELOPMENT__ =', __DEVELOPMENT__)
-    console.log('settings.apiPath =', settings.apiPath)
     apiPath = settings.apiPath || 'http://127.0.0.1:8000'
   } else if (__SERVER__) {
-    console.log('Condition II')
     const headers = require('next/headers').headers()
     apiPath =
       headers.get('x-next-protocol').split(',')[0] +
       '://' +
       headers.get('x-next-host')
   } else if (__CLIENT__) {
-    console.log('Condition III')
     apiPath = window.location.origin
   }
-
-  console.log('apiPath =', apiPath)
-  console.log('===========')
-  // apiPath = 'https://multilateralfund.edw.ro'
 
   apiPath = addTrailingSlash(apiPath)
   adjustedPath = removeFirstSlash(path)
