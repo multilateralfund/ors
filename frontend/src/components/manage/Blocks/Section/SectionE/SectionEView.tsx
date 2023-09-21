@@ -29,8 +29,6 @@ export default function SectionEView() {
 
   const gridOptions = useGridOptions()
 
-  console.log('HERE', results)
-
   return (
     <>
       <Table

@@ -8,7 +8,6 @@ import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
 // import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
 import UnstyledLink, { LinkProps } from '@ors/components/ui/Link/Link'
-import { formatApiUrl } from '@ors/helpers/Api/Api'
 import { matchPath } from '@ors/helpers/Url/Url'
 
 function Link({
@@ -57,7 +56,6 @@ export default function Header() {
         </Link>
         <div>
           {/* <LanguageSelector className="ltr:mr-2 rtl:ml-2" /> */}
-          <Link href={formatApiUrl('/admin/')}>Admin</Link>
           <ProfileDropdown className="ltr:mr-2 rtl:ml-2" />
           {/* <ThemeSelector /> */}
           <div id="header-control" />

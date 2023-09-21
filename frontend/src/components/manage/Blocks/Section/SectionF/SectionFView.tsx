@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from 'react'
 
 import { Box } from '@mui/material'
@@ -19,8 +20,6 @@ export default function SectionFView() {
   const { data } = useApi(apiSettings)
 
   const { results } = getResults(data?.section_f)
-
-  console.log('HERE', results)
 
   return (
     <Box>

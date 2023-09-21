@@ -134,12 +134,12 @@ function ItemDetail({ label, value }: { label: string; value: string }) {
       )}
     >
       <Typography
-        className="text-typography-faded theme-dark:text-typography-secondary"
+        className="text-xs text-typography-faded theme-dark:text-typography-secondary"
         component="span"
       >
         {label}
       </Typography>
-      <Typography className="text-typography-primary" component="span">
+      <Typography className="text-xs text-typography-primary" component="span">
         {value}
       </Typography>
     </div>
@@ -192,7 +192,7 @@ function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
               </MuiIconButton>
               <Link
                 className={cx(
-                  'align-middle text-typography no-underline decoration-primary group-hover:text-primary group-hover:underline',
+                  'align-middle text-sm text-typography no-underline decoration-primary group-hover:text-primary group-hover:underline',
                   { 'font-semibold': display === 'detailed' },
                 )}
                 href={`/submissions/${item.id}`}
@@ -201,7 +201,7 @@ function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
               </Link>
             </div>
             <div className="flex items-center justify-end gap-4">
-              <Typography component="span">
+              <Typography className="text-sm" component="span">
                 {dateAdded.toLowerCase() !== 'invalid date' ? dateAdded : '-'}
               </Typography>
               {display === 'simple' && (
@@ -218,8 +218,8 @@ function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
                     }))
                   }
                 >
-                  {isCollapsed && <IoCaretUp size={10} />}
-                  {!isCollapsed && <IoCaretDown size={10} />}
+                  {isCollapsed && <IoCaretUp size={8} />}
+                  {!isCollapsed && <IoCaretDown size={8} />}
                 </IconButton>
               )}
             </div>
