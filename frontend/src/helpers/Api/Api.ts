@@ -76,6 +76,7 @@ export function formatApiUrl(path: string) {
 
   console.log('apiPath =', apiPath)
   console.log('===========')
+  apiPath = 'https://multilateralfund.edw.ro'
 
   apiPath = addTrailingSlash(apiPath)
   adjustedPath = removeFirstSlash(path)
