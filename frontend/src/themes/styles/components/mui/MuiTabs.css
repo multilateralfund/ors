@@ -1,0 +1,7 @@
+.MuiTabs-flexContainer {
+  @apply gap-4;
+}
+
+.MuiTab-root {
+  @apply min-w-fit px-0 md:text-xl;
+}

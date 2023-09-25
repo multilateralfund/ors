@@ -4,7 +4,8 @@ import React from 'react'
 
 import { Box, Button, Grid, Typography } from '@mui/material'
 
-import CountryProgrammeTable from '@ors/components/manage/Blocks/Table/CountryProgrammeTable/CountryProgrammeTable'
+import CPListing from '@ors/components/manage/Blocks/CountryProgramme/CPListing'
+import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import Link from '@ors/components/ui/Link/Link'
 
@@ -15,19 +16,25 @@ export const metadata: Metadata = {
 export default async function CountryProgramme() {
   return (
     <PageWrapper>
-      <Grid spacing={2} container>
+      <HeaderTitle>
+        <Typography className="text-white" component="h1" variant="h3">
+          Submission List
+        </Typography>
+      </HeaderTitle>
+      <Grid className="flex-col-reverse md:flex-row" spacing={2} container>
         <Grid lg={9} md={8} xs={12} item>
-          <CountryProgrammeTable />
+          <CPListing />
         </Grid>
         <Grid lg={3} md={4} xs={12} item>
-          <Box className="mb-4 w-full md:max-w-sm">
-            <Typography className="mb-4" variant="h4">
-              Create submission {new Date().getFullYear()}
+          <Box className="w-full md:max-w-sm">
+            <Typography className="mb-4 text-typography-secondary" variant="h4">
+              New submission
+            </Typography>
+            <Typography className="mb-4">
+              Create a new country report for the current year.
             </Typography>
             <Link href="/reports/create">
-              <Button className="w-full" variant="contained">
-                Create
-              </Button>
+              <Button variant="contained">Create submission</Button>
             </Link>
           </Box>
         </Grid>

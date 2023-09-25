@@ -30,6 +30,7 @@
           "animate",
           "transition",
           "className",
+          // "breakpoints",
           "unknown",
           "multiline",
           "callback",
@@ -42,6 +43,7 @@
           "animate": "animate",
           "transition": "transition",
           "className": "className",
+          "breakpoints": ["xs", "sm", "md", "lg", "xl", "2xl"],
           "callback": "on*"
         }
       }

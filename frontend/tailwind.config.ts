@@ -150,8 +150,8 @@ module.exports = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   corePlugins: {
-    preflight: false,
     container: false,
+    preflight: false,
   },
   important: '#next-app',
   originalColors,
@@ -169,25 +169,25 @@ module.exports = {
     function ({ addComponents }: any) {
       addComponents({
         '.container': {
-          maxWidth: '100%',
-          margin: '0 auto',
-          paddingLeft: '1rem',
-          paddingRight: '1rem',
-          '@screen sm': {
+          '@screen 2xl': {
+            maxWidth: '1920px',
+          },
+          '@screen lg': {
             maxWidth: '100%',
           },
           '@screen md': {
             maxWidth: '100%',
           },
-          '@screen lg': {
+          '@screen sm': {
             maxWidth: '100%',
           },
           '@screen xl': {
             maxWidth: '100%',
           },
-          '@screen 2xl': {
-            maxWidth: '1920px',
-          },
+          margin: '0 auto',
+          maxWidth: '100%',
+          paddingLeft: '1rem',
+          paddingRight: '1rem',
         },
       })
     },

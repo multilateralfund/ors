@@ -53,6 +53,7 @@ export default function CreateReportForm() {
             key={section.id}
             aria-controls={section.panelId}
             label={section.label}
+            disableRipple
           />
         ))}
       </Tabs>

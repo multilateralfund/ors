@@ -11,7 +11,9 @@ import { IoArrowForward } from '@react-icons/all-files/io5/IoArrowForward'
 
 type ListingProps = {
   Item: React.FC<any>
-  ItemProps: Record<string, any>
+  ItemProps?: Record<string, any>
+  className?: any
+  enableLoader?: boolean
   enablePagination?: boolean
   loaded?: boolean
   loading?: boolean
@@ -25,6 +27,8 @@ const Listing = forwardRef(function Listing(props: ListingProps, ref) {
   const {
     Item,
     ItemProps = {},
+    className,
+    enableLoader = true,
     enablePagination = true,
     loaded,
     loading,
@@ -65,11 +69,13 @@ const Listing = forwardRef(function Listing(props: ListingProps, ref) {
 
   return (
     <>
-      <List className="mb-6" disablePadding>
-        <Loading
-          className="bg-mui-box-background/70 !duration-0"
-          active={loading}
-        />
+      <List className={className || 'mb-6'} disablePadding>
+        {enableLoader && (
+          <Loading
+            className="bg-mui-box-background/70 !duration-0"
+            active={loading}
+          />
+        )}
         {loaded && !results?.length && (
           <>
             <Divider className="mb-3 w-full" />
@@ -86,7 +92,7 @@ const Listing = forwardRef(function Listing(props: ListingProps, ref) {
             )
           })}
       </List>
-      {enablePagination && !!pages && (
+      {enablePagination && !!pages && pages > 1 && (
         <Pagination
           className="mb-8 inline-block flex-nowrap rounded-sm"
           count={pages}
