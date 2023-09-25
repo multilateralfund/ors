@@ -44,10 +44,10 @@ export default function CreateSubmissionForm() {
             aria-label="Substance type"
             color="primary"
             value={substanceType}
-            exclusive
             onChange={(event, value) => {
               setSubstanceType(value)
             }}
+            exclusive
           >
             <ToggleButton value="hcfc">HCFC</ToggleButton>
             <ToggleButton value="hfc">HFC</ToggleButton>

@@ -184,8 +184,6 @@ export const CellNumberWidget = memo(
               step: 1,
             },
           }}
-          onChange={(event: any) => setValue(event.target.value)}
-          onKeyDown={(event: any) => onKeyDown(event)}
           sx={{
             '& .MuiInputBase-root': {
               borderRadius: 0,
@@ -195,6 +193,8 @@ export const CellNumberWidget = memo(
             '& fieldset': { border: 'none' },
             borderRadius: 0,
           }}
+          onChange={(event: any) => setValue(event.target.value)}
+          onKeyDown={(event: any) => onKeyDown(event)}
         />
       )
     },

@@ -96,10 +96,6 @@ export const CellDateWidget = memo(
           format="DD/MM/YYYY"
           ref={refInput}
           value={dayjs(value)}
-          autoFocus
-          onChange={(value) => {
-            setValue(value)
-          }}
           slotProps={{
             popper: {
               className: 'ag-custom-component-popup',
@@ -115,6 +111,10 @@ export const CellDateWidget = memo(
             borderRadius: 0,
             width: '100%',
           }}
+          onChange={(value) => {
+            setValue(value)
+          }}
+          autoFocus
         />
       )
     },

@@ -128,10 +128,6 @@ export const CellAutocompleteWidget = memo(
           ref={refInput}
           renderOption={props.renderOption}
           value={value}
-          onChange={(event: any, value) => {
-            setValue(value)
-          }}
-          onKeyDown={(event: any) => onKeyDown(event)}
           sx={{
             '& .MuiInputBase-root': {
               borderRadius: 0,
@@ -141,6 +137,10 @@ export const CellAutocompleteWidget = memo(
             '& fieldset': { border: 'none' },
             borderRadius: 0,
           }}
+          onChange={(event: any, value) => {
+            setValue(value)
+          }}
+          onKeyDown={(event: any) => onKeyDown(event)}
         />
       )
     },

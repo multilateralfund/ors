@@ -38,7 +38,6 @@ export default function Image({
           : {})}
       >
         <NextImage
-          fill
           onError={(e) => {
             if (onError) {
               onError(e)
@@ -73,6 +72,7 @@ export default function Image({
               imageEl.style.visibility = 'visible'
             }
           }}
+          fill
           {...rest}
         />
       </div>

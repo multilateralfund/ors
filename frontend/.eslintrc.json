@@ -24,23 +24,25 @@
         "type": "natural",
         "order": "asc",
         "groups": [
-          "always-on-top",
+          "id",
+          "initial",
+          "exit",
+          "animate",
+          "transition",
+          "className",
           "unknown",
           "multiline",
           "callback",
           "shorthand"
         ],
         "custom-groups": {
-          "always-on-top": [
-            "key",
-            "id",
-            "name",
-            "initial",
-            "exit",
-            "animate",
-            "transition",
-            "className"
-          ]
+          "id": ["key", "id", "name"],
+          "initial": "initial",
+          "exit": "exit",
+          "animate": "animate",
+          "transition": "transition",
+          "className": "className",
+          "callback": "on*"
         }
       }
     ],
@@ -105,9 +107,10 @@
         "type": "natural",
         "order": "asc",
         "partition-by-comment": false,
-        "groups": ["id", "unknown"],
+        "groups": ["id", "key", "unknown"],
         "custom-groups": {
-          "id": ["id", "key"]
+          "id": "id",
+          "key": "key"
         }
       }
     ],

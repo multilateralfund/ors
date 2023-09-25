@@ -276,9 +276,6 @@ export default function Table(props: AgGridReactProps) {
             </Typography>
           )
         }}
-        onFirstDataRendered={(agGrid) => {
-          onFirstDataRendered(agGrid)
-        }}
         ref={(agGrid) => {
           grid.current = agGrid
           if (!agGrid && gridRef) {
@@ -292,6 +289,9 @@ export default function Table(props: AgGridReactProps) {
               },
             }
           }
+        }}
+        onFirstDataRendered={(agGrid) => {
+          onFirstDataRendered(agGrid)
         }}
         {...rest}
       />

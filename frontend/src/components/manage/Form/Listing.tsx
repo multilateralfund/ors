@@ -93,13 +93,6 @@ const Listing = forwardRef(function Listing(props: ListingProps, ref) {
           disabled={loading}
           page={pagination.page}
           siblingCount={1}
-          onChange={(event, page) => {
-            if (page === pagination.page) return
-            setPagination({ ...pagination, page })
-            if (onPaginationChanged) {
-              onPaginationChanged(page, pagination.rowsPerPage)
-            }
-          }}
           renderItem={(item) => {
             const disabled = loading || item.disabled
             const isEllipsis = ['end-ellipsis', 'start-ellipsis'].includes(
@@ -135,6 +128,13 @@ const Listing = forwardRef(function Listing(props: ListingProps, ref) {
                 {item.type === 'next' && <IoArrowForward />}
               </Button>
             )
+          }}
+          onChange={(event, page) => {
+            if (page === pagination.page) return
+            setPagination({ ...pagination, page })
+            if (onPaginationChanged) {
+              onPaginationChanged(page, pagination.rowsPerPage)
+            }
           }}
         />
       )}

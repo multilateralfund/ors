@@ -81,6 +81,13 @@ export default function CountryProgrammeTable() {
             Input={{ label: 'Period' }}
             defaultValue={{ id: 1, label: 2022 }}
             widget="autocomplete"
+            options={[
+              { id: 1, label: 2022 },
+              { id: 2, label: 2021 },
+              { id: 3, label: 2020 },
+              { id: 4, label: 2019 },
+              { id: 5, label: 2018 },
+            ]}
             onChange={(_: any, value: any) => {
               const newParams = apiSettings.options.params
               if (!value?.label) {
@@ -91,13 +98,6 @@ export default function CountryProgrammeTable() {
               grid.current.paginationGoToPage(0)
               handleParamsChange({ ...newParams, offset: 0 })
             }}
-            options={[
-              { id: 1, label: 2022 },
-              { id: 2, label: 2021 },
-              { id: 3, label: 2020 },
-              { id: 4, label: 2019 },
-              { id: 5, label: 2018 },
-            ]}
           />
         </div>
       </Box>

@@ -1,7 +1,5 @@
 {
-  "extends": [
-    "stylelint-config-standard"
-  ],
+  "extends": ["stylelint-config-standard"],
   "rules": {
     "selector-class-pattern": null,
     "value-keyword-case": null,
@@ -9,9 +7,7 @@
     "function-no-unknown": [
       true,
       {
-        "ignoreFunctions": [
-          "theme"
-        ]
+        "ignoreFunctions": ["theme"]
       }
     ]
   }

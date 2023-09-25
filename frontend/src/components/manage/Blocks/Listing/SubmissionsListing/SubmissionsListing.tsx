@@ -330,8 +330,8 @@ export default function SubmissionsListing() {
             <div className="mb-4 block flex-wrap justify-between gap-4 lg:flex">
               <div className="mb-4 flex justify-between gap-4 lg:mb-0">
                 <Field
-                  className="min-w-[240px] max-w-[240px] sm:max-w-xs lg:max-w-sm"
                   name="search"
+                  className="min-w-[240px] max-w-[240px] sm:max-w-xs lg:max-w-sm"
                   FieldProps={{ className: 'mb-0' }}
                   placeholder="Search by keyword..."
                   InputProps={{
@@ -426,7 +426,6 @@ export default function SubmissionsListing() {
                   <Popover
                     id={open ? 'date-range' : undefined}
                     anchorEl={dateRangeEl}
-                    onClose={closeDateRange}
                     open={open}
                     anchorOrigin={{
                       horizontal: 'center',
@@ -441,6 +440,7 @@ export default function SubmissionsListing() {
                       horizontal: 'center',
                       vertical: 'bottom',
                     }}
+                    onClose={closeDateRange}
                   >
                     <Slider
                       className="block"

@@ -72,9 +72,6 @@ export default function ChipToggleWidget(
             key={chipData.id}
             className="m-1"
             label={chipData.name}
-            onClick={() => {
-              handleClick(chipData.id)
-            }}
             style={
               items && items?.indexOf?.(chipData.id) !== -1
                 ? {
@@ -98,6 +95,9 @@ export default function ChipToggleWidget(
                 ? 'filled'
                 : 'outlined'
             }
+            onClick={() => {
+              handleClick(chipData.id)
+            }}
           />
         )
       })}
