@@ -33,7 +33,7 @@ export default async function CountryProgramme() {
             <Typography className="mb-4">
               Create a new country report for the current year.
             </Typography>
-            <Link href="/reports/create">
+            <Link href="/country-programme/create">
               <Button variant="contained">Create submission</Button>
             </Link>
           </Box>
