@@ -23,19 +23,25 @@
       {
         "type": "natural",
         "order": "asc",
-        "always-on-top": [
-          "key",
-          "id",
-          "name",
-          "initial",
-          "exit",
-          "animate",
-          "transition",
-          "className"
+        "groups": [
+          "always-on-top",
+          "unknown",
+          "multiline",
+          "callback",
+          "shorthand"
         ],
-        "shorthand": "last",
-        "callback": "last",
-        "multiline": "last"
+        "custom-groups": {
+          "always-on-top": [
+            "key",
+            "id",
+            "name",
+            "initial",
+            "exit",
+            "animate",
+            "transition",
+            "className"
+          ]
+        }
       }
     ],
     "perfectionist/sort-imports": [
@@ -87,8 +93,7 @@
           }
         },
         "internal-pattern": ["@ors/**", "~/**"],
-        "newlines-between": "always",
-        "read-tsconfig": false
+        "newlines-between": "always"
       }
     ],
     "perfectionist/sort-named-exports": "error",
@@ -99,8 +104,11 @@
       {
         "type": "natural",
         "order": "asc",
-        "always-on-top": ["id", "key"],
-        "partition-by-comment": false
+        "partition-by-comment": false,
+        "groups": ["id", "unknown"],
+        "custom-groups": {
+          "id": ["id", "key"]
+        }
       }
     ],
     "perfectionist/sort-union-types": "error"

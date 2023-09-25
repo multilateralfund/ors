@@ -1,25 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useState } from 'react'
-
 import { Box } from '@mui/material'
-import { useParams } from 'next/navigation'
 
 import { getResults } from '@ors/helpers/Api/Api'
-import useApi from '@ors/hooks/useApi'
 
-export default function SectionFView() {
-  const params = useParams()
-  const [apiSettings] = useState({
-    options: {
-      params: {
-        cp_report_id: params.report_id,
-      },
-    },
-    path: `api/country-programme/records`,
-  })
-  const { data } = useApi(apiSettings)
+export default function SectionFView(props: {
+  report: Record<string, Array<any>>
+}) {
+  const { report } = props
 
-  const { results } = getResults(data?.section_f)
+  const { results } = getResults(report.section_f)
 
   return (
     <Box>

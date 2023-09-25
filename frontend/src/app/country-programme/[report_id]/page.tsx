@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 
-import CountryProgramme from '@ors/components/CountryProgramme'
+import CPReportView from '@ors/components/manage/Blocks/CountryProgramme/CPReportView'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
+import api from '@ors/helpers/Api/Api'
 
 export const metadata: Metadata = {
   title: 'Country programme',
@@ -14,9 +15,14 @@ type ReportProps = {
 }
 
 export default async function CountryProgrammeReport({ params }: ReportProps) {
+  const report = await api(
+    `api/country-programme/records/?cp_report_id=${params.report_id}`,
+    {},
+    false,
+  )
   return (
     <PageWrapper>
-      <CountryProgramme report_id={params.report_id} />
+      <CPReportView report={report || {}} />
     </PageWrapper>
   )
 }

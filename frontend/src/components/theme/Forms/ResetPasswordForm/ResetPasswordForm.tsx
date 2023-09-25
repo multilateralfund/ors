@@ -15,7 +15,7 @@ const emptyErrors = {
 }
 
 export default function ResetPasswordForm({
-  endpoint = '/api/auth/password/reset/confirm/',
+  endpoint = 'api/auth/password/reset/confirm/',
 }: {
   endpoint?: string
 }) {

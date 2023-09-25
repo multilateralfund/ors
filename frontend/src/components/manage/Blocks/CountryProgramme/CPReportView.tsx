@@ -3,15 +3,16 @@ import React, { useState } from 'react'
 
 import { Tab, Tabs } from '@mui/material'
 
-import SectionAView from './manage/Blocks/Section/SectionA/SectionAView'
-import SectionBView from './manage/Blocks/Section/SectionB/SectionBView'
-import SectionCView from './manage/Blocks/Section/SectionC/SectionCView'
-import SectionDView from './manage/Blocks/Section/SectionD/SectionDView'
-import SectionEView from './manage/Blocks/Section/SectionE/SectionEView'
-import SectionFView from './manage/Blocks/Section/SectionF/SectionFView'
+import SectionAView from '@ors/components/manage/Blocks/Section/SectionA/SectionAView'
+import SectionBView from '@ors/components/manage/Blocks/Section/SectionB/SectionBView'
+import SectionCView from '@ors/components/manage/Blocks/Section/SectionC/SectionCView'
+import SectionDView from '@ors/components/manage/Blocks/Section/SectionD/SectionDView'
+import SectionEView from '@ors/components/manage/Blocks/Section/SectionE/SectionEView'
+import SectionFView from '@ors/components/manage/Blocks/Section/SectionF/SectionFView'
 
 interface SectionPanelProps {
   curentSection: number
+  report?: Record<string, Array<any>> | null
   section: number
 }
 
@@ -55,8 +56,8 @@ export const sections = [
 ]
 
 function SectionPanel(props: SectionPanelProps) {
-  const { curentSection, section, ...rest } = props
-  const Section = sections[section].component
+  const { curentSection, report, section, ...rest } = props
+  const Section: React.FC<any> = sections[section].component
 
   return (
     <div
@@ -66,15 +67,17 @@ function SectionPanel(props: SectionPanelProps) {
       role="tabpanel"
       {...rest}
     >
-      <Section />
+      <Section report={report} />
     </div>
   )
 }
 
-export default function CountryProgramme(props: { report_id: string }) {
+export default function CPReportView({
+  report,
+}: {
+  report?: Record<string, Array<any>> | null
+}) {
   const [activeSection, setActiveSection] = useState(0)
-
-  console.log(props)
 
   return (
     <>
@@ -98,6 +101,7 @@ export default function CountryProgramme(props: { report_id: string }) {
         <SectionPanel
           key={section.id}
           curentSection={activeSection}
+          report={report}
           section={index}
         />
       ))}

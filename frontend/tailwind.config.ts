@@ -151,6 +151,7 @@ module.exports = {
   ],
   corePlugins: {
     preflight: false,
+    container: false,
   },
   important: '#next-app',
   originalColors,
@@ -165,6 +166,31 @@ module.exports = {
         produceThemeVariant: (themeName) => `theme-${themeName}`,
       },
     ),
+    function ({ addComponents }: any) {
+      addComponents({
+        '.container': {
+          maxWidth: '100%',
+          margin: '0 auto',
+          paddingLeft: '1rem',
+          paddingRight: '1rem',
+          '@screen sm': {
+            maxWidth: '100%',
+          },
+          '@screen md': {
+            maxWidth: '100%',
+          },
+          '@screen lg': {
+            maxWidth: '100%',
+          },
+          '@screen xl': {
+            maxWidth: '100%',
+          },
+          '@screen 2xl': {
+            maxWidth: '1920px',
+          },
+        },
+      })
+    },
   ],
   theme: {
     container: {

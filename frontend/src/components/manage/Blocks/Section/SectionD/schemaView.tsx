@@ -19,7 +19,7 @@ function useGridOptions() {
     return {
       columnDefs: [
         {
-          field: 'display_name',
+          field: 'chemical_name',
           headerName: 'Substance',
         },
         {

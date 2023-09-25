@@ -31,7 +31,7 @@ export default function ProjectsTable() {
         substance_type: null,
       },
     },
-    path: 'api/projects',
+    path: 'api/projects/',
   })
   const { data, loading } = useApi(apiSettings)
   const { count, results } = getResults(data)

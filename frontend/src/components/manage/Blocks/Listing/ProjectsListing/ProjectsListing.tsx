@@ -179,8 +179,8 @@ function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
               <MuiIconButton
                 className="inline p-0"
                 aria-label="expand-collapse-row"
-                disableRipple
                 onClick={() => {}}
+                disableRipple
               >
                 <StyledIoEllipseOutline
                   className={cx('text-primary', {
@@ -210,13 +210,13 @@ function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
                     'md:hidden': !isCollapsed,
                   })}
                   size="small"
-                  disableRipple
                   onClick={() =>
                     setCollapsedRows(() => ({
                       ...collapsedRows,
                       [index]: !collapsedRows[index],
                     }))
                   }
+                  disableRipple
                 >
                   {isCollapsed && <IoCaretUp size={8} />}
                   {!isCollapsed && <IoCaretDown size={8} />}
@@ -280,7 +280,7 @@ export default function ProjectsListing() {
         ...initialParams,
       },
     },
-    path: 'api/projects',
+    path: 'api/projects/',
   })
   const { data, loading } = useApi(apiSettings)
 
@@ -349,8 +349,8 @@ export default function ProjectsListing() {
             <div className="mb-4 block flex-wrap justify-between gap-4 lg:flex">
               <div className="mb-4 flex justify-between gap-4 lg:mb-0">
                 <Field
-                  name="search"
                   className="min-w-[240px] max-w-[240px] sm:max-w-xs lg:max-w-sm"
+                  name="search"
                   FieldProps={{ className: 'mb-0' }}
                   placeholder="Search by keyword..."
                   InputProps={{
@@ -360,7 +360,6 @@ export default function ProjectsListing() {
                           aria-label="search submission table"
                           edge="start"
                           tabIndex={-1}
-                          disableRipple
                           onClick={() => {
                             const search = form.current.search.value
                             handleParamsChange({
@@ -369,6 +368,7 @@ export default function ProjectsListing() {
                             })
                             handleFilterChange({ search })
                           }}
+                          disableRipple
                         >
                           <IoSearchOutline />
                         </MuiIconButton>
@@ -445,12 +445,12 @@ export default function ProjectsListing() {
                   <Popover
                     id={open ? 'date-range' : undefined}
                     anchorEl={dateRangeEl}
+                    onClose={closeDateRange}
                     open={open}
                     anchorOrigin={{
                       horizontal: 'center',
                       vertical: 'top',
                     }}
-                    onClose={closeDateRange}
                     slotProps={{
                       paper: {
                         className: 'min-w-[200px] overflow-visible px-5 py-2',
@@ -633,8 +633,8 @@ export default function ProjectsListing() {
                         },
                       )}
                       disabled={disabled}
-                      disableRipple
                       onClick={isEllipsis ? () => {} : item.onClick}
+                      disableRipple
                     >
                       {item.type === 'previous' && <IoArrowBack />}
                       {['next', 'previous'].includes(item.type) && (
@@ -678,7 +678,6 @@ export default function ProjectsListing() {
             <Field
               options={projectSlice.statuses.data}
               widget="chipToggle"
-              multiple
               onChange={(value: Array<number> | null) => {
                 handleFilterChange({ status_id: value })
                 handleParamsChange({
@@ -686,6 +685,7 @@ export default function ProjectsListing() {
                   status_id: (value || initialFilters.status_id).join(','),
                 })
               }}
+              multiple
             />
             <Field
               Input={{ label: 'Country' }}
@@ -693,7 +693,6 @@ export default function ProjectsListing() {
               options={commonSlice.countries.data}
               value={filters.country_id}
               widget="autocomplete"
-              multiple
               onChange={(_: any, value: any) => {
                 handleFilterChange({ country_id: value })
                 handleParamsChange({
@@ -701,6 +700,7 @@ export default function ProjectsListing() {
                   offset: 0,
                 })
               }}
+              multiple
             />
             <Field
               Input={{ label: 'Sector' }}
@@ -708,7 +708,6 @@ export default function ProjectsListing() {
               options={projectSlice.sectors.data}
               value={filters.sector_id}
               widget="autocomplete"
-              multiple
               onChange={(_: any, value: any) => {
                 handleFilterChange({ sector_id: value })
                 handleParamsChange({
@@ -716,6 +715,7 @@ export default function ProjectsListing() {
                   sector_id: value.map((item: any) => item.id).join(','),
                 })
               }}
+              multiple
             />
             <Field
               Input={{ label: 'Subsector' }}
@@ -723,7 +723,6 @@ export default function ProjectsListing() {
               options={projectSlice.subsectors.data}
               value={filters.subsector_id}
               widget="autocomplete"
-              multiple
               onChange={(_: any, value: any) => {
                 handleFilterChange({ subsector_id: value })
                 handleParamsChange({
@@ -731,6 +730,7 @@ export default function ProjectsListing() {
                   subsector_id: value.map((item: any) => item.id).join(','),
                 })
               }}
+              multiple
             />
             <Field
               Input={{ label: 'Type' }}
@@ -741,7 +741,6 @@ export default function ProjectsListing() {
               isOptionEqualToValue={(option: any, value: any) =>
                 option.id === value
               }
-              multiple
               onChange={(_: any, value: any) => {
                 handleFilterChange({ project_type_id: value })
                 handleParamsChange({
@@ -749,13 +748,13 @@ export default function ProjectsListing() {
                   project_type_id: value.map((item: any) => item.id).join(','),
                 })
               }}
+              multiple
             />
             <Field
               Input={{ label: 'Substance Type' }}
               options={substanceTypes}
               value={filters.substance_type}
               widget="autocomplete"
-              multiple
               onChange={(_: any, value: any) => {
                 handleFilterChange({ substance_type: value })
                 handleParamsChange({
@@ -763,6 +762,7 @@ export default function ProjectsListing() {
                   substance_type: value.map((item: any) => item.id).join(','),
                 })
               }}
+              multiple
             />
             <Field
               Input={{ label: 'Agency' }}
@@ -770,7 +770,6 @@ export default function ProjectsListing() {
               options={commonSlice.agencies.data}
               value={filters.agency_id}
               widget="autocomplete"
-              multiple
               onChange={(_: any, value: any) => {
                 handleFilterChange({ agency_id: value })
                 handleParamsChange({
@@ -778,6 +777,7 @@ export default function ProjectsListing() {
                   offset: 0,
                 })
               }}
+              multiple
             />
           </Box>
         </Grid>

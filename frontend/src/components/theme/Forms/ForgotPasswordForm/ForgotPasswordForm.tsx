@@ -41,7 +41,7 @@ export default function ForgotPasswordForm() {
         e.preventDefault()
         const form = new FormData(e.currentTarget)
         try {
-          await api('/api/auth/password/reset/', {
+          await api('api/auth/password/reset/', {
             data: { email: form.get('email') },
             method: 'post',
           })

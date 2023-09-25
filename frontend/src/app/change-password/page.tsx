@@ -9,7 +9,7 @@ export default function ChangePassword() {
       fill
     >
       <Logo className="mb-5" />
-      <ResetPasswordForm endpoint="/api/auth/password/change/" />
+      <ResetPasswordForm endpoint="api/auth/password/change/" />
     </PageWrapper>
   )
 }

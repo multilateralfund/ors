@@ -1,10 +1,8 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 
 import dynamic from 'next/dynamic'
-import { useParams } from 'next/navigation'
 
 import { getResults } from '@ors/helpers/Api/Api'
-import useApi from '@ors/hooks/useApi'
 
 import useGridOptions from './schemaView'
 
@@ -12,20 +10,13 @@ const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
   ssr: false,
 })
 
-export default function SectionEView() {
-  const params = useParams()
+export default function SectionEView(props: {
+  report: Record<string, Array<any>>
+}) {
   const grid = useRef<any>()
-  const [apiSettings] = useState({
-    options: {
-      params: {
-        cp_report_id: params.report_id,
-      },
-    },
-    path: `api/country-programme/records`,
-  })
-  const { data } = useApi(apiSettings)
+  const { report } = props
 
-  const { results } = getResults(data?.section_e)
+  const { results } = getResults(report.section_e)
 
   const gridOptions = useGridOptions()
 

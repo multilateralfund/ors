@@ -9,10 +9,8 @@ import {
   Divider,
   Grid,
   InputAdornment,
-  List,
   ListItem,
   IconButton as MuiIconButton,
-  Pagination,
   Popover,
   Skeleton,
   Slider,
@@ -21,11 +19,11 @@ import {
 import cx from 'classnames'
 import dayjs from 'dayjs'
 import { AnimatePresence } from 'framer-motion'
-import { capitalize, isArray, isNumber, isUndefined, times } from 'lodash'
+import { isArray, isNumber, isUndefined } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
+import Listing from '@ors/components/manage/Form/Listing'
 import CollapseInOut from '@ors/components/manage/Transitions/CollapseInOut'
-import Loading from '@ors/components/theme/Loading/Loading'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
 import { KEY_ENTER } from '@ors/constants'
@@ -33,9 +31,7 @@ import { getResults } from '@ors/helpers/Api/Api'
 import useApi from '@ors/hooks/useApi'
 import useStore from '@ors/store'
 
-import { IoArrowBack } from '@react-icons/all-files/io5/IoArrowBack'
 import { IoArrowDown } from '@react-icons/all-files/io5/IoArrowDown'
-import { IoArrowForward } from '@react-icons/all-files/io5/IoArrowForward'
 import { IoArrowUp } from '@react-icons/all-files/io5/IoArrowUp'
 import { IoCalendarClearOutline } from '@react-icons/all-files/io5/IoCalendarClearOutline'
 import { IoCaretDown } from '@react-icons/all-files/io5/IoCaretDown'
@@ -179,8 +175,8 @@ function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
               <MuiIconButton
                 className="inline p-0"
                 aria-label="expand-collapse-row"
-                disableRipple
                 onClick={() => {}}
+                disableRipple
               >
                 <StyledIoEllipseOutline
                   className={cx('text-primary', {
@@ -193,7 +189,6 @@ function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
               <Link
                 className={cx(
                   'align-middle text-sm text-typography no-underline decoration-primary group-hover:text-primary group-hover:underline',
-                  { 'font-semibold': display === 'detailed' },
                 )}
                 href={`/submissions/${item.id}`}
               >
@@ -210,16 +205,16 @@ function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
                     'md:hidden': !isCollapsed,
                   })}
                   size="small"
-                  disableRipple
                   onClick={() =>
                     setCollapsedRows(() => ({
                       ...collapsedRows,
                       [index]: !collapsedRows[index],
                     }))
                   }
+                  disableRipple
                 >
-                  {isCollapsed && <IoCaretUp size={8} />}
-                  {!isCollapsed && <IoCaretDown size={8} />}
+                  {isCollapsed && <IoCaretUp size={7} />}
+                  {!isCollapsed && <IoCaretDown size={7} />}
                 </IconButton>
               )}
             </div>
@@ -255,6 +250,7 @@ function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
 
 export default function SubmissionsListing() {
   const form = useRef<any>()
+  const listing = useRef<any>()
   const currentYear = useMemo(() => dayjs().year(), [])
   const minDateRange = 1990
   const maxDateRange = currentYear
@@ -267,7 +263,6 @@ export default function SubmissionsListing() {
     field: 'date_received',
     label: 'Date added',
   })
-  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 50 })
   const [collapsedRows, setCollapsedRows] = useState<Record<string, any>>({})
   const [filters, setFilters] = useState({ ...initialFilters })
   const [apiSettings, setApiSettings] = useState({
@@ -280,7 +275,7 @@ export default function SubmissionsListing() {
         ...initialParams,
       },
     },
-    path: 'api/projects',
+    path: 'api/projects/',
   })
   const { data, loading } = useApi(apiSettings)
 
@@ -290,20 +285,6 @@ export default function SubmissionsListing() {
     (obj: Array<string>) => ({ id: obj[0], label: obj[1] }),
   )
   const { count, loaded, results } = getResults(data)
-
-  const rows = useMemo(() => {
-    if (!loaded) {
-      return times(pagination.rowsPerPage, (num) => {
-        return {
-          id: num + 1,
-          isSkeleton: true,
-        }
-      })
-    }
-    return results
-  }, [results, loaded, pagination.rowsPerPage])
-
-  const pages = Math.ceil(count / pagination.rowsPerPage)
 
   function handleParamsChange(newParams: { [key: string]: any }) {
     setApiSettings((prevApiSettings) => ({
@@ -320,7 +301,7 @@ export default function SubmissionsListing() {
   }
 
   function handleFilterChange(newFilters: { [key: string]: any }) {
-    setPagination({ ...pagination, page: 1 })
+    listing.current.setPagination({ ...listing.current.pagination, page: 1 })
     setFilters((filters) => ({ ...filters, ...newFilters }))
   }
 
@@ -349,8 +330,8 @@ export default function SubmissionsListing() {
             <div className="mb-4 block flex-wrap justify-between gap-4 lg:flex">
               <div className="mb-4 flex justify-between gap-4 lg:mb-0">
                 <Field
-                  name="search"
                   className="min-w-[240px] max-w-[240px] sm:max-w-xs lg:max-w-sm"
+                  name="search"
                   FieldProps={{ className: 'mb-0' }}
                   placeholder="Search by keyword..."
                   InputProps={{
@@ -360,7 +341,6 @@ export default function SubmissionsListing() {
                           aria-label="search submission table"
                           edge="start"
                           tabIndex={-1}
-                          disableRipple
                           onClick={() => {
                             const search = form.current.search.value
                             handleParamsChange({
@@ -369,6 +349,7 @@ export default function SubmissionsListing() {
                             })
                             handleFilterChange({ search })
                           }}
+                          disableRipple
                         >
                           <IoSearchOutline />
                         </MuiIconButton>
@@ -445,12 +426,12 @@ export default function SubmissionsListing() {
                   <Popover
                     id={open ? 'date-range' : undefined}
                     anchorEl={dateRangeEl}
+                    onClose={closeDateRange}
                     open={open}
                     anchorOrigin={{
                       horizontal: 'center',
                       vertical: 'top',
                     }}
-                    onClose={closeDateRange}
                     slotProps={{
                       paper: {
                         className: 'min-w-[200px] overflow-visible px-5 py-2',
@@ -567,89 +548,21 @@ export default function SubmissionsListing() {
                 </Typography>
               </div>
             )}
-            <List className="mb-6" disablePadding>
-              <Loading
-                className="bg-mui-box-background/70 !duration-0"
-                active={loading}
-              />
-              {!rows.length && (
-                <>
-                  <Divider className="mb-3 w-full" />
-                  <ListItem className="block w-full py-4 text-center">
-                    No rows to show
-                  </ListItem>
-                  <Divider className="mt-3 w-full" />
-                </>
-              )}
-              {rows.map((item, index) => {
-                return (
-                  <Item
-                    key={item.id}
-                    collapsedRows={collapsedRows}
-                    display={display}
-                    index={index}
-                    item={item}
-                    setCollapsedRows={setCollapsedRows}
-                  />
-                )
-              })}
-            </List>
-            {!!pages && (
-              <Pagination
-                className="mb-8 inline-block flex-nowrap rounded-sm"
-                count={pages}
-                disabled={loading}
-                page={pagination.page}
-                siblingCount={1}
-                onChange={(event, page) => {
-                  if (page === pagination.page) return
-                  setPagination({ ...pagination, page })
-                  handleParamsChange({
-                    limit: pagination.rowsPerPage,
-                    offset: (page - 1) * pagination.rowsPerPage,
-                  })
-                }}
-                renderItem={(item) => {
-                  const disabled = loading || item.disabled
-                  const isEllipsis = [
-                    'end-ellipsis',
-                    'start-ellipsis',
-                  ].includes(item.type)
-
-                  return (
-                    <Button
-                      className={cx(
-                        'flex min-w-fit border-collapse gap-2 rounded-none border-y border-r border-solid border-mui-default-border p-3 text-xs leading-none',
-                        {
-                          'bg-action-highlight': item.selected,
-                          'bg-mui-box-background': !item.selected,
-                          'border-l': item.type === 'previous',
-                          'cursor-default': isEllipsis,
-                          'rounded-sm': ['next', 'previous'].includes(
-                            item.type,
-                          ),
-                          'text-typography-faded': disabled,
-                          'text-typography-secondary': !disabled,
-                        },
-                      )}
-                      disabled={disabled}
-                      disableRipple
-                      onClick={isEllipsis ? () => {} : item.onClick}
-                    >
-                      {item.type === 'previous' && <IoArrowBack />}
-                      {['next', 'previous'].includes(item.type) && (
-                        <span className="hidden md:inline">
-                          {capitalize(item.type)}
-                        </span>
-                      )}
-                      {item.type === 'page' && item.page}
-                      {isEllipsis && '...'}
-                      {item.type === 'next' && <IoArrowForward />}
-                    </Button>
-                  )
-                }}
-              />
-            )}
+            <Listing
+              Item={Item}
+              ItemProps={{ collapsedRows, display, setCollapsedRows }}
+              loaded={loaded}
+              loading={loading}
+              ref={listing}
+              rowCount={count}
+              rowData={results}
+              onPaginationChanged={(page, rowsPerPage) => {
+                handleParamsChange({
+                  limit: rowsPerPage,
+                  offset: (page - 1) * rowsPerPage,
+                })
+              }}
+            />
             <Typography>
               <Link href="/submissions/create" variant="contained" button>
                 Add new submission
@@ -686,7 +599,6 @@ export default function SubmissionsListing() {
               options={commonSlice.countries.data}
               value={filters.country_id}
               widget="autocomplete"
-              multiple
               onChange={(_: any, value: any) => {
                 handleFilterChange({ country_id: value })
                 handleParamsChange({
@@ -694,6 +606,7 @@ export default function SubmissionsListing() {
                   offset: 0,
                 })
               }}
+              multiple
             />
             <Field
               Input={{ label: 'Sector' }}
@@ -701,7 +614,6 @@ export default function SubmissionsListing() {
               options={projectSlice.sectors.data}
               value={filters.sector_id}
               widget="autocomplete"
-              multiple
               onChange={(_: any, value: any) => {
                 handleFilterChange({ sector_id: value })
                 handleParamsChange({
@@ -709,6 +621,7 @@ export default function SubmissionsListing() {
                   sector_id: value.map((item: any) => item.id).join(','),
                 })
               }}
+              multiple
             />
             <Field
               Input={{ label: 'Subsector' }}
@@ -716,7 +629,6 @@ export default function SubmissionsListing() {
               options={projectSlice.subsectors.data}
               value={filters.subsector_id}
               widget="autocomplete"
-              multiple
               onChange={(_: any, value: any) => {
                 handleFilterChange({ subsector_id: value })
                 handleParamsChange({
@@ -724,6 +636,7 @@ export default function SubmissionsListing() {
                   subsector_id: value.map((item: any) => item.id).join(','),
                 })
               }}
+              multiple
             />
             <Field
               Input={{ label: 'Type' }}
@@ -734,7 +647,6 @@ export default function SubmissionsListing() {
               isOptionEqualToValue={(option: any, value: any) =>
                 option.id === value
               }
-              multiple
               onChange={(_: any, value: any) => {
                 handleFilterChange({ project_type_id: value })
                 handleParamsChange({
@@ -742,13 +654,13 @@ export default function SubmissionsListing() {
                   project_type_id: value.map((item: any) => item.id).join(','),
                 })
               }}
+              multiple
             />
             <Field
               Input={{ label: 'Substance Type' }}
               options={substanceTypes}
               value={filters.substance_type}
               widget="autocomplete"
-              multiple
               onChange={(_: any, value: any) => {
                 handleFilterChange({ substance_type: value })
                 handleParamsChange({
@@ -756,6 +668,7 @@ export default function SubmissionsListing() {
                   substance_type: value.map((item: any) => item.id).join(','),
                 })
               }}
+              multiple
             />
             <Field
               Input={{ label: 'Agency' }}
@@ -763,7 +676,6 @@ export default function SubmissionsListing() {
               options={commonSlice.agencies.data}
               value={filters.agency_id}
               widget="autocomplete"
-              multiple
               onChange={(_: any, value: any) => {
                 handleFilterChange({ agency_id: value })
                 handleParamsChange({
@@ -771,6 +683,7 @@ export default function SubmissionsListing() {
                   offset: 0,
                 })
               }}
+              multiple
             />
           </Box>
         </Grid>
