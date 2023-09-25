@@ -1,3 +1,4 @@
+/* eslint-disable perfectionist/sort-objects */
 import grey from '@mui/material/colors/grey'
 import { Config } from 'tailwindcss'
 import { createThemes } from 'tw-colors'
@@ -169,25 +170,25 @@ module.exports = {
     function ({ addComponents }: any) {
       addComponents({
         '.container': {
-          '@screen 2xl': {
-            maxWidth: '1920px',
-          },
-          '@screen lg': {
+          margin: '0 auto',
+          maxWidth: '100%',
+          paddingLeft: '1rem',
+          paddingRight: '1rem',
+          '@screen sm': {
             maxWidth: '100%',
           },
           '@screen md': {
             maxWidth: '100%',
           },
-          '@screen sm': {
+          '@screen lg': {
             maxWidth: '100%',
           },
           '@screen xl': {
             maxWidth: '100%',
           },
-          margin: '0 auto',
-          maxWidth: '100%',
-          paddingLeft: '1rem',
-          paddingRight: '1rem',
+          '@screen 2xl': {
+            maxWidth: '1920px',
+          },
         },
       })
     },
@@ -204,6 +205,13 @@ module.exports = {
       zIndex: {
         absolute: '9999',
       },
+    },
+    screens: {
+      '2xl': '1920px',
+      lg: '1024px',
+      md: '768px',
+      sm: '640px',
+      xl: '1280px',
     },
   },
 } as Config

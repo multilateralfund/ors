@@ -26,7 +26,7 @@ export default async function CountryProgramme() {
           <CPListing />
         </Grid>
         <Grid lg={3} md={4} xs={12} item>
-          <Box className="w-full md:max-w-sm">
+          <Box>
             <Typography className="mb-4 text-typography-secondary" variant="h4">
               New submission
             </Typography>
