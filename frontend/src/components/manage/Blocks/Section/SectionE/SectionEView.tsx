@@ -1,5 +1,6 @@
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 
+import { union } from 'lodash'
 import dynamic from 'next/dynamic'
 
 import { getResults } from '@ors/helpers/Api/Api'
@@ -13,12 +14,18 @@ const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
 export default function SectionEView(props: {
   report: Record<string, Array<any>>
 }) {
-  const grid = useRef<any>()
   const { report } = props
+  const grid = useRef<any>()
+  const gridOptions = useGridOptions()
 
   const { results } = getResults(report.section_e)
 
-  const gridOptions = useGridOptions()
+  const rows = useMemo(() => {
+    return union(
+      results,
+      results.length > 0 ? [{ isTotal: true, x: 'TOTAL' }] : [],
+    )
+  }, [results])
 
   return (
     <>
@@ -30,7 +37,7 @@ export default function SectionEView(props: {
         enablePagination={false}
         gridRef={grid}
         noRowsOverlayComponent={null}
-        rowData={results}
+        rowData={rows}
         suppressCellFocus={false}
         suppressNoRowsOverlay={true}
         suppressRowHoverHighlight={false}

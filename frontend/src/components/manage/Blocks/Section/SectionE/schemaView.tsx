@@ -15,6 +15,8 @@ function useGridOptions() {
           headerName: 'Facility name or identifier',
         },
         {
+          aggFunc: 'sum',
+          cellRenderer: 'agFloatCellRenderer',
           field: 'x',
           headerClass: 'text-center',
           headerName: 'Total amount generated',
@@ -22,16 +24,22 @@ function useGridOptions() {
         {
           children: [
             {
+              aggFunc: 'sum',
+              cellRenderer: 'agFloatCellRenderer',
               field: 'x',
               headerClass: 'text-center',
               headerName: 'For all uses',
             },
             {
+              aggFunc: 'sum',
+              cellRenderer: 'agFloatCellRenderer',
               field: 'x',
               headerClass: 'text-center',
               headerName: 'For feedstock use in your country',
             },
             {
+              aggFunc: 'sum',
+              cellRenderer: 'agFloatCellRenderer',
               field: 'x',
               headerClass: 'text-center',
               headerName: 'For destruction',
@@ -44,16 +52,22 @@ function useGridOptions() {
           marryChildren: true,
         },
         {
+          aggFunc: 'sum',
+          cellRenderer: 'agFloatCellRenderer',
           field: 'x',
           headerClass: 'text-center',
           headerName: 'Amount used for feedstock without prior capture',
         },
         {
+          aggFunc: 'sum',
+          cellRenderer: 'agFloatCellRenderer',
           field: 'x',
           headerClass: 'text-center',
           headerName: 'Amount destroyed without prior capture',
         },
         {
+          aggFunc: 'sum',
+          cellRenderer: 'agFloatCellRenderer',
           field: 'x',
           headerClass: 'text-center',
           headerName: 'Amount of generated emission',

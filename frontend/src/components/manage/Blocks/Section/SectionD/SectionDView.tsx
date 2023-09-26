@@ -21,7 +21,10 @@ export default function SectionDView(props: {
   const { results } = getResults(report.section_d)
 
   const rows = useMemo(() => {
-    return union(results, [{ chemical_name: 'TOTAL', isTotal: true }])
+    return union(
+      results,
+      results.length > 0 ? [{ chemical_name: 'TOTAL', isTotal: true }] : [],
+    )
   }, [results])
 
   return (
