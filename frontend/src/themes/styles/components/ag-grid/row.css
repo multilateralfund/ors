@@ -8,8 +8,14 @@
 #next-app [class*='ag-theme-'] .ag-row-group {
   @apply pattern-diagonal-lines pattern-slate-500 pattern-bg-transparent 
   pattern-size-2 pattern-opacity-100;
+
+  border-top: var(--ag-row-border-style) var(--ag-row-group-border-color)
+    var(--ag-row-group-border-width);
 }
 
 #next-app [class*='ag-theme-'] .ag-row-total {
   @apply bg-gray-100 theme-dark:bg-gray-900/40;
+
+  border-top: var(--ag-row-border-style) var(--ag-row-total-border-color)
+    var(--ag-row-total-border-width);
 }

@@ -41,8 +41,12 @@
   --ag-odd-row-background-color: theme(colors.mui-box-background);
   --ag-popup-shadow: var(--ag-card-shadow);
   --ag-row-border-color: var(--ag-secondary-border-color);
+  --ag-row-group-border-color: theme(colors.primary);
+  --ag-row-total-border-color: theme(colors.primary);
   --ag-row-border-style: solid;
   --ag-row-border-width: 1px;
+  --ag-row-group-border-width: 1px;
+  --ag-row-total-border-width: 1px;
   --ag-row-group-indent-size: calc(
     var(--ag-cell-widget-spacing) + var(--ag-icon-size)
   );
@@ -67,4 +71,6 @@
 :root[data-theme='dark'] #next-app [class*='ag-theme-'] {
   --twc-gray-900-opacity: 0.4;
   --ag-header-background-color: theme(colors.gray-900);
+  --ag-row-group-border-color: theme(colors.white);
+  --ag-row-total-border-color: theme(colors.white);
 }
