@@ -5,26 +5,24 @@ import styled from '@emotion/styled'
 import {
   Box,
   Button,
-  ButtonProps,
   Divider,
   Grid,
   InputAdornment,
   ListItem,
   IconButton as MuiIconButton,
-  Popover,
   Skeleton,
-  Slider,
   Typography,
 } from '@mui/material'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 import { AnimatePresence } from 'framer-motion'
-import { isArray, isNumber, isUndefined } from 'lodash'
+import { isArray, isNumber } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
 import Listing from '@ors/components/manage/Form/Listing'
 import CollapseInOut from '@ors/components/manage/Transitions/CollapseInOut'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
+import IconButton from '@ors/components/ui/IconButton/IconButton'
 import Link from '@ors/components/ui/Link/Link'
 import { KEY_ENTER } from '@ors/constants'
 import { getResults } from '@ors/helpers/Api/Api'
@@ -33,7 +31,6 @@ import useStore from '@ors/store'
 
 import { IoArrowDown } from '@react-icons/all-files/io5/IoArrowDown'
 import { IoArrowUp } from '@react-icons/all-files/io5/IoArrowUp'
-import { IoCalendarClearOutline } from '@react-icons/all-files/io5/IoCalendarClearOutline'
 import { IoCaretDown } from '@react-icons/all-files/io5/IoCaretDown'
 import { IoCaretUp } from '@react-icons/all-files/io5/IoCaretUp'
 import { IoClose } from '@react-icons/all-files/io5/IoClose'
@@ -97,29 +94,6 @@ const orderings = [
   { field: 'project_type', label: 'Project type' },
   { field: 'substance_type', label: 'Substance type' },
 ]
-
-function IconButton({
-  active,
-  className,
-  ...rest
-}: ButtonProps & { active?: boolean }) {
-  const isActive = isUndefined(active) || !!active
-
-  return (
-    <Button
-      className={cx(
-        'min-w-fit rounded-sm border border-solid border-mui-default-border p-[6px] hover:border-typography',
-        {
-          'bg-action-highlight text-typography-secondary': isActive,
-          'bg-action-highlight/10 text-typography-faded theme-dark:bg-action-highlight/20':
-            !isActive,
-        },
-        className,
-      )}
-      {...rest}
-    />
-  )
-}
 
 function ItemDetail({ label, value }: { label: string; value: string }) {
   return (
@@ -254,8 +228,6 @@ export default function SubmissionsListing() {
   const currentYear = useMemo(() => dayjs().year(), [])
   const minDateRange = 1990
   const maxDateRange = currentYear
-  const [dateRangeEl, setDateRangeEl] =
-    React.useState<HTMLButtonElement | null>(null)
   const [dateRange, setDateRange] = useState([minDateRange, currentYear])
   const [display, setDisplay] = useState('simple')
   const [ordering, setOrdering] = useState({
@@ -305,16 +277,6 @@ export default function SubmissionsListing() {
     setFilters((filters) => ({ ...filters, ...newFilters }))
   }
 
-  const openDateRange = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setDateRangeEl(event.currentTarget)
-  }
-
-  const closeDateRange = () => {
-    setDateRangeEl(null)
-  }
-
-  const open = Boolean(dateRangeEl)
-
   return (
     <form
       className="submission-table"
@@ -331,10 +293,15 @@ export default function SubmissionsListing() {
               <div className="mb-4 flex justify-between gap-4 lg:mb-0">
                 <Field
                   name="search"
-                  className="min-w-[240px] max-w-[240px] sm:max-w-xs lg:max-w-sm"
-                  FieldProps={{ className: 'mb-0' }}
                   placeholder="Search by keyword..."
+                  FieldProps={{
+                    className:
+                      'mb-0 min-w-[240px] max-w-[240px] sm:max-w-xs lg:max-w-sm w-full',
+                  }}
                   InputProps={{
+                    classes: {
+                      input: 'py-[6px]',
+                    },
                     startAdornment: (
                       <InputAdornment position="start">
                         <MuiIconButton
@@ -378,13 +345,13 @@ export default function SubmissionsListing() {
                     active={display === 'simple'}
                     onClick={() => setDisplay('simple')}
                   >
-                    <IoRemove size="1rem" />
+                    <IoRemove size={16} />
                   </IconButton>
                   <IconButton
                     active={display === 'detailed'}
                     onClick={() => setDisplay('detailed')}
                   >
-                    <IoReorderTwo size="1rem" />
+                    <IoReorderTwo size={16} />
                   </IconButton>
                 </div>
               </div>
@@ -400,78 +367,43 @@ export default function SubmissionsListing() {
                     active={display === 'simple'}
                     onClick={() => setDisplay('simple')}
                   >
-                    <IoRemove size="1rem" />
+                    <IoRemove size={16} />
                   </IconButton>
                   <IconButton
                     active={display === 'detailed'}
                     onClick={() => setDisplay('detailed')}
                   >
-                    <IoReorderTwo size="1rem" />
+                    <IoReorderTwo size={16} />
                   </IconButton>
                 </div>
-                <div className="datarange-control flex items-center gap-2">
-                  <Typography
-                    className="text-typography-secondary"
-                    component="span"
-                  >
-                    Data range
-                  </Typography>
-
-                  <IconButton
-                    aria-describedby={open ? 'date-range' : undefined}
-                    onClick={openDateRange}
-                  >
-                    <IoCalendarClearOutline size="1rem" />
-                  </IconButton>
-                  <Popover
-                    id={open ? 'date-range' : undefined}
-                    anchorEl={dateRangeEl}
-                    open={open}
-                    anchorOrigin={{
-                      horizontal: 'center',
-                      vertical: 'top',
-                    }}
-                    slotProps={{
-                      paper: {
-                        className: 'min-w-[200px] overflow-visible px-5 py-2',
-                      },
-                    }}
-                    transformOrigin={{
-                      horizontal: 'center',
-                      vertical: 'bottom',
-                    }}
-                    onClose={closeDateRange}
-                  >
-                    <Slider
-                      className="block"
-                      getAriaLabel={() => 'Date range'}
-                      max={maxDateRange}
-                      min={minDateRange}
-                      value={dateRange}
-                      valueLabelDisplay="auto"
-                      onChange={(event, value) => {
-                        if (isArray(value) && value[1] - value[0] >= 1) {
-                          setDateRange(value)
-                          debounce(() => {
-                            handleParamsChange({
-                              date_received_after: dayjs()
-                                .year(value[0])
-                                // @ts-ignore
-                                .dayOfYear(1)
-                                .format('YYYY-MM-DD'),
-                              date_received_before: dayjs()
-                                .year(value[1])
-                                // @ts-ignore
-                                .dayOfYear(365)
-                                .format('YYYY-MM-DD'),
-                            })
-                          })
-                        }
-                      }}
-                    />
-                  </Popover>
-                </div>
-                <div className="datarange-control flex items-center gap-2">
+                <Field
+                  FieldProps={{ className: 'mb-0' }}
+                  label="Date range"
+                  max={maxDateRange}
+                  min={minDateRange}
+                  value={dateRange}
+                  widget="range"
+                  onChange={(event: Event, value: number | number[]) => {
+                    if (isArray(value) && value[1] - value[0] >= 1) {
+                      setDateRange(value)
+                      debounce(() => {
+                        handleParamsChange({
+                          date_received_after: dayjs()
+                            .year(value[0])
+                            // @ts-ignore
+                            .dayOfYear(1)
+                            .format('YYYY-MM-DD'),
+                          date_received_before: dayjs()
+                            .year(value[1])
+                            // @ts-ignore
+                            .dayOfYear(365)
+                            .format('YYYY-MM-DD'),
+                        })
+                      })
+                    }
+                  }}
+                />
+                <div className="ordering-control flex items-center gap-2">
                   <Typography
                     className="text-typography-secondary"
                     component="span"
@@ -525,9 +457,9 @@ export default function SubmissionsListing() {
                     }}
                   >
                     {ordering.direction === 'asc' ? (
-                      <IoArrowUp size="1rem" />
+                      <IoArrowUp size={16} />
                     ) : (
-                      <IoArrowDown size="1rem" />
+                      <IoArrowDown size={16} />
                     )}
                   </IconButton>
                 </div>

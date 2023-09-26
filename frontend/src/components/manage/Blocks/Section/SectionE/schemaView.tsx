@@ -20,30 +20,56 @@ function useGridOptions() {
       columnDefs: [
         {
           field: 'x',
+          headerClass: 'text-center',
           headerName: 'Facility name or identifier',
         },
         {
           field: 'x',
-          headerName: 'Total amount generated1',
+          headerClass: 'text-center',
+          headerName: 'Total amount generated',
         },
         {
-          field: 'x',
+          children: [
+            {
+              field: 'x',
+              headerClass: 'text-center',
+              headerName: 'For all uses',
+            },
+            {
+              field: 'x',
+              headerClass: 'text-center',
+              headerName: 'For feedstock use in your country',
+            },
+            {
+              field: 'x',
+              headerClass: 'text-center',
+              headerName: 'For destruction',
+            },
+          ],
+          groupId: 'amount_generated_and_captured',
+          headerClass: 'text-center',
+          headerGroupComponent: 'agColumnHeaderGroup',
           headerName: 'Amount generated and captured',
+          marryChildren: true,
         },
         {
           field: 'x',
+          headerClass: 'text-center',
           headerName: 'Amount used for feedstock without prior capture',
         },
         {
           field: 'x',
+          headerClass: 'text-center',
           headerName: 'Amount destroyed without prior capture',
         },
         {
           field: 'x',
+          headerClass: 'text-center',
           headerName: 'Amount of generated emission',
         },
         {
           field: 'x',
+          headerClass: 'text-center',
           headerName: 'Remarks',
         },
       ],

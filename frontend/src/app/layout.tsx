@@ -7,20 +7,18 @@ import React from 'react'
 
 import { dir } from 'i18next'
 import { Roboto } from 'next/font/google'
-import { cookies as nextCookies, headers as nextHeaders } from 'next/headers'
+import { headers as nextHeaders } from 'next/headers'
 import Script from 'next/script'
 
 import View from '@ors/components/theme/Views/View'
 import api from '@ors/helpers/Api/Api'
 import { getInitialSliceData } from '@ors/helpers/Store/Store'
 import { getCurrentView } from '@ors/helpers/View/View'
-import config from '@ors/registry'
 import { CommonSlice } from '@ors/slices/createCommonSlice'
 import { ProjectsSlice } from '@ors/slices/createProjectSlice'
 import { ReportsSlice } from '@ors/slices/createReportsSlice'
 import { Provider as StoreProvider } from '@ors/store'
 import ThemeProvider from '@ors/themes/ThemeProvider'
-import { Language } from '@ors/types/locales'
 
 import '@ors/themes/styles/global.css'
 
@@ -83,14 +81,16 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const cookies = nextCookies()
+  // const cookies = nextCookies()
   const headers = nextHeaders()
   let user
   let reports, projects, common
   const pathname = headers.get('x-next-pathname')
-  const lang = (headers.get('x-next-lang') ||
-    config.i18n.defaultLanguage) as Language
-  const theme = cookies.get(config.cookies.theme) || { value: null }
+  // const lang = (headers.get('x-next-lang') ||
+  //   config.i18n.defaultLanguage) as Language
+  const lang = 'en'
+  // const theme = cookies.get(config.cookies.theme) || { value: null }
+  const theme = { value: 'light' }
   const currentView = getCurrentView(pathname || '')
 
   if (pathname !== '/econnrefused') {

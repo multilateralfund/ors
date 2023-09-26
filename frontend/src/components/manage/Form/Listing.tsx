@@ -1,13 +1,10 @@
 import { forwardRef, useImperativeHandle, useMemo, useState } from 'react'
 
-import { Button, Divider, List, ListItem, Pagination } from '@mui/material'
-import cx from 'classnames'
-import { capitalize, times } from 'lodash'
+import { Divider, List, ListItem } from '@mui/material'
+import { times } from 'lodash'
 
 import Loading from '@ors/components/theme/Loading/Loading'
-
-import { IoArrowBack } from '@react-icons/all-files/io5/IoArrowBack'
-import { IoArrowForward } from '@react-icons/all-files/io5/IoArrowForward'
+import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 
 type ListingProps = {
   Item: React.FC<any>
@@ -98,48 +95,13 @@ const Listing = forwardRef(function Listing(props: ListingProps, ref) {
           count={pages}
           disabled={loading}
           page={pagination.page}
+          rowsPerPage={pagination.rowsPerPage}
           siblingCount={1}
-          renderItem={(item) => {
-            const disabled = loading || item.disabled
-            const isEllipsis = ['end-ellipsis', 'start-ellipsis'].includes(
-              item.type,
-            )
-
-            return (
-              <Button
-                className={cx(
-                  'flex min-w-fit border-collapse gap-2 rounded-none border-y border-r border-solid border-mui-default-border p-3 text-xs leading-none',
-                  {
-                    'bg-action-highlight': item.selected,
-                    'bg-mui-box-background': !item.selected,
-                    'border-l': item.type === 'previous',
-                    'cursor-default': isEllipsis,
-                    'rounded-sm': ['next', 'previous'].includes(item.type),
-                    'text-typography-faded': disabled,
-                    'text-typography-secondary': !disabled,
-                  },
-                )}
-                disabled={disabled}
-                onClick={isEllipsis ? () => {} : item.onClick}
-                disableRipple
-              >
-                {item.type === 'previous' && <IoArrowBack />}
-                {['next', 'previous'].includes(item.type) && (
-                  <span className="hidden md:inline">
-                    {capitalize(item.type)}
-                  </span>
-                )}
-                {item.type === 'page' && item.page}
-                {isEllipsis && '...'}
-                {item.type === 'next' && <IoArrowForward />}
-              </Button>
-            )
-          }}
-          onChange={(event, page) => {
+          onPaginationChanged={(page) => {
             if (page === pagination.page) return
-            setPagination({ ...pagination, page })
+            setPagination({ ...pagination, page: page || 1 })
             if (onPaginationChanged) {
-              onPaginationChanged(page, pagination.rowsPerPage)
+              onPaginationChanged(page || 1, pagination.rowsPerPage)
             }
           }}
         />

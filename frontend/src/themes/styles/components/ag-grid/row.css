@@ -7,6 +7,14 @@
     opacity 200ms;
 }
 
-#next-app [class*='ag-theme-']:not(.with-pagination) .ag-row-last {
+/* #next-app [class*='ag-theme-']:not(.with-pagination) .ag-row-last {
   @apply border-b-0;
+} */
+
+#next-app [class*='ag-theme-'] .ag-row-group {
+  @apply bg-gray-100 theme-dark:bg-gray-900/40;
+}
+
+#next-app [class*='ag-theme-'] .ag-row-total {
+  @apply bg-gray-100 theme-dark:bg-gray-900/40;
 }

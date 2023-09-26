@@ -1,5 +1,5 @@
 'use client'
-import { Box } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import cx from 'classnames'
 import { AnimatePresence } from 'framer-motion'
 import { isFunction } from 'lodash'
@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation'
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Logo from '@ors/components/theme/Logo/Logo'
 import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
-import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
+// import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
 import UnstyledLink, { LinkProps } from '@ors/components/ui/Link/Link'
 import { formatApiUrl } from '@ors/helpers/Api/Api'
 import { matchPath } from '@ors/helpers/Url/Url'
@@ -52,14 +52,18 @@ export default function Header() {
       component={FadeInOut}
     >
       <div className="container flex w-full items-center justify-between pb-4">
-        <UnstyledLink
-          className="logo mb-0 flex items-center gap-x-4"
-          href="/"
-          underline="none"
-        >
-          <Logo />
-          <span className="font-bold">Data portal</span>
-        </UnstyledLink>
+        <div className="flex items-center gap-x-8">
+          <UnstyledLink href="/">
+            <Logo />
+          </UnstyledLink>
+          <Typography
+            className="font-semibold text-typography-secondary"
+            component="p"
+            variant="h5"
+          >
+            Data portal
+          </Typography>
+        </div>
         <div>
           {/* <LanguageSelector className="ltr:mr-2 rtl:ml-2" /> */}
           <UnstyledLink
@@ -70,7 +74,7 @@ export default function Header() {
             Admin
           </UnstyledLink>
           <ProfileDropdown className="ltr:mr-2 rtl:ml-2" />
-          {__DEVELOPMENT__ && <ThemeSelector />}
+          {/* {__DEVELOPMENT__ && <ThemeSelector />} */}
           <div id="header-control" />
         </div>
       </div>

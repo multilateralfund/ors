@@ -23,15 +23,16 @@ export default function SectionDView(props: {
   return (
     <>
       <Table
-        className="three-groups rounded-t-none"
         animateRows={true}
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
         enableCellChangeFlash={true}
         enablePagination={false}
         gridRef={grid}
+        noRowsOverlayComponent={null}
         rowData={results}
         suppressCellFocus={false}
+        suppressNoRowsOverlay={true}
         suppressRowHoverHighlight={false}
         withSeparators
       />

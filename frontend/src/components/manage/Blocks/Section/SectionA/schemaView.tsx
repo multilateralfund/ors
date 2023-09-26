@@ -1,17 +1,18 @@
-/* eslint-disable react/display-name */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 import { useMemo } from 'react'
 
-import { Typography } from '@mui/material'
 import { GridOptions } from 'ag-grid-community'
-import cx from 'classnames'
-import dayjs from 'dayjs'
-import { isNaN, isNull } from 'lodash'
 
-function parseNumber(number: any) {
-  const parsedNumber = parseFloat(number)
-  return isNull(number) || isNaN(number) ? '-' : parsedNumber.toFixed(2)
+function cellClass(props: any) {
+  if (props.data.isGroup) {
+    return 'ag-row-group'
+  }
+  if (props.data.isSubTotal) {
+    return 'ag-row-sub-total'
+  }
+  if (props.data.isTotal) {
+    return 'ag-row-total'
+  }
+  return ''
 }
 
 function useGridOptions() {
@@ -19,137 +20,145 @@ function useGridOptions() {
     return {
       columnDefs: [
         {
-          field: 'display_name',
+          field: 'chemical_name',
           headerName: 'Substance',
+          minWidth: 200,
         },
-        // {
-        //   children: [
-        //     {
-        //       id: 10,
-        //       cellEditor: 'agNumberCellEditor',
-        //       cellEditorParams: {
-        //         min: '0',
-        //       },
-        //       field: 'aerosol',
-        //       headerName: 'Aerosol',
-        //       type: 'usages',
-        //     },
-        //     {
-        //       cellEditor: 'agNumberCellEditor',
-        //       cellEditorParams: {
-        //         min: '0',
-        //       },
-        //       field: 'foam',
-        //       headerName: 'Foam',
-        //     },
-        //     {
-        //       cellEditor: 'agNumberCellEditor',
-        //       cellEditorParams: {
-        //         min: '0',
-        //       },
-        //       field: 'fire_fighting',
-        //       headerName: 'Fire Fighting',
-        //     },
-        //     {
-        //       children: [
-        //         {
-        //           cellEditor: 'agNumberCellEditor',
-        //           cellEditorParams: {
-        //             min: '0',
-        //           },
-        //           field: 'manufacturing',
-        //           headerName: 'Manufacturing',
-        //         },
-        //         {
-        //           cellEditor: 'agNumberCellEditor',
-        //           cellEditorParams: {
-        //             min: '0',
-        //           },
-        //           field: 'servicing',
-        //           headerName: 'Servicing',
-        //         },
-        //       ],
-        //       headerClass: 'text-center',
-        //       headerGroupComponent: 'agColumnHeaderGroup',
-        //       headerName: 'Refrigeration',
-        //       marryChildren: true,
-        //     },
-        //     {
-        //       disabled: true,
-        //       editable: false,
-        //       field: 'country',
-        //       headerName: 'TOTAL',
-        //       valueGetter:
-        //         '((data.aerosol || 0) + (data.foam || 0) + (data.fire_fighting || 0) + (data.manufacturing || 0) + (data.servicing || 0)).toFixed(2)',
-        //     },
-        //   ],
-        //   groupId: 'usages',
-        //   headerClass: 'text-center usages-group',
-        //   headerGroupComponent: 'agColumnHeaderGroup',
-        //   headerName: 'Use by Sector',
-        //   marryChildren: true,
-        // },
         {
-          cellRenderer: (props: any) => {
-            return (
-              <Typography component="span">
-                {parseNumber(props.value)}
-              </Typography>
-            )
-          },
+          children: [
+            {
+              id: 1,
+              cellRenderer: 'agUsageCellRenderer',
+              headerName: 'Aerosol',
+              minWidth: 100,
+            },
+            {
+              id: 2,
+              cellRenderer: 'agUsageCellRenderer',
+              headerName: 'Foam',
+              minWidth: 100,
+            },
+            {
+              id: 3,
+              cellRenderer: 'agUsageCellRenderer',
+              headerName: 'Fire fighting',
+              minWidth: 130,
+            },
+            {
+              id: 4,
+              children: [
+                {
+                  id: 5,
+                  cellRenderer: 'agUsageCellRenderer',
+                  headerName: 'Manufacturing',
+                  minWidth: 150,
+                },
+                {
+                  id: 9,
+                  cellRenderer: 'agUsageCellRenderer',
+                  headerName: 'Servicing',
+                  minWidth: 150,
+                },
+              ],
+              groupId: 'usage_refrigeration',
+              headerClass: 'text-center',
+              headerGroupComponent: 'agColumnHeaderGroup',
+              headerName: 'Refrigeration',
+              marryChildren: true,
+            },
+            {
+              id: 10,
+              cellRenderer: 'agUsageCellRenderer',
+              headerName: 'Solvent',
+              minWidth: 120,
+            },
+            {
+              id: 13,
+              cellRenderer: 'agUsageCellRenderer',
+              headerName: 'Process agent',
+              minWidth: 150,
+            },
+            {
+              id: 15,
+              cellRenderer: 'agUsageCellRenderer',
+              headerName: 'Lab use',
+              minWidth: 110,
+            },
+            {
+              id: 16,
+              children: [
+                {
+                  id: 17,
+                  cellRenderer: 'agUsageCellRenderer',
+                  headerName: 'QPS',
+                  minWidth: 110,
+                },
+                {
+                  id: 18,
+                  cellRenderer: 'agUsageCellRenderer',
+                  headerName: 'Non-QPS',
+                  minWidth: 110,
+                },
+              ],
+              groupId: 'usage_methyl_bromide',
+              headerClass: 'text-center',
+              headerGroupComponent: 'agColumnHeaderGroup',
+              headerName: 'Methyl bromide',
+              marryChildren: true,
+            },
+            {
+              id: 'total',
+              cellRenderer: 'agUsageCellRenderer',
+              headerName: 'TOTAL',
+              minWidth: 140,
+            },
+          ],
+          groupId: 'usages',
+          headerClass: 'text-center',
+          headerGroupComponent: 'agColumnHeaderGroup',
+          headerName: 'Use by Sector',
+          marryChildren: true,
+        },
+        {
+          cellRenderer: 'agFloatCellRenderer',
           field: 'imports',
           headerName: 'Imports',
+          minWidth: 100,
         },
         {
-          cellRenderer: (props: any) => {
-            return (
-              <Typography component="span">
-                {parseNumber(props.value)}
-              </Typography>
-            )
-          },
+          cellRenderer: 'agFloatCellRenderer',
           field: 'exports',
           headerName: 'Exports',
+          minWidth: 100,
         },
         {
-          cellRenderer: (props: any) => {
-            return (
-              <Typography component="span">
-                {parseNumber(props.value)}
-              </Typography>
-            )
-          },
+          cellRenderer: 'agFloatCellRenderer',
           field: 'production',
           headerName: 'Production',
+          minWidth: 120,
         },
         {
-          cellRenderer: (props: any) => {
-            return (
-              <Typography component="span">
-                {parseNumber(props.value)}
-              </Typography>
-            )
-          },
+          cellRenderer: 'agFloatCellRenderer',
           field: 'import_quotas',
           headerName: 'Import Quotas',
+          minWidth: 150,
         },
         {
-          cellRenderer: (props: any) => {
-            const value = dayjs(props.value).format('YYYY-MM-DD')
-            const finalValue = value !== 'Invalid Date' ? value : '-'
-            return <Typography component="span">{finalValue}</Typography>
-          },
+          cellRenderer: 'agDateCellRenderer',
           field: 'banned_date',
           headerName: 'Date ban commenced (DD/MM/YYYY)',
+          minWidth: 200,
         },
         {
           field: 'remarks',
           headerName: 'Remarks',
+          minWidth: 300,
         },
       ],
       defaultColDef: {
+        cellClass,
         flex: 1,
-        minWidth: 200,
+        minWidth: 140,
       },
     }
   }, [])

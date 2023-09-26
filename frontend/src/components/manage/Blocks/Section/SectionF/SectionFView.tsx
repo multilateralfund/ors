@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Box } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 
 import { getResults } from '@ors/helpers/Api/Api'
 
@@ -12,7 +12,9 @@ export default function SectionFView(props: {
 
   return (
     <Box>
-      <h2>Comments by bilateral/implementing agencies</h2>
+      <Typography component="h1" variant="h5">
+        Comments by bilateral/implementing agencies
+      </Typography>
     </Box>
   )
 }

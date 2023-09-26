@@ -1,10 +1,9 @@
 'use client'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   Box,
   Button,
-  ButtonProps,
   Divider,
   Grid,
   // InputAdornment,
@@ -15,15 +14,24 @@ import {
   Typography,
 } from '@mui/material'
 import cx from 'classnames'
-import { isUndefined, range, slice } from 'lodash'
+import {
+  filter,
+  groupBy,
+  includes,
+  isArray,
+  keys,
+  maxBy,
+  minBy,
+  orderBy,
+  slice,
+  union,
+} from 'lodash'
 import { useRouter } from 'next/navigation'
 
+import Field from '@ors/components/manage/Form/Field'
+import Listing from '@ors/components/manage/Form/Listing'
+import IconButton from '@ors/components/ui/IconButton/IconButton'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
-import api, { getResults } from '@ors/helpers/Api/Api'
-import useStore from '@ors/store'
-
-import Field from '../../Form/Field'
-import Listing from '../../Form/Listing'
 
 import { IoArrowDown } from '@react-icons/all-files/io5/IoArrowDown'
 import { IoArrowForward } from '@react-icons/all-files/io5/IoArrowForward'
@@ -31,35 +39,30 @@ import { IoArrowUp } from '@react-icons/all-files/io5/IoArrowUp'
 import { IoClose } from '@react-icons/all-files/io5/IoClose'
 // import { IoSearchOutline } from '@react-icons/all-files/io5/IoSearchOutline'
 
-interface SectionPanelProps {
-  curentSection: number
-  section: number
+interface SectionProps {
+  countries: any
+  curentSection?: number
+  filters: any
+  maxYear: any
+  minYear: any
+  reports: any
+  reportsByCountry: any
+  reportsByYear: any
+  section?: number
+  setFilters: any
+  showCountry?: boolean
+  showYear?: boolean
+  years: any
 }
 
-function IconButton({
-  active,
-  className,
-  ...rest
-}: ButtonProps & { active?: boolean }) {
-  const isActive = isUndefined(active) || !!active
+let timer: any
 
-  return (
-    <Button
-      className={cx(
-        'min-w-fit rounded-sm border border-solid border-mui-default-border p-[6px] hover:border-typography',
-        {
-          'bg-action-highlight text-typography-secondary': isActive,
-          'bg-action-highlight/10 text-typography-faded theme-dark:bg-action-highlight/20':
-            !isActive,
-        },
-        className,
-      )}
-      {...rest}
-    />
-  )
+const debounce = (func: () => void) => {
+  if (timer) clearTimeout(timer)
+  timer = setTimeout(func, 500)
 }
 
-function Item({ index, item }: any) {
+function Item({ index, item, showCountry = false, showYear = true }: any) {
   const router = useRouter()
   return (
     <ListItem
@@ -80,7 +83,8 @@ function Item({ index, item }: any) {
           {item.name}
         </Typography>
         <Typography className="text-right group-hover:text-primary">
-          {item.year}
+          {!!showYear && item.year}
+          {!!showCountry && item.country}
         </Typography>
       </div>
       <Divider className="mt-3 w-full" />
@@ -88,101 +92,101 @@ function Item({ index, item }: any) {
   )
 }
 
-function CountrySection() {
-  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 4 })
-  const [ordering, setOrdering] = useState('asc')
-  const [data, setData] = useState<Array<any>>([])
-  const [activeCountry, setActiveCountry] = useState<any>(null)
-  const [activeCountryPagination, setActiveCountryPagination] = useState({
-    page: 1,
-    rowsPerPage: 20,
-  })
-  const [activeCountryData, setActiveCountryData] = useState<any>()
-
-  const countriesOptions = useStore(
-    (state) => getResults(state.common.countries.data).results,
+function GeneralSection(props: SectionProps) {
+  const listing = useRef<any>()
+  const {
+    countries,
+    filters,
+    maxYear,
+    minYear,
+    reports,
+    setFilters,
+    showCountry,
+    showYear,
+  } = props
+  const [range, setRange] = useState([filters.range[0], filters.range[1]])
+  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 20 })
+  const [ordering, setOrdering] = useState<'asc' | 'desc'>(
+    showCountry ? 'asc' : showYear ? 'desc' : 'asc',
   )
 
-  const countries: any = useMemo(() => {
-    return slice(
-      getResults(countriesOptions).results,
-      (pagination.page - 1) * pagination.rowsPerPage,
-      pagination.page * pagination.rowsPerPage,
-    )
-  }, [pagination, countriesOptions])
-
-  const pages = useMemo(
-    () => Math.ceil(countriesOptions.length / pagination.rowsPerPage),
-    [countriesOptions, pagination],
+  const filteredReports = useMemo(
+    () =>
+      filter(reports, (report) => {
+        const includesCountry =
+          filters.country.length > 0
+            ? includes(filters.country, report.country)
+            : true
+        const includesYear =
+          filters.year.length > 0 ? includes(filters.year, report.year) : true
+        return (
+          includesCountry &&
+          includesYear &&
+          report.year >= filters.range[0] &&
+          report.year <= filters.range[1]
+        )
+      }),
+    [reports, filters],
   )
 
-  useEffect(() => {
-    async function fetchData() {
-      const data = []
-      for (const country of countries) {
-        data.push({
-          ...getResults(
-            await api(
-              'api/country-programme/reports/',
-              {
-                params: { country_id: country.id, limit: 6 },
-                withStoreCache: true,
-              },
-              false,
-            ),
-          ),
-          id: country.id,
-        })
-      }
-      setData(data)
-    }
-    fetchData()
-  }, [countries])
-
-  useEffect(() => {
-    async function fetchData() {
-      setActiveCountryData(
-        getResults(
-          await api(
-            'api/country-programme/reports/',
-            {
-              params: {
-                country_id: activeCountry.id,
-                limit: activeCountryPagination.rowsPerPage,
-                offset:
-                  (activeCountryPagination.page - 1) *
-                  activeCountryPagination.rowsPerPage,
-              },
-              withStoreCache: true,
-            },
-            false,
-          ),
+  const rows = useMemo(
+    () =>
+      slice(
+        orderBy(
+          filteredReports,
+          showCountry ? 'country' : showYear ? 'year' : 'name',
+          ordering,
         ),
-      )
-    }
-    if (activeCountry?.id) {
-      fetchData()
-    }
-  }, [activeCountry, activeCountryPagination])
+        (pagination.page - 1) * pagination.rowsPerPage,
+        pagination.page * pagination.rowsPerPage,
+      ),
+    [filteredReports, pagination, ordering, showCountry, showYear],
+  )
 
   return (
     <>
       <div className="mb-4 flex justify-between gap-4">
-        <Field
-          FieldProps={{ className: 'mb-0 w-full max-w-xs' }}
-          Input={{ placeholder: 'Select country' }}
-          getOptionLabel={(option: any) => option.name}
-          options={countriesOptions}
-          value={activeCountry}
-          widget="autocomplete"
-          onChange={(_: any, value: any) => {
-            if (!!value) {
-              setActiveCountry(value)
-            } else {
-              setActiveCountry(null)
-            }
-          }}
-        />
+        <div className="flex flex-1 items-center gap-4">
+          <Field
+            FieldProps={{ className: 'mb-0 w-full max-w-xs' }}
+            options={countries}
+            value={null}
+            widget="autocomplete"
+            Input={{
+              placeholder: 'Select country...',
+            }}
+            onChange={(_: any, value: any) => {
+              if (!!value) {
+                setFilters((filters: any) => {
+                  const country = filters.country || []
+                  return { ...filters, country: union(country, [value.id]) }
+                })
+                if (document.activeElement) {
+                  // @ts-ignore
+                  document.activeElement.blur()
+                }
+              }
+            }}
+          />
+          <Field
+            FieldProps={{ className: 'mb-0 px-4' }}
+            label="Date"
+            max={maxYear}
+            min={minYear}
+            value={range}
+            widget="range"
+            onChange={(event: Event, value: number | number[]) => {
+              if (isArray(value) && value[1] - value[0] >= 1) {
+                setRange(value)
+                debounce(() => {
+                  setFilters((filters: any) => {
+                    return { ...filters, range: value, year: [] }
+                  })
+                })
+              }
+            }}
+          />
+        </div>
         <div className="flex items-center gap-2">
           <Typography className="text-typography-secondary" component="span">
             Ordering
@@ -204,190 +208,148 @@ function CountrySection() {
           </IconButton>
         </div>
       </div>
-      {!activeCountry && (
-        <>
-          <Grid className="mb-6" spacing={4} container>
-            {countries.map((country: any, index: number) => (
-              <Grid key={country.iso3} lg={6} xs={12} item>
-                <Typography
-                  className="mb-4 inline-flex cursor-pointer items-center gap-2 px-4 font-normal"
-                  component="p"
-                  variant="h6"
-                  onClick={() => {
-                    setActiveCountry(country)
-                  }}
-                >
-                  {country.name}
-                  <IoArrowForward size={20} />
-                </Typography>
-                <Listing
-                  className="mb-3"
-                  Item={Item}
-                  enablePagination={false}
-                  loaded={data[index]?.loaded}
-                  loading={!data[index] || data[index].id !== country.id}
-                  rowCount={data[index]?.count || 0}
-                  rowData={data[index]?.results || []}
-                />
-                {!!data[index]?.count && data[index].count > 6 && (
-                  <Button
-                    variant="text"
-                    onClick={() => {
-                      setActiveCountry(country)
-                      setActiveCountryPagination((pagination) => ({
-                        ...pagination,
-                        page: 1,
-                      }))
-                    }}
-                    disableRipple
-                  >
-                    View more...
-                  </Button>
-                )}
-              </Grid>
-            ))}
-          </Grid>
-          <Pagination
-            count={pages}
-            onPaginationChanged={(page) => {
-              setPagination({ ...pagination, page: page || 1 })
-            }}
-          />
-        </>
-      )}
-      {!!activeCountry && (
-        <>
+      <div className="filters mb-4 flex flex-wrap gap-4">
+        {filters.country.map((country: string) => (
           <Typography
-            className="mb-4 inline-flex items-center gap-2 bg-gray-50 px-4 font-normal theme-dark:bg-gray-700/20"
+            key={country}
+            className="inline-flex items-center gap-2 rounded bg-gray-100 px-4 font-normal theme-dark:bg-gray-700/20"
             component="p"
             variant="h6"
           >
-            {activeCountry.name}
+            {country}
             <IoClose
               className="cursor-pointer"
               size={20}
               onClick={() => {
-                setActiveCountry(null)
-                setActiveCountryPagination((pagination) => ({
+                setFilters((filters: any) => {
+                  const values = filters.country || []
+                  return {
+                    ...filters,
+                    country: filter(values, (value) => value !== country),
+                  }
+                })
+                listing.current.setPagination((pagination: any) => ({
                   ...pagination,
                   page: 1,
                 }))
+                setPagination((pagination) => ({ ...pagination, page: 1 }))
               }}
             />
           </Typography>
-          <Listing
-            Item={Item}
-            loaded={activeCountryData?.loaded}
-            // loading={!data[index] || data[index].id !== country.id}
-            loading={false}
-            rowCount={activeCountryData?.count}
-            rowData={activeCountryData?.results}
-            onPaginationChanged={(page) => {
-              setActiveCountryPagination((pagination) => ({
-                ...pagination,
-                page: page || 1,
-              }))
-            }}
-          />
-        </>
-      )}
+        ))}
+        {filters.year.map((year: string) => (
+          <Typography
+            key={year}
+            className="inline-flex items-center gap-2 bg-gray-50 px-4 font-normal theme-dark:bg-gray-700/20"
+            component="p"
+            variant="h6"
+          >
+            {year}
+            <IoClose
+              className="cursor-pointer"
+              size={20}
+              onClick={() => {
+                setFilters((filters: any) => {
+                  const values = filters.year || []
+                  return {
+                    ...filters,
+                    year: filter(values, (value) => value !== year),
+                  }
+                })
+                listing.current.setPagination((pagination: any) => ({
+                  ...pagination,
+                  page: 1,
+                }))
+                setPagination((pagination) => ({ ...pagination, page: 1 }))
+              }}
+            />
+          </Typography>
+        ))}
+        {(filters.range[0] > minYear || filters.range[1] < maxYear) && (
+          <Typography
+            className="inline-flex items-center gap-2 bg-gray-50 px-4 font-normal theme-dark:bg-gray-700/20"
+            component="p"
+            variant="h6"
+          >
+            {filters.range[0]} - {filters.range[1]}
+            <IoClose
+              className="cursor-pointer"
+              size={20}
+              onClick={() => {
+                setFilters((filters: any) => {
+                  setRange([minYear, maxYear])
+                  return {
+                    ...filters,
+                    range: [minYear, maxYear],
+                    year: [],
+                  }
+                })
+                listing.current.setPagination((pagination: any) => ({
+                  ...pagination,
+                  page: 1,
+                }))
+                setPagination((pagination) => ({ ...pagination, page: 1 }))
+              }}
+            />
+          </Typography>
+        )}
+      </div>
+      <Listing
+        className="mb-3"
+        Item={Item}
+        ItemProps={{ showCountry, showYear }}
+        enableLoader={false}
+        loaded={true}
+        loading={false}
+        paginationPageSize={20}
+        ref={listing}
+        rowCount={filteredReports.length}
+        rowData={rows}
+        onPaginationChanged={(page) =>
+          setPagination((pagination) => ({ ...pagination, page }))
+        }
+      />
     </>
   )
 }
 
-function YearSection() {
-  const [yearsOptions] = useState(
-    range(new Date().getFullYear(), 1980).map((year) => ({
-      id: year,
-      label: year,
-    })),
-  )
+function CountrySection(props: SectionProps) {
+  const { countries, reportsByCountry, setFilters } = props
   const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 4 })
-  const [ordering, setOrdering] = useState('asc')
-  const [data, setData] = useState<Array<any>>([])
-  const [activeYear, setActiveYear] = useState<any>(null)
-  const [activeYearPagination, setActiveYearPagination] = useState({
-    page: 1,
-    rowsPerPage: 20,
-  })
-  const [activeYearData, setActiveYearData] = useState<any>()
+  const [ordering, setOrdering] = useState<'asc' | 'desc'>('asc')
 
-  const years: any = useMemo(() => {
-    return slice(
-      getResults(yearsOptions).results,
-      (pagination.page - 1) * pagination.rowsPerPage,
-      pagination.page * pagination.rowsPerPage,
-    )
-  }, [pagination, yearsOptions])
+  const rows = useMemo(
+    () =>
+      slice(
+        orderBy(countries, 'id', ordering),
+        (pagination.page - 1) * pagination.rowsPerPage,
+        pagination.page * pagination.rowsPerPage,
+      ),
+    [countries, pagination, ordering],
+  )
 
   const pages = useMemo(
-    () => Math.ceil(yearsOptions.length / pagination.rowsPerPage),
-    [yearsOptions, pagination],
+    () => Math.ceil(countries.length / pagination.rowsPerPage),
+    [countries, pagination],
   )
-
-  useEffect(() => {
-    async function fetchData() {
-      const data = []
-      for (const year of years) {
-        data.push({
-          ...getResults(
-            await api(
-              'api/country-programme/reports/',
-              {
-                params: { limit: 6, year: year.id },
-                withStoreCache: true,
-              },
-              false,
-            ),
-          ),
-          year_id: year.id,
-        })
-      }
-      setData(data)
-    }
-    fetchData()
-  }, [years])
-
-  useEffect(() => {
-    async function fetchData() {
-      setActiveYearData(
-        getResults(
-          await api(
-            'api/country-programme/reports/',
-            {
-              params: {
-                limit: activeYearPagination.rowsPerPage,
-                offset:
-                  (activeYearPagination.page - 1) *
-                  activeYearPagination.rowsPerPage,
-                year: activeYear.id,
-              },
-              withStoreCache: true,
-            },
-            false,
-          ),
-        ),
-      )
-    }
-    if (activeYear?.id) {
-      fetchData()
-    }
-  }, [activeYear, activeYearPagination])
 
   return (
     <>
       <div className="mb-4 flex justify-between gap-4">
         <Field
           FieldProps={{ className: 'mb-0 w-full max-w-xs' }}
-          Input={{ placeholder: 'Select year' }}
-          options={yearsOptions}
-          value={activeYear}
+          options={countries}
+          value={null}
           widget="autocomplete"
+          Input={{
+            placeholder: 'Select country...',
+          }}
           onChange={(_: any, value: any) => {
             if (!!value) {
-              setActiveYear(value)
-            } else {
-              setActiveYear(null)
+              setFilters((filters: any) => {
+                const country = filters.country || []
+                return { ...filters, country: union(country, [value.id]) }
+              })
             }
           }}
         />
@@ -402,6 +364,7 @@ function YearSection() {
               } else {
                 setOrdering('asc')
               }
+              setPagination({ ...pagination, page: 1 })
             }}
           >
             {ordering === 'asc' ? (
@@ -412,93 +375,187 @@ function YearSection() {
           </IconButton>
         </div>
       </div>
-      {!activeYear && (
-        <>
-          <Grid className="mb-6" spacing={4} container>
-            {years.map((year: any, index: number) => (
-              <Grid key={year.id} lg={6} xs={12} item>
-                <Typography
-                  className="mb-4 inline-flex cursor-pointer items-center gap-2 px-4 font-normal"
-                  component="p"
-                  variant="h6"
-                  onClick={() => {
-                    setActiveYear(year)
-                  }}
-                >
-                  {year.label}
-                  <IoArrowForward size={20} />
-                </Typography>
-                <Listing
-                  className="mb-3"
-                  Item={Item}
-                  enablePagination={false}
-                  loaded={data[index]?.loaded}
-                  loading={!data[index] || data[index].year_id !== year.id}
-                  rowCount={data[index]?.count || 0}
-                  rowData={data[index]?.results || []}
-                />
-                {!!data[index]?.count && data[index].count > 6 && (
-                  <Button
-                    variant="text"
-                    onClick={() => {
-                      setActiveYear(year)
-                      setActiveYearPagination((pagination) => ({
-                        ...pagination,
-                        page: 1,
-                      }))
-                    }}
-                    disableRipple
-                  >
-                    View more...
-                  </Button>
-                )}
-              </Grid>
-            ))}
-          </Grid>
-          <Pagination
-            count={pages}
-            onPaginationChanged={(page) => {
-              setPagination({ ...pagination, page: page || 1 })
-            }}
-          />
-        </>
-      )}
-      {!!activeYear && (
-        <>
-          <Typography
-            className="mb-4 inline-flex items-center gap-2 bg-gray-50 px-4 font-normal theme-dark:bg-gray-700/20"
-            component="p"
-            variant="h6"
-          >
-            {activeYear.label}
-            <IoClose
-              className="cursor-pointer"
-              size={20}
+      <Grid className="mb-6" spacing={4} container>
+        {rows.map((row: any) => (
+          <Grid key={row.id} lg={6} xs={12} item>
+            <Typography
+              className="mb-4 inline-flex cursor-pointer items-center gap-2 px-4 font-normal"
+              component="p"
+              variant="h6"
               onClick={() => {
-                setActiveYear(null)
-                setActiveYearPagination((pagination) => ({
-                  ...pagination,
-                  page: 1,
-                }))
+                setFilters((filters: any) => {
+                  const country = filters.country || []
+                  return { ...filters, country: union(country, [row.id]) }
+                })
               }}
+            >
+              {row.label}
+              <IoArrowForward size={20} />
+            </Typography>
+            <Listing
+              className="mb-3"
+              Item={Item}
+              enableLoader={false}
+              enablePagination={false}
+              loaded={true}
+              loading={false}
+              rowCount={reportsByCountry[row.id].length}
+              rowData={slice(reportsByCountry[row.id], 0, 5)}
             />
+            {reportsByCountry[row.id].length > 6 && (
+              <Button
+                variant="text"
+                onClick={() => {
+                  setFilters((filters: any) => {
+                    const country = filters.country || []
+                    return { ...filters, country: union(country, [row.id]) }
+                  })
+                }}
+              >
+                View more...
+              </Button>
+            )}
+          </Grid>
+        ))}
+      </Grid>
+      <Pagination
+        count={pages}
+        page={pagination.page}
+        siblingCount={1}
+        onPaginationChanged={(page) => {
+          setPagination({ ...pagination, page: page || 1 })
+        }}
+      />
+    </>
+  )
+}
+
+function YearSection(props: SectionProps) {
+  const { filters, maxYear, minYear, reportsByYear, setFilters, years } = props
+  const [range, setRange] = useState([filters.range[0], filters.range[1]])
+  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 4 })
+  const [ordering, setOrdering] = useState<'asc' | 'desc'>('desc')
+
+  const rows = useMemo(
+    () =>
+      slice(
+        orderBy(years, 'id', ordering),
+        (pagination.page - 1) * pagination.rowsPerPage,
+        pagination.page * pagination.rowsPerPage,
+      ),
+    [years, pagination, ordering],
+  )
+
+  const pages = useMemo(
+    () => Math.ceil(years.length / pagination.rowsPerPage),
+    [years, pagination],
+  )
+
+  useEffect(() => {
+    if (filters.range[0] !== range[0] || filters.range[1] !== range[1]) {
+      setRange(filters.range)
+    }
+    /* eslint-disable-next-line */
+  }, [filters.range])
+
+  return (
+    <>
+      <div className="mb-6 flex justify-between gap-4">
+        <Field
+          FieldProps={{ className: 'mb-0 px-4' }}
+          label="Date"
+          max={maxYear}
+          min={minYear}
+          value={range}
+          widget="range"
+          onChange={(event: Event, value: number | number[]) => {
+            if (isArray(value) && value[1] - value[0] >= 1) {
+              setRange(value)
+              debounce(() => {
+                setFilters((filters: any) => {
+                  return { ...filters, range: value, year: [] }
+                })
+              })
+            }
+          }}
+        />
+        <div className="flex items-center gap-2">
+          <Typography className="text-typography-secondary" component="span">
+            Ordering
           </Typography>
-          <Listing
-            Item={Item}
-            loaded={activeYearData?.loaded}
-            // loading={!data[index] || data[index].id !== country.id}
-            loading={false}
-            rowCount={activeYearData?.count}
-            rowData={activeYearData?.results}
-            onPaginationChanged={(page) => {
-              setActiveYearPagination((pagination) => ({
+          <IconButton
+            onClick={() => {
+              if (ordering === 'asc') {
+                setOrdering('desc')
+              } else {
+                setOrdering('asc')
+              }
+              setPagination((pagination) => ({
                 ...pagination,
-                page: page || 1,
+                page: 1,
               }))
             }}
-          />
-        </>
-      )}
+          >
+            {ordering === 'asc' ? (
+              <IoArrowUp size="1rem" />
+            ) : (
+              <IoArrowDown size="1rem" />
+            )}
+          </IconButton>
+        </div>
+      </div>
+      <Grid className="mb-6" spacing={4} container>
+        {rows.map((row: any) => (
+          <Grid key={row.id} lg={6} xs={12} item>
+            <Typography
+              className="mb-4 inline-flex cursor-pointer items-center gap-2 px-4 font-normal"
+              component="p"
+              variant="h6"
+              onClick={() => {
+                setFilters((filters: any) => {
+                  const year = filters.year || []
+                  return { ...filters, year: union(year, [row.id]) }
+                })
+              }}
+            >
+              {row.label}
+              <IoArrowForward size={20} />
+            </Typography>
+            <Listing
+              className="mb-3"
+              Item={Item}
+              ItemProps={{ showCountry: true, showYear: false }}
+              enableLoader={false}
+              enablePagination={false}
+              loaded={true}
+              loading={false}
+              rowCount={reportsByYear[row.id].length}
+              rowData={slice(reportsByYear[row.id], 0, 5)}
+            />
+            {reportsByYear[row.id].length > 6 && (
+              <Button
+                variant="text"
+                onClick={() => {
+                  setFilters((filters: any) => {
+                    const year = filters.year || []
+                    return { ...filters, year: union(year, [row.id]) }
+                  })
+                }}
+              >
+                View more...
+              </Button>
+            )}
+          </Grid>
+        ))}
+      </Grid>
+      <Pagination
+        count={pages}
+        page={pagination.page}
+        siblingCount={1}
+        onPaginationChanged={(page) => {
+          setPagination({ ...pagination, page: page || 1 })
+        }}
+      />
     </>
   )
 }
@@ -518,9 +575,34 @@ export const sections = [
   },
 ]
 
-function SectionPanel(props: SectionPanelProps) {
-  const { curentSection, section, ...rest } = props
-  const Section: React.FC<any> = sections[section].component
+function SectionPanel(props: SectionProps) {
+  const {
+    countries,
+    curentSection,
+    filters,
+    maxYear,
+    minYear,
+    reports,
+    reportsByCountry,
+    reportsByYear,
+    section = 0,
+    setFilters,
+    years,
+    ...rest
+  } = props
+
+  const hasFilters = useMemo(
+    () =>
+      filters.country.length > 0 ||
+      filters.year.length > 0 ||
+      filters.range[0] > minYear ||
+      filters.range[1] < maxYear,
+    [filters, minYear, maxYear],
+  )
+
+  const Section: React.FC<any> = !hasFilters
+    ? sections[section].component
+    : GeneralSection
 
   return (
     <div
@@ -530,22 +612,75 @@ function SectionPanel(props: SectionPanelProps) {
       role="tabpanel"
       {...rest}
     >
-      <Section />
+      <Section
+        countries={countries}
+        filters={filters}
+        maxYear={maxYear}
+        minYear={minYear}
+        reports={reports}
+        reportsByCountry={reportsByCountry}
+        reportsByYear={reportsByYear}
+        setFilters={setFilters}
+        showCountry={sections[section].id === 'section-year'}
+        showYear={sections[section].id === 'section-country'}
+        years={years}
+      />
     </div>
   )
 }
 
-export default function CPListing() {
+export default function CPListing(props: { reports?: any }) {
+  const { reports } = props
   const [activeSection, setActiveSection] = useState(0)
+  const reportsByCountry = useMemo(
+    () => groupBy(orderBy(reports, 'year', 'desc'), 'country'),
+    [reports],
+  )
+  const reportsByYear = useMemo(
+    () => groupBy(orderBy(reports, 'country', 'asc'), 'year'),
+    [reports],
+  )
+  const countries = useMemo(
+    () =>
+      orderBy(
+        keys(reportsByCountry).map((country) => ({
+          id: country,
+          label: country,
+        })),
+        'id',
+        'asc',
+      ),
+    [reportsByCountry],
+  )
+  const years = useMemo(
+    () =>
+      orderBy(
+        keys(reportsByYear).map((year) => ({
+          id: parseInt(year),
+          label: parseInt(year),
+        })),
+        'id',
+        'desc',
+      ),
+    [reportsByYear],
+  )
+  const minYear = useMemo(() => minBy(years, 'id')?.id, [years])
+  const maxYear = useMemo(() => maxBy(years, 'id')?.id, [years])
+  const [filters, setFilters] = useState({
+    country: [],
+    range: [minYear, maxYear],
+    year: [],
+  })
 
   return (
     <Box>
       <Tabs
-        className="mb-4"
+        className="mb-6"
         aria-label="country programme listing"
         value={activeSection}
         onChange={(event: React.SyntheticEvent, newSection: number) => {
           setActiveSection(newSection)
+          setFilters({ country: [], range: [minYear, maxYear], year: [] })
         }}
       >
         {sections.map((section) => (
@@ -560,8 +695,17 @@ export default function CPListing() {
       {sections.map((section, index) => (
         <SectionPanel
           key={section.id}
+          countries={countries}
           curentSection={activeSection}
+          filters={filters}
+          maxYear={maxYear}
+          minYear={minYear}
+          reports={reports}
+          reportsByCountry={reportsByCountry}
+          reportsByYear={reportsByYear}
           section={index}
+          setFilters={setFilters}
+          years={years}
         />
       ))}
     </Box>

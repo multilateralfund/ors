@@ -5,6 +5,19 @@ import { useMemo } from 'react'
 
 import { GridOptions } from 'ag-grid-community'
 
+function cellClass(props: any) {
+  if (props.data.isGroup) {
+    return 'ag-row-group'
+  }
+  if (props.data.isSubTotal) {
+    return 'ag-row-sub-total'
+  }
+  if (props.data.isTotal) {
+    return 'ag-row-total'
+  }
+  return ''
+}
+
 function useGridOptions() {
   const gridOptions: GridOptions = useMemo(() => {
     return {
@@ -15,8 +28,7 @@ function useGridOptions() {
         },
         {
           field: 'previous_year_price',
-          headerName:
-            'Previous year price (prefilled - online submission, if available)',
+          headerName: 'Previous year price',
         },
         {
           field: 'current_year_price',
@@ -28,6 +40,7 @@ function useGridOptions() {
         },
       ],
       defaultColDef: {
+        cellClass,
         flex: 1,
         minWidth: 200,
       },

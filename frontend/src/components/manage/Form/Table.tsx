@@ -14,7 +14,7 @@ import { ColDef } from 'ag-grid-community'
 import { AgGridReact, AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
 import dayjs from 'dayjs'
-import { times } from 'lodash'
+import { find, isNull, sum, times } from 'lodash'
 
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import CellAutocompleteWidget from '@ors/components/manage/Widgets/CellAutocompleteWidget'
@@ -28,6 +28,11 @@ import useStore from '@ors/store'
 import { FaSort } from '@react-icons/all-files/fa/FaSort'
 import { FaSortDown } from '@react-icons/all-files/fa/FaSortDown'
 import { FaSortUp } from '@react-icons/all-files/fa/FaSortUp'
+
+function parseNumber(number: any) {
+  const parsedNumber = parseFloat(number)
+  return isNull(number) || isNaN(number) ? null : parsedNumber.toFixed(2)
+}
 
 function AgHeaderComponent(props: any) {
   const { column, displayName, enableSorting } = props
@@ -98,14 +103,53 @@ function AgTextCellRenderer(props: any) {
   )
 }
 
-function AgDateCellRenderer(props: any) {
+function AgFloatCellRenderer(props: any) {
+  const { maxWidth } = props.colDef
+  const value = parseNumber(props.value)
   return (
-    !!props.value && (
-      <Typography component="span">
-        {dayjs(props.value).format('DD/MM/YYYY')}
-      </Typography>
-    )
+    <>
+      <span
+        className="ag-cell-custom-value"
+        style={
+          maxWidth && {
+            maxWidth: `calc(${maxWidth}px - 2 * (var(--ag-cell-horizontal-padding) - 1px))`,
+          }
+        }
+      >
+        {props.data.isSkeleton ? (
+          <Typography component="span">
+            <Skeleton className="inline-block w-full" />
+          </Typography>
+        ) : (
+          <Typography component="span">{value}</Typography>
+        )}
+      </span>
+    </>
   )
+}
+
+function AgDateCellRenderer(props: any) {
+  const value = dayjs(props.value).format('YYYY-MM-DD')
+  const finalValue = value !== 'Invalid Date' ? value : null
+  return !!props.value && <Typography component="span">{finalValue}</Typography>
+}
+
+function AgUsageCellRenderer(props: any) {
+  let value = null
+  const usageId = props.colDef.id
+  const usages = props.data.record_usages
+  if (props.data.isGroup) {
+  } else if (props.data.isSubTotal) {
+  } else if (props.data.isTotal) {
+  } else if (usageId === 'total') {
+    value = parseNumber(
+      sum(usages.map((usage: any) => parseFloat(usage.quantity))),
+    )
+  } else {
+    const usage = find(usages, (item) => item.usage_id === usageId)
+    value = parseNumber(usage?.quantity)
+  }
+  return <Typography component="span">{value}</Typography>
 }
 
 export default function Table(props: AgGridReactProps) {
@@ -263,10 +307,12 @@ export default function Table(props: AgGridReactProps) {
           agColumnHeaderGroup: AgHeaderGroupComponent,
           agDateCellEditor: CellDateWidget,
           agDateCellRenderer: AgDateCellRenderer,
+          agFloatCellRenderer: AgFloatCellRenderer,
           agNumberCellEditor: CellNumberWidget,
           agSelectCellEditor: CellAutocompleteWidget,
           agTextCellEditor: CellTextareaWidget,
           agTextCellRenderer: AgTextCellRenderer,
+          agUsageCellRenderer: AgUsageCellRenderer,
           ...components,
         }}
         noRowsOverlayComponent={() => {

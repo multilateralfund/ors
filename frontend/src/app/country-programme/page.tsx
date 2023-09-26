@@ -8,12 +8,15 @@ import CPListing from '@ors/components/manage/Blocks/CountryProgramme/CPListing'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import Link from '@ors/components/ui/Link/Link'
+import api from '@ors/helpers/Api/Api'
 
 export const metadata: Metadata = {
   title: 'Country programme',
 }
 
 export default async function CountryProgramme() {
+  const reports = await api('api/country-programme/reports/', {}, false)
+
   return (
     <PageWrapper>
       <HeaderTitle>
@@ -23,7 +26,7 @@ export default async function CountryProgramme() {
       </HeaderTitle>
       <Grid className="flex-col-reverse md:flex-row" spacing={2} container>
         <Grid lg={9} md={8} xs={12} item>
-          <CPListing />
+          <CPListing reports={reports} />
         </Grid>
         <Grid lg={3} md={4} xs={12} item>
           <Box>

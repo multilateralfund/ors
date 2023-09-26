@@ -1,6 +1,7 @@
 import AutocompleteWidget from '@ors/components/manage/Widgets/AutocompleteWidget'
 import ChipToggleWidget from '@ors/components/manage/Widgets/ChipToggleWidget'
 import PasswordWidget from '@ors/components/manage/Widgets/PasswordWidget'
+import RangeWidget from '@ors/components/manage/Widgets/RangeWidget'
 import TextWidget from '@ors/components/manage/Widgets/TextWidget'
 import TextareaWidget from '@ors/components/manage/Widgets/TextareaWidget'
 
@@ -14,6 +15,7 @@ export interface ByType {
 export interface ByWidget {
   autocomplete?: typeof AutocompleteWidget
   chipToggle?: typeof ChipToggleWidget
+  range?: typeof RangeWidget
 }
 
 export interface WidgetsMapping {
@@ -36,5 +38,6 @@ export const widgetsMapping = {
   widget: {
     autocomplete: AutocompleteWidget,
     chipToggle: ChipToggleWidget,
+    range: RangeWidget,
   },
 }
