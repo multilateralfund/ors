@@ -7,11 +7,12 @@ import React from 'react'
 
 import { dir } from 'i18next'
 import { Roboto } from 'next/font/google'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { cookies as nextCookies, headers as nextHeaders } from 'next/headers'
 import Script from 'next/script'
 
 import View from '@ors/components/theme/Views/View'
-import config from '@ors/config/base'
+// import config from '@ors/config/base'
 import api from '@ors/helpers/Api/Api'
 import { getInitialSliceData } from '@ors/helpers/Store/Store'
 import { getCurrentView } from '@ors/helpers/View/View'
@@ -82,7 +83,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const cookies = nextCookies()
+  // const cookies = nextCookies()
   const headers = nextHeaders()
   let user
   let reports, projects, common
@@ -90,8 +91,8 @@ export default async function RootLayout({
   // const lang = (headers.get('x-next-lang') ||
   //   config.i18n.defaultLanguage) as Language
   const lang = 'en'
-  const theme = cookies.get(config.cookies.theme) || { value: null }
-  // const theme = { value: 'light' }
+  // const theme = cookies.get(config.cookies.theme) || { value: null }
+  const theme = { value: 'light' }
   const currentView = getCurrentView(pathname || '')
 
   if (pathname !== '/econnrefused') {
