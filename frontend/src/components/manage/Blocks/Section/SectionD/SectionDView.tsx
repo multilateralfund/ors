@@ -1,5 +1,6 @@
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 
+import { union } from 'lodash'
 import dynamic from 'next/dynamic'
 
 import { getResults } from '@ors/helpers/Api/Api'
@@ -13,12 +14,15 @@ const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
 export default function SectionDView(props: {
   report: Record<string, Array<any>>
 }) {
-  const grid = useRef<any>()
   const { report } = props
+  const grid = useRef<any>()
+  const gridOptions = useGridOptions()
 
   const { results } = getResults(report.section_d)
 
-  const gridOptions = useGridOptions()
+  const rows = useMemo(() => {
+    return union(results, [{ chemical_name: 'TOTAL', isTotal: true }])
+  }, [results])
 
   return (
     <>
@@ -30,10 +34,15 @@ export default function SectionDView(props: {
         enablePagination={false}
         gridRef={grid}
         noRowsOverlayComponent={null}
-        rowData={results}
+        rowData={rows}
         suppressCellFocus={false}
         suppressNoRowsOverlay={true}
         suppressRowHoverHighlight={false}
+        rowClassRules={{
+          'ag-row-group': (props) => props.data.isGroup,
+          'ag-row-sub-total': (props) => props.data.isSubTotal,
+          'ag-row-total': (props) => props.data.isTotal,
+        }}
         withSeparators
       />
     </>

@@ -11,7 +11,7 @@ const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
   ssr: false,
 })
 
-export default function SectionBView(props: {
+export default function SectionAView(props: {
   report: Record<string, Array<any>>
 }) {
   const { report } = props
@@ -25,8 +25,9 @@ export default function SectionBView(props: {
     results.map((item) => ({
       ...item,
       annex_group: item.annex_group || 'Other',
+      group: item.annex_group || 'Other',
     })),
-    'annex_group',
+    'group',
   )
 
   const rows = useMemo(() => {
@@ -36,7 +37,7 @@ export default function SectionBView(props: {
         data,
         [{ chemical_name: annex_group, isGroup: true }],
         resultsByGroup[annex_group],
-        [{ chemical_name: 'Sub-total', isSubTotal: true }],
+        [{ chemical_name: 'Sub-total', group: annex_group, isSubTotal: true }],
       )
     })
     if (data.length > 0) {
@@ -59,6 +60,11 @@ export default function SectionBView(props: {
         suppressCellFocus={false}
         suppressNoRowsOverlay={true}
         suppressRowHoverHighlight={false}
+        rowClassRules={{
+          'ag-row-group': (props) => props.data.isGroup,
+          'ag-row-sub-total': (props) => props.data.isSubTotal,
+          'ag-row-total': (props) => props.data.isTotal,
+        }}
         withSeparators
       />
     </>

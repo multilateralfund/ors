@@ -14,8 +14,9 @@ const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
 export default function SectionCView(props: {
   report: Record<string, Array<any>>
 }) {
-  const grid = useRef<any>()
   const { report } = props
+  const grid = useRef<any>()
+  const gridOptions = useGridOptions()
 
   const { results } = getResults(report.section_c)
 
@@ -24,8 +25,9 @@ export default function SectionCView(props: {
     results.map((item) => ({
       ...item,
       annex_group: item.annex_group || 'Other',
+      group: item.annex_group || 'Other',
     })),
-    'annex_group',
+    'group',
   )
 
   const rows = useMemo(() => {
@@ -35,7 +37,7 @@ export default function SectionCView(props: {
         data,
         [{ chemical_name: annex_group, isGroup: true }],
         resultsByGroup[annex_group],
-        [{ chemical_name: 'Sub-total', isSubTotal: true }],
+        [{ chemical_name: 'Sub-total', group: annex_group, isSubTotal: true }],
       )
     })
     if (data.length > 0) {
@@ -43,8 +45,6 @@ export default function SectionCView(props: {
     }
     return data
   }, [groups, resultsByGroup])
-
-  const gridOptions = useGridOptions()
 
   return (
     <>
@@ -60,6 +60,11 @@ export default function SectionCView(props: {
         suppressCellFocus={false}
         suppressNoRowsOverlay={true}
         suppressRowHoverHighlight={false}
+        rowClassRules={{
+          'ag-row-group': (props) => props.data.isGroup,
+          'ag-row-sub-total': (props) => props.data.isSubTotal,
+          'ag-row-total': (props) => props.data.isTotal,
+        }}
         withSeparators
       />
     </>

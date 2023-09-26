@@ -28,18 +28,21 @@ function useGridOptions() {
           children: [
             {
               id: 1,
+              aggFunc: 'sumUsages',
               cellRenderer: 'agUsageCellRenderer',
               headerName: 'Aerosol',
               minWidth: 100,
             },
             {
               id: 2,
+              aggFunc: 'sumUsages',
               cellRenderer: 'agUsageCellRenderer',
               headerName: 'Foam',
               minWidth: 100,
             },
             {
               id: 3,
+              aggFunc: 'sumUsages',
               cellRenderer: 'agUsageCellRenderer',
               headerName: 'Fire fighting',
               minWidth: 130,
@@ -52,18 +55,21 @@ function useGridOptions() {
                   children: [
                     {
                       id: 7,
+                      aggFunc: 'sumUsages',
                       cellRenderer: 'agUsageCellRenderer',
                       headerName: 'AC',
                       minWidth: 80,
                     },
                     {
                       id: 6,
+                      aggFunc: 'sumUsages',
                       cellRenderer: 'agUsageCellRenderer',
                       headerName: 'Other',
                       minWidth: 80,
                     },
                     {
                       id: 8,
+                      aggFunc: 'sumUsages',
                       cellRenderer: 'agUsageCellRenderer',
                       headerName: 'Total',
                       minWidth: 80,
@@ -77,6 +83,7 @@ function useGridOptions() {
                 },
                 {
                   id: 9,
+                  aggFunc: 'sumUsages',
                   cellRenderer: 'agUsageCellRenderer',
                   headerName: 'Servicing',
                   minWidth: 110,
@@ -90,18 +97,21 @@ function useGridOptions() {
             },
             {
               id: 10,
+              aggFunc: 'sumUsages',
               cellRenderer: 'agUsageCellRenderer',
               headerName: 'Solvent',
               minWidth: 120,
             },
             {
               id: 12,
+              aggFunc: 'sumUsages',
               cellRenderer: 'agUsageCellRenderer',
               headerName: 'Other',
               minWidth: 80,
             },
             {
               id: 'total',
+              aggFunc: 'sumUsages',
               cellRenderer: 'agUsageCellRenderer',
               headerName: 'TOTAL',
               minWidth: 140,
@@ -114,30 +124,35 @@ function useGridOptions() {
           marryChildren: true,
         },
         {
+          aggFunc: 'sum',
           cellRenderer: 'agFloatCellRenderer',
           field: 'imports',
           headerName: 'Imports',
           minWidth: 100,
         },
         {
+          aggFunc: 'sum',
           cellRenderer: 'agFloatCellRenderer',
           field: 'exports',
           headerName: 'Exports',
           minWidth: 100,
         },
         {
+          aggFunc: 'sum',
           cellRenderer: 'agFloatCellRenderer',
           field: 'production',
           headerName: 'Production',
           minWidth: 120,
         },
         {
+          aggFunc: 'sum',
           cellRenderer: 'agFloatCellRenderer',
           field: 'manufacturing_blends',
           headerName: 'Manufacturing of Blends',
           minWidth: 220,
         },
         {
+          aggFunc: 'sum',
           cellRenderer: 'agFloatCellRenderer',
           field: 'import_quotas',
           headerName: 'Import Quotas',

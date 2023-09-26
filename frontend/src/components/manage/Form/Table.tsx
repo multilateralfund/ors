@@ -14,7 +14,7 @@ import { ColDef } from 'ag-grid-community'
 import { AgGridReact, AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
 import dayjs from 'dayjs'
-import { find, isNull, sum, times } from 'lodash'
+import { find, get, isNull, sum, times } from 'lodash'
 
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import CellAutocompleteWidget from '@ors/components/manage/Widgets/CellAutocompleteWidget'
@@ -23,15 +23,58 @@ import CellNumberWidget from '@ors/components/manage/Widgets/CellNumberWidget'
 import CellTextareaWidget from '@ors/components/manage/Widgets/CellTextareaWidget'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { KEY_BACKSPACE, KEY_ENTER } from '@ors/constants'
+import { parseNumber } from '@ors/helpers/Utils/Utils'
 import useStore from '@ors/store'
 
 import { FaSort } from '@react-icons/all-files/fa/FaSort'
 import { FaSortDown } from '@react-icons/all-files/fa/FaSortDown'
 import { FaSortUp } from '@react-icons/all-files/fa/FaSortUp'
 
-function parseNumber(number: any) {
-  const parsedNumber = parseFloat(number)
-  return isNull(number) || isNaN(number) ? null : parsedNumber.toFixed(2)
+const aggFuncs = {
+  sum: (props: any) => {
+    let value: null | number = null
+    const values: Array<any> = []
+    props.api.forEachNode(function (node: any) {
+      if (node.data.isSubTotal || node.data.isTotal) {
+        return
+      }
+      if (props.byGroup && node.data.group !== props.data.group) {
+        return
+      }
+      value = parseNumber(node.data[props.colDef.field])
+      if (!isNull(value)) {
+        values.push(value)
+      }
+    })
+    return sum(values)
+  },
+  sumUsages: (props: any) => {
+    let value: null | number = null
+    const values: Array<any> = []
+    const usageId = props.colDef.id
+    props.api.forEachNode(function (node: any) {
+      if (node.data.isSubTotal || node.data.isTotal) {
+        return
+      }
+      if (props.byGroup && node.data.group !== props.data.group) {
+        return
+      }
+      const usages = node.data.record_usages
+
+      if (usageId === 'total' && usages) {
+        value = parseNumber(
+          sum(usages.map((usage: any) => parseFloat(usage.quantity))),
+        )
+      } else if (usages) {
+        const usage = find(usages, (item) => item.usage_id === usageId)
+        value = parseNumber(usage?.quantity)
+      }
+      if (!isNull(value)) {
+        values.push(value)
+      }
+    })
+    return sum(values)
+  },
 }
 
 function AgHeaderComponent(props: any) {
@@ -104,8 +147,20 @@ function AgTextCellRenderer(props: any) {
 }
 
 function AgFloatCellRenderer(props: any) {
+  let value = null
   const { maxWidth } = props.colDef
-  const value = parseNumber(props.value)
+  const aggFunc = get(aggFuncs, props.colDef.aggFunc)
+  if (props.data.isGroup) {
+    return null
+  }
+  if (props.data.isSubTotal && aggFunc) {
+    value = aggFunc({ ...props, byGroup: true })
+  } else if (props.data.isTotal && aggFunc) {
+    value = aggFunc({ ...props })
+  } else {
+    value = parseNumber(props.value)
+  }
+
   return (
     <>
       <span
@@ -121,7 +176,7 @@ function AgFloatCellRenderer(props: any) {
             <Skeleton className="inline-block w-full" />
           </Typography>
         ) : (
-          <Typography component="span">{value}</Typography>
+          <Typography component="span">{value?.toFixed(2)}</Typography>
         )}
       </span>
     </>
@@ -136,20 +191,25 @@ function AgDateCellRenderer(props: any) {
 
 function AgUsageCellRenderer(props: any) {
   let value = null
+  const aggFunc = get(aggFuncs, props.colDef.aggFunc)
   const usageId = props.colDef.id
   const usages = props.data.record_usages
   if (props.data.isGroup) {
-  } else if (props.data.isSubTotal) {
-  } else if (props.data.isTotal) {
-  } else if (usageId === 'total') {
+    return null
+  }
+  if (props.data.isSubTotal && aggFunc) {
+    value = aggFunc({ ...props, byGroup: true })
+  } else if (props.data.isTotal && aggFunc) {
+    value = aggFunc({ ...props })
+  } else if (usageId === 'total' && usages) {
     value = parseNumber(
       sum(usages.map((usage: any) => parseFloat(usage.quantity))),
     )
-  } else {
+  } else if (usages) {
     const usage = find(usages, (item) => item.usage_id === usageId)
     value = parseNumber(usage?.quantity)
   }
-  return <Typography component="span">{value}</Typography>
+  return <Typography component="span">{value?.toFixed(2)}</Typography>
 }
 
 export default function Table(props: AgGridReactProps) {
@@ -284,6 +344,7 @@ export default function Table(props: AgGridReactProps) {
         <Loading className="bg-action-disabledBackground/5" />
       )}
       <AgGridReact
+        aggFuncs={aggFuncs}
         animateRows={true}
         defaultColDef={{ ...baseColDef, ...defaultColDef }}
         domLayout="autoHeight"

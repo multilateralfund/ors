@@ -11,8 +11,14 @@
   @apply border-b-0;
 } */
 
+#next-app [class*='ag-theme-'] .ag-row-hover:not(.ag-full-width-row)::before,
+.ag-row-hover.ag-full-width-row.ag-row-group::before {
+  @apply z-10;
+}
+
 #next-app [class*='ag-theme-'] .ag-row-group {
-  @apply bg-gray-100 theme-dark:bg-gray-900/40;
+  @apply pattern-diagonal-lines pattern-slate-500 pattern-bg-white 
+  pattern-size-2 pattern-opacity-100;
 }
 
 #next-app [class*='ag-theme-'] .ag-row-total {

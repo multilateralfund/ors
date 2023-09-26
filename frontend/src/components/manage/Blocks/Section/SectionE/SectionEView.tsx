@@ -34,6 +34,11 @@ export default function SectionEView(props: {
         suppressCellFocus={false}
         suppressNoRowsOverlay={true}
         suppressRowHoverHighlight={false}
+        rowClassRules={{
+          'ag-row-group': (props) => props.data.isGroup,
+          'ag-row-sub-total': (props) => props.data.isSubTotal,
+          'ag-row-total': (props) => props.data.isTotal,
+        }}
         withSeparators
       />
     </>

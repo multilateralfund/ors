@@ -192,6 +192,7 @@ module.exports = {
         },
       })
     },
+    require('tailwindcss-bg-patterns'),
   ],
   theme: {
     container: {
