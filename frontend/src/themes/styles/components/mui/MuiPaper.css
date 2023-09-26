@@ -1,8 +1,6 @@
 .MuiPaper-root {
-  @apply border-mui-paper-border;
-  @apply rounded border border-solid transition-colors duration-300;
-
-  transition-property: box-shadow, background-color, border-color;
+  @apply border-mui-paper-border transition duration-300;
+  @apply rounded border border-solid;
 }
 
 .MuiPaper-root.MuiPaper-elevation {

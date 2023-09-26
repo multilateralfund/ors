@@ -17,16 +17,6 @@
 @import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 @layer base {
-  * {
-    @apply !duration-300;
-
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
-    transition-property: background-color, border-color, text-decoration-color !important;
-
-    /* transition-property: background-color, border-color, text-decoration-color,
-      fill, stroke !important; */
-  }
-
   :root {
     @apply h-full;
   }
@@ -48,22 +38,7 @@
   }
 
   body {
-    @apply h-full;
-  }
-
-  body::-webkit-scrollbar,
-  body *::-webkit-scrollbar {
-    @apply transition-all duration-300;
-  }
-
-  body::-webkit-scrollbar-corner,
-  body *::-webkit-scrollbar-corner {
-    @apply transition-all duration-300;
-  }
-
-  body::-webkit-scrollbar-thumb,
-  body *::-webkit-scrollbar-thumb {
-    @apply transition-all duration-300;
+    @apply h-full transition;
   }
 
   main {

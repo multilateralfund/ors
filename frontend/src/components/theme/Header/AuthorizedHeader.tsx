@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation'
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Logo from '@ors/components/theme/Logo/Logo'
 import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
-// import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
+import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
 import UnstyledLink, { LinkProps } from '@ors/components/ui/Link/Link'
 import { formatApiUrl } from '@ors/helpers/Api/Api'
 import { matchPath } from '@ors/helpers/Url/Url'
@@ -74,7 +74,7 @@ export default function Header() {
             Admin
           </UnstyledLink>
           <ProfileDropdown className="ltr:mr-2 rtl:ml-2" />
-          {/* {__DEVELOPMENT__ && <ThemeSelector />} */}
+          {__DEVELOPMENT__ && <ThemeSelector />}
           <div id="header-control" />
         </div>
       </div>

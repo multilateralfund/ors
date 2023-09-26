@@ -83,7 +83,7 @@ function useGridOptions({ showUsages, substances }: GridOptionsProps) {
                         headerName: 'Servicing',
                       },
                     ],
-                    headerClass: 'text-center',
+                    headerClass: 'ag-text-center',
                     headerGroupComponent: 'agColumnHeaderGroup',
                     headerName: 'Refrigeration',
                     marryChildren: true,

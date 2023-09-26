@@ -1,0 +1,35 @@
+@import './variables.css';
+@import './header.css';
+@import './row.css';
+@import './cell.css';
+
+#next-app [class*='ag-theme-'] {
+  @apply duration-300;
+}
+
+#next-app
+  [class*='ag-theme-'].two-groups
+  .ag-overlay-no-rows-wrapper.ag-layout-auto-height {
+  padding-top: 120px;
+}
+
+#next-app
+  [class*='ag-theme-'].three-groups
+  .ag-overlay-no-rows-wrapper.ag-layout-auto-height {
+  padding-top: 180px;
+}
+
+#next-app
+  [class*='ag-theme-'].four-groups
+  .ag-overlay-no-rows-wrapper.ag-layout-auto-height {
+  padding-top: 240px;
+}
+
+.ag-cell-wrapper,
+.ag-cell-value {
+  @apply h-full;
+}
+
+.ag-cell-custom-value {
+  @apply inline-block w-full overflow-hidden text-ellipsis;
+}

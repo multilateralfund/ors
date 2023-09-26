@@ -1,37 +1,70 @@
 #next-app [class*='ag-theme-'] {
-  --ag-background-color: transparent;
-  --ag-header-background-color: transparent;
-  --ag-tooltip-background-color: theme(colors.mui-box-background);
-  --ag-odd-row-background-color: transparent;
-  --ag-control-panel-background-color: theme(colors.mui-box-background);
-  --ag-modal-overlay-background-color: theme(
-    colors.action-disabledBackground / 0.01
-  );
-  --ag-value-change-value-highlight-background-color: theme(colors.primary);
-  --ag-value-change-value-highlight-color: theme(colors.primary-contrastText);
-
-  /* disable all borders */
-  --ag-borders: 0 solid;
-  --ag-borders-critical: 1px solid;
+  --ag-alpine-active-color: theme(colors.primary);
+  --ag-background-color: theme(colors.mui-box-background);
   --ag-border-color: theme(colors.mui-box-border);
-  --ag-secondary-border-color: theme(colors.mui-box-border / 0.8);
-
-  /* row borders */
+  --ag-border-radius: theme(borderRadius.sm);
+  --ag-borders-critical: var(--ag-borders);
+  --ag-borders-input-invalid: solid 2px;
+  --ag-borders-input: var(--ag-borders-secondary);
+  --ag-borders-secondary: var(--ag-borders);
+  --ag-borders-side-button: var(--ag-borders);
+  --ag-borders: solid 1px;
+  --ag-cell-horizontal-border: 1px solid transparent;
+  --ag-cell-horizontal-padding: calc(var(--ag-grid-size) * 3);
+  --ag-cell-widget-spacing: calc(var(--ag-grid-size) * 2);
+  --ag-column-select-indent-size: var(--ag-icon-size);
+  --ag-data-color: var(--ag-foreground-color);
+  --ag-disabled-foreground-color: theme(colors.typography-disabled);
+  --ag-font-family: inherit;
+  --ag-font-size: theme(fontSize.base);
+  --ag-foreground-color: theme(colors.typography-primary);
+  --ag-grid-size: 6px;
+  --ag-header-background-color: theme(colors.gray-100);
+  --ag-header-cell-hover-background-color: transparent;
+  --ag-header-cell-moving-background-color: theme(colors.action-highlight);
+  --ag-header-column-resize-handle-color: theme(colors.primary);
+  --ag-header-column-resize-handle-display: none;
+  --ag-header-column-resize-handle-height: 30%;
+  --ag-header-column-resize-handle-width: 2px;
+  --ag-header-column-separator-color: var(--ag-secondary-border-color);
+  --ag-header-column-separator-display: none;
+  --ag-header-column-separator-height: 100%;
+  --ag-header-column-separator-width: 0.5px;
+  --ag-header-foreground-color: var(--ag-secondary-foreground-color);
+  --ag-header-height: calc(var(--ag-grid-size) * 8);
+  --ag-icon-font-family: agGridAlpine;
+  --ag-icon-size: 16px;
+  --ag-input-border-color-invalid: var(--ag-invalid-color);
+  --ag-input-border-color: var(--ag-border-color);
+  --ag-invalid-color: theme(colors.error);
+  --ag-list-item-height: calc(var(--ag-grid-size) * 4);
+  --ag-odd-row-background-color: theme(colors.mui-box-background);
+  --ag-popup-shadow: var(--ag-card-shadow);
+  --ag-row-border-color: var(--ag-secondary-border-color);
   --ag-row-border-style: solid;
   --ag-row-border-width: 1px;
-  --ag-row-border-color: var(--ag-secondary-border-color);
-  --ag-cell-disabled-background: theme(colors.action-disabledBackground);
-  --ag-cell-disabled-color: theme(colors.typography-primary);
-
-  /* resize habdle */
-  --ag-header-column-resize-handle-color: var(--ag-border-color);
+  --ag-row-group-indent-size: calc(
+    var(--ag-cell-widget-spacing) + var(--ag-icon-size)
+  );
+  --ag-row-height: calc(var(--ag-grid-size) * 7);
+  --ag-row-hover-color: rgb(33 150 243 / 10%);
+  --ag-secondary-border-color: theme(colors.mui-box-border);
+  --ag-secondary-foreground-color: theme(colors.typography-primary);
+  --ag-tooltip-background-color: #f8f8f8;
+  --ag-value-change-delta-down-color: theme(colors.success);
+  --ag-value-change-delta-up-color: theme(colors.success);
+  --ag-value-change-value-highlight-background-color: rgb(22 160 133 / 50%);
+  --ag-widget-container-horizontal-padding: calc(var(--ag-grid-size) * 2);
+  --ag-widget-container-vertical-padding: calc(var(--ag-grid-size) * 2);
+  --ag-widget-horizontal-spacing: calc(var(--ag-grid-size) * 2);
+  --ag-widget-vertical-spacing: calc(var(--ag-grid-size) * 1.5);
 }
 
 #next-app [class*='ag-theme-'].with-separators {
-  --ag-header-column-resize-handle-color: transparent;
-  --ag-cell-horizontal-border: 1px solid var(--ag-secondary-border-color);
+  --ag-cell-horizontal-border: 1px solid theme(colors.mui-box-border);
 }
 
-#next-app [class*='ag-theme-']:not(.with-separators) {
-  --ag-cell-horizontal-border: none;
+:root[data-theme='dark'] #next-app [class*='ag-theme-'] {
+  --twc-gray-900-opacity: 0.4;
+  --ag-header-background-color: theme(colors.gray-900);
 }

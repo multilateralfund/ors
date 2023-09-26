@@ -153,6 +153,7 @@ module.exports = {
   corePlugins: {
     container: false,
     preflight: false,
+    transitionProperty: false,
   },
   important: '#next-app',
   originalColors,
@@ -167,7 +168,7 @@ module.exports = {
         produceThemeVariant: (themeName) => `theme-${themeName}`,
       },
     ),
-    function ({ addComponents }: any) {
+    function ({ addComponents, addUtilities }: any) {
       addComponents({
         '.container': {
           margin: '0 auto',
@@ -189,6 +190,14 @@ module.exports = {
           '@screen 2xl': {
             maxWidth: '1920px',
           },
+        },
+      })
+      addUtilities({
+        '.transition': {
+          'transition-property':
+            'background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, filter, backdrop-filter',
+          'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)',
+          'transition-duration': '300ms',
         },
       })
     },

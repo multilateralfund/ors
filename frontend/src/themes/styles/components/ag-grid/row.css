@@ -1,23 +1,12 @@
-#next-app .ag-row-animation .ag-row {
-  transition:
-    transform 400ms,
-    top 400ms,
-    background-color 300ms,
-    border-color 300ms,
-    opacity 200ms;
-}
-
-/* #next-app [class*='ag-theme-']:not(.with-pagination) .ag-row-last {
-  @apply border-b-0;
-} */
-
 #next-app [class*='ag-theme-'] .ag-row-hover:not(.ag-full-width-row)::before,
-.ag-row-hover.ag-full-width-row.ag-row-group::before {
+#next-app
+  [class*='ag-theme-']
+  .ag-row-hover.ag-full-width-row.ag-row-group::before {
   @apply z-10;
 }
 
 #next-app [class*='ag-theme-'] .ag-row-group {
-  @apply pattern-diagonal-lines pattern-slate-500 pattern-bg-white 
+  @apply pattern-diagonal-lines pattern-slate-500 pattern-bg-transparent 
   pattern-size-2 pattern-opacity-100;
 }
 

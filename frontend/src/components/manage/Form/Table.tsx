@@ -150,6 +150,8 @@ function AgFloatCellRenderer(props: any) {
   let value = null
   const { maxWidth } = props.colDef
   const aggFunc = get(aggFuncs, props.colDef.aggFunc)
+  const Tooltip = props.colDef.tooltip ? MuiTooltip : Fragment
+
   if (props.data.isGroup) {
     return null
   }
@@ -161,8 +163,12 @@ function AgFloatCellRenderer(props: any) {
     value = parseNumber(props.value)
   }
 
+  const formattedValue = value?.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+  })
+
   return (
-    <>
+    <Tooltip enterDelay={300} placement="top-start" title={formattedValue}>
       <span
         className="ag-cell-custom-value"
         style={
@@ -176,10 +182,10 @@ function AgFloatCellRenderer(props: any) {
             <Skeleton className="inline-block w-full" />
           </Typography>
         ) : (
-          <Typography component="span">{value?.toFixed(2)}</Typography>
+          <Typography component="span">{formattedValue}</Typography>
         )}
       </span>
-    </>
+    </Tooltip>
   )
 }
 
@@ -191,9 +197,12 @@ function AgDateCellRenderer(props: any) {
 
 function AgUsageCellRenderer(props: any) {
   let value = null
+  const { maxWidth } = props.colDef
   const aggFunc = get(aggFuncs, props.colDef.aggFunc)
   const usageId = props.colDef.id
   const usages = props.data.record_usages
+  const Tooltip = props.colDef.tooltip ? MuiTooltip : Fragment
+
   if (props.data.isGroup) {
     return null
   }
@@ -209,7 +218,31 @@ function AgUsageCellRenderer(props: any) {
     const usage = find(usages, (item) => item.usage_id === usageId)
     value = parseNumber(usage?.quantity)
   }
-  return <Typography component="span">{value?.toFixed(2)}</Typography>
+
+  const formattedValue = value?.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+  })
+
+  return (
+    <Tooltip enterDelay={300} placement="top-start" title={formattedValue}>
+      <span
+        className="ag-cell-custom-value"
+        style={
+          maxWidth && {
+            maxWidth: `calc(${maxWidth}px - 2 * (var(--ag-cell-horizontal-padding) - 1px))`,
+          }
+        }
+      >
+        {props.data.isSkeleton ? (
+          <Typography component="span">
+            <Skeleton className="inline-block w-full" />
+          </Typography>
+        ) : (
+          <Typography component="span">{formattedValue}</Typography>
+        )}
+      </span>
+    </Tooltip>
+  )
 }
 
 export default function Table(props: AgGridReactProps) {
@@ -330,7 +363,7 @@ export default function Table(props: AgGridReactProps) {
   return (
     <FadeInOut
       className={cx(
-        'relative table w-full rounded border border-solid border-mui-box-border bg-mui-box-background',
+        'relative table w-full',
         {
           'ag-theme-alpine': theme.mode !== 'dark',
           'ag-theme-alpine-dark': theme.mode === 'dark',

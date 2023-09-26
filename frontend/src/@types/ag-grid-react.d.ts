@@ -7,7 +7,7 @@ import type { MutableRefObject } from 'react'
 declare module 'ag-grid-community' {
   interface ColDef extends AgColDef {
     disabled?: boolean
-    id?: string
+    id?: number | string
   }
 }
 

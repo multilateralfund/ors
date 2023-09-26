@@ -64,7 +64,7 @@ export const columnSchema = [
       )
     },
     field: 'action',
-    headerClass: 'text-center',
+    headerClass: 'ag-text-center',
     headerName: 'Action',
     minWidth: 100,
   },

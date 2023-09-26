@@ -11,7 +11,6 @@ import SectionEView from '@ors/components/manage/Blocks/Section/SectionE/Section
 import SectionFView from '@ors/components/manage/Blocks/Section/SectionF/SectionFView'
 
 interface SectionPanelProps {
-  curentSection: number
   report?: Record<string, Array<any>> | null
   section: number
 }
@@ -56,14 +55,13 @@ export const sections = [
 ]
 
 function SectionPanel(props: SectionPanelProps) {
-  const { curentSection, report, section, ...rest } = props
+  const { report, section, ...rest } = props
   const Section: React.FC<any> = sections[section].component
 
   return (
     <div
       id={sections[section].panelId}
       aria-labelledby={sections[section].id}
-      hidden={curentSection !== section}
       role="tabpanel"
       {...rest}
     >
@@ -98,14 +96,7 @@ export default function CPReportView({
           />
         ))}
       </Tabs>
-      {sections.map((section, index) => (
-        <SectionPanel
-          key={section.id}
-          curentSection={activeSection}
-          report={report}
-          section={index}
-        />
-      ))}
+      <SectionPanel report={report} section={activeSection} />
     </>
   )
 }

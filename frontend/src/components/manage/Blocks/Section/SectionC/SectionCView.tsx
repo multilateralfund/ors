@@ -1,8 +1,11 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
+import { Typography } from '@mui/material'
 import { groupBy, union, uniq } from 'lodash'
 import dynamic from 'next/dynamic'
 
+import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
+import LoadingBuffer from '@ors/components/theme/Loading/LoadingBuffer'
 import { getResults } from '@ors/helpers/Api/Api'
 
 import useGridOptions from './schemaView'
@@ -17,8 +20,8 @@ export default function SectionCView(props: {
   const { report } = props
   const grid = useRef<any>()
   const gridOptions = useGridOptions()
-
-  const { results } = getResults(report.section_c)
+  const [results] = useState<Array<any>>(getResults(report.section_c).results)
+  const [loading, setLoading] = useState(true)
 
   const groups = uniq(results.map((item) => item.annex_group || 'Other'))
   const resultsByGroup = groupBy(
@@ -48,25 +51,34 @@ export default function SectionCView(props: {
 
   return (
     <>
-      <Table
-        animateRows={true}
-        columnDefs={gridOptions.columnDefs}
-        defaultColDef={gridOptions.defaultColDef}
-        enableCellChangeFlash={true}
-        enablePagination={false}
-        gridRef={grid}
-        noRowsOverlayComponent={null}
-        rowData={rows}
-        suppressCellFocus={false}
-        suppressNoRowsOverlay={true}
-        suppressRowHoverHighlight={false}
-        rowClassRules={{
-          'ag-row-group': (props) => props.data.isGroup,
-          'ag-row-sub-total': (props) => props.data.isSubTotal,
-          'ag-row-total': (props) => props.data.isTotal,
-        }}
-        withSeparators
-      />
+      <HeaderTitle onInit={() => setLoading(false)}>
+        <Typography className="text-white" component="h1" variant="h6">
+          SECTION C. AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US
+          $/kg)
+        </Typography>
+      </HeaderTitle>
+      {loading && <LoadingBuffer className="relative" time={300} />}
+      {!loading && (
+        <Table
+          animateRows={true}
+          columnDefs={gridOptions.columnDefs}
+          defaultColDef={gridOptions.defaultColDef}
+          enableCellChangeFlash={true}
+          enablePagination={false}
+          gridRef={grid}
+          noRowsOverlayComponent={null}
+          rowData={rows}
+          suppressCellFocus={false}
+          suppressNoRowsOverlay={true}
+          suppressRowHoverHighlight={false}
+          rowClassRules={{
+            'ag-row-group': (props) => props.data.isGroup,
+            'ag-row-sub-total': (props) => props.data.isSubTotal,
+            'ag-row-total': (props) => props.data.isTotal,
+          }}
+          withSeparators
+        />
+      )}
     </>
   )
 }

@@ -14,6 +14,8 @@ export type TitleProps = {
 
 export type HeaderTitleProps = {
   children: React.ReactNode
+  delay?: number
+  onInit?: () => any
 }
 
 function Title({ children, visible }: TitleProps) {
@@ -30,13 +32,23 @@ function Title({ children, visible }: TitleProps) {
   )
 }
 
-export default function HeaderTitle({ children }: HeaderTitleProps) {
+export default function HeaderTitle({
+  children,
+  delay = 600,
+  onInit,
+}: HeaderTitleProps) {
   const [mounted, setMounted] = useState(false)
   const { setHeaderTitleComponent } = useStore((state) => state.header)
 
   useEffect(() => {
     setMounted(true)
     setHeaderTitleComponent(<Title visible={true}>{children}</Title>)
+
+    if (onInit) {
+      setTimeout(() => {
+        onInit()
+      }, delay)
+    }
 
     return () => {
       setHeaderTitleComponent(null)

@@ -1,20 +1,28 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { useState } from 'react'
+
 import { Box, Typography } from '@mui/material'
 
-import { getResults } from '@ors/helpers/Api/Api'
+import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
+import LoadingBuffer from '@ors/components/theme/Loading/LoadingBuffer'
 
-export default function SectionFView(props: {
-  report: Record<string, Array<any>>
-}) {
+export default function SectionFView(props: { report: Record<string, any> }) {
   const { report } = props
-
-  const { results } = getResults(report.section_f)
+  const [loading, setLoading] = useState(true)
 
   return (
-    <Box>
-      <Typography component="h1" variant="h5">
-        Comments by bilateral/implementing agencies
-      </Typography>
-    </Box>
+    <>
+      <HeaderTitle onInit={() => setLoading(false)}>
+        <Typography className="text-white" component="h1" variant="h6">
+          SECTION F. COMMENTS BY BILATERAL/IMPLEMENTING AGENCIES
+        </Typography>
+      </HeaderTitle>
+      {loading && <LoadingBuffer className="relative" time={300} />}
+      {!loading && (
+        <Box>
+          <Typography>{report.section_f?.remarks || 'No comments'}</Typography>
+        </Box>
+      )}
+    </>
   )
 }

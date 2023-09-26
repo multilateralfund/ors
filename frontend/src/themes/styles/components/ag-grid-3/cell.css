@@ -1,0 +1,21 @@
+#next-app [class*='ag-theme-'] .ag-cell.disabled {
+  background-color: var(--ag-cell-disabled-background);
+  color: var(--ag-cell-disabled-color);
+}
+
+#next-app [class*='ag-theme-'] .ag-cell-data-changed {
+  background-color: var(
+    --ag-value-change-value-highlight-background-color
+  ) !important;
+  color: var(--ag-value-change-value-highlight-color) !important;
+}
+
+#next-app [class*='ag-theme-'] .ag-full-width-container .ag-row {
+  padding: calc(var(--ag-cell-horizontal-padding) - 1px);
+  display: flex;
+  align-items: center;
+}
+
+#next-app [class*='ag-theme-'] .ag-row-group .ag-cell[col-id='chemical_name'] {
+  @apply bg-mui-box-background;
+}
