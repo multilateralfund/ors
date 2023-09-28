@@ -15,6 +15,7 @@ function useGridOptions() {
         }),
         field: 'chemical_name',
         headerName: 'Substance',
+        minWidth: 300,
       },
       {
         aggFunc: 'sum',
@@ -32,9 +33,13 @@ function useGridOptions() {
         field: 'remarks',
         headerName: 'Remarks',
       },
+      {
+        field: 'expand',
+        flex: 1,
+        headerName: '',
+      },
     ],
     defaultColDef: {
-      flex: 1,
       minWidth: 200,
       resizable: true,
     },

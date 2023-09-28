@@ -19,7 +19,8 @@ function useGridOptions(props: { model: string }) {
           field: 'display_name',
           headerClass: 'ag-text-left',
           headerName: 'Substance',
-          initialWidth: 150,
+          initialWidth: 300,
+          pinned: 'left',
         },
         {
           children: [
@@ -247,10 +248,12 @@ function useGridOptions(props: { model: string }) {
           : []),
       ],
       defaultColDef: {
+        autoHeight: true,
         cellClass: 'ag-text-right',
         headerClass: 'ag-text-center',
         minWidth: 130,
         resizable: true,
+        wrapText: true,
       },
     }),
     [model],

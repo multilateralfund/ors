@@ -117,14 +117,15 @@ export default function SectionAView(props: {
       {!loading && (
         <>
           <Table
-            className="three-groups"
+            className="three-groups h-[800px]"
             columnDefs={gridOptions.columnDefs}
             defaultColDef={gridOptions.defaultColDef}
+            domLayout="normal"
             enableCellChangeFlash={true}
             enablePagination={false}
             gridRef={grid}
             noRowsOverlayComponentParams={{ label: 'No data reported' }}
-            rowBuffer={20}
+            rowBuffer={40}
             rowData={rowData}
             suppressCellFocus={false}
             suppressRowHoverHighlight={false}
@@ -132,9 +133,6 @@ export default function SectionAView(props: {
               'ag-row-group': (props) => props.data.isGroup,
               'ag-row-sub-total': (props) => props.data.isSubTotal,
               'ag-row-total': (props) => props.data.isTotal,
-            }}
-            onFirstDataRendered={(event) => {
-              event.columnApi.autoSizeAllColumns()
             }}
             withSeparators
           />

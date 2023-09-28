@@ -60,9 +60,10 @@ export default function SectionCView(props: {
       {loading && <LoadingBuffer className="relative" time={300} />}
       {!loading && (
         <Table
-          animateRows={true}
+          className="three-groups h-[800px]"
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
+          domLayout="normal"
           enableCellChangeFlash={true}
           enablePagination={false}
           gridRef={grid}

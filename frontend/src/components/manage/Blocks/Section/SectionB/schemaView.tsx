@@ -16,7 +16,8 @@ function useGridOptions() {
           }),
           field: 'display_name',
           headerName: 'Substance',
-          initialWidth: 150,
+          initialWidth: 300,
+          pinned: 'left',
         },
         {
           children: [
@@ -159,10 +160,12 @@ function useGridOptions() {
         },
       ],
       defaultColDef: {
+        autoHeight: true,
         cellClass: 'ag-text-right',
         headerClass: 'ag-text-center',
         minWidth: 130,
         resizable: true,
+        wrapText: true,
       },
     }),
     [],

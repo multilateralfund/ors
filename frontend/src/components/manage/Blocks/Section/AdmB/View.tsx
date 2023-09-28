@@ -31,6 +31,8 @@ export default function AdmB(props: {
     }))
   }, [admForm])
 
+  console.log('HERE', admForm.admB)
+
   return (
     <>
       <HeaderTitle onInit={() => setLoading(false)}>

@@ -15,7 +15,7 @@ function useGridOptions(props: { model: string }) {
               cellClass: 'bg-mui-box-background',
               field: 'index',
               headerName: '',
-              initialWidth: 200,
+              initialWidth: 100,
             },
             {
               cellClass: 'bg-mui-box-background',
@@ -64,7 +64,7 @@ function useGridOptions(props: { model: string }) {
       ],
       defaultColDef: {
         headerClass: 'ag-text-center',
-        minWidth: 130,
+        minWidth: 80,
         resizable: true,
       },
     }),

@@ -40,7 +40,7 @@ export function getSections(variant: any) {
   const isAdmDE = includes(['II', 'III'], model)
   const isSectionA = includes(['I', 'II', 'III', 'IV'], model)
   const isSectionB = includes(['IV'], model)
-  const isSectionC = includes(['IV'], model)
+  const isSectionC = includes(['I', 'II', 'III', 'IV'], model)
   const isSectionD = includes(['IV'], model)
   const isSectionE = includes(['IV'], model)
   const isSectionF = includes(['IV'], model)
