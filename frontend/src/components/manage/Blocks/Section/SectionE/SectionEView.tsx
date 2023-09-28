@@ -41,16 +41,16 @@ export default function SectionEView(props: {
       {loading && <LoadingBuffer className="relative" time={300} />}
       {!loading && (
         <Table
+          className="two-groups"
           animateRows={true}
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
           enableCellChangeFlash={true}
           enablePagination={false}
           gridRef={grid}
-          noRowsOverlayComponent={null}
+          noRowsOverlayComponentParams={{ label: 'No data reported' }}
           rowData={rows}
           suppressCellFocus={false}
-          suppressNoRowsOverlay={true}
           suppressRowHoverHighlight={false}
           rowClassRules={{
             'ag-row-group': (props) => props.data.isGroup,

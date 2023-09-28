@@ -47,10 +47,9 @@ export default function SectionDView(props: {
           enableCellChangeFlash={true}
           enablePagination={false}
           gridRef={grid}
-          noRowsOverlayComponent={null}
+          noRowsOverlayComponentParams={{ label: 'No data reported' }}
           rowData={rows}
           suppressCellFocus={false}
-          suppressNoRowsOverlay={true}
           suppressRowHoverHighlight={false}
           rowClassRules={{
             'ag-row-group': (props) => props.data.isGroup,

@@ -4,11 +4,18 @@
 import { useState } from 'react'
 
 import { GridOptions } from 'ag-grid-community'
+import cx from 'classnames'
 
 function useGridOptions() {
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
       {
+        cellClass: 'bg-mui-box-background',
+        cellRendererParams: (props: any) => ({
+          className: cx({
+            'font-bold': props.data.isGroup || props.data.isTotal,
+          }),
+        }),
         field: 'chemical_name',
         headerName: 'Substance',
       },

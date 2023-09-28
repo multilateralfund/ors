@@ -1,81 +1,62 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 
 import { Tab, Tabs } from '@mui/material'
+import { filter, isString } from 'lodash'
+import { useSearchParams } from 'next/navigation'
 
-import SectionAView from '@ors/components/manage/Blocks/Section/SectionA/SectionAView'
-import SectionBView from '@ors/components/manage/Blocks/Section/SectionB/SectionBView'
-import SectionCView from '@ors/components/manage/Blocks/Section/SectionC/SectionCView'
-import SectionDView from '@ors/components/manage/Blocks/Section/SectionD/SectionDView'
-import SectionEView from '@ors/components/manage/Blocks/Section/SectionE/SectionEView'
-import SectionFView from '@ors/components/manage/Blocks/Section/SectionF/SectionFView'
+import { getSections, variants } from '.'
 
 interface SectionPanelProps {
-  report?: Record<string, Array<any>> | null
-  section: number
+  admForm: Record<string, any>
+  report: Record<string, Array<any>>
+  section: Record<string, any>
+  variant: Record<string, any>
 }
 
-export const sections = [
-  {
-    id: 'section-A',
-    component: SectionAView,
-    label: 'Section A',
-    panelId: 'section-A-panel',
-  },
-  {
-    id: 'section-B',
-    component: SectionBView,
-    label: 'Section B',
-    panelId: 'section-B-panel',
-  },
-  {
-    id: 'section-C',
-    component: SectionCView,
-    label: 'Section C',
-    panelId: 'section-C-panel',
-  },
-  {
-    id: 'section-D',
-    component: SectionDView,
-    label: 'Section D',
-    panelId: 'section-D-panel',
-  },
-  {
-    id: 'section-E',
-    component: SectionEView,
-    label: 'Section E',
-    panelId: 'section-E-panel',
-  },
-  {
-    id: 'section-F',
-    component: SectionFView,
-    label: 'Section F',
-    panelId: 'section-F-panel',
-  },
-]
-
 function SectionPanel(props: SectionPanelProps) {
-  const { report, section, ...rest } = props
-  const Section: React.FC<any> = sections[section].component
+  const { admForm, report, section, variant, ...rest } = props
+  const Section: React.FC<any> = section.component
 
   return (
     <div
-      id={sections[section].panelId}
-      aria-labelledby={sections[section].id}
+      id={section.panelId}
+      aria-labelledby={section.id}
       role="tabpanel"
       {...rest}
     >
-      <Section report={report} />
+      <Section admForm={admForm} report={report} variant={variant} />
     </div>
   )
 }
 
-export default function CPReportView({
-  report,
-}: {
+export default function CPReportView(props: {
+  admForm?: Record<string, any> | null
   report?: Record<string, Array<any>> | null
 }) {
+  const searchParams = useSearchParams()
   const [activeSection, setActiveSection] = useState(0)
+  const report: any = useMemo(
+    () => ({
+      ...(props.report || {}),
+      name: searchParams.get('name'),
+      year: searchParams.get('year'),
+    }),
+    [props.report, searchParams],
+  )
+  const variant = useMemo(
+    () =>
+      filter(variants, (variant) => {
+        const year =
+          report && isString(report?.year)
+            ? parseInt(report.year)
+            : new Date().getFullYear()
+        return variant.minYear <= year && variant.maxYear >= year
+      })[0],
+    [report],
+  )
+
+  const sections = useMemo(() => getSections(variant), [variant])
 
   return (
     <>
@@ -96,7 +77,12 @@ export default function CPReportView({
           />
         ))}
       </Tabs>
-      <SectionPanel report={report} section={activeSection} />
+      <SectionPanel
+        admForm={props.admForm || {}}
+        report={report}
+        section={sections[activeSection]}
+        variant={variant}
+      />
     </>
   )
 }

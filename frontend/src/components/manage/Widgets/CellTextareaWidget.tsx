@@ -1,7 +1,7 @@
 /* eslint-disable react/display-name */
 import { forwardRef, memo, useImperativeHandle, useState } from 'react'
 
-import { Modal } from '@mui/material'
+import { Box, Button, Modal, Typography } from '@mui/material'
 import { ICellEditorParams } from 'ag-grid-community'
 
 import { KEY_BACKSPACE, KEY_ENTER, KEY_TAB } from '@ors/constants'
@@ -12,10 +12,12 @@ export const CellTextareaWidget = memo(
   forwardRef(
     (
       props: {
+        label?: string
         options?: Array<any>
       } & ICellEditorParams,
       ref,
     ) => {
+      const [open, setOpen] = useState(true)
       const [value, setValue] = useState(props.value)
 
       /* Utility Methods */
@@ -82,21 +84,35 @@ export const CellTextareaWidget = memo(
         <>
           <Modal
             className="ag-custom-component-popup"
-            open={true}
+            aria-labelledby="modal-title"
+            open={open}
             onClose={() => {
+              setOpen(false)
               props.stopEditing()
             }}
           >
-            <TextareaWidget
-              className="left-1/2 top-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 bg-mui-box-background p-4"
-              minRows={5}
-              style={{ position: 'absolute' }}
-              value={value}
-              onChange={(event: any) => {
-                setValue(event.target.value)
-              }}
-              onKeyDown={(event: any) => onKeyDown(event)}
-            />
+            <Box className="absolute-center w-full max-w-md">
+              <Typography
+                id="modal-title"
+                className="mb-4 text-typography-secondary"
+                component="h2"
+                variant="h6"
+              >
+                {props.label || 'Add text'}
+              </Typography>
+              <TextareaWidget
+                className="mb-4 p-4"
+                minRows={5}
+                value={value}
+                onChange={(event: any) => {
+                  setValue(event.target.value)
+                }}
+                onKeyDown={(event: any) => onKeyDown(event)}
+              />
+              <Typography className="text-right">
+                <Button onClick={() => setOpen(false)}>Close</Button>
+              </Typography>
+            </Box>
           </Modal>
         </>
       )

@@ -1,7 +1,7 @@
 #next-app [class*='ag-theme-'] {
   --ag-alpine-active-color: theme(colors.primary);
   --ag-background-color: theme(colors.mui-box-background);
-  --ag-border-color: theme(colors.mui-box-border);
+  --ag-border-color: theme(colors.typography);
   --ag-border-radius: theme(borderRadius.sm);
   --ag-borders-critical: var(--ag-borders);
   --ag-borders-input-invalid: solid 2px;
@@ -26,7 +26,7 @@
   --ag-header-column-resize-handle-display: none;
   --ag-header-column-resize-handle-height: 30%;
   --ag-header-column-resize-handle-width: 2px;
-  --ag-header-column-separator-color: var(--ag-secondary-border-color);
+  --ag-header-column-separator-color: var(--ag-border-color);
   --ag-header-column-separator-display: none;
   --ag-header-column-separator-height: 100%;
   --ag-header-column-separator-width: 0.5px;
@@ -41,8 +41,8 @@
   --ag-odd-row-background-color: theme(colors.mui-box-background);
   --ag-popup-shadow: var(--ag-card-shadow);
   --ag-row-border-color: var(--ag-secondary-border-color);
-  --ag-row-group-border-color: theme(colors.primary);
-  --ag-row-total-border-color: theme(colors.primary);
+  --ag-row-group-border-color: theme(colors.typography);
+  --ag-row-total-border-color: theme(colors.typography);
   --ag-row-border-style: solid;
   --ag-row-border-width: 1px;
   --ag-row-group-border-width: 1px;
@@ -52,7 +52,7 @@
   );
   --ag-row-height: calc(var(--ag-grid-size) * 7);
   --ag-row-hover-color: rgb(33 150 243 / 10%);
-  --ag-secondary-border-color: theme(colors.mui-box-border);
+  --ag-secondary-border-color: theme(colors.typography);
   --ag-secondary-foreground-color: theme(colors.typography-primary);
   --ag-tooltip-background-color: #f8f8f8;
   --ag-value-change-delta-down-color: theme(colors.success);
@@ -65,7 +65,7 @@
 }
 
 #next-app [class*='ag-theme-'].with-separators {
-  --ag-cell-horizontal-border: 1px solid theme(colors.mui-box-border);
+  --ag-cell-horizontal-border: 1px solid var(--ag-secondary-border-color);
 }
 
 :root[data-theme='dark'] #next-app [class*='ag-theme-'] {

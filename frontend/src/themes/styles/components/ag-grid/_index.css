@@ -5,6 +5,8 @@
 
 #next-app [class*='ag-theme-'] .ag-root-wrapper {
   @apply rounded;
+
+  border: var(--ag-borders) theme(colors.mui-box-border);
 }
 
 #next-app [class*='ag-theme-'] .ag-header,
@@ -26,4 +28,22 @@
 
 #next-app [class*='ag-theme-'] .ag-text-right {
   @apply justify-end;
+}
+
+#next-app
+  [class*='ag-theme-'].two-groups
+  .ag-overlay-no-rows-wrapper.ag-layout-auto-height {
+  padding-top: 120px;
+}
+
+#next-app
+  [class*='ag-theme-'].three-groups
+  .ag-overlay-no-rows-wrapper.ag-layout-auto-height {
+  padding-top: 180px;
+}
+
+#next-app
+  [class*='ag-theme-'].four-groups
+  .ag-overlay-no-rows-wrapper.ag-layout-auto-height {
+  padding-top: 240px;
 }

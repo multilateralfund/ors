@@ -1,5 +1,5 @@
-import SectionA from '@ors/components/manage/Blocks/Section/SectionA/SectionA'
-import SectionB from '@ors/components/manage/Blocks/Section/SectionB/SectionB'
+import SectionA from '@ors/components/manage/Blocks/Section/SectionA/Edit'
+import SectionB from '@ors/components/manage/Blocks/Section/SectionB/Edit'
 
 export const sections = [
   {

@@ -576,7 +576,7 @@ export default function ProjectsListing() {
                 <>
                   <Divider className="mb-3 w-full" />
                   <ListItem className="block w-full py-4 text-center">
-                    No rows to show
+                    No project started
                   </ListItem>
                   <Divider className="mt-3 w-full" />
                 </>

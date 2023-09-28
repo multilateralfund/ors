@@ -35,12 +35,12 @@ export default function SectionCView(props: {
 
   const rows = useMemo(() => {
     let data: Array<any> = []
-    groups.forEach((annex_group) => {
+    groups.forEach((group) => {
       data = union(
         data,
-        [{ chemical_name: annex_group, isGroup: true }],
-        resultsByGroup[annex_group],
-        [{ chemical_name: 'Sub-total', group: annex_group, isSubTotal: true }],
+        [{ chemical_name: group, group, isGroup: true }],
+        resultsByGroup[group],
+        [{ chemical_name: 'Sub-total', group, isSubTotal: true }],
       )
     })
     if (data.length > 0) {
@@ -66,10 +66,9 @@ export default function SectionCView(props: {
           enableCellChangeFlash={true}
           enablePagination={false}
           gridRef={grid}
-          noRowsOverlayComponent={null}
+          noRowsOverlayComponentParams={{ label: 'No data reported' }}
           rowData={rows}
           suppressCellFocus={false}
-          suppressNoRowsOverlay={true}
           suppressRowHoverHighlight={false}
           rowClassRules={{
             'ag-row-group': (props) => props.data.isGroup,

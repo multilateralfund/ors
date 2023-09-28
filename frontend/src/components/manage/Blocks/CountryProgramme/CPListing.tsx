@@ -43,6 +43,7 @@ interface SectionProps {
   countries: any
   curentSection?: number
   filters: any
+  groupBy?: string
   maxYear: any
   minYear: any
   reports: any
@@ -50,8 +51,6 @@ interface SectionProps {
   reportsByYear: any
   section?: number
   setFilters: any
-  showCountry?: boolean
-  showYear?: boolean
   years: any
 }
 
@@ -62,8 +61,9 @@ const debounce = (func: () => void) => {
   timer = setTimeout(func, 500)
 }
 
-function Item({ index, item, showCountry = false, showYear = true }: any) {
+function Item({ index, item }: any) {
   const router = useRouter()
+
   return (
     <ListItem
       className={cx(
@@ -73,18 +73,16 @@ function Item({ index, item, showCountry = false, showYear = true }: any) {
         },
       )}
       onClick={() => {
-        router.push(`/country-programme/${item.id}`)
+        router.push(
+          `/country-programme/${item.id}?name=${item.name}&year=${item.year}`,
+        )
       }}
       disablePadding
     >
       {!index && <Divider className="mb-3 w-full" />}
-      <div className="grid w-full grid-cols-[2fr_1fr] items-center justify-between gap-x-4 px-4">
+      <div className="grid w-full items-center justify-between gap-x-4 px-4">
         <Typography className="group-hover:text-primary group-hover:underline">
           {item.name}
-        </Typography>
-        <Typography className="text-right group-hover:text-primary">
-          {!!showYear && item.year}
-          {!!showCountry && item.country}
         </Typography>
       </div>
       <Divider className="mt-3 w-full" />
@@ -94,20 +92,12 @@ function Item({ index, item, showCountry = false, showYear = true }: any) {
 
 function GeneralSection(props: SectionProps) {
   const listing = useRef<any>()
-  const {
-    countries,
-    filters,
-    maxYear,
-    minYear,
-    reports,
-    setFilters,
-    showCountry,
-    showYear,
-  } = props
+  const { countries, filters, groupBy, maxYear, minYear, reports, setFilters } =
+    props
   const [range, setRange] = useState([filters.range[0], filters.range[1]])
   const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 20 })
   const [ordering, setOrdering] = useState<'asc' | 'desc'>(
-    showCountry ? 'asc' : showYear ? 'desc' : 'asc',
+    groupBy === 'country' ? 'asc' : 'desc',
   )
 
   const filteredReports = useMemo(
@@ -134,13 +124,13 @@ function GeneralSection(props: SectionProps) {
       slice(
         orderBy(
           filteredReports,
-          showCountry ? 'country' : showYear ? 'year' : 'name',
-          ordering,
+          groupBy === 'country' ? ['country', 'year'] : ['year', 'country'],
+          groupBy === 'country' ? [ordering, 'desc'] : [ordering, 'asc'],
         ),
         (pagination.page - 1) * pagination.rowsPerPage,
         pagination.page * pagination.rowsPerPage,
       ),
-    [filteredReports, pagination, ordering, showCountry, showYear],
+    [filteredReports, pagination, ordering, groupBy],
   )
 
   return (
@@ -297,7 +287,6 @@ function GeneralSection(props: SectionProps) {
       <Listing
         className="mb-3"
         Item={Item}
-        ItemProps={{ showCountry, showYear }}
         enableLoader={false}
         loaded={true}
         loading={false}
@@ -315,7 +304,7 @@ function GeneralSection(props: SectionProps) {
 
 function CountrySection(props: SectionProps) {
   const { countries, reportsByCountry, setFilters } = props
-  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 4 })
+  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 8 })
   const [ordering, setOrdering] = useState<'asc' | 'desc'>('asc')
 
   const rows = useMemo(
@@ -377,7 +366,7 @@ function CountrySection(props: SectionProps) {
       </div>
       <Grid className="mb-6" spacing={4} container>
         {rows.map((row: any) => (
-          <Grid key={row.id} lg={6} xs={12} item>
+          <Grid key={row.id} lg={3} sm={6} xs={12} item>
             <Typography
               className="mb-4 inline-flex cursor-pointer items-center gap-2 px-4 font-normal"
               component="p"
@@ -400,9 +389,9 @@ function CountrySection(props: SectionProps) {
               loaded={true}
               loading={false}
               rowCount={reportsByCountry[row.id].length}
-              rowData={slice(reportsByCountry[row.id], 0, 5)}
+              rowData={slice(reportsByCountry[row.id], 0, 4)}
             />
-            {reportsByCountry[row.id].length > 6 && (
+            {reportsByCountry[row.id].length > 4 && (
               <Button
                 variant="text"
                 onClick={() => {
@@ -433,7 +422,7 @@ function CountrySection(props: SectionProps) {
 function YearSection(props: SectionProps) {
   const { filters, maxYear, minYear, reportsByYear, setFilters, years } = props
   const [range, setRange] = useState([filters.range[0], filters.range[1]])
-  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 4 })
+  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 8 })
   const [ordering, setOrdering] = useState<'asc' | 'desc'>('desc')
 
   const rows = useMemo(
@@ -506,7 +495,7 @@ function YearSection(props: SectionProps) {
       </div>
       <Grid className="mb-6" spacing={4} container>
         {rows.map((row: any) => (
-          <Grid key={row.id} lg={6} xs={12} item>
+          <Grid key={row.id} lg={3} sm={6} xs={12} item>
             <Typography
               className="mb-4 inline-flex cursor-pointer items-center gap-2 px-4 font-normal"
               component="p"
@@ -524,15 +513,14 @@ function YearSection(props: SectionProps) {
             <Listing
               className="mb-3"
               Item={Item}
-              ItemProps={{ showCountry: true, showYear: false }}
               enableLoader={false}
               enablePagination={false}
               loaded={true}
               loading={false}
               rowCount={reportsByYear[row.id].length}
-              rowData={slice(reportsByYear[row.id], 0, 5)}
+              rowData={slice(reportsByYear[row.id], 0, 4)}
             />
-            {reportsByYear[row.id].length > 6 && (
+            {reportsByYear[row.id].length > 4 && (
               <Button
                 variant="text"
                 onClick={() => {
@@ -564,12 +552,14 @@ export const sections = [
   {
     id: 'section-country',
     component: CountrySection,
+    groupBy: 'country',
     label: 'Country',
     panelId: 'section-country-panel',
   },
   {
     id: 'section-year',
     component: YearSection,
+    groupBy: 'year',
     label: 'Year',
     panelId: 'section-year-panel',
   },
@@ -615,14 +605,13 @@ function SectionPanel(props: SectionProps) {
       <Section
         countries={countries}
         filters={filters}
+        groupBy={sections[section].groupBy}
         maxYear={maxYear}
         minYear={minYear}
         reports={reports}
         reportsByCountry={reportsByCountry}
         reportsByYear={reportsByYear}
         setFilters={setFilters}
-        showCountry={sections[section].id === 'section-year'}
-        showYear={sections[section].id === 'section-country'}
         years={years}
       />
     </div>

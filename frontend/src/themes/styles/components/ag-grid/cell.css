@@ -1,7 +1,40 @@
 #next-app [class*='ag-theme-'] .ag-cell {
-  @apply transition;
+  border: none;
+  border-bottom: var(--ag-row-border-width) var(--ag-row-border-style)
+    var(--ag-row-border-color);
 }
 
-#next-app [class*='ag-theme-'] .ag-row-group .ag-cell[col-id='chemical_name'] {
-  @apply bg-mui-box-background;
+#next-app [class*='ag-theme-'] .ag-ltr .ag-cell:not(:last-child) {
+  border-right: var(--ag-row-border-width) var(--ag-row-border-style)
+    var(--ag-row-border-color);
+}
+
+#next-app [class*='ag-theme-'] .ag-rtl .ag-cell:not(:last-child) {
+  border-left: var(--ag-row-border-width) var(--ag-row-border-style)
+    var(--ag-row-border-color);
+}
+
+#next-app
+  [class*='ag-theme-']
+  .ag-cell-focus:not(.ag-cell-range-selected):focus-within::after {
+  content: '';
+  width: calc(100% + 2 * var(--ag-row-border-width));
+  height: calc(100% + 2 * var(--ag-row-border-width));
+  position: absolute;
+  top: calc(-1 * var(--ag-row-border-width));
+  left: calc(-1 * var(--ag-row-border-width));
+  border: var(--ag-row-border-width) var(--ag-row-border-style)
+    var(--ag-range-selection-border-color);
+}
+
+#next-app [class*='ag-theme-'] .ag-cell.ag-text-left .ag-cell-value {
+  @apply text-left;
+}
+
+#next-app [class*='ag-theme-'] .ag-cell.ag-text-center .ag-cell-value {
+  @apply text-center;
+}
+
+#next-app [class*='ag-theme-'] .ag-cell.ag-text-right .ag-cell-value {
+  @apply text-right;
 }

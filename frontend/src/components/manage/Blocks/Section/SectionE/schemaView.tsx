@@ -1,11 +1,17 @@
 import { useState } from 'react'
 
 import { GridOptions } from 'ag-grid-community'
+import cx from 'classnames'
 
 function useGridOptions() {
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
       {
+        cellRendererParams: (props: any) => ({
+          className: cx({
+            'font-bold': props.data.isTotal,
+          }),
+        }),
         field: 'facility',
         headerClass: 'ag-text-center',
         headerName: 'Facility name or identifier',

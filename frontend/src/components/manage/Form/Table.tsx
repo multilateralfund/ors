@@ -14,7 +14,16 @@ import { ColDef } from 'ag-grid-community'
 import { AgGridReact, AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
 import dayjs from 'dayjs'
-import { find, get, isNull, sum, times } from 'lodash'
+import {
+  filter,
+  find,
+  get,
+  includes,
+  isNull,
+  isNumber,
+  sum,
+  times,
+} from 'lodash'
 
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import CellAutocompleteWidget from '@ors/components/manage/Widgets/CellAutocompleteWidget'
@@ -25,10 +34,6 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import { KEY_BACKSPACE, KEY_ENTER } from '@ors/constants'
 import { parseNumber } from '@ors/helpers/Utils/Utils'
 import useStore from '@ors/store'
-
-import { FaSort } from '@react-icons/all-files/fa/FaSort'
-import { FaSortDown } from '@react-icons/all-files/fa/FaSortDown'
-import { FaSortUp } from '@react-icons/all-files/fa/FaSortUp'
 
 const aggFuncs = {
   sum: (props: any) => {
@@ -61,9 +66,17 @@ const aggFuncs = {
       }
       const usages = node.data.record_usages
 
-      if (usageId === 'total' && usages) {
+      if (usageId === 'total_usages' && usages) {
         value = parseNumber(
           sum(usages.map((usage: any) => parseFloat(usage.quantity))),
+        )
+      } else if (usageId === 'total_refrigeration' && usages) {
+        value = parseNumber(
+          sum(
+            filter(usages, (usage) => includes([6, 7], usage.usage_id)).map(
+              (usage: any) => parseFloat(usage.quantity),
+            ),
+          ),
         )
       } else if (usages) {
         const usage = find(usages, (item) => item.usage_id === usageId)
@@ -77,51 +90,25 @@ const aggFuncs = {
   },
 }
 
-function AgHeaderComponent(props: any) {
-  const { column, displayName, enableSorting } = props
-
-  const { sortingOrder } = column.getColDef()
-  const sort = column.getSort() || null
-  const sortIndex = sortingOrder.indexOf(sort)
-
-  const nextSort = useMemo(() => {
-    if (sortIndex === -1) return null
-    return sortIndex < sortingOrder.length - 1
-      ? sortingOrder[sortIndex + 1]
-      : sortingOrder[0]
-  }, [sortIndex, sortingOrder])
+export function AgHeaderComponent(props: any) {
+  const { displayName } = props
 
   return (
-    <div className="group flex items-center justify-between break-words">
-      <Typography
-        className={cx('inline-flex items-center', {
-          'cursor-pointer gap-2': !!enableSorting,
-        })}
-        onClick={() => {
-          props.setSort(nextSort)
-        }}
-      >
-        {displayName}
-        {!!enableSorting && sort && (
-          <Typography component="span">
-            {sort === 'asc' ? <FaSortUp /> : <FaSortDown />}
-          </Typography>
-        )}
-        {!!enableSorting && !sort && (
-          <Typography component="span">
-            <FaSort />
-          </Typography>
-        )}
-      </Typography>
-    </div>
+    <Typography className={props.className} component="span">
+      {displayName}
+    </Typography>
   )
 }
 
-function AgHeaderGroupComponent(props: any) {
-  return <Typography component="span">{props.displayName}</Typography>
+export function AgHeaderGroupComponent(props: any) {
+  return (
+    <Typography className={props.className} component="span">
+      {props.displayName}
+    </Typography>
+  )
 }
 
-function AgTextCellRenderer(props: any) {
+export function AgTextCellRenderer(props: any) {
   const { maxWidth } = props.colDef
   const Tooltip = props.colDef.tooltip ? MuiTooltip : Fragment
   return (
@@ -135,18 +122,20 @@ function AgTextCellRenderer(props: any) {
         }
       >
         {props.data.isSkeleton ? (
-          <Typography component="span">
+          <Typography className={props.className} component="span">
             <Skeleton className="inline-block w-full" />
           </Typography>
         ) : (
-          <Typography component="span">{props.value}</Typography>
+          <Typography className={props.className} component="span">
+            {props.value}
+          </Typography>
         )}
       </span>
     </Tooltip>
   )
 }
 
-function AgFloatCellRenderer(props: any) {
+export function AgFloatCellRenderer(props: any) {
   let value = null
   const { maxWidth } = props.colDef
   const aggFunc = get(aggFuncs, props.colDef.aggFunc)
@@ -163,9 +152,11 @@ function AgFloatCellRenderer(props: any) {
     value = parseNumber(props.value)
   }
 
-  const formattedValue = value?.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-  })
+  const formattedValue = isNumber(value)
+    ? value.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+      })
+    : '0.00'
 
   return (
     <Tooltip enterDelay={300} placement="top-start" title={formattedValue}>
@@ -189,13 +180,13 @@ function AgFloatCellRenderer(props: any) {
   )
 }
 
-function AgDateCellRenderer(props: any) {
-  const value = dayjs(props.value).format('YYYY-MM-DD')
+export function AgDateCellRenderer(props: any) {
+  const value = dayjs(props.value).format('DD/MM/YYYY')
   const finalValue = value !== 'Invalid Date' ? value : null
   return !!props.value && <Typography component="span">{finalValue}</Typography>
 }
 
-function AgUsageCellRenderer(props: any) {
+export function AgUsageCellRenderer(props: any) {
   let value = null
   const { maxWidth } = props.colDef
   const aggFunc = get(aggFuncs, props.colDef.aggFunc)
@@ -210,18 +201,28 @@ function AgUsageCellRenderer(props: any) {
     value = aggFunc({ ...props, byGroup: true })
   } else if (props.data.isTotal && aggFunc) {
     value = aggFunc({ ...props })
-  } else if (usageId === 'total' && usages) {
+  } else if (usageId === 'total_usages' && usages) {
     value = parseNumber(
       sum(usages.map((usage: any) => parseFloat(usage.quantity))),
+    )
+  } else if (usageId === 'total_refrigeration' && usages) {
+    value = parseNumber(
+      sum(
+        filter(usages, (usage) => includes([6, 7], usage.usage_id)).map(
+          (usage: any) => parseFloat(usage.quantity),
+        ),
+      ),
     )
   } else if (usages) {
     const usage = find(usages, (item) => item.usage_id === usageId)
     value = parseNumber(usage?.quantity)
   }
 
-  const formattedValue = value?.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-  })
+  const formattedValue = isNumber(value)
+    ? value.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+      })
+    : '0.00'
 
   return (
     <Tooltip enterDelay={300} placement="top-start" title={formattedValue}>
@@ -378,7 +379,7 @@ export default function Table(props: AgGridReactProps) {
       )}
       <AgGridReact
         aggFuncs={aggFuncs}
-        animateRows={true}
+        animateRows={false}
         defaultColDef={{ ...baseColDef, ...defaultColDef }}
         domLayout="autoHeight"
         enableCellTextSelection={true}
@@ -389,6 +390,7 @@ export default function Table(props: AgGridReactProps) {
         sortingOrder={['asc']}
         stopEditingWhenCellsLoseFocus={true}
         suppressCellFocus={true}
+        suppressColumnVirtualisation={true}
         suppressDragLeaveHidesColumns={true}
         suppressLoadingOverlay={true}
         suppressMovableColumns={true}
@@ -409,10 +411,10 @@ export default function Table(props: AgGridReactProps) {
           agUsageCellRenderer: AgUsageCellRenderer,
           ...components,
         }}
-        noRowsOverlayComponent={() => {
+        noRowsOverlayComponent={(props: any) => {
           return (
             <Typography id="no-rows" component="span">
-              No Rows To Show
+              {props.label || 'No Rows To Show'}
             </Typography>
           )
         }}
@@ -422,11 +424,12 @@ export default function Table(props: AgGridReactProps) {
             gridRef.current = null
           }
           if (agGrid && gridRef) {
-            gridRef.current = {
-              ...agGrid,
-              paginationGoToPage: (page: number, triggerEvent = false) => {
-                handlePageChange(page, triggerEvent)
-              },
+            gridRef.current = agGrid
+            gridRef.current.paginationGoToPage = (
+              page: number,
+              triggerEvent = false,
+            ) => {
+              handlePageChange(page, triggerEvent)
             }
           }
         }}
