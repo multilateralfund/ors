@@ -36,32 +36,31 @@ export default function CPReportView(props: {
 }) {
   const searchParams = useSearchParams()
   const [activeSection, setActiveSection] = useState(0)
-  const report: any = useMemo(
-    () => ({
-      ...(props.report || {}),
-      name: searchParams.get('name'),
-      year: searchParams.get('year'),
-    }),
-    [props.report, searchParams],
+  const [report]: any = useState({
+    ...(props.report || {}),
+    name: searchParams.get('name'),
+    year: searchParams.get('year'),
+  })
+  const [variant] = useState(
+    filter(variants, (variant) => {
+      const year =
+        report && isString(report?.year)
+          ? parseInt(report.year)
+          : new Date().getFullYear()
+      return variant.minYear <= year && variant.maxYear >= year
+    })[0],
   )
-  const variant = useMemo(
-    () =>
-      filter(variants, (variant) => {
-        const year =
-          report && isString(report?.year)
-            ? parseInt(report.year)
-            : new Date().getFullYear()
-        return variant.minYear <= year && variant.maxYear >= year
-      })[0],
-    [report],
-  )
+  const [sections] = useState(getSections(variant))
 
-  const sections = useMemo(() => getSections(variant), [variant])
+  const section = useMemo(
+    () => sections[activeSection],
+    [activeSection, sections],
+  )
 
   return (
     <>
       <Tabs
-        className="mb-4"
+        className="country-programme-tabs mb-4"
         aria-label="create submission sections"
         value={activeSection}
         onChange={(event: React.SyntheticEvent, newSection: number) => {
@@ -73,16 +72,17 @@ export default function CPReportView(props: {
             key={section.id}
             aria-controls={section.panelId}
             label={section.label}
-            disableRipple
           />
         ))}
       </Tabs>
-      <SectionPanel
-        admForm={props.admForm || {}}
-        report={report}
-        section={sections[activeSection]}
-        variant={variant}
-      />
+      <div id={section.panelId} aria-labelledby={section.id} role="tabpanel">
+        <SectionPanel
+          admForm={props.admForm || {}}
+          report={report}
+          section={section}
+          variant={variant}
+        />
+      </div>
     </>
   )
 }

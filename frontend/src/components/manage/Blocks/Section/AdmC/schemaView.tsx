@@ -27,12 +27,14 @@ function useGridOptions(props: { model: string }) {
           initialWidth: 200,
         },
         {
-          field: 'anual',
-          headerName: 'Anual',
+          id: 21,
+          cellRenderer: 'agAdmCellRenderer',
+          headerName: 'HCFC',
           initialWidth: 200,
         },
         {
-          field: 'cumulative',
+          id: 22,
+          cellRenderer: 'agAdmCellRenderer',
           headerName: 'Cumulative',
           initialWidth: 200,
         },
@@ -43,6 +45,7 @@ function useGridOptions(props: { model: string }) {
         },
       ],
       defaultColDef: {
+        cellClass: 'ag-text-center',
         headerClass: 'ag-text-center',
         minWidth: 130,
         resizable: true,

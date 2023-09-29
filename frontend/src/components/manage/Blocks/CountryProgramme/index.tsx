@@ -6,9 +6,9 @@ import AdmDE from '@ors/components/manage/Blocks/Section/AdmDE/View'
 import SectionA from '@ors/components/manage/Blocks/Section/SectionA/View'
 import SectionB from '@ors/components/manage/Blocks/Section/SectionB/View'
 import SectionCView from '@ors/components/manage/Blocks/Section/SectionC/SectionCView'
-import SectionDView from '@ors/components/manage/Blocks/Section/SectionD/SectionDView'
-import SectionEView from '@ors/components/manage/Blocks/Section/SectionE/SectionEView'
-import SectionFView from '@ors/components/manage/Blocks/Section/SectionF/SectionFView'
+import SectionDView from '@ors/components/manage/Blocks/Section/SectionD/View'
+import SectionEView from '@ors/components/manage/Blocks/Section/SectionE/View'
+import SectionFView from '@ors/components/manage/Blocks/Section/SectionF/View'
 
 export const variants = [
   {

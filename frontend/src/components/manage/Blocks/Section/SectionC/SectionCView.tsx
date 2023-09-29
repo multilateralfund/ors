@@ -1,17 +1,13 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { Typography } from '@mui/material'
-import { each, includes, union } from 'lodash'
-import dynamic from 'next/dynamic'
+import cx from 'classnames'
+import { each, includes, times, union } from 'lodash'
 
+import Table from '@ors/components/manage/Form/Table'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
-import LoadingBuffer from '@ors/components/theme/Loading/LoadingBuffer'
 
 import useGridOptions from './schemaView'
-
-const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
-  ssr: false,
-})
 
 export default function SectionCView(props: {
   report: Record<string, Array<any>>
@@ -21,6 +17,7 @@ export default function SectionCView(props: {
   const grid = useRef<any>()
   const gridOptions = useGridOptions()
   const [offsetHeight, setOffsetHeight] = useState(0)
+  const [loadTable, setLoadTable] = useState(false)
   const [loading, setLoading] = useState(true)
 
   const rowData = useMemo(() => {
@@ -78,9 +75,13 @@ export default function SectionCView(props: {
     setOffsetHeight(headerHeight + horizontalScrollbarHeight + 2)
   }
 
+  useEffect(() => {
+    setTimeout(() => setLoadTable(true), 500)
+  }, [])
+
   return (
     <>
-      <HeaderTitle onInit={() => setLoading(false)}>
+      <HeaderTitle>
         {report.name && (
           <Typography className="mb-4 text-white" component="h1" variant="h5">
             {report.name}
@@ -91,9 +92,21 @@ export default function SectionCView(props: {
           $/kg)
         </Typography>
       </HeaderTitle>
-      {loading && <LoadingBuffer className="relative" time={300} />}
-      {!loading && (
+      {!loadTable && (
         <Table
+          columnDefs={gridOptions.columnDefs}
+          enablePagination={false}
+          rowData={times(10, () => {
+            return {
+              rowType: 'skeleton',
+            }
+          })}
+          withSeparators
+        />
+      )}
+      {loadTable && (
+        <Table
+          className={cx({ 'opacity-0': loading })}
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
           domLayout={tableBodyHeight > 0 ? 'normal' : 'autoHeight'}
@@ -118,6 +131,7 @@ export default function SectionCView(props: {
                 }
               : {}
           }
+          onFirstDataRendered={() => setLoading(false)}
           onGridReady={updateOffsetHeight}
           withSeparators
         />

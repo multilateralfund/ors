@@ -1,18 +1,15 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { Typography } from '@mui/material'
-import dynamic from 'next/dynamic'
+import cx from 'classnames'
+import { times, union } from 'lodash'
 
+import Table from '@ors/components/manage/Form/Table'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
-import LoadingBuffer from '@ors/components/theme/Loading/LoadingBuffer'
 
 import useGridOptions from './schemaView'
 
-const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
-  ssr: false,
-})
-
-export default function SectionEView(props: {
+export default function SectionDView(props: {
   report: Record<string, Array<any>>
   variant: any
 }) {
@@ -20,25 +17,26 @@ export default function SectionEView(props: {
   const grid = useRef<any>()
   const gridOptions = useGridOptions()
   const [offsetHeight, setOffsetHeight] = useState(0)
+  const [loadTable, setLoadTable] = useState(false)
   const [loading, setLoading] = useState(true)
 
   const rowData = useMemo(() => {
-    const rowData = report.section_e
-    return [...rowData]
+    const rowData = (report.section_d || []).map((item) => ({
+      ...item,
+      group: item.annex_group || 'Other',
+    }))
+
+    return union(
+      rowData,
+      rowData.length > 0 ? [{ display_name: 'TOTAL', rowType: 'total' }] : [],
+    )
   }, [report])
 
-  const pinnedBottomRowData = useMemo(() => {
-    return rowData.length > 0 ? [{ facility: 'TOTAL', rowType: 'total' }] : []
-  }, [rowData])
-
   const tableBodyHeight = useMemo(() => {
-    let offset = offsetHeight
+    const offset = offsetHeight
     const rowsVisible = 15
     const rowHeight = 41
-    const rows = rowData.length + pinnedBottomRowData.length
-    if (pinnedBottomRowData.length) {
-      offset += 1
-    }
+    const rows = rowData.length
     if (!rows) {
       return 0
     }
@@ -46,7 +44,7 @@ export default function SectionEView(props: {
       return rows * rowHeight + offset
     }
     return rowsVisible * rowHeight + offset
-  }, [rowData, pinnedBottomRowData, offsetHeight])
+  }, [rowData, offsetHeight])
 
   function updateOffsetHeight() {
     const headerHeight = grid.current.getHeaderContainerHeight()
@@ -55,23 +53,38 @@ export default function SectionEView(props: {
     setOffsetHeight(headerHeight + horizontalScrollbarHeight + 2)
   }
 
+  useEffect(() => {
+    setTimeout(() => setLoadTable(true), 500)
+  }, [])
+
   return (
     <>
-      <HeaderTitle onInit={() => setLoading(false)}>
+      <HeaderTitle>
         {report.name && (
           <Typography className="mb-4 text-white" component="h1" variant="h5">
             {report.name}
           </Typography>
         )}
         <Typography className="text-white" component="h1" variant="h6">
-          SECTION E. ANNEX F, GROUP II - DATA ON HFC-23 EMISSIONS (METRIC
+          SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC
           TONNES)
         </Typography>
       </HeaderTitle>
-      {loading && <LoadingBuffer className="relative" time={300} />}
-      {!loading && (
+      {!loadTable && (
         <Table
-          className="two-groups"
+          columnDefs={gridOptions.columnDefs}
+          enablePagination={false}
+          rowData={times(10, () => {
+            return {
+              rowType: 'skeleton',
+            }
+          })}
+          withSeparators
+        />
+      )}
+      {loadTable && (
+        <Table
+          className={cx({ 'opacity-0': loading })}
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
           domLayout={tableBodyHeight > 0 ? 'normal' : 'autoHeight'}
@@ -79,7 +92,6 @@ export default function SectionEView(props: {
           enablePagination={false}
           gridRef={grid}
           noRowsOverlayComponentParams={{ label: 'No data reported' }}
-          pinnedBottomRowData={pinnedBottomRowData}
           rowBuffer={40}
           rowData={rowData}
           suppressCellFocus={false}
@@ -96,6 +108,7 @@ export default function SectionEView(props: {
                 }
               : {}
           }
+          onFirstDataRendered={() => setLoading(false)}
           onGridReady={updateOffsetHeight}
           withSeparators
         />

@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { Divider } from '@mui/material'
 import cx from 'classnames'
 
-import CollapseInOut from '@ors/components/manage/Transitions/CollapseInOut'
 import useStore from '@ors/store'
 
 export type TitleProps = {
@@ -13,14 +12,14 @@ export type TitleProps = {
 }
 
 export type HeaderTitleProps = {
+  animationDelay?: number
   children: React.ReactNode
-  delay?: number
-  onInit?: () => any
+  onAnimationEnd?: () => any
 }
 
 function Title({ children, visible }: TitleProps) {
   return (
-    <CollapseInOut>
+    <div>
       <Divider
         className={cx('-ml-4 mb-12 mt-4 w-[calc(100%+2rem)] border-gray-200', {
           'pointer-events-none absolute left-0 top-0 opacity-0': !visible,
@@ -28,30 +27,30 @@ function Title({ children, visible }: TitleProps) {
       />
       {children}
       <div className="mb-4" />
-    </CollapseInOut>
+    </div>
   )
 }
 
 export default function HeaderTitle({
+  animationDelay = 600,
   children,
-  delay = 600,
-  onInit,
+  onAnimationEnd,
 }: HeaderTitleProps) {
   const [mounted, setMounted] = useState(false)
   const { setHeaderTitleComponent } = useStore((state) => state.header)
 
   useEffect(() => {
     setMounted(true)
-    setHeaderTitleComponent(<Title visible={true}>{children}</Title>)
+    setHeaderTitleComponent(<Title visible={true}>{children}</Title>, false)
 
-    if (onInit) {
+    if (onAnimationEnd) {
       setTimeout(() => {
-        onInit()
-      }, delay)
+        onAnimationEnd()
+      }, animationDelay)
     }
 
     return () => {
-      setHeaderTitleComponent(null)
+      setHeaderTitleComponent(null, false)
     }
 
     /* eslint-disable-next-line */

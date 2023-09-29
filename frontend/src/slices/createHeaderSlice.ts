@@ -17,7 +17,7 @@ export interface HeaderSlice {
 
 let timer: any
 
-const debounce = (func: () => void) => {
+const animateDebounce = (func: () => void) => {
   if (timer) {
     clearTimeout(timer)
     timer = setTimeout(() => {
@@ -32,6 +32,11 @@ const debounce = (func: () => void) => {
   }
 }
 
+const debounce = (func: () => void) => {
+  if (timer) clearTimeout(timer)
+  timer = setTimeout(func, 100)
+}
+
 export const createHeaderSlice = (
   set: StoreApi<StoreState>['setState'],
   get: StoreApi<StoreState>['getState'],
@@ -44,8 +49,8 @@ export const createHeaderSlice = (
   return {
     HeaderTitle: initialState?.header?.HeaderTitle || null,
     navigationBackground: initialNavigationBackground,
-    setHeaderTitleComponent: (component) => {
-      debounce(() => {
+    setHeaderTitleComponent: (component, animate = true) => {
+      function updateHeader() {
         set((state) => {
           return {
             header: {
@@ -54,7 +59,12 @@ export const createHeaderSlice = (
             },
           }
         })
-      })
+      }
+      if (animate) {
+        animateDebounce(updateHeader)
+      } else {
+        debounce(updateHeader)
+      }
     },
     setNavigationBackground: (value) => {
       set((state) => {

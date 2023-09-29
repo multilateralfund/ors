@@ -1,17 +1,13 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { Typography } from '@mui/material'
-import { map } from 'lodash'
-import dynamic from 'next/dynamic'
+import cx from 'classnames'
+import { groupBy, map, times } from 'lodash'
 
+import Table from '@ors/components/manage/Form/Table'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
-import LoadingBuffer from '@ors/components/theme/Loading/LoadingBuffer'
 
 import useGridOptions from './schemaView'
-
-const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
-  ssr: false,
-})
 
 export default function AdmB(props: {
   admForm: Record<string, any>
@@ -21,21 +17,29 @@ export default function AdmB(props: {
   const { admForm, report, variant } = props
   const grid = useRef<any>()
   const gridOptions = useGridOptions({ model: variant.model })
+  const [loadTable, setLoadTable] = useState(false)
   const [loading, setLoading] = useState(true)
 
   const rowData = useMemo(() => {
-    return map(admForm.admB?.rows, (row) => ({
-      ...row,
-      ...(row.type === 'title' ? { isGroup: true } : {}),
-      ...(row.type === 'subtitle' ? { isStripe: true } : {}),
-    }))
-  }, [admForm])
+    const dataByRowId = groupBy(report.adm_b, 'row_id')
 
-  console.log('HERE', report, admForm)
+    return map(admForm.admB?.rows, (row) => ({
+      values: dataByRowId[row.id]?.[0]?.values || [],
+      ...row,
+      ...(row.type === 'title' ? { rowType: 'group' } : {}),
+      ...(row.type === 'subtitle' ? { rowType: 'hashed' } : {}),
+    }))
+  }, [admForm, report])
+
+  useEffect(() => {
+    setTimeout(() => setLoadTable(true), 500)
+  }, [])
+
+  console.log('HERE', admForm)
 
   return (
     <>
-      <HeaderTitle onInit={() => setLoading(false)}>
+      <HeaderTitle>
         {report.name && (
           <Typography className="mb-4 text-white" component="h1" variant="h5">
             {report.name}
@@ -45,28 +49,38 @@ export default function AdmB(props: {
           B. Regulatory, administrative and supportive actions
         </Typography>
       </HeaderTitle>
-      {loading && <LoadingBuffer className="relative" time={300} />}
-      {!loading && (
-        <>
-          <Table
-            className="two-groups"
-            columnDefs={gridOptions.columnDefs}
-            defaultColDef={gridOptions.defaultColDef}
-            enableCellChangeFlash={true}
-            enablePagination={false}
-            gridRef={grid}
-            noRowsOverlayComponentParams={{ label: 'No data reported' }}
-            rowBuffer={20}
-            rowData={rowData}
-            suppressCellFocus={false}
-            suppressRowHoverHighlight={false}
-            rowClassRules={{
-              'ag-row-group': (props) => props.data.isGroup,
-              'ag-row-stripe': (props) => props.data.isStripe,
-            }}
-            withSeparators
-          />
-        </>
+      {!loadTable && (
+        <Table
+          columnDefs={gridOptions.columnDefs}
+          enablePagination={false}
+          rowData={times(10, () => {
+            return {
+              rowType: 'skeleton',
+            }
+          })}
+          withSeparators
+        />
+      )}
+      {loadTable && (
+        <Table
+          className={cx('two-groups', { 'opacity-0': loading })}
+          columnDefs={gridOptions.columnDefs}
+          defaultColDef={gridOptions.defaultColDef}
+          enableCellChangeFlash={true}
+          enablePagination={false}
+          gridRef={grid}
+          noRowsOverlayComponentParams={{ label: 'No data reported' }}
+          rowBuffer={40}
+          rowData={rowData}
+          suppressCellFocus={false}
+          suppressRowHoverHighlight={false}
+          rowClassRules={{
+            'ag-row-group': (props) => props.data.rowType === 'group',
+            'ag-row-hashed': (props) => props.data.rowType === 'hashed',
+          }}
+          onFirstDataRendered={() => setLoading(false)}
+          withSeparators
+        />
       )}
     </>
   )

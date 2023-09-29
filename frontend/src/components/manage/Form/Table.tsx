@@ -55,7 +55,7 @@ const aggFuncs = {
         values.push(value)
       }
     })
-    return values.length > 0 ? sum(values) : null
+    return values.length > 0 ? sum(values) : undefined
   },
   sumTotalUsages: (props: any) => {
     let value: null | number = null
@@ -120,24 +120,34 @@ export function AgHeaderGroupComponent(props: any) {
   )
 }
 
+export function AgSkeletonCellRenderer(props: any) {
+  return (
+    <Typography className={props.className} component="span">
+      <Skeleton className="inline-block w-full" />
+    </Typography>
+  )
+}
+
 export function AgTextCellRenderer(props: any) {
+  if (props.data.rowType === 'skeleton') {
+    return <AgSkeletonCellRenderer {...props} />
+  }
+
   const Tooltip = props.colDef.tooltip ? MuiTooltip : Fragment
   return (
     <Tooltip enterDelay={300} placement="top-start" title={props.value}>
-      {props.data.isSkeleton ? (
-        <Typography className={props.className} component="span">
-          <Skeleton className="inline-block w-full" />
-        </Typography>
-      ) : (
-        <Typography className={props.className} component="span">
-          {props.value}
-        </Typography>
-      )}
+      <Typography className={props.className} component="span">
+        {props.value}
+      </Typography>
     </Tooltip>
   )
 }
 
 export function AgFloatCellRenderer(props: any) {
+  if (props.data.rowType === 'skeleton') {
+    return <AgSkeletonCellRenderer {...props} />
+  }
+
   let value = null
   const aggFunc = get(aggFuncs, props.colDef.aggFunc)
   const Tooltip = props.colDef.tooltip ? MuiTooltip : Fragment
@@ -151,6 +161,10 @@ export function AgFloatCellRenderer(props: any) {
     value = parseNumber(props.value)
   }
 
+  if (isUndefined(value)) {
+    return null
+  }
+
   if (isNull(value)) {
     return '-'
   }
@@ -161,26 +175,28 @@ export function AgFloatCellRenderer(props: any) {
 
   return (
     <Tooltip enterDelay={300} placement="top-start" title={formattedValue}>
-      {props.data.isSkeleton ? (
-        <Typography className={props.className} component="span">
-          <Skeleton className="inline-block w-full" />
-        </Typography>
-      ) : (
-        <Typography className={props.className} component="span">
-          {formattedValue}
-        </Typography>
-      )}
+      <Typography className={props.className} component="span">
+        {formattedValue}
+      </Typography>
     </Tooltip>
   )
 }
 
 export function AgDateCellRenderer(props: any) {
+  if (props.data.rowType === 'skeleton') {
+    return <AgSkeletonCellRenderer {...props} />
+  }
+
   const value = dayjs(props.value).format('DD/MM/YYYY')
   const finalValue = value !== 'Invalid Date' ? value : null
   return !!props.value && <Typography component="span">{finalValue}</Typography>
 }
 
 export function AgUsageCellRenderer(props: any) {
+  if (props.data.rowType === 'skeleton') {
+    return <AgSkeletonCellRenderer {...props} />
+  }
+
   let value = null
   const aggFunc = get(aggFuncs, props.colDef.aggFunc)
   const Tooltip = props.colDef.tooltip ? MuiTooltip : Fragment
@@ -229,15 +245,34 @@ export function AgUsageCellRenderer(props: any) {
 
   return (
     <Tooltip enterDelay={300} placement="top-start" title={formattedValue}>
-      {props.data.isSkeleton ? (
-        <Typography className={props.className} component="span">
-          <Skeleton className="inline-block w-full" />
-        </Typography>
-      ) : (
-        <Typography className={props.className} component="span">
-          {formattedValue}
-        </Typography>
-      )}
+      <Typography className={props.className} component="span">
+        {formattedValue}
+      </Typography>
+    </Tooltip>
+  )
+}
+
+export function AgAdmCellRenderer(props: any) {
+  if (props.data.rowType === 'skeleton') {
+    return <AgSkeletonCellRenderer {...props} />
+  }
+
+  let value = null
+  const Tooltip = props.colDef.tooltip ? MuiTooltip : Fragment
+  const columnId = props.colDef.id
+  const values = props.data.values || []
+
+  if (includes(['group', 'hashed'], props.data.rowType)) {
+    value = null
+  } else {
+    value = find(values, (value) => value.column_id === columnId)?.value_text
+  }
+
+  return (
+    <Tooltip enterDelay={300} placement="top-start" title={value}>
+      <Typography className={props.className} component="span">
+        {value}
+      </Typography>
     </Tooltip>
   )
 }
@@ -311,7 +346,7 @@ export default function Table(props: AgGridReactProps) {
       return rowData.length === 0 && loading
         ? times(pagination.rowsPerPage, () => {
             return {
-              isSkeleton: true,
+              rowType: 'skeleton',
             }
           })
         : rowData
@@ -364,7 +399,7 @@ export default function Table(props: AgGridReactProps) {
       )}
       style={style}
     >
-      {loading && !(withSkeleton && results?.[0]?.isSkeleton) && (
+      {loading && !(withSkeleton && results?.[0]?.rowType === 'skeleton') && (
         <Loading className="bg-action-disabledBackground/5" />
       )}
       <AgGridReact
@@ -390,6 +425,7 @@ export default function Table(props: AgGridReactProps) {
         suppressRowClickSelection={true}
         suppressRowHoverHighlight={true}
         components={{
+          agAdmCellRenderer: AgAdmCellRenderer,
           agColumnHeader: AgHeaderComponent,
           agColumnHeaderGroup: AgHeaderGroupComponent,
           agDateCellEditor: CellDateWidget,

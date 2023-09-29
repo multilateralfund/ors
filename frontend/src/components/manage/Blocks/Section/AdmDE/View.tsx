@@ -1,41 +1,39 @@
-import { useMemo, useRef, useState } from 'react'
+import React, { useMemo } from 'react'
 
-import { Typography } from '@mui/material'
-import { map } from 'lodash'
-import dynamic from 'next/dynamic'
+import {
+  Box,
+  Checkbox,
+  FormControlLabel,
+  FormGroup,
+  List,
+  ListItem,
+  Typography,
+} from '@mui/material'
+import { groupBy, map } from 'lodash'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
-import LoadingBuffer from '@ors/components/theme/Loading/LoadingBuffer'
-
-import useGridOptions from './schemaView'
-
-const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
-  ssr: false,
-})
 
 export default function AdmC(props: {
   admForm: Record<string, any>
   report: Record<string, Array<any>>
   variant: any
 }) {
-  const { admForm, report, variant } = props
-  const grid = useRef<any>()
-  const gridOptions = useGridOptions({ model: variant.model })
-  const [loading, setLoading] = useState(true)
+  const { admForm, report } = props
 
   const rowData = useMemo(() => {
-    return map(admForm.admC?.rows, (row) => ({
-      ...row,
-      ...(row.type === 'title' ? { isGroup: true } : {}),
-      ...(row.type === 'subtitle' ? { isStripe: true } : {}),
-    }))
-  }, [admForm])
+    const dataByRowId = groupBy(report.adm_d, 'row_id')
 
-  console.log('HERE', report, admForm)
+    return map(admForm.admD?.rows, (row) => ({
+      ...row,
+      ...(row.type === 'title' ? { rowType: 'group' } : {}),
+      ...(row.type === 'subtitle' ? { rowType: 'hashed' } : {}),
+      values: groupBy(dataByRowId[row.id], 'value_choice_id'),
+    }))
+  }, [admForm, report])
 
   return (
     <>
-      <HeaderTitle onInit={() => setLoading(false)}>
+      <HeaderTitle>
         {report.name && (
           <Typography className="mb-4 text-white" component="h1" variant="h5">
             {report.name}
@@ -45,29 +43,39 @@ export default function AdmC(props: {
           C. Quantitative assessment of the phase-out programme
         </Typography>
       </HeaderTitle>
-      {loading && <LoadingBuffer className="relative" time={300} />}
-      {!loading && (
-        <>
-          <Table
-            className="two-groups"
-            columnDefs={gridOptions.columnDefs}
-            defaultColDef={gridOptions.defaultColDef}
-            enableCellChangeFlash={true}
-            enablePagination={false}
-            gridRef={grid}
-            noRowsOverlayComponentParams={{ label: 'No data reported' }}
-            rowBuffer={20}
-            rowData={rowData}
-            suppressCellFocus={false}
-            suppressRowHoverHighlight={false}
-            rowClassRules={{
-              'ag-row-group': (props) => props.data.isGroup,
-              'ag-row-stripe': (props) => props.data.isStripe,
-            }}
-            withSeparators
-          />
-        </>
-      )}
+      <Box>
+        <Typography component="h3" variant="h6">
+          D. Qualitative assessment of the operation of HPMP
+        </Typography>
+        <List>
+          {rowData.map((row, index) => (
+            <ListItem key={row.id} className="flex-col items-start pl-0">
+              <Typography className="text-lg">
+                <span className="mr-2 inline-block">{index + 1}.</span>
+                {row.text}
+              </Typography>
+              <FormGroup className="ml-10">
+                {row.choices.map((choice: any) => (
+                  <FormControlLabel
+                    key={choice.id}
+                    label={choice.value}
+                    control={
+                      <Checkbox
+                        checked={!!row.values[choice.id]}
+                        disableRipple
+                      />
+                    }
+                  />
+                ))}
+              </FormGroup>
+            </ListItem>
+          ))}
+        </List>
+
+        <Typography component="h3" variant="h6">
+          E. Comment by bilateral/implementing agency(ies)
+        </Typography>
+      </Box>
     </>
   )
 }

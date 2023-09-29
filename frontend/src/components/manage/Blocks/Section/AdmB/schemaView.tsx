@@ -42,11 +42,14 @@ function useGridOptions(props: { model: string }) {
         {
           children: [
             {
+              id: 17,
+              cellRenderer: 'agAdmCellRenderer',
               headerName: 'Yes/No',
               initialWidth: 150,
             },
             {
-              cellRenderer: 'agDateCellRenderer',
+              id: 18,
+              cellRenderer: 'agAdmCellRenderer',
               headerName: 'If Yes, since when (Date) / If No, planned date',
               initialWidth: 400,
             },
@@ -63,6 +66,7 @@ function useGridOptions(props: { model: string }) {
         },
       ],
       defaultColDef: {
+        cellClass: 'ag-text-center',
         headerClass: 'ag-text-center',
         minWidth: 80,
         resizable: true,

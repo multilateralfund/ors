@@ -5,6 +5,7 @@ import { AnimatePresence } from 'framer-motion'
 import { isFunction } from 'lodash'
 import { usePathname } from 'next/navigation'
 
+import CollapseInOut from '@ors/components/manage/Transitions/CollapseInOut'
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Logo from '@ors/components/theme/Logo/Logo'
 import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
@@ -102,8 +103,12 @@ export default function Header() {
           </div>
           <div id="header-title">
             <AnimatePresence>
-              {isFunction(HeaderTitle) && <HeaderTitle />}
-              {!!HeaderTitle && HeaderTitle}
+              {isFunction(HeaderTitle) && (
+                <CollapseInOut>
+                  <HeaderTitle />
+                </CollapseInOut>
+              )}
+              {!!HeaderTitle && <CollapseInOut>{HeaderTitle}</CollapseInOut>}
             </AnimatePresence>
           </div>
         </div>

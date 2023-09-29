@@ -6,8 +6,8 @@
 }
 
 #next-app [class*='ag-theme-'] .ag-row-group,
-#next-app [class*='ag-theme-'] .ag-row-controller,
-#next-app [class*='ag-theme-'] .ag-row-stripe {
+#next-app [class*='ag-theme-'] .ag-row-control,
+#next-app [class*='ag-theme-'] .ag-row-hashed {
   @apply pattern-diagonal-lines pattern-bg-transparent pattern-slate-500 
   pattern-opacity-100 pattern-size-2;
 }
