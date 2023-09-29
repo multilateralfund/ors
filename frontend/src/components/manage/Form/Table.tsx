@@ -333,7 +333,7 @@ export default function Table(props: AgGridReactProps) {
           (!props.editing && cellEditorParams.disableClearable && KEY_BACKSPACE)
         )
       },
-      tooltip: true,
+      tooltip: false,
       wrapHeaderText: true,
     }),
     [],
