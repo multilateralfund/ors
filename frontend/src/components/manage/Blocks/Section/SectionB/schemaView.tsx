@@ -18,7 +18,7 @@ function useGridOptions() {
           field: 'display_name',
           headerClass: 'ag-text-left',
           headerName: 'Substance',
-          initialWidth: 300,
+          initialWidth: 340,
           pinned: 'left',
         },
         {

@@ -28,14 +28,14 @@ export default function SectionCView(props: {
     const dataByGroup: Record<string, any> = {}
     const groups: Array<string> = []
     each(report.section_c, (item) => {
-      const group = item.annex_group || 'Other'
+      const group = item.annex_group || 'Alternatives'
       if (!dataByGroup[group]) {
         dataByGroup[group] = []
       }
       if (!includes(groups, group)) {
         groups.push(group)
       }
-      dataByGroup[group].push(item)
+      dataByGroup[group].push({ ...item, group })
     })
     each(groups, (group: string) => {
       rowData = union(

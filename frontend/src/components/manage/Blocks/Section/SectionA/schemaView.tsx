@@ -10,7 +10,6 @@ function useGridOptions(props: { model: string }) {
     () => ({
       columnDefs: [
         {
-          cellClass: 'bg-mui-box-background',
           cellRendererParams: (props: any) => ({
             className: cx({
               'font-bold': includes(['group', 'total'], props.data.rowType),
@@ -249,7 +248,19 @@ function useGridOptions(props: { model: string }) {
       ],
       defaultColDef: {
         autoHeight: true,
-        cellClass: 'ag-text-right',
+        cellClass: (props: any) => {
+          return cx({
+            'ag-text-right': !includes(['display_name'], props.colDef.field),
+            'bg-gray-100 theme-dark:bg-gray-900/40': includes(
+              props.data.excluded_usages || [],
+              props.colDef.id,
+            ),
+            'bg-mui-box-background': includes(
+              ['display_name'],
+              props.colDef.field,
+            ),
+          })
+        },
         headerClass: 'ag-text-center',
         minWidth: 130,
         resizable: true,

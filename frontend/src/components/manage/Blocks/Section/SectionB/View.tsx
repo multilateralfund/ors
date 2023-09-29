@@ -42,7 +42,7 @@ export default function SectionBView(props: {
       if (!includes(groups, group)) {
         groups.push(group)
       }
-      dataByGroup[group].push(item)
+      dataByGroup[group].push({ ...item, group })
     })
     each(groups, (group: string) => {
       rowData = union(

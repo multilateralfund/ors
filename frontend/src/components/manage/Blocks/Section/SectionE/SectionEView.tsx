@@ -71,6 +71,7 @@ export default function SectionEView(props: {
       {loading && <LoadingBuffer className="relative" time={300} />}
       {!loading && (
         <Table
+          className="two-groups"
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
           domLayout={tableBodyHeight > 0 ? 'normal' : 'autoHeight'}

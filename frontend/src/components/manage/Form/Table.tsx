@@ -14,7 +14,17 @@ import { ColDef } from 'ag-grid-community'
 import { AgGridReact, AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
 import dayjs from 'dayjs'
-import { filter, find, get, includes, isNull, reduce, sum, times } from 'lodash'
+import {
+  filter,
+  find,
+  get,
+  includes,
+  isNull,
+  isUndefined,
+  reduce,
+  sum,
+  times,
+} from 'lodash'
 
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import CellAutocompleteWidget from '@ors/components/manage/Widgets/CellAutocompleteWidget'
@@ -76,14 +86,19 @@ const aggFuncs = {
           ),
         )
       } else {
-        const usage = find(recordUsages, (item) => item.usage_id === usageId)
+        const usage = find(
+          recordUsages,
+          (item) =>
+            item.usage_id === usageId &&
+            !includes(node.data.excluded_usages, usageId),
+        )
         value = parseNumber(usage?.quantity)
       }
       if (!isNull(value)) {
         values.push(value)
       }
     })
-    return values.length > 0 ? sum(values) : null
+    return values.length > 0 ? sum(values) : undefined
   },
 }
 
@@ -172,7 +187,10 @@ export function AgUsageCellRenderer(props: any) {
   const usageId = props.colDef.id
   const recordUsages = props.data.record_usages || []
 
-  if (props.data.rowType === 'group') {
+  if (
+    props.data.rowType === 'group' ||
+    includes(props.data.excluded_usages, usageId)
+  ) {
     return null
   }
   if (aggFunc && includes(['subtotal', 'total'], props.data.rowType)) {
@@ -195,6 +213,10 @@ export function AgUsageCellRenderer(props: any) {
   } else {
     const usage = find(recordUsages, (item) => item.usage_id === usageId)
     value = parseNumber(usage?.quantity)
+  }
+
+  if (isUndefined(value)) {
+    return null
   }
 
   if (isNull(value)) {
@@ -331,7 +353,7 @@ export default function Table(props: AgGridReactProps) {
     <FadeInOut
       id={`table-${uniqueId}`}
       className={cx(
-        'relative table w-full',
+        'relative w-full',
         {
           'ag-theme-alpine': theme.mode !== 'dark',
           'ag-theme-alpine-dark': theme.mode === 'dark',
