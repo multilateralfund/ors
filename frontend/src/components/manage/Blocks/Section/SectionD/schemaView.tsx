@@ -1,10 +1,8 @@
-/* eslint-disable react/display-name */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 import { useState } from 'react'
 
 import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
+import { includes } from 'lodash'
 
 function useGridOptions() {
   const [gridOptions] = useState<GridOptions>({
@@ -13,35 +11,46 @@ function useGridOptions() {
         cellClass: 'bg-mui-box-background',
         cellRendererParams: (props: any) => ({
           className: cx({
-            'font-bold': props.data.isGroup || props.data.isTotal,
+            'font-bold': includes(['group', 'total'], props.data.rowType),
           }),
         }),
-        field: 'chemical_name',
+        field: 'display_name',
+        headerClass: 'ag-text-left',
         headerName: 'Substance',
       },
       {
-        aggFunc: 'sum',
+        aggFunc: 'sumTotal',
         cellRenderer: 'agFloatCellRenderer',
         field: 'all_uses',
         headerName: 'Captured for all uses',
       },
       {
-        aggFunc: 'sum',
+        aggFunc: 'sumTotal',
         cellRenderer: 'agFloatCellRenderer',
         field: 'feedstock',
         headerName: 'Captured for feedstock uses within your country',
+        initialWidth: 400,
       },
       {
-        aggFunc: 'sum',
+        aggFunc: 'sumTotal',
         cellRenderer: 'agFloatCellRenderer',
         field: 'destruction',
         headerName: 'Captured for destruction',
+        initialWidth: 240,
+      },
+      {
+        field: 'expand',
+        flex: 1,
+        headerName: '',
       },
     ],
     defaultColDef: {
-      flex: 1,
+      autoHeight: true,
+      cellClass: 'ag-text-right',
+      headerClass: 'ag-text-center',
       minWidth: 200,
       resizable: true,
+      wrapText: true,
     },
   })
 

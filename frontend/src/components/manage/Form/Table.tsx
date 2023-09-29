@@ -2,7 +2,7 @@
 import type { I18nSlice } from '@ors/slices/createI18nSlice'
 import type { ThemeSlice } from '@ors/slices/createThemeSlice'
 
-import { Fragment, useMemo, useRef, useState } from 'react'
+import { Fragment, useId, useMemo, useRef, useState } from 'react'
 
 import {
   Tooltip as MuiTooltip,
@@ -14,16 +14,7 @@ import { ColDef } from 'ag-grid-community'
 import { AgGridReact, AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
 import dayjs from 'dayjs'
-import {
-  filter,
-  find,
-  get,
-  includes,
-  isNull,
-  isNumber,
-  sum,
-  times,
-} from 'lodash'
+import { filter, find, get, includes, isNull, reduce, sum, times } from 'lodash'
 
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import CellAutocompleteWidget from '@ors/components/manage/Widgets/CellAutocompleteWidget'
@@ -36,14 +27,17 @@ import { parseNumber } from '@ors/helpers/Utils/Utils'
 import useStore from '@ors/store'
 
 const aggFuncs = {
-  sum: (props: any) => {
+  sumTotal: (props: any) => {
     let value: null | number = null
     const values: Array<any> = []
+    if (!includes(['subtotal', 'total'], props.data.rowType)) {
+      return null
+    }
     props.api.forEachNode(function (node: any) {
-      if (node.data.isSubTotal || node.data.isTotal) {
-        return
-      }
-      if (props.byGroup && node.data.group !== props.data.group) {
+      if (
+        props.data.rowType === 'subtotal' &&
+        (!props.data.group || node.data.group !== props.data.group)
+      ) {
         return
       }
       value = parseNumber(node.data[props.colDef.field])
@@ -51,42 +45,45 @@ const aggFuncs = {
         values.push(value)
       }
     })
-    return sum(values)
+    return values.length > 0 ? sum(values) : null
   },
-  sumUsages: (props: any) => {
+  sumTotalUsages: (props: any) => {
     let value: null | number = null
     const values: Array<any> = []
     const usageId = props.colDef.id
+    if (!includes(['subtotal', 'total'], props.data.rowType)) {
+      return null
+    }
     props.api.forEachNode(function (node: any) {
-      if (node.data.isSubTotal || node.data.isTotal) {
+      if (
+        props.data.rowType === 'subtotal' &&
+        (!props.data.group || node.data.annex_group !== props.data.group)
+      ) {
         return
       }
-      if (props.byGroup && node.data.group !== props.data.group) {
-        return
-      }
-      const usages = node.data.record_usages
+      const recordUsages = node.data.record_usages || []
 
-      if (usageId === 'total_usages' && usages) {
+      if (usageId === 'total_usages') {
         value = parseNumber(
-          sum(usages.map((usage: any) => parseFloat(usage.quantity))),
+          sum(recordUsages.map((usage: any) => parseFloat(usage.quantity))),
         )
-      } else if (usageId === 'total_refrigeration' && usages) {
+      } else if (usageId === 'total_refrigeration') {
         value = parseNumber(
           sum(
-            filter(usages, (usage) => includes([6, 7], usage.usage_id)).map(
-              (usage: any) => parseFloat(usage.quantity),
-            ),
+            filter(recordUsages, (usage) =>
+              includes([6, 7], usage.usage_id),
+            ).map((usage: any) => parseFloat(usage.quantity)),
           ),
         )
-      } else if (usages) {
-        const usage = find(usages, (item) => item.usage_id === usageId)
+      } else {
+        const usage = find(recordUsages, (item) => item.usage_id === usageId)
         value = parseNumber(usage?.quantity)
       }
       if (!isNull(value)) {
         values.push(value)
       }
     })
-    return sum(values)
+    return values.length > 0 ? sum(values) : null
   },
 }
 
@@ -109,73 +106,55 @@ export function AgHeaderGroupComponent(props: any) {
 }
 
 export function AgTextCellRenderer(props: any) {
-  const { maxWidth } = props.colDef
   const Tooltip = props.colDef.tooltip ? MuiTooltip : Fragment
   return (
     <Tooltip enterDelay={300} placement="top-start" title={props.value}>
-      <span
-        className="ag-cell-custom-value"
-        style={
-          maxWidth && {
-            maxWidth: `calc(${maxWidth}px - 2 * (var(--ag-cell-horizontal-padding) - 1px))`,
-          }
-        }
-      >
-        {props.data.isSkeleton ? (
-          <Typography className={props.className} component="span">
-            <Skeleton className="inline-block w-full" />
-          </Typography>
-        ) : (
-          <Typography className={props.className} component="span">
-            {props.value}
-          </Typography>
-        )}
-      </span>
+      {props.data.isSkeleton ? (
+        <Typography className={props.className} component="span">
+          <Skeleton className="inline-block w-full" />
+        </Typography>
+      ) : (
+        <Typography className={props.className} component="span">
+          {props.value}
+        </Typography>
+      )}
     </Tooltip>
   )
 }
 
 export function AgFloatCellRenderer(props: any) {
   let value = null
-  const { maxWidth } = props.colDef
   const aggFunc = get(aggFuncs, props.colDef.aggFunc)
   const Tooltip = props.colDef.tooltip ? MuiTooltip : Fragment
 
-  if (props.data.isGroup) {
+  if (includes(['control', 'group'], props.data.rowType)) {
     return null
   }
-  if (props.data.isSubTotal && aggFunc) {
-    value = aggFunc({ ...props, byGroup: true })
-  } else if (props.data.isTotal && aggFunc) {
+  if (aggFunc && includes(['subtotal', 'total'], props.data.rowType)) {
     value = aggFunc({ ...props })
   } else {
     value = parseNumber(props.value)
   }
 
-  const formattedValue = isNumber(value)
-    ? value.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-      })
-    : '0.00'
+  if (isNull(value)) {
+    return '-'
+  }
+
+  const formattedValue = value.toLocaleString(undefined, {
+    minimumFractionDigits: props.minimumFractionDigits || 2,
+  })
 
   return (
     <Tooltip enterDelay={300} placement="top-start" title={formattedValue}>
-      <span
-        className="ag-cell-custom-value"
-        style={
-          maxWidth && {
-            maxWidth: `calc(${maxWidth}px - 2 * (var(--ag-cell-horizontal-padding) - 1px))`,
-          }
-        }
-      >
-        {props.data.isSkeleton ? (
-          <Typography component="span">
-            <Skeleton className="inline-block w-full" />
-          </Typography>
-        ) : (
-          <Typography component="span">{formattedValue}</Typography>
-        )}
-      </span>
+      {props.data.isSkeleton ? (
+        <Typography className={props.className} component="span">
+          <Skeleton className="inline-block w-full" />
+        </Typography>
+      ) : (
+        <Typography className={props.className} component="span">
+          {formattedValue}
+        </Typography>
+      )}
     </Tooltip>
   )
 }
@@ -188,65 +167,61 @@ export function AgDateCellRenderer(props: any) {
 
 export function AgUsageCellRenderer(props: any) {
   let value = null
-  const { maxWidth } = props.colDef
   const aggFunc = get(aggFuncs, props.colDef.aggFunc)
-  const usageId = props.colDef.id
-  const usages = props.data.record_usages
   const Tooltip = props.colDef.tooltip ? MuiTooltip : Fragment
+  const usageId = props.colDef.id
+  const recordUsages = props.data.record_usages || []
 
-  if (props.data.isGroup) {
+  if (props.data.rowType === 'group') {
     return null
   }
-  if (props.data.isSubTotal && aggFunc) {
-    value = aggFunc({ ...props, byGroup: true })
-  } else if (props.data.isTotal && aggFunc) {
+  if (aggFunc && includes(['subtotal', 'total'], props.data.rowType)) {
     value = aggFunc({ ...props })
-  } else if (usageId === 'total_usages' && usages) {
+  } else if (usageId === 'total_usages') {
     value = parseNumber(
-      sum(usages.map((usage: any) => parseFloat(usage.quantity))),
+      reduce(recordUsages, (total, usage) => {
+        return total + parseFloat(usage.quantity)
+      }),
     )
-  } else if (usageId === 'total_refrigeration' && usages) {
+  } else if (usageId === 'total_refrigeration') {
     value = parseNumber(
-      sum(
-        filter(usages, (usage) => includes([6, 7], usage.usage_id)).map(
-          (usage: any) => parseFloat(usage.quantity),
-        ),
-      ),
+      reduce(recordUsages, (total, usage) => {
+        if (!includes([6, 7], usage.usage_id)) {
+          return total
+        }
+        return total + parseFloat(usage.quantity)
+      }),
     )
-  } else if (usages) {
-    const usage = find(usages, (item) => item.usage_id === usageId)
+  } else {
+    const usage = find(recordUsages, (item) => item.usage_id === usageId)
     value = parseNumber(usage?.quantity)
   }
 
-  const formattedValue = isNumber(value)
-    ? value.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-      })
-    : '0.00'
+  if (isNull(value)) {
+    return '-'
+  }
+
+  const formattedValue = value.toLocaleString(undefined, {
+    minimumFractionDigits: props.minimumFractionDigits || 2,
+  })
 
   return (
     <Tooltip enterDelay={300} placement="top-start" title={formattedValue}>
-      <span
-        className="ag-cell-custom-value"
-        style={
-          maxWidth && {
-            maxWidth: `calc(${maxWidth}px - 2 * (var(--ag-cell-horizontal-padding) - 1px))`,
-          }
-        }
-      >
-        {props.data.isSkeleton ? (
-          <Typography component="span">
-            <Skeleton className="inline-block w-full" />
-          </Typography>
-        ) : (
-          <Typography component="span">{formattedValue}</Typography>
-        )}
-      </span>
+      {props.data.isSkeleton ? (
+        <Typography className={props.className} component="span">
+          <Skeleton className="inline-block w-full" />
+        </Typography>
+      ) : (
+        <Typography className={props.className} component="span">
+          {formattedValue}
+        </Typography>
+      )}
     </Tooltip>
   )
 }
 
 export default function Table(props: AgGridReactProps) {
+  const uniqueId = useId()
   const grid = useRef<any>()
   const {
     className,
@@ -261,6 +236,7 @@ export default function Table(props: AgGridReactProps) {
     paginationPageSize = 10,
     rowCount = 0,
     rowData = [],
+    style,
     withSeparators = false,
     withSkeleton = false,
     ...rest
@@ -285,16 +261,6 @@ export default function Table(props: AgGridReactProps) {
         })
       },
       cellRenderer: 'agTextCellRenderer',
-      cellStyle: (params) => {
-        const { maxWidth } = params.colDef
-        return {
-          ...(maxWidth
-            ? {
-                '--ag-cell-max-width': `calc(${maxWidth}px - 2 * (var(--ag-cell-horizontal-padding) - 1px))`,
-              }
-            : { '--ag-cell-max-width': '100%' }),
-        }
-      },
       comparator: () => 0,
       filter: true,
       // flex: 1,
@@ -363,6 +329,7 @@ export default function Table(props: AgGridReactProps) {
 
   return (
     <FadeInOut
+      id={`table-${uniqueId}`}
       className={cx(
         'relative table w-full',
         {
@@ -373,6 +340,7 @@ export default function Table(props: AgGridReactProps) {
         },
         className,
       )}
+      style={style}
     >
       {loading && !(withSkeleton && results?.[0]?.isSkeleton) && (
         <Loading className="bg-action-disabledBackground/5" />
@@ -387,6 +355,7 @@ export default function Table(props: AgGridReactProps) {
         pagination={enablePagination}
         paginationPageSize={pagination.rowsPerPage + collapsedRows.length}
         rowData={results}
+        rowHeight={41}
         sortingOrder={['asc']}
         stopEditingWhenCellsLoseFocus={true}
         suppressCellFocus={true}
@@ -430,6 +399,24 @@ export default function Table(props: AgGridReactProps) {
               triggerEvent = false,
             ) => {
               handlePageChange(page, triggerEvent)
+            }
+            gridRef.current.getHeaderContainerHeight = () => {
+              const table = document.getElementById(`table-${uniqueId}`)
+              const header = table?.querySelector<HTMLElement>('.ag-header')
+              if (header) {
+                return header.offsetHeight
+              }
+              return 0
+            }
+            gridRef.current.getHorizontalScrollbarHeight = () => {
+              const table = document.getElementById(`table-${uniqueId}`)
+              const header = table?.querySelector<HTMLElement>(
+                '.ag-body-horizontal-scroll',
+              )
+              if (header) {
+                return header.offsetHeight
+              }
+              return 0
             }
           }
         }}

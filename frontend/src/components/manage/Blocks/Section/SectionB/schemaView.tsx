@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 
 import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
+import { includes } from 'lodash'
 
 function useGridOptions() {
   const gridOptions: GridOptions = useMemo(
@@ -11,10 +12,11 @@ function useGridOptions() {
           cellClass: 'bg-mui-box-background',
           cellRendererParams: (props: any) => ({
             className: cx({
-              'font-bold': props.data.isGroup || props.data.isTotal,
+              'font-bold': includes(['group', 'total'], props.data.rowType),
             }),
           }),
           field: 'display_name',
+          headerClass: 'ag-text-left',
           headerName: 'Substance',
           initialWidth: 300,
           pinned: 'left',
@@ -23,21 +25,21 @@ function useGridOptions() {
           children: [
             {
               id: 1,
-              aggFunc: 'sumUsages',
+              aggFunc: 'sumTotalUsages',
               cellRenderer: 'agUsageCellRenderer',
               headerName: 'Aerosol',
               initialWidth: 130,
             },
             {
               id: 2,
-              aggFunc: 'sumUsages',
+              aggFunc: 'sumTotalUsages',
               cellRenderer: 'agUsageCellRenderer',
               headerName: 'Foam',
               initialWidth: 130,
             },
             {
               id: 3,
-              aggFunc: 'sumUsages',
+              aggFunc: 'sumTotalUsages',
               cellRenderer: 'agUsageCellRenderer',
               headerName: 'Fire fighting',
               initialWidth: 130,
@@ -50,21 +52,21 @@ function useGridOptions() {
                   children: [
                     {
                       id: 6,
-                      aggFunc: 'sumUsages',
+                      aggFunc: 'sumTotalUsages',
                       cellRenderer: 'agUsageCellRenderer',
                       headerName: 'Other',
                       initialWidth: 130,
                     },
                     {
                       id: 7,
-                      aggFunc: 'sumUsages',
+                      aggFunc: 'sumTotalUsages',
                       cellRenderer: 'agUsageCellRenderer',
                       headerName: 'AC',
                       initialWidth: 130,
                     },
                     {
                       id: 'total_refrigeration',
-                      aggFunc: 'sumUsages',
+                      aggFunc: 'sumTotalUsages',
                       cellRenderer: 'agUsageCellRenderer',
                       headerName: 'Total',
                       initialWidth: 130,
@@ -78,7 +80,7 @@ function useGridOptions() {
                 },
                 {
                   id: 9,
-                  aggFunc: 'sumUsages',
+                  aggFunc: 'sumTotalUsages',
                   cellRenderer: 'agUsageCellRenderer',
                   headerName: 'Servicing',
                   initialWidth: 130,
@@ -93,14 +95,14 @@ function useGridOptions() {
             },
             {
               id: 10,
-              aggFunc: 'sumUsages',
+              aggFunc: 'sumTotalUsages',
               cellRenderer: 'agUsageCellRenderer',
               headerName: 'Solvent',
               initialWidth: 130,
             },
             {
               id: 'total_usages',
-              aggFunc: 'sumUsages',
+              aggFunc: 'sumTotalUsages',
               cellRenderer: 'agUsageCellRenderer',
               headerName: 'TOTAL',
               initialWidth: 130,
@@ -113,35 +115,35 @@ function useGridOptions() {
           marryChildren: true,
         },
         {
-          aggFunc: 'sum',
+          aggFunc: 'sumTotal',
           cellRenderer: 'agFloatCellRenderer',
           field: 'imports',
           headerName: 'Import',
           initialWidth: 130,
         },
         {
-          aggFunc: 'sum',
+          aggFunc: 'sumTotal',
           cellRenderer: 'agFloatCellRenderer',
           field: 'exports',
           headerName: 'Export',
           initialWidth: 130,
         },
         {
-          aggFunc: 'sum',
+          aggFunc: 'sumTotal',
           cellRenderer: 'agFloatCellRenderer',
           field: 'production',
           headerName: 'Production',
           initialWidth: 130,
         },
         {
-          aggFunc: 'sum',
+          aggFunc: 'sumTotal',
           cellRenderer: 'agFloatCellRenderer',
           field: 'manufacturing_blends',
           headerName: 'Manufacturing of Blends',
           initialWidth: 250,
         },
         {
-          aggFunc: 'sum',
+          aggFunc: 'sumTotal',
           cellRenderer: 'agFloatCellRenderer',
           field: 'import_quotas',
           headerName: 'Import Quotas',
@@ -172,16 +174,6 @@ function useGridOptions() {
   )
 
   return gridOptions
-}
-
-export function getIncludedSubstances(model: string) {
-  const includedSubstances: Record<string, any> = {
-    IV: [
-      103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 114, 115, 116, 117, 118,
-      119, 120, 121, 122, 123,
-    ],
-  }
-  return includedSubstances[model]
 }
 
 export default useGridOptions

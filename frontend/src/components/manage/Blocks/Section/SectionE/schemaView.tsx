@@ -2,88 +2,87 @@ import { useState } from 'react'
 
 import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
+import { includes } from 'lodash'
 
 function useGridOptions() {
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
       {
+        cellClass: 'bg-mui-box-background',
         cellRendererParams: (props: any) => ({
           className: cx({
-            'font-bold': props.data.isTotal,
+            'font-bold': includes(['group', 'total'], props.data.rowType),
           }),
         }),
         field: 'facility',
-        headerClass: 'ag-text-center',
+        headerClass: 'ag-text-left',
         headerName: 'Facility name or identifier',
+        initialWidth: 400,
       },
       {
-        aggFunc: 'sum',
+        aggFunc: 'sumTotal',
         cellRenderer: 'agFloatCellRenderer',
         field: 'total',
-        headerClass: 'ag-text-center',
         headerName: 'Total amount generated',
+        initialWidth: 240,
       },
       {
         children: [
           {
-            aggFunc: 'sum',
+            aggFunc: 'sumTotal',
             cellRenderer: 'agFloatCellRenderer',
             field: 'all_uses',
-            headerClass: 'ag-text-center',
             headerName: 'For all uses',
           },
           {
-            aggFunc: 'sum',
+            aggFunc: 'sumTotal',
             cellRenderer: 'agFloatCellRenderer',
             field: 'feedstock_gc',
-            headerClass: 'ag-text-center',
             headerName: 'For feedstock use in your country',
           },
           {
-            aggFunc: 'sum',
+            aggFunc: 'sumTotal',
             cellRenderer: 'agFloatCellRenderer',
             field: 'destruction',
-            headerClass: 'ag-text-center',
             headerName: 'For destruction',
           },
         ],
         groupId: 'amount_generated_and_captured',
-        headerClass: 'ag-text-center',
         headerGroupComponent: 'agColumnHeaderGroup',
         headerName: 'Amount generated and captured',
         marryChildren: true,
       },
       {
-        aggFunc: 'sum',
+        aggFunc: 'sumTotal',
         cellRenderer: 'agFloatCellRenderer',
         field: 'feedstock_wpc',
-        headerClass: 'ag-text-center',
         headerName: 'Amount used for feedstock without prior capture',
       },
       {
-        aggFunc: 'sum',
+        aggFunc: 'sumTotal',
         cellRenderer: 'agFloatCellRenderer',
         field: 'destruction_wpc',
-        headerClass: 'ag-text-center',
         headerName: 'Amount destroyed without prior capture',
       },
       {
-        aggFunc: 'sum',
+        aggFunc: 'sumTotal',
         cellRenderer: 'agFloatCellRenderer',
         field: 'generated_emissions',
-        headerClass: 'ag-text-center',
         headerName: 'Amount of generated emission',
       },
       {
         field: 'remarks',
-        headerClass: 'ag-text-center',
         headerName: 'Remarks',
+        initialWidth: 300,
       },
     ],
     defaultColDef: {
-      flex: 1,
+      autoHeight: true,
+      cellClass: 'ag-text-right',
+      headerClass: 'ag-text-center',
       minWidth: 200,
       resizable: true,
+      wrapText: true,
     },
   })
 

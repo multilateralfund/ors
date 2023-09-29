@@ -1,12 +1,11 @@
 import { useMemo, useRef, useState } from 'react'
 
 import { Typography } from '@mui/material'
-import { groupBy, union, uniq } from 'lodash'
+import { each, includes, union } from 'lodash'
 import dynamic from 'next/dynamic'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import LoadingBuffer from '@ors/components/theme/Loading/LoadingBuffer'
-import { getResults } from '@ors/helpers/Api/Api'
 
 import useGridOptions from './schemaView'
 
@@ -16,42 +15,77 @@ const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
 
 export default function SectionCView(props: {
   report: Record<string, Array<any>>
+  variant: any
 }) {
   const { report } = props
   const grid = useRef<any>()
   const gridOptions = useGridOptions()
-  const [results] = useState<Array<any>>(getResults(report.section_c).results)
+  const [offsetHeight, setOffsetHeight] = useState(0)
   const [loading, setLoading] = useState(true)
 
-  const groups = uniq(results.map((item) => item.annex_group || 'Other'))
-  const resultsByGroup = groupBy(
-    results.map((item) => ({
-      ...item,
-      annex_group: item.annex_group || 'Other',
-      group: item.annex_group || 'Other',
-    })),
-    'group',
-  )
-
-  const rows = useMemo(() => {
-    let data: Array<any> = []
-    groups.forEach((group) => {
-      data = union(
-        data,
-        [{ chemical_name: group, group, isGroup: true }],
-        resultsByGroup[group],
-        [{ chemical_name: 'Sub-total', group, isSubTotal: true }],
+  const rowData = useMemo(() => {
+    let rowData: Array<any> = []
+    const dataByGroup: Record<string, any> = {}
+    const groups: Array<string> = []
+    each(report.section_c, (item) => {
+      const group = item.annex_group || 'Other'
+      if (!dataByGroup[group]) {
+        dataByGroup[group] = []
+      }
+      if (!includes(groups, group)) {
+        groups.push(group)
+      }
+      dataByGroup[group].push(item)
+    })
+    each(groups, (group: string) => {
+      rowData = union(
+        rowData,
+        [{ display_name: group, group, rowType: 'group' }],
+        dataByGroup[group],
+        [{ display_name: 'Sub-total', group, rowType: 'subtotal' }],
       )
     })
-    if (data.length > 0) {
-      data.push({ chemical_name: 'TOTAL', isTotal: true })
+    return rowData
+  }, [report])
+
+  const pinnedBottomRowData = useMemo(() => {
+    return rowData.length > 0
+      ? [{ display_name: 'TOTAL', rowType: 'total' }]
+      : []
+  }, [rowData])
+
+  const tableBodyHeight = useMemo(() => {
+    let offset = offsetHeight
+    const rowsVisible = 15
+    const rowHeight = 41
+    const rows = rowData.length + pinnedBottomRowData.length
+    if (pinnedBottomRowData.length) {
+      offset += 1
     }
-    return data
-  }, [groups, resultsByGroup])
+    if (!rows) {
+      return 0
+    }
+    if (rows <= rowsVisible) {
+      return rows * rowHeight + offset
+    }
+    return rowsVisible * rowHeight + offset
+  }, [rowData, pinnedBottomRowData, offsetHeight])
+
+  function updateOffsetHeight() {
+    const headerHeight = grid.current.getHeaderContainerHeight()
+    const horizontalScrollbarHeight =
+      grid.current.getHorizontalScrollbarHeight()
+    setOffsetHeight(headerHeight + horizontalScrollbarHeight + 2)
+  }
 
   return (
     <>
       <HeaderTitle onInit={() => setLoading(false)}>
+        {report.name && (
+          <Typography className="mb-4 text-white" component="h1" variant="h5">
+            {report.name}
+          </Typography>
+        )}
         <Typography className="text-white" component="h1" variant="h6">
           SECTION C. AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US
           $/kg)
@@ -60,22 +94,31 @@ export default function SectionCView(props: {
       {loading && <LoadingBuffer className="relative" time={300} />}
       {!loading && (
         <Table
-          className="three-groups h-[800px]"
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
-          domLayout="normal"
+          domLayout={tableBodyHeight > 0 ? 'normal' : 'autoHeight'}
           enableCellChangeFlash={true}
           enablePagination={false}
           gridRef={grid}
           noRowsOverlayComponentParams={{ label: 'No data reported' }}
-          rowData={rows}
+          pinnedBottomRowData={pinnedBottomRowData}
+          rowBuffer={40}
+          rowData={rowData}
           suppressCellFocus={false}
           suppressRowHoverHighlight={false}
           rowClassRules={{
-            'ag-row-group': (props) => props.data.isGroup,
-            'ag-row-sub-total': (props) => props.data.isSubTotal,
-            'ag-row-total': (props) => props.data.isTotal,
+            'ag-row-group': (props) => props.data.rowType === 'group',
+            'ag-row-sub-total': (props) => props.data.rowType === 'subtotal',
+            'ag-row-total': (props) => props.data.rowType === 'total',
           }}
+          style={
+            tableBodyHeight > 0
+              ? {
+                  height: tableBodyHeight,
+                }
+              : {}
+          }
+          onGridReady={updateOffsetHeight}
           withSeparators
         />
       )}

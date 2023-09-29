@@ -31,7 +31,7 @@ export default function AdmB(props: {
     }))
   }, [admForm])
 
-  console.log('HERE', admForm.admB)
+  console.log('HERE', report, admForm)
 
   return (
     <>

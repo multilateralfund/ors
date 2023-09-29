@@ -1,7 +1,3 @@
-#next-app [class*='ag-theme-'] .ag-row {
-  @apply border-0;
-}
-
 #next-app [class*='ag-theme-'] .ag-row-hover:not(.ag-full-width-row)::before,
 #next-app
   [class*='ag-theme-']
@@ -21,12 +17,27 @@
   @apply bg-gray-100 theme-dark:bg-gray-900/40;
 }
 
-#next-app [class*='ag-theme-'] .ag-row-group {
-  border-top: var(--ag-row-border-style) var(--ag-row-group-border-color)
-    var(--ag-row-group-border-width);
+#next-app [class*='ag-theme-'] .ag-row-group::after,
+#next-app [class*='ag-theme-'] .ag-row-total::after {
+  content: '';
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
-#next-app [class*='ag-theme-'] .ag-row-total {
-  border-top: var(--ag-row-border-style) var(--ag-row-total-border-color)
-    var(--ag-row-total-border-width);
+#next-app [class*='ag-theme-'] .ag-row-group::after {
+  border-top: var(--ag-row-group-border-width) var(--ag-row-border-style)
+    var(--ag-row-group-border-color);
+}
+
+#next-app [class*='ag-theme-'] .ag-row-total::after {
+  border-top: var(--ag-row-total-border-width) var(--ag-row-border-style)
+    var(--ag-row-total-border-color);
+}
+
+#next-app [class*='ag-theme-'] .ag-row-group:not(:first-child)::after,
+#next-app [class*='ag-theme-'] .ag-row-total:not(:first-child)::after {
+  top: -1px;
 }

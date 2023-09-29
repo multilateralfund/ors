@@ -45,8 +45,8 @@
   --ag-row-total-border-color: theme(colors.typography);
   --ag-row-border-style: solid;
   --ag-row-border-width: 1px;
-  --ag-row-group-border-width: 1px;
-  --ag-row-total-border-width: 1px;
+  --ag-row-group-border-width: 2px;
+  --ag-row-total-border-width: 2px;
   --ag-row-group-indent-size: calc(
     var(--ag-cell-widget-spacing) + var(--ag-icon-size)
   );

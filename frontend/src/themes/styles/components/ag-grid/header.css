@@ -1,3 +1,7 @@
+#next-app .ag-header-group-cell {
+  justify-content: center;
+}
+
 #next-app .ag-header-cell.ag-text-left .ag-header-cell-label,
 #next-app .ag-header-group-cell.ag-text-left,
 #next-app .ag-header-cell.ag-text-left .ag-header-cell-comp-wrapper {

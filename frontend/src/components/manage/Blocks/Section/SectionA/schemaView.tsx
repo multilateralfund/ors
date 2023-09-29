@@ -13,7 +13,7 @@ function useGridOptions(props: { model: string }) {
           cellClass: 'bg-mui-box-background',
           cellRendererParams: (props: any) => ({
             className: cx({
-              'font-bold': props.data.isGroup || props.data.isTotal,
+              'font-bold': includes(['group', 'total'], props.data.rowType),
             }),
           }),
           field: 'display_name',
@@ -26,21 +26,21 @@ function useGridOptions(props: { model: string }) {
           children: [
             {
               id: 1,
-              aggFunc: 'sumUsages',
+              aggFunc: 'sumTotalUsages',
               cellRenderer: 'agUsageCellRenderer',
               headerName: 'Aerosol',
               initialWidth: 130,
             },
             {
               id: 2,
-              aggFunc: 'sumUsages',
+              aggFunc: 'sumTotalUsages',
               cellRenderer: 'agUsageCellRenderer',
               headerName: 'Foam',
               initialWidth: 130,
             },
             {
               id: 3,
-              aggFunc: 'sumUsages',
+              aggFunc: 'sumTotalUsages',
               cellRenderer: 'agUsageCellRenderer',
               headerName: 'Fire fighting',
               initialWidth: 130,
@@ -52,14 +52,14 @@ function useGridOptions(props: { model: string }) {
                     children: [
                       {
                         id: 5,
-                        aggFunc: 'sumUsages',
+                        aggFunc: 'sumTotalUsages',
                         cellRenderer: 'agUsageCellRenderer',
                         headerName: 'Manufacturing',
                         initialWidth: 140,
                       },
                       {
                         id: 9,
-                        aggFunc: 'sumUsages',
+                        aggFunc: 'sumTotalUsages',
                         cellRenderer: 'agUsageCellRenderer',
                         headerName: 'Servicing',
                         initialWidth: 140,
@@ -71,7 +71,7 @@ function useGridOptions(props: { model: string }) {
                     marryChildren: true,
                   }
                 : {
-                    aggFunc: 'sumUsages',
+                    aggFunc: 'sumTotalUsages',
                     cellRenderer: 'agUsageCellRenderer',
                   }),
               headerName: 'Refrigeration',
@@ -79,7 +79,7 @@ function useGridOptions(props: { model: string }) {
             },
             {
               id: 10,
-              aggFunc: 'sumUsages',
+              aggFunc: 'sumTotalUsages',
               cellRenderer: 'agUsageCellRenderer',
               headerName: includes(['II', 'III', 'IV'], model)
                 ? 'Solvent'
@@ -90,7 +90,7 @@ function useGridOptions(props: { model: string }) {
               ? [
                   {
                     id: 11,
-                    aggFunc: 'sumUsages',
+                    aggFunc: 'sumTotalUsages',
                     cellRenderer: 'agUsageCellRenderer',
                     headerName: 'Fumigation etc.',
                     initialWidth: 130,
@@ -101,7 +101,7 @@ function useGridOptions(props: { model: string }) {
               ? [
                   {
                     id: 12,
-                    aggFunc: 'sumUsages',
+                    aggFunc: 'sumTotalUsages',
                     cellRenderer: 'agUsageCellRenderer',
                     headerName: 'Other',
                     initialWidth: 130,
@@ -112,7 +112,7 @@ function useGridOptions(props: { model: string }) {
               ? [
                   {
                     id: 13,
-                    aggFunc: 'sumUsages',
+                    aggFunc: 'sumTotalUsages',
                     cellRenderer: 'agUsageCellRenderer',
                     headerName: 'Process agent',
                     initialWidth: 150,
@@ -123,7 +123,7 @@ function useGridOptions(props: { model: string }) {
               ? [
                   {
                     id: 14,
-                    aggFunc: 'sumUsages',
+                    aggFunc: 'sumTotalUsages',
                     cellRenderer: 'agUsageCellRenderer',
                     headerName: 'MDI',
                     initialWidth: 130,
@@ -134,7 +134,7 @@ function useGridOptions(props: { model: string }) {
               ? [
                   {
                     id: 15,
-                    aggFunc: 'sumUsages',
+                    aggFunc: 'sumTotalUsages',
                     cellRenderer: 'agUsageCellRenderer',
                     headerName: 'Lab use',
                     initialWidth: 130,
@@ -148,14 +148,14 @@ function useGridOptions(props: { model: string }) {
                     children: [
                       {
                         id: 17,
-                        aggFunc: 'sumUsages',
+                        aggFunc: 'sumTotalUsages',
                         cellRenderer: 'agUsageCellRenderer',
                         headerName: 'QPS',
                         initialWidth: 130,
                       },
                       {
                         id: 18,
-                        aggFunc: 'sumUsages',
+                        aggFunc: 'sumTotalUsages',
                         cellRenderer: 'agUsageCellRenderer',
                         headerName: 'Non-QPS',
                         initialWidth: 130,
@@ -173,7 +173,7 @@ function useGridOptions(props: { model: string }) {
               ? [
                   {
                     id: 19,
-                    aggFunc: 'sumUsages',
+                    aggFunc: 'sumTotalUsages',
                     cellRenderer: 'agUsageCellRenderer',
                     headerName: 'Tobacco fluffing',
                     initialWidth: 170,
@@ -182,7 +182,7 @@ function useGridOptions(props: { model: string }) {
               : []),
             {
               id: 'total',
-              aggFunc: 'sumUsages',
+              aggFunc: 'sumTotalUsages',
               cellRenderer: 'agUsageCellRenderer',
               headerName: 'TOTAL',
               initialWidth: 140,
@@ -195,21 +195,21 @@ function useGridOptions(props: { model: string }) {
           marryChildren: true,
         },
         {
-          aggFunc: 'sum',
+          aggFunc: 'sumTotal',
           cellRenderer: 'agFloatCellRenderer',
           field: 'imports',
           headerName: 'Import',
           initialWidth: 130,
         },
         {
-          aggFunc: 'sum',
+          aggFunc: 'sumTotal',
           cellRenderer: 'agFloatCellRenderer',
           field: 'exports',
           headerName: 'Export',
           initialWidth: 130,
         },
         {
-          aggFunc: 'sum',
+          aggFunc: 'sumTotal',
           cellRenderer: 'agFloatCellRenderer',
           field: 'production',
           headerName: 'Production',
@@ -218,7 +218,7 @@ function useGridOptions(props: { model: string }) {
         ...(includes(['IV'], model)
           ? [
               {
-                aggFunc: 'sum',
+                aggFunc: 'sumTotal',
                 cellRenderer: 'agFloatCellRenderer',
                 field: 'import_quotas',
                 headerName: 'Import Quotas',
@@ -262,19 +262,4 @@ function useGridOptions(props: { model: string }) {
   return gridOptions
 }
 
-export function getIncludedSubstances(model: string) {
-  const includedSubstances: Record<string, any> = {
-    I: [1, 3, 4, 6, 7, 8, 9, 21, 22, 24, 28, 37, 40, 102],
-    II: [
-      1, 3, 4, 6, 7, 8, 9, 10, 11, 21, 22, 24, 28, 30, 34, 37, 38, 40, 47, 48,
-      49, 102,
-    ],
-    III: [22, 24, 28, 30, 38, 34, 37, 40, 47, 48, 49, 102],
-    IV: [
-      1, 3, 4, 6, 7, 8, 9, 10, 11, 21, 22, 24, 28, 30, 38, 34, 37, 40, 47, 48,
-      49, 102,
-    ],
-  }
-  return includedSubstances[model]
-}
 export default useGridOptions

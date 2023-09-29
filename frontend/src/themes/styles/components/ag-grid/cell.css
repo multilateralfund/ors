@@ -1,13 +1,14 @@
 #next-app [class*='ag-theme-'] .ag-cell {
   border: none;
-  border-bottom: var(--ag-row-border-width) var(--ag-row-border-style)
-    var(--ag-row-border-color);
 }
 
 #next-app [class*='ag-theme-'] .ag-ltr .ag-cell:not(:last-child),
 #next-app
   [class*='ag-theme-']
-  .ag-cell.ag-cell-last-left-pinned:not(.ag-cell-range-right, .ag-cell-range-single-cell) {
+  .ag-cell.ag-cell-last-left-pinned:not(
+    .ag-cell-range-right,
+    .ag-cell-range-single-cell
+  ) {
   border-right: var(--ag-row-border-width) var(--ag-row-border-style)
     var(--ag-row-border-color);
 }
@@ -26,8 +27,7 @@
   position: absolute;
   top: 0;
   left: 0;
-  border: var(--ag-row-border-width) var(--ag-row-border-style)
-    var(--ag-range-selection-border-color);
+  border: 2px var(--ag-row-border-style) var(--ag-range-selection-border-color);
 }
 
 #next-app [class*='ag-theme-'] .ag-cell.ag-text-left .ag-cell-value {
