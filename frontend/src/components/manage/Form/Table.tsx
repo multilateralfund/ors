@@ -277,10 +277,18 @@ export function AgAdmCellRenderer(props: any) {
   )
 }
 
-export default function Table(props: AgGridReactProps) {
+export default function Table(
+  props: AgGridReactProps & {
+    FooterComponent?: React.FC<any>
+    HeaderComponent?: React.FC<any>
+  },
+) {
   const uniqueId = useId()
   const grid = useRef<any>()
   const {
+    id,
+    FooterComponent = () => null,
+    HeaderComponent = () => null,
     className,
     collapsedRows = [],
     components = {},
@@ -386,7 +394,7 @@ export default function Table(props: AgGridReactProps) {
 
   return (
     <FadeInOut
-      id={`table-${uniqueId}`}
+      id={id || `table-${uniqueId}`}
       className={cx(
         'relative w-full',
         {
@@ -399,6 +407,7 @@ export default function Table(props: AgGridReactProps) {
       )}
       style={style}
     >
+      <HeaderComponent {...props} />
       {loading && !(withSkeleton && results?.[0]?.rowType === 'skeleton') && (
         <Loading className="bg-action-disabledBackground/5" />
       )}
@@ -459,7 +468,7 @@ export default function Table(props: AgGridReactProps) {
               handlePageChange(page, triggerEvent)
             }
             gridRef.current.getHeaderContainerHeight = () => {
-              const table = document.getElementById(`table-${uniqueId}`)
+              const table = document.getElementById(id || `table-${uniqueId}`)
               const header = table?.querySelector<HTMLElement>('.ag-header')
               if (header) {
                 return header.offsetHeight
@@ -467,7 +476,7 @@ export default function Table(props: AgGridReactProps) {
               return 0
             }
             gridRef.current.getHorizontalScrollbarHeight = () => {
-              const table = document.getElementById(`table-${uniqueId}`)
+              const table = document.getElementById(id || `table-${uniqueId}`)
               const header = table?.querySelector<HTMLElement>(
                 '.ag-body-horizontal-scroll',
               )
@@ -509,6 +518,7 @@ export default function Table(props: AgGridReactProps) {
           }}
         />
       )}
+      <FooterComponent {...props} />
     </FadeInOut>
   )
 }

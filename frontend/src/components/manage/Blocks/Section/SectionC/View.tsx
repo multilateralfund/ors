@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { Typography } from '@mui/material'
+import { IconButton, Typography } from '@mui/material'
 import cx from 'classnames'
 import { each, includes, times, union } from 'lodash'
 
@@ -9,11 +9,15 @@ import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 
 import useGridOptions from './schemaView'
 
+import { IoClose } from '@react-icons/all-files/io5/IoClose'
+
 export default function SectionCView(props: {
+  exitFullScreen: () => void
+  fullScreen: boolean
   report: Record<string, Array<any>>
   variant: any
 }) {
-  const { report } = props
+  const { exitFullScreen, fullScreen, report } = props
   const grid = useRef<any>()
   const gridOptions = useGridOptions()
   const [offsetHeight, setOffsetHeight] = useState(0)
@@ -106,7 +110,10 @@ export default function SectionCView(props: {
       )}
       {loadTable && (
         <Table
-          className={cx({ 'opacity-0': loading })}
+          className={cx({
+            'full-screen': fullScreen,
+            'opacity-0': loading,
+          })}
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
           domLayout={tableBodyHeight > 0 ? 'normal' : 'autoHeight'}
@@ -119,6 +126,21 @@ export default function SectionCView(props: {
           rowData={rowData}
           suppressCellFocus={false}
           suppressRowHoverHighlight={false}
+          HeaderComponent={
+            fullScreen
+              ? () => {
+                  return (
+                    <IconButton
+                      className="exit-fullscreen p-2 text-primary"
+                      aria-label="exit fullscreen"
+                      onClick={exitFullScreen}
+                    >
+                      <IoClose size={32} />
+                    </IconButton>
+                  )
+                }
+              : () => null
+          }
           rowClassRules={{
             'ag-row-group': (props) => props.data.rowType === 'group',
             'ag-row-sub-total': (props) => props.data.rowType === 'subtotal',

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { Typography } from '@mui/material'
+import { IconButton, Typography } from '@mui/material'
 import cx from 'classnames'
 import { groupBy, map, times } from 'lodash'
 
@@ -9,12 +9,16 @@ import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 
 import useGridOptions from './schemaView'
 
+import { IoClose } from '@react-icons/all-files/io5/IoClose'
+
 export default function AdmC(props: {
   admForm: Record<string, any>
+  exitFullScreen: () => void
+  fullScreen: boolean
   report: Record<string, Array<any>>
   variant: any
 }) {
-  const { admForm, report, variant } = props
+  const { admForm, exitFullScreen, fullScreen, report, variant } = props
   const grid = useRef<any>()
   const gridOptions = useGridOptions({ model: variant.model })
   const [loadTable, setLoadTable] = useState(false)
@@ -61,7 +65,10 @@ export default function AdmC(props: {
       )}
       {loadTable && (
         <Table
-          className={cx('two-groups', { 'opacity-0': loading })}
+          className={cx('two-groups', {
+            'full-screen': fullScreen,
+            'opacity-0': loading,
+          })}
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
           enableCellChangeFlash={true}
@@ -72,6 +79,21 @@ export default function AdmC(props: {
           rowData={rowData}
           suppressCellFocus={false}
           suppressRowHoverHighlight={false}
+          HeaderComponent={
+            fullScreen
+              ? () => {
+                  return (
+                    <IconButton
+                      className="exit-fullscreen p-2 text-primary"
+                      aria-label="exit fullscreen"
+                      onClick={exitFullScreen}
+                    >
+                      <IoClose size={32} />
+                    </IconButton>
+                  )
+                }
+              : () => null
+          }
           rowClassRules={{
             'ag-row-group': (props) => props.data.rowType === 'group',
             'ag-row-hashed': (props) => props.data.rowType === 'hashed',

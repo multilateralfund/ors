@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { Typography } from '@mui/material'
+import { IconButton, Typography } from '@mui/material'
 import cx from 'classnames'
 import { each, includes, times, union } from 'lodash'
 
@@ -8,6 +8,8 @@ import Table from '@ors/components/manage/Form/Table'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 
 import useGridOptions from './schemaView'
+
+import { IoClose } from '@react-icons/all-files/io5/IoClose'
 
 function getGroupName(substance: any) {
   if (substance.blend_id) {
@@ -17,10 +19,12 @@ function getGroupName(substance: any) {
 }
 
 export default function SectionBView(props: {
+  exitFullScreen: () => void
+  fullScreen: boolean
   report: Record<string, Array<any>>
   variant: any
 }) {
-  const { report } = props
+  const { exitFullScreen, fullScreen, report } = props
   const grid = useRef<any>()
   const gridOptions = useGridOptions()
   const [offsetHeight, setOffsetHeight] = useState(0)
@@ -112,7 +116,10 @@ export default function SectionBView(props: {
       )}
       {loadTable && (
         <Table
-          className={cx('three-groups', { 'opacity-0': loading })}
+          className={cx('three-groups', {
+            'full-screen': fullScreen,
+            'opacity-0': loading,
+          })}
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
           domLayout={tableBodyHeight > 0 ? 'normal' : 'autoHeight'}
@@ -125,6 +132,21 @@ export default function SectionBView(props: {
           rowData={rowData}
           suppressCellFocus={false}
           suppressRowHoverHighlight={false}
+          HeaderComponent={
+            fullScreen
+              ? () => {
+                  return (
+                    <IconButton
+                      className="exit-fullscreen p-2 text-primary"
+                      aria-label="exit fullscreen"
+                      onClick={exitFullScreen}
+                    >
+                      <IoClose size={32} />
+                    </IconButton>
+                  )
+                }
+              : () => null
+          }
           rowClassRules={{
             'ag-row-group': (props) => props.data.rowType === 'group',
             'ag-row-sub-total': (props) => props.data.rowType === 'subtotal',

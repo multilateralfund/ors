@@ -5,7 +5,7 @@ import AdmC from '@ors/components/manage/Blocks/Section/AdmC/View'
 import AdmDE from '@ors/components/manage/Blocks/Section/AdmDE/View'
 import SectionA from '@ors/components/manage/Blocks/Section/SectionA/View'
 import SectionB from '@ors/components/manage/Blocks/Section/SectionB/View'
-import SectionCView from '@ors/components/manage/Blocks/Section/SectionC/SectionCView'
+import SectionCView from '@ors/components/manage/Blocks/Section/SectionC/View'
 import SectionDView from '@ors/components/manage/Blocks/Section/SectionD/View'
 import SectionEView from '@ors/components/manage/Blocks/Section/SectionE/View'
 import SectionFView from '@ors/components/manage/Blocks/Section/SectionF/View'
@@ -50,6 +50,7 @@ export function getSections(variant: any) {
       ? [
           {
             id: 'section-A',
+            allowFullScreen: true,
             component: SectionA,
             label: 'Section A',
             panelId: 'section-A-panel',
@@ -60,6 +61,7 @@ export function getSections(variant: any) {
       ? [
           {
             id: 'adm-B',
+            allowFullScreen: true,
             component: AdmB,
             label: 'Adm B',
             panelId: 'adm-B-panel',
@@ -70,6 +72,7 @@ export function getSections(variant: any) {
       ? [
           {
             id: 'section-B',
+            allowFullScreen: true,
             component: SectionB,
             label: 'Section B',
             panelId: 'section-B-panel',
@@ -80,6 +83,7 @@ export function getSections(variant: any) {
       ? [
           {
             id: 'adm-C',
+            allowFullScreen: true,
             component: AdmC,
             label: 'Adm C',
             panelId: 'adm-C-panel',
@@ -90,6 +94,7 @@ export function getSections(variant: any) {
       ? [
           {
             id: 'section-C',
+            allowFullScreen: true,
             component: SectionCView,
             label: 'Section C',
             panelId: 'section-C-panel',
@@ -110,6 +115,7 @@ export function getSections(variant: any) {
       ? [
           {
             id: 'section-D',
+            allowFullScreen: true,
             component: SectionDView,
             label: 'Section D',
             panelId: 'section-D-panel',
@@ -120,6 +126,7 @@ export function getSections(variant: any) {
       ? [
           {
             id: 'section-E',
+            allowFullScreen: true,
             component: SectionEView,
             label: 'Section E',
             panelId: 'section-E-panel',

@@ -1,7 +1,7 @@
 'use client'
 import React, { useMemo, useState } from 'react'
 
-import { Tab, Tabs } from '@mui/material'
+import { Button, Tab, Tabs } from '@mui/material'
 import { filter, isString } from 'lodash'
 import { useSearchParams } from 'next/navigation'
 
@@ -9,13 +9,23 @@ import { getSections, variants } from '.'
 
 interface SectionPanelProps {
   admForm: Record<string, any>
+  exitFullScreen: () => void
+  fullScreen: boolean
   report: Record<string, Array<any>>
   section: Record<string, any>
   variant: Record<string, any>
 }
 
 function SectionPanel(props: SectionPanelProps) {
-  const { admForm, report, section, variant, ...rest } = props
+  const {
+    admForm,
+    exitFullScreen,
+    fullScreen,
+    report,
+    section,
+    variant,
+    ...rest
+  } = props
   const Section: React.FC<any> = section.component
 
   return (
@@ -25,7 +35,13 @@ function SectionPanel(props: SectionPanelProps) {
       role="tabpanel"
       {...rest}
     >
-      <Section admForm={admForm} report={report} variant={variant} />
+      <Section
+        admForm={admForm}
+        exitFullScreen={exitFullScreen}
+        fullScreen={fullScreen}
+        report={report}
+        variant={variant}
+      />
     </div>
   )
 }
@@ -36,6 +52,7 @@ export default function CPReportView(props: {
 }) {
   const searchParams = useSearchParams()
   const [activeSection, setActiveSection] = useState(0)
+  const [fullScreen, setFullScreen] = useState(false)
   const [report]: any = useState({
     ...(props.report || {}),
     name: searchParams.get('name'),
@@ -65,6 +82,7 @@ export default function CPReportView(props: {
         value={activeSection}
         onChange={(event: React.SyntheticEvent, newSection: number) => {
           setActiveSection(newSection)
+          setFullScreen(false)
         }}
       >
         {sections.map((section) => (
@@ -75,12 +93,23 @@ export default function CPReportView(props: {
           />
         ))}
       </Tabs>
+      {section.allowFullScreen && (
+        <div className="mb-4 text-right">
+          <Button variant="outlined" onClick={() => setFullScreen(true)}>
+            Full screen
+          </Button>
+        </div>
+      )}
       <div id={section.panelId} aria-labelledby={section.id} role="tabpanel">
         <SectionPanel
           admForm={props.admForm || {}}
+          fullScreen={fullScreen}
           report={report}
           section={section}
           variant={variant}
+          exitFullScreen={() => {
+            setFullScreen(false)
+          }}
         />
       </div>
     </>
