@@ -29,7 +29,9 @@ class CPRecord(models.Model):
     substance = models.ForeignKey(
         Substance, on_delete=models.CASCADE, null=True, blank=True
     )
-    country_programme_report = models.ForeignKey(CPReport, on_delete=models.CASCADE)
+    country_programme_report = models.ForeignKey(
+        CPReport, on_delete=models.CASCADE, related_name="cprecords"
+    )
     display_name = models.CharField(max_length=248, null=True, blank=True)
     section = models.CharField(max_length=164)
     imports = models.DecimalField(

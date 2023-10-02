@@ -7,7 +7,6 @@ from drf_yasg import openapi
 from core.api.views import ProjectFundViewSet
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
-from core.api.views.adm import AdmEmptyFormView
 from core.api.views.agency import AgencyListView
 from core.api.views.chemicals import (
     BlendCreateView,
@@ -17,6 +16,7 @@ from core.api.views.chemicals import (
 from core.api.views.country_programme import (
     CPRecordListView,
     CPReportView,
+    EmptyFormView,
 )
 from core.api.views.projects import (
     ProjectOdsOdpViewSet,
@@ -92,9 +92,9 @@ urlpatterns = [
         name="country-programme-record-list",
     ),
     path(
-        "country-programme/adm/empty-form/",
-        AdmEmptyFormView.as_view(),
-        name="adm-empty-form",
+        "country-programme/empty-form/",
+        EmptyFormView.as_view(),
+        name="empty-form",
     ),
     path(
         "countries/",

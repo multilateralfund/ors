@@ -484,3 +484,27 @@ class TestCPRecordList(BaseTest):
         assert len(response.data["adm_c"]) == 1
         assert len(response.data["adm_d"]) == 1
         assert response.data["adm_d"][0]["value_choice_id"] == last_choice.id
+
+
+@pytest.fixture(name="_setup_get_empty_form")
+def setup_get_empty_form(_setup_new_cp_report):
+    for i in range(4):
+        UsageFactory.create(
+            name=f"usage{i}{i}", displayed_in_latest_format=(i % 2 == 0)
+        )
+
+
+class TestGetEmptyForm(BaseTest):
+    url = reverse("empty-form")
+
+    def test_without_cp_report_id(self, user, _setup_get_empty_form):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data["usage_columns"]) == 6
+
+    def test_with_cp_report_id(self, user, cp_report_2019, _setup_get_empty_form):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
+        assert response.status_code == 200
+        assert len(response.data["usage_columns"]) == 3

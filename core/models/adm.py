@@ -1,11 +1,18 @@
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
-from mptt.models import MPTTModel, TreeForeignKey
+from mptt.models import MPTTModel, TreeForeignKey, TreeManager
 
 from core.models.blend import Blend
 from core.models.country_programme import CPReport
 from core.models.substance import Substance
+
+
+class AdmColumnManager(models.Manager):
+    def get_for_year(self, year):
+        return self.filter(min_year__lte=year, max_year__gte=year).order_by(
+            "section", "sort_order"
+        )
 
 
 class AdmColumn(models.Model):
@@ -33,11 +40,34 @@ class AdmColumn(models.Model):
     sort_order = models.FloatField(null=True, blank=True)
     source_file = models.CharField(max_length=248, null=True, blank=True)
 
+    objects = AdmColumnManager()
+
     class Meta:
         db_table = "cp_admcolumn"
 
     def __str__(self):
         return f"{self.display_name} - {self.type}"
+
+
+class AdmRowManager(TreeManager):
+    def get_for_cp_report(self, cp_report):
+        return (
+            self.filter(
+                min_year__lte=cp_report.year,
+                max_year__gte=cp_report.year,
+                level=0,
+            )
+            .get_descendants(include_self=True)
+            .filter(
+                models.Q(min_year__lte=cp_report.year, max_year__gte=cp_report.year),
+                models.Q(
+                    models.Q(country_programme_report_id__isnull=True)
+                    | models.Q(country_programme_report_id=cp_report.id)
+                ),
+            )
+            .prefetch_related("choices")
+            .order_by("sort_order", "level")
+        )
 
 
 class AdmRow(MPTTModel):
@@ -81,6 +111,8 @@ class AdmRow(MPTTModel):
         null=True,
         blank=True,
     )
+
+    objects = AdmRowManager()
 
     class Meta:
         db_table = "cp_admrow"
