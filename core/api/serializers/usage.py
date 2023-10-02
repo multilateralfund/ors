@@ -13,10 +13,8 @@ class RecursiveField(serializers.Serializer):
 class UsageSerializer(serializers.ModelSerializer):
     headerName = serializers.SerializerMethodField()
     children = RecursiveField(many=True, read_only=True)
-    cellEditor = serializers.SerializerMethodField()
-    cellEditorParams = serializers.SerializerMethodField()
-    field = serializers.SerializerMethodField()
-    type = serializers.SerializerMethodField()
+    columnCategory = serializers.SerializerMethodField()
+    dataType = serializers.SerializerMethodField()
 
     class Meta:
         model = Usage
@@ -25,24 +23,20 @@ class UsageSerializer(serializers.ModelSerializer):
             "headerName",
             "sort_order",
             "children",
-            "cellEditor",
-            "cellEditorParams",
-            "field",
-            "type",
+            "columnCategory",
+            "displayed_in_latest_format",
+            "dataType",
         ]
 
     def get_headerName(self, obj):
         return obj.full_name
 
-    def get_cellEditor(self, _obj):
-        return "agNumberCellEditor"
-
-    def get_cellEditorParams(self, _obj):
-        return {"min": "0"}
-
     def get_field(self, obj):
         usage_name = obj.full_name.lower().replace(" ", "_")
         return f"usage_{usage_name}"
 
-    def get_type(self, _obj):
-        return "usages"
+    def get_columnCategory(self, _obj):
+        return "usage"
+
+    def get_dataType(self, _obj):
+        return "object"

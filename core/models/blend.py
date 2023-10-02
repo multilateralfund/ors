@@ -125,6 +125,12 @@ class Blend(models.Model):
         help_text="Global Warming Potential",
     )
     is_contained_in_polyols = models.BooleanField(default=False)
+    displayed_in_all = models.BooleanField(
+        default=True, help_text="Controls all-years visibility."
+    )
+    displayed_in_latest_format = models.BooleanField(
+        default=True, help_text="Controls current-year visibility."
+    )
     sort_order = models.FloatField(null=True, blank=True)
     ozone_id = models.IntegerField(null=True, blank=True)
 

@@ -3,7 +3,9 @@ from core.api.tests.factories import (
     AdmChoiceFactory,
     AdmColumnFactory,
     AdmRowFactory,
+    CPRecordFactory,
     CPReportFactory,
+    CPUsageFactory,
 )
 import pytest
 from django.urls import reverse
@@ -14,10 +16,17 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture(name="_setup_empty_form")
-def setup_empty_form(country_ro, cp_report_2005):
+def setup_empty_form(country_ro, cp_report_2005, substance):
     cp_report_17 = CPReportFactory.create(
         country=country_ro, year=2017, comment="Daca ploua nu ma ploua"
     )
+    # section A
+    cp_rec = CPRecordFactory.create(
+        country_programme_report=cp_report_2005, section="A", substance=substance
+    )
+    # add 3 usages for one record
+    for _ in range(3):
+        CPUsageFactory.create(country_programme_record=cp_rec)
 
     for section in ["B", "C"]:
         # create adm column
@@ -98,7 +107,7 @@ def setup_empty_form(country_ro, cp_report_2005):
 
 
 class TestAdmEmptyFormView(BaseTest):
-    url = reverse("adm-empty-form")
+    url = reverse("empty-form")
 
     def test_get_empty_form_annon(self, cp_report_2005):
         # test without authentication
@@ -111,6 +120,11 @@ class TestAdmEmptyFormView(BaseTest):
         # get adm form for 2005 cp report
         response = self.client.get(self.url, {"cp_report_id": cp_report_2005.id})
         assert response.status_code == 200
+
+        # check usage Columns
+        assert len(response.data["usage_columns"]) == 3
+
+        # check admB section
         assert len(response.data["admB"]["columns"]) == 2
         assert len(response.data["admB"]["rows"]) == 5
         assert "N/A" not in response.data["admB"]["rows"]
@@ -122,9 +136,11 @@ class TestAdmEmptyFormView(BaseTest):
         assert admb_rows[3]["text"] == "subtitle_B_row_1"
         assert admb_rows[4]["text"] == "subtitle_B_row_161"
 
+        # check admC section
         assert len(response.data["admC"]["columns"]) == 2
         assert len(response.data["admC"]["rows"]) == 4
 
+        # check admD section
         assert len(response.data["admD"]["rows"]) == 2
         assert len(response.data["admD"]["rows"][0]["choices"]) == 3
         assert len(response.data["admD"]["rows"][1]["choices"]) == 3
@@ -135,6 +151,10 @@ class TestAdmEmptyFormView(BaseTest):
 
         response = self.client.get(self.url, {"cp_report_id": cp_report_17.id})
         assert response.status_code == 200
+
+        # check usage Columns
+        assert len(response.data["usage_columns"]) == 0
+
         assert len(response.data["admB"]["columns"]) == 0
         assert len(response.data["admB"]["rows"]) == 0
         assert len(response.data["admC"]["columns"]) == 0

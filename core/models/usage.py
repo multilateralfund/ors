@@ -17,6 +17,9 @@ class Usage(models.Model):
         "self", on_delete=models.CASCADE, related_name="children", null=True, blank=True
     )
     sort_order = models.FloatField(null=True, blank=True)
+    displayed_in_latest_format = models.BooleanField(
+        default=True, help_text="Controls current-year visibility."
+    )
 
     objects = UsageManager()
 

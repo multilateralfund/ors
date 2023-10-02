@@ -31,9 +31,7 @@ class TestUsages(BaseTest):
         assert len(response.data) == 4
         assert response.data[0]["id"] == usage4.id
         assert response.data[1]["id"] == usage1.id
-        assert response.data[1]["field"] == "usage_chef"
         assert response.data[1]["children"][0]["id"] == usage2.id
-        assert response.data[1]["children"][0]["field"] == "usage_chef_de_chef"
         assert response.data[1]["children"][0]["children"][0]["id"] == usage3.id
 
     def test_usages_list_parents(self, user, _setup_usages):

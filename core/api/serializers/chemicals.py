@@ -33,6 +33,8 @@ class SubstanceSerializer(ChemicalsBaseSerializer):
             "formula",
             "odp",
             "is_contained_in_polyols",
+            "displayed_in_all",
+            "displayed_in_latest_format",
             "excluded_usages",
             "sort_order",
         ]
@@ -64,6 +66,8 @@ class BlendSerializer(ChemicalsBaseSerializer):
             "gwp",
             "excluded_usages",
             "is_contained_in_polyols",
+            "displayed_in_all",
+            "displayed_in_latest_format",
             "sort_order",
         ]
 
