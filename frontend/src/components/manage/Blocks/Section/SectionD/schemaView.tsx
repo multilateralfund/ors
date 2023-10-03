@@ -38,11 +38,6 @@ function useGridOptions() {
         headerName: 'Captured for destruction',
         initialWidth: 240,
       },
-      {
-        field: 'expand',
-        flex: 1,
-        headerName: '',
-      },
     ],
     defaultColDef: {
       autoHeight: true,

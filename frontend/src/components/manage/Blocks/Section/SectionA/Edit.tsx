@@ -76,12 +76,6 @@ export default function SectionA() {
         rowSelection="multiple"
         suppressCellFocus={false}
         suppressRowHoverHighlight={false}
-        rowClassRules={{
-          'ag-row-controller': (props) => props.data.isController,
-          'ag-row-group': (props) => props.data.isGroup,
-          'ag-row-sub-total': (props) => props.data.isSubTotal,
-          'ag-row-total': (props) => props.data.isTotal,
-        }}
         onCellValueChanged={(event) => {
           setData((data) => {
             const index = findIndex(

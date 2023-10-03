@@ -27,6 +27,12 @@ function useGridOptions(props: { model: string }) {
           initialWidth: 200,
         },
         {
+          id: 20,
+          cellRenderer: 'agAdmCellRenderer',
+          headerName: 'All other ods',
+          initialWidth: 200,
+        },
+        {
           id: 21,
           cellRenderer: 'agAdmCellRenderer',
           headerName: 'HCFC',

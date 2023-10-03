@@ -24,6 +24,7 @@ export interface WidgetsMapping {
 }
 
 export type WidgetProps = any
+
 // Default Widget
 export const defaultWidget = TextWidget
 

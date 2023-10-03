@@ -20,14 +20,15 @@ export default async function CountryProgrammeReport({ params }: ReportProps) {
     {},
     false,
   )
-  const admForm = await api(
-    `api/country-programme/adm/empty-form/?cp_report_id=${params.report_id}`,
+  const emptyForm = await api(
+    `api/country-programme/empty-form/?cp_report_id=${params.report_id}`,
     {},
     false,
   )
+
   return (
     <PageWrapper>
-      <CPReportView admForm={admForm || {}} report={report || {}} />
+      <CPReportView emptyForm={emptyForm || {}} report={report || {}} />
     </PageWrapper>
   )
 }

@@ -4,7 +4,27 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-function useGridOptions() {
+// import { colDefByUsageId } from '../defaultColDef'
+
+// const mapUsage = (usage: any) => ({
+//   id: usage.id,
+//   category: usage.columnCategory,
+//   cellDataType: 'number',
+//   headerName: usage.headerName,
+//   ...(colDefByUsageId[usage.id] || {}),
+//   ...(usage.children.length
+//     ? {
+//         children: usage.children.map(mapUsage),
+//         headerGroupComponent: 'agColumnHeaderGroup',
+//         marryChildren: true,
+//       }
+//     : {
+//         aggFunc: 'sumTotalUsages',
+//       }),
+// })
+
+function useGridOptions(props: { usages: Array<any> }) {
+  const { usages } = props
   const gridOptions: GridOptions = useMemo(
     () => ({
       columnDefs: [
@@ -21,6 +41,25 @@ function useGridOptions() {
           initialWidth: 340,
           pinned: 'left',
         },
+        // ...(usages.length
+        //   ? [
+        //       {
+        //         children: [
+        //           ...usages.map(mapUsage),
+        //           {
+        //             id: 'total_usages',
+        //             aggFunc: 'sumTotalUsages',
+        //             category: 'usage',
+        //             headerName: 'TOTAL',
+        //             initialWidth: 140,
+        //           },
+        //         ],
+        //         headerGroupComponent: 'agColumnHeaderGroup',
+        //         headerName: 'Use by Sector',
+        //         marryChildren: true,
+        //       },
+        //     ]
+        //   : []),
         {
           children: [
             {
@@ -65,12 +104,19 @@ function useGridOptions() {
                       initialWidth: 130,
                     },
                     {
-                      id: 'total_refrigeration',
+                      id: 8,
                       aggFunc: 'sumTotalUsages',
                       cellRenderer: 'agUsageCellRenderer',
                       headerName: 'Total',
                       initialWidth: 130,
                     },
+                    // {
+                    //   id: 'total_refrigeration',
+                    //   aggFunc: 'sumTotalUsages',
+                    //   cellRenderer: 'agUsageCellRenderer',
+                    //   headerName: 'Total',
+                    //   initialWidth: 130,
+                    // },
                   ],
                   groupId: 'usage_refrigeration_manufacturing',
                   headerClass: 'ag-text-center',
@@ -170,7 +216,8 @@ function useGridOptions() {
         wrapText: true,
       },
     }),
-    [],
+    // eslint-disable-next-line
+    [usages],
   )
 
   return gridOptions

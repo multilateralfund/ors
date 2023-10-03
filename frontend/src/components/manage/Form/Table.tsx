@@ -2,285 +2,29 @@
 import type { I18nSlice } from '@ors/slices/createI18nSlice'
 import type { ThemeSlice } from '@ors/slices/createThemeSlice'
 
-import { Fragment, useId, useMemo, useRef, useState } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 
-import {
-  Tooltip as MuiTooltip,
-  Skeleton,
-  TablePagination,
-  Typography,
-} from '@mui/material'
+import { TablePagination, Typography } from '@mui/material'
 import { ColDef } from 'ag-grid-community'
 import { AgGridReact, AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
-import dayjs from 'dayjs'
-import {
-  filter,
-  find,
-  get,
-  includes,
-  isNull,
-  isUndefined,
-  reduce,
-  sum,
-  times,
-} from 'lodash'
+import { times } from 'lodash'
 
+import { aggFuncs, components as defaultComponents } from '@ors/config/Table'
+
+import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
-import CellAutocompleteWidget from '@ors/components/manage/Widgets/CellAutocompleteWidget'
-import CellDateWidget from '@ors/components/manage/Widgets/CellDateWidget'
-import CellNumberWidget from '@ors/components/manage/Widgets/CellNumberWidget'
-import CellTextareaWidget from '@ors/components/manage/Widgets/CellTextareaWidget'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { KEY_BACKSPACE, KEY_ENTER } from '@ors/constants'
-import { parseNumber } from '@ors/helpers/Utils/Utils'
 import useStore from '@ors/store'
-
-const aggFuncs = {
-  sumTotal: (props: any) => {
-    let value: null | number = null
-    const values: Array<any> = []
-    if (!includes(['subtotal', 'total'], props.data.rowType)) {
-      return null
-    }
-    props.api.forEachNode(function (node: any) {
-      if (
-        props.data.rowType === 'subtotal' &&
-        (!props.data.group || node.data.group !== props.data.group)
-      ) {
-        return
-      }
-      value = parseNumber(node.data[props.colDef.field])
-      if (!isNull(value)) {
-        values.push(value)
-      }
-    })
-    return values.length > 0 ? sum(values) : undefined
-  },
-  sumTotalUsages: (props: any) => {
-    let value: null | number = null
-    const values: Array<any> = []
-    const usageId = props.colDef.id
-    if (!includes(['subtotal', 'total'], props.data.rowType)) {
-      return null
-    }
-    props.api.forEachNode(function (node: any) {
-      if (
-        props.data.rowType === 'subtotal' &&
-        (!props.data.group || node.data.annex_group !== props.data.group)
-      ) {
-        return
-      }
-      const recordUsages = node.data.record_usages || []
-
-      if (usageId === 'total_usages') {
-        value = parseNumber(
-          sum(recordUsages.map((usage: any) => parseFloat(usage.quantity))),
-        )
-      } else if (usageId === 'total_refrigeration') {
-        value = parseNumber(
-          sum(
-            filter(recordUsages, (usage) =>
-              includes([6, 7], usage.usage_id),
-            ).map((usage: any) => parseFloat(usage.quantity)),
-          ),
-        )
-      } else {
-        const usage = find(
-          recordUsages,
-          (item) =>
-            item.usage_id === usageId &&
-            !includes(node.data.excluded_usages, usageId),
-        )
-        value = parseNumber(usage?.quantity)
-      }
-      if (!isNull(value)) {
-        values.push(value)
-      }
-    })
-    return values.length > 0 ? sum(values) : undefined
-  },
-}
-
-export function AgHeaderComponent(props: any) {
-  const { displayName } = props
-
-  return (
-    <Typography className={props.className} component="span">
-      {displayName}
-    </Typography>
-  )
-}
-
-export function AgHeaderGroupComponent(props: any) {
-  return (
-    <Typography className={props.className} component="span">
-      {props.displayName}
-    </Typography>
-  )
-}
-
-export function AgSkeletonCellRenderer(props: any) {
-  return (
-    <Typography className={props.className} component="span">
-      <Skeleton className="inline-block w-full" />
-    </Typography>
-  )
-}
-
-export function AgTextCellRenderer(props: any) {
-  if (props.data.rowType === 'skeleton') {
-    return <AgSkeletonCellRenderer {...props} />
-  }
-
-  const Tooltip = props.colDef.tooltip ? MuiTooltip : Fragment
-  return (
-    <Tooltip enterDelay={300} placement="top-start" title={props.value}>
-      <Typography className={props.className} component="span">
-        {props.value}
-      </Typography>
-    </Tooltip>
-  )
-}
-
-export function AgFloatCellRenderer(props: any) {
-  if (props.data.rowType === 'skeleton') {
-    return <AgSkeletonCellRenderer {...props} />
-  }
-
-  let value = null
-  const aggFunc = get(aggFuncs, props.colDef.aggFunc)
-  const Tooltip = props.colDef.tooltip ? MuiTooltip : Fragment
-
-  if (includes(['control', 'group'], props.data.rowType)) {
-    return null
-  }
-  if (aggFunc && includes(['subtotal', 'total'], props.data.rowType)) {
-    value = aggFunc({ ...props })
-  } else {
-    value = parseNumber(props.value)
-  }
-
-  if (isUndefined(value)) {
-    return null
-  }
-
-  if (isNull(value)) {
-    return '-'
-  }
-
-  const formattedValue = value.toLocaleString(undefined, {
-    minimumFractionDigits: props.minimumFractionDigits || 2,
-  })
-
-  return (
-    <Tooltip enterDelay={300} placement="top-start" title={formattedValue}>
-      <Typography className={props.className} component="span">
-        {formattedValue}
-      </Typography>
-    </Tooltip>
-  )
-}
-
-export function AgDateCellRenderer(props: any) {
-  if (props.data.rowType === 'skeleton') {
-    return <AgSkeletonCellRenderer {...props} />
-  }
-
-  const value = dayjs(props.value).format('DD/MM/YYYY')
-  const finalValue = value !== 'Invalid Date' ? value : null
-  return !!props.value && <Typography component="span">{finalValue}</Typography>
-}
-
-export function AgUsageCellRenderer(props: any) {
-  if (props.data.rowType === 'skeleton') {
-    return <AgSkeletonCellRenderer {...props} />
-  }
-
-  let value = null
-  const aggFunc = get(aggFuncs, props.colDef.aggFunc)
-  const Tooltip = props.colDef.tooltip ? MuiTooltip : Fragment
-  const usageId = props.colDef.id
-  const recordUsages = props.data.record_usages || []
-
-  if (
-    props.data.rowType === 'group' ||
-    includes(props.data.excluded_usages, usageId)
-  ) {
-    return null
-  }
-  if (aggFunc && includes(['subtotal', 'total'], props.data.rowType)) {
-    value = aggFunc({ ...props })
-  } else if (usageId === 'total_usages') {
-    value = parseNumber(
-      reduce(recordUsages, (total, usage) => {
-        return total + parseFloat(usage.quantity)
-      }),
-    )
-  } else if (usageId === 'total_refrigeration') {
-    value = parseNumber(
-      reduce(recordUsages, (total, usage) => {
-        if (!includes([6, 7], usage.usage_id)) {
-          return total
-        }
-        return total + parseFloat(usage.quantity)
-      }),
-    )
-  } else {
-    const usage = find(recordUsages, (item) => item.usage_id === usageId)
-    value = parseNumber(usage?.quantity)
-  }
-
-  if (isUndefined(value)) {
-    return null
-  }
-
-  if (isNull(value)) {
-    return '-'
-  }
-
-  const formattedValue = value.toLocaleString(undefined, {
-    minimumFractionDigits: props.minimumFractionDigits || 2,
-  })
-
-  return (
-    <Tooltip enterDelay={300} placement="top-start" title={formattedValue}>
-      <Typography className={props.className} component="span">
-        {formattedValue}
-      </Typography>
-    </Tooltip>
-  )
-}
-
-export function AgAdmCellRenderer(props: any) {
-  if (props.data.rowType === 'skeleton') {
-    return <AgSkeletonCellRenderer {...props} />
-  }
-
-  let value = null
-  const Tooltip = props.colDef.tooltip ? MuiTooltip : Fragment
-  const columnId = props.colDef.id
-  const values = props.data.values || []
-
-  if (includes(['group', 'hashed'], props.data.rowType)) {
-    value = null
-  } else {
-    value = find(values, (value) => value.column_id === columnId)?.value_text
-  }
-
-  return (
-    <Tooltip enterDelay={300} placement="top-start" title={value}>
-      <Typography className={props.className} component="span">
-        {value}
-      </Typography>
-    </Tooltip>
-  )
-}
 
 export default function Table(
   props: AgGridReactProps & {
     FooterComponent?: React.FC<any>
     HeaderComponent?: React.FC<any>
+    headerDepth?: number
+    rowsVisible?: number
+    withFluidEmptyColumn?: boolean
   },
 ) {
   const uniqueId = useId()
@@ -291,21 +35,32 @@ export default function Table(
     HeaderComponent = () => null,
     className,
     collapsedRows = [],
+    columnDefs = [],
     components = {},
     defaultColDef = {},
+    domLayout = 'autoHeight',
     enablePagination = true,
     gridRef,
+    headerDepth = 1,
     loading = false,
     onFirstDataRendered = () => {},
+    onGridReady,
     onPaginationChanged = ({}: { page: number; rowsPerPage: number }) => {},
     paginationPageSize = 10,
+    pinnedBottomRowData = [],
+    rowBuffer = 40,
+    rowClassRules = {},
     rowCount = 0,
     rowData = [],
-    style,
+    rowHeight = 45,
+    rowsVisible = 15,
+    style = {},
+    withFluidEmptyColumn = false,
     withSeparators = false,
     withSkeleton = false,
     ...rest
   } = props
+  const [offsetHeight, setOffsetHeight] = useState(0)
   const [pagination, setPagination] = useState<{
     page: number
     rowsPerPage: number
@@ -325,11 +80,11 @@ export default function Table(
           disabled: props.colDef.disabled,
         })
       },
-      cellRenderer: 'agTextCellRenderer',
+      cellRenderer: (props: any) => {
+        return <AgCellRenderer {...props} />
+      },
       comparator: () => 0,
-      filter: true,
-      // flex: 1,
-      // minWidth: 100,
+      filter: false,
       sortable: false,
       sortingOrder: ['asc', 'desc', null],
       suppressKeyboardEvent: (props) => {
@@ -362,6 +117,34 @@ export default function Table(
     return rowData
     /* eslint-disable-next-line */
   }, [withSkeleton, rowData, loading])
+
+  // Normal layout table height
+  const tableBodyHeight = useMemo(() => {
+    if (domLayout !== 'normal' || !rowData?.length) return 0
+    const rows = rowData.length + pinnedBottomRowData.length
+    if (rows <= rowsVisible) {
+      return rows * rowHeight + offsetHeight + headerDepth + 1
+    }
+    return rowsVisible * rowHeight + offsetHeight + headerDepth + 1
+  }, [
+    domLayout,
+    headerDepth,
+    offsetHeight,
+    pinnedBottomRowData,
+    rowData,
+    rowHeight,
+    rowsVisible,
+  ])
+
+  function updateOffsetHeight() {
+    const table = document.getElementById(id || `table-${uniqueId}`)
+    const headerHeight =
+      table?.querySelector<HTMLElement>('.ag-header')?.offsetHeight || 0
+    const horizontalScrollbarHeight =
+      table?.querySelector<HTMLElement>('.ag-body-horizontal-scroll')
+        ?.offsetHeight || 0
+    setOffsetHeight(headerHeight + horizontalScrollbarHeight)
+  }
 
   function handlePageChange(page: number, triggerEvent = true) {
     setPagination((prevPagination) => {
@@ -405,7 +188,14 @@ export default function Table(
         },
         className,
       )}
-      style={style}
+      style={{
+        ...(tableBodyHeight > 0
+          ? {
+              height: tableBodyHeight,
+            }
+          : {}),
+        ...style,
+      }}
     >
       <HeaderComponent {...props} />
       {loading && !(withSkeleton && results?.[0]?.rowType === 'skeleton') && (
@@ -415,13 +205,14 @@ export default function Table(
         aggFuncs={aggFuncs}
         animateRows={false}
         defaultColDef={{ ...baseColDef, ...defaultColDef }}
-        domLayout="autoHeight"
         enableCellTextSelection={true}
         enableRtl={i18n.dir === 'rtl'}
         pagination={enablePagination}
         paginationPageSize={pagination.rowsPerPage + collapsedRows.length}
+        pinnedBottomRowData={pinnedBottomRowData}
+        rowBuffer={rowBuffer}
         rowData={results}
-        rowHeight={41}
+        rowHeight={rowHeight}
         sortingOrder={['asc']}
         stopEditingWhenCellsLoseFocus={true}
         suppressCellFocus={true}
@@ -433,20 +224,30 @@ export default function Table(
         suppressPaginationPanel={true}
         suppressRowClickSelection={true}
         suppressRowHoverHighlight={true}
+        columnDefs={[
+          ...(columnDefs || []),
+          ...(withFluidEmptyColumn
+            ? [
+                {
+                  category: 'expand',
+                  field: 'none',
+                  flex: 1,
+                  headerName: '',
+                },
+              ]
+            : []),
+        ]}
         components={{
-          agAdmCellRenderer: AgAdmCellRenderer,
-          agColumnHeader: AgHeaderComponent,
-          agColumnHeaderGroup: AgHeaderGroupComponent,
-          agDateCellEditor: CellDateWidget,
-          agDateCellRenderer: AgDateCellRenderer,
-          agFloatCellRenderer: AgFloatCellRenderer,
-          agNumberCellEditor: CellNumberWidget,
-          agSelectCellEditor: CellAutocompleteWidget,
-          agTextCellEditor: CellTextareaWidget,
-          agTextCellRenderer: AgTextCellRenderer,
-          agUsageCellRenderer: AgUsageCellRenderer,
+          ...defaultComponents,
           ...components,
         }}
+        domLayout={
+          domLayout === 'normal'
+            ? tableBodyHeight > 0
+              ? 'normal'
+              : 'autoHeight'
+            : domLayout
+        }
         noRowsOverlayComponent={(props: any) => {
           return (
             <Typography id="no-rows" component="span">
@@ -487,8 +288,21 @@ export default function Table(
             }
           }
         }}
+        rowClassRules={{
+          'ag-row-controller': (props) => props.data.rowType === 'controller',
+          'ag-row-group': (props) => props.data.rowType === 'group',
+          'ag-row-hashed': (props) => props.data.rowType === 'hashed',
+          'ag-row-sub-total': (props) => props.data.rowType === 'subtotal',
+          'ag-row-total': (props) => props.data.rowType === 'total',
+          ...rowClassRules,
+        }}
         onFirstDataRendered={(agGrid) => {
+          updateOffsetHeight()
           onFirstDataRendered(agGrid)
+        }}
+        onGridReady={(event) => {
+          updateOffsetHeight()
+          onGridReady?.(event)
         }}
         {...rest}
       />

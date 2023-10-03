@@ -4,8 +4,27 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-function useGridOptions(props: { model: string }) {
-  const { model } = props
+// import { colDefByUsageId } from '../defaultColDef'
+
+// const mapUsage = (usage: any) => ({
+//   id: usage.id,
+//   category: usage.columnCategory,
+//   cellDataType: 'number',
+//   headerName: usage.headerName,
+//   ...(colDefByUsageId[usage.id] || {}),
+//   ...(usage.children.length
+//     ? {
+//         children: usage.children.map(mapUsage),
+//         headerGroupComponent: 'agColumnHeaderGroup',
+//         marryChildren: true,
+//       }
+//     : {
+//         aggFunc: 'sumTotalUsages',
+//       }),
+// })
+
+function useGridOptions(props: { model: string; usages: Array<any> }) {
+  const { model, usages } = props
   const gridOptions: GridOptions = useMemo(
     () => ({
       columnDefs: [
@@ -21,6 +40,25 @@ function useGridOptions(props: { model: string }) {
           initialWidth: 300,
           pinned: 'left',
         },
+        // ...(usages.length
+        //   ? [
+        //       {
+        //         children: [
+        //           ...usages.map(mapUsage),
+        //           {
+        //             id: 'total_usages',
+        //             aggFunc: 'sumTotalUsages',
+        //             category: 'usage',
+        //             headerName: 'TOTAL',
+        //             initialWidth: 140,
+        //           },
+        //         ],
+        //         headerGroupComponent: 'agColumnHeaderGroup',
+        //         headerName: 'Use by Sector',
+        //         marryChildren: true,
+        //       },
+        //     ]
+        //   : []),
         {
           children: [
             {
@@ -64,8 +102,6 @@ function useGridOptions(props: { model: string }) {
                         initialWidth: 140,
                       },
                     ],
-                    groupId: 'usage_refrigeration',
-                    headerClass: 'ag-text-center',
                     headerGroupComponent: 'agColumnHeaderGroup',
                     marryChildren: true,
                   }
@@ -160,8 +196,6 @@ function useGridOptions(props: { model: string }) {
                         initialWidth: 130,
                       },
                     ],
-                    groupId: 'usage_methyl_bromide',
-                    headerClass: 'ag-text-center',
                     headerGroupComponent: 'agColumnHeaderGroup',
                     headerName: 'Methyl bromide',
                     marryChildren: true,
@@ -180,15 +214,13 @@ function useGridOptions(props: { model: string }) {
                 ]
               : []),
             {
-              id: 'total',
+              id: 'total_usages',
               aggFunc: 'sumTotalUsages',
               cellRenderer: 'agUsageCellRenderer',
               headerName: 'TOTAL',
               initialWidth: 140,
             },
           ],
-          groupId: 'usages',
-          headerClass: 'ag-text-center',
           headerGroupComponent: 'agColumnHeaderGroup',
           headerName: 'Use by Sector',
           marryChildren: true,
@@ -267,7 +299,8 @@ function useGridOptions(props: { model: string }) {
         wrapText: true,
       },
     }),
-    [model],
+    // eslint-disable-next-line
+    [model, usages],
   )
 
   return gridOptions

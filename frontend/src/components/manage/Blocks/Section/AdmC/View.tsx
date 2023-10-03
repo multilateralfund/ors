@@ -12,13 +12,13 @@ import useGridOptions from './schemaView'
 import { IoClose } from '@react-icons/all-files/io5/IoClose'
 
 export default function AdmC(props: {
-  admForm: Record<string, any>
+  emptyForm: Record<string, any>
   exitFullScreen: () => void
   fullScreen: boolean
   report: Record<string, Array<any>>
   variant: any
 }) {
-  const { admForm, exitFullScreen, fullScreen, report, variant } = props
+  const { emptyForm, exitFullScreen, fullScreen, report, variant } = props
   const grid = useRef<any>()
   const gridOptions = useGridOptions({ model: variant.model })
   const [loadTable, setLoadTable] = useState(false)
@@ -27,17 +27,19 @@ export default function AdmC(props: {
   const rowData = useMemo(() => {
     const dataByRowId = groupBy(report.adm_c, 'row_id')
 
-    return map(admForm.admC?.rows, (row) => ({
+    return map(emptyForm.admC?.rows, (row) => ({
       values: dataByRowId[row.id]?.[0]?.values || [],
       ...row,
       ...(row.type === 'title' ? { rowType: 'group' } : {}),
       ...(row.type === 'subtitle' ? { rowType: 'hashed' } : {}),
     }))
-  }, [admForm, report])
+  }, [emptyForm, report])
 
   useEffect(() => {
     setTimeout(() => setLoadTable(true), 500)
   }, [])
+
+  console.log('HERE', emptyForm.admC)
 
   return (
     <>
@@ -54,6 +56,7 @@ export default function AdmC(props: {
       {!loadTable && (
         <Table
           columnDefs={gridOptions.columnDefs}
+          defaultColDef={gridOptions.defaultColDef}
           enablePagination={false}
           rowData={times(10, () => {
             return {
@@ -75,7 +78,6 @@ export default function AdmC(props: {
           enablePagination={false}
           gridRef={grid}
           noRowsOverlayComponentParams={{ label: 'No data reported' }}
-          rowBuffer={40}
           rowData={rowData}
           suppressCellFocus={false}
           suppressRowHoverHighlight={false}
@@ -94,10 +96,6 @@ export default function AdmC(props: {
                 }
               : () => null
           }
-          rowClassRules={{
-            'ag-row-group': (props) => props.data.rowType === 'group',
-            'ag-row-hashed': (props) => props.data.rowType === 'hashed',
-          }}
           onFirstDataRendered={() => setLoading(false)}
           withSeparators
         />
