@@ -11,7 +11,7 @@ from core.models.adm import AdmColumn, AdmRow
 from core.models.agency import Agency
 from core.models.blend import Blend
 from core.models.country import Country
-from core.models.country_programme import CPReport
+from core.models.country_programme import CPRecord, CPReport, CPUsage
 from core.models.project import (
     Project,
     ProjectSector,
@@ -263,6 +263,71 @@ def get_object_by_code(cls, code, column, index_row, with_log=True):
                 f"[row: {index_row}]: This {cls.__name__} does not exists in data base: {column}={code}"
             )
         return None
+
+
+def create_cp_record(record_data, usages_data, index_row):
+    """
+    create cp record and usages objects from data
+    -> if the record / usages exists, update it and log inconsistent data
+    -> if the record  doesn't exists, create it
+
+    @param record_data = dict (record data)
+    @param usages_data = list (list of usages data)
+    @param index_row = int
+
+    @return cp_usages = list (list of CPUsage objects)
+    """
+
+    inconsistent_data = []
+    cp_usages = []
+    # get cp record if exists
+    record = CPRecord.objects.filter(
+        country_programme_report_id=record_data["country_programme_report_id"],
+        substance_id=record_data["substance_id"],
+        blend_id=record_data["blend_id"],
+        section=record_data["section"],
+    ).first()
+
+    if record:
+        # check for inconsistent data and update record if needed
+        for key, value in record_data.items():
+            if not getattr(record, key, None):
+                # set attribute if it's not set
+                setattr(record, key, value)
+            elif getattr(record, key) != value and key not in [
+                "source_file",
+                "display_name",
+            ]:
+                inconsistent_data.append(f"{key}={value}")
+    else:
+        # create record if it doesn't exist
+        record = CPRecord.objects.create(**record_data)
+
+    # insert records
+    for usage_data in usages_data:
+        usage_data["country_programme_record_id"] = record.id
+
+        # get cp usage if exists
+        cp_usage = CPUsage.objects.filter(
+            country_programme_record_id=usage_data["country_programme_record_id"],
+            usage=usage_data["usage"],
+        ).first()
+
+        # check for inconsistent data and update cp usage if needed
+        if cp_usage and cp_usage.quantity != usage_data["quantity"]:
+            inconsistent_data.append(
+                f"quantity: {usage_data['usage'].name}={usage_data['quantity']}"
+            )
+        elif not cp_usage:
+            cp_usages.append(CPUsage(**usage_data))
+
+    # log inconsistent data
+    if inconsistent_data:
+        logger.warning(
+            f"⚠️ [row: {index_row + OFFSET}] The following data is inconsistent: {inconsistent_data}"
+        )
+
+    return cp_usages
 
 
 # --- cp databases import utils ---

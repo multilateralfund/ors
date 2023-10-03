@@ -8,6 +8,7 @@ from core.import_data.utils import (
     DB_DIR_LIST,
     USAGE_NAME_MAPPING,
     check_empty_row,
+    create_cp_record,
     delete_old_data,
     get_chemical_by_name_or_components,
     get_country_dict_from_db_file,
@@ -104,7 +105,7 @@ def set_usages_dict(current_usages_dict, item_attributes):
             )
             continue
 
-        current_usages_dict[usage_key] = usage.id
+        current_usages_dict[usage_key] = usage
 
 
 def get_users_dict(users_file):
@@ -189,7 +190,7 @@ def parse_record_data(
         if check_empty_row(item, item["ItemAttirbutesId"], quantity_columns):
             continue
 
-        # create record
+        # set record data
         record_data = {
             "country_programme_report_id": cp_rep.id,
             "substance_id": substance_id,
@@ -201,18 +202,22 @@ def parse_record_data(
             "production": item["Production"],
             "display_name": chemical_dict[item["ItemId"]]["display_name"],
         }
-        record = CPRecord.objects.create(**record_data)
 
-        # create records
-        for usage, usage_id in current_usages_dict.items():
-            if not item[usage]:
+        # set usage data
+        usages_data = []
+        for usage_key, usage_obj in current_usages_dict.items():
+            if not item[usage_key]:
                 continue
-            cp_rep = {
-                "country_programme_record_id": record.id,
-                "usage_id": usage_id,
-                "quantity": item[usage],
-            }
-            cp_usages.append(CPUsage(**cp_rep))
+            usages_data.append(
+                {
+                    "usage": usage_obj,
+                    "quantity": item[usage_key],
+                }
+            )
+
+        cp_usages.extend(
+            create_cp_record(record_data, usages_data, item["ItemAttirbutesId"])
+        )
 
     CPUsage.objects.bulk_create(cp_usages)
 
