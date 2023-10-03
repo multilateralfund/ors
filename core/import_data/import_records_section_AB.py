@@ -8,6 +8,7 @@ from django.conf import settings
 from core.import_data.utils import (
     check_empty_row,
     check_headers,
+    create_cp_record,
     delete_old_data,
     get_cp_report,
     get_country_by_name,
@@ -197,11 +198,11 @@ def parse_sheet(df, file_details):
         else:
             odp_value = 1
 
-        # create record
+        # set record data
         record_data = {
             "country_programme_report_id": current_cp.id,
-            "substance": substance,
-            "blend": blend,
+            "substance_id": substance.id if substance else None,
+            "blend_id": blend.id if blend else None,
             "section": file_details["section"],
             "display_name": row["chemical"],
             "source_file": file_details["file_name"],
@@ -210,21 +211,23 @@ def parse_sheet(df, file_details):
             column_value = get_decimal_from_excel_string(row.get(colummn_name, None))
             if column_value:
                 record_data[filed_name] = column_value / odp_value
-        record = CPRecord.objects.create(**record_data)
 
-        # insert records
+        # set usages data
+        usages_data = []
         for usage_name, usage in usage_dict.items():
             # check if the usage is empty or not a number
             quantity = get_decimal_from_excel_string(row.get(usage_name, None))
             if not quantity:
                 continue
 
-            usage_data = {
-                "country_programme_record_id": record.id,
-                "usage_id": usage.id,
-                "quantity": quantity / odp_value,
-            }
-            cp_usages.append(CPUsage(**usage_data))
+            usages_data.append(
+                {
+                    "usage": usage,
+                    "quantity": quantity / odp_value,
+                }
+            )
+
+        cp_usages.extend(create_cp_record(record_data, usages_data, index_row))
 
     CPUsage.objects.bulk_create(cp_usages)
 
