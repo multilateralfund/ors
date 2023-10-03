@@ -4,7 +4,7 @@ import { Button } from '@mui/material'
 import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 
-import { AgTextCellRenderer } from '@ors/components/manage/Form/Table'
+import AgTextCellRenderer from '@ors/components/manage/AgCellRenderers/AgTextCellRenderer'
 
 function useGridOptions(props: { setAddModal: (...args: any) => void }) {
   const { setAddModal } = props
