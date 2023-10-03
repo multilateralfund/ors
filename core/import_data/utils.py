@@ -278,7 +278,7 @@ def create_cp_record(record_data, usages_data, index_row):
     @return cp_usages = list (list of CPUsage objects)
     """
 
-    inconsistet_data = []
+    inconsistent_data = []
     cp_usages = []
     # get cp record if exists
     record = CPRecord.objects.filter(
@@ -298,7 +298,7 @@ def create_cp_record(record_data, usages_data, index_row):
                 "source_file",
                 "display_name",
             ]:
-                inconsistet_data.append(f"{key}={value}")
+                inconsistent_data.append(f"{key}={value}")
     else:
         # create record if it doesn't exist
         record = CPRecord.objects.create(**record_data)
@@ -315,16 +315,16 @@ def create_cp_record(record_data, usages_data, index_row):
 
         # check for inconsistent data and update cp usage if needed
         if cp_usage and cp_usage.quantity != usage_data["quantity"]:
-            inconsistet_data.append(
+            inconsistent_data.append(
                 f"quantity: {usage_data['usage'].name}={usage_data['quantity']}"
             )
         elif not cp_usage:
             cp_usages.append(CPUsage(**usage_data))
 
     # log inconsistent data
-    if inconsistet_data:
+    if inconsistent_data:
         logger.warning(
-            f"⚠️ [row: {index_row + OFFSET}] The following data is inconsistent: {inconsistet_data}"
+            f"⚠️ [row: {index_row + OFFSET}] The following data is inconsistent: {inconsistent_data}"
         )
 
     return cp_usages
