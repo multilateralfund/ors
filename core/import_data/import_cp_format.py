@@ -33,9 +33,10 @@ def reset_old_format():
 
 def set_chemicals_displayed_status(df):
     for index_row, row in df.iterrows():
-        chemical_name = row["chemical"].strip()
+        chemical_name = row["chemical"]
         if not chemical_name:
             continue
+        chemical_name = chemical_name.strip()
 
         # skip some chemical names that are not real chemicals
         skip_found = [

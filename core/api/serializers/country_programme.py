@@ -113,7 +113,6 @@ class CPUsageSerializer(serializers.ModelSerializer):
 class CPRecordSerializer(BaseWChemicalSerializer):
     record_usages = CPUsageSerializer(many=True)
     section = serializers.CharField(required=False, write_only=True)
-    country_programme_report = CPReportSerializer(read_only=True)
     excluded_usages = serializers.SerializerMethodField()
 
     class Meta:
@@ -130,7 +129,6 @@ class CPRecordSerializer(BaseWChemicalSerializer):
             "banned_date",
             "remarks",
             "record_usages",
-            "country_programme_report",
             "excluded_usages",
         ]
 

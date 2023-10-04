@@ -201,6 +201,7 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
 
         return Response(
             {
+                "cp_report": CPReportSerializer(cp_report).data,
                 "section_a": CPRecordSerializer(section_a, many=True).data,
                 "section_b": CPRecordSerializer(section_b, many=True).data,
                 "section_c": CPPricesSerializer(section_c, many=True).data,
@@ -234,6 +235,7 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
 
         return Response(
             {
+                "cp_report": CPReportSerializer(cp_report).data,
                 "section_a": CPRecordSerializer(section_a, many=True).data,
                 "adm_b": adm_b,
                 "section_c": CPPricesSerializer(section_c, many=True).data,
