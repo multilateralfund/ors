@@ -22,6 +22,7 @@ from core.api.serializers.country_programme import (
     CPReportCreateSerializer,
 )
 from core.api.serializers.usage import UsageSerializer
+from core.api.utils import SECTION_ANNEX_MAPPING
 from core.models.adm import AdmColumn, AdmRecord, AdmRow
 from core.models.blend import Blend
 from core.models.country_programme import (
@@ -113,7 +114,6 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
                 }
                 chemical_dict[chemical.id] = CPRecord(**cp_record_data)
 
-        print("alooo", chemical_type, len(chemical_dict))
         return chemical_dict
 
     def _get_displayed_records(self, cp_report_id, section):
@@ -137,12 +137,16 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
         }
 
         # get all substances and blends
+        annexes = SECTION_ANNEX_MAPPING.get(section, [])
         substances = (
             Substance.objects.filter(displayed_in_all=True)
             .select_related("group")
+            .filter(group__annex__in=annexes)
             .all()
         )
-        blends = Blend.objects.filter(displayed_in_all=True).all()
+        blends = []
+        if section == "B":
+            blends = Blend.objects.filter(displayed_in_all=True).all()
 
         substances_dict = self._set_chemical_records_dict(
             substances, subs_rec_dict, "substance", section, cp_report_id
@@ -220,7 +224,7 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
         return list(result.values())
 
     def _get_old_cp_records(self, cp_report):
-        section_a = self._get_cp_record(cp_report.id, "A")
+        section_a = self._get_displayed_records(cp_report.id, "A")
         adm_b = self._get_adm_records(cp_report.id, "B")
         adm_b = self._get_regroupped_adm_records(adm_b)
         section_c = self._get_cp_prices(cp_report.id)

@@ -7,6 +7,7 @@ from core.api.tests.factories import (
     AdmColumnFactory,
     AdmRecordFactory,
     AdmRowFactory,
+    BlendFactory,
     CPGenerationFactory,
     CPPricesFactory,
     CountryFactory,
@@ -351,9 +352,15 @@ def setup_new_cp_report(cp_report_2019, blend, substance):
     CPRecordFactory.create(
         country_programme_report=cp_report_2019, section="A", substance=substance
     )
+
     # section B
     cp_rec = CPRecordFactory.create(
         country_programme_report=cp_report_2019, section="B", blend=blend
+    )
+    # substance
+    BlendFactory.create(
+        name="blend2B",
+        displayed_in_all=True,
     )
     # add 3 usages for one record
     for _ in range(3):
@@ -372,7 +379,7 @@ def setup_new_cp_report(cp_report_2019, blend, substance):
 
 
 @pytest.fixture(name="_setup_old_cp_report")
-def setup_old_cp_report(cp_report_2005, substance, blend):
+def setup_old_cp_report(cp_report_2005, substance, blend, groupA):
     # section A
     cp_rec = CPRecordFactory.create(
         country_programme_report=cp_report_2005, section="A", substance=substance
@@ -380,6 +387,8 @@ def setup_old_cp_report(cp_report_2005, substance, blend):
     # add 3 usages for one record
     for _ in range(3):
         CPUsageFactory.create(country_programme_record=cp_rec)
+    # substance
+    SubstanceFactory.create(name="substance2", displayed_in_all=True, group=groupA)
 
     # section C (prices)
     CPPricesFactory.create(country_programme_report=cp_report_2005, blend=blend)
@@ -459,8 +468,9 @@ class TestCPRecordList(BaseTest):
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 200
         assert len(response.data["section_a"]) == 1
+        assert len(response.data["section_a"][0]["excluded_usages"]) == 1
         assert response.data["section_a"][0]["chemical_name"] == substance.name
-        assert len(response.data["section_b"]) == 1
+        assert len(response.data["section_b"]) == 2
         assert response.data["section_b"][0]["chemical_name"] == blend.name
         assert len(response.data["section_b"][0]["record_usages"]) == 3
         assert len(response.data["section_c"]) == 2
@@ -476,7 +486,7 @@ class TestCPRecordList(BaseTest):
         # check response
         response = self.client.get(self.url, {"cp_report_id": cp_report_2005.id})
         assert response.status_code == 200
-        assert len(response.data["section_a"]) == 1
+        assert len(response.data["section_a"]) == 2
         assert len(response.data["adm_b"]) == 1
         assert response.data["adm_b"][0]["row_text"] == "rowB"
         assert response.data["adm_b"][0]["values"][0]["value_text"] == "record_B"
