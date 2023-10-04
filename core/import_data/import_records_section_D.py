@@ -50,7 +50,7 @@ def parse_sheet(df):
                 "source_file": FILE_NAME,
             }
             records_list.append(CPGeneration(**record_data))
-    CPGeneration.objects.bulk_create(records_list)
+    CPGeneration.objects.bulk_create(records_list, batch_size=1000)
     logger.info("✔ sheet parsed")
 
 

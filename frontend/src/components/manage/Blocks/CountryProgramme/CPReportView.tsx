@@ -2,8 +2,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
 import { Button, Tab, Tabs } from '@mui/material'
-import { filter, isString } from 'lodash'
-import { useSearchParams } from 'next/navigation'
+import { filter } from 'lodash'
 
 import { getSections, variants } from '.'
 
@@ -11,7 +10,7 @@ interface SectionPanelProps {
   emptyForm: Record<string, any>
   exitFullScreen: () => void
   fullScreen: boolean
-  report: Record<string, Array<any>>
+  report: Record<string, any>
   section: Record<string, any>
   variant: Record<string, any>
 }
@@ -55,22 +54,18 @@ function SectionPanel(props: SectionPanelProps) {
 
 export default function CPReportView(props: {
   emptyForm?: Record<string, any> | null
-  report?: Record<string, Array<any>> | null
+  report?: Record<string, any>
 }) {
-  const searchParams = useSearchParams()
   const [activeSection, setActiveSection] = useState(0)
   const [fullScreen, setFullScreen] = useState(false)
   const [report]: any = useState({
     ...(props.report || {}),
-    name: searchParams.get('name'),
-    year: searchParams.get('year'),
+    name: props.report?.cp_report?.name,
+    year: props.report?.cp_report?.year,
   })
   const [variant] = useState(
     filter(variants, (variant) => {
-      const year =
-        report && isString(report?.year)
-          ? parseInt(report.year)
-          : new Date().getFullYear()
+      const year = report.year
       return variant.minYear <= year && variant.maxYear >= year
     })[0],
   )

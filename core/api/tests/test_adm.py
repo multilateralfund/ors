@@ -122,7 +122,7 @@ class TestAdmEmptyFormView(BaseTest):
         assert response.status_code == 200
 
         # check usage Columns
-        assert len(response.data["usage_columns"]) == 3
+        assert len(response.data["usage_columns"]) == 4
 
         # check admB section
         assert len(response.data["admB"]["columns"]) == 2
@@ -153,7 +153,7 @@ class TestAdmEmptyFormView(BaseTest):
         assert response.status_code == 200
 
         # check usage Columns
-        assert len(response.data["usage_columns"]) == 0
+        assert len(response.data["usage_columns"]) == 4
 
         assert len(response.data["admB"]["columns"]) == 0
         assert len(response.data["admB"]["rows"]) == 0

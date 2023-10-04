@@ -22,15 +22,17 @@ from core.api.serializers.country_programme import (
     CPReportCreateSerializer,
 )
 from core.api.serializers.usage import UsageSerializer
+from core.api.utils import SECTION_ANNEX_MAPPING
 from core.models.adm import AdmColumn, AdmRecord, AdmRow
+from core.models.blend import Blend
 from core.models.country_programme import (
     CPEmission,
     CPGeneration,
     CPPrices,
     CPRecord,
     CPReport,
-    CPUsage,
 )
+from core.models.substance import Substance
 from core.models.usage import Usage
 from core.utils import IMPORT_DB_MAX_YEAR
 
@@ -69,16 +71,97 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
 
     def _get_cp_record(self, cp_report_id, section):
         return (
-            CPRecord.objects.select_related("substance__group", "blend")
-            .prefetch_related("record_usages__usage")
-            .filter(country_programme_report_id=cp_report_id, section=section)
-            .order_by(
-                "section",
-                "substance__group__name",
-                "substance__name",
+            CPRecord.objects.select_related(
+                "substance__group",
+                "blend",
+                "country_programme_report__country",
             )
+            .prefetch_related(
+                "record_usages__usage",
+                "substance__excluded_usages",
+                "blend__excluded_usages",
+            )
+            .filter(country_programme_report_id=cp_report_id, section=section)
             .all()
         )
+
+    def _set_chemical_records_dict(
+        self, chemical_list, chemical_dict, chemical_type, section, cp_report_id
+    ):
+        """
+        Set chemical records dict
+
+
+        @param chemical_list: list of substances or blends
+        @param chemical_dict: dict of substances or blends ( key: id, value: chemical record)
+        @param chemical_type: str - "substance" or "blend"
+        @param section: str - section name
+
+        @return: dict of chemical records
+            structure: {chemical_id: CPRecord object}
+        """
+        for chemical in chemical_list:
+            if chemical.id not in chemical_dict:
+                cp_record_data = {
+                    "country_programme_report_id": cp_report_id,
+                    "substance_id": chemical.id
+                    if chemical_type == "substance"
+                    else None,
+                    "blend_id": chemical.id if chemical_type == "blend" else None,
+                    "section": section,
+                    "id": 0,
+                }
+                chemical_dict[chemical.id] = CPRecord(**cp_record_data)
+
+        return chemical_dict
+
+    def _get_displayed_records(self, cp_report_id, section):
+        """
+        Returns a list of CPRecord objects for the given section and cp_report_id
+        -> if there is no record for a substance or blend that is displayed in all formats
+             then append a new CPRecord object to the list with the substance or blend
+
+        @param cp_report_id: int - country programme report id
+        @param section: str - section name
+
+        @return: list of CPRecord objects
+        """
+
+        exist_records = self._get_cp_record(cp_report_id, section)
+        subs_rec_dict = {
+            record.substance_id: record for record in exist_records if record.substance
+        }
+        blends_rec_dict = {
+            record.blend_id: record for record in exist_records if record.blend
+        }
+
+        # get all substances and blends
+        annexes = SECTION_ANNEX_MAPPING.get(section, [])
+        substances = (
+            Substance.objects.filter(displayed_in_all=True)
+            .select_related("group")
+            .filter(group__annex__in=annexes)
+            .all()
+        )
+        blends = []
+        if section == "B":
+            blends = Blend.objects.filter(displayed_in_all=True).all()
+
+        substances_dict = self._set_chemical_records_dict(
+            substances, subs_rec_dict, "substance", section, cp_report_id
+        )
+        blends_dict = self._set_chemical_records_dict(
+            blends, blends_rec_dict, "blend", section, cp_report_id
+        )
+
+        final_list = list(substances_dict.values()) + list(blends_dict.values())
+        final_list.sort(
+            key=lambda x: (x.substance.group.name, x.substance.name)
+            if x.substance
+            else ("zzzzz", x.blend.name)
+        )
+
+        return final_list
 
     def _get_adm_records(self, cp_report_id, section):
         return (
@@ -106,8 +189,8 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
         )
 
     def _get_new_cp_records(self, cp_report):
-        section_a = self._get_cp_record(cp_report.id, "A")
-        section_b = self._get_cp_record(cp_report.id, "B")
+        section_a = self._get_displayed_records(cp_report.id, "A")
+        section_b = self._get_displayed_records(cp_report.id, "B")
         section_c = self._get_cp_prices(cp_report.id)
         section_d = self._get_items_filtered_by_report(CPGeneration, cp_report.id)
         section_e = self._get_items_filtered_by_report(CPEmission, cp_report.id)
@@ -117,6 +200,7 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
 
         return Response(
             {
+                "cp_report": CPReportSerializer(cp_report).data,
                 "section_a": CPRecordSerializer(section_a, many=True).data,
                 "section_b": CPRecordSerializer(section_b, many=True).data,
                 "section_c": CPPricesSerializer(section_c, many=True).data,
@@ -140,7 +224,7 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
         return list(result.values())
 
     def _get_old_cp_records(self, cp_report):
-        section_a = self._get_cp_record(cp_report.id, "A")
+        section_a = self._get_displayed_records(cp_report.id, "A")
         adm_b = self._get_adm_records(cp_report.id, "B")
         adm_b = self._get_regroupped_adm_records(adm_b)
         section_c = self._get_cp_prices(cp_report.id)
@@ -150,6 +234,7 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
 
         return Response(
             {
+                "cp_report": CPReportSerializer(cp_report).data,
                 "section_a": CPRecordSerializer(section_a, many=True).data,
                 "adm_b": adm_b,
                 "section_c": CPPricesSerializer(section_c, many=True).data,
@@ -188,35 +273,21 @@ class EmptyFormView(views.APIView):
     API endpoint that allows to get empty form
     """
 
-    def get_usage_columns(self, cp_report):
+    def get_usage_columns(self):
         # for now we return only the list of columns for usages
+        usages = Usage.objects.filter(
+            displayed_in_latest_format=True, parent=None
+        ).order_by("sort_order")
 
-        # if the cp_report is not none we return only the columns that we have data for
-        # if the cp_report is none we return all the columns for the current year
-        if cp_report:
-            usage_ids = list(
-                CPUsage.objects.select_related("country_programme_record")
-                .filter(
-                    country_programme_record__country_programme_report_id=cp_report.id
-                )
-                .values_list("usage_id", flat=True)
-            )
-            usages = Usage.objects.filter(
-                id__in=usage_ids,
-            )
-        else:
-            usages = Usage.objects.filter(displayed_in_latest_format=True, parent=None)
-
-        usages = usages.order_by("sort_order")
         return UsageSerializer(usages, many=True).data
 
-    def get_new_empty_form(self, cp_report):
-        usage_columns = self.get_usage_columns(cp_report)
+    def get_new_empty_form(self):
+        usage_columns = self.get_usage_columns()
         return Response({"usage_columns": usage_columns})
 
     def get_old_empty_form(self, cp_report):
         sections = {
-            "usage_columns": self.get_usage_columns(cp_report),
+            "usage_columns": self.get_usage_columns(),
             "admB": {
                 "columns": [],
                 "rows": [],
@@ -297,4 +368,4 @@ class EmptyFormView(views.APIView):
         if cp_report and cp_report.year <= IMPORT_DB_MAX_YEAR:
             return self.get_old_empty_form(cp_report)
 
-        return self.get_new_empty_form(cp_report)
+        return self.get_new_empty_form()

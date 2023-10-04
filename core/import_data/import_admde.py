@@ -132,7 +132,7 @@ def create_adm_records(file_name, dir_path, article_dict, opt_dict):
             ]
         adm_records.append(AdmRecord(**record_data))
 
-    AdmRecord.objects.bulk_create(adm_records)
+    AdmRecord.objects.bulk_create(adm_records, batch_size=1000)
 
 
 def parse_db_files(dir_path, db_name):

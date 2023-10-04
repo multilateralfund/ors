@@ -26,7 +26,7 @@ export default function SectionDView(props: {
   const rowData = useMemo(() => {
     const rowData = (report.section_d || []).map((item) => ({
       ...item,
-      group: item.annex_group || 'Other',
+      group: item.group || 'Other',
     }))
 
     return union(

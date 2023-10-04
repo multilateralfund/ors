@@ -585,6 +585,7 @@ def parse_chemical_name(chemical_name):
         R23/Other uncontrolled substances (98%/2%) =>
             R23/Other uncontrolled substances (98%/2%), [(R23, 98), (Other substances, 2)]
         HFC-23 (use) => HFC-23, []
+        HCFC-41** => HCFC-41, []
     @param chemical_name string
     @return tuple => (chemical_search_name, components)
         - chemical_search_name = string
@@ -593,6 +594,11 @@ def parse_chemical_name(chemical_name):
     # remove Fullwidth Right Parenthesis
     chemical_name = chemical_name.replace("）", ")").strip()
     chemical_name = CHEMICAL_NAME_MAPPING.get(chemical_name, chemical_name)
+
+    # HCFC-41** => HCFC-41, []
+    if "**" in chemical_name:
+        chemical_name = chemical_name.replace("**", "").strip()
+        return chemical_name, []
 
     # HFC-23 (use) => HFC-23, []
     if "(use)" in chemical_name:

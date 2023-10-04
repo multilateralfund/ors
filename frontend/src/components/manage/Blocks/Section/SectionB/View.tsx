@@ -15,7 +15,7 @@ function getGroupName(substance: any) {
   if (substance.blend_id) {
     return 'Blends (Mixture of Controlled Substances)'
   }
-  return substance.annex_group || 'Other'
+  return substance.group || 'Other'
 }
 
 export default function SectionBView(props: {

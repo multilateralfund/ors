@@ -229,7 +229,7 @@ def parse_sheet(df, file_details):
 
         cp_usages.extend(create_cp_record(record_data, usages_data, index_row))
 
-    CPUsage.objects.bulk_create(cp_usages)
+    CPUsage.objects.bulk_create(cp_usages, batch_size=1000)
 
     logger.info("✔ sheet parsed")
 
