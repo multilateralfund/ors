@@ -114,6 +114,7 @@ class CPRecordSerializer(BaseWChemicalSerializer):
     record_usages = CPUsageSerializer(many=True)
     section = serializers.CharField(required=False, write_only=True)
     excluded_usages = serializers.SerializerMethodField()
+    display_name = serializers.SerializerMethodField()
 
     class Meta:
         model = CPRecord
@@ -135,6 +136,11 @@ class CPRecordSerializer(BaseWChemicalSerializer):
     def get_excluded_usages(self, obj):
         chemical = obj.substance if obj.substance else obj.blend
         return [usage.usage_id for usage in chemical.excluded_usages.all()]
+
+    def get_display_name(self, obj):
+        if obj.display_name:
+            return obj.display_name
+        return obj.substance.name if obj.substance else obj.blend.name
 
     @transaction.atomic
     def create(self, validated_data):
