@@ -1,12 +1,11 @@
-/* eslint-disable react/display-name */
+'use client'
 import { forwardRef, memo, useImperativeHandle, useState } from 'react'
 
 import { Box, Button, Modal, Typography } from '@mui/material'
 import { ICellEditorParams } from 'ag-grid-community'
 
+import TextareaWidget from '@ors/components/manage/Widgets/TextareaWidget'
 import { KEY_BACKSPACE, KEY_ENTER, KEY_TAB } from '@ors/constants'
-
-import TextareaWidget from './TextareaWidget'
 
 export const CellTextareaWidget = memo(
   forwardRef(

@@ -64,6 +64,7 @@
           ],
           "react",
           ["builtin", "external"],
+          "config",
           "internal",
           ["parent", "sibling", "index"],
           "i18n",
@@ -78,6 +79,7 @@
             "server": ["server-only"],
             "react": ["react", "react-*"],
             "icons": ["@react-icons/**"],
+            "config": ["@ors/config", "@ors/config/**"],
             "i18n": ["@ors/i18n", "@ors/i18n/client", "@ors/i18n/settings"],
             "files": [
               "*.css",

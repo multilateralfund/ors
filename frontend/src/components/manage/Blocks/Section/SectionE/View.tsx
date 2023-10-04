@@ -20,7 +20,6 @@ export default function SectionEView(props: {
   const { exitFullScreen, fullScreen, report } = props
   const grid = useRef<any>()
   const gridOptions = useGridOptions()
-  const [offsetHeight, setOffsetHeight] = useState(0)
   const [loadTable, setLoadTable] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -32,30 +31,6 @@ export default function SectionEView(props: {
   const pinnedBottomRowData = useMemo(() => {
     return rowData.length > 0 ? [{ facility: 'TOTAL', rowType: 'total' }] : []
   }, [rowData])
-
-  const tableBodyHeight = useMemo(() => {
-    let offset = offsetHeight
-    const rowsVisible = 15
-    const rowHeight = 41
-    const rows = rowData.length + pinnedBottomRowData.length
-    if (pinnedBottomRowData.length) {
-      offset += 1
-    }
-    if (!rows) {
-      return 0
-    }
-    if (rows <= rowsVisible) {
-      return rows * rowHeight + offset
-    }
-    return rowsVisible * rowHeight + offset
-  }, [rowData, pinnedBottomRowData, offsetHeight])
-
-  function updateOffsetHeight() {
-    const headerHeight = grid.current.getHeaderContainerHeight()
-    const horizontalScrollbarHeight =
-      grid.current.getHorizontalScrollbarHeight()
-    setOffsetHeight(headerHeight + horizontalScrollbarHeight + 2)
-  }
 
   useEffect(() => {
     setTimeout(() => setLoadTable(true), 500)
@@ -77,12 +52,14 @@ export default function SectionEView(props: {
       {!loadTable && (
         <Table
           columnDefs={gridOptions.columnDefs}
+          defaultColDef={gridOptions.defaultColDef}
           enablePagination={false}
           rowData={times(10, () => {
             return {
               rowType: 'skeleton',
             }
           })}
+          withFluidEmptyColumn
           withSeparators
         />
       )}
@@ -94,13 +71,13 @@ export default function SectionEView(props: {
           })}
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
-          domLayout={tableBodyHeight > 0 ? 'normal' : 'autoHeight'}
+          domLayout="normal"
           enableCellChangeFlash={true}
           enablePagination={false}
           gridRef={grid}
+          headerDepth={2}
           noRowsOverlayComponentParams={{ label: 'No data reported' }}
           pinnedBottomRowData={pinnedBottomRowData}
-          rowBuffer={40}
           rowData={rowData}
           suppressCellFocus={false}
           suppressRowHoverHighlight={false}
@@ -119,20 +96,8 @@ export default function SectionEView(props: {
                 }
               : () => null
           }
-          rowClassRules={{
-            'ag-row-group': (props) => props.data.rowType === 'group',
-            'ag-row-sub-total': (props) => props.data.rowType === 'subtotal',
-            'ag-row-total': (props) => props.data.rowType === 'total',
-          }}
-          style={
-            tableBodyHeight > 0
-              ? {
-                  height: tableBodyHeight,
-                }
-              : {}
-          }
           onFirstDataRendered={() => setLoading(false)}
-          onGridReady={updateOffsetHeight}
+          withFluidEmptyColumn
           withSeparators
         />
       )}

@@ -31,7 +31,7 @@ function useGridOptions(props: { model: string }) {
               field: 'text',
               flex: 1,
               headerName: '',
-              initialWidth: 200,
+              minWidth: 700,
             },
           ],
           headerClass: 'ag-text-center',
@@ -43,15 +43,20 @@ function useGridOptions(props: { model: string }) {
           children: [
             {
               id: 17,
-              cellRenderer: 'agAdmCellRenderer',
+              category: 'adm',
               headerName: 'Yes/No',
               initialWidth: 150,
+              type: 'boolean',
             },
             {
               id: 18,
-              cellRenderer: 'agAdmCellRenderer',
-              headerName: 'If Yes, since when (Date) / If No, planned date',
-              initialWidth: 400,
+              category: 'adm',
+              headerComponentParams: {
+                footnote: 1,
+                info: 'If Yes, since when (Date) / If No, planned date',
+              },
+              headerName: 'Date',
+              initialWidth: 200,
             },
           ],
           headerClass: 'ag-text-center',
@@ -59,6 +64,60 @@ function useGridOptions(props: { model: string }) {
           headerName: 'HCFC',
           marryChildren: true,
         },
+        ...(includes(['II'], model)
+          ? [
+              {
+                children: [
+                  {
+                    id: 15,
+                    category: 'adm',
+                    headerName: 'Yes/No',
+                    initialWidth: 150,
+                    type: 'boolean',
+                  },
+                  {
+                    id: 16,
+                    category: 'adm',
+                    headerComponentParams: {
+                      footnote: 1,
+                      info: 'If Yes, since when (Date) / If No, planned date',
+                    },
+                    headerName: 'Date',
+                    initialWidth: 200,
+                  },
+                ],
+                headerClass: 'ag-text-center',
+                headerGroupComponent: 'agColumnHeaderGroup',
+                headerName: 'CFC',
+                marryChildren: true,
+              },
+              {
+                children: [
+                  {
+                    id: 14,
+                    category: 'adm',
+                    headerName: 'Yes/No',
+                    initialWidth: 150,
+                    type: 'boolean',
+                  },
+                  {
+                    id: 13,
+                    category: 'adm',
+                    headerComponentParams: {
+                      footnote: 1,
+                      info: 'If Yes, since when (Date) / If No, planned date',
+                    },
+                    headerName: 'Date',
+                    initialWidth: 200,
+                  },
+                ],
+                headerClass: 'ag-text-center',
+                headerGroupComponent: 'agColumnHeaderGroup',
+                headerName: 'All other ods',
+                marryChildren: true,
+              },
+            ]
+          : []),
         {
           field: 'remarks',
           headerName: 'Remarks',
@@ -66,10 +125,12 @@ function useGridOptions(props: { model: string }) {
         },
       ],
       defaultColDef: {
+        autoHeight: true,
         cellClass: 'ag-text-center',
         headerClass: 'ag-text-center',
-        minWidth: 80,
+        minWidth: 100,
         resizable: true,
+        wrapText: true,
       },
     }),
     // eslint-disable-next-line

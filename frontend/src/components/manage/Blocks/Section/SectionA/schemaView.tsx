@@ -4,8 +4,27 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-function useGridOptions(props: { model: string }) {
-  const { model } = props
+import { colDefByUsageId } from '../defaultColDef'
+
+const mapUsage = (usage: any) => ({
+  id: usage.id,
+  category: usage.columnCategory,
+  cellDataType: 'number',
+  headerName: usage.headerName,
+  ...(colDefByUsageId[usage.id] || {}),
+  ...(usage.children.length
+    ? {
+        children: usage.children.map(mapUsage),
+        headerGroupComponent: 'agColumnHeaderGroup',
+        marryChildren: true,
+      }
+    : {
+        aggFunc: 'sumTotalUsages',
+      }),
+})
+
+function useGridOptions(props: { model: string; usages: Array<any> }) {
+  const { model, usages } = props
   const gridOptions: GridOptions = useMemo(
     () => ({
       columnDefs: [
@@ -21,178 +40,25 @@ function useGridOptions(props: { model: string }) {
           initialWidth: 300,
           pinned: 'left',
         },
-        {
-          children: [
-            {
-              id: 1,
-              aggFunc: 'sumTotalUsages',
-              cellRenderer: 'agUsageCellRenderer',
-              headerName: 'Aerosol',
-              initialWidth: 130,
-            },
-            {
-              id: 2,
-              aggFunc: 'sumTotalUsages',
-              cellRenderer: 'agUsageCellRenderer',
-              headerName: 'Foam',
-              initialWidth: 130,
-            },
-            {
-              id: 3,
-              aggFunc: 'sumTotalUsages',
-              cellRenderer: 'agUsageCellRenderer',
-              headerName: 'Fire fighting',
-              initialWidth: 130,
-            },
-            {
-              id: 4,
-              ...(includes(['II', 'III', 'IV'], model)
-                ? {
-                    children: [
-                      {
-                        id: 5,
-                        aggFunc: 'sumTotalUsages',
-                        cellRenderer: 'agUsageCellRenderer',
-                        headerName: 'Manufacturing',
-                        initialWidth: 140,
-                      },
-                      {
-                        id: 9,
-                        aggFunc: 'sumTotalUsages',
-                        cellRenderer: 'agUsageCellRenderer',
-                        headerName: 'Servicing',
-                        initialWidth: 140,
-                      },
-                    ],
-                    groupId: 'usage_refrigeration',
-                    headerClass: 'ag-text-center',
-                    headerGroupComponent: 'agColumnHeaderGroup',
-                    marryChildren: true,
-                  }
-                : {
-                    aggFunc: 'sumTotalUsages',
-                    cellRenderer: 'agUsageCellRenderer',
-                  }),
-              headerName: 'Refrigeration',
-              initialWidth: 140,
-            },
-            {
-              id: 10,
-              aggFunc: 'sumTotalUsages',
-              cellRenderer: 'agUsageCellRenderer',
-              headerName: includes(['II', 'III', 'IV'], model)
-                ? 'Solvent'
-                : 'Solvent application',
-              initialWidth: includes(['II', 'III', 'IV'], model) ? 130 : 180,
-            },
-            ...(includes(['I'], model)
-              ? [
+        ...(usages.length
+          ? [
+              {
+                children: [
+                  ...usages.map(mapUsage),
                   {
-                    id: 11,
+                    id: 'total_usages',
                     aggFunc: 'sumTotalUsages',
-                    cellRenderer: 'agUsageCellRenderer',
-                    headerName: 'Fumigation etc.',
-                    initialWidth: 130,
+                    category: 'usage',
+                    headerName: 'TOTAL',
+                    initialWidth: 140,
                   },
-                ]
-              : []),
-            ...(includes(['I'], model)
-              ? [
-                  {
-                    id: 12,
-                    aggFunc: 'sumTotalUsages',
-                    cellRenderer: 'agUsageCellRenderer',
-                    headerName: 'Other',
-                    initialWidth: 130,
-                  },
-                ]
-              : []),
-            ...(includes(['II', 'III', 'IV'], model)
-              ? [
-                  {
-                    id: 13,
-                    aggFunc: 'sumTotalUsages',
-                    cellRenderer: 'agUsageCellRenderer',
-                    headerName: 'Process agent',
-                    initialWidth: 150,
-                  },
-                ]
-              : []),
-            ...(includes(['II'], model)
-              ? [
-                  {
-                    id: 14,
-                    aggFunc: 'sumTotalUsages',
-                    cellRenderer: 'agUsageCellRenderer',
-                    headerName: 'MDI',
-                    initialWidth: 130,
-                  },
-                ]
-              : []),
-            ...(includes(['II', 'III', 'IV'], model)
-              ? [
-                  {
-                    id: 15,
-                    aggFunc: 'sumTotalUsages',
-                    cellRenderer: 'agUsageCellRenderer',
-                    headerName: 'Lab use',
-                    initialWidth: 130,
-                  },
-                ]
-              : []),
-            ...(includes(['II', 'III', 'IV'], model)
-              ? [
-                  {
-                    id: 16,
-                    children: [
-                      {
-                        id: 17,
-                        aggFunc: 'sumTotalUsages',
-                        cellRenderer: 'agUsageCellRenderer',
-                        headerName: 'QPS',
-                        initialWidth: 130,
-                      },
-                      {
-                        id: 18,
-                        aggFunc: 'sumTotalUsages',
-                        cellRenderer: 'agUsageCellRenderer',
-                        headerName: 'Non-QPS',
-                        initialWidth: 130,
-                      },
-                    ],
-                    groupId: 'usage_methyl_bromide',
-                    headerClass: 'ag-text-center',
-                    headerGroupComponent: 'agColumnHeaderGroup',
-                    headerName: 'Methyl bromide',
-                    marryChildren: true,
-                  },
-                ]
-              : []),
-            ...(includes(['II'], model)
-              ? [
-                  {
-                    id: 19,
-                    aggFunc: 'sumTotalUsages',
-                    cellRenderer: 'agUsageCellRenderer',
-                    headerName: 'Tobacco fluffing',
-                    initialWidth: 170,
-                  },
-                ]
-              : []),
-            {
-              id: 'total',
-              aggFunc: 'sumTotalUsages',
-              cellRenderer: 'agUsageCellRenderer',
-              headerName: 'TOTAL',
-              initialWidth: 140,
-            },
-          ],
-          groupId: 'usages',
-          headerClass: 'ag-text-center',
-          headerGroupComponent: 'agColumnHeaderGroup',
-          headerName: 'Use by Sector',
-          marryChildren: true,
-        },
+                ],
+                headerGroupComponent: 'agColumnHeaderGroup',
+                headerName: 'Use by Sector',
+                marryChildren: true,
+              },
+            ]
+          : []),
         {
           aggFunc: 'sumTotal',
           cellRenderer: 'agFloatCellRenderer',
@@ -267,7 +133,8 @@ function useGridOptions(props: { model: string }) {
         wrapText: true,
       },
     }),
-    [model],
+    // eslint-disable-next-line
+    [model, usages],
   )
 
   return gridOptions

@@ -12,13 +12,13 @@ import useGridOptions from './schemaView'
 import { IoClose } from '@react-icons/all-files/io5/IoClose'
 
 export default function AdmB(props: {
-  admForm: Record<string, any>
+  emptyForm: Record<string, any>
   exitFullScreen: () => void
   fullScreen: boolean
   report: Record<string, Array<any>>
   variant: any
 }) {
-  const { admForm, exitFullScreen, fullScreen, report, variant } = props
+  const { emptyForm, exitFullScreen, fullScreen, report, variant } = props
   const grid = useRef<any>()
   const gridOptions = useGridOptions({ model: variant.model })
   const [loadTable, setLoadTable] = useState(false)
@@ -27,13 +27,13 @@ export default function AdmB(props: {
   const rowData = useMemo(() => {
     const dataByRowId = groupBy(report.adm_b, 'row_id')
 
-    return map(admForm.admB?.rows, (row) => ({
+    return map(emptyForm.admB?.rows, (row) => ({
       values: dataByRowId[row.id]?.[0]?.values || [],
       ...row,
       ...(row.type === 'title' ? { rowType: 'group' } : {}),
       ...(row.type === 'subtitle' ? { rowType: 'hashed' } : {}),
     }))
-  }, [admForm, report])
+  }, [emptyForm, report])
 
   useEffect(() => {
     setTimeout(() => setLoadTable(true), 500)
@@ -54,6 +54,7 @@ export default function AdmB(props: {
       {!loadTable && (
         <Table
           columnDefs={gridOptions.columnDefs}
+          defaultColDef={gridOptions.defaultColDef}
           enablePagination={false}
           rowData={times(10, () => {
             return {
@@ -64,43 +65,43 @@ export default function AdmB(props: {
         />
       )}
       {loadTable && (
-        <Table
-          className={cx('two-groups', {
-            'full-screen': fullScreen,
-            'opacity-0': loading,
-          })}
-          columnDefs={gridOptions.columnDefs}
-          defaultColDef={gridOptions.defaultColDef}
-          enableCellChangeFlash={true}
-          enablePagination={false}
-          gridRef={grid}
-          noRowsOverlayComponentParams={{ label: 'No data reported' }}
-          rowBuffer={40}
-          rowData={rowData}
-          suppressCellFocus={false}
-          suppressRowHoverHighlight={false}
-          HeaderComponent={
-            fullScreen
-              ? () => {
-                  return (
-                    <IconButton
-                      className="exit-fullscreen p-2 text-primary"
-                      aria-label="exit fullscreen"
-                      onClick={exitFullScreen}
-                    >
-                      <IoClose size={32} />
-                    </IconButton>
-                  )
-                }
-              : () => null
-          }
-          rowClassRules={{
-            'ag-row-group': (props) => props.data.rowType === 'group',
-            'ag-row-hashed': (props) => props.data.rowType === 'hashed',
-          }}
-          onFirstDataRendered={() => setLoading(false)}
-          withSeparators
-        />
+        <>
+          <Table
+            className={cx('two-groups mb-4', {
+              'full-screen': fullScreen,
+              'opacity-0': loading,
+            })}
+            columnDefs={gridOptions.columnDefs}
+            defaultColDef={gridOptions.defaultColDef}
+            enableCellChangeFlash={true}
+            enablePagination={false}
+            gridRef={grid}
+            noRowsOverlayComponentParams={{ label: 'No data reported' }}
+            rowData={rowData}
+            suppressCellFocus={false}
+            suppressRowHoverHighlight={false}
+            HeaderComponent={
+              fullScreen
+                ? () => {
+                    return (
+                      <IconButton
+                        className="exit-fullscreen p-2 text-primary"
+                        aria-label="exit fullscreen"
+                        onClick={exitFullScreen}
+                      >
+                        <IoClose size={32} />
+                      </IconButton>
+                    )
+                  }
+                : () => null
+            }
+            onFirstDataRendered={() => setLoading(false)}
+            withSeparators
+          />
+          <Typography id="footnote-1" className="italic" variant="body2">
+            1. If Yes, since when (Date) / If No, planned date.
+          </Typography>
+        </>
       )}
     </>
   )

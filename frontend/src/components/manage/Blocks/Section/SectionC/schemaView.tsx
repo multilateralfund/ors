@@ -35,11 +35,6 @@ function useGridOptions() {
         field: 'remarks',
         headerName: 'Remarks',
       },
-      {
-        field: 'expand',
-        flex: 1,
-        headerName: '',
-      },
     ],
     defaultColDef: {
       minWidth: 200,

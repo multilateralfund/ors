@@ -1,5 +1,5 @@
 'use client'
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import { Button, Tab, Tabs } from '@mui/material'
 import { filter, isString } from 'lodash'
@@ -8,7 +8,7 @@ import { useSearchParams } from 'next/navigation'
 import { getSections, variants } from '.'
 
 interface SectionPanelProps {
-  admForm: Record<string, any>
+  emptyForm: Record<string, any>
   exitFullScreen: () => void
   fullScreen: boolean
   report: Record<string, Array<any>>
@@ -18,7 +18,7 @@ interface SectionPanelProps {
 
 function SectionPanel(props: SectionPanelProps) {
   const {
-    admForm,
+    emptyForm,
     exitFullScreen,
     fullScreen,
     report,
@@ -27,6 +27,11 @@ function SectionPanel(props: SectionPanelProps) {
     ...rest
   } = props
   const Section: React.FC<any> = section.component
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   return (
     <div
@@ -35,19 +40,21 @@ function SectionPanel(props: SectionPanelProps) {
       role="tabpanel"
       {...rest}
     >
-      <Section
-        admForm={admForm}
-        exitFullScreen={exitFullScreen}
-        fullScreen={fullScreen}
-        report={report}
-        variant={variant}
-      />
+      {mounted && (
+        <Section
+          emptyForm={emptyForm}
+          exitFullScreen={exitFullScreen}
+          fullScreen={fullScreen}
+          report={report}
+          variant={variant}
+        />
+      )}
     </div>
   )
 }
 
 export default function CPReportView(props: {
-  admForm?: Record<string, any> | null
+  emptyForm?: Record<string, any> | null
   report?: Record<string, Array<any>> | null
 }) {
   const searchParams = useSearchParams()
@@ -102,7 +109,7 @@ export default function CPReportView(props: {
       )}
       <div id={section.panelId} aria-labelledby={section.id} role="tabpanel">
         <SectionPanel
-          admForm={props.admForm || {}}
+          emptyForm={props.emptyForm || {}}
           fullScreen={fullScreen}
           report={report}
           section={section}

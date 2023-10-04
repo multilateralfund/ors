@@ -1,4 +1,4 @@
-/* eslint-disable react/display-name */
+'use client'
 import {
   ReactNode,
   forwardRef,
@@ -11,9 +11,8 @@ import {
 
 import { ICellEditorParams } from 'ag-grid-community'
 
+import AutocompleteWidget from '@ors/components/manage/Widgets/AutocompleteWidget'
 import { KEY_BACKSPACE, KEY_ENTER, KEY_TAB } from '@ors/constants'
-
-import AutocompleteWidget from '../Widgets/AutocompleteWidget'
 
 function getInput(element: HTMLInputElement) {
   if (element.tagName.toLowerCase() === 'input') {

@@ -14,22 +14,26 @@ import { groupBy, map } from 'lodash'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 
 export default function AdmC(props: {
-  admForm: Record<string, any>
+  emptyForm: Record<string, any>
   report: Record<string, Array<any>>
   variant: any
 }) {
-  const { admForm, report } = props
+  const { emptyForm, report } = props
 
   const rowData = useMemo(() => {
     const dataByRowId = groupBy(report.adm_d, 'row_id')
 
-    return map(admForm.admD?.rows, (row) => ({
+    console.log('HERE', dataByRowId)
+
+    return map(emptyForm.admD?.rows, (row) => ({
       ...row,
       ...(row.type === 'title' ? { rowType: 'group' } : {}),
       ...(row.type === 'subtitle' ? { rowType: 'hashed' } : {}),
       values: groupBy(dataByRowId[row.id], 'value_choice_id'),
     }))
-  }, [admForm, report])
+  }, [emptyForm, report])
+
+  console.log('HERE', rowData)
 
   return (
     <>
@@ -67,11 +71,15 @@ export default function AdmC(props: {
                     }
                   />
                 ))}
+                {!!row.values['null'] && (
+                  <Typography className="mt-2">
+                    {row.values['null'][0]?.value_text}
+                  </Typography>
+                )}
               </FormGroup>
             </ListItem>
           ))}
         </List>
-
         <Typography component="h3" variant="h6">
           E. Comment by bilateral/implementing agency(ies)
         </Typography>

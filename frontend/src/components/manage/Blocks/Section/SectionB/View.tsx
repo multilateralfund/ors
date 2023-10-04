@@ -19,15 +19,15 @@ function getGroupName(substance: any) {
 }
 
 export default function SectionBView(props: {
+  emptyForm: Record<string, any>
   exitFullScreen: () => void
   fullScreen: boolean
   report: Record<string, Array<any>>
   variant: any
 }) {
-  const { exitFullScreen, fullScreen, report } = props
+  const { emptyForm, exitFullScreen, fullScreen, report } = props
   const grid = useRef<any>()
-  const gridOptions = useGridOptions()
-  const [offsetHeight, setOffsetHeight] = useState(0)
+  const gridOptions = useGridOptions({ usages: emptyForm.usage_columns || [] })
   const [loadTable, setLoadTable] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -62,30 +62,6 @@ export default function SectionBView(props: {
       : []
   }, [rowData])
 
-  const tableBodyHeight = useMemo(() => {
-    let offset = offsetHeight
-    const rowsVisible = 15
-    const rowHeight = 41
-    const rows = rowData.length + pinnedBottomRowData.length
-    if (pinnedBottomRowData.length) {
-      offset += 1
-    }
-    if (!rows) {
-      return 0
-    }
-    if (rows <= rowsVisible) {
-      return rows * rowHeight + offset
-    }
-    return rowsVisible * rowHeight + offset
-  }, [rowData, pinnedBottomRowData, offsetHeight])
-
-  function updateOffsetHeight() {
-    const headerHeight = grid.current.getHeaderContainerHeight()
-    const horizontalScrollbarHeight =
-      grid.current.getHorizontalScrollbarHeight()
-    setOffsetHeight(headerHeight + horizontalScrollbarHeight + 2)
-  }
-
   useEffect(() => {
     setTimeout(() => setLoadTable(true), 500)
   }, [])
@@ -105,12 +81,14 @@ export default function SectionBView(props: {
       {!loadTable && (
         <Table
           columnDefs={gridOptions.columnDefs}
+          defaultColDef={gridOptions.defaultColDef}
           enablePagination={false}
           rowData={times(10, () => {
             return {
               rowType: 'skeleton',
             }
           })}
+          withFluidEmptyColumn
           withSeparators
         />
       )}
@@ -122,13 +100,13 @@ export default function SectionBView(props: {
           })}
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
-          domLayout={tableBodyHeight > 0 ? 'normal' : 'autoHeight'}
+          domLayout="normal"
           enableCellChangeFlash={true}
           enablePagination={false}
           gridRef={grid}
+          headerDepth={4}
           noRowsOverlayComponentParams={{ label: 'No data reported' }}
           pinnedBottomRowData={pinnedBottomRowData}
-          rowBuffer={40}
           rowData={rowData}
           suppressCellFocus={false}
           suppressRowHoverHighlight={false}
@@ -147,20 +125,8 @@ export default function SectionBView(props: {
                 }
               : () => null
           }
-          rowClassRules={{
-            'ag-row-group': (props) => props.data.rowType === 'group',
-            'ag-row-sub-total': (props) => props.data.rowType === 'subtotal',
-            'ag-row-total': (props) => props.data.rowType === 'total',
-          }}
-          style={
-            tableBodyHeight > 0
-              ? {
-                  height: tableBodyHeight,
-                }
-              : {}
-          }
           onFirstDataRendered={() => setLoading(false)}
-          onGridReady={updateOffsetHeight}
+          withFluidEmptyColumn
           withSeparators
         />
       )}

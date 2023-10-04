@@ -1,4 +1,4 @@
-/* eslint-disable react/display-name */
+'use client'
 import {
   forwardRef,
   memo,
@@ -11,9 +11,8 @@ import {
 import { ICellEditorParams } from 'ag-grid-community'
 import { isNumber } from 'lodash'
 
+import TextWidget from '@ors/components/manage/Widgets/TextWidget'
 import { KEY_BACKSPACE, KEY_ENTER, KEY_F2, KEY_TAB } from '@ors/constants'
-
-import TextWidget from '../Widgets/TextWidget'
 
 function getInput(element: HTMLInputElement) {
   if (element.tagName.toLowerCase() === 'input') {

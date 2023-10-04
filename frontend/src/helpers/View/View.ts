@@ -3,6 +3,7 @@ import type { ByLayout } from '@ors/config/Views'
 import { find } from 'lodash'
 
 import config from '@ors/config'
+
 import { matchPath } from '@ors/helpers/Url/Url'
 
 export function getCurrentView(pathname: string) {
