@@ -21,6 +21,7 @@ class UsageSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "headerName",
+            "full_name",
             "sort_order",
             "children",
             "columnCategory",
@@ -29,7 +30,7 @@ class UsageSerializer(serializers.ModelSerializer):
         ]
 
     def get_headerName(self, obj):
-        return obj.full_name
+        return obj.name
 
     def get_field(self, obj):
         usage_name = obj.full_name.lower().replace(" ", "_")
