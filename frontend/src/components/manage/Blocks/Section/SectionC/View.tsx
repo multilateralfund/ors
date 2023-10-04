@@ -28,7 +28,7 @@ export default function SectionCView(props: {
     const dataByGroup: Record<string, any> = {}
     const groups: Array<string> = []
     each(report.section_c, (item) => {
-      const group = item.annex_group || 'Alternatives'
+      const group = item.group || 'Alternatives'
       if (!dataByGroup[group]) {
         dataByGroup[group] = []
       }

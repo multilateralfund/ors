@@ -33,7 +33,7 @@ export const aggFuncs = {
         values.push(value)
       }
     })
-    return values.length > 0 ? sum(values) : undefined
+    return values.length > 0 ? sum(values) : 0
   },
   sumTotalUsages: (props: any) => {
     let value: null | number = null
@@ -45,7 +45,7 @@ export const aggFuncs = {
     props.api.forEachNode(function (node: any) {
       if (
         props.data.rowType === 'subtotal' &&
-        (!props.data.group || node.data.annex_group !== props.data.group)
+        (!props.data.group || node.data.group !== props.data.group)
       ) {
         return
       }
@@ -76,7 +76,7 @@ export const aggFuncs = {
         values.push(value)
       }
     })
-    return values.length > 0 ? sum(values) : undefined
+    return values.length > 0 ? sum(values) : 0
   },
 }
 

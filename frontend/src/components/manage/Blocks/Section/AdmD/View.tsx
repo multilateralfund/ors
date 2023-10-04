@@ -13,7 +13,7 @@ import { groupBy, map } from 'lodash'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 
-export default function AdmC(props: {
+export default function AdmD(props: {
   emptyForm: Record<string, any>
   report: Record<string, Array<any>>
   variant: any
@@ -23,8 +23,6 @@ export default function AdmC(props: {
   const rowData = useMemo(() => {
     const dataByRowId = groupBy(report.adm_d, 'row_id')
 
-    console.log('HERE', dataByRowId)
-
     return map(emptyForm.admD?.rows, (row) => ({
       ...row,
       ...(row.type === 'title' ? { rowType: 'group' } : {}),
@@ -32,8 +30,6 @@ export default function AdmC(props: {
       values: groupBy(dataByRowId[row.id], 'value_choice_id'),
     }))
   }, [emptyForm, report])
-
-  console.log('HERE', rowData)
 
   return (
     <>
@@ -80,9 +76,6 @@ export default function AdmC(props: {
             </ListItem>
           ))}
         </List>
-        <Typography component="h3" variant="h6">
-          E. Comment by bilateral/implementing agency(ies)
-        </Typography>
       </Box>
     </>
   )

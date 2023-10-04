@@ -36,12 +36,11 @@ export default function SectionA() {
 
   const gridOptions = useGridOptions({ setAddModal })
 
-  const groups = uniq(data.map((row) => row.annex_group || 'Other'))
+  const groups = uniq(data.map((row) => row.group || 'Other'))
   const resultsByGroup = groupBy(
     data.map((row) => ({
       ...row,
-      annex_group: row.annex_group || 'Other',
-      group: row.annex_group || 'Other',
+      group: row.group || 'Other',
     })),
     'group',
   )
@@ -110,7 +109,7 @@ export default function SectionA() {
         onClose={() => setAddModal(false)}
         keepMounted
       >
-        <Box className="xs:max-w-xs absolute-center w-full max-w-md sm:max-w-sm">
+        <Box className="xs:max-w-xs w-full max-w-md absolute-center sm:max-w-sm">
           <Typography
             id="add-substance-modal-title"
             className="mb-4 text-typography-secondary"
@@ -127,10 +126,10 @@ export default function SectionA() {
             widget="autocomplete"
             onChange={(event: any, substance: any) => {
               const newSubstance = {
-                annex_group: substance.group_name,
                 blend_id: null,
                 chemical_name: substance.formula || substance.name,
                 display_name: substance.name,
+                group: substance.group_name,
                 record_usages: [],
                 sort_order: substance.sort_order,
                 substance_data: substance,

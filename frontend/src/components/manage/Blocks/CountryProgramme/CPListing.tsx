@@ -73,9 +73,7 @@ function Item({ index, item }: any) {
         },
       )}
       onClick={() => {
-        router.push(
-          `/country-programme/${item.id}?name=${item.name}&year=${item.year}`,
-        )
+        router.push(`/country-programme/${item.id}`)
       }}
       disablePadding
     >

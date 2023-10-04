@@ -54,7 +54,7 @@ export default function AgUsageCellRenderer(props: any) {
   }
 
   if (isNull(value)) {
-    return '-'
+    value = 0
   }
 
   const formattedValue = value.toLocaleString(undefined, {

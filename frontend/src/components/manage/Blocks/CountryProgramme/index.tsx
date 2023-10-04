@@ -2,7 +2,7 @@ import { includes } from 'lodash'
 
 import AdmB from '@ors/components/manage/Blocks/Section/AdmB/View'
 import AdmC from '@ors/components/manage/Blocks/Section/AdmC/View'
-import AdmDE from '@ors/components/manage/Blocks/Section/AdmDE/View'
+import AdmD from '@ors/components/manage/Blocks/Section/AdmD/View'
 import SectionA from '@ors/components/manage/Blocks/Section/SectionA/View'
 import SectionB from '@ors/components/manage/Blocks/Section/SectionB/View'
 import SectionCView from '@ors/components/manage/Blocks/Section/SectionC/View'
@@ -37,7 +37,7 @@ export function getSections(variant: any) {
   const { model } = variant
   const isAdmB = includes(['I', 'II', 'III'], model)
   const isAdmC = includes(['II', 'III'], model)
-  const isAdmDE = includes(['II', 'III'], model)
+  const isAdmD = includes(['II', 'III'], model)
   const isSectionA = includes(['I', 'II', 'III', 'IV'], model)
   const isSectionB = includes(['IV'], model)
   const isSectionC = includes(['I', 'II', 'III', 'IV'], model)
@@ -101,11 +101,11 @@ export function getSections(variant: any) {
           },
         ]
       : []),
-    ...(isAdmDE
+    ...(isAdmD
       ? [
           {
             id: 'adm-DE',
-            component: AdmDE,
+            component: AdmD,
             label: 'Adm D-E',
             panelId: 'adm-DE-panel',
           },

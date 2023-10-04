@@ -32,7 +32,7 @@ export default function SectionAView(props: {
     const dataByGroup: Record<string, any> = {}
     const groups: Array<string> = []
     each(report.section_a, (item) => {
-      const group = item.annex_group || 'Other'
+      const group = item.group || 'Other'
       if (!dataByGroup[group]) {
         dataByGroup[group] = []
       }
