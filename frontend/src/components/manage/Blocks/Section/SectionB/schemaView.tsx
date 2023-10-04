@@ -4,24 +4,24 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-// import { colDefByUsageId } from '../defaultColDef'
+import { colDefByUsageId } from '../defaultColDef'
 
-// const mapUsage = (usage: any) => ({
-//   id: usage.id,
-//   category: usage.columnCategory,
-//   cellDataType: 'number',
-//   headerName: usage.headerName,
-//   ...(colDefByUsageId[usage.id] || {}),
-//   ...(usage.children.length
-//     ? {
-//         children: usage.children.map(mapUsage),
-//         headerGroupComponent: 'agColumnHeaderGroup',
-//         marryChildren: true,
-//       }
-//     : {
-//         aggFunc: 'sumTotalUsages',
-//       }),
-// })
+const mapUsage = (usage: any) => ({
+  id: usage.id,
+  category: usage.columnCategory,
+  cellDataType: 'number',
+  headerName: usage.headerName,
+  ...(colDefByUsageId[usage.id] || {}),
+  ...(usage.children.length
+    ? {
+        children: usage.children.map(mapUsage),
+        headerGroupComponent: 'agColumnHeaderGroup',
+        marryChildren: true,
+      }
+    : {
+        aggFunc: 'sumTotalUsages',
+      }),
+})
 
 function useGridOptions(props: { usages: Array<any> }) {
   const { usages } = props
@@ -41,125 +41,25 @@ function useGridOptions(props: { usages: Array<any> }) {
           initialWidth: 340,
           pinned: 'left',
         },
-        // ...(usages.length
-        //   ? [
-        //       {
-        //         children: [
-        //           ...usages.map(mapUsage),
-        //           {
-        //             id: 'total_usages',
-        //             aggFunc: 'sumTotalUsages',
-        //             category: 'usage',
-        //             headerName: 'TOTAL',
-        //             initialWidth: 140,
-        //           },
-        //         ],
-        //         headerGroupComponent: 'agColumnHeaderGroup',
-        //         headerName: 'Use by Sector',
-        //         marryChildren: true,
-        //       },
-        //     ]
-        //   : []),
-        {
-          children: [
-            {
-              id: 1,
-              aggFunc: 'sumTotalUsages',
-              cellRenderer: 'agUsageCellRenderer',
-              headerName: 'Aerosol',
-              initialWidth: 130,
-            },
-            {
-              id: 2,
-              aggFunc: 'sumTotalUsages',
-              cellRenderer: 'agUsageCellRenderer',
-              headerName: 'Foam',
-              initialWidth: 130,
-            },
-            {
-              id: 3,
-              aggFunc: 'sumTotalUsages',
-              cellRenderer: 'agUsageCellRenderer',
-              headerName: 'Fire fighting',
-              initialWidth: 130,
-            },
-            {
-              id: 4,
-              children: [
-                {
-                  id: 5,
-                  children: [
-                    {
-                      id: 6,
-                      aggFunc: 'sumTotalUsages',
-                      cellRenderer: 'agUsageCellRenderer',
-                      headerName: 'Other',
-                      initialWidth: 130,
-                    },
-                    {
-                      id: 7,
-                      aggFunc: 'sumTotalUsages',
-                      cellRenderer: 'agUsageCellRenderer',
-                      headerName: 'AC',
-                      initialWidth: 130,
-                    },
-                    {
-                      id: 8,
-                      aggFunc: 'sumTotalUsages',
-                      cellRenderer: 'agUsageCellRenderer',
-                      headerName: 'Total',
-                      initialWidth: 130,
-                    },
-                    // {
-                    //   id: 'total_refrigeration',
-                    //   aggFunc: 'sumTotalUsages',
-                    //   cellRenderer: 'agUsageCellRenderer',
-                    //   headerName: 'Total',
-                    //   initialWidth: 130,
-                    // },
-                  ],
-                  groupId: 'usage_refrigeration_manufacturing',
-                  headerClass: 'ag-text-center',
-                  headerGroupComponent: 'agColumnHeaderGroup',
-                  headerName: 'Manufacturing',
-                  marryChildren: true,
-                },
-                {
-                  id: 9,
-                  aggFunc: 'sumTotalUsages',
-                  cellRenderer: 'agUsageCellRenderer',
-                  headerName: 'Servicing',
-                  initialWidth: 130,
-                },
-              ],
-              groupId: 'usage_refrigeration',
-              headerClass: 'ag-text-center',
-              headerGroupComponent: 'agColumnHeaderGroup',
-              headerName: 'Refrigeration',
-              initialWidth: 140,
-              marryChildren: true,
-            },
-            {
-              id: 10,
-              aggFunc: 'sumTotalUsages',
-              cellRenderer: 'agUsageCellRenderer',
-              headerName: 'Solvent',
-              initialWidth: 130,
-            },
-            {
-              id: 'total_usages',
-              aggFunc: 'sumTotalUsages',
-              cellRenderer: 'agUsageCellRenderer',
-              headerName: 'TOTAL',
-              initialWidth: 130,
-            },
-          ],
-          groupId: 'usages',
-          headerClass: 'ag-text-center',
-          headerGroupComponent: 'agColumnHeaderGroup',
-          headerName: 'Use by Sector',
-          marryChildren: true,
-        },
+        ...(usages.length
+          ? [
+              {
+                children: [
+                  ...usages.map(mapUsage),
+                  {
+                    id: 'total_usages',
+                    aggFunc: 'sumTotalUsages',
+                    category: 'usage',
+                    headerName: 'TOTAL',
+                    initialWidth: 140,
+                  },
+                ],
+                headerGroupComponent: 'agColumnHeaderGroup',
+                headerName: 'Use by Sector',
+                marryChildren: true,
+              },
+            ]
+          : []),
         {
           aggFunc: 'sumTotal',
           cellRenderer: 'agFloatCellRenderer',
