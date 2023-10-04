@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Button, Tab, Tabs } from '@mui/material'
 import { filter } from 'lodash'
 
-import { getSections, variants } from '.'
+import { getViewSections, variants } from '.'
 
 interface SectionPanelProps {
   emptyForm: Record<string, any>
@@ -69,7 +69,7 @@ export default function CPReportView(props: {
       return variant.minYear <= year && variant.maxYear >= year
     })[0],
   )
-  const [sections] = useState(getSections(variant))
+  const [sections] = useState(getViewSections(variant))
 
   const section = useMemo(
     () => sections[activeSection],
@@ -80,7 +80,7 @@ export default function CPReportView(props: {
     <>
       <Tabs
         className="country-programme-tabs mb-4"
-        aria-label="create submission sections"
+        aria-label="view submission sections"
         value={activeSection}
         onChange={(event: React.SyntheticEvent, newSection: number) => {
           setActiveSection(newSection)

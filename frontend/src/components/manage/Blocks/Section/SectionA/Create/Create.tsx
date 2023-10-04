@@ -61,6 +61,8 @@ export default function SectionA() {
     return data
   }, [groups, resultsByGroup])
 
+  return null
+
   return (
     <>
       <Table

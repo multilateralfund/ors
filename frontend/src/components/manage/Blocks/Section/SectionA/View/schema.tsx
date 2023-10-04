@@ -4,7 +4,7 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-import { colDefByUsageId } from '../defaultColDef'
+import { colDefByUsageId } from '@ors/components/manage/Blocks/Section/defaultColDef'
 
 const mapUsage = (usage: any) => ({
   id: usage.id,

@@ -39,9 +39,6 @@ export default function AdmD(props: {
             {report.name}
           </Typography>
         )}
-        <Typography className="text-white" component="h2" variant="h6">
-          C. Quantitative assessment of the phase-out programme
-        </Typography>
       </HeaderTitle>
       <Box>
         <Typography component="h3" variant="h6">

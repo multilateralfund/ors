@@ -2,12 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { IconButton, Typography } from '@mui/material'
 import cx from 'classnames'
-import { times, union } from 'lodash'
+import { times } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 
-import useGridOptions from './schemaView'
+import useGridOptions from './schema'
 
 import { IoClose } from '@react-icons/all-files/io5/IoClose'
 
@@ -29,10 +29,7 @@ export default function SectionDView(props: {
       group: item.group || 'Other',
     }))
 
-    return union(
-      rowData,
-      rowData.length > 0 ? [{ display_name: 'TOTAL', rowType: 'total' }] : [],
-    )
+    return rowData
   }, [report])
 
   useEffect(() => {
@@ -67,40 +64,47 @@ export default function SectionDView(props: {
         />
       )}
       {loadTable && (
-        <Table
-          className={cx({
-            'full-screen': fullScreen,
-            'opacity-0': loading,
-          })}
-          columnDefs={gridOptions.columnDefs}
-          defaultColDef={gridOptions.defaultColDef}
-          domLayout="normal"
-          enableCellChangeFlash={true}
-          enablePagination={false}
-          gridRef={grid}
-          noRowsOverlayComponentParams={{ label: 'No data reported' }}
-          rowData={rowData}
-          suppressCellFocus={false}
-          suppressRowHoverHighlight={false}
-          HeaderComponent={
-            fullScreen
-              ? () => {
-                  return (
-                    <IconButton
-                      className="exit-fullscreen p-2 text-primary"
-                      aria-label="exit fullscreen"
-                      onClick={exitFullScreen}
-                    >
-                      <IoClose size={32} />
-                    </IconButton>
-                  )
-                }
-              : () => null
-          }
-          onFirstDataRendered={() => setLoading(false)}
-          withFluidEmptyColumn
-          withSeparators
-        />
+        <>
+          <Table
+            className={cx('mb-4', {
+              'full-screen': fullScreen,
+              'opacity-0': loading,
+            })}
+            columnDefs={gridOptions.columnDefs}
+            defaultColDef={gridOptions.defaultColDef}
+            domLayout="normal"
+            enableCellChangeFlash={true}
+            enablePagination={false}
+            gridRef={grid}
+            noRowsOverlayComponentParams={{ label: 'No data reported' }}
+            rowData={rowData}
+            suppressCellFocus={false}
+            suppressRowHoverHighlight={false}
+            HeaderComponent={
+              fullScreen
+                ? () => {
+                    return (
+                      <IconButton
+                        className="exit-fullscreen p-2 text-primary"
+                        aria-label="exit fullscreen"
+                        onClick={exitFullScreen}
+                      >
+                        <IoClose size={32} />
+                      </IconButton>
+                    )
+                  }
+                : () => null
+            }
+            onFirstDataRendered={() => setLoading(false)}
+            withFluidEmptyColumn
+            withSeparators
+          />
+          <Typography className="italic" variant="body2">
+            1. Amounts of HFC-23 captured for destruction or feedstock use will
+            not be counted as production as per Article 1 of the Montreal
+            Protocol.
+          </Typography>
+        </>
       )}
     </>
   )

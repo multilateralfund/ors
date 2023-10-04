@@ -7,7 +7,7 @@ import { groupBy, map, times } from 'lodash'
 import Table from '@ors/components/manage/Form/Table'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 
-import useGridOptions from './schemaView'
+import useGridOptions from './schema'
 
 import { IoClose } from '@react-icons/all-files/io5/IoClose'
 
@@ -38,8 +38,6 @@ export default function AdmC(props: {
   useEffect(() => {
     setTimeout(() => setLoadTable(true), 500)
   }, [])
-
-  console.log('HERE', emptyForm.admC)
 
   return (
     <>

@@ -9,6 +9,10 @@ import {
 
 import { CommonSlice, createCommonSlice } from '@ors/slices/createCommonSlice'
 
+import {
+  CPReportCreateSlice,
+  createCPReportCreateSlice,
+} from './slices/createCPReportCreateSlice'
 import { createCacheSlice } from './slices/createCacheSlice'
 import {
   ControlsSlice,
@@ -26,6 +30,7 @@ export type StoreState = {
   common: CommonSlice
   connection: null | string
   controls: ControlsSlice
+  cp_report_create: CPReportCreateSlice
   header: HeaderSlice
   i18n: I18nSlice
   projects: ProjectsSlice
@@ -39,6 +44,7 @@ export type InitialStoreState = {
   common?: CommonSlice
   connection?: null | string
   controls?: Partial<ControlsSlice>
+  cp_report_create?: Partial<CPReportCreateSlice>
   header?: Partial<HeaderSlice>
   i18n?: Partial<I18nSlice>
   projects?: ProjectsSlice
@@ -64,6 +70,7 @@ const createStore = (initialState?: InitialStoreState) => {
           navigator?.connection?.effectiveType || null
         : null,
       controls: { ...createControlsSlice(...args) },
+      cp_report_create: { ...createCPReportCreateSlice(...args) },
       header: { ...createHeaderSlice(...args) },
       i18n: { ...createI18nSlice(...args) },
       projects: { ...createProjectSlice(...args) },

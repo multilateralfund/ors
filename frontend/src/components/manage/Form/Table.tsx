@@ -18,6 +18,13 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import { KEY_BACKSPACE, KEY_ENTER } from '@ors/constants'
 import useStore from '@ors/store'
 
+let timer: any
+
+const debounce = (func: () => void) => {
+  if (timer) clearTimeout(timer)
+  timer = setTimeout(func, 200)
+}
+
 export default function Table(
   props: AgGridReactProps & {
     FooterComponent?: React.FC<any>
@@ -43,9 +50,12 @@ export default function Table(
     gridRef,
     headerDepth = 1,
     loading = false,
+    onColumnResized = () => {},
     onFirstDataRendered = () => {},
-    onGridReady,
+    onGridReady = () => {},
+    onGridSizeChanged = () => {},
     onPaginationChanged = ({}: { page: number; rowsPerPage: number }) => {},
+    onRowDataUpdated = () => {},
     paginationPageSize = 10,
     pinnedBottomRowData = [],
     rowBuffer = 40,
@@ -289,12 +299,16 @@ export default function Table(
           }
         }}
         rowClassRules={{
-          'ag-row-controller': (props) => props.data.rowType === 'controller',
+          'ag-row-control': (props) => props.data.rowType === 'control',
           'ag-row-group': (props) => props.data.rowType === 'group',
           'ag-row-hashed': (props) => props.data.rowType === 'hashed',
           'ag-row-sub-total': (props) => props.data.rowType === 'subtotal',
           'ag-row-total': (props) => props.data.rowType === 'total',
           ...rowClassRules,
+        }}
+        onColumnResized={(event) => {
+          debounce(updateOffsetHeight)
+          onColumnResized(event)
         }}
         onFirstDataRendered={(agGrid) => {
           updateOffsetHeight()
@@ -302,7 +316,14 @@ export default function Table(
         }}
         onGridReady={(event) => {
           updateOffsetHeight()
-          onGridReady?.(event)
+          onGridReady(event)
+        }}
+        onGridSizeChanged={(event) => {
+          debounce(updateOffsetHeight)
+          onGridSizeChanged(event)
+        }}
+        onRowDataUpdated={(event) => {
+          onRowDataUpdated(event)
         }}
         {...rest}
       />

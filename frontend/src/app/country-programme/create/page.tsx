@@ -2,17 +2,20 @@ import type { Metadata } from 'next'
 
 import React from 'react'
 
-import CreateReportForm from '@ors/components/theme/Forms/CreateReportForm/CreateReportForm'
+import CPReportCreate from '@ors/components/manage/Blocks/CountryProgramme/CPReportCreate'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
+import api from '@ors/helpers/Api/Api'
 
 export const metadata: Metadata = {
   title: 'Create report',
 }
 
 export default async function CreateReport() {
+  const emptyForm = await api('api/country-programme/empty-form/', {}, false)
+
   return (
     <PageWrapper>
-      <CreateReportForm />
+      <CPReportCreate emptyForm={emptyForm} />
     </PageWrapper>
   )
 }

@@ -3,11 +3,14 @@ import { includes } from 'lodash'
 import AdmB from '@ors/components/manage/Blocks/Section/AdmB/View'
 import AdmC from '@ors/components/manage/Blocks/Section/AdmC/View'
 import AdmD from '@ors/components/manage/Blocks/Section/AdmD/View'
-import SectionA from '@ors/components/manage/Blocks/Section/SectionA/View'
+import SectionA from '@ors/components/manage/Blocks/Section/SectionA/View/View'
 import SectionB from '@ors/components/manage/Blocks/Section/SectionB/View'
 import SectionCView from '@ors/components/manage/Blocks/Section/SectionC/View'
-import SectionDView from '@ors/components/manage/Blocks/Section/SectionD/View'
-import SectionEView from '@ors/components/manage/Blocks/Section/SectionE/View'
+import SectionDCreate from '@ors/components/manage/Blocks/Section/SectionD/Create/Create'
+import SectionDView from '@ors/components/manage/Blocks/Section/SectionD/View/View'
+import SectionECreate from '@ors/components/manage/Blocks/Section/SectionE/Create/Create'
+import SectionEView from '@ors/components/manage/Blocks/Section/SectionE/View/View'
+import SectionFCreate from '@ors/components/manage/Blocks/Section/SectionF/Edit'
 import SectionFView from '@ors/components/manage/Blocks/Section/SectionF/View'
 
 export const variants = [
@@ -33,7 +36,7 @@ export const variants = [
   },
 ]
 
-export function getSections(variant: any) {
+export function getViewSections(variant: any) {
   const { model } = variant
   const isAdmB = includes(['I', 'II', 'III'], model)
   const isAdmC = includes(['II', 'III'], model)
@@ -104,10 +107,10 @@ export function getSections(variant: any) {
     ...(isAdmD
       ? [
           {
-            id: 'adm-DE',
+            id: 'adm-D',
             component: AdmD,
-            label: 'Adm D-E',
-            panelId: 'adm-DE-panel',
+            label: 'Adm D',
+            panelId: 'adm-D-panel',
           },
         ]
       : []),
@@ -143,5 +146,51 @@ export function getSections(variant: any) {
           },
         ]
       : []),
+  ]
+}
+
+export function getCreateSections() {
+  return [
+    {
+      id: 'section-A',
+      allowFullScreen: true,
+      component: () => null,
+      label: 'Section A',
+      panelId: 'section-A-panel',
+    },
+    {
+      id: 'section-B',
+      allowFullScreen: true,
+      component: () => null,
+      label: 'Section B',
+      panelId: 'section-B-panel',
+    },
+    {
+      id: 'section-C',
+      allowFullScreen: true,
+      component: () => null,
+      label: 'Section C',
+      panelId: 'section-C-panel',
+    },
+    {
+      id: 'section-D',
+      allowFullScreen: true,
+      component: SectionDCreate,
+      label: 'Section D',
+      panelId: 'section-D-panel',
+    },
+    {
+      id: 'section-E',
+      allowFullScreen: true,
+      component: SectionECreate,
+      label: 'Section E',
+      panelId: 'section-E-panel',
+    },
+    {
+      id: 'section-F',
+      component: SectionFCreate,
+      label: 'Section F',
+      panelId: 'section-F-panel',
+    },
   ]
 }
