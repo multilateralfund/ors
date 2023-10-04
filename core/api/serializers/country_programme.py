@@ -23,7 +23,7 @@ CP_GENERATION_CHEMICAL = "HFC-23"
 
 
 class BaseWChemicalSerializer(serializers.ModelSerializer):
-    annex_group = serializers.SerializerMethodField()
+    group = serializers.SerializerMethodField()
     chemical_name = serializers.SerializerMethodField()
     substance_id = serializers.PrimaryKeyRelatedField(
         required=False,
@@ -46,16 +46,18 @@ class BaseWChemicalSerializer(serializers.ModelSerializer):
             "chemical_name",
             "substance_id",
             "blend_id",
-            "annex_group",
+            "group",
         ]
 
     def get_chemical_name(self, obj):
         return obj.substance.name if obj.substance else obj.blend.name
 
-    def get_annex_group(self, obj):
-        return (
-            obj.substance.group.name if obj.substance and obj.substance.group else None
-        )
+    def get_group(self, obj):
+        if obj.blend:
+            return "Blends"
+        if obj.substance and obj.substance.group:
+            return obj.substance.group.name_alt
+        return None
 
     def validate(self, attrs):
         if not attrs.get("substance_id") and not attrs.get("blend_id"):
@@ -109,9 +111,10 @@ class CPUsageSerializer(serializers.ModelSerializer):
 
 
 class CPRecordSerializer(BaseWChemicalSerializer):
-    annex_group = serializers.SerializerMethodField()
     record_usages = CPUsageSerializer(many=True)
     section = serializers.CharField(required=False, write_only=True)
+    country_programme_report = CPReportSerializer(read_only=True)
+    excluded_usages = serializers.SerializerMethodField()
 
     class Meta:
         model = CPRecord
@@ -127,7 +130,13 @@ class CPRecordSerializer(BaseWChemicalSerializer):
             "banned_date",
             "remarks",
             "record_usages",
+            "country_programme_report",
+            "excluded_usages",
         ]
+
+    def get_excluded_usages(self, obj):
+        chemical = obj.substance if obj.substance else obj.blend
+        return [usage.usage_id for usage in chemical.excluded_usages.all()]
 
     @transaction.atomic
     def create(self, validated_data):

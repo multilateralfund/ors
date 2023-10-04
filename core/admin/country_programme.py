@@ -27,7 +27,7 @@ class CPReportAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request):
         exclude = [
-            "cprecord",
+            "cprecords",
             "cpprices",
             "cpgeneration",
             "cpemission",
