@@ -298,7 +298,7 @@ def add_business_plan_values(bp_record, row, columns_dict):
         )
         values.append(BPRecordValue(**value_data))
 
-    BPRecordValue.objects.bulk_create(values)
+    BPRecordValue.objects.bulk_create(values, batch_size=1000)
 
 
 def add_chemicals(bp_record, row, index_row):

@@ -219,7 +219,7 @@ def parse_record_data(
             create_cp_record(record_data, usages_data, item["ItemAttirbutesId"])
         )
 
-    CPUsage.objects.bulk_create(cp_usages)
+    CPUsage.objects.bulk_create(cp_usages, batch_size=1000)
 
 
 def parse_db_files(db_dir_path):

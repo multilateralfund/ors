@@ -437,7 +437,7 @@ def import_adm_records(
             )
             adm_records.append(AdmRecord(**adm_record_data))
 
-    AdmRecord.objects.bulk_create(adm_records)
+    AdmRecord.objects.bulk_create(adm_records, batch_size=1000)
 
 
 def parse_db_files(dir_path, database_name):

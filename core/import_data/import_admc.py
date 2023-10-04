@@ -340,8 +340,8 @@ def import_admc_entries(file_data, items_dict, column_dict):
                 create_cp_price(cp, admc_entry, items_dict, file_data["file_name"])
             )
 
-    AdmRecord.objects.bulk_create(admc_records)
-    CPPrices.objects.bulk_create(prices)
+    AdmRecord.objects.bulk_create(admc_records, batch_size=1000)
+    CPPrices.objects.bulk_create(prices, batch_size=1000)
 
 
 def parse_db_files(dir_path, db_name):
