@@ -31,7 +31,6 @@ from core.models.country_programme import (
     CPPrices,
     CPRecord,
     CPReport,
-    CPUsage,
 )
 from core.models.substance import Substance
 from core.models.usage import Usage
@@ -274,35 +273,21 @@ class EmptyFormView(views.APIView):
     API endpoint that allows to get empty form
     """
 
-    def get_usage_columns(self, cp_report):
+    def get_usage_columns(self):
         # for now we return only the list of columns for usages
+        usages = Usage.objects.filter(
+            displayed_in_latest_format=True, parent=None
+        ).order_by("sort_order")
 
-        # if the cp_report is not none we return only the columns that we have data for
-        # if the cp_report is none we return all the columns for the current year
-        if cp_report:
-            usage_ids = list(
-                CPUsage.objects.select_related("country_programme_record")
-                .filter(
-                    country_programme_record__country_programme_report_id=cp_report.id
-                )
-                .values_list("usage_id", flat=True)
-            )
-            usages = Usage.objects.filter(
-                id__in=usage_ids,
-            )
-        else:
-            usages = Usage.objects.filter(displayed_in_latest_format=True, parent=None)
-
-        usages = usages.order_by("sort_order")
         return UsageSerializer(usages, many=True).data
 
-    def get_new_empty_form(self, cp_report):
-        usage_columns = self.get_usage_columns(cp_report)
+    def get_new_empty_form(self):
+        usage_columns = self.get_usage_columns()
         return Response({"usage_columns": usage_columns})
 
     def get_old_empty_form(self, cp_report):
         sections = {
-            "usage_columns": self.get_usage_columns(cp_report),
+            "usage_columns": self.get_usage_columns(),
             "admB": {
                 "columns": [],
                 "rows": [],
@@ -383,4 +368,4 @@ class EmptyFormView(views.APIView):
         if cp_report and cp_report.year <= IMPORT_DB_MAX_YEAR:
             return self.get_old_empty_form(cp_report)
 
-        return self.get_new_empty_form(cp_report)
+        return self.get_new_empty_form()

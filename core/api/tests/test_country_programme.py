@@ -517,4 +517,4 @@ class TestGetEmptyForm(BaseTest):
         self.client.force_authenticate(user=user)
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 200
-        assert len(response.data["usage_columns"]) == 3
+        assert len(response.data["usage_columns"]) == 6
