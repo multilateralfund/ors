@@ -303,7 +303,7 @@ function GeneralSection(props: SectionProps) {
         enableLoader={false}
         loaded={true}
         loading={false}
-        paginationPageSize={20}
+        paginationPageSize={42}
         ref={listing}
         rowCount={filteredReports.length}
         rowData={rows}
