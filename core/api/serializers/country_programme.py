@@ -38,11 +38,13 @@ class BaseWChemicalSerializer(serializers.ModelSerializer):
         queryset=CPReport.objects.all().values_list("id", flat=True),
         write_only=True,
     )
+    display_name = serializers.SerializerMethodField()
 
     class Meta:
         fields = [
             "id",
             "country_programme_report_id",
+            "display_name",
             "chemical_name",
             "substance_id",
             "blend_id",
@@ -58,6 +60,13 @@ class BaseWChemicalSerializer(serializers.ModelSerializer):
         if obj.substance and obj.substance.group:
             return obj.substance.group.name_alt
         return None
+
+    def get_display_name(self, obj):
+        if obj.blend:
+            return obj.blend.get_display_name()
+        if obj.display_name:
+            return obj.display_name
+        return obj.substance.name
 
     def validate(self, attrs):
         if not attrs.get("substance_id") and not attrs.get("blend_id"):
@@ -114,12 +123,10 @@ class CPRecordSerializer(BaseWChemicalSerializer):
     record_usages = CPUsageSerializer(many=True)
     section = serializers.CharField(required=False, write_only=True)
     excluded_usages = serializers.SerializerMethodField()
-    display_name = serializers.SerializerMethodField()
 
     class Meta:
         model = CPRecord
         fields = BaseWChemicalSerializer.Meta.fields + [
-            "display_name",
             "section",
             "imports",
             "import_quotas",
@@ -137,11 +144,6 @@ class CPRecordSerializer(BaseWChemicalSerializer):
         chemical = obj.substance if obj.substance else obj.blend
         return [usage.usage_id for usage in chemical.excluded_usages.all()]
 
-    def get_display_name(self, obj):
-        if obj.display_name:
-            return obj.display_name
-        return obj.substance.name if obj.substance else obj.blend.name
-
     @transaction.atomic
     def create(self, validated_data):
         usages = validated_data.pop("record_usages")
@@ -155,7 +157,6 @@ class CPPricesSerializer(BaseWChemicalSerializer):
     class Meta:
         model = CPPrices
         fields = BaseWChemicalSerializer.Meta.fields + [
-            "display_name",
             "previous_year_price",
             "current_year_price",
             "remarks",

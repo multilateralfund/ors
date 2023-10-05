@@ -139,6 +139,30 @@ class Blend(models.Model):
     def __str__(self):
         return self.name
 
+    def get_generated_composition(self):
+        """
+        generate the composition of the blend from the components
+
+        @return: composition string
+        """
+        # sort the components by percentage
+        components = [
+            (c.component_name, round(c.percentage * 100, 2))
+            for c in self.components.all()
+        ]
+        components.sort(key=lambda x: x[1], reverse=True)
+
+        # return the composition string
+        return "; ".join([f"{c[0]}-{c[1]}%" for c in components])
+
+    def get_display_name(self):
+        """
+        get the display name of the blend
+
+        @return: display name string
+        """
+        return f"{self.name} ({self.get_generated_composition()})"
+
 
 class BlendAltNameManager(models.Manager):
     def find_by_name(self, name):
