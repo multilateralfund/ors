@@ -1,0 +1,14 @@
+{% load settings_value %}
+
+Dear {{ user.first_name }} {{user.last_name}},
+
+Your account has been successfully created. Below are your account details:
+
+- Username: {{ username }}
+- Password: {{ password }}
+
+To ensure the security of your account, we have generated a temporary password for you.
+
+Please go to the following page and choose a new password:
+
+{% frontend_host %}/reset-password/?uid={{ uid }}&token={{ token }}
