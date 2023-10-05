@@ -53,7 +53,7 @@ class UserAdmin(admin.ModelAdmin):
         form = PasswordResetForm({"email": obj.email})
         form.is_valid()
         form.save(
-            domain_override=settings.FRONTEND_HOST,
+            domain_override=settings.FRONTEND_HOST[0],
             use_https=settings.HAS_HTTPS,
             email_template_name="registration/create_new_user_email.txt",
             html_email_template_name="registration/create_new_user_email.html",
