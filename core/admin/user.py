@@ -42,26 +42,28 @@ class UserAdmin(admin.ModelAdmin):
     ordering = ("email",)
 
     def save_model(self, request, obj, form, change):
-        if not change:
-            password = User.objects.make_random_password(length=8)
-            obj.set_password(password)
+        if change:
+            super().save_model(request, obj, form, change)
+            return
+
+        password = User.objects.make_random_password(length=12)
+        obj.set_password(password)
         super().save_model(request, obj, form, change)
 
-        # send reset password email
-        if not change:
-            form = PasswordResetForm({"email": obj.email})
-            form.is_valid()
-            form.save(
-                domain_override=settings.FRONTEND_HOST,
-                use_https=settings.HAS_HTTPS,
-                email_template_name="registration/create_new_user_email.html",
-                extra_email_context={
-                    "username": obj.username,
-                    "password": password,
-                },
-            )
-            self.message_user(
-                request,
-                f"Email sent to {obj.email} for password reset",
-                level=messages.SUCCESS,
-            )
+        form = PasswordResetForm({"email": obj.email})
+        form.is_valid()
+        form.save(
+            domain_override=settings.FRONTEND_HOST[0],
+            use_https=settings.HAS_HTTPS,
+            email_template_name="registration/create_new_user_email.txt",
+            html_email_template_name="registration/create_new_user_email.html",
+            extra_email_context={
+                "username": obj.username,
+                "password": password,
+            },
+        )
+        self.message_user(
+            request,
+            f"Email sent to {obj.email} for password reset",
+            level=messages.SUCCESS,
+        )
