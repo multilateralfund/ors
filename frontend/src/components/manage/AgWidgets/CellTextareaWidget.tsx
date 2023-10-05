@@ -1,7 +1,7 @@
 'use client'
 import { forwardRef, memo, useImperativeHandle, useState } from 'react'
 
-import { Box, Button, Modal, Typography } from '@mui/material'
+import { Box, Modal, Typography } from '@mui/material'
 import { ICellEditorParams } from 'ag-grid-community'
 
 import TextareaWidget from '@ors/components/manage/Widgets/TextareaWidget'
@@ -90,7 +90,7 @@ export const CellTextareaWidget = memo(
               props.stopEditing()
             }}
           >
-            <Box className="absolute-center w-full max-w-md">
+            <Box className="w-full max-w-md absolute-center">
               <Typography
                 id="modal-title"
                 className="mb-4 text-typography-secondary"
@@ -108,9 +108,6 @@ export const CellTextareaWidget = memo(
                 }}
                 onKeyDown={(event: any) => onKeyDown(event)}
               />
-              <Typography className="text-right">
-                <Button onClick={() => setOpen(false)}>Close</Button>
-              </Typography>
             </Box>
           </Modal>
         </>

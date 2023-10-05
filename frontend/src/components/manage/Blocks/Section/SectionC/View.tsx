@@ -66,11 +66,11 @@ export default function SectionCView(props: {
             {report.name}
           </Typography>
         )}
-        <Typography className="text-white" component="h1" variant="h6">
-          SECTION C. AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US
-          $/kg)
-        </Typography>
       </HeaderTitle>
+      <Typography className="mb-4" component="h1" variant="h6">
+        SECTION C. AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US
+        $/kg)
+      </Typography>
       {!loadTable && (
         <Table
           columnDefs={gridOptions.columnDefs}
@@ -93,7 +93,6 @@ export default function SectionCView(props: {
           })}
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
-          domLayout="normal"
           enableCellChangeFlash={true}
           enablePagination={false}
           gridRef={grid}

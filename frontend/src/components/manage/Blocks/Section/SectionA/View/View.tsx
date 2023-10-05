@@ -70,12 +70,12 @@ export default function SectionAView(props: {
             {report.name}
           </Typography>
         )}
-        <Typography className="text-white" component="h2" variant="h6">
-          {includes(['IV'], variant.model)
-            ? 'SECTION A. ANNEX A, ANNEX B, ANNEX C - GROUP I AND ANNEX E - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)'
-            : 'A. Data on Controlled Substances (in METRIC TONNES)'}
-        </Typography>
       </HeaderTitle>
+      <Typography className="mb-4" component="h2" variant="h6">
+        {includes(['IV'], variant.model)
+          ? 'SECTION A. ANNEX A, ANNEX B, ANNEX C - GROUP I AND ANNEX E - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)'
+          : 'A. Data on Controlled Substances (in METRIC TONNES)'}
+      </Typography>
       {!loadTable && (
         <Table
           columnDefs={gridOptions.columnDefs}
@@ -98,7 +98,6 @@ export default function SectionAView(props: {
           })}
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
-          domLayout="normal"
           enableCellChangeFlash={true}
           enablePagination={false}
           gridRef={grid}

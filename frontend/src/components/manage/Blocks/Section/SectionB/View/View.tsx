@@ -7,7 +7,7 @@ import { each, includes, times, union } from 'lodash'
 import Table from '@ors/components/manage/Form/Table'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 
-import useGridOptions from './schemaView'
+import useGridOptions from './schema'
 
 import { IoClose } from '@react-icons/all-files/io5/IoClose'
 
@@ -74,10 +74,10 @@ export default function SectionBView(props: {
             {report.name}
           </Typography>
         )}
-        <Typography className="text-white" component="h2" variant="h6">
-          SECTION B. ANNEX F - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)
-        </Typography>
       </HeaderTitle>
+      <Typography className="mb-4" component="h2" variant="h6">
+        SECTION B. ANNEX F - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)
+      </Typography>
       {!loadTable && (
         <Table
           columnDefs={gridOptions.columnDefs}
@@ -100,7 +100,6 @@ export default function SectionBView(props: {
           })}
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
-          domLayout="normal"
           enableCellChangeFlash={true}
           enablePagination={false}
           gridRef={grid}

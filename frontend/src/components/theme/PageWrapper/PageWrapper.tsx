@@ -6,18 +6,20 @@ import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 export default function PageWrapper({
   children,
   className,
+  defaultSpacing = true,
   fill,
   ...rest
 }: {
   children: React.ReactNode
   className?: string
+  defaultSpacing?: boolean
   fill?: boolean
 }) {
   return (
     <FadeInOut
       className={cx(
-        'page-content container relative mb-4',
-        { 'h-fit': !fill, 'h-full': !!fill },
+        'page-content container relative',
+        { 'h-fit': !fill, 'h-full': !!fill, 'mb-40 mt-12': defaultSpacing },
         className,
       )}
       {...rest}

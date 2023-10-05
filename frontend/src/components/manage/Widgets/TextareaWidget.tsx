@@ -33,7 +33,7 @@ const TextareaWidget = forwardRef(
       <>
         <Label {...(InputLabel || {})} id={rest.id} />
         <TextareaAutosize
-          className={cx('w-full p-2', className)}
+          className={cx('w-full max-w-full resize-none rounded p-2', className)}
           minRows={5}
           ref={ref}
           {...rest}

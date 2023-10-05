@@ -9,7 +9,7 @@ import CollapseInOut from '@ors/components/manage/Transitions/CollapseInOut'
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Logo from '@ors/components/theme/Logo/Logo'
 import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
-import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
+// import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
 import UnstyledLink, { LinkProps } from '@ors/components/ui/Link/Link'
 import { formatApiUrl } from '@ors/helpers/Api/Api'
 import { matchPath } from '@ors/helpers/Url/Url'
@@ -48,19 +48,19 @@ export default function Header() {
   return (
     <Box
       id="header"
-      className="mb-4 rounded-none border-0 px-0 pb-0 pt-4"
+      className="rounded-none border-0 px-0 pb-0 pt-4"
       FadeInOut={{ component: 'nav' }}
       component={FadeInOut}
     >
       <div className="container flex w-full items-center justify-between pb-4">
-        <div className="flex items-center gap-x-8">
+        <div className="flex items-center gap-x-12">
           <UnstyledLink href="/">
             <Logo />
           </UnstyledLink>
           <Typography
-            className="font-semibold text-typography-secondary"
+            className="text-typography-secondary"
             component="p"
-            variant="h5"
+            variant="h1"
           >
             Data portal
           </Typography>
@@ -68,14 +68,14 @@ export default function Header() {
         <div>
           {/* <LanguageSelector className="ltr:mr-2 rtl:ml-2" /> */}
           <UnstyledLink
-            className="theme-dark:text-white"
+            className="hidden theme-dark:text-white md:inline-block"
             href={formatApiUrl('/admin/')}
             button
           >
             Admin
           </UnstyledLink>
           <ProfileDropdown className="ltr:mr-2 rtl:ml-2" />
-          {__DEVELOPMENT__ && <ThemeSelector />}
+          {/* {__DEVELOPMENT__ && <ThemeSelector />} */}
           <div id="header-control" />
         </div>
       </div>

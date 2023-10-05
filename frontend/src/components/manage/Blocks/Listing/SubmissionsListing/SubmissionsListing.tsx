@@ -162,7 +162,7 @@ function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
               </MuiIconButton>
               <Link
                 className={cx(
-                  'align-middle text-sm text-typography no-underline decoration-primary group-hover:text-primary group-hover:underline',
+                  'align-middle text-typography no-underline decoration-primary group-hover:text-primary group-hover:underline',
                 )}
                 href={`/submissions/${item.id}`}
               >
@@ -170,7 +170,7 @@ function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
               </Link>
             </div>
             <div className="flex items-center justify-end gap-4">
-              <Typography className="text-sm" component="span">
+              <Typography component="span">
                 {dateAdded.toLowerCase() !== 'invalid date' ? dateAdded : '-'}
               </Typography>
               {display === 'simple' && (

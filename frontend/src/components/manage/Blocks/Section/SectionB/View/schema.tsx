@@ -4,25 +4,6 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-import { colDefByUsageId } from '../defaultColDef'
-
-const mapUsage = (usage: any) => ({
-  id: usage.id,
-  category: usage.columnCategory,
-  cellDataType: 'number',
-  headerName: usage.headerName,
-  ...(colDefByUsageId[usage.id] || {}),
-  ...(usage.children.length
-    ? {
-        children: usage.children.map(mapUsage),
-        headerGroupComponent: 'agColumnHeaderGroup',
-        marryChildren: true,
-      }
-    : {
-        aggFunc: 'sumTotalUsages',
-      }),
-})
-
 function useGridOptions(props: { usages: Array<any> }) {
   const { usages } = props
   const gridOptions: GridOptions = useMemo(
@@ -45,7 +26,7 @@ function useGridOptions(props: { usages: Array<any> }) {
           ? [
               {
                 children: [
-                  ...usages.map(mapUsage),
+                  ...usages,
                   {
                     id: 'total_usages',
                     aggFunc: 'sumTotalUsages',

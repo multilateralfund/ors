@@ -1,5 +1,6 @@
 import { Box, Typography } from '@mui/material'
 
+import Field from '@ors/components/manage/Form/Field'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 
 export default function SectionFView(props: { report: Record<string, any> }) {
@@ -13,12 +14,18 @@ export default function SectionFView(props: { report: Record<string, any> }) {
             {report.name}
           </Typography>
         )}
-        <Typography className="text-white" component="h1" variant="h6">
+      </HeaderTitle>
+
+      <Box>
+        <Typography className="mb-4" component="h1" variant="h6">
           SECTION F. COMMENTS BY BILATERAL/IMPLEMENTING AGENCIES
         </Typography>
-      </HeaderTitle>
-      <Box>
-        <Typography>{report.section_f?.remarks || 'No comments'}</Typography>
+        <Field
+          FieldProps={{ className: 'mb-0' }}
+          readOnly={true}
+          type="textarea"
+          value={report.section_f.remarks}
+        />
       </Box>
     </>
   )

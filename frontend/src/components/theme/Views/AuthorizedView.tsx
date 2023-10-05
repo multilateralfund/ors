@@ -3,6 +3,7 @@ import React from 'react'
 
 import { usePathname, useRouter } from 'next/navigation'
 
+import Footer from '@ors/components/theme/Footer/AuthorizedFooter'
 import Header from '@ors/components/theme/Header/AuthorizedHeader'
 import useStore from '@ors/store'
 
@@ -34,6 +35,7 @@ export default function AuthorizedView({
             <div id="bottom-control" className="z-10" />
           </div>
         </main>
+        <Footer />
       </>
     )
   )

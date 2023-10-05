@@ -39,8 +39,12 @@ const config: Config = {
     views: routes,
   },
   table: {
-    aggFuncs,
-    components,
+    aggFuncs: {
+      ...aggFuncs,
+    },
+    components: {
+      ...components,
+    },
     renderers: {
       ...renderers,
       default: defaultRenderer,

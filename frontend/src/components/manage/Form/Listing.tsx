@@ -1,15 +1,23 @@
-import { forwardRef, useImperativeHandle, useMemo, useState } from 'react'
+import {
+  Fragment,
+  forwardRef,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from 'react'
 
-import { Divider, List, ListItem } from '@mui/material'
+import { Divider, List, ListItem, Grid as MuiGrid } from '@mui/material'
 import { times } from 'lodash'
 
 import Loading from '@ors/components/theme/Loading/Loading'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 
 type ListingProps = {
+  GridProps?: Record<string, any>
   Item: React.FC<any>
   ItemProps?: Record<string, any>
   className?: any
+  enableGrid?: boolean
   enableLoader?: boolean
   enablePagination?: boolean
   loaded?: boolean
@@ -22,9 +30,11 @@ type ListingProps = {
 
 const Listing = forwardRef(function Listing(props: ListingProps, ref) {
   const {
+    GridProps = {},
     Item,
     ItemProps = {},
     className,
+    enableGrid,
     enableLoader = true,
     enablePagination = true,
     loaded,
@@ -64,6 +74,8 @@ const Listing = forwardRef(function Listing(props: ListingProps, ref) {
     [pagination, setPagination],
   )
 
+  const Grid = enableGrid ? MuiGrid : Fragment
+
   return (
     <>
       <List className={className || 'mb-6'} disablePadding>
@@ -82,12 +94,19 @@ const Listing = forwardRef(function Listing(props: ListingProps, ref) {
             <Divider className="mt-3 w-full" />
           </>
         )}
-        {Item &&
-          results?.map((item, index) => {
-            return (
-              <Item key={item.id} index={index} item={item} {...ItemProps} />
-            )
-          })}
+        {Item && (
+          <Grid
+            {...(enableGrid
+              ? { container: true, spacing: 2, ...GridProps }
+              : {})}
+          >
+            {results?.map((item, index) => {
+              return (
+                <Item key={item.id} index={index} item={item} {...ItemProps} />
+              )
+            })}
+          </Grid>
+        )}
       </List>
       {enablePagination && !!pages && pages > 1 && (
         <Pagination

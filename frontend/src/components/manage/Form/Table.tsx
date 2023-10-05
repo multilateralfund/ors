@@ -217,6 +217,7 @@ export default function Table(
         defaultColDef={{ ...baseColDef, ...defaultColDef }}
         enableCellTextSelection={true}
         enableRtl={i18n.dir === 'rtl'}
+        ensureDomOrder={true}
         pagination={enablePagination}
         paginationPageSize={pagination.rowsPerPage + collapsedRows.length}
         pinnedBottomRowData={pinnedBottomRowData}

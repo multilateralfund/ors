@@ -44,11 +44,10 @@ export default function SectionEView(props: {
             {report.name}
           </Typography>
         )}
-        <Typography className="text-white" component="h1" variant="h6">
-          SECTION E. ANNEX F, GROUP II - DATA ON HFC-23 EMISSIONS (METRIC
-          TONNES)
-        </Typography>
       </HeaderTitle>
+      <Typography className="mb-4" component="h1" variant="h6">
+        SECTION E. ANNEX F, GROUP II - DATA ON HFC-23 EMISSIONS (METRIC TONNES)
+      </Typography>
       {!loadTable && (
         <Table
           columnDefs={gridOptions.columnDefs}
@@ -71,7 +70,6 @@ export default function SectionEView(props: {
           })}
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
-          domLayout="normal"
           enableCellChangeFlash={true}
           enablePagination={false}
           gridRef={grid}

@@ -38,7 +38,6 @@ export default function SectionDCreate(props: {
         })}
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
-        domLayout="normal"
         enableCellChangeFlash={true}
         enablePagination={false}
         gridRef={grid}

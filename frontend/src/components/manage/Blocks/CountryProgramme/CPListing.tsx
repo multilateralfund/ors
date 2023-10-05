@@ -4,13 +4,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Box,
   Button,
-  Divider,
   Grid,
   // InputAdornment,
   ListItem,
   // IconButton as MuiIconButton,
   Tab,
   Tabs,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import cx from 'classnames'
@@ -26,18 +26,18 @@ import {
   slice,
   union,
 } from 'lodash'
-import { useRouter } from 'next/navigation'
 
 import Field from '@ors/components/manage/Form/Field'
 import Listing from '@ors/components/manage/Form/Listing'
 import IconButton from '@ors/components/ui/IconButton/IconButton'
+import Link from '@ors/components/ui/Link/Link'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 
 import { IoArrowDown } from '@react-icons/all-files/io5/IoArrowDown'
 import { IoArrowForward } from '@react-icons/all-files/io5/IoArrowForward'
 import { IoArrowUp } from '@react-icons/all-files/io5/IoArrowUp'
 import { IoClose } from '@react-icons/all-files/io5/IoClose'
-// import { IoSearchOutline } from '@react-icons/all-files/io5/IoSearchOutline'
+import { IoFilter } from '@react-icons/all-files/io5/IoFilter'
 
 interface SectionProps {
   countries: any
@@ -61,29 +61,38 @@ const debounce = (func: () => void) => {
   timer = setTimeout(func, 500)
 }
 
-function Item({ index, item }: any) {
-  const router = useRouter()
+function Item({ item, showCountry, showYear }: any) {
+  const showAll = !showCountry && !showYear
 
   return (
     <ListItem
-      className={cx(
-        'group flex cursor-pointer flex-col items-start hover:bg-gray-50 theme-dark:hover:bg-gray-700/20',
-        {
-          'pt-2': !!index,
-        },
-      )}
-      onClick={() => {
-        router.push(`/country-programme/${item.id}`)
-      }}
+      className={cx('group flex flex-col items-start justify-center')}
+      component={Grid}
       disablePadding
+      item
+      {...(showAll
+        ? { lg: 3, md: 4, sm: 4, xl: 2, xs: 6 }
+        : { lg: 6, md: 4, sm: 6, xl: 4, xs: 4 })}
     >
-      {!index && <Divider className="mb-3 w-full" />}
-      <div className="grid w-full items-center justify-between gap-x-4 px-4">
-        <Typography className="group-hover:text-primary group-hover:underline">
-          {item.name}
-        </Typography>
+      <div className="flex max-w-full items-center px-4">
+        <Tooltip
+          enterDelay={300}
+          placement="top-start"
+          title={showAll ? item.name : showCountry ? item.country : item.year}
+        >
+          <div className="flex max-w-full items-center">
+            <Link
+              className="inline-block max-w-full text-typography-secondary hover:text-primary md:truncate"
+              href={`/country-programme/${item.id}`}
+              underline="hover"
+            >
+              {showAll && item.name}
+              {!!showCountry && item.country}
+              {!!showYear && item.year}
+            </Link>
+          </div>
+        </Tooltip>
       </div>
-      <Divider className="mt-3 w-full" />
     </ListItem>
   )
 }
@@ -93,7 +102,7 @@ function GeneralSection(props: SectionProps) {
   const { countries, filters, groupBy, maxYear, minYear, reports, setFilters } =
     props
   const [range, setRange] = useState([filters.range[0], filters.range[1]])
-  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 20 })
+  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 42 })
   const [ordering, setOrdering] = useState<'asc' | 'desc'>(
     groupBy === 'country' ? 'asc' : 'desc',
   )
@@ -136,12 +145,17 @@ function GeneralSection(props: SectionProps) {
       <div className="mb-4 flex justify-between gap-4">
         <div className="flex flex-1 items-center gap-4">
           <Field
-            FieldProps={{ className: 'mb-0 w-full max-w-xs' }}
+            FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
             options={countries}
+            popupIcon={<IoFilter className="p-1" size={24} />}
             value={null}
             widget="autocomplete"
             Input={{
               placeholder: 'Select country...',
+            }}
+            sx={{
+              '& .MuiAutocomplete-popupIndicator': { transform: 'none' },
+              width: '100%',
             }}
             onChange={(_: any, value: any) => {
               if (!!value) {
@@ -196,7 +210,7 @@ function GeneralSection(props: SectionProps) {
           </IconButton>
         </div>
       </div>
-      <div className="filters mb-4 flex flex-wrap gap-4">
+      <div className="filters mb-6 flex flex-wrap gap-4">
         {filters.country.map((country: string) => (
           <Typography
             key={country}
@@ -283,7 +297,8 @@ function GeneralSection(props: SectionProps) {
         )}
       </div>
       <Listing
-        className="mb-3"
+        className="mb-6"
+        GridProps={{ columnSpacing: 2, rowSpacing: 3 }}
         Item={Item}
         enableLoader={false}
         loaded={true}
@@ -295,6 +310,7 @@ function GeneralSection(props: SectionProps) {
         onPaginationChanged={(page) =>
           setPagination((pagination) => ({ ...pagination, page }))
         }
+        enableGrid
       />
     </>
   )
@@ -302,7 +318,7 @@ function GeneralSection(props: SectionProps) {
 
 function CountrySection(props: SectionProps) {
   const { countries, reportsByCountry, setFilters } = props
-  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 8 })
+  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 16 })
   const [ordering, setOrdering] = useState<'asc' | 'desc'>('asc')
 
   const rows = useMemo(
@@ -324,12 +340,17 @@ function CountrySection(props: SectionProps) {
     <>
       <div className="mb-4 flex justify-between gap-4">
         <Field
-          FieldProps={{ className: 'mb-0 w-full max-w-xs' }}
+          FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
           options={countries}
+          popupIcon={<IoFilter className="p-1" size={24} />}
           value={null}
           widget="autocomplete"
           Input={{
             placeholder: 'Select country...',
+          }}
+          sx={{
+            '& .MuiAutocomplete-popupIndicator': { transform: 'none' },
+            width: '100%',
           }}
           onChange={(_: any, value: any) => {
             if (!!value) {
@@ -365,33 +386,11 @@ function CountrySection(props: SectionProps) {
       <Grid className="mb-6" spacing={4} container>
         {rows.map((row: any) => (
           <Grid key={row.id} lg={3} sm={6} xs={12} item>
-            <Typography
-              className="mb-4 inline-flex cursor-pointer items-center gap-2 px-4 font-normal"
-              component="p"
-              variant="h6"
-              onClick={() => {
-                setFilters((filters: any) => {
-                  const country = filters.country || []
-                  return { ...filters, country: union(country, [row.id]) }
-                })
-              }}
-            >
-              {row.label}
-              <IoArrowForward size={20} />
-            </Typography>
-            <Listing
-              className="mb-3"
-              Item={Item}
-              enableLoader={false}
-              enablePagination={false}
-              loaded={true}
-              loading={false}
-              rowCount={reportsByCountry[row.id].length}
-              rowData={slice(reportsByCountry[row.id], 0, 4)}
-            />
-            {reportsByCountry[row.id].length > 4 && (
-              <Button
-                variant="text"
+            <Box className="h-full p-2">
+              <Typography
+                className="mb-4 inline-flex cursor-pointer items-center gap-2 px-4 font-normal"
+                component="p"
+                variant="h6"
                 onClick={() => {
                   setFilters((filters: any) => {
                     const country = filters.country || []
@@ -399,9 +398,35 @@ function CountrySection(props: SectionProps) {
                   })
                 }}
               >
-                View more...
-              </Button>
-            )}
+                {row.label}
+                <IoArrowForward size={20} />
+              </Typography>
+              <Listing
+                className="mb-3"
+                Item={Item}
+                ItemProps={{ showYear: true }}
+                enableLoader={false}
+                enablePagination={false}
+                loaded={true}
+                loading={false}
+                rowCount={reportsByCountry[row.id].length}
+                rowData={slice(reportsByCountry[row.id], 0, 9)}
+                enableGrid
+              />
+              {reportsByCountry[row.id].length > 9 && (
+                <Button
+                  variant="text"
+                  onClick={() => {
+                    setFilters((filters: any) => {
+                      const country = filters.country || []
+                      return { ...filters, country: union(country, [row.id]) }
+                    })
+                  }}
+                >
+                  View more...
+                </Button>
+              )}
+            </Box>
           </Grid>
         ))}
       </Grid>
@@ -420,7 +445,7 @@ function CountrySection(props: SectionProps) {
 function YearSection(props: SectionProps) {
   const { filters, maxYear, minYear, reportsByYear, setFilters, years } = props
   const [range, setRange] = useState([filters.range[0], filters.range[1]])
-  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 8 })
+  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 16 })
   const [ordering, setOrdering] = useState<'asc' | 'desc'>('desc')
 
   const rows = useMemo(
@@ -494,33 +519,11 @@ function YearSection(props: SectionProps) {
       <Grid className="mb-6" spacing={4} container>
         {rows.map((row: any) => (
           <Grid key={row.id} lg={3} sm={6} xs={12} item>
-            <Typography
-              className="mb-4 inline-flex cursor-pointer items-center gap-2 px-4 font-normal"
-              component="p"
-              variant="h6"
-              onClick={() => {
-                setFilters((filters: any) => {
-                  const year = filters.year || []
-                  return { ...filters, year: union(year, [row.id]) }
-                })
-              }}
-            >
-              {row.label}
-              <IoArrowForward size={20} />
-            </Typography>
-            <Listing
-              className="mb-3"
-              Item={Item}
-              enableLoader={false}
-              enablePagination={false}
-              loaded={true}
-              loading={false}
-              rowCount={reportsByYear[row.id].length}
-              rowData={slice(reportsByYear[row.id], 0, 4)}
-            />
-            {reportsByYear[row.id].length > 4 && (
-              <Button
-                variant="text"
+            <Box className="h-full p-2">
+              <Typography
+                className="mb-4 inline-flex cursor-pointer items-center gap-2 px-4 font-normal"
+                component="p"
+                variant="h6"
                 onClick={() => {
                   setFilters((filters: any) => {
                     const year = filters.year || []
@@ -528,9 +531,35 @@ function YearSection(props: SectionProps) {
                   })
                 }}
               >
-                View more...
-              </Button>
-            )}
+                {row.label}
+                <IoArrowForward size={20} />
+              </Typography>
+              <Listing
+                className="mb-3"
+                Item={Item}
+                ItemProps={{ showCountry: true }}
+                enableLoader={false}
+                enablePagination={false}
+                loaded={true}
+                loading={false}
+                rowCount={reportsByYear[row.id].length}
+                rowData={slice(reportsByYear[row.id], 0, 9)}
+                enableGrid
+              />
+              {reportsByYear[row.id].length > 9 && (
+                <Button
+                  variant="text"
+                  onClick={() => {
+                    setFilters((filters: any) => {
+                      const year = filters.year || []
+                      return { ...filters, year: union(year, [row.id]) }
+                    })
+                  }}
+                >
+                  View more...
+                </Button>
+              )}
+            </Box>
           </Grid>
         ))}
       </Grid>
@@ -660,41 +689,52 @@ export default function CPListing(props: { reports?: any }) {
   })
 
   return (
-    <Box>
-      <Tabs
-        className="mb-6"
-        aria-label="country programme listing"
-        value={activeSection}
-        onChange={(event: React.SyntheticEvent, newSection: number) => {
-          setActiveSection(newSection)
-          setFilters({ country: [], range: [minYear, maxYear], year: [] })
-        }}
-      >
-        {sections.map((section) => (
-          <Tab
+    <>
+      <div className="mb-4 flex items-center justify-between gap-x-4">
+        <div className="flex items-center gap-x-4">
+          <Typography className="text-xl font-medium text-typography-secondary">
+            Group by:
+          </Typography>
+          <Tabs
+            aria-label="country programme listing"
+            value={activeSection}
+            onChange={(event: React.SyntheticEvent, newSection: number) => {
+              setActiveSection(newSection)
+              setFilters({ country: [], range: [minYear, maxYear], year: [] })
+            }}
+          >
+            {sections.map((section) => (
+              <Tab
+                key={section.id}
+                aria-controls={section.panelId}
+                label={section.label}
+                disableRipple
+              />
+            ))}
+          </Tabs>
+        </div>
+        <Link href="/country-programme/create" variant="contained" button>
+          New submission
+        </Link>
+      </div>
+      <Box>
+        {sections.map((section, index) => (
+          <SectionPanel
             key={section.id}
-            aria-controls={section.panelId}
-            label={section.label}
-            disableRipple
+            countries={countries}
+            curentSection={activeSection}
+            filters={filters}
+            maxYear={maxYear}
+            minYear={minYear}
+            reports={reports}
+            reportsByCountry={reportsByCountry}
+            reportsByYear={reportsByYear}
+            section={index}
+            setFilters={setFilters}
+            years={years}
           />
         ))}
-      </Tabs>
-      {sections.map((section, index) => (
-        <SectionPanel
-          key={section.id}
-          countries={countries}
-          curentSection={activeSection}
-          filters={filters}
-          maxYear={maxYear}
-          minYear={minYear}
-          reports={reports}
-          reportsByCountry={reportsByCountry}
-          reportsByYear={reportsByYear}
-          section={index}
-          setFilters={setFilters}
-          years={years}
-        />
-      ))}
-    </Box>
+      </Box>
+    </>
   )
 }

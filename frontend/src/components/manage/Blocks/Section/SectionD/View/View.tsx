@@ -44,11 +44,10 @@ export default function SectionDView(props: {
             {report.name}
           </Typography>
         )}
-        <Typography className="text-white" component="h1" variant="h6">
-          SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC
-          TONNES)
-        </Typography>
       </HeaderTitle>
+      <Typography className="mb-4" component="h1" variant="h6">
+        SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)
+      </Typography>
       {!loadTable && (
         <Table
           columnDefs={gridOptions.columnDefs}
@@ -72,7 +71,6 @@ export default function SectionDView(props: {
             })}
             columnDefs={gridOptions.columnDefs}
             defaultColDef={gridOptions.defaultColDef}
-            domLayout="normal"
             enableCellChangeFlash={true}
             enablePagination={false}
             gridRef={grid}
