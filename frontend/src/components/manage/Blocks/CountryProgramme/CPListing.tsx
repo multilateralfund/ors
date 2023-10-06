@@ -318,7 +318,7 @@ function GeneralSection(props: SectionProps) {
 
 function CountrySection(props: SectionProps) {
   const { countries, reportsByCountry, setFilters } = props
-  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 16 })
+  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 32 })
   const [ordering, setOrdering] = useState<'asc' | 'desc'>('asc')
 
   const rows = useMemo(
@@ -445,22 +445,11 @@ function CountrySection(props: SectionProps) {
 function YearSection(props: SectionProps) {
   const { filters, maxYear, minYear, reportsByYear, setFilters, years } = props
   const [range, setRange] = useState([filters.range[0], filters.range[1]])
-  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 16 })
   const [ordering, setOrdering] = useState<'asc' | 'desc'>('desc')
 
   const rows = useMemo(
-    () =>
-      slice(
-        orderBy(years, 'id', ordering),
-        (pagination.page - 1) * pagination.rowsPerPage,
-        pagination.page * pagination.rowsPerPage,
-      ),
-    [years, pagination, ordering],
-  )
-
-  const pages = useMemo(
-    () => Math.ceil(years.length / pagination.rowsPerPage),
-    [years, pagination],
+    () => slice(orderBy(years, 'id', ordering)),
+    [years, ordering],
   )
 
   useEffect(() => {
@@ -502,10 +491,6 @@ function YearSection(props: SectionProps) {
               } else {
                 setOrdering('asc')
               }
-              setPagination((pagination) => ({
-                ...pagination,
-                page: 1,
-              }))
             }}
           >
             {ordering === 'asc' ? (
@@ -563,14 +548,6 @@ function YearSection(props: SectionProps) {
           </Grid>
         ))}
       </Grid>
-      <Pagination
-        count={pages}
-        page={pagination.page}
-        siblingCount={1}
-        onPaginationChanged={(page) => {
-          setPagination({ ...pagination, page: page || 1 })
-        }}
-      />
     </>
   )
 }

@@ -20,7 +20,7 @@ export default async function CountryProgramme() {
     <PageWrapper>
       <HeaderTitle>
         <Typography className="text-white" component="h1" variant="h3">
-          Submission List
+          Country programmes
         </Typography>
       </HeaderTitle>
       <CPListing reports={reports} />
