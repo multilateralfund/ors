@@ -44,16 +44,27 @@ class RecursiveField(serializers.Serializer):
 
 class AdmColumnSerializer(serializers.ModelSerializer):
     children = RecursiveField(read_only=True, many=True)
+    full_name = serializers.SerializerMethodField()
+    category = serializers.SerializerMethodField()
 
     class Meta:
         model = AdmColumn
         fields = [
             "id",
             "display_name",
+            "category",
             "type",
             "sort_order",
             "children",
+            "full_name",
         ]
+
+    def get_full_name(self, obj):
+        final_name = obj.name.lower().replace(" ", "_")
+        return f"{obj.section}_{final_name}"
+
+    def get_category(self, _obj):
+        return "adm"
 
 
 class AdmRecordSerializer(serializers.ModelSerializer):
