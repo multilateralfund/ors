@@ -15,6 +15,7 @@ class UserAdmin(admin.ModelAdmin):
         "username",
         "is_staff",
         "is_active",
+        "is_superuser",
     ]
 
     fields = (
@@ -24,6 +25,7 @@ class UserAdmin(admin.ModelAdmin):
         "username",
         "is_staff",
         "is_active",
+        "is_superuser",
         "last_login",
         "date_joined",
     )
