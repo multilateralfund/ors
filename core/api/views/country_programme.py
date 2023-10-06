@@ -80,6 +80,7 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
                 "record_usages__usage",
                 "substance__excluded_usages",
                 "blend__excluded_usages",
+                "blend__components",
             )
             .filter(country_programme_report_id=cp_report_id, section=section)
             .all()
@@ -184,6 +185,7 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
             .order_by(
                 "substance__group__name",
                 "substance__name",
+                "blend__components",
             )
             .all()
         )

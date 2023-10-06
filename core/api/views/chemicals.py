@@ -1,10 +1,12 @@
 from decimal import Decimal
 from django.db import transaction
 from django.db.models import Prefetch
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, generics, status
 from rest_framework.response import Response
+from core.api.filters.chemicals import ChemicalFilter
 
 
 from core.api.serializers.chemicals import BlendSerializer, SubstanceSerializer
@@ -22,6 +24,8 @@ class ChemicalBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
     serializer_class = None
     queryset = None
     select_related_string = None
+    filterset_class = ChemicalFilter
+    filter_backends = [DjangoFilterBackend]
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -31,6 +35,7 @@ class ChemicalBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
 
         with_usages = self.request.query_params.get("with_usages", None)
         for_year = self.request.query_params.get("for_year", None)
+
         if with_usages:
             queryset = queryset.prefetch_related(
                 Prefetch(

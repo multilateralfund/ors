@@ -10,9 +10,9 @@ from core.models.substance import Substance
 
 class AdmColumnManager(models.Manager):
     def get_for_year(self, year):
-        return self.filter(min_year__lte=year, max_year__gte=year).order_by(
-            "section", "sort_order"
-        )
+        return self.filter(
+            min_year__lte=year, max_year__gte=year, parent=None
+        ).order_by("section", "sort_order")
 
 
 class AdmColumn(models.Model):
@@ -28,6 +28,9 @@ class AdmColumn(models.Model):
         C = "C", "C"
 
     name = models.CharField(max_length=248)
+    parent = models.ForeignKey(
+        "self", on_delete=models.CASCADE, related_name="children", null=True, blank=True
+    )
     display_name = models.CharField(max_length=248)
     type = models.CharField(max_length=248, choices=AdmColumnType.choices)
     section = models.CharField(max_length=10, choices=AdmColumnSection.choices)

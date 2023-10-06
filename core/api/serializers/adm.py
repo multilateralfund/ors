@@ -3,6 +3,8 @@ from rest_framework import serializers
 from core.models.adm import AdmChoice, AdmColumn, AdmRecord, AdmRow
 from core.models.country_programme import CPReport
 
+# pylint: disable=W0223
+
 CP_GENERATION_CHEMICAL = "HFC-23"
 
 
@@ -34,7 +36,15 @@ class AdmRowSerializer(serializers.ModelSerializer):
         ]
 
 
+class RecursiveField(serializers.Serializer):
+    def to_representation(self, instance):
+        serializer = self.parent.parent.__class__(instance, context=self.context)
+        return serializer.data
+
+
 class AdmColumnSerializer(serializers.ModelSerializer):
+    children = RecursiveField(read_only=True, many=True)
+
     class Meta:
         model = AdmColumn
         fields = [
@@ -42,6 +52,7 @@ class AdmColumnSerializer(serializers.ModelSerializer):
             "display_name",
             "type",
             "sort_order",
+            "children",
         ]
 
 

@@ -12,7 +12,7 @@ class AdmColumnAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["admrecord"]
+        exclude = ["admrecord", "children"]
         return get_final_display_list(AdmColumn, exclude)
 
 

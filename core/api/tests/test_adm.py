@@ -32,13 +32,22 @@ def setup_empty_form(country_ro, cp_report_2005, substance):
         # create adm column
         for i in range(2):
             order = 2 - i
-            AdmColumnFactory.create(
+            last_col = AdmColumnFactory.create(
                 display_name=f"adm_column_{order}",
                 sort_order=order,
                 section=section,
                 min_year=2000,
                 max_year=2010,
+                parent=None,
             )
+        AdmColumnFactory.create(
+            display_name="adm_column_child_1",
+            sort_order=5,
+            section=section,
+            min_year=2000,
+            max_year=2010,
+            parent=last_col,
+        )
 
         # create adm rows
         row_data = {
@@ -126,6 +135,7 @@ class TestAdmEmptyFormView(BaseTest):
 
         # check admB section
         assert len(response.data["admB"]["columns"]) == 2
+        assert len(response.data["admB"]["columns"][0]["children"]) == 1
         assert len(response.data["admB"]["rows"]) == 5
         assert "N/A" not in response.data["admB"]["rows"]
         # check rows sort order

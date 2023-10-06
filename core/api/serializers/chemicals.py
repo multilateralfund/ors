@@ -80,14 +80,6 @@ class BlendSerializer(ChemicalsBaseSerializer):
         generate_composition = self.context.get("generate_composition", False)
 
         if generate_composition:
-            # sort the components by percentage
-            components = [
-                (c.component_name, round(c.percentage * 100, 2))
-                for c in obj.components.all()
-            ]
-            components.sort(key=lambda x: x[1], reverse=True)
-
-            # return the composition string
-            return "; ".join([f"{c[0]}-{c[1]}%" for c in components])
+            return obj.get_generated_composition()
 
         return obj.composition

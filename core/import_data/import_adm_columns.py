@@ -19,14 +19,19 @@ def parse_columns_file(file_path):
     with open(file_path, encoding="utf8") as f:
         json_data = json.load(f)
 
-    columns = []
-    for column in json_data:
+    column_parents = {}
+    for column_data in json_data:
+        parent_name = column_data.pop("parent_name", None)
+        if parent_name:
+            column_data["parent"] = column_parents[parent_name]
+
         column_data = {
             "source_file": file_path,
-            **column,
+            **column_data,
         }
-        columns.append(AdmColumn(**column_data))
-    AdmColumn.objects.bulk_create(columns)
+        column = AdmColumn.objects.create(**column_data)
+        if not parent_name:
+            column_parents[column.name] = column
 
 
 def import_adm_columns():

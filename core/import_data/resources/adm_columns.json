@@ -1,7 +1,38 @@
 [
     {
+        "name": "ALL OTHER ODS parent",
+        "display_name": "ALL OTHER ODS",
+        "parent_name": null,
+        "sort_order": 1,
+        "type": "parent",
+        "section": "B",
+        "min_year": 2000,
+        "max_year": 2011
+    },
+    {
+        "name": "HCFC parent",
+        "display_name": "HCFC",
+        "parent_name": null,
+        "sort_order": 2,
+        "type": "parent",
+        "section": "B",
+        "min_year": 2000,
+        "max_year": 2018
+    },
+    {
+        "name": "CFC parent",
+        "display_name": "CFC",
+        "parent_name": null,
+        "sort_order": 2,
+        "type": "parent",
+        "section": "B",
+        "min_year": 2000,
+        "max_year": 2011
+    },
+    {
         "name": "ALL OTHER ODS bool",
-        "display_name": "ALL OTHER ODS (Yes / No)",
+        "display_name": "Yes / No",
+        "parent_name": "ALL OTHER ODS parent",
         "sort_order": 1,
         "type": "boolean",
         "section": "B",
@@ -10,7 +41,8 @@
     },
     {
         "name": "ALL OTHER ODS date",
-        "display_name": "ALL OTHER ODS (Since when (Date MM/DD/YYYY))",
+        "display_name": "If Yes, since when (Date) / If No, Planned Date",
+        "parent_name": "ALL OTHER ODS parent",
         "sort_order": 2,
         "type": "date",
         "section": "B",
@@ -19,7 +51,8 @@
     },
     {
         "name": "ALL OTHER ODS float",
-        "display_name": "ALL OTHER ODS (Yes / No)",
+        "display_name": "Yes / No",
+        "parent_name": "ALL OTHER ODS parent",
         "sort_order": 3,
         "type": "float",
         "section": "B",
@@ -28,25 +61,28 @@
     },
     {
         "name": "CFC bool",
-        "display_name": "CFC (Yes / No)",
+        "display_name": "Yes / No",
+        "parent_name": "CFC parent",
         "sort_order": 1.1,
         "type": "boolean",
         "section": "B",
         "min_year": 2000,
-        "max_year": 2018
+        "max_year": 2011
     },
     {
         "name": "CFC date",
-        "display_name": "CFC (If Yes, since when (Date) / If No, Planned Date)",
+        "display_name": "If Yes, since when (Date) / If No, Planned Date",
+        "parent_name": "CFC parent",
         "sort_order": 1.2,
         "type": "date",
         "section": "B",
         "min_year": 2000,
-        "max_year": 2018
+        "max_year": 2011
     },
     {
         "name": "HCFC bool",
-        "display_name": "HCFC (Yes / No)",
+        "display_name": "Yes / No",
+        "parent_name": "HCFC parent",
         "sort_order": 4,
         "type": "boolean",
         "section": "B",
@@ -55,7 +91,8 @@
     },
     {
         "name": "HCFC date",
-        "display_name": "HCFC (If Yes, since when (Date) / If No, Planned Date)",
+        "display_name": "If Yes, since when (Date) / If No, Planned Date",
+        "parent_name": "HCFC parent",
         "sort_order": 4,
         "type": "date",
         "section": "B",
@@ -64,7 +101,8 @@
     },
     {
         "name": "HCFC float",
-        "display_name": "HCFC (Yes / No)",
+        "display_name": "Yes / No",
+        "parent_name": "HCFC parent",
         "sort_order": 5,
         "type": "float",
         "section": "B",
@@ -74,6 +112,7 @@
     {
         "name": "ALL OTHER ODS float",
         "display_name": "ALL OTHER ODS",
+        "parent_name": null,
         "sort_order": 1,
         "type": "float",
         "section": "C",
@@ -83,6 +122,7 @@
     {
         "name": "HCFC float",
         "display_name": "HCFC",
+        "parent_name": null,
         "sort_order": 2,
         "type": "float",
         "section": "C",
@@ -92,6 +132,7 @@
     {
         "name": "Cumulative float",
         "display_name": "Cumulative",
+        "parent_name": null,
         "sort_order": 3,
         "type": "float",
         "section": "C",
