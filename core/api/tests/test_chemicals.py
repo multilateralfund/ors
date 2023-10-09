@@ -48,7 +48,7 @@ def setup_substances_list():
     groups = []
     substances = []
     for gr_name in GROUP_LIST:
-        group = GroupFactory.create(name=gr_name, annex=gr_name)
+        group = GroupFactory.create(name=gr_name, annex=gr_name, name_alt=gr_name)
         groups.append(group)
         for i in range(2):
             substances.append(
@@ -81,7 +81,7 @@ class TestSubstancesList(BaseTest):
         count_substances = len(response.data)
         assert count_substances == 14
         for i in range(count_substances):
-            assert response.data[i]["group_name"] == self.group_list[int(i / 2)]
+            assert response.data[i]["group"] == self.group_list[int(i / 2)]
 
     def test_subs_list_w_usages(self, user, _setup_substances_list):
         self.client.force_authenticate(user=user)

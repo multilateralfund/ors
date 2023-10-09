@@ -353,9 +353,13 @@ def get_or_create_adm_row(row_data):
 
     @return AdmRow object
     """
+    if "index" not in row_data:
+        row_data["index"] = None
+
     existing_row = AdmRow.objects.filter(
         text=row_data["text"],
         section=row_data["section"],
+        index=row_data["index"],
         country_programme_report_id=row_data.get("country_programme_report_id", None),
     ).first()
 
