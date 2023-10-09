@@ -154,8 +154,8 @@ docker-compose exec app ./manage.py import_business_plans
 
 ### Import Files
 : download all files from nextcloud except "Business Plan Template and Sample" file
-    - **nextcloud path** OzoneMlf/Data/2.7 Business plans
-    - **local path** .fs/import_files/business_plans
+  - **nextcloud path** OzoneMlf/Data/2.7 Business plans
+  - **local path** .fs/import_files/business_plans
 
 
 
@@ -168,5 +168,5 @@ docker-compose exec app ./manage.py import_cp_format
 ```
 
 ### Import Files
-    - **nextcloud path** OzoneMlf/Data/1. Country Programme/CP Format/CP Format - 2022 and beyond(Final-92ndMtg)Consultant.xls
-    - **local path** .fs/import_files/cp_format/CP_Format_2022.xls
+  - **nextcloud path** OzoneMlf/Data/1. Country Programme/CP Format/CP Format - 2022 and beyond(Final-92ndMtg)Consultant.xls
+  - **local path** .fs/import_files/cp_format/CP_Format_2022.xls
