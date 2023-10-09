@@ -5,6 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, generics, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from core.api.filters.chemicals import ChemicalFilter
 
@@ -51,7 +52,7 @@ class ChemicalBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
 
 class SubstancesListView(ChemicalBaseListView):
     """
-    API endpoint that allows substancesto be viewed.
+    API endpoint that allows substances to be viewed.
     """
 
     serializer_class = SubstanceSerializer
@@ -155,12 +156,11 @@ class BlendCreateView(generics.CreateAPIView):
     def parse_blend_components_data(self, blend_components):
         """
         Validate components data and return blend components data
-        ! if there is a validation error => return None, error_message
 
         @param components_data: list of tuples (substance_id, component_name, percentage)
 
-        @return tuple: (blend_components_data, error_message)
-            blend_components_data: dict or None
+        @return dict: blend_components_data
+            blend_components_data: dict
                 {
                     "components": [
                             {
@@ -172,7 +172,6 @@ class BlendCreateView(generics.CreateAPIView):
                     "odp": odp (decimal),
                     "gwp": gwp (decimal),
                 }
-            error_message: string or None
         """
 
         components = []
@@ -181,27 +180,43 @@ class BlendCreateView(generics.CreateAPIView):
         percentage_sum = 0
         existing_subst = set()
 
-        for subst_id, component_name, percentage in blend_components:
-            prcnt_decimal = Decimal(percentage / 100)
+        for vals in blend_components:
+            try:
+                subst_id, component_name, percentage = vals
+            except ValueError as e:
+                raise ValidationError(
+                    {"components": f"Incorrect number of values: {vals}"}
+                ) from e
+            try:
+                prcnt_decimal = Decimal(percentage / 100)
+            except (ValueError, ArithmeticError, TypeError) as e:
+                raise ValidationError(
+                    {"components": f"Invalid percentage: {percentage}"}
+                ) from e
             # get substance by id, if it does not exist return error
             try:
                 subst = Substance.objects.select_related("group").get(id=subst_id)
-            except Substance.DoesNotExist:
-                return None, f"Substance with id {subst_id} does not exist"
+            except Substance.DoesNotExist as e:
+                raise ValidationError(
+                    {"components": f"Substance with id {subst_id} does not exist"}
+                ) from e
 
             # check if component already exists in components dict
             if subst_id in existing_subst:
                 # if component already exists and is not "other" return error
-                return None, f"Substance with id {subst_id} already exists"
+                raise ValidationError(
+                    {"components": f"Substance with id {subst_id} already exists"}
+                )
 
             if "other" in subst.name.lower() and not component_name:
                 # components of "other" substances must have a specific name
-                return (
-                    None,
-                    f"Please add a specific name for the component with id {subst_id}",
+                raise ValidationError(
+                    {
+                        "components": f"Please add a specific name for the component with id {subst_id}",
+                    }
                 )
 
-            # add component to component list
+            # add component to the component list
             components.append(
                 {
                     "component_name": component_name if component_name else subst.name,
@@ -211,7 +226,7 @@ class BlendCreateView(generics.CreateAPIView):
                 }
             )
 
-            # add substance to existing substances list if it is not "other"
+            # add substance to the existing substances list if it is not "other"
             if "other" not in subst.name.lower():
                 existing_subst.add(subst_id)
 
@@ -227,15 +242,13 @@ class BlendCreateView(generics.CreateAPIView):
 
         # check if percentage_sum is 100
         if percentage_sum != 100:
-            return None, "Sum of percentages must be 100"
+            raise ValidationError({"components": "Sum of percentages must be 100"})
 
-        return_data = {
+        return {
             "components": components,
             "odp": odp,
             "gwp": gwp,
         }
-
-        return return_data, None
 
     def get_blend_if_exists(self, data):
         """
@@ -299,7 +312,11 @@ class BlendCreateView(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         data = request.data
 
-        # check for existaing blend
+        for field in ["other_names", "components", "composition"]:
+            if field not in data:
+                raise ValidationError({field: "This field is required."})
+
+        # check for existing blend
         blend = self.get_blend_if_exists(data)
         if blend:
             return self.create_response(blend)
@@ -307,9 +324,7 @@ class BlendCreateView(generics.CreateAPIView):
         # create new blend
 
         # parse blend components data
-        components_data, error = self.parse_blend_components_data(data["components"])
-        if error:
-            return Response({"error": error}, status=status.HTTP_400_BAD_REQUEST)
+        components_data = self.parse_blend_components_data(data["components"])
 
         # set name
         name = Blend.objects.get_next_cust_mx_name()

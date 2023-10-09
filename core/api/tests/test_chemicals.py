@@ -370,6 +370,25 @@ class TestCreateBlend:
         # check that no blend was created
         assert (Blend.objects.count()) == initial_count
 
+    def test_invalid_request_missing_fields(self, user, _setup_blend_create):
+        substA, substF, subst_otherF = _setup_blend_create
+        self.client.force_authenticate(user=user)
+
+        data = {
+            "composition": "A-20%; F-30%; SubstFFF-50%",
+            "other_names": "Blend1 other names",
+            "components": [
+                (substA.id, "", 20),
+                (substF.id, "", 30),
+                (subst_otherF.id, "SubstFFF", 50),
+            ],
+        }
+        for key in data:
+            new_data = data.copy()
+            del new_data[key]
+            response = self.client.post(self.url, new_data, format="json")
+            assert response.status_code == 400
+
     def test_multiple_other_subs(self, user, _setup_blend_create):
         substA, _, subst_otherF = _setup_blend_create
         self.client.force_authenticate(user=user)
