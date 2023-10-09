@@ -49,7 +49,7 @@ class AdmColumn(models.Model):
         db_table = "cp_admcolumn"
 
     def __str__(self):
-        return f"{self.display_name} - {self.type}"
+        return f"{self.name}"
 
 
 class AdmRowManager(TreeManager):

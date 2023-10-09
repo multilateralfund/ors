@@ -56,7 +56,7 @@ class BaseWChemicalSerializer(serializers.ModelSerializer):
 
     def get_group(self, obj):
         if obj.blend:
-            return "Blends"
+            return "Blends (Mixture of Controlled Substances)"
         if obj.substance and obj.substance.group:
             return obj.substance.group.name_alt
         return None

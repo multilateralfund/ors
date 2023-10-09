@@ -17,8 +17,7 @@ class ChemicalsBaseSerializer(serializers.ModelSerializer):
 # substance serializer with excluded usages if the request has a with_usages query param
 class SubstanceSerializer(ChemicalsBaseSerializer):
     excluded_usages = serializers.SerializerMethodField()
-    group_name = serializers.SlugField(source="group.name", read_only=True)
-    annex_name = serializers.SlugField(source="group.annex", read_only=True)
+    group = serializers.SlugField(source="group.name_alt", read_only=True)
     sections = serializers.SerializerMethodField()
 
     class Meta:
@@ -27,8 +26,7 @@ class SubstanceSerializer(ChemicalsBaseSerializer):
             "id",
             "name",
             "group_id",
-            "group_name",
-            "annex_name",
+            "group",
             "sections",
             "formula",
             "odp",
@@ -52,12 +50,14 @@ class SubstanceSerializer(ChemicalsBaseSerializer):
 class BlendSerializer(ChemicalsBaseSerializer):
     excluded_usages = serializers.SerializerMethodField()
     composition = serializers.SerializerMethodField()
+    group = serializers.SerializerMethodField()
 
     class Meta:
         model = Blend
         fields = [
             "id",
             "name",
+            "group",
             "other_names",
             "type",
             "composition",
@@ -83,3 +83,6 @@ class BlendSerializer(ChemicalsBaseSerializer):
             return obj.get_generated_composition()
 
         return obj.composition
+
+    def get_group(self, _obj):
+        return "Blends (Mixture of Controlled Substances)"

@@ -22,18 +22,16 @@ SECTION = "B"
 
 CP_COLUMNS_MAPPING = {
     "CP": {
-        "ALL OTHER ODS date": "Date",
-        "ALL OTHER ODS bool": "Ongoing",
-        "ALL OTHER ODS float": "Amount",
-        "HCFC date": "DateHCFC",
-        "HCFC bool": "OngoingHCFC",
-        "HCFC float": "Amount",
-        "CFC date": "Date",
-        "CFC bool": "Ongoing",
+        "ALL OTHER ODS date": ["Date"],
+        "ALL OTHER ODS text": ["Ongoing", "Amount"],
+        "HCFC date": ["DateHCFC"],
+        "HCFC text": ["OngoingHCFC", "Amount"],
+        "CFC date": ["Date"],
+        "CFC text": ["Ongoing"],
     },
     "CP2012": {
-        "HCFC date": "DateHCFC",
-        "HCFC bool": "OngoingHCFC",
+        "HCFC date": ["DateHCFC"],
+        "HCFC text": ["OngoingHCFC"],
     },
 }
 
@@ -41,9 +39,11 @@ ARTICLES_WITH_USER_TEXT = ["1.6.1", "1.6.2"]
 ITEM_NOT_FOUND_IDS = [61]
 
 
-def get_columns_dict():
+def get_columns_dict(database_name):
     """
     Get columns dictionary
+    @ param database_name = str (database name)
+
     @return columns_dict = dict
         - struct: {
             column_name: AdmColumn object
@@ -52,12 +52,11 @@ def get_columns_dict():
     """
 
     columns_dict = {}
-    for _, columns in CP_COLUMNS_MAPPING.items():
-        for column_name in columns:
-            column_obj = get_adm_column(column_name, SECTION)
-            if not column_obj:
-                return None
-            columns_dict[column_name] = column_obj
+    for column_name in CP_COLUMNS_MAPPING[database_name]:
+        column_obj = get_adm_column(column_name, SECTION)
+        if not column_obj:
+            return None
+        columns_dict[column_name] = column_obj
 
     return columns_dict
 
@@ -347,7 +346,7 @@ def import_adm_records(
 
     """
     country_dict, year_dict = get_country_and_year_dict(file_data["dir_path"])
-    columns_dict = get_columns_dict()
+    columns_dict = get_columns_dict(file_data["database_name"])
     if not columns_dict:
         return
 
@@ -393,7 +392,7 @@ def import_adm_records(
             continue
 
         # create adm records for each column
-        for column_name, json_attribute in CP_COLUMNS_MAPPING[
+        for column_name, json_attributes in CP_COLUMNS_MAPPING[
             file_data["database_name"]
         ].items():
             # skip cfc columns if it's not using cfc
@@ -406,17 +405,21 @@ def import_adm_records(
 
             # get column attributes
             adm_record_data = {}
-            if admb_entry[json_attribute] is None:
-                continue
-            if column_obj.type == AdmColumn.AdmColumnType.DATE:
-                adm_record_data["value_text"] = parser.parse(
-                    admb_entry[json_attribute]
-                ).strftime("%m/%d/%Y")
-            elif column_obj.type == AdmColumn.AdmColumnType.BOOLEAN:
-                # 1 = Yes, 2 = No
-                adm_record_data["value_text"] = admb_entry[json_attribute] == 1
-            else:
-                adm_record_data["value_text"] = admb_entry[json_attribute]
+            for json_attribute in json_attributes:
+                if admb_entry[json_attribute] is None:
+                    continue
+                if column_obj.type == AdmColumn.AdmColumnType.DATE:
+                    adm_record_data["value_text"] = parser.parse(
+                        admb_entry[json_attribute]
+                    ).strftime("%m/%d/%Y")
+                elif column_obj.type == AdmColumn.AdmColumnType.TEXT:
+                    if "ongoing" in json_attribute.lower():
+                        # 1 = Yes, 2 = No
+                        adm_record_data["value_text"] = (
+                            "Yes" if admb_entry[json_attribute] == 1 else "No"
+                        )
+                    else:
+                        adm_record_data["value_text"] = admb_entry[json_attribute]
 
             # insert only if there is data for the column
             if not adm_record_data:
