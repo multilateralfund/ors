@@ -43,14 +43,14 @@ export default function AdmC(props: {
     <>
       <HeaderTitle>
         {report.name && (
-          <Typography className="mb-4 text-white" component="h1" variant="h5">
+          <Typography className="mb-4 text-white" component="h1" variant="h3">
             {report.name}
           </Typography>
         )}
-        <Typography className="text-white" component="h2" variant="h6">
-          C. Quantitative assessment of the phase-out programme
-        </Typography>
       </HeaderTitle>
+      <Typography className="mb-4" component="h2" variant="h6">
+        C. Quantitative assessment of the phase-out programme
+      </Typography>
       {!loadTable && (
         <Table
           columnDefs={gridOptions.columnDefs}
@@ -72,6 +72,7 @@ export default function AdmC(props: {
           })}
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
+          domLayout={fullScreen ? 'normal' : 'autoHeight'}
           enableCellChangeFlash={true}
           enablePagination={false}
           gridRef={grid}

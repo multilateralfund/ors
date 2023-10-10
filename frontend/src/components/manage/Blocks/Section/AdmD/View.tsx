@@ -35,13 +35,13 @@ export default function AdmD(props: {
     <>
       <HeaderTitle>
         {report.name && (
-          <Typography className="mb-4 text-white" component="h1" variant="h5">
+          <Typography className="mb-4 text-white" component="h1" variant="h3">
             {report.name}
           </Typography>
         )}
       </HeaderTitle>
       <Box>
-        <Typography component="h3" variant="h6">
+        <Typography component="h2" variant="h6">
           D. Qualitative assessment of the operation of HPMP
         </Typography>
         <List>

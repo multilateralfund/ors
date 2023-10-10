@@ -1,8 +1,8 @@
-import type { Api } from '@ors/helpers/Api/Api'
+import type { Api } from '@ors/helpers/Api'
 
 import { useEffect, useState } from 'react'
 
-import { fetcher } from '@ors/helpers/Api/Api'
+import { fetcher } from '@ors/helpers/Api'
 import { DataType, ErrorType } from '@ors/types/primitives'
 
 export default function useApi(props: Api): {

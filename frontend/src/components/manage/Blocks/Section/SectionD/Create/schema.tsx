@@ -20,9 +20,6 @@ function useGridOptions() {
       },
       {
         cellEditor: 'agNumberCellEditor',
-        cellEditorParams: {
-          min: '0',
-        },
         cellRenderer: 'agFloatCellRenderer',
         editable: true,
         field: 'all_uses',
@@ -31,9 +28,6 @@ function useGridOptions() {
       },
       {
         cellEditor: 'agNumberCellEditor',
-        cellEditorParams: {
-          min: '0',
-        },
         cellRenderer: 'agFloatCellRenderer',
         editable: true,
         field: 'feedstock',
@@ -43,9 +37,6 @@ function useGridOptions() {
       },
       {
         cellEditor: 'agNumberCellEditor',
-        cellEditorParams: {
-          min: '0',
-        },
         cellRenderer: 'agFloatCellRenderer',
         editable: true,
         field: 'destruction',

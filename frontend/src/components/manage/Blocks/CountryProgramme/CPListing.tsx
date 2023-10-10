@@ -623,6 +623,7 @@ function SectionPanel(props: SectionProps) {
 }
 
 export default function CPListing(props: { reports?: any }) {
+  // TODO: use real pagination
   const { reports } = props
   const [activeSection, setActiveSection] = useState(0)
   const reportsByCountry = useMemo(

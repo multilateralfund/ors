@@ -7,7 +7,7 @@ import { Typography } from '@mui/material'
 import CPListing from '@ors/components/manage/Blocks/CountryProgramme/CPListing'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-import api from '@ors/helpers/Api/Api'
+import api from '@ors/helpers/Api'
 
 export const metadata: Metadata = {
   title: 'Country programme',

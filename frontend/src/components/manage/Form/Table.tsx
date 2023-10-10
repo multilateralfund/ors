@@ -1,6 +1,5 @@
 'use client'
-import type { I18nSlice } from '@ors/slices/createI18nSlice'
-import type { ThemeSlice } from '@ors/slices/createThemeSlice'
+import { I18nSlice, ThemeSlice } from '@ors/types/store'
 
 import { useId, useMemo, useRef, useState } from 'react'
 
@@ -10,7 +9,10 @@ import { AgGridReact, AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
 import { times } from 'lodash'
 
-import { aggFuncs, components as defaultComponents } from '@ors/config/Table'
+import {
+  aggFuncs,
+  components as defaultComponents,
+} from '@ors/config/Table/Table'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'

@@ -3,7 +3,6 @@
 import type { Language, UseTranslationResponse } from '@ors/types/locales'
 import type { FlatNamespace } from 'i18next'
 import type { FallbackNs, UseTranslationOptions } from 'react-i18next'
-import type { $Tuple } from 'react-i18next/helpers'
 
 import { useCallback, useMemo } from 'react'
 import {
@@ -18,6 +17,8 @@ import resourcesToBackend from 'i18next-resources-to-backend'
 import useStore, { getStore } from '@ors/store'
 
 import { getLocale, getOptions, languages } from './settings'
+
+type $Tuple<T> = readonly [T?, ...T[]]
 
 const store = getStore()
 

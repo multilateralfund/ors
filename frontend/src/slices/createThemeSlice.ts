@@ -1,13 +1,13 @@
+import type {
+  InitialStoreState,
+  StoreState,
+  ThemeSlice,
+} from '@ors/types/store'
+
 import Cookies from 'js-cookie'
 import { StoreApi } from 'zustand'
 
 import config from '@ors/registry'
-import { InitialStoreState, StoreState } from '@ors/store'
-
-export interface ThemeSlice {
-  mode: 'dark' | 'light' | null
-  setMode?: (mode: 'dark' | 'light' | null) => void
-}
 
 export const createThemeSlice = (
   set: StoreApi<StoreState>['setState'],

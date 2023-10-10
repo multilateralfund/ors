@@ -1,22 +1,14 @@
+import type { InitialStoreState, StoreState, UserSlice } from '@ors/types/store'
+
 import Cookies from 'js-cookie'
 import { StoreApi } from 'zustand'
 
 import api from '@ors/helpers/Api/Api'
-import { InitialStoreState, StoreState } from '@ors/store'
-import { DataType } from '@ors/types/primitives'
 
 function removeCookies() {
   Cookies.remove('csrftoken')
   Cookies.remove('orsauth')
   Cookies.remove('orsrefresh')
-}
-
-export interface UserSlice {
-  data: DataType
-  getUser?: () => void
-  login?: (username: string, password: string) => void
-  logout?: () => void
-  setUser?: (data: DataType) => void
 }
 
 export const createUserSlice = (

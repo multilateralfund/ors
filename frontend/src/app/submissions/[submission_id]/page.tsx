@@ -5,7 +5,7 @@ import { sumBy } from 'lodash'
 import Field from '@ors/components/manage/Form/Field'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-import api from '@ors/helpers/Api/Api'
+import api from '@ors/helpers/Api'
 
 type ProjectProps = {
   params: {

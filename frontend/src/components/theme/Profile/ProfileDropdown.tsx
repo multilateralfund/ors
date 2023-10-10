@@ -5,7 +5,7 @@ import version from '@ors/../version.json'
 import { useRouter } from 'next/navigation'
 
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
-import { formatApiUrl } from '@ors/helpers/Api/Api'
+import { formatApiUrl } from '@ors/helpers/Api'
 import useStore from '@ors/store'
 
 import { IoPerson } from '@react-icons/all-files/io5/IoPerson'

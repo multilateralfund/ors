@@ -10,7 +10,7 @@ export default function SectionFView(props: { report: Record<string, any> }) {
     <>
       <HeaderTitle>
         {report.name && (
-          <Typography className="mb-4 text-white" component="h1" variant="h5">
+          <Typography className="mb-4 text-white" component="h1" variant="h3">
             {report.name}
           </Typography>
         )}

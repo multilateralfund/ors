@@ -53,10 +53,10 @@ export default function Sidebar() {
             className={cx(
               'flex flex-col items-center rounded p-2 theme-dark:text-white',
               {
-                'bg-primary text-white transition-colors': item.isExact
+                'mb-6': index < items.length - 1,
+                'transition-colors bg-primary text-white': item.isExact
                   ? pathname === item.href
                   : pathname.includes(item.href),
-                'mb-6': index < items.length - 1,
               },
             )}
             href={item.href}

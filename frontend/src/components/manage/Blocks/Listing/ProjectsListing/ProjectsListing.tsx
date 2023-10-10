@@ -29,7 +29,7 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
 import { KEY_ENTER } from '@ors/constants'
-import { getResults } from '@ors/helpers/Api/Api'
+import { getResults } from '@ors/helpers/Api'
 import useApi from '@ors/hooks/useApi'
 import useStore from '@ors/store'
 

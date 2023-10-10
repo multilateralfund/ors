@@ -22,7 +22,8 @@ function Title({ children, visible }: TitleProps) {
     <div>
       <Divider
         className={cx('-ml-4 mb-12 mt-4 w-[calc(100%+2rem)] border-gray-200', {
-          'pointer-events-none absolute left-0 top-0 opacity-0': !visible,
+          'pointer-events-none absolute left-0 top-0 hidden opacity-0':
+            !visible,
         })}
       />
       {children}
@@ -55,6 +56,8 @@ export default function HeaderTitle({
 
     /* eslint-disable-next-line */
   }, [])
+
+  return null
 
   return !mounted && <Title visible={false}>{children}</Title>
 }
