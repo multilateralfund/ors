@@ -7,7 +7,7 @@ import { each, includes, times, union } from 'lodash'
 import Table from '@ors/components/manage/Form/Table'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 
-import useGridOptions from './schemaView'
+import useGridOptions from './schema'
 
 import { IoClose } from '@react-icons/all-files/io5/IoClose'
 
@@ -62,7 +62,7 @@ export default function SectionCView(props: {
     <>
       <HeaderTitle>
         {report.name && (
-          <Typography className="mb-4 text-white" component="h1" variant="h5">
+          <Typography className="mb-4 text-white" component="h1" variant="h3">
             {report.name}
           </Typography>
         )}
@@ -93,6 +93,7 @@ export default function SectionCView(props: {
           })}
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
+          domLayout={fullScreen ? 'normal' : 'autoHeight'}
           enableCellChangeFlash={true}
           enablePagination={false}
           gridRef={grid}

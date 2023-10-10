@@ -112,6 +112,8 @@
 }
 
 #next-app [class*='ag-theme-'].full-screen {
+  @apply z-20;
+
   position: fixed;
   width: 100vw;
   height: 100vh !important;

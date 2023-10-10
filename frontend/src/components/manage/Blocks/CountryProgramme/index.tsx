@@ -3,14 +3,17 @@ import { includes } from 'lodash'
 import AdmB from '@ors/components/manage/Blocks/Section/AdmB/View'
 import AdmC from '@ors/components/manage/Blocks/Section/AdmC/View'
 import AdmD from '@ors/components/manage/Blocks/Section/AdmD/View'
-import SectionA from '@ors/components/manage/Blocks/Section/SectionA/View/View'
+import SectionACreate from '@ors/components/manage/Blocks/Section/SectionA/Create/Create'
+import SectionAView from '@ors/components/manage/Blocks/Section/SectionA/View/View'
+import SectionBCreate from '@ors/components/manage/Blocks/Section/SectionB/Create/Create'
 import SectionB from '@ors/components/manage/Blocks/Section/SectionB/View/View'
-import SectionCView from '@ors/components/manage/Blocks/Section/SectionC/View'
+import SectionCCreate from '@ors/components/manage/Blocks/Section/SectionC/Create/Create'
+import SectionCView from '@ors/components/manage/Blocks/Section/SectionC/View/View'
 import SectionDCreate from '@ors/components/manage/Blocks/Section/SectionD/Create/Create'
 import SectionDView from '@ors/components/manage/Blocks/Section/SectionD/View/View'
 import SectionECreate from '@ors/components/manage/Blocks/Section/SectionE/Create/Create'
 import SectionEView from '@ors/components/manage/Blocks/Section/SectionE/View/View'
-import SectionFCreate from '@ors/components/manage/Blocks/Section/SectionF/Edit'
+import SectionFCreate from '@ors/components/manage/Blocks/Section/SectionF/Create'
 import SectionFView from '@ors/components/manage/Blocks/Section/SectionF/View'
 
 export const variants = [
@@ -54,7 +57,7 @@ export function getViewSections(variant: any) {
           {
             id: 'section-A',
             allowFullScreen: true,
-            component: SectionA,
+            component: SectionAView,
             label: 'Section A',
             panelId: 'section-A-panel',
           },
@@ -154,21 +157,21 @@ export function getCreateSections() {
     {
       id: 'section-A',
       allowFullScreen: true,
-      component: () => null,
+      component: SectionACreate,
       label: 'Section A',
       panelId: 'section-A-panel',
     },
     {
       id: 'section-B',
       allowFullScreen: true,
-      component: () => null,
+      component: SectionBCreate,
       label: 'Section B',
       panelId: 'section-B-panel',
     },
     {
       id: 'section-C',
       allowFullScreen: true,
-      component: () => null,
+      component: SectionCCreate,
       label: 'Section C',
       panelId: 'section-C-panel',
     },

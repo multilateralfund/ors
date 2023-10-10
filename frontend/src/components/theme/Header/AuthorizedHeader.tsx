@@ -11,7 +11,7 @@ import Logo from '@ors/components/theme/Logo/Logo'
 import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
 // import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
 import UnstyledLink, { LinkProps } from '@ors/components/ui/Link/Link'
-import { formatApiUrl } from '@ors/helpers/Api/Api'
+import { formatApiUrl } from '@ors/helpers/Api'
 import { matchPath } from '@ors/helpers/Url/Url'
 import useStore from '@ors/store'
 

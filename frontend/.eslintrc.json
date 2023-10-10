@@ -60,7 +60,8 @@
             "parent-type",
             "sibling-type",
             "index-type",
-            "internal-type"
+            "internal-type",
+            "@type"
           ],
           "react",
           ["builtin", "external"],
@@ -92,7 +93,8 @@
               "@ors/**/*.jpg",
               "@ors/**/*.jpeg",
               "@ors/**/*.json"
-            ]
+            ],
+            "@type": ["@ors/types/**"]
           },
           "type": {
             "react": ["react react-* next"]

@@ -5,32 +5,23 @@ import cx from 'classnames'
 import { findIndex } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
-import useStore from '@ors/store'
-import { SectionD } from '@ors/types'
 
 import useGridOptions from './schema'
 
 import { IoClose } from '@react-icons/all-files/io5/IoClose'
 
-export default function SectionDCreate(props: {
-  exitFullScreen: () => void
-  fullScreen: boolean
-  variant: any
-}) {
-  const { exitFullScreen, fullScreen } = props
+export default function SectionDCreate(props: any) {
+  const { exitFullScreen, form, fullScreen, setForm } = props
   const grid = useRef<any>()
   const gridOptions = useGridOptions()
   const [loading, setLoading] = useState(true)
-  const rowData: SectionD = useStore(
-    (state) => state.cp_report_create.section_d,
-  )
-  const updateRowData = useStore(
-    (state) => (data: SectionD) =>
-      state.cp_report_create.update?.('section_d', data),
-  )
+  const [initialRowData] = useState(form.section_d)
 
   return (
     <>
+      <Typography className="mb-4" component="h2" variant="h6">
+        SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)
+      </Typography>
       <Table
         className={cx('mb-4', {
           'full-screen': fullScreen,
@@ -38,11 +29,12 @@ export default function SectionDCreate(props: {
         })}
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
+        domLayout="normal"
         enableCellChangeFlash={true}
         enablePagination={false}
         gridRef={grid}
         noRowsOverlayComponentParams={{ label: 'No data reported' }}
-        rowData={rowData}
+        rowData={initialRowData}
         suppressCellFocus={false}
         suppressRowHoverHighlight={false}
         HeaderComponent={
@@ -60,11 +52,22 @@ export default function SectionDCreate(props: {
               }
             : () => null
         }
+        getRowId={(props) => {
+          return props.data.rowId
+        }}
         onCellValueChanged={(event) => {
-          const newData = [...rowData]
-          const index = findIndex(rowData, (row) => row.id == event.data.id)
-          newData.splice(index, 1, event.data)
-          updateRowData(newData)
+          const newData = [...form.section_c]
+          const index = findIndex(
+            newData,
+            (row: any) => row.rowId == event.data.rowId,
+          )
+          if (index > -1) {
+            // Should not be posible for index to be -1
+            newData.splice(index, 1, {
+              ...event.data,
+            })
+            setForm({ ...form, section_c: newData })
+          }
         }}
         onFirstDataRendered={() => setLoading(false)}
         withFluidEmptyColumn

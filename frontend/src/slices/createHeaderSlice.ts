@@ -1,19 +1,14 @@
+import type {
+  HeaderSlice,
+  InitialStoreState,
+  StoreState,
+} from '@ors/types/store'
+
 import resolveConfig from 'tailwindcss/resolveConfig'
 import { StoreApi } from 'zustand'
 
-import { InitialStoreState, StoreState } from '@ors/store'
-
 const tailwindConfigModule = require('@ors/../tailwind.config')
 const tailwindConfig = resolveConfig(tailwindConfigModule)
-
-export interface HeaderSlice {
-  HeaderTitle: React.FC | React.ReactNode | null
-  navigationBackground: string
-  setHeaderTitleComponent?: (
-    component: React.FC | React.ReactNode | null,
-  ) => void
-  setNavigationBackground?: (value: string) => void
-}
 
 let timer: any
 

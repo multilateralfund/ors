@@ -1,4 +1,6 @@
 'use client'
+import type { InitialStoreState, StoreState } from '@ors/types/store'
+
 import React, { createContext, useContext } from 'react'
 
 import {
@@ -7,51 +9,15 @@ import {
   createStore as zustandCreateStore,
 } from 'zustand'
 
-import { CommonSlice, createCommonSlice } from '@ors/slices/createCommonSlice'
-
-import {
-  CPReportCreateSlice,
-  createCPReportCreateSlice,
-} from './slices/createCPReportCreateSlice'
-import { createCacheSlice } from './slices/createCacheSlice'
-import {
-  ControlsSlice,
-  createControlsSlice,
-} from './slices/createControlsSlice'
-import { HeaderSlice, createHeaderSlice } from './slices/createHeaderSlice'
-import { I18nSlice, createI18nSlice } from './slices/createI18nSlice'
-import { ProjectsSlice, createProjectSlice } from './slices/createProjectSlice'
-import { ReportsSlice, createReportsSlice } from './slices/createReportsSlice'
-import { ThemeSlice, createThemeSlice } from './slices/createThemeSlice'
-import { UserSlice, createUserSlice } from './slices/createUserSlice'
-
-export type StoreState = {
-  cache: { [key: string]: any }
-  common: CommonSlice
-  connection: null | string
-  controls: ControlsSlice
-  cp_report_create: CPReportCreateSlice
-  header: HeaderSlice
-  i18n: I18nSlice
-  projects: ProjectsSlice
-  reports: ReportsSlice
-  theme: ThemeSlice
-  user: UserSlice
-}
-
-export type InitialStoreState = {
-  cache?: { [key: string]: any }
-  common?: CommonSlice
-  connection?: null | string
-  controls?: Partial<ControlsSlice>
-  cp_report_create?: Partial<CPReportCreateSlice>
-  header?: Partial<HeaderSlice>
-  i18n?: Partial<I18nSlice>
-  projects?: ProjectsSlice
-  reports?: ReportsSlice
-  theme?: Partial<ThemeSlice>
-  user?: Partial<UserSlice>
-}
+import { createCPReportsSlice } from '@ors/slices/createCPReportsSlice'
+import { createCacheSlice } from '@ors/slices/createCacheSlice'
+import { createCommonSlice } from '@ors/slices/createCommonSlice'
+import { createControlsSlice } from '@ors/slices/createControlsSlice'
+import { createHeaderSlice } from '@ors/slices/createHeaderSlice'
+import { createI18nSlice } from '@ors/slices/createI18nSlice'
+import { createProjectSlice } from '@ors/slices/createProjectSlice'
+import { createThemeSlice } from '@ors/slices/createThemeSlice'
+import { createUserSlice } from '@ors/slices/createUserSlice'
 
 let storeInstance: StoreApi<StoreState>
 
@@ -70,11 +36,10 @@ const createStore = (initialState?: InitialStoreState) => {
           navigator?.connection?.effectiveType || null
         : null,
       controls: { ...createControlsSlice(...args) },
-      cp_report_create: { ...createCPReportCreateSlice(...args) },
+      cp_reports: { ...createCPReportsSlice(...args) },
       header: { ...createHeaderSlice(...args) },
       i18n: { ...createI18nSlice(...args) },
       projects: { ...createProjectSlice(...args) },
-      reports: { ...createReportsSlice(...args) },
       theme: { ...createThemeSlice(...args) },
       user: { ...createUserSlice(...args) },
     }

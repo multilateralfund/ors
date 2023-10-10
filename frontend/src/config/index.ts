@@ -1,4 +1,4 @@
-import { aggFuncs, components, defaultRenderer, renderers } from './Table'
+import { aggFuncs, components, renderers } from './Table/Table'
 import { ByLayout, defaultView, layoutViews, routes } from './Views'
 import { ByType, ByWidget, defaultWidget, widgetsMapping } from './Widgets'
 import baseConfig, { BaseConfig } from './base'
@@ -39,16 +39,9 @@ const config: Config = {
     views: routes,
   },
   table: {
-    aggFuncs: {
-      ...aggFuncs,
-    },
-    components: {
-      ...components,
-    },
-    renderers: {
-      ...renderers,
-      default: defaultRenderer,
-    },
+    aggFuncs,
+    components,
+    renderers,
   },
   views: {
     default: defaultView,

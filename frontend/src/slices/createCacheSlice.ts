@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { StoreApi } from 'zustand'
+import type { InitialStoreState, StoreState } from '@ors/types/store'
 
-// import config from '@ors/registry'
-import { InitialStoreState, StoreState } from '@ors/store'
+import { StoreApi } from 'zustand'
 
 export interface CacheSlice {
   data: {

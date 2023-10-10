@@ -20,7 +20,10 @@ export default function AdmB(props: {
 }) {
   const { emptyForm, exitFullScreen, fullScreen, report, variant } = props
   const grid = useRef<any>()
-  const gridOptions = useGridOptions({ model: variant.model })
+  const gridOptions = useGridOptions({
+    adm_columns: emptyForm.admB.columns,
+    model: variant.model,
+  })
   const [loadTable, setLoadTable] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -43,14 +46,14 @@ export default function AdmB(props: {
     <>
       <HeaderTitle>
         {report.name && (
-          <Typography className="mb-4 text-white" component="h1" variant="h5">
+          <Typography className="mb-4 text-white" component="h1" variant="h3">
             {report.name}
           </Typography>
         )}
-        <Typography className="text-white" component="h2" variant="h6">
-          B. Regulatory, administrative and supportive actions
-        </Typography>
       </HeaderTitle>
+      <Typography className="mb-4" component="h2" variant="h6">
+        B. Regulatory, administrative and supportive actions
+      </Typography>
       {!loadTable && (
         <Table
           columnDefs={gridOptions.columnDefs}
@@ -73,6 +76,7 @@ export default function AdmB(props: {
             })}
             columnDefs={gridOptions.columnDefs}
             defaultColDef={gridOptions.defaultColDef}
+            domLayout={fullScreen ? 'normal' : 'autoHeight'}
             enableCellChangeFlash={true}
             enablePagination={false}
             gridRef={grid}
