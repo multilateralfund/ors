@@ -2,7 +2,6 @@
 // REF: https://github.com/mui-org/material-ui/blob/ec37e2bb3c904d9552fa819425ee1eef72914996/packages/material-ui/src/styles/createPalette.js#L104
 
 import type { PaletteColorOptions } from '@mui/material'
-
 import { ColorRecordType } from '@ors/types/tailwind'
 
 import { warning } from '../Log/Log'
