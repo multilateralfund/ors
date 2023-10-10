@@ -180,39 +180,52 @@ class BlendCreateView(generics.CreateAPIView):
         percentage_sum = 0
         existing_subst = set()
 
-        for vals in blend_components:
+        for index, vals in enumerate(blend_components):
             try:
-                subst_id, component_name, percentage = vals
-            except ValueError as e:
+                assert isinstance(vals, dict), "Component must be a dictionary"
+                subst_id = vals["substance_id"]
+                component_name = vals["component_name"]
+                percentage = vals["percentage"]
+            except (ValueError, AssertionError) as e:
                 raise ValidationError(
-                    {"components": f"Incorrect number of values: {vals}"}
+                    {"components": {index: f"Incorrect component: {e}"}}
                 ) from e
             try:
                 prcnt_decimal = Decimal(percentage / 100)
             except (ValueError, ArithmeticError, TypeError) as e:
                 raise ValidationError(
-                    {"components": f"Invalid percentage: {percentage}"}
+                    {"components": {index: f"Invalid percentage: {percentage}"}}
                 ) from e
             # get substance by id, if it does not exist return error
             try:
                 subst = Substance.objects.select_related("group").get(id=subst_id)
             except Substance.DoesNotExist as e:
                 raise ValidationError(
-                    {"components": f"Substance with id {subst_id} does not exist"}
+                    {
+                        "components": {
+                            index: f"Substance with id {subst_id} does not exist"
+                        }
+                    }
                 ) from e
 
             # check if component already exists in components dict
             if subst_id in existing_subst:
                 # if component already exists and is not "other" return error
                 raise ValidationError(
-                    {"components": f"Substance with id {subst_id} already exists"}
+                    {
+                        "components": {
+                            index: f"Substance with id {subst_id} already exists"
+                        }
+                    }
                 )
 
             if "other" in subst.name.lower() and not component_name:
                 # components of "other" substances must have a specific name
                 raise ValidationError(
                     {
-                        "components": f"Please add a specific name for the component with id {subst_id}",
+                        "components": {
+                            index: f"Please add a specific name for the component with id {subst_id}",
+                        }
                     }
                 )
 
@@ -263,7 +276,8 @@ class BlendCreateView(generics.CreateAPIView):
             return blend
 
         blend_cmp = [
-            (subst_id, prcnt / 100) for subst_id, _, prcnt in data["components"]
+            (vals["substance_id"], vals["percentage"] / 100)
+            for vals in data["components"]
         ]
         blend = BlendComponents.objects.get_blend_by_components(blend_cmp)
         if blend:
@@ -282,23 +296,24 @@ class BlendCreateView(generics.CreateAPIView):
                 ),
                 "components": openapi.Schema(
                     type=openapi.TYPE_ARRAY,
-                    description="List of tuples (substance_id, component_name, percentage)",
+                    description="Array of objects",
                     items=openapi.Schema(
-                        type=openapi.TYPE_ARRAY,
-                        items=[
-                            openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        required=["substance_id", "component_name", "percentage"],
+                        properties={
+                            "substance_id": openapi.Schema(
                                 type=openapi.TYPE_INTEGER,
                                 description="Substance id",
                             ),
-                            openapi.Schema(
+                            "component_name": openapi.Schema(
                                 type=openapi.TYPE_STRING,
                                 description="Component name",
                             ),
-                            openapi.Schema(
+                            "percentage": openapi.Schema(
                                 type=openapi.TYPE_NUMBER,
                                 description="Percentage",
                             ),
-                        ],
+                        },
                     ),
                 ),
                 "composition": openapi.Schema(
@@ -316,15 +331,21 @@ class BlendCreateView(generics.CreateAPIView):
             if field not in data:
                 raise ValidationError({field: "This field is required."})
 
+        try:
+            assert isinstance(data["components"], list), "Components must be an array"
+            assert len(data["components"]) > 0, "At least one component is required"
+        except AssertionError as e:
+            raise ValidationError({"components": str(e)}) from e
+
+        # parse blend components data
+        components_data = self.parse_blend_components_data(data["components"])
+
         # check for existing blend
         blend = self.get_blend_if_exists(data)
         if blend:
             return self.create_response(blend)
 
         # create new blend
-
-        # parse blend components data
-        components_data = self.parse_blend_components_data(data["components"])
 
         # set name
         name = Blend.objects.get_next_cust_mx_name()

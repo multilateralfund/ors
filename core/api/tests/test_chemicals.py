@@ -265,9 +265,13 @@ class TestCreateBlend:
             "composition": "A-20%; F-30%; SubstFFF-50%",
             "other_names": "Blend1 other names",
             "components": [
-                (substA.id, "", 20),
-                (substF.id, "", 30),
-                (subst_otherF.id, "SubstFFF", 50),
+                {"substance_id": substA.id, "component_name": "", "percentage": 20},
+                {"substance_id": substF.id, "component_name": "", "percentage": 30},
+                {
+                    "substance_id": subst_otherF.id,
+                    "component_name": "SubstFFF",
+                    "percentage": 50,
+                },
             ],
         }
         return self.client.post(self.url, data, format="json")
@@ -316,9 +320,13 @@ class TestCreateBlend:
             "composition": "sub_A-20%; sub_F-30%; SubstFFF-50%",
             "other_names": "BBBBBBBllllllleeeeennnndddd",
             "components": [
-                (substA.id, "", 20),
-                (subst_otherF.id, "SubstFFF", 50),
-                (substF.id, "", 30),
+                {"substance_id": substA.id, "component_name": "", "percentage": 20},
+                {
+                    "substance_id": subst_otherF.id,
+                    "component_name": "SubstFFF",
+                    "percentage": 50,
+                },
+                {"substance_id": substF.id, "component_name": "", "percentage": 30},
             ],
         }
         response = self.client.post(self.url, data, format="json")
@@ -338,31 +346,39 @@ class TestCreateBlend:
             "composition": "Blend2 composition",
             "other_names": "Blend2",
             "components": [
-                (substA.id, "", 20),
-                (subst_otherF.id, "SubstFFF", 50),
+                {"substance_id": substA.id, "component_name": "", "percentage": 20},
+                {
+                    "substance_id": subst_otherF.id,
+                    "component_name": "SubstFFF",
+                    "percentage": 50,
+                },
             ],
         }
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
 
         # invalid substance
-        data["components"][0] = (1212, "", 20)
+        data["components"][0] = {
+            "substance_id": 1212,
+            "component_name": "",
+            "percentage": 20,
+        }
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
 
         # duplicate component
-        data["components"] = {
-            (substA.id, "", 20),
-            (substF.id, "", 50),
-            (substF.id, "", 30),
-        }
+        data["components"] = [
+            {"substance_id": substA.id, "component_name": "", "percentage": 20},
+            {"substance_id": substF.id, "component_name": "", "percentage": 30},
+            {"substance_id": substF.id, "component_name": "", "percentage": 30},
+        ]
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
 
         # invalid component name for other substances
         data["components"] = [
-            (substA.id, "", 50),
-            (subst_otherF.id, "", 50),
+            {"substance_id": substA.id, "component_name": "", "percentage": 50},
+            {"substance_id": subst_otherF.id, "component_name": "", "percentage": 50},
         ]
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
@@ -378,9 +394,13 @@ class TestCreateBlend:
             "composition": "A-20%; F-30%; SubstFFF-50%",
             "other_names": "Blend1 other names",
             "components": [
-                (substA.id, "", 20),
-                (substF.id, "", 30),
-                (subst_otherF.id, "SubstFFF", 50),
+                {"substance_id": substA.id, "component_name": "", "percentage": 20},
+                {"substance_id": substF.id, "component_name": "", "percentage": 30},
+                {
+                    "substance_id": subst_otherF.id,
+                    "component_name": "SubstFFF",
+                    "percentage": 50,
+                },
             ],
         }
         for key in data:
@@ -394,12 +414,20 @@ class TestCreateBlend:
         self.client.force_authenticate(user=user)
 
         data = {
-            "composition": "Blend3 composition",
-            "other_names": "Blend3",
+            "composition": "A-20%; F-30%; SubstFFF-50%",
+            "other_names": "Blend1 other names",
             "components": [
-                (substA.id, "", 20),
-                (subst_otherF.id, "SubstFFF", 50),
-                (subst_otherF.id, "SubstFFF2", 30),
+                {"substance_id": substA.id, "component_name": "", "percentage": 20},
+                {
+                    "substance_id": subst_otherF.id,
+                    "component_name": "SubstFFF",
+                    "percentage": 50,
+                },
+                {
+                    "substance_id": subst_otherF.id,
+                    "component_name": "SubstFFF2",
+                    "percentage": 30,
+                },
             ],
         }
         response = self.client.post(self.url, data, format="json")

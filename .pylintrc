@@ -21,6 +21,7 @@ disable=
     logging-fstring-interpolation,
     logging-not-lazy,
     invalid-name,
+    avoid-assert,
 
 [FORMAT]
 max-line-length=120
