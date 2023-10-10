@@ -97,6 +97,7 @@ export default function SectionBCreate(props: any) {
 
   const [blendForm, setBlendForm] = useState<any>({
     components: [],
+    composition: '',
     other_names: '',
   })
   const [addChimicalModal, setAddChimicalModal] = useState(false)
@@ -174,7 +175,7 @@ export default function SectionBCreate(props: any) {
   useEffect(() => {
     if (!createBlendModal) {
       setTimeout(() => {
-        setBlendForm({ components: [], other_names: '' })
+        setBlendForm({ components: [], composition: '', other_names: '' })
       }, 300)
     }
   }, [createBlendModal])
@@ -361,7 +362,18 @@ export default function SectionBCreate(props: any) {
               Create blend
             </Typography>
             <Field
-              InputLabel={{ label: 'Blend name' }}
+              InputLabel={{ label: 'Blend description' }}
+              onChange={(event: any) => {
+                debounce(() => {
+                  setBlendForm({
+                    ...blendForm,
+                    composition: event.target.value,
+                  })
+                })
+              }}
+            />
+            <Field
+              InputLabel={{ label: 'Blend other names' }}
               onChange={(event: any) => {
                 debounce(() => {
                   setBlendForm({
