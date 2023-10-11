@@ -144,14 +144,15 @@ class BlendCreateView(generics.CreateAPIView):
     serializer_class = BlendSerializer
     queryset = Blend.objects.all()
 
-    def create_response(self, blend_object):
-        serializer = self.get_serializer(
+    def create_response(self, blend_object, created):
+        data = self.get_serializer(
             blend_object,
             context={
                 "generate_composition": True,
             },
-        )
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        ).data
+        data["created"] = created
+        return Response(data, status=status.HTTP_200_OK)
 
     def parse_blend_components_data(self, blend_components):
         """
@@ -343,7 +344,7 @@ class BlendCreateView(generics.CreateAPIView):
         # check for existing blend
         blend = self.get_blend_if_exists(data)
         if blend:
-            return self.create_response(blend)
+            return self.create_response(blend, False)
 
         # create new blend
 
@@ -384,4 +385,4 @@ class BlendCreateView(generics.CreateAPIView):
 
         BlendComponents.objects.bulk_create(blend_components)
 
-        return self.create_response(blend)
+        return self.create_response(blend, True)

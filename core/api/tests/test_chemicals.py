@@ -303,6 +303,7 @@ class TestCreateBlend:
             response.data["composition"]
             == "SubstFFF-50.00%; SubstanceF-30.00%; SubstanceA-20.00%"
         )
+        assert response.data["created"]
 
     def test_blend_already_exists(self, user, _setup_blend_create):
         substA, substF, subst_otherF = _setup_blend_create
@@ -334,6 +335,7 @@ class TestCreateBlend:
         assert response.data["id"] == blend.id
 
         assert (Blend.objects.count()) == initial_count
+        assert not response.data["created"]
 
     def test_invalid_request(self, user, _setup_blend_create):
         substA, substF, subst_otherF = _setup_blend_create
