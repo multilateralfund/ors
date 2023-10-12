@@ -2,6 +2,8 @@ import type { Language } from '@ors/types/locales'
 import type { SliceData } from '@ors/types/primitives'
 import type { DataType } from '@ors/types/primitives'
 
+import { AlertProps } from '@mui/material'
+
 export interface CPReportsSlice {
   blends: SliceData
   substances: SliceData

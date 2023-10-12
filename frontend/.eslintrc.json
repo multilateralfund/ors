@@ -70,8 +70,8 @@
           ["parent", "sibling", "index"],
           "i18n",
           "side-effect",
-          "icons",
           "files",
+          "icons",
           "object",
           "unknown"
         ],

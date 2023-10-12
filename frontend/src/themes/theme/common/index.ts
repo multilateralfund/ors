@@ -62,6 +62,13 @@ const commonTheme = (
           },
         },
       },
+      MuiSnackbarContent: {
+        styleOverrides: {
+          message: {
+            fontSize: getTypography('base').fontSize,
+          },
+        },
+      },
     },
     direction,
     palette: {

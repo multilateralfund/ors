@@ -1,5 +1,4 @@
 /* eslint-disable @next/next/no-before-interactive-script-outside-document */
-/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @next/next/no-css-tags */
 import type {
   CPReportsSlice,

@@ -1,15 +1,22 @@
 'use client'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
-import { Box, Button, Tab, Tabs, Typography } from '@mui/material'
+import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
+import cx from 'classnames'
+import { AnimatePresence } from 'framer-motion'
 import { isBoolean, isNil, isString, omitBy } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
 import Portal from '@ors/components/manage/Utils/Portal'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
+import Loading from '@ors/components/theme/Loading/Loading'
 import api from '@ors/helpers/Api'
 
 import { getCreateSections } from '.'
+import FadeInOut from '../../Transitions/FadeInOut'
+
+import { IoClose } from '@react-icons/all-files/io5/IoClose'
+import { IoExpand } from '@react-icons/all-files/io5/IoExpand'
 
 const mapChimicalSubstance = (data: any, mandatory: any) => ({
   banned_date: data.banned_date || null,
@@ -98,6 +105,48 @@ const getInitialForm = (mandatoryForm: any) => {
   }
 }
 
+function TabPanel(props: any) {
+  const {
+    activeSection,
+    currentIndex,
+    index,
+    renderSection,
+    section,
+    setActiveSection,
+    ...rest
+  } = props
+  const Section: React.FC<any> = section.component
+
+  return (
+    <div
+      id={section.panelId}
+      key={section.panelId}
+      aria-labelledby={section.id}
+      hidden={activeSection !== index}
+      role="tabpanel"
+    >
+      <AnimatePresence>
+        <FadeInOut
+          animate={{
+            opacity: activeSection === currentIndex ? 1 : 0,
+          }}
+          transition={{ duration: 0.5 }}
+        >
+          {((currentIndex === index && renderSection) ||
+            (activeSection !== currentIndex && activeSection === index)) && (
+            <Section
+              index={index}
+              section={section}
+              setActiveSection={setActiveSection}
+              {...rest}
+            />
+          )}
+        </FadeInOut>
+      </AnimatePresence>
+    </div>
+  )
+}
+
 export default function CPReportCreate(props: {
   blends?: Array<any>
   emptyForm?: Record<string, any> | null
@@ -106,8 +155,10 @@ export default function CPReportCreate(props: {
   substances_c?: Array<any>
 }) {
   const { blends, substances_a, substances_b, substances_c } = props
-  const [activeSection, setActiveSection] = useState(0)
-  const [fullScreen, setFullScreen] = useState(false)
+  const [errors, setErrors] = useState<Record<string, any>>({})
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [activeSection, setActiveSection] = useState(null)
+  const [renderSection, setRenderSection] = useState(false)
   const [mandatoryForm] = useState({
     country: '',
     name: '',
@@ -142,10 +193,11 @@ export default function CPReportCreate(props: {
 
   const [sections] = useState(getCreateSections())
 
-  const section = useMemo(
-    () => sections[activeSection],
-    [activeSection, sections],
-  )
+  useEffect(() => {
+    setTimeout(() => {
+      setRenderSection(true)
+    }, 600)
+  }, [currentIndex])
 
   useEffect(() => {
     const section_a = form?.section_a?.map((substance: any) =>
@@ -187,10 +239,14 @@ export default function CPReportCreate(props: {
     window.localStorage.setItem('section_f_create', JSON.stringify(section_f))
   }, [form.section_f])
 
-  const Section: React.FC<any> = section.component
+  console.log('HERE', errors)
 
   return (
     <>
+      <Loading
+        className="!fixed bg-action-disabledBackground"
+        active={currentIndex !== activeSection || !renderSection}
+      />
       <HeaderTitle>
         <Typography className="text-white" component="h1" variant="h3">
           New submission
@@ -198,17 +254,32 @@ export default function CPReportCreate(props: {
       </HeaderTitle>
       <form className="create-submission-form">
         <div className="grid grid-cols-3 gap-x-4">
-          <Field id="name" name="name" label="Report name" />
-          <Field id="country" name="country_id" label="Country" />
+          <Field
+            id="name"
+            name="name"
+            error={!!errors.name}
+            helperText={errors.name}
+            label="Report name"
+          />
+          <Field
+            id="country"
+            name="country_id"
+            error={!!errors.country_id}
+            helperText={errors.country_id}
+            label="Country"
+          />
         </div>
         <Tabs
-          className="country-programme-tabs mb-4"
+          className="scrollable mb-2"
           aria-label="create submission sections"
-          value={activeSection}
-          onChange={(event: React.SyntheticEvent, newSection: number) => {
-            setActiveSection(newSection)
-            setFullScreen(false)
+          scrollButtons="auto"
+          value={currentIndex}
+          variant="scrollable"
+          onChange={(event: React.SyntheticEvent, index: number) => {
+            setCurrentIndex(index)
+            setRenderSection(false)
           }}
+          allowScrollButtonsMobile
         >
           {sections.map((section) => (
             <Tab
@@ -218,25 +289,84 @@ export default function CPReportCreate(props: {
             />
           ))}
         </Tabs>
-        {section.allowFullScreen && (
-          <div className="mb-4 text-right">
-            <Button variant="outlined" onClick={() => setFullScreen(true)}>
-              Full screen
-            </Button>
-          </div>
-        )}
-        <div id={section.panelId} aria-labelledby={section.id} role="tabpanel">
-          <Section
-            exitFullScreen={() => setFullScreen(false)}
+        {sections.map((section, index) => (
+          <TabPanel
+            key={section.panelId}
+            activeSection={activeSection}
+            currentIndex={currentIndex}
+            errors={errors}
             form={form}
-            fullScreen={fullScreen}
+            index={index}
             mandatoryForm={mandatoryForm}
             mapBlend={mapBlend}
             mapSubstance={mapSubstance}
+            renderSection={renderSection}
+            section={section}
+            setActiveSection={setActiveSection}
             setForm={setForm}
+            TableProps={{
+              Toolbar: ({
+                enterFullScreen,
+                exitFullScreen,
+                fullScreen,
+              }: any) => {
+                return (
+                  <div
+                    className={cx(
+                      'flex items-center justify-between gap-x-4 py-2',
+                      {
+                        'px-4': fullScreen,
+                      },
+                    )}
+                  >
+                    <Typography component="h2" variant="h6">
+                      {section.title}
+                    </Typography>
+                    {section.allowFullScreen && !fullScreen && (
+                      <div>
+                        <IconButton
+                          color="primary"
+                          onClick={() => {
+                            enterFullScreen()
+                          }}
+                        >
+                          <IoExpand />
+                        </IconButton>
+                      </div>
+                    )}
+                    {fullScreen && (
+                      <div>
+                        <IconButton
+                          className="exit-fullscreen p-2 text-primary"
+                          aria-label="exit fullscreen"
+                          onClick={() => {
+                            exitFullScreen()
+                          }}
+                        >
+                          <IoClose size={32} />
+                        </IconButton>
+                      </div>
+                    )}
+                  </div>
+                )
+              },
+              enableCellChangeFlash: true,
+              enableFullScreen: true,
+              enablePagination: false,
+              fadeInOut: false,
+              getRowId: (props: any) => {
+                return props.data.rowId
+              },
+              noRowsOverlayComponentParams: { label: 'No data reported' },
+              suppressCellFocus: false,
+              suppressRowHoverHighlight: false,
+              withFluidEmptyColumn: true,
+              withSeparators: true,
+            }}
             {...props}
           />
-        </div>
+        ))}
+
         <Portal domNode="bottom-control">
           <Box className="rounded-none border-0 border-t px-4">
             <div className="container flex w-full justify-between">
@@ -248,16 +378,25 @@ export default function CPReportCreate(props: {
                 size="small"
                 variant="contained"
                 onClick={async () => {
-                  localStorage.removeItem('section_a_create')
-                  localStorage.removeItem('section_b_create')
-                  localStorage.removeItem('section_c_create')
-                  localStorage.removeItem('section_d_create')
-                  localStorage.removeItem('section_e_create')
-                  localStorage.removeItem('section_f_create')
-                  await api('api/country-programme/reports/', {
-                    data: form,
-                    method: 'POST',
-                  })
+                  try {
+                    await api('api/country-programme/reports/', {
+                      data: form,
+                      method: 'POST',
+                    })
+                    setErrors({})
+                    localStorage.removeItem('section_a_create')
+                    localStorage.removeItem('section_b_create')
+                    localStorage.removeItem('section_c_create')
+                    localStorage.removeItem('section_d_create')
+                    localStorage.removeItem('section_e_create')
+                    localStorage.removeItem('section_f_create')
+                  } catch (error) {
+                    if (error.status === 400) {
+                      setErrors({ ...(await error.json()) })
+                    } else {
+                      setErrors({})
+                    }
+                  }
                 }}
               >
                 Submit

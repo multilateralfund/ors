@@ -1,20 +1,18 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
-import { IconButton, Typography } from '@mui/material'
-import cx from 'classnames'
+import { Typography } from '@mui/material'
+import { RowNode } from 'ag-grid-community'
 import { findIndex } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
-import { applyTransaction, isInViewport } from '@ors/helpers/Utils/Utils'
+import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 
 import useGridOptions from './schema'
 
-import { IoClose } from '@react-icons/all-files/io5/IoClose'
-
 export default function SectionECreate(props: any) {
-  const { exitFullScreen, form, fullScreen, setForm } = props
+  const { TableProps, errors, form, index, setActiveSection, setForm } = props
+  const newNode = useRef<RowNode>()
   const grid = useRef<any>()
-  const [loading, setLoading] = useState(true)
   const [initialRowData] = useState(form.section_e)
 
   const pinnedBottomRowData = useMemo(() => {
@@ -47,18 +45,8 @@ export default function SectionECreate(props: any) {
       add: [newFacility],
       addIndex: prevNode ? prevNode.rowIndex + 1 : 0,
     })
-    setTimeout(() => {
-      const rowEl = document.querySelector(
-        `.ag-row[row-id=${newFacility.rowId}]`,
-      )
-      if (rowEl && !isInViewport(rowEl)) {
-        const top = rowEl.getBoundingClientRect().top + window.scrollY
-        window.scroll({
-          behavior: 'smooth',
-          top,
-        })
-      }
-    }, 300)
+    const facilityNode = grid.current.api.getRowNode(newFacility.rowId)
+    newNode.current = facilityNode
   }, [form.section_e, setForm])
 
   const removeFacility = useCallback(
@@ -80,49 +68,19 @@ export default function SectionECreate(props: any) {
     [form.section_e, setForm],
   )
 
-  const gridOptions = useGridOptions({ addFacility, removeFacility })
+  const gridOptions = useGridOptions({ addFacility, errors, removeFacility })
 
   return (
     <>
-      <Typography className="mb-4" component="h2" variant="h6">
-        SECTION E. ANNEX F, GROUP II - DATA ON HFC-23 EMISSIONS (METRIC TONNES)
-      </Typography>
       <Table
-        className={cx('two-groups mb-4', {
-          'full-screen': fullScreen,
-          'opacity-0': loading,
-        })}
+        {...TableProps}
+        className="two-groups mb-4"
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
-        domLayout={fullScreen ? 'normal' : 'autoHeight'}
-        enableCellChangeFlash={true}
-        enablePagination={false}
         gridRef={grid}
         headerDepth={2}
-        noRowsOverlayComponentParams={{ label: 'No data reported' }}
         pinnedBottomRowData={pinnedBottomRowData}
         rowData={initialRowData}
-        suppressCellFocus={false}
-        suppressNoRowsOverlay={true}
-        suppressRowHoverHighlight={false}
-        HeaderComponent={
-          fullScreen
-            ? () => {
-                return (
-                  <IconButton
-                    className="exit-fullscreen p-2 text-primary"
-                    aria-label="exit fullscreen"
-                    onClick={exitFullScreen}
-                  >
-                    <IoClose size={32} />
-                  </IconButton>
-                )
-              }
-            : () => null
-        }
-        getRowId={(props) => {
-          return props.data.rowId
-        }}
         onCellValueChanged={(event) => {
           const newData = [...form.section_e]
           const index = findIndex(
@@ -137,9 +95,24 @@ export default function SectionECreate(props: any) {
             setForm({ ...form, section_e: newData })
           }
         }}
-        onFirstDataRendered={() => setLoading(false)}
-        withFluidEmptyColumn
-        withSeparators
+        onFirstDataRendered={() => setActiveSection(index)}
+        onGridReady={() => {
+          if (!initialRowData.length) {
+            setActiveSection(index)
+          }
+        }}
+        onRowDataUpdated={() => {
+          if (newNode.current) {
+            scrollToElement(
+              `.ag-row[row-id=${newNode.current.data.rowId}]`,
+              () => {
+                grid.current.api.flashCells({
+                  rowNodes: [newNode.current],
+                })
+              },
+            )
+          }
+        }}
       />
       <Typography id="footnote-1" className="italic" variant="body2">
         1. Edit by pressing double left-click or ENTER on a field.

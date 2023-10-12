@@ -1,25 +1,19 @@
+.MuiTabs-root.scrollable {
+  @apply w-full;
+}
+
 .MuiTabs-flexContainer {
   @apply gap-4;
 }
 
+.MuiTabs-root.scrollable .MuiTabs-scroller .MuiTabs-flexContainer {
+  @apply w-0;
+}
+
 .MuiButtonBase-root.MuiTab-root {
-  /* @apply min-w-fit px-0 md:text-xl; */
   @apply min-w-fit px-0 text-xl;
 }
 
-.country-programme-tabs .MuiTabs-flexContainer {
-  /* @apply flex-wrap gap-4; */
-  @apply flex-wrap;
-}
-
-.country-programme-tabs .MuiTabs-indicator {
-  @apply hidden;
-}
-
-.country-programme-tabs .MuiButtonBase-root.MuiTab-root {
-  @apply rounded border border-solid border-mui-box-border px-4 py-2;
-}
-
-.country-programme-tabs .MuiButtonBase-root.MuiTab-root.Mui-selected {
-  @apply border-primary;
+.MuiTabs-scrollButtons.Mui-disabled {
+  opacity: 0.3;
 }

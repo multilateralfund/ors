@@ -9,17 +9,23 @@ import { IoTrash } from '@react-icons/all-files/io5/IoTrash'
 
 function useGridOptions(props: {
   addFacility: () => void
+  errors: Record<string, any>
   removeFacility: (props: any) => void
 }) {
-  const { addFacility, removeFacility } = props
+  const { addFacility, errors, removeFacility } = props
   const gridOptions: GridOptions = useMemo(
     () => ({
       columnDefs: [
         {
-          cellClass: (props) =>
-            cx('bg-mui-box-background', {
+          cellClass: (props) => {
+            console.log('HERE', props)
+            return cx('bg-mui-box-background', {
+              'ag-error':
+                !!errors.section_e?.[props.rowIndex]?.facility &&
+                !props.node.rowPinned,
               'ag-flex-cell': props.data.rowType === 'control',
-            }),
+            })
+          },
           cellEditor: 'agTextCellEditor',
           cellRenderer: (props: any) => {
             if (props.data.rowType === 'control') {
@@ -150,7 +156,7 @@ function useGridOptions(props: {
         wrapText: true,
       },
     }),
-    [addFacility, removeFacility],
+    [addFacility, removeFacility, errors],
   )
 
   return gridOptions
