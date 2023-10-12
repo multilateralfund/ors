@@ -32,6 +32,7 @@ docker-compose exec app ./manage.py import_resources usages
 - countries -> import only the countries
 - usages -> import only the usages
 - adm_columns -> import adm columns
+- time-frames -> import time frames
 - project-resources -> import agencies, sectors, subsectors,
     project statuses and project types
 ---

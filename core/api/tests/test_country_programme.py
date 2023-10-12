@@ -10,12 +10,14 @@ from core.api.tests.factories import (
     BlendFactory,
     CPGenerationFactory,
     CPPricesFactory,
+    CPRaportFormatFactory,
     CountryFactory,
     CPRecordFactory,
     CPReportFactory,
     CPUsageFactory,
     GroupFactory,
     SubstanceFactory,
+    TimeFrameFactory,
     UsageFactory,
 )
 from core.models.adm import AdmRecord
@@ -379,7 +381,7 @@ def setup_new_cp_report(cp_report_2019, blend, substance):
 
 
 @pytest.fixture(name="_setup_old_cp_report")
-def setup_old_cp_report(cp_report_2005, substance, blend, groupA):
+def setup_old_cp_report(cp_report_2005, substance, blend, groupA, time_frames):
     # section A
     cp_rec = CPRecordFactory.create(
         country_programme_report=cp_report_2005, section="A", substance=substance
@@ -400,8 +402,7 @@ def setup_old_cp_report(cp_report_2005, substance, blend, groupA):
     for section in ["B", "C", "D"]:
         data = {
             "section": section,
-            "min_year": 1995,
-            "max_year": 2010,
+            "time_frame": time_frames[(2000, 2011)],
         }
         if section != "D":
             columns[section] = AdmColumnFactory.create(
@@ -497,24 +498,34 @@ class TestCPRecordList(BaseTest):
 
 
 @pytest.fixture(name="_setup_get_empty_form")
-def setup_get_empty_form(_setup_new_cp_report):
-    for i in range(4):
-        UsageFactory.create(
-            name=f"usage{i}{i}", displayed_in_latest_format=(i % 2 == 0)
-        )
+def setup_get_empty_form(usage):
+    time_frame = TimeFrameFactory.create(
+        min_year=2022,
+        max_year=None,
+    )
+    cerate_data = {
+        "usage": usage,
+        "time_frame": time_frame,
+        "section": "B",
+    }
+    CPRaportFormatFactory.create(**cerate_data)
 
 
 class TestGetEmptyForm(BaseTest):
     url = reverse("empty-form")
 
-    def test_without_cp_report_id(self, user, _setup_get_empty_form):
+    def test_without_cp_report_id(self, user, _setup_get_empty_form, _cp_report_format):
         self.client.force_authenticate(user=user)
         response = self.client.get(self.url)
         assert response.status_code == 200
-        assert len(response.data["usage_columns"]) == 6
+        assert len(response.data["usage_columns"]["section_a"]) == 1
+        assert len(response.data["usage_columns"]["section_b"]) == 2
 
-    def test_with_cp_report_id(self, user, cp_report_2019, _setup_get_empty_form):
+    def test_with_cp_report_id(
+        self, user, cp_report_2019, _setup_get_empty_form, _cp_report_format
+    ):
         self.client.force_authenticate(user=user)
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 200
-        assert len(response.data["usage_columns"]) == 6
+        assert len(response.data["usage_columns"]["section_a"]) == 1
+        assert len(response.data["usage_columns"]["section_b"]) == 1

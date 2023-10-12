@@ -1,4 +1,7 @@
 from django.db import models
+from core.models.base import BaseWTimeFrameManager
+
+from core.models.time_frame import TimeFrame
 
 
 class UsageManager(models.Manager):
@@ -13,34 +16,17 @@ class Usage(models.Model):
     name = models.CharField(max_length=100)
     full_name = models.CharField(max_length=248)
     description = models.TextField(null=True, blank=True)
-    parent = models.ForeignKey(
-        "self", on_delete=models.CASCADE, related_name="children", null=True, blank=True
-    )
+    parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True)
     sort_order = models.FloatField(null=True, blank=True)
-    displayed_in_latest_format = models.BooleanField(
-        default=True, help_text="Controls current-year visibility."
-    )
-
     objects = UsageManager()
 
     def __str__(self):
         return self.full_name
 
 
-class ExcludedUsageManager(models.Manager):
-    def get_for_year(self, year):
-        if not year:
-            return self.all()
-        return self.filter(
-            (models.Q(start_year__lte=year) | models.Q(start_year__isnull=True)),
-            (models.Q(end_year__gte=year) | models.Q(end_year__isnull=True)),
-        )
-
-
 class ExcludedUsage(models.Model):
     usage = models.ForeignKey(Usage, on_delete=models.CASCADE)
-    start_year = models.IntegerField(null=True, blank=True)
-    end_year = models.IntegerField(null=True, blank=True)
+    time_frame = models.ForeignKey(TimeFrame, on_delete=models.CASCADE)
     substance = models.ForeignKey(
         "Substance",
         on_delete=models.CASCADE,
@@ -56,4 +42,4 @@ class ExcludedUsage(models.Model):
         blank=True,
     )
 
-    objects = ExcludedUsageManager()
+    objects = BaseWTimeFrameManager()

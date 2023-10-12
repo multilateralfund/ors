@@ -8,5 +8,6 @@ from .group import *
 from .project import *
 from .project_submission import *
 from .substance import *
+from .time_frame import *
 from .usage import *
 from .user import *

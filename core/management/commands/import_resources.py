@@ -1,4 +1,5 @@
 from django.core.management import BaseCommand
+from core.import_data.import_time_frames import import_time_frames
 from core.import_data.import_adm_columns import import_adm_columns
 from core.import_data.import_project_resources import import_project_resources
 from core.import_data.import_countries import import_countries
@@ -16,7 +17,7 @@ class Command(BaseCommand):
     help = """
         Import resources
         (groups, substances, blends, blend components, usages,
-            countries, project-resources)
+            countries, project-resources, time-frames)
     """
 
     def add_arguments(self, parser):
@@ -36,6 +37,7 @@ class Command(BaseCommand):
                 "countries",
                 "adm_columns",
                 "project-resources",
+                "time-frames",
             ],
         )
 
@@ -56,6 +58,8 @@ class Command(BaseCommand):
             import_blend_components()
         if resource in ["countries", "all"]:
             import_countries()
+        if resource in ["time-frames", "all"]:
+            import_time_frames()
         if resource in ["usages", "all"]:
             import_usages()
         if resource in ["adm_columns", "all"]:

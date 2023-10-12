@@ -7,6 +7,7 @@ from core.api.tests.factories import (
     AdmRowFactory,
     AgencyFactory,
     BlendFactory,
+    CPRaportFormatFactory,
     CPReportFactory,
     CountryFactory,
     ExcludedUsageBlendFactory,
@@ -20,6 +21,7 @@ from core.api.tests.factories import (
     ProjectSubmissionFactory,
     ProjectTypeFactory,
     SubstanceFactory,
+    TimeFrameFactory,
     UsageFactory,
     UserFactory,
 )
@@ -50,12 +52,72 @@ def cp_report_2019(country_ro):
 
 
 @pytest.fixture
-def adm_rows():
+def time_frames():
+    frame = [(2000, 2011), (2012, 2018), (2019, None), (2000, None)]
+    time_frames = {}
+    for min_year, max_year in frame:
+        time_frames[(min_year, max_year)] = TimeFrameFactory.create(
+            min_year=min_year,
+            max_year=max_year,
+        )
+
+    return time_frames
+
+
+@pytest.fixture(name="_cp_report_format")
+def cp_report_format(time_frames):
+    usageA = UsageFactory.create(name="usage A", sort_order=1)
+    usageB = UsageFactory.create(name="usage B", sort_order=2)
+    usageAa = UsageFactory.create(name="usage Aa", sort_order=11, parent=usageA)
+    usageAb = UsageFactory.create(name="usage Ab", sort_order=12, parent=usageA)
+    usageAaa = UsageFactory.create(name="usage Aaa", sort_order=111, parent=usageAa)
+
+    create_data = []
+    for usage in [usageA, usageAa, usageAaa]:
+        create_data.append(
+            {
+                "usage": usage,
+                "time_frame": time_frames[(2000, 2011)],
+                "section": "A",
+            }
+        )
+
+    for usage in [usageA, usageAa, usageAb, usageAaa]:
+        create_data.append(
+            {
+                "usage": usage,
+                "time_frame": time_frames[(2012, 2018)],
+                "section": "B",
+            }
+        )
+
+    create_data.extend(
+        [
+            {
+                "usage": usageB,
+                "time_frame": time_frames[(2000, None)],
+                "section": "A",
+            },
+            {
+                "usage": usageB,
+                "time_frame": time_frames[(2019, None)],
+                "section": "B",
+            },
+        ]
+    )
+    cp_report_formats = []
+    for data in create_data:
+        cp_report_formats.append(CPRaportFormatFactory.create(**data))
+
+    return cp_report_formats
+
+
+@pytest.fixture
+def adm_rows(time_frames):
     row_data = {
         "type": "question",
-        "min_year": 2000,
-        "max_year": 2010,
         "parent": None,
+        "time_frame": time_frames[(2000, 2011)],
     }
     b_row = AdmRowFactory.create(
         text="adm_row_b",
@@ -84,11 +146,8 @@ def adm_rows():
 
 
 @pytest.fixture
-def adm_columns():
-    column_data = {
-        "min_year": 2000,
-        "max_year": 2010,
-    }
+def adm_columns(time_frames):
+    column_data = {"time_frame": time_frames[(2000, 2011)]}
     b_column = AdmColumnFactory.create(
         display_name="adm_column_b",
         section="B",
@@ -119,7 +178,7 @@ def groupA():
 
 
 @pytest.fixture
-def substance(excluded_usage, groupA):
+def substance(excluded_usage, groupA, time_frames):
     substance = SubstanceFactory.create(
         name="substance",
         group=groupA,
@@ -129,20 +188,18 @@ def substance(excluded_usage, groupA):
     ExcludedUsageSubstFactory.create(
         substance=substance,
         usage=excluded_usage,
-        start_year=1990,
-        end_year=3000,
+        time_frame=time_frames[(2000, None)],
     )
     return substance
 
 
 @pytest.fixture
-def blend(excluded_usage):
+def blend(excluded_usage, time_frames):
     blend = BlendFactory.create(name="blend")
     ExcludedUsageBlendFactory.create(
         blend=blend,
         usage=excluded_usage,
-        start_year=1990,
-        end_year=3000,
+        time_frame=time_frames[(2000, None)],
     )
     return blend
 

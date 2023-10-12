@@ -4,10 +4,13 @@ import pandas as pd
 
 from django.conf import settings
 from django.db import transaction
-from core.import_data.utils import get_chemical
+from core.import_data.utils import IMPORT_RESOURCES_DIR, get_chemical
 from core.models.blend import Blend
+from core.models.country_programme import CPReportFormat
 
 from core.models.substance import Substance
+from core.models.time_frame import TimeFrame
+from core.models.usage import Usage
 
 
 logger = logging.getLogger(__name__)
@@ -59,7 +62,9 @@ def set_chemicals_displayed_status(df):
         chemical.save()
 
 
-def parse_file(file_path):
+def import_chemicas_format(file_path):
+    reset_old_format()
+
     sectiona = pd.read_excel(
         file_path, sheet_name="Section A", usecols=[0], names=["chemical"], skiprows=8
     ).replace({np.nan: None})
@@ -71,12 +76,46 @@ def parse_file(file_path):
     set_chemicals_displayed_status(sectionb)
 
 
+def import_usages_format(file_path):
+    # delete old data
+    CPReportFormat.objects.all().delete()
+
+    df = pd.read_excel(file_path).replace({np.nan: None})
+
+    cp_fomats = []
+    for index_row, row in df.iterrows():
+        time_frame = TimeFrame.objects.find_by_frame(row["min_year"], row["max_year"])
+        if not time_frame:
+            logger.warning(
+                f"{index_row}: {row['min_year']}-{row['max_year']} time frame not found"
+            )
+            continue
+
+        usage = Usage.objects.find_by_name(row["usage"])
+        if not usage:
+            logger.warning(f"{index_row}: {row['usage']} usage not found")
+            continue
+
+        sections = row["sections"].split(",")
+        for section in sections:
+            cp_format_data = {
+                "usage": usage,
+                "time_frame": time_frame,
+                "section": section,
+                "sort_order": usage.sort_order,
+            }
+            cp_fomats.append(CPReportFormat(**cp_format_data))
+
+    CPReportFormat.objects.bulk_create(cp_fomats)
+
+
 @transaction.atomic
 def import_cp_format():
     logger.info("⏳ importing country programme report format")
     file_path = settings.IMPORT_DATA_DIR / "cp_format" / "CP_Format_2022.xls"
+    import_chemicas_format(file_path)
 
-    reset_old_format()
-    parse_file(file_path)
+    file_path = IMPORT_RESOURCES_DIR / "usages_cp_format.xlsx"
+    import_usages_format(file_path)
 
     logger.info("✔ country programme report format imported")
