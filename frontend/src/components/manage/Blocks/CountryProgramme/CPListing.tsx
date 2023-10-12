@@ -20,8 +20,6 @@ import {
   includes,
   isArray,
   keys,
-  maxBy,
-  minBy,
   orderBy,
   slice,
   union,
@@ -32,6 +30,8 @@ import Listing from '@ors/components/manage/Form/Listing'
 import IconButton from '@ors/components/ui/IconButton/IconButton'
 import Link from '@ors/components/ui/Link/Link'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
+import useApi from '@ors/hooks/useApi'
+import useStore from '@ors/store'
 
 import { IoArrowDown } from '@react-icons/all-files/io5/IoArrowDown'
 import { IoArrowForward } from '@react-icons/all-files/io5/IoArrowForward'
@@ -41,7 +41,7 @@ import { IoFilter } from '@react-icons/all-files/io5/IoFilter'
 
 interface SectionProps {
   countries: any
-  curentSection?: number
+  currentSection?: number
   filters: any
   groupBy?: string
   maxYear: any
@@ -572,7 +572,7 @@ export const sections = [
 function SectionPanel(props: SectionProps) {
   const {
     countries,
-    curentSection,
+    currentSection,
     filters,
     maxYear,
     minYear,
@@ -602,7 +602,7 @@ function SectionPanel(props: SectionProps) {
     <div
       id={sections[section].panelId}
       aria-labelledby={sections[section].id}
-      hidden={curentSection !== section}
+      hidden={currentSection !== section}
       role="tabpanel"
       {...rest}
     >
@@ -622,17 +622,17 @@ function SectionPanel(props: SectionProps) {
   )
 }
 
-export default function CPListing(props: { reports?: any }) {
-  // TODO: use real pagination
-  const { reports } = props
+export default function CPListing() {
+  const settings = useStore((state) => state.common.settings.data)
+  const { data } = useApi({ path: 'api/country-programme/reports/' })
   const [activeSection, setActiveSection] = useState(0)
   const reportsByCountry = useMemo(
-    () => groupBy(orderBy(reports, 'year', 'desc'), 'country'),
-    [reports],
+    () => groupBy(orderBy(data, 'year', 'desc'), 'country'),
+    [data],
   )
   const reportsByYear = useMemo(
-    () => groupBy(orderBy(reports, 'country', 'asc'), 'year'),
-    [reports],
+    () => groupBy(orderBy(data, 'country', 'asc'), 'year'),
+    [data],
   )
   const countries = useMemo(
     () =>
@@ -658,8 +658,8 @@ export default function CPListing(props: { reports?: any }) {
       ),
     [reportsByYear],
   )
-  const minYear = useMemo(() => minBy(years, 'id')?.id, [years])
-  const maxYear = useMemo(() => maxBy(years, 'id')?.id, [years])
+  const minYear = settings.cp_reports.min_year
+  const maxYear = settings.cp_reports.max_year
   const [filters, setFilters] = useState({
     country: [],
     range: [minYear, maxYear],
@@ -700,11 +700,11 @@ export default function CPListing(props: { reports?: any }) {
           <SectionPanel
             key={section.id}
             countries={countries}
-            curentSection={activeSection}
+            currentSection={activeSection}
             filters={filters}
             maxYear={maxYear}
             minYear={minYear}
-            reports={reports}
+            reports={data}
             reportsByCountry={reportsByCountry}
             reportsByYear={reportsByYear}
             section={index}

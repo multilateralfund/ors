@@ -7,15 +7,12 @@ import { Typography } from '@mui/material'
 import CPListing from '@ors/components/manage/Blocks/CountryProgramme/CPListing'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-import api from '@ors/helpers/Api'
 
 export const metadata: Metadata = {
   title: 'Country programme',
 }
 
 export default async function CountryProgramme() {
-  const reports = await api('api/country-programme/reports/', {}, false)
-
   return (
     <PageWrapper>
       <HeaderTitle>
@@ -23,7 +20,7 @@ export default async function CountryProgramme() {
           Country programmes
         </Typography>
       </HeaderTitle>
-      <CPListing reports={reports} />
+      <CPListing />
     </PageWrapper>
   )
 }
