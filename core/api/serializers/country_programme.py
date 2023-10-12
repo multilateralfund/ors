@@ -102,6 +102,17 @@ class CPReportSerializer(serializers.ModelSerializer):
         ]
 
 
+class CPReportGroupSerializer(serializers.Serializer):
+    group = serializers.CharField()
+    reports = CPReportSerializer(many=True, read_only=True)
+
+    class Meta:
+        fields = [
+            "group",
+            "reports",
+        ]
+
+
 class CPUsageSerializer(serializers.ModelSerializer):
     usage = serializers.StringRelatedField()
     usage_id = serializers.PrimaryKeyRelatedField(

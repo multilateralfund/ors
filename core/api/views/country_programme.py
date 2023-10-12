@@ -1,11 +1,17 @@
+from constance import config
+from django.db.models import F
+from django.db.models import Window
+from django.db.models.functions import RowNumber
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, generics, views
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from core.api.filters.country_programme import (
     CPReportFilter,
 )
+from core.api.serializers import CPReportGroupSerializer
 from core.api.serializers import (
     CPReportSerializer,
     CPRecordSerializer,
@@ -58,6 +64,94 @@ class CPReportView(generics.ListAPIView, generics.CreateAPIView):
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
+
+
+class CPReportGroupByYearView(generics.ListAPIView):
+    """
+    API endpoint that allows listing country programme reports grouped.
+    """
+
+    serializer_class = CPReportGroupSerializer
+    group_by = "year"
+    order_by = "country__name"
+
+    @property
+    def order_field(self):
+        direction = self.request.query_params.get("ordering", "asc").lower()
+        if direction not in ("asc", "desc"):
+            raise ValidationError({"ordering": f"Invalid value: {direction}"})
+
+        if direction == "asc":
+            return self.group_by
+        return "-" + self.group_by
+
+    def get_queryset(self):
+        return (
+            CPReport.objects.values_list(self.group_by, flat=True)
+            .distinct()
+            .order_by(self.order_field)
+        )
+
+    @staticmethod
+    def get_group(obj):
+        return obj.year
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "ordering",
+                openapi.IN_QUERY,
+                description="Order results in ascending or descending order",
+                default="asc",
+                type=openapi.TYPE_STRING,
+                enum=["asc", "desc"],
+            ),
+        ],
+    )
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+
+        queryset = (
+            CPReport.objects.annotate(
+                row_number=Window(
+                    expression=RowNumber(),
+                    partition_by=[F(self.group_by)],
+                    order_by=self.order_by,
+                )
+            )
+            .filter(
+                **{
+                    f"{self.group_by}__in": (page or queryset),
+                    "row_number__lte": config.CP_NR_REPORTS,
+                }
+            )
+            .order_by(self.order_field)
+        )
+
+        grouped_data = {}
+        for obj in queryset:
+            group = self.get_group(obj)
+            if group not in grouped_data:
+                grouped_data[group] = {
+                    "group": group,
+                    "reports": [],
+                }
+            grouped_data[group]["reports"].append(obj)
+
+        serializer = self.get_serializer(grouped_data.values(), many=True)
+        if page is not None:
+            return self.get_paginated_response(serializer.data)
+        return Response(serializer.data)
+
+
+class CPReportGroupByCountryView(CPReportGroupByYearView):
+    group_by = "country__name"
+    order_by = "year"
+
+    @staticmethod
+    def get_group(obj):
+        return obj.country.name
 
 
 # view for country programme record list
