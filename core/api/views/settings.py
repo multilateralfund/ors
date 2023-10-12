@@ -1,3 +1,4 @@
+from constance import config
 from rest_framework import views
 from rest_framework.response import Response
 
@@ -42,5 +43,8 @@ class SettingsView(views.APIView):
             "project_substance_types": Project.SubstancesType.choices,
             "project_ods_odp_types": ProjectOdsOdp.ProjectOdsOdpType.choices,
             "project_fund_types": ProjectFund.FundType.choices,
+            "country_programme": {
+                "nr_reports": config.NR_REPORTS,
+            },
         }
         return Response(settings)
