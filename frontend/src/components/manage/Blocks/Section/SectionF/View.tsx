@@ -1,24 +1,22 @@
+import { useEffect } from 'react'
+
 import { Box, Typography } from '@mui/material'
 
 import Field from '@ors/components/manage/Form/Field'
-import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 
-export default function SectionFView(props: { report: Record<string, any> }) {
-  const { report } = props
+export default function SectionFView(props: any) {
+  const { index, report, section, setActiveSection } = props
+
+  useEffect(() => {
+    setActiveSection(index)
+    /* eslint-disable-next-line  */
+  }, [])
 
   return (
     <>
-      <HeaderTitle>
-        {report.name && (
-          <Typography className="mb-4 text-white" component="h1" variant="h3">
-            {report.name}
-          </Typography>
-        )}
-      </HeaderTitle>
-
       <Box>
-        <Typography className="mb-4" component="h1" variant="h6">
-          SECTION F. COMMENTS BY BILATERAL/IMPLEMENTING AGENCIES
+        <Typography className="mb-4" component="h2" variant="h6">
+          {section.title}
         </Typography>
         <Field
           FieldProps={{ className: 'mb-0' }}

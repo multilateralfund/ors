@@ -58,7 +58,7 @@ function useGridOptions(props: {
           headerName: 'Substance',
           initialWidth: 300,
           minWidth: 160,
-          pinned: 'left',
+          // pinned: 'left',
         },
         ...(usages.length
           ? [

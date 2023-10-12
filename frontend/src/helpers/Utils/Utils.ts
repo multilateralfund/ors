@@ -1,5 +1,7 @@
 import { GridApi, RowDataTransaction } from 'ag-grid-community'
-import { isNaN, isNull, isNumber, isString } from 'lodash'
+import { isFunction, isNaN, isNull, isNumber, isString } from 'lodash'
+
+const timer: Record<string, any> = {}
 
 export function parseNumber(number: any) {
   const parsedNumber = isString(number)
@@ -30,4 +32,47 @@ export function isInViewport(element: Element) {
     rect.left >= 0 &&
     rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
   )
+}
+
+export function debounce(func: any, wait: number = 300) {
+  if (!isFunction(func)) return
+  const name = func.name || 'generic'
+  if (timer[name]) clearTimeout(timer[name])
+  timer[name] = setTimeout(func, wait)
+}
+
+export function scrollToElement(
+  id: string,
+  callback: any,
+  wait: number = 0,
+  offset: number = 16,
+) {
+  setTimeout(() => {
+    const el = document.querySelector(id)
+    if (!el) return
+    const visible = isInViewport(el)
+    if (visible) {
+      if (isFunction(callback)) {
+        callback()
+      }
+      return
+    }
+    const top = el.getBoundingClientRect().top + window.scrollY - offset
+    const onScroll = function () {
+      debounce(function scrollToElement() {
+        if (isInViewport(el)) {
+          window.removeEventListener('scroll', onScroll)
+          callback()
+        }
+      }, 50)
+    }
+    if (isFunction(callback)) {
+      window.addEventListener('scroll', onScroll)
+      onScroll()
+    }
+    window.scrollTo({
+      behavior: 'smooth',
+      top,
+    })
+  }, wait)
 }

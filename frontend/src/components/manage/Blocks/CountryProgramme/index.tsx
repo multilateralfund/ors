@@ -60,6 +60,9 @@ export function getViewSections(variant: any) {
             component: SectionAView,
             label: 'Section A',
             panelId: 'section-A-panel',
+            title: includes(['IV'], variant.model)
+              ? 'SECTION A. ANNEX A, ANNEX B, ANNEX C - GROUP I AND ANNEX E - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)'
+              : 'A. Data on Controlled Substances (in METRIC TONNES)',
           },
         ]
       : []),
@@ -71,6 +74,7 @@ export function getViewSections(variant: any) {
             component: AdmB,
             label: 'Adm B',
             panelId: 'adm-B-panel',
+            title: 'B. Regulatory, administrative and supportive actions',
           },
         ]
       : []),
@@ -82,6 +86,8 @@ export function getViewSections(variant: any) {
             component: SectionB,
             label: 'Section B',
             panelId: 'section-B-panel',
+            title:
+              'SECTION B. ANNEX F - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)',
           },
         ]
       : []),
@@ -93,6 +99,7 @@ export function getViewSections(variant: any) {
             component: AdmC,
             label: 'Adm C',
             panelId: 'adm-C-panel',
+            title: 'C. Quantitative assessment of the phase-out programme',
           },
         ]
       : []),
@@ -104,6 +111,8 @@ export function getViewSections(variant: any) {
             component: SectionCView,
             label: 'Section C',
             panelId: 'section-C-panel',
+            title:
+              'SECTION C. AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US $/kg)',
           },
         ]
       : []),
@@ -114,6 +123,7 @@ export function getViewSections(variant: any) {
             component: AdmD,
             label: 'Adm D',
             panelId: 'adm-D-panel',
+            title: 'D. Qualitative assessment of the operation of HPMP',
           },
         ]
       : []),
@@ -125,6 +135,8 @@ export function getViewSections(variant: any) {
             component: SectionDView,
             label: 'Section D',
             panelId: 'section-D-panel',
+            title:
+              'SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)',
           },
         ]
       : []),
@@ -136,6 +148,8 @@ export function getViewSections(variant: any) {
             component: SectionEView,
             label: 'Section E',
             panelId: 'section-E-panel',
+            title:
+              'SECTION E. ANNEX F, GROUP II - DATA ON HFC-23 EMISSIONS (METRIC TONNES)',
           },
         ]
       : []),
@@ -146,6 +160,7 @@ export function getViewSections(variant: any) {
             component: SectionFView,
             label: 'Section F',
             panelId: 'section-F-panel',
+            title: 'SECTION F. COMMENTS BY BILATERAL/IMPLEMENTING AGENCIES',
           },
         ]
       : []),
@@ -155,45 +170,56 @@ export function getViewSections(variant: any) {
 export function getCreateSections() {
   return [
     {
-      id: 'section-A',
+      id: 'section_a',
       allowFullScreen: true,
       component: SectionACreate,
       label: 'Section A',
       panelId: 'section-A-panel',
+      title:
+        'SECTION A. ANNEX A, ANNEX B, ANNEX C - GROUP I AND ANNEX E - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)',
     },
     {
-      id: 'section-B',
+      id: 'section_b',
       allowFullScreen: true,
       component: SectionBCreate,
       label: 'Section B',
       panelId: 'section-B-panel',
+      title:
+        'SECTION B. ANNEX F - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)',
     },
     {
-      id: 'section-C',
+      id: 'section_C',
       allowFullScreen: true,
       component: SectionCCreate,
       label: 'Section C',
       panelId: 'section-C-panel',
+      title:
+        'SECTION C. AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US $/kg)',
     },
     {
-      id: 'section-D',
+      id: 'section_d',
       allowFullScreen: true,
       component: SectionDCreate,
       label: 'Section D',
       panelId: 'section-D-panel',
+      title:
+        'SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)',
     },
     {
-      id: 'section-E',
+      id: 'section_e',
       allowFullScreen: true,
       component: SectionECreate,
       label: 'Section E',
       panelId: 'section-E-panel',
+      title:
+        'SECTION E. ANNEX F, GROUP II - DATA ON HFC-23 EMISSIONS (METRIC TONNES)',
     },
     {
-      id: 'section-F',
+      id: 'section_f',
       component: SectionFCreate,
       label: 'Section F',
       panelId: 'section-F-panel',
+      title: 'SECTION F. COMMENTS BY BILATERAL/IMPLEMENTING AGENCIES',
     },
   ]
 }

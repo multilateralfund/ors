@@ -21,7 +21,7 @@
     @apply h-full;
   }
 
-  :root[data-connection='slow'] .motion.fade-in-out {
+  :root[data-connection='slow'] .fade-in-out {
     opacity: 1 !important;
   }
 
