@@ -170,7 +170,7 @@ export function getViewSections(variant: any) {
 export function getCreateSections() {
   return [
     {
-      id: 'section-A',
+      id: 'section_a',
       allowFullScreen: true,
       component: SectionACreate,
       label: 'Section A',
@@ -179,7 +179,7 @@ export function getCreateSections() {
         'SECTION A. ANNEX A, ANNEX B, ANNEX C - GROUP I AND ANNEX E - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)',
     },
     {
-      id: 'section-B',
+      id: 'section_b',
       allowFullScreen: true,
       component: SectionBCreate,
       label: 'Section B',
@@ -188,7 +188,7 @@ export function getCreateSections() {
         'SECTION B. ANNEX F - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)',
     },
     {
-      id: 'section-C',
+      id: 'section_C',
       allowFullScreen: true,
       component: SectionCCreate,
       label: 'Section C',
@@ -197,7 +197,7 @@ export function getCreateSections() {
         'SECTION C. AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US $/kg)',
     },
     {
-      id: 'section-D',
+      id: 'section_d',
       allowFullScreen: true,
       component: SectionDCreate,
       label: 'Section D',
@@ -206,7 +206,7 @@ export function getCreateSections() {
         'SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)',
     },
     {
-      id: 'section-E',
+      id: 'section_e',
       allowFullScreen: true,
       component: SectionECreate,
       label: 'Section E',
@@ -215,7 +215,7 @@ export function getCreateSections() {
         'SECTION E. ANNEX F, GROUP II - DATA ON HFC-23 EMISSIONS (METRIC TONNES)',
     },
     {
-      id: 'section-F',
+      id: 'section_f',
       component: SectionFCreate,
       label: 'Section F',
       panelId: 'section-F-panel',

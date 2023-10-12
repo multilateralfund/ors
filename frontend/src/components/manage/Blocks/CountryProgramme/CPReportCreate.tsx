@@ -4,13 +4,15 @@ import React, { useEffect, useState } from 'react'
 import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
 import cx from 'classnames'
 import { AnimatePresence } from 'framer-motion'
-import { isBoolean, isNil, isString, omitBy } from 'lodash'
+import { isBoolean, isEmpty, isNil, isString, omitBy } from 'lodash'
+import { useSnackbar } from 'notistack'
 
 import Field from '@ors/components/manage/Form/Field'
 import Portal from '@ors/components/manage/Utils/Portal'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
-import api from '@ors/helpers/Api'
+import api, { getResults } from '@ors/helpers/Api'
+import useStore from '@ors/store'
 
 import { getCreateSections } from '.'
 import FadeInOut from '../../Transitions/FadeInOut'
@@ -155,6 +157,14 @@ export default function CPReportCreate(props: {
   substances_c?: Array<any>
 }) {
   const { blends, substances_a, substances_b, substances_c } = props
+  const { enqueueSnackbar } = useSnackbar()
+  const countries = useStore((state) => [
+    { id: 0, label: 'Any' },
+    ...getResults(state.common.countries.data).results.map((country) => ({
+      id: country.id,
+      label: country.name,
+    })),
+  ])
   const [errors, setErrors] = useState<Record<string, any>>({})
   const [currentIndex, setCurrentIndex] = useState(0)
   const [activeSection, setActiveSection] = useState(null)
@@ -239,8 +249,6 @@ export default function CPReportCreate(props: {
     window.localStorage.setItem('section_f_create', JSON.stringify(section_f))
   }, [form.section_f])
 
-  console.log('HERE', errors)
-
   return (
     <>
       <Loading
@@ -264,9 +272,15 @@ export default function CPReportCreate(props: {
           <Field
             id="country"
             name="country_id"
+            Input={{ label: 'Country' }}
             error={!!errors.country_id}
             helperText={errors.country_id}
-            label="Country"
+            options={countries}
+            value={form.country}
+            widget="autocomplete"
+            onChange={(_: any, country: any) => {
+              setForm({ ...form, country })
+            }}
           />
         </div>
         <Tabs
@@ -284,6 +298,7 @@ export default function CPReportCreate(props: {
           {sections.map((section) => (
             <Tab
               key={section.id}
+              className={cx({ 'MuiTab-error': !isEmpty(errors?.[section.id]) })}
               aria-controls={section.panelId}
               label={section.label}
             />
@@ -380,7 +395,7 @@ export default function CPReportCreate(props: {
                 onClick={async () => {
                   try {
                     await api('api/country-programme/reports/', {
-                      data: form,
+                      data: { ...form, country_id: form.country?.id },
                       method: 'POST',
                     })
                     setErrors({})
@@ -393,6 +408,10 @@ export default function CPReportCreate(props: {
                   } catch (error) {
                     if (error.status === 400) {
                       setErrors({ ...(await error.json()) })
+                      enqueueSnackbar(
+                        <>Please make sure all the inputs are correct.</>,
+                        { variant: 'error' },
+                      )
                     } else {
                       setErrors({})
                     }

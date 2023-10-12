@@ -17,3 +17,14 @@
 .MuiTabs-scrollButtons.Mui-disabled {
   opacity: 0.3;
 }
+
+.MuiButtonBase-root.MuiTab-root.MuiTab-error::after {
+  content: '';
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  border-bottom: 2px solid theme(colors.error);
+}
