@@ -30,10 +30,11 @@ docker-compose exec app ./manage.py import_resources usages
 - blends -> import only the blends
 - blend_components -> import only the blend_components
 - countries -> import only the countries
+- time_frames -> import time frames
 - usages -> import only the usages
 - adm_columns -> import adm columns
-- time-frames -> import time frames
-- project-resources -> import agencies, sectors, subsectors,
+- excluded_usages -> import excluded usages
+- project_resources -> import agencies, sectors, subsectors,
     project statuses and project types
 ---
 

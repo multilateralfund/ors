@@ -144,15 +144,19 @@ def parse_noop(value):
     return value
 
 
-def delete_old_data(cls, source_file):
+def delete_old_data(cls, source_file=None):
     """
     Delete old data from db for a specific source file
 
     @param cls: Class instance
     @param source_file: string source file name
     """
-    cls.objects.filter(source_file__iexact=str(source_file).lower()).all().delete()
-    logger.info(f"✔ old {cls.__name__} from {source_file} deleted")
+    if source_file:
+        cls.objects.filter(source_file__iexact=str(source_file).lower()).all().delete()
+        logger.info(f"✔ old {cls.__name__} from {source_file} deleted")
+        return
+    cls.objects.all().delete()
+    logger.info(f"✔ old {cls.__name__} deleted")
 
 
 def get_chemical_by_name_or_components(chemical_name, components=None):

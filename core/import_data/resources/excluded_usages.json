@@ -1,0 +1,5146 @@
+{
+    "section_a": [
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Aerosol",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Aerosol",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Foam",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Foam",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Foam",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Fire Fighting",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Fire Fighting",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Fire Fighting",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Fire Fighting",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Fire Fighting",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Solvent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Solvent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Solvent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Solvent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Process agent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Process agent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Process agent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Process agent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Lab use",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Lab use",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Lab use",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Lab use",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Aerosol",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Aerosol",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Aerosol",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Foam",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Foam",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Foam",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Solvent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Solvent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Solvent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Process agent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Process agent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Process agent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Lab use",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Lab use",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Lab use",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Aerosol",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Foam",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Fire fighting",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Solvent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Process agent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Lab use",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Aerosol",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Foam",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Fire fighting",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Aerosol",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Foam",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Fire fighting",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-22",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-22",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-141b",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-141b",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Aerosol",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Fire fighting",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Solvent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Process agent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Lab use",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-142b",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-142b",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-123",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-123",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-124",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-124",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-133",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-133",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-225",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-225",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-225ca",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-225ca",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-225cb",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-225cb",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-271",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-271",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-262",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-262",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-261",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-261",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-253",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-253",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-252",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-252",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-251",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-251",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-244",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-244",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-243",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-243",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-242",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-242",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-241",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-241",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-235",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-235",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-234",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-234",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-233",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-233",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-232",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-232",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-231",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-231",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-226CB",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-226CB",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-226",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-226",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-224",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-224",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-223",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-223",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-222",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-222",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-221",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-221",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-151a",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-151a",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-151",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-151",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-142",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-142",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-141",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-141",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-133a",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-133a",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-132",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-132",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-131",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-131",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-124a",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-124a",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-123a",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-123a",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-122",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-122",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-121",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-121",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-31",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-31",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-21",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "HCFC-21",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Aerosol",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Foam",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Fire fighting",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Solvent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Process agent",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Lab use",
+            "min_year": 2022,
+            "max_year": null
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Aerosol",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Aerosol",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Foam",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Foam",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Foam",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Fire Fighting",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Fire Fighting",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Fire Fighting",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Fire Fighting",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Fire Fighting",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Solvent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Solvent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Solvent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Solvent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Process agent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Process agent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Process agent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Process agent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Lab use",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Lab use",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Lab use",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Lab use",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Aerosol",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Aerosol",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Aerosol",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Foam",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Foam",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Foam",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Solvent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Solvent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Solvent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Process agent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Process agent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Process agent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Lab use",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Lab use",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Lab use",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Aerosol",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Foam",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Fire fighting",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Solvent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Process agent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Lab use",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Aerosol",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Foam",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Fire fighting",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Aerosol",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Foam",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Fire fighting",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-22",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-22",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-141b",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-141b",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Aerosol",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Fire fighting",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Solvent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Process agent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Lab use",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-142b",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-142b",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-123",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-123",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-124",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-124",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-133",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-133",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-225",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-225",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-225ca",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-225ca",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-225cb",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-225cb",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-271",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-271",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-262",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-262",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-261",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-261",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-253",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-253",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-252",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-252",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-251",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-251",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-244",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-244",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-243",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-243",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-242",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-242",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-241",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-241",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-235",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-235",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-234",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-234",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-233",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-233",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-232",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-232",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-231",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-231",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-226CB",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-226CB",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-226",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-226",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-224",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-224",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-223",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-223",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-222",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-222",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-221",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-221",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-151a",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-151a",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-151",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-151",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-142",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-142",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-141",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-141",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-133a",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-133a",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-132",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-132",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-131",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-131",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-124a",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-124a",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-123a",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-123a",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-122",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-122",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-121",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-121",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-31",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-31",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-21",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "HCFC-21",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Aerosol",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Foam",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Fire fighting",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Solvent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Process agent",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Lab use",
+            "min_year": 2019,
+            "max_year": 2021
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Aerosol",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Aerosol",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Foam",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Foam",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Foam",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Fire Fighting",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Fire Fighting",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Fire Fighting",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Fire Fighting",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Fire Fighting",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Solvent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Solvent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Solvent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Solvent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Process agent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Process agent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Process agent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Process agent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Lab use",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Lab use",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Lab use",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Lab use",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Aerosol",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Aerosol",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Aerosol",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Foam",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Foam",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Foam",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Solvent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Solvent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Solvent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Process agent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Process agent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Process agent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Lab use",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Lab use",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Lab use",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Aerosol",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Foam",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Fire fighting",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Solvent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Process agent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Lab use",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Aerosol",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Foam",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Fire fighting",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Aerosol",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Foam",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Fire fighting",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-22",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-22",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-141b",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-141b",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Aerosol",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Fire fighting",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Solvent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Process agent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Lab use",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-142b",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-142b",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-123",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-123",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-124",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-124",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-133",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-133",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-225",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-225",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-225ca",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-225ca",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-225cb",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-225cb",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-271",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-271",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-262",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-262",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-261",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-261",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-253",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-253",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-252",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-252",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-251",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-251",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-244",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-244",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-243",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-243",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-242",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-242",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-241",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-241",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-235",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-235",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-234",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-234",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-233",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-233",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-232",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-232",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-231",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-231",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-226CB",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-226CB",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-226",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-226",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-224",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-224",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-223",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-223",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-222",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-222",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-221",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-221",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-151a",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-151a",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-151",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-151",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-142",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-142",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-141",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-141",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-133a",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-133a",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-132",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-132",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-131",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-131",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-124a",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-124a",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-123a",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-123a",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-122",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-122",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-121",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-121",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-31",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-31",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-21",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "HCFC-21",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Aerosol",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Foam",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Fire fighting",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Solvent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Process agent",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Lab use",
+            "min_year": 2012,
+            "max_year": 2018
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Aerosol",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Aerosol",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Foam",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Foam",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Foam",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Fire Fighting",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Fire Fighting",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Fire Fighting",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Fire Fighting",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Fire Fighting",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Solvent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Solvent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Solvent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Solvent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Process agent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Process agent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Process agent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Process agent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Lab use",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Lab use",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Lab use",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Lab use",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-11",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-12",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-113",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-114",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-115",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Aerosol",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Aerosol",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Aerosol",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Foam",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Foam",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Foam",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Solvent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Solvent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Solvent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Process agent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Process agent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Process agent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Lab use",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Lab use",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Lab use",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1211",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-1301",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Halon-2402",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Aerosol",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Foam",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Fire fighting",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Solvent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Process agent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Lab use",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "CFC-13",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Aerosol",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Foam",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Fire fighting",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Carbon Tetrachloride",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Aerosol",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Foam",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Fire fighting",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Methyl chloroform",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-22",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-22",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-141b",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-141b",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Aerosol",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Fire fighting",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Solvent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Process agent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Lab use",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-142b",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-142b",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-123",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-123",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-124",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-124",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-133",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-133",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-225",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-225",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-225ca",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-225ca",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-225cb",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-225cb",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-271",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-271",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-262",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-262",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-261",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-261",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-253",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-253",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-252",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-252",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-251",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-251",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-244",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-244",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-243",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-243",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-242",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-242",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-241",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-241",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-235",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-235",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-234",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-234",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-233",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-233",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-232",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-232",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-231",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-231",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-226CB",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-226CB",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-226",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-226",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-224",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-224",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-223",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-223",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-222",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-222",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-221",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-221",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-151a",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-151a",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-151",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-151",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-142",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-142",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-141",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-141",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-133a",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-133a",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-132",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-132",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-131",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-131",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-124a",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-124a",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-123a",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-123a",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-122",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-122",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-121",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-121",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-31",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-31",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-21",
+            "usage_name": "Methyl bromide QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-21",
+            "usage_name": "Methyl bromide Non-QPS",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Aerosol",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Foam",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Fire fighting",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Refrigeration Manufacturing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Refrigeration Servicing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Solvent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Process agent",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Lab use",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-271",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-271",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-262",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-262",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-261",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-261",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-253",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-253",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-252",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-252",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-251",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-251",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-244",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-244",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-243",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-243",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-242",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-242",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-241",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-241",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-235",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-235",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-234",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-234",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-233",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-233",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-232",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-232",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-231",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-231",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-226CB",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-226CB",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-226",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-226",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-225CB",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-225CB",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-225CA",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-225CA",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-225",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-225",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-224",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-224",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-223",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-223",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-222",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-222",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-221",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-221",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-151a",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-151a",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-151",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-151",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-142B",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-142B",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-142",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-142",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-141B in imported pre-blended polyol",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-141B",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-141B",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-141",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-141",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-133a",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-133a",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-133",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-133",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-132",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-132",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-131",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-131",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-124a",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-124a",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-124",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-124",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-123a",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-123a",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-123",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-123",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-122",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-122",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-121",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-121",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-31",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-31",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-22",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-22",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-21",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "HCFC-21",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "MDI",
+            "min_year": 2000,
+            "max_year": 2011
+        },
+        {
+            "substance_name": "Methyl Bromide",
+            "usage_name": "Tobacco fluffing",
+            "min_year": 2000,
+            "max_year": 2011
+        }
+    ]
+}

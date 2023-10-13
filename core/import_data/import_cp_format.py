@@ -4,7 +4,7 @@ import pandas as pd
 
 from django.conf import settings
 from django.db import transaction
-from core.import_data.utils import IMPORT_RESOURCES_DIR, get_chemical
+from core.import_data.utils import IMPORT_RESOURCES_DIR, delete_old_data, get_chemical
 from core.models.blend import Blend
 from core.models.country_programme import CPReportFormat
 
@@ -78,7 +78,7 @@ def import_chemicas_format(file_path):
 
 def import_usages_format(file_path):
     # delete old data
-    CPReportFormat.objects.all().delete()
+    delete_old_data(CPReportFormat)
 
     df = pd.read_excel(file_path).replace({np.nan: None})
 
