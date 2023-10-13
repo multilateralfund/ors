@@ -23,9 +23,10 @@ def create_usages(count=3):
     return [UsageFactory.create() for _ in range(count)]
 
 
-def create_excluded_usages(usages, chemical, type_ch, count=2, with_years=True):
+def create_excluded_usages(usages, chemical, type_ch, time_frames, count=2):
     factory_cls = None
     create_data = {}
+    time_frames_list = list(time_frames.values())
     if type_ch == "substance":
         factory_cls = ExcludedUsageSubstFactory
         create_data["substance"] = chemical
@@ -34,9 +35,8 @@ def create_excluded_usages(usages, chemical, type_ch, count=2, with_years=True):
         create_data["blend"] = chemical
 
     for i in range(count):
-        if with_years:
-            create_data["start_year"] = 2000 + i
-            create_data["end_year"] = 2010 + i
+        j = i % len(time_frames_list)
+        create_data["time_frame"] = time_frames_list[j]
         factory_cls.create(
             usage=usages[i],
             **create_data,
@@ -44,7 +44,7 @@ def create_excluded_usages(usages, chemical, type_ch, count=2, with_years=True):
 
 
 @pytest.fixture(name="_setup_substances_list")
-def setup_substances_list():
+def setup_substances_list(time_frames):
     groups = []
     substances = []
     for gr_name in GROUP_LIST:
@@ -62,8 +62,7 @@ def setup_substances_list():
     # add 3 usages
     usages = create_usages()
     # add excluded usages for first group substances
-    create_excluded_usages(usages, substances[0], "substance")
-    create_excluded_usages(usages, substances[1], "substance", with_years=False)
+    create_excluded_usages(usages, substances[0], "substance", time_frames)
     return usages
 
 
@@ -89,6 +88,7 @@ class TestSubstancesList(BaseTest):
         response = self.client.get(self.url, {"with_usages": True})
         assert response.status_code == 200
         assert len(response.data) == 14
+        assert len(response.data[0]["excluded_usages"]) == 2
         # check that excluded usages are returned
         for i in range(2):
             assert usages[i].id in response.data[0]["excluded_usages"]
@@ -97,10 +97,10 @@ class TestSubstancesList(BaseTest):
         self.client.force_authenticate(user=user)
         usages = _setup_substances_list
         # check for_year filter for excluded usages
-        # for_year = 2000 => 1 excluded usage
+        # for_year = 2000 => 1 excluded usage (2000, 2011)
         response = self.client.get(self.url, {"with_usages": True, "for_year": 2000})
         assert response.status_code == 200
-        # substance0 1 excluded usage (2000-2010)
+        # substance0 1 excluded usage (2000, 2011)
         excluded_usages_list = response.data[0]["excluded_usages"]
         assert len(excluded_usages_list) == 1
         assert excluded_usages_list[0] == usages[0].id
@@ -147,7 +147,7 @@ class TestSubstancesList(BaseTest):
 
 
 @pytest.fixture(name="_setup_blend_list")
-def setup_blend_list():
+def setup_blend_list(time_frames):
     # add some blends
     blends = []
     for i in range(3):
@@ -162,8 +162,7 @@ def setup_blend_list():
     # add some usages
     usages = create_usages()
     # create excluded usages
-    create_excluded_usages(usages, blends[0], "blend")
-    create_excluded_usages(usages, blends[1], "blend", with_years=False)
+    create_excluded_usages(usages, blends[0], "blend", time_frames)
 
     return blends, usages
 
@@ -194,6 +193,7 @@ class TestBlendList(BaseTest):
         for i in range(3):
             assert response.data[i]["id"] == blends[i].id
         # check that excluded usages are returned
+        assert len(response.data[0]["excluded_usages"]) == 2
         for i in range(2):
             assert usages[i].id in response.data[0]["excluded_usages"]
         # check that excluded usages are not returned for blends without excluded usages
@@ -206,13 +206,10 @@ class TestBlendList(BaseTest):
         # for_year = 2000 => 1 excluded usage
         response = self.client.get(self.url, {"with_usages": True, "for_year": 2000})
         assert response.status_code == 200
-        # blend0 1 excluded usage (2000-2010)
+        # blend0 1 excluded usage (2000-2011)
         excluded_usages_list = response.data[0]["excluded_usages"]
         assert len(excluded_usages_list) == 1
         assert excluded_usages_list[0] == usages[0].id
-        # blend1 2 excluded usages (no years)
-        excluded_usages_list = response.data[1]["excluded_usages"]
-        assert len(excluded_usages_list) == 2
 
     def test_displayed_in_all_filter(self, user, _setup_blend_list):
         self.client.force_authenticate(user=user)

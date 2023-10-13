@@ -20,6 +20,7 @@ from core.models.project import (
     ProjectType,
 )
 from core.models.substance import Substance
+from core.models.time_frame import TimeFrame
 from core.utils import IMPORT_DB_MAX_YEAR
 
 logger = logging.getLogger(__name__)
@@ -143,15 +144,19 @@ def parse_noop(value):
     return value
 
 
-def delete_old_data(cls, source_file):
+def delete_old_data(cls, source_file=None):
     """
     Delete old data from db for a specific source file
 
     @param cls: Class instance
     @param source_file: string source file name
     """
-    cls.objects.filter(source_file__iexact=str(source_file).lower()).all().delete()
-    logger.info(f"✔ old {cls.__name__} from {source_file} deleted")
+    if source_file:
+        cls.objects.filter(source_file__iexact=str(source_file).lower()).all().delete()
+        logger.info(f"✔ old {cls.__name__} from {source_file} deleted")
+        return
+    cls.objects.all().delete()
+    logger.info(f"✔ old {cls.__name__} deleted")
 
 
 def get_chemical_by_name_or_components(chemical_name, components=None):
@@ -356,19 +361,30 @@ def get_or_create_adm_row(row_data):
     if "index" not in row_data:
         row_data["index"] = None
 
-    existing_row = AdmRow.objects.filter(
-        text=row_data["text"],
-        section=row_data["section"],
-        index=row_data["index"],
-        country_programme_report_id=row_data.get("country_programme_report_id", None),
-    ).first()
+    existing_row = (
+        AdmRow.objects.filter(
+            text=row_data["text"],
+            section=row_data["section"],
+            index=row_data["index"],
+            country_programme_report_id=row_data.get(
+                "country_programme_report_id", None
+            ),
+        )
+        .select_related("time_frame")
+        .first()
+    )
+    min_year = row_data.pop("min_year")
+    max_year = row_data.pop("max_year")
 
     if existing_row:
-        existing_row.min_year = min(existing_row.min_year, row_data["min_year"])
-        existing_row.max_year = max(existing_row.max_year, row_data["max_year"])
+        # set correct time frame for this row
+        min_year = min(existing_row.time_frame.min_year, min_year)
+        max_year = max(existing_row.time_frame.max_year, max_year)
+        existing_row.time_frame = TimeFrame.objects.find_by_frame(min_year, max_year)
         existing_row.save()
         return existing_row
 
+    row_data["time_frame"] = TimeFrame.objects.find_by_frame(min_year, max_year)
     return AdmRow.objects.create(**row_data)
 
 

@@ -16,7 +16,7 @@ class UsageAdmin(admin.ModelAdmin):
         return queryset.select_related("parent")
 
     def get_list_display(self, request):
-        exclude = ["usage", "cpusage", "excludedusage", "children"]
+        exclude = ["usage", "cpusage", "excludedusage", "children", "cpreportformat"]
         return get_final_display_list(Usage, exclude)
 
 

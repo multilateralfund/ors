@@ -5,6 +5,7 @@ from core.admin.utils import get_final_display_list
 from core.models.country_programme import (
     CPRecord,
     CPReport,
+    CPReportFormat,
     CPUsage,
     CPPrices,
     CPGeneration,
@@ -161,3 +162,20 @@ class CPEmissionAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = ["source_file", "remarks"]
         return get_final_display_list(CPEmission, exclude)
+
+
+@admin.register(CPReportFormat)
+class CPReportFormatAdmin(admin.ModelAdmin):
+    search_fields = ["usage__name"]
+    list_filter = [
+        "section",
+        "time_frame",
+    ]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("usage", "time_frame")
+
+    def get_list_display(self, request):
+        exclude = []
+        return get_final_display_list(CPReportFormat, exclude)

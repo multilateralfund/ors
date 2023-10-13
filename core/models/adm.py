@@ -1,18 +1,21 @@
-from django.conf import settings
-from django.core.validators import MinValueValidator
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey, TreeManager
+from core.models.base import BaseWTimeFrameManager
 
 from core.models.blend import Blend
 from core.models.country_programme import CPReport
 from core.models.substance import Substance
+from core.models.time_frame import TimeFrame
 
 
-class AdmColumnManager(models.Manager):
+class AdmColumnManager(BaseWTimeFrameManager):
     def get_for_year(self, year):
-        return self.filter(
-            min_year__lte=year, max_year__gte=year, parent=None
-        ).order_by("section", "sort_order")
+        return (
+            super()
+            .get_for_year(year)
+            .filter(parent=None)
+            .order_by("section", "sort_order")
+        )
 
 
 class AdmColumn(models.Model):
@@ -34,12 +37,7 @@ class AdmColumn(models.Model):
     display_name = models.CharField(max_length=248)
     type = models.CharField(max_length=248, choices=AdmColumnType.choices)
     section = models.CharField(max_length=10, choices=AdmColumnSection.choices)
-    min_year = models.PositiveIntegerField(
-        validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
-    )
-    max_year = models.PositiveIntegerField(
-        validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
-    )
+    time_frame = models.ForeignKey(TimeFrame, on_delete=models.CASCADE)
     sort_order = models.FloatField(null=True, blank=True)
     source_file = models.CharField(max_length=248, null=True, blank=True)
 
@@ -55,19 +53,15 @@ class AdmColumn(models.Model):
 class AdmRowManager(TreeManager):
     def get_for_cp_report(self, cp_report):
         return (
-            self.filter(
-                min_year__lte=cp_report.year,
-                max_year__gte=cp_report.year,
-                level=0,
-            )
-            .get_descendants(include_self=True)
+            self.select_related("time_frame")
             .filter(
-                models.Q(min_year__lte=cp_report.year, max_year__gte=cp_report.year),
-                models.Q(
-                    models.Q(country_programme_report_id__isnull=True)
-                    | models.Q(country_programme_report_id=cp_report.id)
+                (models.Q(time_frame__min_year__lte=cp_report.year)),
+                (
+                    models.Q(time_frame__max_year__gte=cp_report.year)
+                    | models.Q(time_frame__max_year__isnull=True)
                 ),
             )
+            # .get_descendants(include_self=True)
             .prefetch_related("choices")
             .order_by("sort_order", "level")
         )
@@ -88,12 +82,7 @@ class AdmRow(MPTTModel):
     text = models.TextField()
     type = models.CharField(max_length=10, choices=AdmRowType.choices)
     section = models.CharField(max_length=10, choices=AdmRowSection.choices)
-    min_year = models.PositiveIntegerField(
-        validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
-    )
-    max_year = models.PositiveIntegerField(
-        validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
-    )
+    time_frame = models.ForeignKey(TimeFrame, on_delete=models.CASCADE)
     index = models.CharField(
         max_length=248, null=True, blank=True, verbose_name="row index"
     )

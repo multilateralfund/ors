@@ -5,6 +5,7 @@ from django.db import transaction
 
 from core.import_data.utils import IMPORT_RESOURCES_DIR, delete_old_data
 from core.models.adm import AdmColumn
+from core.models.time_frame import TimeFrame
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +26,14 @@ def parse_columns_file(file_path):
         if parent_name:
             column_data["parent"] = column_parents[parent_name]
 
+        # get time frame
+        min_year = column_data.pop("min_year", None)
+        max_year = column_data.pop("max_year", None)
+        time_frame = TimeFrame.objects.find_by_frame(min_year, max_year)
+
         column_data = {
             "source_file": file_path,
+            "time_frame": time_frame,
             **column_data,
         }
         column = AdmColumn.objects.create(**column_data)
