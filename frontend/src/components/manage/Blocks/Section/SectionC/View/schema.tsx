@@ -37,8 +37,10 @@ function useGridOptions() {
       },
     ],
     defaultColDef: {
+      autoHeight: true,
       minWidth: 200,
       resizable: true,
+      wrapText: true,
     },
   })
 

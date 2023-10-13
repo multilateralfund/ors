@@ -1,4 +1,5 @@
 'use client'
+
 import type { AnyObject } from '@ors/types/primitives'
 import type { HTMLMotionProps } from 'framer-motion'
 
@@ -8,15 +9,17 @@ import cx from 'classnames'
 import { LazyMotion, domAnimation, m } from 'framer-motion'
 import { get } from 'lodash'
 
+export type FadeInOutProps = HTMLMotionProps<keyof ReactHTML> & {
+  [key: string]: any
+  FadeInOut?: AnyObject & { component: string }
+}
+
 export default function FadeInOut({
   FadeInOut,
   children,
   className,
   ...rest
-}: HTMLMotionProps<keyof ReactHTML> & {
-  [key: string]: any
-  FadeInOut?: AnyObject & { component: string }
-}) {
+}: FadeInOutProps) {
   const Motion = get(m, FadeInOut?.component || 'div')
 
   return (

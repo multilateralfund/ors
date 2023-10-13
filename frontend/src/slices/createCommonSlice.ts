@@ -1,14 +1,12 @@
-import { StoreApi } from 'zustand/esm'
+import type {
+  CommonSlice,
+  InitialStoreState,
+  StoreState,
+} from '@ors/types/store'
+
+import { StoreApi } from 'zustand'
 
 import { defaultSliceData } from '@ors/helpers/Store/Store'
-import { InitialStoreState, StoreState } from '@ors/store'
-import { SliceData } from '@ors/types/primitives'
-
-export interface CommonSlice {
-  agencies: SliceData
-  countries: SliceData
-  settings: SliceData
-}
 
 export const createCommonSlice = (
   set: StoreApi<StoreState>['setState'],

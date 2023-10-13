@@ -24,7 +24,6 @@ const commonTheme = (
   tailwindTheme: ThemeConfig,
   direction: 'ltr' | 'rtl',
 ): ThemeOptions => {
-  console.log('HERE', tailwindTheme.fontSize)
   function getTypography(size: TypographyType) {
     return {
       fontSize: tailwindTheme.fontSize[size][0],
@@ -60,6 +59,13 @@ const commonTheme = (
           root: {
             transform: 'scale(1)',
             transformOrigin: 'top',
+          },
+        },
+      },
+      MuiSnackbarContent: {
+        styleOverrides: {
+          message: {
+            fontSize: getTypography('base').fontSize,
           },
         },
       },

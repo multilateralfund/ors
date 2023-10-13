@@ -1,19 +1,13 @@
 import { useMemo, useRef, useState } from 'react'
 
 import { Box, Button, Modal, Typography } from '@mui/material'
-import {
-  filter,
-  findIndex,
-  groupBy,
-  includes,
-  sortBy,
-  union,
-  uniq,
-} from 'lodash'
+import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
+import { each, find, findIndex, includes, union } from 'lodash'
 import dynamic from 'next/dynamic'
 
 import Field from '@ors/components/manage/Form/Field'
-import { getResults } from '@ors/helpers/Api/Api'
+import { getResults } from '@ors/helpers/Api'
+import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import useStore from '@ors/store'
 
 import useGridOptions from './schema'
@@ -22,73 +16,169 @@ const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
   ssr: false,
 })
 
-export default function SectionA() {
-  const grid = useRef<any>()
-  const [data, setData] = useState<Array<Record<string, any>>>([])
-  const [addModal, setAddModal] = useState(false)
-  const substances = useStore(
-    (state) => getResults(state.reports.substances.data).results,
-  )
-  const filteredSubstances = useMemo(() => {
-    const ids = data.map((row) => row.substance_id)
-    return filter(substances, (substance) => !includes(ids, substance.id))
-  }, [data, substances])
-
-  const gridOptions = useGridOptions({ setAddModal })
-
-  const groups = uniq(data.map((row) => row.group || 'Other'))
-  const resultsByGroup = groupBy(
-    data.map((row) => ({
-      ...row,
-      group: row.group || 'Other',
-    })),
-    'group',
-  )
-
-  const rowData = useMemo(() => {
-    let data: Array<any> = []
-    groups.forEach((group) => {
-      data = union(
-        data,
-        [{ chemical_name: group, group, isGroup: true }],
-        resultsByGroup[group],
-        [{ chemical_name: 'Sub-total', group, isSubTotal: true }],
-      )
-    })
-    if (data.length > 0) {
-      data.push({ chemical_name: 'TOTAL', isTotal: true })
+function getRowData(data: any) {
+  let rowData: Array<any> = []
+  const dataByGroup: Record<string, any> = {}
+  const groups: Array<string> = []
+  each(data, (item) => {
+    const group = item.group || 'Other'
+    if (!dataByGroup[group]) {
+      dataByGroup[group] = []
     }
-    return data
-  }, [groups, resultsByGroup])
+    if (!includes(groups, group)) {
+      groups.push(group)
+    }
+    dataByGroup[group].push({ ...item, group })
+  })
+  each(groups, (group: string) => {
+    rowData = union(
+      rowData,
+      [
+        {
+          count: dataByGroup[group].length,
+          display_name: group,
+          group,
+          rowId: group,
+          rowType: 'group',
+        },
+      ],
+      dataByGroup[group],
+      [
+        {
+          display_name: 'Sub-total',
+          group,
+          rowId: `subtotal[${group}]`,
+          rowType: 'subtotal',
+        },
+      ],
+    )
+  })
+  return rowData
+}
 
-  return null
+export default function SectionACreate(props: any) {
+  const {
+    TableProps,
+    emptyForm,
+    form,
+    index,
+    mapSubstance,
+    setActiveSection,
+    setForm,
+  } = props
+  const newNode = useRef<RowNode>()
+
+  const substances = useStore(
+    (state) => getResults(state.cp_reports.substances.data).results,
+  )
+  const grid = useRef<any>()
+  const [initialRowData] = useState(getRowData(form.section_a))
+  const [addSubstanceModal, setAddSubstanceModal] = useState(false)
+
+  const substancesOptions = useMemo(() => {
+    const data: Array<any> = []
+    const substancesInForm = form.section_a.map(
+      (substance: any) => substance.rowId,
+    )
+    each(substances, (substance) => {
+      if (
+        includes(['Annex C, Group I'], substance.group) &&
+        includes(substance.sections, 'A') &&
+        !includes(substancesInForm, `substance_${substance.id}`)
+      ) {
+        data.push(mapSubstance(substance))
+      }
+    })
+    return data
+  }, [substances, form.section_a, mapSubstance])
+
+  const gridOptions = useGridOptions({
+    onRemoveSubstance: (props: any) => {
+      const removedSubstance = props.data
+      const newData = [...form.section_a]
+      const index = findIndex(
+        form.section_a,
+        (substance: any) => substance.rowId == removedSubstance.rowId,
+      )
+      if (index > -1) {
+        const groupNode = grid.current.api.getRowNode(removedSubstance.group)
+        newData.splice(index, 1)
+        setForm((form: any) => ({ ...form, section_a: newData }))
+        applyTransaction(grid.current.api, {
+          remove: [props.data],
+          update: [{ ...groupNode.data, count: groupNode.data.count - 1 }],
+        })
+      }
+    },
+    openAddSubstanceModal: () => setAddSubstanceModal(true),
+    usages: emptyForm.usage_columns || [],
+  })
+
+  function getUsagesOnCellValueChange(event: CellValueChangedEvent<any>) {
+    const usages = event.data.record_usages
+    if (event.source === 'cellClear' && event.colDef.category === 'usage') {
+      const usageIndex = findIndex(
+        usages,
+        (item: any) => item.usage_id === event.colDef.id,
+      )
+      if (usageIndex > -1) {
+        usages[usageIndex].quantity = null
+        applyTransaction(grid.current.api, {
+          update: [{ ...event.data, record_usages: usages }],
+        })
+      }
+    }
+    return usages
+  }
 
   return (
     <>
       <Table
+        {...TableProps}
         className="three-groups mb-4"
-        animateRows={true}
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
-        enableCellChangeFlash={true}
-        enablePagination={false}
         gridRef={grid}
-        rowData={[...rowData, { isController: true }]}
-        rowSelection="multiple"
-        suppressCellFocus={false}
-        suppressRowHoverHighlight={false}
+        headerDepth={3}
+        rowData={initialRowData}
+        pinnedBottomRowData={[
+          { display_name: 'TOTAL', rowType: 'total' },
+          { rowType: 'control' },
+        ]}
         onCellValueChanged={(event) => {
-          setData((data) => {
-            const index = findIndex(
-              data,
-              (row) => row.substance_id == event.data.substance_id,
-            )
-            const newData = [...data]
-            newData.splice(index, 1, event.data)
-            return newData
-          })
+          const usages = getUsagesOnCellValueChange(event)
+          const newData = [...form.section_a]
+          const index = findIndex(
+            newData,
+            (row: any) => row.rowId == event.data.rowId,
+          )
+          if (index > -1) {
+            // Should not be posible for index to be -1
+            newData.splice(index, 1, {
+              ...event.data,
+              record_usages: usages,
+            })
+            setForm({ ...form, section_a: newData })
+          }
         }}
-        withSeparators
+        onFirstDataRendered={() => setActiveSection(index)}
+        onGridReady={() => {
+          if (!initialRowData.length) {
+            setActiveSection(index)
+          }
+        }}
+        onRowDataUpdated={() => {
+          if (newNode.current) {
+            scrollToElement(
+              `.ag-row[row-id=${newNode.current.data.rowId}]`,
+              () => {
+                grid.current.api.flashCells({
+                  rowNodes: [newNode.current],
+                })
+              },
+            )
+          }
+        }}
       />
       <Typography className="italic" variant="body2">
         1. Edit by pressing double left-click or ENTER on a field.
@@ -105,54 +195,67 @@ export default function SectionA() {
         4. Provide explanation if total sector use and consumption
         (import-export+production) is different (e.g, stockpiling).
       </Typography>
-      <Modal
-        aria-labelledby="add-substance-modal-title"
-        open={addModal}
-        onClose={() => setAddModal(false)}
-        keepMounted
-      >
-        <Box className="xs:max-w-xs w-full max-w-md absolute-center sm:max-w-sm">
-          <Typography
-            id="add-substance-modal-title"
-            className="mb-4 text-typography-secondary"
-            component="h2"
-            variant="h6"
-          >
-            Select substance
-          </Typography>
-          <Field
-            Input={{ autoComplete: 'off' }}
-            getOptionLabel={(option: any) => option.name}
-            options={filteredSubstances}
-            value={null}
-            widget="autocomplete"
-            onChange={(event: any, substance: any) => {
-              const newSubstance = {
-                blend_id: null,
-                chemical_name: substance.formula || substance.name,
-                display_name: substance.name,
-                group: substance.group_name,
-                record_usages: [],
-                sort_order: substance.sort_order,
-                substance_data: substance,
-                substance_id: substance.id,
-              }
-              if (document.activeElement) {
-                // @ts-ignore
-                document.activeElement.blur()
-              }
-              setData((data) => {
-                const newData = sortBy([...data, newSubstance], 'sort_order')
-                return newData
-              })
-              setAddModal(false)
-            }}
-          />
-          <Typography className="text-right">
-            <Button onClick={() => setAddModal(false)}>Close</Button>
-          </Typography>
-        </Box>
-      </Modal>
+      {addSubstanceModal && (
+        <Modal
+          aria-labelledby="add-substance-modal-title"
+          open={addSubstanceModal}
+          onClose={() => setAddSubstanceModal(false)}
+          keepMounted
+        >
+          <Box className="xs:max-w-xs w-full max-w-md absolute-center sm:max-w-sm">
+            <Typography
+              id="add-substance-modal-title"
+              className="mb-4 text-typography-secondary"
+              component="h2"
+              variant="h6"
+            >
+              Select substance
+            </Typography>
+            <Field
+              Input={{ autoComplete: 'off' }}
+              getOptionLabel={(option: any) => option.display_name}
+              groupBy={(option: any) => option.group}
+              options={substancesOptions}
+              value={null}
+              widget="autocomplete"
+              onChange={(event: any, newSubstance: any) => {
+                if (document.activeElement) {
+                  // @ts-ignore
+                  document.activeElement.blur()
+                }
+                const added = find(
+                  form.section_a,
+                  (substance) => substance.rowId === newSubstance.rowId,
+                )
+                if (!added) {
+                  const groupNode = grid.current.api.getRowNode(
+                    newSubstance.group,
+                  )
+                  setForm((form: any) => ({
+                    ...form,
+                    section_a: [...form.section_a, newSubstance],
+                  }))
+                  applyTransaction(grid.current.api, {
+                    add: [newSubstance],
+                    addIndex: groupNode.rowIndex + groupNode.data.count + 1,
+                    update: [
+                      { ...groupNode.data, count: groupNode.data.count + 1 },
+                    ],
+                  })
+                  const substanceNode = grid.current.api.getRowNode(
+                    newSubstance.rowId,
+                  )
+                  newNode.current = substanceNode
+                }
+                setAddSubstanceModal(false)
+              }}
+            />
+            <Typography className="text-right">
+              <Button onClick={() => setAddSubstanceModal(false)}>Close</Button>
+            </Typography>
+          </Box>
+        </Modal>
+      )}
     </>
   )
 }

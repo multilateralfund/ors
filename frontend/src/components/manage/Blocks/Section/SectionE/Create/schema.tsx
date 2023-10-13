@@ -1,22 +1,31 @@
 import { useMemo } from 'react'
 
-import { Button } from '@mui/material'
+import { Button, IconButton, Typography } from '@mui/material'
 import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
+import { IoTrash } from '@react-icons/all-files/io5/IoTrash'
 
-function useGridOptions(props: { addFacility: () => void }) {
-  const { addFacility } = props
+function useGridOptions(props: {
+  addFacility: () => void
+  errors: Record<string, any>
+  removeFacility: (props: any) => void
+}) {
+  const { addFacility, errors, removeFacility } = props
   const gridOptions: GridOptions = useMemo(
     () => ({
       columnDefs: [
         {
-          cellClass: (props) =>
-            cx('bg-mui-box-background', {
+          cellClass: (props) => {
+            console.log('HERE', props)
+            return cx('bg-mui-box-background', {
+              'ag-error':
+                !!errors.section_e?.[props.rowIndex]?.facility &&
+                !props.node.rowPinned,
               'ag-flex-cell': props.data.rowType === 'control',
-            }),
+            })
+          },
           cellEditor: 'agTextCellEditor',
           cellRenderer: (props: any) => {
             if (props.data.rowType === 'control') {
@@ -30,7 +39,23 @@ function useGridOptions(props: { addFacility: () => void }) {
                 </Button>
               )
             }
-            return <AgCellRenderer {...props} />
+            return (
+              <Typography className={props.className} component="span">
+                {!props.data.rowType && !props.data.mandatory && (
+                  <>
+                    <IconButton
+                      color="error"
+                      onClick={() => {
+                        removeFacility(props)
+                      }}
+                    >
+                      <IoTrash size="1rem" />
+                    </IconButton>{' '}
+                  </>
+                )}
+                {props.value}
+              </Typography>
+            )
           },
           cellRendererParams: (props: any) => ({
             className: cx({
@@ -41,13 +66,11 @@ function useGridOptions(props: { addFacility: () => void }) {
           headerClass: 'ag-text-left',
           headerName: 'Facility name or identifier',
           initialWidth: 400,
+          minWidth: 160,
         },
         {
           aggFunc: 'sumTotal',
           cellEditor: 'agNumberCellEditor',
-          cellEditorParams: {
-            min: '0',
-          },
           cellRenderer: 'agFloatCellRenderer',
           field: 'total',
           headerComponentParams: {
@@ -61,9 +84,6 @@ function useGridOptions(props: { addFacility: () => void }) {
             {
               aggFunc: 'sumTotal',
               cellEditor: 'agNumberCellEditor',
-              cellEditorParams: {
-                min: '0',
-              },
               cellRenderer: 'agFloatCellRenderer',
               field: 'all_uses',
               headerName: 'For all uses',
@@ -71,9 +91,6 @@ function useGridOptions(props: { addFacility: () => void }) {
             {
               aggFunc: 'sumTotal',
               cellEditor: 'agNumberCellEditor',
-              cellEditorParams: {
-                min: '0',
-              },
               cellRenderer: 'agFloatCellRenderer',
               field: 'feedstock_gc',
               headerName: 'For feedstock use in your country',
@@ -81,9 +98,6 @@ function useGridOptions(props: { addFacility: () => void }) {
             {
               aggFunc: 'sumTotal',
               cellEditor: 'agNumberCellEditor',
-              cellEditorParams: {
-                min: '0',
-              },
               cellRenderer: 'agFloatCellRenderer',
               field: 'destruction',
               headerName: 'For destruction',
@@ -100,9 +114,6 @@ function useGridOptions(props: { addFacility: () => void }) {
         {
           aggFunc: 'sumTotal',
           cellEditor: 'agNumberCellEditor',
-          cellEditorParams: {
-            min: '0',
-          },
           cellRenderer: 'agFloatCellRenderer',
           field: 'feedstock_wpc',
           headerComponentParams: {
@@ -113,9 +124,6 @@ function useGridOptions(props: { addFacility: () => void }) {
         {
           aggFunc: 'sumTotal',
           cellEditor: 'agNumberCellEditor',
-          cellEditorParams: {
-            min: '0',
-          },
           cellRenderer: 'agFloatCellRenderer',
           field: 'destruction_wpc',
           headerComponentParams: {
@@ -126,9 +134,6 @@ function useGridOptions(props: { addFacility: () => void }) {
         {
           aggFunc: 'sumTotal',
           cellEditor: 'agNumberCellEditor',
-          cellEditorParams: {
-            min: '0',
-          },
           cellRenderer: 'agFloatCellRenderer',
           field: 'generated_emissions',
           headerName: 'Amount of generated emission',
@@ -151,7 +156,7 @@ function useGridOptions(props: { addFacility: () => void }) {
         wrapText: true,
       },
     }),
-    [addFacility],
+    [addFacility, removeFacility, errors],
   )
 
   return gridOptions

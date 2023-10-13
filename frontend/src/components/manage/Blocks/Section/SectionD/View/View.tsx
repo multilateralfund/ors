@@ -1,30 +1,21 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
 
-import { IconButton, Typography } from '@mui/material'
-import cx from 'classnames'
-import { times } from 'lodash'
-
-import Table from '@ors/components/manage/Form/Table'
-import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
+import { Typography } from '@mui/material'
+import dynamic from 'next/dynamic'
 
 import useGridOptions from './schema'
 
-import { IoClose } from '@react-icons/all-files/io5/IoClose'
+const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
+  ssr: false,
+})
 
-export default function SectionDView(props: {
-  exitFullScreen: () => void
-  fullScreen: boolean
-  report: Record<string, Array<any>>
-  variant: any
-}) {
-  const { exitFullScreen, fullScreen, report } = props
+export default function SectionDView(props: any) {
+  const { TableProps, index, report, setActiveSection } = props
   const grid = useRef<any>()
   const gridOptions = useGridOptions()
-  const [loadTable, setLoadTable] = useState(false)
-  const [loading, setLoading] = useState(true)
 
   const rowData = useMemo(() => {
-    const rowData = (report.section_d || []).map((item) => ({
+    const rowData = (report.section_d || []).map((item: any) => ({
       ...item,
       group: item.group || 'Other',
     }))
@@ -32,78 +23,26 @@ export default function SectionDView(props: {
     return rowData
   }, [report])
 
-  useEffect(() => {
-    setTimeout(() => setLoadTable(true), 500)
-  }, [])
-
   return (
     <>
-      <HeaderTitle>
-        {report.name && (
-          <Typography className="mb-4 text-white" component="h1" variant="h5">
-            {report.name}
-          </Typography>
-        )}
-      </HeaderTitle>
-      <Typography className="mb-4" component="h1" variant="h6">
-        SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)
+      <Table
+        {...TableProps}
+        className="mb-4"
+        columnDefs={gridOptions.columnDefs}
+        defaultColDef={gridOptions.defaultColDef}
+        gridRef={grid}
+        rowData={rowData}
+        onFirstDataRendered={() => setActiveSection(index)}
+        onGridReady={() => {
+          if (!rowData.length) {
+            setActiveSection(index)
+          }
+        }}
+      />
+      <Typography className="italic" variant="body2">
+        1. Amounts of HFC-23 captured for destruction or feedstock use will not
+        be counted as production as per Article 1 of the Montreal Protocol.
       </Typography>
-      {!loadTable && (
-        <Table
-          columnDefs={gridOptions.columnDefs}
-          defaultColDef={gridOptions.defaultColDef}
-          enablePagination={false}
-          rowData={times(10, () => {
-            return {
-              rowType: 'skeleton',
-            }
-          })}
-          withFluidEmptyColumn
-          withSeparators
-        />
-      )}
-      {loadTable && (
-        <>
-          <Table
-            className={cx('mb-4', {
-              'full-screen': fullScreen,
-              'opacity-0': loading,
-            })}
-            columnDefs={gridOptions.columnDefs}
-            defaultColDef={gridOptions.defaultColDef}
-            enableCellChangeFlash={true}
-            enablePagination={false}
-            gridRef={grid}
-            noRowsOverlayComponentParams={{ label: 'No data reported' }}
-            rowData={rowData}
-            suppressCellFocus={false}
-            suppressRowHoverHighlight={false}
-            HeaderComponent={
-              fullScreen
-                ? () => {
-                    return (
-                      <IconButton
-                        className="exit-fullscreen p-2 text-primary"
-                        aria-label="exit fullscreen"
-                        onClick={exitFullScreen}
-                      >
-                        <IoClose size={32} />
-                      </IconButton>
-                    )
-                  }
-                : () => null
-            }
-            onFirstDataRendered={() => setLoading(false)}
-            withFluidEmptyColumn
-            withSeparators
-          />
-          <Typography className="italic" variant="body2">
-            1. Amounts of HFC-23 captured for destruction or feedstock use will
-            not be counted as production as per Article 1 of the Montreal
-            Protocol.
-          </Typography>
-        </>
-      )}
     </>
   )
 }

@@ -1,17 +1,10 @@
-import type { Language } from '@ors/types/locales'
+import type { I18nSlice, InitialStoreState, StoreState } from '@ors/types/store'
 
 import { dir } from 'i18next'
 import Cookies from 'js-cookie'
 import { StoreApi } from 'zustand'
 
 import config from '@ors/registry'
-import { InitialStoreState, StoreState } from '@ors/store'
-
-export interface I18nSlice {
-  dir: 'ltr' | 'rtl'
-  lang: Language
-  setLang?: (lang: Language) => void
-}
 
 export const createI18nSlice = (
   set: StoreApi<StoreState>['setState'],

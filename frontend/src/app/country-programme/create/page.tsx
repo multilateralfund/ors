@@ -6,7 +6,7 @@ import { isNull, isUndefined } from 'lodash'
 
 import CPReportCreate from '@ors/components/manage/Blocks/CountryProgramme/CPReportCreate'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-import api from '@ors/helpers/Api/Api'
+import api from '@ors/helpers/Api'
 
 export const metadata: Metadata = {
   title: 'Create report',
@@ -15,6 +15,52 @@ export const metadata: Metadata = {
 export default async function CreateReport() {
   const emptyForm =
     (await api('api/country-programme/empty-form/', {}, false)) || {}
+
+  const substances_a =
+    (await api(
+      'api/substances/',
+      {
+        params: {
+          displayed_in_latest_format: true,
+          section: 'A',
+          with_usages: true,
+        },
+      },
+      false,
+    )) || []
+
+  const substances_b =
+    (await api(
+      'api/substances/',
+      {
+        params: {
+          displayed_in_latest_format: true,
+          section: 'B',
+          with_usages: true,
+        },
+      },
+      false,
+    )) || []
+
+  const substances_c =
+    (await api(
+      'api/substances/',
+      {
+        params: {
+          displayed_in_latest_format: true,
+          section: 'C',
+          with_usages: true,
+        },
+      },
+      false,
+    )) || []
+
+  const blends =
+    (await api(
+      'api/blends/',
+      { params: { displayed_in_latest_format: true, with_usages: true } },
+      false,
+    )) || []
 
   function filterUsage(usage: any) {
     const year = new Date().getFullYear()
@@ -46,6 +92,8 @@ export default async function CreateReport() {
           }
         : {
             aggFunc: 'sumTotalUsages',
+            cellEditor: 'agUsageCellEditor',
+            field: `usage_${usage.id}`,
           }),
     }
   }
@@ -53,6 +101,10 @@ export default async function CreateReport() {
   return (
     <PageWrapper>
       <CPReportCreate
+        blends={blends}
+        substances_a={substances_a}
+        substances_b={substances_b}
+        substances_c={substances_c}
         emptyForm={{
           ...emptyForm,
           usage_columns: emptyForm.usage_columns

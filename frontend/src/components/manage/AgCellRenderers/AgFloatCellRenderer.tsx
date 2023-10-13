@@ -2,7 +2,7 @@
 import { Typography } from '@mui/material'
 import { get, includes, isNull, isUndefined } from 'lodash'
 
-import { aggFuncs } from '@ors/config/Table'
+import aggFuncs from '@ors/config/Table/aggFuncs'
 
 import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSkeletonCellRenderer'
 import AgTooltipComponent from '@ors/components/manage/AgComponents/AgTooltipComponent'
@@ -16,7 +16,7 @@ export default function AgFloatCellRenderer(props: any) {
   let value = null
   const aggFunc = get(aggFuncs, props.colDef.aggFunc)
 
-  if (includes(['control', 'group'], props.data.rowType)) {
+  if (includes(['control', 'group', 'hashed', 'control'], props.data.rowType)) {
     return null
   }
   if (aggFunc && includes(['subtotal', 'total'], props.data.rowType)) {

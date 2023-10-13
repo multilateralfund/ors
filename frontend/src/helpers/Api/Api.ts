@@ -1,8 +1,8 @@
 import type { DataType } from '@ors/types/primitives'
 
 import Cookies from 'js-cookie'
+import { isFunction } from 'lodash'
 import { redirect } from 'next/navigation'
-import hash from 'object-hash'
 
 import {
   addTrailingSlash,
@@ -10,9 +10,10 @@ import {
   removeTrailingSlash,
 } from '@ors/helpers/Url/Url'
 import config from '@ors/registry'
-import { getStore } from '@ors/store'
 
 export type Api = {
+  handleError?: (error: any) => any
+  handleResponse?: (response: any) => any
   options?: {
     data?: any
     delay?: number | undefined
@@ -79,10 +80,10 @@ async function api(
   path: Api['path'],
   options?: Api['options'],
   throwError: Api['throwError'] = true,
+  handleResponse?: Api['handleResponse'],
+  handleError?: Api['handleError'],
 ) {
   const nextHeaders = __SERVER__ ? require('next/headers').headers() : null
-  const store = __CLIENT__ ? getStore() : null
-  const storeState = store ? store.getState() : null
   const {
     data = null,
     delay,
@@ -90,17 +91,13 @@ async function api(
     method = 'get',
     next = {},
     params = undefined,
-    // updateSliceData = undefined,
-    withStoreCache = false,
     ...opts
   } = options || {}
-  const id = withStoreCache ? hash({ options, path }) : ''
   const pathname = __SERVER__
     ? nextHeaders.get('x-next-pathname')
     : removeTrailingSlash(window.location.pathname)
   const csrftoken = !__SERVER__ ? Cookies.get('csrftoken') : null
   const sendRequestTime = delay ? new Date().getTime() : 0
-  // const sliceData = updateSliceData ? {} : null
   let fullPath = formatApiUrl(path)
   if (params) {
     fullPath +=
@@ -112,10 +109,6 @@ async function api(
       ).toString()
   }
 
-  if (withStoreCache && storeState?.cache.data[id]) {
-    return storeState.cache.data[id]
-  }
-
   function handleEconnrefused(error: any) {
     console.log('ECONNREFUSED for endpoint:', fullPath)
     console.log(error)
@@ -124,7 +117,7 @@ async function api(
     }
   }
 
-  function handleError(error: any) {
+  async function defaultHandleError(error: any) {
     switch (error.status || error.name) {
       case undefined:
         handleEconnrefused(error)
@@ -135,20 +128,24 @@ async function api(
       case 'ECONNREFUSED':
         handleEconnrefused(error)
         break
-      case 403:
-        if (store) {
-          store.setState((state) => ({
-            ...state,
-            user: { ...state.user, data: null },
-          }))
-        }
-        break
       default:
         if (throwError) {
           throw error
         } else {
           return null
         }
+    }
+  }
+
+  async function defaultHandleResponse(response: any) {
+    try {
+      const data = await response.json()
+      return data
+    } catch {
+      if (throwError) {
+        return response
+      }
+      return null
     }
   }
 
@@ -179,24 +176,23 @@ async function api(
       await delayExecution(delay - responseTimeMs)
     }
     if (response.ok) {
-      try {
-        const data = await response.json()
-        if (withStoreCache) {
-          storeState?.cache.setCache(id, data)
-        }
-        return data
-      } catch {
-        if (throwError) {
-          return response
-        }
-        return null
+      if (isFunction(handleResponse)) {
+        return await handleResponse(response)
+      } else {
+        return await defaultHandleResponse(response)
       }
     } else {
-      handleError(response)
+      if (isFunction(handleError)) {
+        return await handleError(response)
+      } else {
+        return await defaultHandleError(response)
+      }
     }
   } catch (error) {
-    console.log('HERE ERROR', error)
-    return handleError(error)
+    if (isFunction(handleError)) {
+      return await handleError(error)
+    }
+    return await defaultHandleError(error)
   }
 }
 

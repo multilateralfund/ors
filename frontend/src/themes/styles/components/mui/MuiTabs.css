@@ -1,25 +1,30 @@
+.MuiTabs-root.scrollable {
+  @apply w-full;
+}
+
 .MuiTabs-flexContainer {
   @apply gap-4;
 }
 
+.MuiTabs-root.scrollable .MuiTabs-scroller .MuiTabs-flexContainer {
+  @apply w-0;
+}
+
 .MuiButtonBase-root.MuiTab-root {
-  /* @apply min-w-fit px-0 md:text-xl; */
   @apply min-w-fit px-0 text-xl;
 }
 
-.country-programme-tabs .MuiTabs-flexContainer {
-  /* @apply flex-wrap gap-4; */
-  @apply flex-wrap;
+.MuiTabs-scrollButtons.Mui-disabled {
+  opacity: 0.3;
 }
 
-.country-programme-tabs .MuiTabs-indicator {
-  @apply hidden;
-}
-
-.country-programme-tabs .MuiButtonBase-root.MuiTab-root {
-  @apply rounded border border-solid border-mui-box-border px-4 py-2;
-}
-
-.country-programme-tabs .MuiButtonBase-root.MuiTab-root.Mui-selected {
-  @apply border-primary;
+.MuiButtonBase-root.MuiTab-root.MuiTab-error::after {
+  content: '';
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  border-bottom: 2px solid theme(colors.error);
 }

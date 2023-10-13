@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 
 import {
   Box,
@@ -11,14 +11,8 @@ import {
 } from '@mui/material'
 import { groupBy, map } from 'lodash'
 
-import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
-
-export default function AdmD(props: {
-  emptyForm: Record<string, any>
-  report: Record<string, Array<any>>
-  variant: any
-}) {
-  const { emptyForm, report } = props
+export default function AdmD(props: any) {
+  const { emptyForm, index, report, section, setActiveSection } = props
 
   const rowData = useMemo(() => {
     const dataByRowId = groupBy(report.adm_d, 'row_id')
@@ -31,18 +25,16 @@ export default function AdmD(props: {
     }))
   }, [emptyForm, report])
 
+  useEffect(() => {
+    setActiveSection(index)
+    /* eslint-disable-next-line  */
+  }, [])
+
   return (
     <>
-      <HeaderTitle>
-        {report.name && (
-          <Typography className="mb-4 text-white" component="h1" variant="h5">
-            {report.name}
-          </Typography>
-        )}
-      </HeaderTitle>
       <Box>
-        <Typography component="h3" variant="h6">
-          D. Qualitative assessment of the operation of HPMP
+        <Typography component="h2" variant="h6">
+          {section.title}
         </Typography>
         <List>
           {rowData.map((row, index) => (

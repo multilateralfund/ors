@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import type {
+  ControlsSlice,
+  InitialStoreState,
+  StoreState,
+} from '@ors/types/store'
+
 import { StoreApi } from 'zustand'
-
-import { InitialStoreState, StoreState } from '@ors/store'
-
-export interface ControlsSlice {
-  setSidebar?: (value?: boolean) => void
-  sidebar: boolean
-}
 
 export const createControlsSlice = (
   set: StoreApi<StoreState>['setState'],

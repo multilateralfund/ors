@@ -1,5 +1,5 @@
 'use client'
-import type { ThemeSlice } from '@ors/slices/createThemeSlice'
+import { ThemeSlice } from '@ors/types/store'
 
 import React from 'react'
 

@@ -1,19 +1,18 @@
-import config from '@ors/config'
+import components from '@ors/config/Table/components'
+import renderers from '@ors/config/Table/renderers'
 
 function getDefaultCellRenderer() {
-  return config.table.components[config.table.renderers.default]
+  return components[renderers.default]
 }
 
 function getCellRendererByType(type?: string) {
-  const componentName = type ? config.table.renderers.type[type] : null
-  return componentName ? config.table.components[componentName] : null
+  const componentName = type ? renderers.type[type] : null
+  return componentName ? components[componentName] : null
 }
 
 function getCellRendererByCategory(category?: string) {
-  const componentName = category
-    ? config.table.renderers.category[category]
-    : null
-  return componentName ? config.table.components[componentName] : null
+  const componentName = category ? renderers.category[category] : null
+  return componentName ? components[componentName] : null
 }
 
 export default function AgCellRenderer(props: any) {

@@ -1,74 +1,51 @@
 import { useRef, useState } from 'react'
 
-import { IconButton, Typography } from '@mui/material'
-import cx from 'classnames'
+import { Typography } from '@mui/material'
 import { findIndex } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
-import useStore from '@ors/store'
-import { SectionD } from '@ors/types'
 
 import useGridOptions from './schema'
 
-import { IoClose } from '@react-icons/all-files/io5/IoClose'
-
-export default function SectionDCreate(props: {
-  exitFullScreen: () => void
-  fullScreen: boolean
-  variant: any
-}) {
-  const { exitFullScreen, fullScreen } = props
+export default function SectionDCreate(props: any) {
+  const { TableProps, form, index, setActiveSection, setForm } = props
   const grid = useRef<any>()
   const gridOptions = useGridOptions()
-  const [loading, setLoading] = useState(true)
-  const rowData: SectionD = useStore(
-    (state) => state.cp_report_create.section_d,
-  )
-  const updateRowData = useStore(
-    (state) => (data: SectionD) =>
-      state.cp_report_create.update?.('section_d', data),
-  )
+  const [initialRowData] = useState(form.section_d)
 
   return (
     <>
       <Table
-        className={cx('mb-4', {
-          'full-screen': fullScreen,
-          'opacity-0': loading,
-        })}
+        {...TableProps}
+        className="mb-4"
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
-        enableCellChangeFlash={true}
-        enablePagination={false}
+        domLayout="normal"
         gridRef={grid}
-        noRowsOverlayComponentParams={{ label: 'No data reported' }}
-        rowData={rowData}
-        suppressCellFocus={false}
-        suppressRowHoverHighlight={false}
-        HeaderComponent={
-          fullScreen
-            ? () => {
-                return (
-                  <IconButton
-                    className="exit-fullscreen p-2 text-primary"
-                    aria-label="exit fullscreen"
-                    onClick={exitFullScreen}
-                  >
-                    <IoClose size={32} />
-                  </IconButton>
-                )
-              }
-            : () => null
-        }
-        onCellValueChanged={(event) => {
-          const newData = [...rowData]
-          const index = findIndex(rowData, (row) => row.id == event.data.id)
-          newData.splice(index, 1, event.data)
-          updateRowData(newData)
+        rowData={initialRowData}
+        getRowId={(props) => {
+          return props.data.rowId
         }}
-        onFirstDataRendered={() => setLoading(false)}
-        withFluidEmptyColumn
-        withSeparators
+        onCellValueChanged={(event) => {
+          const newData = [...form.section_d]
+          const index = findIndex(
+            newData,
+            (row: any) => row.rowId == event.data.rowId,
+          )
+          if (index > -1) {
+            // Should not be posible for index to be -1
+            newData.splice(index, 1, {
+              ...event.data,
+            })
+            setForm({ ...form, section_d: newData })
+          }
+        }}
+        onFirstDataRendered={() => setActiveSection(index)}
+        onGridReady={() => {
+          if (!initialRowData.length) {
+            setActiveSection(index)
+          }
+        }}
       />
       <Typography id="footnote-1" className="italic" variant="body2">
         1. Edit by pressing double left-click or ENTER on a field.

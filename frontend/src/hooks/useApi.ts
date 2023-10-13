@@ -1,9 +1,9 @@
 import type { Api } from '@ors/helpers/Api/Api'
+import { DataType, ErrorType } from '@ors/types/primitives'
 
 import { useEffect, useState } from 'react'
 
-import { fetcher } from '@ors/helpers/Api/Api'
-import { DataType, ErrorType } from '@ors/types/primitives'
+import { fetcher } from '@ors/helpers/Api'
 
 export default function useApi(props: Api): {
   data: DataType

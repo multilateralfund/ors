@@ -111,21 +111,18 @@
   order: 7;
 }
 
-#next-app [class*='ag-theme-'].full-screen {
+#next-app .ag-full-screen {
+  @apply z-20;
+
   position: fixed;
   width: 100vw;
   height: 100vh !important;
   top: 0;
   left: 0;
-  padding-top: 4rem;
   background-color: theme(colors.mui-box-background);
   border: 1px solid theme(colors.mui-box-border);
 }
 
-#next-app [class*='ag-theme-'].full-screen .exit-fullscreen {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  z-index: 1;
-  cursor: pointer;
+#next-app .ag-full-screen [class*='ag-theme-'] {
+  @apply m-0 !h-full;
 }

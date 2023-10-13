@@ -1,28 +1,23 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
 
-import { IconButton, Typography } from '@mui/material'
-import cx from 'classnames'
-import { groupBy, map, times } from 'lodash'
-
-import Table from '@ors/components/manage/Form/Table'
-import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
+import { Typography } from '@mui/material'
+import { groupBy, map } from 'lodash'
+import dynamic from 'next/dynamic'
 
 import useGridOptions from './schema'
 
-import { IoClose } from '@react-icons/all-files/io5/IoClose'
+const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
+  ssr: false,
+})
 
-export default function AdmB(props: {
-  emptyForm: Record<string, any>
-  exitFullScreen: () => void
-  fullScreen: boolean
-  report: Record<string, Array<any>>
-  variant: any
-}) {
-  const { emptyForm, exitFullScreen, fullScreen, report, variant } = props
+export default function AdmB(props: any) {
+  const { TableProps, emptyForm, index, report, setActiveSection, variant } =
+    props
   const grid = useRef<any>()
-  const gridOptions = useGridOptions({ model: variant.model })
-  const [loadTable, setLoadTable] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const gridOptions = useGridOptions({
+    adm_columns: emptyForm.admB.columns,
+    model: variant.model,
+  })
 
   const rowData = useMemo(() => {
     const dataByRowId = groupBy(report.adm_b, 'row_id')
@@ -35,74 +30,26 @@ export default function AdmB(props: {
     }))
   }, [emptyForm, report])
 
-  useEffect(() => {
-    setTimeout(() => setLoadTable(true), 500)
-  }, [])
-
   return (
     <>
-      <HeaderTitle>
-        {report.name && (
-          <Typography className="mb-4 text-white" component="h1" variant="h5">
-            {report.name}
-          </Typography>
-        )}
-        <Typography className="text-white" component="h2" variant="h6">
-          B. Regulatory, administrative and supportive actions
-        </Typography>
-      </HeaderTitle>
-      {!loadTable && (
-        <Table
-          columnDefs={gridOptions.columnDefs}
-          defaultColDef={gridOptions.defaultColDef}
-          enablePagination={false}
-          rowData={times(10, () => {
-            return {
-              rowType: 'skeleton',
-            }
-          })}
-          withSeparators
-        />
-      )}
-      {loadTable && (
-        <>
-          <Table
-            className={cx('two-groups mb-4', {
-              'full-screen': fullScreen,
-              'opacity-0': loading,
-            })}
-            columnDefs={gridOptions.columnDefs}
-            defaultColDef={gridOptions.defaultColDef}
-            enableCellChangeFlash={true}
-            enablePagination={false}
-            gridRef={grid}
-            noRowsOverlayComponentParams={{ label: 'No data reported' }}
-            rowData={rowData}
-            suppressCellFocus={false}
-            suppressRowHoverHighlight={false}
-            HeaderComponent={
-              fullScreen
-                ? () => {
-                    return (
-                      <IconButton
-                        className="exit-fullscreen p-2 text-primary"
-                        aria-label="exit fullscreen"
-                        onClick={exitFullScreen}
-                      >
-                        <IoClose size={32} />
-                      </IconButton>
-                    )
-                  }
-                : () => null
-            }
-            onFirstDataRendered={() => setLoading(false)}
-            withSeparators
-          />
-          <Typography id="footnote-1" className="italic" variant="body2">
-            1. If Yes, since when (Date) / If No, planned date.
-          </Typography>
-        </>
-      )}
+      <Table
+        {...TableProps}
+        className="two-groups mb-4"
+        columnDefs={gridOptions.columnDefs}
+        defaultColDef={gridOptions.defaultColDef}
+        gridRef={grid}
+        headerDepth={2}
+        rowData={rowData}
+        onFirstDataRendered={() => setActiveSection(index)}
+        onGridReady={() => {
+          if (!rowData.length) {
+            setActiveSection(index)
+          }
+        }}
+      />
+      <Typography id="footnote-1" className="italic" variant="body2">
+        1. If Yes, since when (Date) / If No, planned date.
+      </Typography>
     </>
   )
 }

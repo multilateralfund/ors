@@ -60,6 +60,17 @@
   /* z-index: -1; */
 }
 
+#next-app [class*='ag-theme-'] .ag-cell.ag-error::after {
+  content: '';
+  width: calc(100% - 4px);
+  height: calc(100% - 4px);
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  pointer-events: none;
+  border: 2px var(--ag-row-border-style) theme(colors.error);
+}
+
 #next-app [class*='ag-theme-'] .ag-cell.ag-text-left .ag-cell-value {
   @apply text-left;
 }

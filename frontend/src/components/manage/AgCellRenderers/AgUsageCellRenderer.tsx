@@ -2,7 +2,7 @@
 import { Typography } from '@mui/material'
 import { each, find, get, includes, isNull, isUndefined, sum } from 'lodash'
 
-import { aggFuncs } from '@ors/config/Table'
+import aggFuncs from '@ors/config/Table/aggFuncs'
 
 import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSkeletonCellRenderer'
 import AgTooltipComponent from '@ors/components/manage/AgComponents/AgTooltipComponent'
@@ -19,7 +19,7 @@ export default function AgUsageCellRenderer(props: any) {
   const recordUsages = props.data.record_usages || []
 
   if (
-    props.data.rowType === 'group' ||
+    includes(['group', 'control'], props.data.rowType) ||
     includes(props.data.excluded_usages, usageId)
   ) {
     return null

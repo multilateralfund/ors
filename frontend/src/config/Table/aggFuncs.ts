@@ -1,20 +1,8 @@
 import { filter, find, includes, isNull, sum } from 'lodash'
 
-import { AgAdmCellRenderer } from '@ors/components/manage/AgCellRenderers/AgAdmCellRenderer'
-import AgBooleanCellRenderer from '@ors/components/manage/AgCellRenderers/AgBooleanCellRenderer'
-import AgDateCellRenderer from '@ors/components/manage/AgCellRenderers/AgDateCellRenderer'
-import AgFloatCellRenderer from '@ors/components/manage/AgCellRenderers/AgFloatCellRenderer'
-import AgTextCellRenderer from '@ors/components/manage/AgCellRenderers/AgTextCellRenderer'
-import AgUsageCellRenderer from '@ors/components/manage/AgCellRenderers/AgUsageCellRenderer'
-import AgHeaderComponent from '@ors/components/manage/AgComponents/AgHeaderComponent'
-import AgHeaderGroupComponent from '@ors/components/manage/AgComponents/AgHeaderGroupComponent'
-import CellAutocompleteWidget from '@ors/components/manage/AgWidgets/CellAutocompleteWidget'
-import CellDateWidget from '@ors/components/manage/AgWidgets/CellDateWidget'
-import CellNumberWidget from '@ors/components/manage/AgWidgets/CellNumberWidget'
-import CellTextareaWidget from '@ors/components/manage/AgWidgets/CellTextareaWidget'
 import { parseNumber } from '@ors/helpers/Utils/Utils'
 
-export const aggFuncs = {
+const aggFuncs = {
   sumTotal: (props: any) => {
     let value: null | number = null
     const values: Array<any> = []
@@ -80,32 +68,4 @@ export const aggFuncs = {
   },
 }
 
-export const components = {
-  agAdmCellRenderer: AgAdmCellRenderer,
-  agBooleanCellRenderer: AgBooleanCellRenderer,
-  agColumnHeader: AgHeaderComponent,
-  agColumnHeaderGroup: AgHeaderGroupComponent,
-  agDateCellEditor: CellDateWidget,
-  agDateCellRenderer: AgDateCellRenderer,
-  agFloatCellRenderer: AgFloatCellRenderer,
-  agNumberCellEditor: CellNumberWidget,
-  agSelectCellEditor: CellAutocompleteWidget,
-  agTextCellEditor: CellTextareaWidget,
-  agTextCellRenderer: AgTextCellRenderer,
-  agUsageCellRenderer: AgUsageCellRenderer,
-}
-
-export const defaultRenderer = 'agTextCellRenderer'
-
-export const renderers = {
-  category: {
-    adm: 'agAdmCellRenderer',
-    usage: 'agUsageCellRenderer',
-  },
-  type: {
-    boolean: 'agBooleanCellRenderer',
-    date: 'agDateCellRenderer',
-    number: 'agFloatCellRenderer',
-    text: 'agTextCellRenderer',
-  },
-}
+export default aggFuncs

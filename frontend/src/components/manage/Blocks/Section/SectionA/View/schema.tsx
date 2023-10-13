@@ -20,7 +20,7 @@ function useGridOptions(props: { model: string; usages: any }) {
           headerClass: 'ag-text-left',
           headerName: 'Substance',
           initialWidth: 300,
-          pinned: 'left',
+          // pinned: 'left',
         },
         ...(usages.length
           ? [

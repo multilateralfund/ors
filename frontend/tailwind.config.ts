@@ -199,6 +199,11 @@ module.exports = {
           'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)',
           'transition-duration': '300ms',
         },
+        '.transition-all': {
+          'transition-property': 'all',
+          'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)',
+          'transition-duration': '300ms',
+        },
         '.absolute-center': {
           '--tw-translate-x': '-50%',
           '--tw-translate-y': '-50%',

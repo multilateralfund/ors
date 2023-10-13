@@ -1,15 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
 
-import { IconButton, Typography } from '@mui/material'
-import cx from 'classnames'
-import { each, includes, times, union } from 'lodash'
-
-import Table from '@ors/components/manage/Form/Table'
-import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
+import { each, includes, union } from 'lodash'
+import dynamic from 'next/dynamic'
 
 import useGridOptions from './schema'
-
-import { IoClose } from '@react-icons/all-files/io5/IoClose'
 
 function getGroupName(substance: any) {
   if (substance.blend_id) {
@@ -18,18 +12,14 @@ function getGroupName(substance: any) {
   return substance.group || 'Other'
 }
 
-export default function SectionBView(props: {
-  emptyForm: Record<string, any>
-  exitFullScreen: () => void
-  fullScreen: boolean
-  report: Record<string, Array<any>>
-  variant: any
-}) {
-  const { emptyForm, exitFullScreen, fullScreen, report } = props
+const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
+  ssr: false,
+})
+
+export default function SectionBView(props: any) {
+  const { TableProps, emptyForm, index, report, setActiveSection } = props
   const grid = useRef<any>()
   const gridOptions = useGridOptions({ usages: emptyForm.usage_columns || [] })
-  const [loadTable, setLoadTable] = useState(false)
-  const [loading, setLoading] = useState(true)
 
   const rowData = useMemo(() => {
     let rowData: Array<any> = []
@@ -62,73 +52,24 @@ export default function SectionBView(props: {
       : []
   }, [rowData])
 
-  useEffect(() => {
-    setTimeout(() => setLoadTable(true), 500)
-  }, [])
-
   return (
     <>
-      <HeaderTitle>
-        {report.name && (
-          <Typography className="mb-4 text-white" component="h1" variant="h5">
-            {report.name}
-          </Typography>
-        )}
-      </HeaderTitle>
-      <Typography className="mb-4" component="h2" variant="h6">
-        SECTION B. ANNEX F - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)
-      </Typography>
-      {!loadTable && (
-        <Table
-          columnDefs={gridOptions.columnDefs}
-          defaultColDef={gridOptions.defaultColDef}
-          enablePagination={false}
-          rowData={times(10, () => {
-            return {
-              rowType: 'skeleton',
-            }
-          })}
-          withFluidEmptyColumn
-          withSeparators
-        />
-      )}
-      {loadTable && (
-        <Table
-          className={cx('three-groups', {
-            'full-screen': fullScreen,
-            'opacity-0': loading,
-          })}
-          columnDefs={gridOptions.columnDefs}
-          defaultColDef={gridOptions.defaultColDef}
-          enableCellChangeFlash={true}
-          enablePagination={false}
-          gridRef={grid}
-          headerDepth={4}
-          noRowsOverlayComponentParams={{ label: 'No data reported' }}
-          pinnedBottomRowData={pinnedBottomRowData}
-          rowData={rowData}
-          suppressCellFocus={false}
-          suppressRowHoverHighlight={false}
-          HeaderComponent={
-            fullScreen
-              ? () => {
-                  return (
-                    <IconButton
-                      className="exit-fullscreen p-2 text-primary"
-                      aria-label="exit fullscreen"
-                      onClick={exitFullScreen}
-                    >
-                      <IoClose size={32} />
-                    </IconButton>
-                  )
-                }
-              : () => null
+      <Table
+        {...TableProps}
+        className="three-groups"
+        columnDefs={gridOptions.columnDefs}
+        defaultColDef={gridOptions.defaultColDef}
+        gridRef={grid}
+        headerDepth={3}
+        pinnedBottomRowData={pinnedBottomRowData}
+        rowData={rowData}
+        onFirstDataRendered={() => setActiveSection(index)}
+        onGridReady={() => {
+          if (!rowData.length) {
+            setActiveSection(index)
           }
-          onFirstDataRendered={() => setLoading(false)}
-          withFluidEmptyColumn
-          withSeparators
-        />
-      )}
+        }}
+      />
     </>
   )
 }

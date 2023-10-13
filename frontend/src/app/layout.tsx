@@ -1,6 +1,10 @@
 /* eslint-disable @next/next/no-before-interactive-script-outside-document */
-/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @next/next/no-css-tags */
+import type {
+  CPReportsSlice,
+  CommonSlice,
+  ProjectsSlice,
+} from '@ors/types/store'
 import type { Metadata } from 'next'
 
 import React from 'react'
@@ -13,12 +17,9 @@ import Script from 'next/script'
 
 import View from '@ors/components/theme/Views/View'
 // import config from '@ors/config/base'
-import api from '@ors/helpers/Api/Api'
+import api from '@ors/helpers/Api'
 import { getInitialSliceData } from '@ors/helpers/Store/Store'
 import { getCurrentView } from '@ors/helpers/View/View'
-import { CommonSlice } from '@ors/slices/createCommonSlice'
-import { ProjectsSlice } from '@ors/slices/createProjectSlice'
-import { ReportsSlice } from '@ors/slices/createReportsSlice'
 import { Provider as StoreProvider } from '@ors/store'
 import ThemeProvider from '@ors/themes/ThemeProvider'
 
@@ -53,14 +54,17 @@ async function getInitialProjectsData(): Promise<ProjectsSlice> {
   }
 }
 
-async function getInitialReportsData(): Promise<ReportsSlice> {
-  const blends = api('api/blends/', {}, false)
-  const substances = api('api/substances/', {}, false)
+async function getInitialCPReportsData(): Promise<CPReportsSlice> {
+  const blends = api('api/blends/', { params: { with_usages: true } }, false)
+  const substances = api(
+    'api/substances/',
+    { params: { with_usages: true } },
+    false,
+  )
   const usages = api('api/usages/', {}, false)
 
   return {
     blends: getInitialSliceData(await blends),
-    get: getInitialSliceData(null),
     substances: getInitialSliceData(await substances),
     usages: getInitialSliceData(await usages),
   }
@@ -86,7 +90,7 @@ export default async function RootLayout({
   // const cookies = nextCookies()
   const headers = nextHeaders()
   let user
-  let reports, projects, common
+  let cp_reports, projects, common
   const pathname = headers.get('x-next-pathname')
   // const lang = (headers.get('x-next-lang') ||
   //   config.i18n.defaultLanguage) as Language
@@ -101,7 +105,7 @@ export default async function RootLayout({
 
   if (user) {
     projects = await getInitialProjectsData()
-    reports = await getInitialReportsData()
+    cp_reports = await getInitialCPReportsData()
     common = await getInitialCommonData()
   }
 
@@ -118,6 +122,7 @@ export default async function RootLayout({
         <StoreProvider
           initialState={{
             common,
+            cp_reports,
             header: {
               HeaderTitle: null,
             },
@@ -125,7 +130,6 @@ export default async function RootLayout({
               lang,
             },
             projects,
-            reports,
             theme: {
               mode: theme.value as 'dark' | 'light' | null,
             },

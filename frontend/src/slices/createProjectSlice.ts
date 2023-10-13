@@ -1,16 +1,12 @@
-import { StoreApi } from 'zustand/esm'
+import type {
+  InitialStoreState,
+  ProjectsSlice,
+  StoreState,
+} from '@ors/types/store'
+
+import { StoreApi } from 'zustand'
 
 import { defaultSliceData } from '@ors/helpers/Store/Store'
-import { InitialStoreState, StoreState } from '@ors/store'
-import { SliceData } from '@ors/types/primitives'
-
-export interface ProjectsSlice {
-  meetings: SliceData
-  sectors: SliceData
-  statuses: SliceData
-  subsectors: SliceData
-  types: SliceData
-}
 
 export const createProjectSlice = (
   set: StoreApi<StoreState>['setState'],
