@@ -67,13 +67,14 @@ def parse_file(file_path):
                 logger.error(f"Usage not found for name: {usage_name}")
                 continue
 
-            excluded_usage_data = {
-                "time_frame": time_frame,
-                "substance": substance,
-                "blend": blend,
-                "usage": usage,
-            }
-            excluded_usages.append(ExcludedUsage(**excluded_usage_data))
+            excluded_usages.append(
+                ExcludedUsage(
+                    time_frame=time_frame,
+                    substance=substance,
+                    blend=blend,
+                    usage=usage,
+                )
+            )
 
     ExcludedUsage.objects.bulk_create(excluded_usages, batch_size=1000)
 
