@@ -83,6 +83,8 @@ export default function CPReportView(props: {
     }, 600)
   }, [currentIndex])
 
+  console.log('HERE', props.emptyForm)
+
   return (
     <>
       <Loading

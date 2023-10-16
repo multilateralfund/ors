@@ -7,7 +7,7 @@ import { TablePagination, Typography } from '@mui/material'
 import { ColDef } from 'ag-grid-community'
 import { AgGridReact, AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
-import { times } from 'lodash'
+import { isFunction, times } from 'lodash'
 
 import {
   aggFuncs,
@@ -94,6 +94,12 @@ export default function Table(
         return cx({
           disabled: props.colDef.disabled,
         })
+      },
+      cellClassRules: {
+        'ag-error': (props) =>
+          !!(isFunction(props.colDef.error)
+            ? props.colDef.error(props)
+            : props.colDef.error),
       },
       cellRenderer: (props: any) => {
         return <AgCellRenderer {...props} />

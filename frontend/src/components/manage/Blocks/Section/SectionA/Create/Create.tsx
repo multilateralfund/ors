@@ -111,7 +111,7 @@ export default function SectionACreate(props: any) {
       }
     },
     openAddSubstanceModal: () => setAddSubstanceModal(true),
-    usages: emptyForm.usage_columns || [],
+    usages: emptyForm.usage_columns.section_a || [],
   })
 
   function getUsagesOnCellValueChange(event: CellValueChangedEvent<any>) {

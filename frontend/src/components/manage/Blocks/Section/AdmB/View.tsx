@@ -11,12 +11,10 @@ const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
 })
 
 export default function AdmB(props: any) {
-  const { TableProps, emptyForm, index, report, setActiveSection, variant } =
-    props
+  const { TableProps, emptyForm, index, report, setActiveSection } = props
   const grid = useRef<any>()
   const gridOptions = useGridOptions({
     adm_columns: emptyForm.admB.columns,
-    model: variant.model,
   })
 
   const rowData = useMemo(() => {

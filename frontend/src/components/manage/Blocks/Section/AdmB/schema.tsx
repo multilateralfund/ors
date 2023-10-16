@@ -28,8 +28,9 @@ const defaultColDef: any = {
   },
 }
 
-function useGridOptions(props: { adm_columns: any; model: string }) {
-  const { adm_columns, model } = props
+function useGridOptions(props: { adm_columns: any }) {
+  const { adm_columns } = props
+
   const mapAdmColumn = useCallback((column: any) => {
     return {
       id: column.id,
@@ -81,85 +82,6 @@ function useGridOptions(props: { adm_columns: any; model: string }) {
           marryChildren: true,
         },
         ...(adm_columns.length > 0 ? adm_columns.map(mapAdmColumn) : []),
-        // {
-        //   children: [
-        //     {
-        //       id: 17,
-        //       category: 'adm',
-        //       headerName: 'Yes/No',
-        //       initialWidth: 150,
-        //       type: 'boolean',
-        //     },
-        //     {
-        //       id: 18,
-        //       category: 'adm',
-        //       headerComponentParams: {
-        //         footnote: 1,
-        //         info: 'If Yes, since when (Date) / If No, planned date',
-        //       },
-        //       headerName: 'Date',
-        //       initialWidth: 200,
-        //     },
-        //   ],
-        //   headerClass: 'ag-text-center',
-        //   headerGroupComponent: 'agColumnHeaderGroup',
-        //   headerName: 'HCFC',
-        //   marryChildren: true,
-        // },
-        // ...(includes(['II'], model)
-        //   ? [
-        //       {
-        //         children: [
-        //           {
-        //             id: 15,
-        //             category: 'adm',
-        //             headerName: 'Yes/No',
-        //             initialWidth: 150,
-        //             type: 'boolean',
-        //           },
-        //           {
-        //             id: 16,
-        //             category: 'adm',
-        //             headerComponentParams: {
-        //               footnote: 1,
-        //               info: 'If Yes, since when (Date) / If No, planned date',
-        //             },
-        //             headerName: 'Date',
-        //             initialWidth: 200,
-        //           },
-        //         ],
-        //         headerClass: 'ag-text-center',
-        //         headerGroupComponent: 'agColumnHeaderGroup',
-        //         headerName: 'CFC',
-        //         marryChildren: true,
-        //       },
-        //       {
-        //         children: [
-        //           {
-        //             id: 14,
-        //             category: 'adm',
-        //             headerName: 'Yes/No',
-        //             initialWidth: 150,
-        //             type: 'boolean',
-        //           },
-        //           {
-        //             id: 13,
-        //             category: 'adm',
-        //             headerComponentParams: {
-        //               footnote: 1,
-        //               info: 'If Yes, since when (Date) / If No, planned date',
-        //             },
-        //             headerName: 'Date',
-        //             initialWidth: 200,
-        //           },
-        //         ],
-        //         headerClass: 'ag-text-center',
-        //         headerGroupComponent: 'agColumnHeaderGroup',
-        //         headerName: 'All other ods',
-        //         marryChildren: true,
-        //       },
-        //     ]
-        //   : []),
         {
           field: 'remarks',
           headerName: 'Remarks',
@@ -176,7 +98,7 @@ function useGridOptions(props: { adm_columns: any; model: string }) {
       },
     }),
     // eslint-disable-next-line
-    [model, adm_columns],
+    [adm_columns],
   )
 
   return gridOptions

@@ -43,12 +43,11 @@ const originalColors = {
       DEFAULT: gray[700],
     },
     error: {
-      DEFAULT: colors.red[500],
-      contrastText: '#ffffff',
+      DEFAULT: '#EE3939',
     },
     gray,
     info: {
-      DEFAULT: colors.blue[500],
+      DEFAULT: '#049F9A',
     },
     mui: {
       box: {
@@ -73,7 +72,7 @@ const originalColors = {
       contrastText: '#ffffff',
     },
     success: {
-      DEFAULT: colors.green[500],
+      DEFAULT: '#36A41D',
     },
     typography: {
       DEFAULT: 'rgba(255, 255, 255, 1)',
@@ -83,7 +82,7 @@ const originalColors = {
       secondary: 'rgba(255, 255, 255, 0.7)',
     },
     warning: {
-      DEFAULT: colors.orange[500],
+      DEFAULT: '#E76500',
     },
   },
   light: {
@@ -99,11 +98,11 @@ const originalColors = {
       DEFAULT: gray[200],
     },
     error: {
-      DEFAULT: colors.red[500],
+      DEFAULT: '#EE3939',
     },
     gray,
     info: {
-      DEFAULT: colors.blue[500],
+      DEFAULT: '#049F9A',
     },
     mui: {
       box: {
@@ -128,8 +127,7 @@ const originalColors = {
       contrastText: '#ffffff',
     },
     success: {
-      DEFAULT: colors.green[500],
-      contrastText: '#000000',
+      DEFAULT: '#36A41D',
     },
     typography: {
       DEFAULT: gray[900],
@@ -139,7 +137,7 @@ const originalColors = {
       secondary: gray[700],
     },
     warning: {
-      DEFAULT: colors.orange[500],
+      DEFAULT: '#E76500',
     },
   },
 }

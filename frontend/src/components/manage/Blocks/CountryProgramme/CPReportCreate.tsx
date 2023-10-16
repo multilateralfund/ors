@@ -86,7 +86,13 @@ const parseLocalStorageItem = (key: string) => {
   }
 }
 
-const getInitialForm = (mandatoryForm: any) => {
+const getInitialForm = (
+  mandatoryForm: any,
+  // blends: Array<any> = [],
+  // substances_a: Array<any> = [],
+  // substances_b: Array<any> = [],
+  // substances_c: Array<any> = [],
+) => {
   const section_a = parseLocalStorageItem('section_a_create') || []
   const section_b = parseLocalStorageItem('section_b_create') || []
   const section_c = parseLocalStorageItem('section_c_create') || []
@@ -199,7 +205,15 @@ export default function CPReportCreate(props: {
     },
     year: new Date().getFullYear(),
   })
-  const [form, setForm] = useState(getInitialForm(mandatoryForm))
+  const [form, setForm] = useState(
+    getInitialForm(
+      mandatoryForm,
+      // blends,
+      // substances_a,
+      // substances_b,
+      // substances_c,
+    ),
+  )
 
   const [sections] = useState(getCreateSections())
 
@@ -272,12 +286,14 @@ export default function CPReportCreate(props: {
           <Field
             id="country"
             name="country_id"
-            Input={{ label: 'Country' }}
-            error={!!errors.country_id}
-            helperText={errors.country_id}
             options={countries}
             value={form.country}
             widget="autocomplete"
+            Input={{
+              error: !!errors.country_id,
+              helperText: errors.country_id,
+              label: 'Country',
+            }}
             onChange={(_: any, country: any) => {
               setForm({ ...form, country })
             }}

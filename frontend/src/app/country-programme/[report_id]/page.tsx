@@ -45,7 +45,7 @@ export default async function CountryProgrammeReport({ params }: ReportProps) {
   }
 
   function mapUsage(usage: any) {
-    const children = usage.children.filter(filterUsage)
+    const children = usage.children?.filter(filterUsage) || []
     return {
       id: usage.id,
       category: usage.columnCategory,
@@ -70,9 +70,20 @@ export default async function CountryProgrammeReport({ params }: ReportProps) {
         report={report}
         emptyForm={{
           ...emptyForm,
-          usage_columns: emptyForm.usage_columns
-            .filter(filterUsage)
-            .map(mapUsage),
+          ...(emptyForm.usage_columns
+            ? {
+                usage_columns: {
+                  section_a:
+                    emptyForm.usage_columns.section_a
+                      ?.filter(filterUsage)
+                      .map(mapUsage) || [],
+                  section_b:
+                    emptyForm.usage_columns.section_b
+                      ?.filter(filterUsage)
+                      .map(mapUsage) || [],
+                },
+              }
+            : {}),
         }}
       />
     </PageWrapper>

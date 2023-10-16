@@ -19,7 +19,9 @@ const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
 export default function SectionBView(props: any) {
   const { TableProps, emptyForm, index, report, setActiveSection } = props
   const grid = useRef<any>()
-  const gridOptions = useGridOptions({ usages: emptyForm.usage_columns || [] })
+  const gridOptions = useGridOptions({
+    usages: emptyForm.usage_columns.section_b || [],
+  })
 
   const rowData = useMemo(() => {
     let rowData: Array<any> = []
@@ -56,11 +58,11 @@ export default function SectionBView(props: any) {
     <>
       <Table
         {...TableProps}
-        className="three-groups"
+        className="four-groups"
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
         gridRef={grid}
-        headerDepth={3}
+        headerDepth={4}
         pinnedBottomRowData={pinnedBottomRowData}
         rowData={rowData}
         onFirstDataRendered={() => setActiveSection(index)}

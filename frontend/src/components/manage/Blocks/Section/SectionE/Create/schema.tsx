@@ -1,9 +1,11 @@
 import { useMemo } from 'react'
 
-import { Button, IconButton, Typography } from '@mui/material'
+import { Button, IconButton } from '@mui/material'
 import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
+
+import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 
 import { IoTrash } from '@react-icons/all-files/io5/IoTrash'
 
@@ -18,11 +20,7 @@ function useGridOptions(props: {
       columnDefs: [
         {
           cellClass: (props) => {
-            console.log('HERE', props)
             return cx('bg-mui-box-background', {
-              'ag-error':
-                !!errors.section_e?.[props.rowIndex]?.facility &&
-                !props.node.rowPinned,
               'ag-flex-cell': props.data.rowType === 'control',
             })
           },
@@ -40,28 +38,53 @@ function useGridOptions(props: {
               )
             }
             return (
-              <Typography className={props.className} component="span">
-                {!props.data.rowType && !props.data.mandatory && (
+              <AgCellRenderer
+                {...props}
+                value={
                   <>
-                    <IconButton
-                      color="error"
-                      onClick={() => {
-                        removeFacility(props)
-                      }}
-                    >
-                      <IoTrash size="1rem" />
-                    </IconButton>{' '}
+                    {!props.data.rowType && !props.data.mandatory && (
+                      <>
+                        <IconButton
+                          color="error"
+                          onClick={() => {
+                            removeFacility(props)
+                          }}
+                        >
+                          <IoTrash size="1rem" />
+                        </IconButton>{' '}
+                      </>
+                    )}
+                    {props.value}
                   </>
-                )}
-                {props.value}
-              </Typography>
+                }
+              />
             )
+            // return (
+            //   <Typography className={props.className} component="span">
+            //     {!props.data.rowType && !props.data.mandatory && (
+            //       <>
+            //         <IconButton
+            //           color="error"
+            //           onClick={() => {
+            //             removeFacility(props)
+            //           }}
+            //         >
+            //           <IoTrash size="1rem" />
+            //         </IconButton>{' '}
+            //       </>
+            //     )}
+            //     {props.value}
+            //   </Typography>
+            // )
           },
           cellRendererParams: (props: any) => ({
             className: cx({
               'font-bold': includes(['group', 'total'], props.data.rowType),
             }),
           }),
+          error: (props) =>
+            props.data.rowId === `facility_${props.rowIndex + 1}` &&
+            errors.section_e?.[props.rowIndex]?.facility,
           field: 'facility',
           headerClass: 'ag-text-left',
           headerName: 'Facility name or identifier',
