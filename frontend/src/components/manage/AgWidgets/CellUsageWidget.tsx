@@ -162,7 +162,7 @@ export const CellUsageWidget = memo(
         return {
           // the final value to send to the grid, on completion of editing
           getValue() {
-            const newUsages = [...props.data.record_usages]
+            const newUsages = [...(props.data.record_usages || [])]
             let finalValue = parseNumber(value)
             const min = parseNumber(props.min)
             const max = parseNumber(props.max)

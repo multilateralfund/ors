@@ -4,6 +4,8 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
+import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+
 function useGridOptions() {
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
@@ -17,14 +19,14 @@ function useGridOptions() {
         field: 'facility',
         headerClass: 'ag-text-left',
         headerName: 'Facility name or identifier',
-        initialWidth: 400,
+        ...colDefById['facility'],
       },
       {
         aggFunc: 'sumTotal',
         cellRenderer: 'agFloatCellRenderer',
         field: 'total',
         headerName: 'Total amount generated',
-        initialWidth: 240,
+        ...colDefById['total_amount_generated'],
       },
       {
         children: [
@@ -33,18 +35,21 @@ function useGridOptions() {
             cellRenderer: 'agFloatCellRenderer',
             field: 'all_uses',
             headerName: 'For all uses',
+            ...colDefById['all_uses'],
           },
           {
             aggFunc: 'sumTotal',
             cellRenderer: 'agFloatCellRenderer',
             field: 'feedstock_gc',
             headerName: 'For feedstock use in your country',
+            ...colDefById['feedstock_gc'],
           },
           {
             aggFunc: 'sumTotal',
             cellRenderer: 'agFloatCellRenderer',
             field: 'destruction',
             headerName: 'For destruction',
+            ...colDefById['destruction'],
           },
         ],
         groupId: 'amount_generated_and_captured',
@@ -57,30 +62,33 @@ function useGridOptions() {
         cellRenderer: 'agFloatCellRenderer',
         field: 'feedstock_wpc',
         headerName: 'Amount used for feedstock without prior capture',
+        ...colDefById['feedstock_wpc'],
       },
       {
         aggFunc: 'sumTotal',
         cellRenderer: 'agFloatCellRenderer',
         field: 'destruction_wpc',
         headerName: 'Amount destroyed without prior capture',
+        ...colDefById['destruction_wpc'],
       },
       {
         aggFunc: 'sumTotal',
         cellRenderer: 'agFloatCellRenderer',
         field: 'generated_emissions',
         headerName: 'Amount of generated emission',
+        ...colDefById['generated_emissions'],
       },
       {
         field: 'remarks',
         headerName: 'Remarks',
-        initialWidth: 300,
+        ...colDefById['remarks'],
       },
     ],
     defaultColDef: {
       autoHeight: true,
       cellClass: 'ag-text-right',
       headerClass: 'ag-text-center',
-      minWidth: 200,
+      minWidth: defaultColDef.minWidth,
       resizable: true,
       wrapText: true,
     },

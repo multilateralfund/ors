@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 
 import { isNull, isUndefined } from 'lodash'
 
+import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+
 import CPReportView from '@ors/components/manage/Blocks/CountryProgramme/CPReportView'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import api from '@ors/helpers/Api'
@@ -51,7 +53,8 @@ export default async function CountryProgrammeReport({ params }: ReportProps) {
       category: usage.columnCategory,
       cellDataType: 'number',
       headerName: usage.headerName,
-      // ...(colDefByUsageId[usage.id] || {}),
+      initialWidth: defaultColDef.minWidth,
+      ...(colDefById[usage.full_name] || {}),
       ...(children.length
         ? {
             children: children.map(mapUsage),

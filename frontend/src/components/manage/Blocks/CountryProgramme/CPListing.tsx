@@ -102,7 +102,7 @@ function GeneralSection(props: SectionProps) {
   const { countries, filters, groupBy, maxYear, minYear, reports, setFilters } =
     props
   const [range, setRange] = useState([filters.range[0], filters.range[1]])
-  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 42 })
+  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 100 })
   const [ordering, setOrdering] = useState<'asc' | 'desc'>(
     groupBy === 'country' ? 'asc' : 'desc',
   )

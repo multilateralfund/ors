@@ -4,29 +4,7 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-const defaultColDef: any = {
-  B_all_other_ods_date: {
-    headerComponentParams: {
-      footnote: 1,
-      info: 'If Yes, since when (Date) / If No, planned date',
-    },
-    headerName: 'Date',
-  },
-  B_cfc_date: {
-    headerComponentParams: {
-      footnote: 1,
-      info: 'If Yes, since when (Date) / If No, planned date',
-    },
-    headerName: 'Date',
-  },
-  B_hcfc_date: {
-    headerComponentParams: {
-      footnote: 1,
-      info: 'If Yes, since when (Date) / If No, planned date',
-    },
-    headerName: 'Date',
-  },
-}
+import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
 
 function useGridOptions(props: { adm_columns: any }) {
   const { adm_columns } = props
@@ -36,6 +14,7 @@ function useGridOptions(props: { adm_columns: any }) {
       id: column.id,
       category: 'adm',
       headerName: column.display_name,
+      initialWidth: defaultColDef.minWidth,
       type: column.type,
       ...(column.children.length
         ? {
@@ -44,7 +23,7 @@ function useGridOptions(props: { adm_columns: any }) {
             marryChildren: true,
           }
         : {}),
-      ...(defaultColDef[column.full_name] || {}),
+      ...(colDefById[column.full_name] || {}),
     }
   }, [])
 
@@ -57,7 +36,7 @@ function useGridOptions(props: { adm_columns: any }) {
               cellClass: 'bg-mui-box-background',
               field: 'index',
               headerName: '',
-              initialWidth: 100,
+              initialWidth: defaultColDef.minWidth,
             },
             {
               cellClass: 'bg-mui-box-background',
@@ -71,9 +50,8 @@ function useGridOptions(props: { adm_columns: any }) {
                 }),
               }),
               field: 'text',
-              flex: 1,
               headerName: '',
-              minWidth: 700,
+              ...colDefById['type_of_action'],
             },
           ],
           headerClass: 'ag-text-center',
@@ -85,14 +63,14 @@ function useGridOptions(props: { adm_columns: any }) {
         {
           field: 'remarks',
           headerName: 'Remarks',
-          initialWidth: 300,
+          ...colDefById['remarks'],
         },
       ],
       defaultColDef: {
         autoHeight: true,
         cellClass: 'ag-text-center',
         headerClass: 'ag-text-center',
-        minWidth: 100,
+        minWidth: defaultColDef.minWidth,
         resizable: true,
         wrapText: true,
       },

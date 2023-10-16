@@ -4,7 +4,7 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-const defaultColDef: any = {}
+import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
 
 function useGridOptions(props: { adm_columns: any }) {
   const { adm_columns } = props
@@ -14,6 +14,7 @@ function useGridOptions(props: { adm_columns: any }) {
       id: column.id,
       category: 'adm',
       headerName: column.display_name,
+      initialWidth: defaultColDef.minWidth,
       type: column.type,
       ...(column.children.length
         ? {
@@ -22,7 +23,7 @@ function useGridOptions(props: { adm_columns: any }) {
             marryChildren: true,
           }
         : {}),
-      ...(defaultColDef[column.full_name] || {}),
+      ...(colDefById[column.full_name] || {}),
     }
   }, [])
 
@@ -40,24 +41,23 @@ function useGridOptions(props: { adm_columns: any }) {
             }),
           }),
           field: 'text',
-          flex: 1,
           headerClass: 'ag-text-left',
           headerGroupComponent: 'agColumnHeaderGroup',
           headerName: 'Description',
-          initialWidth: 200,
+          ...colDefById['adm_c_description'],
         },
         ...(adm_columns.length > 0 ? adm_columns.map(mapAdmColumn) : []),
         {
           field: 'remarks',
           headerName: 'Remarks',
-          initialWidth: 300,
+          ...colDefById['remarks'],
         },
       ],
       defaultColDef: {
         autoHeight: true,
         cellClass: 'ag-text-center',
         headerClass: 'ag-text-center',
-        minWidth: 130,
+        minWidth: defaultColDef.minWidth,
         resizable: true,
         wrapText: true,
       },
