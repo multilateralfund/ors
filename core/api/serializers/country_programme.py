@@ -41,7 +41,7 @@ class BaseRowSerializer(serializers.ModelSerializer):
                 "row_id": row_id,
                 "errors": e.detail,
             }
-            raise ValidationError(raport_error)
+            raise ValidationError(raport_error) from e
         internal_value.pop("rowId", None)
         return internal_value
 
@@ -154,7 +154,7 @@ class CPUsageSerializer(serializers.ModelSerializer):
                 "row_id": row_id,
                 "errors": e.detail,
             }
-            raise ValidationError(raport_error)
+            raise ValidationError(raport_error) from e
 
         return intenal_value
 
