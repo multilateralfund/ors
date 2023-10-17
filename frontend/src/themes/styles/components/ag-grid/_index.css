@@ -3,6 +3,10 @@
 @import './row.css';
 @import './cell.css';
 
+#next-app [class*='ag-theme-'] .ag-body-horizontal-scroll {
+  @apply !relative;
+}
+
 #next-app [class*='ag-theme-'] .ag-root-wrapper {
   @apply rounded;
 

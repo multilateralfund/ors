@@ -1,9 +1,13 @@
 import { useMemo } from 'react'
 
-import { Button, IconButton, Typography } from '@mui/material'
+import { Button, IconButton } from '@mui/material'
 import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
+
+import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+
+import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 
 import { IoTrash } from '@react-icons/all-files/io5/IoTrash'
 
@@ -18,11 +22,7 @@ function useGridOptions(props: {
       columnDefs: [
         {
           cellClass: (props) => {
-            console.log('HERE', props)
             return cx('bg-mui-box-background', {
-              'ag-error':
-                !!errors.section_e?.[props.rowIndex]?.facility &&
-                !props.node.rowPinned,
               'ag-flex-cell': props.data.rowType === 'control',
             })
           },
@@ -40,21 +40,26 @@ function useGridOptions(props: {
               )
             }
             return (
-              <Typography className={props.className} component="span">
-                {!props.data.rowType && !props.data.mandatory && (
+              <AgCellRenderer
+                {...props}
+                value={
                   <>
-                    <IconButton
-                      color="error"
-                      onClick={() => {
-                        removeFacility(props)
-                      }}
-                    >
-                      <IoTrash size="1rem" />
-                    </IconButton>{' '}
+                    {!props.data.rowType && !props.data.mandatory && (
+                      <>
+                        <IconButton
+                          color="error"
+                          onClick={() => {
+                            removeFacility(props)
+                          }}
+                        >
+                          <IoTrash size="1rem" />
+                        </IconButton>{' '}
+                      </>
+                    )}
+                    {props.value}
                   </>
-                )}
-                {props.value}
-              </Typography>
+                }
+              />
             )
           },
           cellRendererParams: (props: any) => ({
@@ -62,11 +67,13 @@ function useGridOptions(props: {
               'font-bold': includes(['group', 'total'], props.data.rowType),
             }),
           }),
+          error: (props) =>
+            props.data.rowId === `facility_${props.rowIndex + 1}` &&
+            errors.section_e?.[props.rowIndex]?.facility,
           field: 'facility',
           headerClass: 'ag-text-left',
           headerName: 'Facility name or identifier',
-          initialWidth: 400,
-          minWidth: 160,
+          ...colDefById['facility'],
         },
         {
           aggFunc: 'sumTotal',
@@ -77,7 +84,7 @@ function useGridOptions(props: {
             footnote: 2,
           },
           headerName: 'Total amount generated',
-          initialWidth: 240,
+          ...colDefById['total_amount_generated'],
         },
         {
           children: [
@@ -87,6 +94,7 @@ function useGridOptions(props: {
               cellRenderer: 'agFloatCellRenderer',
               field: 'all_uses',
               headerName: 'For all uses',
+              ...colDefById['all_uses'],
             },
             {
               aggFunc: 'sumTotal',
@@ -94,6 +102,7 @@ function useGridOptions(props: {
               cellRenderer: 'agFloatCellRenderer',
               field: 'feedstock_gc',
               headerName: 'For feedstock use in your country',
+              ...colDefById['feedstock_gc'],
             },
             {
               aggFunc: 'sumTotal',
@@ -101,6 +110,7 @@ function useGridOptions(props: {
               cellRenderer: 'agFloatCellRenderer',
               field: 'destruction',
               headerName: 'For destruction',
+              ...colDefById['destruction'],
             },
           ],
           groupId: 'amount_generated_and_captured',
@@ -120,6 +130,7 @@ function useGridOptions(props: {
             footnote: 4,
           },
           headerName: 'Amount used for feedstock without prior capture',
+          ...colDefById['feedstock_wpc'],
         },
         {
           aggFunc: 'sumTotal',
@@ -130,6 +141,7 @@ function useGridOptions(props: {
             footnote: 5,
           },
           headerName: 'Amount destroyed without prior capture',
+          ...colDefById['destruction_wpc'],
         },
         {
           aggFunc: 'sumTotal',
@@ -137,12 +149,13 @@ function useGridOptions(props: {
           cellRenderer: 'agFloatCellRenderer',
           field: 'generated_emissions',
           headerName: 'Amount of generated emission',
+          ...colDefById['generated_emissions'],
         },
         {
           cellEditor: 'agTextCellEditor',
           field: 'remarks',
           headerName: 'Remarks',
-          initialWidth: 300,
+          ...colDefById['remarks'],
         },
       ],
       defaultColDef: {
@@ -151,7 +164,7 @@ function useGridOptions(props: {
         editable: (props) =>
           !includes(['total', 'control'], props.data.rowType),
         headerClass: 'ag-text-center',
-        minWidth: 200,
+        minWidth: defaultColDef.minWidth,
         resizable: true,
         wrapText: true,
       },

@@ -1,4 +1,3 @@
-/* eslint-disable react/display-name */
 import type { InputLabelProps, TextFieldProps } from '@mui/material'
 
 import { forwardRef } from 'react'
@@ -24,24 +23,22 @@ export type TextWidgetProps = TextFieldProps & {
   InputLabel?: InputLabelProps & { label?: React.ReactNode }
 }
 
-const TextWidget = forwardRef(
-  (
-    { InputLabel, className, ...rest }: TextWidgetProps,
-    ref: any,
-  ): JSX.Element => {
-    return (
-      <>
-        <Label {...(InputLabel || {})} id={rest.id} />
-        <TextField
-          className={cx('w-full', className)}
-          ref={ref}
-          size="small"
-          variant="outlined"
-          {...rest}
-        />
-      </>
-    )
-  },
-)
+const TextWidget = forwardRef(function TextWidget(
+  { InputLabel, className, ...rest }: TextWidgetProps,
+  ref: any,
+): JSX.Element {
+  return (
+    <>
+      <Label {...(InputLabel || {})} id={rest.id} />
+      <TextField
+        className={cx('w-full', className)}
+        ref={ref}
+        size="small"
+        variant="outlined"
+        {...rest}
+      />
+    </>
+  )
+})
 
 export default TextWidget

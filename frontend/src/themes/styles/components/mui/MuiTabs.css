@@ -18,6 +18,10 @@
   opacity: 0.3;
 }
 
+.MuiButtonBase-root.MuiTab-root.MuiTab-error:not(.Mui-selected) {
+  @apply text-error;
+}
+
 .MuiButtonBase-root.MuiTab-root.MuiTab-error::after {
   content: '';
   width: 100%;

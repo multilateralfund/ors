@@ -15,7 +15,7 @@ export default function SectionAView(props: any) {
   const grid = useRef<any>()
   const gridOptions = useGridOptions({
     model: variant.model,
-    usages: emptyForm.usage_columns || [],
+    usages: emptyForm.usage_columns.section_a || [],
   })
 
   const rowData = useMemo(() => {

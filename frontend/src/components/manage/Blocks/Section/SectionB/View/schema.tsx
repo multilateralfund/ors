@@ -4,6 +4,8 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
+import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+
 function useGridOptions(props: { usages: Array<any> }) {
   const { usages } = props
   const gridOptions: GridOptions = useMemo(
@@ -19,8 +21,7 @@ function useGridOptions(props: { usages: Array<any> }) {
           field: 'display_name',
           headerClass: 'ag-text-left',
           headerName: 'Substance',
-          initialWidth: 340,
-          // pinned: 'left',
+          ...colDefById['display_name'],
         },
         ...(usages.length
           ? [
@@ -32,7 +33,7 @@ function useGridOptions(props: { usages: Array<any> }) {
                     aggFunc: 'sumTotalUsages',
                     category: 'usage',
                     headerName: 'TOTAL',
-                    initialWidth: 140,
+                    ...colDefById['total_usages'],
                   },
                 ],
                 headerGroupComponent: 'agColumnHeaderGroup',
@@ -46,53 +47,53 @@ function useGridOptions(props: { usages: Array<any> }) {
           cellRenderer: 'agFloatCellRenderer',
           field: 'imports',
           headerName: 'Import',
-          initialWidth: 130,
+          ...colDefById['imports'],
         },
         {
           aggFunc: 'sumTotal',
           cellRenderer: 'agFloatCellRenderer',
           field: 'exports',
           headerName: 'Export',
-          initialWidth: 130,
+          ...colDefById['exports'],
         },
         {
           aggFunc: 'sumTotal',
           cellRenderer: 'agFloatCellRenderer',
           field: 'production',
           headerName: 'Production',
-          initialWidth: 130,
+          ...colDefById['production'],
         },
         {
           aggFunc: 'sumTotal',
           cellRenderer: 'agFloatCellRenderer',
           field: 'manufacturing_blends',
           headerName: 'Manufacturing of Blends',
-          initialWidth: 250,
+          ...colDefById['manufacturing_blends'],
         },
         {
           aggFunc: 'sumTotal',
           cellRenderer: 'agFloatCellRenderer',
           field: 'import_quotas',
           headerName: 'Import Quotas',
-          initialWidth: 150,
+          ...colDefById['import_quotas'],
         },
         {
           cellRenderer: 'agDateCellRenderer',
           field: 'banned_date',
           headerName: 'Date ban commenced (DD/MM/YYYY)',
-          initialWidth: 200,
+          ...colDefById['banned_date'],
         },
         {
           field: 'remarks',
           headerName: 'Remarks',
-          initialWidth: 300,
+          ...colDefById['remarks'],
         },
       ],
       defaultColDef: {
         autoHeight: true,
         cellClass: 'ag-text-right',
         headerClass: 'ag-text-center',
-        minWidth: 130,
+        minWidth: defaultColDef.minWidth,
         resizable: true,
         wrapText: true,
       },

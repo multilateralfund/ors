@@ -72,7 +72,7 @@ export default function SectionACreate(props: any) {
     (state) => getResults(state.cp_reports.substances.data).results,
   )
   const grid = useRef<any>()
-  const [initialRowData] = useState(getRowData(form.section_a))
+  const [initialRowData] = useState(() => getRowData(form.section_a))
   const [addSubstanceModal, setAddSubstanceModal] = useState(false)
 
   const substancesOptions = useMemo(() => {
@@ -111,7 +111,7 @@ export default function SectionACreate(props: any) {
       }
     },
     openAddSubstanceModal: () => setAddSubstanceModal(true),
-    usages: emptyForm.usage_columns || [],
+    usages: emptyForm.usage_columns.section_a || [],
   })
 
   function getUsagesOnCellValueChange(event: CellValueChangedEvent<any>) {

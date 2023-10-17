@@ -55,9 +55,9 @@
   --ag-secondary-border-color: theme(colors.typography);
   --ag-secondary-foreground-color: theme(colors.typography-primary);
   --ag-tooltip-background-color: #f8f8f8;
-  --ag-value-change-delta-down-color: theme(colors.success);
+  --ag-value-change-delta-down-color: theme(colors.error);
   --ag-value-change-delta-up-color: theme(colors.success);
-  --ag-value-change-value-highlight-background-color: rgb(22 160 133 / 50%);
+  --ag-value-change-value-highlight-background-color: theme(colors.success/40);
   --ag-widget-container-horizontal-padding: calc(var(--ag-grid-size) * 2);
   --ag-widget-container-vertical-padding: calc(var(--ag-grid-size) * 2);
   --ag-widget-horizontal-spacing: calc(var(--ag-grid-size) * 2);

@@ -113,7 +113,7 @@ export default function SectionBCreate(props: any) {
   )
 
   const grid = useRef<any>()
-  const [initialRowData] = useState(getRowData(form.section_b))
+  const [initialRowData] = useState(() => getRowData(form.section_b))
 
   const [blendForm, setBlendForm, prevBlendForm] = useStateWithPrev<any>({
     components: [],
@@ -185,7 +185,7 @@ export default function SectionBCreate(props: any) {
       }
     },
     openAddChimicalModal: () => setAddChimicalModal(true),
-    usages: emptyForm.usage_columns || [],
+    usages: emptyForm.usage_columns.section_b || [],
   })
 
   function getUsagesOnCellValueChange(event: CellValueChangedEvent<any>) {
@@ -581,7 +581,7 @@ export default function SectionBCreate(props: any) {
                           )
                           enqueueSnackbar(
                             `Blend ${serializedBlend.name} already exists in the form.`,
-                            { variant: 'success' },
+                            { variant: 'info' },
                           )
                           scrollToElement(
                             `.ag-row[row-id=${serializedBlend.rowId}]`,
@@ -623,7 +623,7 @@ export default function SectionBCreate(props: any) {
                               </span>{' '}
                               created succesfuly.
                             </>,
-                            { variant: 'success' },
+                            { variant: 'info' },
                           )
                         }
                         setBlendFormErrors({})

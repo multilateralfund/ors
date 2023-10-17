@@ -65,7 +65,7 @@ export default function SectionCCreate(props: any) {
   )
 
   const grid = useRef<any>()
-  const [initialRowData] = useState(getRowData(form.section_c))
+  const [initialRowData] = useState(() => getRowData(form.section_c))
 
   const [addChimicalModal, setAddChimicalModal] = useState(false)
 

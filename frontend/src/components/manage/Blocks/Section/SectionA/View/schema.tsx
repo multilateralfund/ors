@@ -4,6 +4,8 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
+import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+
 function useGridOptions(props: { model: string; usages: any }) {
   const { model, usages } = props
 
@@ -19,8 +21,7 @@ function useGridOptions(props: { model: string; usages: any }) {
           field: 'display_name',
           headerClass: 'ag-text-left',
           headerName: 'Substance',
-          initialWidth: 300,
-          // pinned: 'left',
+          ...colDefById['display_name'],
         },
         ...(usages.length
           ? [
@@ -32,7 +33,7 @@ function useGridOptions(props: { model: string; usages: any }) {
                     aggFunc: 'sumTotalUsages',
                     category: 'usage',
                     headerName: 'TOTAL',
-                    initialWidth: 140,
+                    ...colDefById['total_usages'],
                   },
                 ],
                 headerGroupComponent: 'agColumnHeaderGroup',
@@ -46,21 +47,21 @@ function useGridOptions(props: { model: string; usages: any }) {
           cellRenderer: 'agFloatCellRenderer',
           field: 'imports',
           headerName: 'Import',
-          initialWidth: 130,
+          ...colDefById['imports'],
         },
         {
           aggFunc: 'sumTotal',
           cellRenderer: 'agFloatCellRenderer',
           field: 'exports',
           headerName: 'Export',
-          initialWidth: 130,
+          ...colDefById['exports'],
         },
         {
           aggFunc: 'sumTotal',
           cellRenderer: 'agFloatCellRenderer',
           field: 'production',
           headerName: 'Production',
-          initialWidth: 130,
+          ...colDefById['production'],
         },
         ...(includes(['IV'], model)
           ? [
@@ -69,7 +70,7 @@ function useGridOptions(props: { model: string; usages: any }) {
                 cellRenderer: 'agFloatCellRenderer',
                 field: 'import_quotas',
                 headerName: 'Import Quotas',
-                initialWidth: 150,
+                ...colDefById['import_quotas'],
               },
             ]
           : []),
@@ -79,7 +80,7 @@ function useGridOptions(props: { model: string; usages: any }) {
                 cellRenderer: 'agDateCellRenderer',
                 field: 'banned_date',
                 headerName: 'Date ban commenced (DD/MM/YYYY)',
-                initialWidth: 200,
+                ...colDefById['banned_date'],
               },
             ]
           : []),
@@ -89,7 +90,7 @@ function useGridOptions(props: { model: string; usages: any }) {
                 cellClass: 'ag-text-left',
                 field: 'remarks',
                 headerName: 'Remarks',
-                initialWidth: 300,
+                ...colDefById['remarks'],
               },
             ]
           : []),
@@ -110,7 +111,7 @@ function useGridOptions(props: { model: string; usages: any }) {
           })
         },
         headerClass: 'ag-text-center',
-        minWidth: 130,
+        minWidth: defaultColDef.minWidth,
         resizable: true,
         wrapText: true,
       },

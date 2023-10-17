@@ -39,7 +39,7 @@ export default function AgFloatCellRenderer(props: any) {
 
   return (
     <AgTooltipComponent {...props} value={formattedValue}>
-      <Typography className={props.className} component="span">
+      <Typography className={props.className} component="span" lineHeight={1}>
         {formattedValue}
       </Typography>
     </AgTooltipComponent>

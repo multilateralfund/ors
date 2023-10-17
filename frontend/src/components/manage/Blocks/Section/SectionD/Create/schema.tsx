@@ -4,6 +4,8 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
+import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+
 function useGridOptions() {
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
@@ -17,6 +19,7 @@ function useGridOptions() {
         field: 'display_name',
         headerClass: 'ag-text-left',
         headerName: 'Substance',
+        ...colDefById['display_name'],
       },
       {
         cellEditor: 'agNumberCellEditor',
@@ -25,6 +28,7 @@ function useGridOptions() {
         field: 'all_uses',
         headerComponentParams: { footnote: 2 },
         headerName: 'Captured for all uses',
+        ...colDefById['all_uses'],
       },
       {
         cellEditor: 'agNumberCellEditor',
@@ -33,7 +37,7 @@ function useGridOptions() {
         field: 'feedstock',
         headerComponentParams: { footnote: 3 },
         headerName: 'Captured for feedstock uses within your country',
-        initialWidth: 400,
+        ...colDefById['feedstock'],
       },
       {
         cellEditor: 'agNumberCellEditor',
@@ -41,14 +45,14 @@ function useGridOptions() {
         editable: true,
         field: 'destruction',
         headerName: 'Captured for destruction',
-        initialWidth: 240,
+        ...colDefById['destruction'],
       },
     ],
     defaultColDef: {
       autoHeight: true,
       cellClass: 'ag-text-right',
       headerClass: 'ag-text-center',
-      minWidth: 200,
+      minWidth: defaultColDef.minWidth,
       resizable: true,
       wrapText: true,
     },

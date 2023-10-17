@@ -4,16 +4,11 @@ import cx from 'classnames'
 
 import Image from '@ors/components/ui/Image/Image'
 
-import { useTranslation } from '@ors/i18n/client'
-
 export type LogoProps = {
   className?: string
 }
 
 export default function Logo({ className }: LogoProps) {
-  const { lang } = useTranslation()
-  const logoUrl = `/assets/logos/logo_${lang}.png`
-
   return (
     <div
       className={cx(
@@ -26,7 +21,7 @@ export default function Logo({ className }: LogoProps) {
         alt="Multilateral Fund"
         priority={true}
         sizes="240px"
-        src={logoUrl}
+        src="/assets/logos/logo_en.png"
       />
     </div>
   )

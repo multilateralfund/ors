@@ -11,7 +11,7 @@ export default function AgTextCellRenderer(props: any) {
 
   return (
     <AgTooltipComponent {...props}>
-      <Typography className={props.className} component="span">
+      <Typography className={props.className} component="span" lineHeight={1}>
         {props.value}
       </Typography>
     </AgTooltipComponent>

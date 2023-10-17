@@ -6,11 +6,11 @@ import cx from 'classnames'
 import { AnimatePresence } from 'framer-motion'
 import { filter } from 'lodash'
 
+import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 
 import { getViewSections, variants } from '.'
-import FadeInOut from '../../Transitions/FadeInOut'
 
 import { IoClose } from '@react-icons/all-files/io5/IoClose'
 import { IoExpand } from '@react-icons/all-files/io5/IoExpand'
@@ -75,7 +75,7 @@ export default function CPReportView(props: {
       return variant.minYear <= year && variant.maxYear >= year
     })[0],
   )
-  const [sections] = useState(getViewSections(variant))
+  const [sections] = useState(() => getViewSections(variant))
 
   useEffect(() => {
     setTimeout(() => {
@@ -176,7 +176,6 @@ export default function CPReportView(props: {
             noRowsOverlayComponentParams: { label: 'No data reported' },
             suppressCellFocus: false,
             suppressRowHoverHighlight: false,
-            withFluidEmptyColumn: true,
             withSeparators: true,
           }}
         />
