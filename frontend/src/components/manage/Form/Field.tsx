@@ -1,4 +1,7 @@
+'use client'
 import type { ByType, ByWidget, WidgetProps } from '@ors/config/Widgets'
+
+import { useMemo } from 'react'
 
 import cx from 'classnames'
 
@@ -28,8 +31,12 @@ export default function Field({
   widget,
   ...props
 }: WidgetProps): React.ReactElement {
-  const Widget =
-    getWidgetByName(widget) || getWidgetByType(type) || getWidgetDefault()
+  const Widget = useMemo(
+    () =>
+      getWidgetByName(widget) || getWidgetByType(type) || getWidgetDefault(),
+    [widget, type],
+  )
+
   return (
     <div
       {...FieldProps}

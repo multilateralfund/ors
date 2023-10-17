@@ -113,7 +113,7 @@ export default function SectionBCreate(props: any) {
   )
 
   const grid = useRef<any>()
-  const [initialRowData] = useState(getRowData(form.section_b))
+  const [initialRowData] = useState(() => getRowData(form.section_b))
 
   const [blendForm, setBlendForm, prevBlendForm] = useStateWithPrev<any>({
     components: [],
