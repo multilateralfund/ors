@@ -11,5 +11,11 @@ export default function AgDateCellRenderer(props: any) {
 
   const value = dayjs(props.value).format('DD/MM/YYYY')
   const finalValue = value !== 'Invalid Date' ? value : null
-  return !!props.value && <Typography component="span">{finalValue}</Typography>
+  return (
+    !!props.value && (
+      <Typography component="span" lineHeight={1}>
+        {finalValue}
+      </Typography>
+    )
+  )
 }

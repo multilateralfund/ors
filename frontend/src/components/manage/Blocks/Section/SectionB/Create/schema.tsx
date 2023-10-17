@@ -5,6 +5,8 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
+import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+
 import { IoTrash } from '@react-icons/all-files/io5/IoTrash'
 
 function useGridOptions(props: {
@@ -56,9 +58,7 @@ function useGridOptions(props: {
           field: 'display_name',
           headerClass: 'ag-text-left',
           headerName: 'Substance',
-          initialWidth: 300,
-          minWidth: 160,
-          // pinned: 'left',
+          ...colDefById['display_name'],
         },
         ...(usages.length
           ? [
@@ -71,7 +71,7 @@ function useGridOptions(props: {
                     category: 'usage',
                     field: 'total_usages',
                     headerName: 'TOTAL',
-                    initialWidth: 140,
+                    ...colDefById['total_usages'],
                   },
                 ],
                 headerGroupComponent: 'agColumnHeaderGroup',
@@ -86,7 +86,7 @@ function useGridOptions(props: {
           cellRenderer: 'agFloatCellRenderer',
           field: 'imports',
           headerName: 'Import',
-          initialWidth: 130,
+          ...colDefById['imports'],
         },
         {
           aggFunc: 'sumTotal',
@@ -94,7 +94,7 @@ function useGridOptions(props: {
           cellRenderer: 'agFloatCellRenderer',
           field: 'exports',
           headerName: 'Export',
-          initialWidth: 130,
+          ...colDefById['exports'],
         },
         {
           aggFunc: 'sumTotal',
@@ -102,7 +102,7 @@ function useGridOptions(props: {
           cellRenderer: 'agFloatCellRenderer',
           field: 'production',
           headerName: 'Production',
-          initialWidth: 130,
+          ...colDefById['production'],
         },
         {
           aggFunc: 'sumTotal',
@@ -110,21 +110,21 @@ function useGridOptions(props: {
           cellRenderer: 'agFloatCellRenderer',
           field: 'import_quotas',
           headerName: 'Import Quotas',
-          initialWidth: 150,
+          ...colDefById['import_quotas'],
         },
         {
           cellEditor: 'agDateCellEditor',
           cellRenderer: 'agDateCellRenderer',
           field: 'banned_date',
           headerName: 'Date ban commenced (DD/MM/YYYY)',
-          initialWidth: 200,
+          ...colDefById['banned_date'],
         },
         {
           cellClass: 'ag-text-left',
           cellEditor: 'agTextCellEditor',
           field: 'remarks',
           headerName: 'Remarks',
-          initialWidth: 300,
+          ...colDefById['remarks'],
         },
       ],
       defaultColDef: {
@@ -155,7 +155,7 @@ function useGridOptions(props: {
           return true
         },
         headerClass: 'ag-text-center',
-        minWidth: 130,
+        minWidth: defaultColDef.minWidth,
         resizable: true,
         wrapText: true,
       },

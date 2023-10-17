@@ -4,6 +4,8 @@ import React from 'react'
 
 import { isNull, isUndefined } from 'lodash'
 
+import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+
 import CPReportCreate from '@ors/components/manage/Blocks/CountryProgramme/CPReportCreate'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import api from '@ors/helpers/Api'
@@ -77,13 +79,14 @@ export default async function CreateReport() {
   }
 
   function mapUsage(usage: any) {
-    const children = usage.children.filter(filterUsage)
+    const children = usage.children?.filter(filterUsage) || []
     return {
       id: usage.id,
       category: usage.columnCategory,
       cellDataType: 'number',
       headerName: usage.headerName,
-      // ...(colDefByUsageId[usage.id] || {}),
+      initialWidth: defaultColDef.minWidth,
+      ...(colDefById[usage.full_name] || {}),
       ...(children.length
         ? {
             children: children.map(mapUsage),
@@ -107,9 +110,20 @@ export default async function CreateReport() {
         substances_c={substances_c}
         emptyForm={{
           ...emptyForm,
-          usage_columns: emptyForm.usage_columns
-            .filter(filterUsage)
-            .map(mapUsage),
+          ...(emptyForm.usage_columns
+            ? {
+                usage_columns: {
+                  section_a:
+                    emptyForm.usage_columns.section_a
+                      ?.filter(filterUsage)
+                      .map(mapUsage) || [],
+                  section_b:
+                    emptyForm.usage_columns.section_b
+                      ?.filter(filterUsage)
+                      .map(mapUsage) || [],
+                },
+              }
+            : {}),
         }}
       />
     </PageWrapper>

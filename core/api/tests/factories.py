@@ -8,6 +8,7 @@ from core.models.country_programme import (
     CPPrices,
     CPRecord,
     CPReport,
+    CPReportFormat,
     CPUsage,
 )
 
@@ -22,6 +23,7 @@ from core.models.project import (
 )
 from core.models.project_submission import ProjectSubmission
 from core.models.substance import Substance
+from core.models.time_frame import TimeFrame
 from core.models.usage import ExcludedUsage, Usage
 from core.models.blend import Blend
 from core.models.user import User
@@ -88,6 +90,14 @@ class BlendFactory(factory.django.DjangoModelFactory):
     sort_order = factory.Faker("random_int", min=1, max=100)
 
 
+class TimeFrameFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = TimeFrame
+
+    min_year = factory.Faker("random_int", min=1990, max=2000)
+    max_year = factory.Faker("random_int", min=2001, max=2010)
+
+
 class ExcludedUsageSubstFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExcludedUsage
@@ -110,6 +120,15 @@ class CountryFactory(factory.django.DjangoModelFactory):
 
     name = factory.Faker("pystr", max_chars=50)
     abbr = factory.Faker("pystr", max_chars=5)
+
+
+class CPRaportFormatFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = CPReportFormat
+
+    usage = factory.SubFactory(UsageFactory)
+    time_frame = factory.SubFactory(TimeFrameFactory)
+    section = factory.fuzzy.FuzzyChoice(["A", "B"])
 
 
 # country_programme_report factory
@@ -190,8 +209,7 @@ class AdmColumnFactory(factory.django.DjangoModelFactory):
     display_name = factory.Faker("pystr", max_chars=248)
     type = factory.fuzzy.FuzzyChoice(AdmColumn.AdmColumnType.choices)
     section = factory.fuzzy.FuzzyChoice(AdmColumn.AdmColumnSection.choices)
-    min_year = factory.Faker("random_int", min=1990, max=2000)
-    max_year = factory.Faker("random_int", min=2001, max=2010)
+    time_frame = factory.SubFactory(TimeFrameFactory)
     sort_order = factory.Faker("random_int", min=1, max=100)
 
 
@@ -202,8 +220,7 @@ class AdmRowFactory(factory.django.DjangoModelFactory):
     text = factory.Faker("pystr", max_chars=100)
     type = factory.fuzzy.FuzzyChoice(AdmRow.AdmRowType.choices)
     section = factory.fuzzy.FuzzyChoice(AdmRow.AdmRowSection.choices)
-    min_year = factory.Faker("random_int", min=1990, max=2000)
-    max_year = factory.Faker("random_int", min=2001, max=2010)
+    time_frame = factory.SubFactory(TimeFrameFactory)
     index = factory.Faker("pystr", max_chars=10)
     sort_order = factory.Faker("random_int", min=1, max=100)
 

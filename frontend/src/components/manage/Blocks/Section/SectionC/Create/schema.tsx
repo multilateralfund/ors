@@ -5,6 +5,8 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
+import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+
 import { IoTrash } from '@react-icons/all-files/io5/IoTrash'
 
 function useGridOptions(props: {
@@ -55,9 +57,7 @@ function useGridOptions(props: {
           field: 'display_name',
           headerClass: 'ag-text-left',
           headerName: 'Substance',
-          initialWidth: 300,
-          minWidth: 160,
-          // pinned: 'left',
+          ...colDefById['display_name'],
         },
         {
           aggFunc: 'sumTotal',
@@ -65,6 +65,7 @@ function useGridOptions(props: {
           cellRenderer: 'agFloatCellRenderer',
           field: 'previous_year_price',
           headerName: 'Previous year price',
+          ...colDefById['previous_year_price'],
         },
         {
           aggFunc: 'sumTotal',
@@ -72,12 +73,13 @@ function useGridOptions(props: {
           cellRenderer: 'agFloatCellRenderer',
           field: 'current_year_price',
           headerName: 'Current prices',
+          ...colDefById['current_year_price'],
         },
         {
           cellEditor: 'agTextCellEditor',
           field: 'remarks',
-
           headerName: 'Remarks',
+          ...colDefById['remarks'],
         },
       ],
       defaultColDef: {
@@ -102,7 +104,7 @@ function useGridOptions(props: {
           return true
         },
         headerClass: 'ag-text-center',
-        minWidth: 130,
+        minWidth: defaultColDef.minWidth,
         resizable: true,
         wrapText: true,
       },

@@ -1,8 +1,10 @@
 from django.db import models
+from core.models.base import BaseWTimeFrameManager
 from core.models.blend import Blend
 
 from core.models.country import Country
 from core.models.substance import Substance
+from core.models.time_frame import TimeFrame
 from core.models.usage import Usage
 
 
@@ -220,3 +222,12 @@ class CPEmission(models.Model):
 
     def __str__(self):
         return self.country_programme_report.name
+
+
+class CPReportFormat(models.Model):
+    usage = models.ForeignKey(Usage, on_delete=models.CASCADE)
+    time_frame = models.ForeignKey(TimeFrame, on_delete=models.CASCADE)
+    section = models.CharField(max_length=10)
+    sort_order = models.FloatField(null=True, blank=True)
+
+    objects = BaseWTimeFrameManager()

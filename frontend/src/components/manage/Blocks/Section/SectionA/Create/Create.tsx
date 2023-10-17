@@ -1,19 +1,16 @@
 import { useMemo, useRef, useState } from 'react'
 
-import { Box, Button, IconButton, Modal, Typography } from '@mui/material'
-import { CellValueChangedEvent } from 'ag-grid-community'
-import cx from 'classnames'
+import { Box, Button, Modal, Typography } from '@mui/material'
+import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, union } from 'lodash'
 import dynamic from 'next/dynamic'
 
 import Field from '@ors/components/manage/Form/Field'
 import { getResults } from '@ors/helpers/Api'
-import { applyTransaction, isInViewport } from '@ors/helpers/Utils/Utils'
+import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import useStore from '@ors/store'
 
 import useGridOptions from './schema'
-
-import { IoClose } from '@react-icons/all-files/io5/IoClose'
 
 const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
   ssr: false,
@@ -60,14 +57,22 @@ function getRowData(data: any) {
 }
 
 export default function SectionACreate(props: any) {
-  const { emptyForm, exitFullScreen, form, fullScreen, mapSubstance, setForm } =
-    props
+  const {
+    TableProps,
+    emptyForm,
+    form,
+    index,
+    mapSubstance,
+    setActiveSection,
+    setForm,
+  } = props
+  const newNode = useRef<RowNode>()
+
   const substances = useStore(
     (state) => getResults(state.cp_reports.substances.data).results,
   )
   const grid = useRef<any>()
   const [initialRowData] = useState(getRowData(form.section_a))
-
   const [addSubstanceModal, setAddSubstanceModal] = useState(false)
 
   const substancesOptions = useMemo(() => {
@@ -106,7 +111,7 @@ export default function SectionACreate(props: any) {
       }
     },
     openAddSubstanceModal: () => setAddSubstanceModal(true),
-    usages: emptyForm.usage_columns || [],
+    usages: emptyForm.usage_columns.section_a || [],
   })
 
   function getUsagesOnCellValueChange(event: CellValueChangedEvent<any>) {
@@ -128,43 +133,14 @@ export default function SectionACreate(props: any) {
 
   return (
     <>
-      <Typography className="mb-4" component="h2" variant="h6">
-        SECTION A. ANNEX A, ANNEX B, ANNEX C - GROUP I AND ANNEX E - DATA ON
-        CONTROLLED SUBSTANCES (METRIC TONNES)
-      </Typography>
       <Table
-        className={cx('three-groups mb-4', {
-          'full-screen': fullScreen,
-        })}
+        {...TableProps}
+        className="three-groups mb-4"
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
-        domLayout={fullScreen ? 'normal' : 'autoHeight'}
-        enableCellChangeFlash={false}
-        enablePagination={false}
         gridRef={grid}
         headerDepth={3}
-        noRowsOverlayComponentParams={{ label: 'No data reported' }}
         rowData={initialRowData}
-        suppressCellFocus={false}
-        suppressRowHoverHighlight={false}
-        HeaderComponent={
-          fullScreen
-            ? () => {
-                return (
-                  <IconButton
-                    className="exit-fullscreen p-2 text-primary"
-                    aria-label="exit fullscreen"
-                    onClick={exitFullScreen}
-                  >
-                    <IoClose size={32} />
-                  </IconButton>
-                )
-              }
-            : () => null
-        }
-        getRowId={(props) => {
-          return props.data.rowId
-        }}
         pinnedBottomRowData={[
           { display_name: 'TOTAL', rowType: 'total' },
           { rowType: 'control' },
@@ -185,8 +161,24 @@ export default function SectionACreate(props: any) {
             setForm({ ...form, section_a: newData })
           }
         }}
-        withFluidEmptyColumn
-        withSeparators
+        onFirstDataRendered={() => setActiveSection(index)}
+        onGridReady={() => {
+          if (!initialRowData.length) {
+            setActiveSection(index)
+          }
+        }}
+        onRowDataUpdated={() => {
+          if (newNode.current) {
+            scrollToElement(
+              `.ag-row[row-id=${newNode.current.data.rowId}]`,
+              () => {
+                grid.current.api.flashCells({
+                  rowNodes: [newNode.current],
+                })
+              },
+            )
+          }
+        }}
       />
       <Typography className="italic" variant="body2">
         1. Edit by pressing double left-click or ENTER on a field.
@@ -250,19 +242,10 @@ export default function SectionACreate(props: any) {
                       { ...groupNode.data, count: groupNode.data.count + 1 },
                     ],
                   })
-                  setTimeout(() => {
-                    const rowEl = document.querySelector(
-                      `.ag-row[row-id=${newSubstance.rowId}]`,
-                    )
-                    if (rowEl && !isInViewport(rowEl)) {
-                      const top =
-                        rowEl.getBoundingClientRect().top + window.scrollY
-                      window.scroll({
-                        behavior: 'smooth',
-                        top,
-                      })
-                    }
-                  }, 300)
+                  const substanceNode = grid.current.api.getRowNode(
+                    newSubstance.rowId,
+                  )
+                  newNode.current = substanceNode
                 }
                 setAddSubstanceModal(false)
               }}

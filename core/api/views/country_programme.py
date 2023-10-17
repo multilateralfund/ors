@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from constance import config
 from django.db.models import F
 from django.db.models import Window
@@ -37,9 +39,9 @@ from core.models.country_programme import (
     CPPrices,
     CPRecord,
     CPReport,
+    CPReportFormat,
 )
 from core.models.substance import Substance
-from core.models.usage import Usage
 from core.utils import IMPORT_DB_MAX_YEAR
 
 
@@ -369,21 +371,75 @@ class EmptyFormView(views.APIView):
     API endpoint that allows to get empty form
     """
 
-    def get_usage_columns(self):
+    def get_usages_tree(self, usage_id_dict):
+        """
+        Build usages tree structure from a list of usages
+        ! make sure that the parrents are before the children in the list
+
+        @param usage_id_dict: dict of usages (key: usage_id, value: usage object)
+
+        @return: list of root nodes
+        """
+        root_nodes = []
+
+        # Build the tree structure
+        for usage in usage_id_dict.values():
+            if usage.parent_id is None:
+                root_nodes.append(usage)
+            else:
+                parent = usage_id_dict.get(usage.parent_id)
+                # parrent should be before the child in the list so we can find it
+                if getattr(parent, "children", None) is None:
+                    parent.children = []
+                parent.children.append(usage)
+
+        return root_nodes
+
+    def get_usage_columns(self, year):
+        """
+        Get usage columns for the given year
+
+        @param year: int - year
+
+        @return: dict of usage columns
+            structure: {section: [Usage serialize data]}
+        """
+        # get all usages for the given year
+        cp_report_formats = (
+            CPReportFormat.objects.get_for_year(year)
+            .select_related("usage")
+            .order_by("section", "usage__sort_order")
+        )
+        # group usages by section
+        section_usages = {}
+        for cp_report_format in cp_report_formats:
+            section = cp_report_format.section
+            if section not in section_usages:
+                section_usages[section] = {}
+            section_usages[section][cp_report_format.usage_id] = cp_report_format.usage
+
+        # get usages tree for each section
+        usage_columns = {}
+        for section, usages in section_usages.items():
+            usage_tree = self.get_usages_tree(usages)
+            key_name = f"section_{section.lower()}"
+
+            usage_columns[key_name] = UsageSerializer(
+                usage_tree, many=True, context={"for_year": year, "section": section}
+            ).data
+
+        return usage_columns
+
+    def get_new_empty_form(self, year=None):
         # for now we return only the list of columns for usages
-        usages = Usage.objects.filter(
-            displayed_in_latest_format=True, parent=None
-        ).order_by("sort_order")
-
-        return UsageSerializer(usages, many=True).data
-
-    def get_new_empty_form(self):
-        usage_columns = self.get_usage_columns()
+        if not year:
+            year = datetime.now().year
+        usage_columns = self.get_usage_columns(year)
         return Response({"usage_columns": usage_columns})
 
     def get_old_empty_form(self, cp_report):
         sections = {
-            "usage_columns": self.get_usage_columns(),
+            "usage_columns": self.get_usage_columns(cp_report.year),
             "admB": {
                 "columns": [],
                 "rows": [],
@@ -399,6 +455,8 @@ class EmptyFormView(views.APIView):
         }
 
         # set columns
+        # adm columns childrens are from the same time-frame as the parent
+        # so it is enough to filter by the year only the parent columns
         columns = AdmColumn.objects.get_for_year(cp_report.year)
         for col in columns:
             serial_col = AdmColumnSerializer(col).data
@@ -464,4 +522,5 @@ class EmptyFormView(views.APIView):
         if cp_report and cp_report.year <= IMPORT_DB_MAX_YEAR:
             return self.get_old_empty_form(cp_report)
 
-        return self.get_new_empty_form()
+        year = cp_report.year if cp_report else None
+        return self.get_new_empty_form(year)

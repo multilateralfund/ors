@@ -189,7 +189,6 @@ async function api(
       }
     }
   } catch (error) {
-    console.log('HERE ERROR', error)
     if (isFunction(handleError)) {
       return await handleError(error)
     }

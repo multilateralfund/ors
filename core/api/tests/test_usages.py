@@ -31,8 +31,8 @@ class TestUsages(BaseTest):
         assert len(response.data) == 4
         assert response.data[0]["id"] == usage4.id
         assert response.data[1]["id"] == usage1.id
-        assert response.data[1]["children"][0]["id"] == usage2.id
-        assert response.data[1]["children"][0]["children"][0]["id"] == usage3.id
+        assert response.data[2]["id"] == usage2.id
+        assert response.data[3]["id"] == usage3.id
 
     def test_usages_list_parents(self, user, _setup_usages):
         self.client.force_authenticate(user=user)

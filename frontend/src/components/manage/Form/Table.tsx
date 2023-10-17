@@ -1,13 +1,13 @@
 'use client'
 import { I18nSlice, ThemeSlice } from '@ors/types/store'
 
-import { useId, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 
 import { TablePagination, Typography } from '@mui/material'
 import { ColDef } from 'ag-grid-community'
 import { AgGridReact, AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
-import { times } from 'lodash'
+import { isFunction, times } from 'lodash'
 
 import {
   aggFuncs,
@@ -15,7 +15,7 @@ import {
 } from '@ors/config/Table/Table'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
-import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
+import DefaultFadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { KEY_BACKSPACE, KEY_ENTER } from '@ors/constants'
 import useStore from '@ors/store'
@@ -29,8 +29,9 @@ const debounce = (func: () => void) => {
 
 export default function Table(
   props: AgGridReactProps & {
-    FooterComponent?: React.FC<any>
-    HeaderComponent?: React.FC<any>
+    Toolbar?: React.FC<any>
+    enableFullScreen?: boolean
+    fadeInOut?: boolean
     headerDepth?: number
     rowsVisible?: number
     withFluidEmptyColumn?: boolean
@@ -40,15 +41,16 @@ export default function Table(
   const grid = useRef<any>()
   const {
     id,
-    FooterComponent = () => null,
-    HeaderComponent = () => null,
+    Toolbar,
     className,
     collapsedRows = [],
     columnDefs = [],
     components = {},
     defaultColDef = {},
     domLayout = 'autoHeight',
+    enableFullScreen = false,
     enablePagination = true,
+    fadeInOut = true,
     gridRef,
     headerDepth = 1,
     loading = false,
@@ -82,6 +84,7 @@ export default function Table(
   })
   const theme: ThemeSlice = useStore((state) => state.theme)
   const i18n: I18nSlice = useStore((state) => state.i18n)
+  const [fullScreen, setFullScreen] = useState(false)
 
   // baseColDef sets props common to all Columns
   const baseColDef: ColDef = useMemo(
@@ -91,6 +94,12 @@ export default function Table(
         return cx({
           disabled: props.colDef.disabled,
         })
+      },
+      cellClassRules: {
+        'ag-error': (props) =>
+          !!(isFunction(props.colDef.error)
+            ? props.colDef.error(props)
+            : props.colDef.error),
       },
       cellRenderer: (props: any) => {
         return <AgCellRenderer {...props} />
@@ -187,176 +196,199 @@ export default function Table(
     })
   }
 
+  const FadeInOut = useMemo(
+    () => (fadeInOut ? DefaultFadeInOut : 'div'),
+    [fadeInOut],
+  )
+
+  useEffect(() => {
+    if (fullScreen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+  }, [fullScreen])
+
   return (
     <FadeInOut
-      id={id || `table-${uniqueId}`}
-      className={cx(
-        'relative w-full',
-        {
-          'ag-theme-alpine': theme.mode !== 'dark',
-          'ag-theme-alpine-dark': theme.mode === 'dark',
-          'with-pagination': enablePagination,
-          'with-separators': withSeparators,
-        },
-        className,
-      )}
-      style={{
-        ...(tableBodyHeight > 0
-          ? {
-              height: tableBodyHeight,
-            }
-          : {}),
-        ...style,
-      }}
+      className={cx('table-root flex flex-col', {
+        'ag-full-screen': fullScreen,
+      })}
     >
-      <HeaderComponent {...props} />
-      {loading && !(withSkeleton && results?.[0]?.rowType === 'skeleton') && (
-        <Loading className="bg-action-disabledBackground/5" />
+      {Toolbar && (
+        <div className="ag-toolbar">
+          <Toolbar
+            enterFullScreen={() => setFullScreen(true)}
+            exitFullScreen={() => setFullScreen(false)}
+            fullScreen={fullScreen}
+            {...props}
+          />
+        </div>
       )}
-      <AgGridReact
-        aggFuncs={aggFuncs}
-        animateRows={false}
-        defaultColDef={{ ...baseColDef, ...defaultColDef }}
-        enableCellTextSelection={true}
-        enableRtl={i18n.dir === 'rtl'}
-        ensureDomOrder={true}
-        pagination={enablePagination}
-        paginationPageSize={pagination.rowsPerPage + collapsedRows.length}
-        pinnedBottomRowData={pinnedBottomRowData}
-        rowBuffer={rowBuffer}
-        rowData={results}
-        rowHeight={rowHeight}
-        sortingOrder={['asc']}
-        stopEditingWhenCellsLoseFocus={true}
-        suppressCellFocus={true}
-        suppressColumnVirtualisation={true}
-        suppressDragLeaveHidesColumns={true}
-        suppressLoadingOverlay={true}
-        suppressMovableColumns={true}
-        suppressMultiSort={true}
-        suppressPaginationPanel={true}
-        suppressRowClickSelection={true}
-        suppressRowHoverHighlight={true}
-        columnDefs={[
-          ...(columnDefs || []),
-          ...(withFluidEmptyColumn
-            ? [
-                {
-                  category: 'expand',
-                  field: 'none',
-                  flex: 1,
-                  headerName: '',
-                },
-              ]
-            : []),
-        ]}
-        components={{
-          ...defaultComponents,
-          ...components,
+      <div
+        id={id || `table-${uniqueId}`}
+        className={cx(
+          'relative w-full',
+          {
+            'ag-theme-alpine': theme.mode !== 'dark',
+            'ag-theme-alpine-dark': theme.mode === 'dark',
+            'with-pagination': enablePagination,
+            'with-separators': withSeparators,
+          },
+          className,
+        )}
+        style={{
+          ...(tableBodyHeight > 0
+            ? {
+                height: tableBodyHeight,
+              }
+            : {}),
+          ...style,
         }}
-        domLayout={
-          domLayout === 'normal'
-            ? tableBodyHeight > 0
+      >
+        {loading && !(withSkeleton && results?.[0]?.rowType === 'skeleton') && (
+          <Loading className="bg-action-disabledBackground/5" />
+        )}
+        <AgGridReact
+          aggFuncs={aggFuncs}
+          animateRows={false}
+          defaultColDef={{ ...baseColDef, ...defaultColDef }}
+          enableCellTextSelection={true}
+          enableRtl={i18n.dir === 'rtl'}
+          ensureDomOrder={true}
+          pagination={enablePagination}
+          paginationPageSize={pagination.rowsPerPage + collapsedRows.length}
+          pinnedBottomRowData={pinnedBottomRowData}
+          rowBuffer={rowBuffer}
+          rowData={results}
+          rowHeight={rowHeight}
+          sortingOrder={['asc']}
+          stopEditingWhenCellsLoseFocus={true}
+          suppressCellFocus={true}
+          suppressColumnVirtualisation={true}
+          suppressDragLeaveHidesColumns={true}
+          suppressLoadingOverlay={true}
+          suppressMovableColumns={true}
+          suppressMultiSort={true}
+          suppressPaginationPanel={true}
+          suppressRowClickSelection={true}
+          suppressRowHoverHighlight={true}
+          columnDefs={[
+            ...(columnDefs || []),
+            ...(withFluidEmptyColumn
+              ? [
+                  {
+                    category: 'expand',
+                    field: 'none',
+                    flex: 1,
+                    headerName: '',
+                  },
+                ]
+              : []),
+          ]}
+          components={{
+            ...defaultComponents,
+            ...components,
+          }}
+          domLayout={
+            fullScreen
               ? 'normal'
-              : 'autoHeight'
-            : domLayout
-        }
-        noRowsOverlayComponent={(props: any) => {
-          return (
-            <Typography id="no-rows" component="span">
-              {props.label || 'No Rows To Show'}
-            </Typography>
-          )
-        }}
-        ref={(agGrid) => {
-          grid.current = agGrid
-          if (!agGrid && gridRef) {
-            gridRef.current = null
+              : domLayout === 'normal'
+              ? tableBodyHeight > 0
+                ? 'normal'
+                : 'autoHeight'
+              : domLayout
           }
-          if (agGrid && gridRef) {
-            gridRef.current = agGrid
-            gridRef.current.paginationGoToPage = (
-              page: number,
-              triggerEvent = false,
-            ) => {
-              handlePageChange(page, triggerEvent)
+          noRowsOverlayComponent={(props: any) => {
+            return (
+              <Typography id="no-rows" component="span">
+                {props.label || 'No Rows To Show'}
+              </Typography>
+            )
+          }}
+          ref={(agGrid) => {
+            grid.current = agGrid
+            if (!agGrid && gridRef) {
+              gridRef.current = null
             }
-            gridRef.current.getHeaderContainerHeight = () => {
-              const table = document.getElementById(id || `table-${uniqueId}`)
-              const header = table?.querySelector<HTMLElement>('.ag-header')
-              if (header) {
-                return header.offsetHeight
+            if (agGrid && gridRef) {
+              gridRef.current = agGrid
+              gridRef.current.paginationGoToPage = (
+                page: number,
+                triggerEvent = false,
+              ) => {
+                handlePageChange(page, triggerEvent)
               }
-              return 0
-            }
-            gridRef.current.getHorizontalScrollbarHeight = () => {
-              const table = document.getElementById(id || `table-${uniqueId}`)
-              const header = table?.querySelector<HTMLElement>(
-                '.ag-body-horizontal-scroll',
-              )
-              if (header) {
-                return header.offsetHeight
+              if (enableFullScreen) {
+                gridRef.current.enterFullScreen = () => {
+                  setFullScreen(true)
+                }
+                gridRef.current.exitFullScreen = () => {
+                  setFullScreen(false)
+                }
               }
-              return 0
             }
-          }
-        }}
-        rowClassRules={{
-          'ag-row-control': (props) => props.data.rowType === 'control',
-          'ag-row-group': (props) => props.data.rowType === 'group',
-          'ag-row-hashed': (props) => props.data.rowType === 'hashed',
-          'ag-row-sub-total': (props) => props.data.rowType === 'subtotal',
-          'ag-row-total': (props) => props.data.rowType === 'total',
-          ...rowClassRules,
-        }}
-        onColumnResized={(event) => {
-          debounce(updateOffsetHeight)
-          onColumnResized(event)
-        }}
-        onFirstDataRendered={(agGrid) => {
-          updateOffsetHeight()
-          onFirstDataRendered(agGrid)
-        }}
-        onGridReady={(event) => {
-          updateOffsetHeight()
-          onGridReady(event)
-        }}
-        onGridSizeChanged={(event) => {
-          debounce(updateOffsetHeight)
-          onGridSizeChanged(event)
-        }}
-        onRowDataUpdated={(event) => {
-          onRowDataUpdated(event)
-        }}
-        {...rest}
-      />
-      {enablePagination && (
-        <TablePagination
-          className="pr-2"
-          backIconButtonProps={{ disabled: loading || pagination.page <= 0 }}
-          component="div"
-          count={rowCount}
-          page={pagination.page}
-          rowsPerPage={pagination.rowsPerPage}
-          rowsPerPageOptions={[10, 20, 30, 40, 50]}
-          SelectProps={{
-            disabled: loading,
           }}
-          nextIconButtonProps={{
-            disabled:
-              loading ||
-              pagination.page >=
-                Math.ceil(rowCount / pagination.rowsPerPage) - 1,
+          rowClassRules={{
+            'ag-row-control': (props) => props.data.rowType === 'control',
+            'ag-row-group': (props) => props.data.rowType === 'group',
+            'ag-row-hashed': (props) => props.data.rowType === 'hashed',
+            'ag-row-sub-total': (props) => props.data.rowType === 'subtotal',
+            'ag-row-total': (props) => props.data.rowType === 'total',
+            ...rowClassRules,
           }}
-          onPageChange={(_, page) => {
-            handlePageChange(page)
+          onColumnResized={(event) => {
+            debounce(updateOffsetHeight)
+            onColumnResized(event)
           }}
-          onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            handleRowsPerPageChange(event.target.value)
+          onFirstDataRendered={(agGrid) => {
+            updateOffsetHeight()
+            onFirstDataRendered(agGrid)
           }}
+          onGridReady={(event) => {
+            updateOffsetHeight()
+            onGridReady(event)
+          }}
+          onGridSizeChanged={(event) => {
+            debounce(updateOffsetHeight)
+            onGridSizeChanged(event)
+          }}
+          onRowDataUpdated={(event) => {
+            onRowDataUpdated(event)
+          }}
+          {...rest}
         />
-      )}
-      <FooterComponent {...props} />
+        {enablePagination && (
+          <TablePagination
+            className="pr-2"
+            component="div"
+            count={rowCount}
+            page={pagination.page}
+            rowsPerPage={pagination.rowsPerPage}
+            rowsPerPageOptions={[10, 20, 30, 40, 50]}
+            SelectProps={{
+              disabled: loading,
+            }}
+            backIconButtonProps={{
+              disabled: loading || pagination.page <= 0,
+            }}
+            nextIconButtonProps={{
+              disabled:
+                loading ||
+                pagination.page >=
+                  Math.ceil(rowCount / pagination.rowsPerPage) - 1,
+            }}
+            onPageChange={(_, page) => {
+              handlePageChange(page)
+            }}
+            onRowsPerPageChange={(
+              event: React.ChangeEvent<HTMLInputElement>,
+            ) => {
+              handleRowsPerPageChange(event.target.value)
+            }}
+          />
+        )}
+      </div>
     </FadeInOut>
   )
 }

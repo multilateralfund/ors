@@ -4,6 +4,8 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
+import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+
 function useGridOptions() {
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
@@ -17,28 +19,31 @@ function useGridOptions() {
         field: 'display_name',
         headerClass: 'ag-text-left',
         headerName: 'Substance',
-        minWidth: 300,
+        ...colDefById['display_name'],
       },
       {
         aggFunc: 'sumTotal',
         cellRenderer: 'agFloatCellRenderer',
         field: 'previous_year_price',
         headerName: 'Previous year price',
+        ...colDefById['previous_year_price'],
       },
       {
         aggFunc: 'sumTotal',
         cellRenderer: 'agFloatCellRenderer',
         field: 'current_year_price',
         headerName: 'Current prices',
+        ...colDefById['current_year_price'],
       },
       {
         field: 'remarks',
         headerName: 'Remarks',
+        ...colDefById['remarks'],
       },
     ],
     defaultColDef: {
       autoHeight: true,
-      minWidth: 200,
+      minWidth: defaultColDef.minWidth,
       resizable: true,
       wrapText: true,
     },

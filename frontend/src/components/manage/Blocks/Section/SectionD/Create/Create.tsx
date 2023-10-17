@@ -1,62 +1,33 @@
 import { useRef, useState } from 'react'
 
-import { IconButton, Typography } from '@mui/material'
-import cx from 'classnames'
+import { Typography } from '@mui/material'
 import { findIndex } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
 
 import useGridOptions from './schema'
 
-import { IoClose } from '@react-icons/all-files/io5/IoClose'
-
 export default function SectionDCreate(props: any) {
-  const { exitFullScreen, form, fullScreen, setForm } = props
+  const { TableProps, form, index, setActiveSection, setForm } = props
   const grid = useRef<any>()
   const gridOptions = useGridOptions()
-  const [loading, setLoading] = useState(true)
   const [initialRowData] = useState(form.section_d)
 
   return (
     <>
-      <Typography className="mb-4" component="h2" variant="h6">
-        SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)
-      </Typography>
       <Table
-        className={cx('mb-4', {
-          'full-screen': fullScreen,
-          'opacity-0': loading,
-        })}
+        {...TableProps}
+        className="mb-4"
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
         domLayout="normal"
-        enableCellChangeFlash={true}
-        enablePagination={false}
         gridRef={grid}
-        noRowsOverlayComponentParams={{ label: 'No data reported' }}
         rowData={initialRowData}
-        suppressCellFocus={false}
-        suppressRowHoverHighlight={false}
-        HeaderComponent={
-          fullScreen
-            ? () => {
-                return (
-                  <IconButton
-                    className="exit-fullscreen p-2 text-primary"
-                    aria-label="exit fullscreen"
-                    onClick={exitFullScreen}
-                  >
-                    <IoClose size={32} />
-                  </IconButton>
-                )
-              }
-            : () => null
-        }
         getRowId={(props) => {
           return props.data.rowId
         }}
         onCellValueChanged={(event) => {
-          const newData = [...form.section_c]
+          const newData = [...form.section_d]
           const index = findIndex(
             newData,
             (row: any) => row.rowId == event.data.rowId,
@@ -66,12 +37,15 @@ export default function SectionDCreate(props: any) {
             newData.splice(index, 1, {
               ...event.data,
             })
-            setForm({ ...form, section_c: newData })
+            setForm({ ...form, section_d: newData })
           }
         }}
-        onFirstDataRendered={() => setLoading(false)}
-        withFluidEmptyColumn
-        withSeparators
+        onFirstDataRendered={() => setActiveSection(index)}
+        onGridReady={() => {
+          if (!initialRowData.length) {
+            setActiveSection(index)
+          }
+        }}
       />
       <Typography id="footnote-1" className="italic" variant="body2">
         1. Edit by pressing double left-click or ENTER on a field.

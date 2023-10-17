@@ -1,53 +1,58 @@
 'use client'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
-import { Button, Tab, Tabs } from '@mui/material'
+import { IconButton, Tab, Tabs, Typography } from '@mui/material'
+import cx from 'classnames'
+import { AnimatePresence } from 'framer-motion'
 import { filter } from 'lodash'
+
+import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
+import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
+import Loading from '@ors/components/theme/Loading/Loading'
 
 import { getViewSections, variants } from '.'
 
-interface SectionPanelProps {
-  emptyForm: Record<string, any>
-  exitFullScreen: () => void
-  fullScreen: boolean
-  report: Record<string, any>
-  section: Record<string, any>
-  variant: Record<string, any>
-}
+import { IoClose } from '@react-icons/all-files/io5/IoClose'
+import { IoExpand } from '@react-icons/all-files/io5/IoExpand'
 
-function SectionPanel(props: SectionPanelProps) {
+function TabPanel(props: any) {
   const {
-    emptyForm,
-    exitFullScreen,
-    fullScreen,
-    report,
+    activeSection,
+    currentIndex,
+    index,
+    renderSection,
     section,
-    variant,
+    setActiveSection,
     ...rest
   } = props
   const Section: React.FC<any> = section.component
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   return (
     <div
       id={section.panelId}
+      key={section.panelId}
       aria-labelledby={section.id}
+      hidden={activeSection !== index}
       role="tabpanel"
-      {...rest}
     >
-      {mounted && (
-        <Section
-          emptyForm={emptyForm}
-          exitFullScreen={exitFullScreen}
-          fullScreen={fullScreen}
-          report={report}
-          variant={variant}
-        />
-      )}
+      <AnimatePresence>
+        <FadeInOut
+          animate={{
+            opacity: activeSection === currentIndex && renderSection ? 1 : 0,
+          }}
+          transition={{ duration: 0.3 }}
+        >
+          {((currentIndex === index && renderSection) ||
+            (activeSection !== currentIndex && activeSection === index)) && (
+            <Section
+              index={index}
+              section={section}
+              setActiveSection={setActiveSection}
+              {...rest}
+            />
+          )}
+        </FadeInOut>
+      </AnimatePresence>
     </div>
   )
 }
@@ -56,8 +61,9 @@ export default function CPReportView(props: {
   emptyForm?: Record<string, any> | null
   report?: Record<string, any>
 }) {
-  const [activeSection, setActiveSection] = useState(0)
-  const [fullScreen, setFullScreen] = useState(false)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [activeSection, setActiveSection] = useState(null)
+  const [renderSection, setRenderSection] = useState(false)
   const [report]: any = useState({
     ...(props.report || {}),
     name: props.report?.cp_report?.name,
@@ -71,21 +77,36 @@ export default function CPReportView(props: {
   )
   const [sections] = useState(getViewSections(variant))
 
-  const section = useMemo(
-    () => sections[activeSection],
-    [activeSection, sections],
-  )
+  useEffect(() => {
+    setTimeout(() => {
+      setRenderSection(true)
+    }, 600)
+  }, [currentIndex])
 
   return (
     <>
+      <Loading
+        className="!fixed bg-action-disabledBackground"
+        active={currentIndex !== activeSection || !renderSection}
+      />
+      {report.name && (
+        <HeaderTitle>
+          <Typography className="mb-4 text-white" component="h1" variant="h3">
+            {report.name}
+          </Typography>
+        </HeaderTitle>
+      )}
       <Tabs
-        className="country-programme-tabs mb-4"
+        className="scrollable mb-2"
         aria-label="view submission sections"
-        value={activeSection}
-        onChange={(event: React.SyntheticEvent, newSection: number) => {
-          setActiveSection(newSection)
-          setFullScreen(false)
+        scrollButtons="auto"
+        value={currentIndex}
+        variant="scrollable"
+        onChange={(event: React.SyntheticEvent, index: number) => {
+          setCurrentIndex(index)
+          setRenderSection(false)
         }}
+        allowScrollButtonsMobile
       >
         {sections.map((section) => (
           <Tab
@@ -95,25 +116,70 @@ export default function CPReportView(props: {
           />
         ))}
       </Tabs>
-      {section.allowFullScreen && (
-        <div className="mb-4 text-right">
-          <Button variant="outlined" onClick={() => setFullScreen(true)}>
-            Full screen
-          </Button>
-        </div>
-      )}
-      <div id={section.panelId} aria-labelledby={section.id} role="tabpanel">
-        <SectionPanel
+      {sections.map((section, index) => (
+        <TabPanel
+          key={section.panelId}
+          activeSection={activeSection}
+          currentIndex={currentIndex}
           emptyForm={props.emptyForm || {}}
-          fullScreen={fullScreen}
+          index={index}
+          renderSection={renderSection}
           report={report}
           section={section}
+          setActiveSection={setActiveSection}
           variant={variant}
-          exitFullScreen={() => {
-            setFullScreen(false)
+          TableProps={{
+            Toolbar: ({ enterFullScreen, exitFullScreen, fullScreen }: any) => {
+              return (
+                <div
+                  className={cx(
+                    'flex items-center justify-between gap-x-4 py-2',
+                    {
+                      'px-4': fullScreen,
+                    },
+                  )}
+                >
+                  <Typography component="h2" variant="h6">
+                    {section.title}
+                  </Typography>
+                  {section.allowFullScreen && !fullScreen && (
+                    <div>
+                      <IconButton
+                        color="primary"
+                        onClick={() => {
+                          enterFullScreen()
+                        }}
+                      >
+                        <IoExpand />
+                      </IconButton>
+                    </div>
+                  )}
+                  {fullScreen && (
+                    <div>
+                      <IconButton
+                        className="exit-fullscreen p-2 text-primary"
+                        aria-label="exit fullscreen"
+                        onClick={() => {
+                          exitFullScreen()
+                        }}
+                      >
+                        <IoClose size={32} />
+                      </IconButton>
+                    </div>
+                  )}
+                </div>
+              )
+            },
+            enableCellChangeFlash: true,
+            enableFullScreen: true,
+            enablePagination: false,
+            noRowsOverlayComponentParams: { label: 'No data reported' },
+            suppressCellFocus: false,
+            suppressRowHoverHighlight: false,
+            withSeparators: true,
           }}
         />
-      </div>
+      ))}
     </>
   )
 }

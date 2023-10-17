@@ -1,11 +1,32 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-function useGridOptions(props: { model: string }) {
-  const { model } = props
+import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+
+function useGridOptions(props: { adm_columns: any }) {
+  const { adm_columns } = props
+
+  const mapAdmColumn = useCallback((column: any) => {
+    return {
+      id: column.id,
+      category: 'adm',
+      headerName: column.display_name,
+      initialWidth: defaultColDef.minWidth,
+      type: column.type,
+      ...(column.children.length
+        ? {
+            children: column.children.map(mapAdmColumn),
+            headerGroupComponent: 'agColumnHeaderGroup',
+            marryChildren: true,
+          }
+        : {}),
+      ...(colDefById[column.full_name] || {}),
+    }
+  }, [])
+
   const gridOptions: GridOptions = useMemo(
     () => ({
       columnDefs: [
@@ -20,45 +41,29 @@ function useGridOptions(props: { model: string }) {
             }),
           }),
           field: 'text',
-          flex: 1,
           headerClass: 'ag-text-left',
           headerGroupComponent: 'agColumnHeaderGroup',
           headerName: 'Description',
-          initialWidth: 200,
+          ...colDefById['adm_c_description'],
         },
-        {
-          id: 20,
-          cellRenderer: 'agAdmCellRenderer',
-          headerName: 'All other ods',
-          initialWidth: 200,
-        },
-        {
-          id: 21,
-          cellRenderer: 'agAdmCellRenderer',
-          headerName: 'HCFC',
-          initialWidth: 200,
-        },
-        {
-          id: 22,
-          cellRenderer: 'agAdmCellRenderer',
-          headerName: 'Cumulative',
-          initialWidth: 200,
-        },
+        ...(adm_columns.length > 0 ? adm_columns.map(mapAdmColumn) : []),
         {
           field: 'remarks',
           headerName: 'Remarks',
-          initialWidth: 400,
+          ...colDefById['remarks'],
         },
       ],
       defaultColDef: {
+        autoHeight: true,
         cellClass: 'ag-text-center',
         headerClass: 'ag-text-center',
-        minWidth: 130,
+        minWidth: defaultColDef.minWidth,
         resizable: true,
+        wrapText: true,
       },
     }),
     // eslint-disable-next-line
-    [model],
+    [adm_columns],
   )
 
   return gridOptions
