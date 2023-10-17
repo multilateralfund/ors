@@ -20,7 +20,7 @@ const getViewDefault = () => {
   return config.views.default
 }
 
-const localStorageVersion = '1.0.0'
+const localStorageVersion = '1.0.1'
 
 export default function View({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()

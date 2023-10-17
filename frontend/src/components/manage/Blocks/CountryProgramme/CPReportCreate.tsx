@@ -47,7 +47,7 @@ const fields: Record<Sections, any> = {
     import_quotas: { dataType: 'number', defaultValue: null },
     imports: { dataType: 'number', defaultValue: null },
     production: { dataType: 'number', defaultValue: null },
-    record_usages: { dataType: 'usage', defaultValue: null },
+    record_usages: { dataType: 'usage', defaultValue: [] },
     remarks: { dataType: 'string', defaultValue: null },
   },
   section_c: {
