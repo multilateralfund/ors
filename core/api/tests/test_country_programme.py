@@ -102,21 +102,25 @@ def setup_section_a_c(substance, blend, usage):
     section_a = [
         {
             "substance_id": substance.id,
+            "rowId": f"substance_{substance.id}",
             **cp_record_data,
         },
         {
             "substance_id": substance2.id,
+            "rowId": f"substance_{substance2.id}",
             **cp_record_data,
         },
     ]
     section_c = [
         {
             "substance_id": substance.id,
+            "rowId": f"substance_{substance.id}",
             "current_year_price": 25.5,
             "remarks": "Mama mea cand mi-a dat viata",
         },
         {
             "blend_id": blend.id,
+            "rowId": f"blend_{blend.id}",
             "previous_year_price": 12.4,
             "current_year_price": 25.5,
             "remarks": "Smecheri au luat vacanta",
@@ -137,6 +141,7 @@ def setup_new_cp_report_create(blend, country_ro, _setup_section_a_c):
         "section_b": [
             {
                 "blend_id": blend.id,
+                "rowId": f"blend_{blend.id}",
                 **cp_record_data,
             }
         ],
@@ -144,12 +149,14 @@ def setup_new_cp_report_create(blend, country_ro, _setup_section_a_c):
         "section_d": [
             {
                 "all_uses": "80.570",
+                "rowId": "generation_1",
                 "destruction": "80.570",
             }
         ],
         "section_e": [
             {
                 "facility": "Facility",
+                "rowId": "emission_1",
                 "total": 12.4,
                 "all_uses": 15.4,
                 "generated_emissions": 31.887,
@@ -294,25 +301,71 @@ class TestCPReportCreate(BaseTest):
         assert d_record.value_choice_id == d_record.row.choices.first().id
         assert d_record.value_text == "La orele de vrajeala"
 
-    def test_invalid_usage_id(self, user, _setup_new_cp_report_create):
+    def test_invalid_country_id(self, user, _setup_new_cp_report_create):
+        self.client.force_authenticate(user=user)
+        data = _setup_new_cp_report_create
+        data["country_id"] = 999
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 400
+        assert "country_id" in response.data
+        assert "general_error" in response.data["country_id"]
+
+    def test_invalid_usage_id(self, user, _setup_new_cp_report_create, substance):
         self.client.force_authenticate(user=user)
         data = _setup_new_cp_report_create
         data["section_a"][0]["record_usages"][0]["usage_id"] = 999
-        response = self.client.post(
-            self.url, _setup_new_cp_report_create, format="json"
-        )
+        response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
-        assert "usage_id" in response.data["section_a"][0]["record_usages"][0]
+        subst_error = response.data["section_a"][f"substance_{substance.id}"]
+        assert "record_usages" in subst_error
+        assert "usage_999" in subst_error["record_usages"]
+        assert "usage_id" in subst_error["record_usages"]["usage_999"]
+
+    def test_invalid_usage_quantity(
+        self, user, _setup_new_cp_report_create, substance, usage
+    ):
+        self.client.force_authenticate(user=user)
+        data = _setup_new_cp_report_create
+        data["section_a"][0]["record_usages"][0]["quantity"] = "abc"
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 400
+        subst_error = response.data["section_a"][f"substance_{substance.id}"]
+        assert "record_usages" in subst_error
+        assert f"usage_{usage.id}" in subst_error["record_usages"]
+        assert "quantity" in subst_error["record_usages"][f"usage_{usage.id}"]
 
     def test_invalid_substance_id(self, user, _setup_new_cp_report_create):
         self.client.force_authenticate(user=user)
         data = _setup_new_cp_report_create
         data["section_a"][0]["substance_id"] = 999
-        response = self.client.post(
-            self.url, _setup_new_cp_report_create, format="json"
-        )
+        data["section_a"][0]["rowId"] = "substance_999"
+        response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
-        assert "substance_id" in response.data["section_a"][0]
+        assert "substance_999" in response.data["section_a"]
+        assert "substance_id" in response.data["section_a"]["substance_999"]
+
+    def test_invalid_substance_and_blend(
+        self, user, _setup_new_cp_report_create, blend
+    ):
+        self.client.force_authenticate(user=user)
+        data = _setup_new_cp_report_create
+        data["section_a"][0]["blend_id"] = blend.id
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 400
+        assert "general_error" in response.data["section_a"]
+        assert "non_field_errors" in response.data["section_a"]["general_error"]
+
+    def test_invalid_current_year_price(
+        self, user, _setup_new_cp_report_create, substance
+    ):
+        self.client.force_authenticate(user=user)
+        data = _setup_new_cp_report_create
+        data["section_c"][0]["current_year_price"] = "abc"
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 400
+        row_id = f"substance_{substance.id}"
+        assert row_id in response.data["section_c"]
+        assert "current_year_price" in response.data["section_c"][row_id]
 
     def test_invalid_adm_row_id(self, user, _setup_old_cp_report_create):
         self.client.force_authenticate(user=user)
