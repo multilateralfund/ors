@@ -10,7 +10,7 @@ import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import useGridOptions from './schema'
 
 export default function SectionECreate(props: any) {
-  const { TableProps, errors, form, index, setActiveSection, setForm } = props
+  const { TableProps, form, index, setActiveSection, setForm } = props
   const newNode = useRef<RowNode>()
   const grid = useRef<any>()
   const [initialRowData] = useState(form.section_e)
@@ -31,7 +31,7 @@ export default function SectionECreate(props: any) {
       feedstock_gc: 0,
       feedstock_wpc: 0,
       generated_emissions: 0,
-      remark: '',
+      remarks: '',
       rowId: `facility_${id}`,
       total: 0,
     }
@@ -68,7 +68,7 @@ export default function SectionECreate(props: any) {
     [form.section_e, setForm],
   )
 
-  const gridOptions = useGridOptions({ addFacility, errors, removeFacility })
+  const gridOptions = useGridOptions({ addFacility, removeFacility })
 
   return (
     <>
@@ -76,11 +76,14 @@ export default function SectionECreate(props: any) {
         {...TableProps}
         className="two-groups mb-4"
         columnDefs={gridOptions.columnDefs}
-        defaultColDef={gridOptions.defaultColDef}
         gridRef={grid}
         headerDepth={2}
         pinnedBottomRowData={pinnedBottomRowData}
         rowData={initialRowData}
+        defaultColDef={{
+          ...TableProps.defaultColDef,
+          ...gridOptions.defaultColDef,
+        }}
         onCellValueChanged={(event) => {
           const newData = [...form.section_e]
           const index = findIndex(
@@ -109,6 +112,7 @@ export default function SectionECreate(props: any) {
                 grid.current.api.flashCells({
                   rowNodes: [newNode.current],
                 })
+                newNode.current = undefined
               },
             )
           }

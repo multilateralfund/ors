@@ -25,7 +25,6 @@ export const CellAutocompleteWidget = memo(
   forwardRef(
     (
       props: {
-        disableClearable?: boolean
         getOptionLabel?: (option: any) => string
         options?: Array<any>
         renderOption?: (
@@ -46,12 +45,6 @@ export const CellAutocompleteWidget = memo(
         eInput.focus()
         // eslint-disable-next-line
       }, [])
-
-      /* Utility Methods */
-      const cancelBeforeStart =
-        props.eventKey &&
-        props.eventKey.length === 1 &&
-        '1234567890'.indexOf(props.eventKey) < 0
 
       const isArrowKey = (event: any) => {
         return (
@@ -107,21 +100,19 @@ export const CellAutocompleteWidget = memo(
           // Gets called once before editing starts, to give editor a chance to
           // If you return true, then the result of the edit will be ignored.
           isCancelAfterEnd() {
-            if (!!props.disableClearable && !value) return true
             return false
           },
 
           // Gets called once when editing is finished (eg if Enter is pressed).
           // cancel the editing before it even starts.
           isCancelBeforeStart() {
-            return cancelBeforeStart
+            return false
           },
         }
       })
 
       return (
         <AutocompleteWidget
-          disableClearable={props.disableClearable}
           getOptionLabel={props.getOptionLabel}
           options={props.options || []}
           ref={refInput}

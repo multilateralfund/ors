@@ -1,11 +1,20 @@
 'use client'
-import { forwardRef, memo, useImperativeHandle, useState } from 'react'
+import {
+  forwardRef,
+  memo,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react'
 
 import { Box, Modal, Typography } from '@mui/material'
 import { ICellEditorParams } from 'ag-grid-community'
 
 import TextareaWidget from '@ors/components/manage/Widgets/TextareaWidget'
 import { KEY_BACKSPACE, KEY_ENTER, KEY_TAB } from '@ors/constants'
+
+import AgCellRenderer from '../AgCellRenderers/AgCellRenderer'
 
 export const CellTextareaWidget = memo(
   forwardRef(
@@ -16,14 +25,8 @@ export const CellTextareaWidget = memo(
       } & ICellEditorParams,
       ref,
     ) => {
-      const [open, setOpen] = useState(true)
+      const el = useRef<HTMLTextAreaElement>()
       const [value, setValue] = useState(props.value)
-
-      /* Utility Methods */
-      const cancelBeforeStart =
-        props.eventKey &&
-        props.eventKey.length === 1 &&
-        '1234567890'.indexOf(props.eventKey) < 0
 
       const isArrowKey = (event: any) => {
         return (
@@ -74,25 +77,31 @@ export const CellTextareaWidget = memo(
           // Gets called once when editing is finished (eg if Enter is pressed).
           // cancel the editing before it even starts.
           isCancelBeforeStart() {
-            return cancelBeforeStart
+            return false
           },
         }
       })
 
+      useEffect(() => {
+        setTimeout(() => {
+          el.current?.focus()
+        }, 0)
+      }, [])
+
       return (
         <>
+          <AgCellRenderer {...props} />
           <Modal
             className="ag-custom-component-popup"
-            aria-labelledby="modal-title"
-            open={open}
+            aria-labelledby="cell-textarea-widget-title"
+            open={true}
             onClose={() => {
-              setOpen(false)
               props.stopEditing()
             }}
           >
             <Box className="w-full max-w-md absolute-center">
               <Typography
-                id="modal-title"
+                id="cell-textarea-widget-title"
                 className="mb-4 text-typography-secondary"
                 component="h2"
                 variant="h6"
@@ -100,8 +109,10 @@ export const CellTextareaWidget = memo(
                 {props.label || 'Add text'}
               </Typography>
               <TextareaWidget
+                id="cell-textarea-widget"
                 className="mb-4 p-4"
                 minRows={5}
+                ref={el}
                 value={value}
                 onChange={(event: any) => {
                   setValue(event.target.value)

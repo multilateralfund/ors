@@ -1,16 +1,15 @@
 'use client'
 import type { ByLayout } from '@ors/config/Views'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 
 import { usePathname } from 'next/navigation'
 import { SnackbarProvider } from 'notistack'
 
 import config from '@ors/config'
 
+import DefaultAlert from '@ors/components/theme/Alerts/Default'
 import { getCurrentView } from '@ors/helpers/View/View'
-
-import DefaultAlert from '../Alerts/Default'
 
 const getViewByLayout = (layout?: keyof ByLayout) => {
   return layout ? config.views.layoutViews[layout] : null
@@ -25,9 +24,12 @@ const localStorageVersion = '1.0.1'
 export default function View({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
-  const view = React.useMemo(() => getCurrentView(pathname), [pathname])
+  const view = getCurrentView(pathname)
 
-  const RenderedView = getViewByLayout(view.layout) || getViewDefault()
+  const RenderedView = useMemo(
+    () => getViewByLayout(view.layout) || getViewDefault(),
+    [view],
+  )
 
   useEffect(() => {
     if (localStorage.getItem('version') !== localStorageVersion) {

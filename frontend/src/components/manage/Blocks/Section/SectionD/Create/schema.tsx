@@ -23,7 +23,7 @@ function useGridOptions() {
       },
       {
         cellEditor: 'agNumberCellEditor',
-        cellRenderer: 'agFloatCellRenderer',
+        dataType: 'number',
         editable: true,
         field: 'all_uses',
         headerComponentParams: { footnote: 2 },
@@ -32,7 +32,7 @@ function useGridOptions() {
       },
       {
         cellEditor: 'agNumberCellEditor',
-        cellRenderer: 'agFloatCellRenderer',
+        dataType: 'number',
         editable: true,
         field: 'feedstock',
         headerComponentParams: { footnote: 3 },
@@ -41,7 +41,7 @@ function useGridOptions() {
       },
       {
         cellEditor: 'agNumberCellEditor',
-        cellRenderer: 'agFloatCellRenderer',
+        dataType: 'number',
         editable: true,
         field: 'destruction',
         headerName: 'Captured for destruction',

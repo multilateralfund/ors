@@ -13,9 +13,9 @@ function useGridOptions(props: { adm_columns: any }) {
     return {
       id: column.id,
       category: 'adm',
+      dataType: column.type,
       headerName: column.display_name,
       initialWidth: defaultColDef.minWidth,
-      type: column.type,
       ...(column.children.length
         ? {
             children: column.children.map(mapAdmColumn),

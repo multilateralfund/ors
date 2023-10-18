@@ -57,11 +57,18 @@
   --ag-tooltip-background-color: #f8f8f8;
   --ag-value-change-delta-down-color: theme(colors.error);
   --ag-value-change-delta-up-color: theme(colors.success);
-  --ag-value-change-value-highlight-background-color: theme(colors.success/40);
+  --ag-value-change-value-highlight-background-color: theme(colors.primary);
   --ag-widget-container-horizontal-padding: calc(var(--ag-grid-size) * 2);
   --ag-widget-container-vertical-padding: calc(var(--ag-grid-size) * 2);
   --ag-widget-horizontal-spacing: calc(var(--ag-grid-size) * 2);
   --ag-widget-vertical-spacing: calc(var(--ag-grid-size) * 1.5);
+
+  .ag-value-change-value-highlight,
+  .ag-cell-data-changed,
+  .ag-cell-highlight {
+    --twc-primary-opacity: 0.4;
+    --ag-value-change-value-highlight-background-color: theme(colors.primary);
+  }
 }
 
 #next-app [class*='ag-theme-'].with-separators {

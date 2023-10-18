@@ -21,7 +21,7 @@ function Title({ children, visible }: TitleProps) {
   return (
     <div>
       <Divider
-        className={cx('-ml-4 mb-12 mt-4 w-[calc(100%+2rem)] border-gray-200', {
+        className={cx('mb-12 mt-4 w-full border-gray-200', {
           'pointer-events-none absolute left-0 top-0 hidden opacity-0':
             !visible,
         })}

@@ -23,14 +23,14 @@ function useGridOptions() {
       },
       {
         aggFunc: 'sumTotal',
-        cellRenderer: 'agFloatCellRenderer',
+        dataType: 'number',
         field: 'previous_year_price',
         headerName: 'Previous year price',
         ...colDefById['previous_year_price'],
       },
       {
         aggFunc: 'sumTotal',
-        cellRenderer: 'agFloatCellRenderer',
+        dataType: 'number',
         field: 'current_year_price',
         headerName: 'Current prices',
         ...colDefById['current_year_price'],

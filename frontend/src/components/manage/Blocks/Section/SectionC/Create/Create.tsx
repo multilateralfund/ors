@@ -57,8 +57,7 @@ function getRowData(data: any) {
 }
 
 export default function SectionCCreate(props: any) {
-  const { TableProps, form, index, mapSubstance, setActiveSection, setForm } =
-    props
+  const { Section, TableProps, form, index, setActiveSection, setForm } = props
   const newNode = useRef<RowNode>()
   const substances = useStore(
     (state) => getResults(state.cp_reports.substances.data).results,
@@ -79,11 +78,11 @@ export default function SectionCCreate(props: any) {
         includes(substance.sections, 'C') &&
         !includes(chimicalsInForm, `substance_${substance.id}`)
       ) {
-        data.push(mapSubstance(substance))
+        data.push(Section.transformSubstance(substance))
       }
     })
     return data
-  }, [substances, form.section_c, mapSubstance])
+  }, [substances, form.section_c, Section])
 
   const gridOptions = useGridOptions({
     onRemoveSubstance: (props: any) => {
@@ -95,12 +94,24 @@ export default function SectionCCreate(props: any) {
       )
       if (index > -1) {
         const groupNode = grid.current.api.getRowNode(removedSubstance.group)
+        const removeGroup = groupNode.data.count === 1
         newData.splice(index, 1)
         setForm((form: any) => ({ ...form, section_c: newData }))
-        applyTransaction(grid.current.api, {
-          remove: [props.data],
-          update: [{ ...groupNode.data, count: groupNode.data.count - 1 }],
-        })
+        if (removeGroup) {
+          applyTransaction(grid.current.api, {
+            remove: [
+              groupNode.data,
+              props.data,
+              grid.current.api.getRowNode(`subtotal[${removedSubstance.group}]`)
+                ?.data,
+            ],
+          })
+        } else {
+          applyTransaction(grid.current.api, {
+            remove: [props.data],
+            update: [{ ...groupNode.data, count: groupNode.data.count - 1 }],
+          })
+        }
       }
     },
     openAddChimicalModal: () => setAddChimicalModal(true),
@@ -112,10 +123,13 @@ export default function SectionCCreate(props: any) {
         {...TableProps}
         className="three-groups mb-4'"
         columnDefs={gridOptions.columnDefs}
-        defaultColDef={gridOptions.defaultColDef}
         gridRef={grid}
         headerDepth={3}
         rowData={initialRowData}
+        defaultColDef={{
+          ...TableProps.defaultColDef,
+          ...gridOptions.defaultColDef,
+        }}
         pinnedBottomRowData={[
           { display_name: 'TOTAL', rowType: 'total' },
           { rowType: 'control' },
@@ -148,6 +162,7 @@ export default function SectionCCreate(props: any) {
                 grid.current.api.flashCells({
                   rowNodes: [newNode.current],
                 })
+                newNode.current = undefined
               },
             )
           }
@@ -196,17 +211,45 @@ export default function SectionCCreate(props: any) {
                   const groupNode = grid.current.api.getRowNode(
                     newChimical.group,
                   )
+                  const createGroup = !groupNode
+                  const { group } = newChimical
+
                   setForm((form: any) => ({
                     ...form,
                     section_c: [...form.section_c, newChimical],
                   }))
-                  applyTransaction(grid.current.api, {
-                    add: [newChimical],
-                    addIndex: groupNode.rowIndex + groupNode.data.count + 1,
-                    update: [
-                      { ...groupNode.data, count: groupNode.data.count + 1 },
-                    ],
-                  })
+                  if (createGroup) {
+                    applyTransaction(grid.current.api, {
+                      add: [
+                        {
+                          count: 1,
+                          display_name: group,
+                          group,
+                          rowId: group,
+                          rowType: 'group',
+                        },
+                        newChimical,
+                        {
+                          display_name: 'Sub-total',
+                          group,
+                          rowId: `subtotal[${group}]`,
+                          rowType: 'subtotal',
+                        },
+                      ],
+                      addIndex: grid.current.api.getLastDisplayedRow() + 1,
+                    })
+                  } else {
+                    applyTransaction(grid.current.api, {
+                      add: [newChimical],
+                      addIndex: groupNode.rowIndex + groupNode.data.count + 1,
+                      update: [
+                        {
+                          ...groupNode.data,
+                          count: groupNode.data.count + 1,
+                        },
+                      ],
+                    })
+                  }
                   const substanceNode = grid.current.api.getRowNode(
                     newChimical.rowId,
                   )
