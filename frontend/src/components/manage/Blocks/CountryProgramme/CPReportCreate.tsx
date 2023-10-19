@@ -4,7 +4,16 @@
 
 import React, { useCallback, useEffect, useState } from 'react'
 
-import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
+import {
+  Alert,
+  Box,
+  Button,
+  Collapse,
+  IconButton,
+  Tab,
+  Tabs,
+  Typography,
+} from '@mui/material'
 import cx from 'classnames'
 import { AnimatePresence } from 'framer-motion'
 import { isEmpty } from 'lodash'
@@ -139,6 +148,7 @@ export default function CPReportCreate(props: {
       section_e: Sections.section_e.getSubmitFormData(form.section_e),
       section_f: Sections.section_f.getSubmitFormData(form.section_f),
       country_id: form.country?.id,
+      name: form.country?.id ? `${form.country?.id} ${form.year}` : '',
     }
     /* eslint-disable-next-line */
   }, [form])
@@ -192,13 +202,6 @@ export default function CPReportCreate(props: {
       </HeaderTitle>
       <form className="create-submission-form">
         <div className="grid grid-cols-3 gap-x-4">
-          <Field
-            id="name"
-            name="name"
-            error={!!errors.name}
-            helperText={errors.name?.general_error}
-            label="Report name"
-          />
           <Field
             id="country"
             name="country_id"
