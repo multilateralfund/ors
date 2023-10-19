@@ -57,7 +57,7 @@ export const Provider = ({
   children: React.ReactNode
   initialState: InitialStoreState
 }) => {
-  const [store] = React.useState(createStore(initialState))
+  const [store] = React.useState(() => createStore(initialState))
 
   return (
     <ZustandContext.Provider value={store}>{children}</ZustandContext.Provider>

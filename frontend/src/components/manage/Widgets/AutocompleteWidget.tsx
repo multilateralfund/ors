@@ -1,4 +1,3 @@
-/* eslint-disable react/display-name */
 import type { TextWidgetProps } from './TextWidget'
 import type { AutocompleteProps } from '@mui/material'
 
@@ -23,67 +22,65 @@ export interface AutocompleteWidgetProps
     | undefined
 }
 
-const AutocompleteWidget = forwardRef(
-  (
-    {
-      Input,
-      className,
-      getOptionLabel,
-      isOptionEqualToValue,
-      options,
-      renderInput,
-      renderOption,
-      ...rest
-    }: AutocompleteWidgetProps,
-    ref: any,
-  ): JSX.Element => {
-    return (
-      <Autocomplete
-        className={cx('w-full', className)}
-        options={options || []}
-        ref={ref}
-        getOptionLabel={(option) => {
-          if (!option) return ''
-          if (!!getOptionLabel) {
-            return getOptionLabel(option)
-          }
-          if (isString(option)) return option
-          return option.label || ''
-        }}
-        isOptionEqualToValue={(option, value) => {
-          if (isOptionEqualToValue) {
-            return isOptionEqualToValue(option, value)
-          }
-          if (isObject(option) && isObject(value) && option.label) {
-            return option.label === value.label
-          }
-          if (isObject(option) && isString(value) && option.label) {
-            return option.label === value
-          }
-          return option === value
-        }}
-        renderInput={
-          !!renderInput
-            ? renderInput
-            : (params) => (
-                <TextWidget {...params} size="small" {...(Input || {})} />
-              )
+const AutocompleteWidget = forwardRef(function AutocompleteWidget(
+  {
+    Input,
+    className,
+    getOptionLabel,
+    isOptionEqualToValue,
+    options,
+    renderInput,
+    renderOption,
+    ...rest
+  }: AutocompleteWidgetProps,
+  ref: any,
+): JSX.Element {
+  return (
+    <Autocomplete
+      className={cx('w-full', className)}
+      options={options || []}
+      ref={ref}
+      getOptionLabel={(option) => {
+        if (!option) return ''
+        if (!!getOptionLabel) {
+          return getOptionLabel(option)
         }
-        renderOption={(props, option, ...args) => {
-          if (!option) return null
-          if (!!renderOption) {
-            return renderOption(props, option, ...args)
-          }
-          return (
-            <li {...props} key={option.id}>
-              {getOptionLabel?.(option) ?? option.label}
-            </li>
-          )
-        }}
-        {...rest}
-      />
-    )
-  },
-)
+        if (isString(option)) return option
+        return option.label || ''
+      }}
+      isOptionEqualToValue={(option, value) => {
+        if (isOptionEqualToValue) {
+          return isOptionEqualToValue(option, value)
+        }
+        if (isObject(option) && isObject(value) && option.label) {
+          return option.label === value.label
+        }
+        if (isObject(option) && isString(value) && option.label) {
+          return option.label === value
+        }
+        return option === value
+      }}
+      renderInput={
+        !!renderInput
+          ? renderInput
+          : (params) => (
+              <TextWidget {...params} size="small" {...(Input || {})} />
+            )
+      }
+      renderOption={(props, option, ...args) => {
+        if (!option) return null
+        if (!!renderOption) {
+          return renderOption(props, option, ...args)
+        }
+        return (
+          <li {...props} key={option.id}>
+            {getOptionLabel?.(option) ?? option.label}
+          </li>
+        )
+      }}
+      {...rest}
+    />
+  )
+})
 
 export default AutocompleteWidget

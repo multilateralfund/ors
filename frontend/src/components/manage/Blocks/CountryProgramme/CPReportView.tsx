@@ -75,7 +75,7 @@ export default function CPReportView(props: {
       return variant.minYear <= year && variant.maxYear >= year
     })[0],
   )
-  const [sections] = useState(getViewSections(variant))
+  const [sections] = useState(() => getViewSections(variant))
 
   useEffect(() => {
     setTimeout(() => {

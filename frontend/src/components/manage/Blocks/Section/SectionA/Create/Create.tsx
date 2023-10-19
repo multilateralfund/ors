@@ -72,7 +72,7 @@ export default function SectionACreate(props: any) {
     (state) => getResults(state.cp_reports.substances.data).results,
   )
   const grid = useRef<any>()
-  const [initialRowData] = useState(getRowData(form.section_a))
+  const [initialRowData] = useState(() => getRowData(form.section_a))
   const [addSubstanceModal, setAddSubstanceModal] = useState(false)
 
   const substancesOptions = useMemo(() => {

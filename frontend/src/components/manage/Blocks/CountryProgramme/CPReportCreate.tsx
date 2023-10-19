@@ -47,7 +47,7 @@ const fields: Record<Sections, any> = {
     import_quotas: { dataType: 'number', defaultValue: null },
     imports: { dataType: 'number', defaultValue: null },
     production: { dataType: 'number', defaultValue: null },
-    record_usages: { dataType: 'usage', defaultValue: null },
+    record_usages: { dataType: 'usage', defaultValue: [] },
     remarks: { dataType: 'string', defaultValue: null },
   },
   section_c: {
@@ -104,42 +104,40 @@ const mapBlend = (blend: any, section: Sections, mandatory?: any) => {
 //   updated: Array<any>,
 //   original: Array<any>,
 //   key: string,
-//   section: Sections,
+//   // section: Sections,
 // ) => {
-//   let fieldKey: string
+//   // let fieldKey: string
 //   const mergedMap = new Map()
 
 //   original.forEach((item: any) => mergedMap.set(item[key], { ...item }))
-//   updated.forEach((data: any) => {
-//     if ((!data.isSubstance && !data.isBlend) || !data[key]) return
-//     const originalItem = { ...mergedMap.get(data[key]) }
-//     const item = data.isSubstance
-//       ? mapSubstance(data, section)
-//       : mapBlend(data, section)
-//     const parsedItem: Record<string, any> = {}
+//   console.log('HERE', mergedMap)
+//   // updated.forEach((data: any) => {
+//   //   if ((!data.isSubstance && !data.isBlend) || !data[key]) return
+//   //   const originalItem = { ...mergedMap.get(data[key]) }
+//   //   const parsedItem: Record<string, any> = {}
 
-//     for (fieldKey in fields[section]) {
-//       const field = fields[section][fieldKey]
-//       if (
-//         isNull(item[key]) ||
-//         (field.dataType === 'number' && !isNumber(item[fieldKey])) ||
-//         (field.dataType === 'string' && !isString(item[fieldKey])) ||
-//         (field.dataType === 'usage' &&
-//           item[fieldKey].filter(
-//             (usage: any) =>
-//               isNumber(usage.usage_id) && isNumber(usage.quantity),
-//           ))
-//       ) {
-//         return
-//       }
-//       parsedItem[key] = item[key] || field.defaultValue
-//     }
-//     mergedMap.set(item[key], {
-//       ...originalItem,
-//       ...parsedItem,
-//       mandatory: originalItem.mandatory,
-//     })
-//   })
+//   //   for (fieldKey in fields[section]) {
+//   //     const field = fields[section][fieldKey]
+//   //     if (
+//   //       isNull(data[key]) ||
+//   //       (field.dataType === 'number' && !isNumber(data[fieldKey])) ||
+//   //       (field.dataType === 'string' && !isString(data[fieldKey])) ||
+//   //       (field.dataType === 'usage' &&
+//   //         data[fieldKey].filter(
+//   //           (usage: any) =>
+//   //             !(isNumber(usage.usage_id) && isNumber(usage.quantity)),
+//   //         ).length > 0)
+//   //     ) {
+//   //       return
+//   //     }
+//   //     parsedItem[key] = data[key] || field.defaultValue
+//   //   }
+//   //   mergedMap.set(data[key], {
+//   //     ...originalItem,
+//   //     ...parsedItem,
+//   //     mandatory: originalItem.mandatory,
+//   //   })
+//   // })
 
 //   return Array.from(mergedMap.values())
 // }
@@ -156,7 +154,6 @@ const mapBlend = (blend: any, section: Sections, mandatory?: any) => {
 // }
 
 // const getInitialForm = (mandatoryForm: any) => {
-//   console.log('HERE getInitialForm')
 //   const _section_a = parseLocalStorageItem('section_a_create') || []
 //   const _section_b = parseLocalStorageItem('section_b_create') || []
 //   const _section_c = parseLocalStorageItem('section_c_create') || []
@@ -262,7 +259,7 @@ export default function CPReportCreate(props: {
     ],
     section_d: [
       {
-        display_name: 'HFC-23',
+        name: 'HFC-23',
         id: 'hfc_23',
       },
     ].map((substance) => mapSubstance(substance, 'section_d', true)),
@@ -275,7 +272,7 @@ export default function CPReportCreate(props: {
   // const [form, setForm] = useState(getInitialForm(mandatoryForm))
   const [form, setForm] = useState(mandatoryForm)
 
-  const [sections] = useState(getCreateSections())
+  const [sections] = useState(getCreateSections)
 
   useEffect(() => {
     setTimeout(() => {

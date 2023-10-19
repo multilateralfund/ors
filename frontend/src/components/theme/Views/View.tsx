@@ -20,12 +20,21 @@ const getViewDefault = () => {
   return config.views.default
 }
 
+const localStorageVersion = '1.0.1'
+
 export default function View({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
   const view = React.useMemo(() => getCurrentView(pathname), [pathname])
 
   const RenderedView = getViewByLayout(view.layout) || getViewDefault()
+
+  useEffect(() => {
+    if (localStorage.getItem('version') !== localStorageVersion) {
+      localStorage.clear()
+      localStorage.setItem('version', localStorageVersion)
+    }
+  }, [])
 
   useEffect(() => {
     window.requestAnimationFrame(() => {
