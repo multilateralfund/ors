@@ -219,7 +219,7 @@ class CPReportGroupByYearView(generics.ListAPIView):
                     "row_number__lte": config.CP_NR_REPORTS,
                 }
             )
-            .order_by(self.order_field)
+            .order_by(self.order_field, self.order_by)
         )
 
         grouped_data = {}
