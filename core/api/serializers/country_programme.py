@@ -269,9 +269,9 @@ class CPReportCreateSerializer(serializers.Serializer):
     country_id = serializers.PrimaryKeyRelatedField(
         queryset=Country.objects.all().values_list("id", flat=True),
     )
-    section_a = CPRecordSerializer(many=True)
+    section_a = CPRecordSerializer(many=True, required=False)
     section_b = CPRecordSerializer(many=True, required=False)
-    section_c = CPPricesSerializer(many=True)
+    section_c = CPPricesSerializer(many=True, required=False)
     section_d = CPGenerationSerializer(many=True, required=False)
     section_e = CPEmissionSerializer(many=True, required=False)
     section_f = serializers.DictField(
@@ -300,36 +300,37 @@ class CPReportCreateSerializer(serializers.Serializer):
     def to_representation(self, instance):
         return CPReportSerializer(instance).data
 
-    def validate(self, attrs):
-        if attrs["year"] > IMPORT_DB_MAX_YEAR:
-            if not all(
-                [
-                    attrs.get("section_b"),
-                    attrs.get("section_d"),
-                    attrs.get("section_e"),
-                    attrs.get("section_f"),
-                ]
-            ):
-                raise serializers.ValidationError(
-                    f"Sections B, D, E and F are required for years after {IMPORT_DB_MAX_YEAR}"
-                )
-            if attrs["section_f"].get("remarks") is None:
-                raise serializers.ValidationError(
-                    f"Remarks are required for years after {IMPORT_DB_MAX_YEAR}"
-                )
-        else:
-            if not all(
-                [
-                    attrs.get("adm_b"),
-                    attrs.get("adm_c"),
-                    attrs.get("adm_d"),
-                ]
-            ):
-                raise serializers.ValidationError(
-                    f"Adm B, C and D are required for years before {IMPORT_DB_MAX_YEAR}"
-                )
+    # waiting for the decision on the validation rules
+    # def validate(self, attrs):
+    #     if attrs["year"] > IMPORT_DB_MAX_YEAR:
+    #         if not all(
+    #             [
+    #                 attrs.get("section_b"),
+    #                 attrs.get("section_d"),
+    #                 attrs.get("section_e"),
+    #                 attrs.get("section_f"),
+    #             ]
+    #         ):
+    #             raise serializers.ValidationError(
+    #                 f"Sections B, D, E and F are required for years after {IMPORT_DB_MAX_YEAR}"
+    #             )
+    #         if attrs["section_f"].get("remarks") is None:
+    #             raise serializers.ValidationError(
+    #                 f"Remarks are required for years after {IMPORT_DB_MAX_YEAR}"
+    #             )
+    #     else:
+    #         if not all(
+    #             [
+    #                 attrs.get("adm_b"),
+    #                 attrs.get("adm_c"),
+    #                 attrs.get("adm_d"),
+    #             ]
+    #         ):
+    #             raise serializers.ValidationError(
+    #                 f"Adm B, C and D are required for years before {IMPORT_DB_MAX_YEAR}"
+    #             )
 
-        return super().validate(attrs)
+    #     return super().validate(attrs)
 
     def _create_cp_records(self, cp_report, section_data, section):
         for record in section_data:
