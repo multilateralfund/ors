@@ -1,11 +1,14 @@
 from datetime import datetime
 
 from constance import config
+from django.db.models import Count
 from django.db.models import F
 from django.db.models import Window
 from django.db.models.functions import RowNumber
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import filters
 from rest_framework import mixins, generics, views
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -53,6 +56,11 @@ class CPReportView(generics.ListAPIView, generics.CreateAPIView):
 
     queryset = CPReport.objects.select_related("country").order_by("name")
     filterset_class = CPReportFilter
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.OrderingFilter,
+    ]
+    ordering_fields = ["year", "country__name"]
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -75,6 +83,7 @@ class CPReportGroupByYearView(generics.ListAPIView):
 
     serializer_class = CPReportGroupSerializer
     group_by = "year"
+    group_pk = "year"
     order_by = "country__name"
 
     @property
@@ -98,6 +107,10 @@ class CPReportGroupByYearView(generics.ListAPIView):
     def get_group(obj):
         return obj.year
 
+    @staticmethod
+    def get_id(obj):
+        return obj.year
+
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(
@@ -111,6 +124,10 @@ class CPReportGroupByYearView(generics.ListAPIView):
         ],
     )
     def list(self, request, *args, **kwargs):
+        totals = dict(
+            CPReport.objects.values_list(self.group_pk).annotate(count=Count(1))
+        )
+
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
 
@@ -120,7 +137,7 @@ class CPReportGroupByYearView(generics.ListAPIView):
                     expression=RowNumber(),
                     partition_by=[F(self.group_by)],
                     order_by=self.order_by,
-                )
+                ),
             )
             .filter(
                 **{
@@ -133,13 +150,15 @@ class CPReportGroupByYearView(generics.ListAPIView):
 
         grouped_data = {}
         for obj in queryset:
-            group = self.get_group(obj)
-            if group not in grouped_data:
-                grouped_data[group] = {
-                    "group": group,
+            pk = self.get_id(obj)
+            if pk not in grouped_data:
+                grouped_data[pk] = {
+                    "id": pk,
+                    "count": totals[pk],
+                    "group": self.get_group(obj),
                     "reports": [],
                 }
-            grouped_data[group]["reports"].append(obj)
+            grouped_data[pk]["reports"].append(obj)
 
         serializer = self.get_serializer(grouped_data.values(), many=True)
         if page is not None:
@@ -149,11 +168,16 @@ class CPReportGroupByYearView(generics.ListAPIView):
 
 class CPReportGroupByCountryView(CPReportGroupByYearView):
     group_by = "country__name"
+    group_pk = "country__id"
     order_by = "year"
 
     @staticmethod
     def get_group(obj):
         return obj.country.name
+
+    @staticmethod
+    def get_id(obj):
+        return obj.country.id
 
 
 # view for country programme record list

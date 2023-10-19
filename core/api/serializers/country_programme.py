@@ -103,11 +103,15 @@ class CPReportSerializer(serializers.ModelSerializer):
 
 
 class CPReportGroupSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    count = serializers.IntegerField()
     group = serializers.CharField()
     reports = CPReportSerializer(many=True, read_only=True)
 
     class Meta:
         fields = [
+            "id",
+            "count",
             "group",
             "reports",
         ]
