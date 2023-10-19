@@ -651,7 +651,6 @@ export default function SectionBCreate(props: any) {
                             { variant: 'error' },
                           )
                         } else {
-                          console.log('HERE', error)
                           setBlendFormErrors({})
                           enqueueSnackbar(
                             <>Unexpected error, we are working on it.</>,

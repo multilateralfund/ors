@@ -26,7 +26,7 @@ function getCellRendererByCategory(category?: string) {
 export default function AgCellRenderer(props: any) {
   const [showError, setShowError] = useState(false)
   const category = props.colDef.category
-  const type = props.colDef.cellDataType
+  const type = props.colDef.dataType
 
   const error = getError(props)
 
