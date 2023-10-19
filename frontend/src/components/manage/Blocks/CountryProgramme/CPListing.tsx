@@ -14,22 +14,14 @@ import {
   Typography,
 } from '@mui/material'
 import cx from 'classnames'
-import {
-  filter,
-  groupBy,
-  includes,
-  isArray,
-  keys,
-  orderBy,
-  slice,
-  union,
-} from 'lodash'
+import { filter, isArray, union } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
 import Listing from '@ors/components/manage/Form/Listing'
 import IconButton from '@ors/components/ui/IconButton/IconButton'
 import Link from '@ors/components/ui/Link/Link'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
+import { getResults } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
 import useStore from '@ors/store'
 
@@ -40,19 +32,16 @@ import { IoClose } from '@react-icons/all-files/io5/IoClose'
 import { IoFilter } from '@react-icons/all-files/io5/IoFilter'
 
 interface SectionProps {
-  countries: any
   currentSection?: number
   filters: any
   groupBy?: string
   maxYear: any
   minYear: any
-  reports: any
-  reportsByCountry: any
-  reportsByYear: any
   section?: number
   setFilters: any
-  years: any
 }
+
+const PER_PAGE = 12
 
 let timer: any
 
@@ -99,46 +88,50 @@ function Item({ item, showCountry, showYear }: any) {
 
 function GeneralSection(props: SectionProps) {
   const listing = useRef<any>()
-  const { countries, filters, groupBy, maxYear, minYear, reports, setFilters } =
-    props
+  const countries = useStore((state) => state.common.countries.data)
+  const countriesById = new Map<number, any>(
+    countries.map((country: any) => [country.id, country]),
+  )
+  const { filters, groupBy, maxYear, minYear, setFilters } = props
   const [range, setRange] = useState([filters.range[0], filters.range[1]])
-  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 100 })
+  const [pagination, setPagination] = useState({
+    page: 1,
+    rowsPerPage: 50,
+  })
   const [ordering, setOrdering] = useState<'asc' | 'desc'>(
     groupBy === 'country' ? 'asc' : 'desc',
   )
+  const orderField =
+    groupBy === 'country' ? 'country__name,year' : 'year,country__name'
+  const [apiSettings, setApiSettings] = useState({
+    options: {
+      params: {
+        country_id: filters.country.join(','),
+        limit: 50,
+        offset: 0,
+        ordering: (ordering === 'asc' ? '' : '-') + orderField,
+        year_max: filters.year.length > 0 ? filters.year[0] : range[1],
+        year_min: filters.year.length > 0 ? filters.year[0] : range[0],
+      },
+    },
+    path: 'api/country-programme/reports/',
+  })
 
-  const filteredReports = useMemo(
-    () =>
-      filter(reports, (report) => {
-        const includesCountry =
-          filters.country.length > 0
-            ? includes(filters.country, report.country)
-            : true
-        const includesYear =
-          filters.year.length > 0 ? includes(filters.year, report.year) : true
-        return (
-          includesCountry &&
-          includesYear &&
-          report.year >= filters.range[0] &&
-          report.year <= filters.range[1]
-        )
-      }),
-    [reports, filters],
-  )
+  const { data, loading } = useApi(apiSettings)
+  const { count, loaded, results } = getResults(data)
 
-  const rows = useMemo(
-    () =>
-      slice(
-        orderBy(
-          filteredReports,
-          groupBy === 'country' ? ['country', 'year'] : ['year', 'country'],
-          groupBy === 'country' ? [ordering, 'desc'] : [ordering, 'asc'],
-        ),
-        (pagination.page - 1) * pagination.rowsPerPage,
-        pagination.page * pagination.rowsPerPage,
-      ),
-    [filteredReports, pagination, ordering, groupBy],
-  )
+  function handleParamsChange(newParams: { [key: string]: any }) {
+    setApiSettings((prevApiSettings) => ({
+      ...prevApiSettings,
+      options: {
+        ...prevApiSettings.options,
+        params: {
+          ...prevApiSettings.options.params,
+          ...newParams,
+        },
+      },
+    }))
+  }
 
   return (
     <>
@@ -146,6 +139,7 @@ function GeneralSection(props: SectionProps) {
         <div className="flex flex-1 items-center gap-4">
           <Field
             FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
+            getOptionLabel={(option: any) => option?.name}
             options={countries}
             popupIcon={<IoFilter className="p-1" size={24} />}
             value={null}
@@ -159,9 +153,14 @@ function GeneralSection(props: SectionProps) {
             }}
             onChange={(_: any, value: any) => {
               if (!!value) {
+                const country = filters.country || []
+                const newValue = union(country, [value.id])
                 setFilters((filters: any) => {
-                  const country = filters.country || []
-                  return { ...filters, country: union(country, [value.id]) }
+                  return { ...filters, country: newValue }
+                })
+                handleParamsChange({
+                  country_id: newValue.join(','),
+                  offset: 0,
                 })
                 if (document.activeElement) {
                   // @ts-ignore
@@ -184,6 +183,11 @@ function GeneralSection(props: SectionProps) {
                   setFilters((filters: any) => {
                     return { ...filters, range: value, year: [] }
                   })
+                  handleParamsChange({
+                    offset: 0,
+                    year_max: value[1],
+                    year_min: value[0],
+                  })
                 })
               }
             }}
@@ -195,11 +199,13 @@ function GeneralSection(props: SectionProps) {
           </Typography>
           <IconButton
             onClick={() => {
-              if (ordering === 'asc') {
-                setOrdering('desc')
-              } else {
-                setOrdering('asc')
-              }
+              const newOrder = ordering === 'asc' ? 'desc' : 'asc'
+              setOrdering(newOrder)
+              setPagination({ ...pagination, page: 1 })
+              handleParamsChange({
+                offset: 0,
+                ordering: (newOrder === 'asc' ? '' : '-') + orderField,
+              })
             }}
           >
             {ordering === 'asc' ? (
@@ -211,23 +217,24 @@ function GeneralSection(props: SectionProps) {
         </div>
       </div>
       <div className="filters mb-6 flex flex-wrap gap-4">
-        {filters.country.map((country: string) => (
+        {filters.country.map((countryId: number) => (
           <Typography
-            key={country}
+            key={countryId}
             className="inline-flex items-center gap-2 rounded bg-gray-100 px-4 font-normal theme-dark:bg-gray-700/20"
             component="p"
             variant="h6"
           >
-            {country}
+            {countriesById.get(countryId)?.name}
             <IoClose
               className="cursor-pointer"
               size={20}
               onClick={() => {
+                const values = filters.country || []
+                const newValue = filter(values, (value) => value !== countryId)
                 setFilters((filters: any) => {
-                  const values = filters.country || []
                   return {
                     ...filters,
-                    country: filter(values, (value) => value !== country),
+                    country: newValue,
                   }
                 })
                 listing.current.setPagination((pagination: any) => ({
@@ -235,6 +242,10 @@ function GeneralSection(props: SectionProps) {
                   page: 1,
                 }))
                 setPagination((pagination) => ({ ...pagination, page: 1 }))
+                handleParamsChange({
+                  country_id: newValue.join(','),
+                  offset: 0,
+                })
               }}
             />
           </Typography>
@@ -263,6 +274,11 @@ function GeneralSection(props: SectionProps) {
                   page: 1,
                 }))
                 setPagination((pagination) => ({ ...pagination, page: 1 }))
+                handleParamsChange({
+                  offset: 0,
+                  year_max: year,
+                  year_min: year,
+                })
               }}
             />
           </Typography>
@@ -291,6 +307,11 @@ function GeneralSection(props: SectionProps) {
                   page: 1,
                 }))
                 setPagination((pagination) => ({ ...pagination, page: 1 }))
+                handleParamsChange({
+                  offset: 0,
+                  year_max: maxYear,
+                  year_min: minYear,
+                })
               }}
             />
           </Typography>
@@ -300,16 +321,19 @@ function GeneralSection(props: SectionProps) {
         className="mb-6"
         GridProps={{ columnSpacing: 2, rowSpacing: 3 }}
         Item={Item}
-        enableLoader={false}
-        loaded={true}
-        loading={false}
-        paginationPageSize={42}
+        loaded={loaded}
+        loading={loading}
+        paginationPageSize={pagination.rowsPerPage}
         ref={listing}
-        rowCount={filteredReports.length}
-        rowData={rows}
-        onPaginationChanged={(page) =>
+        rowCount={count}
+        rowData={results}
+        onPaginationChanged={(page) => {
           setPagination((pagination) => ({ ...pagination, page }))
-        }
+          handleParamsChange({
+            limit: pagination.rowsPerPage,
+            offset: ((page || 1) - 1) * pagination.rowsPerPage,
+          })
+        }}
         enableGrid
       />
     </>
@@ -317,30 +341,45 @@ function GeneralSection(props: SectionProps) {
 }
 
 function CountrySection(props: SectionProps) {
-  const { countries, reportsByCountry, setFilters } = props
-  const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 32 })
+  const { setFilters } = props
+  const [pagination, setPagination] = useState({
+    page: 1,
+    rowsPerPage: PER_PAGE,
+  })
   const [ordering, setOrdering] = useState<'asc' | 'desc'>('asc')
-
-  const rows = useMemo(
-    () =>
-      slice(
-        orderBy(countries, 'id', ordering),
-        (pagination.page - 1) * pagination.rowsPerPage,
-        pagination.page * pagination.rowsPerPage,
-      ),
-    [countries, pagination, ordering],
-  )
-
-  const pages = useMemo(
-    () => Math.ceil(countries.length / pagination.rowsPerPage),
-    [countries, pagination],
-  )
+  const countries = useStore((state) => state.common.countries.data)
+  const [apiSettings, setApiSettings] = useState({
+    options: {
+      params: {
+        limit: PER_PAGE,
+        offset: 0,
+        ordering: 'asc',
+      },
+    },
+    path: 'api/country-programme/reports-by-country/',
+  })
+  function handleParamsChange(newParams: { [key: string]: any }) {
+    setApiSettings((prevApiSettings) => ({
+      ...prevApiSettings,
+      options: {
+        ...prevApiSettings.options,
+        params: {
+          ...prevApiSettings.options.params,
+          ...newParams,
+        },
+      },
+    }))
+  }
+  const { data, loading } = useApi(apiSettings)
+  const { count, loaded, results } = getResults(data)
+  const pages = Math.ceil(count / pagination.rowsPerPage)
 
   return (
     <>
       <div className="mb-4 flex justify-between gap-4">
         <Field
           FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
+          getOptionLabel={(option: any) => option?.name}
           options={countries}
           popupIcon={<IoFilter className="p-1" size={24} />}
           value={null}
@@ -367,12 +406,10 @@ function CountrySection(props: SectionProps) {
           </Typography>
           <IconButton
             onClick={() => {
-              if (ordering === 'asc') {
-                setOrdering('desc')
-              } else {
-                setOrdering('asc')
-              }
+              const newOrder = ordering === 'asc' ? 'desc' : 'asc'
+              setOrdering(newOrder)
               setPagination({ ...pagination, page: 1 })
+              handleParamsChange({ offset: 0, ordering: newOrder })
             }}
           >
             {ordering === 'asc' ? (
@@ -384,7 +421,7 @@ function CountrySection(props: SectionProps) {
         </div>
       </div>
       <Grid className="mb-6" spacing={4} container>
-        {rows.map((row: any) => (
+        {results.map((row: any) => (
           <Grid key={row.id} lg={3} sm={6} xs={12} item>
             <Box className="h-full p-2">
               <Typography
@@ -398,28 +435,29 @@ function CountrySection(props: SectionProps) {
                   })
                 }}
               >
-                {row.label}
+                {row.group}
                 <IoArrowForward size={20} />
               </Typography>
               <Listing
                 className="mb-3"
                 Item={Item}
                 ItemProps={{ showYear: true }}
-                enableLoader={false}
-                enablePagination={false}
-                loaded={true}
-                loading={false}
-                rowCount={reportsByCountry[row.id].length}
-                rowData={slice(reportsByCountry[row.id], 0, 9)}
+                loaded={loaded}
+                loading={loading}
+                rowCount={row.reports.length}
+                rowData={row.reports}
                 enableGrid
               />
-              {reportsByCountry[row.id].length > 9 && (
+              {row.count > row.reports.length && (
                 <Button
                   variant="text"
                   onClick={() => {
                     setFilters((filters: any) => {
                       const country = filters.country || []
-                      return { ...filters, country: union(country, [row.id]) }
+                      return {
+                        ...filters,
+                        country: union(country, [row.group]),
+                      }
                     })
                   }}
                 >
@@ -436,6 +474,10 @@ function CountrySection(props: SectionProps) {
         siblingCount={1}
         onPaginationChanged={(page) => {
           setPagination({ ...pagination, page: page || 1 })
+          handleParamsChange({
+            limit: pagination.rowsPerPage,
+            offset: ((page || 1) - 1) * pagination.rowsPerPage,
+          })
         }}
       />
     </>
@@ -443,14 +485,38 @@ function CountrySection(props: SectionProps) {
 }
 
 function YearSection(props: SectionProps) {
-  const { filters, maxYear, minYear, reportsByYear, setFilters, years } = props
+  const { filters, maxYear, minYear, setFilters } = props
+  const [pagination, setPagination] = useState({
+    page: 1,
+    rowsPerPage: PER_PAGE,
+  })
   const [range, setRange] = useState([filters.range[0], filters.range[1]])
   const [ordering, setOrdering] = useState<'asc' | 'desc'>('desc')
-
-  const rows = useMemo(
-    () => slice(orderBy(years, 'id', ordering)),
-    [years, ordering],
-  )
+  const [apiSettings, setApiSettings] = useState({
+    options: {
+      params: {
+        limit: PER_PAGE,
+        offset: 0,
+        ordering: 'desc',
+      },
+    },
+    path: 'api/country-programme/reports-by-year/',
+  })
+  function handleParamsChange(newParams: { [key: string]: any }) {
+    setApiSettings((prevApiSettings) => ({
+      ...prevApiSettings,
+      options: {
+        ...prevApiSettings.options,
+        params: {
+          ...prevApiSettings.options.params,
+          ...newParams,
+        },
+      },
+    }))
+  }
+  const { data, loading } = useApi(apiSettings)
+  const { count, loaded, results } = getResults(data)
+  const pages = Math.ceil(count / pagination.rowsPerPage)
 
   useEffect(() => {
     if (filters.range[0] !== range[0] || filters.range[1] !== range[1]) {
@@ -486,11 +552,10 @@ function YearSection(props: SectionProps) {
           </Typography>
           <IconButton
             onClick={() => {
-              if (ordering === 'asc') {
-                setOrdering('desc')
-              } else {
-                setOrdering('asc')
-              }
+              const newOrder = ordering === 'asc' ? 'desc' : 'asc'
+              setOrdering(newOrder)
+              setPagination({ ...pagination, page: 1 })
+              handleParamsChange({ offset: 0, ordering: newOrder })
             }}
           >
             {ordering === 'asc' ? (
@@ -502,7 +567,7 @@ function YearSection(props: SectionProps) {
         </div>
       </div>
       <Grid className="mb-6" spacing={4} container>
-        {rows.map((row: any) => (
+        {results.map((row: any) => (
           <Grid key={row.id} lg={3} sm={6} xs={12} item>
             <Box className="h-full p-2">
               <Typography
@@ -512,32 +577,30 @@ function YearSection(props: SectionProps) {
                 onClick={() => {
                   setFilters((filters: any) => {
                     const year = filters.year || []
-                    return { ...filters, year: union(year, [row.id]) }
+                    return { ...filters, year: union(year, [row.group]) }
                   })
                 }}
               >
-                {row.label}
+                {row.group}
                 <IoArrowForward size={20} />
               </Typography>
               <Listing
                 className="mb-3"
                 Item={Item}
                 ItemProps={{ showCountry: true }}
-                enableLoader={false}
-                enablePagination={false}
-                loaded={true}
-                loading={false}
-                rowCount={reportsByYear[row.id].length}
-                rowData={slice(reportsByYear[row.id], 0, 9)}
+                loaded={loaded}
+                loading={loading}
+                rowCount={row.reports.length}
+                rowData={row.reports}
                 enableGrid
               />
-              {reportsByYear[row.id].length > 9 && (
+              {row.count > row.reports.length && (
                 <Button
                   variant="text"
                   onClick={() => {
                     setFilters((filters: any) => {
                       const year = filters.year || []
-                      return { ...filters, year: union(year, [row.id]) }
+                      return { ...filters, year: union(year, [row.group]) }
                     })
                   }}
                 >
@@ -548,6 +611,18 @@ function YearSection(props: SectionProps) {
           </Grid>
         ))}
       </Grid>
+      <Pagination
+        count={pages}
+        page={pagination.page}
+        siblingCount={1}
+        onPaginationChanged={(page) => {
+          setPagination({ ...pagination, page: page || 1 })
+          handleParamsChange({
+            limit: pagination.rowsPerPage,
+            offset: ((page || 1) - 1) * pagination.rowsPerPage,
+          })
+        }}
+      />
     </>
   )
 }
@@ -571,17 +646,12 @@ export const sections = [
 
 function SectionPanel(props: SectionProps) {
   const {
-    countries,
     currentSection,
     filters,
     maxYear,
     minYear,
-    reports,
-    reportsByCountry,
-    reportsByYear,
     section = 0,
     setFilters,
-    years,
     ...rest
   } = props
 
@@ -607,16 +677,11 @@ function SectionPanel(props: SectionProps) {
       {...rest}
     >
       <Section
-        countries={countries}
         filters={filters}
         groupBy={sections[section].groupBy}
         maxYear={maxYear}
         minYear={minYear}
-        reports={reports}
-        reportsByCountry={reportsByCountry}
-        reportsByYear={reportsByYear}
         setFilters={setFilters}
-        years={years}
       />
     </div>
   )
@@ -624,40 +689,8 @@ function SectionPanel(props: SectionProps) {
 
 export default function CPListing() {
   const settings = useStore((state) => state.common.settings.data)
-  const { data } = useApi({ path: 'api/country-programme/reports/' })
   const [activeSection, setActiveSection] = useState(0)
-  const reportsByCountry = useMemo(
-    () => groupBy(orderBy(data, 'year', 'desc'), 'country'),
-    [data],
-  )
-  const reportsByYear = useMemo(
-    () => groupBy(orderBy(data, 'country', 'asc'), 'year'),
-    [data],
-  )
-  const countries = useMemo(
-    () =>
-      orderBy(
-        keys(reportsByCountry).map((country) => ({
-          id: country,
-          label: country,
-        })),
-        'id',
-        'asc',
-      ),
-    [reportsByCountry],
-  )
-  const years = useMemo(
-    () =>
-      orderBy(
-        keys(reportsByYear).map((year) => ({
-          id: parseInt(year),
-          label: parseInt(year),
-        })),
-        'id',
-        'desc',
-      ),
-    [reportsByYear],
-  )
+
   const minYear = settings.cp_reports.min_year
   const maxYear = settings.cp_reports.max_year
   const [filters, setFilters] = useState({
@@ -699,17 +732,12 @@ export default function CPListing() {
         {sections.map((section, index) => (
           <SectionPanel
             key={section.id}
-            countries={countries}
             currentSection={activeSection}
             filters={filters}
             maxYear={maxYear}
             minYear={minYear}
-            reports={data}
-            reportsByCountry={reportsByCountry}
-            reportsByYear={reportsByYear}
             section={index}
             setFilters={setFilters}
-            years={years}
           />
         ))}
       </Box>
