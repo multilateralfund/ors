@@ -167,59 +167,70 @@ export function getViewSections(variant: any) {
   ]
 }
 
-export function getCreateSections() {
-  return [
-    {
-      id: 'section_a',
-      allowFullScreen: true,
-      component: SectionACreate,
-      label: 'Section A',
-      panelId: 'section-A-panel',
-      title:
-        'SECTION A. ANNEX A, ANNEX B, ANNEX C - GROUP I AND ANNEX E - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)',
-    },
-    {
-      id: 'section_b',
-      allowFullScreen: true,
-      component: SectionBCreate,
-      label: 'Section B',
-      panelId: 'section-B-panel',
-      title:
-        'SECTION B. ANNEX F - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)',
-    },
-    {
-      id: 'section_C',
-      allowFullScreen: true,
-      component: SectionCCreate,
-      label: 'Section C',
-      panelId: 'section-C-panel',
-      title:
-        'SECTION C. AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US $/kg)',
-    },
-    {
-      id: 'section_d',
-      allowFullScreen: true,
-      component: SectionDCreate,
-      label: 'Section D',
-      panelId: 'section-D-panel',
-      title:
-        'SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)',
-    },
-    {
-      id: 'section_e',
-      allowFullScreen: true,
-      component: SectionECreate,
-      label: 'Section E',
-      panelId: 'section-E-panel',
-      title:
-        'SECTION E. ANNEX F, GROUP II - DATA ON HFC-23 EMISSIONS (METRIC TONNES)',
-    },
-    {
-      id: 'section_f',
-      component: SectionFCreate,
-      label: 'Section F',
-      panelId: 'section-F-panel',
-      title: 'SECTION F. COMMENTS BY BILATERAL/IMPLEMENTING AGENCIES',
-    },
-  ]
-}
+export const createSections: Array<{
+  allowFullScreen: boolean
+  component: React.FC
+  id:
+    | 'section_a'
+    | 'section_b'
+    | 'section_c'
+    | 'section_d'
+    | 'section_e'
+    | 'section_f'
+  label: string
+  panelId: string
+  title: string
+}> = [
+  {
+    id: 'section_a',
+    allowFullScreen: true,
+    component: SectionACreate,
+    label: 'Section A',
+    panelId: 'section-A-panel',
+    title:
+      'SECTION A. ANNEX A, ANNEX B, ANNEX C - GROUP I AND ANNEX E - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)',
+  },
+  {
+    id: 'section_b',
+    allowFullScreen: true,
+    component: SectionBCreate,
+    label: 'Section B',
+    panelId: 'section-B-panel',
+    title: 'SECTION B. ANNEX F - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)',
+  },
+  {
+    id: 'section_c',
+    allowFullScreen: true,
+    component: SectionCCreate,
+    label: 'Section C',
+    panelId: 'section-C-panel',
+    title:
+      'SECTION C. AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US $/kg)',
+  },
+  {
+    id: 'section_d',
+    allowFullScreen: true,
+    component: SectionDCreate,
+    label: 'Section D',
+    panelId: 'section-D-panel',
+    title:
+      'SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)',
+  },
+  {
+    id: 'section_e',
+    allowFullScreen: true,
+    component: SectionECreate,
+    label: 'Section E',
+    panelId: 'section-E-panel',
+    title:
+      'SECTION E. ANNEX F, GROUP II - DATA ON HFC-23 EMISSIONS (METRIC TONNES)',
+  },
+  {
+    id: 'section_f',
+    allowFullScreen: false,
+    component: SectionFCreate,
+    label: 'Section F',
+    panelId: 'section-F-panel',
+    title: 'SECTION F. COMMENTS BY BILATERAL/IMPLEMENTING AGENCIES',
+  },
+]

@@ -9,6 +9,7 @@ import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
 import CPReportCreate from '@ors/components/manage/Blocks/CountryProgramme/CPReportCreate'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import api from '@ors/helpers/Api'
+import { Substance } from '@ors/models/Section'
 
 export const metadata: Metadata = {
   title: 'Create report',
@@ -18,51 +19,10 @@ export default async function CreateReport() {
   const emptyForm =
     (await api('api/country-programme/empty-form/', {}, false)) || {}
 
-  const substances_a =
-    (await api(
-      'api/substances/',
-      {
-        params: {
-          displayed_in_latest_format: true,
-          section: 'A',
-          with_usages: true,
-        },
-      },
-      false,
-    )) || []
+  const substances: Array<Substance> =
+    (await api('api/substances/?with_usages=true', {}, false)) || []
 
-  const substances_b =
-    (await api(
-      'api/substances/',
-      {
-        params: {
-          displayed_in_latest_format: true,
-          section: 'B',
-          with_usages: true,
-        },
-      },
-      false,
-    )) || []
-
-  const substances_c =
-    (await api(
-      'api/substances/',
-      {
-        params: {
-          displayed_in_latest_format: true,
-          section: 'C',
-          with_usages: true,
-        },
-      },
-      false,
-    )) || []
-
-  const blends =
-    (await api(
-      'api/blends/',
-      { params: { displayed_in_latest_format: true, with_usages: true } },
-      false,
-    )) || []
+  const blends = (await api('api/blends/?with_usages=true', {}, false)) || []
 
   function filterUsage(usage: any) {
     const year = new Date().getFullYear()
@@ -83,7 +43,7 @@ export default async function CreateReport() {
     return {
       id: usage.id,
       category: usage.columnCategory,
-      cellDataType: 'number',
+      dataType: 'number',
       headerName: usage.headerName,
       initialWidth: defaultColDef.minWidth,
       ...(colDefById[usage.full_name] || {}),
@@ -105,9 +65,7 @@ export default async function CreateReport() {
     <PageWrapper>
       <CPReportCreate
         blends={blends}
-        substances_a={substances_a}
-        substances_b={substances_b}
-        substances_c={substances_c}
+        substances={substances}
         emptyForm={{
           ...emptyForm,
           ...(emptyForm.usage_columns

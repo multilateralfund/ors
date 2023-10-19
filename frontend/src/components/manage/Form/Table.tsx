@@ -2,22 +2,29 @@
 import { I18nSlice, ThemeSlice } from '@ors/types/store'
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import React from 'react'
 
 import { TablePagination, Typography } from '@mui/material'
-import { ColDef } from 'ag-grid-community'
+import { ColDef, RowNode } from 'ag-grid-community'
 import { AgGridReact, AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
-import { isFunction, times } from 'lodash'
-
 import {
-  aggFuncs,
-  components as defaultComponents,
-} from '@ors/config/Table/Table'
+  findIndex,
+  get,
+  isEmpty,
+  isFunction,
+  isObject,
+  noop,
+  times,
+} from 'lodash'
+
+import { components as defaultComponents } from '@ors/config/Table/Table'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import DefaultFadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Loading from '@ors/components/theme/Loading/Loading'
-import { KEY_BACKSPACE, KEY_ENTER } from '@ors/constants'
+import { KEY_BACKSPACE } from '@ors/constants'
+import { applyTransaction, getError } from '@ors/helpers/Utils/Utils'
 import useStore from '@ors/store'
 
 let timer: any
@@ -31,6 +38,7 @@ export default function Table(
   props: AgGridReactProps & {
     Toolbar?: React.FC<any>
     enableFullScreen?: boolean
+    errors?: any
     fadeInOut?: boolean
     headerDepth?: number
     rowsVisible?: number
@@ -50,16 +58,19 @@ export default function Table(
     domLayout = 'autoHeight',
     enableFullScreen = false,
     enablePagination = true,
+    errors,
     fadeInOut = true,
     gridRef,
     headerDepth = 1,
     loading = false,
-    onColumnResized = () => {},
-    onFirstDataRendered = () => {},
-    onGridReady = () => {},
-    onGridSizeChanged = () => {},
+    onCellKeyDown = noop,
+    onCellValueChanged = noop,
+    onColumnResized = noop,
+    onFirstDataRendered = noop,
+    onGridReady = noop,
+    onGridSizeChanged = noop,
     onPaginationChanged = ({}: { page: number; rowsPerPage: number }) => {},
-    onRowDataUpdated = () => {},
+    onRowDataUpdated = noop,
     paginationPageSize = 10,
     pinnedBottomRowData = [],
     rowBuffer = 40,
@@ -74,6 +85,7 @@ export default function Table(
     withSkeleton = false,
     ...rest
   } = props
+
   const [offsetHeight, setOffsetHeight] = useState(0)
   const [pagination, setPagination] = useState<{
     page: number
@@ -96,10 +108,7 @@ export default function Table(
         })
       },
       cellClassRules: {
-        'ag-error': (props) =>
-          !!(isFunction(props.colDef.error)
-            ? props.colDef.error(props)
-            : props.colDef.error),
+        'ag-error': (props) => !!getError(props),
       },
       cellRenderer: (props: any) => {
         return <AgCellRenderer {...props} />
@@ -110,12 +119,7 @@ export default function Table(
       sortingOrder: ['asc', 'desc', null],
       suppressKeyboardEvent: (props) => {
         const key = props.event.key
-        const cellEditorParams = props.colDef.cellEditorParams || {}
-
-        return (
-          (props.editing && key === KEY_ENTER) ||
-          (!props.editing && cellEditorParams.disableClearable && KEY_BACKSPACE)
-        )
+        return key === KEY_BACKSPACE
       },
       tooltip: false,
       wrapHeaderText: true,
@@ -196,10 +200,40 @@ export default function Table(
     })
   }
 
-  const FadeInOut = useMemo(
-    () => (fadeInOut ? DefaultFadeInOut : 'div'),
-    [fadeInOut],
-  )
+  function handleErrors() {
+    const rowNodes: Array<any> = []
+    const hasErrors = !isEmpty(errors)
+
+    grid.current.api.forEachNode((rowNode: RowNode) => {
+      const data = { ...rowNode.data }
+      const error =
+        hasErrors && isObject(errors) ? get(errors, data.rowId) : null
+
+      if (!hasErrors && data.error) {
+        delete data.error
+        rowNodes.push({ ...rowNode, data })
+      }
+      if (hasErrors && error) {
+        data.error = error
+        rowNodes.push({ ...rowNode, data })
+      }
+      if (hasErrors && !error && !!data.error) {
+        delete data.error
+        rowNodes.push({ ...rowNode, data })
+      }
+    })
+
+    if (rowNodes.length > 0) {
+      applyTransaction(grid.current.api, {
+        update: rowNodes.map((rowNode) => rowNode.data),
+      })
+      grid.current.api.refreshCells({
+        force: true,
+        rowNodes,
+        suppressFlash: true,
+      })
+    }
+  }
 
   useEffect(() => {
     if (fullScreen) {
@@ -208,6 +242,17 @@ export default function Table(
       document.body.style.overflow = ''
     }
   }, [fullScreen])
+
+  useEffect(() => {
+    if (!grid.current.api) return
+    handleErrors()
+    /* eslint-disable-next-line */
+  }, [errors])
+
+  const FadeInOut = useMemo(
+    () => (fadeInOut ? DefaultFadeInOut : 'div'),
+    [fadeInOut],
+  )
 
   return (
     <FadeInOut
@@ -250,7 +295,6 @@ export default function Table(
           <Loading className="bg-action-disabledBackground/5" />
         )}
         <AgGridReact
-          aggFuncs={aggFuncs}
           animateRows={false}
           defaultColDef={{ ...baseColDef, ...defaultColDef }}
           enableCellTextSelection={true}
@@ -271,6 +315,7 @@ export default function Table(
           suppressMovableColumns={true}
           suppressMultiSort={true}
           suppressPaginationPanel={true}
+          suppressPropertyNamesCheck={true}
           suppressRowClickSelection={true}
           suppressRowHoverHighlight={true}
           columnDefs={[
@@ -331,30 +376,75 @@ export default function Table(
           }}
           rowClassRules={{
             'ag-row-control': (props) => props.data.rowType === 'control',
+            'ag-row-error': (props) => !!props.data.error,
             'ag-row-group': (props) => props.data.rowType === 'group',
             'ag-row-hashed': (props) => props.data.rowType === 'hashed',
             'ag-row-sub-total': (props) => props.data.rowType === 'subtotal',
             'ag-row-total': (props) => props.data.rowType === 'total',
             ...rowClassRules,
           }}
-          onColumnResized={(event) => {
+          onCellKeyDown={(props: any) => {
+            const key = props.event.key
+            const { category, dataType, editable, field } = props.colDef
+            const { rowId } = props.data
+            const recordUsages = [...(props.data.record_usages || [])]
+            const isEditable = isFunction(editable) ? editable(props) : editable
+            if (isEditable && rowId && key === KEY_BACKSPACE) {
+              let value = null
+              const rowNode = props.api.getRowNode(rowId)
+              if (dataType === 'string') {
+                value = ''
+              }
+              if (dataType === 'number') {
+                value = 0
+              }
+              if (category === 'usage') {
+                const usageId = props.colDef.id
+                const index = findIndex(
+                  recordUsages,
+                  (item: any) => item.usage_id === usageId,
+                )
+                if (index > -1) {
+                  recordUsages.splice(index, 1, {
+                    ...recordUsages[index],
+                    quantity: 0,
+                  })
+                }
+              }
+              const data = { ...rowNode.data, [field]: value }
+              applyTransaction(props.api, {
+                update: [{ ...data, record_usages: recordUsages }],
+              })
+              onCellValueChanged({
+                ...props,
+                data,
+                source: 'cellClear',
+              })
+            }
+            onCellKeyDown(props)
+          }}
+          onCellValueChanged={(props) => {
+            onCellValueChanged(props)
+          }}
+          onColumnResized={(props) => {
             debounce(updateOffsetHeight)
-            onColumnResized(event)
+            onColumnResized(props)
           }}
           onFirstDataRendered={(agGrid) => {
             updateOffsetHeight()
+            handleErrors()
             onFirstDataRendered(agGrid)
           }}
-          onGridReady={(event) => {
+          onGridReady={(props) => {
             updateOffsetHeight()
-            onGridReady(event)
+            onGridReady(props)
           }}
-          onGridSizeChanged={(event) => {
+          onGridSizeChanged={(props) => {
             debounce(updateOffsetHeight)
-            onGridSizeChanged(event)
+            onGridSizeChanged(props)
           }}
-          onRowDataUpdated={(event) => {
-            onRowDataUpdated(event)
+          onRowDataUpdated={(props) => {
+            onRowDataUpdated(props)
           }}
           {...rest}
         />

@@ -10,6 +10,9 @@ class GroupAdmin(admin.ModelAdmin):
         "name",
         "name_alt",
     ]
+    readonly_fields = [
+        "name_alt",
+    ]
 
     def get_list_display(self, request):
         exclude = ["substances"]

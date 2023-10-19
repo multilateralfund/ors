@@ -1,5 +1,14 @@
 import { GridApi, RowDataTransaction } from 'ag-grid-community'
-import { isFunction, isNaN, isNull, isNumber, isString } from 'lodash'
+import {
+  get,
+  isArray,
+  isFunction,
+  isNaN,
+  isNull,
+  isNumber,
+  isObject,
+  isString,
+} from 'lodash'
 
 const timer: Record<string, any> = {}
 
@@ -75,4 +84,24 @@ export function scrollToElement(
       top,
     })
   }, wait)
+}
+
+export function getError(props: any) {
+  if (props.colDef.category === 'usage') {
+    if (isObject(props.data.error)) {
+      const errors = get(props.data.error, 'record_usages')
+      if (isObject(errors) && !isArray(errors)) {
+        const error = get(errors, `usage_${props.colDef.id}`)
+        return isObject(error) && !isArray(error)
+          ? Object.keys(error).map((key) => error[key])
+          : error
+      }
+      return errors
+    }
+    return null
+  }
+  if (isObject(props.data.error)) {
+    return get(props.data.error, props.colDef.field)
+  }
+  return null
 }

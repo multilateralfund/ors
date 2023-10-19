@@ -19,12 +19,12 @@ export default function SectionDCreate(props: any) {
         {...TableProps}
         className="mb-4"
         columnDefs={gridOptions.columnDefs}
-        defaultColDef={gridOptions.defaultColDef}
         domLayout="normal"
         gridRef={grid}
         rowData={initialRowData}
-        getRowId={(props) => {
-          return props.data.rowId
+        defaultColDef={{
+          ...TableProps.defaultColDef,
+          ...gridOptions.defaultColDef,
         }}
         onCellValueChanged={(event) => {
           const newData = [...form.section_d]

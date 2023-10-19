@@ -54,7 +54,7 @@
       var(--ag-range-selection-border-color);
   }
 
-  .ag-cell.ag-error {
+  .ag-cell.ag-cell-not-inline-editing.ag-error {
     padding-right: 38px;
   }
 

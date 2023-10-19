@@ -23,7 +23,7 @@ function useGridOptions() {
       },
       {
         aggFunc: 'sumTotal',
-        cellRenderer: 'agFloatCellRenderer',
+        dataType: 'number',
         field: 'total',
         headerName: 'Total amount generated',
         ...colDefById['total_amount_generated'],
@@ -32,21 +32,21 @@ function useGridOptions() {
         children: [
           {
             aggFunc: 'sumTotal',
-            cellRenderer: 'agFloatCellRenderer',
+            dataType: 'number',
             field: 'all_uses',
             headerName: 'For all uses',
             ...colDefById['all_uses'],
           },
           {
             aggFunc: 'sumTotal',
-            cellRenderer: 'agFloatCellRenderer',
+            dataType: 'number',
             field: 'feedstock_gc',
             headerName: 'For feedstock use in your country',
             ...colDefById['feedstock_gc'],
           },
           {
             aggFunc: 'sumTotal',
-            cellRenderer: 'agFloatCellRenderer',
+            dataType: 'number',
             field: 'destruction',
             headerName: 'For destruction',
             ...colDefById['destruction'],
@@ -59,21 +59,21 @@ function useGridOptions() {
       },
       {
         aggFunc: 'sumTotal',
-        cellRenderer: 'agFloatCellRenderer',
+        dataType: 'number',
         field: 'feedstock_wpc',
         headerName: 'Amount used for feedstock without prior capture',
         ...colDefById['feedstock_wpc'],
       },
       {
         aggFunc: 'sumTotal',
-        cellRenderer: 'agFloatCellRenderer',
+        dataType: 'number',
         field: 'destruction_wpc',
         headerName: 'Amount destroyed without prior capture',
         ...colDefById['destruction_wpc'],
       },
       {
         aggFunc: 'sumTotal',
-        cellRenderer: 'agFloatCellRenderer',
+        dataType: 'number',
         field: 'generated_emissions',
         headerName: 'Amount of generated emission',
         ...colDefById['generated_emissions'],

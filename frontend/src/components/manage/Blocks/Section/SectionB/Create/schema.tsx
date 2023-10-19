@@ -1,11 +1,13 @@
 import { useMemo } from 'react'
 
-import { Button, IconButton, Typography } from '@mui/material'
+import { Button, IconButton } from '@mui/material'
 import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
 import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+
+import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 
 import { IoTrash } from '@react-icons/all-files/io5/IoTrash'
 
@@ -33,21 +35,26 @@ function useGridOptions(props: {
               )
             }
             return (
-              <Typography className={props.className} component="span">
-                {!props.data.rowType && !props.data.mandatory && (
+              <AgCellRenderer
+                {...props}
+                value={
                   <>
-                    <IconButton
-                      color="error"
-                      onClick={() => {
-                        onRemoveSubstance(props)
-                      }}
-                    >
-                      <IoTrash size="1rem" />
-                    </IconButton>{' '}
+                    {!props.data.rowType && !props.data.mandatory && (
+                      <>
+                        <IconButton
+                          color="error"
+                          onClick={() => {
+                            onRemoveSubstance(props)
+                          }}
+                        >
+                          <IoTrash size="1rem" />
+                        </IconButton>{' '}
+                      </>
+                    )}
+                    {props.value}
                   </>
-                )}
-                {props.value}
-              </Typography>
+                }
+              />
             )
           },
           cellRendererParams: (props: any) => ({
@@ -83,7 +90,7 @@ function useGridOptions(props: {
         {
           aggFunc: 'sumTotal',
           cellEditor: 'agNumberCellEditor',
-          cellRenderer: 'agFloatCellRenderer',
+          dataType: 'number',
           field: 'imports',
           headerName: 'Import',
           ...colDefById['imports'],
@@ -91,7 +98,7 @@ function useGridOptions(props: {
         {
           aggFunc: 'sumTotal',
           cellEditor: 'agNumberCellEditor',
-          cellRenderer: 'agFloatCellRenderer',
+          dataType: 'number',
           field: 'exports',
           headerName: 'Export',
           ...colDefById['exports'],
@@ -99,7 +106,7 @@ function useGridOptions(props: {
         {
           aggFunc: 'sumTotal',
           cellEditor: 'agNumberCellEditor',
-          cellRenderer: 'agFloatCellRenderer',
+          dataType: 'number',
           field: 'production',
           headerName: 'Production',
           ...colDefById['production'],
@@ -107,14 +114,14 @@ function useGridOptions(props: {
         {
           aggFunc: 'sumTotal',
           cellEditor: 'agNumberCellEditor',
-          cellRenderer: 'agFloatCellRenderer',
+          dataType: 'number',
           field: 'import_quotas',
           headerName: 'Import Quotas',
           ...colDefById['import_quotas'],
         },
         {
           cellEditor: 'agDateCellEditor',
-          cellRenderer: 'agDateCellRenderer',
+          dataType: 'date',
           field: 'banned_date',
           headerName: 'Date ban commenced (DD/MM/YYYY)',
           ...colDefById['banned_date'],

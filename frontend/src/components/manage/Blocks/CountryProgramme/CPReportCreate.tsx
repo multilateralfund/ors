@@ -1,20 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable perfectionist/sort-objects */
 'use client'
-import React, { useEffect, useState } from 'react'
+
+import React, { useCallback, useEffect, useState } from 'react'
 
 import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
 import cx from 'classnames'
 import { AnimatePresence } from 'framer-motion'
-import {
-  forOwn,
-  isBoolean,
-  isEmpty,
-  // isNil,
-  // isNull,
-  // isNumber,
-  // isString,
-  // omitBy,
-} from 'lodash'
+import { isEmpty } from 'lodash'
 import { useSnackbar } from 'notistack'
 
 import Field from '@ors/components/manage/Form/Field'
@@ -24,158 +17,20 @@ import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Link from '@ors/components/ui/Link/Link'
 import api, { getResults } from '@ors/helpers/Api'
+import useMakeClassInstance from '@ors/hooks/useMakeClassInstance'
+import { Blend, Substance } from '@ors/models/Section'
+import SectionA from '@ors/models/SectionA'
+import SectionB from '@ors/models/SectionB'
+import SectionC from '@ors/models/SectionC'
+import SectionD from '@ors/models/SectionD'
+import SectionE from '@ors/models/SectionE'
+import SectionF from '@ors/models/SectionF'
 import useStore from '@ors/store'
 
-import { getCreateSections } from '.'
+import { createSections } from '.'
 
 import { IoClose } from '@react-icons/all-files/io5/IoClose'
 import { IoExpand } from '@react-icons/all-files/io5/IoExpand'
-
-type Sections =
-  | 'section_a'
-  | 'section_ab'
-  | 'section_b'
-  | 'section_c'
-  | 'section_d'
-  | 'section_e'
-
-const fields: Record<Sections, any> = {
-  section_ab: {
-    banned_date: { dataType: 'string', defaultValue: null },
-    export_quotas: { dataType: 'number', defaultValue: null },
-    exports: { dataType: 'number', defaultValue: null },
-    import_quotas: { dataType: 'number', defaultValue: null },
-    imports: { dataType: 'number', defaultValue: null },
-    production: { dataType: 'number', defaultValue: null },
-    record_usages: { dataType: 'usage', defaultValue: [] },
-    remarks: { dataType: 'string', defaultValue: null },
-  },
-  section_c: {
-    previous_year_price: { dataType: 'number', defaultValue: null },
-    current_year_price: { dataType: 'number', defaultValue: null },
-    remarks: { dataType: 'string', defaultValue: null },
-  },
-  section_d: {
-    all_uses: { dataType: 'number', defaultValue: null },
-    destruction: { dataType: 'number', defaultValue: null },
-    feedstock: { dataType: 'number', defaultValue: null },
-  },
-  section_a: {},
-  section_b: {},
-  section_e: {},
-}
-
-const mapSubstance = (substance: any, section: Sections, mandatory?: any) => {
-  const substance_id = substance.id || substance.substance_id
-  const newSubstance: Record<string, any> = {
-    substance_id,
-    isSubstance: true,
-    display_name: substance.name || null,
-    excluded_usages: substance.excluded_usages || [],
-    group: substance.group,
-    rowId: `substance_${substance_id}`,
-    ...(isBoolean(mandatory) ? { mandatory } : {}),
-  }
-  forOwn(fields[section], (field: any, key) => {
-    newSubstance[key] = substance[key] || field.defaultValue
-  })
-  return newSubstance
-}
-
-const mapBlend = (blend: any, section: Sections, mandatory?: any) => {
-  const blend_id = blend.id || blend.blend_id
-  const newBlend: Record<string, any> = {
-    blend_id,
-    isBlend: true,
-    display_name: `${blend.name} (${blend.composition})`,
-    excluded_usages: blend.excluded_usages || [],
-    composition: blend.composition,
-    group: blend.group,
-    rowId: `blend_${blend_id}`,
-    ...(isBoolean(mandatory) ? { mandatory } : {}),
-  }
-  forOwn(fields[section], (field: any, key) => {
-    newBlend[key] = blend[key] || field.defaultValue
-  })
-  return newBlend
-}
-
-// const unionBy = (
-//   updated: Array<any>,
-//   original: Array<any>,
-//   key: string,
-//   // section: Sections,
-// ) => {
-//   // let fieldKey: string
-//   const mergedMap = new Map()
-
-//   original.forEach((item: any) => mergedMap.set(item[key], { ...item }))
-//   console.log('HERE', mergedMap)
-//   // updated.forEach((data: any) => {
-//   //   if ((!data.isSubstance && !data.isBlend) || !data[key]) return
-//   //   const originalItem = { ...mergedMap.get(data[key]) }
-//   //   const parsedItem: Record<string, any> = {}
-
-//   //   for (fieldKey in fields[section]) {
-//   //     const field = fields[section][fieldKey]
-//   //     if (
-//   //       isNull(data[key]) ||
-//   //       (field.dataType === 'number' && !isNumber(data[fieldKey])) ||
-//   //       (field.dataType === 'string' && !isString(data[fieldKey])) ||
-//   //       (field.dataType === 'usage' &&
-//   //         data[fieldKey].filter(
-//   //           (usage: any) =>
-//   //             !(isNumber(usage.usage_id) && isNumber(usage.quantity)),
-//   //         ).length > 0)
-//   //     ) {
-//   //       return
-//   //     }
-//   //     parsedItem[key] = data[key] || field.defaultValue
-//   //   }
-//   //   mergedMap.set(data[key], {
-//   //     ...originalItem,
-//   //     ...parsedItem,
-//   //     mandatory: originalItem.mandatory,
-//   //   })
-//   // })
-
-//   return Array.from(mergedMap.values())
-// }
-
-// const parseLocalStorageItem = (key: string) => {
-//   if (__SERVER__) return null
-//   const value = window.localStorage.getItem(key)
-//   if (!isString(value)) return null
-//   try {
-//     return JSON.parse(value)
-//   } catch {
-//     return null
-//   }
-// }
-
-// const getInitialForm = (mandatoryForm: any) => {
-//   const _section_a = parseLocalStorageItem('section_a_create') || []
-//   const _section_b = parseLocalStorageItem('section_b_create') || []
-//   const _section_c = parseLocalStorageItem('section_c_create') || []
-//   const _section_d = parseLocalStorageItem('section_d_create') || []
-//   const _section_e = parseLocalStorageItem('section_e_create') || []
-//   const _section_f = parseLocalStorageItem('section_f_create') || []
-
-//   const { section_a, section_b, section_c, section_d, section_e, section_f } =
-//     mandatoryForm
-
-//   return {
-//     ...mandatoryForm,
-//     section_a: unionBy(_section_a, section_a, 'rowId', 'section_ab'),
-//     section_b: unionBy(_section_b, section_b, 'rowId', 'section_ab'),
-//     section_c: unionBy(_section_c, section_c, 'rowId', 'section_c'),
-//     section_d: unionBy(_section_d, section_d, 'rowId', 'section_d'),
-//     section_e: unionBy(_section_e, section_e, 'rowId', 'section_e'),
-//     section_f: {
-//       remarks: _section_f.remarks || section_f.remarks,
-//     },
-//   }
-// }
 
 function TabPanel(props: any) {
   const {
@@ -220,13 +75,10 @@ function TabPanel(props: any) {
 }
 
 export default function CPReportCreate(props: {
-  blends?: Array<any>
-  emptyForm?: Record<string, any> | null
-  substances_a?: Array<any>
-  substances_b?: Array<any>
-  substances_c?: Array<any>
+  blends: Array<Blend>
+  emptyForm: Record<string, any>
+  substances: Array<Substance>
 }) {
-  const { blends, substances_a, substances_b, substances_c } = props
   const { enqueueSnackbar } = useSnackbar()
   const countries = useStore((state) => [
     { id: 0, label: 'Any' },
@@ -235,44 +87,61 @@ export default function CPReportCreate(props: {
       label: country.name,
     })),
   ])
+  const { blends, substances } = props
+
+  const Sections = {
+    section_a: useMakeClassInstance<SectionA>(SectionA, [
+      substances,
+      'section_a_create',
+    ]),
+    section_b: useMakeClassInstance<SectionB>(SectionB, [
+      substances,
+      blends,
+      'section_b_create',
+    ]),
+    section_c: useMakeClassInstance<SectionC>(SectionC, [
+      substances,
+      blends,
+      'section_c_create',
+    ]),
+    section_d: useMakeClassInstance<SectionD>(SectionD, [
+      substances,
+      blends,
+      'section_d_create',
+    ]),
+    section_e: useMakeClassInstance<SectionE>(SectionE, ['section_e_create']),
+    section_f: useMakeClassInstance<SectionF>(SectionF, ['section_f_create']),
+  }
+
   const [errors, setErrors] = useState<Record<string, any>>({})
   const [currentIndex, setCurrentIndex] = useState(0)
   const [activeSection, setActiveSection] = useState(null)
   const [renderSection, setRenderSection] = useState(false)
-  const [mandatoryForm] = useState<any>({
+  const [form, setForm] = useState<Record<string, any>>({
     country: null,
     name: '',
-    section_a: substances_a?.map((substance) =>
-      mapSubstance(substance, 'section_ab', true),
-    ),
-    section_b: [
-      ...(substances_b?.map((substance) =>
-        mapSubstance(substance, 'section_ab', true),
-      ) || []),
-      ...(blends?.map((blend) => mapBlend(blend, 'section_ab', true)) || []),
-    ],
-    section_c: [
-      ...(substances_c?.map((substance) =>
-        mapSubstance(substance, 'section_c', true),
-      ) || []),
-      ...(blends?.map((blend) => mapBlend(blend, 'section_c', true)) || []),
-    ],
-    section_d: [
-      {
-        name: 'HFC-23',
-        id: 'hfc_23',
-      },
-    ].map((substance) => mapSubstance(substance, 'section_d', true)),
-    section_e: [],
-    section_f: {
-      remarks: '',
-    },
+    section_a: Sections.section_a.getData(),
+    section_b: Sections.section_b.getData(),
+    section_c: Sections.section_c.getData(),
+    section_d: Sections.section_d.getData(),
+    section_e: Sections.section_e.getData(),
+    section_f: Sections.section_f.getData(),
     year: new Date().getFullYear(),
   })
-  // const [form, setForm] = useState(getInitialForm(mandatoryForm))
-  const [form, setForm] = useState(mandatoryForm)
 
-  const [sections] = useState(getCreateSections)
+  const getSubmitFormData = useCallback(() => {
+    return {
+      ...form,
+      section_a: Sections.section_a.getSubmitFormData(form.section_a),
+      section_b: Sections.section_b.getSubmitFormData(form.section_b),
+      section_c: Sections.section_c.getSubmitFormData(form.section_c),
+      section_d: Sections.section_d.getSubmitFormData(form.section_d),
+      section_e: Sections.section_e.getSubmitFormData(form.section_e),
+      section_f: Sections.section_f.getSubmitFormData(form.section_f),
+      country_id: form.country?.id,
+    }
+    /* eslint-disable-next-line */
+  }, [form])
 
   useEffect(() => {
     setTimeout(() => {
@@ -280,45 +149,35 @@ export default function CPReportCreate(props: {
     }, 600)
   }, [currentIndex])
 
-  // useEffect(() => {
-  //   const section_a = form?.section_a?.map((substance: any) =>
-  //     omitBy(substance, isNil),
-  //   )
-  //   window.localStorage.setItem('section_a_create', JSON.stringify(section_a))
-  // }, [form.section_a])
+  useEffect(() => {
+    Sections.section_a.updateLocalStorage(form.section_a)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.section_a])
 
-  // useEffect(() => {
-  //   const section_b = form?.section_b?.map((chimical: any) => {
-  //     return omitBy(chimical, isNil)
-  //   })
-  //   window.localStorage.setItem('section_b_create', JSON.stringify(section_b))
-  // }, [form.section_b])
+  useEffect(() => {
+    Sections.section_b.updateLocalStorage(form.section_b)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.section_b])
 
-  // useEffect(() => {
-  //   const section_c = form?.section_c?.map((chimical: any) => {
-  //     return omitBy(chimical, isNil)
-  //   })
-  //   window.localStorage.setItem('section_c_create', JSON.stringify(section_c))
-  // }, [form.section_c])
+  useEffect(() => {
+    Sections.section_c.updateLocalStorage(form.section_c)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.section_c])
 
-  // useEffect(() => {
-  //   const section_d = form?.section_d?.map((chimical: any) => {
-  //     return omitBy(chimical, isNil)
-  //   })
-  //   window.localStorage.setItem('section_d_create', JSON.stringify(section_d))
-  // }, [form.section_d])
+  useEffect(() => {
+    Sections.section_d.updateLocalStorage(form.section_d)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.section_d])
 
-  // useEffect(() => {
-  //   const section_e = form?.section_e?.map((factory: any) => {
-  //     return omitBy(factory, isNil)
-  //   })
-  //   window.localStorage.setItem('section_e_create', JSON.stringify(section_e))
-  // }, [form.section_e])
+  useEffect(() => {
+    Sections.section_e.updateLocalStorage(form.section_e)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.section_e])
 
-  // useEffect(() => {
-  //   const section_f = form?.section_f
-  //   window.localStorage.setItem('section_f_create', JSON.stringify(section_f))
-  // }, [form.section_f])
+  useEffect(() => {
+    Sections.section_f.updateLocalStorage(form.section_f)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.section_f])
 
   return (
     <>
@@ -337,7 +196,7 @@ export default function CPReportCreate(props: {
             id="name"
             name="name"
             error={!!errors.name}
-            helperText={errors.name}
+            helperText={errors.name?.general_error}
             label="Report name"
           />
           <Field
@@ -348,7 +207,7 @@ export default function CPReportCreate(props: {
             widget="autocomplete"
             Input={{
               error: !!errors.country_id,
-              helperText: errors.country_id,
+              helperText: errors.country_id?.general_error,
               label: 'Country',
             }}
             onChange={(_: any, country: any) => {
@@ -368,7 +227,7 @@ export default function CPReportCreate(props: {
           }}
           allowScrollButtonsMobile
         >
-          {sections.map((section) => (
+          {createSections.map((section) => (
             <Tab
               key={section.id}
               className={cx({ 'MuiTab-error': !isEmpty(errors?.[section.id]) })}
@@ -377,17 +236,15 @@ export default function CPReportCreate(props: {
             />
           ))}
         </Tabs>
-        {sections.map((section, index) => (
+        {createSections.map((section, index) => (
           <TabPanel
             key={section.panelId}
+            Section={Sections[section.id]}
             activeSection={activeSection}
             currentIndex={currentIndex}
             errors={errors}
             form={form}
             index={index}
-            mandatoryForm={mandatoryForm}
-            mapBlend={mapBlend}
-            mapSubstance={mapSubstance}
             renderSection={renderSection}
             section={section}
             setActiveSection={setActiveSection}
@@ -449,6 +306,7 @@ export default function CPReportCreate(props: {
               suppressCellFocus: false,
               suppressRowHoverHighlight: false,
               withSeparators: true,
+              errors: errors[section.id],
             }}
             {...props}
           />
@@ -473,16 +331,20 @@ export default function CPReportCreate(props: {
                 onClick={async () => {
                   try {
                     await api('api/country-programme/reports/', {
-                      data: { ...form, country_id: form.country?.id },
+                      data: getSubmitFormData(),
                       method: 'POST',
                     })
                     setErrors({})
-                    localStorage.removeItem('section_a_create')
-                    localStorage.removeItem('section_b_create')
-                    localStorage.removeItem('section_c_create')
-                    localStorage.removeItem('section_d_create')
-                    localStorage.removeItem('section_e_create')
-                    localStorage.removeItem('section_f_create')
+                    Sections.section_a.clearLocalStorage()
+                    Sections.section_b.clearLocalStorage()
+                    Sections.section_c.clearLocalStorage()
+                    Sections.section_d.clearLocalStorage()
+                    Sections.section_e.clearLocalStorage()
+                    Sections.section_f.clearLocalStorage()
+                    enqueueSnackbar(
+                      <>Added new submission for {form.name}.</>,
+                      { variant: 'success' },
+                    )
                   } catch (error) {
                     if (error.status === 400) {
                       setErrors({ ...(await error.json()) })
