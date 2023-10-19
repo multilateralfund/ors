@@ -202,6 +202,7 @@ class CPReportGroupByYearView(generics.ListAPIView):
             CPReport.objects.values_list(self.group_pk).annotate(count=Count(1))
         )
 
+        # Only paginate the query based on unique Group IDs
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
 
@@ -215,6 +216,8 @@ class CPReportGroupByYearView(generics.ListAPIView):
             )
             .filter(
                 **{
+                    # Filter results base on the group and the MAX number of
+                    # reports to display.
                     f"{self.group_by}__in": (page or queryset),
                     "row_number__lte": config.CP_NR_REPORTS,
                 }
@@ -222,6 +225,9 @@ class CPReportGroupByYearView(generics.ListAPIView):
             .order_by(self.order_field, self.order_by)
         )
 
+        # Data is already sorted in the correct order, and the dictionary will
+        # preserve the order.
+        # Create the final response by grouping the data.
         grouped_data = {}
         for obj in queryset:
             pk = self.get_id(obj)
