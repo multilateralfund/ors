@@ -329,7 +329,7 @@ class BlendCreateView(generics.CreateAPIView):
         data = request.data
 
         for field in ["other_names", "components", "composition"]:
-            if field not in data:
+            if field not in data or not data[field]:
                 raise ValidationError({field: "This field is required."})
 
         try:

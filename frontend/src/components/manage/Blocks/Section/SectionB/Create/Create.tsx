@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import React from 'react'
 
 import {
   Alert,
@@ -16,8 +17,9 @@ import {
   each,
   find,
   findIndex,
+  get,
   includes,
-  isNil,
+  isObject,
   isString,
   sortBy,
   union,
@@ -90,12 +92,11 @@ function getRowData(data: any) {
 
 export default function SectionBCreate(props: any) {
   const {
+    Section,
     TableProps,
     emptyForm,
     form,
     index,
-    mapBlend,
-    mapSubstance,
     section,
     setActiveSection,
     setForm,
@@ -145,26 +146,19 @@ export default function SectionBCreate(props: any) {
         includes(substance.sections, 'B') &&
         !includes(chimicalsInForm, `substance_${substance.id}`)
       ) {
-        data.push(mapSubstance(substance))
+        data.push(Section.transformSubstance(substance))
       }
     })
     each(
       sortBy(uniqBy([...blends, ...createdBlends], 'id'), 'sort_order'),
       (blend) => {
         if (!includes(chimicalsInForm, `blend_${blend.id}`)) {
-          data.push(mapBlend(blend))
+          data.push(Section.transformBlend(blend))
         }
       },
     )
     return data
-  }, [
-    substances,
-    blends,
-    form.section_b,
-    mapSubstance,
-    mapBlend,
-    createdBlends,
-  ])
+  }, [substances, blends, form.section_b, createdBlends, Section])
 
   const gridOptions = useGridOptions({
     onRemoveSubstance: (props: any) => {
@@ -218,7 +212,6 @@ export default function SectionBCreate(props: any) {
         {...TableProps}
         className="three-groups mb-4"
         columnDefs={gridOptions.columnDefs}
-        defaultColDef={gridOptions.defaultColDef}
         gridRef={grid}
         headerDepth={3}
         rowData={initialRowData}
@@ -268,6 +261,10 @@ export default function SectionBCreate(props: any) {
             </div>
           )
         }}
+        defaultColDef={{
+          ...TableProps.defaultColDef,
+          ...gridOptions.defaultColDef,
+        }}
         pinnedBottomRowData={[
           { display_name: 'TOTAL', rowType: 'total' },
           { rowType: 'control' },
@@ -302,6 +299,7 @@ export default function SectionBCreate(props: any) {
                 grid.current.api.flashCells({
                   rowNodes: [newNode.current],
                 })
+                newNode.current = undefined
               },
             )
           }
@@ -415,6 +413,8 @@ export default function SectionBCreate(props: any) {
                 </Typography>
                 <Field
                   InputLabel={{ label: 'Blend description' }}
+                  error={!!blendFormErrors.composition}
+                  helperText={blendFormErrors.composition}
                   onChange={(event: any) => {
                     debounce(function updateBlendDescription() {
                       setBlendForm({
@@ -426,6 +426,8 @@ export default function SectionBCreate(props: any) {
                 />
                 <Field
                   InputLabel={{ label: 'Blend other names' }}
+                  error={!!blendFormErrors.other_names}
+                  helperText={blendFormErrors.other_names}
                   onChange={(event: any) => {
                     debounce(function updateBlendName() {
                       setBlendForm({
@@ -437,92 +439,100 @@ export default function SectionBCreate(props: any) {
                 />
                 <InputLabel className="mb-2">Blend composition</InputLabel>
                 {blendForm.components.map((component: any, index: number) => (
-                  <div
-                    key={component?.substance_id || index}
-                    className="mb-4 grid grid-cols-[1fr_1fr_auto_auto] items-center gap-x-4"
-                  >
-                    <Field
-                      FieldProps={{ className: 'w-full mb-0' }}
-                      Input={{ placeholder: 'Select substance...' }}
-                      getOptionLabel={(option: any) => option.name}
-                      groupBy={(option: any) => option.group}
-                      label="Substance"
-                      options={createBlendSubstancesOptions}
-                      value={component}
-                      widget="autocomplete"
-                      onChange={(_: any, value: any) => {
-                        const components = [...blendForm.components]
-                        if (!value) {
-                          components.splice(index, 1)
-                        } else {
-                          components[index] = {
-                            ...value,
-                            percentage: components[index]?.percentage || 0,
-                          }
-                        }
-                        setBlendForm({ ...blendForm, components })
-                      }}
-                    />
-                    <Field
-                      FieldProps={{ className: 'mb-0' }}
-                      defaultValue={component?.component_name || ''}
-                      disabled={!component}
-                      label="Compnent name"
-                      onChange={(event: any) => {
-                        debounce(function updateBlendComponentName() {
-                          const components = [
-                            ...prevBlendForm.current.components,
-                          ]
-                          components[index].component_name = event.target.value
-                          setBlendForm({
-                            ...prevBlendForm.current,
-                            components,
-                          })
-                        })
-                      }}
-                    />
-                    <TextWidget
-                      defaultValue={component?.percentage || 0}
-                      disabled={!component}
-                      label="Percentage"
-                      type="number"
-                      InputProps={{
-                        inputProps: {
-                          lang: 'en',
-                          max: 100,
-                          min: 0,
-                          step: 1,
-                        },
-                      }}
-                      onChange={(event: any) => {
-                        debounce(function updateBlendComponentPercentage() {
-                          const components = [
-                            ...prevBlendForm.current.components,
-                          ]
-                          components[index] = {
-                            ...(components[index] || {}),
-                            percentage: event.target.value || 0,
-                          }
-                          setBlendForm({
-                            ...prevBlendForm.current,
-                            components,
-                          })
-                        })
-                      }}
-                    />
-                    <div>
-                      <IconButton
-                        color="error"
-                        onClick={() => {
+                  <React.Fragment key={component?.substance_id || index}>
+                    <div className="mb-4 grid grid-cols-[1fr_1fr_auto_auto] items-center gap-x-4">
+                      <Field
+                        FieldProps={{ className: 'w-full mb-0' }}
+                        Input={{ placeholder: 'Select substance...' }}
+                        getOptionLabel={(option: any) => option.name}
+                        groupBy={(option: any) => option.group}
+                        label="Substance"
+                        options={createBlendSubstancesOptions}
+                        value={component}
+                        widget="autocomplete"
+                        onChange={(_: any, value: any) => {
                           const components = [...blendForm.components]
-                          components.splice(index, 1)
+                          if (!value) {
+                            components.splice(index, 1)
+                          } else {
+                            components[index] = {
+                              ...value,
+                              percentage: components[index]?.percentage || 0,
+                            }
+                          }
                           setBlendForm({ ...blendForm, components })
                         }}
-                      >
-                        <IoRemoveCircle size="1rem" />
-                      </IconButton>
+                      />
+                      <Field
+                        FieldProps={{ className: 'mb-0' }}
+                        defaultValue={component?.component_name || ''}
+                        disabled={!component}
+                        label="Compnent name"
+                        onChange={(event: any) => {
+                          debounce(function updateBlendComponentName() {
+                            const components = [
+                              ...prevBlendForm.current.components,
+                            ]
+                            components[index].component_name =
+                              event.target.value
+                            setBlendForm({
+                              ...prevBlendForm.current,
+                              components,
+                            })
+                          })
+                        }}
+                      />
+                      <TextWidget
+                        defaultValue={component?.percentage || 0}
+                        disabled={!component}
+                        label="Percentage"
+                        type="number"
+                        InputProps={{
+                          inputProps: {
+                            lang: 'en',
+                            max: 100,
+                            min: 0,
+                            step: 1,
+                          },
+                        }}
+                        onChange={(event: any) => {
+                          debounce(function updateBlendComponentPercentage() {
+                            const components = [
+                              ...prevBlendForm.current.components,
+                            ]
+                            components[index] = {
+                              ...(components[index] || {}),
+                              percentage: event.target.value || 0,
+                            }
+                            setBlendForm({
+                              ...prevBlendForm.current,
+                              components,
+                            })
+                          })
+                        }}
+                      />
+                      <div>
+                        <IconButton
+                          color="error"
+                          onClick={() => {
+                            const components = [...blendForm.components]
+                            components.splice(index, 1)
+                            setBlendForm({ ...blendForm, components })
+                          }}
+                        >
+                          <IoRemoveCircle size="1rem" />
+                        </IconButton>
+                      </div>
                     </div>
-                  </div>
+                    <Collapse in={isObject(blendFormErrors.components)}>
+                      {isObject(blendFormErrors.components) &&
+                        isString(get(blendFormErrors.components, index)) && (
+                          <Alert className="mb-4" severity="error">
+                            {get(blendFormErrors.components, index)}
+                          </Alert>
+                        )}
+                    </Collapse>
+                  </React.Fragment>
                 ))}
                 <Button
                   className="mb-4"
@@ -541,7 +551,9 @@ export default function SectionBCreate(props: any) {
                     !!blendFormErrors.components
                   }
                 >
-                  <Alert severity="error">{blendFormErrors.components}</Alert>
+                  {isString(blendFormErrors.components) && (
+                    <Alert severity="error">{blendFormErrors.components}</Alert>
+                  )}
                 </Collapse>
               </div>
               <div>
@@ -556,35 +568,36 @@ export default function SectionBCreate(props: any) {
                         const blend = await api('api/blends/create/', {
                           data: {
                             ...blendForm,
-                            components: blendForm.components
-                              .filter((component: any) => !isNil(component))
-                              .map((component: any) => ({
-                                component_name: component.component_name || '',
-                                percentage: parseNumber(component.percentage),
-                                substance_id: component.id,
-                              })),
+                            components: blendForm.components.map(
+                              (component: any) => ({
+                                component_name: component?.component_name || '',
+                                percentage:
+                                  parseNumber(component?.percentage) || 0,
+                                substance_id: component?.id || null,
+                              }),
+                            ),
                           },
                           method: 'POST',
                         })
 
-                        const serializedBlend = mapBlend(blend)
+                        const deserializedBlend = Section.transformBlend(blend)
 
                         const added = find(
                           form.section_b,
                           (chimical) =>
-                            chimical.rowId === serializedBlend.rowId,
+                            chimical.rowId === deserializedBlend.rowId,
                         )
 
                         if (added) {
                           const blendNode = grid.current.api.getRowNode(
-                            serializedBlend.rowId,
+                            deserializedBlend.rowId,
                           )
                           enqueueSnackbar(
-                            `Blend ${serializedBlend.name} already exists in the form.`,
+                            `Blend ${deserializedBlend.name} already exists in the form.`,
                             { variant: 'info' },
                           )
                           scrollToElement(
-                            `.ag-row[row-id=${serializedBlend.rowId}]`,
+                            `.ag-row[row-id=${deserializedBlend.rowId}]`,
                             () => {
                               grid.current.api.flashCells({
                                 rowNodes: [blendNode],
@@ -593,15 +606,15 @@ export default function SectionBCreate(props: any) {
                           )
                         } else {
                           const groupNode = grid.current.api.getRowNode(
-                            serializedBlend.group,
+                            deserializedBlend.group,
                           )
                           setForm((form: any) => ({
                             ...form,
-                            section_b: [...form.section_b, serializedBlend],
+                            section_b: [...form.section_b, deserializedBlend],
                           }))
                           setCreatedBlends((prev) => [...prev, blend])
                           applyTransaction(grid.current.api, {
-                            add: [serializedBlend],
+                            add: [deserializedBlend],
                             addIndex:
                               groupNode.rowIndex + groupNode.data.count + 1,
                             update: [
@@ -612,14 +625,14 @@ export default function SectionBCreate(props: any) {
                             ],
                           })
                           const blendNode = grid.current.api.getRowNode(
-                            serializedBlend.rowId,
+                            deserializedBlend.rowId,
                           )
                           newNode.current = blendNode
                           enqueueSnackbar(
                             <>
                               Blend{' '}
                               <span className="font-medium">
-                                {serializedBlend.name}
+                                {deserializedBlend.name}
                               </span>{' '}
                               created succesfuly.
                             </>,
@@ -633,8 +646,19 @@ export default function SectionBCreate(props: any) {
                           setBlendFormErrors({
                             ...(await error.json()),
                           })
+                          enqueueSnackbar(
+                            <>Please make sure all the inputs are correct.</>,
+                            { variant: 'error' },
+                          )
                         } else {
+                          console.log('HERE', error)
                           setBlendFormErrors({})
+                          enqueueSnackbar(
+                            <>Unexpected error, we are working on it.</>,
+                            {
+                              variant: 'error',
+                            },
+                          )
                         }
                       }
                     }}

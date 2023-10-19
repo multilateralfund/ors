@@ -93,12 +93,6 @@ export const CellUsageWidget = memo(
         // eslint-disable-next-line
       }, [])
 
-      /* Utility Methods */
-      const cancelBeforeStart =
-        props.eventKey &&
-        props.eventKey.length === 1 &&
-        '1234567890'.indexOf(props.eventKey) < 0
-
       const isArrowKey = (event: any) => {
         return (
           ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(
@@ -162,8 +156,12 @@ export const CellUsageWidget = memo(
         return {
           // the final value to send to the grid, on completion of editing
           getValue() {
+            const rowNode = props.api.getRowNode(props.data.rowId)
+            const subtotalRowNode = props.api.getRowNode(
+              `subtotal[${props.data.group}]`,
+            )
             const newUsages = [...(props.data.record_usages || [])]
-            let finalValue = parseNumber(value)
+            let finalValue = parseNumber(value) || 0
             const min = parseNumber(props.min)
             const max = parseNumber(props.max)
             if (finalValue && isNumber(min) && finalValue < min) {
@@ -187,20 +185,28 @@ export const CellUsageWidget = memo(
               update: [{ ...props.data, record_usages: newUsages }],
             })
 
+            props.api.flashCells({
+              ...(rowNode ? { columns: ['total_usages', props.column] } : {}),
+              rowNodes: [
+                ...(rowNode ? [rowNode] : []),
+                ...(rowNode && subtotalRowNode ? [subtotalRowNode] : []),
+              ],
+            })
+
             return finalValue
           },
 
           // Gets called once before editing starts, to give editor a chance to
           // If you return true, then the result of the edit will be ignored.
           isCancelAfterEnd() {
-            const finalValue = this.getValue()
-            return !isNumber(finalValue)
+            const finalValue = parseNumber(value)
+            return !isNumber(finalValue) || isNaN(finalValue)
           },
 
           // Gets called once when editing is finished (eg if Enter is pressed).
           // cancel the editing before it even starts.
           isCancelBeforeStart() {
-            return cancelBeforeStart
+            return false
           },
         }
       })

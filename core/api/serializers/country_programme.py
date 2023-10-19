@@ -1,7 +1,8 @@
 from django.db import transaction
 from rest_framework import serializers
-from core.api.serializers.adm import AdmRecordSerializer
+from rest_framework.exceptions import ValidationError
 
+from core.api.serializers.adm import AdmRecordSerializer
 from core.models.blend import Blend
 from core.models.country import Country
 from core.models.country_programme import (
@@ -22,7 +23,30 @@ from core.utils import IMPORT_DB_MAX_YEAR
 CP_GENERATION_CHEMICAL = "HFC-23"
 
 
-class BaseWChemicalSerializer(serializers.ModelSerializer):
+class BaseRowSerializer(serializers.ModelSerializer):
+    rowId = serializers.CharField(required=False, write_only=True)
+
+    class Meta:
+        fields = [
+            "rowId",
+        ]
+
+    def to_internal_value(self, data):
+        try:
+            internal_value = super().to_internal_value(data)
+        except ValidationError as e:
+            # add chemical_id to error message
+            row_id = data.get("rowId", "general_error")
+            raport_error = {
+                "row_id": row_id,
+                "errors": e.detail,
+            }
+            raise ValidationError(raport_error) from e
+        internal_value.pop("rowId", None)
+        return internal_value
+
+
+class BaseWChemicalSerializer(BaseRowSerializer):
     group = serializers.SerializerMethodField()
     chemical_name = serializers.SerializerMethodField()
     substance_id = serializers.PrimaryKeyRelatedField(
@@ -41,7 +65,7 @@ class BaseWChemicalSerializer(serializers.ModelSerializer):
     display_name = serializers.SerializerMethodField()
 
     class Meta:
-        fields = [
+        fields = BaseRowSerializer.Meta.fields + [
             "id",
             "country_programme_report_id",
             "display_name",
@@ -133,6 +157,22 @@ class CPUsageSerializer(serializers.ModelSerializer):
             "quantity",
         ]
 
+    def to_internal_value(self, data):
+        try:
+            intenal_value = super().to_internal_value(data)
+        except ValidationError as e:
+            # add usage_id to error message
+            row_id = data.get("usage_id", "general_error")
+            if row_id != "general_error":
+                row_id = f"usage_{row_id}"
+            raport_error = {
+                "row_id": row_id,
+                "errors": e.detail,
+            }
+            raise ValidationError(raport_error) from e
+
+        return intenal_value
+
 
 class CPRecordSerializer(BaseWChemicalSerializer):
     record_usages = CPUsageSerializer(many=True)
@@ -169,6 +209,14 @@ class CPRecordSerializer(BaseWChemicalSerializer):
 
 
 class CPPricesSerializer(BaseWChemicalSerializer):
+    previous_year_price = serializers.DecimalField(
+        max_digits=12, decimal_places=3, required=False, allow_null=True
+    )
+    current_year_price = serializers.DecimalField(
+        max_digits=12, decimal_places=3, required=True
+    )
+    remarks = serializers.CharField(required=False, allow_blank=True)
+
     class Meta:
         model = CPPrices
         fields = BaseWChemicalSerializer.Meta.fields + [
@@ -178,7 +226,7 @@ class CPPricesSerializer(BaseWChemicalSerializer):
         ]
 
 
-class CPGenerationSerializer(serializers.ModelSerializer):
+class CPGenerationSerializer(BaseRowSerializer):
     chemical_name = serializers.SerializerMethodField()
     display_name = serializers.SerializerMethodField()
     country_programme_report_id = serializers.PrimaryKeyRelatedField(
@@ -189,7 +237,7 @@ class CPGenerationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CPGeneration
-        fields = [
+        fields = BaseRowSerializer.Meta.fields + [
             "id",
             "chemical_name",
             "display_name",
@@ -206,7 +254,7 @@ class CPGenerationSerializer(serializers.ModelSerializer):
         return CP_GENERATION_CHEMICAL
 
 
-class CPEmissionSerializer(serializers.ModelSerializer):
+class CPEmissionSerializer(BaseRowSerializer):
     country_programme_report_id = serializers.PrimaryKeyRelatedField(
         required=False,
         queryset=CPReport.objects.all().values_list("id", flat=True),
@@ -215,7 +263,7 @@ class CPEmissionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CPEmission
-        fields = [
+        fields = BaseRowSerializer.Meta.fields + [
             "id",
             "facility",
             "total",

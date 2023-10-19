@@ -13,10 +13,9 @@ import { IoTrash } from '@react-icons/all-files/io5/IoTrash'
 
 function useGridOptions(props: {
   addFacility: () => void
-  errors: Record<string, any>
   removeFacility: (props: any) => void
 }) {
-  const { addFacility, errors, removeFacility } = props
+  const { addFacility, removeFacility } = props
   const gridOptions: GridOptions = useMemo(
     () => ({
       columnDefs: [
@@ -67,9 +66,6 @@ function useGridOptions(props: {
               'font-bold': includes(['group', 'total'], props.data.rowType),
             }),
           }),
-          error: (props) =>
-            props.data.rowId === `facility_${props.rowIndex + 1}` &&
-            errors.section_e?.[props.rowIndex]?.facility,
           field: 'facility',
           headerClass: 'ag-text-left',
           headerName: 'Facility name or identifier',
@@ -78,7 +74,7 @@ function useGridOptions(props: {
         {
           aggFunc: 'sumTotal',
           cellEditor: 'agNumberCellEditor',
-          cellRenderer: 'agFloatCellRenderer',
+          dataType: 'number',
           field: 'total',
           headerComponentParams: {
             footnote: 2,
@@ -91,7 +87,7 @@ function useGridOptions(props: {
             {
               aggFunc: 'sumTotal',
               cellEditor: 'agNumberCellEditor',
-              cellRenderer: 'agFloatCellRenderer',
+              dataType: 'number',
               field: 'all_uses',
               headerName: 'For all uses',
               ...colDefById['all_uses'],
@@ -99,7 +95,7 @@ function useGridOptions(props: {
             {
               aggFunc: 'sumTotal',
               cellEditor: 'agNumberCellEditor',
-              cellRenderer: 'agFloatCellRenderer',
+              dataType: 'number',
               field: 'feedstock_gc',
               headerName: 'For feedstock use in your country',
               ...colDefById['feedstock_gc'],
@@ -107,7 +103,7 @@ function useGridOptions(props: {
             {
               aggFunc: 'sumTotal',
               cellEditor: 'agNumberCellEditor',
-              cellRenderer: 'agFloatCellRenderer',
+              dataType: 'number',
               field: 'destruction',
               headerName: 'For destruction',
               ...colDefById['destruction'],
@@ -124,7 +120,7 @@ function useGridOptions(props: {
         {
           aggFunc: 'sumTotal',
           cellEditor: 'agNumberCellEditor',
-          cellRenderer: 'agFloatCellRenderer',
+          dataType: 'number',
           field: 'feedstock_wpc',
           headerComponentParams: {
             footnote: 4,
@@ -135,7 +131,7 @@ function useGridOptions(props: {
         {
           aggFunc: 'sumTotal',
           cellEditor: 'agNumberCellEditor',
-          cellRenderer: 'agFloatCellRenderer',
+          dataType: 'number',
           field: 'destruction_wpc',
           headerComponentParams: {
             footnote: 5,
@@ -146,7 +142,7 @@ function useGridOptions(props: {
         {
           aggFunc: 'sumTotal',
           cellEditor: 'agNumberCellEditor',
-          cellRenderer: 'agFloatCellRenderer',
+          dataType: 'number',
           field: 'generated_emissions',
           headerName: 'Amount of generated emission',
           ...colDefById['generated_emissions'],
@@ -169,7 +165,7 @@ function useGridOptions(props: {
         wrapText: true,
       },
     }),
-    [addFacility, removeFacility, errors],
+    [addFacility, removeFacility],
   )
 
   return gridOptions

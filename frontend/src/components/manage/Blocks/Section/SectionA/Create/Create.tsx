@@ -58,11 +58,11 @@ function getRowData(data: any) {
 
 export default function SectionACreate(props: any) {
   const {
+    Section,
     TableProps,
     emptyForm,
     form,
     index,
-    mapSubstance,
     setActiveSection,
     setForm,
   } = props
@@ -86,11 +86,11 @@ export default function SectionACreate(props: any) {
         includes(substance.sections, 'A') &&
         !includes(substancesInForm, `substance_${substance.id}`)
       ) {
-        data.push(mapSubstance(substance))
+        data.push(Section?.transformSubstance(substance))
       }
     })
     return data
-  }, [substances, form.section_a, mapSubstance])
+  }, [substances, form.section_a, Section])
 
   const gridOptions = useGridOptions({
     onRemoveSubstance: (props: any) => {
@@ -137,13 +137,16 @@ export default function SectionACreate(props: any) {
         {...TableProps}
         className="three-groups mb-4"
         columnDefs={gridOptions.columnDefs}
-        defaultColDef={gridOptions.defaultColDef}
         gridRef={grid}
         headerDepth={3}
         rowData={initialRowData}
+        defaultColDef={{
+          ...TableProps.defaultColDef,
+          ...gridOptions.defaultColDef,
+        }}
         pinnedBottomRowData={[
-          { display_name: 'TOTAL', rowType: 'total' },
-          { rowType: 'control' },
+          { display_name: 'TOTAL', rowId: 'total', rowType: 'total' },
+          { rowId: 'control', rowType: 'control' },
         ]}
         onCellValueChanged={(event) => {
           const usages = getUsagesOnCellValueChange(event)
@@ -175,6 +178,7 @@ export default function SectionACreate(props: any) {
                 grid.current.api.flashCells({
                   rowNodes: [newNode.current],
                 })
+                newNode.current = undefined
               },
             )
           }

@@ -3,10 +3,8 @@ import Error from '@ors/components/theme/Error/Error'
 
 export default function NotFound() {
   return (
-    <Error
-      component={FadeInOut}
-      message="Page not found"
-      statusCode={404}
-    ></Error>
+    <FadeInOut className="h-full w-full">
+      <Error message="Page not found" statusCode={404} />
+    </FadeInOut>
   )
 }

@@ -26,7 +26,6 @@ export const CellDateWidget = memo(
   forwardRef(
     (
       props: {
-        disableClearable?: boolean
         options?: Array<any>
       } & ICellEditorParams,
       ref,
@@ -46,12 +45,6 @@ export const CellDateWidget = memo(
         }
         // eslint-disable-next-line
       }, [])
-
-      /* Utility Methods */
-      const cancelBeforeStart =
-        props.eventKey &&
-        props.eventKey.length === 1 &&
-        '1234567890'.indexOf(props.eventKey) < 0
 
       const finishedEditingPressed = (event: any) => {
         const key = event.key
@@ -79,21 +72,20 @@ export const CellDateWidget = memo(
           // Gets called once before editing starts, to give editor a chance to
           // If you return true, then the result of the edit will be ignored.
           isCancelAfterEnd() {
-            if (!!props.disableClearable && !value) return true
             return false
           },
 
           // Gets called once when editing is finished (eg if Enter is pressed).
           // cancel the editing before it even starts.
           isCancelBeforeStart() {
-            return cancelBeforeStart
+            return false
           },
         }
       })
 
       return (
         <DatePicker
-          format="DD/MM/YYYY"
+          format="YYYY-MM-DD"
           ref={refInput}
           value={dayjs(value)}
           slotProps={{

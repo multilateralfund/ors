@@ -51,7 +51,7 @@ export default async function CountryProgrammeReport({ params }: ReportProps) {
     return {
       id: usage.id,
       category: usage.columnCategory,
-      cellDataType: 'number',
+      dataType: 'number',
       headerName: usage.headerName,
       initialWidth: defaultColDef.minWidth,
       ...(colDefById[usage.full_name] || {}),

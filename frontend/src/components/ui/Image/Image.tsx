@@ -27,7 +27,7 @@ export default function Image({
       )}
       <div
         id={imageId}
-        className="image-container"
+        className="image-container relative"
         {...(imageId && useSkeleton
           ? {
               style: {

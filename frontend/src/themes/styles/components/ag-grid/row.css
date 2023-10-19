@@ -41,3 +41,13 @@
 #next-app [class*='ag-theme-'] .ag-row-total:not(:first-child)::after {
   top: -1px;
 }
+
+#next-app [class*='ag-theme-'] .ag-row.ag-row-error::after {
+  @apply z-10 bg-error/20;
+
+  content: '';
+  display: block;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}

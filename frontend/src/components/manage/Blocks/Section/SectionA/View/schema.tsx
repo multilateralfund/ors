@@ -44,21 +44,21 @@ function useGridOptions(props: { model: string; usages: any }) {
           : []),
         {
           aggFunc: 'sumTotal',
-          cellRenderer: 'agFloatCellRenderer',
+          dataType: 'number',
           field: 'imports',
           headerName: 'Import',
           ...colDefById['imports'],
         },
         {
           aggFunc: 'sumTotal',
-          cellRenderer: 'agFloatCellRenderer',
+          dataType: 'number',
           field: 'exports',
           headerName: 'Export',
           ...colDefById['exports'],
         },
         {
           aggFunc: 'sumTotal',
-          cellRenderer: 'agFloatCellRenderer',
+          dataType: 'number',
           field: 'production',
           headerName: 'Production',
           ...colDefById['production'],
@@ -67,7 +67,7 @@ function useGridOptions(props: { model: string; usages: any }) {
           ? [
               {
                 aggFunc: 'sumTotal',
-                cellRenderer: 'agFloatCellRenderer',
+                dataType: 'number',
                 field: 'import_quotas',
                 headerName: 'Import Quotas',
                 ...colDefById['import_quotas'],
@@ -77,7 +77,7 @@ function useGridOptions(props: { model: string; usages: any }) {
         ...(includes(['IV'], model)
           ? [
               {
-                cellRenderer: 'agDateCellRenderer',
+                dataType: 'date',
                 field: 'banned_date',
                 headerName: 'Date ban commenced (DD/MM/YYYY)',
                 ...colDefById['banned_date'],
