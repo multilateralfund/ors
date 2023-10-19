@@ -14,8 +14,6 @@ import { ICellEditorParams } from 'ag-grid-community'
 import TextareaWidget from '@ors/components/manage/Widgets/TextareaWidget'
 import { KEY_BACKSPACE, KEY_ENTER, KEY_TAB } from '@ors/constants'
 
-import AgCellRenderer from '../AgCellRenderers/AgCellRenderer'
-
 export const CellTextareaWidget = memo(
   forwardRef(
     (
@@ -90,7 +88,6 @@ export const CellTextareaWidget = memo(
 
       return (
         <>
-          <AgCellRenderer {...props} />
           <Modal
             className="ag-custom-component-popup"
             aria-labelledby="cell-textarea-widget-title"

@@ -4,10 +4,20 @@
 
 import React, { useCallback, useEffect, useState } from 'react'
 
-import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
+import {
+  Alert,
+  Box,
+  Button,
+  Collapse,
+  IconButton,
+  Tab,
+  Tabs,
+  Typography,
+} from '@mui/material'
 import cx from 'classnames'
 import { AnimatePresence } from 'framer-motion'
 import { isEmpty } from 'lodash'
+import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
 import Field from '@ors/components/manage/Form/Field'
@@ -79,6 +89,7 @@ export default function CPReportCreate(props: {
   emptyForm: Record<string, any>
   substances: Array<Substance>
 }) {
+  const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
   const countries = useStore((state) => [
     { id: 0, label: 'Any' },
@@ -139,6 +150,7 @@ export default function CPReportCreate(props: {
       section_e: Sections.section_e.getSubmitFormData(form.section_e),
       section_f: Sections.section_f.getSubmitFormData(form.section_f),
       country_id: form.country?.id,
+      name: form.country?.label ? `${form.country?.label} ${form.year}` : '',
     }
     /* eslint-disable-next-line */
   }, [form])
@@ -193,17 +205,10 @@ export default function CPReportCreate(props: {
       <form className="create-submission-form">
         <div className="grid grid-cols-3 gap-x-4">
           <Field
-            id="name"
-            name="name"
-            error={!!errors.name}
-            helperText={errors.name?.general_error}
-            label="Report name"
-          />
-          <Field
             id="country"
             name="country_id"
             options={countries}
-            value={form.country}
+            value={form.country?.id}
             widget="autocomplete"
             Input={{
               error: !!errors.country_id,
@@ -330,10 +335,13 @@ export default function CPReportCreate(props: {
                 variant="contained"
                 onClick={async () => {
                   try {
-                    await api('api/country-programme/reports/', {
-                      data: getSubmitFormData(),
-                      method: 'POST',
-                    })
+                    const response = await api(
+                      'api/country-programme/reports/',
+                      {
+                        data: getSubmitFormData(),
+                        method: 'POST',
+                      },
+                    )
                     setErrors({})
                     Sections.section_a.clearLocalStorage()
                     Sections.section_b.clearLocalStorage()
@@ -342,9 +350,13 @@ export default function CPReportCreate(props: {
                     Sections.section_e.clearLocalStorage()
                     Sections.section_f.clearLocalStorage()
                     enqueueSnackbar(
-                      <>Added new submission for {form.name}.</>,
+                      <>
+                        Added new submission for {form.country.label}{' '}
+                        {form.year}.
+                      </>,
                       { variant: 'success' },
                     )
+                    router.push(`/country-programme/${response.id}`)
                   } catch (error) {
                     if (error.status === 400) {
                       setErrors({ ...(await error.json()) })
