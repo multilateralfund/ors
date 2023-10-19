@@ -129,7 +129,12 @@ export default function CPReportView(props: {
           setActiveSection={setActiveSection}
           variant={variant}
           TableProps={{
-            Toolbar: ({ enterFullScreen, exitFullScreen, fullScreen }: any) => {
+            Toolbar: ({
+              enterFullScreen,
+              exitFullScreen,
+              fullScreen,
+              onPrint,
+            }: any) => {
               return (
                 <div
                   className={cx(
@@ -142,8 +147,9 @@ export default function CPReportView(props: {
                   <Typography component="h2" variant="h6">
                     {section.title}
                   </Typography>
-                  {section.allowFullScreen && !fullScreen && (
-                    <div>
+                  <div>
+                    {!fullScreen && <button onClick={onPrint}>Print</button>}
+                    {section.allowFullScreen && !fullScreen && (
                       <IconButton
                         color="primary"
                         onClick={() => {
@@ -152,12 +158,12 @@ export default function CPReportView(props: {
                       >
                         <IoExpand />
                       </IconButton>
-                    </div>
-                  )}
+                    )}
+                  </div>
                   {fullScreen && (
                     <div>
                       <IconButton
-                        className="exit-fullscreen p-2 text-primary"
+                        className="exit-fullscreen not-printable p-2 text-primary"
                         aria-label="exit fullscreen"
                         onClick={() => {
                           exitFullScreen()

@@ -12,7 +12,6 @@ import {
 import { createCPReportsSlice } from '@ors/slices/createCPReportsSlice'
 import { createCacheSlice } from '@ors/slices/createCacheSlice'
 import { createCommonSlice } from '@ors/slices/createCommonSlice'
-import { createControlsSlice } from '@ors/slices/createControlsSlice'
 import { createHeaderSlice } from '@ors/slices/createHeaderSlice'
 import { createI18nSlice } from '@ors/slices/createI18nSlice'
 import { createProjectSlice } from '@ors/slices/createProjectSlice'
@@ -35,7 +34,6 @@ const createStore = (initialState?: InitialStoreState) => {
         ? // @ts-ignore
           navigator?.connection?.effectiveType || null
         : null,
-      controls: { ...createControlsSlice(...args) },
       cp_reports: { ...createCPReportsSlice(...args) },
       header: { ...createHeaderSlice(...args) },
       i18n: { ...createI18nSlice(...args) },

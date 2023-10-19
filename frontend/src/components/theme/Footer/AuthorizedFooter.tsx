@@ -4,7 +4,7 @@ import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 
 export default function Footer() {
   return (
-    <FadeInOut>
+    <FadeInOut className="not-printable">
       <Box
         id="footer"
         className={

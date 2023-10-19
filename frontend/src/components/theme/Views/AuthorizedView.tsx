@@ -27,8 +27,9 @@ export default function AuthorizedView({
   return (
     !!user && (
       <>
+        <div id="print-content" />
         <Header />
-        <main className="grid-cols-[auto]">
+        <main className="not-printable grid-cols-[auto]">
           <div className="content grid grid-rows-[auto_1fr_auto]">
             <div id="top-control" className="z-10" />
             <div className="page-content-wrapper">{children}</div>

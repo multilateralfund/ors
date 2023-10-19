@@ -116,7 +116,7 @@
 }
 
 #next-app .ag-full-screen {
-  @apply z-20;
+  @apply z-50;
 
   position: fixed;
   width: 100vw;
@@ -124,7 +124,6 @@
   top: 0;
   left: 0;
   background-color: theme(colors.mui-box-background);
-  border: 1px solid theme(colors.mui-box-border);
 }
 
 #next-app .ag-full-screen [class*='ag-theme-'] {

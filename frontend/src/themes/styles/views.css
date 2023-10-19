@@ -1,5 +1,5 @@
 :root[data-layout*='document'] #next-app {
-  @apply grid h-full grid-rows-[auto_1fr];
+  @apply grid h-full grid-rows-[auto_auto_1fr_auto];
 }
 
 :root[data-layout*='document'] main {

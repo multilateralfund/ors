@@ -258,6 +258,7 @@ export default function CPReportCreate(props: {
               Toolbar: ({
                 enterFullScreen,
                 exitFullScreen,
+                onPrint,
                 fullScreen,
               }: any) => {
                 return (
@@ -272,8 +273,9 @@ export default function CPReportCreate(props: {
                     <Typography component="h2" variant="h6">
                       {section.title}
                     </Typography>
-                    {section.allowFullScreen && !fullScreen && (
-                      <div>
+                    <div>
+                      {!fullScreen && <button onClick={onPrint}>Print</button>}
+                      {section.allowFullScreen && !fullScreen && (
                         <IconButton
                           color="primary"
                           onClick={() => {
@@ -282,10 +284,10 @@ export default function CPReportCreate(props: {
                         >
                           <IoExpand />
                         </IconButton>
-                      </div>
-                    )}
+                      )}
+                    </div>
                     {fullScreen && (
-                      <div>
+                      <div className="not-printable">
                         <IconButton
                           className="exit-fullscreen p-2 text-primary"
                           aria-label="exit fullscreen"

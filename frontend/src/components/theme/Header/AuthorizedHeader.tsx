@@ -46,7 +46,7 @@ export default function Header() {
   )
 
   return (
-    <FadeInOut className="header-motion">
+    <FadeInOut className="header-motion not-printable">
       <Box
         id="header"
         className="rounded-none border-0 px-0 pb-0 pt-4"

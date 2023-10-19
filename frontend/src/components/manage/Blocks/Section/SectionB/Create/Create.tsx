@@ -215,7 +215,12 @@ export default function SectionBCreate(props: any) {
         gridRef={grid}
         headerDepth={3}
         rowData={initialRowData}
-        Toolbar={({ enterFullScreen, exitFullScreen, fullScreen }: any) => {
+        Toolbar={({
+          enterFullScreen,
+          exitFullScreen,
+          fullScreen,
+          onPrint,
+        }: any) => {
           return (
             <div
               className={cx('py-2', {
@@ -232,8 +237,9 @@ export default function SectionBCreate(props: any) {
                 >
                   Create blend
                 </Button>
-                {section.allowFullScreen && !fullScreen && (
-                  <div>
+                <div>
+                  {!fullScreen && <button onClick={onPrint}>Print</button>}
+                  {section.allowFullScreen && !fullScreen && (
                     <IconButton
                       color="primary"
                       onClick={() => {
@@ -242,8 +248,8 @@ export default function SectionBCreate(props: any) {
                     >
                       <IoExpand />
                     </IconButton>
-                  </div>
-                )}
+                  )}
+                </div>
                 {fullScreen && (
                   <div>
                     <IconButton

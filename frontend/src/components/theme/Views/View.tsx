@@ -31,10 +31,26 @@ export default function View({ children }: { children: React.ReactNode }) {
     [view],
   )
 
+  function onBeforePrint() {
+    document.documentElement.setAttribute('printing', 'yes')
+  }
+
+  function onAfterPrint() {
+    document.documentElement.setAttribute('printing', 'no')
+  }
+
   useEffect(() => {
     if (localStorage.getItem('version') !== localStorageVersion) {
       localStorage.clear()
       localStorage.setItem('version', localStorageVersion)
+    }
+
+    window.addEventListener('beforeprint', onBeforePrint)
+    window.addEventListener('afterprint', onAfterPrint)
+
+    return () => {
+      window.removeEventListener('beforeprint', onBeforePrint)
+      window.removeEventListener('afterprint', onAfterPrint)
     }
   }, [])
 

@@ -105,3 +105,8 @@ export function getError(props: any) {
   }
   return null
 }
+
+export function mmToPx(mm: number) {
+  const DPI = 96
+  return (mm * DPI) / 25.4
+}

@@ -1,24 +1,18 @@
 'use client'
-import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 export default function Portal({
   key,
+  active = true,
   children,
   domNode,
 }: {
+  active?: boolean
   children: React.ReactNode
   domNode?: DocumentFragment | Element | string
   key?: null | string
 }) {
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!domNode) return children
-  if (__SERVER__ || !mounted) return null
+  if (__SERVER__ || !domNode || !active) return children
   if (typeof domNode === 'string') {
     const element = document.getElementById(domNode)
     if (element) {
