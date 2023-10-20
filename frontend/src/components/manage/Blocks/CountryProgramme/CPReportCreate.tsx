@@ -25,6 +25,7 @@ import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Portal from '@ors/components/manage/Utils/Portal'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
+import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
 import api, { getResults } from '@ors/helpers/Api'
 import useMakeClassInstance from '@ors/hooks/useMakeClassInstance'
@@ -39,7 +40,9 @@ import useStore from '@ors/store'
 
 import { createSections } from '.'
 
+import { AiFillFilePdf } from '@react-icons/all-files/ai/AiFillFilePdf'
 import { IoClose } from '@react-icons/all-files/io5/IoClose'
+import { IoDownloadOutline } from '@react-icons/all-files/io5/IoDownloadOutline'
 import { IoExpand } from '@react-icons/all-files/io5/IoExpand'
 
 function TabPanel(props: any) {
@@ -259,6 +262,7 @@ export default function CPReportCreate(props: {
                 enterFullScreen,
                 exitFullScreen,
                 onPrint,
+                print,
                 fullScreen,
               }: any) => {
                 return (
@@ -266,15 +270,31 @@ export default function CPReportCreate(props: {
                     className={cx(
                       'flex items-center justify-between gap-x-4 py-2',
                       {
-                        'px-4': fullScreen,
+                        'px-4': fullScreen && !print,
                       },
                     )}
                   >
                     <Typography component="h2" variant="h6">
                       {section.title}
                     </Typography>
-                    <div>
-                      {!fullScreen && <button onClick={onPrint}>Print</button>}
+                    <div className="flex items-center">
+                      {!fullScreen && (
+                        <Dropdown
+                          color="primary"
+                          label={<IoDownloadOutline />}
+                          icon
+                        >
+                          <Dropdown.Item onClick={onPrint}>
+                            <div className="flex items-center gap-x-2">
+                              <AiFillFilePdf
+                                className="fill-red-700"
+                                size={24}
+                              />
+                              <span>PDF</span>
+                            </div>
+                          </Dropdown.Item>
+                        </Dropdown>
+                      )}
                       {section.allowFullScreen && !fullScreen && (
                         <IconButton
                           color="primary"
@@ -285,20 +305,20 @@ export default function CPReportCreate(props: {
                           <IoExpand />
                         </IconButton>
                       )}
+                      {fullScreen && (
+                        <div className="not-printable">
+                          <IconButton
+                            className="exit-fullscreen p-2 text-primary"
+                            aria-label="exit fullscreen"
+                            onClick={() => {
+                              exitFullScreen()
+                            }}
+                          >
+                            <IoClose size={32} />
+                          </IconButton>
+                        </div>
+                      )}
                     </div>
-                    {fullScreen && (
-                      <div className="not-printable">
-                        <IconButton
-                          className="exit-fullscreen p-2 text-primary"
-                          aria-label="exit fullscreen"
-                          onClick={() => {
-                            exitFullScreen()
-                          }}
-                        >
-                          <IoClose size={32} />
-                        </IconButton>
-                      </div>
-                    )}
                   </div>
                 )
               },

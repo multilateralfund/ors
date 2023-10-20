@@ -24,20 +24,20 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import DefaultFadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { KEY_BACKSPACE } from '@ors/constants'
-import { applyTransaction, getError, mmToPx } from '@ors/helpers/Utils/Utils'
+import {
+  applyTransaction,
+  debounce,
+  getError,
+  // pxToNumber,
+} from '@ors/helpers/Utils/Utils'
 import useStore from '@ors/store'
 
 import Portal from '../Utils/Portal'
 
-let timer: any
+import 'svg2pdf.js'
 
-const debounce = (func: () => void) => {
-  if (timer) clearTimeout(timer)
-  timer = setTimeout(func, 200)
-}
-
-const papers = {
-  A4: 210,
+function pxToMm(px: number, DPI: number = 96) {
+  return (1 / DPI) * 25.4 * px
 }
 
 export default function Table(
@@ -104,8 +104,7 @@ export default function Table(
   const theme: ThemeSlice = useStore((state) => state.theme)
   const i18n: I18nSlice = useStore((state) => state.i18n)
   const [fullScreen, setFullScreen] = useState(false)
-  const [print, setPrint] = useState(false)
-  const [prinstStyle, setPrintStyle] = useState({})
+  const [print, setPrint] = useState<'solo' | boolean>(false)
 
   // baseColDef sets props common to all Columns
   const baseColDef: ColDef = useMemo(
@@ -255,37 +254,55 @@ export default function Table(
     }
   }
 
-  function onPrint() {
+  function agPrint() {
+    window.print()
+  }
+
+  async function onPrint(triggerPrint = true) {
     const table = tableEl.current
     if (table && print) {
-      const pinnedLeftHeaderContainer = table.querySelector<HTMLElement>(
-        '.ag-pinned-left-header',
-      )
-      const pinnedRightHeaderContainer = table.querySelector<HTMLElement>(
-        '.ag-pinned-right-header',
-      )
-      const headerContainer = table.querySelector<HTMLElement>(
-        '.ag-header-container',
-      )
-      const headerWidth =
-        (pinnedLeftHeaderContainer?.offsetWidth || 0) +
-        (pinnedRightHeaderContainer?.offsetWidth || 0) +
-        (headerContainer?.offsetWidth || 0)
+      const dpi = table.querySelector<HTMLElement>('dpi')?.offsetWidth || 96
+      const agLayoutPrint = table.querySelector<HTMLElement>('.ag-root-wrapper')
+      const agToolbar = table.querySelector<HTMLElement>('.ag-toolbar')
+      const tableWidth = pxToMm(agLayoutPrint?.offsetWidth || 0, dpi)
+      const tableHeight = pxToMm(agLayoutPrint?.offsetHeight || 0, dpi)
 
-      const scale =
-        (mmToPx(papers.A4) / (headerWidth + 1)) * window.devicePixelRatio
-      setPrintStyle({
-        transform: `scale(${scale})`,
-        transformOrigin: 'top left',
-      })
+      table.style.setProperty(
+        '--print-device-pixel-ratio',
+        `${window.devicePixelRatio}`,
+      )
+      table.style.setProperty('--ag-print-width', `${tableWidth}`)
+      table.style.setProperty('--ag-print-height', `${tableHeight}`)
+      table.style.setProperty('--ag-print-paper-width', '210')
+      table.style.setProperty('--print-unit', '1mm')
+      table.style.setProperty('--print-dpi', `${dpi}`)
+
       setTimeout(() => {
-        window.print()
+        const toolbarHeight = pxToMm(agToolbar?.offsetHeight || 0, dpi)
+        table.style.setProperty('--ag-print-toolbar-height', `${toolbarHeight}`)
+      }, 500)
+
+      if (triggerPrint) {
+        debounce(agPrint, 1000)
+      }
+    }
+  }
+
+  function onBeforePrint(event: any) {
+    if (!print) {
+      event.preventDefault()
+      setPrint(true)
+      setTimeout(() => {
+        onPrint(true)
       }, 1000)
     }
   }
 
   function onAfterPrint() {
     setPrint(false)
+    setTimeout(() => {
+      document.documentElement.setAttribute('data-printing', 'no')
+    }, 0)
   }
 
   useEffect(() => {
@@ -312,10 +329,12 @@ export default function Table(
   }, [errors])
 
   useEffect(() => {
+    window.addEventListener('beforeprint', onBeforePrint)
     window.addEventListener('afterprint', onAfterPrint)
 
     return () => {
       window.removeEventListener('afterprint', onAfterPrint)
+      window.removeEventListener('beforeprint', onBeforePrint)
     }
 
     /* eslint-disable-next-line */
@@ -327,7 +346,7 @@ export default function Table(
   )
 
   return (
-    <Portal active={print} domNode="print-content">
+    <Portal active={print === 'solo'} domNode="print-content">
       <FadeInOut
         className={cx('table-root flex flex-col', {
           'ag-full-screen': fullScreen,
@@ -335,227 +354,240 @@ export default function Table(
         })}
         ref={tableEl}
       >
+        <div className="dpi pointer-events-none absolute -z-absolute h-[1in] w-[1in] opacity-0" />
         {Toolbar && (
           <div className="ag-toolbar">
             <Toolbar
               enterFullScreen={() => setFullScreen(true)}
               exitFullScreen={() => setFullScreen(false)}
               fullScreen={fullScreen || print}
+              print={print}
               onPrint={() => {
-                document.documentElement.setAttribute('printing', 'yes')
-                setPrint(true)
+                document.documentElement.setAttribute(
+                  'data-printing',
+                  'ag-grid',
+                )
+                setPrint('solo')
               }}
               {...props}
             />
           </div>
         )}
-        <div
-          id={id || `table-${uniqueId}`}
-          className={cx(
-            'relative w-full',
-            {
-              'ag-theme-alpine': theme.mode !== 'dark',
-              'ag-theme-alpine-dark': theme.mode === 'dark',
-              'with-pagination': enablePagination,
-              'with-separators': withSeparators,
-            },
-            className,
-          )}
-          style={{
-            ...(tableBodyHeight > 0
-              ? {
-                  height: tableBodyHeight,
-                }
-              : {}),
-            ...style,
-            ...(print ? prinstStyle : {}),
-          }}
-        >
-          {loading &&
-            !(withSkeleton && results?.[0]?.rowType === 'skeleton') && (
-              <Loading className="bg-action-disabledBackground/5" />
+        <div className="ag-table">
+          <div
+            id={id || `table-${uniqueId}`}
+            className={cx(
+              'relative w-full',
+              {
+                '!m-0': print === 'solo',
+                'ag-theme-alpine': theme.mode !== 'dark',
+                'ag-theme-alpine-dark': theme.mode === 'dark',
+                'origin-top-left': print,
+                'with-pagination': enablePagination,
+                'with-separators': withSeparators,
+              },
+              className,
             )}
-          <AgGridReact
-            animateRows={false}
-            defaultColDef={{ ...baseColDef, ...defaultColDef }}
-            domLayout={computedDomLayout}
-            enableCellTextSelection={true}
-            enableRtl={i18n.dir === 'rtl'}
-            ensureDomOrder={true}
-            pagination={enablePagination}
-            paginationPageSize={pagination.rowsPerPage + collapsedRows.length}
-            pinnedBottomRowData={print ? [] : pinnedBottomRowData}
-            rowBuffer={rowBuffer}
-            rowHeight={rowHeight}
-            sortingOrder={['asc']}
-            stopEditingWhenCellsLoseFocus={true}
-            suppressCellFocus={true}
-            suppressColumnVirtualisation={true}
-            suppressDragLeaveHidesColumns={true}
-            suppressLoadingOverlay={true}
-            suppressMovableColumns={true}
-            suppressMultiSort={true}
-            suppressPaginationPanel={true}
-            suppressPropertyNamesCheck={true}
-            suppressRowClickSelection={true}
-            suppressRowHoverHighlight={true}
-            columnDefs={[
-              ...(columnDefs || []),
-              ...(withFluidEmptyColumn
-                ? [
-                    {
-                      category: 'expand',
-                      field: 'none',
-                      flex: 1,
-                      headerName: '',
-                    },
-                  ]
-                : []),
-            ]}
-            components={{
-              ...defaultComponents,
-              ...components,
-            }}
-            noRowsOverlayComponent={(props: any) => {
-              return (
-                <Typography id="no-rows" component="span">
-                  {props.label || 'No Rows To Show'}
-                </Typography>
-              )
-            }}
-            ref={(agGrid) => {
-              grid.current = agGrid
-              if (!agGrid && gridRef) {
-                gridRef.current = null
-              }
-              if (agGrid && gridRef) {
-                gridRef.current = agGrid
-                gridRef.current.paginationGoToPage = (
-                  page: number,
-                  triggerEvent = false,
-                ) => {
-                  handlePageChange(page, triggerEvent)
-                }
-                grid.current.onPrint = () => setPrint(true)
-                if (enableFullScreen) {
-                  gridRef.current.enterFullScreen = () => {
-                    setFullScreen(true)
+            style={{
+              ...(tableBodyHeight > 0
+                ? {
+                    height: tableBodyHeight,
                   }
-                  gridRef.current.exitFullScreen = () => {
-                    setFullScreen(false)
+                : {}),
+              ...style,
+            }}
+          >
+            {loading &&
+              !(withSkeleton && results?.[0]?.rowType === 'skeleton') && (
+                <Loading className="bg-action-disabledBackground/5" />
+              )}
+            <AgGridReact
+              animateRows={false}
+              defaultColDef={{ ...baseColDef, ...defaultColDef }}
+              domLayout={computedDomLayout}
+              enableCellTextSelection={true}
+              enableRtl={i18n.dir === 'rtl'}
+              ensureDomOrder={true}
+              pagination={enablePagination}
+              paginationPageSize={pagination.rowsPerPage + collapsedRows.length}
+              pinnedBottomRowData={print ? [] : pinnedBottomRowData}
+              rowBuffer={rowBuffer}
+              rowHeight={rowHeight}
+              sortingOrder={['asc']}
+              stopEditingWhenCellsLoseFocus={true}
+              suppressCellFocus={true}
+              suppressColumnVirtualisation={true}
+              suppressDragLeaveHidesColumns={true}
+              suppressLoadingOverlay={true}
+              suppressMovableColumns={true}
+              suppressMultiSort={true}
+              suppressPaginationPanel={true}
+              suppressPropertyNamesCheck={true}
+              suppressRowClickSelection={true}
+              suppressRowHoverHighlight={true}
+              columnDefs={[
+                ...(columnDefs || []),
+                ...(withFluidEmptyColumn
+                  ? [
+                      {
+                        category: 'expand',
+                        field: 'none',
+                        flex: 1,
+                        headerName: '',
+                      },
+                    ]
+                  : []),
+              ]}
+              components={{
+                ...defaultComponents,
+                ...components,
+              }}
+              noRowsOverlayComponent={(props: any) => {
+                return (
+                  <Typography id="no-rows" component="span">
+                    {props.label || 'No Rows To Show'}
+                  </Typography>
+                )
+              }}
+              ref={(agGrid) => {
+                grid.current = agGrid
+                if (!agGrid && gridRef) {
+                  gridRef.current = null
+                }
+                if (agGrid && gridRef) {
+                  gridRef.current = agGrid
+                  gridRef.current.paginationGoToPage = (
+                    page: number,
+                    triggerEvent = false,
+                  ) => {
+                    handlePageChange(page, triggerEvent)
                   }
-                }
-              }
-            }}
-            rowClassRules={{
-              'ag-row-control': (props) => props.data.rowType === 'control',
-              'ag-row-error': (props) => !!props.data.error,
-              'ag-row-group': (props) => props.data.rowType === 'group',
-              'ag-row-hashed': (props) => props.data.rowType === 'hashed',
-              'ag-row-sub-total': (props) => props.data.rowType === 'subtotal',
-              'ag-row-total': (props) => props.data.rowType === 'total',
-              ...rowClassRules,
-            }}
-            rowData={
-              print && results ? [...results, ...pinnedBottomRowData] : results
-            }
-            onCellKeyDown={(props: any) => {
-              const key = props.event.key
-              const { category, dataType, editable, field } = props.colDef
-              const { rowId } = props.data
-              const recordUsages = [...(props.data.record_usages || [])]
-              const isEditable = isFunction(editable)
-                ? editable(props)
-                : editable
-              if (isEditable && rowId && key === KEY_BACKSPACE) {
-                let value = null
-                const rowNode = props.api.getRowNode(rowId)
-                if (dataType === 'string') {
-                  value = ''
-                }
-                if (dataType === 'number') {
-                  value = 0
-                }
-                if (category === 'usage') {
-                  const usageId = props.colDef.id
-                  const index = findIndex(
-                    recordUsages,
-                    (item: any) => item.usage_id === usageId,
-                  )
-                  if (index > -1) {
-                    recordUsages.splice(index, 1, {
-                      ...recordUsages[index],
-                      quantity: 0,
-                    })
+                  grid.current.onPrint = () => {
+                    setPrint('solo')
+                  }
+                  if (enableFullScreen) {
+                    gridRef.current.enterFullScreen = () => {
+                      setFullScreen(true)
+                    }
+                    gridRef.current.exitFullScreen = () => {
+                      setFullScreen(false)
+                    }
                   }
                 }
-                const data = { ...rowNode.data, [field]: value }
-                applyTransaction(props.api, {
-                  update: [{ ...data, record_usages: recordUsages }],
-                })
-                onCellValueChanged({
-                  ...props,
-                  data,
-                  source: 'cellClear',
-                })
+              }}
+              rowClassRules={{
+                'ag-row-control': (props) => props.data.rowType === 'control',
+                'ag-row-error': (props) => !!props.data.error,
+                'ag-row-group': (props) => props.data.rowType === 'group',
+                'ag-row-hashed': (props) => props.data.rowType === 'hashed',
+                'ag-row-sub-total': (props) =>
+                  props.data.rowType === 'subtotal',
+                'ag-row-total': (props) => props.data.rowType === 'total',
+                ...rowClassRules,
+              }}
+              rowData={
+                print && results
+                  ? [...results, ...pinnedBottomRowData]
+                  : results
               }
-              onCellKeyDown(props)
-            }}
-            onCellValueChanged={(props) => {
-              onCellValueChanged(props)
-            }}
-            onColumnResized={(props) => {
-              debounce(updateOffsetHeight)
-              onColumnResized(props)
-            }}
-            onFirstDataRendered={(agGrid) => {
-              updateOffsetHeight()
-              handleErrors()
-              onFirstDataRendered(agGrid)
-            }}
-            onGridReady={(props) => {
-              updateOffsetHeight()
-              onGridReady(props)
-            }}
-            onGridSizeChanged={(props) => {
-              debounce(updateOffsetHeight)
-              onGridSizeChanged(props)
-            }}
-            onRowDataUpdated={(props) => {
-              onRowDataUpdated(props)
-            }}
-            {...rest}
-          />
-          {enablePagination && (
-            <TablePagination
-              className="pr-2"
-              component="div"
-              count={rowCount}
-              page={pagination.page}
-              rowsPerPage={pagination.rowsPerPage}
-              rowsPerPageOptions={[10, 20, 30, 40, 50]}
-              SelectProps={{
-                disabled: loading,
+              onCellKeyDown={(props: any) => {
+                const key = props.event.key
+                const { category, dataType, editable, field } = props.colDef
+                const { rowId } = props.data
+                const recordUsages = [...(props.data.record_usages || [])]
+                const isEditable = isFunction(editable)
+                  ? editable(props)
+                  : editable
+                if (isEditable && rowId && key === KEY_BACKSPACE) {
+                  let value = null
+                  const rowNode = props.api.getRowNode(rowId)
+                  if (dataType === 'string') {
+                    value = ''
+                  }
+                  if (dataType === 'number') {
+                    value = 0
+                  }
+                  if (category === 'usage') {
+                    const usageId = props.colDef.id
+                    const index = findIndex(
+                      recordUsages,
+                      (item: any) => item.usage_id === usageId,
+                    )
+                    if (index > -1) {
+                      recordUsages.splice(index, 1, {
+                        ...recordUsages[index],
+                        quantity: 0,
+                      })
+                    }
+                  }
+                  const data = { ...rowNode.data, [field]: value }
+                  applyTransaction(props.api, {
+                    update: [{ ...data, record_usages: recordUsages }],
+                  })
+                  onCellValueChanged({
+                    ...props,
+                    data,
+                    source: 'cellClear',
+                  })
+                }
+                onCellKeyDown(props)
               }}
-              backIconButtonProps={{
-                disabled: loading || pagination.page <= 0,
+              onCellValueChanged={(props) => {
+                onCellValueChanged(props)
               }}
-              nextIconButtonProps={{
-                disabled:
-                  loading ||
-                  pagination.page >=
-                    Math.ceil(rowCount / pagination.rowsPerPage) - 1,
+              onColumnResized={(props) => {
+                debounce(updateOffsetHeight)
+                onColumnResized(props)
               }}
-              onPageChange={(_, page) => {
-                handlePageChange(page)
+              onFirstDataRendered={(agGrid) => {
+                updateOffsetHeight()
+                handleErrors()
+                onFirstDataRendered(agGrid)
               }}
-              onRowsPerPageChange={(
-                event: React.ChangeEvent<HTMLInputElement>,
-              ) => {
-                handleRowsPerPageChange(event.target.value)
+              onGridReady={(props) => {
+                updateOffsetHeight()
+                onGridReady(props)
               }}
+              onGridSizeChanged={(props) => {
+                debounce(updateOffsetHeight)
+                onGridSizeChanged(props)
+              }}
+              onRowDataUpdated={(props) => {
+                onRowDataUpdated(props)
+              }}
+              {...rest}
             />
-          )}
+            {enablePagination && (
+              <TablePagination
+                className="pr-2"
+                component="div"
+                count={rowCount}
+                page={pagination.page}
+                rowsPerPage={pagination.rowsPerPage}
+                rowsPerPageOptions={[10, 20, 30, 40, 50]}
+                SelectProps={{
+                  disabled: loading,
+                }}
+                backIconButtonProps={{
+                  disabled: loading || pagination.page <= 0,
+                }}
+                nextIconButtonProps={{
+                  disabled:
+                    loading ||
+                    pagination.page >=
+                      Math.ceil(rowCount / pagination.rowsPerPage) - 1,
+                }}
+                onPageChange={(_, page) => {
+                  handlePageChange(page)
+                }}
+                onRowsPerPageChange={(
+                  event: React.ChangeEvent<HTMLInputElement>,
+                ) => {
+                  handleRowsPerPageChange(event.target.value)
+                }}
+              />
+            )}
+          </div>
         </div>
       </FadeInOut>
     </Portal>

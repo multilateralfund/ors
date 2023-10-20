@@ -15,6 +15,7 @@
 @import './components/ag-grid/_index.css';
 @import 'ag-grid-community/styles/ag-grid.css';
 @import 'ag-grid-community/styles/ag-theme-alpine.css';
+@import './print.css';
 
 @layer base {
   :root {
@@ -37,12 +38,6 @@
     @apply theme-light;
   }
 
-  :root[printing='yes'] .not-printable {
-    margin-left: -9999px;
-    pointer-events: none;
-    position: absolute;
-  }
-
   body {
     @apply h-full transition;
   }
@@ -50,9 +45,4 @@
   main {
     @apply relative;
   }
-}
-
-@page {
-  size: 210mm 297mm;
-  margin: 0;
 }

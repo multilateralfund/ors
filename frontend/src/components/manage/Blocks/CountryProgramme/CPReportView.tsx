@@ -9,10 +9,13 @@ import { filter } from 'lodash'
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
+import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 
 import { getViewSections, variants } from '.'
 
+import { AiFillFilePdf } from '@react-icons/all-files/ai/AiFillFilePdf'
 import { IoClose } from '@react-icons/all-files/io5/IoClose'
+import { IoDownloadOutline } from '@react-icons/all-files/io5/IoDownloadOutline'
 import { IoExpand } from '@react-icons/all-files/io5/IoExpand'
 
 function TabPanel(props: any) {
@@ -134,13 +137,14 @@ export default function CPReportView(props: {
               exitFullScreen,
               fullScreen,
               onPrint,
+              print,
             }: any) => {
               return (
                 <div
                   className={cx(
                     'flex items-center justify-between gap-x-4 py-2',
                     {
-                      'px-4': fullScreen,
+                      'px-4': fullScreen && !print,
                     },
                   )}
                 >
@@ -148,7 +152,20 @@ export default function CPReportView(props: {
                     {section.title}
                   </Typography>
                   <div>
-                    {!fullScreen && <button onClick={onPrint}>Print</button>}
+                    {!fullScreen && (
+                      <Dropdown
+                        color="primary"
+                        label={<IoDownloadOutline />}
+                        icon
+                      >
+                        <Dropdown.Item onClick={onPrint}>
+                          <div className="flex items-center gap-x-2">
+                            <AiFillFilePdf className="fill-red-700" size={24} />
+                            <span>PDF</span>
+                          </div>
+                        </Dropdown.Item>
+                      </Dropdown>
+                    )}
                     {section.allowFullScreen && !fullScreen && (
                       <IconButton
                         color="primary"

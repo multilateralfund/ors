@@ -220,11 +220,12 @@ export default function SectionBCreate(props: any) {
           exitFullScreen,
           fullScreen,
           onPrint,
+          print,
         }: any) => {
           return (
             <div
               className={cx('py-2', {
-                'px-4': fullScreen,
+                'px-4': fullScreen && !print,
               })}
             >
               <Typography className="mb-2" component="h2" variant="h6">

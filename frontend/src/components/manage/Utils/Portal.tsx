@@ -11,7 +11,7 @@ export default function Portal({
   children: React.ReactNode
   domNode?: DocumentFragment | Element | string
   key?: null | string
-}) {
+} & React.HTMLProps<HTMLDivElement>) {
   if (__SERVER__ || !domNode || !active) return children
   if (typeof domNode === 'string') {
     const element = document.getElementById(domNode)

@@ -3,6 +3,7 @@ import React from 'react'
 
 import { usePathname, useRouter } from 'next/navigation'
 
+import Print from '@ors/components/manage/Utils/Print'
 import Footer from '@ors/components/theme/Footer/AuthorizedFooter'
 import Header from '@ors/components/theme/Header/AuthorizedHeader'
 import useStore from '@ors/store'
@@ -27,13 +28,13 @@ export default function AuthorizedView({
   return (
     !!user && (
       <>
-        <div id="print-content" />
+        <Print />
         <Header />
-        <main className="not-printable grid-cols-[auto]">
+        <main className="grid-cols-[auto]">
           <div className="content grid grid-rows-[auto_1fr_auto]">
-            <div id="top-control" className="z-10" />
+            <div id="top-control" className="not-printable z-10" />
             <div className="page-content-wrapper">{children}</div>
-            <div id="bottom-control" className="z-10" />
+            <div id="bottom-control" className="not-printable z-10" />
           </div>
         </main>
         <Footer />

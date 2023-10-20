@@ -184,21 +184,23 @@ export default function SectionACreate(props: any) {
           }
         }}
       />
-      <Typography className="italic" variant="body2">
-        1. Edit by pressing double left-click or ENTER on a field.
-      </Typography>
-      <Typography className="italic" variant="body2">
-        2. Where the data involves a blend of two or more substances, the
-        quantities of individual components of controlled substances must be
-        indicated separately.
-      </Typography>
-      <Typography className="italic" variant="body2">
-        3. Indicate relevant controlled substances.
-      </Typography>
-      <Typography className="italic" variant="body2">
-        4. Provide explanation if total sector use and consumption
-        (import-export+production) is different (e.g, stockpiling).
-      </Typography>
+      <div className="not-printable">
+        <Typography className="italic" variant="body2">
+          1. Edit by pressing double left-click or ENTER on a field.
+        </Typography>
+        <Typography className="italic" variant="body2">
+          2. Where the data involves a blend of two or more substances, the
+          quantities of individual components of controlled substances must be
+          indicated separately.
+        </Typography>
+        <Typography className="italic" variant="body2">
+          3. Indicate relevant controlled substances.
+        </Typography>
+        <Typography className="italic" variant="body2">
+          4. Provide explanation if total sector use and consumption
+          (import-export+production) is different (e.g, stockpiling).
+        </Typography>
+      </div>
       {addSubstanceModal && (
         <Modal
           aria-labelledby="add-substance-modal-title"

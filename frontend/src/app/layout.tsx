@@ -114,6 +114,7 @@ export default async function RootLayout({
       lang={lang}
       {...(theme.value ? { 'data-theme': theme.value } : {})}
       data-layout={currentView?.layout}
+      data-printing="no"
       data-ssr="yes"
       dir={dir(lang)}
     >

@@ -2,6 +2,7 @@
 import type { ByLayout } from '@ors/config/Views'
 
 import React, { useEffect, useMemo } from 'react'
+import { browserName } from 'react-device-detect'
 
 import { usePathname } from 'next/navigation'
 import { SnackbarProvider } from 'notistack'
@@ -31,27 +32,12 @@ export default function View({ children }: { children: React.ReactNode }) {
     [view],
   )
 
-  function onBeforePrint() {
-    document.documentElement.setAttribute('printing', 'yes')
-  }
-
-  function onAfterPrint() {
-    document.documentElement.setAttribute('printing', 'no')
-  }
-
   useEffect(() => {
     if (localStorage.getItem('version') !== localStorageVersion) {
       localStorage.clear()
       localStorage.setItem('version', localStorageVersion)
     }
-
-    window.addEventListener('beforeprint', onBeforePrint)
-    window.addEventListener('afterprint', onAfterPrint)
-
-    return () => {
-      window.removeEventListener('beforeprint', onBeforePrint)
-      window.removeEventListener('afterprint', onAfterPrint)
-    }
+    document.documentElement.setAttribute('data-browser', browserName)
   }, [])
 
   useEffect(() => {
