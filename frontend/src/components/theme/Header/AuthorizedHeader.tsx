@@ -58,7 +58,7 @@ export default function Header() {
               <Logo />
             </UnstyledLink>
             <Typography
-              className="text-typography-secondary"
+              className="hidden text-typography-secondary md:block"
               component="p"
               variant="h1"
             >
