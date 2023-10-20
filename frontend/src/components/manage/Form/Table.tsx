@@ -34,8 +34,6 @@ import useStore from '@ors/store'
 
 import Portal from '../Utils/Portal'
 
-import 'svg2pdf.js'
-
 function pxToMm(px: number, DPI: number = 96) {
   return (1 / DPI) * 25.4 * px
 }
