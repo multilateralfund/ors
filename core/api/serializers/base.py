@@ -5,6 +5,7 @@ from core.models.blend import Blend
 from core.models.country_programme import CPReport
 from core.models.substance import Substance
 
+
 CP_GENERATION_CHEMICAL = "HFC-23"
 
 

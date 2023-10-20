@@ -3,8 +3,6 @@ from rest_framework import serializers
 from core.api.serializers.base import BaseCPWChemicalSerializer
 from core.models.country_programme import CPPrices
 
-# pylint: disable=W0223
-
 
 class CPPricesSerializer(BaseCPWChemicalSerializer):
     previous_year_price = serializers.DecimalField(

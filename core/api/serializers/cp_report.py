@@ -10,6 +10,8 @@ from core.models.country import Country
 from core.models.country_programme import CPReport
 from core.utils import IMPORT_DB_MAX_YEAR
 
+# pylint: disable=W0223
+
 
 class CPReportSerializer(serializers.ModelSerializer):
     country = serializers.StringRelatedField()
