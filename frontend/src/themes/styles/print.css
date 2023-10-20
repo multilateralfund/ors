@@ -56,10 +56,12 @@
     transform-origin: 0 0;
     width: calc(var(--ag-print-width) * var(--print-unit));
   }
+}
 
-  .ag-print.table-root .ag-table [class*='ag-theme-'] {
-    width: calc(var(--ag-print-width) * var(--print-unit));
-  }
+#next-app .ag-print.table-root .ag-table [class*='ag-theme-'] {
+  --ag-header-column-resize-handle-display: none;
+
+  width: calc(var(--ag-print-width) * var(--print-unit));
 }
 
 @media print {
