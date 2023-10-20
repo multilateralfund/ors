@@ -206,25 +206,8 @@ export default function CPReportCreate(props: {
         </Typography>
       </HeaderTitle>
       <form className="create-submission-form">
-        <div className="grid grid-cols-3 gap-x-4">
-          <Field
-            id="country"
-            name="country_id"
-            options={countries}
-            value={form.country?.id}
-            widget="autocomplete"
-            Input={{
-              error: !!errors.country_id,
-              helperText: errors.country_id?.general_error,
-              label: 'Country',
-            }}
-            onChange={(_: any, country: any) => {
-              setForm({ ...form, country })
-            }}
-          />
-        </div>
         <Tabs
-          className="scrollable mb-2"
+          className="scrollable mb-4"
           aria-label="create submission sections"
           scrollButtons="auto"
           value={currentIndex}
@@ -244,6 +227,23 @@ export default function CPReportCreate(props: {
             />
           ))}
         </Tabs>
+        <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2 lg:grid-cols-3">
+          <Field
+            id="country"
+            name="country_id"
+            options={countries}
+            value={form.country?.id}
+            widget="autocomplete"
+            Input={{
+              error: !!errors.country_id,
+              helperText: errors.country_id?.general_error,
+              label: 'Country',
+            }}
+            onChange={(_: any, country: any) => {
+              setForm({ ...form, country })
+            }}
+          />
+        </div>
         {createSections.map((section, index) => (
           <TabPanel
             key={section.panelId}
