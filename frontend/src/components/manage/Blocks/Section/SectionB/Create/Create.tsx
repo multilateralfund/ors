@@ -30,6 +30,7 @@ import { useSnackbar } from 'notistack'
 
 import Field from '@ors/components/manage/Form/Field'
 import TextWidget from '@ors/components/manage/Widgets/TextWidget'
+import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import api, { getResults } from '@ors/helpers/Api'
 import {
   applyTransaction,
@@ -42,7 +43,9 @@ import useStore from '@ors/store'
 
 import useGridOptions from './schema'
 
+import { AiFillFilePdf } from '@react-icons/all-files/ai/AiFillFilePdf'
 import { IoClose } from '@react-icons/all-files/io5/IoClose'
+import { IoDownloadOutline } from '@react-icons/all-files/io5/IoDownloadOutline'
 import { IoExpand } from '@react-icons/all-files/io5/IoExpand'
 import { IoRemoveCircle } from '@react-icons/all-files/io5/IoRemoveCircle'
 
@@ -222,6 +225,66 @@ export default function SectionBCreate(props: any) {
           onPrint,
           print,
         }: any) => {
+          return (
+            <div
+              className={cx('mb-2 flex flex-col', {
+                // 'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
+                //   fullScreen,
+                'px-4 pt-2': fullScreen && !print,
+              })}
+            >
+              <Typography className="mb-2" component="h2" variant="h6">
+                {section.title}
+              </Typography>
+              <div className="flex items-center justify-between gap-x-4">
+                <Button
+                  variant="contained"
+                  onClick={() => setCreateBlendModal(true)}
+                >
+                  Create blend
+                </Button>
+                <div>
+                  {!fullScreen && (
+                    <Dropdown
+                      color="primary"
+                      label={<IoDownloadOutline />}
+                      icon
+                    >
+                      <Dropdown.Item onClick={onPrint}>
+                        <div className="flex items-center gap-x-2">
+                          <AiFillFilePdf className="fill-red-700" size={24} />
+                          <span>PDF</span>
+                        </div>
+                      </Dropdown.Item>
+                    </Dropdown>
+                  )}
+                  {section.allowFullScreen && !fullScreen && (
+                    <IconButton
+                      color="primary"
+                      onClick={() => {
+                        enterFullScreen()
+                      }}
+                    >
+                      <IoExpand />
+                    </IconButton>
+                  )}
+                  {fullScreen && (
+                    <div>
+                      <IconButton
+                        className="exit-fullscreen not-printable p-2 text-primary"
+                        aria-label="exit fullscreen"
+                        onClick={() => {
+                          exitFullScreen()
+                        }}
+                      >
+                        <IoClose size={32} />
+                      </IconButton>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )
           return (
             <div
               className={cx('py-2', {

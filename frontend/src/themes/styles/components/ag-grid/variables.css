@@ -22,8 +22,8 @@
   --ag-header-background-color: theme(colors.gray-100);
   --ag-header-cell-hover-background-color: transparent;
   --ag-header-cell-moving-background-color: theme(colors.action-highlight);
-  --ag-header-column-resize-handle-color: theme(colors.primary);
-  --ag-header-column-resize-handle-display: none;
+  --ag-header-column-resize-handle-color: theme(colors.typography-disabled);
+  --ag-header-column-resize-handle-display: block;
   --ag-header-column-resize-handle-height: 30%;
   --ag-header-column-resize-handle-width: 2px;
   --ag-header-column-separator-color: var(--ag-border-color);

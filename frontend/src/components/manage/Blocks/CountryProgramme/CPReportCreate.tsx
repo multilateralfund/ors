@@ -267,17 +267,21 @@ export default function CPReportCreate(props: {
               }: any) => {
                 return (
                   <div
-                    className={cx(
-                      'flex items-center justify-between gap-x-4 py-2',
-                      {
-                        'px-4': fullScreen && !print,
-                      },
-                    )}
+                    className={cx('mb-2 flex', {
+                      'flex-col': !fullScreen,
+                      'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
+                        fullScreen,
+                      'px-4': fullScreen && !print,
+                    })}
                   >
-                    <Typography component="h2" variant="h6">
+                    <Typography
+                      className={cx({ 'mb-4 md:mb-0': fullScreen })}
+                      component="h2"
+                      variant="h6"
+                    >
                       {section.title}
                     </Typography>
-                    <div className="flex items-center">
+                    <div className="flex items-center justify-end">
                       {!fullScreen && (
                         <Dropdown
                           color="primary"
@@ -306,9 +310,9 @@ export default function CPReportCreate(props: {
                         </IconButton>
                       )}
                       {fullScreen && (
-                        <div className="not-printable">
+                        <div>
                           <IconButton
-                            className="exit-fullscreen p-2 text-primary"
+                            className="exit-fullscreen not-printable p-2 text-primary"
                             aria-label="exit fullscreen"
                             onClick={() => {
                               exitFullScreen()

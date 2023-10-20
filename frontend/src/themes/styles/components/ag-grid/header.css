@@ -4,6 +4,10 @@
     justify-content: center;
   }
 
+  .ag-header-group-cell .ag-header-cell-resize::after {
+    display: none;
+  }
+
   .ag-header-cell.ag-text-left .ag-header-cell-label,
   .ag-header-group-cell.ag-text-left,
   .ag-header-cell.ag-text-left .ag-header-cell-comp-wrapper {

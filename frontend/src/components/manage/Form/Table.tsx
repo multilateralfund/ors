@@ -414,7 +414,7 @@ export default function Table(
               sortingOrder={['asc']}
               stopEditingWhenCellsLoseFocus={true}
               suppressCellFocus={true}
-              suppressColumnVirtualisation={true}
+              suppressColumnMoveAnimation={true}
               suppressDragLeaveHidesColumns={true}
               suppressLoadingOverlay={true}
               suppressMovableColumns={true}
