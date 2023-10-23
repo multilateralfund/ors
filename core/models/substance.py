@@ -49,10 +49,10 @@ class Substance(models.Model):
     is_captured = models.BooleanField(default=False)
     ozone_id = models.IntegerField(null=True, blank=True)
     displayed_in_all = models.BooleanField(
-        default=True, help_text="Controls all-years visibility."
+        default=False, help_text="Controls all-years visibility."
     )
     displayed_in_latest_format = models.BooleanField(
-        default=True, help_text="Controls current-year visibility."
+        default=False, help_text="Controls current-year visibility."
     )
     group = models.ForeignKey(
         "Group",

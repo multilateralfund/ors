@@ -50,21 +50,39 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
             .all()
         )
 
-    def _set_chemical_records_dict(
-        self, chemical_list, chemical_dict, chemical_type, section, cp_report_id
+    def _set_chemical_items_dict(
+        self,
+        item_cls,
+        chemical_dict,
+        chemical_type,
+        section,
+        cp_report_id,
     ):
         """
         Set chemical records dict
 
-
-        @param chemical_list: list of substances or blends
         @param chemical_dict: dict of substances or blends ( key: id, value: chemical record)
         @param chemical_type: str - "substance" or "blend"
         @param section: str - section name
+        @param cp_report_id: int - country programme report id
 
         @return: dict of chemical records
             structure: {chemical_id: CPRecord object}
         """
+        # get all substances or blends that are displayed in all formats
+        chemical_list = []
+        if chemical_type == "substance":
+            annexes = SECTION_ANNEX_MAPPING.get(section, [])
+            chemical_list = (
+                Substance.objects.filter(displayed_in_all=True)
+                .select_related("group")
+                .filter(group__annex__in=annexes)
+                .all()
+            )
+        elif chemical_type == "blend" and section in ["B", "C"]:
+            chemical_list = Blend.objects.filter(displayed_in_all=True).all()
+
+        # set the chemical dict
         for chemical in chemical_list:
             if chemical.id not in chemical_dict:
                 cp_record_data = {
@@ -73,18 +91,53 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
                     if chemical_type == "substance"
                     else None,
                     "blend_id": chemical.id if chemical_type == "blend" else None,
-                    "section": section,
                     "id": 0,
                 }
-                chemical_dict[chemical.id] = CPRecord(**cp_record_data)
+                if section in ["A", "B"]:
+                    cp_record_data["section"] = section
+                chemical_dict[chemical.id] = item_cls(**cp_record_data)
 
         return chemical_dict
+
+    def _get_displayed_items(self, item_cls, cp_report_id, section, existing_items):
+        """
+        Returns a list of ItemCld objects for the given section and cp_report_id
+         -> if there is no record for a substance or blend that is displayed in all formats
+                then append a new ItemCls object to the list with the substance or blend
+                and the cp_report_id
+
+        @param item_cls: ItemCls class (CPRecord / CPPrices)
+        @param cp_report_id: int - country programme report id
+        @param section: str - section name
+        @param existing_items: list of existing ItemCls objects
+
+        @return: final list of ItemCls objects
+        """
+        subs_rec_dict = {
+            item.substance_id: item for item in existing_items if item.substance
+        }
+        blends_rec_dict = {item.blend_id: item for item in existing_items if item.blend}
+
+        # get all substances and blends
+        substances_dict = self._set_chemical_items_dict(
+            item_cls, subs_rec_dict, "substance", section, cp_report_id
+        )
+        blends_dict = self._set_chemical_items_dict(
+            item_cls, blends_rec_dict, "blend", section, cp_report_id
+        )
+
+        final_list = list(substances_dict.values()) + list(blends_dict.values())
+        final_list.sort(
+            key=lambda x: (x.substance.group.name, x.substance.name)
+            if x.substance
+            else ("zzzzz", x.blend.name)
+        )
+
+        return final_list
 
     def _get_displayed_records(self, cp_report_id, section):
         """
         Returns a list of CPRecord objects for the given section and cp_report_id
-        -> if there is no record for a substance or blend that is displayed in all formats
-             then append a new CPRecord object to the list with the substance or blend
 
         @param cp_report_id: int - country programme report id
         @param section: str - section name
@@ -93,37 +146,8 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
         """
 
         exist_records = self._get_cp_record(cp_report_id, section)
-        subs_rec_dict = {
-            record.substance_id: record for record in exist_records if record.substance
-        }
-        blends_rec_dict = {
-            record.blend_id: record for record in exist_records if record.blend
-        }
-
-        # get all substances and blends
-        annexes = SECTION_ANNEX_MAPPING.get(section, [])
-        substances = (
-            Substance.objects.filter(displayed_in_all=True)
-            .select_related("group")
-            .filter(group__annex__in=annexes)
-            .all()
-        )
-        blends = []
-        if section == "B":
-            blends = Blend.objects.filter(displayed_in_all=True).all()
-
-        substances_dict = self._set_chemical_records_dict(
-            substances, subs_rec_dict, "substance", section, cp_report_id
-        )
-        blends_dict = self._set_chemical_records_dict(
-            blends, blends_rec_dict, "blend", section, cp_report_id
-        )
-
-        final_list = list(substances_dict.values()) + list(blends_dict.values())
-        final_list.sort(
-            key=lambda x: (x.substance.group.name, x.substance.name)
-            if x.substance
-            else ("zzzzz", x.blend.name)
+        final_list = self._get_displayed_items(
+            CPRecord, cp_report_id, section, exist_records
         )
 
         return final_list
@@ -143,16 +167,17 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
         return cls.objects.filter(country_programme_report=cp_report_id).all()
 
     def _get_cp_prices(self, cp_report_id):
-        return (
+        exist_records = (
             CPPrices.objects.select_related("substance__group", "blend")
+            .prefetch_related("blend__components")
             .filter(country_programme_report=cp_report_id)
-            .order_by(
-                "substance__group__name",
-                "substance__name",
-                "blend__components",
-            )
             .all()
         )
+        final_list = self._get_displayed_items(
+            CPPrices, cp_report_id, "C", exist_records
+        )
+
+        return final_list
 
     def _get_new_cp_records(self, cp_report):
         section_a = self._get_displayed_records(cp_report.id, "A")

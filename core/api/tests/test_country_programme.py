@@ -527,7 +527,7 @@ class TestCPRecordList(BaseTest):
         assert len(response.data["section_b"]) == 2
         assert response.data["section_b"][0]["chemical_name"] == blend.name
         assert len(response.data["section_b"][0]["record_usages"]) == 3
-        assert len(response.data["section_c"]) == 2
+        assert len(response.data["section_c"]) == 3
         assert len(response.data["section_d"]) == 1
         assert response.data["section_d"][0]["chemical_name"] == "HFC-23"
         assert len(response.data["section_e"]) == 2
