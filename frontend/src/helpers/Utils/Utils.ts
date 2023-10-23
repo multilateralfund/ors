@@ -43,9 +43,9 @@ export function isInViewport(element: Element) {
   )
 }
 
-export function debounce(func: any, wait: number = 300) {
+export function debounce(func: any, wait: number = 300, id?: string) {
   if (!isFunction(func)) return
-  const name = func.name || 'generic'
+  const name = id || func.name || 'generic'
   if (timer[name]) clearTimeout(timer[name])
   timer[name] = setTimeout(func, wait)
 }
@@ -55,13 +55,13 @@ export function pendingWorkers(name: string) {
 }
 
 export function scrollToElement(
-  id: string,
-  callback: any,
+  selectors: string,
+  callback?: any,
   wait: number = 0,
   offset: number = 16,
 ) {
   setTimeout(() => {
-    const el = document.querySelector(id)
+    const el = document.querySelector(selectors)
     if (!el) return
     const visible = isInViewport(el)
     if (visible) {

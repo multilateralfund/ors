@@ -2,6 +2,15 @@ import type { Language } from '@ors/types/locales'
 import type { SliceData } from '@ors/types/primitives'
 import type { DataType } from '@ors/types/primitives'
 
+export interface CacheSlice {
+  data: {
+    [key: string]: any
+  }
+  getCache: (id: string) => any
+  removeCache: (id: string) => void
+  setCache: (id: string, data: any) => void
+}
+
 export interface CPReportsSlice {
   blends: SliceData
   substances: SliceData
@@ -51,7 +60,7 @@ export interface CommonSlice {
 }
 
 export type StoreState = {
-  cache: { [key: string]: any }
+  cache: CacheSlice
   common: CommonSlice
   connection: null | string
   cp_reports: CPReportsSlice
@@ -63,7 +72,7 @@ export type StoreState = {
 }
 
 export type InitialStoreState = {
-  cache?: { [key: string]: any }
+  cache?: Partial<CacheSlice>
   common?: CommonSlice
   connection?: null | string
   cp_reports?: Partial<CPReportsSlice>

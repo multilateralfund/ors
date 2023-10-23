@@ -22,6 +22,7 @@ import IconButton from '@ors/components/ui/IconButton/IconButton'
 import Link from '@ors/components/ui/Link/Link'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import { getResults } from '@ors/helpers'
+import { scrollToElement } from '@ors/helpers/Utils/Utils'
 import useApi from '@ors/hooks/useApi'
 import useStore from '@ors/store'
 
@@ -89,6 +90,7 @@ function Item({ item, showCountry, showYear }: any) {
 }
 
 function GeneralSection(props: SectionProps) {
+  const shouldScroll = useRef(false)
   const listing = useRef<any>()
   const countries = useStore((state) => state.common.countries.data)
   const countriesById = new Map<number, any>(
@@ -106,6 +108,13 @@ function GeneralSection(props: SectionProps) {
   const orderField =
     groupBy === 'country' ? 'country__name,year' : 'year,country__name'
   const [apiSettings, setApiSettings] = useState({
+    onSuccess: () => {
+      if (shouldScroll.current) {
+        scrollToElement('#cp-listing-sections')
+      } else {
+        shouldScroll.current = true
+      }
+    },
     options: {
       params: {
         country_id: filters.country.join(','),
@@ -117,6 +126,7 @@ function GeneralSection(props: SectionProps) {
       },
     },
     path: 'api/country-programme/reports/',
+    withStoreCache: true,
   })
 
   const { data, loading } = useApi(apiSettings)
@@ -343,6 +353,7 @@ function GeneralSection(props: SectionProps) {
 }
 
 function CountrySection(props: SectionProps) {
+  const shouldScroll = useRef(false)
   const { setFilters } = props
   const [pagination, setPagination] = useState({
     page: 1,
@@ -351,12 +362,20 @@ function CountrySection(props: SectionProps) {
   const [ordering, setOrdering] = useState<'asc' | 'desc'>('asc')
   const countries = useStore((state) => state.common.countries.data)
   const [apiSettings, setApiSettings] = useState({
+    onSuccess: () => {
+      if (shouldScroll.current) {
+        scrollToElement('#cp-listing-sections')
+      } else {
+        shouldScroll.current = true
+      }
+    },
     options: {
       params: {
         limit: PER_PAGE_COUNTRY,
         offset: 0,
         ordering: 'asc',
       },
+      withStoreCache: true,
     },
     path: 'api/country-programme/reports-by-country/',
   })
@@ -378,7 +397,7 @@ function CountrySection(props: SectionProps) {
 
   return (
     <>
-      <div className="mb-4 flex justify-between gap-4">
+      <div id="country-section" className="mb-4 flex justify-between gap-4">
         <Field
           FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
           getOptionLabel={(option: any) => option?.name}
@@ -505,6 +524,7 @@ function YearSection(props: SectionProps) {
       },
     },
     path: 'api/country-programme/reports-by-year/',
+    withStoreCache: true,
   })
   function handleParamsChange(newParams: { [key: string]: any }) {
     setApiSettings((prevApiSettings) => ({
@@ -734,7 +754,7 @@ export default function CPListing() {
           New submission
         </Link>
       </div>
-      <Box>
+      <Box id="cp-listing-sections">
         {sections.map((section, index) => (
           <SectionPanel
             key={section.id}
