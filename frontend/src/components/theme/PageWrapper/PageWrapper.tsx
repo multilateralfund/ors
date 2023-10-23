@@ -19,7 +19,7 @@ export default function PageWrapper({
     <FadeInOut
       className={cx(
         'page-content container relative',
-        { 'h-fit': !fill, 'h-full': !!fill, 'mb-40 mt-12': defaultSpacing },
+        { 'h-fit': !fill, 'h-full': !!fill, 'mb-40 mt-8': defaultSpacing },
         className,
       )}
       {...rest}

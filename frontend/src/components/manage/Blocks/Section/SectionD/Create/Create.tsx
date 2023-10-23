@@ -19,7 +19,6 @@ export default function SectionDCreate(props: any) {
         {...TableProps}
         className="mb-4"
         columnDefs={gridOptions.columnDefs}
-        domLayout="normal"
         gridRef={grid}
         rowData={initialRowData}
         defaultColDef={{

@@ -1,0 +1,108 @@
+@layer base {
+  :root[data-printing]:not([data-printing='no']) .not-printable {
+    margin-left: -9999px;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  :root[data-printing]:not([data-printing='no']) {
+    --print-dpi: 96;
+    --print-unit: '1mm';
+    --print-scale: 1;
+    --print-margin-x: 16px;
+    --print-margin-y: 0px;
+    --print-device-pixel-ratio: 1.5;
+
+    &[data-browser='Chrome'],
+    &[data-browser='Edge'],
+    &[data-browser='Opera'] {
+      --print-scale: 1.5;
+    }
+
+    #footer {
+      margin-left: -9999px;
+      pointer-events: none;
+      position: absolute;
+    }
+  }
+
+  :root[data-printing='ag-grid'] {
+    #header,
+    main {
+      margin-left: -9999px;
+      pointer-events: none;
+      position: absolute;
+    }
+  }
+
+  .ag-print.table-root {
+    --ag-paper-width: var(--ag-print-paper-width, 210);
+    --ag-scale: (
+      var(--print-scale) * var(--ag-paper-width) / var(--ag-print-width)
+    );
+
+    height: calc(
+      (
+          var(--ag-print-height) * var(--ag-scale) +
+            var(--ag-print-toolbar-height)
+        ) * var(--print-unit)
+    );
+    width: calc(var(--ag-print-width) * var(--ag-scale) * var(--print-unit));
+  }
+
+  .ag-print.table-root .ag-table {
+    height: calc(var(--ag-print-height) * var(--print-unit));
+    transform: scale(calc(var(--ag-scale)));
+    transform-origin: 0 0;
+    width: calc(var(--ag-print-width) * var(--print-unit));
+  }
+}
+
+#next-app .ag-print.table-root .ag-table [class*='ag-theme-'] {
+  --ag-header-column-resize-handle-display: none;
+
+  width: calc(var(--ag-print-width) * var(--print-unit));
+}
+
+@media print {
+  @page {
+    size: 210mm 297mm;
+    margin: 0;
+  }
+}
+
+/* @media print and (min-width: 148mm) {
+  :root {
+    --paper-width: 148mm;
+  }
+}
+
+@media print and (min-width: 210mm) {
+  :root {
+    --paper-width: 210mm;
+  }
+}
+
+@media print and (min-width: 297mm) {
+  :root {
+    --paper-width: 297mm;
+  }
+}
+
+@media print and (min-width: 420mm) {
+  :root {
+    --paper-width: 420mm;
+  }
+}
+
+@media print and (min-width: 420mm) {
+  :root {
+    --paper-width: 420mm;
+  }
+}
+
+@media print and (min-width: 841mm) {
+  :root {
+    --paper-width: 841mm;
+  }
+} */

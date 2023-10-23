@@ -1,9 +1,14 @@
 'use client'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useEffect, useId, useRef } from 'react'
 
-import { Button, Menu, MenuItem } from '@mui/material'
-import cx from 'classnames'
+import {
+  ButtonProps,
+  Menu,
+  MenuItem,
+  Button as MuiButton,
+  IconButton as MuiIconButton,
+} from '@mui/material'
 import { isFunction } from 'lodash'
 
 const DropdownContext = React.createContext({ handleClose: () => {} })
@@ -12,13 +17,16 @@ export default function Dropdown({
   id,
   children,
   className,
+  color,
+  icon,
   label,
 }: {
   children: React.ReactNode
   className?: string
+  icon?: boolean
   id?: string
   label: ((props?: any) => React.ReactElement) | React.ReactNode
-}) {
+} & ButtonProps) {
   const uniqueId = useId()
   const buttonRef = useRef<any>()
   const menuRef = useRef<any>()
@@ -47,13 +55,17 @@ export default function Dropdown({
     }
   }, [menuId])
 
+  const Button = useMemo(() => (icon ? MuiIconButton : MuiButton), [icon])
+
   return (
     <DropdownContext.Provider value={{ handleClose }}>
+      {/* @ts-ignore */}
       <Button
-        className={cx('text-base', className)}
+        className={className}
         aria-controls={open ? menuId : undefined}
         aria-expanded={open ? 'true' : undefined}
         aria-haspopup="true"
+        color={color}
         ref={buttonRef}
         onClick={handleClick}
       >

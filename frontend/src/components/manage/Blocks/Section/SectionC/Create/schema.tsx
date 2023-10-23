@@ -65,6 +65,7 @@ function useGridOptions(props: {
           headerClass: 'ag-text-left',
           headerName: 'Substance',
           ...colDefById['display_name'],
+          minWidth: 160,
         },
         {
           aggFunc: 'sumTotal',

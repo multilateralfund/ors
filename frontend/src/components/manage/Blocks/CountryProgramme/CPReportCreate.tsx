@@ -25,6 +25,7 @@ import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Portal from '@ors/components/manage/Utils/Portal'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
+import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
 import api, { getResults } from '@ors/helpers/Api'
 import useMakeClassInstance from '@ors/hooks/useMakeClassInstance'
@@ -39,7 +40,9 @@ import useStore from '@ors/store'
 
 import { createSections } from '.'
 
+import { AiFillFilePdf } from '@react-icons/all-files/ai/AiFillFilePdf'
 import { IoClose } from '@react-icons/all-files/io5/IoClose'
+import { IoDownloadOutline } from '@react-icons/all-files/io5/IoDownloadOutline'
 import { IoExpand } from '@react-icons/all-files/io5/IoExpand'
 
 function TabPanel(props: any) {
@@ -203,25 +206,8 @@ export default function CPReportCreate(props: {
         </Typography>
       </HeaderTitle>
       <form className="create-submission-form">
-        <div className="grid grid-cols-3 gap-x-4">
-          <Field
-            id="country"
-            name="country_id"
-            options={countries}
-            value={form.country?.id}
-            widget="autocomplete"
-            Input={{
-              error: !!errors.country_id,
-              helperText: errors.country_id?.general_error,
-              label: 'Country',
-            }}
-            onChange={(_: any, country: any) => {
-              setForm({ ...form, country })
-            }}
-          />
-        </div>
         <Tabs
-          className="scrollable mb-2"
+          className="scrollable mb-4"
           aria-label="create submission sections"
           scrollButtons="auto"
           value={currentIndex}
@@ -241,6 +227,23 @@ export default function CPReportCreate(props: {
             />
           ))}
         </Tabs>
+        <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2 lg:grid-cols-3">
+          <Field
+            id="country"
+            name="country_id"
+            options={countries}
+            value={form.country?.id}
+            widget="autocomplete"
+            Input={{
+              error: !!errors.country_id,
+              helperText: errors.country_id?.general_error,
+              label: 'Country',
+            }}
+            onChange={(_: any, country: any) => {
+              setForm({ ...form, country })
+            }}
+          />
+        </div>
         {createSections.map((section, index) => (
           <TabPanel
             key={section.panelId}
@@ -258,22 +261,45 @@ export default function CPReportCreate(props: {
               Toolbar: ({
                 enterFullScreen,
                 exitFullScreen,
+                onPrint,
+                print,
                 fullScreen,
               }: any) => {
                 return (
                   <div
-                    className={cx(
-                      'flex items-center justify-between gap-x-4 py-2',
-                      {
-                        'px-4': fullScreen,
-                      },
-                    )}
+                    className={cx('mb-2 flex', {
+                      'flex-col': !fullScreen,
+                      'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
+                        fullScreen,
+                      'px-4': fullScreen && !print,
+                    })}
                   >
-                    <Typography component="h2" variant="h6">
+                    <Typography
+                      className={cx({ 'mb-4 md:mb-0': fullScreen })}
+                      component="h2"
+                      variant="h6"
+                    >
                       {section.title}
                     </Typography>
-                    {section.allowFullScreen && !fullScreen && (
-                      <div>
+                    <div className="flex items-center justify-end">
+                      {!fullScreen && (
+                        <Dropdown
+                          color="primary"
+                          label={<IoDownloadOutline />}
+                          icon
+                        >
+                          <Dropdown.Item onClick={onPrint}>
+                            <div className="flex items-center gap-x-2">
+                              <AiFillFilePdf
+                                className="fill-red-700"
+                                size={24}
+                              />
+                              <span>PDF</span>
+                            </div>
+                          </Dropdown.Item>
+                        </Dropdown>
+                      )}
+                      {section.allowFullScreen && !fullScreen && (
                         <IconButton
                           color="primary"
                           onClick={() => {
@@ -282,21 +308,21 @@ export default function CPReportCreate(props: {
                         >
                           <IoExpand />
                         </IconButton>
-                      </div>
-                    )}
-                    {fullScreen && (
-                      <div>
-                        <IconButton
-                          className="exit-fullscreen p-2 text-primary"
-                          aria-label="exit fullscreen"
-                          onClick={() => {
-                            exitFullScreen()
-                          }}
-                        >
-                          <IoClose size={32} />
-                        </IconButton>
-                      </div>
-                    )}
+                      )}
+                      {fullScreen && (
+                        <div>
+                          <IconButton
+                            className="exit-fullscreen not-printable p-2 text-primary"
+                            aria-label="exit fullscreen"
+                            onClick={() => {
+                              exitFullScreen()
+                            }}
+                          >
+                            <IoClose size={32} />
+                          </IconButton>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )
               },

@@ -13,13 +13,13 @@ from core.api.views.chemicals import (
     BlendsListView,
     SubstancesListView,
 )
-from core.api.views.country_programme import (
-    CPRecordListView,
+from core.api.views.cp_reports import (
     CPReportView,
     CPReportGroupByYearView,
     CPReportGroupByCountryView,
-    EmptyFormView,
 )
+from core.api.views.cp_records import CPRecordListView
+from core.api.views.cp_report_empty_form import EmptyFormView
 from core.api.views.projects import (
     ProjectOdsOdpViewSet,
     ProjectViewSet,
