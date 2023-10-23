@@ -218,7 +218,7 @@ class CPReportGroupByYearView(generics.ListAPIView):
 class CPReportGroupByCountryView(CPReportGroupByYearView):
     group_by = "country__name"
     group_pk = "country__id"
-    order_by = "year"
+    order_by = "-year"
 
     @staticmethod
     def get_group(obj):

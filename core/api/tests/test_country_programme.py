@@ -156,9 +156,9 @@ class TestCPReportListGroupByCountry(BaseTest):
         assert len(response.data) == 3
         assert response.data[0]["group"] == "Bulgaria"
         assert [report["year"] for report in response.data[0]["reports"]] == [
-            2010,
-            2011,
             2012,
+            2011,
+            2010,
         ]
 
     def test_get_cp_report_list_order(self, user, _setup_cp_report_list):
@@ -169,9 +169,9 @@ class TestCPReportListGroupByCountry(BaseTest):
         assert len(response.data) == 3
         assert response.data[0]["group"] == "Romania"
         assert [report["year"] for report in response.data[0]["reports"]] == [
-            2010,
-            2011,
             2012,
+            2011,
+            2010,
         ]
 
 
