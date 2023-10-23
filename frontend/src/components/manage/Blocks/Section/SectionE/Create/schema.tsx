@@ -70,6 +70,7 @@ function useGridOptions(props: {
           headerClass: 'ag-text-left',
           headerName: 'Facility name or identifier',
           ...colDefById['facility'],
+          minWidth: 160,
         },
         {
           aggFunc: 'sumTotal',

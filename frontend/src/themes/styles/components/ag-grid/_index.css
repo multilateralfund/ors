@@ -115,18 +115,23 @@
   order: 7;
 }
 
-#next-app .ag-full-screen {
-  @apply z-20;
+#next-app .ag-full-screen,
+#next-app .ag-hide-print {
+  @apply z-50;
 
   position: fixed;
-  width: 100vw;
+  width: 100vw !important;
   height: 100vh !important;
   top: 0;
   left: 0;
   background-color: theme(colors.mui-box-background);
-  border: 1px solid theme(colors.mui-box-border);
 }
 
-#next-app .ag-full-screen [class*='ag-theme-'] {
+#next-app .ag-full-screen [class*='ag-theme-'],
+#next-app .ag-full-screen .ag-table {
   @apply m-0 !h-full;
 }
+
+/* #next-app .ag-layout-print {
+  width: 100%;
+} */

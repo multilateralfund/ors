@@ -1,7 +1,11 @@
-:root[data-layout*='document'] #next-app {
-  @apply grid h-full grid-rows-[auto_1fr];
+:root[data-layout='authorized_document'] #next-app {
+  @apply grid h-full grid-rows-[auto_auto_1fr_auto];
 }
 
-:root[data-layout*='document'] main {
+:root[data-layout='document'] #next-app {
+  @apply grid h-full grid-rows-[auto_1fr_auto];
+}
+
+:root[data-layout='authorized_document'] main {
   @apply grid;
 }

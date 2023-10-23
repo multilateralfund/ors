@@ -15,6 +15,7 @@
 @import './components/ag-grid/_index.css';
 @import 'ag-grid-community/styles/ag-grid.css';
 @import 'ag-grid-community/styles/ag-theme-alpine.css';
+@import './print.css';
 
 @layer base {
   :root {
@@ -43,18 +44,5 @@
 
   main {
     @apply relative;
-  }
-
-  .sidebar::before {
-    content: '';
-    background-color: rgb(0 0 0 / 40%);
-    height: 100%;
-    display: block;
-    position: absolute;
-    top: 2rem;
-    left: calc(100% + 1rem);
-    margin-left: -1rem;
-    margin-top: -2rem;
-    width: 100vw;
   }
 }

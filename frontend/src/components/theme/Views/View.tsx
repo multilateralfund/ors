@@ -2,6 +2,7 @@
 import type { ByLayout } from '@ors/config/Views'
 
 import React, { useEffect, useMemo } from 'react'
+import { browserName } from 'react-device-detect'
 
 import { usePathname } from 'next/navigation'
 import { SnackbarProvider } from 'notistack'
@@ -36,6 +37,7 @@ export default function View({ children }: { children: React.ReactNode }) {
       localStorage.clear()
       localStorage.setItem('version', localStorageVersion)
     }
+    document.documentElement.setAttribute('data-browser', browserName)
   }, [])
 
   useEffect(() => {
