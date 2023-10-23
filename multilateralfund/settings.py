@@ -193,7 +193,7 @@ MIN_VALID_YEAR = 1985
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 
 CONSTANCE_CONFIG = {
-    "TEST_CONST": (12, "Just for test"),
+    "CP_NR_REPORTS": (9, "Number of reports to display in the country programme page"),
 }
 
 # Logging

@@ -167,8 +167,7 @@ async function api(
   }
 
   try {
-    const cachedFetcher = fetcher
-    const response = await cachedFetcher()
+    const response = await fetcher()
     const receiveResponseTime = delay ? new Date().getTime() : 0
     const responseTimeMs = receiveResponseTime - sendRequestTime
     // Delay response time

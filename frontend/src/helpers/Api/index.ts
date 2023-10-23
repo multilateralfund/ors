@@ -4,9 +4,12 @@ import hash from 'object-hash'
 import { removeTrailingSlash } from '@ors/helpers/Url/Url'
 import { getStore } from '@ors/store'
 
+import { debounce } from '../Utils/Utils'
 import defaultApi, { Api } from './Api'
 
-export { fetcher, formatApiUrl, getResults } from './Api'
+export { fetcher as defaultFetcher, formatApiUrl, getResults } from './Api'
+
+const REMOVE_CACHE_TIMEOUT = 300000 // ms
 
 async function api(
   path: Api['path'],
@@ -20,6 +23,13 @@ async function api(
   const id = withStoreCache ? hash({ options, path }) : ''
 
   if (withStoreCache && storeState?.cache.data[id]) {
+    debounce(
+      () => {
+        storeState.cache.removeCache(id)
+      },
+      REMOVE_CACHE_TIMEOUT,
+      `remove_cache_${id}`,
+    )
     return storeState.cache.data[id]
   }
 
@@ -66,8 +76,15 @@ async function api(
   async function handleResponse(response: any) {
     try {
       const data = await response.json()
-      if (withStoreCache) {
-        storeState?.cache.setCache(id, data)
+      if (withStoreCache && storeState) {
+        debounce(
+          () => {
+            storeState.cache.removeCache(id)
+          },
+          REMOVE_CACHE_TIMEOUT,
+          `remove_cache_${id}`,
+        )
+        storeState.cache.setCache(id, data)
       }
       return data
     } catch {
@@ -79,6 +96,39 @@ async function api(
   }
 
   return defaultApi(path, options, throwError, handleResponse, handleError)
+}
+
+export async function fetcher({
+  onError = () => {},
+  onPending = () => {},
+  onSuccess = () => {},
+  onSuccessNoCatch = () => {},
+  options,
+  path,
+  throwError,
+}: {
+  onError?: (...args: any) => void
+  onPending?: (...args: any) => void
+  onSuccess?: (...args: any) => void
+  onSuccessNoCatch?: (...args: any) => void
+  options?: Api['options']
+  path: Api['path']
+  throwError?: Api['throwError']
+}) {
+  if (!throwError) {
+    const data = await api(path, options, throwError)
+    onSuccessNoCatch(data)
+    return data
+  }
+  onPending()
+  try {
+    const data = await api(path, options, throwError)
+    onSuccess(data)
+    return data
+  } catch (error) {
+    onError(error)
+    return error
+  }
 }
 
 export default api

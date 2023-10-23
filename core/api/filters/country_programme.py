@@ -1,5 +1,7 @@
 from django_filters import rest_framework as filters
+from django_filters.widgets import CSVWidget
 
+from core.models import Country
 from core.models.country_programme import CPReport
 
 
@@ -8,9 +10,13 @@ class CPReportFilter(filters.FilterSet):
     Filter for country programme reports
     """
 
-    country_id = filters.NumberFilter(field_name="country_id", lookup_expr="exact")
+    country_id = filters.ModelMultipleChoiceFilter(
+        field_name="country_id",
+        queryset=Country.objects.all(),
+        widget=CSVWidget,
+    )
     name = filters.CharFilter(field_name="name", lookup_expr="icontains")
-    year = filters.NumberFilter(field_name="year", lookup_expr="exact")
+    year = filters.RangeFilter(field_name="year")
 
     class Meta:
         model = CPReport
