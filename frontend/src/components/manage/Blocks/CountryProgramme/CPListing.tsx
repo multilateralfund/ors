@@ -41,7 +41,9 @@ interface SectionProps {
   setFilters: any
 }
 
-const PER_PAGE = 12
+const PER_PAGE_GENERAL = 48
+const PER_PAGE_COUNTRY = 48
+const PER_PAGE_YEAR = 500
 
 let timer: any
 
@@ -96,7 +98,7 @@ function GeneralSection(props: SectionProps) {
   const [range, setRange] = useState([filters.range[0], filters.range[1]])
   const [pagination, setPagination] = useState({
     page: 1,
-    rowsPerPage: 50,
+    rowsPerPage: PER_PAGE_GENERAL,
   })
   const [ordering, setOrdering] = useState<'asc' | 'desc'>(
     groupBy === 'country' ? 'asc' : 'desc',
@@ -107,7 +109,7 @@ function GeneralSection(props: SectionProps) {
     options: {
       params: {
         country_id: filters.country.join(','),
-        limit: 50,
+        limit: PER_PAGE_GENERAL,
         offset: 0,
         ordering: (ordering === 'asc' ? '' : '-') + orderField,
         year_max: filters.year.length > 0 ? filters.year[0] : range[1],
@@ -344,14 +346,14 @@ function CountrySection(props: SectionProps) {
   const { setFilters } = props
   const [pagination, setPagination] = useState({
     page: 1,
-    rowsPerPage: PER_PAGE,
+    rowsPerPage: PER_PAGE_COUNTRY,
   })
   const [ordering, setOrdering] = useState<'asc' | 'desc'>('asc')
   const countries = useStore((state) => state.common.countries.data)
   const [apiSettings, setApiSettings] = useState({
     options: {
       params: {
-        limit: PER_PAGE,
+        limit: PER_PAGE_COUNTRY,
         offset: 0,
         ordering: 'asc',
       },
@@ -468,18 +470,20 @@ function CountrySection(props: SectionProps) {
           </Grid>
         ))}
       </Grid>
-      <Pagination
-        count={pages}
-        page={pagination.page}
-        siblingCount={1}
-        onPaginationChanged={(page) => {
-          setPagination({ ...pagination, page: page || 1 })
-          handleParamsChange({
-            limit: pagination.rowsPerPage,
-            offset: ((page || 1) - 1) * pagination.rowsPerPage,
-          })
-        }}
-      />
+      {!!pages && pages > 1 && (
+        <Pagination
+          count={pages}
+          page={pagination.page}
+          siblingCount={1}
+          onPaginationChanged={(page) => {
+            setPagination({ ...pagination, page: page || 1 })
+            handleParamsChange({
+              limit: pagination.rowsPerPage,
+              offset: ((page || 1) - 1) * pagination.rowsPerPage,
+            })
+          }}
+        />
+      )}
     </>
   )
 }
@@ -488,14 +492,14 @@ function YearSection(props: SectionProps) {
   const { filters, maxYear, minYear, setFilters } = props
   const [pagination, setPagination] = useState({
     page: 1,
-    rowsPerPage: PER_PAGE,
+    rowsPerPage: PER_PAGE_YEAR,
   })
   const [range, setRange] = useState([filters.range[0], filters.range[1]])
   const [ordering, setOrdering] = useState<'asc' | 'desc'>('desc')
   const [apiSettings, setApiSettings] = useState({
     options: {
       params: {
-        limit: PER_PAGE,
+        limit: PER_PAGE_YEAR,
         offset: 0,
         ordering: 'desc',
       },
@@ -611,18 +615,20 @@ function YearSection(props: SectionProps) {
           </Grid>
         ))}
       </Grid>
-      <Pagination
-        count={pages}
-        page={pagination.page}
-        siblingCount={1}
-        onPaginationChanged={(page) => {
-          setPagination({ ...pagination, page: page || 1 })
-          handleParamsChange({
-            limit: pagination.rowsPerPage,
-            offset: ((page || 1) - 1) * pagination.rowsPerPage,
-          })
-        }}
-      />
+      {!!pages && pages > 1 && (
+        <Pagination
+          count={pages}
+          page={pagination.page}
+          siblingCount={1}
+          onPaginationChanged={(page) => {
+            setPagination({ ...pagination, page: page || 1 })
+            handleParamsChange({
+              limit: pagination.rowsPerPage,
+              offset: ((page || 1) - 1) * pagination.rowsPerPage,
+            })
+          }}
+        />
+      )}
     </>
   )
 }
