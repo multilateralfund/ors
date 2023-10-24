@@ -15,6 +15,8 @@ from core.api.views.chemicals import (
 )
 from core.api.views.cp_reports import (
     CPReportView,
+    CPReportGroupByYearView,
+    CPReportGroupByCountryView,
 )
 from core.api.views.cp_records import CPRecordListView
 from core.api.views.cp_report_empty_form import EmptyFormView
@@ -85,6 +87,16 @@ urlpatterns = [
         "country-programme/reports/",
         CPReportView.as_view(),
         name="country-programme-reports",
+    ),
+    path(
+        "country-programme/reports-by-year/",
+        CPReportGroupByYearView.as_view(),
+        name="country-programme-reports-by-year",
+    ),
+    path(
+        "country-programme/reports-by-country/",
+        CPReportGroupByCountryView.as_view(),
+        name="country-programme-reports-by-country",
     ),
     path(
         "country-programme/records/",

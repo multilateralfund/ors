@@ -1,6 +1,10 @@
+from constance import config
+from django.db.models import Max
+from django.db.models import Min
 from rest_framework import views
 from rest_framework.response import Response
 
+from core.models import CPReport
 from core.models.blend import Blend
 from core.models.project import Project, ProjectFund, ProjectOdsOdp
 from core.models.project_submission import ProjectSubmission, SubmissionAmount
@@ -42,5 +46,11 @@ class SettingsView(views.APIView):
             "project_substance_types": Project.SubstancesType.choices,
             "project_ods_odp_types": ProjectOdsOdp.ProjectOdsOdpType.choices,
             "project_fund_types": ProjectFund.FundType.choices,
+            "cp_reports": {
+                "nr_reports": config.CP_NR_REPORTS,
+                **CPReport.objects.aggregate(
+                    max_year=Max("year"), min_year=Min("year")
+                ),
+            },
         }
         return Response(settings)
