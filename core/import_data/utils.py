@@ -536,7 +536,7 @@ def get_year_dict_from_db_file(file_name):
 
 
 # --- import pcr utils ---
-def check_json_data(json_entry, important_args):
+def check_pcr_json_data(json_entry, important_args):
     """
     Check if the json entry has at least one of the important args
 
@@ -556,7 +556,7 @@ def import_pcr_categories(file_path, category_class):
 
     category_dict = {}
     for category_json in json_data:
-        # skip empty sectors
+        # skip empty category
         if not category_json["Title"]:
             continue
 

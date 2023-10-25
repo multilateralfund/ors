@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db import transaction
 from core.import_data.utils import (
     PCR_DIR_LIST,
-    check_json_data,
+    check_pcr_json_data,
     delete_old_data,
     get_object_by_code,
 )
@@ -62,7 +62,7 @@ def parse_file(file_path, sectors_dict):
 
     activities = []
     for activity_json in json_data:
-        if not check_json_data(activity_json, IMPORTANT_ARGS):
+        if not check_pcr_json_data(activity_json, IMPORTANT_ARGS):
             logger.warning(
                 f"⚠️ activity {activity_json['Id']} not imported (too few data)"
             )

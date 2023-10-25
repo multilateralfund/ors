@@ -21,12 +21,12 @@ class Command(BaseCommand):
             - type = progress => project progress reports
             - type = comments => project comments
             - type = meta_projects => project meta projects
-            - type = all_pcr => all data fpr project complition reports 
+            - type = all_pcr => all data for project complition reports 
                 (activities, delay_explanation, learned_lessons)
             - type = pcr_activities => project complition report activities
             - type = pcr_delay_explanation => project complition report delay explanation
             - type = pcr_learned_lessons => project complition report learned lessons
-            - type all => all of the above
+            - type =  all => all of the above
     """
 
     def add_arguments(self, parser):

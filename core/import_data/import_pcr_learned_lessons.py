@@ -14,7 +14,6 @@ from core.import_data.utils import (
 from core.models.project import MetaProject
 from core.models.project_complition_report import (
     LearnedLessonCategory,
-    PCRDelayExplanation,
     PCRLearnedLessons,
 )
 
@@ -47,21 +46,9 @@ def parse_file(file_path, category_dict, agency_dict):
 
         # get agency
         agency = agency_dict.get(lesson_json["AgencyId"])
-        if not agency:
-            logger.warning(
-                f"⚠️ could not find agency {lesson_json['AgencyId']} "
-                f"for learned lesson {lesson_json['Id']}"
-            )
-            continue
 
         # get explanation category
         category = category_dict.get(lesson_json["TitleId"])
-        if not category:
-            logger.warning(
-                f"⚠️ could not find category {lesson_json['TitleId']} "
-                f"for learned lesson {lesson_json['Id']}"
-            )
-            continue
 
         # create learned lesson
         lesson_data = {
@@ -91,6 +78,6 @@ def import_pcr_learned_lessons():
         agency_dict = get_agency_dict(file_path)
 
         file_path = db_dir_path / database_name / "PCR6.json"
-        delete_old_data(PCRDelayExplanation, file_path)
+        delete_old_data(PCRLearnedLessons, file_path)
         parse_file(file_path, category_dict, agency_dict)
         logger.info(f"✔ pcr learned lessons from {database_name} imported")
