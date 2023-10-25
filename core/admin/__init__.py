@@ -5,6 +5,7 @@ from .business_plan import *
 from .country import *
 from .country_programme import *
 from .group import *
+from .project_complition_report import *
 from .project import *
 from .project_submission import *
 from .substance import *

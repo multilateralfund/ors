@@ -106,7 +106,13 @@ docker-compose exec app ./manage.py import_projects proposals
 - projects -> projects from tbInventory
 - multi_year_projects -> multi year projects from MultiYear-Projects
 - progress -> progress reports from tbProgress 
-- comments -> project comments 
+- comments -> project comments
+- meta_projects -> project meta projects
+- all_pcr -> all data for project complition reports (activities, delay_explanation, learned_lessons)
+- pcr_activities -> project complition report activities
+- pcr_delay_explanation -> project complition report delay explanation
+- pcr_learned_lessons -> project complition report learned lessons
+- all -> all of the above
             
 ### Import files
 
@@ -145,6 +151,25 @@ docker-compose exec app ./manage.py import_projects proposals
     - **nextcloud path** OzoneMlf/Progress reports/data/json/tbComment.json
     - **local path** .fs/import_files/progress_report
 
+- meta_projects 
+: download files from nextcloud
+    - **nextcloud path** OzoneMlf/Data/2.4 PCR/data/json
+    - **local path** .fs/import_files/pcr
+
+    |nextcloud name | local name |
+    | :----:    | :----:  |
+    | hpmppcr2023/tbINVENTORY.json | hpmppcr2023/tbINVENTORY.json |
+    | pcr2023/tbINVENTORY.json | pcr2023/tbINVENTORY.json |
+
+- all_pcr
+: download folders from nextcloud
+    - **nextcloud path** OzoneMlf/Data/2.4 PCR/data/json
+    - **local path** .fs/import_files/pcr
+
+    |nextcloud name | local name |
+    | :----:    | :----:  |
+    | hpmppcr2023 | hpmppcr2023 |
+    | pcr2023 | pcr2023 |
 
 ---
 

@@ -13,6 +13,20 @@ from core.models.substance import Substance
 PROTECTED_STORAGE = FileSystemStorage(location=settings.PROTECTED_MEDIA_ROOT)
 
 
+class MetaProject(models.Model):
+    class MetaProjectType(models.TextChoices):
+        MYACFC = "MYA CFC", "MYA CFC"
+        MYAHCFC = "MYA HCFC", "MYA HCFC"
+        INDINV = "Individual investment", "Individual investment"
+        INDNONINV = "Individual non-investment", "Individual non-investment"
+
+    type = models.CharField(max_length=255)
+    pcr_project_id = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.type} {self.pcr_project_id}"
+
+
 class ProjectTypeManager(models.Manager):
     def find_by_name(self, name):
         name_str = name.strip()
@@ -106,6 +120,7 @@ class Project(models.Model):
         HFC = "HFC", "HFC"
         HFC_Plus = "HFC_Plus", "HFC_Plus"
 
+    meta_project = models.ForeignKey(MetaProject, on_delete=models.CASCADE, null=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
     national_agency = models.CharField(max_length=255, null=True, blank=True)
@@ -115,7 +130,6 @@ class Project(models.Model):
     mya_code = models.CharField(max_length=128, null=True, blank=True)
     approval_meeting_no = models.IntegerField(null=True, blank=True)
     project_type = models.ForeignKey(ProjectType, on_delete=models.CASCADE)
-    multi_year = models.BooleanField(default=False)
     project_duration = models.IntegerField(null=True, blank=True)
     stage = models.IntegerField(null=True, blank=True)
     subsector = models.ForeignKey(ProjectSubSector, on_delete=models.CASCADE)

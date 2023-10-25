@@ -194,62 +194,72 @@ def parse_project_funds(project, project_json):
     create_project_funds(project, project_json, transferred_fund)
 
 
+def create_project(project_json):
+    """
+    Create project from project json data (tbINVENTORY.json)
+
+    @param project_json: project json data
+
+    @return: Project object
+    """
+    project_data = get_project_base_data(
+        project_json, project_json["CODE"], is_submissions=False
+    )
+
+    if not project_data:
+        return None
+
+    # set substance type
+    substance_type = "HCFC"
+    if project_json["HFC"]:
+        substance_type = "HFC"
+    elif project_json["HFC_PLUS"]:
+        substance_type = "HFC_PLUS"
+
+    # set approval meeting no
+    # code =  {Country or Region}/{Sector}/{MeetingNo where the project was approved}/{ProjectType}/{ProjectNumber}
+    meeting_no = project_json["CODE"].split("/")[2]
+
+    project_data.update(
+        {
+            "number": project_json["NO"],
+            "code": project_json["CODE"],
+            "approval_meeting_no": meeting_no,
+            "substance_type": substance_type,
+            "application": project_json.get("APPLICATION"),
+            "technology": project_json.get("TECHNOLOGY"),
+            "plan": project_json.get("PLAN"),
+            "impact": project_json.get("IMPACT"),
+            "impact_co2mt": project_json.get("IMPACT_CO2MT"),
+            "impact_production": project_json.get("IMPACT_PRODUCTION"),
+            "impact_prod_co2mt": project_json.get("IMPACT_PROD_CO2MT"),
+            "ods_phasedout": project_json.get("ODS_PHASEDOUT"),
+            "ods_phasedout_co2mt": project_json.get("ODS_PHASEDOUT_CO2MT"),
+            "hcfc_stage": project_json.get("HCFCStage"),
+            "fund_disbursed": project_json.get("FUND_DISBURSED"),
+            "fund_disbursed_13": project_json.get("FUND_DISB1_13%"),
+            "date_completion": parse_date(project_json.get("DATE_COMPLETION")),
+            "date_actual": parse_date(project_json.get("DATE_ACTUAL")),
+            "date_comp_revised": parse_date(project_json.get("DATE_COMP_REVISED")),
+            "date_per_agreement": parse_date(project_json.get("DATE_PER_AGREEMENT")),
+            "remarks": project_json.get("REMARKS"),
+        }
+    )
+
+    # get or create project
+    project = update_or_create_project(project_data)
+    parse_project_ODS_ODP(project, project_json)
+    parse_project_funds(project, project_json)
+
+    return project
+
+
 def parse_file(file_path):
     with open(file_path, "r", encoding="utf8") as f:
         json_data = json.load(f)
 
     for project_json in json_data:
-        project_data = get_project_base_data(
-            project_json, project_json["CODE"], is_submissions=False
-        )
-
-        if not project_data:
-            continue
-
-        # set substance type
-        substance_type = "HCFC"
-        if project_json["HFC"]:
-            substance_type = "HFC"
-        elif project_json["HFC_PLUS"]:
-            substance_type = "HFC_PLUS"
-
-        # set approval meeting no
-        # code =  {Country or Region}/{Sector}/{MeetingNo where the project was approved}/{ProjectType}/{ProjectNumber}
-        meeting_no = project_json["CODE"].split("/")[2]
-
-        project_data.update(
-            {
-                "number": project_json["NO"],
-                "code": project_json["CODE"],
-                "approval_meeting_no": meeting_no,
-                "substance_type": substance_type,
-                "application": project_json.get("APPLICATION"),
-                "technology": project_json.get("TECHNOLOGY"),
-                "plan": project_json.get("PLAN"),
-                "impact": project_json.get("IMPACT"),
-                "impact_co2mt": project_json.get("IMPACT_CO2MT"),
-                "impact_production": project_json.get("IMPACT_PRODUCTION"),
-                "impact_prod_co2mt": project_json.get("IMPACT_PROD_CO2MT"),
-                "ods_phasedout": project_json.get("ODS_PHASEDOUT"),
-                "ods_phasedout_co2mt": project_json.get("ODS_PHASEDOUT_CO2MT"),
-                "hcfc_stage": project_json.get("HCFCStage"),
-                "fund_disbursed": project_json.get("FUND_DISBURSED"),
-                "fund_disbursed_13": project_json.get("FUND_DISB1_13%"),
-                "date_completion": parse_date(project_json.get("DATE_COMPLETION")),
-                "date_actual": parse_date(project_json.get("DATE_ACTUAL")),
-                "date_comp_revised": parse_date(project_json.get("DATE_COMP_REVISED")),
-                "date_per_agreement": parse_date(
-                    project_json.get("DATE_PER_AGREEMENT")
-                ),
-                "remarks": project_json.get("REMARKS"),
-            }
-        )
-
-        # get or create project
-        project = update_or_create_project(project_data)
-
-        parse_project_ODS_ODP(project, project_json)
-        parse_project_funds(project, project_json)
+        create_project(project_json)
 
 
 @transaction.atomic

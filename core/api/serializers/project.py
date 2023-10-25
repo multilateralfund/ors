@@ -271,7 +271,6 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "sector",
             "subsector",
             "project_type",
-            "multi_year",
             "mya_subsector",
             "stage",
             "status",

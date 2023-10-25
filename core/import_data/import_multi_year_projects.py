@@ -81,7 +81,6 @@ def parse_file(file_path):
             "date_per_agreement": parse(date_agree) if date_agree else None,
             "date_per_decision": parse(date_decision) if date_decision else None,
             "decisions": project_json.get("Decisions"),
-            "multi_year": project_json["Multi-Year"] == "Yes",
             "approval_meeting_no": meeting_no,
             "status": unk_status,
         }
