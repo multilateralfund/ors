@@ -28,6 +28,8 @@ logger = logging.getLogger(__name__)
 IMPORT_RESOURCES_DIR = settings.ROOT_DIR / "import_data" / "resources"
 IMPORT_PROJECTS_DIR = settings.IMPORT_DATA_DIR / "project_database"
 
+PCR_DIR_LIST = ["pcr2023", "hpmppcr2023"]
+
 # When we parse excel files, "index_row" is two steps behind. Because of this, the
 # excel files are hard to check.
 # Used only for logs.
@@ -531,6 +533,64 @@ def get_year_dict_from_db_file(file_name):
         year_dict[year_json["ProjectDateId"]] = year_json["ProjectDate"]
 
     return year_dict
+
+
+# --- import pcr utils ---
+def check_pcr_json_data(json_entry, important_args):
+    """
+    Check if the json entry has at least one of the important args
+
+    @param json_entry = dict
+    @param important_args = list
+    @return bool
+    """
+    for arg in important_args:
+        if json_entry[arg]:
+            return True
+    return False
+
+
+def import_pcr_categories(file_path, category_class):
+    with open(file_path, encoding="utf8") as f:
+        json_data = json.load(f)
+
+    category_dict = {}
+    for category_json in json_data:
+        # skip empty category
+        if not category_json["Title"]:
+            continue
+
+        category_data = {
+            "name": category_json["Title"],
+            "sort_order": category_json["SortId"],
+        }
+        category, _ = category_class.objects.update_or_create(
+            name=category_data["name"], defaults=category_data
+        )
+        category_dict[category_json["Id"]] = category
+
+    return category_dict
+
+
+def get_agency_dict(json_file_path):
+    """
+    Parse agency json file and create a dictionary
+    @param json_file_path = str (file path for import file)
+
+    @return agency_dict = dict
+        - struct: {agency_cp_id: agency_name}
+    """
+    agency_dict = {}
+    with open(json_file_path, "r", encoding="utf8") as f:
+        json_data = json.load(f)
+
+    for agency_json in json_data:
+        agency = get_object_by_name(
+            Agency, agency_json["Name"], agency_json["ID"], "agency", use_offset=False
+        )
+        agency_dict[agency_json["ID"]] = agency
+
+    return agency_dict
 
 
 # --- xlsx import utils ---

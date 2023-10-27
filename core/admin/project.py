@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from core.admin.utils import get_final_display_list
 from core.models.project import (
+    MetaProject,
     Project,
     ProjectFund,
     ProjectOdsOdp,
@@ -13,6 +14,20 @@ from core.models.project import (
 from core.models.project import ProjectComment
 from core.models.project import ProjectFile
 from core.models.project import ProjectProgressReport
+
+
+@admin.register(MetaProject)
+class MetaProjectAdmin(admin.ModelAdmin):
+    search_fields = [
+        "project__title",
+    ]
+    list_filter = [
+        "type",
+    ]
+
+    def get_list_display(self, request):
+        exclude = ["project", "pcractivity", "pcrlearnedlessons", "pcrdelayexplanation"]
+        return get_final_display_list(MetaProject, exclude)
 
 
 @admin.register(ProjectSector)
@@ -48,7 +63,7 @@ class ProjectTypeAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["project", "businessplan"]
+        exclude = ["project", "businessplan", "bprecord"]
         return get_final_display_list(ProjectType, exclude)
 
 
@@ -80,6 +95,7 @@ class ProjectAdmin(admin.ModelAdmin):
         "status",
         "agency",
         "subsector",
+        "meta_project__type",
     ]
     autocomplete_fields = ["country", "subsector", "agency"]
 

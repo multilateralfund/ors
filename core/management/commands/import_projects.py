@@ -1,5 +1,9 @@
 from django.core.management import BaseCommand
+from core.import_data.import_meta_projects import import_meta_projects
 from core.import_data.import_multi_year_projects import import_multi_year_projects
+from core.import_data.import_pcr_activities import import_pcr_activities
+from core.import_data.import_pcr_delay_explanations import import_pcr_delay_explanations
+from core.import_data.import_pcr_learned_lessons import import_pcr_learned_lessons
 
 from core.import_data.import_progress_reports import import_progress_reports
 from core.import_data.import_project_comments import import_project_comments
@@ -16,7 +20,13 @@ class Command(BaseCommand):
             - type = multi_year_projects => multi year projects from MultiYear-Projects
             - type = progress => project progress reports
             - type = comments => project comments
-            - type all => all of the above
+            - type = meta_projects => project meta projects
+            - type = all_pcr => all data for project complition reports 
+                (activities, delay_explanation, learned_lessons)
+            - type = pcr_activities => project complition report activities
+            - type = pcr_delay_explanation => project complition report delay explanation
+            - type = pcr_learned_lessons => project complition report learned lessons
+            - type =  all => all of the above
     """
 
     def add_arguments(self, parser):
@@ -31,6 +41,11 @@ class Command(BaseCommand):
                 "multi_year_projects",
                 "progress",
                 "comments",
+                "meta_projects",
+                "all_pcr",
+                "pcr_activities",
+                "pcr_delay_explanation",
+                "pcr_learned_lessons",
                 "all",
             ],
         )
@@ -48,3 +63,11 @@ class Command(BaseCommand):
             import_progress_reports()
         if imp_type in ["comments", "all"]:
             import_project_comments()
+        if imp_type in ["meta_projects", "all"]:
+            import_meta_projects()
+        if imp_type in ["pcr_activities", "all_pcr", "all"]:
+            import_pcr_activities()
+        if imp_type in ["pcr_delay_explanation", "all_pcr", "all"]:
+            import_pcr_delay_explanations()
+        if imp_type in ["pcr_learned_lessons", "all_pcr", "all"]:
+            import_pcr_learned_lessons()
