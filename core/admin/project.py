@@ -63,7 +63,7 @@ class ProjectTypeAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["project", "businessplan"]
+        exclude = ["project", "businessplan", "bprecord"]
         return get_final_display_list(ProjectType, exclude)
 
 

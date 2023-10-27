@@ -36,6 +36,9 @@ class DelayCategory(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)
     sort_order = models.FloatField(null=True, blank=True)
 
+    class Meta:
+        verbose_name_plural = "Delay categories"
+
     def __str__(self):
         return self.name
 
@@ -53,6 +56,9 @@ class LearnedLessonCategory(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)
     sort_order = models.FloatField(null=True, blank=True)
 
+    class Meta:
+        verbose_name_plural = "Learned lesson categories"
+
     def __str__(self):
         return self.name
 
@@ -63,3 +69,6 @@ class PCRLearnedLessons(models.Model):
     category = models.ForeignKey(LearnedLessonCategory, on_delete=models.CASCADE)
     description = models.TextField(blank=True, null=True)
     source_file = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        verbose_name_plural = "Learned lessons"
