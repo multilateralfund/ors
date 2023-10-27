@@ -47,7 +47,7 @@ def parse_file(file_path, category_dict, agency_dict):
         # get agency
         agency = agency_dict.get(lesson_json["AgencyId"])
 
-        # get explanation category
+        # get lesson category
         category = category_dict.get(lesson_json["TitleId"])
 
         # create learned lesson

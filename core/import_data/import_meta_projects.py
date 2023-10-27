@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 def parse_file(file_path, database_name):
     """
-    Import columns from json file
+    Import meta projects from json file
 
     @param file_path = str (file path for import file)
     """
