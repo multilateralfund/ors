@@ -17,6 +17,7 @@ from core.models.country_programme import (
 class CPReportAdmin(admin.ModelAdmin):
     search_fields = ["name", "year", "country__name", "reporting_email"]
     list_filter = [
+        "status",
         AutocompleteFilterFactory("country", "country"),
         "year",
     ]

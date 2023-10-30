@@ -9,8 +9,15 @@ from core.models.usage import Usage
 
 
 class CPReport(models.Model):
+    class CPReportStatus(models.TextChoices):
+        DRAFT = "draft", "Draft"
+        FINAL = "final", "Final"
+
     name = models.CharField(max_length=248)
     year = models.IntegerField()
+    status = models.CharField(
+        max_length=10, choices=CPReportStatus.choices, default=CPReportStatus.DRAFT
+    )
     reporting_entry = models.CharField(max_length=248, null=True, blank=True)
     reporting_email = models.CharField(max_length=248, null=True, blank=True)
     submission_date = models.DateField(null=True, blank=True)

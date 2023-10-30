@@ -119,6 +119,43 @@ class CPReportView(generics.ListAPIView, generics.CreateAPIView):
         return custom_errors
 
 
+class CPReportStatusUpdateView(generics.GenericAPIView):
+    """
+    API endpoint that allows updating country programme report status.
+    """
+
+    queryset = CPReport.objects.all()
+    serializer_class = CPReportSerializer
+    lookup_field = "id"
+
+    @swagger_auto_schema(
+        operation_description="Update country programme report status",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "status": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    enum=CPReport.CPReportStatus.choices,
+                )
+            },
+        ),
+    )
+    def put(self, request, *args, **kwargs):
+        cp_report = self.get_object()
+        cp_status = request.data.get("status")
+        if cp_status not in CPReport.CPReportStatus.values:
+            return Response(
+                {"status": f"Invalid value {cp_status}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        cp_report.status = cp_status
+        cp_report.save()
+        serializer = self.get_serializer(cp_report)
+
+        return Response(serializer.data)
+
+
 class CPReportGroupByYearView(generics.ListAPIView):
     """
     API endpoint that allows listing country programme reports grouped.
