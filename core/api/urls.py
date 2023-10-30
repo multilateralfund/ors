@@ -14,6 +14,7 @@ from core.api.views.chemicals import (
     SubstancesListView,
 )
 from core.api.views.cp_reports import (
+    CPReportStatusUpdateView,
     CPReportView,
     CPReportGroupByYearView,
     CPReportGroupByCountryView,
@@ -87,6 +88,11 @@ urlpatterns = [
         "country-programme/reports/",
         CPReportView.as_view(),
         name="country-programme-reports",
+    ),
+    path(
+        "country-programme/report/<int:id>/status-update/",
+        CPReportStatusUpdateView.as_view(),
+        name="country-programme-report-status",
     ),
     path(
         "country-programme/reports-by-year/",

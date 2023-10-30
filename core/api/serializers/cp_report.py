@@ -20,6 +20,9 @@ class CPReportSerializer(serializers.ModelSerializer):
         write_only=True,
         queryset=Country.objects.all().values_list("id", flat=True),
     )
+    status = serializers.ChoiceField(
+        choices=CPReport.CPReportStatus.choices, required=False
+    )
 
     class Meta:
         model = CPReport
@@ -27,6 +30,7 @@ class CPReportSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "year",
+            "status",
             "country",
             "country_id",
             "comment",

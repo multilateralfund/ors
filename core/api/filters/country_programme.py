@@ -17,7 +17,8 @@ class CPReportFilter(filters.FilterSet):
     )
     name = filters.CharFilter(field_name="name", lookup_expr="icontains")
     year = filters.RangeFilter(field_name="year")
+    status = filters.ChoiceFilter(choices=CPReport.CPReportStatus.choices)
 
     class Meta:
         model = CPReport
-        fields = ["country_id", "name", "year"]
+        fields = ["country_id", "name", "year", "status"]
