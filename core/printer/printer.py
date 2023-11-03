@@ -112,11 +112,13 @@ class Browser(webdriver.Firefox):
         shutil.rmtree(self.print_dir, ignore_errors=True)
 
     def wait_until_visible(self, css_selector, timeout=10):
+        logger.debug("Waiting until visible: %r", css_selector)
         return WebDriverWait(self, timeout).until(
             EC.visibility_of_element_located((By.CSS_SELECTOR, css_selector))
         )
 
     def wait_until_not_visible(self, css_selector, timeout=10):
+        logger.debug("Waiting until NOT visible: %r", css_selector)
         return WebDriverWait(self, timeout).until_not(
             EC.visibility_of_element_located((By.CSS_SELECTOR, css_selector))
         )
