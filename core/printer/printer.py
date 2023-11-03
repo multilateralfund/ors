@@ -91,7 +91,7 @@ class Browser(webdriver.Firefox):
             str(self.print_path),
         )
 
-        geckodriver_path = "/snap/bin/geckodriver"
+        geckodriver_path = shutil.which("geckodriver")
         driver_service = Service(executable_path=geckodriver_path)
 
         super().__init__(options=options, service=driver_service, **kwargs)
