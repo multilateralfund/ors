@@ -99,10 +99,17 @@ class Browser(webdriver.Firefox):
         self.set_page_load_timeout(SCRIPT_TIMEOUT)
 
     def __del__(self):
-        shutil.rmtree(self.print_path, ignore_errors=True)
+        self._clean_tmp_dir()
 
     def __getitem__(self, css_selector):
         return self.find_element(By.CSS_SELECTOR, css_selector)
+
+    def quit(self):
+        self._clean_tmp_dir()
+        super().quit()
+
+    def _clean_tmp_dir(self):
+        shutil.rmtree(self.print_dir, ignore_errors=True)
 
     def wait_until_visible(self, css_selector, timeout=10):
         return WebDriverWait(self, timeout).until(
@@ -138,7 +145,6 @@ class Browser(webdriver.Firefox):
 def temporary_browser(**kwargs):
     browser = Browser(**kwargs)
     logger.debug("Browser ready")
-
     try:
         yield browser
     finally:

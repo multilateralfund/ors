@@ -8,6 +8,7 @@ ipdb
 ipython
 ipython-autotime
 mypy-extensions
+pdfminer.six
 pylint-django
 pylint-secure-coding-standard
 pytest
