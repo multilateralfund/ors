@@ -31,6 +31,7 @@ from core.api.views.projects import (
     ProjectTypeListView,
 )
 from core.api.views.settings import SettingsView
+from core.api.views.cp_print import CPPrintView
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView
 
@@ -93,6 +94,11 @@ urlpatterns = [
         "country-programme/report/<int:id>/status-update/",
         CPReportStatusUpdateView.as_view(),
         name="country-programme-report-status",
+    ),
+    path(
+        "country-programme/report/<int:pk>/print/",
+        CPPrintView.as_view(),
+        name="country-programme-report-print",
     ),
     path(
         "country-programme/reports-by-year/",
