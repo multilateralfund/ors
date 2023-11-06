@@ -1,6 +1,7 @@
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, generics
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from core.api.serializers.adm import (
@@ -28,7 +29,7 @@ from core.utils import IMPORT_DB_MAX_YEAR
 class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
     """
     API endpoint that allows country programme records to be viewed.
-    @param country_programme_id: int - query filter for country programme id (exact)
+    @param cp_report_id: int - query filter for country programme id (exact)
     @param name: str - query filter for name (contains)
     @param year: int - query filter for year (exact)
     """
@@ -189,17 +190,15 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
             "remarks": cp_report.comment,
         }
 
-        return Response(
-            {
-                "cp_report": CPReportSerializer(cp_report).data,
-                "section_a": CPRecordSerializer(section_a, many=True).data,
-                "section_b": CPRecordSerializer(section_b, many=True).data,
-                "section_c": CPPricesSerializer(section_c, many=True).data,
-                "section_d": CPGenerationSerializer(section_d, many=True).data,
-                "section_e": CPEmissionSerializer(section_e, many=True).data,
-                "section_f": section_f,
-            }
-        )
+        return {
+            "cp_report": CPReportSerializer(cp_report).data,
+            "section_a": CPRecordSerializer(section_a, many=True).data,
+            "section_b": CPRecordSerializer(section_b, many=True).data,
+            "section_c": CPPricesSerializer(section_c, many=True).data,
+            "section_d": CPGenerationSerializer(section_d, many=True).data,
+            "section_e": CPEmissionSerializer(section_e, many=True).data,
+            "section_f": section_f,
+        }
 
     def _get_regroupped_adm_records(self, adm_records):
         result = {}
@@ -223,16 +222,28 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
         adm_c = self._get_regroupped_adm_records(adm_c)
         adm_d = self._get_adm_records(cp_report.id, "D")
 
-        return Response(
-            {
-                "cp_report": CPReportSerializer(cp_report).data,
-                "section_a": CPRecordSerializer(section_a, many=True).data,
-                "adm_b": adm_b,
-                "section_c": CPPricesSerializer(section_c, many=True).data,
-                "adm_c": adm_c,
-                "adm_d": AdmRecordSerializer(adm_d, many=True).data,
-            }
-        )
+        return {
+            "cp_report": CPReportSerializer(cp_report).data,
+            "section_a": CPRecordSerializer(section_a, many=True).data,
+            "adm_b": adm_b,
+            "section_c": CPPricesSerializer(section_c, many=True).data,
+            "adm_c": adm_c,
+            "adm_d": AdmRecordSerializer(adm_d, many=True).data,
+        }
+
+    def _get_cp_report(self):
+        try:
+            return CPReport.objects.get(id=self.request.query_params["cp_report_id"])
+        except KeyError:
+            raise ValidationError({"cp_report_id": "query parameter is required"})
+        except CPReport.DoesNotExist:
+            raise ValidationError({"cp_report_id": "invalid id"})
+
+    def get_data(self, cp_report):
+        if cp_report.year > IMPORT_DB_MAX_YEAR:
+            return self._get_new_cp_records(cp_report)
+
+        return self._get_old_cp_records(cp_report)
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -245,15 +256,4 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
         ],
     )
     def get(self, *args, **kwargs):
-        cp_report_id = self.request.query_params.get("cp_report_id", None)
-        if not cp_report_id:
-            return Response({"error": "cp_report_id is required"}, status=400)
-
-        cp_report = CPReport.objects.filter(id=cp_report_id).first()
-        if not cp_report:
-            return Response({"error": "cp_report_id is invalid"}, status=400)
-
-        if cp_report.year > IMPORT_DB_MAX_YEAR:
-            return self._get_new_cp_records(cp_report)
-
-        return self._get_old_cp_records(cp_report)
+        return Response(self.get_data(self._get_cp_report()))

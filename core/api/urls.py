@@ -20,6 +20,7 @@ from core.api.views.cp_reports import (
     CPReportGroupByCountryView,
 )
 from core.api.views.cp_records import CPRecordListView
+from core.api.views.cp_records_export import CPRecordExportView
 from core.api.views.cp_report_empty_form import EmptyFormView
 from core.api.views.projects import (
     ProjectOdsOdpViewSet,
@@ -108,6 +109,11 @@ urlpatterns = [
         "country-programme/records/",
         CPRecordListView.as_view(),
         name="country-programme-record-list",
+    ),
+    path(
+        "country-programme/export/",
+        CPRecordExportView.as_view(),
+        name="country-programme-export",
     ),
     path(
         "country-programme/empty-form/",

@@ -22,10 +22,11 @@ class EmptyFormView(views.APIView):
     API endpoint that allows to get empty form
     """
 
-    def get_usages_tree(self, usage_id_dict):
+    @classmethod
+    def get_usages_tree(cls, usage_id_dict):
         """
         Build usages tree structure from a list of usages
-        ! make sure that the parrents are before the children in the list
+        ! make sure that the parents are before the children in the list
 
         @param usage_id_dict: dict of usages (key: usage_id, value: usage object)
 
@@ -39,14 +40,15 @@ class EmptyFormView(views.APIView):
                 root_nodes.append(usage)
             else:
                 parent = usage_id_dict.get(usage.parent_id)
-                # parrent should be before the child in the list so we can find it
+                # parent should be before the child in the list, so we can find it
                 if getattr(parent, "children", None) is None:
                     parent.children = []
                 parent.children.append(usage)
 
         return root_nodes
 
-    def get_usage_columns(self, year):
+    @classmethod
+    def get_usage_columns(cls, year):
         """
         Get usage columns for the given year
 
@@ -69,10 +71,10 @@ class EmptyFormView(views.APIView):
                 section_usages[section] = {}
             section_usages[section][cp_report_format.usage_id] = cp_report_format.usage
 
-        # get usages tree for each section
+        # get the usage tree for each section
         usage_columns = {}
         for section, usages in section_usages.items():
-            usage_tree = self.get_usages_tree(usages)
+            usage_tree = cls.get_usages_tree(usages)
             key_name = f"section_{section.lower()}"
 
             usage_columns[key_name] = UsageSerializer(
@@ -81,16 +83,18 @@ class EmptyFormView(views.APIView):
 
         return usage_columns
 
-    def get_new_empty_form(self, year=None):
-        # for now we return only the list of columns for usages
+    @classmethod
+    def get_new_empty_form(cls, year=None):
+        # for now, we return only the list of columns for usages
         if not year:
             year = datetime.now().year
-        usage_columns = self.get_usage_columns(year)
-        return Response({"usage_columns": usage_columns})
+        usage_columns = cls.get_usage_columns(year)
+        return {"usage_columns": usage_columns}
 
-    def get_old_empty_form(self, cp_report):
+    @classmethod
+    def get_old_empty_form(cls, cp_report):
         sections = {
-            "usage_columns": self.get_usage_columns(cp_report.year),
+            "usage_columns": cls.get_usage_columns(cp_report.year),
             "admB": {
                 "columns": [],
                 "rows": [],
@@ -106,7 +110,7 @@ class EmptyFormView(views.APIView):
         }
 
         # set columns
-        # adm columns childrens are from the same time-frame as the parent
+        # adm columns children are from the same time-frame as the parent,
         # so it is enough to filter by the year only the parent columns
         columns = AdmColumn.objects.get_for_year(cp_report.year)
         for col in columns:
@@ -152,7 +156,15 @@ class EmptyFormView(views.APIView):
             elif row.section == AdmRow.AdmRowSection.D:
                 sections["admD"]["rows"].append(serial_row)
 
-        return Response(sections)
+        return sections
+
+    @classmethod
+    def get_data(cls, cp_report):
+        if cp_report and cp_report.year <= IMPORT_DB_MAX_YEAR:
+            return cls.get_old_empty_form(cp_report)
+
+        year = cp_report.year if cp_report else None
+        return cls.get_new_empty_form(year)
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -169,9 +181,4 @@ class EmptyFormView(views.APIView):
             "cp_report_id",
         )
         cp_report = CPReport.objects.filter(id=cp_report_id).first()
-
-        if cp_report and cp_report.year <= IMPORT_DB_MAX_YEAR:
-            return self.get_old_empty_form(cp_report)
-
-        year = cp_report.year if cp_report else None
-        return self.get_new_empty_form(year)
+        return Response(self.get_data(cp_report))
