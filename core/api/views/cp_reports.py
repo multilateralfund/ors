@@ -1,4 +1,5 @@
 from constance import config
+from django.db import transaction
 from django.db.models import Count
 from django.db.models import F
 from django.db.models import Window
@@ -16,9 +17,20 @@ from core.api.filters.country_programme import (
 from core.api.serializers import CPReportGroupSerializer
 from core.api.serializers.cp_report import CPReportCreateSerializer, CPReportSerializer
 from core.models.country_programme import CPReport
+from core.models.country_programme_archive import (
+    CPEmissionArchive,
+    CPGenerationArchive,
+    CPPricesArchive,
+    CPRecordArchive,
+    CPReportArchive,
+    CPUsageArchive,
+)
+from core.utils import IMPORT_DB_MAX_YEAR
+
+# pylint: disable=R0901
 
 
-class CPReportView(generics.ListAPIView, generics.CreateAPIView):
+class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
     """
     API endpoint that allows country programmes to be viewed or created.
     """
@@ -29,6 +41,7 @@ class CPReportView(generics.ListAPIView, generics.CreateAPIView):
         DjangoFilterBackend,
         filters.OrderingFilter,
     ]
+    lookup_field = "id"
     ordering_fields = ["year", "country__name"]
 
     def get_serializer_class(self):
@@ -36,12 +49,7 @@ class CPReportView(generics.ListAPIView, generics.CreateAPIView):
             return CPReportCreateSerializer
         return CPReportSerializer
 
-    @swagger_auto_schema(
-        operation_description="year < 2019 => required: section_a, adm_b, section_c, adm_c, adm_d\n"
-        "year >= 2019 => required: section_a, section_b, section_c, section_d, section_e, section_f",
-        request_body=CPReportCreateSerializer,
-    )
-    def post(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         serializer = CPReportCreateSerializer(data=request.data)
         if serializer.is_valid():
             self.perform_create(serializer)
@@ -52,6 +60,14 @@ class CPReportView(generics.ListAPIView, generics.CreateAPIView):
 
         custom_errors = self.customize_errors(serializer.errors)
         return Response(custom_errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(
+        operation_description="year < 2019 => required: section_a, adm_b, section_c, adm_c, adm_d\n"
+        "year >= 2019 => required: section_a, section_b, section_c, section_d, section_e, section_f",
+        request_body=CPReportCreateSerializer,
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
 
     def customize_errors(self, error_dict):
         """
@@ -117,6 +133,125 @@ class CPReportView(generics.ListAPIView, generics.CreateAPIView):
             custom_errors[section] = cust_scetion_err
 
         return custom_errors
+
+    def _get_archive_data(self, cls, instance, args=None):
+        """
+        Get archive data for an instance of a model
+          - delete unnecessary fields (id, _state)
+          - add additional data from args
+
+        @param cls: class of the model
+        @param instance: instance of the model
+        @param args: dict of additional data
+
+        @return: instance of the model
+        """
+        data = instance.__dict__.copy()
+        for key in ["_state", "id"]:
+            data.pop(key)
+
+        if args:
+            data.update(args)
+        return cls(**data)
+
+    def _archive_cp_report(self, instance):
+        """
+        Archive country programme report
+
+        @param instance: CPReport object
+        @param new_instance: CPReport object
+        """
+        # archive cp_report
+        cp_report_ar = self._get_archive_data(CPReportArchive, instance)
+        cp_report_ar.save()
+
+        # archive cp_records and cp_usages
+        cp_usages = []
+        for cp_record in instance.cprecords.all():
+            cp_record_ar = self._get_archive_data(
+                CPRecordArchive,
+                cp_record,
+                {"country_programme_report_id": cp_report_ar.id},
+            )
+            cp_record_ar.save()
+            for cp_usage in cp_record.record_usages.all():
+                cp_usages.append(
+                    self._get_archive_data(
+                        CPUsageArchive,
+                        cp_usage,
+                        {"country_programme_record_id": cp_record_ar.id},
+                    )
+                )
+        CPUsageArchive.objects.bulk_create(cp_usages, batch_size=1000)
+
+        # archive cp_prices
+        cp_prices = []
+        for cp_price in instance.prices.all():
+            cp_prices.append(
+                self._get_archive_data(
+                    CPPricesArchive,
+                    cp_price,
+                    {"country_programme_report_id": cp_report_ar.id},
+                )
+            )
+        CPPricesArchive.objects.bulk_create(cp_prices, batch_size=1000)
+
+        # archive cp_generation
+        cp_generation = []
+        for cp_gen in instance.cpgenerations.all():
+            cp_generation.append(
+                self._get_archive_data(
+                    CPGenerationArchive,
+                    cp_gen,
+                    {"country_programme_report_id": cp_report_ar.id},
+                )
+            )
+        CPGenerationArchive.objects.bulk_create(cp_generation, batch_size=1000)
+
+        # archive cp_emission
+        cp_emission = []
+        for cp_em in instance.cpemissions.all():
+            cp_emission.append(
+                self._get_archive_data(
+                    CPEmissionArchive,
+                    cp_em,
+                    {"country_programme_report_id": cp_report_ar.id},
+                )
+            )
+        CPEmissionArchive.objects.bulk_create(cp_emission, batch_size=1000)
+
+    @transaction.atomic
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.year <= IMPORT_DB_MAX_YEAR:
+            return Response(
+                {
+                    "error": "Cannot update country programme report with year <="
+                    f" {IMPORT_DB_MAX_YEAR}"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        serializer = CPReportCreateSerializer(data=request.data)
+        if not serializer.is_valid():
+            custom_errors = self.customize_errors(serializer.errors)
+            return Response(custom_errors, status=status.HTTP_400_BAD_REQUEST)
+        self.perform_create(serializer)
+        # update version number
+        new_instance = serializer.instance
+        # increment version number if the status is FINAL
+        new_instance.version = instance.version + int(
+            instance.status == CPReport.CPReportStatus.FINAL
+        )
+        new_instance.status = instance.status
+        new_instance.save()
+
+        if instance.status == CPReport.CPReportStatus.FINAL:
+            self._archive_cp_report(instance)
+
+        instance.delete()
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
 
 class CPReportStatusUpdateView(generics.GenericAPIView):

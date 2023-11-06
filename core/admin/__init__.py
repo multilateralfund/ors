@@ -4,6 +4,7 @@ from .blend import *
 from .business_plan import *
 from .country import *
 from .country_programme import *
+from .country_programme_archive import *
 from .group import *
 from .project_complition_report import *
 from .project import *

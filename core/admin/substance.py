@@ -44,5 +44,7 @@ class SubstanceAdmin(admin.ModelAdmin):
             "admrecord",
             "project_ods",
             "bprecord",
+            "cprecordarchive",
+            "cppricesarchive",
         ]
         return get_final_display_list(Substance, exclude)
