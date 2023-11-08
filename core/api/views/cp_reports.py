@@ -35,7 +35,6 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
     API endpoint that allows country programmes to be viewed or created.
     """
 
-    queryset = CPReport.objects.select_related("country").order_by("name")
     filterset_class = CPReportFilter
     filter_backends = [
         DjangoFilterBackend,
@@ -43,6 +42,11 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
     ]
     lookup_field = "id"
     ordering_fields = ["year", "country__name"]
+
+    def get_queryset(self):
+        if self.request.method == "PUT":
+            return CPReport.objects.select_for_update()
+        return CPReport.objects.select_related("country").order_by("name")
 
     def get_serializer_class(self):
         if self.request.method == "POST":

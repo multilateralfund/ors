@@ -10,6 +10,10 @@ from core.models.base_country_programme import (
 
 
 class CPReportArchive(AbstractCPReport):
+    created_at = models.DateTimeField(
+        auto_now_add=True, help_text="Date of creation of the report archive"
+    )
+
     class Meta:
         verbose_name = "CP report archive"
         verbose_name_plural = "CP reports archive"

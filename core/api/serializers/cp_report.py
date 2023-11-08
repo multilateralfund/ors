@@ -47,6 +47,7 @@ class CPReportSerializer(CPReportBaseSerializer):
 class CPReportArchiveSerializer(CPReportBaseSerializer):
     class Meta(CPReportBaseSerializer.Meta):
         model = CPReportArchive
+        fields = CPReportBaseSerializer.Meta.fields + ["created_at"]
 
 
 class CPReportGroupSerializer(serializers.Serializer):

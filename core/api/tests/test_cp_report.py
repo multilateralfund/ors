@@ -634,6 +634,7 @@ class TestCPReportUpdate(BaseTest):
         assert ar is not None
         assert ar.comment == "Sunt din cap până în picioare"
         assert ar.version == 2
+        assert ar.created_at is not None
 
         # check record usage archive
         records = CPRecordArchive.objects.filter(country_programme_report_id=ar.id)
