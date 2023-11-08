@@ -1,29 +1,18 @@
 from django.db import models
 from core.models.base import BaseWTimeFrameManager
-from core.models.blend import Blend
-
-from core.models.country import Country
-from core.models.substance import Substance
+from core.models.base_country_programme import (
+    AbstractCPEmission,
+    AbstractCPGeneration,
+    AbstractCPPrices,
+    AbstractCPRecord,
+    AbstractCPReport,
+    AbstractCPUsage,
+)
 from core.models.time_frame import TimeFrame
 from core.models.usage import Usage
 
 
-class CPReport(models.Model):
-    class CPReportStatus(models.TextChoices):
-        DRAFT = "draft", "Draft"
-        FINAL = "final", "Final"
-
-    name = models.CharField(max_length=248)
-    year = models.IntegerField()
-    status = models.CharField(
-        max_length=10, choices=CPReportStatus.choices, default=CPReportStatus.DRAFT
-    )
-    reporting_entry = models.CharField(max_length=248, null=True, blank=True)
-    reporting_email = models.CharField(max_length=248, null=True, blank=True)
-    submission_date = models.DateField(null=True, blank=True)
-    comment = models.TextField(null=True, blank=True)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE)
-
+class CPReport(AbstractCPReport):
     class Meta:
         verbose_name = "CP report"
         verbose_name_plural = "CP reports"
@@ -33,38 +22,10 @@ class CPReport(models.Model):
         return self.name
 
 
-class CPRecord(models.Model):
-    blend = models.ForeignKey(Blend, on_delete=models.CASCADE, null=True, blank=True)
-    substance = models.ForeignKey(
-        Substance, on_delete=models.CASCADE, null=True, blank=True
-    )
+class CPRecord(AbstractCPRecord):
     country_programme_report = models.ForeignKey(
         CPReport, on_delete=models.CASCADE, related_name="cprecords"
     )
-    display_name = models.CharField(max_length=248, null=True, blank=True)
-    section = models.CharField(max_length=164)
-    imports = models.DecimalField(
-        max_digits=25, decimal_places=15, null=True, blank=True
-    )
-    import_quotas = models.DecimalField(
-        max_digits=25, decimal_places=15, null=True, blank=True
-    )
-    exports = models.DecimalField(
-        max_digits=25, decimal_places=15, null=True, blank=True
-    )
-    export_quotas = models.DecimalField(
-        max_digits=25, decimal_places=15, null=True, blank=True
-    )
-    production = models.DecimalField(
-        max_digits=25, decimal_places=15, null=True, blank=True
-    )
-    manufacturing_blends = models.DecimalField(
-        max_digits=25, decimal_places=15, null=True, blank=True
-    )
-    banned_date = models.DateField(null=True, blank=True)
-    remarks = models.TextField(null=True, blank=True)
-
-    source_file = models.CharField(max_length=248)
 
     class Meta:
         verbose_name = "CP record"
@@ -81,12 +42,10 @@ class CPRecord(models.Model):
         )
 
 
-class CPUsage(models.Model):
+class CPUsage(AbstractCPUsage):
     country_programme_record = models.ForeignKey(
         CPRecord, on_delete=models.CASCADE, related_name="record_usages"
     )
-    usage = models.ForeignKey(Usage, on_delete=models.CASCADE)
-    quantity = models.DecimalField(max_digits=25, decimal_places=15)
 
     class Meta:
         verbose_name = "CP usage"
@@ -94,21 +53,12 @@ class CPUsage(models.Model):
         db_table = "cp_usage"
 
 
-class CPPrices(models.Model):
+class CPPrices(AbstractCPPrices):
     country_programme_report = models.ForeignKey(
         CPReport,
         on_delete=models.CASCADE,
+        related_name="prices",
     )
-    blend = models.ForeignKey(Blend, on_delete=models.CASCADE, null=True, blank=True)
-    substance = models.ForeignKey(
-        Substance, on_delete=models.CASCADE, null=True, blank=True
-    )
-    display_name = models.CharField(max_length=248, null=True, blank=True)
-    remarks = models.TextField(null=True, blank=True)
-    source_file = models.CharField(max_length=248)
-
-    previous_year_price = models.CharField(max_length=248, null=True, blank=True)
-    current_year_price = models.CharField(max_length=248, null=True, blank=True)
 
     class Meta:
         verbose_name = "CP price"
@@ -124,34 +74,12 @@ class CPPrices(models.Model):
 
 
 # model used for data regarding only HFC-23 substance
-class CPGeneration(models.Model):
+class CPGeneration(AbstractCPGeneration):
     country_programme_report = models.ForeignKey(
         CPReport,
         on_delete=models.CASCADE,
+        related_name="cpgenerations",
     )
-    all_uses = models.DecimalField(
-        max_digits=25,
-        decimal_places=3,
-        null=True,
-        blank=True,
-        help_text="Captured for all uses",
-    )
-    feedstock = models.DecimalField(
-        max_digits=25,
-        decimal_places=3,
-        null=True,
-        blank=True,
-        help_text="Captured for feedstock uses within your country",
-    )
-    destruction = models.DecimalField(
-        max_digits=25,
-        decimal_places=3,
-        null=True,
-        blank=True,
-        help_text="Captured for destruction",
-    )
-
-    source_file = models.CharField(max_length=248)
 
     class Meta:
         verbose_name = "CP generation"
@@ -163,64 +91,12 @@ class CPGeneration(models.Model):
 
 
 # model used for data regarding only HFC-23 substance
-class CPEmission(models.Model):
+class CPEmission(AbstractCPEmission):
     country_programme_report = models.ForeignKey(
         CPReport,
         on_delete=models.CASCADE,
+        related_name="cpemissions",
     )
-    facility = models.CharField(max_length=256, help_text="Facility name or identifier")
-    total = models.DecimalField(
-        max_digits=25,
-        decimal_places=3,
-        null=True,
-        blank=True,
-        help_text="Total amount generated",
-    )
-    all_uses = models.DecimalField(
-        max_digits=25,
-        decimal_places=3,
-        null=True,
-        blank=True,
-        help_text="Amount generated and captured - For all uses",
-    )
-    feedstock_gc = models.DecimalField(
-        max_digits=25,
-        decimal_places=3,
-        null=True,
-        blank=True,
-        help_text="Amount generated and captured - For feedstock use in your country",
-    )
-    destruction = models.DecimalField(
-        max_digits=25,
-        decimal_places=3,
-        null=True,
-        blank=True,
-        help_text="Amount generated and captured - For destruction",
-    )
-    feedstock_wpc = models.DecimalField(
-        max_digits=25,
-        decimal_places=3,
-        null=True,
-        blank=True,
-        help_text="Captured for feedstock uses within your country",
-    )
-    destruction_wpc = models.DecimalField(
-        max_digits=25,
-        decimal_places=3,
-        null=True,
-        blank=True,
-        help_text="Amount used for feedstock without prior capture",
-    )
-    generated_emissions = models.DecimalField(
-        max_digits=25,
-        decimal_places=3,
-        null=True,
-        blank=True,
-        help_text="Captured for destruction",
-    )
-
-    remarks = models.TextField(null=True, blank=True)
-    source_file = models.CharField(max_length=248)
 
     class Meta:
         verbose_name = "CP emission"

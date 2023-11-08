@@ -30,13 +30,13 @@ class CPReportAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = [
             "cprecords",
-            "cpprices",
-            "cpgeneration",
-            "cpemission",
             "usage",
             "comment",
             "adm_records",
             "adm_rows",
+            "prices",
+            "cpgenerations",
+            "cpemissions",
         ]
         return get_final_display_list(CPReport, exclude)
 

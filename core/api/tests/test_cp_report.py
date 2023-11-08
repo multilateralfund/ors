@@ -13,7 +13,20 @@ from core.api.tests.factories import (
 )
 from core.models import Country
 from core.models.adm import AdmRecord
-from core.models.country_programme import CPEmission, CPGeneration, CPPrices, CPRecord
+from core.models.country_programme import (
+    CPEmission,
+    CPGeneration,
+    CPPrices,
+    CPRecord,
+    CPReport,
+)
+from core.models.country_programme_archive import (
+    CPEmissionArchive,
+    CPGenerationArchive,
+    CPPricesArchive,
+    CPRecordArchive,
+    CPReportArchive,
+)
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008, W0221
@@ -353,6 +366,8 @@ class TestCPReportCreate(BaseTest):
         assert response.data["name"] == "Romania2019"
         assert response.data["year"] == 2019
         assert response.data["country"] == "Romania"
+        assert response.data["status"] == CPReport.CPReportStatus.DRAFT
+        assert response.data["version"] == 1
         assert response.data["comment"] == "S-a nascut un fenomen"
         cp_report_id = response.data["id"]
 
@@ -524,6 +539,173 @@ class TestCPReportCreate(BaseTest):
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
         assert "non_field_errors" in response.data["adm_b"][0]
+
+
+class TestCPReportUpdate(BaseTest):
+    def test_without_login(self, cp_report_2019):
+        self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
+        self.client.force_authenticate(user=None)
+        response = self.client.put(
+            self.url, {"id": cp_report_2019.id, "name": "Romania2019"}, format="json"
+        )
+        assert response.status_code == 403
+
+    def test_update_cp_report_draft(
+        self, user, _setup_new_cp_report_create, cp_report_2019
+    ):
+        self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
+        self.client.force_authenticate(user=user)
+        data = _setup_new_cp_report_create
+        data["name"] = "Alo baza baza"
+        data["section_f"]["remarks"] = "Alo Delta Force"
+        response = self.client.put(self.url, data, format="json")
+        assert response.status_code == 200
+        assert response.data["name"] == "Alo baza baza"
+        assert response.data["year"] == 2019
+        assert response.data["country"] == "Romania"
+        assert response.data["status"] == CPReport.CPReportStatus.DRAFT
+        assert response.data["version"] == 1
+        assert response.data["comment"] == "Alo Delta Force"
+        cp_report_id = response.data["id"]
+
+        # check cp records
+        records = CPRecord.objects.filter(country_programme_report_id=cp_report_id)
+        assert records.count() == 3
+        assert records.filter(section="A", substance_id__isnull=False).count() == 2
+        assert records.filter(section="B", blend_id__isnull=False).count() == 1
+
+        # check cp prices
+        prices = CPPrices.objects.filter(country_programme_report_id=cp_report_id)
+        assert prices.count() == 2
+        assert prices.filter(substance_id__isnull=False).count() == 1
+        assert prices.filter(blend_id__isnull=False).count() == 1
+
+        # check cp generation
+        generation = CPGeneration.objects.filter(
+            country_programme_report_id=cp_report_id
+        )
+        assert generation.count() == 1
+
+        # check cp emissions
+        emissions = CPEmission.objects.filter(country_programme_report_id=cp_report_id)
+        assert emissions.count() == 1
+
+        # check no archive is created
+        assert CPReportArchive.objects.count() == 0
+
+    def test_update_cp_report_final(
+        self, user, _setup_new_cp_report_create, cp_report_2019
+    ):
+        self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
+        self.client.force_authenticate(user=user)
+
+        # change status to final
+        cp_report_2019.status = CPReport.CPReportStatus.FINAL
+        cp_report_2019.save()
+
+        # update cp report
+        data = _setup_new_cp_report_create
+        data["name"] = "O valoare mare, o mare valoare"
+        data["section_f"]["remarks"] = "Sunt din cap până în picioare"
+
+        response = self.client.put(self.url, data, format="json")
+        assert response.status_code == 200
+        assert response.data["name"] == "O valoare mare, o mare valoare"
+        assert response.data["status"] == CPReport.CPReportStatus.FINAL
+        assert response.data["version"] == 2
+
+        new_id = response.data["id"]
+        self.url = reverse("country-programme-reports") + f"{new_id}/"
+
+        # update again
+        data["name"] = "Mai bine vorbe puține"
+        data["section_f"]["remarks"] = "Și buzunarele pline"
+        response = self.client.put(self.url, data, format="json")
+        assert response.status_code == 200
+        assert response.data["name"] == "Mai bine vorbe puține"
+        assert response.data["status"] == CPReport.CPReportStatus.FINAL
+        assert response.data["version"] == 3
+
+        # check report archive
+        assert CPReportArchive.objects.count() == 2
+        ar = CPReportArchive.objects.filter(
+            name="O valoare mare, o mare valoare"
+        ).first()
+        assert ar is not None
+        assert ar.comment == "Sunt din cap până în picioare"
+        assert ar.version == 2
+        assert ar.created_at is not None
+
+        # check record usage archive
+        records = CPRecordArchive.objects.filter(country_programme_report_id=ar.id)
+        assert records.count() == 3
+        assert records.filter(section="A", substance_id__isnull=False).count() == 2
+        assert records.filter(section="B", blend_id__isnull=False).count() == 1
+        for record in records:
+            assert float(record.imports) == 12.3
+            assert record.record_usages.count() == 2
+
+        # check cp prices
+        prices = CPPricesArchive.objects.filter(country_programme_report_id=ar.id)
+        assert prices.count() == 2
+        for price in prices:
+            assert float(price.current_year_price) == 25.5
+
+        # check cp generation
+        assert (
+            CPGenerationArchive.objects.filter(
+                country_programme_report_id=ar.id
+            ).count()
+            == 1
+        )
+
+        # check cp emissions
+        assert (
+            CPEmissionArchive.objects.filter(country_programme_report_id=ar.id).count()
+            == 1
+        )
+
+    def test_update_cp_report_invalid_country(
+        self, user, _setup_new_cp_report_create, cp_report_2019
+    ):
+        self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
+        self.client.force_authenticate(user=user)
+        data = _setup_new_cp_report_create
+        data["country_id"] = 999
+        response = self.client.put(self.url, data, format="json")
+        assert response.status_code == 400
+        assert "country_id" in response.data
+        assert "general_error" in response.data["country_id"]
+
+        # check no archive is created
+        assert CPReportArchive.objects.count() == 0
+
+    def test_update_cp_report_invalid_cp_id(self, user, _setup_new_cp_report_create):
+        self.url = reverse("country-programme-reports") + "999/"
+        self.client.force_authenticate(user=user)
+        data = _setup_new_cp_report_create
+        response = self.client.put(self.url, data, format="json")
+        assert response.status_code == 404
+
+        # check no archive is created
+        assert CPReportArchive.objects.count() == 0
+
+    def test_update_cp_report_invalid_usage_id(
+        self, user, _setup_new_cp_report_create, cp_report_2019, substance
+    ):
+        self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
+        self.client.force_authenticate(user=user)
+        data = _setup_new_cp_report_create
+        data["section_a"][0]["record_usages"][0]["usage_id"] = 999
+        response = self.client.put(self.url, data, format="json")
+        assert response.status_code == 400
+        subst_error = response.data["section_a"][f"substance_{substance.id}"]
+        assert "record_usages" in subst_error
+        assert "usage_999" in subst_error["record_usages"]
+        assert "usage_id" in subst_error["record_usages"]["usage_999"]
+
+        # check no archive is created
+        assert CPReportArchive.objects.count() == 0
 
 
 @pytest.fixture(name="_setup_get_empty_form")
