@@ -7,15 +7,15 @@ from core.models.country_programme import (
     CPRecord,
     CPUsage,
 )
+from core.models.country_programme_archive import CPRecordArchive
 
 
-class CPRecordSerializer(BaseCPWChemicalSerializer):
+class CPRecordBaseSerializer(BaseCPWChemicalSerializer):
     record_usages = CPUsageSerializer(many=True)
     section = serializers.CharField(required=False, write_only=True)
     excluded_usages = serializers.SerializerMethodField()
 
     class Meta:
-        model = CPRecord
         fields = BaseCPWChemicalSerializer.Meta.fields + [
             "section",
             "imports",
@@ -41,3 +41,13 @@ class CPRecordSerializer(BaseCPWChemicalSerializer):
         for usage in usages:
             CPUsage.objects.create(country_programme_record=record, **usage)
         return record
+
+
+class CPRecordSerializer(CPRecordBaseSerializer):
+    class Meta(CPRecordBaseSerializer.Meta):
+        model = CPRecord
+
+
+class CPRecordArchiveSerializer(CPRecordBaseSerializer):
+    class Meta(CPRecordBaseSerializer.Meta):
+        model = CPRecordArchive

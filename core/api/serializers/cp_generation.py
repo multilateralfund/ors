@@ -3,9 +3,10 @@ from core.api.serializers.adm import CP_GENERATION_CHEMICAL
 
 from core.api.serializers.base import BaseCPRowSerializer
 from core.models.country_programme import CPGeneration, CPReport
+from core.models.country_programme_archive import CPGenerationArchive
 
 
-class CPGenerationSerializer(BaseCPRowSerializer):
+class CPGenerationBaseSerializer(BaseCPRowSerializer):
     chemical_name = serializers.SerializerMethodField()
     display_name = serializers.SerializerMethodField()
     country_programme_report_id = serializers.PrimaryKeyRelatedField(
@@ -15,7 +16,6 @@ class CPGenerationSerializer(BaseCPRowSerializer):
     )
 
     class Meta:
-        model = CPGeneration
         fields = BaseCPRowSerializer.Meta.fields + [
             "id",
             "chemical_name",
@@ -31,3 +31,13 @@ class CPGenerationSerializer(BaseCPRowSerializer):
 
     def get_display_name(self, _):
         return CP_GENERATION_CHEMICAL
+
+
+class CPGenerationSerializer(CPGenerationBaseSerializer):
+    class Meta(CPGenerationBaseSerializer.Meta):
+        model = CPGeneration
+
+
+class CPGenerationArchiveSerializer(CPGenerationBaseSerializer):
+    class Meta(CPGenerationBaseSerializer.Meta):
+        model = CPGenerationArchive

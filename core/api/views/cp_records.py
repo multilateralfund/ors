@@ -25,18 +25,33 @@ from core.models.country_programme import (
 from core.models.substance import Substance
 from core.utils import IMPORT_DB_MAX_YEAR
 
+# pylint: disable=E1102
 
-class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
+
+class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
     """
     API endpoint that allows country programme records to be viewed.
+    !!!! We also use this view for CPRecordsArchiveListView
     @param cp_report_id: int - query filter for country programme id (exact)
     @param name: str - query filter for name (contains)
     @param year: int - query filter for year (exact)
     """
 
+    cp_report_class = None
+    cp_record_class = None
+    cp_prices_class = None
+    cp_generation_class = None
+    cp_emission_class = None
+
+    cp_report_seri_class = None
+    cp_record_seri_class = None
+    cp_prices_seri_class = None
+    cp_generation_seri_class = None
+    cp_emission_seri_class = None
+
     def _get_cp_record(self, cp_report_id, section):
         return (
-            CPRecord.objects.select_related(
+            self.cp_record_class.objects.select_related(
                 "substance__group",
                 "blend",
                 "country_programme_report__country",
@@ -148,7 +163,7 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
 
         exist_records = self._get_cp_record(cp_report_id, section)
         final_list = self._get_displayed_items(
-            CPRecord, cp_report_id, section, exist_records
+            self.cp_record_class, cp_report_id, section, exist_records
         )
 
         return final_list
@@ -169,13 +184,13 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
 
     def _get_cp_prices(self, cp_report_id):
         exist_records = (
-            CPPrices.objects.select_related("substance__group", "blend")
+            self.cp_prices_class.objects.select_related("substance__group", "blend")
             .prefetch_related("blend__components")
             .filter(country_programme_report=cp_report_id)
             .all()
         )
         final_list = self._get_displayed_items(
-            CPPrices, cp_report_id, "C", exist_records
+            self.cp_prices_class, cp_report_id, "C", exist_records
         )
 
         return final_list
@@ -184,19 +199,23 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
         section_a = self._get_displayed_records(cp_report.id, "A")
         section_b = self._get_displayed_records(cp_report.id, "B")
         section_c = self._get_cp_prices(cp_report.id)
-        section_d = self._get_items_filtered_by_report(CPGeneration, cp_report.id)
-        section_e = self._get_items_filtered_by_report(CPEmission, cp_report.id)
+        section_d = self._get_items_filtered_by_report(
+            self.cp_generation_class, cp_report.id
+        )
+        section_e = self._get_items_filtered_by_report(
+            self.cp_emission_class, cp_report.id
+        )
         section_f = {
             "remarks": cp_report.comment,
         }
 
         return {
-            "cp_report": CPReportSerializer(cp_report).data,
-            "section_a": CPRecordSerializer(section_a, many=True).data,
-            "section_b": CPRecordSerializer(section_b, many=True).data,
-            "section_c": CPPricesSerializer(section_c, many=True).data,
-            "section_d": CPGenerationSerializer(section_d, many=True).data,
-            "section_e": CPEmissionSerializer(section_e, many=True).data,
+            "cp_report": self.cp_report_seri_class(cp_report).data,
+            "section_a": self.cp_record_seri_class(section_a, many=True).data,
+            "section_b": self.cp_record_seri_class(section_b, many=True).data,
+            "section_c": self.cp_prices_seri_class(section_c, many=True).data,
+            "section_d": self.cp_generation_seri_class(section_d, many=True).data,
+            "section_e": self.cp_emission_seri_class(section_e, many=True).data,
             "section_f": section_f,
         }
 
@@ -224,17 +243,17 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
         adm_d = self._get_regroupped_adm_records(adm_d)
 
         return {
-            "cp_report": CPReportSerializer(cp_report).data,
-            "section_a": CPRecordSerializer(section_a, many=True).data,
+            "cp_report": self.cp_report_seri_class(cp_report).data,
+            "section_a": self.cp_record_seri_class(section_a, many=True).data,
             "adm_b": adm_b,
-            "section_c": CPPricesSerializer(section_c, many=True).data,
+            "section_c": self.cp_prices_seri_class(section_c, many=True).data,
             "adm_c": adm_c,
             "adm_d": adm_d,
         }
 
     def _get_cp_report(self):
         try:
-            return CPReport.objects.get(id=self.request.query_params["cp_report_id"])
+            return self.cp_report_class.objects.get(id=self.request.query_params["cp_report_id"])
         except KeyError as e:
             raise ValidationError({"cp_report_id": "query parameter is required"}) from e
         except CPReport.DoesNotExist as e:
@@ -258,3 +277,17 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
     )
     def get(self, *args, **kwargs):
         return Response(self.get_data(self._get_cp_report()))
+
+
+class CPRecordListView(CPRecordBaseListView):
+    cp_report_class = CPReport
+    cp_record_class = CPRecord
+    cp_prices_class = CPPrices
+    cp_generation_class = CPGeneration
+    cp_emission_class = CPEmission
+
+    cp_report_seri_class = CPReportSerializer
+    cp_record_seri_class = CPRecordSerializer
+    cp_prices_seri_class = CPPricesSerializer
+    cp_generation_seri_class = CPGenerationSerializer
+    cp_emission_seri_class = CPEmissionSerializer
