@@ -62,6 +62,7 @@ function TabPanel(props: any) {
 
 export default function CPReportView(props: {
   emptyForm?: Record<string, any> | null
+  print?: boolean
   report?: Record<string, any>
 }) {
   const [currentIndex, setCurrentIndex] = useState(0)

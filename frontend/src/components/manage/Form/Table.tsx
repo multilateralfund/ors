@@ -34,10 +34,6 @@ import useStore from '@ors/store'
 
 import Portal from '../Utils/Portal'
 
-function pxToMm(px: number, DPI: number = 96) {
-  return (1 / DPI) * 25.4 * px
-}
-
 export default function Table(
   props: AgGridReactProps & {
     Toolbar?: React.FC<any>
@@ -102,7 +98,7 @@ export default function Table(
   const theme: ThemeSlice = useStore((state) => state.theme)
   const i18n: I18nSlice = useStore((state) => state.i18n)
   const [fullScreen, setFullScreen] = useState(false)
-  const [print, setPrint] = useState<'solo' | boolean>(false)
+  const [print, setPrint] = useState<'solo' | boolean>(props.print)
 
   // baseColDef sets props common to all Columns
   const baseColDef: ColDef = useMemo(
@@ -252,57 +248,6 @@ export default function Table(
     }
   }
 
-  function agPrint() {
-    window.print()
-  }
-
-  async function onPrint(triggerPrint = true) {
-    const table = tableEl.current
-    if (table && print) {
-      const dpi = table.querySelector<HTMLElement>('dpi')?.offsetWidth || 96
-      const agLayoutPrint = table.querySelector<HTMLElement>('.ag-root-wrapper')
-      const agToolbar = table.querySelector<HTMLElement>('.ag-toolbar')
-      const tableWidth = pxToMm(agLayoutPrint?.offsetWidth || 0, dpi)
-      const tableHeight = pxToMm(agLayoutPrint?.offsetHeight || 0, dpi)
-
-      table.style.setProperty(
-        '--print-device-pixel-ratio',
-        `${window.devicePixelRatio}`,
-      )
-      table.style.setProperty('--ag-print-width', `${tableWidth}`)
-      table.style.setProperty('--ag-print-height', `${tableHeight}`)
-      table.style.setProperty('--ag-print-paper-width', '210')
-      table.style.setProperty('--print-unit', '1mm')
-      table.style.setProperty('--print-dpi', `${dpi}`)
-
-      setTimeout(() => {
-        const toolbarHeight = pxToMm(agToolbar?.offsetHeight || 0, dpi)
-        table.style.setProperty('--ag-print-toolbar-height', `${toolbarHeight}`)
-      }, 500)
-
-      if (triggerPrint) {
-        debounce(agPrint, 1000)
-      }
-    }
-  }
-
-  function onBeforePrint(event: any) {
-    if (!print) {
-      event.preventDefault()
-      setPrint(true)
-      setTimeout(() => {
-        onPrint(true)
-      }, 1000)
-    }
-  }
-
-  function onAfterPrint() {
-    setPrint(false)
-    setTimeout(() => {
-      document.documentElement.setAttribute('data-printing', 'no')
-    }, 0)
-  }
-
   useEffect(() => {
     if (fullScreen) {
       document.body.style.overflow = 'hidden'
@@ -312,31 +257,10 @@ export default function Table(
   }, [fullScreen])
 
   useEffect(() => {
-    if (print) {
-      setTimeout(() => {
-        onPrint()
-      }, 1000)
-    }
-    /* eslint-disable-next-line */
-  }, [print])
-
-  useEffect(() => {
     if (!grid.current.api) return
     handleErrors()
     /* eslint-disable-next-line */
   }, [errors])
-
-  useEffect(() => {
-    window.addEventListener('beforeprint', onBeforePrint)
-    window.addEventListener('afterprint', onAfterPrint)
-
-    return () => {
-      window.removeEventListener('afterprint', onAfterPrint)
-      window.removeEventListener('beforeprint', onBeforePrint)
-    }
-
-    /* eslint-disable-next-line */
-  }, [])
 
   const FadeInOut = useMemo(
     () => (fadeInOut ? DefaultFadeInOut : 'div'),
@@ -360,13 +284,7 @@ export default function Table(
               exitFullScreen={() => setFullScreen(false)}
               fullScreen={fullScreen || print}
               print={print}
-              onPrint={() => {
-                document.documentElement.setAttribute(
-                  'data-printing',
-                  'ag-grid',
-                )
-                setPrint('solo')
-              }}
+              onPrint={() => {}}
               {...props}
             />
           </div>
