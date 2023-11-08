@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from core.api.utils import SECTION_ANNEX_MAPPING
 
 from core.models import Substance
@@ -86,3 +87,13 @@ class BlendSerializer(ChemicalsBaseSerializer):
 
     def get_group(self, _obj):
         return "Blends (Mixture of Controlled Substances)"
+
+    def validate_components(self, attrs):
+        if "components" not in attrs:
+            raise ValidationError({"components": "This field is required"})
+        try:
+            assert isinstance(attrs["components"], list), "Components must be an array"
+            assert len(attrs["components"]) > 0, "At least one component is required"
+        except AssertionError as e:
+            raise ValidationError({"components": str(e)}) from e
+        return attrs

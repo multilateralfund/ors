@@ -11,6 +11,7 @@ from core.api.views.agency import AgencyListView
 from core.api.views.chemicals import (
     BlendCreateView,
     BlendsListView,
+    SimilarBlendsListView,
     SubstancesListView,
 )
 from core.api.views.cp_archive import CPRecordsArchiveListView, CPReportVersionsListView
@@ -84,6 +85,7 @@ urlpatterns = [
         name="substances-list",
     ),
     path("blends/", BlendsListView.as_view(), name="blends-list"),
+    path("blends/similar/", SimilarBlendsListView.as_view(), name="blends-similar"),
     path("blends/create/", BlendCreateView.as_view(), name="blends-create"),
     path(
         "country-programme/reports/",

@@ -136,6 +136,73 @@ class BlendsListView(ChemicalBaseListView):
         return super().get(request, *args, **kwargs)
 
 
+class SimilarBlendsListView(ChemicalBaseListView):
+    """
+    API endpoint that allows similar blends to be viewed.
+    """
+
+    serializer_class = BlendSerializer
+
+    def get_queryset(self):
+        data = self.request.data
+        same_substances = data.get("same_substances", False)
+
+        queryset = BlendComponents.objects
+        if not data.get("components", None):
+            return queryset.none()
+
+        components_list = [
+            (vals["substance_id"], vals["percentage"] / 100)
+            for vals in data["components"]
+        ]
+        queryset = queryset.get_similar_blends(
+            components_list, same_subs_list=same_substances
+        )
+
+        return queryset.order_by("sort_order")
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["components"],
+            properties={
+                "same_substances": openapi.Schema(
+                    type=openapi.TYPE_BOOLEAN,
+                    description="If true, the blend must have the same number"
+                    " of components as the components_list",
+                ),
+                "components": openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    description="Array of objects",
+                    items=openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        required=["substance_id", "component_name", "percentage"],
+                        properties={
+                            "substance_id": openapi.Schema(
+                                type=openapi.TYPE_INTEGER,
+                                description="Substance id",
+                            ),
+                            "component_name": openapi.Schema(
+                                type=openapi.TYPE_STRING,
+                                description="Component name",
+                            ),
+                            "percentage": openapi.Schema(
+                                type=openapi.TYPE_NUMBER,
+                                description="Percentage",
+                            ),
+                        },
+                    ),
+                ),
+            },
+        ),
+    )
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        self.serializer_class(data=data).validate_components(data)
+
+        return self.list(request, *args, **kwargs)
+
+
 class BlendCreateView(generics.CreateAPIView):
     """
     API endpoint that allows blends to be created.
@@ -328,15 +395,12 @@ class BlendCreateView(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         data = request.data
 
+        # validate data
         for field in ["other_names", "components", "composition"]:
-            if field not in data or not data[field]:
+            if data.get(field) is None:
                 raise ValidationError({field: "This field is required."})
 
-        try:
-            assert isinstance(data["components"], list), "Components must be an array"
-            assert len(data["components"]) > 0, "At least one component is required"
-        except AssertionError as e:
-            raise ValidationError({"components": str(e)}) from e
+        self.serializer_class(data=data).validate_components(data)
 
         # parse blend components data
         components_data = self.parse_blend_components_data(data["components"])
