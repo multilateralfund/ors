@@ -4,14 +4,6 @@ from core.api.export.base import BaseWriter
 
 
 class SectionWriter(BaseWriter):
-    def write(self, data):
-        self.write_headers()
-        self.write_data(data)
-        self.set_dimensions()
-        # Freeze so top and side headers always stay visible.
-        # Help with scrolling in the very large sections.
-        self.sheet.freeze_panes = f"B{self.header_row_end_idx + 1}"
-
     def write_data(self, data):
         """Write data row by row:
 
