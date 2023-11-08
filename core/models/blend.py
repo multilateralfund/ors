@@ -189,16 +189,16 @@ class BlendComponentManager(models.Manager):
         @param components_list: list of tuples (substance_id, percentage)
         @return: Blend object or None
         """
-        filter_lsit = []
+        filter_list = []
         # set the filter list for the query using the components list
         for substance_id, percentage in components_list:
-            filter_lsit.append(
+            filter_list.append(
                 models.Q(substance_id=substance_id, percentage=percentage)
             )
 
         # create the query
-        filters = filter_lsit.pop()
-        for item in filter_lsit:
+        filters = filter_list.pop()
+        for item in filter_list:
             filters |= item
 
         queryset = (
@@ -227,14 +227,14 @@ class BlendComponentManager(models.Manager):
             as the components_list
         @return: list of Blend objects
         """
-        filter_lsit = []
+        filter_list = []
         # set the filter list for the query using the components list
         for substance_id, _ in components_list:
-            filter_lsit.append(models.Q(substance_id=substance_id))
+            filter_list.append(models.Q(substance_id=substance_id))
 
         # create the query
-        filters = filter_lsit.pop()
-        for item in filter_lsit:
+        filters = filter_list.pop()
+        for item in filter_list:
             filters |= item
 
         queryset = (
