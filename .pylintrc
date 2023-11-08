@@ -22,6 +22,8 @@ disable=
     logging-not-lazy,
     invalid-name,
     avoid-assert,
+    consider-using-f-string,
+    duplicate-code,
 
 [FORMAT]
 max-line-length=120

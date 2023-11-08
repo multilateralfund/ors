@@ -17,11 +17,14 @@ export default function AdmD(props: any) {
   const rowData = useMemo(() => {
     const dataByRowId = groupBy(report.adm_d, 'row_id')
 
-    return map(emptyForm.admD?.rows, (row) => ({
+    return map(emptyForm.adm_d?.rows, (row) => ({
       ...row,
       ...(row.type === 'title' ? { rowType: 'group' } : {}),
       ...(row.type === 'subtitle' ? { rowType: 'hashed' } : {}),
-      values: groupBy(dataByRowId[row.id], 'value_choice_id'),
+      values: groupBy(
+        dataByRowId[row.id],
+        (item) => item.values[0]?.value_choice_id,
+      ),
     }))
   }, [emptyForm, report])
 

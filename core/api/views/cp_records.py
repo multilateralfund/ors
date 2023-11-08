@@ -221,6 +221,7 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
         adm_c = self._get_adm_records(cp_report.id, "C")
         adm_c = self._get_regroupped_adm_records(adm_c)
         adm_d = self._get_adm_records(cp_report.id, "D")
+        adm_d = self._get_regroupped_adm_records(adm_d)
 
         return {
             "cp_report": CPReportSerializer(cp_report).data,
@@ -228,16 +229,16 @@ class CPRecordListView(mixins.ListModelMixin, generics.GenericAPIView):
             "adm_b": adm_b,
             "section_c": CPPricesSerializer(section_c, many=True).data,
             "adm_c": adm_c,
-            "adm_d": AdmRecordSerializer(adm_d, many=True).data,
+            "adm_d": adm_d,
         }
 
     def _get_cp_report(self):
         try:
             return CPReport.objects.get(id=self.request.query_params["cp_report_id"])
-        except KeyError:
-            raise ValidationError({"cp_report_id": "query parameter is required"})
-        except CPReport.DoesNotExist:
-            raise ValidationError({"cp_report_id": "invalid id"})
+        except KeyError as e:
+            raise ValidationError({"cp_report_id": "query parameter is required"}) from e
+        except CPReport.DoesNotExist as e:
+            raise ValidationError({"cp_report_id": "invalid id"}) from e
 
     def get_data(self, cp_report):
         if cp_report.year > IMPORT_DB_MAX_YEAR:

@@ -1,123 +1,16 @@
-import openpyxl
-from openpyxl.styles import Alignment
-from openpyxl.styles import Border
-from openpyxl.styles import PatternFill
-from openpyxl.styles import Side
-from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
 
-ROW_HEIGHT = 30
-COLUMN_WIDTH = 15
+from core.api.export.base import BaseWriter
 
 
-class SectionWriter:
-    def __init__(self, sheet, headers):
-        self.sheet = sheet
-        self.headers = {}
-        self.all_headers = {}
-
-        nex_column_idx, max_header_depth = self._compute_header_positions(headers)
-        # Excel row start at index 1
-        self.last_header_row_idx = max_header_depth + 1
-        self.max_column_idx = nex_column_idx - 1
-
+class SectionWriter(BaseWriter):
     def write(self, data):
         self.write_headers()
         self.write_data(data)
         self.set_dimensions()
         # Freeze so top and side headers always stay visible.
         # Help with scrolling in the very large sections.
-        self.sheet.freeze_panes = f"B{self.last_header_row_idx + 1}"
-
-    def _compute_header_positions(self, items, column=1, depth=0):
-        """Compute the positions of the headers depending on their hierarchy."""
-        max_child_depth = depth
-        for item in items:
-            # Keep track of the start column, as the header might span over many
-            # columns if it has more than one child; for those cases the cells need
-            # to be merged.
-            start_column = column
-            if children := item.get("children"):
-                column, child_depth = self._compute_header_positions(
-                    children, column=column, depth=depth + 1
-                )
-            else:
-                column += 1
-                child_depth = depth
-            max_child_depth = max(child_depth, max_child_depth)
-
-            # Keep track of how many level of children this node is an
-            # ancestor of.
-            # Depending on this number, we'll position the header.
-            header_child_depth = child_depth - depth
-            header = {
-                **item,
-                "child_depth": header_child_depth,
-                "column_letter": get_column_letter(start_column),
-                "column": start_column,
-                "end_column": column - 1,
-            }
-            self.all_headers[item["id"]] = header
-            # If header has no children, keep track of them separately
-            # as these are the places where values are actually added.
-            if header_child_depth == 0:
-                self.headers[item["id"]] = header
-
-        return column, max_child_depth
-
-    def _write_header_cell(self, row, column, value):
-        cell = self.sheet.cell(row, column, value)
-        cell.font = Font(name=openpyxl.styles.DEFAULT_FONT.name, bold=True)
-        cell.border = Border(
-            left=Side(style="thin"),
-            right=Side(style="thin"),
-            top=Side(style="thin"),
-            bottom=Side(style="thin"),
-        )
-        cell.alignment = Alignment(
-            horizontal="center", vertical="center", wrap_text=True
-        )
-        cell.fill = PatternFill(
-            start_color="CCCCCC", end_color="CCCCCC", fill_type="solid"
-        )
-        return cell
-
-    def _write_record_cell(self, row, column, value, read_only=False):
-        cell = self.sheet.cell(row, column, value)
-        cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
-        cell.border = Border(
-            left=Side(style="hair"),
-            right=Side(style="hair"),
-            top=Side(style="hair"),
-            bottom=Side(style="hair"),
-        )
-        if read_only:
-            cell.fill = PatternFill(
-                start_color="EEEEEE", end_color="EEEEEE", fill_type="solid"
-            )
-        return cell
-
-    def write_headers(self):
-        """Write the entire header structure and merge cells."""
-        # Write empty values in the entire header range to ensure everything
-        # has the same style.
-        for i in range(1, self.last_header_row_idx + 1):
-            for j in range(1, self.max_column_idx + 1):
-                self._write_header_cell(i, j, "")
-
-        for parsed_header in self.all_headers.values():
-            row = self.last_header_row_idx - parsed_header["child_depth"]
-            self._write_header_cell(
-                row,
-                parsed_header["column"],
-                parsed_header["headerName"],
-            )
-            self.sheet.merge_cells(
-                start_row=row,
-                start_column=parsed_header["column"],
-                end_row=row,
-                end_column=parsed_header["end_column"],
-            )
+        self.sheet.freeze_panes = f"B{self.header_row_end_idx + 1}"
 
     def write_data(self, data):
         """Write data row by row:
@@ -126,7 +19,11 @@ class SectionWriter:
         - Write sub-totals for each column of each group.
         - Write a final total row for each column.
         """
-        row_idx = self.last_header_row_idx + 1
+        if not data:
+            # If there is no data, add an empty row so the formulas actually work
+            data = [{}]
+
+        row_idx = self.header_row_end_idx + 1
         group_ranges = []
         current_group, group_row_start_idx = None, None
         for record in data:
@@ -158,18 +55,9 @@ class SectionWriter:
             row_idx += 1
         else:
             # No groups in this section, make one big group instead
-            group_ranges.append((self.last_header_row_idx + 1, row_idx - 1))
+            group_ranges.append((self.header_row_end_idx + 1, row_idx - 1))
 
         self._write_total_row(row_idx, group_ranges)
-
-    def set_dimensions(self):
-        for header in self.headers.values():
-            self.sheet.column_dimensions[header["column_letter"]].width = header.get(
-                "column_width", COLUMN_WIDTH
-            )
-
-        for row in range(1, self.sheet.max_row + 1):
-            self.sheet.row_dimensions[row].height = ROW_HEIGHT
 
     def _write_subtotal_row(self, group_row_start_idx, row_idx):
         self._write_record_cell(row_idx, 1, "Sub-total", read_only=True)

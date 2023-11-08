@@ -95,15 +95,15 @@ class EmptyFormView(views.APIView):
     def get_old_empty_form(cls, cp_report):
         sections = {
             "usage_columns": cls.get_usage_columns(cp_report.year),
-            "admB": {
+            "adm_b": {
                 "columns": [],
                 "rows": [],
             },
-            "admC": {
+            "adm_c": {
                 "columns": [],
                 "rows": [],
             },
-            "admD": {
+            "adm_d": {
                 "columns": [],
                 "rows": [],
             },
@@ -116,9 +116,9 @@ class EmptyFormView(views.APIView):
         for col in columns:
             serial_col = AdmColumnSerializer(col).data
             if col.section == AdmColumn.AdmColumnSection.B:
-                sections["admB"]["columns"].append(serial_col)
+                sections["adm_b"]["columns"].append(serial_col)
             elif col.section == AdmColumn.AdmColumnSection.C:
-                sections["admC"]["columns"].append(serial_col)
+                sections["adm_c"]["columns"].append(serial_col)
 
         # set rows
         rows = AdmRow.objects.get_for_cp_report(cp_report)
@@ -131,30 +131,30 @@ class EmptyFormView(views.APIView):
             serial_row = AdmRowSerializer(row).data
             if row.section == AdmRow.AdmRowSection.B:
                 if row.index not in ["1.6.1", "1.6.2"]:
-                    sections["admB"]["rows"].append(serial_row)
+                    sections["adm_b"]["rows"].append(serial_row)
                     continue
                 # row.index in ["1.6.1", "1.6.2"]
                 if row.index == "1.6.1":
                     if row.text.lower() != "n/a":
                         # set admb_161 to True so we will not display 1.6.1 for N/A
                         admb_161 = True
-                        sections["admB"]["rows"].append(serial_row)
+                        sections["adm_b"]["rows"].append(serial_row)
                     elif not admb_161:
                         # row.text.lower() == "n/a" and admb_161 is False
-                        sections["admB"]["rows"].append(serial_row)
+                        sections["adm_b"]["rows"].append(serial_row)
                 elif row.index == "1.6.2":
                     if row.text.lower() != "n/a":
                         # set admb_162 to True so we will not display 1.6.2 for N/A
                         admb_162 = True
-                        sections["admB"]["rows"].append(serial_row)
+                        sections["adm_b"]["rows"].append(serial_row)
                     elif not admb_162:
                         # row.text.lower() == "n/a" and admb_162 is False
-                        sections["admB"]["rows"].append(serial_row)
+                        sections["adm_b"]["rows"].append(serial_row)
 
             elif row.section == AdmRow.AdmRowSection.C:
-                sections["admC"]["rows"].append(serial_row)
+                sections["adm_c"]["rows"].append(serial_row)
             elif row.section == AdmRow.AdmRowSection.D:
-                sections["admD"]["rows"].append(serial_row)
+                sections["adm_d"]["rows"].append(serial_row)
 
         return sections
 

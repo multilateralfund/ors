@@ -2,8 +2,10 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from core.api.export.cp_report_new import CPReportNewExporter
+from core.api.export.cp_report_old import CPReportOldExporter
 from core.api.views.cp_records import CPRecordListView
 from core.api.views.cp_report_empty_form import EmptyFormView
+from core.utils import IMPORT_DB_MAX_YEAR
 
 
 class CPRecordExportView(CPRecordListView):
@@ -19,7 +21,19 @@ class CPRecordExportView(CPRecordListView):
     )
     def get(self, *args, **kwargs):
         cp_report = self._get_cp_report()
-        return CPReportNewExporter().get_xlsx(
+        empty_form = EmptyFormView.get_data(cp_report)
+
+        if cp_report.year > IMPORT_DB_MAX_YEAR:
+            exporter = CPReportNewExporter()
+        else:
+            exporter = CPReportOldExporter()
+
+        usages = empty_form.pop("usage_columns")
+
+        return exporter.get_xlsx(
             self.get_data(cp_report),
-            EmptyFormView.get_data(cp_report)["usage_columns"],
+            {
+                **usages,
+                **empty_form,
+            },
         )

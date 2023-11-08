@@ -1,8 +1,8 @@
 from openpyxl.styles import Alignment
 
 from core.api.export.base import CPReportBase
-from core.api.export.section_export import COLUMN_WIDTH
-from core.api.export.section_export import ROW_HEIGHT
+from core.api.export.base import COLUMN_WIDTH
+from core.api.export.base import ROW_HEIGHT
 from core.api.export.section_export import SectionWriter
 
 
