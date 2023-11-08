@@ -189,16 +189,16 @@ class BlendComponentManager(models.Manager):
         @param components_list: list of tuples (substance_id, percentage)
         @return: Blend object or None
         """
-        filter_lsit = []
+        filter_list = []
         # set the filter list for the query using the components list
         for substance_id, percentage in components_list:
-            filter_lsit.append(
+            filter_list.append(
                 models.Q(substance_id=substance_id, percentage=percentage)
             )
 
         # create the query
-        filters = filter_lsit.pop()
-        for item in filter_lsit:
+        filters = filter_list.pop()
+        for item in filter_list:
             filters |= item
 
         queryset = (
@@ -215,6 +215,48 @@ class BlendComponentManager(models.Manager):
                 return blend
 
         return None
+
+    def get_similar_blends(self, components_list, same_subs_list=False):
+        """
+        get similar blends by a list of components
+          -> blends that have all the components in the components_list and maybe more
+          -> the percentage of the components does not have to be the same as in the blend
+
+        @param components_list: list of tuples (substance_id, percentage)
+        @param same_subs_list: if True, the blend must have the same number of components
+            as the components_list
+        @return: list of Blend objects
+        """
+        filter_list = []
+        # set the filter list for the query using the components list
+        for substance_id, _ in components_list:
+            filter_list.append(models.Q(substance_id=substance_id))
+
+        # create the query
+        filters = filter_list.pop()
+        for item in filter_list:
+            filters |= item
+
+        queryset = (
+            self.values("blend_id")
+            .filter(filters)
+            .annotate(total=models.Count("id"))
+            .filter(models.Q(total=len(components_list)))
+        )
+        if not queryset:
+            return Blend.objects.none()
+
+        blend_ids = [item["blend_id"] for item in queryset]
+        if not same_subs_list:
+            return Blend.objects.filter(id__in=blend_ids)
+
+        # check if the blend has the same number of components as the components list
+
+        return (
+            Blend.objects.filter(id__in=blend_ids)
+            .annotate(total=models.Count("components"))
+            .filter(models.Q(total=len(components_list)))
+        )
 
 
 class BlendComponents(models.Model):
