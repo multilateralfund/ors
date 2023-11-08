@@ -166,7 +166,7 @@ class CPReportBase:
             )
 
         # Remove the default sheet before saving
-        wb.remove_sheet(wb.get_sheet_by_name(wb.get_sheet_names()[0]))
+        del wb[wb.sheetnames[0]]
 
         # Save xlsx and return the response
         xls = io.BytesIO()

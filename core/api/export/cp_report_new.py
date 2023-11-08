@@ -1,4 +1,5 @@
 from openpyxl.styles import Alignment
+from openpyxl.utils import get_column_letter
 
 from core.api.export.base import CPReportBase
 from core.api.export.base import COLUMN_WIDTH
@@ -25,6 +26,7 @@ class CPReportNewExporter(CPReportBase):
                 "SECTION A. ANNEX A, ANNEX B, ANNEX C - GROUP I AND "
                 "ANNEX E - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)"
             ),
+            manufacturing_blends=False,
         )
 
     def export_section_b(self, sheet, data, usages):
@@ -35,7 +37,9 @@ class CPReportNewExporter(CPReportBase):
             "SECTION B. ANNEX F - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)",
         )
 
-    def _export_usage_section(self, sheet, data, usages, title):
+    def _export_usage_section(
+        self, sheet, data, usages, title, manufacturing_blends=True
+    ):
         SectionWriter(
             sheet,
             [
@@ -73,10 +77,16 @@ class CPReportNewExporter(CPReportBase):
                             "id": "production",
                             "headerName": "Production",
                         },
-                        {
-                            "id": "manufacturing_blends",
-                            "headerName": "Manufacturing of Blends",
-                        },
+                        *(
+                            [
+                                {
+                                    "id": "manufacturing_blends",
+                                    "headerName": "Manufacturing of Blends",
+                                }
+                            ]
+                            if manufacturing_blends
+                            else []
+                        ),
                         {
                             "id": "import_quotas",
                             "headerName": "Import Quotas",
@@ -245,7 +255,10 @@ class CPReportNewExporter(CPReportBase):
         writer.write_headers()
         writer.set_dimensions()
 
-        cell = sheet.cell(3, 1, data["remarks"])
+        row_idx = writer.header_row_end_idx + 1
+        col_idx = 1
+
+        cell = sheet.cell(row_idx, col_idx, data["remarks"])
         cell.alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
-        sheet.column_dimensions["A"].width = COLUMN_WIDTH * 8
-        sheet.row_dimensions[3].height = ROW_HEIGHT * 16
+        sheet.column_dimensions[get_column_letter(col_idx)].width = COLUMN_WIDTH * 8
+        sheet.row_dimensions[row_idx].height = ROW_HEIGHT * 16
