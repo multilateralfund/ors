@@ -44,8 +44,8 @@ PREFERENCES = {
     "print.printer_Mozilla_Save_to_PDF.print_margin_left": "5",
     "print.printer_Mozilla_Save_to_PDF.print_margin_right": "5",
     "print.printer_Mozilla_Save_to_PDF.print_margin_top": "5",
-    # Hardcoded to landscape
-    "print.printer_Mozilla_Save_to_PDF.print_orientation": 1,
+    # Hardcoded to portrait
+    "print.printer_Mozilla_Save_to_PDF.print_orientation": 0,
     "print.printer_Mozilla_Save_to_PDF.print_page_delay": 100,
     "print.printer_Mozilla_Save_to_PDF.print_paper_height": "297",
     "print.printer_Mozilla_Save_to_PDF.print_paper_width": "210",
@@ -75,7 +75,7 @@ class Browser(webdriver.Firefox):
         self.print_path = self.print_dir / "report.pdf"
 
         self.print_options = PrintOptions()
-        self.print_options.orientation = "landscape"
+        self.print_options.orientation = "portrait"
         self.print_options.shrink_to_fit = True
         self.print_options.background = True
 
