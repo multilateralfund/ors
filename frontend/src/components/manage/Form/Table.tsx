@@ -274,10 +274,10 @@ export default function Table(
         className={cx('table-root flex flex-col', {
           'ag-full-screen': fullScreen,
           'ag-print': print,
+          'ag-rendering': rendering,
         })}
         ref={tableEl}
       >
-        {rendering && <div className={cx(`rendering-aggrid-${uniqueId}`)} />}
         <div className="dpi pointer-events-none absolute -z-absolute h-[1in] w-[1in] opacity-0" />
         {Toolbar && (
           <div className="ag-toolbar">
