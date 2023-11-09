@@ -143,6 +143,16 @@ class SimilarBlendsListView(ChemicalBaseListView):
 
     serializer_class = BlendSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update(
+            {
+                "with_components": True,
+                "generate_composition": True,
+            }
+        )
+        return context
+
     def get_queryset(self):
         data = self.request.data
         same_substances = data.get("same_substances", False)
