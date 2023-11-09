@@ -114,28 +114,30 @@ class Browser(webdriver.Firefox):
     def wait_until_visible(self, css_selector, timeout=10):
         logger.debug("Waiting until visible: %r", css_selector)
         return WebDriverWait(self, timeout).until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, css_selector))
+            EC.visibility_of_element_located((By.CSS_SELECTOR, css_selector)),
+            f"Expected element to be visible: f{css_selector!r}",
         )
 
     def wait_until_not_visible(self, css_selector, timeout=10):
         logger.debug("Waiting until NOT visible: %r", css_selector)
         return WebDriverWait(self, timeout).until_not(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, css_selector))
+            EC.visibility_of_element_located((By.CSS_SELECTOR, css_selector)),
+            f"Expected element to be NOT visible: f{css_selector!r}",
         )
 
     def authenticate(self, username, password):
-        logger.debug("Authenticating as %r", username)
+        logger.info("Authenticating as %r", username)
 
         self.wait_until_visible("[name=username]").send_keys(username)
         self.wait_until_visible("[name=password]").send_keys(password)
         self.wait_until_visible("button[type=submit]").click()
 
     def get(self, url):
-        logger.debug("Navigating to %r", url)
+        logger.info("Navigating to %r", url)
         return super().get(url)
 
     def print_to_pdf(self):
-        logger.debug("Printing to PDF: %s", self.print_path)
+        logger.info("Printing to PDF: %s", self.print_path)
         with self.print_path.open("wb") as print_file:
             data = base64.b64decode(self.print_page(print_options=self.print_options))
             print_file.write(data)
