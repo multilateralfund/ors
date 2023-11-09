@@ -8,6 +8,8 @@ import type {
 
 import { warning } from '../Log/Log'
 
+type CompiledPathParam = { isOptional?: boolean; paramName: string }
+
 export function removeTrailingSlash(path: string): string {
   return path.replace(/\/+$/, '')
 }
@@ -41,7 +43,7 @@ function compilePath(
   path: string,
   caseSensitive = false,
   end = true,
-): [RegExp, string[]] {
+): [RegExp, CompiledPathParam[]] {
   warning(
     path === '*' || !path.endsWith('*') || path.endsWith('/*'),
     `Route path "${path}" will be treated as if it were ` +
@@ -50,20 +52,21 @@ function compilePath(
       `please change the route path to "${path.replace(/\*$/, '/*')}".`,
   )
 
-  const paramNames: string[] = []
+  const params: CompiledPathParam[] = []
   let regexpSource =
     '^' +
     path
       .replace(/\/*\*?$/, '') // Ignore trailing / and /*, we'll handle it below
       .replace(/^\/*/, '/') // Make sure it has a leading /
-      .replace(/[\\.*+^$?{}|()[\]]/g, '\\$&') // Escape special regex chars
-      .replace(/\/:(\w+)/g, (_: string, paramName: string) => {
-        paramNames.push(paramName)
-        return '/([^\\/]+)'
+      .replace(/[\\.*+^${}|()[\]]/g, '\\$&') // Escape special regex chars
+      .replace('/\\*\\*', '/.*')
+      .replace(/\/:(\w+)(\?)?/g, (_: string, paramName: string, isOptional) => {
+        params.push({ isOptional: isOptional != null, paramName })
+        return isOptional ? '/?([^\\/]+)?' : '/([^\\/]+)'
       })
 
   if (path.endsWith('*')) {
-    paramNames.push('*')
+    params.push({ paramName: '*' })
     regexpSource +=
       path === '*' || path === '/*'
         ? '(.*)$' // Already matched the initial /, just match the rest
@@ -73,7 +76,7 @@ function compilePath(
     regexpSource += '\\/*$'
   } else if (path !== '' && path !== '/') {
     // If our path is non-empty and contains anything beyond an initial slash,
-    // then we have _some_ form of path in our regex so we should expect to
+    // then we have _some_ form of path in our regex, so we should expect to
     // match only if we find the end of this path segment.  Look for an optional
     // non-captured trailing slash (to match a portion of the URL) or the end
     // of the path (if we've matched to the end).  We used to do this with a
@@ -86,7 +89,7 @@ function compilePath(
 
   const matcher = new RegExp(regexpSource, caseSensitive ? undefined : 'i')
 
-  return [matcher, paramNames]
+  return [matcher, params]
 }
 
 function safelyDecodeURIComponent(value: string, paramName: string) {
@@ -104,6 +107,12 @@ function safelyDecodeURIComponent(value: string, paramName: string) {
   }
 }
 
+/**
+ * Performs pattern matching on a URL pathname and returns information about
+ * the match.
+ *
+ * @see https://reactrouter.com/utils/match-path
+ */
 export function matchPath<
   ParamKey extends ParamParseKey<Path>,
   Path extends string,
@@ -115,7 +124,7 @@ export function matchPath<
     pattern = { caseSensitive: false, end: true, path: pattern }
   }
 
-  const [matcher, paramNames] = compilePath(
+  const [matcher, compiledParams] = compilePath(
     pattern.path,
     pattern.caseSensitive,
     pattern.end,
@@ -127,8 +136,8 @@ export function matchPath<
   const matchedPathname = match[0]
   let pathnameBase = matchedPathname.replace(/(.)\/+$/, '$1')
   const captureGroups = match.slice(1)
-  const params: Params = paramNames.reduce<Mutable<Params>>(
-    (memo, paramName, index) => {
+  const params: Params = compiledParams.reduce<Mutable<Params>>(
+    (memo, { isOptional, paramName }, index) => {
       // We need to compute the pathnameBase here using the raw splat value
       // instead of using params["*"] later because it will be decoded then
       if (paramName === '*') {
@@ -138,10 +147,12 @@ export function matchPath<
           .replace(/(.)\/+$/, '$1')
       }
 
-      memo[paramName] = safelyDecodeURIComponent(
-        captureGroups[index] || '',
-        paramName,
-      )
+      const value = captureGroups[index]
+      if (isOptional && !value) {
+        memo[paramName] = undefined
+      } else {
+        memo[paramName] = safelyDecodeURIComponent(value || '', paramName)
+      }
       return memo
     },
     {},

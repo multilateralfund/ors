@@ -11,8 +11,10 @@ from core.api.views.agency import AgencyListView
 from core.api.views.chemicals import (
     BlendCreateView,
     BlendsListView,
+    SimilarBlendsListView,
     SubstancesListView,
 )
+from core.api.views.cp_archive import CPRecordsArchiveListView, CPReportVersionsListView
 from core.api.views.cp_reports import (
     CPReportStatusUpdateView,
     CPReportView,
@@ -84,11 +86,17 @@ urlpatterns = [
         name="substances-list",
     ),
     path("blends/", BlendsListView.as_view(), name="blends-list"),
+    path("blends/similar/", SimilarBlendsListView.as_view(), name="blends-similar"),
     path("blends/create/", BlendCreateView.as_view(), name="blends-create"),
     path(
         "country-programme/reports/",
         CPReportView.as_view(),
         name="country-programme-reports",
+    ),
+    path(
+        "country-programme/reports/<int:id>/",
+        CPReportView.as_view(),
+        name="country-programme-reports-update",
     ),
     path(
         "country-programme/report/<int:id>/status-update/",
@@ -119,6 +127,16 @@ urlpatterns = [
         "country-programme/empty-form/",
         EmptyFormView.as_view(),
         name="empty-form",
+    ),
+    path(
+        "country-programme/versions/",
+        CPReportVersionsListView.as_view(),
+        name="country-programme-versions",
+    ),
+    path(
+        "country-programme-archive/records/",
+        CPRecordsArchiveListView.as_view(),
+        name="country-programme-archive-record-list",
     ),
     path(
         "countries/",

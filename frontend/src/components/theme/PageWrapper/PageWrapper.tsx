@@ -1,4 +1,6 @@
 'use client'
+import { CSSProperties } from 'react'
+
 import cx from 'classnames'
 
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
@@ -8,12 +10,14 @@ export default function PageWrapper({
   className,
   defaultSpacing = true,
   fill,
+  style,
   ...rest
 }: {
   children: React.ReactNode
   className?: string
   defaultSpacing?: boolean
   fill?: boolean
+  style?: CSSProperties
 }) {
   return (
     <FadeInOut
@@ -22,6 +26,7 @@ export default function PageWrapper({
         { 'h-fit': !fill, 'h-full': !!fill, 'mb-40 mt-8': defaultSpacing },
         className,
       )}
+      style={style}
       {...rest}
     >
       {children}

@@ -8,12 +8,13 @@ from core.api.serializers.cp_price import CPPricesSerializer
 from core.api.serializers.cp_record import CPRecordSerializer
 from core.models.country import Country
 from core.models.country_programme import CPReport
+from core.models.country_programme_archive import CPReportArchive
 from core.utils import IMPORT_DB_MAX_YEAR
 
 # pylint: disable=W0223
 
 
-class CPReportSerializer(serializers.ModelSerializer):
+class CPReportBaseSerializer(serializers.ModelSerializer):
     country = serializers.StringRelatedField()
     country_id = serializers.PrimaryKeyRelatedField(
         required=True,
@@ -23,18 +24,30 @@ class CPReportSerializer(serializers.ModelSerializer):
     status = serializers.ChoiceField(
         choices=CPReport.CPReportStatus.choices, required=False
     )
+    version = serializers.FloatField(read_only=True)
 
     class Meta:
-        model = CPReport
         fields = [
             "id",
             "name",
             "year",
             "status",
+            "version",
             "country",
             "country_id",
             "comment",
         ]
+
+
+class CPReportSerializer(CPReportBaseSerializer):
+    class Meta(CPReportBaseSerializer.Meta):
+        model = CPReport
+
+
+class CPReportArchiveSerializer(CPReportBaseSerializer):
+    class Meta(CPReportBaseSerializer.Meta):
+        model = CPReportArchive
+        fields = CPReportBaseSerializer.Meta.fields + ["created_at"]
 
 
 class CPReportGroupSerializer(serializers.Serializer):

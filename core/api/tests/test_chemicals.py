@@ -253,11 +253,138 @@ def setup_blend_create(groupA):
     return substA, substF, subst_otherF
 
 
+@pytest.fixture(name="_setup_similar_blend")
+def setup_similar_blend(_setup_blend_create):
+    substA, substF, subst_otherF = _setup_blend_create
+    # create blend with 3 substances (2 from group F and 1 from group A)
+    components = {
+        "blendAFOF": [
+            {
+                "substance_id": substA.id,
+                "percentage": 0.2,
+            },
+            {
+                "substance_id": substF.id,
+                "percentage": 0.3,
+            },
+            {
+                "substance_id": subst_otherF.id,
+                "component_name": "Substafof",
+                "percentage": 0.5,
+            },
+        ],
+        "blendAF": [
+            {
+                "substance_id": substA.id,
+                "percentage": 0.2,
+            },
+            {
+                "substance_id": substF.id,
+                "percentage": 0.8,
+            },
+        ],
+        "blendFA": [
+            {
+                "substance_id": substF.id,
+                "percentage": 0.2,
+            },
+            {
+                "substance_id": substA.id,
+                "percentage": 0.8,
+            },
+        ],
+    }
+
+    blends = {}
+    for name, components_list in components.items():
+        blend = BlendFactory.create(name=name)
+        for component in components_list:
+            blend.components.create(**component)
+
+        blends[name] = blend
+
+    # set percentages to be in range [0, 100]
+    for name, components_list in components.items():
+        for component in components_list:
+            component["percentage"] = component["percentage"] * 100
+
+    return blends, components
+
+
+class TestSimilarBlend(BaseTest):
+    url = reverse("blends-similar")
+
+    def test_without_login(self, **kwargs):
+        self.client.force_authenticate(user=None)
+        response = self.client.post(self.url, kwargs)
+        assert response.status_code == 403
+
+    def test_similar_blend_list(self, user, _setup_similar_blend):
+        self.client.force_authenticate(user=user)
+        blends, components = _setup_similar_blend
+        # get similar blends for blendAFOF
+        response = self.client.post(
+            self.url, {"components": components["blendAFOF"]}, format="json"
+        )
+        assert response.status_code == 200
+        assert len(response.data) == 1
+        assert response.data[0]["id"] == blends["blendAFOF"].id
+
+        # get similar blends for blendAF
+        response = self.client.post(
+            self.url, {"components": components["blendAF"]}, format="json"
+        )
+        assert response.status_code == 200
+        assert len(response.data) == 3
+
+    def test_same_substnces_list_filter(self, user, _setup_similar_blend):
+        self.client.force_authenticate(user=user)
+        _, components = _setup_similar_blend
+
+        params = {
+            "components": components["blendAF"],
+            "same_substances": True,
+        }
+        response = self.client.post(self.url, params, format="json")
+        assert response.status_code == 200
+        assert len(response.data) == 2
+
+    def test_invalid_substance(self, user, _setup_similar_blend):
+        self.client.force_authenticate(user=user)
+        _, components = _setup_similar_blend
+        components_data = components["blendAF"]
+        components_data[0]["substance_id"] = 999
+        response = self.client.post(
+            self.url, {"components": components_data}, format="json"
+        )
+        assert response.status_code == 200
+        assert len(response.data) == 0
+
+    def test_no_components(self, user, _setup_similar_blend):
+        self.client.force_authenticate(user=user)
+        response = self.client.post(self.url)
+        assert response.status_code == 400
+
+        response = self.client.post(self.url, {"components": []}, format="json")
+        assert response.status_code == 400
+
+    def test_no_blends(self, user, _setup_similar_blend, substance):
+        self.client.force_authenticate(user=user)
+        _, components = _setup_similar_blend
+        components_data = components["blendAFOF"]
+        components_data[0]["substance_id"] = substance.id
+        response = self.client.post(
+            self.url, {"components": components_data}, format="json"
+        )
+        assert response.status_code == 200
+        assert len(response.data) == 0
+
+
 class TestCreateBlend:
     client = APIClient()
     url = reverse("blends-create")
 
-    def create_simple_blend(self, substA, substF, subst_otherF):
+    def _create_simple_blend(self, substA, substF, subst_otherF):
         data = {
             "composition": "A-20%; F-30%; SubstFFF-50%",
             "other_names": "Blend1 other names",
@@ -276,7 +403,7 @@ class TestCreateBlend:
     def test_create_simple_blend_anon(self, _setup_blend_create):
         substA, substF, subst_otherF = _setup_blend_create
 
-        response = self.create_simple_blend(substA, substF, subst_otherF)
+        response = self._create_simple_blend(substA, substF, subst_otherF)
         assert response.status_code == 403
 
     def test_create_simple_blend(self, user, _setup_blend_create):
@@ -284,7 +411,7 @@ class TestCreateBlend:
         self.client.force_authenticate(user=user)
         # create blend with 3 substances (2 from group F and 1 from group A)
 
-        response = self.create_simple_blend(substA, substF, subst_otherF)
+        response = self._create_simple_blend(substA, substF, subst_otherF)
         assert response.status_code == 200
         assert response.data["name"] == "CustMix-0"
         assert response.data["other_names"] == "Blend1 other names"
@@ -305,11 +432,11 @@ class TestCreateBlend:
     def test_blend_already_exists(self, user, _setup_blend_create):
         substA, substF, subst_otherF = _setup_blend_create
         self.client.force_authenticate(user=user)
-        self.create_simple_blend(substA, substF, subst_otherF)
+        self._create_simple_blend(substA, substF, subst_otherF)
 
         initial_count = Blend.objects.count()
         # same data
-        self.create_simple_blend(substA, substF, subst_otherF)
+        self._create_simple_blend(substA, substF, subst_otherF)
         assert (Blend.objects.count()) == initial_count
         blend = Blend.objects.first()
 
@@ -356,7 +483,7 @@ class TestCreateBlend:
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
 
-        # invalid substance
+        # invalid substance id
         data["components"][0] = {
             "substance_id": 1212,
             "component_name": "",
