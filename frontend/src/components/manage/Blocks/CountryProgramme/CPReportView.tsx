@@ -79,7 +79,7 @@ export default function CPReportView(props: {
       return variant.minYear <= year && variant.maxYear >= year
     })[0],
   )
-  const [sections] = useState(() => getViewSections(variant))
+  const [sections] = useState(() => (variant ? getViewSections(variant) : []))
 
   useEffect(() => {
     setTimeout(() => {
@@ -87,19 +87,19 @@ export default function CPReportView(props: {
     }, 600)
   }, [currentIndex])
 
+  if (!report.name || !report.year) return null
+
   return (
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
         active={currentIndex !== activeSection || !renderSection}
       />
-      {report.name && (
-        <HeaderTitle>
-          <Typography className="mb-4 text-white" component="h1" variant="h3">
-            {report.name}
-          </Typography>
-        </HeaderTitle>
-      )}
+      <HeaderTitle>
+        <Typography className="mb-4 text-white" component="h1" variant="h3">
+          {report.name}
+        </Typography>
+      </HeaderTitle>
       <Tabs
         className="scrollable mb-4"
         aria-label="view submission sections"
