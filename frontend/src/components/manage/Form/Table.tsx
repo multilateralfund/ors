@@ -99,6 +99,7 @@ export default function Table(
   const i18n: I18nSlice = useStore((state) => state.i18n)
   const [fullScreen, setFullScreen] = useState(false)
   const [print, setPrint] = useState<'solo' | boolean>(props.print)
+  const [rendering, setRendering] = useState(true)
 
   // baseColDef sets props common to all Columns
   const baseColDef: ColDef = useMemo(
@@ -273,10 +274,10 @@ export default function Table(
         className={cx('table-root flex flex-col', {
           'ag-full-screen': fullScreen,
           'ag-print': print,
+          'ag-rendering': rendering && rowData?.length,
         })}
         ref={tableEl}
       >
-        <div className="dpi pointer-events-none absolute -z-absolute h-[1in] w-[1in] opacity-0" />
         {Toolbar && (
           <div className="ag-toolbar">
             <Toolbar
@@ -456,6 +457,7 @@ export default function Table(
                 onColumnResized(props)
               }}
               onFirstDataRendered={(agGrid) => {
+                setRendering(false)
                 updateOffsetHeight()
                 handleErrors()
                 onFirstDataRendered(agGrid)

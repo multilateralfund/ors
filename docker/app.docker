@@ -10,11 +10,16 @@ RUN mkdir /.fs /app
 WORKDIR /app
 VOLUME ["/.fs"]
 
-RUN runDeps="wait-for-it gettext build-essential gcc" \
+RUN runDeps="wait-for-it gettext build-essential gcc wget firefox-esr" \
     && apt-get update -y \
     && apt-get install -y --no-install-recommends $runDeps \
     && apt-get clean \
     && rm -vrf /var/lib/apt/lists/*
+
+# Install geckdriver
+RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz \
+    && tar -xzvf geckodriver-v0.33.0-linux64.tar.gz \
+    && mv geckodriver /usr/bin/
 
 RUN pip install --upgrade pip
 COPY $REQFILE .
