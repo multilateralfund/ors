@@ -139,7 +139,7 @@ class Browser(webdriver.Firefox):
         with self.print_path.open("wb") as print_file:
             data = base64.b64decode(self.print_page(print_options=self.print_options))
             print_file.write(data)
-
+        logger.debug("Print complete: %s", self.print_path)
         return self.print_path
 
 

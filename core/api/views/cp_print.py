@@ -13,15 +13,14 @@ class CPPrintView(views.APIView):
     def get(self, *args, pk=None, **kwargs):
         obj = get_object_or_404(CPReport, pk=pk)
 
-        url = settings.PRINTER_FRONTEND_HOST + f"/country-programme/{pk}"
+        url = settings.PRINTER_FRONTEND_HOST + f"/country-programme/{pk}/print"
         with temporary_browser() as browser:
             browser.get(url)
             browser.authenticate(
                 settings.PRINTER_USERNAME, settings.PRINTER_USER_PASSWORD
             )
-            # TODO: replace with a more reliable loading wait method
-            browser.wait_until_visible("#header-title")
-            browser.wait_until_not_visible(".loading")
+            browser.wait_until_visible(".print-section")
+            browser.wait_until_not_visible(".ag-rendering")
             tmpf = browser.print_to_pdf()
 
             response = FileResponse(
