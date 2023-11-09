@@ -13,6 +13,7 @@ import {
   get,
   isEmpty,
   isFunction,
+  isNull,
   isObject,
   noop,
   times,
@@ -274,11 +275,10 @@ export default function Table(
         className={cx('table-root flex flex-col', {
           'ag-full-screen': fullScreen,
           'ag-print': print,
-          'ag-rendering': rendering,
+          'ag-rendering': rendering || isNull(rowData) || !rowData.length,
         })}
         ref={tableEl}
       >
-        <div className="dpi pointer-events-none absolute -z-absolute h-[1in] w-[1in] opacity-0" />
         {Toolbar && (
           <div className="ag-toolbar">
             <Toolbar
