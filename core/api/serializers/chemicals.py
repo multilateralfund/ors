@@ -52,6 +52,7 @@ class BlendSerializer(ChemicalsBaseSerializer):
     excluded_usages = serializers.SerializerMethodField()
     composition = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
+    components = serializers.SerializerMethodField()
 
     class Meta:
         model = Blend
@@ -70,6 +71,7 @@ class BlendSerializer(ChemicalsBaseSerializer):
             "displayed_in_all",
             "displayed_in_latest_format",
             "sort_order",
+            "components",
         ]
 
     def get_composition(self, obj):
@@ -84,6 +86,21 @@ class BlendSerializer(ChemicalsBaseSerializer):
             return obj.get_generated_composition()
 
         return obj.composition
+
+    def get_components(self, obj):
+        print(self.context)
+        if not self.context.get("with_components", False):
+            return []
+        components = []
+        for c in obj.components.all():
+            components.append(
+                {
+                    "component_name": c.component_name,
+                    "percentage": c.percentage * 100,
+                    "substance_id": c.substance_id,
+                }
+            )
+        return components
 
     def get_group(self, _obj):
         return "Blends (Mixture of Controlled Substances)"

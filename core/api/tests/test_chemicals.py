@@ -348,6 +348,8 @@ class TestSimilarBlend(BaseTest):
         response = self.client.post(self.url, params, format="json")
         assert response.status_code == 200
         assert len(response.data) == 2
+        for blend in response.data:
+            assert len(blend["components"]) == 2
 
     def test_invalid_substance(self, user, _setup_similar_blend):
         self.client.force_authenticate(user=user)

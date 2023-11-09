@@ -14,13 +14,13 @@ export default function AdmB(props: any) {
   const { TableProps, emptyForm, index, report, setActiveSection } = props
   const grid = useRef<any>()
   const gridOptions = useGridOptions({
-    adm_columns: emptyForm.admB.columns,
+    adm_columns: emptyForm.adm_b.columns,
   })
 
   const rowData = useMemo(() => {
     const dataByRowId = groupBy(report.adm_b, 'row_id')
 
-    return map(emptyForm.admB?.rows, (row) => ({
+    return map(emptyForm.adm_b?.rows, (row) => ({
       values: dataByRowId[row.id]?.[0]?.values || [],
       ...row,
       ...(row.type === 'title' ? { rowType: 'group' } : {}),

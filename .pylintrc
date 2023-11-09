@@ -23,6 +23,8 @@ disable=
     invalid-name,
     avoid-assert,
     fixme,
+    consider-using-f-string,
+    duplicate-code,
 
 [FORMAT]
 max-line-length=120

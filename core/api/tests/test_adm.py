@@ -132,27 +132,27 @@ class TestAdmEmptyFormView(BaseTest):
         assert len(section_a_usages[0]["children"][0]["children"]) == 1
         assert "section_b" not in response.data["usage_columns"]
 
-        # check admB section
-        assert len(response.data["admB"]["columns"]) == 2
-        assert len(response.data["admB"]["columns"][0]["children"]) == 1
-        assert len(response.data["admB"]["rows"]) == 5
-        assert "N/A" not in response.data["admB"]["rows"]
+        # check adm_b section
+        assert len(response.data["adm_b"]["columns"]) == 2
+        assert len(response.data["adm_b"]["columns"][0]["children"]) == 1
+        assert len(response.data["adm_b"]["rows"]) == 5
+        assert "N/A" not in response.data["adm_b"]["rows"]
         # check rows sort order
-        admb_rows = response.data["admB"]["rows"]
+        admb_rows = response.data["adm_b"]["rows"]
         assert admb_rows[0]["text"] == "title_B"
         assert admb_rows[1]["text"] == "subtitle_B"
         assert admb_rows[2]["text"] == "subtitle_B_row_0"
         assert admb_rows[3]["text"] == "subtitle_B_row_1"
         assert admb_rows[4]["text"] == "subtitle_B_row_161"
 
-        # check admC section
-        assert len(response.data["admC"]["columns"]) == 2
-        assert len(response.data["admC"]["rows"]) == 4
+        # check adm_c section
+        assert len(response.data["adm_c"]["columns"]) == 2
+        assert len(response.data["adm_c"]["rows"]) == 4
 
-        # check admD section
-        assert len(response.data["admD"]["rows"]) == 2
-        assert len(response.data["admD"]["rows"][0]["choices"]) == 3
-        assert len(response.data["admD"]["rows"][1]["choices"]) == 3
+        # check adm_d section
+        assert len(response.data["adm_d"]["rows"]) == 2
+        assert len(response.data["adm_d"]["rows"][0]["choices"]) == 3
+        assert len(response.data["adm_d"]["rows"][1]["choices"]) == 3
 
     def test_get_empty_form_2017(self, user, _setup_empty_form, _cp_report_format):
         self.client.force_authenticate(user=user)
@@ -168,8 +168,8 @@ class TestAdmEmptyFormView(BaseTest):
         assert len(section_b_usages[0]["children"]) == 2
         assert len(section_b_usages[0]["children"][0]["children"]) == 1
 
-        assert len(response.data["admB"]["columns"]) == 0
-        assert len(response.data["admB"]["rows"]) == 0
-        assert len(response.data["admC"]["columns"]) == 0
-        assert len(response.data["admC"]["rows"]) == 0
-        assert len(response.data["admD"]["rows"]) == 0
+        assert len(response.data["adm_b"]["columns"]) == 0
+        assert len(response.data["adm_b"]["rows"]) == 0
+        assert len(response.data["adm_c"]["columns"]) == 0
+        assert len(response.data["adm_c"]["rows"]) == 0
+        assert len(response.data["adm_d"]["rows"]) == 0
