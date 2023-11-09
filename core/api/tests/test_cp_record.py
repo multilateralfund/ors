@@ -166,4 +166,6 @@ class TestCPRecordList(BaseTest):
         assert len(response.data["section_c"]) == 2
         assert len(response.data["adm_c"]) == 1
         assert len(response.data["adm_d"]) == 1
-        assert response.data["adm_d"][0]["value_choice_id"] == last_choice.id
+        assert (
+            response.data["adm_d"][0]["values"][0]["value_choice_id"] == last_choice.id
+        )
