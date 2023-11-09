@@ -15,7 +15,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
-SCRIPT_TIMEOUT = 30
+SCRIPT_TIMEOUT = 20
 
 PREFERENCES = {
     # Firefox doesn't have support for Command.GET_LOG, this is the best we
