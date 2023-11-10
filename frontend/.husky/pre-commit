@@ -1,8 +1,14 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+
 cd frontend
 git checkout -- ./version.json
-node ./scripts/update-version.js
-git add ./version.json
+
+if [[ "$BRANCH" == "main" ]]; then
+  node ./scripts/update-version.js
+  git add ./version.json
+fi
+
 npx lint-staged
