@@ -389,7 +389,7 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
               <div className="similar-blends grid grid-cols-2 gap-4">
                 <div>
                   <Typography className="mb-2 font-semibold">
-                    Same components
+                    Same composition
                   </Typography>
                   {similarBlends.same.map((blend: any) => (
                     <SimilarBlend
@@ -402,7 +402,7 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
                 </div>
                 <div>
                   <Typography className="mb-2 font-semibold">
-                    Similar components
+                    Similar composition
                   </Typography>
                   {similarBlends.default.map((blend: any) => (
                     <SimilarBlend
