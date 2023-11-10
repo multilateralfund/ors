@@ -11,6 +11,7 @@ declare module 'ag-grid-community' {
     disabled?: boolean
     error?: ((props: any) => void) | string
     id?: number | string
+    showRowError?: boolean
     type?: string
   }
 }
