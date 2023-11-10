@@ -1,3 +1,10 @@
+import io
+import shutil
+import subprocess
+import tempfile
+from pathlib import Path
+
+from django.http import FileResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
@@ -29,11 +36,41 @@ class CPRecordExportView(CPRecordListView):
             exporter = CPReportOldExporter()
 
         usages = empty_form.pop("usage_columns")
-
-        return exporter.get_xlsx(
+        wb = exporter.get_xlsx(
             self.get_data(cp_report),
             {
                 **usages,
                 **empty_form,
             },
         )
+
+        return self.get_response(cp_report, wb)
+
+    def get_response(self, cp_report, wb):
+        """Save xlsx and return the response"""
+        xls = io.BytesIO()
+        wb.save(xls)
+        xls.seek(0)
+        return FileResponse(xls, as_attachment=True, filename=cp_report.name + ".xlsx")
+
+
+class CPRecordPrintView(CPRecordExportView):
+    def get_response(self, cp_report, wb):
+        """Save pdf and return the response"""
+
+        with tempfile.TemporaryDirectory(prefix="cp-report-print-") as tmpdirname:
+            pdf_file = Path(tmpdirname) / (cp_report.name + ".pdf")
+            xlsx_file = Path(tmpdirname) / (cp_report.name + ".xlsx")
+            wb.save(xlsx_file)
+
+            libreoffice_bin = shutil.which("libreoffice")
+            subprocess.check_call(
+                [libreoffice_bin, "--headless", "--convert-to", "pdf", str(xlsx_file)],
+                cwd=tmpdirname,
+                shell=False,
+            )
+            return FileResponse(
+                pdf_file.open("rb"),
+                as_attachment=True,
+                filename=cp_report.name + ".pdf",
+            )

@@ -260,5 +260,5 @@ class CPReportNewExporter(CPReportBase):
 
         cell = sheet.cell(row_idx, col_idx, data["remarks"])
         cell.alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
-        sheet.column_dimensions[get_column_letter(col_idx)].width = COLUMN_WIDTH * 8
+        sheet.column_dimensions[get_column_letter(col_idx)].width = COLUMN_WIDTH * 4
         sheet.row_dimensions[row_idx].height = ROW_HEIGHT * 16
