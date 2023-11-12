@@ -545,16 +545,16 @@ class TestCreateBlend:
             "composition": "A-20%; F-30%; SubstFFF-50%",
             "other_names": "Blend1 other names",
             "components": [
-                {"substance_id": substA.id, "component_name": "", "percentage": 20},
+                {"substance_id": substA.id, "component_name": "", "percentage": 19.2},
                 {
                     "substance_id": subst_otherF.id,
                     "component_name": "SubstFFF",
-                    "percentage": 50,
+                    "percentage": 50.3,
                 },
                 {
                     "substance_id": subst_otherF.id,
                     "component_name": "SubstFFF2",
-                    "percentage": 30,
+                    "percentage": 30.5,
                 },
             ],
         }
@@ -565,8 +565,10 @@ class TestCreateBlend:
         assert response.data["composition_alt"] == data["composition"]
         assert (
             response.data["composition"]
-            == "SubstFFF-50.00%; SubstFFF2-30.00%; SubstanceA-20.00%"
+            == "SubstFFF-50.30%; SubstFFF2-30.50%; SubstanceA-19.20%"
         )
-        assert float(response.data["odp"]) == substA.odp * 0.2 + subst_otherF.odp * 0.8
-        assert float(response.data["gwp"]) == subst_otherF.gwp * 0.8
+        assert (
+            float(response.data["odp"]) == substA.odp * 0.192 + subst_otherF.odp * 0.808
+        )
+        assert float(response.data["gwp"]) == subst_otherF.gwp * 0.808
         assert Blend.objects.count() == 1
