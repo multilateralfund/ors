@@ -280,14 +280,14 @@ class BlendCreateView(generics.CreateAPIView):
             try:
                 subst = Substance.objects.select_related("group").get(id=subst_id)
             except Substance.DoesNotExist:
-                comp_errors[row_id] = {"substance_id": "Substance does not exist."}
+                comp_errors[row_id] = {"substance": "Substance does not exist."}
                 continue
 
             # check if component already exists in components dict
             if subst_id in existing_subst:
                 # if component already exists and is not "other" return error
                 comp_errors[row_id] = {
-                    "substance_id": "Substance already exists in the blend."
+                    "substance": "Substance already exists in the blend."
                 }
                 continue
 
