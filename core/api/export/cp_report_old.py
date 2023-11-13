@@ -19,7 +19,7 @@ class CPReportOldExporter(CPReportBase):
             [
                 {
                     "id": "sheet-title",
-                    "headerName": "A. Data on Controlled Substances (in METRIC TONNES)",
+                    "headerName": "SECTION A. Data on Controlled Substances (in METRIC TONNES)",
                     "children": [
                         {
                             "id": "display_name",
@@ -68,7 +68,7 @@ class CPReportOldExporter(CPReportBase):
             [
                 {
                     "id": "sheet-title",
-                    "headerName": "B. Regulatory, administrative and supportive actions",
+                    "headerName": "ADM B. Regulatory, administrative and supportive actions",
                     "children": [
                         {
                             "id": "row-header-1",
@@ -105,7 +105,7 @@ class CPReportOldExporter(CPReportBase):
             [
                 {
                     "id": "sheet-title",
-                    "headerName": "C. Quantitative assessment of the phase-out programme",
+                    "headerName": "ADM C. Quantitative assessment of the phase-out programme",
                     "children": [
                         {
                             "id": "text",
@@ -166,7 +166,7 @@ class CPReportOldExporter(CPReportBase):
             [
                 {
                     "id": "sheet-title",
-                    "headerName": "D. Qualitative assessment of the operation of HPMP",
+                    "headerName": "ADM D. Qualitative assessment of the operation of HPMP",
                     "column_width": COLUMN_WIDTH * 16,
                     "children": [
                         {
