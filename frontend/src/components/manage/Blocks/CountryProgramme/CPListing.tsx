@@ -53,12 +53,27 @@ const debounce = (func: () => void) => {
   timer = setTimeout(func, 500)
 }
 
+function Legend() {
+  return (
+    <div className="legend flex gap-x-4">
+      <div className="flex items-center gap-x-2">
+        <span className="inline-block h-4 w-4 rounded-full bg-warning" />
+        <span>Draft</span>
+      </div>
+      <div className="flex items-center gap-x-2">
+        <span className="inline-block h-4 w-4 rounded-full bg-success" />
+        <span>Final</span>
+      </div>
+    </div>
+  )
+}
+
 function Item({ item, showCountry, showYear }: any) {
   const showAll = !showCountry && !showYear
 
   return (
     <ListItem
-      className={cx('group flex flex-col items-start justify-center')}
+      className="group flex flex-col items-start justify-center"
       component={Grid}
       disablePadding
       item
@@ -74,7 +89,14 @@ function Item({ item, showCountry, showYear }: any) {
         >
           <div className="flex max-w-full items-center">
             <Link
-              className="inline-block max-w-full text-typography-secondary hover:text-primary md:truncate"
+              className={cx(
+                'inline-block max-w-full font-semibold hover:text-primary md:truncate',
+                {
+                  'text-success': item.status === 'final',
+                  'text-typography-secondary': !item.status,
+                  'text-warning': item.status === 'draft',
+                },
+              )}
               href={`/country-programme/${item.id}`}
               underline="hover"
             >
@@ -146,8 +168,8 @@ function GeneralSection(props: SectionProps) {
   }
 
   return (
-    <>
-      <div className="mb-4 flex justify-between gap-4">
+    <div id="general-section">
+      <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
         <div className="flex flex-1 items-center gap-4">
           <Field
             FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
@@ -205,6 +227,7 @@ function GeneralSection(props: SectionProps) {
             }}
           />
         </div>
+        <Legend />
         <div className="flex items-center gap-2">
           <Typography className="text-typography-secondary" component="span">
             Ordering
@@ -348,7 +371,7 @@ function GeneralSection(props: SectionProps) {
         }}
         enableGrid
       />
-    </>
+    </div>
   )
 }
 
@@ -396,31 +419,34 @@ function CountrySection(props: SectionProps) {
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
   return (
-    <>
-      <div id="country-section" className="mb-4 flex justify-between gap-4">
-        <Field
-          FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
-          getOptionLabel={(option: any) => option?.name}
-          options={countries}
-          popupIcon={<IoFilter className="p-1" size={24} />}
-          value={null}
-          widget="autocomplete"
-          Input={{
-            placeholder: 'Select country...',
-          }}
-          sx={{
-            '& .MuiAutocomplete-popupIndicator': { transform: 'none' },
-            width: '100%',
-          }}
-          onChange={(_: any, value: any) => {
-            if (!!value) {
-              setFilters((filters: any) => {
-                const country = filters.country || []
-                return { ...filters, country: union(country, [value.id]) }
-              })
-            }
-          }}
-        />
+    <div id="country-section">
+      <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
+        <div className="flex flex-1 items-center gap-4">
+          <Field
+            FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
+            getOptionLabel={(option: any) => option?.name}
+            options={countries}
+            popupIcon={<IoFilter className="p-1" size={24} />}
+            value={null}
+            widget="autocomplete"
+            Input={{
+              placeholder: 'Select country...',
+            }}
+            sx={{
+              '& .MuiAutocomplete-popupIndicator': { transform: 'none' },
+              width: '100%',
+            }}
+            onChange={(_: any, value: any) => {
+              if (!!value) {
+                setFilters((filters: any) => {
+                  const country = filters.country || []
+                  return { ...filters, country: union(country, [value.id]) }
+                })
+              }
+            }}
+          />
+        </div>
+        <Legend />
         <div className="flex items-center gap-2">
           <Typography className="text-typography-secondary" component="span">
             Ordering
@@ -503,7 +529,7 @@ function CountrySection(props: SectionProps) {
           }}
         />
       )}
-    </>
+    </div>
   )
 }
 
@@ -550,26 +576,29 @@ function YearSection(props: SectionProps) {
   }, [filters.range])
 
   return (
-    <>
-      <div className="mb-6 flex justify-between gap-4">
-        <Field
-          FieldProps={{ className: 'mb-0 px-4' }}
-          label="Date"
-          max={maxYear}
-          min={minYear}
-          value={range}
-          widget="range"
-          onChange={(event: Event, value: number | number[]) => {
-            if (isArray(value) && value[1] - value[0] >= 1) {
-              setRange(value)
-              debounce(() => {
-                setFilters((filters: any) => {
-                  return { ...filters, range: value, year: [] }
+    <div id="year-section">
+      <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
+        <div className="flex flex-1 items-center gap-4">
+          <Field
+            FieldProps={{ className: 'mb-0 px-4' }}
+            label="Date"
+            max={maxYear}
+            min={minYear}
+            value={range}
+            widget="range"
+            onChange={(event: Event, value: number | number[]) => {
+              if (isArray(value) && value[1] - value[0] >= 1) {
+                setRange(value)
+                debounce(() => {
+                  setFilters((filters: any) => {
+                    return { ...filters, range: value, year: [] }
+                  })
                 })
-              })
-            }
-          }}
-        />
+              }
+            }}
+          />
+        </div>
+        <Legend />
         <div className="flex items-center gap-2">
           <Typography className="text-typography-secondary" component="span">
             Ordering
@@ -649,7 +678,7 @@ function YearSection(props: SectionProps) {
           }}
         />
       )}
-    </>
+    </div>
   )
 }
 

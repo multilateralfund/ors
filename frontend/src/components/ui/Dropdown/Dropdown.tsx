@@ -6,8 +6,11 @@ import {
   ButtonProps,
   Menu,
   MenuItem,
+  MenuItemProps,
+  MenuProps,
   Button as MuiButton,
   IconButton as MuiIconButton,
+  Tooltip,
 } from '@mui/material'
 import { isFunction } from 'lodash'
 
@@ -15,17 +18,21 @@ const DropdownContext = React.createContext({ handleClose: () => {} })
 
 export default function Dropdown({
   id,
+  MenuProps,
   children,
   className,
   color,
   icon,
   label,
+  tooltip,
 }: {
+  MenuProps?: Omit<MenuProps, 'open'>
   children: React.ReactNode
   className?: string
   icon?: boolean
   id?: string
   label: ((props?: any) => React.ReactElement) | React.ReactNode
+  tooltip?: React.ReactNode
 } & ButtonProps) {
   const uniqueId = useId()
   const buttonRef = useRef<any>()
@@ -59,18 +66,20 @@ export default function Dropdown({
 
   return (
     <DropdownContext.Provider value={{ handleClose }}>
-      {/* @ts-ignore */}
-      <Button
-        className={className}
-        aria-controls={open ? menuId : undefined}
-        aria-expanded={open ? 'true' : undefined}
-        aria-haspopup="true"
-        color={color}
-        ref={buttonRef}
-        onClick={handleClick}
-      >
-        {isFunction(label) ? label({ open }) : label}
-      </Button>
+      <Tooltip placement="top" title={tooltip}>
+        {/* @ts-ignore */}
+        <Button
+          className={className}
+          aria-controls={open ? menuId : undefined}
+          aria-expanded={open ? 'true' : undefined}
+          aria-haspopup="true"
+          color={color}
+          ref={buttonRef}
+          onClick={handleClick}
+        >
+          {isFunction(label) ? label({ open }) : label}
+        </Button>
+      </Tooltip>
       <Menu
         anchorEl={anchorEl}
         open={open}
@@ -79,6 +88,7 @@ export default function Dropdown({
           'aria-labelledby': buttonId,
         }}
         onClose={handleClose}
+        {...(MenuProps || {})}
       >
         {children}
       </Menu>
@@ -86,13 +96,7 @@ export default function Dropdown({
   )
 }
 
-Dropdown.Item = function DropdownItem({
-  children,
-  onClick,
-}: {
-  children: React.ReactNode
-  onClick?: (e: React.MouseEvent) => void
-}) {
+const DropdownItem = ({ children, onClick, ...rest }: MenuItemProps) => {
   const { handleClose } = React.useContext(DropdownContext)
 
   return (
@@ -103,8 +107,11 @@ Dropdown.Item = function DropdownItem({
         }
         handleClose()
       }}
+      {...rest}
     >
       {children}
     </MenuItem>
   )
 }
+
+Dropdown.Item = DropdownItem

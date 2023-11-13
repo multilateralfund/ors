@@ -4,9 +4,10 @@ import { isNull, isUndefined } from 'lodash'
 
 import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
 
-import CPReportView from '@ors/components/manage/Blocks/CountryProgramme/CPReportView'
+import CPReportEdit from '@ors/components/manage/Blocks/CountryProgramme/CPReportEdit'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import api from '@ors/helpers/Api'
+import { Substance } from '@ors/models/Section'
 
 export const metadata: Metadata = {
   title: 'Country programme',
@@ -25,20 +26,23 @@ export default async function CountryProgrammeReport({ params }: ReportProps) {
     false,
   )
   const versions = await api(
-    `api/country-programme/versions/?country_programme_report_id=${params.report_id}`,
+    `api/country-programme/versions/?cp_report_id=${params.report_id}`,
     {},
     false,
   )
-
   const emptyForm =
     (await api(
       `api/country-programme/empty-form/?cp_report_id=${params.report_id}`,
       {},
       false,
     )) || {}
+  const substances: Array<Substance> =
+    (await api('api/substances/?with_usages=true', {}, false)) || []
+
+  const blends = (await api('api/blends/?with_usages=true', {}, false)) || []
 
   function filterUsage(usage: any) {
-    const year = report.year
+    const year = new Date().getFullYear()
     const minYear = isNull(usage.min_year) ? -Infinity : usage.min_year
     const maxYear = isNull(usage.max_year) ? Infinity : usage.max_year
     if (
@@ -68,6 +72,8 @@ export default async function CountryProgrammeReport({ params }: ReportProps) {
           }
         : {
             aggFunc: 'sumTotalUsages',
+            cellEditor: 'agUsageCellEditor',
+            field: `usage_${usage.id}`,
           }),
     }
   }
@@ -75,8 +81,10 @@ export default async function CountryProgrammeReport({ params }: ReportProps) {
   return (
     <PageWrapper>
       {!!report && (
-        <CPReportView
+        <CPReportEdit
+          blends={blends}
           report={report}
+          substances={substances}
           versions={versions}
           emptyForm={{
             ...emptyForm,

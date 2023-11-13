@@ -28,9 +28,10 @@ export default class SectionB extends Section<
   Record<keyof SectionBFormFields, Field>
 > {
   constructor(
+    initialData: Array<DeserializedDataB> = [],
     substances: Array<Substance>,
     blends: Array<Blend>,
-    localStorageKey: string,
+    localStorageKey: null | string,
   ) {
     const formFields = {
       banned_date: { dataType: 'date', defaultValue: null },
@@ -45,6 +46,7 @@ export default class SectionB extends Section<
 
     super(
       formFields,
+      initialData,
       substances.filter((substance) => includes(substance.sections, 'B')),
       blends,
       localStorageKey,

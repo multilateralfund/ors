@@ -13,6 +13,7 @@ export default function SectionECreate(props: any) {
   const { TableProps, form, index, setActiveSection, setForm } = props
   const newNode = useRef<RowNode>()
   const grid = useRef<any>()
+  const newFacilityIndex = useRef(form.section_e.length + 1)
   const [initialRowData] = useState(form.section_e)
 
   const pinnedBottomRowData = useMemo(() => {
@@ -22,7 +23,7 @@ export default function SectionECreate(props: any) {
   }, [form.section_e])
 
   const addFacility = useCallback(() => {
-    const id = form.section_e.length + 1
+    const id = newFacilityIndex.current
     const newFacility = {
       all_uses: 0,
       destruction: 0,
@@ -47,7 +48,8 @@ export default function SectionECreate(props: any) {
     })
     const facilityNode = grid.current.api.getRowNode(newFacility.rowId)
     newNode.current = facilityNode
-  }, [form.section_e, setForm])
+    newFacilityIndex.current = newFacilityIndex.current + 1
+  }, [setForm])
 
   const removeFacility = useCallback(
     (props: any) => {

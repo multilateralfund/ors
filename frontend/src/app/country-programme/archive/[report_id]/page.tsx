@@ -20,16 +20,10 @@ type ReportProps = {
 
 export default async function CountryProgrammeReport({ params }: ReportProps) {
   const report = await api(
-    `api/country-programme/records/?cp_report_id=${params.report_id}`,
+    `api/country-programme-archive/records/?cp_report_id=${params.report_id}`,
     {},
     false,
   )
-  const versions = await api(
-    `api/country-programme/versions/?country_programme_report_id=${params.report_id}`,
-    {},
-    false,
-  )
-
   const emptyForm =
     (await api(
       `api/country-programme/empty-form/?cp_report_id=${params.report_id}`,
@@ -77,7 +71,6 @@ export default async function CountryProgrammeReport({ params }: ReportProps) {
       {!!report && (
         <CPReportView
           report={report}
-          versions={versions}
           emptyForm={{
             ...emptyForm,
             ...(emptyForm.usage_columns
@@ -95,6 +88,7 @@ export default async function CountryProgrammeReport({ params }: ReportProps) {
                 }
               : {}),
           }}
+          archive
         />
       )}
     </PageWrapper>

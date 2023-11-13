@@ -12,7 +12,10 @@ export default class SectionD extends Section<
   DeserializedDataD,
   Record<keyof SectionDFormFields, Field>
 > {
-  constructor(localStorageKey: string) {
+  constructor(
+    initialData: Array<DeserializedDataD> = [],
+    localStorageKey: null | string,
+  ) {
     const formFields = {
       all_uses: { dataType: 'number', defaultValue: 0 },
       destruction: { dataType: 'number', defaultValue: 0 },
@@ -21,6 +24,7 @@ export default class SectionD extends Section<
 
     super(
       formFields,
+      initialData,
       [{ id: 'hfc_23', displayed_in_latest_format: true, name: 'HFC-23' }],
       [],
       localStorageKey,

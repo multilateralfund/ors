@@ -65,6 +65,7 @@ export default class Section<DeserializedData, FormFields> {
 
   constructor(
     formFields: FormFields,
+    initialData: Array<DeserializedData & LocalDeserializedData> = [],
     substances: Array<Substance> = [],
     blends: Array<Blend> = [],
     localStorageKey: null | string,
@@ -97,7 +98,7 @@ export default class Section<DeserializedData, FormFields> {
           .filter((blend: Blend) => blend.displayed_in_latest_format)
           .map((blend: Blend) => this.transformBlend(blend, true)),
       ],
-      isArray(localStorageData) ? localStorageData : [],
+      [...initialData, ...(isArray(localStorageData) ? localStorageData : [])],
       substances,
       blends,
     )

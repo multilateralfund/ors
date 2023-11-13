@@ -23,9 +23,10 @@ export default class SectionC extends Section<
   Record<keyof SectionCFormFields, Field>
 > {
   constructor(
+    initialData: Array<DeserializedDataC> = [],
     substances: Array<Substance>,
     blends: Array<Blend>,
-    localStorageKey: string,
+    localStorageKey: null | string,
   ) {
     const formFields = {
       current_year_price: { dataType: 'number', defaultValue: 0 },
@@ -35,6 +36,7 @@ export default class SectionC extends Section<
 
     super(
       formFields,
+      initialData,
       substances.filter((substance) => includes(substance.sections, 'C')),
       blends,
       localStorageKey,

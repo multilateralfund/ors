@@ -1,4 +1,4 @@
-import { forOwn, get, isNull, isString } from 'lodash'
+import { forOwn, get, isNull, isObject, isString } from 'lodash'
 
 import { Field } from './Section'
 
@@ -6,10 +6,10 @@ export type SectionFFormFields = {
   remarks?: string
 }
 
-export type DeserializedDataE = SectionFFormFields & { [key: string]: any }
+export type DeserializedDataF = SectionFFormFields & { [key: string]: any }
 
 export default class SectionF {
-  private data: DeserializedDataE = {
+  private data: DeserializedDataF = {
     remarks: '',
   }
   private formFields: Record<keyof SectionFFormFields, Field> = {
@@ -18,10 +18,13 @@ export default class SectionF {
   public key = 'rowId'
   public localStorageKey: null | string = null
 
-  constructor(localStorageKey: string) {
+  constructor(
+    initialData: DeserializedDataF = {},
+    localStorageKey: null | string,
+  ) {
     this.localStorageKey = localStorageKey
 
-    let localStorageData: DeserializedDataE | string =
+    let localStorageData: DeserializedDataF | string =
       __CLIENT__ && this.localStorageKey
         ? window.localStorage.getItem(this.localStorageKey) || {}
         : {}
@@ -34,7 +37,13 @@ export default class SectionF {
     forOwn(this.formFields, (field, fieldKey) => {
       this.data[fieldKey] = this.getFormFieldValue(
         field,
-        get(localStorageData, fieldKey),
+        get(
+          {
+            ...initialData,
+            ...(isObject(localStorageData) ? localStorageData : {}),
+          },
+          fieldKey,
+        ),
       )
     })
   }
@@ -56,9 +65,9 @@ export default class SectionF {
     return value
   }
 
-  public getSubmitFormData(data: DeserializedDataE) {
+  public getSubmitFormData(data: DeserializedDataF) {
     if (!this.formFields) return {}
-    const formData: DeserializedDataE = {}
+    const formData: DeserializedDataF = {}
 
     forOwn(this.formFields, (field: any, fieldKey: any) => {
       formData[fieldKey] = this.getFormFieldValue(field, data[fieldKey])
@@ -70,7 +79,7 @@ export default class SectionF {
     return formData
   }
 
-  public updateLocalStorage(newData: DeserializedDataE) {
+  public updateLocalStorage(newData: DeserializedDataF) {
     if (this.localStorageKey) {
       try {
         window.localStorage.setItem(
