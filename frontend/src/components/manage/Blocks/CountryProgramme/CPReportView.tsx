@@ -186,10 +186,19 @@ export default function CPReportView(props: {
                           </Link>
                         </Dropdown.Item>
                         <Dropdown.Item onClick={onPrint}>
-                          <div className="flex items-center gap-x-2">
+                          <Link
+                            className="flex items-center gap-x-2 text-black no-underline"
+                            target="_blank"
+                            href={
+                              formatApiUrl('api/country-programme/print/') +
+                              '?cp_report_id=' +
+                              report.id?.toString()
+                            }
+                            download
+                          >
                             <AiFillFilePdf className="fill-red-700" size={24} />
                             <span>PDF</span>
-                          </div>
+                          </Link>
                         </Dropdown.Item>
                       </Dropdown>
                     )}

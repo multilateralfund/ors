@@ -22,6 +22,7 @@ from core.api.views.cp_reports import (
     CPReportGroupByCountryView,
 )
 from core.api.views.cp_records import CPRecordListView
+from core.api.views.cp_records_export import CPRecordPrintView
 from core.api.views.cp_records_export import CPRecordExportView
 from core.api.views.cp_report_empty_form import EmptyFormView
 from core.api.views.projects import (
@@ -34,7 +35,6 @@ from core.api.views.projects import (
     ProjectTypeListView,
 )
 from core.api.views.settings import SettingsView
-from core.api.views.cp_print import CPPrintView
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView
 
@@ -105,11 +105,6 @@ urlpatterns = [
         name="country-programme-report-status",
     ),
     path(
-        "country-programme/report/<int:pk>/print/",
-        CPPrintView.as_view(),
-        name="country-programme-report-print",
-    ),
-    path(
         "country-programme/reports-by-year/",
         CPReportGroupByYearView.as_view(),
         name="country-programme-reports-by-year",
@@ -128,6 +123,11 @@ urlpatterns = [
         "country-programme/export/",
         CPRecordExportView.as_view(),
         name="country-programme-export",
+    ),
+    path(
+        "country-programme/print/",
+        CPRecordPrintView.as_view(),
+        name="country-programme-print",
     ),
     path(
         "country-programme/empty-form/",

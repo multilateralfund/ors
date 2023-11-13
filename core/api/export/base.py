@@ -1,5 +1,3 @@
-import io
-
 import openpyxl
 from openpyxl.comments import Comment
 from openpyxl.styles import Alignment
@@ -9,7 +7,6 @@ from openpyxl.styles import Side
 from openpyxl.styles import Font
 from openpyxl.styles import DEFAULT_FONT
 from openpyxl.utils import get_column_letter
-from django.http import FileResponse
 
 
 ROW_HEIGHT = 30
@@ -165,13 +162,14 @@ class CPReportBase:
                 usages.get(section, []),
             )
 
+            sheet.page_setup.orientation = sheet.ORIENTATION_PORTRAIT
+            sheet.page_setup.paperSize = sheet.PAPERSIZE_A4
+            sheet.sheet_properties.pageSetUpPr.fitToPage = True
+            sheet.page_margins.top = 0.25
+            sheet.page_margins.right = 0.25
+            sheet.page_margins.bottom = 0.25
+            sheet.page_margins.left = 0.25
+
         # Remove the default sheet before saving
         del wb[wb.sheetnames[0]]
-
-        # Save xlsx and return the response
-        xls = io.BytesIO()
-        wb.save(xls)
-        xls.seek(0)
-        return FileResponse(
-            xls, as_attachment=True, filename=data["cp_report"]["name"] + ".xlsx"
-        )
+        return wb
