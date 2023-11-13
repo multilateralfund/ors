@@ -1,3 +1,4 @@
+from datetime import date
 from datetime import datetime
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -182,5 +183,8 @@ class EmptyFormView(views.APIView):
         cp_report_id = request.query_params.get(
             "cp_report_id",
         )
-        cp_report = CPReport.objects.filter(id=cp_report_id).first()
-        return Response(self.get_data(cp_report.year))
+        try:
+            year = CPReport.objects.get(id=cp_report_id).year
+        except CPReport.DoesNotExist:
+            year = date.today().year
+        return Response(self.get_data(year))
