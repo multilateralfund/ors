@@ -219,6 +219,9 @@ export default function Table(
     const hasErrors = !isEmpty(errors)
 
     grid.current.api.forEachNode((rowNode: RowNode) => {
+      if (rowNode.data.rowType) {
+        return
+      }
       const data = { ...rowNode.data }
       const error =
         hasErrors && isObject(errors) ? get(errors, data.rowId) : null

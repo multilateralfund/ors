@@ -1,53 +1,26 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import React from 'react'
 
-import {
-  Alert,
-  Box,
-  Button,
-  Collapse,
-  IconButton,
-  InputLabel,
-  Modal,
-  Typography,
-} from '@mui/material'
+import { Box, Button, IconButton, Modal, Typography } from '@mui/material'
 import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
 import cx from 'classnames'
-import {
-  each,
-  find,
-  findIndex,
-  get,
-  includes,
-  isObject,
-  isString,
-  sortBy,
-  union,
-  uniqBy,
-} from 'lodash'
+import { each, find, findIndex, includes, sortBy, union, uniqBy } from 'lodash'
 import dynamic from 'next/dynamic'
 import { useSnackbar } from 'notistack'
 
 import Field from '@ors/components/manage/Form/Field'
-import TextWidget from '@ors/components/manage/Widgets/TextWidget'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
-import api, { getResults } from '@ors/helpers/Api'
-import {
-  applyTransaction,
-  debounce,
-  parseNumber,
-  scrollToElement,
-} from '@ors/helpers/Utils/Utils'
-import useStateWithPrev from '@ors/hooks/useStateWithPrev'
+import { getResults } from '@ors/helpers/Api'
+import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import useStore from '@ors/store'
 
+import { CreateBlend } from './CreateBlend'
 import useGridOptions from './schema'
 
 import { AiFillFilePdf } from '@react-icons/all-files/ai/AiFillFilePdf'
 import { IoClose } from '@react-icons/all-files/io5/IoClose'
 import { IoDownloadOutline } from '@react-icons/all-files/io5/IoDownloadOutline'
 import { IoExpand } from '@react-icons/all-files/io5/IoExpand'
-import { IoRemoveCircle } from '@react-icons/all-files/io5/IoRemoveCircle'
 
 const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
   ssr: false,
@@ -94,6 +67,7 @@ function getRowData(data: any) {
 }
 
 export default function SectionBCreate(props: any) {
+  const { enqueueSnackbar } = useSnackbar()
   const {
     Section,
     TableProps,
@@ -104,8 +78,8 @@ export default function SectionBCreate(props: any) {
     setActiveSection,
     setForm,
   } = props
+
   const newNode = useRef<RowNode>()
-  const { enqueueSnackbar } = useSnackbar()
 
   const [createdBlends, setCreatedBlends] = useState<Array<any>>([])
 
@@ -119,25 +93,8 @@ export default function SectionBCreate(props: any) {
   const grid = useRef<any>()
   const [initialRowData] = useState(() => getRowData(form.section_b))
 
-  const [blendForm, setBlendForm, prevBlendForm] = useStateWithPrev<any>({
-    components: [],
-    composition: '',
-    other_names: '',
-  })
-  const [blendFormErrors, setBlendFormErrors] = useState<Record<string, any>>(
-    {},
-  )
   const [addChimicalModal, setAddChimicalModal] = useState(false)
   const [createBlendModal, setCreateBlendModal] = useState(false)
-
-  const createBlendSubstancesOptions = useMemo(() => {
-    const addedSubstances = blendForm.components.map(
-      (component: any) => component?.id,
-    )
-    return substances.filter(
-      (substance: any) => !includes(addedSubstances, substance.id),
-    )
-  }, [substances, blendForm])
 
   const chimicalsOptions = useMemo(() => {
     const data: Array<any> = []
@@ -202,13 +159,6 @@ export default function SectionBCreate(props: any) {
     return usages
   }
 
-  useEffect(() => {
-    if (!createBlendModal) {
-      setBlendForm({ components: [], composition: '', other_names: '' })
-      setBlendFormErrors({})
-    }
-  }, [createBlendModal, setBlendForm])
-
   return (
     <>
       <Table
@@ -228,8 +178,6 @@ export default function SectionBCreate(props: any) {
           return (
             <div
               className={cx('mb-2 flex flex-col', {
-                // 'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
-                //   fullScreen,
                 'px-4 pt-2': fullScreen && !print,
               })}
             >
@@ -282,51 +230,6 @@ export default function SectionBCreate(props: any) {
                     </div>
                   )}
                 </div>
-              </div>
-            </div>
-          )
-          return (
-            <div
-              className={cx('py-2', {
-                'px-4': fullScreen && !print,
-              })}
-            >
-              <Typography className="mb-2" component="h2" variant="h6">
-                {section.title}
-              </Typography>
-              <div className="flex items-center justify-between gap-x-4">
-                <Button
-                  variant="contained"
-                  onClick={() => setCreateBlendModal(true)}
-                >
-                  Create blend
-                </Button>
-                <div>
-                  {!fullScreen && <button onClick={onPrint}>Print</button>}
-                  {section.allowFullScreen && !fullScreen && (
-                    <IconButton
-                      color="primary"
-                      onClick={() => {
-                        enterFullScreen()
-                      }}
-                    >
-                      <IoExpand />
-                    </IconButton>
-                  )}
-                </div>
-                {fullScreen && (
-                  <div>
-                    <IconButton
-                      className="exit-fullscreen p-2 text-primary"
-                      aria-label="exit fullscreen"
-                      onClick={() => {
-                        exitFullScreen()
-                      }}
-                    >
-                      <IoClose size={32} />
-                    </IconButton>
-                  </div>
-                )}
               </div>
             </div>
           )
@@ -464,281 +367,67 @@ export default function SectionBCreate(props: any) {
         </Modal>
       )}
       {createBlendModal && (
-        <Modal
-          aria-labelledby="create-blend-modal-title"
-          open={createBlendModal}
+        <CreateBlend
+          substances={substances}
           onClose={() => setCreateBlendModal(false)}
-          keepMounted
-        >
-          <div className="h-full w-full p-4 absolute-center">
-            <Box className="flex h-full flex-col justify-between overflow-scroll">
-              <div>
-                <Typography
-                  id="create-blend-modal-title"
-                  className="mb-4 text-typography-secondary"
-                  component="h2"
-                  variant="h6"
-                >
-                  Create blend
-                </Typography>
-                <Field
-                  InputLabel={{ label: 'Blend description' }}
-                  error={!!blendFormErrors.composition}
-                  helperText={blendFormErrors.composition}
-                  onChange={(event: any) => {
-                    debounce(function updateBlendDescription() {
-                      setBlendForm({
-                        ...prevBlendForm.current,
-                        composition: event.target.value,
-                      })
-                    })
-                  }}
-                />
-                <Field
-                  InputLabel={{ label: 'Blend other names' }}
-                  error={!!blendFormErrors.other_names}
-                  helperText={blendFormErrors.other_names}
-                  onChange={(event: any) => {
-                    debounce(function updateBlendName() {
-                      setBlendForm({
-                        ...prevBlendForm.current,
-                        other_names: event.target.value,
-                      })
-                    })
-                  }}
-                />
-                <InputLabel className="mb-2">Blend composition</InputLabel>
-                {blendForm.components.map((component: any, index: number) => (
-                  <React.Fragment key={component?.substance_id || index}>
-                    <div className="mb-4 grid grid-cols-[1fr_1fr_auto_auto] items-center gap-x-4">
-                      <Field
-                        FieldProps={{ className: 'w-full mb-0' }}
-                        Input={{ placeholder: 'Select substance...' }}
-                        getOptionLabel={(option: any) => option.name}
-                        groupBy={(option: any) => option.group}
-                        label="Substance"
-                        options={createBlendSubstancesOptions}
-                        value={component}
-                        widget="autocomplete"
-                        onChange={(_: any, value: any) => {
-                          const components = [...blendForm.components]
-                          if (!value) {
-                            components.splice(index, 1)
-                          } else {
-                            components[index] = {
-                              ...value,
-                              percentage: components[index]?.percentage || 0,
-                            }
-                          }
-                          setBlendForm({ ...blendForm, components })
-                        }}
-                      />
-                      <Field
-                        FieldProps={{ className: 'mb-0' }}
-                        defaultValue={component?.component_name || ''}
-                        disabled={!component}
-                        label="Compnent name"
-                        onChange={(event: any) => {
-                          debounce(function updateBlendComponentName() {
-                            const components = [
-                              ...prevBlendForm.current.components,
-                            ]
-                            components[index].component_name =
-                              event.target.value
-                            setBlendForm({
-                              ...prevBlendForm.current,
-                              components,
-                            })
-                          })
-                        }}
-                      />
-                      <TextWidget
-                        defaultValue={component?.percentage || 0}
-                        disabled={!component}
-                        label="Percentage"
-                        type="number"
-                        InputProps={{
-                          inputProps: {
-                            lang: 'en',
-                            max: 100,
-                            min: 0,
-                            step: 1,
-                          },
-                        }}
-                        onChange={(event: any) => {
-                          debounce(function updateBlendComponentPercentage() {
-                            const components = [
-                              ...prevBlendForm.current.components,
-                            ]
-                            components[index] = {
-                              ...(components[index] || {}),
-                              percentage: event.target.value || 0,
-                            }
-                            setBlendForm({
-                              ...prevBlendForm.current,
-                              components,
-                            })
-                          })
-                        }}
-                      />
-                      <div>
-                        <IconButton
-                          color="error"
-                          onClick={() => {
-                            const components = [...blendForm.components]
-                            components.splice(index, 1)
-                            setBlendForm({ ...blendForm, components })
-                          }}
-                        >
-                          <IoRemoveCircle size="1rem" />
-                        </IconButton>
-                      </div>
-                    </div>
-                    <Collapse in={isObject(blendFormErrors.components)}>
-                      {isObject(blendFormErrors.components) &&
-                        isString(get(blendFormErrors.components, index)) && (
-                          <Alert className="mb-4" severity="error">
-                            {get(blendFormErrors.components, index)}
-                          </Alert>
-                        )}
-                    </Collapse>
-                  </React.Fragment>
-                ))}
-                <Button
-                  className="mb-4"
-                  onClick={() => {
-                    setBlendForm({
-                      ...blendForm,
-                      components: [...blendForm.components, null],
-                    })
-                  }}
-                >
-                  + Add component
-                </Button>
-                <Collapse
-                  in={
-                    isString(blendFormErrors.components) &&
-                    !!blendFormErrors.components
-                  }
-                >
-                  {isString(blendFormErrors.components) && (
-                    <Alert severity="error">{blendFormErrors.components}</Alert>
-                  )}
-                </Collapse>
-              </div>
-              <div>
-                <Typography className="flex justify-end gap-x-2">
-                  <Button onClick={() => setCreateBlendModal(false)}>
-                    Close
-                  </Button>
-                  <Button
-                    variant="contained"
-                    onClick={async () => {
-                      try {
-                        const blend = await api('api/blends/create/', {
-                          data: {
-                            ...blendForm,
-                            components: blendForm.components.map(
-                              (component: any) => ({
-                                component_name: component?.component_name || '',
-                                percentage:
-                                  parseNumber(component?.percentage) || 0,
-                                substance_id: component?.id || null,
-                              }),
-                            ),
-                          },
-                          method: 'POST',
-                        })
+          onCreateBlend={(blend: any) => {
+            const serializedBlend = Section.transformBlend(blend)
 
-                        const deserializedBlend = Section.transformBlend(blend)
+            const added = find(
+              form.section_b,
+              (chimical) => chimical.rowId === serializedBlend.rowId,
+            )
 
-                        const added = find(
-                          form.section_b,
-                          (chimical) =>
-                            chimical.rowId === deserializedBlend.rowId,
-                        )
-
-                        if (added) {
-                          const blendNode = grid.current.api.getRowNode(
-                            deserializedBlend.rowId,
-                          )
-                          enqueueSnackbar(
-                            `Blend ${deserializedBlend.name} already exists in the form.`,
-                            { variant: 'info' },
-                          )
-                          scrollToElement(
-                            `.ag-row[row-id=${deserializedBlend.rowId}]`,
-                            () => {
-                              grid.current.api.flashCells({
-                                rowNodes: [blendNode],
-                              })
-                            },
-                          )
-                        } else {
-                          const groupNode = grid.current.api.getRowNode(
-                            deserializedBlend.group,
-                          )
-                          setForm((form: any) => ({
-                            ...form,
-                            section_b: [...form.section_b, deserializedBlend],
-                          }))
-                          setCreatedBlends((prev) => [...prev, blend])
-                          applyTransaction(grid.current.api, {
-                            add: [deserializedBlend],
-                            addIndex:
-                              groupNode.rowIndex + groupNode.data.count + 1,
-                            update: [
-                              {
-                                ...groupNode.data,
-                                count: groupNode.data.count + 1,
-                              },
-                            ],
-                          })
-                          const blendNode = grid.current.api.getRowNode(
-                            deserializedBlend.rowId,
-                          )
-                          newNode.current = blendNode
-                          enqueueSnackbar(
-                            <>
-                              Blend{' '}
-                              <span className="font-medium">
-                                {deserializedBlend.name}
-                              </span>{' '}
-                              created succesfuly.
-                            </>,
-                            { variant: 'info' },
-                          )
-                        }
-                        setBlendFormErrors({})
-                        setCreateBlendModal(false)
-                      } catch (error) {
-                        if (error.status === 400) {
-                          setBlendFormErrors({
-                            ...(await error.json()),
-                          })
-                          enqueueSnackbar(
-                            <>Please make sure all the inputs are correct.</>,
-                            { variant: 'error' },
-                          )
-                        } else {
-                          setBlendFormErrors({})
-                          enqueueSnackbar(
-                            <>Unexpected error, we are working on it.</>,
-                            {
-                              variant: 'error',
-                            },
-                          )
-                        }
-                      }
-                    }}
-                  >
-                    Submit
-                  </Button>
-                </Typography>
-              </div>
-            </Box>
-          </div>
-        </Modal>
+            if (added) {
+              const blendNode = grid.current.api.getRowNode(
+                serializedBlend.rowId,
+              )
+              enqueueSnackbar(
+                `Blend ${serializedBlend.name} already exists in the form.`,
+                { variant: 'info' },
+              )
+              scrollToElement(
+                `.ag-row[row-id=${serializedBlend.rowId}]`,
+                () => {
+                  grid.current.api.flashCells({
+                    rowNodes: [blendNode],
+                  })
+                },
+              )
+            } else {
+              const groupNode = grid.current.api.getRowNode(
+                serializedBlend.group,
+              )
+              setForm((form: any) => ({
+                ...form,
+                section_b: [...form.section_b, serializedBlend],
+              }))
+              setCreatedBlends((prev) => [...prev, blend])
+              applyTransaction(grid.current.api, {
+                add: [serializedBlend],
+                addIndex: groupNode.rowIndex + groupNode.data.count + 1,
+                update: [
+                  {
+                    ...groupNode.data,
+                    count: groupNode.data.count + 1,
+                  },
+                ],
+              })
+              const blendNode = grid.current.api.getRowNode(
+                serializedBlend.rowId,
+              )
+              newNode.current = blendNode
+              enqueueSnackbar(
+                <>
+                  Blend{' '}
+                  <span className="font-medium">{serializedBlend.name}</span>{' '}
+                  created succesfuly.
+                </>,
+                { variant: 'info' },
+              )
+            }
+          }}
+        />
       )}
     </>
   )
