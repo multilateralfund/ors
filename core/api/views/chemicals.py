@@ -245,6 +245,7 @@ class BlendCreateView(generics.CreateAPIView):
                             "component_name": component_name (string),
                             "percentage": percentage (float),
                             "substance_id": substance_id (int),
+                            "rowId": used in error response (string),
                             }
                         ],
                     "odp": odp (decimal),
@@ -257,55 +258,43 @@ class BlendCreateView(generics.CreateAPIView):
         gwp = 0
         percentage_sum = 0
         existing_subst = set()
+        comp_errors = {}
 
         for index, vals in enumerate(blend_components):
-            try:
-                assert isinstance(vals, dict), "Component must be a dictionary"
-                subst_id = vals["substance_id"]
-                component_name = vals["component_name"]
-                percentage = vals["percentage"]
-            except (ValueError, AssertionError) as e:
+            if not isinstance(vals, dict):
                 raise ValidationError(
-                    {"components": {index: f"Incorrect component: {e}"}}
-                ) from e
+                    {"components": "There is a component that is not a dict"}
+                )
+
+            row_id = vals.pop("rowId", index)
             try:
-                prcnt_decimal = Decimal(percentage / 100)
-            except (ValueError, ArithmeticError, TypeError) as e:
-                raise ValidationError(
-                    {"components": {index: f"Invalid percentage: {percentage}"}}
-                ) from e
+                subst_id = vals.get("substance_id", None)
+                component_name = vals.get("component_name", None)
+                percentage = Decimal(str(vals["percentage"]))
+                prcnt_decimal = percentage / 100
+            except (ArithmeticError, TypeError, ValueError):
+                comp_errors[row_id] = {"percentage": "Invalid value"}
+                continue
+
             # get substance by id, if it does not exist return error
             try:
                 subst = Substance.objects.select_related("group").get(id=subst_id)
-            except Substance.DoesNotExist as e:
-                raise ValidationError(
-                    {
-                        "components": {
-                            index: f"Substance with id {subst_id} does not exist"
-                        }
-                    }
-                ) from e
+            except Substance.DoesNotExist:
+                comp_errors[row_id] = {"substance": "Substance does not exist."}
+                continue
 
             # check if component already exists in components dict
             if subst_id in existing_subst:
                 # if component already exists and is not "other" return error
-                raise ValidationError(
-                    {
-                        "components": {
-                            index: f"Substance with id {subst_id} already exists"
-                        }
-                    }
-                )
+                comp_errors[row_id] = {
+                    "substance": "Substance already exists in the blend."
+                }
+                continue
 
             if "other" in subst.name.lower() and not component_name:
                 # components of "other" substances must have a specific name
-                raise ValidationError(
-                    {
-                        "components": {
-                            index: f"Please add a specific name for the component with id {subst_id}",
-                        }
-                    }
-                )
+                comp_errors[row_id] = {"component_name": "Please add a component name"}
+                continue
 
             # add component to the component list
             components.append(
@@ -330,6 +319,10 @@ class BlendCreateView(generics.CreateAPIView):
 
             # set percentage_sum
             percentage_sum += percentage
+
+        # check if there are any errors
+        if comp_errors:
+            raise ValidationError({"components": comp_errors})
 
         # check if percentage_sum is 100
         if percentage_sum != 100:
