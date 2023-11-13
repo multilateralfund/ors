@@ -1,21 +1,39 @@
+import collections
 import io
+import itertools
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
 
+from django.db.models import Prefetch
 from django.http import FileResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework.exceptions import ValidationError
 
 from core.api.export.cp_report_new import CPReportNewExporter
 from core.api.export.cp_report_old import CPReportOldExporter
+from core.api.serializers import BlendSerializer
+from core.api.serializers import SubstanceSerializer
 from core.api.views.cp_records import CPRecordListView
 from core.api.views.cp_report_empty_form import EmptyFormView
+from core.models import Blend
+from core.models import CPReport
+from core.models import ExcludedUsage
+from core.models import Substance
 from core.utils import IMPORT_DB_MAX_YEAR
 
 
 class CPRecordExportView(CPRecordListView):
+    def get_usages(self, cp_report):
+        empty_form = EmptyFormView.get_data(cp_report.year)
+        usages = empty_form.pop("usage_columns")
+        return {
+            **usages,
+            **empty_form,
+        }
+
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(
@@ -28,39 +46,29 @@ class CPRecordExportView(CPRecordListView):
     )
     def get(self, *args, **kwargs):
         cp_report = self._get_cp_report()
-        empty_form = EmptyFormView.get_data(cp_report)
-
         if cp_report.year > IMPORT_DB_MAX_YEAR:
             exporter = CPReportNewExporter()
         else:
             exporter = CPReportOldExporter()
 
-        usages = empty_form.pop("usage_columns")
-        wb = exporter.get_xlsx(
-            self.get_data(cp_report),
-            {
-                **usages,
-                **empty_form,
-            },
-        )
+        wb = exporter.get_xlsx(self.get_data(cp_report), self.get_usages(cp_report))
+        return self.get_response(cp_report.name, wb)
 
-        return self.get_response(cp_report, wb)
-
-    def get_response(self, cp_report, wb):
+    def get_response(self, name, wb):
         """Save xlsx and return the response"""
         xls = io.BytesIO()
         wb.save(xls)
         xls.seek(0)
-        return FileResponse(xls, as_attachment=True, filename=cp_report.name + ".xlsx")
+        return FileResponse(xls, as_attachment=True, filename=name + ".xlsx")
 
 
 class CPRecordPrintView(CPRecordExportView):
-    def get_response(self, cp_report, wb):
+    def get_response(self, name, wb):
         """Save pdf and return the response"""
 
         with tempfile.TemporaryDirectory(prefix="cp-report-print-") as tmpdirname:
-            pdf_file = Path(tmpdirname) / (cp_report.name + ".pdf")
-            xlsx_file = Path(tmpdirname) / (cp_report.name + ".xlsx")
+            pdf_file = Path(tmpdirname) / (name + ".pdf")
+            xlsx_file = Path(tmpdirname) / (name + ".xlsx")
             wb.save(xlsx_file)
 
             libreoffice_bin = shutil.which("libreoffice")
@@ -72,5 +80,70 @@ class CPRecordPrintView(CPRecordExportView):
             return FileResponse(
                 pdf_file.open("rb"),
                 as_attachment=True,
-                filename=cp_report.name + ".pdf",
+                filename=name + ".pdf",
             )
+
+
+class CPEmptyExportView(CPRecordExportView):
+    @swagger_auto_schema(
+        required=["year"],
+        manual_parameters=[
+            openapi.Parameter(
+                "year",
+                openapi.IN_QUERY,
+                description="What year to generate the empty report for",
+                type=openapi.TYPE_INTEGER,
+            ),
+        ],
+    )
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
+
+    def _get_cp_report(self):
+        try:
+            year = int(self.request.query_params["year"])
+        except (KeyError, TypeError, ValueError) as e:
+            raise ValidationError({"year": "Invalid or missing parameter"}) from e
+        return CPReport(year=year, name=f"Empty Country Programme {year}")
+
+    def get_data(self, cp_report):
+        substances = SubstanceSerializer(
+            Substance.objects.select_related("group")
+            .prefetch_related(
+                Prefetch(
+                    "excluded_usages",
+                    queryset=ExcludedUsage.objects.get_for_year(cp_report.year),
+                ),
+            )
+            .filter(displayed_in_all=True)
+            .order_by("group__name", "sort_order"),
+            many=True,
+            context={"with_usages": True},
+        ).data
+        blends = BlendSerializer(
+            Blend.objects.prefetch_related(
+                Prefetch(
+                    "excluded_usages",
+                    queryset=ExcludedUsage.objects.get_for_year(cp_report.year),
+                ),
+            )
+            .filter(displayed_in_all=True)
+            .order_by("sort_order"),
+            many=True,
+            context={"with_usages": True},
+        ).data
+        by_section = collections.defaultdict(list)
+
+        for item in itertools.chain(substances, blends):
+            for section in item["sections"]:
+                item["display_name"] = item["name"]
+                by_section["section_" + section.lower()].append(item)
+
+        return {
+            "cp_report": {
+                "name": cp_report.name,
+                "year": cp_report.year,
+                "country": "XXXX",
+            },
+            **by_section,
+        }

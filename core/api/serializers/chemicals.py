@@ -9,8 +9,7 @@ from core.models import Blend
 # pylint: disable=W0223
 class ChemicalsBaseSerializer(serializers.ModelSerializer):
     def get_excluded_usages(self, obj):
-        request = self.context.get("request")
-        if request and request.query_params.get("with_usages", None):
+        if self.context.get("with_usages", False):
             return list({usage.usage_id for usage in obj.excluded_usages.all()})
         return []
 
@@ -53,6 +52,7 @@ class BlendSerializer(ChemicalsBaseSerializer):
     composition = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
     components = serializers.SerializerMethodField()
+    sections = serializers.SerializerMethodField()
 
     class Meta:
         model = Blend
@@ -72,6 +72,7 @@ class BlendSerializer(ChemicalsBaseSerializer):
             "displayed_in_latest_format",
             "sort_order",
             "components",
+            "sections",
         ]
 
     def get_composition(self, obj):
@@ -113,3 +114,6 @@ class BlendSerializer(ChemicalsBaseSerializer):
         except AssertionError as e:
             raise ValidationError({"components": str(e)}) from e
         return attrs
+
+    def get_sections(self, *args):
+        return ["B", "C"]
