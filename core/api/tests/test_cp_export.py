@@ -98,3 +98,44 @@ class TestCPExportPDF(BaseTest):
             "Adm D",
         ]:
             assert name.upper() in text
+
+
+class TestCPExportEmpty(BaseTest):
+    url = reverse("country-programme-export-empty")
+
+    def test_get_cp_export_anon(self, cp_report_2019):
+        response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
+        assert response.status_code == 403
+
+    def test_get_cp_export_new(self, user):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"year": "2019"})
+        assert response.status_code == 200
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        assert wb.sheetnames == [
+            "Section A",
+            "Section B",
+            "Section C",
+            "Section D",
+            "Section E",
+            "Section F",
+        ]
+        assert wb["Section A"]["A1"].value == "Country: XXXX Year: 2019"
+
+    def test_get_cp_export_old(self, user):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"year": 2005})
+        assert response.status_code == 200
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        assert wb.sheetnames == [
+            "Section A",
+            "Adm B",
+            "Adm C",
+            "Section C",
+            "Adm D",
+        ]
+        assert wb["Section A"]["A1"].value == "Country: XXXX Year: 2005"
