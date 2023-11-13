@@ -17,7 +17,6 @@ from core.models.project import (
 from core.models.project import ProjectComment
 from core.models.project import ProjectFund
 from core.models.project import ProjectFile
-from core.models.project_submission import ProjectSubmission
 from core.models.substance import Substance
 
 
@@ -81,43 +80,6 @@ class ProjectTypeSerializer(serializers.ModelSerializer):
             "name",
             "code",
             "sort_order",
-        ]
-
-
-class ProjectSubmissionSerializer(serializers.ModelSerializer):
-    """
-    ProjectSubmissionSerializer class
-    """
-
-    id = serializers.IntegerField(read_only=True)
-    funds_allocated = serializers.FloatField(required=True)
-    support_cost_13 = serializers.FloatField(required=True)
-
-    class Meta:
-        model = ProjectSubmission
-        fields = [
-            "id",
-            "category",
-            "submission_number",
-            "programme_officer",
-            "impact_tranche",
-            "funds_allocated",
-            "support_cost_13",
-            "date_approved",
-            "contingency_cost",
-            "project_cost",
-            "date_received",
-            "revision_number",
-            "date_of_revision",
-            "agency_remarks",
-            "comments",
-            "withdrawn",
-            "issue",
-            "issue_description",
-            "incomplete",
-            "reviewed_mfs",
-            "correspondance_no",
-            "plus",
         ]
 
 
@@ -253,7 +215,6 @@ class ProjectListSerializer(serializers.ModelSerializer):
     project_type = serializers.SlugRelatedField("name", read_only=True)
     status = serializers.SlugRelatedField("name", read_only=True)
     title = serializers.CharField(required=True)
-    submission = ProjectSubmissionSerializer(read_only=True)
 
     class Meta:
         model = Project
@@ -276,7 +237,6 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "status",
             "substance_type",
             "approval_meeting_no",
-            "submission",
             "project_duration",
             "application",
             "products_manufactured",
@@ -319,7 +279,6 @@ class ProjectDetailsSerializer(ProjectListSerializer):
     ProjectSerializer class
     """
 
-    submission = ProjectSubmissionSerializer()
     ods_odp = ProjectOdsOdpSerializer(many=True)
     funds = ProjectFundSerializer(many=True)
     comments = ProjectCommentSerializer(many=True)
@@ -367,24 +326,17 @@ class ProjectDetailsSerializer(ProjectListSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        submission_data = validated_data.pop("submission")
         ods_odp_data = validated_data.pop("ods_odp", [])
         funds = validated_data.pop("funds", [])
         comments = validated_data.pop("comments", [])
         coop_agencies_id = validated_data.pop("coop_agencies_id")
 
-        if submission_data:
-            status = ProjectStatus.objects.get(code="NEWSUB")
-            validated_data["status_id"] = status.id
-        else:
-            status = ProjectStatus.objects.get(code="NEW")
-            validated_data["status_id"] = status.id
+        # a new project = new submission ?
+        status = ProjectStatus.objects.get(code="NEWSUB")
+        validated_data["status_id"] = status.id
 
         # create project
         project = Project.objects.create(**validated_data)
-        # create submission
-        if submission_data:
-            ProjectSubmission.objects.create(project=project, **submission_data)
         # create ods_odp
         for ods_odp in ods_odp_data:
             ProjectOdsOdp.objects.create(project=project, **ods_odp)
@@ -401,17 +353,9 @@ class ProjectDetailsSerializer(ProjectListSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        submission_data = validated_data.pop("submission", None)
         coop_agencies_id = validated_data.pop("coop_agencies_id", None)
 
         super().update(instance, validated_data)
-
-        # update submission
-        if submission_data:
-            submission = instance.submission
-            for attr, value in submission_data.items():
-                setattr(submission, attr, value)
-            submission.save()
 
         # update coop_agencies
         if coop_agencies_id:

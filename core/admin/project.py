@@ -10,6 +10,7 @@ from core.models.project import (
     ProjectStatus,
     ProjectSubSector,
     ProjectType,
+    SubmissionAmount,
 )
 from core.models.project import ProjectComment
 from core.models.project import ProjectFile
@@ -108,6 +109,7 @@ class ProjectAdmin(admin.ModelAdmin):
             "submission",
             "files",
             "comments",
+            "submissionamount",
         ]
         return get_final_display_list(Project, exclude)
 
@@ -166,3 +168,18 @@ class ProjectFundAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = ["project"]
         return get_final_display_list(ProjectFund, exclude)
+
+
+@admin.register(SubmissionAmount)
+class SubmissionAmountAdmin(admin.ModelAdmin):
+    search_fields = [
+        "submission__project__title",
+    ]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("submission__project")
+
+    def get_list_display(self, request):
+        exclude = []
+        return get_final_display_list(SubmissionAmount, exclude)

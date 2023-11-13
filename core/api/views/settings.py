@@ -6,8 +6,7 @@ from rest_framework.response import Response
 
 from core.models import CPReport
 from core.models.blend import Blend
-from core.models.project import Project, ProjectFund, ProjectOdsOdp
-from core.models.project_submission import ProjectSubmission, SubmissionAmount
+from core.models.project import Project, ProjectFund, ProjectOdsOdp, SubmissionAmount
 
 
 class SettingsView(views.APIView):
@@ -41,7 +40,7 @@ class SettingsView(views.APIView):
                 },
             ],
             "blend_types": Blend.BlendTypes.choices,
-            "project_submission_categories": ProjectSubmission.ProjectSubmissionCategories.choices,
+            "project_submission_categories": Project.SubmissionCategory.choices,
             "submission_amount_statuses": SubmissionAmount.SubmissionStatus.choices,
             "project_substance_types": Project.SubstancesType.choices,
             "project_ods_odp_types": ProjectOdsOdp.ProjectOdsOdpType.choices,
