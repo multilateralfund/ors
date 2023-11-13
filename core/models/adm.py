@@ -51,13 +51,13 @@ class AdmColumn(models.Model):
 
 
 class AdmRowManager(TreeManager):
-    def get_for_cp_report(self, cp_report):
+    def get_for_year(self, year):
         return (
             self.select_related("time_frame")
             .filter(
-                (models.Q(time_frame__min_year__lte=cp_report.year)),
+                (models.Q(time_frame__min_year__lte=year)),
                 (
-                    models.Q(time_frame__max_year__gte=cp_report.year)
+                    models.Q(time_frame__max_year__gte=year)
                     | models.Q(time_frame__max_year__isnull=True)
                 ),
             )

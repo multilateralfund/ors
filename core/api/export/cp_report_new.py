@@ -258,7 +258,13 @@ class CPReportNewExporter(CPReportBase):
         row_idx = writer.header_row_end_idx + 1
         col_idx = 1
 
-        cell = sheet.cell(row_idx, col_idx, data["remarks"])
+        try:
+            value = data["remarks"]
+        except (KeyError, TypeError):
+            # This may be missing when exporting an empty form
+            value = ""
+
+        cell = sheet.cell(row_idx, col_idx, value)
         cell.alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
         sheet.column_dimensions[get_column_letter(col_idx)].width = COLUMN_WIDTH * 4
         sheet.row_dimensions[row_idx].height = ROW_HEIGHT * 16

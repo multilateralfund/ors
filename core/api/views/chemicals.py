@@ -28,6 +28,11 @@ class ChemicalBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
     filterset_class = ChemicalFilter
     filter_backends = [DjangoFilterBackend]
 
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx["with_usages"] = self.request.query_params.get("with_usages", None)
+        return ctx
+
     def get_queryset(self):
         queryset = super().get_queryset()
 

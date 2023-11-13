@@ -92,9 +92,9 @@ class EmptyFormView(views.APIView):
         return {"usage_columns": usage_columns}
 
     @classmethod
-    def get_old_empty_form(cls, cp_report):
+    def get_old_empty_form(cls, year):
         sections = {
-            "usage_columns": cls.get_usage_columns(cp_report.year),
+            "usage_columns": cls.get_usage_columns(year),
             "adm_b": {
                 "columns": [],
                 "rows": [],
@@ -112,7 +112,7 @@ class EmptyFormView(views.APIView):
         # set columns
         # adm columns children are from the same time-frame as the parent,
         # so it is enough to filter by the year only the parent columns
-        columns = AdmColumn.objects.get_for_year(cp_report.year)
+        columns = AdmColumn.objects.get_for_year(year)
         for col in columns:
             serial_col = AdmColumnSerializer(col).data
             if col.section == AdmColumn.AdmColumnSection.B:
@@ -120,8 +120,11 @@ class EmptyFormView(views.APIView):
             elif col.section == AdmColumn.AdmColumnSection.C:
                 sections["adm_c"]["columns"].append(serial_col)
 
+        if not year:
+            return sections
+
         # set rows
-        rows = AdmRow.objects.get_for_cp_report(cp_report)
+        rows = AdmRow.objects.get_for_year(year)
 
         # the rows with index 1.6.1 and 1.6.2 are special cases
         # if there is not a row with index 1.6.1 or 1.6.2 then we will display N/A
@@ -159,11 +162,10 @@ class EmptyFormView(views.APIView):
         return sections
 
     @classmethod
-    def get_data(cls, cp_report):
-        if cp_report and cp_report.year <= IMPORT_DB_MAX_YEAR:
-            return cls.get_old_empty_form(cp_report)
+    def get_data(cls, year):
+        if year <= IMPORT_DB_MAX_YEAR:
+            return cls.get_old_empty_form(year)
 
-        year = cp_report.year if cp_report else None
         return cls.get_new_empty_form(year)
 
     @swagger_auto_schema(
@@ -181,4 +183,4 @@ class EmptyFormView(views.APIView):
             "cp_report_id",
         )
         cp_report = CPReport.objects.filter(id=cp_report_id).first()
-        return Response(self.get_data(cp_report))
+        return Response(self.get_data(cp_report.year))
