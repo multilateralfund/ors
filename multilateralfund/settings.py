@@ -25,7 +25,7 @@ env = environ.Env()
 if os.path.exists(str(BASE_DIR / ".env")):
     env.read_env(str(BASE_DIR / ".env"))
 
-BACKEND_HOST = env.str("BACKEND_HOST", default="localhost")
+BACKEND_HOST = env.list("BACKEND_HOST", default=["localhost"])
 FRONTEND_HOST = env.list("FRONTEND_HOST", default=["http://localhost:3000"])
 
 # Quick-start development settings - unsuitable for production
@@ -41,7 +41,7 @@ ALLOWED_HOSTS = [
     # Allow direct access from the docker network to the backend API
     "app",
     # Allow access from the outside
-    BACKEND_HOST.rsplit(":", 1)[0].split("/")[-1],
+    *[host.rsplit(":", 1)[0].split("/")[-1] for host in BACKEND_HOST],
 ]
 
 # CORS allowed origins
@@ -222,7 +222,7 @@ LOGGING = {
     },
     "root": {
         "handlers": ["console"],
-        "level": "WARNING",
+        "level": "INFO",
     },
 }
 

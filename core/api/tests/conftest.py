@@ -1,5 +1,8 @@
 # pylint: disable=W0621
 import pytest
+import unicodedata
+
+from pdfminer.high_level import extract_text
 
 from core.api.tests.factories import (
     AdmChoiceFactory,
@@ -270,3 +273,9 @@ def project_ods_odp_blend(project, blend):
         co2_mt=0.05,
         sort_order=1,
     )
+
+
+def pdf_text(pdf_file):
+    text = extract_text(pdf_file)
+    # Normalize to avoid weird comparisons like 'ﬃ' != 'ffi'
+    return unicodedata.normalize("NFKD", text)

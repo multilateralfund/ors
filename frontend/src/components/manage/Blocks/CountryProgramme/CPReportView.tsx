@@ -10,9 +10,12 @@ import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
+import Link from '@ors/components/ui/Link/Link'
+import { formatApiUrl } from '@ors/helpers'
 
 import { getViewSections, variants } from '.'
 
+import { AiFillFileExcel } from '@react-icons/all-files/ai/AiFillFileExcel'
 import { AiFillFilePdf } from '@react-icons/all-files/ai/AiFillFilePdf'
 import { IoClose } from '@react-icons/all-files/io5/IoClose'
 import { IoDownloadOutline } from '@react-icons/all-files/io5/IoDownloadOutline'
@@ -70,6 +73,7 @@ export default function CPReportView(props: {
   const [renderSection, setRenderSection] = useState(false)
   const [report]: any = useState({
     ...(props.report || {}),
+    id: props.report?.cp_report?.id,
     name: props.report?.cp_report?.name,
     year: props.report?.cp_report?.year,
   })
@@ -79,7 +83,7 @@ export default function CPReportView(props: {
       return variant.minYear <= year && variant.maxYear >= year
     })[0],
   )
-  const [sections] = useState(() => getViewSections(variant))
+  const [sections] = useState(() => (variant ? getViewSections(variant) : []))
 
   useEffect(() => {
     setTimeout(() => {
@@ -87,19 +91,19 @@ export default function CPReportView(props: {
     }, 600)
   }, [currentIndex])
 
+  if (!report.name || !report.year) return null
+
   return (
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
         active={currentIndex !== activeSection || !renderSection}
       />
-      {report.name && (
-        <HeaderTitle>
-          <Typography className="mb-4 text-white" component="h1" variant="h3">
-            {report.name}
-          </Typography>
-        </HeaderTitle>
-      )}
+      <HeaderTitle>
+        <Typography className="mb-4 text-white" component="h1" variant="h3">
+          {report.name}
+        </Typography>
+      </HeaderTitle>
       <Tabs
         className="scrollable mb-4"
         aria-label="view submission sections"
@@ -163,11 +167,38 @@ export default function CPReportView(props: {
                         label={<IoDownloadOutline />}
                         icon
                       >
+                        <Dropdown.Item>
+                          <Link
+                            className="flex items-center gap-x-2 text-black no-underline"
+                            target="_blank"
+                            href={
+                              formatApiUrl('api/country-programme/export/') +
+                              '?cp_report_id=' +
+                              report.id?.toString()
+                            }
+                            download
+                          >
+                            <AiFillFileExcel
+                              className="fill-green-700"
+                              size={24}
+                            />
+                            <span>XLSX</span>
+                          </Link>
+                        </Dropdown.Item>
                         <Dropdown.Item onClick={onPrint}>
-                          <div className="flex items-center gap-x-2">
+                          <Link
+                            className="flex items-center gap-x-2 text-black no-underline"
+                            target="_blank"
+                            href={
+                              formatApiUrl('api/country-programme/print/') +
+                              '?cp_report_id=' +
+                              report.id?.toString()
+                            }
+                            download
+                          >
                             <AiFillFilePdf className="fill-red-700" size={24} />
                             <span>PDF</span>
-                          </div>
+                          </Link>
                         </Dropdown.Item>
                       </Dropdown>
                     )}

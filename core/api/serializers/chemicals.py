@@ -88,7 +88,6 @@ class BlendSerializer(ChemicalsBaseSerializer):
         return obj.composition
 
     def get_components(self, obj):
-        print(self.context)
         if not self.context.get("with_components", False):
             return []
         components = []

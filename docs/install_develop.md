@@ -9,6 +9,7 @@ This document describes installation steps required to install locally for devel
 - Install nodejs (>=18)
 - Install python and python-dev (>=3.11)
 - Install and start postgresql (>=15)
+- Install libreoffice
 - Create a postgresql database and user:
   ```shell
   sudo -u postgres createuser -Pds multilateralfund && sudo -u postgres createdb --encoding=UTF8 multilateralfund

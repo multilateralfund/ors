@@ -107,6 +107,9 @@ export function getError(props: any) {
   if (isObject(props.data.error)) {
     return get(props.data.error, props.colDef.field)
   }
+  if (isString(props.data.error) && props.colDef.showRowError) {
+    return props.data.error
+  }
   return null
 }
 

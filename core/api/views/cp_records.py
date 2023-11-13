@@ -1,6 +1,7 @@
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, generics
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from core.api.serializers.adm import (
@@ -208,17 +209,15 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
             "remarks": cp_report.comment,
         }
 
-        return Response(
-            {
-                "cp_report": self.cp_report_seri_class(cp_report).data,
-                "section_a": self.cp_record_seri_class(section_a, many=True).data,
-                "section_b": self.cp_record_seri_class(section_b, many=True).data,
-                "section_c": self.cp_prices_seri_class(section_c, many=True).data,
-                "section_d": self.cp_generation_seri_class(section_d, many=True).data,
-                "section_e": self.cp_emission_seri_class(section_e, many=True).data,
-                "section_f": section_f,
-            }
-        )
+        return {
+            "cp_report": self.cp_report_seri_class(cp_report).data,
+            "section_a": self.cp_record_seri_class(section_a, many=True).data,
+            "section_b": self.cp_record_seri_class(section_b, many=True).data,
+            "section_c": self.cp_prices_seri_class(section_c, many=True).data,
+            "section_d": self.cp_generation_seri_class(section_d, many=True).data,
+            "section_e": self.cp_emission_seri_class(section_e, many=True).data,
+            "section_f": section_f,
+        }
 
     def _get_regroupped_adm_records(self, adm_records):
         result = {}
@@ -241,17 +240,30 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
         adm_c = self._get_adm_records(cp_report.id, "C")
         adm_c = self._get_regroupped_adm_records(adm_c)
         adm_d = self._get_adm_records(cp_report.id, "D")
+        adm_d = self._get_regroupped_adm_records(adm_d)
 
-        return Response(
-            {
-                "cp_report": self.cp_report_seri_class(cp_report).data,
-                "section_a": self.cp_record_seri_class(section_a, many=True).data,
-                "adm_b": adm_b,
-                "section_c": self.cp_prices_seri_class(section_c, many=True).data,
-                "adm_c": adm_c,
-                "adm_d": AdmRecordSerializer(adm_d, many=True).data,
-            }
-        )
+        return {
+            "cp_report": self.cp_report_seri_class(cp_report).data,
+            "section_a": self.cp_record_seri_class(section_a, many=True).data,
+            "adm_b": adm_b,
+            "section_c": self.cp_prices_seri_class(section_c, many=True).data,
+            "adm_c": adm_c,
+            "adm_d": adm_d,
+        }
+
+    def _get_cp_report(self):
+        try:
+            return self.cp_report_class.objects.get(id=self.request.query_params["cp_report_id"])
+        except KeyError as e:
+            raise ValidationError({"cp_report_id": "query parameter is required"}) from e
+        except CPReport.DoesNotExist as e:
+            raise ValidationError({"cp_report_id": "invalid id"}) from e
+
+    def get_data(self, cp_report):
+        if cp_report.year > IMPORT_DB_MAX_YEAR:
+            return self._get_new_cp_records(cp_report)
+
+        return self._get_old_cp_records(cp_report)
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -264,18 +276,7 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
         ],
     )
     def get(self, *args, **kwargs):
-        cp_report_id = self.request.query_params.get("cp_report_id", None)
-        if not cp_report_id:
-            return Response({"error": "cp_report_id is required"}, status=400)
-
-        cp_report = self.cp_report_class.objects.filter(id=cp_report_id).first()
-        if not cp_report:
-            return Response({"error": "cp_report_id is invalid"}, status=400)
-
-        if cp_report.year > IMPORT_DB_MAX_YEAR:
-            return self._get_new_cp_records(cp_report)
-
-        return self._get_old_cp_records(cp_report)
+        return Response(self.get_data(self._get_cp_report()))
 
 
 class CPRecordListView(CPRecordBaseListView):

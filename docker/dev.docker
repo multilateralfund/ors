@@ -11,7 +11,7 @@ RUN mkdir /.fs /app
 WORKDIR /app
 VOLUME ["/.fs"]
 
-RUN runDeps="wait-for-it gettext build-essential gcc" \
+RUN runDeps="wait-for-it gettext build-essential gcc libreoffice-calc-nogui" \
     && apt-get update -y \
     && apt-get install -y --no-install-recommends $runDeps \
     && apt-get clean \

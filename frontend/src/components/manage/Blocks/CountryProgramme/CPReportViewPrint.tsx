@@ -30,17 +30,17 @@ export default function CPReportView(props: {
       return variant.minYear <= year && variant.maxYear >= year
     })[0],
   )
-  const [sections] = useState(() => getViewSections(variant))
+  const [sections] = useState(() => (variant ? getViewSections(variant) : []))
+
+  if (!report.name || !report.year) return null
 
   return (
     <>
-      {report.name && (
-        <HeaderTitle>
-          <Typography className="mb-4 text-white" component="h1" variant="h3">
-            {report.name}
-          </Typography>
-        </HeaderTitle>
-      )}
+      <HeaderTitle>
+        <Typography className="mb-4 text-white" component="h1" variant="h3">
+          {report.name}
+        </Typography>
+      </HeaderTitle>
       {sections.map((section, index) => {
         const Section = section.component
 
