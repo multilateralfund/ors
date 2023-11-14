@@ -18,7 +18,6 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
     country = serializers.StringRelatedField()
     country_id = serializers.PrimaryKeyRelatedField(
         required=True,
-        write_only=True,
         queryset=Country.objects.all().values_list("id", flat=True),
     )
     status = serializers.ChoiceField(
