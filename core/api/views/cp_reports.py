@@ -53,8 +53,11 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
             return CPReportCreateSerializer
         return CPReportSerializer
 
+    def get_data(self):
+        return self.request.data
+
     def create(self, request, *args, **kwargs):
-        serializer = CPReportCreateSerializer(data=request.data)
+        serializer = CPReportCreateSerializer(data=self.get_data())
         if serializer.is_valid():
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
@@ -235,7 +238,7 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        serializer = CPReportCreateSerializer(data=request.data)
+        serializer = CPReportCreateSerializer(data=self.get_data())
         if not serializer.is_valid():
             custom_errors = self.customize_errors(serializer.errors)
             return Response(custom_errors, status=status.HTTP_400_BAD_REQUEST)

@@ -28,6 +28,12 @@ from core.api.tests.factories import (
     UsageFactory,
     UserFactory,
 )
+from core.api.tests.factories import AdmRecordFactory
+from core.api.tests.factories import CPGenerationFactory
+from core.api.tests.factories import CPPricesFactory
+from core.api.tests.factories import CPRecordFactory
+from core.api.tests.factories import CPUsageFactory
+from core.models import CPEmission
 
 
 @pytest.fixture
@@ -177,16 +183,13 @@ def excluded_usage():
 
 @pytest.fixture
 def groupA():
-    return GroupFactory.create(name="group A", annex="A")
+    return GroupFactory.create(name="group A", annex="A", name_alt="group A")
 
 
 @pytest.fixture
 def substance(excluded_usage, groupA, time_frames):
     substance = SubstanceFactory.create(
-        name="substance",
-        group=groupA,
-        odp=0.02,
-        gwp=0.05,
+        name="substance", group=groupA, odp=0.02, gwp=0.05, formula="Substance Formula"
     )
     ExcludedUsageSubstFactory.create(
         substance=substance,
@@ -279,3 +282,100 @@ def pdf_text(pdf_file):
     text = extract_text(pdf_file)
     # Normalize to avoid weird comparisons like 'ﬃ' != 'ffi'
     return unicodedata.normalize("NFKD", text)
+
+
+@pytest.fixture(name="_setup_new_cp_report")
+def setup_new_cp_report(cp_report_2019, blend, substance):
+    # section A
+    CPRecordFactory.create(
+        country_programme_report=cp_report_2019,
+        section="A",
+        substance=substance,
+    )
+
+    # section B
+    cp_rec = CPRecordFactory.create(
+        country_programme_report=cp_report_2019,
+        section="B",
+        blend=blend,
+    )
+    # substance
+    BlendFactory.create(
+        name="blend2B",
+        displayed_in_all=True,
+    )
+    # add 3 usages for one record
+    for _ in range(3):
+        CPUsageFactory.create(country_programme_record=cp_rec)
+
+    # section C (prices)
+    CPPricesFactory.create(country_programme_report=cp_report_2019, blend=blend)
+    CPPricesFactory.create(country_programme_report=cp_report_2019, substance=substance)
+
+    # section D (generation)
+    CPGenerationFactory.create(country_programme_report=cp_report_2019)
+
+    # section E (emissions)
+    for _ in range(2):
+        CPEmission.objects.create(country_programme_report=cp_report_2019)
+
+
+@pytest.fixture(name="_setup_old_cp_report")
+def setup_old_cp_report(cp_report_2005, substance, blend, groupA, time_frames):
+    # section A
+    cp_rec = CPRecordFactory.create(
+        country_programme_report=cp_report_2005, section="A", substance=substance
+    )
+    # add 3 usages for one record
+    for _ in range(3):
+        CPUsageFactory.create(country_programme_record=cp_rec)
+    # substance
+    SubstanceFactory.create(name="substance2", displayed_in_all=True, group=groupA)
+
+    # section C (prices)
+    CPPricesFactory.create(country_programme_report=cp_report_2005, blend=blend)
+    CPPricesFactory.create(country_programme_report=cp_report_2005, substance=substance)
+
+    # create rows and columns
+    rows = {}
+    columns = {}
+    for section in ["B", "C", "D"]:
+        data = {
+            "section": section,
+            "time_frame": time_frames[(2000, 2011)],
+        }
+        if section != "D":
+            columns[section] = AdmColumnFactory.create(
+                display_name=f"adm_column_{section}", sort_order=1, **data
+            )
+
+        rows[section] = AdmRowFactory.create(
+            text=f"row{section}",
+            index=None,
+            type="question",
+            parent=None,
+            **data,
+        )
+        if section == "D":
+            # creat choices
+            for i in range(3):
+                last_choice = AdmChoiceFactory.create(
+                    adm_row=rows[section],
+                    value="choice1",
+                    sort_order=i,
+                )
+
+    # create records
+    for section in ["B", "C", "D"]:
+        record_data = {
+            "country_programme_report": cp_report_2005,
+            "row": rows[section],
+            "column": columns.get(section, None),
+            "value_text": f"record_{section}",
+            "section": section,
+        }
+        if section == "D":
+            record_data["value_choice"] = last_choice
+        AdmRecordFactory.create(**record_data)
+
+    return last_choice

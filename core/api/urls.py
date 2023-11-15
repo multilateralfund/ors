@@ -25,6 +25,7 @@ from core.api.views.cp_reports import (
 from core.api.views.cp_records import CPRecordListView
 from core.api.views.cp_records_export import CPRecordPrintView
 from core.api.views.cp_records_export import CPRecordExportView
+from core.api.views.cp_records_import import CPReportViewImport
 from core.api.views.cp_report_empty_form import EmptyFormView
 from core.api.views.projects import (
     ProjectOdsOdpViewSet,
@@ -54,6 +55,7 @@ schema_view = get_schema_view(
     public=True,
     permission_classes=[permissions.AllowAny],
 )
+
 
 urlpatterns = [
     re_path(
@@ -119,6 +121,16 @@ urlpatterns = [
         "country-programme/records/",
         CPRecordListView.as_view(),
         name="country-programme-record-list",
+    ),
+    path(
+        "country-programme/import/",
+        CPReportViewImport.as_view(),
+        name="country-programme-import",
+    ),
+    path(
+        "country-programme/import/<int:id>/",
+        CPReportViewImport.as_view(),
+        name="country-programme-import-update",
     ),
     path(
         "country-programme/export/",

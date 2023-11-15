@@ -148,11 +148,15 @@ class BaseWriter:
 class CPReportBase:
     sections = ()
 
+    @classmethod
+    def iter_sections(cls):
+        for section in cls.sections:
+            yield section, section.replace("_", " ").title()
+
     def get_xlsx(self, data, usages):
         cp_report = data["cp_report"]
         wb = openpyxl.Workbook()
-        for section in self.sections:
-            name = section.replace("_", " ").title()
+        for section, name in self.iter_sections():
             sheet = wb.create_sheet(name)
             sheet.cell(1, 1, "Country: %(country)s Year: %(year)s" % cp_report)
 

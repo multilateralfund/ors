@@ -14,11 +14,11 @@ pytestmark = pytest.mark.django_db
 class TestCPExportXLSX(BaseTest):
     url = reverse("country-programme-export")
 
-    def test_get_cp_export_anon(self, cp_report_2019):
+    def test_get_cp_export_anon(self, cp_report_2019, _setup_new_cp_report):
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 403
 
-    def test_get_cp_export_new(self, user, cp_report_2019):
+    def test_get_cp_export_new(self, user, cp_report_2019, _setup_new_cp_report):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
@@ -36,7 +36,7 @@ class TestCPExportXLSX(BaseTest):
         ]
         assert wb["Section A"]["A1"].value == "Country: Romania Year: 2019"
 
-    def test_get_cp_export_old(self, user, cp_report_2005):
+    def test_get_cp_export_old(self, user, cp_report_2005, _setup_old_cp_report):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"cp_report_id": cp_report_2005.id})
@@ -57,11 +57,11 @@ class TestCPExportXLSX(BaseTest):
 class TestCPExportPDF(BaseTest):
     url = reverse("country-programme-print")
 
-    def test_get_cp_export_anon(self, cp_report_2019):
+    def test_get_cp_export_anon(self, cp_report_2019, _setup_new_cp_report):
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 403
 
-    def test_get_cp_export_new(self, user, cp_report_2019):
+    def test_get_cp_export_new(self, user, cp_report_2019, _setup_new_cp_report):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
@@ -80,7 +80,7 @@ class TestCPExportPDF(BaseTest):
         ]:
             assert name.upper() in text
 
-    def test_get_cp_export_old(self, user, cp_report_2005):
+    def test_get_cp_export_old(self, user, cp_report_2005, _setup_old_cp_report):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"cp_report_id": cp_report_2005.id})
@@ -104,7 +104,7 @@ class TestCPExportEmpty(BaseTest):
     url = reverse("country-programme-export-empty")
 
     def test_get_cp_export_anon(self, cp_report_2019):
-        response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
+        response = self.client.get(self.url, {"year": "2019"})
         assert response.status_code == 403
 
     def test_get_cp_export_new(self, user):

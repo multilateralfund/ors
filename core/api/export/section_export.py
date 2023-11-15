@@ -112,3 +112,33 @@ class SectionWriter(BaseWriter):
                 )
                 value = f"=SUM({ranges})"
             self._write_record_cell(row_idx, col_idx, value, read_only=True)
+
+
+def parse_section_sheet(sheet):
+    # TODO: find another way to determine this
+    data_start_row = int(sheet.freeze_panes[1])
+
+    # Parse headers
+    header_cols = {}
+    for row in range(1, data_start_row):
+        for col_idx in range(2, sheet.max_column + 1):
+            cell = sheet.cell(row, col_idx)
+            if not cell.value:
+                continue
+
+            header_cols[col_idx] = cell.value
+
+    # Parse data
+    data = {}
+    for row in range(data_start_row, sheet.max_row):
+        # Substance is always on the first col
+        cell = sheet.cell(row, 1)
+        if not cell.value:
+            continue
+
+        item = {"Substance": cell}
+        data[cell.value] = item
+        for col_idx, col_name in header_cols.items():
+            item[col_name] = sheet.cell(row, col_idx)
+
+    return data

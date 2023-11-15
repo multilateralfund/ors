@@ -49,9 +49,9 @@ class UsageFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Usage
 
-    name = factory.Faker("pystr", max_chars=100)
-    full_name = factory.Faker("pystr", max_chars=248)
-    description = factory.Faker("pystr", max_chars=248)
+    name = factory.Faker("pystr", max_chars=50, prefix="Usage")
+    full_name = factory.Faker("pystr", max_chars=200, prefix="Usage Full Name")
+    description = factory.Faker("pystr", max_chars=200, prefix="Usage Description")
     sort_order = factory.Faker("random_int", min=1, max=100)
 
 
@@ -59,18 +59,18 @@ class GroupFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Group
 
-    name = factory.Faker("pystr", max_chars=100)
-    name_alt = factory.Faker("pystr", max_chars=100)
-    annex = factory.Faker("pystr", max_chars=50)
-    description = factory.Faker("pystr", max_chars=100)
+    name = factory.Faker("pystr", max_chars=50, prefix="Group")
+    name_alt = factory.Faker("pystr", max_chars=50, prefix="Group Alt")
+    annex = factory.Faker("pystr", max_chars=50, prefix="Annex")
+    description = factory.Faker("pystr", max_chars=50, prefix="Description")
 
 
 class SubstanceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Substance
 
-    name = factory.Faker("pystr", max_chars=100)
-    formula = factory.Faker("pystr", max_chars=100)
+    name = factory.Faker("pystr", max_chars=50, prefix="Substance")
+    formula = factory.Faker("pystr", max_chars=50, prefix="Substance Formula")
     odp = factory.Faker("random_int", min=1, max=100)
     min_odp = factory.Faker("random_int", min=1, max=100)
     max_odp = factory.Faker("random_int", min=1, max=100)
@@ -83,8 +83,8 @@ class BlendFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Blend
 
-    name = factory.Faker("pystr", max_chars=64)
-    other_names = factory.Faker("pystr", max_chars=100)
+    name = factory.Faker("pystr", max_chars=20, prefix="Blend")
+    other_names = factory.Faker("pystr", max_chars=50, prefix="Blend Other Names")
     odp = factory.Faker("random_int", min=1, max=100)
     gwp = factory.Faker("random_int", min=1, max=100)
     sort_order = factory.Faker("random_int", min=1, max=100)
@@ -118,8 +118,8 @@ class CountryFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Country
 
-    name = factory.Faker("pystr", max_chars=50)
-    abbr = factory.Faker("pystr", max_chars=5)
+    name = factory.Faker("pystr", max_chars=50, prefix="Country")
+    abbr = factory.Faker("pystr", max_chars=5, prefix="C-")
 
 
 class CPRaportFormatFactory(factory.django.DjangoModelFactory):
@@ -137,7 +137,7 @@ class CPReportFactory(factory.django.DjangoModelFactory):
         model = CPReport
 
     country = factory.SubFactory(CountryFactory)
-    name = factory.Faker("pystr", max_chars=100)
+    name = factory.Faker("pystr", max_chars=50, prefix="CP Report")
     year = factory.Faker("random_int", min=1995, max=2030)
 
 
@@ -146,14 +146,14 @@ class CPRecordFactory(factory.django.DjangoModelFactory):
         model = CPRecord
 
     country_programme_report = factory.SubFactory(CPReportFactory)
-    display_name = factory.Faker("pystr", max_chars=100)
+    display_name = factory.Faker("pystr", max_chars=50, prefix="CP Record")
     section = factory.Faker("pystr", max_chars=2)
     imports = factory.Faker("random_int", min=1, max=100)
     import_quotas = factory.Faker("random_int", min=1, max=100)
     exports = factory.Faker("random_int", min=1, max=100)
     production = factory.Faker("random_int", min=1, max=100)
     manufacturing_blends = factory.Faker("random_int", min=1, max=100)
-    remarks = factory.Faker("pystr", max_chars=100)
+    remarks = factory.Faker("pystr", max_chars=50, prefix="CP Record Remarks")
 
 
 class CPUsageFactory(factory.django.DjangoModelFactory):
@@ -170,7 +170,7 @@ class CPPricesFactory(factory.django.DjangoModelFactory):
         model = CPPrices
 
     country_programme_report = factory.SubFactory(CPReportFactory)
-    display_name = factory.Faker("pystr", max_chars=100)
+    display_name = factory.Faker("pystr", max_chars=50, prefix="CP Prices")
     previous_year_price = factory.Faker("random_int", min=1, max=100)
     current_year_price = factory.Faker("random_int", min=1, max=100)
 
@@ -190,7 +190,7 @@ class CPEmissionFactory(factory.django.DjangoModelFactory):
         model = CPEmission
 
     country_programme_report = factory.SubFactory(CPReportFactory)
-    facility = factory.Faker("rpyst", max_chars=100)
+    facility = factory.Faker("rpyst", max_chars=50)
     total = factory.Faker("random_int", min=1, max=100)
     all_uses = factory.Faker("random_int", min=1, max=100)
     feedstock_gc = factory.Faker("random_int", min=1, max=100)
@@ -198,15 +198,15 @@ class CPEmissionFactory(factory.django.DjangoModelFactory):
     feedstock_wpc = factory.Faker("random_int", min=1, max=100)
     destruction_wpc = factory.Faker("random_int", min=1, max=100)
     generated_emissions = factory.Faker("random_int", min=1, max=100)
-    remarks = factory.Faker("pystr", max_chars=100)
+    remarks = factory.Faker("pystr", max_chars=50, prefix="CP Emissions Remarks")
 
 
 class AdmColumnFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = AdmColumn
 
-    name = factory.Faker("pystr", max_chars=248)
-    display_name = factory.Faker("pystr", max_chars=248)
+    name = factory.Faker("pystr", max_chars=200, prefix="Adm")
+    display_name = factory.Faker("pystr", max_chars=200, prefix="Adm Display Name")
     type = factory.fuzzy.FuzzyChoice(AdmColumn.AdmColumnType.choices)
     section = factory.fuzzy.FuzzyChoice(AdmColumn.AdmColumnSection.choices)
     time_frame = factory.SubFactory(TimeFrameFactory)
@@ -217,11 +217,11 @@ class AdmRowFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = AdmRow
 
-    text = factory.Faker("pystr", max_chars=100)
+    text = factory.Faker("pystr", max_chars=50, prefix="Adm Text")
     type = factory.fuzzy.FuzzyChoice(AdmRow.AdmRowType.choices)
     section = factory.fuzzy.FuzzyChoice(AdmRow.AdmRowSection.choices)
     time_frame = factory.SubFactory(TimeFrameFactory)
-    index = factory.Faker("pystr", max_chars=10)
+    index = factory.Faker("pystr", max_chars=5, prefix="AdmIdx")
     sort_order = factory.Faker("random_int", min=1, max=100)
 
 
@@ -230,7 +230,7 @@ class AdmChoiceFactory(factory.django.DjangoModelFactory):
         model = AdmChoice
 
     adm_row = factory.SubFactory(AdmRowFactory)
-    value = factory.Faker("pystr", max_chars=100)
+    value = factory.Faker("pystr", max_chars=50, prefix="Adm Choice Value")
     sort_order = factory.Faker("random_int", min=1, max=100)
 
 
@@ -241,23 +241,23 @@ class AdmRecordFactory(factory.django.DjangoModelFactory):
     country_programme_report = factory.SubFactory(CPReportFactory)
     column = factory.SubFactory(AdmColumnFactory)
     row = factory.SubFactory(AdmRowFactory)
-    value_text = factory.Faker("pystr", max_chars=100)
+    value_text = factory.Faker("pystr", max_chars=50, prefix="Adm Record Value")
 
 
 class AgencyFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Agency
 
-    name = factory.Faker("pystr", max_chars=100)
-    description = factory.Faker("pystr", max_chars=200)
+    name = factory.Faker("pystr", max_chars=50, prefix="Agency")
+    description = factory.Faker("pystr", max_chars=200, prefix="Agency Description")
 
 
 class ProjectTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ProjectType
 
-    name = factory.Faker("pystr", max_chars=100)
-    code = factory.Faker("pystr", max_chars=10)
+    name = factory.Faker("pystr", max_chars=50, prefix="Project")
+    code = factory.Faker("pystr", max_chars=5, prefix="P-COD")
     sort_order = factory.Faker("random_int", min=1, max=100)
 
 
@@ -265,16 +265,16 @@ class ProjectStatusFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ProjectStatus
 
-    name = factory.Faker("pystr", max_chars=100)
-    code = factory.Faker("pystr", max_chars=10)
+    name = factory.Faker("pystr", max_chars=50, prefix="Project Status")
+    code = factory.Faker("pystr", max_chars=5, prefix="P-STA")
 
 
 class ProjectSectorFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ProjectSector
 
-    name = factory.Faker("pystr", max_chars=100)
-    code = factory.Faker("pystr", max_chars=10)
+    name = factory.Faker("pystr", max_chars=50, prefix="Project Sector")
+    code = factory.Faker("pystr", max_chars=5, prefix="P-SEC")
     sort_order = factory.Faker("random_int", min=1, max=100)
 
 
@@ -282,8 +282,8 @@ class ProjectSubSectorFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ProjectSubSector
 
-    name = factory.Faker("pystr", max_chars=100)
-    code = factory.Faker("pystr", max_chars=10)
+    name = factory.Faker("pystr", max_chars=50, prefix="Project Sub-Sector")
+    code = factory.Faker("pystr", max_chars=5, prefix="P-SUB")
     sort_order = factory.Faker("random_int", min=1, max=100)
     sector = factory.SubFactory(ProjectSectorFactory)
 
@@ -292,8 +292,8 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Project
 
-    title = factory.Faker("pystr", max_chars=100)
-    description = factory.Faker("pystr", max_chars=200)
+    title = factory.Faker("pystr", max_chars=50, prefix="Project Title")
+    description = factory.Faker("pystr", max_chars=200, prefix="Project Description")
     project_type = factory.SubFactory(ProjectTypeFactory)
     status = factory.SubFactory(ProjectStatusFactory)
     subsector = factory.SubFactory(ProjectSubSectorFactory)
@@ -317,6 +317,6 @@ class ProjectOdsOdpFactory(factory.django.DjangoModelFactory):
 
     project = factory.SubFactory(ProjectFactory)
     odp = factory.Faker("random_int", min=1, max=100)
-    ods_replacement = factory.Faker("pystr", max_chars=100)
+    ods_replacement = factory.Faker("pystr", max_chars=50, prefix="ODS Repl")
     co2_mt = factory.Faker("random_int", min=1, max=100)
     sort_order = factory.Faker("random_int", min=1, max=100)
