@@ -252,7 +252,7 @@ def create_business_plan(row, index_row, year_start, year_end):
         "sector_subsector": row["Sector and Subsector"],
         "bp_type": row["A-Appr. P-Plan'd"] if row["A-Appr. P-Plan'd"] else "U",
         "is_multi_year": row["I-Indiv M-MY"] == "M",
-        "reason_for_exceding": row["Reason for exceeding"],
+        "reason_for_exceeding": row["Reason for exceeding"],
         "remarks": row["Remarks"],
         "remarks_additional": row["Remarks (Additional)"],
     }
