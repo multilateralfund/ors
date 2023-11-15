@@ -8,6 +8,7 @@ from django.db import transaction
 
 from core.import_data.utils import (
     get_country_by_name,
+    get_meeting_by_number,
     get_object_by_name,
     update_or_create_project,
 )
@@ -44,6 +45,18 @@ def parse_file(file_path):
             use_offset=False,
         )
 
+        # set approval meeting no
+        if "Mtg" not in project_json:
+            # code =  {Country or Region}/{Sector}/{MeetingNo}/{ProjectType}/{ProjectNumber}
+            meeting_no = project_json["Code"].split("/")[2]
+        else:
+            meeting_no = project_json["Mtg"]
+        meeting = get_meeting_by_number(meeting_no, project_json["Code"])
+
+        # skip project with missing data
+        if not all([country, agency, project_type, meeting]):
+            continue
+
         # extract subsector name and stage
         # HCFC Phase Out Plan (Stage I) -> HCFC Phase Out Plan, 1
         # HCFC Phase Out Plan (Stage II) -> HCFC Phase Out Plan, 2
@@ -55,19 +68,8 @@ def parse_file(file_path):
         subs_name = subs_name.strip()
         stage = stage.count("I")
 
-        # skip project with missing data
-        if not all([country, agency, project_type]):
-            continue
-
         date_agree = project_json.get("Date Completion Per Agreement")
         date_decision = project_json.get("Date Completion Per Decision")
-
-        # set approval meeting no
-        if "Mtg" not in project_json:
-            # code =  {Country or Region}/{Sector}/{MeetingNo}/{ProjectType}/{ProjectNumber}
-            meeting_no = project_json["Code"].split("/")[2]
-        else:
-            meeting_no = project_json["Mtg"]
 
         project_data = {
             "country": country,
@@ -80,8 +82,7 @@ def parse_file(file_path):
             "stage": stage,
             "date_per_agreement": parse(date_agree) if date_agree else None,
             "date_per_decision": parse(date_decision) if date_decision else None,
-            "decisions": project_json.get("Decisions"),
-            "approval_meeting_no": meeting_no,
+            "approval_meeting": meeting,
             "status": unk_status,
         }
 

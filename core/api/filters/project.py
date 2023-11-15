@@ -11,6 +11,7 @@ from core.models.project import (
     ProjectSubSector,
     ProjectType,
 )
+from core.models.utils import SubstancesType
 
 
 class ProjectFilter(filters.FilterSet):
@@ -44,7 +45,7 @@ class ProjectFilter(filters.FilterSet):
         widget=CSVWidget,
     )
     substance_type = filters.MultipleChoiceFilter(
-        choices=Project.SubstancesType.choices,
+        choices=SubstancesType.choices,
         widget=CSVWidget,
     )
     agency_id = filters.ModelMultipleChoiceFilter(

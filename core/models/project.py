@@ -121,7 +121,7 @@ class ProjectSubSector(models.Model):
 class ProjectCluster(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=10, null=True, blank=True)
-    substance_type = models.CharField(max_length=255)
+    substance_type = models.CharField(max_length=255, choices=SubstancesType.choices)
     sort_order = models.FloatField(null=True, blank=True)
 
     def __str__(self):
@@ -159,7 +159,7 @@ class Project(models.Model):
     coop_agencies = models.ManyToManyField(Agency, related_name="coop_projects")
 
     code = models.CharField(max_length=128, unique=True, null=True, blank=True)
-    serial_number = models.IntegerField(null=True, blank=True)
+    serial_number = models.IntegerField(null=True, blank=True)  # number
     mya_code = models.CharField(max_length=128, null=True, blank=True)
     title = models.CharField(max_length=256)
     description = models.TextField(null=True, blank=True)
@@ -242,7 +242,7 @@ class Project(models.Model):
     submission_number = models.IntegerField(null=True, blank=True)
     programme_officer = models.CharField(max_length=255, null=True, blank=True)
     funds_allocated = models.FloatField(null=True, blank=True)
-    support_cost_13 = models.FloatField(null=True, blank=True)
+    support_cost_psc = models.FloatField(null=True, blank=True)
     project_cost = models.FloatField(null=True, blank=True)
     date_received = models.DateField(null=True, blank=True)
     revision_number = models.TextField(null=True, blank=True)
@@ -329,7 +329,7 @@ class ProjectFund(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="funds")
     amount = models.FloatField()
     support_psc = models.FloatField(default=0, null=True)  # support_13
-    meeting = models.IntegerField(null=True, blank=True)
+    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, null=True)
     interest = models.FloatField(default=0, null=True)
     date = models.DateField(null=True, blank=True)
     fund_type = models.CharField(max_length=256, choices=FundType.choices)

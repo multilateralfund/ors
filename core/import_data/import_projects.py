@@ -6,6 +6,7 @@ from django.db import transaction
 from core.import_data.utils import (
     IMPORT_PROJECTS_DIR,
     get_chemical_by_name_or_components,
+    get_meeting_by_number,
     get_project_base_data,
     parse_date,
     update_or_create_project,
@@ -138,7 +139,7 @@ def create_project_funds(project, project_json, fields_mapping):
 
     for i in range(1, max_count + 1):
         amount_field = f"{fields_mapping['amount']}{i}"
-        support_13_field = f"{fields_mapping['support_13']}{i}"
+        support_psc_field = f"{fields_mapping['support_psc']}{i}"
         meeting_field = f"{fields_mapping['meeting']}{i}"
         interest_field = f"{fields_mapping['interest']}{i}"
         date_field = f"{fields_mapping['date']}{i}"
@@ -147,12 +148,17 @@ def create_project_funds(project, project_json, fields_mapping):
         if not project_json.get(amount_field):
             continue
 
+        meeting_no = project_json.get(meeting_field)
+        meeting = get_meeting_by_number(meeting_no, project_json["CODE"])
+        if meeting_no and not meeting:
+            continue
+
         # create project funds
         funds_data = {
             "project": project,
             "amount": project_json[amount_field],
-            "support_13": project_json[support_13_field],
-            "meeting": project_json.get(meeting_field),
+            "support_psc": project_json[support_psc_field],
+            "meeting": meeting,
             "interest": project_json.get(interest_field),
             "date": parse_date(project_json.get(date_field)),
             "fund_type": fields_mapping["fund_type"],
@@ -175,7 +181,7 @@ def parse_project_funds(project, project_json):
     """
     allocated_fund = {
         "amount": "FUND_ALLOCATED",
-        "support_13": "13%SUPPORT_COST",
+        "support_psc": "13%SUPPORT_COST",
         "meeting": "MEETING",
         "interest": "N/A",
         "date": "DATE_APPROVAL",
@@ -185,7 +191,7 @@ def parse_project_funds(project, project_json):
 
     transferred_fund = {
         "amount": "FUND_TRANSFERRED",
-        "support_13": "13%_TRANSFERRED",
+        "support_psc": "13%_TRANSFERRED",
         "meeting": "MEETING_TRANSFERRED",
         "interest": "INTEREST",
         "date": "DATE_TRANSFERRED",
@@ -219,12 +225,15 @@ def create_project(project_json):
     # set approval meeting no
     # code =  {Country or Region}/{Sector}/{MeetingNo where the project was approved}/{ProjectType}/{ProjectNumber}
     meeting_no = project_json["CODE"].split("/")[2]
+    meeting = get_meeting_by_number(meeting_no, project_json["CODE"])
+    if not meeting:
+        return None
 
     project_data.update(
         {
-            "number": project_json["NO"],
+            "serial_number": project_json["NO"],
             "code": project_json["CODE"],
-            "approval_meeting_no": meeting_no,
+            "approval_meeting": meeting,
             "substance_type": substance_type,
             "application": project_json.get("APPLICATION"),
             "technology": project_json.get("TECHNOLOGY"),
@@ -233,11 +242,11 @@ def create_project(project_json):
             "impact_co2mt": project_json.get("IMPACT_CO2MT"),
             "impact_production": project_json.get("IMPACT_PRODUCTION"),
             "impact_prod_co2mt": project_json.get("IMPACT_PROD_CO2MT"),
-            "ods_phasedout": project_json.get("ODS_PHASEDOUT"),
+            "substance_phasedout": project_json.get("ODS_PHASEDOUT"),
             "ods_phasedout_co2mt": project_json.get("ODS_PHASEDOUT_CO2MT"),
             "hcfc_stage": project_json.get("HCFCStage"),
             "fund_disbursed": project_json.get("FUND_DISBURSED"),
-            "fund_disbursed_13": project_json.get("FUND_DISB1_13%"),
+            "fund_disbursed_psc": project_json.get("FUND_DISB1_13%"),
             "date_completion": parse_date(project_json.get("DATE_COMPLETION")),
             "date_actual": parse_date(project_json.get("DATE_ACTUAL")),
             "date_comp_revised": parse_date(project_json.get("DATE_COMP_REVISED")),

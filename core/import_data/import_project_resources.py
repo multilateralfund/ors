@@ -1,16 +1,24 @@
 import json
 import logging
+import pandas as pd
 
 from django.db import transaction
-from core.import_data.utils import IMPORT_PROJECTS_DIR, SUBSECTOR_NAME_MAPPING
+from core.import_data.utils import (
+    IMPORT_PROJECTS_DIR,
+    IMPORT_RESOURCES_DIR,
+    SUBSECTOR_NAME_MAPPING,
+)
 
 from core.models.agency import Agency
+from core.models.meeting import Meeting
 from core.models.project import (
+    ProjectCluster,
     ProjectSector,
     ProjectStatus,
     ProjectSubSector,
     ProjectType,
 )
+from core.models.rbm_measures import RBMMeasure
 
 logger = logging.getLogger(__name__)
 
@@ -186,6 +194,54 @@ def import_project_type(file_path):
         ProjectType.objects.update_or_create(name=type_data["name"], defaults=type_data)
 
 
+def import_project_clusters(file_path):
+    """
+    Import project clusters from file
+    Please make sure that the file has the correct extention
+        (xls, xlsx, xlsm, xlsb, odf, ods, odt)
+
+    @param file_path = str (file path for import file)
+    """
+
+    df = pd.read_excel(file_path).fillna("")
+    clusters = []
+    for index, row in df.iterrows():
+        cluster_data = {
+            "name": row["Name"],
+            "code": row["Acronym"],
+            "substance_type": row["Asscoaited Substance"].upper(),
+            "sort_order": index,
+        }
+        clusters.append(ProjectCluster(**cluster_data))
+
+    ProjectCluster.objects.bulk_create(clusters, batch_size=1000)
+
+
+def import_rbm_measures(file_path):
+    df = pd.read_excel(file_path).fillna("")
+    measures = []
+    for index, row in df.iterrows():
+        measure_data = {
+            "name": row["Name"],
+            "sort_order": index,
+        }
+        measures.append(RBMMeasure(**measure_data))
+
+    RBMMeasure.objects.bulk_create(measures, batch_size=1000)
+
+
+def import_meetings():
+    meetings = []
+    for i in range(1, 92):
+        meeting_data = {
+            "number": i,
+            "status": Meeting.MeetingStatus.COMPLETED,
+        }
+        meetings.append(Meeting(**meeting_data))
+
+    Meeting.objects.bulk_create(meetings, batch_size=1000)
+
+
 @transaction.atomic
 def import_project_resources():
     file_path = IMPORT_PROJECTS_DIR / "tbAgency.json"
@@ -207,3 +263,14 @@ def import_project_resources():
     file_path = IMPORT_PROJECTS_DIR / "tbTypeOfProject.json"
     import_project_type(file_path)
     logger.info("✔ project types imported")
+
+    file_path = IMPORT_RESOURCES_DIR / "project_clusters.xlsx"
+    import_project_clusters(file_path)
+    logger.info("✔ project clusters imported")
+
+    file_path = IMPORT_RESOURCES_DIR / "rbm_measures.xlsx"
+    import_rbm_measures(file_path)
+    logger.info("✔ rbm measures imported")
+
+    import_meetings()
+    logger.info("✔ meetings imported")

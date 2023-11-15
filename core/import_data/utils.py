@@ -12,6 +12,7 @@ from core.models.agency import Agency
 from core.models.blend import Blend
 from core.models.country import Country
 from core.models.country_programme import CPRecord, CPReport, CPUsage
+from core.models.meeting import Meeting
 from core.models.project import (
     Project,
     ProjectSector,
@@ -159,6 +160,21 @@ def delete_old_data(cls, source_file=None):
         return
     cls.objects.all().delete()
     logger.info(f"✔ old {cls.__name__} deleted")
+
+
+def get_meeting_by_number(meeting_number, row_index):
+    """
+    get meeting by number or log error if not found in db
+    @param meeting_number: integer -> meeting number
+    @return: meeting object or None
+    """
+    if not meeting_number:
+        return None
+    try:
+        return Meeting.objects.get(number=meeting_number)
+    except Meeting.DoesNotExist:
+        logger.info(f"[row: {row_index}]: This meeting does not exists in data base")
+        return None
 
 
 def get_chemical_by_name_or_components(chemical_name, components=None):
@@ -791,7 +807,7 @@ def get_project_base_data(item, item_index, is_submissions=True):
         "excom_provision": string,
         "products_manufactured": string,
         "operating_cost": string,
-        "cost_effectiveness": string,
+        "effectiveness_cost": string,
         "local_ownership": string,
         "export_to": string,
     }
