@@ -17,7 +17,10 @@ export default class SectionE extends Section<
   DeserializedDataE,
   Record<keyof SectionEFormFields, Field>
 > {
-  constructor(localStorageKey: string) {
+  constructor(
+    initialData: Array<DeserializedDataE> = [],
+    localStorageKey: null | string,
+  ) {
     const formFields = {
       all_uses: { dataType: 'number', defaultValue: 0 },
       destruction: { dataType: 'number', defaultValue: 0 },
@@ -30,6 +33,6 @@ export default class SectionE extends Section<
       total: { dataType: 'number', defaultValue: 0 },
     }
 
-    super(formFields, [], [], localStorageKey)
+    super(formFields, initialData, [], [], localStorageKey)
   }
 }

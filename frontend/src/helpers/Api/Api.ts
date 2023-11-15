@@ -40,7 +40,9 @@ const defaultHeaders: { [key: string]: { [key: string]: any } } = {
   post: {
     'Content-Type': 'application/json',
   },
-  put: {},
+  put: {
+    'Content-Type': 'application/json',
+  },
 }
 
 function delayExecution(ms: number) {

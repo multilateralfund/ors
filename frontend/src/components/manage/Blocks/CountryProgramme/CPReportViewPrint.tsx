@@ -37,9 +37,11 @@ export default function CPReportView(props: {
   return (
     <>
       <HeaderTitle>
-        <Typography className="mb-4 text-white" component="h1" variant="h3">
-          {report.name}
-        </Typography>
+        <div className="mb-4 min-h-[40px]">
+          <Typography className="text-white" component="h1" variant="h3">
+            {report.name}
+          </Typography>
+        </div>
       </HeaderTitle>
       {sections.map((section, index) => {
         const Section = section.component

@@ -4,30 +4,20 @@
 
 import React, { useCallback, useEffect, useState } from 'react'
 
-import {
-  Alert,
-  Box,
-  Button,
-  Collapse,
-  IconButton,
-  Tab,
-  Tabs,
-  Typography,
-} from '@mui/material'
+import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
 import cx from 'classnames'
 import { AnimatePresence } from 'framer-motion'
 import { isEmpty } from 'lodash'
 import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
-import Field from '@ors/components/manage/Form/Field'
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Portal from '@ors/components/manage/Utils/Portal'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
-import api, { getResults } from '@ors/helpers/Api'
+import api from '@ors/helpers/Api'
 import useMakeClassInstance from '@ors/hooks/useMakeClassInstance'
 import { Blend, Substance } from '@ors/models/Section'
 import SectionA from '@ors/models/SectionA'
@@ -36,7 +26,6 @@ import SectionC from '@ors/models/SectionC'
 import SectionD from '@ors/models/SectionD'
 import SectionE from '@ors/models/SectionE'
 import SectionF from '@ors/models/SectionF'
-import useStore from '@ors/store'
 
 import { createSections } from '.'
 
@@ -90,50 +79,45 @@ function TabPanel(props: any) {
 export default function CPReportCreate(props: {
   blends: Array<Blend>
   emptyForm: Record<string, any>
+  report: Record<string, any>
   substances: Array<Substance>
+  versions?: any
 }) {
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
-  const countries = useStore((state) => [
-    { id: 0, label: 'Any' },
-    ...getResults(state.common.countries.data).results.map((country) => ({
-      id: country.id,
-      label: country.name,
-    })),
-  ])
   const { blends, substances } = props
 
   const Sections = {
     section_a: useMakeClassInstance<SectionA>(SectionA, [
-      [],
+      props.report?.section_a,
       substances,
-      'section_a_create',
+      null,
     ]),
     section_b: useMakeClassInstance<SectionB>(SectionB, [
-      [],
+      props.report?.section_b,
       substances,
       blends,
-      'section_b_create',
+      null,
     ]),
     section_c: useMakeClassInstance<SectionC>(SectionC, [
-      [],
+      props.report?.section_c,
       substances,
       blends,
-      'section_c_create',
+      null,
     ]),
     section_d: useMakeClassInstance<SectionD>(SectionD, [
-      [],
+      props.report?.section_d,
       substances,
       blends,
-      'section_d_create',
+      null,
     ]),
     section_e: useMakeClassInstance<SectionE>(SectionE, [
-      [],
-      'section_e_create',
+      props.report?.section_e,
+      null,
     ]),
     section_f: useMakeClassInstance<SectionF>(SectionF, [
-      {},
-      'section_f_create',
+      props.report?.section_f,
+      null,
     ]),
   }
 
@@ -142,15 +126,12 @@ export default function CPReportCreate(props: {
   const [activeSection, setActiveSection] = useState(null)
   const [renderSection, setRenderSection] = useState(false)
   const [form, setForm] = useState<Record<string, any>>({
-    country: null,
-    name: '',
     section_a: Sections.section_a.getData(),
     section_b: Sections.section_b.getData(),
     section_c: Sections.section_c.getData(),
     section_d: Sections.section_d.getData(),
     section_e: Sections.section_e.getData(),
     section_f: Sections.section_f.getData(),
-    year: new Date().getFullYear(),
   })
 
   const getSubmitFormData = useCallback(() => {
@@ -162,8 +143,6 @@ export default function CPReportCreate(props: {
       section_d: Sections.section_d.getSubmitFormData(form.section_d),
       section_e: Sections.section_e.getSubmitFormData(form.section_e),
       section_f: Sections.section_f.getSubmitFormData(form.section_f),
-      country_id: form.country?.id,
-      name: form.country?.label ? `${form.country?.label} ${form.year}` : '',
     }
     /* eslint-disable-next-line */
   }, [form])
@@ -174,36 +153,6 @@ export default function CPReportCreate(props: {
     }, 600)
   }, [currentIndex])
 
-  useEffect(() => {
-    Sections.section_a.updateLocalStorage(form.section_a)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.section_a])
-
-  useEffect(() => {
-    Sections.section_b.updateLocalStorage(form.section_b)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.section_b])
-
-  useEffect(() => {
-    Sections.section_c.updateLocalStorage(form.section_c)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.section_c])
-
-  useEffect(() => {
-    Sections.section_d.updateLocalStorage(form.section_d)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.section_d])
-
-  useEffect(() => {
-    Sections.section_e.updateLocalStorage(form.section_e)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.section_e])
-
-  useEffect(() => {
-    Sections.section_f.updateLocalStorage(form.section_f)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.section_f])
-
   return (
     <>
       <Loading
@@ -211,9 +160,9 @@ export default function CPReportCreate(props: {
         active={currentIndex !== activeSection || !renderSection}
       />
       <HeaderTitle>
-        <div className="mb-4 min-h-[40px]">
+        <div className="mb-4 flex min-h-[40px] items-center justify-between gap-x-4">
           <Typography className="text-white" component="h1" variant="h3">
-            New submission
+            Edit <em>{props.report.cp_report.name}</em>
           </Typography>
         </div>
       </HeaderTitle>
@@ -239,23 +188,6 @@ export default function CPReportCreate(props: {
             />
           ))}
         </Tabs>
-        <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2 lg:grid-cols-3">
-          <Field
-            id="country"
-            name="country_id"
-            options={countries}
-            value={form.country?.id}
-            widget="autocomplete"
-            Input={{
-              error: !!errors.country_id,
-              helperText: errors.country_id?.general_error,
-              label: 'Country',
-            }}
-            onChange={(_: any, country: any) => {
-              setForm({ ...form, country })
-            }}
-          />
-        </div>
         {createSections.map((section, index) => (
           <TabPanel
             key={section.panelId}
@@ -360,7 +292,7 @@ export default function CPReportCreate(props: {
             <div className="container flex w-full justify-between">
               <Link
                 color="secondary"
-                href="/country-programme"
+                href={`/country-programme/${props.report.cp_report.id || ''}`}
                 size="small"
                 variant="contained"
                 button
@@ -374,23 +306,20 @@ export default function CPReportCreate(props: {
                 onClick={async () => {
                   try {
                     const response = await api(
-                      'api/country-programme/reports/',
+                      `api/country-programme/reports/${props.report.cp_report.id}/`,
                       {
-                        data: getSubmitFormData(),
-                        method: 'POST',
+                        data: {
+                          ...getSubmitFormData(),
+                          ...props.report.cp_report,
+                        },
+                        method: 'PUT',
                       },
                     )
                     setErrors({})
-                    Sections.section_a.clearLocalStorage()
-                    Sections.section_b.clearLocalStorage()
-                    Sections.section_c.clearLocalStorage()
-                    Sections.section_d.clearLocalStorage()
-                    Sections.section_e.clearLocalStorage()
-                    Sections.section_f.clearLocalStorage()
                     enqueueSnackbar(
                       <>
-                        Added new submission for {form.country.label}{' '}
-                        {form.year}.
+                        Updated submission for {response.country}{' '}
+                        {response.year}.
                       </>,
                       { variant: 'success' },
                     )
@@ -403,7 +332,12 @@ export default function CPReportCreate(props: {
                         { variant: 'error' },
                       )
                     } else {
+                      const errors = await error.json()
                       setErrors({})
+                      {
+                        errors.detail &&
+                          enqueueSnackbar(errors.detail, { variant: 'error' })
+                      }
                     }
                   }
                 }}

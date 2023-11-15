@@ -1,22 +1,36 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// @ts-nocheck
 'use client'
 import React, { useEffect, useState } from 'react'
 
-import { IconButton, Tab, Tabs, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  IconButton,
+  Tab,
+  Tabs,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import cx from 'classnames'
 import { AnimatePresence } from 'framer-motion'
-import { filter } from 'lodash'
+import { capitalize, filter, orderBy } from 'lodash'
+import { useSnackbar } from 'notistack'
 
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
+import Portal from '@ors/components/manage/Utils/Portal'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
 import { formatApiUrl } from '@ors/helpers'
+import api from '@ors/helpers/Api'
 
 import { getViewSections, variants } from '.'
 
 import { AiFillFileExcel } from '@react-icons/all-files/ai/AiFillFileExcel'
 import { AiFillFilePdf } from '@react-icons/all-files/ai/AiFillFilePdf'
+import { IoAlbumsOutline } from '@react-icons/all-files/io5/IoAlbumsOutline'
 import { IoClose } from '@react-icons/all-files/io5/IoClose'
 import { IoDownloadOutline } from '@react-icons/all-files/io5/IoDownloadOutline'
 import { IoExpand } from '@react-icons/all-files/io5/IoExpand'
@@ -64,19 +78,21 @@ function TabPanel(props: any) {
 }
 
 export default function CPReportView(props: {
+  archive?: boolean
   emptyForm?: Record<string, any> | null
   print?: boolean
-  report?: Record<string, any>
+  report: Record<string, any>
+  versions?: any
 }) {
+  const { enqueueSnackbar } = useSnackbar()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [activeSection, setActiveSection] = useState(null)
   const [renderSection, setRenderSection] = useState(false)
-  const [report]: any = useState({
+  const [report, setReport]: any = useState({
     ...(props.report || {}),
-    id: props.report?.cp_report?.id,
-    name: props.report?.cp_report?.name,
-    year: props.report?.cp_report?.year,
+    ...(props.report?.cp_report || {}),
   })
+  const [versions, setVersions]: any = useState(props.versions)
   const [variant] = useState(
     filter(variants, (variant) => {
       const year = report.year
@@ -93,16 +109,57 @@ export default function CPReportView(props: {
 
   if (!report.name || !report.year) return null
 
+  console.log('HERE', report)
+
   return (
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
         active={currentIndex !== activeSection || !renderSection}
       />
-      <HeaderTitle>
-        <Typography className="mb-4 text-white" component="h1" variant="h3">
-          {report.name}
-        </Typography>
+      <HeaderTitle memo={report.status}>
+        <div className="mb-4 flex min-h-[40px] items-center justify-between gap-x-4">
+          <Typography className="text-white" component="h1" variant="h3">
+            {report.name}{' '}
+            <span
+              className={cx({
+                'rounded bg-success px-2 py-1': report.status === 'final',
+                'rounded bg-warning px-2 py-1': report.status === 'draft',
+              })}
+            >
+              {props.archive
+                ? `Version ${report.version}`
+                : capitalize(report.status)}
+            </span>
+          </Typography>
+          {!!versions?.length && (
+            <Dropdown
+              className="text-white"
+              label={<IoAlbumsOutline />}
+              tooltip="Change version"
+              MenuProps={{
+                slotProps: {
+                  paper: {
+                    className: 'max-h-[200px] overflow-y-auto',
+                  },
+                },
+              }}
+              icon
+            >
+              {orderBy(versions, 'version', 'desc').map((report: any) => (
+                <Dropdown.Item
+                  key={report.id}
+                  className="flex items-center gap-x-2 text-black no-underline"
+                  component={Link}
+                  // @ts-ignore
+                  href={`/country-programme/archive/${report.id}`}
+                >
+                  Version {report.version}
+                </Dropdown.Item>
+              ))}
+            </Dropdown>
+          )}
+        </div>
       </HeaderTitle>
       <Tabs
         className="scrollable mb-4"
@@ -161,59 +218,60 @@ export default function CPReportView(props: {
                     {section.title}
                   </Typography>
                   <div className="flex items-center justify-end">
-                    {!fullScreen && (
-                      <Dropdown
-                        color="primary"
-                        label={<IoDownloadOutline />}
-                        icon
-                      >
-                        <Dropdown.Item>
-                          <Link
-                            className="flex items-center gap-x-2 text-black no-underline"
-                            target="_blank"
-                            href={
-                              formatApiUrl('api/country-programme/export/') +
-                              '?cp_report_id=' +
-                              report.id?.toString()
-                            }
-                            download
-                          >
-                            <AiFillFileExcel
-                              className="fill-green-700"
-                              size={24}
-                            />
-                            <span>XLSX</span>
-                          </Link>
-                        </Dropdown.Item>
-                        <Dropdown.Item onClick={onPrint}>
-                          <Link
-                            className="flex items-center gap-x-2 text-black no-underline"
-                            target="_blank"
-                            href={
-                              formatApiUrl('api/country-programme/print/') +
-                              '?cp_report_id=' +
-                              report.id?.toString()
-                            }
-                            download
-                          >
-                            <AiFillFilePdf className="fill-red-700" size={24} />
-                            <span>PDF</span>
-                          </Link>
-                        </Dropdown.Item>
-                      </Dropdown>
-                    )}
+                    <Dropdown
+                      color="primary"
+                      label={<IoDownloadOutline />}
+                      tooltip="Download"
+                      icon
+                    >
+                      <Dropdown.Item>
+                        <Link
+                          className="flex items-center gap-x-2 text-black no-underline"
+                          target="_blank"
+                          href={
+                            formatApiUrl('api/country-programme/export/') +
+                            '?cp_report_id=' +
+                            report.id?.toString()
+                          }
+                          download
+                        >
+                          <AiFillFileExcel
+                            className="fill-green-700"
+                            size={24}
+                          />
+                          <span>XLSX</span>
+                        </Link>
+                      </Dropdown.Item>
+                      <Dropdown.Item onClick={onPrint}>
+                        <Link
+                          className="flex items-center gap-x-2 text-black no-underline"
+                          target="_blank"
+                          href={
+                            formatApiUrl('api/country-programme/print/') +
+                            '?cp_report_id=' +
+                            report.id?.toString()
+                          }
+                          download
+                        >
+                          <AiFillFilePdf className="fill-red-700" size={24} />
+                          <span>PDF</span>
+                        </Link>
+                      </Dropdown.Item>
+                    </Dropdown>
                     {section.allowFullScreen && !fullScreen && (
-                      <IconButton
-                        color="primary"
-                        onClick={() => {
-                          enterFullScreen()
-                        }}
-                      >
-                        <IoExpand />
-                      </IconButton>
+                      <Tooltip placement="top" title="Enter fullscreen">
+                        <IconButton
+                          color="primary"
+                          onClick={() => {
+                            enterFullScreen()
+                          }}
+                        >
+                          <IoExpand />
+                        </IconButton>
+                      </Tooltip>
                     )}
                     {fullScreen && (
-                      <div>
+                      <Tooltip placement="top" title="Exit fullscreen">
                         <IconButton
                           className="exit-fullscreen not-printable p-2 text-primary"
                           aria-label="exit fullscreen"
@@ -221,9 +279,9 @@ export default function CPReportView(props: {
                             exitFullScreen()
                           }}
                         >
-                          <IoClose size={32} />
+                          <IoClose size={24} />
                         </IconButton>
-                      </div>
+                      </Tooltip>
                     )}
                   </div>
                 </div>
@@ -239,6 +297,69 @@ export default function CPReportView(props: {
           }}
         />
       ))}
+      {!props.archive && (
+        <Portal domNode="bottom-control">
+          <Box className="rounded-none border-0 border-t px-4">
+            <div className="container flex w-full justify-between">
+              <Link
+                color="secondary"
+                href="/country-programme"
+                size="small"
+                variant="contained"
+                button
+              >
+                Close
+              </Link>
+              <div className="flex gap-x-4">
+                <Link
+                  color="primary"
+                  href={`/country-programme/edit/${report.id}`}
+                  size="small"
+                  variant="contained"
+                  button
+                >
+                  Edit
+                </Link>
+                {report.status === 'draft' && (
+                  <Button
+                    color="primary"
+                    size="small"
+                    variant="contained"
+                    onClick={async () => {
+                      try {
+                        const response = await api(
+                          `/api/country-programme/report/${props.report.cp_report.id}/status-update/`,
+                          {
+                            data: {
+                              status: 'final',
+                            },
+                            method: 'PUT',
+                          },
+                        )
+                        enqueueSnackbar(
+                          <>
+                            Submit submission for {response.country}{' '}
+                            {response.year}.
+                          </>,
+                          { variant: 'success' },
+                        )
+                        window.scrollTo({ behavior: 'smooth', top: 0 })
+                        setReport({ ...report, ...response })
+                      } catch (error) {
+                        const errors = await error.json()
+                        errors.detail &&
+                          enqueueSnackbar(errors.detail, { variant: 'error' })
+                      }
+                    }}
+                  >
+                    Submit
+                  </Button>
+                )}
+              </div>
+            </div>
+          </Box>
+        </Portal>
+      )}
     </>
   )
 }

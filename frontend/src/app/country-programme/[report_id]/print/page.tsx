@@ -19,12 +19,11 @@ type ReportProps = {
 }
 
 export default async function CountryProgrammeReport({ params }: ReportProps) {
-  const report =
-    (await api(
-      `api/country-programme/records/?cp_report_id=${params.report_id}`,
-      {},
-      false,
-    )) || {}
+  const report = await api(
+    `api/country-programme/records/?cp_report_id=${params.report_id}`,
+    {},
+    false,
+  )
   const emptyForm =
     (await api(
       `api/country-programme/empty-form/?cp_report_id=${params.report_id}`,
@@ -69,26 +68,28 @@ export default async function CountryProgrammeReport({ params }: ReportProps) {
 
   return (
     <PageWrapper style={{ marginBottom: '0px', marginTop: '0px' }}>
-      <CPReportViewPrint
-        report={report}
-        emptyForm={{
-          ...emptyForm,
-          ...(emptyForm.usage_columns
-            ? {
-                usage_columns: {
-                  section_a:
-                    emptyForm.usage_columns.section_a
-                      ?.filter(filterUsage)
-                      .map(mapUsage) || [],
-                  section_b:
-                    emptyForm.usage_columns.section_b
-                      ?.filter(filterUsage)
-                      .map(mapUsage) || [],
-                },
-              }
-            : {}),
-        }}
-      />
+      {!!report && (
+        <CPReportViewPrint
+          report={report}
+          emptyForm={{
+            ...emptyForm,
+            ...(emptyForm.usage_columns
+              ? {
+                  usage_columns: {
+                    section_a:
+                      emptyForm.usage_columns.section_a
+                        ?.filter(filterUsage)
+                        .map(mapUsage) || [],
+                    section_b:
+                      emptyForm.usage_columns.section_b
+                        ?.filter(filterUsage)
+                        .map(mapUsage) || [],
+                  },
+                }
+              : {}),
+          }}
+        />
+      )}
     </PageWrapper>
   )
 }

@@ -14,6 +14,7 @@ export type TitleProps = {
 export type HeaderTitleProps = {
   animationDelay?: number
   children: React.ReactNode
+  memo?: any
   onAnimationEnd?: () => any
 }
 
@@ -35,12 +36,14 @@ function Title({ children, visible }: TitleProps) {
 export default function HeaderTitle({
   animationDelay = 600,
   children,
+  memo = '',
   onAnimationEnd,
 }: HeaderTitleProps) {
   const [mounted, setMounted] = useState(false)
   const { setHeaderTitleComponent } = useStore((state) => state.header)
 
   useEffect(() => {
+    console.log('HERE REBUILD HEADER')
     setMounted(true)
     setHeaderTitleComponent(<Title visible={true}>{children}</Title>, false)
 
@@ -55,7 +58,7 @@ export default function HeaderTitle({
     }
 
     /* eslint-disable-next-line */
-  }, [])
+  }, [memo])
 
   return null
 
