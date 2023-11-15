@@ -1,0 +1,103 @@
+from rest_framework import serializers
+
+from core.api.serializers import BlendSerializer
+from core.api.serializers import SubstanceSerializer
+from core.models import Agency
+from core.models import BPRecord
+from core.models import BPRecordValue
+from core.models import BusinessPlan
+from core.models import Country
+from core.models import ProjectSector
+from core.models import ProjectSubSector
+
+
+class BPRecordValueSerializer(serializers.ModelSerializer):
+    bp_record_id = serializers.PrimaryKeyRelatedField(
+        required=True,
+        queryset=BPRecord.objects.all().values_list("id", flat=True),
+    )
+
+    class Meta:
+        model = BPRecordValue
+        fields = [
+            "id",
+            "bp_record_id",
+            "year",
+            "value_usd",
+            "value_odp",
+            "value_mt",
+        ]
+
+
+class BPRecordSerializer(serializers.ModelSerializer):
+    business_plan_id = serializers.PrimaryKeyRelatedField(
+        required=True,
+        queryset=BusinessPlan.objects.all().values_list("id", flat=True),
+    )
+    country_id = serializers.PrimaryKeyRelatedField(
+        required=True,
+        queryset=Country.objects.all().values_list("id", flat=True),
+    )
+    lvc_status = serializers.ChoiceField(choices=BPRecord.LVCStatus.choices)
+    project_type = serializers.StringRelatedField()
+    bp_type = serializers.ChoiceField(choices=BPRecord.BPType.choices)
+    bp_chemical_type = serializers.StringRelatedField()
+
+    substances = SubstanceSerializer(many=True)
+    blends = BlendSerializer(many=True)
+
+    sector_id = serializers.PrimaryKeyRelatedField(
+        queryset=ProjectSector.objects.values_list("id", flat=True)
+    )
+    subsector_id = serializers.PrimaryKeyRelatedField(
+        queryset=ProjectSubSector.objects.values_list("id", flat=True)
+    )
+
+    class Meta:
+        model = BPRecord
+        fields = [
+            "id",
+            "business_plan_id",
+            "title",
+            "required_by_model",
+            "country_id",
+            "lvc_status",
+            "project_type",
+            "bp_chemical_type",
+            "substances",
+            "blends",
+            "amount_polyol",
+            "sector_id",
+            "subsector_id",
+            "sector_subsector",
+            "bp_type",
+            "is_multi_year",
+            "reason_for_exceeding",
+            "remarks",
+            "remarks_additional",
+        ]
+
+
+class BusinessPlanSerializer(serializers.ModelSerializer):
+    country_id = serializers.PrimaryKeyRelatedField(
+        required=True,
+        queryset=Country.objects.all().values_list("id", flat=True),
+    )
+    agency_id = serializers.PrimaryKeyRelatedField(
+        required=True,
+        queryset=Agency.objects.all().values_list("id", flat=True),
+    )
+    status = serializers.ChoiceField(
+        choices=BusinessPlan.Status.choices, required=False
+    )
+
+    class Meta:
+        model = BusinessPlan
+        fields = [
+            "id",
+            "country_id",
+            "status",
+            "year_start",
+            "year_end",
+            "agency_id",
+        ]
