@@ -910,7 +910,7 @@ def update_or_create_project(project_data, update_status=True):
             country=project_data["country"],
             agency=project_data["agency"],
             project_type=project_data["project_type"],
-            approval_meeting_no=project_data["approval_meeting_no"],
+            approval_meeting=project_data["approval_meeting"],
         )
         if "subsector" in project_data:
             fields_filter &= models.Q(subsector=project_data["subsector"])

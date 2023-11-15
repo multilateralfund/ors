@@ -7,20 +7,21 @@ from django.conf import settings
 
 from core.import_data.utils import (
     delete_old_data,
+    get_meeting_by_number,
     get_project_base_data,
     parse_string,
     update_or_create_project,
 )
-from core.models.project import SubmissionAmount
+from core.models.project import Project, SubmissionAmount
 
 
 logger = logging.getLogger(__name__)
 
 
-def create_submission_amount(submission, row):
+def create_submission_amount(project, row):
     """
     Create SubmissionAmount object
-    @param submission: ProjectSubmission object
+    @param project: Project object
     @param row: row data
     """
     items = []
@@ -43,7 +44,7 @@ def create_submission_amount(submission, row):
             cost_name = f"COST_EFF_{status.upper()}"
 
         data = {
-            "submission": submission,
+            "project": project,
             "status": status,
             "amount": row[amount_name],
             "amount_psc": row[amount_psc_name],
@@ -116,6 +117,10 @@ def import_proposals():
         file_path = settings.IMPORT_DATA_DIR / "proposals" / file_name
 
         delete_old_data(Project, file_name)
-        parse_file(file_path, file_name, meeting_no)
+        meeting = get_meeting_by_number(meeting_no, file_name)
+        if not meeting:
+            logger.error(f"❌ meeting {meeting_no} not found")
+            continue
+        parse_file(file_path, file_name, meeting)
 
     logger.info("✔ proposals imported")

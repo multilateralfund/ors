@@ -1,9 +1,11 @@
 from django.contrib import admin
 
 from core.admin.utils import get_final_display_list
+from core.models.meeting import Meeting
 from core.models.project import (
     MetaProject,
     Project,
+    ProjectCluster,
     ProjectFund,
     ProjectOdsOdp,
     ProjectSector,
@@ -15,6 +17,7 @@ from core.models.project import (
 from core.models.project import ProjectComment
 from core.models.project import ProjectFile
 from core.models.project import ProjectProgressReport
+from core.models.rbm_measures import RBMMeasure
 
 
 @admin.register(MetaProject)
@@ -183,3 +186,38 @@ class SubmissionAmountAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = []
         return get_final_display_list(SubmissionAmount, exclude)
+
+
+@admin.register(Meeting)
+class MeetingAdmin(admin.ModelAdmin):
+    search_fields = [
+        "number",
+    ]
+
+    def get_list_display(self, request):
+        exclude = [
+            "project",
+            "decision",
+            "projectfund",
+            "approved_projects",
+            "transferred_projects",
+        ]
+        return get_final_display_list(Meeting, exclude)
+
+
+@admin.register(ProjectCluster)
+class ProjectClusterAdmin(admin.ModelAdmin):
+    search_fields = ["name", "code"]
+
+    def get_list_display(self, request):
+        exclude = ["project"]
+        return get_final_display_list(ProjectCluster, exclude)
+
+
+@admin.register(RBMMeasure)
+class RBMMeasureAdmin(admin.ModelAdmin):
+    search_fields = ["name"]
+
+    def get_list_display(self, request):
+        exclude = ["project_measures"]
+        return get_final_display_list(RBMMeasure, exclude)
