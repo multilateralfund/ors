@@ -11,18 +11,28 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture(name="_setup_version_list")
-def setup_version_list(cp_report_2019):
+def setup_version_list(cp_report_2019, cp_report_2005):
     cp_report_2019.status = CPReport.CPReportStatus.FINAL
     cp_report_2019.save()
 
     for i in range(5):
-        CPReportArchive.objects.create(
+        last_archive = CPReportArchive.objects.create(
             name=cp_report_2019.name,
             year=cp_report_2019.year,
             country=cp_report_2019.country,
             status=cp_report_2019.status,
             version=i + 1,
         )
+
+    for i in range(3):
+        CPReportArchive.objects.create(
+            name=cp_report_2005.name,
+            year=cp_report_2005.year,
+            country=cp_report_2005.country,
+            status=cp_report_2005.status,
+            version=i + 1,
+        )
+    return last_archive
 
 
 class TestVersionsList(BaseTest):
@@ -43,7 +53,7 @@ class TestVersionsList(BaseTest):
             self.url, {"country_programme_report_id": cp_report_2005.id}
         )
         assert response.status_code == 200
-        assert len(response.data) == 0
+        assert len(response.data) == 3
 
     def test_versions_list_invalid_cp_report_id(self, user, _setup_version_list):
         self.client.force_authenticate(user=user)
@@ -51,6 +61,14 @@ class TestVersionsList(BaseTest):
         response = self.client.get(self.url, {"country_programme_report_id": 999})
         assert response.status_code == 200
         assert len(response.data) == 0
+
+    def test_version_list_filter_by_archive_id(self, user, _setup_version_list):
+        self.client.force_authenticate(user=user)
+
+        last_archive = _setup_version_list
+        response = self.client.get(self.url, {"cp_report_archive_id": last_archive.id})
+        assert response.status_code == 200
+        assert len(response.data) == 5
 
 
 @pytest.fixture(name="_setup_old_version")
@@ -79,13 +97,14 @@ def setup_old_version(cp_report_2019, substance, blend):
 class TestGetOldVersion(BaseTest):
     url = reverse("country-programme-archive-record-list")
 
-    def test_get_old_version(self, user, _setup_old_version):
+    def test_get_old_version(self, user, _setup_old_version, cp_report_2019):
         self.client.force_authenticate(user=user)
 
         cp_ar = _setup_old_version
 
         response = self.client.get(self.url, {"cp_report_id": cp_ar.id})
         assert response.status_code == 200
+        assert response.data["cp_report"]["final_version_id"] == cp_report_2019.id
         assert len(response.data["section_a"]) == 1
         assert len(response.data["section_a"][0]["excluded_usages"]) == 1
         assert len(response.data["section_b"]) == 1

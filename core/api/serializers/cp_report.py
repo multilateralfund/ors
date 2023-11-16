@@ -44,9 +44,18 @@ class CPReportSerializer(CPReportBaseSerializer):
 
 
 class CPReportArchiveSerializer(CPReportBaseSerializer):
+    final_version_id = serializers.SerializerMethodField()
+
     class Meta(CPReportBaseSerializer.Meta):
         model = CPReportArchive
-        fields = CPReportBaseSerializer.Meta.fields + ["created_at"]
+        fields = CPReportBaseSerializer.Meta.fields + ["created_at", "final_version_id"]
+
+    def get_final_version_id(self, obj):
+        cp_report_final = CPReport.objects.filter(
+            country_id=obj.country_id,
+            year=obj.year,
+        ).first()
+        return cp_report_final.id if cp_report_final else None
 
 
 class CPReportGroupSerializer(serializers.Serializer):
