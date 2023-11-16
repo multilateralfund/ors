@@ -245,11 +245,13 @@ def setup_section_a_c(substance, blend, usage):
     section_a = [
         {
             "substance_id": substance.id,
+            "blend_id": None,
             "rowId": f"substance_{substance.id}",
             **cp_record_data,
         },
         {
             "substance_id": substance2.id,
+            "blend_id": None,
             "rowId": f"substance_{substance2.id}",
             **cp_record_data,
         },
@@ -257,12 +259,14 @@ def setup_section_a_c(substance, blend, usage):
     section_c = [
         {
             "substance_id": substance.id,
+            "blend_id": None,
             "rowId": f"substance_{substance.id}",
             "current_year_price": 25.5,
             "remarks": "Mama mea cand mi-a dat viata",
         },
         {
             "blend_id": blend.id,
+            "substance_id": None,
             "rowId": f"blend_{blend.id}",
             "previous_year_price": 12.4,
             "current_year_price": 25.5,

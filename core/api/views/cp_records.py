@@ -255,9 +255,13 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
 
     def _get_cp_report(self):
         try:
-            return self.cp_report_class.objects.get(id=self.request.query_params["cp_report_id"])
+            return self.cp_report_class.objects.get(
+                id=self.request.query_params["cp_report_id"]
+            )
         except KeyError as e:
-            raise ValidationError({"cp_report_id": "query parameter is required"}) from e
+            raise ValidationError(
+                {"cp_report_id": "query parameter is required"}
+            ) from e
         except CPReport.DoesNotExist as e:
             raise ValidationError({"cp_report_id": "invalid id"}) from e
 

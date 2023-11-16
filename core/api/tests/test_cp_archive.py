@@ -54,6 +54,14 @@ class TestVersionsList(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 0
 
+    def test_version_list_filter_by_archive_id(self, user, _setup_version_list):
+        self.client.force_authenticate(user=user)
+
+        last_archive = CPReportArchive.objects.last()
+        response = self.client.get(self.url, {"cp_report_archive_id": last_archive.id})
+        assert response.status_code == 200
+        assert len(response.data) == 5
+
 
 @pytest.fixture(name="_setup_old_version_2019")
 def setup_old_version_2019(cp_report_2019, substance, blend):
@@ -115,13 +123,14 @@ def setup_old_version_2005(cp_report_2005, substance, blend, adm_rows, adm_colum
 class TestGetOldVersion(BaseTest):
     url = reverse("country-programme-archive-record-list")
 
-    def test_get_old_version_2019(self, user, _setup_old_version_2019):
+    def test_get_old_version_2019(self, user, _setup_old_version_2019, cp_report_2019):
         self.client.force_authenticate(user=user)
 
         cp_ar = _setup_old_version_2019
 
         response = self.client.get(self.url, {"cp_report_id": cp_ar.id})
         assert response.status_code == 200
+        assert response.data["cp_report"]["final_version_id"] == cp_report_2019.id
         assert len(response.data["section_a"]) == 1
         assert len(response.data["section_a"][0]["excluded_usages"]) == 1
         assert len(response.data["section_b"]) == 1
