@@ -135,13 +135,14 @@ class TestGetOldVersion(BaseTest):
         assert len(response.data["section_a"][0]["excluded_usages"]) == 1
         assert len(response.data["section_b"]) == 1
 
-    def test_get_old_version_2005(self, user, _setup_old_version_2005):
+    def test_get_old_version_2005(self, user, _setup_old_version_2005, cp_report_2005):
         self.client.force_authenticate(user=user)
 
         cp_ar = _setup_old_version_2005
 
         response = self.client.get(self.url, {"cp_report_id": cp_ar.id})
         assert response.status_code == 200
+        assert response.data["cp_report"]["final_version_id"] == cp_report_2005.id
         assert len(response.data["section_a"]) == 1
         assert len(response.data["section_a"][0]["excluded_usages"]) == 1
         assert len(response.data["adm_b"]) == 1
