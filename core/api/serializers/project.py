@@ -6,17 +6,22 @@ from core.api.serializers.agency import AgencySerializer
 from core.models.agency import Agency
 from core.models.blend import Blend
 from core.models.country import Country
+from core.models.meeting import Meeting
 from core.models.project import (
     Project,
+    ProjectCluster,
     ProjectOdsOdp,
+    ProjectRBMMeasure,
     ProjectSector,
     ProjectStatus,
     ProjectSubSector,
     ProjectType,
+    SubmissionAmount,
 )
 from core.models.project import ProjectComment
 from core.models.project import ProjectFund
 from core.models.project import ProjectFile
+from core.models.rbm_measures import RBMMeasure
 from core.models.substance import Substance
 
 
@@ -88,13 +93,15 @@ class ProjectFundSerializer(serializers.ModelSerializer):
     ProjectFundSerializer class
     """
 
+    meeting = serializers.SlugRelatedField("number", read_only=True)
+
     class Meta:
         model = ProjectFund
         fields = [
             "id",
             "project_id",
             "amount",
-            "support_13",
+            "support_psc",
             "meeting",
             "interest",
             "date",
@@ -187,6 +194,68 @@ class ProjectOdsOdpSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
 
+class SubmissionAmountSerializer(serializers.ModelSerializer):
+    """
+    SubmissionAmountSerializer class
+    """
+
+    project_id = serializers.PrimaryKeyRelatedField(
+        required=True, queryset=Project.objects.all().values_list("id", flat=True)
+    )
+
+    class Meta:
+        model = SubmissionAmount
+        fields = [
+            "id",
+            "project_id",
+            "amount",
+            "impact",
+            "cost_effectiveness",
+            "status",
+        ]
+
+
+class ProjectRbmMeasureSerializer(serializers.ModelSerializer):
+    """
+    ProjectRbmMeasureSerializer class
+    """
+
+    project_id = serializers.PrimaryKeyRelatedField(
+        required=True, queryset=Project.objects.all().values_list("id", flat=True)
+    )
+    measure_id = serializers.PrimaryKeyRelatedField(
+        required=True, queryset=RBMMeasure.objects.all().values_list("id", flat=True)
+    )
+    measure_name = serializers.SlugRelatedField("name", read_only=True)
+
+    class Meta:
+        model = ProjectRBMMeasure
+        fields = [
+            "id",
+            "project_id",
+            "measure_name",
+            "measure_id",
+            "value",
+            "sort_order",
+        ]
+
+
+class ProjectClusterSerializer(serializers.ModelSerializer):
+    """
+    ProjectClusterSerializer class
+    """
+
+    class Meta:
+        model = ProjectCluster
+        fields = [
+            "id",
+            "name",
+            "code",
+            "substance_type",
+            "sort_order",
+        ]
+
+
 class ProjectFileSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
 
@@ -214,7 +283,12 @@ class ProjectListSerializer(serializers.ModelSerializer):
     subsector = serializers.SlugRelatedField("name", read_only=True)
     project_type = serializers.SlugRelatedField("name", read_only=True)
     status = serializers.SlugRelatedField("name", read_only=True)
+    cluster = serializers.SlugRelatedField("name", read_only=True)
     title = serializers.CharField(required=True)
+    approval_meeting = serializers.SerializerMethodField()
+    meeting_transf = serializers.SerializerMethodField()
+    decision = serializers.SlugField(source="number", read_only=True)
+    substance_category = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -223,7 +297,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "title",
             "code",
             "mya_code",
-            "number",
+            "serial_number",
             "description",
             "country",
             "agency",
@@ -233,10 +307,16 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "subsector",
             "project_type",
             "mya_subsector",
+            "cluster",
             "stage",
+            "tranche",
+            "compliance",
             "status",
             "substance_type",
-            "approval_meeting_no",
+            "substance_category",
+            "approval_meeting",
+            "meeting_transf",
+            "decision",
             "project_duration",
             "application",
             "products_manufactured",
@@ -247,31 +327,72 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "impact_co2mt",
             "impact_production",
             "impact_prod_co2mt",
-            "ods_phasedout",
+            "substance_phasedout",
             "ods_phasedout_co2mt",
             "hcfc_stage",
             "capital_cost",
             "operating_cost",
             "effectiveness_cost",
+            "contingency_cost",
+            "total_fund_transferred",
+            "total_psc_transferred",
+            "total_fund_approved",
+            "total_psc_cost",
+            "total_grant",
             "fund_disbursed",
-            "fund_disbursed_13",
+            "fund_disbursed_psc",
+            "date_approved",
             "date_completion",
             "date_actual",
             "date_comp_revised",
             "date_per_agreement",
             "date_per_decision",
+            "date_received",
+            "submission_category",
+            "submission_number",
+            "programme_officer",
+            "funds_allocated",
+            "support_cost_psc",
+            "project_cost",
             "umbrella_project",
             "loan",
             "intersessional_approval",
             "retroactive_finance",
+            "revision_number",
+            "date_of_revision",
+            "agency_remarks",
+            "withdrawn",
+            "incomplete",
+            "issue",
+            "issue_description",
             "local_ownership",
             "export_to",
+            "reviewed_mfs",
+            "correspondance_no",
+            "submission_comments",
+            "plus",
             "remarks",
-            "decisions",
         ]
 
     def get_sector(self, obj):
         return obj.subsector.sector.name
+
+    def get_approval_meeting(self, obj):
+        if obj.approval_meeting:
+            return obj.approval_meeting.number
+        return None
+
+    def get_meeting_transf(self, obj):
+        if obj.meeting_transf:
+            return obj.meeting_transf.number
+        return None
+
+    def get_substance_category(self, obj):
+        if not obj.cluster:
+            return None
+        if "kpp" in obj.cluster.code.lower():
+            return "Production"
+        return "Consumption"
 
 
 class ProjectDetailsSerializer(ProjectListSerializer):
@@ -301,6 +422,18 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         write_only=True,
     )
     latest_file = ProjectFileSerializer(many=False, read_only=True)
+    approval_meeting_id = serializers.PrimaryKeyRelatedField(
+        required=True, queryset=Meeting.objects.all().values_list("id", flat=True)
+    )
+    meeting_transf_id = serializers.PrimaryKeyRelatedField(
+        required=True, queryset=Meeting.objects.all().values_list("id", flat=True)
+    )
+    cluster_id = serializers.PrimaryKeyRelatedField(
+        required=False,
+        queryset=ProjectCluster.objects.all().values_list("id", flat=True),
+    )
+    submission_amounts = SubmissionAmountSerializer(many=True)
+    rbm_measures = ProjectRbmMeasureSerializer(many=True)
 
     class Meta:
         model = Project
@@ -310,22 +443,35 @@ class ProjectDetailsSerializer(ProjectListSerializer):
             "coop_agencies_id",
             "subsector_id",
             "project_type_id",
+            "approval_meeting_id",
+            "meeting_transf_id",
+            "cluster_id",
             "ods_odp",
             "funds",
             "comments",
             "latest_file",
+            "submission_amounts",
+            "rbm_measures",
         ]
 
     def __init__(self, instance=None, data=empty, **kwargs):
         super().__init__(instance, data, **kwargs)
         request = self.context.get("request")
 
-        for field in ("ods_odp", "funds", "comments"):
+        for field in (
+            "ods_odp",
+            "funds",
+            "comments",
+            "submission_amounts",
+            "rbm_measures",
+        ):
             # set ods odps read only for PUT, PATCH, DELETE
             self.fields[field].read_only = request.method not in ["GET", "POST"]
 
     @transaction.atomic
     def create(self, validated_data):
+        submission_amounts = validated_data.pop("submission_amounts", [])
+        rbm_measures = validated_data.pop("rbm_measures", [])
         ods_odp_data = validated_data.pop("ods_odp", [])
         funds = validated_data.pop("funds", [])
         comments = validated_data.pop("comments", [])
@@ -349,6 +495,12 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         # add coop_agencies
         for coop_agency in coop_agencies_id:
             project.coop_agencies.add(coop_agency)
+        # create submission_amounts
+        for submission_amount in submission_amounts:
+            SubmissionAmount.objects.create(project=project, **submission_amount)
+        # create rbm_measures
+        for rbm_measure in rbm_measures:
+            ProjectRBMMeasure.objects.create(project=project, **rbm_measure)
         return project
 
     @transaction.atomic

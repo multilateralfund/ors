@@ -347,7 +347,9 @@ class SubmissionAmount(models.Model):
         GRAND_TOTAL = "grand_total", "Grand Total"
         RSVD = "rsvd", "Grand Total RSVD"
 
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="submission_amounts"
+    )
     amount = models.FloatField()
     amount_psc = models.FloatField(default=0, null=True)  # amount_13
     impact = models.FloatField(default=0, null=True)
@@ -355,7 +357,7 @@ class SubmissionAmount(models.Model):
     status = models.CharField(max_length=164, choices=SubmissionStatus.choices)
 
     def __str__(self):
-        return self.status + "  " + self.amount
+        return f"{self.amount} {self.status}"
 
 
 class ProjectRBMMeasure(models.Model):

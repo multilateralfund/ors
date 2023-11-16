@@ -100,6 +100,7 @@ class ProjectAdmin(admin.ModelAdmin):
         "agency",
         "subsector",
         "meta_project__type",
+        "cluster",
     ]
     autocomplete_fields = ["country", "subsector", "agency"]
 
@@ -112,7 +113,8 @@ class ProjectAdmin(admin.ModelAdmin):
             "submission",
             "files",
             "comments",
-            "submissionamount",
+            "submission_amounts",
+            "rbm_measures",
         ]
         return get_final_display_list(Project, exclude)
 
@@ -176,12 +178,12 @@ class ProjectFundAdmin(admin.ModelAdmin):
 @admin.register(SubmissionAmount)
 class SubmissionAmountAdmin(admin.ModelAdmin):
     search_fields = [
-        "submission__project__title",
+        "project__title",
     ]
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        return queryset.select_related("submission__project")
+        return queryset.select_related("project")
 
     def get_list_display(self, request):
         exclude = []

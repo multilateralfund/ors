@@ -4,8 +4,10 @@ from core.api.utils import SUBMISSION_STATUSE_CODES
 
 from core.models.agency import Agency
 from core.models.country import Country
+from core.models.meeting import Meeting
 from core.models.project import (
     Project,
+    ProjectCluster,
     ProjectSector,
     ProjectStatus,
     ProjectSubSector,
@@ -53,13 +55,18 @@ class ProjectFilter(filters.FilterSet):
         queryset=Agency.objects.all(),
         widget=CSVWidget,
     )
-    approval_meeting_no = filters.AllValuesMultipleFilter(widget=CSVWidget)
-
-    get_submission = filters.BooleanFilter(method="filter_submission")
-
-    date_received = filters.DateFromToRangeFilter(
-        field_name="submission__date_received"
+    approval_meeting_id = filters.ModelMultipleChoiceFilter(
+        field_name="approval_meeting",
+        queryset=Meeting.objects.all(),
+        widget=CSVWidget,
     )
+    cluster_id = filters.ModelMultipleChoiceFilter(
+        field_name="cluster",
+        queryset=ProjectCluster.objects.all(),
+        widget=CSVWidget,
+    )
+
+    date_received = filters.DateFromToRangeFilter(field_name="date_received")
 
     class Meta:
         model = Project
@@ -71,11 +78,6 @@ class ProjectFilter(filters.FilterSet):
             "project_type_id",
             "substance_type",
             "agency_id",
-            "approval_meeting_no",
+            "approval_meeting_id",
             "date_received",
         ]
-
-    def filter_submission(self, queryset, _name, value):
-        if value:
-            return queryset.filter(status__code__in=SUBMISSION_STATUSE_CODES)
-        return queryset.exclude(status__code__in=SUBMISSION_STATUSE_CODES)

@@ -6,14 +6,18 @@ from django.views.static import serve
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import mixins, generics, views, viewsets, filters
+from rest_framework import mixins, generics, viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
 from core.api.filters.project import ProjectFilter
-from core.api.serializers.project import ProjectCommentSerializer
+from core.api.serializers.meeting import MeetingSerializer
+from core.api.serializers.project import (
+    ProjectClusterSerializer,
+    ProjectCommentSerializer,
+)
 from core.api.serializers.project import (
     ProjectDetailsSerializer,
     ProjectListSerializer,
@@ -24,8 +28,10 @@ from core.api.serializers.project import (
     ProjectTypeSerializer,
     ProjectFundSerializer,
 )
+from core.models.meeting import Meeting
 from core.models.project import (
     Project,
+    ProjectCluster,
     ProjectOdsOdp,
     ProjectSector,
     ProjectSubSector,
@@ -72,15 +78,14 @@ class ProjectTypeListView(generics.ListAPIView):
     serializer_class = ProjectTypeSerializer
 
 
-class ProjectMeetingListView(views.APIView):
-    def get(self, request, *args, **kwargs):
-        meetings = (
-            Project.objects.filter(approval_meeting_no__isnull=False)
-            .values_list("approval_meeting_no", flat=True)
-            .distinct()
-            .order_by("approval_meeting_no")
-        )
-        return Response(list(meetings))
+class ProjectMeetingListView(generics.ListAPIView):
+    queryset = Meeting.objects.order_by("number").all()
+    serializer_class = MeetingSerializer
+
+
+class ProjectClusterListView(generics.ListAPIView):
+    queryset = ProjectCluster.objects.order_by("sort_order").all()
+    serializer_class = ProjectClusterSerializer
 
 
 # view for country programme reports
@@ -102,8 +107,12 @@ class ProjectViewSet(
         "subsector__sector",
         "project_type",
         "status",
-        "submission",
-    ).prefetch_related("coop_agencies__agency")
+        "cluster",
+        "approval_meeting",
+        "meeting_transf",
+    ).prefetch_related(
+        "coop_agencies__agency", "submission_amounts", "rbm_measures__measure"
+    )
     filterset_class = ProjectFilter
     filter_backends = [
         DjangoFilterBackend,

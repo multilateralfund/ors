@@ -26,10 +26,11 @@ from core.api.views.cp_records import CPRecordListView
 from core.api.views.cp_records_export import CPRecordPrintView
 from core.api.views.cp_records_export import CPRecordExportView
 from core.api.views.cp_report_empty_form import EmptyFormView
+from core.api.views.meetings import MeetingListView
 from core.api.views.projects import (
+    ProjectClusterListView,
     ProjectOdsOdpViewSet,
     ProjectViewSet,
-    ProjectMeetingListView,
     ProjectSectorListView,
     ProjectStatusListView,
     ProjectSubSectorListView,
@@ -176,9 +177,14 @@ urlpatterns = [
         name="project-type-list",
     ),
     path(
-        "project-meetings/",
-        ProjectMeetingListView.as_view(),
-        name="project-meeting-list",
+        "meetings/",
+        MeetingListView.as_view(),
+        name="meeting-list",
+    ),
+    path(
+        "project-clusters/",
+        ProjectClusterListView.as_view(),
+        name="project-cluster-list",
     ),
     re_path(
         "^project-files/(?P<pk>[^/]+)/$",
