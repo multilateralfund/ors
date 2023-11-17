@@ -79,6 +79,9 @@ class CPReportCreateSerializer(serializers.Serializer):
     country_id = serializers.PrimaryKeyRelatedField(
         queryset=Country.objects.all().values_list("id", flat=True),
     )
+    status = serializers.ChoiceField(
+        choices=CPReport.CPReportStatus.choices, required=False
+    )
     section_a = CPRecordSerializer(many=True, required=False)
     section_b = CPRecordSerializer(many=True, required=False)
     section_c = CPPricesSerializer(many=True, required=False)
@@ -95,6 +98,7 @@ class CPReportCreateSerializer(serializers.Serializer):
         fields = [
             "name",
             "year",
+            "status",
             "country_id",
             "section_a",
             "section_b",
@@ -188,6 +192,7 @@ class CPReportCreateSerializer(serializers.Serializer):
         cp_report_data = {
             "name": validated_data.get("name"),
             "year": validated_data.get("year"),
+            "status": validated_data.get("status", CPReport.CPReportStatus.DRAFT),
             "country_id": validated_data.get("country_id"),
         }
 

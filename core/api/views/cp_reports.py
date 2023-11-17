@@ -238,7 +238,7 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
 
     @transaction.atomic
     def put(self, request, *args, **kwargs):
-        instance = self.get_object()
+        current_obj = self.get_object()
         serializer = CPReportCreateSerializer(data=request.data)
         if not serializer.is_valid():
             custom_errors = self.customize_errors(serializer.errors)
@@ -246,17 +246,22 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
         self.perform_create(serializer)
         # update version number
         new_instance = serializer.instance
+
+        # make sure that the final status can be set only once
+        if current_obj.status == CPReport.CPReportStatus.FINAL:
+            new_instance.status = CPReport.CPReportStatus.FINAL
+
         # increment version number if the status is FINAL
-        new_instance.version = instance.version + int(
-            instance.status == CPReport.CPReportStatus.FINAL
+        new_instance.version = current_obj.version + int(
+            new_instance.status == CPReport.CPReportStatus.FINAL
         )
-        new_instance.status = instance.status
+
         new_instance.save()
 
-        if instance.status == CPReport.CPReportStatus.FINAL:
-            self._archive_cp_report(instance)
+        if new_instance.status == CPReport.CPReportStatus.FINAL:
+            self._archive_cp_report(current_obj)
 
-        instance.delete()
+        current_obj.delete()
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
