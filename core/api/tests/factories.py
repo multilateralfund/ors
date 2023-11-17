@@ -18,11 +18,13 @@ from core.models.project import (
     Project,
     ProjectCluster,
     ProjectOdsOdp,
+    ProjectRBMMeasure,
     ProjectSector,
     ProjectStatus,
     ProjectSubSector,
     ProjectType,
 )
+from core.models.rbm_measures import RBMMeasure
 from core.models.substance import Substance
 from core.models.time_frame import TimeFrame
 from core.models.usage import ExcludedUsage, Usage
@@ -333,3 +335,21 @@ class ProjectOdsOdpFactory(factory.django.DjangoModelFactory):
     ods_replacement = factory.Faker("pystr", max_chars=100)
     co2_mt = factory.Faker("random_int", min=1, max=100)
     sort_order = factory.Faker("random_int", min=1, max=100)
+
+
+class RbmMeasureFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RBMMeasure
+
+    name = factory.Faker("pystr", max_chars=100)
+    description = factory.Faker("pystr", max_chars=10)
+    sort_order = factory.Faker("random_int", min=1, max=100)
+
+
+class ProjectRBMMeasureFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProjectRBMMeasure
+
+    project = factory.SubFactory(ProjectFactory)
+    rbm_measure = factory.SubFactory(RbmMeasureFactory)
+    value = factory.Faker("random_int", min=1, max=100)

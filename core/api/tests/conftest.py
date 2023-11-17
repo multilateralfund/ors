@@ -20,10 +20,12 @@ from core.api.tests.factories import (
     ProjectClusterFactory,
     ProjectFactory,
     ProjectOdsOdpFactory,
+    ProjectRBMMeasureFactory,
     ProjectSectorFactory,
     ProjectStatusFactory,
     ProjectSubSectorFactory,
     ProjectTypeFactory,
+    RbmMeasureFactory,
     SubstanceFactory,
     TimeFrameFactory,
     UsageFactory,
@@ -236,6 +238,11 @@ def subsector(sector):
 
 
 @pytest.fixture
+def rbm_measure():
+    return RbmMeasureFactory.create(name="RBM Measure", sort_order=1)
+
+
+@pytest.fixture
 def meeting():
     return MeetingFactory.create(number=1, date="2019-03-14")
 
@@ -276,6 +283,11 @@ def project(
     )
 
     return project
+
+
+@pytest.fixture
+def project_rbm_measure(project, rbm_measure):
+    return ProjectRBMMeasureFactory(project=project, measure=rbm_measure, value=10)
 
 
 @pytest.fixture

@@ -14,6 +14,7 @@ from core.api.tests.factories import (
     ProjectStatusFactory,
     ProjectSubSectorFactory,
     ProjectTypeFactory,
+    RbmMeasureFactory,
 )
 from core.models.project import Project, ProjectOdsOdp
 from core.models.project import ProjectFile
@@ -365,13 +366,24 @@ class TestProjectList(BaseTest):
 
 
 @pytest.fixture(name="_setup_project_create")
-def setup_project_create(country_ro, agency, project_type, subsector, substance, blend):
+def setup_project_create(
+    country_ro,
+    agency,
+    project_type,
+    subsector,
+    substance,
+    blend,
+    meeting,
+    project_cluster_kip,
+    rbm_measure,
+):
     statuses = [
         {"name": "New Submission", "code": "NEWSUB"},
         {"name": "New", "code": "NEW"},
     ]
     for status in statuses:
         ProjectStatusFactory.create(**status)
+    new_rbm_measure = RbmMeasureFactory.create(name="new_measure")
 
     # create coop agencies
     coop_agencies = [AgencyFactory.create().id for i in range(2)]
@@ -386,13 +398,12 @@ def setup_project_create(country_ro, agency, project_type, subsector, substance,
         "project_type_id": project_type.id,
         "status_id": 1,
         "substance_type": "HCFC",
-        "approval_meeting_no": 1,
+        "approval_meeting_id": meeting.id,
+        "cluster_id": project_cluster_kip.id,
         "national_agency": "National Agency",
-        "submission": {
-            "category": "bilateral cooperation",
-            "funds_allocated": 1234,
-            "support_cost_13": 12.3,
-        },
+        "submission_category": "bilateral cooperation",
+        "funds_allocated": 1234,
+        "support_cost_psc": 12.3,
         "ods_odp": [
             {
                 "odp": 3.14,
@@ -415,6 +426,16 @@ def setup_project_create(country_ro, agency, project_type, subsector, substance,
             {
                 "amount": 42,
                 "fund_type": "transferred",
+            },
+        ],
+        "rbm_measurs": [
+            {
+                "measure_id": rbm_measure.id,
+                "value": 10,
+            },
+            {
+                "measure_id": new_rbm_measure.id,
+                "value": 20,
             },
         ],
         "comments": [
@@ -451,6 +472,7 @@ class TestCreateProjects(BaseTest):
         blend,
         project_type,
         subsector,
+        measure,
         _setup_project_create,
     ):
         data = _setup_project_create
@@ -469,8 +491,7 @@ class TestCreateProjects(BaseTest):
         assert response.data["status"] == "New Submission"
         assert response.data["substance_type"] == "HCFC"
         assert response.data["national_agency"] == "National Agency"
-        submission = response.data["submission"]
-        assert submission["category"] == "bilateral cooperation"
+        assert response.data["submission_category"] == "bilateral cooperation"
 
         ods_odp = response.data["ods_odp"]
         assert len(ods_odp) == 2
@@ -487,6 +508,11 @@ class TestCreateProjects(BaseTest):
         assert funds[1]["amount"] == 42
         assert funds[1]["fund_type"] == "transferred"
 
+        rbm_measures = response.data["rbm_measures"]
+        assert len(rbm_measures) == 2
+        assert rbm_measures[0]["value"] == 10
+        assert rbm_measures[0]["measure_name"] == measure.name
+
         comments = response.data["comments"]
         assert len(comments) == 2
         assert comments[0]["meeting_of_report"] == "1"
@@ -496,7 +522,13 @@ class TestCreateProjects(BaseTest):
         data = _setup_project_create
         self.client.force_authenticate(user=user)
         # invalid country, agency, subsector, project_type ids
-        for field in ["agency_id", "subsector_id", "project_type_id", "country_id"]:
+        for field in [
+            "agency_id",
+            "subsector_id",
+            "project_type_id",
+            "country_id",
+            "cluster_id",
+        ]:
             initial_value = data[field]
             data[field] = 999
             # test with invalid id
@@ -527,11 +559,22 @@ class TestCreateProjects(BaseTest):
         data = _setup_project_create
         self.client.force_authenticate(user=user)
 
-        data["submission"]["category"] = "invalid"
+        data["submission_category"] = "invalid"
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
         assert "submission" in response.data
         assert "category" in response.data["submission"]
+
+        # check project count
+        assert Project.objects.count() == 0
+
+    def teste_create_project_rbm_meas_fk(self, user, _setup_project_create):
+        data = _setup_project_create
+        self.client.force_authenticate(user=user)
+
+        data["rbm_measures"][0]["measure_id"] = 999
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 400
 
         # check project count
         assert Project.objects.count() == 0
