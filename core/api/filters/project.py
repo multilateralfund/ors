@@ -65,8 +65,8 @@ class ProjectFilter(filters.FilterSet):
         queryset=ProjectCluster.objects.all(),
         widget=CSVWidget,
     )
-
     date_received = filters.DateFromToRangeFilter(field_name="date_received")
+    get_submission = filters.BooleanFilter(method="filter_submission")
 
     class Meta:
         model = Project
@@ -78,6 +78,12 @@ class ProjectFilter(filters.FilterSet):
             "project_type_id",
             "substance_type",
             "agency_id",
+            "cluster_id",
             "approval_meeting_id",
             "date_received",
         ]
+
+    def filter_submission(self, queryset, _name, value):
+        if value:
+            return queryset.filter(status__code__in=SUBMISSION_STATUSE_CODES)
+        return queryset.exclude(status__code__in=SUBMISSION_STATUSE_CODES)

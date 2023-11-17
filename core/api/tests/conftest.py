@@ -16,12 +16,13 @@ from core.api.tests.factories import (
     ExcludedUsageBlendFactory,
     ExcludedUsageSubstFactory,
     GroupFactory,
+    MeetingFactory,
+    ProjectClusterFactory,
     ProjectFactory,
     ProjectOdsOdpFactory,
     ProjectSectorFactory,
     ProjectStatusFactory,
     ProjectSubSectorFactory,
-    ProjectSubmissionFactory,
     ProjectTypeFactory,
     SubstanceFactory,
     TimeFrameFactory,
@@ -235,7 +236,30 @@ def subsector(sector):
 
 
 @pytest.fixture
-def project(country_ro, agency, project_type, project_status, subsector):
+def meeting():
+    return MeetingFactory.create(number=1, date="2019-03-14")
+
+
+@pytest.fixture
+def project_cluster_kpp():
+    return ProjectClusterFactory.create(name="KPP1", code="KPP1", sort_order=1)
+
+
+@pytest.fixture
+def project_cluster_kip():
+    return ProjectClusterFactory.create(name="KIP1", code="KIP1", sort_order=2)
+
+
+@pytest.fixture
+def project(
+    country_ro,
+    agency,
+    project_type,
+    project_status,
+    subsector,
+    meeting,
+    project_cluster_kpp,
+):
     project = ProjectFactory.create(
         title="Karma to Burn",
         country=country_ro,
@@ -243,12 +267,13 @@ def project(country_ro, agency, project_type, project_status, subsector):
         project_type=project_type,
         status=project_status,
         subsector=subsector,
+        approval_meeting=meeting,
         substance_type="HCFC",
-        approval_meeting_no=1,
+        cluster=project_cluster_kpp,
+        fund_disbursed=123.1,
+        total_fund_transferred=123.1,
+        date_approved="2019-03-14",
     )
-
-    # add submission
-    ProjectSubmissionFactory.create(project=project)
 
     return project
 

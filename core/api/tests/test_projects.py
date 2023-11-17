@@ -8,11 +8,11 @@ from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
     AgencyFactory,
     CountryFactory,
+    MeetingFactory,
     ProjectFactory,
     ProjectSectorFactory,
     ProjectStatusFactory,
     ProjectSubSectorFactory,
-    ProjectSubmissionFactory,
     ProjectTypeFactory,
 )
 from core.models.project import Project, ProjectOdsOdp
@@ -64,6 +64,7 @@ class TestProjectsRetrieve:
         response = self.client.get(project_url)
         assert response.status_code == 200
         assert response.data["id"] == project.id
+        assert response.data["substance_category"] == "Production"
         assert response.data["latest_file"] is None
 
     def test_project_files_get(self, user, project_url, project_file):
@@ -112,9 +113,7 @@ class TestProjectsUpdate:
 
         update_data = {
             "title": "Into the Spell",
-            "submission": {
-                "category": "investment project",
-            },
+            "submission_category": "investment project",
             "coop_agencies_id": [agency.id],
         }
         response = self.client.patch(project_url, update_data, format="json")
@@ -122,7 +121,7 @@ class TestProjectsUpdate:
 
         project.refresh_from_db()
         assert project.title == "Into the Spell"
-        assert project.submission.category == "investment project"
+        assert project.submission_category == "investment project"
         assert project.coop_agencies.count() == 1
 
     def test_project_patch_ods_odp(
@@ -170,51 +169,53 @@ class TestProjectUpload:
 
 
 @pytest.fixture(name="_setup_project_list")
-def setup_project_list(country_ro, agency, project_type, project_status, subsector):
+def setup_project_list(
+    country_ro, agency, project_type, project_status, subsector, meeting
+):
+    new_country = CountryFactory.create()
+    new_agency = AgencyFactory.create()
+    new_project_type = ProjectTypeFactory.create()
+    new_project_status = ProjectStatusFactory.create(code="NEWSUB")
+    new_sector = ProjectSectorFactory.create()
+    new_subsector = ProjectSubSectorFactory.create(sector=new_sector)
+    new_meeting = MeetingFactory.create(number=3, date="2020-03-14")
+
+    projects_data = [
+        {
+            "country": country_ro,
+            "agency": agency,
+            "project_type": project_type,
+            "status": project_status,
+            "subsector": subsector,
+            "substance_type": "HCFC",
+            "approval_meeting": meeting,
+        },
+        {
+            "country": new_country,
+            "agency": new_agency,
+            "project_type": new_project_type,
+            "status": new_project_status,
+            "subsector": new_subsector,
+            "substance_type": "CFC",
+            "approval_meeting": new_meeting,
+        },
+    ]
+
     for i in range(4):
-        new_country = CountryFactory.create()
-        new_agency = AgencyFactory.create()
-        new_project_type = ProjectTypeFactory.create()
-        new_project_status = ProjectStatusFactory.create(code="NEWSUB")
-        new_sector = ProjectSectorFactory.create()
-        new_subsector = ProjectSubSectorFactory.create(sector=new_sector)
-
-        projects_data = [
-            (
-                country_ro,
-                agency,
-                project_type,
-                project_status,
-                subsector,
-                "HCFC",
-            ),
-            (
-                new_country,
-                new_agency,
-                new_project_type,
-                new_project_status,
-                new_subsector,
-                "CFC",
-            ),
-        ]
-
         for project_data in projects_data:
-            project = ProjectFactory.create(
+            ProjectFactory.create(
                 title=f"Project {i}",
-                country=project_data[0],
-                agency=project_data[1],
-                project_type=project_data[2],
-                status=project_data[3],
-                subsector=project_data[4],
-                substance_type=project_data[5],
-                approval_meeting_no=i + 1,
+                date_received=f"2020-01-{i+1}",
+                **project_data,
             )
-            if project_data[3].code == "NEWSUB":
-                ProjectSubmissionFactory.create(
-                    project=project, date_received=f"2020-01-{i+1}"
-                )
 
-    return new_agency, new_project_status, new_sector
+    ProjectFactory.create(
+        title=f"Project {25}",
+        date_received=f"2020-01-30",
+        **projects_data[0],
+    )
+
+    return new_agency, new_project_status, new_sector, new_meeting
 
 
 class TestProjectList(BaseTest):
@@ -226,13 +227,7 @@ class TestProjectList(BaseTest):
         # get project list
         response = self.client.get(self.url)
         assert response.status_code == 200
-        assert len(response.data) == 8
-        # check if there is submission data
-        projects_with_submission = 0
-        for project in response.data:
-            if project["submission"]:
-                projects_with_submission += 1
-        assert projects_with_submission == 4
+        assert len(response.data) == 9
 
     def test_project_list_w_submission(self, user, _setup_project_list):
         self.client.force_authenticate(user=user)
@@ -240,25 +235,21 @@ class TestProjectList(BaseTest):
         response = self.client.get(self.url, {"get_submission": True})
         assert response.status_code == 200
         assert len(response.data) == 4
-        for project in response.data:
-            assert project["submission"] is not None
 
     def test_project_list_wout_submission(self, user, _setup_project_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"get_submission": False})
         assert response.status_code == 200
-        assert len(response.data) == 4
-        for project in response.data:
-            assert not project["submission"]
+        assert len(response.data) == 5
 
     def test_project_list_agency_filter(self, user, agency, _setup_project_list):
-        new_agency, _, _ = _setup_project_list
+        new_agency, _, _, _ = _setup_project_list
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"agency_id": agency.id})
         assert response.status_code == 200
-        assert len(response.data) == 4
+        assert len(response.data) == 5
         for project in response.data:
             assert project["agency"] == agency.name
 
@@ -266,26 +257,26 @@ class TestProjectList(BaseTest):
             self.url, {"agency_id": f"{agency.id},{new_agency.id}"}
         )
         assert response.status_code == 200
-        assert len(response.data) == 5
+        assert len(response.data) == 9
 
     def test_project_list_type_filter(self, user, project_type, _setup_project_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"project_type_id": project_type.id})
         assert response.status_code == 200
-        assert len(response.data) == 4
+        assert len(response.data) == 5
         for project in response.data:
             assert project["project_type"] == project_type.name
 
     def test_project_list_status_filter(
         self, user, project_status, _setup_project_list
     ):
-        _, new_project_status, _ = _setup_project_list
+        _, new_project_status, _, _ = _setup_project_list
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"status_id": project_status.id})
         assert response.status_code == 200
-        assert len(response.data) == 4
+        assert len(response.data) == 5
         for project in response.data:
             assert project["status"] == project_status.name
 
@@ -293,15 +284,15 @@ class TestProjectList(BaseTest):
             self.url, {"status_id": f"{project_status.id},{new_project_status.id}"}
         )
         assert response.status_code == 200
-        assert len(response.data) == 5
+        assert len(response.data) == 9
 
     def test_project_list_sector_filter(self, user, sector, _setup_project_list):
-        _, _, new_sector = _setup_project_list
+        _, _, new_sector, _ = _setup_project_list
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"sector_id": sector.id})
         assert response.status_code == 200
-        assert len(response.data) == 4
+        assert len(response.data) == 5
         for project in response.data:
             assert project["sector"] == sector.name
 
@@ -309,14 +300,14 @@ class TestProjectList(BaseTest):
             self.url, {"sector_id": f"{sector.id},{new_sector.id}"}
         )
         assert response.status_code == 200
-        assert len(response.data) == 5
+        assert len(response.data) == 9
 
     def test_project_list_subsector_filter(self, user, subsector, _setup_project_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"subsector_id": subsector.id})
         assert response.status_code == 200
-        assert len(response.data) == 4
+        assert len(response.data) == 5
         for project in response.data:
             assert project["subsector"] == subsector.name
 
@@ -325,29 +316,32 @@ class TestProjectList(BaseTest):
 
         response = self.client.get(self.url, {"substance_type": "HCFC"})
         assert response.status_code == 200
-        assert len(response.data) == 4
+        assert len(response.data) == 5
         for project in response.data:
             assert project["substance_type"] == "HCFC"
 
-    def test_project_list_meet_no_filter(self, user, _setup_project_list):
+    def test_project_list_meet_filter(self, user, _setup_project_list, meeting):
+        _, _, _, new_meeting = _setup_project_list
         self.client.force_authenticate(user=user)
 
-        response = self.client.get(self.url, {"approval_meeting_no": 1})
+        response = self.client.get(self.url, {"approval_meeting_id": meeting.id})
         assert response.status_code == 200
-        assert len(response.data) == 2
+        assert len(response.data) == 5
         for project in response.data:
-            assert project["approval_meeting_no"] == 1
+            assert project["approval_meeting"] == meeting.number
 
-        response = self.client.get(self.url, {"approval_meeting_no": "1,2"})
+        response = self.client.get(
+            self.url, {"approval_meeting_id": f"{new_meeting.id},{meeting.id}"}
+        )
         assert response.status_code == 200
-        assert len(response.data) == 4
+        assert len(response.data) == 9
 
     def test_project_list_country_filter(self, user, country_ro, _setup_project_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"country_id": country_ro.id})
         assert response.status_code == 200
-        assert len(response.data) == 4
+        assert len(response.data) == 5
         for project in response.data:
             assert project["country"] == country_ro.name
 
@@ -356,17 +350,18 @@ class TestProjectList(BaseTest):
 
         response = self.client.get(self.url, {"date_received_after": "2020-01-03"})
         assert response.status_code == 200
-        assert len(response.data) == 2
+        assert len(response.data) == 5
         for project in response.data:
-            assert project["submission"]["date_received"] in [
+            assert project["date_received"] in [
                 "2020-01-03",
                 "2020-01-04",
+                "2020-01-30",
             ]
 
         response = self.client.get(self.url, {"date_received_before": "2020-01-01"})
         assert response.status_code == 200
-        assert len(response.data) == 1
-        assert response.data[0]["submission"]["date_received"] == "2020-01-01"
+        assert len(response.data) == 2
+        assert response.data[0]["date_received"] == "2020-01-01"
 
 
 @pytest.fixture(name="_setup_project_create")
@@ -426,14 +421,14 @@ def setup_project_create(country_ro, agency, project_type, subsector, substance,
             {
                 "meeting_of_report": 1,
                 "secretariat_comment": "Well watch out. It's a sickly air that fills the place.",
-                "agency_response": "Perhaps dreams aren't such great things after all..."
+                "agency_response": "Perhaps dreams aren't such great things after all...",
             },
             {
                 "meeting_of_report": 2,
                 "secretariat_comment": "Don't look so glum, coz.",
-                "agency_response": "Uncle Alexander said he won't be back again."
-            }
-        ]
+                "agency_response": "Uncle Alexander said he won't be back again.",
+            },
+        ],
     }
 
 

@@ -13,15 +13,16 @@ from core.models.country_programme import (
 )
 
 from core.models.group import Group
+from core.models.meeting import Meeting
 from core.models.project import (
     Project,
+    ProjectCluster,
     ProjectOdsOdp,
     ProjectSector,
     ProjectStatus,
     ProjectSubSector,
     ProjectType,
 )
-from core.models.project_submission import ProjectSubmission
 from core.models.substance import Substance
 from core.models.time_frame import TimeFrame
 from core.models.usage import ExcludedUsage, Usage
@@ -288,6 +289,25 @@ class ProjectSubSectorFactory(factory.django.DjangoModelFactory):
     sector = factory.SubFactory(ProjectSectorFactory)
 
 
+class MeetingFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Meeting
+
+    number = factory.Faker("random_int", min=1, max=100)
+    date = factory.Faker("date")
+    status = Meeting.MeetingStatus.COMPLETED
+
+
+class ProjectClusterFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProjectCluster
+
+    name = factory.Faker("pystr", max_chars=100)
+    code = factory.Faker("pystr", max_chars=10)
+    substance_type = "HFC"
+    sort_order = factory.Faker("random_int", min=1, max=100)
+
+
 class ProjectFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Project
@@ -299,15 +319,8 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     subsector = factory.SubFactory(ProjectSubSectorFactory)
     agency = factory.SubFactory(AgencyFactory)
     country = factory.SubFactory(CountryFactory)
-    approval_meeting_no = factory.Faker("random_int", min=1, max=100)
-
-
-class ProjectSubmissionFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = ProjectSubmission
-
-    project = factory.SubFactory(ProjectFactory)
-    category = "bilateral cooperation"
+    approval_meeting = factory.SubFactory(MeetingFactory)
+    submission_category = "bilateral cooperation"
     submission_number = factory.Faker("random_int", min=1, max=100)
 
 

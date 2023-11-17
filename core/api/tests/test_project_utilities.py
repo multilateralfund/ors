@@ -137,7 +137,7 @@ def setup_project_meeting(country_ro, agency, project_type, project_status, subs
 
 
 class TestProjectMeeting(BaseTest):
-    url = reverse("project-meeting-list")
+    url = reverse("meeting-list")
 
     def test_project_meeting_list_user(self, admin_user, _setup_project_meeting):
         self.client.force_authenticate(user=admin_user)
