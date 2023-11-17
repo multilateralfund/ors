@@ -21,11 +21,11 @@ class BaseWriter:
         self.headers = {}
         self.all_headers = {}
 
-        nex_column_idx = self._compute_header_positions(
+        next_column_idx = self._compute_header_positions(
             headers, row=self.header_row_start_idx
         )
         self.header_row_end_idx = max(h["row"] for h in self.headers.values())
-        self.max_column_idx = nex_column_idx - 1
+        self.max_column_idx = next_column_idx - 1
 
     def write(self, data):
         self.write_headers()
@@ -70,7 +70,22 @@ class BaseWriter:
             )
 
     def write_data(self, data):
-        raise NotImplementedError
+        for row_idx, record in enumerate(data, start=self.header_row_end_idx + 1):
+            for header_id, header in self.headers.items():
+                header_type = header.get("type")
+                if method := header.get("method"):
+                    value = method(record, header)
+                else:
+                    value = record.get(header_id)
+
+                if header_type == "number":
+                    value = float(value or 0)
+                elif header_type == "bool":
+                    value = "Yes" if value else "No"
+                else:
+                    value = value or ""
+
+                self._write_record_cell(row_idx, header["column"], value)
 
     def set_dimensions(self):
         for header in self.headers.values():

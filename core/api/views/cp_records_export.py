@@ -1,5 +1,4 @@
 import collections
-import io
 import itertools
 import shutil
 import subprocess
@@ -16,6 +15,7 @@ from core.api.export.cp_report_new import CPReportNewExporter
 from core.api.export.cp_report_old import CPReportOldExporter
 from core.api.serializers import BlendSerializer
 from core.api.serializers import SubstanceSerializer
+from core.api.utils import workbook_response
 from core.api.views.cp_records import CPRecordListView
 from core.api.views.cp_report_empty_form import EmptyFormView
 from core.models import Blend
@@ -55,11 +55,7 @@ class CPRecordExportView(CPRecordListView):
         return self.get_response(cp_report.name, wb)
 
     def get_response(self, name, wb):
-        """Save xlsx and return the response"""
-        xls = io.BytesIO()
-        wb.save(xls)
-        xls.seek(0)
-        return FileResponse(xls, as_attachment=True, filename=name + ".xlsx")
+        return workbook_response(name, wb)
 
 
 class CPRecordPrintView(CPRecordExportView):
