@@ -87,7 +87,9 @@ class BPRecord(models.Model):
 
 
 class BPRecordValue(models.Model):
-    bp_record = models.ForeignKey(BPRecord, on_delete=models.CASCADE)
+    bp_record = models.ForeignKey(
+        BPRecord, on_delete=models.CASCADE, related_name="values"
+    )
     year = models.IntegerField(validators=[MinValueValidator(settings.MIN_VALID_YEAR)])
     value_usd = models.DecimalField(
         max_digits=25, decimal_places=15, null=True, blank=True

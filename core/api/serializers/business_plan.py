@@ -52,6 +52,7 @@ class BPRecordSerializer(serializers.ModelSerializer):
     subsector_id = serializers.PrimaryKeyRelatedField(
         queryset=ProjectSubSector.objects.values_list("id", flat=True)
     )
+    values = BPRecordValueSerializer(many=True)
 
     class Meta:
         model = BPRecord
@@ -75,16 +76,14 @@ class BPRecordSerializer(serializers.ModelSerializer):
             "reason_for_exceeding",
             "remarks",
             "remarks_additional",
+            "values",
         ]
 
 
 class BusinessPlanSerializer(serializers.ModelSerializer):
-    country_id = serializers.PrimaryKeyRelatedField(
+    agencies = serializers.PrimaryKeyRelatedField(
         required=True,
-        queryset=Country.objects.all().values_list("id", flat=True),
-    )
-    agency_id = serializers.PrimaryKeyRelatedField(
-        required=True,
+        many=True,
         queryset=Agency.objects.all().values_list("id", flat=True),
     )
     status = serializers.ChoiceField(
@@ -95,9 +94,8 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
         model = BusinessPlan
         fields = [
             "id",
-            "country_id",
             "status",
             "year_start",
             "year_end",
-            "agency_id",
+            "agencies",
         ]
