@@ -42,12 +42,14 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
     cp_prices_class = None
     cp_generation_class = None
     cp_emission_class = None
+    adm_record_class = None
 
     cp_report_seri_class = None
     cp_record_seri_class = None
     cp_prices_seri_class = None
     cp_generation_seri_class = None
     cp_emission_seri_class = None
+    adm_record_seri_class = None
 
     def _get_cp_record(self, cp_report_id, section):
         return (
@@ -170,7 +172,7 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
 
     def _get_adm_records(self, cp_report_id, section):
         return (
-            AdmRecord.objects.select_related("row", "column")
+            self.adm_record_class.objects.select_related("row", "column")
             .filter(
                 country_programme_report_id=cp_report_id,
                 section=section,
@@ -229,7 +231,7 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
                     "row_text": str(adm_record.row),
                     "values": [],
                 }
-            result[row_id]["values"].append(AdmRecordSerializer(adm_record).data)
+            result[row_id]["values"].append(self.adm_record_seri_class(adm_record).data)
         return list(result.values())
 
     def _get_old_cp_records(self, cp_report):
@@ -253,9 +255,13 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
 
     def _get_cp_report(self):
         try:
-            return self.cp_report_class.objects.get(id=self.request.query_params["cp_report_id"])
+            return self.cp_report_class.objects.get(
+                id=self.request.query_params["cp_report_id"]
+            )
         except KeyError as e:
-            raise ValidationError({"cp_report_id": "query parameter is required"}) from e
+            raise ValidationError(
+                {"cp_report_id": "query parameter is required"}
+            ) from e
         except CPReport.DoesNotExist as e:
             raise ValidationError({"cp_report_id": "invalid id"}) from e
 
@@ -285,9 +291,11 @@ class CPRecordListView(CPRecordBaseListView):
     cp_prices_class = CPPrices
     cp_generation_class = CPGeneration
     cp_emission_class = CPEmission
+    adm_record_class = AdmRecord
 
     cp_report_seri_class = CPReportSerializer
     cp_record_seri_class = CPRecordSerializer
     cp_prices_seri_class = CPPricesSerializer
     cp_generation_seri_class = CPGenerationSerializer
     cp_emission_seri_class = CPEmissionSerializer
+    adm_record_seri_class = AdmRecordSerializer

@@ -1,9 +1,10 @@
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey, TreeManager
-from core.models.base import BaseWTimeFrameManager
 
+from core.models.base import BaseWTimeFrameManager
 from core.models.blend import Blend
 from core.models.country_programme import CPReport
+from core.models.country_programme_archive import CPReportArchive
 from core.models.substance import Substance
 from core.models.time_frame import TimeFrame
 
@@ -130,12 +131,7 @@ class AdmChoice(models.Model):
         return self.value
 
 
-class AdmRecord(models.Model):
-    country_programme_report = models.ForeignKey(
-        CPReport,
-        on_delete=models.CASCADE,
-        related_name="adm_records",
-    )
+class BaseAdmRecord(models.Model):
     row = models.ForeignKey(AdmRow, on_delete=models.CASCADE)
     column = models.ForeignKey(
         AdmColumn, on_delete=models.CASCADE, null=True, blank=True
@@ -154,10 +150,32 @@ class AdmRecord(models.Model):
     source_file = models.CharField(max_length=248, null=True, blank=True)
 
     class Meta:
-        db_table = "cp_admrecord"
+        abstract = True
 
     def __str__(self):
         if self.column:
             return self.row.text + " - " + self.column.name
 
         return self.row.text
+
+
+class AdmRecord(BaseAdmRecord):
+    country_programme_report = models.ForeignKey(
+        CPReport,
+        on_delete=models.CASCADE,
+        related_name="adm_records",
+    )
+
+    class Meta:
+        db_table = "cp_admrecord"
+
+
+class AdmRecordArchive(BaseAdmRecord):
+    country_programme_report = models.ForeignKey(
+        CPReportArchive,
+        on_delete=models.CASCADE,
+        related_name="adm_records",
+    )
+
+    class Meta:
+        db_table = "cp_admrecord_archive"
