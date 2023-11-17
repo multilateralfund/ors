@@ -7,6 +7,7 @@ import re
 from django.db import transaction
 from django.conf import settings
 
+from core.import_data.utils import delete_old_data
 from core.import_data.utils import (
     get_chemical_by_name_or_components,
     get_country_by_name,
@@ -168,7 +169,7 @@ def get_sector_subsector(sector_subsector, index_row):
     return sector, subsector
 
 
-def get_or_create_bp(row, index_row, start_year, end_year):
+def get_or_create_bp(row, index_row, start_year, end_year, source_file):
     """
     Get or create BusinessPlan object
 
@@ -189,14 +190,13 @@ def get_or_create_bp(row, index_row, start_year, end_year):
         return None
 
     bp_data = {
-        "agency": agency,
         "year_start": start_year,
         "year_end": end_year,
         "status": BusinessPlan.Status.submitted,
+        "source_file": source_file,
     }
 
-    bp, _ = BusinessPlan.objects.update_or_create(
-        agency=agency,
+    bp, _ = agency.businessplan_set.update_or_create(
         year_start=start_year,
         year_end=end_year,
         defaults=bp_data,
@@ -205,7 +205,7 @@ def get_or_create_bp(row, index_row, start_year, end_year):
     return bp
 
 
-def create_business_plan(row, index_row, year_start, year_end):
+def create_business_plan(row, index_row, year_start, year_end, source_file):
     """
     Create BusinessPlan object
     @param row: row data
@@ -227,7 +227,7 @@ def create_business_plan(row, index_row, year_start, year_end):
         return None
 
     # get or create business plan
-    bp = get_or_create_bp(row, index_row, year_start, year_end)
+    bp = get_or_create_bp(row, index_row, year_start, year_end, source_file)
     if not bp:
         # business plan not created
         return None
@@ -340,6 +340,8 @@ def parse_file(file_path, file_name):
     @param file_name: file name
     """
 
+    delete_old_data(BusinessPlan, file_path)
+
     # get prerequisites data
     year_start, year_end = re.search(YEAR_REGEX, file_name).groups()
     year_start, year_end = int(year_start), int(year_end)
@@ -352,7 +354,7 @@ def parse_file(file_path, file_name):
     year_columns_dict = get_values_columns(df, year_start, year_end)
 
     for index_row, row in df.iterrows():
-        bp = create_business_plan(row, index_row, year_start, year_end)
+        bp = create_business_plan(row, index_row, year_start, year_end, file_path)
         if not bp:
             continue
         add_business_plan_values(bp, row, year_columns_dict)

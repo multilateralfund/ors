@@ -29,13 +29,18 @@ class BusinessPlan(models.Model):
     year_end = models.IntegerField(
         validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
     )
-    agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
+    agencies = models.ManyToManyField(Agency)
     status = models.CharField(
         max_length=32, choices=Status.choices, default=Status.draft
     )
+    source_file = models.CharField(max_length=248, null=True, blank=True)
+
+    @property
+    def agency_names(self):
+        return ", ".join(agency.name for agency in self.agencies.all())
 
     def __str__(self):
-        return f"{self.agency.name} {self.year_start}-{self.year_end}"
+        return f"{self.agency_names} {self.year_start}-{self.year_end}"
 
 
 class BPRecord(models.Model):
