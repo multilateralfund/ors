@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from core.models import AdmRecordArchive
 from core.models.adm import AdmChoice, AdmColumn, AdmRecord, AdmRow
 from core.models.country_programme import CPReport
 
@@ -67,7 +68,7 @@ class AdmColumnSerializer(serializers.ModelSerializer):
         return "adm"
 
 
-class AdmRecordSerializer(serializers.ModelSerializer):
+class AdmRecordBaseSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     column_id = serializers.PrimaryKeyRelatedField(
         required=False,
@@ -111,3 +112,13 @@ class AdmRecordSerializer(serializers.ModelSerializer):
             )
 
         return super().validate(attrs)
+
+
+class AdmRecordSerializer(AdmRecordBaseSerializer):
+    class Meta(AdmRecordBaseSerializer.Meta):
+        model = AdmRecord
+
+
+class AdmRecordArchiveSerializer(AdmRecordBaseSerializer):
+    class Meta(AdmRecordBaseSerializer.Meta):
+        model = AdmRecordArchive

@@ -44,9 +44,18 @@ class CPReportSerializer(CPReportBaseSerializer):
 
 
 class CPReportArchiveSerializer(CPReportBaseSerializer):
+    final_version_id = serializers.SerializerMethodField()
+
     class Meta(CPReportBaseSerializer.Meta):
         model = CPReportArchive
-        fields = CPReportBaseSerializer.Meta.fields + ["created_at"]
+        fields = CPReportBaseSerializer.Meta.fields + ["created_at", "final_version_id"]
+
+    def get_final_version_id(self, obj):
+        cp_report_final = CPReport.objects.filter(
+            country_id=obj.country_id,
+            year=obj.year,
+        ).first()
+        return cp_report_final.id if cp_report_final else None
 
 
 class CPReportGroupSerializer(serializers.Serializer):
@@ -70,6 +79,9 @@ class CPReportCreateSerializer(serializers.Serializer):
     country_id = serializers.PrimaryKeyRelatedField(
         queryset=Country.objects.all().values_list("id", flat=True),
     )
+    status = serializers.ChoiceField(
+        choices=CPReport.CPReportStatus.choices, required=False
+    )
     section_a = CPRecordSerializer(many=True, required=False)
     section_b = CPRecordSerializer(many=True, required=False)
     section_c = CPPricesSerializer(many=True, required=False)
@@ -86,6 +98,7 @@ class CPReportCreateSerializer(serializers.Serializer):
         fields = [
             "name",
             "year",
+            "status",
             "country_id",
             "section_a",
             "section_b",
@@ -179,6 +192,7 @@ class CPReportCreateSerializer(serializers.Serializer):
         cp_report_data = {
             "name": validated_data.get("name"),
             "year": validated_data.get("year"),
+            "status": validated_data.get("status", CPReport.CPReportStatus.DRAFT),
             "country_id": validated_data.get("country_id"),
         }
 

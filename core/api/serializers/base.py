@@ -60,10 +60,12 @@ class BaseCPWChemicalSerializer(BaseCPRowSerializer):
     chemical_name = serializers.SerializerMethodField()
     substance_id = serializers.PrimaryKeyRelatedField(
         required=False,
+        allow_null=True,
         queryset=Substance.objects.all().values_list("id", flat=True),
     )
     blend_id = serializers.PrimaryKeyRelatedField(
         required=False,
+        allow_null=True,
         queryset=Blend.objects.all().values_list("id", flat=True),
     )
     country_programme_report_id = serializers.PrimaryKeyRelatedField(

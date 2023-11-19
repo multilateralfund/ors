@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import pytest
 from django.urls import reverse
 
@@ -11,7 +13,10 @@ from core.api.tests.factories import (
     TimeFrameFactory,
     UsageFactory,
 )
+from core.models import AdmRecordArchive
 from core.models import Country
+from core.models import CPUsage
+from core.models import CPUsageArchive
 from core.models.adm import AdmRecord
 from core.models.country_programme import (
     CPEmission,
@@ -240,11 +245,13 @@ def setup_section_a_c(substance, blend, usage):
     section_a = [
         {
             "substance_id": substance.id,
+            "blend_id": None,
             "rowId": f"substance_{substance.id}",
             **cp_record_data,
         },
         {
             "substance_id": substance2.id,
+            "blend_id": None,
             "rowId": f"substance_{substance2.id}",
             **cp_record_data,
         },
@@ -252,12 +259,14 @@ def setup_section_a_c(substance, blend, usage):
     section_c = [
         {
             "substance_id": substance.id,
+            "blend_id": None,
             "rowId": f"substance_{substance.id}",
             "current_year_price": 25.5,
             "remarks": "Mama mea cand mi-a dat viata",
         },
         {
             "blend_id": blend.id,
+            "substance_id": None,
             "rowId": f"blend_{blend.id}",
             "previous_year_price": 12.4,
             "current_year_price": 25.5,
@@ -664,6 +673,95 @@ class TestCPReportUpdate(BaseTest):
             CPEmissionArchive.objects.filter(country_programme_report_id=ar.id).count()
             == 1
         )
+
+    def test_update_cp_report_old(
+        self,
+        user,
+        _setup_old_cp_report_create,
+        cp_report_2005,
+        substance,
+    ):
+        self.url = reverse("country-programme-reports") + f"{cp_report_2005.id}/"
+        self.client.force_authenticate(user=user)
+
+        data = _setup_old_cp_report_create
+        data["name"] = "Komorebi"
+
+        response = self.client.put(self.url, data, format="json")
+        assert response.status_code == 200
+        assert response.data["name"] == "Komorebi"
+        assert response.data["version"] == 2
+        assert CPReportArchive.objects.count() == 1
+
+        new_id = response.data["id"]
+        self.url = reverse("country-programme-reports") + f"{new_id}/"
+
+        # update again
+        data = _setup_old_cp_report_create
+        data["section_a"][0]["record_usages"][0]["quantity"] = 42.0
+        data["section_c"][0]["remarks"] = "Sunlight leaking through trees"
+        data["adm_b"][0]["value_text"] = "Lumina care se filtrează printre copaci"
+
+        response = self.client.put(self.url, data, format="json")
+        assert response.status_code == 200
+        assert response.data["version"] == 3
+        assert CPReportArchive.objects.count() == 2
+
+        new_cp = CPReport.objects.get(pk=response.data["id"])
+
+        # Check if the usage record has updated
+        cp_record = CPRecord.objects.get(
+            substance=substance,
+            country_programme_report=new_cp,
+        )
+        usage_record = CPUsage.objects.get(
+            usage__id=data["section_a"][0]["record_usages"][0]["usage_id"],
+            country_programme_record=cp_record,
+        )
+        assert usage_record.quantity == 42.0
+
+        # Check if the cp prices have updated
+        cp_price_record = CPPrices.objects.get(
+            substance=substance, country_programme_report=new_cp
+        )
+        assert cp_price_record.remarks == "Sunlight leaking through trees"
+
+        # Check if the adm record has updated
+        adm_record = AdmRecord.objects.get(
+            row=data["adm_b"][0]["row_id"],
+            column=data["adm_b"][0]["column_id"],
+            section="B",
+            country_programme_report=new_cp,
+        )
+        assert adm_record.value_text == "Lumina care se filtrează printre copaci"
+
+        old_cp = CPReportArchive.objects.get(version=2)
+
+        # Check if the usage record is archived
+        cp_record = CPRecordArchive.objects.get(
+            substance=substance,
+            country_programme_report=old_cp,
+        )
+        usage_record = CPUsageArchive.objects.get(
+            usage__id=data["section_a"][0]["record_usages"][0]["usage_id"],
+            country_programme_record=cp_record,
+        )
+        assert usage_record.quantity == Decimal("12.1")
+
+        # Check if the cp prices are archived
+        cp_price_record = CPPricesArchive.objects.get(
+            substance=substance, country_programme_report=old_cp
+        )
+        assert cp_price_record.remarks == "Mama mea cand mi-a dat viata"
+
+        # Check if the adm record is archived
+        adm_record = AdmRecordArchive.objects.get(
+            row=data["adm_b"][0]["row_id"],
+            column=data["adm_b"][0]["column_id"],
+            section="B",
+            country_programme_report=old_cp,
+        )
+        assert adm_record.value_text == "Am fost locu-ntai la scoala"
 
     def test_update_cp_report_invalid_country(
         self, user, _setup_new_cp_report_create, cp_report_2019

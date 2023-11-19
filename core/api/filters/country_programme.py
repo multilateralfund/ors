@@ -33,12 +33,21 @@ class CPReportArchiveFilter(CPReportFilter):
     country_programme_report_id = filters.NumberFilter(
         method="filter_by_country_programme_report_id"
     )
+    cp_report_archive_id = filters.NumberFilter(method="filter_by_cp_report_archive_id")
 
     def filter_by_country_programme_report_id(self, queryset, _, value):
         cp_report = CPReport.objects.filter(id=value).first()
         if not cp_report:
             return queryset.none()
         return queryset.filter(country_id=cp_report.country_id, year=cp_report.year)
+
+    def filter_by_cp_report_archive_id(self, queryset, _, value):
+        cp_report_archive = CPReportArchive.objects.filter(id=value).first()
+        if not cp_report_archive:
+            return queryset.none()
+        return queryset.filter(
+            country_id=cp_report_archive.country_id, year=cp_report_archive.year
+        )
 
     class Meta:
         model = CPReportArchive

@@ -16,6 +16,7 @@ from core.api.filters.country_programme import (
 )
 from core.api.serializers import CPReportGroupSerializer
 from core.api.serializers.cp_report import CPReportCreateSerializer, CPReportSerializer
+from core.models.adm import AdmRecordArchive
 from core.models.country_programme import CPReport
 from core.models.country_programme_archive import (
     CPEmissionArchive,
@@ -25,7 +26,6 @@ from core.models.country_programme_archive import (
     CPReportArchive,
     CPUsageArchive,
 )
-from core.utils import IMPORT_DB_MAX_YEAR
 
 # pylint: disable=R0901
 
@@ -224,17 +224,21 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
             )
         CPEmissionArchive.objects.bulk_create(cp_emission, batch_size=1000)
 
+        # archive adm records
+        adm_records = []
+        for adm_record in instance.adm_records.all():
+            adm_records.append(
+                self._get_archive_data(
+                    AdmRecordArchive,
+                    adm_record,
+                    {"country_programme_report_id": cp_report_ar.id},
+                )
+            )
+        AdmRecordArchive.objects.bulk_create(adm_records, batch_size=1000)
+
     @transaction.atomic
     def put(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if instance.year <= IMPORT_DB_MAX_YEAR:
-            return Response(
-                {
-                    "error": "Cannot update country programme report with year <="
-                    f" {IMPORT_DB_MAX_YEAR}"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        current_obj = self.get_object()
         serializer = CPReportCreateSerializer(data=request.data)
         if not serializer.is_valid():
             custom_errors = self.customize_errors(serializer.errors)
@@ -242,17 +246,22 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
         self.perform_create(serializer)
         # update version number
         new_instance = serializer.instance
+
+        # make sure that the final status can be set only once
+        if current_obj.status == CPReport.CPReportStatus.FINAL:
+            new_instance.status = CPReport.CPReportStatus.FINAL
+
         # increment version number if the status is FINAL
-        new_instance.version = instance.version + int(
-            instance.status == CPReport.CPReportStatus.FINAL
+        new_instance.version = current_obj.version + int(
+            new_instance.status == CPReport.CPReportStatus.FINAL
         )
-        new_instance.status = instance.status
+
         new_instance.save()
 
-        if instance.status == CPReport.CPReportStatus.FINAL:
-            self._archive_cp_report(instance)
+        if new_instance.status == CPReport.CPReportStatus.FINAL:
+            self._archive_cp_report(current_obj)
 
-        instance.delete()
+        current_obj.delete()
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)

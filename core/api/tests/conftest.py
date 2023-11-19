@@ -31,6 +31,7 @@ from core.api.tests.factories import (
     UsageFactory,
     UserFactory,
 )
+from core.models import CPReport
 
 
 @pytest.fixture
@@ -46,7 +47,10 @@ def country_ro():
 @pytest.fixture
 def cp_report_2005(country_ro):
     return CPReportFactory.create(
-        country=country_ro, year=2005, comment="Si daca e rau, tot e bine"
+        country=country_ro,
+        year=2005,
+        comment="Si daca e rau, tot e bine",
+        status=CPReport.CPReportStatus.FINAL,
     )
 
 
