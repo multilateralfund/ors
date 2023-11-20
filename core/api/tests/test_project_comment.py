@@ -1,7 +1,7 @@
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
-from core.api.tests.base import BaseTest
+from core.api.tests.base import BaseProjectUtilitiesCreate
 
 from core.models.project import ProjectComment
 
@@ -19,41 +19,19 @@ def create_project_comment(project, meeting):
     }
 
 
-class TestProjectCommentCreate(BaseTest):
+class TestProjectCommentCreate(BaseProjectUtilitiesCreate):
     url = reverse("projectcomment-list")
+    proj_utility_attr_name = "comments"
 
-    def test_without_login(self, _create_project_comment):
-        self.client.force_authenticate(user=None)
-
-        project_data = _create_project_comment
-        response = self.client.post(self.url, project_data, format="json")
-        assert response.status_code == 403
-
-    def test_project_comment_create(self, user, _create_project_comment, project):
-        self.client.force_authenticate(user=user)
-
-        project_data = _create_project_comment
-        response = self.client.post(self.url, project_data, format="json")
-        assert response.status_code == 201
-        assert (
-            response.data["secretariat_comment"] == project_data["secretariat_comment"]
-        )
-
-        assert project.comments.count() == 1
+    @pytest.fixture(autouse=True)
+    def setup(self, _create_project_comment):
+        self.__class__.new_utility_data = _create_project_comment
 
     def test_invalid_meeting(self, user, _create_project_comment, project):
         self.client.force_authenticate(user=user)
 
         project_data = _create_project_comment
         project_data["meeting_of_report_id"] = 999
-        response = self.client.post(self.url, project_data, format="json")
-        assert response.status_code == 400
-
-    def test_without_project(self, user, _create_project_comment, project):
-        self.client.force_authenticate(user=user)
-
-        project_data = _create_project_comment
-        project_data.pop("project_id")
         response = self.client.post(self.url, project_data, format="json")
         assert response.status_code == 400
 

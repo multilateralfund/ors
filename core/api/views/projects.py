@@ -20,6 +20,8 @@ from core.api.serializers.project import (
     ProjectCommentListSerializer,
     ProjectFundCreateSerializer,
     ProjectOdsOdpCreateSerializer,
+    ProjectRbmMeasureCreateSerializer,
+    SubmissionAmountCreateSerializer,
 )
 from core.api.serializers.project import (
     ProjectDetailsSerializer,
@@ -36,10 +38,12 @@ from core.models.project import (
     Project,
     ProjectCluster,
     ProjectOdsOdp,
+    ProjectRBMMeasure,
     ProjectSector,
     ProjectSubSector,
     ProjectType,
     ProjectFile,
+    SubmissionAmount,
 )
 from core.models.project import ProjectComment
 from core.models.project import ProjectStatus, ProjectFund
@@ -195,7 +199,7 @@ class ProjectOdsOdpViewSet(
     viewsets.GenericViewSet,
 ):
     """
-    API endpoint that allows project ods odp to be updated and deleted.
+    API endpoint that allows project ods odp CreateUpdateDdelete
     """
 
     queryset = ProjectOdsOdp.objects.select_related("ods_substance", "ods_blend").all()
@@ -209,7 +213,7 @@ class ProjectFundViewSet(
     viewsets.GenericViewSet,
 ):
     """
-    API endpoint that allows project fund to be updated and deleted.
+    API endpoint that allows project fund CreateUpdateDdelete
     """
 
     queryset = ProjectFund.objects.select_related("meeting").all()
@@ -223,8 +227,36 @@ class ProjectCommentViewSet(
     viewsets.GenericViewSet,
 ):
     """
-    API endpoint that allows comment to be updated and deleted.
+    API endpoint that allows comment CreateUpdateDdelete
     """
 
     queryset = ProjectComment.objects.select_related("meeting_of_report").all()
     serializer_class = ProjectCommentCreateSerializer
+
+
+class ProjectRbmMeasureViewSet(
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    API endpoint that allows project rbm measure CreateUpdateDdelete
+    """
+
+    queryset = ProjectRBMMeasure.objects.select_related("measure").all()
+    serializer_class = ProjectRbmMeasureCreateSerializer
+
+
+class ProjectSubmissionAmountViewSet(
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    API endpoint that allows project submission amount CreateUpdateDdelete
+    """
+
+    queryset = SubmissionAmount.objects.all()
+    serializer_class = SubmissionAmountCreateSerializer

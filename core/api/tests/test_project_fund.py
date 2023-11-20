@@ -1,7 +1,7 @@
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
-from core.api.tests.base import BaseTest
+from core.api.tests.base import BaseProjectUtilitiesCreate, BaseTest
 
 from core.models.project import ProjectFund
 
@@ -19,40 +19,19 @@ def create_project_fund(project, meeting):
     }
 
 
-class TestCreateProjectFund(BaseTest):
+class TestCreateProjectFund(BaseProjectUtilitiesCreate):
     url = reverse("projectfund-list")
+    proj_utility_attr_name = "funds"
 
-    def test_without_login(self, _create_project_fund):
-        self.client.force_authenticate(user=None)
-
-        project_data = _create_project_fund
-        response = self.client.post(self.url, project_data, format="json")
-        assert response.status_code == 403
-
-    def test_project_fund_create(self, user, _create_project_fund, project, meeting):
-        self.client.force_authenticate(user=user)
-
-        project_data = _create_project_fund
-        response = self.client.post(self.url, project_data, format="json")
-        assert response.status_code == 201
-        assert response.data["amount"] == project_data["amount"]
-        assert response.data["meeting"] == meeting.number
-
-        assert project.funds.count() == 1
+    @pytest.fixture(autouse=True)
+    def setup(self, _create_project_fund):
+        self.__class__.new_utility_data = _create_project_fund
 
     def test_invalid_meeting(self, user, _create_project_fund, project):
         self.client.force_authenticate(user=user)
 
         project_data = _create_project_fund
         project_data["meeting_id"] = 999
-        response = self.client.post(self.url, project_data, format="json")
-        assert response.status_code == 400
-
-    def test_without_project(self, user, _create_project_fund, project):
-        self.client.force_authenticate(user=user)
-
-        project_data = _create_project_fund
-        project_data.pop("project_id")
         response = self.client.post(self.url, project_data, format="json")
         assert response.status_code == 400
 
