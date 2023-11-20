@@ -16,17 +16,20 @@ from core.api.filters.project import ProjectFilter
 from core.api.serializers.meeting import MeetingSerializer
 from core.api.serializers.project import (
     ProjectClusterSerializer,
-    ProjectCommentSerializer,
+    ProjectCommentCreateSerializer,
+    ProjectCommentListSerializer,
+    ProjectFundCreateSerializer,
+    ProjectOdsOdpCreateSerializer,
 )
 from core.api.serializers.project import (
     ProjectDetailsSerializer,
     ProjectListSerializer,
-    ProjectOdsOdpSerializer,
+    ProjectOdsOdpListSerializer,
     ProjectSectorSerializer,
     ProjectStatusSerializer,
     ProjectSubSectorSerializer,
     ProjectTypeSerializer,
-    ProjectFundSerializer,
+    ProjectFundListSerializer,
 )
 from core.models.meeting import Meeting
 from core.models.project import (
@@ -186,6 +189,7 @@ class ProjectFileView(APIView):
 
 
 class ProjectOdsOdpViewSet(
+    mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
@@ -194,11 +198,12 @@ class ProjectOdsOdpViewSet(
     API endpoint that allows project ods odp to be updated and deleted.
     """
 
-    queryset = ProjectOdsOdp.objects.all()
-    serializer_class = ProjectOdsOdpSerializer
+    queryset = ProjectOdsOdp.objects.select_related("ods_substance", "ods_blend").all()
+    serializer_class = ProjectOdsOdpCreateSerializer
 
 
 class ProjectFundViewSet(
+    mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
@@ -207,11 +212,12 @@ class ProjectFundViewSet(
     API endpoint that allows project fund to be updated and deleted.
     """
 
-    queryset = ProjectFund.objects.all()
-    serializer_class = ProjectFundSerializer
+    queryset = ProjectFund.objects.select_related("meeting").all()
+    serializer_class = ProjectFundCreateSerializer
 
 
 class ProjectCommentViewSet(
+    mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
@@ -220,5 +226,5 @@ class ProjectCommentViewSet(
     API endpoint that allows comment to be updated and deleted.
     """
 
-    queryset = ProjectComment.objects.all()
-    serializer_class = ProjectCommentSerializer
+    queryset = ProjectComment.objects.select_related("meeting_of_report").all()
+    serializer_class = ProjectCommentCreateSerializer

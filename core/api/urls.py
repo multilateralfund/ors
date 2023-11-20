@@ -36,6 +36,7 @@ from core.api.views.projects import (
     ProjectSubSectorListView,
     ProjectTypeListView,
 )
+from core.api.views.rbm_measures import RBMMeasureListView
 from core.api.views.settings import SettingsView
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView
@@ -185,6 +186,11 @@ urlpatterns = [
         "project-clusters/",
         ProjectClusterListView.as_view(),
         name="project-cluster-list",
+    ),
+    path(
+        "rbm-measures/",
+        RBMMeasureListView.as_view(),
+        name="rbm-measure-list",
     ),
     re_path(
         "^project-files/(?P<pk>[^/]+)/$",

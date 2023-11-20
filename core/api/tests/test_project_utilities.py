@@ -3,10 +3,12 @@ from django.urls import reverse
 from core.api.tests.base import BaseTest
 
 from core.api.tests.factories import (
+    MeetingFactory,
     ProjectFactory,
     ProjectSectorFactory,
     ProjectSubSectorFactory,
     ProjectTypeFactory,
+    RbmMeasureFactory,
 )
 
 
@@ -121,19 +123,22 @@ def setup_project_meeting(country_ro, agency, project_type, project_status, subs
         "subsector": subsector,
         "substance_type": "HCFC",
     }
-    for i in range(1, 3):
-        ProjectFactory.create(
-            title=f"Smecherie{i}",
-            description="E talent si e vrajeala ce nu se-nvata la scoala",
-            approval_meeting_no=i,
-            **project_data,
-        )
+
+    meeting = MeetingFactory.create(number=3)
     ProjectFactory.create(
         title="Valoare",
         description="Hai sa vedem, sa vedem, sa vedem/ cine-i as in smecherie / ma cunoasteti dintr-o mie",
-        approval_meeting_no=3,
+        approval_meeting=meeting,
         **project_data,
     )
+    for i in range(1, 3):
+        meeting = MeetingFactory.create(number=i)
+        ProjectFactory.create(
+            title=f"Smecherie{i}",
+            description="E talent si e vrajeala ce nu se-nvata la scoala",
+            approval_meeting=meeting,
+            **project_data,
+        )
 
 
 class TestProjectMeeting(BaseTest):
@@ -145,4 +150,42 @@ class TestProjectMeeting(BaseTest):
         response = self.client.get(self.url)
         assert response.status_code == 200
         assert len(response.data) == 3
-        assert response.data == [1, 2, 3]
+        assert response.data[1]["number"] == 2
+
+
+class TestProjectCluster(BaseTest):
+    url = reverse("project-cluster-list")
+
+    def test_project_cluster_list_user(
+        self, admin_user, project_cluster_kpp, project_cluster_kip
+    ):
+        self.client.force_authenticate(user=admin_user)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 2
+        assert response.data[1]["name"] == project_cluster_kip.name
+        assert response.data[1]["code"] == project_cluster_kip.code
+
+
+@pytest.fixture(name="_setup_rbm_measures")
+def setup_rbm_measures():
+    last_measure = RbmMeasureFactory.create(name="RBM Measure 0", sort_order=5)
+    for i in range(1, 3):
+        RbmMeasureFactory.create(name=f"RBM Measure {i}", sort_order=i)
+
+    return last_measure
+
+
+class TestRbmMeasures(BaseTest):
+    url = reverse("rbm-measure-list")
+
+    def test_rbm_measures_list_user(self, admin_user, _setup_rbm_measures):
+        self.client.force_authenticate(user=admin_user)
+
+        last_measure = _setup_rbm_measures
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 3
+        assert response.data[2]["name"] == last_measure.name

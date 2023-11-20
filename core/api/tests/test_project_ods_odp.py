@@ -1,12 +1,89 @@
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
+from core.api.tests.base import BaseTest
 
 from core.api.tests.factories import SubstanceFactory
 
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008,W0221,R0913
+
+
+@pytest.fixture(name="_project_ods_odp_create")
+def project_ods_odp_create(project, substance, blend):
+    subst_ods_odp = {
+        "project_id": project.id,
+        "ods_substance_id": substance.id,
+        "odp": 0.02,
+        "ods_replacement": "N-are cine sa-mi ia locu",
+    }
+    blend_ods_odp = {
+        "project_id": project.id,
+        "ods_blend_id": blend.id,
+        "odp": 0.02,
+        "ods_replacement": "Ca ma iubeste norocu",
+    }
+    return subst_ods_odp, blend_ods_odp
+
+
+class TestOdsOdpCreate(BaseTest):
+    url = reverse("projectodsodp-list")
+
+    def test_without_login(self, _project_ods_odp_create):
+        self.client.force_authenticate(user=None)
+
+        subst_ods_odp, _ = _project_ods_odp_create
+        response = self.client.post(self.url, subst_ods_odp, format="json")
+        assert response.status_code == 403
+
+    def test_create_ods_odp(self, user, _project_ods_odp_create, project):
+        self.client.force_authenticate(user=user)
+
+        subst_ods_odp, blend_ods_odp = _project_ods_odp_create
+
+        # create ods substance
+        response = self.client.post(self.url, subst_ods_odp, format="json")
+        assert response.status_code == 201
+        assert response.data["ods_substance_id"] == subst_ods_odp["ods_substance_id"]
+        assert response.data["odp"] == subst_ods_odp["odp"]
+        assert response.data["ods_replacement"] == subst_ods_odp["ods_replacement"]
+
+        # create ods blend
+        response = self.client.post(self.url, blend_ods_odp, format="json")
+        assert response.status_code == 201
+        assert response.data["ods_blend_id"] == blend_ods_odp["ods_blend_id"]
+        assert response.data["odp"] == blend_ods_odp["odp"]
+        assert response.data["ods_replacement"] == blend_ods_odp["ods_replacement"]
+
+        assert project.ods_odp.count() == 2
+
+    def test_invalid_substance(self, user, _project_ods_odp_create):
+        self.client.force_authenticate(user=user)
+
+        subst_ods_odp, _ = _project_ods_odp_create
+        subst_ods_odp["ods_substance_id"] = 999
+
+        response = self.client.post(self.url, subst_ods_odp, format="json")
+        assert response.status_code == 400
+
+    def test_without_project(self, user, _project_ods_odp_create):
+        self.client.force_authenticate(user=user)
+
+        subst_ods_odp, _ = _project_ods_odp_create
+        subst_ods_odp.pop("project_id")
+
+        response = self.client.post(self.url, subst_ods_odp, format="json")
+        assert response.status_code == 400
+
+    def test_subst_and_blend(self, user, _project_ods_odp_create, blend):
+        self.client.force_authenticate(user=user)
+
+        subst_ods_odp, _ = _project_ods_odp_create
+        subst_ods_odp["ods_blend_id"] = blend.id
+
+        response = self.client.post(self.url, subst_ods_odp, format="json")
+        assert response.status_code == 400
 
 
 @pytest.fixture(name="ods_subst_url")

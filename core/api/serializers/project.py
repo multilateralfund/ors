@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework.fields import empty
 
 from core.api.serializers.agency import AgencySerializer
+from core.api.serializers.base import BaseProjectUtilityCreateSerializer
 from core.models.agency import Agency
 from core.models.blend import Blend
 from core.models.country import Country
@@ -88,33 +89,49 @@ class ProjectTypeSerializer(serializers.ModelSerializer):
         ]
 
 
-class ProjectFundSerializer(serializers.ModelSerializer):
+class ProjectFundListSerializer(serializers.ModelSerializer):
     """
     ProjectFundSerializer class
     """
 
+    meeting_id = serializers.PrimaryKeyRelatedField(
+        required=False, queryset=Meeting.objects.all().values_list("id", flat=True)
+    )
     meeting = serializers.SlugRelatedField("number", read_only=True)
 
     class Meta:
         model = ProjectFund
         fields = [
             "id",
-            "project_id",
             "amount",
             "support_psc",
+            "project_id",
             "meeting",
+            "meeting_id",
             "interest",
             "date",
             "fund_type",
             "sort_order",
         ]
-        read_only_fields = ["id"]
+        read_only_fields = ["id", "project_id"]
 
 
-class ProjectCommentSerializer(serializers.ModelSerializer):
+class ProjectFundCreateSerializer(
+    ProjectFundListSerializer, BaseProjectUtilityCreateSerializer
+):
+    class Meta(ProjectFundListSerializer.Meta):
+        fields = ProjectFundListSerializer.Meta.fields
+
+
+class ProjectCommentListSerializer(serializers.ModelSerializer):
     """
     ProjectCommentSerializer class
     """
+
+    meeting_of_report = serializers.SlugRelatedField("number", read_only=True)
+    meeting_of_report_id = serializers.PrimaryKeyRelatedField(
+        required=False, queryset=Meeting.objects.all().values_list("id", flat=True)
+    )
 
     class Meta:
         model = ProjectComment
@@ -122,12 +139,21 @@ class ProjectCommentSerializer(serializers.ModelSerializer):
             "id",
             "project_id",
             "meeting_of_report",
+            "meeting_of_report_id",
             "secretariat_comment",
             "agency_response",
         ]
+        read_only_fields = ["id", "project_id"]
 
 
-class ProjectOdsOdpSerializer(serializers.ModelSerializer):
+class ProjectCommentCreateSerializer(
+    BaseProjectUtilityCreateSerializer, ProjectCommentListSerializer
+):
+    class Meta(ProjectCommentListSerializer.Meta):
+        fields = ProjectCommentListSerializer.Meta.fields
+
+
+class ProjectOdsOdpListSerializer(serializers.ModelSerializer):
     """
     ProjectOdsOdpSerializer class
     """
@@ -140,7 +166,6 @@ class ProjectOdsOdpSerializer(serializers.ModelSerializer):
     ods_blend_id = serializers.PrimaryKeyRelatedField(
         required=False, queryset=Blend.objects.all().values_list("id", flat=True)
     )
-    project_id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = ProjectOdsOdp
@@ -156,7 +181,7 @@ class ProjectOdsOdpSerializer(serializers.ModelSerializer):
             "ods_blend_id",
             "sort_order",
         ]
-        read_only_fields = ["id"]
+        read_only_fields = ["id", "project_id"]
 
     def get_ods_display_name(self, obj):
         if obj.ods_display_name:
@@ -194,14 +219,17 @@ class ProjectOdsOdpSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
 
-class SubmissionAmountSerializer(serializers.ModelSerializer):
+class ProjectOdsOdpCreateSerializer(
+    ProjectOdsOdpListSerializer, BaseProjectUtilityCreateSerializer
+):
+    class Meta(ProjectOdsOdpListSerializer.Meta):
+        fields = ProjectOdsOdpListSerializer.Meta.fields
+
+
+class SubmissionAmountListSerializer(serializers.ModelSerializer):
     """
     SubmissionAmountSerializer class
     """
-
-    project_id = serializers.PrimaryKeyRelatedField(
-        required=True, queryset=Project.objects.all().values_list("id", flat=True)
-    )
 
     class Meta:
         model = SubmissionAmount
@@ -213,20 +241,28 @@ class SubmissionAmountSerializer(serializers.ModelSerializer):
             "cost_effectiveness",
             "status",
         ]
+        read_only_fields = ["id", "project_id"]
 
 
-class ProjectRbmMeasureSerializer(serializers.ModelSerializer):
+class SubmissionAmountCreateSerializer(
+    SubmissionAmountListSerializer, BaseProjectUtilityCreateSerializer
+):
+    class Meta(SubmissionAmountListSerializer.Meta):
+        fields = SubmissionAmountListSerializer.Meta.fields
+
+
+class ProjectRbmMeasureListSerializer(serializers.ModelSerializer):
     """
     ProjectRbmMeasureSerializer class
     """
 
     project_id = serializers.PrimaryKeyRelatedField(
-        required=True, queryset=Project.objects.all().values_list("id", flat=True)
+        required=False, queryset=Project.objects.all().values_list("id", flat=True)
     )
     measure_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=RBMMeasure.objects.all().values_list("id", flat=True)
     )
-    measure_name = serializers.SlugRelatedField("name", read_only=True)
+    measure_name = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectRBMMeasure
@@ -236,8 +272,17 @@ class ProjectRbmMeasureSerializer(serializers.ModelSerializer):
             "measure_name",
             "measure_id",
             "value",
-            "sort_order",
         ]
+
+    def get_measure_name(self, obj):
+        return obj.measure.name
+
+
+class ProjectRbmMeasureCreateSerializer(
+    ProjectRbmMeasureListSerializer, BaseProjectUtilityCreateSerializer
+):
+    class Meta(ProjectRbmMeasureListSerializer.Meta):
+        fields = ProjectRbmMeasureListSerializer.Meta.fields
 
 
 class ProjectClusterSerializer(serializers.ModelSerializer):
@@ -400,9 +445,11 @@ class ProjectDetailsSerializer(ProjectListSerializer):
     ProjectSerializer class
     """
 
-    ods_odp = ProjectOdsOdpSerializer(many=True)
-    funds = ProjectFundSerializer(many=True)
-    comments = ProjectCommentSerializer(many=True)
+    ods_odp = ProjectOdsOdpListSerializer(many=True)
+    funds = ProjectFundListSerializer(many=True)
+    comments = ProjectCommentListSerializer(many=True)
+    submission_amounts = SubmissionAmountListSerializer(many=True, required=False)
+    rbm_measures = ProjectRbmMeasureListSerializer(many=True, required=False)
     agency_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Agency.objects.all().values_list("id", flat=True)
     )
@@ -426,14 +473,12 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         required=True, queryset=Meeting.objects.all().values_list("id", flat=True)
     )
     meeting_transf_id = serializers.PrimaryKeyRelatedField(
-        required=True, queryset=Meeting.objects.all().values_list("id", flat=True)
+        required=False, queryset=Meeting.objects.all().values_list("id", flat=True)
     )
     cluster_id = serializers.PrimaryKeyRelatedField(
         required=False,
         queryset=ProjectCluster.objects.all().values_list("id", flat=True),
     )
-    submission_amounts = SubmissionAmountSerializer(many=True)
-    rbm_measures = ProjectRbmMeasureSerializer(many=True)
 
     class Meta:
         model = Project

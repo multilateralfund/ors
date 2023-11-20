@@ -387,6 +387,7 @@ def setup_project_create(
 
     # create coop agencies
     coop_agencies = [AgencyFactory.create().id for i in range(2)]
+    new_meeting = MeetingFactory.create(number=2, date="2020-03-14")
 
     return {
         "title": "Project",
@@ -428,7 +429,7 @@ def setup_project_create(
                 "fund_type": "transferred",
             },
         ],
-        "rbm_measurs": [
+        "rbm_measures": [
             {
                 "measure_id": rbm_measure.id,
                 "value": 10,
@@ -440,12 +441,12 @@ def setup_project_create(
         ],
         "comments": [
             {
-                "meeting_of_report": 1,
+                "meeting_of_report_id": meeting.id,
                 "secretariat_comment": "Well watch out. It's a sickly air that fills the place.",
                 "agency_response": "Perhaps dreams aren't such great things after all...",
             },
             {
-                "meeting_of_report": 2,
+                "meeting_of_report": new_meeting.id,
                 "secretariat_comment": "Don't look so glum, coz.",
                 "agency_response": "Uncle Alexander said he won't be back again.",
             },
@@ -472,7 +473,8 @@ class TestCreateProjects(BaseTest):
         blend,
         project_type,
         subsector,
-        measure,
+        rbm_measure,
+        meeting,
         _setup_project_create,
     ):
         data = _setup_project_create
@@ -511,12 +513,11 @@ class TestCreateProjects(BaseTest):
         rbm_measures = response.data["rbm_measures"]
         assert len(rbm_measures) == 2
         assert rbm_measures[0]["value"] == 10
-        assert rbm_measures[0]["measure_name"] == measure.name
+        assert rbm_measures[0]["measure_name"] == rbm_measure.name
 
         comments = response.data["comments"]
         assert len(comments) == 2
-        assert comments[0]["meeting_of_report"] == "1"
-        assert comments[1]["meeting_of_report"] == "2"
+        assert comments[0]["meeting_of_report"] == meeting.number
 
     def test_create_project_project_fk(self, user, _setup_project_create):
         data = _setup_project_create
@@ -562,8 +563,7 @@ class TestCreateProjects(BaseTest):
         data["submission_category"] = "invalid"
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
-        assert "submission" in response.data
-        assert "category" in response.data["submission"]
+        assert "submission_category" in response.data
 
         # check project count
         assert Project.objects.count() == 0
@@ -573,6 +573,17 @@ class TestCreateProjects(BaseTest):
         self.client.force_authenticate(user=user)
 
         data["rbm_measures"][0]["measure_id"] = 999
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 400
+
+        # check project count
+        assert Project.objects.count() == 0
+
+    def test_create_project_comments(self, user, _setup_project_create):
+        data = _setup_project_create
+        self.client.force_authenticate(user=user)
+
+        data["comments"][0]["meeting_of_report_id"] = 999
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
 

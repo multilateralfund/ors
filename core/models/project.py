@@ -177,6 +177,7 @@ class Project(models.Model):
         Meeting,
         on_delete=models.CASCADE,
         null=True,
+        blank=True,
         related_name="transferred_projects",
     )
     decision = models.ForeignKey(Decision, on_delete=models.CASCADE, null=True)
@@ -466,7 +467,9 @@ class ProjectComment(models.Model):
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, related_name="comments"
     )
-    meeting_of_report = models.CharField(max_length=255, null=True, blank=True)
+    meeting_of_report = models.ForeignKey(
+        Meeting, on_delete=models.CASCADE, null=True, blank=True
+    )
     secretariat_comment = models.TextField(
         null=True, blank=True, verbose_name="Secretariat's Comment"
     )

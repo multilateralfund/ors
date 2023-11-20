@@ -1,11 +1,60 @@
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
+from core.api.tests.base import BaseTest
 
 from core.models.project import ProjectFund
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008,W0221,R0913
+
+
+@pytest.fixture(name="_create_project_fund")
+def create_project_fund(project, meeting):
+    return {
+        "project_id": project.id,
+        "fund_type": ProjectFund.FundType.ALLOCATED,
+        "amount": 42,
+        "meeting_id": meeting.id,
+    }
+
+
+class TestCreateProjectFund(BaseTest):
+    url = reverse("projectfund-list")
+
+    def test_without_login(self, _create_project_fund):
+        self.client.force_authenticate(user=None)
+
+        project_data = _create_project_fund
+        response = self.client.post(self.url, project_data, format="json")
+        assert response.status_code == 403
+
+    def test_project_fund_create(self, user, _create_project_fund, project, meeting):
+        self.client.force_authenticate(user=user)
+
+        project_data = _create_project_fund
+        response = self.client.post(self.url, project_data, format="json")
+        assert response.status_code == 201
+        assert response.data["amount"] == project_data["amount"]
+        assert response.data["meeting"] == meeting.number
+
+        assert project.funds.count() == 1
+
+    def test_invalid_meeting(self, user, _create_project_fund, project):
+        self.client.force_authenticate(user=user)
+
+        project_data = _create_project_fund
+        project_data["meeting_id"] = 999
+        response = self.client.post(self.url, project_data, format="json")
+        assert response.status_code == 400
+
+    def test_without_project(self, user, _create_project_fund, project):
+        self.client.force_authenticate(user=user)
+
+        project_data = _create_project_fund
+        project_data.pop("project_id")
+        response = self.client.post(self.url, project_data, format="json")
+        assert response.status_code == 400
 
 
 @pytest.fixture(name="project_fund")
