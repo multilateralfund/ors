@@ -28,7 +28,6 @@ class BusinessPlanViewSet(viewsets.ReadOnlyModelViewSet):
 class BPRecordViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = BPRecordSerializer
     queryset = BPRecord.objects.prefetch_related(
-        "business_plan",
         "country",
         "sector",
         "subsector",

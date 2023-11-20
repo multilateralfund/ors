@@ -36,7 +36,7 @@ class BPRecordAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["bprecordvalue"]
+        exclude = ["values"]
         return get_final_display_list(BPRecord, exclude)
 
 

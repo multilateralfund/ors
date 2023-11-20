@@ -30,14 +30,7 @@ class BPRecordValueSerializer(serializers.ModelSerializer):
 
 
 class BPRecordSerializer(serializers.ModelSerializer):
-    business_plan_id = serializers.PrimaryKeyRelatedField(
-        required=True,
-        queryset=BusinessPlan.objects.all().values_list("id", flat=True),
-    )
-    country_id = serializers.PrimaryKeyRelatedField(
-        required=True,
-        queryset=Country.objects.all().values_list("id", flat=True),
-    )
+    country = serializers.SlugRelatedField("name", read_only=True)
     lvc_status = serializers.ChoiceField(choices=BPRecord.LVCStatus.choices)
     project_type = serializers.StringRelatedField()
     bp_type = serializers.ChoiceField(choices=BPRecord.BPType.choices)
@@ -46,12 +39,8 @@ class BPRecordSerializer(serializers.ModelSerializer):
     substances = SubstanceSerializer(many=True)
     blends = BlendSerializer(many=True)
 
-    sector_id = serializers.PrimaryKeyRelatedField(
-        queryset=ProjectSector.objects.values_list("id", flat=True)
-    )
-    subsector_id = serializers.PrimaryKeyRelatedField(
-        queryset=ProjectSubSector.objects.values_list("id", flat=True)
-    )
+    sector = serializers.SlugRelatedField("name", read_only=True)
+    subsector = serializers.SlugRelatedField("name", read_only=True)
     values = BPRecordValueSerializer(many=True)
 
     class Meta:
@@ -61,15 +50,15 @@ class BPRecordSerializer(serializers.ModelSerializer):
             "business_plan_id",
             "title",
             "required_by_model",
-            "country_id",
+            "country",
             "lvc_status",
             "project_type",
             "bp_chemical_type",
             "substances",
             "blends",
             "amount_polyol",
-            "sector_id",
-            "subsector_id",
+            "sector",
+            "subsector",
             "sector_subsector",
             "bp_type",
             "is_multi_year",

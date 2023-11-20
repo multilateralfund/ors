@@ -40,7 +40,7 @@ class BusinessPlan(models.Model):
         return ", ".join(agency.name for agency in self.agencies.all())
 
     def __str__(self):
-        return f"{self.agency_names} {self.year_start}-{self.year_end}"
+        return f"({self.id}) {self.year_start}-{self.year_end}"
 
 
 class BPRecord(models.Model):
