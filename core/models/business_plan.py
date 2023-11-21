@@ -73,7 +73,7 @@ class BPRecord(models.Model):
     sector_subsector = models.CharField(max_length=255, null=True, blank=True)
     bp_type = models.CharField(max_length=16, choices=BPType.choices)
     is_multi_year = models.BooleanField(default=False)
-    reason_for_exceding = models.TextField(null=True, blank=True)
+    reason_for_exceeding = models.TextField(null=True, blank=True)
     remarks = models.TextField(null=True, blank=True)
     remarks_additional = models.TextField(null=True, blank=True)
 
