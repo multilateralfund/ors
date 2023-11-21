@@ -1,18 +1,11 @@
-import type {
-  CommonSlice,
-  InitialStoreState,
-  StoreState,
-} from '@ors/types/store'
-
-import { StoreApi } from 'zustand'
+import type { CommonSlice } from '@ors/types/store'
 
 import { defaultSliceData } from '@ors/helpers/Store/Store'
+import { CreateSliceProps } from '@ors/store'
 
-export const createCommonSlice = (
-  set: StoreApi<StoreState>['setState'],
-  get: StoreApi<StoreState>['getState'],
-  initialState?: InitialStoreState,
-): CommonSlice => {
+export const createCommonSlice = ({
+  initialState,
+}: CreateSliceProps): CommonSlice => {
   return {
     agencies: {
       ...defaultSliceData,

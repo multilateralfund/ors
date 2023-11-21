@@ -1,9 +1,14 @@
-import type { InitialStoreState, StoreState, UserSlice } from '@ors/types/store'
+import type { UserSlice } from '@ors/types/store'
 
 import Cookies from 'js-cookie'
-import { StoreApi } from 'zustand'
 
 import api from '@ors/helpers/Api/Api'
+import {
+  fetchSliceData,
+  getInitialSliceData,
+  setSlice,
+} from '@ors/helpers/Store/Store'
+import { CreateSliceProps } from '@ors/store'
 
 function removeCookies() {
   Cookies.remove('csrftoken')
@@ -11,51 +16,60 @@ function removeCookies() {
   Cookies.remove('orsrefresh')
 }
 
-export const createUserSlice = (
-  set: StoreApi<StoreState>['setState'],
-  get: StoreApi<StoreState>['getState'],
-  initialState?: InitialStoreState,
-): UserSlice => ({
-  data: null,
+export const createUserSlice = ({
+  initialState,
+}: CreateSliceProps): UserSlice => ({
+  ...getInitialSliceData(),
   // Get user
   getUser: async () => {
-    try {
-      const user = await api('api/auth/user/')
-      get().user.setUser?.(user)
-    } catch (error) {
-      get().user.setUser?.(null)
-    }
+    fetchSliceData({ path: 'api/auth/user/' }, 'user')
   },
   // Login
   login: async (username, password) => {
+    setSlice('user', { loaded: false, loading: true })
     try {
       const login = await api('api/auth/login/', {
         data: { password, username },
         method: 'post',
       })
-      get().user.setUser?.(login.user)
+      setSlice('user', {
+        data: login.user,
+        error: null,
+        loaded: true,
+        loading: false,
+      })
     } catch (error) {
-      get().user.setUser?.(null)
-      throw error
+      setSlice('user', {
+        data: null,
+        error: await error.json(),
+        loaded: true,
+        loading: false,
+      })
     }
   },
   // Logout
   logout: async () => {
+    setSlice('user', { loaded: false, loading: true })
     try {
       await api('api/auth/logout/', {
         method: 'post',
       })
       removeCookies()
-      get().user.setUser?.(null)
+      setSlice('user', {
+        data: null,
+        error: null,
+        loaded: false,
+        loading: false,
+      })
     } catch (error) {
       removeCookies()
-      get().user.setUser?.(null)
-      throw error
+      setSlice('user', {
+        data: null,
+        error,
+        loaded: false,
+        loading: false,
+      })
     }
-  },
-  // Set user
-  setUser: (data) => {
-    set((state) => ({ user: { ...state.user, data } }))
   },
   ...(initialState?.user || {}),
 })

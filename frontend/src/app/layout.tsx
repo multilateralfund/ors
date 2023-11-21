@@ -1,15 +1,11 @@
 /* eslint-disable @next/next/no-before-interactive-script-outside-document */
 /* eslint-disable @next/next/no-css-tags */
-import type {
-  CPReportsSlice,
-  CommonSlice,
-  ProjectsSlice,
-} from '@ors/types/store'
 import type { Metadata } from 'next'
 
 import React from 'react'
 
 import { dir } from 'i18next'
+import { includes } from 'lodash'
 import { Roboto } from 'next/font/google'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { cookies as nextCookies, headers as nextHeaders } from 'next/headers'
@@ -17,10 +13,10 @@ import Script from 'next/script'
 
 import View from '@ors/components/theme/Views/View'
 // import config from '@ors/config/base'
-import api from '@ors/helpers/Api'
+import api from '@ors/helpers/Api/Api'
 import { getInitialSliceData } from '@ors/helpers/Store/Store'
 import { getCurrentView } from '@ors/helpers/View/View'
-import { Provider as StoreProvider } from '@ors/store'
+import { StoreProvider } from '@ors/store'
 import ThemeProvider from '@ors/themes/ThemeProvider'
 
 import '@ors/themes/styles/global.css'
@@ -38,50 +34,6 @@ export const metadata: Metadata = {
   title: 'ORS',
 }
 
-async function getInitialProjectsData(): Promise<ProjectsSlice> {
-  const statuses = api('api/project-statuses/', {}, false)
-  const sectors = api('api/project-sectors/', {}, false)
-  const subsectors = api('api/project-subsectors/', {}, false)
-  const types = api('api/project-types/', {}, false)
-  const meetings = api('api/project-meetings/', {}, false)
-
-  return {
-    meetings: getInitialSliceData(await meetings),
-    sectors: getInitialSliceData(await sectors),
-    statuses: getInitialSliceData(await statuses),
-    subsectors: getInitialSliceData(await subsectors),
-    types: getInitialSliceData(await types),
-  }
-}
-
-async function getInitialCPReportsData(): Promise<CPReportsSlice> {
-  const blends = api('api/blends/', { params: { with_usages: true } }, false)
-  const substances = api(
-    'api/substances/',
-    { params: { with_usages: true } },
-    false,
-  )
-  const usages = api('api/usages/', {}, false)
-
-  return {
-    blends: getInitialSliceData(await blends),
-    substances: getInitialSliceData(await substances),
-    usages: getInitialSliceData(await usages),
-  }
-}
-
-async function getInitialCommonData(): Promise<CommonSlice> {
-  const agencies = api('api/agencies/', {}, false)
-  const countries = api('api/countries/', {}, false)
-  const settings = api('api/settings/', {}, false)
-
-  return {
-    agencies: getInitialSliceData(await agencies),
-    countries: getInitialSliceData(await countries),
-    settings: getInitialSliceData(await settings),
-  }
-}
-
 export default async function RootLayout({
   children,
 }: {
@@ -89,7 +41,7 @@ export default async function RootLayout({
 }) {
   // const cookies = nextCookies()
   const headers = nextHeaders()
-  let user
+  let user, internalError
   let cp_reports, projects, common
   const pathname = headers.get('x-next-pathname')
   // const lang = (headers.get('x-next-lang') ||
@@ -99,14 +51,68 @@ export default async function RootLayout({
   const theme = { value: 'light' }
   const currentView = getCurrentView(pathname || '')
 
-  if (pathname !== '/econnrefused') {
-    user = await api('api/auth/user/', {}, false)
+  try {
+    user = await api('api/auth/user/', {})
+  } catch (error) {
+    if (
+      error &&
+      includes(
+        [undefined, 'TypeError', 'ECONNREFUSED'],
+        error.status || error.name,
+      )
+    ) {
+      internalError = {
+        _info: error,
+        status: 'ECONNREFUSED',
+      }
+    }
   }
 
   if (user) {
-    projects = await getInitialProjectsData()
-    cp_reports = await getInitialCPReportsData()
-    common = await getInitialCommonData()
+    const [
+      // Common data
+      settings,
+      agencies,
+      countries,
+      // Projects data
+      statuses,
+      sectors,
+      subsectors,
+      types,
+      meetings,
+      // Country programme data
+      blends,
+      substances,
+    ] = await Promise.all([
+      api('api/settings/', {}, false),
+      api('api/agencies/', {}, false),
+      api('api/countries/', {}, false),
+      api('api/project-statuses/', {}, false),
+      api('api/project-sectors/', {}, false),
+      api('api/project-subsectors/', {}, false),
+      api('api/project-types/', {}, false),
+      api('api/project-meetings/', {}, false),
+      api('api/blends/', { params: { with_usages: true } }, false),
+      api('api/substances/', { params: { with_usages: true } }, false),
+      api('api/usages/', {}, false),
+    ])
+
+    common = {
+      agencies: getInitialSliceData(agencies),
+      countries: getInitialSliceData(countries),
+      settings: getInitialSliceData(settings),
+    }
+    projects = {
+      meetings: getInitialSliceData(meetings),
+      sectors: getInitialSliceData(sectors),
+      statuses: getInitialSliceData(statuses),
+      subsectors: getInitialSliceData(subsectors),
+      types: getInitialSliceData(types),
+    }
+    cp_reports = {
+      blends: getInitialSliceData(blends),
+      substances: getInitialSliceData(substances),
+    }
   }
 
   return (
@@ -124,17 +130,15 @@ export default async function RootLayout({
           initialState={{
             common,
             cp_reports,
-            header: {
-              HeaderTitle: null,
-            },
             i18n: {
               lang,
             },
+            internalError,
             projects,
             theme: {
               mode: theme.value as 'dark' | 'light' | null,
             },
-            user: { data: user },
+            user: { data: user, loaded: !!user },
           }}
         >
           <ThemeProvider options={{ key: 'tw', prepend: true }}>

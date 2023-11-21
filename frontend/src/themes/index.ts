@@ -3,8 +3,9 @@ import {
   createTheme as MuiCreateTheme,
   responsiveFontSizes,
 } from '@mui/material/styles'
-import tailwindConfigModule from '@ors/../tailwind.config'
 import resolveConfig from 'tailwindcss/resolveConfig'
+
+import tailwindConfigModule from '~/tailwind.config'
 
 const tailwindConfig = resolveConfig(tailwindConfigModule)
 

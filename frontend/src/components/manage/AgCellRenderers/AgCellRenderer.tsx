@@ -7,7 +7,7 @@ import renderers from '@ors/config/Table/renderers'
 
 import { getError } from '@ors/helpers/Utils/Utils'
 
-import { IoInformation } from '@react-icons/all-files/io5/IoInformation'
+import { IoInformation } from 'react-icons/io5'
 
 function getDefaultCellRenderer() {
   return components[renderers.default]

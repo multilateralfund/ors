@@ -71,4 +71,10 @@ const colDefById: Record<string, ColDef> = {
   ...getUsagesColDef(),
 }
 
-export { colDefById, defaultColDef }
+const colDefByDataType: Record<string, ColDef> = {
+  date: {
+    initialWidth: 150,
+  },
+}
+
+export { colDefByDataType, colDefById, defaultColDef }

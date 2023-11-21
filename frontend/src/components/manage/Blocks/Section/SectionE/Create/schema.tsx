@@ -9,7 +9,7 @@ import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 
-import { IoTrash } from '@react-icons/all-files/io5/IoTrash'
+import { IoTrash } from 'react-icons/io5'
 
 function useGridOptions(props: {
   addFacility: () => void

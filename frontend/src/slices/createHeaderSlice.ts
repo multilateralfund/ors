@@ -1,75 +1,38 @@
-import type {
-  HeaderSlice,
-  InitialStoreState,
-  StoreState,
-} from '@ors/types/store'
+import type { HeaderSlice } from '@ors/types/store'
 
+import { produce } from 'immer'
 import resolveConfig from 'tailwindcss/resolveConfig'
-import { StoreApi } from 'zustand'
 
-const tailwindConfigModule = require('@ors/../tailwind.config')
+import { CreateSliceProps } from '@ors/store'
+
+const tailwindConfigModule = require('~/tailwind.config')
 const tailwindConfig = resolveConfig(tailwindConfigModule)
 
-let timer: any
-
-const animateDebounce = (func: () => void) => {
-  if (timer) {
-    clearTimeout(timer)
-    timer = setTimeout(() => {
-      func()
-      timer = undefined
-    }, 300)
-  } else {
-    func()
-    timer = setTimeout(() => {
-      timer = undefined
-    }, 300)
-  }
-}
-
-const debounce = (func: () => void) => {
-  if (timer) clearTimeout(timer)
-  timer = setTimeout(func, 100)
-}
-
-export const createHeaderSlice = (
-  set: StoreApi<StoreState>['setState'],
-  get: StoreApi<StoreState>['getState'],
-  initialState?: InitialStoreState,
-): HeaderSlice => {
+export const createHeaderSlice = ({
+  initialState,
+  set,
+}: CreateSliceProps): HeaderSlice => {
   const initialTheme = initialState?.theme?.mode || 'light'
   const initialNavigationBackground =
     tailwindConfig.originalColors[initialTheme].primary.DEFAULT
 
   return {
-    HeaderTitle: initialState?.header?.HeaderTitle || null,
+    HeaderTitle: null,
     navigationBackground: initialNavigationBackground,
-    setHeaderTitleComponent: (component, animate = true) => {
-      function updateHeader() {
-        set((state) => {
-          return {
-            header: {
-              ...state.header,
-              HeaderTitle: component || null,
-            },
-          }
-        })
-      }
-      if (animate) {
-        animateDebounce(updateHeader)
-      } else {
-        debounce(updateHeader)
-      }
+    setHeaderTitleComponent: (component) => {
+      set(
+        produce((state) => {
+          state.header.HeaderTitle = component || null
+        }),
+      )
     },
     setNavigationBackground: (value) => {
-      set((state) => {
-        return {
-          header: {
-            ...state.header,
-            navigationBackground: value || initialNavigationBackground,
-          },
-        }
-      })
+      set(
+        produce((state) => {
+          state.header.navigationBackground =
+            value || initialNavigationBackground
+        }),
+      )
     },
   }
 }

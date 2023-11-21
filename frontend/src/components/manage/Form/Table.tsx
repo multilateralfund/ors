@@ -30,7 +30,7 @@ import {
   getError,
   // pxToNumber,
 } from '@ors/helpers/Utils/Utils'
-import useStore from '@ors/store'
+import { useStore } from '@ors/store'
 
 import Portal from '../Utils/Portal'
 

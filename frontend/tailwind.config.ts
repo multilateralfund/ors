@@ -82,7 +82,7 @@ const originalColors = {
       secondary: 'rgba(255, 255, 255, 0.7)',
     },
     warning: {
-      DEFAULT: '#E76500',
+      DEFAULT: '#FF8A00',
     },
   },
   light: {
@@ -137,7 +137,7 @@ const originalColors = {
       secondary: gray[700],
     },
     warning: {
-      DEFAULT: '#E76500',
+      DEFAULT: '#FF8A00',
     },
   },
 }

@@ -4,7 +4,7 @@ import cx from 'classnames'
 
 import AgTooltipComponent from './AgTooltipComponent'
 
-import { IoInformationCircleOutline } from '@react-icons/all-files/io5/IoInformationCircleOutline'
+import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export default function AgHeaderComponent(props: any) {
   const { displayName, footnote, info } = props

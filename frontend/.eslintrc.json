@@ -71,7 +71,6 @@
           "i18n",
           "side-effect",
           "files",
-          "icons",
           "object",
           "unknown"
         ],
@@ -79,10 +78,10 @@
           "value": {
             "server": ["server-only"],
             "react": ["react", "react-*"],
-            "icons": ["@react-icons/**"],
             "config": ["@ors/config", "@ors/config/**"],
             "i18n": ["@ors/i18n", "@ors/i18n/client", "@ors/i18n/settings"],
             "files": [
+              "react-icons/**",
               "*.css",
               "*.png",
               "*.jpg",
@@ -106,17 +105,29 @@
     ],
     "perfectionist/sort-named-exports": "error",
     "perfectionist/sort-named-imports": "error",
-    "perfectionist/sort-object-types": "error",
+    "perfectionist/sort-object-types": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc",
+        "partition-by-new-line": false,
+        "groups": ["unknown", "state"],
+        "custom-groups": {
+          "state": ["get", "set"]
+        }
+      }
+    ],
     "perfectionist/sort-objects": [
       "error",
       {
         "type": "natural",
         "order": "asc",
         "partition-by-comment": false,
-        "groups": ["id", "key", "unknown"],
+        "groups": ["id", "key", "unknown", "state"],
         "custom-groups": {
           "id": "id",
-          "key": "key"
+          "key": "key",
+          "state": ["get", "set"]
         }
       }
     ],

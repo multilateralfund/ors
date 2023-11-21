@@ -1,13 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable perfectionist/sort-objects */
 'use client'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
 import cx from 'classnames'
 import { AnimatePresence } from 'framer-motion'
-import { isEmpty } from 'lodash'
+import { capitalize, filter, findIndex, get, isEmpty, pickBy } from 'lodash'
 import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
@@ -17,22 +15,22 @@ import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
-import api from '@ors/helpers/Api'
+import api from '@ors/helpers/Api/Api'
+import { defaultSliceData } from '@ors/helpers/Store/Store'
+import { parseNumber } from '@ors/helpers/Utils/Utils'
 import useMakeClassInstance from '@ors/hooks/useMakeClassInstance'
-import { Blend, Substance } from '@ors/models/Section'
 import SectionA from '@ors/models/SectionA'
 import SectionB from '@ors/models/SectionB'
 import SectionC from '@ors/models/SectionC'
 import SectionD from '@ors/models/SectionD'
 import SectionE from '@ors/models/SectionE'
 import SectionF from '@ors/models/SectionF'
+import { useStore } from '@ors/store'
 
-import { createSections } from '.'
+import { getEditSection, variants } from '.'
 
-import { AiFillFilePdf } from '@react-icons/all-files/ai/AiFillFilePdf'
-import { IoClose } from '@react-icons/all-files/io5/IoClose'
-import { IoDownloadOutline } from '@react-icons/all-files/io5/IoDownloadOutline'
-import { IoExpand } from '@react-icons/all-files/io5/IoExpand'
+import { AiFillFilePdf } from 'react-icons/ai'
+import { IoClose, IoDownloadOutline, IoExpand } from 'react-icons/io5'
 
 function TabPanel(props: any) {
   const {
@@ -76,56 +74,53 @@ function TabPanel(props: any) {
   )
 }
 
-export default function CPReportCreate(props: {
-  blends: Array<Blend>
-  emptyForm: Record<string, any>
-  report: Record<string, any>
-  substances: Array<Substance>
-  versions?: any
-}) {
+function CPReportCreate(props: { id: null | number }) {
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
-  const { blends, substances } = props
+  const { blends, report, substances } = useStore((state) => state.cp_reports)
 
   const Sections = {
     section_a: useMakeClassInstance<SectionA>(SectionA, [
-      props.report?.section_a,
-      substances,
+      report.data?.section_a,
+      substances.data,
       null,
     ]),
     section_b: useMakeClassInstance<SectionB>(SectionB, [
-      props.report?.section_b,
-      substances,
-      blends,
+      report.data?.section_b,
+      substances.data,
+      blends.data,
       null,
     ]),
     section_c: useMakeClassInstance<SectionC>(SectionC, [
-      props.report?.section_c,
-      substances,
-      blends,
+      report.data?.section_c,
+      substances.data,
+      blends.data,
       null,
     ]),
     section_d: useMakeClassInstance<SectionD>(SectionD, [
-      props.report?.section_d,
-      substances,
-      blends,
+      report.data?.section_d,
+      substances.data,
+      blends.data,
       null,
     ]),
     section_e: useMakeClassInstance<SectionE>(SectionE, [
-      props.report?.section_e,
+      report.data?.section_e,
       null,
     ]),
     section_f: useMakeClassInstance<SectionF>(SectionF, [
-      props.report?.section_f,
+      report.data?.section_f,
       null,
     ]),
   }
 
   const [errors, setErrors] = useState<Record<string, any>>({})
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState(4)
   const [activeSection, setActiveSection] = useState(null)
   const [renderSection, setRenderSection] = useState(false)
   const [form, setForm] = useState<Record<string, any>>({
+    adm_b: report.data?.adm_b,
+    adm_c: report.data?.adm_c,
+    adm_d: report.data?.adm_d,
     section_a: Sections.section_a.getData(),
     section_b: Sections.section_b.getData(),
     section_c: Sections.section_c.getData(),
@@ -134,16 +129,33 @@ export default function CPReportCreate(props: {
     section_f: Sections.section_f.getData(),
   })
 
+  const variant = useMemo(() => {
+    if (!report.data) return null
+    return filter(variants, (variant) => {
+      const year = report.data?.year
+      return variant.minYear <= year && variant.maxYear >= year
+    })[0]
+  }, [report.data])
+  const sections = useMemo(
+    () => (variant ? getEditSection(variant) : []),
+    [variant],
+  )
+
   const getSubmitFormData = useCallback(() => {
-    return {
-      ...form,
-      section_a: Sections.section_a.getSubmitFormData(form.section_a),
-      section_b: Sections.section_b.getSubmitFormData(form.section_b),
-      section_c: Sections.section_c.getSubmitFormData(form.section_c),
-      section_d: Sections.section_d.getSubmitFormData(form.section_d),
-      section_e: Sections.section_e.getSubmitFormData(form.section_e),
-      section_f: Sections.section_f.getSubmitFormData(form.section_f),
-    }
+    return pickBy(
+      {
+        ...form,
+        section_a: Sections.section_a.getSubmitFormData(form.section_a),
+        section_b: Sections.section_b.getSubmitFormData(form.section_b),
+        section_c: Sections.section_c.getSubmitFormData(form.section_c),
+        section_d: Sections.section_d.getSubmitFormData(form.section_d),
+        section_e: Sections.section_e.getSubmitFormData(form.section_e),
+        section_f: Sections.section_f.getSubmitFormData(form.section_f),
+      },
+      (value, key) => {
+        return findIndex(sections, (section) => key === section.id) > -1
+      },
+    )
     /* eslint-disable-next-line */
   }, [form])
 
@@ -157,15 +169,31 @@ export default function CPReportCreate(props: {
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
-        active={currentIndex !== activeSection || !renderSection}
+        active={
+          !report.error &&
+          (report.loading || currentIndex !== activeSection || !renderSection)
+        }
       />
-      <HeaderTitle>
-        <div className="mb-4 flex min-h-[40px] items-center justify-between gap-x-4">
-          <Typography className="text-white" component="h1" variant="h3">
-            Edit <em>{props.report.cp_report.name}</em>
-          </Typography>
-        </div>
-      </HeaderTitle>
+      {!!report.data && (
+        <HeaderTitle memo={report.data.status}>
+          <div className="mb-4 flex min-h-[40px] items-center justify-between gap-x-4">
+            <Typography className="text-white" component="h1" variant="h3">
+              Edit {report.data.name}{' '}
+              <span
+                className={cx({
+                  'rounded bg-success px-2 py-1':
+                    report.data.status === 'final',
+                  'rounded bg-warning px-2 py-1':
+                    report.data.status === 'draft',
+                })}
+              >
+                {capitalize(report.data.status)}
+              </span>
+            </Typography>
+          </div>
+        </HeaderTitle>
+      )}
+
       <form className="create-submission-form">
         <Tabs
           className="scrollable mb-4"
@@ -179,175 +207,228 @@ export default function CPReportCreate(props: {
           }}
           allowScrollButtonsMobile
         >
-          {createSections.map((section) => (
+          {sections.map((section) => (
             <Tab
               key={section.id}
-              className={cx({ 'MuiTab-error': !isEmpty(errors?.[section.id]) })}
+              className={cx({
+                'MuiTab-error': !isEmpty(errors?.[section.id]),
+              })}
               aria-controls={section.panelId}
               label={section.label}
             />
           ))}
         </Tabs>
-        {createSections.map((section, index) => (
-          <TabPanel
-            key={section.panelId}
-            Section={Sections[section.id]}
-            activeSection={activeSection}
-            currentIndex={currentIndex}
-            errors={errors}
-            form={form}
-            index={index}
-            renderSection={renderSection}
-            section={section}
-            setActiveSection={setActiveSection}
-            setForm={setForm}
-            TableProps={{
-              Toolbar: ({
-                enterFullScreen,
-                exitFullScreen,
-                onPrint,
-                print,
-                fullScreen,
-              }: any) => {
-                return (
-                  <div
-                    className={cx('mb-2 flex', {
-                      'flex-col': !fullScreen,
-                      'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
-                        fullScreen,
-                      'px-4': fullScreen && !print,
-                    })}
-                  >
-                    <Typography
-                      className={cx({ 'mb-4 md:mb-0': fullScreen })}
-                      component="h2"
-                      variant="h6"
+        {!!report.data &&
+          sections.map((section, index) => (
+            <TabPanel
+              key={section.panelId}
+              Section={get(Sections, section.id)}
+              activeSection={activeSection}
+              currentIndex={currentIndex}
+              emptyForm={report.emptyForm.data || {}}
+              errors={errors}
+              form={form}
+              index={index}
+              renderSection={renderSection}
+              section={section}
+              setActiveSection={setActiveSection}
+              setForm={setForm}
+              TableProps={{
+                Toolbar: ({
+                  enterFullScreen,
+                  exitFullScreen,
+                  fullScreen,
+                  onPrint,
+                  print,
+                }: any) => {
+                  return (
+                    <div
+                      className={cx('mb-2 flex', {
+                        'flex-col': !fullScreen,
+                        'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
+                          fullScreen,
+                        'px-4': fullScreen && !print,
+                      })}
                     >
-                      {section.title}
-                    </Typography>
-                    <div className="flex items-center justify-end">
-                      {!fullScreen && (
-                        <Dropdown
-                          color="primary"
-                          label={<IoDownloadOutline />}
-                          icon
-                        >
-                          <Dropdown.Item onClick={onPrint}>
-                            <div className="flex items-center gap-x-2">
-                              <AiFillFilePdf
-                                className="fill-red-700"
-                                size={24}
-                              />
-                              <span>PDF</span>
-                            </div>
-                          </Dropdown.Item>
-                        </Dropdown>
-                      )}
-                      {section.allowFullScreen && !fullScreen && (
-                        <IconButton
-                          color="primary"
-                          onClick={() => {
-                            enterFullScreen()
-                          }}
-                        >
-                          <IoExpand />
-                        </IconButton>
-                      )}
-                      {fullScreen && (
-                        <div>
+                      <Typography
+                        className={cx({ 'mb-4 md:mb-0': fullScreen })}
+                        component="h2"
+                        variant="h6"
+                      >
+                        {section.title}
+                      </Typography>
+                      <div className="flex items-center justify-end">
+                        {!fullScreen && (
+                          <Dropdown
+                            color="primary"
+                            label={<IoDownloadOutline />}
+                            icon
+                          >
+                            <Dropdown.Item onClick={onPrint}>
+                              <div className="flex items-center gap-x-2">
+                                <AiFillFilePdf
+                                  className="fill-red-700"
+                                  size={24}
+                                />
+                                <span>PDF</span>
+                              </div>
+                            </Dropdown.Item>
+                          </Dropdown>
+                        )}
+                        {section.allowFullScreen && !fullScreen && (
                           <IconButton
-                            className="exit-fullscreen not-printable p-2 text-primary"
-                            aria-label="exit fullscreen"
+                            color="primary"
                             onClick={() => {
-                              exitFullScreen()
+                              enterFullScreen()
                             }}
                           >
-                            <IoClose size={32} />
+                            <IoExpand />
                           </IconButton>
-                        </div>
-                      )}
+                        )}
+                        {fullScreen && (
+                          <div>
+                            <IconButton
+                              className="exit-fullscreen not-printable p-2 text-primary"
+                              aria-label="exit fullscreen"
+                              onClick={() => {
+                                exitFullScreen()
+                              }}
+                            >
+                              <IoClose size={32} />
+                            </IconButton>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )
-              },
-              enableCellChangeFlash: true,
-              enableFullScreen: true,
-              enablePagination: false,
-              fadeInOut: false,
-              getRowId: (props: any) => {
-                return props.data.rowId
-              },
-              noRowsOverlayComponentParams: { label: 'No data reported' },
-              suppressCellFocus: false,
-              suppressRowHoverHighlight: false,
-              withSeparators: true,
-              errors: errors[section.id],
-            }}
-            {...props}
-          />
-        ))}
+                  )
+                },
+                enableCellChangeFlash: true,
+                enableFullScreen: true,
+                enablePagination: false,
+                errors: errors[section.id],
+                fadeInOut: false,
+                getRowId: (props: any) => {
+                  return props.data.rowId
+                },
+                noRowsOverlayComponentParams: { label: 'No data reported' },
+                suppressCellFocus: false,
+                suppressRowHoverHighlight: false,
+                withSeparators: true,
+              }}
+              {...props}
+            />
+          ))}
 
-        <Portal domNode="bottom-control">
-          <Box className="rounded-none border-0 border-t px-4">
-            <div className="container flex w-full justify-between">
-              <Link
-                color="secondary"
-                href={`/country-programme/${props.report.cp_report.id || ''}`}
-                size="small"
-                variant="contained"
-                button
-              >
-                Close
-              </Link>
-              <Button
-                color="primary"
-                size="small"
-                variant="contained"
-                onClick={async () => {
-                  try {
-                    const response = await api(
-                      `api/country-programme/reports/${props.report.cp_report.id}/`,
-                      {
-                        data: {
-                          ...getSubmitFormData(),
-                          ...props.report.cp_report,
-                        },
-                        method: 'PUT',
-                      },
-                    )
-                    setErrors({})
-                    enqueueSnackbar(
-                      <>
-                        Updated submission for {response.country}{' '}
-                        {response.year}.
-                      </>,
-                      { variant: 'success' },
-                    )
-                    router.push(`/country-programme/${response.id}`)
-                  } catch (error) {
-                    if (error.status === 400) {
-                      setErrors({ ...(await error.json()) })
-                      enqueueSnackbar(
-                        <>Please make sure all the inputs are correct.</>,
-                        { variant: 'error' },
-                      )
-                    } else {
-                      const errors = await error.json()
-                      setErrors({})
-                      {
-                        errors.detail &&
-                          enqueueSnackbar(errors.detail, { variant: 'error' })
+        {!!report.data && (
+          <Portal domNode="bottom-control">
+            <Box className="rounded-none border-0 border-t px-4">
+              <div className="container flex w-full justify-between">
+                <Link
+                  color="secondary"
+                  href={`/country-programme/${report.data?.id || ''}`}
+                  size="small"
+                  variant="contained"
+                  button
+                >
+                  Close
+                </Link>
+                <div className="flex items-center gap-x-4">
+                  <Button
+                    color="primary"
+                    size="small"
+                    variant="contained"
+                    onClick={async () => {
+                      try {
+                        const response = await api(
+                          `api/country-programme/reports/${report.data?.id}/`,
+                          {
+                            data: {
+                              ...report.data,
+                              ...getSubmitFormData(),
+                              status: 'final',
+                            },
+                            method: 'PUT',
+                          },
+                        )
+                        setErrors({})
+                        enqueueSnackbar(
+                          <>
+                            Updated submission for {response.country}{' '}
+                            {response.year}.
+                          </>,
+                          { variant: 'success' },
+                        )
+                        router.push(`/country-programme/${response.id}`)
+                      } catch (error) {
+                        if (error.status === 400) {
+                          setErrors({ ...(await error.json()) })
+                          enqueueSnackbar(
+                            <>Please make sure all the inputs are correct.</>,
+                            { variant: 'error' },
+                          )
+                        } else {
+                          const errors = await error.json()
+                          setErrors({})
+                          {
+                            errors.detail &&
+                              enqueueSnackbar(errors.detail, {
+                                variant: 'error',
+                              })
+                          }
+                        }
                       }
-                    }
-                  }
-                }}
-              >
-                Submit
-              </Button>
-            </div>
-          </Box>
-        </Portal>
+                    }}
+                  >
+                    {report.data.status === 'draft'
+                      ? 'Submit final version'
+                      : 'Submit new version'}
+                  </Button>
+                </div>
+              </div>
+            </Box>
+          </Portal>
+        )}
       </form>
     </>
   )
+}
+
+export default function CPReportCreateWrapper(props: { id: string }) {
+  const { blends, fetchBundle, report, setReport, substances } = useStore(
+    (state) => state.cp_reports,
+  )
+
+  const id = useMemo(() => parseNumber(props.id), [props.id])
+
+  const dataReady =
+    report.data &&
+    report.emptyForm.data &&
+    blends.data &&
+    substances.data &&
+    report.data.id === id
+
+  useEffect(() => {
+    return () => {
+      setReport({
+        ...defaultSliceData,
+        emptyForm: defaultSliceData,
+        versions: defaultSliceData,
+      })
+    }
+  }, [setReport])
+
+  useEffect(() => {
+    fetchBundle(id, false)
+  }, [id, fetchBundle])
+
+  if (!dataReady) {
+    return (
+      <Loading
+        className="!fixed bg-action-disabledBackground"
+        active={!report.error && report.loading}
+      />
+    )
+  }
+
+  return <CPReportCreate id={id} />
 }

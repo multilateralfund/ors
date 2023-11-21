@@ -10,17 +10,15 @@ import { useSnackbar } from 'notistack'
 
 import Field from '@ors/components/manage/Form/Field'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
-import { getResults } from '@ors/helpers/Api'
+import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
-import useStore from '@ors/store'
+import { useStore } from '@ors/store'
 
 import { CreateBlend } from './CreateBlend'
 import useGridOptions from './schema'
 
-import { AiFillFilePdf } from '@react-icons/all-files/ai/AiFillFilePdf'
-import { IoClose } from '@react-icons/all-files/io5/IoClose'
-import { IoDownloadOutline } from '@react-icons/all-files/io5/IoDownloadOutline'
-import { IoExpand } from '@react-icons/all-files/io5/IoExpand'
+import { AiFillFilePdf } from 'react-icons/ai'
+import { IoClose, IoDownloadOutline, IoExpand } from 'react-icons/io5'
 
 const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
   ssr: false,
@@ -139,7 +137,7 @@ export default function SectionBCreate(props: any) {
       }
     },
     openAddChimicalModal: () => setAddChimicalModal(true),
-    usages: emptyForm.usage_columns.section_b || [],
+    usages: emptyForm.usage_columns?.section_b || [],
   })
 
   function getUsagesOnCellValueChange(event: CellValueChangedEvent<any>) {

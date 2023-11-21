@@ -1,17 +1,13 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import type {
-  CacheSlice,
-  InitialStoreState,
-  StoreState,
-} from '@ors/types/store'
+import type { CacheSlice } from '@ors/types/store'
 
-import { StoreApi } from 'zustand'
+import { produce } from 'immer'
 
-export const createCacheSlice = (
-  set: StoreApi<StoreState>['setState'],
-  get: StoreApi<StoreState>['getState'],
-  initialState?: InitialStoreState,
-): CacheSlice => ({
+import { CreateSliceProps } from '@ors/store'
+
+export const createCacheSlice = ({
+  get,
+  set,
+}: CreateSliceProps): CacheSlice => ({
   data: {},
   getCache: (id) => {
     get().cache.data[id]
@@ -19,22 +15,17 @@ export const createCacheSlice = (
   removeCache: (id) => {
     const data = { ...get().cache.data }
     delete data[id]
-    set((state) => ({
-      cache: {
-        ...state.cache,
-        data,
-      },
-    }))
+    set(
+      produce((state) => {
+        state.cache.data = data
+      }),
+    )
   },
   setCache: (id, data) => {
-    set((state) => ({
-      cache: {
-        ...state.cache,
-        data: {
-          ...state.cache.data,
-          [id]: data,
-        },
-      },
-    }))
+    set(
+      produce((state) => {
+        state.cache.data[id] = data
+      }),
+    )
   },
 })

@@ -6,7 +6,7 @@ import resolveConfig from 'tailwindcss/resolveConfig'
 
 import { getContrastText } from '@ors/helpers/Color/Color'
 
-const tailwindConfigModule = require('@ors/../tailwind.config')
+const tailwindConfigModule = require('~/tailwind.config')
 const tailwindConfig = resolveConfig(tailwindConfigModule)
 
 export type ChipData = {

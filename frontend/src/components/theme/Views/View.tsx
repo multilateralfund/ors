@@ -1,5 +1,5 @@
 'use client'
-import type { ByLayout } from '@ors/config/Views'
+import type { ByError, ByLayout } from '@ors/config/Views'
 
 import React, { useEffect, useMemo } from 'react'
 import { browserName } from 'react-device-detect'
@@ -11,6 +11,9 @@ import config from '@ors/config'
 
 import DefaultAlert from '@ors/components/theme/Alerts/Default'
 import { getCurrentView } from '@ors/helpers/View/View'
+import { useStore } from '@ors/store'
+
+const localStorageVersion = '1.0.1'
 
 const getViewByLayout = (layout?: keyof ByLayout) => {
   return layout ? config.views.layoutViews[layout] : null
@@ -20,16 +23,23 @@ const getViewDefault = () => {
   return config.views.default
 }
 
-const localStorageVersion = '1.0.1'
+export const getErrorView = (error?: keyof ByError) => {
+  return error ? config.views.errorViews[error] : null
+}
 
 export default function View({ children }: { children: React.ReactNode }) {
+  const internalError = useStore((state) => state.internalError)
+  const errorName = useStore((state) => state.internalError?.status)
   const pathname = usePathname()
 
   const view = getCurrentView(pathname)
 
-  const RenderedView = useMemo(
-    () => getViewByLayout(view.layout) || getViewDefault(),
-    [view],
+  const RenderedView: React.FC<any> = useMemo(
+    () =>
+      getErrorView(errorName) ||
+      getViewByLayout(view.layout) ||
+      getViewDefault(),
+    [view, errorName],
   )
 
   useEffect(() => {
@@ -42,9 +52,13 @@ export default function View({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     window.requestAnimationFrame(() => {
-      document.documentElement.setAttribute('data-layout', view.layout)
+      const hasInternalError = !!getErrorView(errorName)
+      document.documentElement.setAttribute(
+        'data-layout',
+        hasInternalError ? 'error' : view.layout,
+      )
     })
-  }, [view.layout])
+  }, [view.layout, errorName])
 
   return (
     <SnackbarProvider
@@ -57,7 +71,7 @@ export default function View({ children }: { children: React.ReactNode }) {
         warning: DefaultAlert,
       }}
     >
-      <RenderedView>{children}</RenderedView>
+      <RenderedView error={internalError?._info}>{children}</RenderedView>
     </SnackbarProvider>
   )
 }

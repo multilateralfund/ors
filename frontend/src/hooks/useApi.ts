@@ -1,26 +1,31 @@
 import type { Api } from '@ors/helpers/Api/Api'
 import { DataType, ErrorType } from '@ors/types/primitives'
 
-import { useEffect, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 
+import { produce } from 'immer'
 import { isFunction } from 'lodash'
 
-import { fetcher } from '@ors/helpers/Api'
+import { fetcher } from '@ors/helpers/Api/Api'
 
-export default function useApi(
-  props: Api & {
-    onError?: any
-    onPending?: any
-    onSuccess?: any
-    onSuccessNoCatch?: any
-  },
-): {
+export type ApiSettings = Api & {
+  onError?: any
+  onPending?: any
+  onSuccess?: any
+  onSuccessNoCatch?: any
+}
+
+export default function useApi(props: ApiSettings): {
+  apiSettings: ApiSettings
   data: DataType
   error: ErrorType
   loaded: boolean
   loading: boolean
+  setApiSettings: Dispatch<SetStateAction<ApiSettings>>
+  setParams: (params: { [key: string]: any }) => void
 } {
-  const { options, path, throwError = true } = props
+  const [apiSettings, setApiSettings] = useState(props)
+  const { options, path, throwError = true } = apiSettings
   const [data, setData] = useState<DataType>(undefined)
   const [error, setError] = useState<ErrorType>(undefined)
   const [loading, setLoading] = useState<boolean>(false)
@@ -54,14 +59,15 @@ export default function useApi(
     setLoaded(true)
   }
 
-  function onSuccessNoCatch(data: DataType) {
-    if (isFunction(props.onSuccessNoCatch)) {
-      props.onSuccessNoCatch(error)
-    }
-    setData(data)
-    setError(undefined)
-    setLoading(false)
-    setLoaded(!!data)
+  function setParams(params: { [key: string]: any }) {
+    setApiSettings(
+      produce((apiSettings) => {
+        apiSettings.options.params = {
+          ...apiSettings.options.params,
+          ...params,
+        }
+      }),
+    )
   }
 
   useEffect(() => {
@@ -69,7 +75,6 @@ export default function useApi(
       onError,
       onPending,
       onSuccess,
-      onSuccessNoCatch,
       options,
       path,
       throwError,
@@ -77,5 +82,13 @@ export default function useApi(
     /* eslint-disable-next-line */
   }, [path, options, throwError])
 
-  return { data, error, loaded, loading }
+  return {
+    apiSettings,
+    data,
+    error,
+    loaded,
+    loading,
+    setApiSettings,
+    setParams,
+  }
 }

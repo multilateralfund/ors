@@ -6,8 +6,7 @@ import {
 } from '@mui/material'
 import cx from 'classnames'
 
-import { IoArrowBack } from '@react-icons/all-files/io5/IoArrowBack'
-import { IoArrowForward } from '@react-icons/all-files/io5/IoArrowForward'
+import { IoArrowBack, IoArrowForward } from 'react-icons/io5'
 
 type PaginationProps = MuiPaginationProps & {
   loading?: boolean
