@@ -1,7 +1,10 @@
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
-from core.api.tests.base import BaseProjectUtilitiesCreate, BaseTest
+from core.api.tests.base import (
+    BaseProjectUtilityCreate,
+    BaseProjectUtilityDelete,
+)
 
 from core.models.project import ProjectFund
 
@@ -19,7 +22,7 @@ def create_project_fund(project, meeting):
     }
 
 
-class TestCreateProjectFund(BaseProjectUtilitiesCreate):
+class TestCreateProjectFund(BaseProjectUtilityCreate):
     url = reverse("projectfund-list")
     proj_utility_attr_name = "funds"
 
@@ -65,17 +68,8 @@ class TestFundUpdate:
         assert project_fund.amount == 41
 
 
-class TestProjectsFundDelete:
-    client = APIClient()
-
-    def test_delete_anon(self, project_fund_url):
-        response = self.client.delete(project_fund_url)
-        assert response.status_code == 403
-
-    def test_delete(self, user, project_fund_url, project):
-        self.client.force_authenticate(user=user)
-
-        response = self.client.delete(project_fund_url)
-        assert response.status_code == 204
-
-        assert not project.funds.exists()
+class TestProjectsFundDelete(BaseProjectUtilityDelete):
+    @pytest.fixture(autouse=True)
+    def setup(self, project_fund_url):
+        self.__class__.url = project_fund_url
+        self.__class__.proj_utility_attr_name = "funds"

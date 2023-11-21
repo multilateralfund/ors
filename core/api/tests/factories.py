@@ -23,6 +23,7 @@ from core.models.project import (
     ProjectStatus,
     ProjectSubSector,
     ProjectType,
+    SubmissionAmount,
 )
 from core.models.rbm_measures import RBMMeasure
 from core.models.substance import Substance
@@ -351,5 +352,17 @@ class ProjectRBMMeasureFactory(factory.django.DjangoModelFactory):
         model = ProjectRBMMeasure
 
     project = factory.SubFactory(ProjectFactory)
-    rbm_measure = factory.SubFactory(RbmMeasureFactory)
+    measure = factory.SubFactory(RbmMeasureFactory)
     value = factory.Faker("random_int", min=1, max=100)
+
+
+class SubmissionAmountFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = SubmissionAmount
+
+    project = factory.SubFactory(ProjectFactory)
+    status = SubmissionAmount.SubmissionStatus.REQUESTED
+    amount = factory.Faker("random_int", min=1, max=100)
+    amount_psc = factory.Faker("random_int", min=1, max=100)
+    impact = factory.Faker("random_int", min=1, max=100)
+    cost_effectiveness = factory.Faker("random_int", min=1, max=100)

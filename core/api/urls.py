@@ -30,6 +30,8 @@ from core.api.views.meetings import MeetingListView
 from core.api.views.projects import (
     ProjectClusterListView,
     ProjectOdsOdpViewSet,
+    ProjectRbmMeasureViewSet,
+    ProjectSubmissionAmountViewSet,
     ProjectViewSet,
     ProjectSectorListView,
     ProjectStatusListView,
@@ -46,6 +48,8 @@ router.register("projects", ProjectViewSet)
 router.register("project-fund", ProjectFundViewSet)
 router.register("project-ods-odp", ProjectOdsOdpViewSet)
 router.register("project-comment", ProjectCommentViewSet)
+router.register("project-rbm-measure", ProjectRbmMeasureViewSet)
+router.register("submission-amount", ProjectSubmissionAmountViewSet)
 
 
 schema_view = get_schema_view(

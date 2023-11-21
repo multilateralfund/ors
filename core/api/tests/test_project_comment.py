@@ -1,7 +1,7 @@
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
-from core.api.tests.base import BaseProjectUtilitiesCreate
+from core.api.tests.base import BaseProjectUtilityCreate, BaseProjectUtilityDelete
 
 from core.models.project import ProjectComment
 
@@ -19,7 +19,7 @@ def create_project_comment(project, meeting):
     }
 
 
-class TestProjectCommentCreate(BaseProjectUtilitiesCreate):
+class TestProjectCommentCreate(BaseProjectUtilityCreate):
     url = reverse("projectcomment-list")
     proj_utility_attr_name = "comments"
 
@@ -65,17 +65,8 @@ class TestProjectCommentUpdate:
         assert project_comment.secretariat_comment == "24 de karate"
 
 
-class TestProjectsFundDelete:
-    client = APIClient()
-
-    def test_delete_anon(self, project_comment_detail_url):
-        response = self.client.delete(project_comment_detail_url)
-        assert response.status_code == 403
-
-    def test_delete(self, user, project_comment_detail_url, project):
-        self.client.force_authenticate(user=user)
-
-        response = self.client.delete(project_comment_detail_url)
-        assert response.status_code == 204
-
-        assert not project.comments.exists()
+class TestProjectsCommentDelete(BaseProjectUtilityDelete):
+    @pytest.fixture(autouse=True)
+    def setup(self, project_comment_detail_url):
+        self.__class__.url = project_comment_detail_url
+        self.__class__.proj_utility_attr_name = "comments"

@@ -256,9 +256,6 @@ class ProjectRbmMeasureListSerializer(serializers.ModelSerializer):
     ProjectRbmMeasureSerializer class
     """
 
-    project_id = serializers.PrimaryKeyRelatedField(
-        required=False, queryset=Project.objects.all().values_list("id", flat=True)
-    )
     measure_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=RBMMeasure.objects.all().values_list("id", flat=True)
     )
@@ -273,6 +270,7 @@ class ProjectRbmMeasureListSerializer(serializers.ModelSerializer):
             "measure_id",
             "value",
         ]
+        read_only_fields = ["id", "project_id"]
 
     def get_measure_name(self, obj):
         return obj.measure.name

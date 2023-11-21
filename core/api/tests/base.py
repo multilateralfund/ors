@@ -13,11 +13,11 @@ class BaseTest:
         assert response.status_code == 403
 
 
-class BaseProjectUtilitiesCreate(BaseTest):
+class BaseProjectUtilityCreate(BaseTest):
     new_utility_data = None
     proj_utility_attr_name = None  # e.g. "comments"
 
-    @pytest.fixture(autouse=True, scope="class")
+    @pytest.fixture(autouse=True)
     def setup(self, **args):
         raise NotImplementedError
 
@@ -40,3 +40,24 @@ class BaseProjectUtilitiesCreate(BaseTest):
         self.new_utility_data.pop("project_id")
         response = self.client.post(self.url, self.new_utility_data, format="json")
         assert response.status_code == 400
+
+
+class BaseProjectUtilityDelete(BaseTest):
+    proj_utility_attr_name = None  # e.g. "comments"
+
+    @pytest.fixture(autouse=True)
+    def setup(self, **args):
+        raise NotImplementedError
+
+    def test_delete_anon(self):
+        response = self.client.delete(self.url)
+        assert response.status_code == 403
+
+    def test_delete(self, user, project):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.delete(self.url)
+        assert response.status_code == 204
+
+        project.refresh_from_db()
+        assert getattr(project, self.proj_utility_attr_name).count() == 0

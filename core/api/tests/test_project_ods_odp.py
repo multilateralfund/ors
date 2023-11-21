@@ -2,7 +2,11 @@ import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 from core.api.serializers.base import BaseProjectUtilityCreateSerializer
-from core.api.tests.base import BaseProjectUtilitiesCreate, BaseTest
+from core.api.tests.base import (
+    BaseProjectUtilityCreate,
+    BaseProjectUtilityDelete,
+    BaseTest,
+)
 
 from core.api.tests.factories import SubstanceFactory
 
@@ -31,7 +35,7 @@ def project_ods_blend_create(project, blend):
     }
 
 
-class TestOdsOdpCreate(BaseProjectUtilitiesCreate):
+class TestOdsOdpCreate(BaseProjectUtilityCreate):
     url = reverse("projectodsodp-list")
     proj_utility_attr_name = "ods_odp"
 
@@ -150,18 +154,8 @@ class TestProjectsOdsOdpUpdate:
         assert response.status_code == 400
 
 
-class TestProjectsOdsOdpDelete:
-    client = APIClient()
-
-    def test_delete_anon(self, ods_subst_url):
-        response = self.client.delete(ods_subst_url)
-        assert response.status_code == 403
-
-    def test_delete(self, user, ods_subst_url, project):
-        self.client.force_authenticate(user=user)
-
-        response = self.client.delete(ods_subst_url)
-        assert response.status_code == 204
-
-        project.refresh_from_db()
-        assert not project.ods_odp.exists()
+class TestProjectsOdsOdpDelete(BaseProjectUtilityDelete):
+    @pytest.fixture(autouse=True)
+    def setup(self, ods_subst_url):
+        self.__class__.url = ods_subst_url
+        self.__class__.proj_utility_attr_name = "ods_odp"
