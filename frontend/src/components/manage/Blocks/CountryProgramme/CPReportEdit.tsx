@@ -14,6 +14,7 @@ import {
   map,
   pickBy,
   reduce,
+  values,
 } from 'lodash'
 import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
@@ -180,6 +181,7 @@ function CPReportCreate(props: { id: null | number }) {
           },
           [],
         ),
+        adm_d: values(form.adm_d),
         section_a: Sections.section_a.getSubmitFormData(form.section_a),
         section_b: Sections.section_b.getSubmitFormData(form.section_b),
         section_c: Sections.section_c.getSubmitFormData(form.section_c),
