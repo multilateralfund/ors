@@ -143,18 +143,18 @@ class TestCPRecordList(BaseTest):
         assert len(response.data["section_a"]) == 1
         assert len(response.data["section_a"][0]["excluded_usages"]) == 1
         assert response.data["section_a"][0]["chemical_name"] == substance.name
-        assert response.data["section_a"][0]["rowId"] == f"substance_{substance.id}"
+        assert response.data["section_a"][0]["row_id"] == f"substance_{substance.id}"
         assert len(response.data["section_b"]) == 2
         assert response.data["section_b"][0]["chemical_name"] == blend.name
-        assert response.data["section_b"][0]["rowId"] == f"blend_{blend.id}"
+        assert response.data["section_b"][0]["row_id"] == f"blend_{blend.id}"
         assert len(response.data["section_b"][0]["record_usages"]) == 3
         assert len(response.data["section_c"]) == 3
         assert len(response.data["section_d"]) == 1
         assert response.data["section_d"][0]["chemical_name"] == "HFC-23"
-        assert response.data["section_d"][0]["rowId"] == "generation_1"
+        assert response.data["section_d"][0]["row_id"] == "generation_1"
         assert len(response.data["section_e"]) == 2
         emission = response.data["section_e"][0]
-        assert response.data["section_e"][0]["rowId"] == f"facility_{emission['id']}"
+        assert response.data["section_e"][0]["row_id"] == f"facility_{emission['id']}"
         assert response.data["section_f"]["remarks"] == cp_report_2019.comment
 
     def test_get_old_cp_record_list(self, user, cp_report_2005, _setup_old_cp_report):

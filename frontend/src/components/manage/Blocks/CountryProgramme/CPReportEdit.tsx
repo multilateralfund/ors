@@ -5,7 +5,16 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
 import cx from 'classnames'
 import { AnimatePresence } from 'framer-motion'
-import { capitalize, filter, findIndex, get, isEmpty, pickBy } from 'lodash'
+import {
+  capitalize,
+  filter,
+  findIndex,
+  get,
+  isEmpty,
+  map,
+  pickBy,
+  reduce,
+} from 'lodash'
 import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
@@ -145,6 +154,32 @@ function CPReportCreate(props: { id: null | number }) {
     return pickBy(
       {
         ...form,
+        adm_b: reduce(
+          form.adm_b,
+          (rows: any, row: any) => {
+            map(row.values, (value) => {
+              rows.push({
+                ...row,
+                ...value,
+              })
+            })
+            return rows
+          },
+          [],
+        ),
+        adm_c: reduce(
+          form.adm_c,
+          (rows: any, row: any) => {
+            map(row.values, (value) => {
+              rows.push({
+                ...row,
+                ...value,
+              })
+            })
+            return rows
+          },
+          [],
+        ),
         section_a: Sections.section_a.getSubmitFormData(form.section_a),
         section_b: Sections.section_b.getSubmitFormData(form.section_b),
         section_c: Sections.section_c.getSubmitFormData(form.section_c),
@@ -308,7 +343,7 @@ function CPReportCreate(props: { id: null | number }) {
                 errors: errors[section.id],
                 fadeInOut: false,
                 getRowId: (props: any) => {
-                  return props.data.rowId
+                  return props.data.row_id
                 },
                 noRowsOverlayComponentParams: { label: 'No data reported' },
                 suppressCellFocus: false,

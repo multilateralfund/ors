@@ -156,7 +156,7 @@ export const CellUsageWidget = memo(
         return {
           // the final value to send to the grid, on completion of editing
           getValue() {
-            const rowNode = props.api.getRowNode(props.data.rowId)
+            const rowNode = props.api.getRowNode(props.data.row_id)
             const subtotalRowNode = props.api.getRowNode(
               `subtotal[${props.data.group}]`,
             )

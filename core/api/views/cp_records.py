@@ -106,18 +106,17 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
                 cp_record_data = {
                     "country_programme_report_id": cp_report_id,
                     "substance_id": chemical.id
-                    if chemical_type == "substance"
-                    else None,
-                    "blend_id": chemical.id if chemical_type == "blend" else None,
-                    "id": 0,
-                }
+                    if chemical_type == "substance" else None,
+                    "blend_id": chemical.id
+                    if chemical_type == "blend" else None, "id": 0, }
                 if section in ["A", "B"]:
                     cp_record_data["section"] = section
                 chemical_dict[chemical.id] = item_cls(**cp_record_data)
 
         return chemical_dict
 
-    def _get_displayed_items(self, item_cls, cp_report_id, section, existing_items):
+    def _get_displayed_items(
+            self, item_cls, cp_report_id, section, existing_items):
         """
         Returns a list of ItemCld objects for the given section and cp_report_id
          -> if there is no record for a substance or blend that is displayed in all formats
@@ -134,7 +133,8 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
         subs_rec_dict = {
             item.substance_id: item for item in existing_items if item.substance
         }
-        blends_rec_dict = {item.blend_id: item for item in existing_items if item.blend}
+        blends_rec_dict = {
+            item.blend_id: item for item in existing_items if item.blend}
 
         # get all substances and blends
         substances_dict = self._set_chemical_items_dict(
@@ -231,8 +231,16 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
                     "row_text": str(adm_record.row),
                     "values": [],
                 }
-            result[row_id]["values"].append(self.adm_record_seri_class(adm_record).data)
+            result[row_id]["values"].append(
+                self.adm_record_seri_class(adm_record).data)
         return list(result.values())
+
+    def _get_adm_d_records(self, adm_records):
+        result = {}
+        for adm_record in adm_records:
+            row_id = adm_record.row_id
+            result[row_id] = self.adm_record_seri_class(adm_record).data
+        return result
 
     def _get_old_cp_records(self, cp_report):
         section_a = self._get_displayed_records(cp_report.id, "A")
@@ -242,7 +250,7 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
         adm_c = self._get_adm_records(cp_report.id, "C")
         adm_c = self._get_regroupped_adm_records(adm_c)
         adm_d = self._get_adm_records(cp_report.id, "D")
-        adm_d = self._get_regroupped_adm_records(adm_d)
+        adm_d = self._get_adm_d_records(adm_d)
 
         return {
             "cp_report": self.cp_report_seri_class(cp_report).data,

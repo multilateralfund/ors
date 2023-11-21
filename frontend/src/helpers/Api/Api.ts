@@ -18,6 +18,7 @@ export type Api = {
     next?: any
     params?: Record<string, any>
     removeCacheTimeout?: number
+    triggerIf?: boolean
     updateSliceData?: string
     withStoreCache?: boolean
   }
@@ -94,6 +95,7 @@ async function api(
     next = {},
     params = undefined,
     removeCacheTimeout = REMOVE_CACHE_TIMEOUT,
+    triggerIf = true,
     withStoreCache = false,
     ...opts
   } = options || {}
@@ -122,6 +124,10 @@ async function api(
 
   if (state && withStoreCache && state.cache.data[id]) {
     return state.cache.data[id]
+  }
+
+  if (!triggerIf) {
+    return
   }
 
   async function handleError(error: any) {

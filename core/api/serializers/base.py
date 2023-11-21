@@ -29,15 +29,15 @@ class RowIDField(serializers.CharField):
             return f"substance_{value.substance_id}"
         if getattr(value, "blend_id", None):
             return f"blend_{value.blend_id}"
-        return "rowId_0"
+        return "row_id_0"
 
 
 class BaseCPRowSerializer(serializers.ModelSerializer):
-    rowId = RowIDField(required=False)
+    row_id = RowIDField(required=False)
 
     class Meta:
         fields = [
-            "rowId",
+            "row_id",
         ]
 
     def to_internal_value(self, data):
@@ -45,13 +45,13 @@ class BaseCPRowSerializer(serializers.ModelSerializer):
             internal_value = super().to_internal_value(data)
         except ValidationError as e:
             # add chemical_id to error message
-            row_id = data.get("rowId", "general_error")
+            row_id = data.get("row_id", "general_error")
             raport_error = {
                 "row_id": row_id,
                 "errors": e.detail,
             }
             raise ValidationError(raport_error) from e
-        internal_value.pop("rowId", None)
+        internal_value.pop("row_id", None)
         return internal_value
 
 

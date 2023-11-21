@@ -124,7 +124,7 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
 
       return {
         ...component,
-        rowId: `${index}`,
+        row_id: `${index}`,
         substance,
       }
     })
@@ -265,7 +265,7 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
                             const newComponent = {
                               component_name: '',
                               percentage: 0,
-                              rowId,
+                              row_id: rowId,
                               substance: null,
                               substance_id: null,
                             }
@@ -277,7 +277,7 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
                               add: [newComponent],
                             })
                             const componentNode = grid.current.api.getRowNode(
-                              newComponent.rowId,
+                              newComponent.row_id,
                             )
                             newNode.current = componentNode
                             newNodeIndex.current = newNodeIndex.current + 1
@@ -300,7 +300,7 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
                                   const index = findIndex(
                                     newComponents,
                                     (component: any) =>
-                                      component.rowId === props.data.rowId,
+                                      component.row_id === props.data.row_id,
                                   )
                                   newComponents.splice(index, 1)
                                   setForm({
@@ -353,7 +353,7 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
                 },
               ]}
               getRowId={(props: any) => {
-                return props.data.rowId
+                return props.data.row_id
               }}
               pinnedBottomRowData={[
                 { rowType: 'total', substance: 'TOTAL' },
@@ -363,7 +363,7 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
                 const newComponents = form.components
                 const index = findIndex(
                   newComponents,
-                  (component: any) => component.rowId === event.data.rowId,
+                  (component: any) => component.row_id === event.data.row_id,
                 )
                 newComponents.splice(index, 1, event.data)
                 setForm({

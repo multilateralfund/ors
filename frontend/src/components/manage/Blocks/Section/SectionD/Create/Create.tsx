@@ -29,7 +29,7 @@ export default function SectionDCreate(props: any) {
           const newData = [...form.section_d]
           const index = findIndex(
             newData,
-            (row: any) => row.rowId == event.data.rowId,
+            (row: any) => row.row_id == event.data.row_id,
           )
           if (index > -1) {
             // Should not be posible for index to be -1

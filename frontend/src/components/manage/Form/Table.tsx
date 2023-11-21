@@ -224,7 +224,7 @@ export default function Table(
       }
       const data = { ...rowNode.data }
       const error =
-        hasErrors && isObject(errors) ? get(errors, data.rowId) : null
+        hasErrors && isObject(errors) ? get(errors, data.row_id) : null
 
       if (!hasErrors && data.error) {
         delete data.error
@@ -413,14 +413,14 @@ export default function Table(
               onCellKeyDown={(props: any) => {
                 const key = props.event.key
                 const { category, dataType, editable, field } = props.colDef
-                const { rowId } = props.data
+                const { row_id } = props.data
                 const recordUsages = [...(props.data.record_usages || [])]
                 const isEditable = isFunction(editable)
                   ? editable(props)
                   : editable
-                if (isEditable && rowId && key === KEY_BACKSPACE) {
+                if (isEditable && row_id && key === KEY_BACKSPACE) {
                   let value = null
-                  const rowNode = props.api.getRowNode(rowId)
+                  const rowNode = props.api.getRowNode(row_id)
                   if (dataType === 'string') {
                     value = ''
                   }

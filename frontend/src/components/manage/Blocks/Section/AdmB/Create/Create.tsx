@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 
-import { Box, Button, IconButton, Modal, Typography } from '@mui/material'
+import { IconButton, Typography } from '@mui/material'
 import cx from 'classnames'
 import { findIndex, groupBy, map } from 'lodash'
 
@@ -26,12 +26,12 @@ export default function AdmBCreate(props: any) {
   // const newNode = useRef<RowNode>()
   const grid = useRef<any>()
   // const newFacilityIndex = useRef(form.section_e.length + 1)
-  const [addRegulationModal, setAddRegulationModal] = useState(false)
+  // const [addRegulationModal, setAddRegulationModal] = useState(false)
   const [initialRowData] = useState(() => {
     const dataByRowId = groupBy(form.adm_b, 'row_id')
 
     return map(rows, (row) => ({
-      rowId: row.id,
+      row_id: row.id,
       values: dataByRowId[row.id]?.[0]?.values || [],
       ...row,
       ...(row.type === 'title' ? { rowType: 'group' } : {}),
@@ -72,13 +72,13 @@ export default function AdmBCreate(props: any) {
               <Typography className="mb-2" component="h2" variant="h6">
                 {section.title}
               </Typography>
-              <div className="flex items-center justify-between">
-                <Button
+              <div className="flex items-center justify-end">
+                {/* <Button
                   variant="contained"
                   onClick={() => setAddRegulationModal(true)}
                 >
                   Add regulation
-                </Button>
+                </Button> */}
                 <div>
                   {!fullScreen && (
                     <Dropdown
@@ -131,8 +131,8 @@ export default function AdmBCreate(props: any) {
           const index = findIndex(
             newData,
             (row: any) =>
-              (row.row_id || row.rowId) ===
-              (event.data.row_id || event.data.rowId),
+              (row.row_id || row.row_id) ===
+              (event.data.row_id || event.data.row_id),
           )
           if (index > -1) {
             // Should not be posible for index to be -1
@@ -151,7 +151,7 @@ export default function AdmBCreate(props: any) {
         onRowDataUpdated={() => {
           // if (newNode.current) {
           //   scrollToElement(
-          //     `.ag-row[row-id=${newNode.current.data.rowId}]`,
+          //     `.ag-row[row-id=${newNode.current.data.row_id}]`,
           //     () => {
           //       grid.current.api.flashCells({
           //         rowNodes: [newNode.current],
@@ -165,7 +165,8 @@ export default function AdmBCreate(props: any) {
       <Typography id="footnote-1" className="italic" variant="body2">
         1. If Yes, since when (Date) / If No, planned date.
       </Typography>
-      {addRegulationModal && (
+      {/* TODO: fix this */}
+      {/* {addRegulationModal && (
         <Modal
           aria-labelledby="add-substance-modal-title"
           open={addRegulationModal}
@@ -181,45 +182,6 @@ export default function AdmBCreate(props: any) {
             >
               New regulation
             </Typography>
-            {/* <Field
-              Input={{ autoComplete: 'off' }}
-              getOptionLabel={(option: any) => option.display_name}
-              groupBy={(option: any) => option.group}
-              options={chimicalsOptions}
-              value={null}
-              widget="autocomplete"
-              onChange={(event: any, newChimical: any) => {
-                if (document.activeElement) {
-                  // @ts-ignore
-                  document.activeElement.blur()
-                }
-                const added = find(
-                  form.section_b,
-                  (chimical) => chimical.rowId === newChimical.rowId,
-                )
-                if (!added) {
-                  const groupNode = grid.current.api.getRowNode(
-                    newChimical.group,
-                  )
-                  setForm((form: any) => ({
-                    ...form,
-                    section_b: [...form.section_b, newChimical],
-                  }))
-                  applyTransaction(grid.current.api, {
-                    add: [newChimical],
-                    addIndex: groupNode.rowIndex + groupNode.data.count + 1,
-                    update: [
-                      { ...groupNode.data, count: groupNode.data.count + 1 },
-                    ],
-                  })
-                  const chimicalNode = grid.current.api.getRowNode(
-                    newChimical.rowId,
-                  )
-                  newNode.current = chimicalNode
-                }
-                setAddRegulationModal(false)
-              }}
-            /> */}
             <Typography className="text-right">
               <Button onClick={() => setAddRegulationModal(false)}>
                 Close
@@ -227,7 +189,7 @@ export default function AdmBCreate(props: any) {
             </Typography>
           </Box>
         </Modal>
-      )}
+      )} */}
     </>
   )
 }
