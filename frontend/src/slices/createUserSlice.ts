@@ -22,7 +22,7 @@ export const createUserSlice = ({
   ...getInitialSliceData(),
   // Get user
   getUser: async () => {
-    fetchSliceData({ path: 'api/auth/user/' }, 'user')
+    fetchSliceData({ apiSettings: { path: 'api/auth/user/' }, slice: 'user' })
   },
   // Login
   login: async (username, password) => {
