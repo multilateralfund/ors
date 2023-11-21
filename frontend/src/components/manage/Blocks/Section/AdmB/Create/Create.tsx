@@ -130,9 +130,7 @@ export default function AdmBCreate(props: any) {
           const newData = [...form.adm_b]
           const index = findIndex(
             newData,
-            (row: any) =>
-              (row.row_id || row.row_id) ===
-              (event.data.row_id || event.data.row_id),
+            (row: any) => row.row_id === event.data.row_id,
           )
           if (index > -1) {
             // Should not be posible for index to be -1
