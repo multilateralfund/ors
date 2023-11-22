@@ -450,6 +450,19 @@ class TestCPReportCreate(BaseTest):
         assert d_record.value_choice_id == d_record.row.choices.first().id
         assert d_record.value_text == "La orele de vrajeala"
 
+    def test_existing_cp_report(
+        self, user, _setup_new_cp_report_create, cp_report_2019
+    ):
+        self.client.force_authenticate(user=user)
+        data = _setup_new_cp_report_create
+        data["country_id"] = cp_report_2019.country_id
+        data["year"] = cp_report_2019.year
+        response = self.client.post(
+            self.url, _setup_new_cp_report_create, format="json"
+        )
+        assert response.status_code == 400
+        assert "already exists" in response.data["general_error"]
+
     def test_invalid_country_id(self, user, _setup_new_cp_report_create):
         self.client.force_authenticate(user=user)
         data = _setup_new_cp_report_create
@@ -457,7 +470,6 @@ class TestCPReportCreate(BaseTest):
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
         assert "country_id" in response.data
-        assert "general_error" in response.data["country_id"]
 
     def test_invalid_usage_id(self, user, _setup_new_cp_report_create, substance):
         self.client.force_authenticate(user=user)
@@ -522,32 +534,46 @@ class TestCPReportCreate(BaseTest):
         data["adm_b"][0]["row_id"] = 999
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
-        assert "row_id" in response.data["adm_b"][0]
+        assert "Invalid pk " in response.data["adm_b"]["999"]
 
     def test_invalid_adm_column_id(self, user, _setup_old_cp_report_create):
         self.client.force_authenticate(user=user)
         data = _setup_old_cp_report_create
         data["adm_b"][0]["column_id"] = 999
+        row_id = str(data["adm_b"][0]["row_id"])
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
-        assert "column_id" in response.data["adm_b"][0]
+        assert "column_id" in response.data["adm_b"][row_id]["values"]["999"]
 
     def test_invalid_adm_choice_id(self, user, _setup_old_cp_report_create):
         self.client.force_authenticate(user=user)
         data = _setup_old_cp_report_create
         data["adm_d"][0]["value_choice_id"] = 999
+        row_id = str(data["adm_d"][0]["row_id"])
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
-        assert "value_choice_id" in response.data["adm_d"][0]
+        assert "value_choice_id" in response.data["adm_d"][row_id]
+
+    def test_invalid_adm_record_value(self, user, _setup_old_cp_report_create):
+        self.client.force_authenticate(user=user)
+        data = _setup_old_cp_report_create
+        data["adm_b"][0]["column_id"] = None
+        data["adm_b"][0]["value_choice_id"] = None
+        data["adm_b"][0]["value_text"] = None
+        row_id = str(data["adm_b"][0]["row_id"])
+
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 400
+        assert "must be specified" in response.data["adm_b"][row_id]
 
     def test_invalid_adm_record(self, user, _setup_old_cp_report_create):
         self.client.force_authenticate(user=user)
         data = _setup_old_cp_report_create
-        data["adm_b"][0].pop("column_id")
+        data["adm_b"][0].pop("row_id")
 
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
-        assert "non_field_errors" in response.data["adm_b"][0]
+        assert "row_id" in response.data["adm_b"]["general_error"]
 
 
 class TestCPReportUpdate(BaseTest):
@@ -773,7 +799,6 @@ class TestCPReportUpdate(BaseTest):
         response = self.client.put(self.url, data, format="json")
         assert response.status_code == 400
         assert "country_id" in response.data
-        assert "general_error" in response.data["country_id"]
 
         # check no archive is created
         assert CPReportArchive.objects.count() == 0

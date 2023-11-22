@@ -188,6 +188,7 @@ def groupA():
 def substance(excluded_usage, groupA, time_frames):
     substance = SubstanceFactory.create(
         name="substance",
+        sort_order=1,
         group=groupA,
         odp=0.02,
         gwp=0.05,
@@ -202,7 +203,7 @@ def substance(excluded_usage, groupA, time_frames):
 
 @pytest.fixture
 def blend(excluded_usage, time_frames):
-    blend = BlendFactory.create(name="blend")
+    blend = BlendFactory.create(name="blend", sort_order=1)
     ExcludedUsageBlendFactory.create(
         blend=blend,
         usage=excluded_usage,

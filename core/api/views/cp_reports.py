@@ -119,16 +119,15 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
             }
 
         """
-        print(error_dict)
+        print("----------", error_dict)
         custom_errors = {}
         for section, section_errors in error_dict.items():
-            if not "adm" in section and not "section" in section:
+            if (
+                not "adm" in section
+                and not "section" in section
+                and not "record_usages" in section
+            ):
                 # this is a general error
-                custom_errors["general_error"] = section_errors
-                continue
-
-            if "adm" in section:
-                # we do not need to customize adm errors
                 custom_errors[section] = section_errors
                 continue
 
@@ -139,16 +138,37 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
                     continue
 
                 if "row_id" not in errors or errors["row_id"] == "general_error":
-                    cust_scetion_err["general_error"] = errors
+                    cust_scetion_err["general_error"] = (
+                        errors["errors"] if errors.get("errors") else errors
+                    )
                     continue
 
                 row_id = errors["row_id"]
+                # check if there is an error for the entire row
+                if "row_id" in errors["errors"]:
+                    cust_scetion_err[row_id] = errors["errors"]["row_id"][0]
+                    continue
 
-                cust_scetion_err[row_id] = {}
+                # initialize the cust_scetion_err
+                if row_id not in cust_scetion_err:
+                    if errors.get("column_id"):
+                        # this is an adm record
+                        cust_scetion_err[row_id] = {
+                            "values": {},
+                        }
+                    else:
+                        cust_scetion_err[row_id] = {}
+
                 if errors["errors"].get("record_usages"):
                     # check if there is an error for record_usages
                     cust_scetion_err[row_id] = self.customize_errors(errors["errors"])
                     continue
+                if errors.get("column_id"):
+                    # this is an adm record
+                    cust_scetion_err[row_id]["values"][errors["column_id"]] = errors[
+                        "errors"
+                    ]
+
                 for error_key, error_value in errors["errors"].items():
                     # ('substance_id', [ErrorDetail(string='Invalid pk "999" - object does not exist.',
                     # code='does_not_exist')])

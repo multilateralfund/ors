@@ -35,6 +35,7 @@ def setup_new_cp_report(cp_report_2019, blend, substance):
     BlendFactory.create(
         name="blend2B",
         displayed_in_all=True,
+        sort_order=2,
     )
     # add 3 usages for one record
     for _ in range(3):
@@ -172,5 +173,6 @@ class TestCPRecordList(BaseTest):
         assert len(response.data["adm_c"]) == 1
         assert len(response.data["adm_d"]) == 1
         assert (
-            response.data["adm_d"][0]["values"][0]["value_choice_id"] == last_choice.id
+            response.data["adm_d"][last_choice.adm_row_id]["value_choice_id"]
+            == last_choice.id
         )

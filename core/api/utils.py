@@ -5,7 +5,7 @@ from django_filters import rest_framework as filters
 SECTION_ANNEX_MAPPING = {
     "A": ["A", "B", "C", "D", "E"],
     "B": ["F"],
-    "C": ["C", "E", "F", "unknown"],
+    "C": ["C", "F", "unknown"],
 }
 
 SUBMISSION_STATUSE_CODES = ["NEWSUB", "UNK"]

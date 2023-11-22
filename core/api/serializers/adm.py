@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from core.models import AdmRecordArchive
 from core.models.adm import AdmChoice, AdmColumn, AdmRecord, AdmRow
@@ -105,21 +106,45 @@ class AdmRecordBaseSerializer(serializers.ModelSerializer):
             "section",
         ]
 
-    def validate(self, attrs):
+    def check_user_choice(self, data):
         if (
-            not attrs.get("column_id")
-            and not attrs.get("value_choice_id")
-            and not attrs.get("value_text")
+            not data.get("column_id")
+            and not data.get("value_choice_id")
+            and not data.get("value_text")
         ):
-            raise serializers.ValidationError(
-                "Either column_id or value_choice_id or value_text must be specified"
-            )
-        if attrs.get("column_id") and attrs.get("value_choice_id"):
-            raise serializers.ValidationError(
-                "Only one of column_id or value_choice_id must be specified"
+            raise ValidationError(
+                {
+                    "row_id": [
+                        "Either column_id or value_choice_id or value_text must be specified"
+                    ]
+                }
             )
 
-        return super().validate(attrs)
+        if data.get("column_id") and data.get("value_choice_id"):
+            raise ValidationError(
+                {
+                    "row_id": [
+                        "Only one of column_id or value_choice_id must be specified"
+                    ]
+                }
+            )
+
+    def to_internal_value(self, data):
+        try:
+            self.check_user_choice(data)
+            internal_value = super().to_internal_value(data)
+        except ValidationError as e:
+            # add chemical_id to error message
+            row_id = data.get("row_id", "general_error")
+            column_id = data.get("column_id", None)
+            raport_error = {
+                "row_id": row_id,
+                "errors": e.detail,
+            }
+            if column_id:
+                raport_error["column_id"] = column_id
+            raise ValidationError(raport_error) from e
+        return internal_value
 
 
 class AdmRecordSerializer(AdmRecordBaseSerializer):
