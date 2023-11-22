@@ -16,6 +16,8 @@ class AdmChoiceSerializer(serializers.ModelSerializer):
             "id",
             "value",
             "sort_order",
+            "with_text",
+            "text_label",
         ]
 
 
@@ -39,8 +41,7 @@ class AdmRowSerializer(serializers.ModelSerializer):
 
 class RecursiveField(serializers.Serializer):
     def to_representation(self, instance):
-        serializer = self.parent.parent.__class__(
-            instance, context=self.context)
+        serializer = self.parent.parent.__class__(instance, context=self.context)
         return serializer.data
 
 
@@ -74,7 +75,7 @@ class AdmRecordBaseSerializer(serializers.ModelSerializer):
     column_id = serializers.PrimaryKeyRelatedField(
         required=False,
         queryset=AdmColumn.objects.all().values_list("id", flat=True),
-        allow_null=True
+        allow_null=True,
     )
     row_id = serializers.PrimaryKeyRelatedField(
         required=True,
@@ -83,7 +84,7 @@ class AdmRecordBaseSerializer(serializers.ModelSerializer):
     value_choice_id = serializers.PrimaryKeyRelatedField(
         required=False,
         queryset=AdmChoice.objects.all().values_list("id", flat=True),
-        allow_null=True
+        allow_null=True,
     )
     country_programme_report_id = serializers.PrimaryKeyRelatedField(
         required=False,
@@ -105,7 +106,11 @@ class AdmRecordBaseSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
-        if not attrs.get("column_id") and not attrs.get("value_choice_id") and not attrs.get("value_text"):
+        if (
+            not attrs.get("column_id")
+            and not attrs.get("value_choice_id")
+            and not attrs.get("value_text")
+        ):
             raise serializers.ValidationError(
                 "Either column_id or value_choice_id or value_text must be specified"
             )

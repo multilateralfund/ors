@@ -54,7 +54,21 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
         return CPReportSerializer
 
     def create(self, request, *args, **kwargs):
+        # check if the cp_record already exists
+        cp_report = CPReport.objects.filter(
+            country_id=request.data.get("country_id"),
+            year=request.data.get("year"),
+        ).first()
+        if cp_report:
+            return Response(
+                {
+                    "general_error": "A report for this country and this year already exists"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         serializer = CPReportCreateSerializer(data=request.data)
+
         if serializer.is_valid():
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
@@ -105,8 +119,14 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
             }
 
         """
+        print(error_dict)
         custom_errors = {}
         for section, section_errors in error_dict.items():
+            if not "adm" in section and not "section" in section:
+                # this is a general error
+                custom_errors["general_error"] = section_errors
+                continue
+
             if "adm" in section:
                 # we do not need to customize adm errors
                 custom_errors[section] = section_errors
