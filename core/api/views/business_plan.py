@@ -88,5 +88,5 @@ class BPRecordViewSet(viewsets.ReadOnlyModelViewSet):
             max_year=limits["max_year"],
         ).write(data)
 
-        name = f"Business Plans {limits['min_year']} {limits['max_year']}"
+        name = f"Business Plans {limits['min_year']}-{limits['max_year'] - 1}"
         return workbook_response(name, wb)
