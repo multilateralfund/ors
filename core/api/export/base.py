@@ -169,6 +169,7 @@ class CPReportBase:
         for section in self.sections:
             name = section.replace("_", " ").title()
             sheet = wb.create_sheet(name)
+            configure_sheet_print(sheet, sheet.ORIENTATION_PORTRAIT)
             sheet.cell(1, 1, "Country: %(country)s Year: %(year)s" % cp_report)
 
             getattr(self, f"export_{section}")(
@@ -177,14 +178,19 @@ class CPReportBase:
                 usages.get(section, []),
             )
 
-            sheet.page_setup.orientation = sheet.ORIENTATION_PORTRAIT
-            sheet.page_setup.paperSize = sheet.PAPERSIZE_A4
-            sheet.sheet_properties.pageSetUpPr.fitToPage = True
-            sheet.page_margins.top = 0.25
-            sheet.page_margins.right = 0.25
-            sheet.page_margins.bottom = 0.25
-            sheet.page_margins.left = 0.25
-
         # Remove the default sheet before saving
         del wb[wb.sheetnames[0]]
         return wb
+
+
+def configure_sheet_print(sheet, orientation):
+    sheet.page_setup.orientation = orientation
+    sheet.page_setup.paperSize = sheet.PAPERSIZE_A4
+    sheet.sheet_properties.pageSetUpPr.fitToPage = True
+    sheet.sheet_properties.pageSetUpPr.autoPageBreaks = True
+    sheet.page_setup.fitToWidth = 1
+    sheet.page_setup.fitToHeight = False
+    sheet.page_margins.top = 0.25
+    sheet.page_margins.right = 0.25
+    sheet.page_margins.bottom = 0.25
+    sheet.page_margins.left = 0.25

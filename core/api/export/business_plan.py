@@ -5,36 +5,38 @@ from core.api.export.base import COLUMN_WIDTH
 class BusinessPlanWriter(BaseWriter):
     header_row_start_idx = 1
 
-    def __init__(self, sheet, min_year, max_year):
-        assert min_year < max_year, "min_year must be smaller than max_year"
-
+    def __init__(self, sheet, min_year=None, max_year=None):
         year_headers = []
-        for year in range(min_year, max_year + 1):
-            label = str(year)
-            if year == max_year:
-                label = f"After {year - 1}"
-            year_headers.extend(
-                [
-                    {
-                        "id": f"value_usd_{year}",
-                        "headerName": f"Value ($000) {label}",
-                        "type": "number",
-                        "method": self.get_value,
-                    },
-                    {
-                        "id": f"value_odp_{year}",
-                        "headerName": f"ODP {label}",
-                        "type": "number",
-                        "method": self.get_value,
-                    },
-                    {
-                        "id": f"value_mt_{year}",
-                        "headerName": f"MT {label} for HFC",
-                        "type": "number",
-                        "method": self.get_value,
-                    },
-                ]
-            )
+
+        if min_year and max_year:
+            assert min_year < max_year, "min_year must be smaller than max_year"
+
+            for year in range(min_year, max_year + 1):
+                label = str(year)
+                if year == max_year:
+                    label = f"After {year - 1}"
+                year_headers.extend(
+                    [
+                        {
+                            "id": f"value_usd_{year}",
+                            "headerName": f"Value ($000) {label}",
+                            "type": "number",
+                            "method": self.get_value,
+                        },
+                        {
+                            "id": f"value_odp_{year}",
+                            "headerName": f"ODP {label}",
+                            "type": "number",
+                            "method": self.get_value,
+                        },
+                        {
+                            "id": f"value_mt_{year}",
+                            "headerName": f"MT {label} for HFC",
+                            "type": "number",
+                            "method": self.get_value,
+                        },
+                    ]
+                )
 
         headers = [
             {
@@ -73,7 +75,7 @@ class BusinessPlanWriter(BaseWriter):
             {
                 "id": "title",
                 "headerName": "Title",
-                "column_width": COLUMN_WIDTH * 3,
+                "column_width": COLUMN_WIDTH * 4,
             },
             {
                 "id": "required_by_model",

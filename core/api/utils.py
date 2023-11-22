@@ -1,4 +1,8 @@
 import io
+import shutil
+import subprocess
+import tempfile
+from pathlib import Path
 
 from django.db.models import Exists
 from django.db.models import OuterRef
@@ -56,3 +60,24 @@ def workbook_response(name, wb):
     wb.save(xls)
     xls.seek(0)
     return FileResponse(xls, as_attachment=True, filename=name + ".xlsx")
+
+
+def workbook_pdf_response(name, wb):
+    """Save pdf and return the response"""
+
+    with tempfile.TemporaryDirectory(prefix="mlf-print-") as tmpdirname:
+        pdf_file = Path(tmpdirname) / (name + ".pdf")
+        xlsx_file = Path(tmpdirname) / (name + ".xlsx")
+        wb.save(xlsx_file)
+
+        libreoffice_bin = shutil.which("libreoffice")
+        subprocess.check_call(
+            [libreoffice_bin, "--headless", "--convert-to", "pdf", str(xlsx_file)],
+            cwd=tmpdirname,
+            shell=False,
+        )
+        return FileResponse(
+            pdf_file.open("rb"),
+            as_attachment=True,
+            filename=name + ".pdf",
+        )

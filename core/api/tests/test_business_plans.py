@@ -5,6 +5,7 @@ import pytest
 from django.urls import reverse
 
 from core.api.tests.base import BaseTest
+from core.api.tests.conftest import pdf_text
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008, W0221
@@ -26,7 +27,10 @@ class TestBPExport(BaseTest):
             self.url, {"business_plan__year_start": business_plan.year_start}
         )
         assert response.status_code == 200
-        assert response.filename == f"Business Plans {business_plan.year_start}-{business_plan.year_end}.xlsx"
+        assert (
+            response.filename
+            == f"Business Plans {business_plan.year_start}-{business_plan.year_end}.xlsx"
+        )
 
         wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
         sheet = wb.active
@@ -49,3 +53,31 @@ class TestBPExport(BaseTest):
         assert sheet["U2"].value == bp_record_values[3].value_usd
         assert sheet["V2"].value == bp_record_values[3].value_odp
         assert sheet["W2"].value == bp_record_values[3].value_mt
+
+
+class TestBPPrint(BaseTest):
+    url = reverse("bprecord-print")
+
+    def test_export_anon(self, business_plan):
+        response = self.client.get(
+            self.url, {"business_plan__year_start": business_plan.year_start}
+        )
+        assert response.status_code == 403
+
+    def test_export(self, user, business_plan, bp_record):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(
+            self.url, {"business_plan__year_start": business_plan.year_start}
+        )
+        assert response.status_code == 200
+        assert (
+            response.filename
+            == f"Business Plans {business_plan.year_start}-{business_plan.year_end}.pdf"
+        )
+
+        text = pdf_text(io.BytesIO(response.getvalue())).replace("\n", "")
+
+        assert bp_record.country.name in text
+        assert business_plan.agency.name in text
+        assert bp_record.title in text
