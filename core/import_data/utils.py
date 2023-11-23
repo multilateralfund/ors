@@ -170,14 +170,25 @@ def get_meeting_by_number(meeting_number, row_index):
     """
     if not meeting_number:
         return None
+    # check if the meeting string is a number
+    if not str(meeting_number).isnumeric():
+        logger.info(
+            f"[row: {row_index}]: This meeting number is not valid: {meeting_number}"
+        )
+        return None
     try:
         return Meeting.objects.get(number=meeting_number)
     except Meeting.DoesNotExist:
-        logger.info(f"[row: {row_index}]: This meeting does not exists in data base")
+        logger.info(
+            f"[row: {row_index}]: This meeting does not exists in data base {meeting_number}"
+        )
         return None
 
 
-def get_chemical_by_name_or_components(chemical_name, components=None):
+def get_chemical_by_name_or_components(
+    chemical_name,
+    components=None,
+):
     """
     get chemical by name or alt name (case insensitive) or components (blends)
     @param chemical_name: string chemical name

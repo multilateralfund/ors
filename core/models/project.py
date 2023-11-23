@@ -470,6 +470,7 @@ class ProjectComment(models.Model):
     meeting_of_report = models.ForeignKey(
         Meeting, on_delete=models.CASCADE, null=True, blank=True
     )
+    meeting_of_report_string = models.CharField(max_length=255, null=True, blank=True)
     secretariat_comment = models.TextField(
         null=True, blank=True, verbose_name="Secretariat's Comment"
     )
