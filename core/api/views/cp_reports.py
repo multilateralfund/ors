@@ -119,7 +119,6 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
             }
 
         """
-        print("----------", error_dict)
         custom_errors = {}
         for section, section_errors in error_dict.items():
             if (
