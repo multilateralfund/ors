@@ -6,7 +6,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import Print from '@ors/components/manage/Utils/Print'
 import Footer from '@ors/components/theme/Footer/AuthorizedFooter'
 import Header from '@ors/components/theme/Header/AuthorizedHeader'
-import useStore from '@ors/store'
+import Loading from '@ors/components/theme/Loading/Loading'
+import { useStore } from '@ors/store'
 
 export default function AuthorizedView({
   children,
@@ -26,19 +27,18 @@ export default function AuthorizedView({
   }, [user, pathname, router])
 
   return (
-    !!user && (
-      <>
-        <Print />
-        <Header />
-        <main className="grid-cols-[auto]">
-          <div className="content grid grid-rows-[auto_1fr_auto]">
-            <div id="top-control" className="not-printable z-10" />
-            <div className="page-content-wrapper">{children}</div>
-            <div id="bottom-control" className="not-printable z-10" />
-          </div>
-        </main>
-        <Footer />
-      </>
-    )
+    <>
+      {!user && <Loading className="bg-action-disabledBackground" />}
+      <Print />
+      <Header />
+      <main className="grid-cols-[auto]">
+        <div className="content grid grid-rows-[auto_1fr_auto]">
+          <div id="top-control" className="not-printable z-10" />
+          <div className="page-content-wrapper">{children}</div>
+          <div id="bottom-control" className="not-printable z-10" />
+        </div>
+      </main>
+      <Footer />
+    </>
   )
 }

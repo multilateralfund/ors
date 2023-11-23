@@ -25,19 +25,21 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import IconButton from '@ors/components/ui/IconButton/IconButton'
 import Link from '@ors/components/ui/Link/Link'
 import { KEY_ENTER } from '@ors/constants'
-import { getResults } from '@ors/helpers/Api'
+import { getResults } from '@ors/helpers/Api/Api'
 import useApi from '@ors/hooks/useApi'
-import useStore from '@ors/store'
+import { useStore } from '@ors/store'
 
-import { IoArrowDown } from '@react-icons/all-files/io5/IoArrowDown'
-import { IoArrowUp } from '@react-icons/all-files/io5/IoArrowUp'
-import { IoCaretDown } from '@react-icons/all-files/io5/IoCaretDown'
-import { IoCaretUp } from '@react-icons/all-files/io5/IoCaretUp'
-import { IoClose } from '@react-icons/all-files/io5/IoClose'
-import { IoEllipseOutline } from '@react-icons/all-files/io5/IoEllipseOutline'
-import { IoRemove } from '@react-icons/all-files/io5/IoRemove'
-import { IoReorderTwo } from '@react-icons/all-files/io5/IoReorderTwo'
-import { IoSearchOutline } from '@react-icons/all-files/io5/IoSearchOutline'
+import {
+  IoArrowDown,
+  IoArrowUp,
+  IoCaretDown,
+  IoCaretUp,
+  IoClose,
+  IoEllipseOutline,
+  IoRemove,
+  IoReorderTwo,
+  IoSearchOutline,
+} from 'react-icons/io5'
 
 const dayOfYear = require('dayjs/plugin/dayOfYear')
 dayjs.extend(dayOfYear)
@@ -237,7 +239,7 @@ export default function SubmissionsListing() {
   })
   const [collapsedRows, setCollapsedRows] = useState<Record<string, any>>({})
   const [filters, setFilters] = useState({ ...initialFilters })
-  const [apiSettings, setApiSettings] = useState({
+  const { data, loading, setParams } = useApi({
     options: {
       delay: 500,
       params: {
@@ -249,7 +251,6 @@ export default function SubmissionsListing() {
     },
     path: 'api/projects/',
   })
-  const { data, loading } = useApi(apiSettings)
 
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
@@ -258,17 +259,8 @@ export default function SubmissionsListing() {
   )
   const { count, loaded, results } = getResults(data)
 
-  function handleParamsChange(newParams: { [key: string]: any }) {
-    setApiSettings((prevApiSettings) => ({
-      ...prevApiSettings,
-      options: {
-        ...prevApiSettings.options,
-        params: {
-          ...prevApiSettings.options.params,
-          ...newParams,
-        },
-      },
-    }))
+  function handleParamsChange(params: { [key: string]: any }) {
+    setParams(params)
     setCollapsedRows({})
   }
 

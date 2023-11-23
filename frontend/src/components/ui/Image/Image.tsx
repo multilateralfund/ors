@@ -7,7 +7,7 @@ export default function Image({
   id,
   Skeleton,
   onError,
-  onLoadingComplete,
+  onLoad,
   useSkeleton,
   ...rest
 }: ImageProps & { Skeleton?: SkeletonProps; useSkeleton?: boolean }) {
@@ -55,9 +55,9 @@ export default function Image({
               imageEl.style.visibility = 'hidden'
             }
           }}
-          onLoadingComplete={(e) => {
-            if (onLoadingComplete) {
-              onLoadingComplete(e)
+          onLoad={(e) => {
+            if (onLoad) {
+              onLoad(e)
             }
             if (!useSkeleton) return
             const skeletonEl = skeletonId

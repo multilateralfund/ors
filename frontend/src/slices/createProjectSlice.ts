@@ -1,18 +1,11 @@
-import type {
-  InitialStoreState,
-  ProjectsSlice,
-  StoreState,
-} from '@ors/types/store'
-
-import { StoreApi } from 'zustand'
+import type { ProjectsSlice } from '@ors/types/store'
 
 import { defaultSliceData } from '@ors/helpers/Store/Store'
+import { CreateSliceProps } from '@ors/store'
 
-export const createProjectSlice = (
-  set: StoreApi<StoreState>['setState'],
-  get: StoreApi<StoreState>['getState'],
-  initialState?: InitialStoreState,
-): ProjectsSlice => {
+export const createProjectSlice = ({
+  initialState,
+}: CreateSliceProps): ProjectsSlice => {
   return {
     meetings: {
       ...defaultSliceData,

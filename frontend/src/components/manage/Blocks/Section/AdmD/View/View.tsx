@@ -13,11 +13,12 @@ import { groupBy, map } from 'lodash'
 
 export default function AdmD(props: any) {
   const { emptyForm, index, report, section, setActiveSection } = props
+  const { rows = [] } = emptyForm.adm_d || {}
 
   const rowData = useMemo(() => {
     const dataByRowId = groupBy(report.adm_d, 'row_id')
 
-    return map(emptyForm.adm_d?.rows, (row) => ({
+    return map(rows, (row) => ({
       ...row,
       ...(row.type === 'title' ? { rowType: 'group' } : {}),
       ...(row.type === 'subtitle' ? { rowType: 'hashed' } : {}),
@@ -26,7 +27,7 @@ export default function AdmD(props: any) {
         (item) => item.values[0]?.value_choice_id,
       ),
     }))
-  }, [emptyForm, report])
+  }, [rows, report])
 
   useEffect(() => {
     setActiveSection(index)

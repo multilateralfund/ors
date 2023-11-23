@@ -24,7 +24,8 @@
       "@ors/types": ["./src/@types"],
       "@ors/types/*": ["./src/@types/*"],
       "@ors/registry": ["./src/config/base"],
-      "@ors/*": ["./src/*"]
+      "@ors/*": ["./src/*"],
+      "~/*": ["./*"]
     },
     "useUnknownInCatchVariables": false
   },

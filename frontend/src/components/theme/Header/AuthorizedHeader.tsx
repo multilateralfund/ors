@@ -5,15 +5,15 @@ import { AnimatePresence } from 'framer-motion'
 import { isFunction } from 'lodash'
 import { usePathname } from 'next/navigation'
 
-import CollapseInOut from '@ors/components/manage/Transitions/CollapseInOut'
+// import CollapseInOut from '@ors/components/manage/Transitions/CollapseInOut'
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Logo from '@ors/components/theme/Logo/Logo'
 import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
 // import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
 import UnstyledLink, { LinkProps } from '@ors/components/ui/Link/Link'
-import { formatApiUrl } from '@ors/helpers/Api'
+import { formatApiUrl } from '@ors/helpers/Api/Api'
 import { matchPath } from '@ors/helpers/Url/Url'
-import useStore from '@ors/store'
+import { useStore } from '@ors/store'
 
 function Link({
   children,
@@ -89,7 +89,7 @@ export default function Header() {
                 Business plans
               </Link>
               <Link href="/submissions" path="/submissions/*">
-                Submissions
+                Project submissions
               </Link>
               <Link href="/projects" path="/projects/*">
                 Projects
@@ -103,12 +103,8 @@ export default function Header() {
             </div>
             <div id="header-title">
               <AnimatePresence>
-                {isFunction(HeaderTitle) && (
-                  <CollapseInOut>
-                    <HeaderTitle />
-                  </CollapseInOut>
-                )}
-                {!!HeaderTitle && <CollapseInOut>{HeaderTitle}</CollapseInOut>}
+                {isFunction(HeaderTitle) && <HeaderTitle />}
+                {!!HeaderTitle && !isFunction(HeaderTitle) && HeaderTitle}
               </AnimatePresence>
             </div>
           </div>

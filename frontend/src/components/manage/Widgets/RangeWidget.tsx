@@ -6,7 +6,7 @@ import cx from 'classnames'
 
 import IconButton from '@ors/components/ui/IconButton/IconButton'
 
-import { IoCalendarClearOutline } from '@react-icons/all-files/io5/IoCalendarClearOutline'
+import { IoCalendarClearOutline } from 'react-icons/io5'
 
 export type RangeWidgetProps = {
   className?: string

@@ -5,9 +5,9 @@ import { Box, Grid } from '@mui/material'
 import dynamic from 'next/dynamic'
 
 import Field from '@ors/components/manage/Form/Field'
-import { getResults } from '@ors/helpers/Api'
+import { getResults } from '@ors/helpers/Api/Api'
 import useApi from '@ors/hooks/useApi'
-import useStore from '@ors/store'
+import { useStore } from '@ors/store'
 
 import { columnSchema } from './schema'
 

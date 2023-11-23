@@ -27,7 +27,8 @@ import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
-import api, { getResults } from '@ors/helpers/Api'
+import api, { getResults } from '@ors/helpers/Api/Api'
+import { defaultSliceData } from '@ors/helpers/Store/Store'
 import useMakeClassInstance from '@ors/hooks/useMakeClassInstance'
 import { Blend, Substance } from '@ors/models/Section'
 import SectionA from '@ors/models/SectionA'
@@ -36,14 +37,12 @@ import SectionC from '@ors/models/SectionC'
 import SectionD from '@ors/models/SectionD'
 import SectionE from '@ors/models/SectionE'
 import SectionF from '@ors/models/SectionF'
-import useStore from '@ors/store'
+import { useStore } from '@ors/store'
 
 import { createSections } from '.'
 
-import { AiFillFilePdf } from '@react-icons/all-files/ai/AiFillFilePdf'
-import { IoClose } from '@react-icons/all-files/io5/IoClose'
-import { IoDownloadOutline } from '@react-icons/all-files/io5/IoDownloadOutline'
-import { IoExpand } from '@react-icons/all-files/io5/IoExpand'
+import { AiFillFilePdf } from 'react-icons/ai'
+import { IoClose, IoDownloadOutline, IoExpand } from 'react-icons/io5'
 
 function TabPanel(props: any) {
   const {
@@ -87,13 +86,10 @@ function TabPanel(props: any) {
   )
 }
 
-export default function CPReportCreate(props: {
-  blends: Array<Blend>
-  emptyForm: Record<string, any>
-  substances: Array<Substance>
-}) {
+function CPReportCreate() {
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
+  const { report, substances, blends } = useStore((state) => state.cp_reports)
   const countries = useStore((state) => [
     { id: 0, label: 'Any' },
     ...getResults(state.common.countries.data).results.map((country) => ({
@@ -101,30 +97,29 @@ export default function CPReportCreate(props: {
       label: country.name,
     })),
   ])
-  const { blends, substances } = props
 
   const Sections = {
     section_a: useMakeClassInstance<SectionA>(SectionA, [
       [],
-      substances,
+      substances.data,
       'section_a_create',
     ]),
     section_b: useMakeClassInstance<SectionB>(SectionB, [
       [],
-      substances,
-      blends,
+      substances.data,
+      blends.data,
       'section_b_create',
     ]),
     section_c: useMakeClassInstance<SectionC>(SectionC, [
       [],
-      substances,
-      blends,
+      substances.data,
+      blends.data,
       'section_c_create',
     ]),
     section_d: useMakeClassInstance<SectionD>(SectionD, [
       [],
-      substances,
-      blends,
+      substances.data,
+      blends.data,
       'section_d_create',
     ]),
     section_e: useMakeClassInstance<SectionE>(SectionE, [
@@ -143,7 +138,6 @@ export default function CPReportCreate(props: {
   const [renderSection, setRenderSection] = useState(false)
   const [form, setForm] = useState<Record<string, any>>({
     country: null,
-    name: '',
     section_a: Sections.section_a.getData(),
     section_b: Sections.section_b.getData(),
     section_c: Sections.section_c.getData(),
@@ -262,6 +256,7 @@ export default function CPReportCreate(props: {
             Section={Sections[section.id]}
             activeSection={activeSection}
             currentIndex={currentIndex}
+            emptyForm={report.emptyForm.data || {}}
             errors={errors}
             form={form}
             index={index}
@@ -351,7 +346,6 @@ export default function CPReportCreate(props: {
               withSeparators: true,
               errors: errors[section.id],
             }}
-            {...props}
           />
         ))}
 
@@ -416,4 +410,37 @@ export default function CPReportCreate(props: {
       </form>
     </>
   )
+}
+
+export default function CPReportCreateWrapper() {
+  const { fetchEmptyForm, report, setReport, blends, substances } = useStore(
+    (state) => state.cp_reports,
+  )
+
+  const dataReady = report.emptyForm.data && blends.data && substances.data
+
+  useEffect(() => {
+    return () => {
+      setReport({
+        ...defaultSliceData,
+        versions: defaultSliceData,
+        emptyForm: defaultSliceData,
+      })
+    }
+  }, [setReport])
+
+  useEffect(() => {
+    fetchEmptyForm(null, false)
+  }, [fetchEmptyForm])
+
+  if (!dataReady) {
+    return (
+      <Loading
+        className="!fixed bg-action-disabledBackground"
+        active={!report.error && report.loading}
+      />
+    )
+  }
+
+  return <CPReportCreate />
 }

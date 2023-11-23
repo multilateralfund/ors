@@ -20,12 +20,11 @@ import { useSnackbar } from 'notistack'
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
-import api from '@ors/helpers/Api'
+import api from '@ors/helpers/Api/Api'
 import { applyTransaction } from '@ors/helpers/Utils/Utils'
 import useStateWithPrev from '@ors/hooks/useStateWithPrev'
 
-import { IoRefresh } from '@react-icons/all-files/io5/IoRefresh'
-import { IoTrash } from '@react-icons/all-files/io5/IoTrash'
+import { IoRefresh, IoTrash } from 'react-icons/io5'
 
 function SimilarBlend({ blend, onClick, substances }: any) {
   return (

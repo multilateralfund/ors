@@ -1,70 +1,78 @@
 'use client'
 import type { InitialStoreState, StoreState } from '@ors/types/store'
 
-import React, { createContext, useContext } from 'react'
-
 import {
-  StoreApi,
-  useStore as useZustandStore,
-  createStore as zustandCreateStore,
-} from 'zustand'
+  MutableRefObject,
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
-import { createCPReportsSlice } from '@ors/slices/createCPReportsSlice'
-import { createCacheSlice } from '@ors/slices/createCacheSlice'
-import { createCommonSlice } from '@ors/slices/createCommonSlice'
-import { createHeaderSlice } from '@ors/slices/createHeaderSlice'
-import { createI18nSlice } from '@ors/slices/createI18nSlice'
-import { createProjectSlice } from '@ors/slices/createProjectSlice'
-import { createThemeSlice } from '@ors/slices/createThemeSlice'
-import { createUserSlice } from '@ors/slices/createUserSlice'
+import { merge } from 'lodash'
+import { StoreApi, useStore as useZustandStore } from 'zustand'
+import { useShallow } from 'zustand/react/shallow'
+import { createStore as createZustandStore } from 'zustand/vanilla'
 
-let storeInstance: StoreApi<StoreState>
+import createSlices from '@ors/slices'
 
-const createStore = (initialState?: InitialStoreState) => {
-  storeInstance = zustandCreateStore<StoreState>((set, get) => {
-    const args: [
-      StoreApi<StoreState>['setState'],
-      StoreApi<StoreState>['getState'],
-      InitialStoreState | undefined,
-    ] = [set, get, initialState]
-    return {
-      cache: { ...createCacheSlice(...args) },
-      common: { ...createCommonSlice(...args) },
-      connection: __CLIENT__
-        ? // @ts-ignore
-          navigator?.connection?.effectiveType || null
-        : null,
-      cp_reports: { ...createCPReportsSlice(...args) },
-      header: { ...createHeaderSlice(...args) },
-      i18n: { ...createI18nSlice(...args) },
-      projects: { ...createProjectSlice(...args) },
-      theme: { ...createThemeSlice(...args) },
-      user: { ...createUserSlice(...args) },
+type StoreProviderProps = {
+  children: React.ReactNode
+  initialState: InitialStoreState
+}
+
+export type CreateSliceProps = {
+  initialState: InitialStoreState
+  get: StoreApi<StoreState>['getState']
+  set: StoreApi<StoreState>['setState']
+}
+
+export type Store = ReturnType<typeof createStore>
+
+export let store: MutableRefObject<StoreApi<StoreState>>
+
+export const test = {}
+
+export const initialStore = createZustandStore<InitialStoreState>(() => ({}))
+
+export const createStore = (initialState: InitialStoreState) => {
+  return createZustandStore<StoreState>((set, get) => ({
+    ...createSlices({ initialState, get, set }),
+  }))
+}
+
+export const StoreContext = createContext<Store | null>(null)
+
+export function StoreProvider({ children, initialState }: StoreProviderProps) {
+  const [, setMounted] = useState(false)
+  // Set initial store state
+  initialStore.setState(initialState)
+  // Hydrate store with initial state
+  store = useRef(createStore(initialStore.getState()))
+  // Re-hydrate store with new initial state
+  const unsubscribeRehydrate = initialStore.subscribe((state, prevState) => {
+    if (JSON.stringify(state) !== JSON.stringify(prevState)) {
+      store.current.setState(merge(store.current.getState(), state))
     }
   })
 
-  return storeInstance
-}
-
-export const ZustandContext = createContext<StoreApi<StoreState>>(createStore())
-
-export const Provider = ({
-  children,
-  initialState,
-}: {
-  children: React.ReactNode
-  initialState: InitialStoreState
-}) => {
-  const [store] = React.useState(() => createStore(initialState))
+  useEffect(() => {
+    // Unsubscribe store re-hydration on initial render and trigger rerender
+    unsubscribeRehydrate()
+    setMounted(true)
+    /* eslint-disable-next-line */
+  }, [])
 
   return (
-    <ZustandContext.Provider value={store}>{children}</ZustandContext.Provider>
+    <StoreContext.Provider value={store.current}>
+      {children}
+    </StoreContext.Provider>
   )
 }
 
-export const getStore = () => storeInstance
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function useStore(selector: (state: StoreState) => any) {
-  return useZustandStore(useContext(ZustandContext), selector)
+export function useStore<S>(selector: (state: StoreState) => S) {
+  const store = useContext(StoreContext)
+  if (!store) throw new Error('Missing StoreContext.Provider in the tree')
+  return useZustandStore(store, useShallow(selector))
 }

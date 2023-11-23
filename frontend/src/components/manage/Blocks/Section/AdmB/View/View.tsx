@@ -12,21 +12,22 @@ const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
 
 export default function AdmB(props: any) {
   const { TableProps, emptyForm, index, report, setActiveSection } = props
+  const { columns = [], rows = [] } = emptyForm.adm_b || {}
   const grid = useRef<any>()
   const gridOptions = useGridOptions({
-    adm_columns: emptyForm.adm_b.columns,
+    adm_columns: columns,
   })
 
   const rowData = useMemo(() => {
     const dataByRowId = groupBy(report.adm_b, 'row_id')
 
-    return map(emptyForm.adm_b?.rows, (row) => ({
+    return map(rows, (row) => ({
       values: dataByRowId[row.id]?.[0]?.values || [],
       ...row,
       ...(row.type === 'title' ? { rowType: 'group' } : {}),
       ...(row.type === 'subtitle' ? { rowType: 'hashed' } : {}),
     }))
-  }, [emptyForm, report])
+  }, [rows, report])
 
   return (
     <>

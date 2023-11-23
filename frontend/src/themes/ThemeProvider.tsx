@@ -16,7 +16,7 @@ import rtlPlugin from 'stylis-plugin-rtl'
 
 import LoadingBuffer from '@ors/components/theme/Loading/LoadingBuffer'
 import Trans from '@ors/components/ui/Trans/Trans'
-import useStore from '@ors/store'
+import { useStore } from '@ors/store'
 import { createTheme } from '@ors/themes'
 
 export default function ThemeProvider({

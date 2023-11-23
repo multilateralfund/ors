@@ -1,15 +1,14 @@
-export declare type AnyObject = Record<
-  string,
-  Array<any> | boolean | number | string | undefined
->
+// import { Primitive, UnknownArray, UnknownRecord } from 'type-fest'
 
-export declare type DataType = Array<any> | any | null | undefined
+// export declare type DataType = Primitive | UnknownArray | UnknownRecord
+export declare type DataType = any
 
-export declare type ErrorType = AnyObject | Array<any> | null | undefined
+// export declare type ErrorType = Primitive | UnknownArray | UnknownRecord
+export declare type ErrorType = any
 
-export declare type SliceData = {
-  data: DataType
-  error: ErrorType
+export declare type SliceData<D = DataType, E = ErrorType> = {
+  data: D
+  error: E
   loaded: boolean
   loading: boolean
 }

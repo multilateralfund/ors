@@ -14,13 +14,11 @@ import i18next from 'i18next'
 import ICU from 'i18next-icu'
 import resourcesToBackend from 'i18next-resources-to-backend'
 
-import useStore, { getStore } from '@ors/store'
+import { store, useStore } from '@ors/store'
 
 import { getLocale, getOptions, languages } from './settings'
 
 type $Tuple<T> = readonly [T?, ...T[]]
-
-const store = getStore()
 
 i18next
   .use(ICU)
@@ -36,7 +34,7 @@ i18next
     detection: {
       order: ['path', 'htmlTag', 'cookie', 'navigator'],
     },
-    lng: store.getState().i18n.lang,
+    lng: store?.current.getState().i18n.lang,
     preload: __SERVER__ ? languages : [],
   })
 

@@ -1,10 +1,10 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 import { Divider } from '@mui/material'
 import cx from 'classnames'
 
-import useStore from '@ors/store'
+import { useStore } from '@ors/store'
 
 export type TitleProps = {
   children: React.ReactNode
@@ -12,10 +12,8 @@ export type TitleProps = {
 }
 
 export type HeaderTitleProps = {
-  animationDelay?: number
   children: React.ReactNode
   memo?: any
-  onAnimationEnd?: () => any
 }
 
 function Title({ children, visible }: TitleProps) {
@@ -33,34 +31,18 @@ function Title({ children, visible }: TitleProps) {
   )
 }
 
-export default function HeaderTitle({
-  animationDelay = 600,
-  children,
-  memo = '',
-  onAnimationEnd,
-}: HeaderTitleProps) {
-  const [mounted, setMounted] = useState(false)
+export default function HeaderTitle({ children }: HeaderTitleProps) {
   const { setHeaderTitleComponent } = useStore((state) => state.header)
 
   useEffect(() => {
-    console.log('HERE REBUILD HEADER')
-    setMounted(true)
     setHeaderTitleComponent(<Title visible={true}>{children}</Title>, false)
-
-    if (onAnimationEnd) {
-      setTimeout(() => {
-        onAnimationEnd()
-      }, animationDelay)
-    }
 
     return () => {
       setHeaderTitleComponent(null, false)
     }
 
     /* eslint-disable-next-line */
-  }, [memo])
+  }, [])
 
   return null
-
-  return !mounted && <Title visible={false}>{children}</Title>
 }

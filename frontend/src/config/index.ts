@@ -1,5 +1,12 @@
 import { aggFuncs, components, renderers } from './Table/Table'
-import { ByLayout, defaultView, layoutViews, routes } from './Views'
+import {
+  ByError,
+  ByLayout,
+  defaultView,
+  errorViews,
+  layoutViews,
+  routes,
+} from './Views'
 import { ByType, ByWidget, defaultWidget, widgetsMapping } from './Widgets'
 import baseConfig, { BaseConfig } from './base'
 
@@ -19,6 +26,7 @@ export interface Config extends BaseConfig {
   }
   views: {
     default: typeof defaultView
+    errorViews: ByError
     layoutViews: ByLayout
   }
   widgets: {
@@ -45,6 +53,7 @@ const config: Config = {
   },
   views: {
     default: defaultView,
+    errorViews,
     layoutViews,
   },
   widgets: {

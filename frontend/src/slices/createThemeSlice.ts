@@ -1,24 +1,22 @@
-import type {
-  InitialStoreState,
-  StoreState,
-  ThemeSlice,
-} from '@ors/types/store'
+import type { ThemeSlice } from '@ors/types/store'
 
+import { produce } from 'immer'
 import Cookies from 'js-cookie'
-import { StoreApi } from 'zustand'
 
 import config from '@ors/registry'
+import { CreateSliceProps } from '@ors/store'
 
-export const createThemeSlice = (
-  set: StoreApi<StoreState>['setState'],
-  get: StoreApi<StoreState>['getState'],
-  initialState?: InitialStoreState,
-): ThemeSlice => ({
+export const createThemeSlice = ({
+  initialState,
+  set,
+}: CreateSliceProps): ThemeSlice => ({
   mode: initialState?.theme?.mode || null,
   setMode: (mode) => {
-    set((state) => {
-      Cookies.set(config.cookies.theme, mode as string)
-      return { theme: { ...state.theme, mode } }
-    })
+    set(
+      produce((state) => {
+        Cookies.set(config.cookies.theme, mode as string)
+        state.theme.mode = mode
+      }),
+    )
   },
 })

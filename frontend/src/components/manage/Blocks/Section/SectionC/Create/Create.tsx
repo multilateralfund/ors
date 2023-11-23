@@ -6,9 +6,9 @@ import { each, find, findIndex, includes, union } from 'lodash'
 import dynamic from 'next/dynamic'
 
 import Field from '@ors/components/manage/Form/Field'
-import { getResults } from '@ors/helpers/Api'
+import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
-import useStore from '@ors/store'
+import { useStore } from '@ors/store'
 
 import useGridOptions from './schema'
 

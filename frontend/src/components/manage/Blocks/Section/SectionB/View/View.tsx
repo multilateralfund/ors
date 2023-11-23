@@ -20,7 +20,7 @@ export default function SectionBView(props: any) {
   const { TableProps, emptyForm, index, report, setActiveSection } = props
   const grid = useRef<any>()
   const gridOptions = useGridOptions({
-    usages: emptyForm.usage_columns.section_b || [],
+    usages: emptyForm.usage_columns?.section_b || [],
   })
 
   const rowData = useMemo(() => {

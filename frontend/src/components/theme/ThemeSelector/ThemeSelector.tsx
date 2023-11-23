@@ -6,10 +6,9 @@ import React from 'react'
 import { IconButton } from '@mui/material'
 import cx from 'classnames'
 
-import useStore from '@ors/store'
+import { useStore } from '@ors/store'
 
-import { IoMoon } from '@react-icons/all-files/io5/IoMoon'
-import { IoSunny } from '@react-icons/all-files/io5/IoSunny'
+import { IoMoon, IoSunny } from 'react-icons/io5'
 
 export default function ThemeSelector() {
   const theme: ThemeSlice = useStore((state) => state.theme)

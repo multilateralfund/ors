@@ -29,22 +29,24 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
 import { KEY_ENTER } from '@ors/constants'
-import { getResults } from '@ors/helpers/Api'
+import { getResults } from '@ors/helpers/Api/Api'
 import useApi from '@ors/hooks/useApi'
-import useStore from '@ors/store'
+import { useStore } from '@ors/store'
 
-import { IoArrowBack } from '@react-icons/all-files/io5/IoArrowBack'
-import { IoArrowDown } from '@react-icons/all-files/io5/IoArrowDown'
-import { IoArrowForward } from '@react-icons/all-files/io5/IoArrowForward'
-import { IoArrowUp } from '@react-icons/all-files/io5/IoArrowUp'
-import { IoCalendarClearOutline } from '@react-icons/all-files/io5/IoCalendarClearOutline'
-import { IoCaretDown } from '@react-icons/all-files/io5/IoCaretDown'
-import { IoCaretUp } from '@react-icons/all-files/io5/IoCaretUp'
-import { IoClose } from '@react-icons/all-files/io5/IoClose'
-import { IoEllipseOutline } from '@react-icons/all-files/io5/IoEllipseOutline'
-import { IoRemove } from '@react-icons/all-files/io5/IoRemove'
-import { IoReorderTwo } from '@react-icons/all-files/io5/IoReorderTwo'
-import { IoSearchOutline } from '@react-icons/all-files/io5/IoSearchOutline'
+import {
+  IoArrowBack,
+  IoArrowDown,
+  IoArrowForward,
+  IoArrowUp,
+  IoCalendarClearOutline,
+  IoCaretDown,
+  IoCaretUp,
+  IoClose,
+  IoEllipseOutline,
+  IoRemove,
+  IoReorderTwo,
+  IoSearchOutline,
+} from 'react-icons/io5'
 
 const dayOfYear = require('dayjs/plugin/dayOfYear')
 dayjs.extend(dayOfYear)
@@ -270,7 +272,7 @@ export default function ProjectsListing() {
   const [pagination, setPagination] = useState({ page: 1, rowsPerPage: 50 })
   const [collapsedRows, setCollapsedRows] = useState<Record<string, any>>({})
   const [filters, setFilters] = useState({ ...initialFilters })
-  const [apiSettings, setApiSettings] = useState({
+  const { data, loading, setParams } = useApi({
     options: {
       delay: 500,
       params: {
@@ -282,7 +284,6 @@ export default function ProjectsListing() {
     },
     path: 'api/projects/',
   })
-  const { data, loading } = useApi(apiSettings)
 
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
@@ -305,17 +306,8 @@ export default function ProjectsListing() {
 
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
-  function handleParamsChange(newParams: { [key: string]: any }) {
-    setApiSettings((prevApiSettings) => ({
-      ...prevApiSettings,
-      options: {
-        ...prevApiSettings.options,
-        params: {
-          ...prevApiSettings.options.params,
-          ...newParams,
-        },
-      },
-    }))
+  function handleParamsChange(params: { [key: string]: any }) {
+    setParams(params)
     setCollapsedRows({})
   }
 

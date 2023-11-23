@@ -22,15 +22,17 @@ import IconButton from '@ors/components/ui/IconButton/IconButton'
 import Link from '@ors/components/ui/Link/Link'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import { getResults } from '@ors/helpers'
-import { scrollToElement } from '@ors/helpers/Utils/Utils'
+// import { scrollToElement } from '@ors/helpers/Utils/Utils'
 import useApi from '@ors/hooks/useApi'
-import useStore from '@ors/store'
+import { useStore } from '@ors/store'
 
-import { IoArrowDown } from '@react-icons/all-files/io5/IoArrowDown'
-import { IoArrowForward } from '@react-icons/all-files/io5/IoArrowForward'
-import { IoArrowUp } from '@react-icons/all-files/io5/IoArrowUp'
-import { IoClose } from '@react-icons/all-files/io5/IoClose'
-import { IoFilter } from '@react-icons/all-files/io5/IoFilter'
+import {
+  IoArrowDown,
+  IoArrowForward,
+  IoArrowUp,
+  IoClose,
+  IoFilter,
+} from 'react-icons/io5'
 
 interface SectionProps {
   currentSection?: number
@@ -97,8 +99,12 @@ function Item({ item, showCountry, showYear }: any) {
                   'text-warning': item.status === 'draft',
                 },
               )}
-              href={`/country-programme/${item.id}`}
               underline="hover"
+              href={
+                item.status === 'draft'
+                  ? `/country-programme/edit/${item.id}`
+                  : `/country-programme/${item.id}`
+              }
             >
               {showAll && item.name}
               {!!showCountry && item.country}
@@ -112,7 +118,7 @@ function Item({ item, showCountry, showYear }: any) {
 }
 
 function GeneralSection(props: SectionProps) {
-  const shouldScroll = useRef(false)
+  // const shouldScroll = useRef(false)
   const listing = useRef<any>()
   const countries = useStore((state) => state.common.countries.data)
   const countriesById = new Map<number, any>(
@@ -129,14 +135,15 @@ function GeneralSection(props: SectionProps) {
   )
   const orderField =
     groupBy === 'country' ? 'country__name,year' : 'year,country__name'
-  const [apiSettings, setApiSettings] = useState({
-    onSuccess: () => {
-      if (shouldScroll.current) {
-        scrollToElement('#cp-listing-sections')
-      } else {
-        shouldScroll.current = true
-      }
-    },
+
+  const { data, loading, setParams } = useApi({
+    // onSuccess: () => {
+    //   if (shouldScroll.current) {
+    //     scrollToElement('#cp-listing-sections')
+    //   } else {
+    //     shouldScroll.current = true
+    //   }
+    // },
     options: {
       params: {
         country_id: filters.country.join(','),
@@ -146,26 +153,11 @@ function GeneralSection(props: SectionProps) {
         year_max: filters.year.length > 0 ? filters.year[0] : range[1],
         year_min: filters.year.length > 0 ? filters.year[0] : range[0],
       },
+      withStoreCache: true,
     },
     path: 'api/country-programme/reports/',
-    withStoreCache: true,
   })
-
-  const { data, loading } = useApi(apiSettings)
   const { count, loaded, results } = getResults(data)
-
-  function handleParamsChange(newParams: { [key: string]: any }) {
-    setApiSettings((prevApiSettings) => ({
-      ...prevApiSettings,
-      options: {
-        ...prevApiSettings.options,
-        params: {
-          ...prevApiSettings.options.params,
-          ...newParams,
-        },
-      },
-    }))
-  }
 
   return (
     <div id="general-section">
@@ -192,7 +184,7 @@ function GeneralSection(props: SectionProps) {
                 setFilters((filters: any) => {
                   return { ...filters, country: newValue }
                 })
-                handleParamsChange({
+                setParams({
                   country_id: newValue.join(','),
                   offset: 0,
                 })
@@ -217,7 +209,7 @@ function GeneralSection(props: SectionProps) {
                   setFilters((filters: any) => {
                     return { ...filters, range: value, year: [] }
                   })
-                  handleParamsChange({
+                  setParams({
                     offset: 0,
                     year_max: value[1],
                     year_min: value[0],
@@ -237,7 +229,7 @@ function GeneralSection(props: SectionProps) {
               const newOrder = ordering === 'asc' ? 'desc' : 'asc'
               setOrdering(newOrder)
               setPagination({ ...pagination, page: 1 })
-              handleParamsChange({
+              setParams({
                 offset: 0,
                 ordering: (newOrder === 'asc' ? '' : '-') + orderField,
               })
@@ -277,7 +269,7 @@ function GeneralSection(props: SectionProps) {
                   page: 1,
                 }))
                 setPagination((pagination) => ({ ...pagination, page: 1 }))
-                handleParamsChange({
+                setParams({
                   country_id: newValue.join(','),
                   offset: 0,
                 })
@@ -309,7 +301,7 @@ function GeneralSection(props: SectionProps) {
                   page: 1,
                 }))
                 setPagination((pagination) => ({ ...pagination, page: 1 }))
-                handleParamsChange({
+                setParams({
                   offset: 0,
                   year_max: year,
                   year_min: year,
@@ -342,7 +334,7 @@ function GeneralSection(props: SectionProps) {
                   page: 1,
                 }))
                 setPagination((pagination) => ({ ...pagination, page: 1 }))
-                handleParamsChange({
+                setParams({
                   offset: 0,
                   year_max: maxYear,
                   year_min: minYear,
@@ -364,7 +356,7 @@ function GeneralSection(props: SectionProps) {
         rowData={results}
         onPaginationChanged={(page) => {
           setPagination((pagination) => ({ ...pagination, page }))
-          handleParamsChange({
+          setParams({
             limit: pagination.rowsPerPage,
             offset: ((page || 1) - 1) * pagination.rowsPerPage,
           })
@@ -376,7 +368,7 @@ function GeneralSection(props: SectionProps) {
 }
 
 function CountrySection(props: SectionProps) {
-  const shouldScroll = useRef(false)
+  // const shouldScroll = useRef(false)
   const { setFilters } = props
   const [pagination, setPagination] = useState({
     page: 1,
@@ -384,14 +376,14 @@ function CountrySection(props: SectionProps) {
   })
   const [ordering, setOrdering] = useState<'asc' | 'desc'>('asc')
   const countries = useStore((state) => state.common.countries.data)
-  const [apiSettings, setApiSettings] = useState({
-    onSuccess: () => {
-      if (shouldScroll.current) {
-        scrollToElement('#cp-listing-sections')
-      } else {
-        shouldScroll.current = true
-      }
-    },
+  const { data, loading, setParams } = useApi({
+    // onSuccess: () => {
+    //   if (shouldScroll.current) {
+    //     scrollToElement('#cp-listing-sections')
+    //   } else {
+    //     shouldScroll.current = true
+    //   }
+    // },
     options: {
       params: {
         limit: PER_PAGE_COUNTRY,
@@ -402,19 +394,6 @@ function CountrySection(props: SectionProps) {
     },
     path: 'api/country-programme/reports-by-country/',
   })
-  function handleParamsChange(newParams: { [key: string]: any }) {
-    setApiSettings((prevApiSettings) => ({
-      ...prevApiSettings,
-      options: {
-        ...prevApiSettings.options,
-        params: {
-          ...prevApiSettings.options.params,
-          ...newParams,
-        },
-      },
-    }))
-  }
-  const { data, loading } = useApi(apiSettings)
   const { count, loaded, results } = getResults(data)
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
@@ -456,7 +435,7 @@ function CountrySection(props: SectionProps) {
               const newOrder = ordering === 'asc' ? 'desc' : 'asc'
               setOrdering(newOrder)
               setPagination({ ...pagination, page: 1 })
-              handleParamsChange({ offset: 0, ordering: newOrder })
+              setParams({ offset: 0, ordering: newOrder })
             }}
           >
             {ordering === 'asc' ? (
@@ -522,7 +501,7 @@ function CountrySection(props: SectionProps) {
           siblingCount={1}
           onPaginationChanged={(page) => {
             setPagination({ ...pagination, page: page || 1 })
-            handleParamsChange({
+            setParams({
               limit: pagination.rowsPerPage,
               offset: ((page || 1) - 1) * pagination.rowsPerPage,
             })
@@ -541,30 +520,17 @@ function YearSection(props: SectionProps) {
   })
   const [range, setRange] = useState([filters.range[0], filters.range[1]])
   const [ordering, setOrdering] = useState<'asc' | 'desc'>('desc')
-  const [apiSettings, setApiSettings] = useState({
+  const { data, loading, setParams } = useApi({
     options: {
       params: {
         limit: PER_PAGE_YEAR,
         offset: 0,
         ordering: 'desc',
       },
+      withStoreCache: true,
     },
     path: 'api/country-programme/reports-by-year/',
-    withStoreCache: true,
   })
-  function handleParamsChange(newParams: { [key: string]: any }) {
-    setApiSettings((prevApiSettings) => ({
-      ...prevApiSettings,
-      options: {
-        ...prevApiSettings.options,
-        params: {
-          ...prevApiSettings.options.params,
-          ...newParams,
-        },
-      },
-    }))
-  }
-  const { data, loading } = useApi(apiSettings)
   const { count, loaded, results } = getResults(data)
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
@@ -608,7 +574,7 @@ function YearSection(props: SectionProps) {
               const newOrder = ordering === 'asc' ? 'desc' : 'asc'
               setOrdering(newOrder)
               setPagination({ ...pagination, page: 1 })
-              handleParamsChange({ offset: 0, ordering: newOrder })
+              setParams({ offset: 0, ordering: newOrder })
             }}
           >
             {ordering === 'asc' ? (
@@ -671,7 +637,7 @@ function YearSection(props: SectionProps) {
           siblingCount={1}
           onPaginationChanged={(page) => {
             setPagination({ ...pagination, page: page || 1 })
-            handleParamsChange({
+            setParams({
               limit: pagination.rowsPerPage,
               offset: ((page || 1) - 1) * pagination.rowsPerPage,
             })

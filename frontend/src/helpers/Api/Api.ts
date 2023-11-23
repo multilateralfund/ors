@@ -1,26 +1,23 @@
-import type { DataType } from '@ors/types/primitives'
+import { DataType } from '@ors/types/primitives'
 
 import Cookies from 'js-cookie'
-import { isFunction } from 'lodash'
-import { redirect } from 'next/navigation'
+import { includes } from 'lodash'
+import hash from 'object-hash'
 
-import {
-  addTrailingSlash,
-  removeFirstSlash,
-  removeTrailingSlash,
-} from '@ors/helpers/Url/Url'
+import { addTrailingSlash, removeFirstSlash } from '@ors/helpers/Url/Url'
+import { debounce } from '@ors/helpers/Utils/Utils'
 import config from '@ors/registry'
+import { store } from '@ors/store'
 
 export type Api = {
-  handleError?: (error: any) => any
-  handleResponse?: (response: any) => any
-  options?: {
+  options: {
     data?: any
     delay?: number | undefined
     headers?: any
     method?: string
     next?: any
     params?: Record<string, any>
+    removeCacheTimeout?: number
     updateSliceData?: string
     withStoreCache?: boolean
   }
@@ -28,21 +25,23 @@ export type Api = {
   throwError?: boolean
 }
 
-const nextCookies = require('next/headers').cookies
+const REMOVE_CACHE_TIMEOUT = 300 // seconds
 
 const defaultHeaders: { [key: string]: { [key: string]: any } } = {
   common: {
     Accept: 'application/json',
   },
   del: {},
-  get: {},
-  patch: {},
+  patch: {
+    'Content-Type': 'application/json',
+  },
   post: {
     'Content-Type': 'application/json',
   },
   put: {
     'Content-Type': 'application/json',
   },
+  get: {},
 }
 
 function delayExecution(ms: number) {
@@ -82,10 +81,11 @@ async function api(
   path: Api['path'],
   options?: Api['options'],
   throwError: Api['throwError'] = true,
-  handleResponse?: Api['handleResponse'],
-  handleError?: Api['handleError'],
 ) {
-  const nextHeaders = __SERVER__ ? require('next/headers').headers() : null
+  const [state, setState] = __CLIENT__
+    ? [store.current.getState(), store.current.setState]
+    : [null, null]
+  const nextCookies = __SERVER__ && require('next/headers').cookies()
   const {
     data = null,
     delay,
@@ -93,14 +93,23 @@ async function api(
     method = 'get',
     next = {},
     params = undefined,
+    removeCacheTimeout = REMOVE_CACHE_TIMEOUT,
+    withStoreCache = false,
     ...opts
   } = options || {}
-  const pathname = __SERVER__
-    ? nextHeaders.get('x-next-pathname')
-    : removeTrailingSlash(window.location.pathname)
-  const csrftoken = !__SERVER__ ? Cookies.get('csrftoken') : null
-  const sendRequestTime = delay ? new Date().getTime() : 0
   let fullPath = formatApiUrl(path)
+  const id = withStoreCache ? hash({ options, path }) : ''
+  const csrftoken = __CLIENT__ && Cookies.get('csrftoken')
+  const sendRequestTime = delay ? new Date().getTime() : 0
+
+  if (
+    state &&
+    state.internalError &&
+    includes(['TypeError', 'ECONNREFUSED'], state.internalError.status)
+  ) {
+    return null
+  }
+
   if (params) {
     fullPath +=
       '?' +
@@ -111,37 +120,46 @@ async function api(
       ).toString()
   }
 
-  function handleEconnrefused(error: any) {
-    console.log('ECONNREFUSED for endpoint:', fullPath)
-    console.log(error)
-    if (pathname !== '/econnrefused') {
-      redirect('/econnrefused')
+  if (state && withStoreCache && state.cache.data[id]) {
+    return state.cache.data[id]
+  }
+
+  async function handleError(error: any) {
+    if (
+      error &&
+      setState &&
+      includes(
+        [undefined, 'TypeError', 'ECONNREFUSED'],
+        error.status || error.name,
+      )
+    ) {
+      setState({
+        internalError: {
+          _info: error,
+          status: 'ECONNREFUSED',
+        },
+      })
+    }
+    if (throwError) {
+      throw error
+    } else {
+      return null
     }
   }
 
-  async function defaultHandleError(error: any) {
-    switch (error.status || error.name) {
-      case undefined:
-        handleEconnrefused(error)
-        break
-      case 'TypeError':
-        handleEconnrefused(error)
-        break
-      case 'ECONNREFUSED':
-        handleEconnrefused(error)
-        break
-      default:
-        if (throwError) {
-          throw error
-        } else {
-          return null
-        }
-    }
-  }
-
-  async function defaultHandleResponse(response: any) {
+  async function handleResponse(response: any) {
     try {
       const data = await response.json()
+      if (state && withStoreCache) {
+        debounce(
+          () => {
+            state.cache.removeCache(id)
+          },
+          removeCacheTimeout * 1000,
+          `remove_cache_${id}`,
+        )
+        state.cache.setCache(id, data)
+      }
       return data
     } catch {
       if (throwError) {
@@ -155,7 +173,7 @@ async function api(
     return await fetch(fullPath, {
       credentials: 'include',
       headers: {
-        ...(__SERVER__ ? { Cookie: nextCookies().toString() } : {}),
+        ...(__SERVER__ ? { Cookie: nextCookies.toString() } : {}),
         ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
         ...defaultHeaders['common'],
         ...defaultHeaders[method.toLowerCase()],
@@ -177,23 +195,12 @@ async function api(
       await delayExecution(delay - responseTimeMs)
     }
     if (response.ok) {
-      if (isFunction(handleResponse)) {
-        return await handleResponse(response)
-      } else {
-        return await defaultHandleResponse(response)
-      }
+      return await handleResponse(response)
     } else {
-      if (isFunction(handleError)) {
-        return await handleError(response)
-      } else {
-        return await defaultHandleError(response)
-      }
+      return await handleError(response)
     }
   } catch (error) {
-    if (isFunction(handleError)) {
-      return await handleError(error)
-    }
-    return await defaultHandleError(error)
+    return await handleError(error)
   }
 }
 
@@ -228,22 +235,20 @@ export async function fetcher({
   onError = () => {},
   onPending = () => {},
   onSuccess = () => {},
-  onSuccessNoCatch = () => {},
   options,
   path,
   throwError,
 }: {
-  onError?: (...args: any) => void
-  onPending?: (...args: any) => void
-  onSuccess?: (...args: any) => void
-  onSuccessNoCatch?: (...args: any) => void
+  onError?: (error: any) => void
+  onPending?: () => void
+  onSuccess?: (data: any) => void
   options?: Api['options']
   path: Api['path']
   throwError?: Api['throwError']
 }) {
   if (!throwError) {
     const data = await api(path, options, throwError)
-    onSuccessNoCatch(data)
+    onSuccess(data || null)
     return data
   }
   onPending()

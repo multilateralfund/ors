@@ -1,5 +1,3 @@
-import type { AnyObject } from '@ors/types/primitives'
-
 import config from '@ors/registry'
 
 import { useTranslation } from '@ors/i18n/client'
@@ -13,7 +11,7 @@ export default function Trans({
   children: React.ReactNode
   id?: string
   ns?: string
-  options?: AnyObject
+  options?: Record<string, any>
 }) {
   const { i18n, t } = useTranslation(ns || config.i18n.defaultNamespace)
 
