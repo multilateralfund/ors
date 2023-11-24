@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "constance",
     "constance.backends.database",
+    "explorer",
     "mptt",
     "core",
 ]
@@ -137,6 +138,10 @@ DATABASES = {
         "PASSWORD": POSTGRES_PASSWORD,
     }
 }
+
+# Django explorer settings
+EXPLORER_CONNECTIONS = {"Default": "default"}
+EXPLORER_DEFAULT_CONNECTION = "default"
 
 
 # Password validation

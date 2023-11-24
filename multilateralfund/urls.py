@@ -44,6 +44,7 @@ urlpatterns = [
         name="reset_password_frontend",
     ),
     path("api/", include("core.api.urls")),
+    path("explorer/", include("explorer.urls")),
     path("", RedirectView.as_view(pattern_name="admin:index")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
