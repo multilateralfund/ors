@@ -100,6 +100,7 @@ def import_data(cls, file_path, exclude=None, uncontrolled_group_id=None):
             # if the chemical is contained in pre-blended polyol, we need to create a new chemical
             if cls in [Substance, Blend] and instance["is_contained_in_polyols"]:
                 instance["name"] += " in imported pre-blended polyol"
+                instance["sort_order"] += 1
                 instance.pop("ozone_id")
                 cls.objects.update_or_create(
                     name=instance["name"],

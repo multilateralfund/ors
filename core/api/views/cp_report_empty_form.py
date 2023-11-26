@@ -1,5 +1,6 @@
 from datetime import date
 from datetime import datetime
+from django.db.models import Q
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import views
@@ -93,7 +94,7 @@ class EmptyFormView(views.APIView):
         return {"usage_columns": usage_columns}
 
     @classmethod
-    def get_old_empty_form(cls, year):
+    def get_old_empty_form(cls, year, cp_report):
         sections = {
             "usage_columns": cls.get_usage_columns(year),
             "adm_b": {
@@ -125,7 +126,10 @@ class EmptyFormView(views.APIView):
             return sections
 
         # set rows
-        rows = AdmRow.objects.get_for_year(year)
+        rows = AdmRow.objects.get_for_year(year).filter(  # filter by cp_report
+            Q(country_programme_report_id=cp_report.id)
+            | Q(country_programme_report_id__isnull=True)
+        )
 
         # the rows with index 1.6.1 and 1.6.2 are special cases
         # if there is not a row with index 1.6.1 or 1.6.2 then we will display N/A
@@ -163,9 +167,9 @@ class EmptyFormView(views.APIView):
         return sections
 
     @classmethod
-    def get_data(cls, year):
+    def get_data(cls, year, cp_report):
         if year <= IMPORT_DB_MAX_YEAR:
-            return cls.get_old_empty_form(year)
+            return cls.get_old_empty_form(year, cp_report)
 
         return cls.get_new_empty_form(year)
 
@@ -183,8 +187,10 @@ class EmptyFormView(views.APIView):
         cp_report_id = request.query_params.get(
             "cp_report_id",
         )
+        cp_report = None
         try:
-            year = CPReport.objects.get(id=cp_report_id).year
+            cp_report = CPReport.objects.get(id=cp_report_id)
+            year = cp_report.year
         except CPReport.DoesNotExist:
             year = date.today().year
-        return Response(self.get_data(year))
+        return Response(self.get_data(year, cp_report))

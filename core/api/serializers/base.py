@@ -74,6 +74,7 @@ class BaseCPWChemicalSerializer(BaseCPRowSerializer):
         write_only=True,
     )
     display_name = serializers.SerializerMethodField()
+    chemical_sort_order = serializers.SerializerMethodField()
 
     class Meta:
         fields = BaseCPRowSerializer.Meta.fields + [
@@ -84,6 +85,7 @@ class BaseCPWChemicalSerializer(BaseCPRowSerializer):
             "substance_id",
             "blend_id",
             "group",
+            "chemical_sort_order",
         ]
 
     def get_chemical_name(self, obj):
@@ -102,6 +104,13 @@ class BaseCPWChemicalSerializer(BaseCPRowSerializer):
         if obj.display_name:
             return obj.display_name
         return obj.substance.name
+
+    def get_chemical_sort_order(self, obj):
+        if obj.blend:
+            return obj.blend.sort_order
+        if obj.substance:
+            return obj.substance.sort_order
+        return None
 
     def validate(self, attrs):
         if not attrs.get("substance_id") and not attrs.get("blend_id"):

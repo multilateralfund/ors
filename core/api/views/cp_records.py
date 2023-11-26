@@ -1,3 +1,4 @@
+from django.db.models import Q
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, generics
@@ -143,7 +144,6 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
         blends_dict = self._set_chemical_items_dict(
             item_cls, blends_rec_dict, "blend", section, cp_report_id
         )
-
         final_list = list(substances_dict.values()) + list(blends_dict.values())
         final_list.sort(
             key=lambda x: (
@@ -177,9 +177,10 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
     def _get_adm_records(self, cp_report_id, section):
         return (
             self.adm_record_class.objects.select_related("row", "column")
-            .filter(
-                country_programme_report_id=cp_report_id,
-                section=section,
+            .filter(country_programme_report_id=cp_report_id, section=section)
+            .filter(  # filter by cp_report
+                Q(row__country_programme_report_id=cp_report_id)
+                | Q(row__country_programme_report_id__isnull=True)
             )
             .order_by("row__sort_order", "column__sort_order")
             .all()
@@ -188,23 +189,50 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
     def _get_items_filtered_by_report(self, cls, cp_report_id):
         return cls.objects.filter(country_programme_report=cp_report_id).all()
 
-    def _get_cp_prices(self, cp_report_id):
+    def _get_cp_prices(self, cp_report):
         exist_records = (
             self.cp_prices_class.objects.select_related("substance__group", "blend")
             .prefetch_related("blend__components")
-            .filter(country_programme_report=cp_report_id)
+            .filter(country_programme_report=cp_report.id)
             .all()
         )
         final_list = self._get_displayed_items(
-            self.cp_prices_class, cp_report_id, "C", exist_records
+            self.cp_prices_class, cp_report.id, "C", exist_records
         )
+
+        # get last_year cp_report
+        last_year_cp_report = self.cp_report_class.objects.filter(
+            country=cp_report.country, year=cp_report.year - 1
+        ).first()
+        if not last_year_cp_report:
+            return final_list
+
+        # get last_year cp_prices
+        last_year_cp_prices = self.cp_prices_class.objects.filter(
+            country_programme_report=last_year_cp_report.id
+        ).all()
+        ly_subst_prices_dict = {
+            item.substance_id: item for item in last_year_cp_prices if item.substance
+        }
+        ly_blend_prices_dict = {
+            item.blend_id: item for item in last_year_cp_prices if item.blend
+        }
+        # set last_year prices
+        for price in final_list:
+            last_year_price = None
+            if price.substance:
+                last_year_price = ly_subst_prices_dict.get(price.substance_id)
+            elif price.blend:
+                last_year_price = ly_blend_prices_dict.get(price.blend_id)
+            if last_year_price:
+                price.computed_prev_year_price = last_year_price.current_year_price
 
         return final_list
 
     def _get_new_cp_records(self, cp_report):
         section_a = self._get_displayed_records(cp_report.id, "A")
         section_b = self._get_displayed_records(cp_report.id, "B")
-        section_c = self._get_cp_prices(cp_report.id)
+        section_c = self._get_cp_prices(cp_report)
         section_d = self._get_items_filtered_by_report(
             self.cp_generation_class, cp_report.id
         )
@@ -249,7 +277,7 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
         section_a = self._get_displayed_records(cp_report.id, "A")
         adm_b = self._get_adm_records(cp_report.id, "B")
         adm_b = self._get_regroupped_adm_records(adm_b)
-        section_c = self._get_cp_prices(cp_report.id)
+        section_c = self._get_cp_prices(cp_report)
         adm_c = self._get_adm_records(cp_report.id, "C")
         adm_c = self._get_regroupped_adm_records(adm_c)
         adm_d = self._get_adm_records(cp_report.id, "D")

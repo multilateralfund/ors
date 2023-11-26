@@ -11,10 +11,11 @@ from core.api.tests.factories import (
     CPGenerationFactory,
     CPPricesFactory,
     CPRecordFactory,
+    CPReportFactory,
     CPUsageFactory,
     SubstanceFactory,
 )
-from core.models.country_programme import CPEmission
+from core.models.country_programme import CPEmission, CPReport
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008, W0221
@@ -22,6 +23,13 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture(name="_setup_new_cp_report")
 def setup_new_cp_report(cp_report_2019, blend, substance):
+    # create prev tear cp report
+    prev_report = CPReportFactory.create(
+        country=cp_report_2019.country,
+        year=2018,
+        comment="Alo baza baza",
+        status=CPReport.CPReportStatus.FINAL,
+    )
     # section A
     CPRecordFactory.create(
         country_programme_report=cp_report_2019, section="A", substance=substance
@@ -31,19 +39,29 @@ def setup_new_cp_report(cp_report_2019, blend, substance):
     cp_rec = CPRecordFactory.create(
         country_programme_report=cp_report_2019, section="B", blend=blend
     )
-    # substance
+    # blend displayed in all
     BlendFactory.create(
         name="blend2B",
         displayed_in_all=True,
-        sort_order=2,
+        sort_order=5,
     )
     # add 3 usages for one record
     for _ in range(3):
         CPUsageFactory.create(country_programme_record=cp_rec)
 
     # section C (prices)
-    CPPricesFactory.create(country_programme_report=cp_report_2019, blend=blend)
-    CPPricesFactory.create(country_programme_report=cp_report_2019, substance=substance)
+    for cp_report in [cp_report_2019, prev_report]:
+        CPPricesFactory.create(
+            country_programme_report=cp_report,
+            blend=blend,
+            current_year_price=cp_report.year,
+        )
+    CPPricesFactory.create(
+        country_programme_report=cp_report_2019,
+        substance=substance,
+        current_year_price=cp_report_2019.year,
+        previous_year_price=cp_report_2019.year - 1,
+    )
 
     # section D (generation)
     CPGenerationFactory.create(country_programme_report=cp_report_2019)
@@ -145,17 +163,31 @@ class TestCPRecordList(BaseTest):
         assert len(response.data["section_a"][0]["excluded_usages"]) == 1
         assert response.data["section_a"][0]["chemical_name"] == substance.name
         assert response.data["section_a"][0]["row_id"] == f"substance_{substance.id}"
+
         assert len(response.data["section_b"]) == 2
         assert response.data["section_b"][0]["chemical_name"] == blend.name
         assert response.data["section_b"][0]["row_id"] == f"blend_{blend.id}"
         assert len(response.data["section_b"][0]["record_usages"]) == 3
-        assert len(response.data["section_c"]) == 3
-        assert len(response.data["section_d"]) == 1
+
+        section_c = response.data["section_c"]
+        assert len(section_c) == 3
+        assert section_c[0]["chemical_name"] == substance.name
+        assert section_c[0]["computed_prev_year_price"] is None
+        assert int(float(section_c[0]["current_year_price"])) == 2019
+        assert section_c[1]["chemical_name"] == blend.name
+        assert int(section_c[1]["computed_prev_year_price"]) == 2018
+        assert int(float(section_c[1]["current_year_price"])) == 2019
+        # chemical displayed without prices
+        assert section_c[2]["computed_prev_year_price"] is None
+        assert section_c[2]["current_year_price"] is None
+
         assert response.data["section_d"][0]["chemical_name"] == "HFC-23"
         assert response.data["section_d"][0]["row_id"] == "generation_1"
+
         assert len(response.data["section_e"]) == 2
         emission = response.data["section_e"][0]
         assert response.data["section_e"][0]["row_id"] == f"facility_{emission['id']}"
+
         assert response.data["section_f"]["remarks"] == cp_report_2019.comment
 
     def test_get_old_cp_record_list(self, user, cp_report_2005, _setup_old_cp_report):
