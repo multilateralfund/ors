@@ -5,7 +5,7 @@ import type { Metadata } from 'next'
 import React from 'react'
 
 import { dir } from 'i18next'
-import { includes } from 'lodash'
+// import { includes } from 'lodash'
 import { Roboto } from 'next/font/google'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { cookies as nextCookies, headers as nextHeaders } from 'next/headers'
@@ -54,18 +54,18 @@ export default async function RootLayout({
   try {
     user = await api('api/auth/user/', {})
   } catch (error) {
-    if (
-      error &&
-      includes(
-        [undefined, 'TypeError', 'ECONNREFUSED'],
-        error.status || error.name,
-      )
-    ) {
-      internalError = {
-        _info: error,
-        status: 'ECONNREFUSED',
-      }
-    }
+    // if (
+    //   error &&
+    //   includes(
+    //     [undefined, 'TypeError', 'ECONNREFUSED'],
+    //     error.status || error.name,
+    //   )
+    // ) {
+    //   internalError = {
+    //     _info: error,
+    //     status: 'ECONNREFUSED',
+    //   }
+    // }
   }
 
   if (user) {

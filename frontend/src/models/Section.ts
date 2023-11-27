@@ -167,6 +167,8 @@ export default class Section<DeserializedData, FormFields> {
       }
     })
 
+    console.log('HERE', formData)
+
     return formData
   }
 

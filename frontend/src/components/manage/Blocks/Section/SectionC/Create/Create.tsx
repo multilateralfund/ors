@@ -125,15 +125,12 @@ export default function SectionCCreate(props: any) {
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={3}
+        pinnedBottomRowData={[{ rowType: 'control' }]}
         rowData={initialRowData}
         defaultColDef={{
           ...TableProps.defaultColDef,
           ...gridOptions.defaultColDef,
         }}
-        pinnedBottomRowData={[
-          { display_name: 'TOTAL', rowType: 'total' },
-          { rowType: 'control' },
-        ]}
         onCellValueChanged={(event) => {
           const newData = [...form.section_c]
           const index = findIndex(

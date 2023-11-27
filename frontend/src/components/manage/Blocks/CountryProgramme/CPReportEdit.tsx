@@ -124,7 +124,7 @@ function CPReportCreate(props: { id: null | number }) {
   }
 
   const [errors, setErrors] = useState<Record<string, any>>({})
-  const [currentIndex, setCurrentIndex] = useState(4)
+  const [currentIndex, setCurrentIndex] = useState(0)
   const [activeSection, setActiveSection] = useState(null)
   const [renderSection, setRenderSection] = useState(false)
   const [form, setForm] = useState<Record<string, any>>({

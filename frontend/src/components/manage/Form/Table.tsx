@@ -10,7 +10,9 @@ import { AgGridReact, AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
 import {
   findIndex,
+  forEach,
   get,
+  indexOf,
   isEmpty,
   isFunction,
   isObject,
@@ -34,6 +36,14 @@ import { useStore } from '@ors/store'
 
 import Portal from '../Utils/Portal'
 
+function cloneStyle(original: Element, clone: Element) {
+  clone.setAttribute('style', original.getAttribute('style') || '')
+}
+
+function cloneClass(original: Element, clone: Element) {
+  clone.className = original.className
+}
+
 export default function Table(
   props: AgGridReactProps & {
     Toolbar?: React.FC<any>
@@ -48,6 +58,7 @@ export default function Table(
   const uniqueId = useId()
   const grid = useRef<any>({})
   const tableEl = useRef<HTMLDivElement>(null)
+  const scrollMutationObserver = useRef<any>(null)
   const {
     id,
     Toolbar,
@@ -78,7 +89,7 @@ export default function Table(
     rowClassRules = {},
     rowCount = 0,
     rowData = [],
-    rowHeight = 45,
+    rowHeight = 40,
     rowsVisible = 15,
     style = {},
     withFluidEmptyColumn = false,
@@ -271,6 +282,14 @@ export default function Table(
     [fadeInOut],
   )
 
+  useEffect(() => {
+    return () => {
+      if (scrollMutationObserver.current) {
+        scrollMutationObserver.current.disconnect()
+      }
+    }
+  }, [])
+
   return (
     <Portal active={print === 'solo'} domNode="print-content">
       <FadeInOut
@@ -322,6 +341,7 @@ export default function Table(
                 <Loading className="bg-action-disabledBackground/5" />
               )}
             <AgGridReact
+              alwaysShowHorizontalScroll={true}
               animateRows={false}
               defaultColDef={{ ...baseColDef, ...defaultColDef }}
               domLayout={computedDomLayout}
@@ -468,6 +488,84 @@ export default function Table(
               onGridReady={(props) => {
                 updateOffsetHeight()
                 onGridReady(props)
+
+                if (!tableEl.current) return
+                const tableRoot = tableEl.current.querySelector('.ag-root')
+                // Get original scroll
+                const agScroll = tableRoot?.querySelector(
+                  '.ag-body-horizontal-scroll',
+                )
+                const agScrollViewport = agScroll?.querySelector(
+                  '.ag-body-horizontal-scroll-viewport',
+                )
+                const agScrollContainer = agScroll?.querySelector(
+                  '.ag-body-horizontal-scroll-container',
+                )
+                // Get clone scroll
+                const cloneAgScroll = agScroll?.cloneNode(true) as Element
+                const cloneAgScrollViewport = cloneAgScroll?.querySelector(
+                  '.ag-body-horizontal-scroll-viewport',
+                )
+                const cloneAgScrollContainer = cloneAgScroll?.querySelector(
+                  '.ag-body-horizontal-scroll-container',
+                )
+                if (
+                  !tableRoot ||
+                  !agScroll ||
+                  !agScrollViewport ||
+                  !agScrollContainer ||
+                  !cloneAgScroll ||
+                  !cloneAgScrollViewport ||
+                  !cloneAgScrollContainer
+                ) {
+                  return
+                }
+                // Insert clone scroll
+                tableRoot.insertBefore(cloneAgScroll, tableRoot.firstChild)
+                // add event listeners to keep scroll position synchronized
+                agScrollViewport.addEventListener('scroll', () => {
+                  cloneAgScrollViewport.scrollTo({
+                    left: agScrollViewport.scrollLeft,
+                  })
+                })
+                cloneAgScrollViewport.addEventListener('scroll', () => {
+                  agScrollViewport.scrollTo({
+                    left: cloneAgScrollViewport.scrollLeft,
+                  })
+                })
+                // scroll mutation observer to keep size sync
+                const scrollElements = [
+                  agScroll,
+                  agScrollViewport,
+                  agScrollContainer,
+                ]
+                const cloneScrollElements = [
+                  cloneAgScroll,
+                  cloneAgScrollViewport,
+                  cloneAgScrollContainer,
+                ]
+                scrollMutationObserver.current = new MutationObserver(
+                  (mutationList) => {
+                    forEach(mutationList, (mutation) => {
+                      const element = indexOf(scrollElements, mutation.target)
+                      if (element > -1) {
+                        cloneStyle(
+                          scrollElements[element],
+                          cloneScrollElements[element],
+                        )
+                        cloneClass(
+                          scrollElements[element],
+                          cloneScrollElements[element],
+                        )
+                      }
+                    })
+                  },
+                )
+                // start observing the scroll elements for `style` attribute changes
+                scrollMutationObserver.current.observe(agScroll, {
+                  attributeFilter: ['style', 'class'],
+                  subtree: true,
+                })
               }}
               onGridSizeChanged={(props) => {
                 debounce(updateOffsetHeight)

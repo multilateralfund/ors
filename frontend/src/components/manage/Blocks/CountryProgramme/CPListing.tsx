@@ -99,6 +99,7 @@ function Item({ item, showCountry, showYear }: any) {
                   'text-warning': item.status === 'draft',
                 },
               )}
+              prefetch={false}
               underline="hover"
               href={
                 item.status === 'draft'

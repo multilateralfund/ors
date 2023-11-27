@@ -17,28 +17,28 @@ const colDefById: Record<string, ColDef> = {
     pinned: mobile ? undefined : 'left',
   },
   imports: {
-    initialWidth: defaultColDef.minWidth,
+    // initialWidth: defaultColDef.minWidth,
   },
   exports: {
-    initialWidth: defaultColDef.minWidth,
+    // initialWidth: defaultColDef.minWidth,
   },
   production: {
-    initialWidth: defaultColDef.minWidth,
+    // initialWidth: defaultColDef.minWidth,
   },
   manufacturing_blends: {
-    initialWidth: defaultColDef.minWidth,
+    // initialWidth: defaultColDef.minWidth,
   },
   import_quotas: {
-    initialWidth: defaultColDef.minWidth,
+    // initialWidth: defaultColDef.minWidth,
   },
   previous_year_price: {
-    initialWidth: defaultColDef.minWidth,
+    initialWidth: 160,
   },
   current_year_price: {
-    initialWidth: defaultColDef.minWidth,
+    initialWidth: 160,
   },
   banned_date: {
-    initialWidth: 150,
+    initialWidth: 190,
   },
   remarks: {
     initialWidth: mobile ? 200 : 250,
