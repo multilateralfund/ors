@@ -17,19 +17,19 @@ const colDefById: Record<string, ColDef> = {
     pinned: mobile ? undefined : 'left',
   },
   imports: {
-    // initialWidth: defaultColDef.minWidth,
+    initialWidth: defaultColDef.minWidth,
   },
   exports: {
-    // initialWidth: defaultColDef.minWidth,
+    initialWidth: defaultColDef.minWidth,
   },
   production: {
-    // initialWidth: defaultColDef.minWidth,
+    initialWidth: defaultColDef.minWidth,
   },
   manufacturing_blends: {
-    // initialWidth: defaultColDef.minWidth,
+    initialWidth: defaultColDef.minWidth,
   },
   import_quotas: {
-    // initialWidth: defaultColDef.minWidth,
+    initialWidth: defaultColDef.minWidth,
   },
   previous_year_price: {
     initialWidth: 160,
@@ -44,28 +44,28 @@ const colDefById: Record<string, ColDef> = {
     initialWidth: mobile ? 200 : 250,
   },
   total_amount_generated: {
-    initialWidth: defaultColDef.minWidth,
+    initialWidth: 120,
   },
   all_uses: {
-    initialWidth: defaultColDef.minWidth,
+    initialWidth: 140,
   },
   feedstock: {
-    initialWidth: defaultColDef.minWidth,
+    initialWidth: 140,
   },
   feedstock_gc: {
-    initialWidth: defaultColDef.minWidth,
+    initialWidth: 120,
   },
   feedstock_wpc: {
-    initialWidth: defaultColDef.minWidth,
+    initialWidth: 120,
   },
   destruction: {
-    initialWidth: defaultColDef.minWidth,
+    initialWidth: 140,
   },
   destruction_wpc: {
-    initialWidth: defaultColDef.minWidth,
+    initialWidth: 120,
   },
   generated_emissions: {
-    initialWidth: defaultColDef.minWidth,
+    initialWidth: 120,
   },
   ...getAdmsColDef(),
   ...getUsagesColDef(),

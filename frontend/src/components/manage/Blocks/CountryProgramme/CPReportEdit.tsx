@@ -84,7 +84,7 @@ function TabPanel(props: any) {
   )
 }
 
-function CPReportCreate(props: { id: null | number }) {
+function CPReportEdit(props: { id: null | number }) {
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
   const { blends, report, substances } = useStore((state) => state.cp_reports)
@@ -202,6 +202,8 @@ function CPReportCreate(props: { id: null | number }) {
     }, 600)
   }, [currentIndex])
 
+  console.log('HERE EDIT')
+
   return (
     <>
       <Loading
@@ -230,7 +232,6 @@ function CPReportCreate(props: { id: null | number }) {
           </div>
         </HeaderTitle>
       )}
-
       <form className="create-submission-form">
         <Tabs
           className="scrollable mb-4"
@@ -430,7 +431,7 @@ function CPReportCreate(props: { id: null | number }) {
   )
 }
 
-export default function CPReportCreateWrapper(props: { id: string }) {
+export default function CPReportEditWrapper(props: { id: string }) {
   const { blends, fetchBundle, report, setReport, substances } = useStore(
     (state) => state.cp_reports,
   )
@@ -467,5 +468,5 @@ export default function CPReportCreateWrapper(props: { id: string }) {
     )
   }
 
-  return <CPReportCreate id={id} />
+  return <CPReportEdit id={id} />
 }

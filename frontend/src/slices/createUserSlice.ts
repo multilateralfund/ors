@@ -41,7 +41,7 @@ export const createUserSlice = ({
     } catch (error) {
       setSlice('user', {
         data: null,
-        error: await error.json(),
+        error: await error.json?.(),
         loaded: true,
         loading: false,
       })

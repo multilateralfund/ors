@@ -483,7 +483,7 @@ function CountrySection(props: SectionProps) {
                       const country = filters.country || []
                       return {
                         ...filters,
-                        country: union(country, [row.group]),
+                        country: union(country, [row.id]),
                       }
                     })
                   }}

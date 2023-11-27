@@ -4,14 +4,14 @@ import defaultColDef from './defaultColDef'
 
 const defaultWidths: Record<string, any> = {
   adm_c_description: [
-    { max: Infinity, min: 1200, value: 600 },
-    { max: 1199, min: 768, value: 600 },
-    { max: 767, min: -Infinity, value: 600 },
+    { max: Infinity, min: 1200, value: 480 },
+    { max: 1199, min: 768, value: 480 },
+    { max: 767, min: -Infinity, value: 480 },
   ],
   type_of_action: [
-    { max: Infinity, min: 1200, value: 600 },
-    { max: 1199, min: 768, value: 600 },
-    { max: 767, min: -Infinity, value: 600 },
+    { max: Infinity, min: 1200, value: 480 },
+    { max: 1199, min: 768, value: 480 },
+    { max: 767, min: -Infinity, value: 480 },
   ],
 }
 
@@ -55,6 +55,9 @@ export default function getAdmsColDef() {
         info: 'If Yes, since when (Date) / If No, planned date',
       },
       headerName: 'Date',
+    },
+    C_all_other_ods_float: {
+      initialWidth: 140,
     },
   }
 }
