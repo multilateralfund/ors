@@ -112,7 +112,9 @@ export function getViewSections(variant: any) {
         component: AdmDView,
         label: 'Adm D',
         panelId: 'adm-D-panel',
-        title: 'D. Qualitative assessment of the operation of HPMP',
+        title: includes(['II'], variant.model)
+          ? 'D. Qualitative assessment of the operation of RMP/NPP/TPMP'
+          : 'D. Qualitative assessment of the operation of HPMP',
       },
       {
         id: 'section_d',

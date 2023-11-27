@@ -38,7 +38,7 @@ function getRowData(data: any) {
           count: dataByGroup[group].length,
           display_name: group,
           group,
-          rowId: group,
+          row_id: group,
           rowType: 'group',
         },
       ],
@@ -47,7 +47,7 @@ function getRowData(data: any) {
         {
           display_name: 'Sub-total',
           group,
-          rowId: `subtotal[${group}]`,
+          row_id: `subtotal[${group}]`,
           rowType: 'subtotal',
         },
       ],
@@ -78,7 +78,7 @@ export default function SectionACreate(props: any) {
   const substancesOptions = useMemo(() => {
     const data: Array<any> = []
     const substancesInForm = form.section_a.map(
-      (substance: any) => substance.rowId,
+      (substance: any) => substance.row_id,
     )
     each(substances, (substance) => {
       if (
@@ -98,7 +98,7 @@ export default function SectionACreate(props: any) {
       const newData = [...form.section_a]
       const index = findIndex(
         form.section_a,
-        (substance: any) => substance.rowId == removedSubstance.rowId,
+        (substance: any) => substance.row_id == removedSubstance.row_id,
       )
       if (index > -1) {
         const groupNode = grid.current.api.getRowNode(removedSubstance.group)
@@ -145,15 +145,15 @@ export default function SectionACreate(props: any) {
           ...gridOptions.defaultColDef,
         }}
         pinnedBottomRowData={[
-          { display_name: 'TOTAL', rowId: 'total', rowType: 'total' },
-          { rowId: 'control', rowType: 'control' },
+          { display_name: 'TOTAL', row_id: 'total', rowType: 'total' },
+          { row_id: 'control', rowType: 'control' },
         ]}
         onCellValueChanged={(event) => {
           const usages = getUsagesOnCellValueChange(event)
           const newData = [...form.section_a]
           const index = findIndex(
             newData,
-            (row: any) => row.rowId == event.data.rowId,
+            (row: any) => row.row_id == event.data.row_id,
           )
           if (index > -1) {
             // Should not be posible for index to be -1
@@ -173,7 +173,7 @@ export default function SectionACreate(props: any) {
         onRowDataUpdated={() => {
           if (newNode.current) {
             scrollToElement(
-              `.ag-row[row-id=${newNode.current.data.rowId}]`,
+              `.ag-row[row-id=${newNode.current.data.row_id}]`,
               () => {
                 grid.current.api.flashCells({
                   rowNodes: [newNode.current],
@@ -231,7 +231,7 @@ export default function SectionACreate(props: any) {
                 }
                 const added = find(
                   form.section_a,
-                  (substance) => substance.rowId === newSubstance.rowId,
+                  (substance) => substance.row_id === newSubstance.row_id,
                 )
                 if (!added) {
                   const groupNode = grid.current.api.getRowNode(
@@ -249,7 +249,7 @@ export default function SectionACreate(props: any) {
                     ],
                   })
                   const substanceNode = grid.current.api.getRowNode(
-                    newSubstance.rowId,
+                    newSubstance.row_id,
                   )
                   newNode.current = substanceNode
                 }

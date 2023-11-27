@@ -83,7 +83,7 @@ export const CellAdmTextareaWidget = memo(
         return {
           // the final value to send to the grid, on completion of editing
           getValue() {
-            const rowNode = props.api.getRowNode(props.data.rowId)
+            const rowNode = props.api.getRowNode(props.data.row_id)
             const newAdms = [...(props.data.values || [])]
             if (admIndex > -1) {
               newAdms.splice(admIndex, 1, {

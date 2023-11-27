@@ -38,7 +38,7 @@ function getRowData(data: any) {
           count: dataByGroup[group].length,
           display_name: group,
           group,
-          rowId: group,
+          row_id: group,
           rowType: 'group',
         },
       ],
@@ -47,7 +47,7 @@ function getRowData(data: any) {
         {
           display_name: 'Sub-total',
           group,
-          rowId: `subtotal[${group}]`,
+          row_id: `subtotal[${group}]`,
           rowType: 'subtotal',
         },
       ],
@@ -71,7 +71,7 @@ export default function SectionCCreate(props: any) {
   const chimicalsOptions = useMemo(() => {
     const data: Array<any> = []
     const chimicalsInForm = form.section_c.map(
-      (chimical: any) => chimical.rowId,
+      (chimical: any) => chimical.row_id,
     )
     each(substances, (substance) => {
       if (
@@ -90,7 +90,7 @@ export default function SectionCCreate(props: any) {
       const newData = [...form.section_c]
       const index = findIndex(
         form.section_c,
-        (substance: any) => substance.rowId == removedSubstance.rowId,
+        (substance: any) => substance.row_id == removedSubstance.row_id,
       )
       if (index > -1) {
         const groupNode = grid.current.api.getRowNode(removedSubstance.group)
@@ -125,20 +125,17 @@ export default function SectionCCreate(props: any) {
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={3}
+        pinnedBottomRowData={[{ rowType: 'control' }]}
         rowData={initialRowData}
         defaultColDef={{
           ...TableProps.defaultColDef,
           ...gridOptions.defaultColDef,
         }}
-        pinnedBottomRowData={[
-          { display_name: 'TOTAL', rowType: 'total' },
-          { rowType: 'control' },
-        ]}
         onCellValueChanged={(event) => {
           const newData = [...form.section_c]
           const index = findIndex(
             newData,
-            (row: any) => row.rowId == event.data.rowId,
+            (row: any) => row.row_id == event.data.row_id,
           )
           if (index > -1) {
             // Should not be posible for index to be -1
@@ -157,7 +154,7 @@ export default function SectionCCreate(props: any) {
         onRowDataUpdated={() => {
           if (newNode.current) {
             scrollToElement(
-              `.ag-row[row-id=${newNode.current.data.rowId}]`,
+              `.ag-row[row-id=${newNode.current.data.row_id}]`,
               () => {
                 grid.current.api.flashCells({
                   rowNodes: [newNode.current],
@@ -205,7 +202,7 @@ export default function SectionCCreate(props: any) {
                 }
                 const added = find(
                   form.section_c,
-                  (chimical) => chimical.rowId === newChimical.rowId,
+                  (chimical) => chimical.row_id === newChimical.row_id,
                 )
                 if (!added) {
                   const groupNode = grid.current.api.getRowNode(
@@ -225,14 +222,14 @@ export default function SectionCCreate(props: any) {
                           count: 1,
                           display_name: group,
                           group,
-                          rowId: group,
+                          row_id: group,
                           rowType: 'group',
                         },
                         newChimical,
                         {
                           display_name: 'Sub-total',
                           group,
-                          rowId: `subtotal[${group}]`,
+                          row_id: `subtotal[${group}]`,
                           rowType: 'subtotal',
                         },
                       ],
@@ -251,7 +248,7 @@ export default function SectionCCreate(props: any) {
                     })
                   }
                   const substanceNode = grid.current.api.getRowNode(
-                    newChimical.rowId,
+                    newChimical.row_id,
                   )
                   newNode.current = substanceNode
                 }

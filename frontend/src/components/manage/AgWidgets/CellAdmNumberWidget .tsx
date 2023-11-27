@@ -164,7 +164,7 @@ export const CellNumberWidget = memo(
             } else if (finalValue && isNumber(max) && finalValue > max) {
               finalValue = max
             }
-            const rowNode = props.api.getRowNode(props.data.rowId)
+            const rowNode = props.api.getRowNode(props.data.row_id)
             const newAdms = [...(props.data.values || [])]
             if (admIndex > -1) {
               newAdms.splice(admIndex, 1, {

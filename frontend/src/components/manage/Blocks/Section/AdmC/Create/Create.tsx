@@ -18,7 +18,7 @@ export default function AdmBCreate(props: any) {
     const dataByRowId = groupBy(form.adm_c, 'row_id')
 
     return map(rows, (row) => ({
-      rowId: row.id,
+      row_id: row.id,
       values: dataByRowId[row.id]?.[0]?.values || [],
       ...row,
       ...(row.type === 'title' ? { rowType: 'group' } : {}),
@@ -29,8 +29,6 @@ export default function AdmBCreate(props: any) {
   const gridOptions = useGridOptions({
     adm_columns: columns,
   })
-
-  console.log('HERE', form.adm_c)
 
   return (
     <>
@@ -50,9 +48,7 @@ export default function AdmBCreate(props: any) {
           const newData = [...form.adm_c]
           const index = findIndex(
             newData,
-            (row: any) =>
-              (row.row_id || row.rowId) ===
-              (event.data.row_id || event.data.rowId),
+            (row: any) => row.row_id === event.data.row_id,
           )
           if (index > -1) {
             // Should not be posible for index to be -1
@@ -71,7 +67,7 @@ export default function AdmBCreate(props: any) {
         onRowDataUpdated={() => {
           // if (newNode.current) {
           //   scrollToElement(
-          //     `.ag-row[row-id=${newNode.current.data.rowId}]`,
+          //     `.ag-row[row-id=${newNode.current.data.row_id}]`,
           //     () => {
           //       grid.current.api.flashCells({
           //         rowNodes: [newNode.current],

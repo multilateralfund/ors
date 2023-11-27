@@ -68,6 +68,7 @@ class AdmRowAdmin(admin.ModelAdmin):
             "admrecordarchive",
             "children",
             "choices",
+            "admrecordarchive",
         ]
         return get_final_display_list(AdmRow, exclude)
 

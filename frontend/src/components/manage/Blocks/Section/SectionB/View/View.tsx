@@ -23,6 +23,8 @@ export default function SectionBView(props: any) {
     usages: emptyForm.usage_columns?.section_b || [],
   })
 
+  console.log('HERE', emptyForm.usage_columns?.section_b)
+
   const rowData = useMemo(() => {
     let rowData: Array<any> = []
     const dataByGroup: Record<string, any> = {}

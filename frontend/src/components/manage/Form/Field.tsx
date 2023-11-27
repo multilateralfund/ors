@@ -41,7 +41,7 @@ export default function Field({
     <div
       {...FieldProps}
       className={cx(
-        'widget',
+        'widget max-w-full',
         `${widget || type || 'text'}-widget`,
         FieldProps?.className,
       )}

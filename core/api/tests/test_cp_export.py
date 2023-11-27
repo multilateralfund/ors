@@ -18,7 +18,7 @@ class TestCPExportXLSX(BaseTest):
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 403
 
-    def test_get_cp_export_new(self, user, cp_report_2019):
+    def test_get_cp_export_new(self, user, cp_report_2019, _setup_new_cp_report):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
@@ -36,7 +36,7 @@ class TestCPExportXLSX(BaseTest):
         ]
         assert wb["Section A"]["A1"].value == "Country: Romania Year: 2019"
 
-    def test_get_cp_export_old(self, user, cp_report_2005):
+    def test_get_cp_export_old(self, user, cp_report_2005, _setup_old_cp_report):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"cp_report_id": cp_report_2005.id})
@@ -61,7 +61,7 @@ class TestCPExportPDF(BaseTest):
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 403
 
-    def test_get_cp_export_new(self, user, cp_report_2019):
+    def test_get_cp_export_new(self, user, cp_report_2019, _setup_new_cp_report):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
@@ -80,7 +80,7 @@ class TestCPExportPDF(BaseTest):
         ]:
             assert name.upper() in text
 
-    def test_get_cp_export_old(self, user, cp_report_2005):
+    def test_get_cp_export_old(self, user, cp_report_2005, _setup_old_cp_report):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"cp_report_id": cp_report_2005.id})

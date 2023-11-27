@@ -32,7 +32,7 @@ function useGridOptions() {
         aggFunc: 'sumTotal',
         dataType: 'number',
         field: 'current_year_price',
-        headerName: 'Current prices',
+        headerName: 'Current year prices',
         ...colDefById['current_year_price'],
       },
       {

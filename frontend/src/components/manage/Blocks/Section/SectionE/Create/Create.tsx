@@ -33,7 +33,7 @@ export default function SectionECreate(props: any) {
       feedstock_wpc: 0,
       generated_emissions: 0,
       remarks: '',
-      rowId: `facility_${id}`,
+      row_id: `facility_${id}`,
       total: 0,
     }
     const prevNode =
@@ -46,7 +46,7 @@ export default function SectionECreate(props: any) {
       add: [newFacility],
       addIndex: prevNode ? prevNode.rowIndex + 1 : 0,
     })
-    const facilityNode = grid.current.api.getRowNode(newFacility.rowId)
+    const facilityNode = grid.current.api.getRowNode(newFacility.row_id)
     newNode.current = facilityNode
     newFacilityIndex.current = newFacilityIndex.current + 1
   }, [setForm])
@@ -57,7 +57,7 @@ export default function SectionECreate(props: any) {
       const newData = [...form.section_e]
       const index = findIndex(
         form.section_e,
-        (facility: any) => facility.rowId == removedFacility.rowId,
+        (facility: any) => facility.row_id == removedFacility.row_id,
       )
       if (index > -1) {
         newData.splice(index, 1)
@@ -90,7 +90,7 @@ export default function SectionECreate(props: any) {
           const newData = [...form.section_e]
           const index = findIndex(
             newData,
-            (row: any) => row.rowId == event.data.rowId,
+            (row: any) => row.row_id == event.data.row_id,
           )
           if (index > -1) {
             // Should not be posible for index to be -1
@@ -109,7 +109,7 @@ export default function SectionECreate(props: any) {
         onRowDataUpdated={() => {
           if (newNode.current) {
             scrollToElement(
-              `.ag-row[row-id=${newNode.current.data.rowId}]`,
+              `.ag-row[row-id=${newNode.current.data.row_id}]`,
               () => {
                 grid.current.api.flashCells({
                   rowNodes: [newNode.current],

@@ -5,7 +5,17 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
 import cx from 'classnames'
 import { AnimatePresence } from 'framer-motion'
-import { capitalize, filter, findIndex, get, isEmpty, pickBy } from 'lodash'
+import {
+  capitalize,
+  filter,
+  findIndex,
+  get,
+  isEmpty,
+  map,
+  pickBy,
+  reduce,
+  values,
+} from 'lodash'
 import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
@@ -74,7 +84,7 @@ function TabPanel(props: any) {
   )
 }
 
-function CPReportCreate(props: { id: null | number }) {
+function CPReportEdit(props: { id: null | number }) {
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
   const { blends, report, substances } = useStore((state) => state.cp_reports)
@@ -114,7 +124,7 @@ function CPReportCreate(props: { id: null | number }) {
   }
 
   const [errors, setErrors] = useState<Record<string, any>>({})
-  const [currentIndex, setCurrentIndex] = useState(4)
+  const [currentIndex, setCurrentIndex] = useState(0)
   const [activeSection, setActiveSection] = useState(null)
   const [renderSection, setRenderSection] = useState(false)
   const [form, setForm] = useState<Record<string, any>>({
@@ -145,6 +155,33 @@ function CPReportCreate(props: { id: null | number }) {
     return pickBy(
       {
         ...form,
+        adm_b: reduce(
+          form.adm_b,
+          (rows: any, row: any) => {
+            map(row.values, (value) => {
+              rows.push({
+                ...row,
+                ...value,
+              })
+            })
+            return rows
+          },
+          [],
+        ),
+        adm_c: reduce(
+          form.adm_c,
+          (rows: any, row: any) => {
+            map(row.values, (value) => {
+              rows.push({
+                ...row,
+                ...value,
+              })
+            })
+            return rows
+          },
+          [],
+        ),
+        adm_d: values(form.adm_d),
         section_a: Sections.section_a.getSubmitFormData(form.section_a),
         section_b: Sections.section_b.getSubmitFormData(form.section_b),
         section_c: Sections.section_c.getSubmitFormData(form.section_c),
@@ -164,6 +201,8 @@ function CPReportCreate(props: { id: null | number }) {
       setRenderSection(true)
     }, 600)
   }, [currentIndex])
+
+  console.log('HERE EDIT')
 
   return (
     <>
@@ -193,7 +232,6 @@ function CPReportCreate(props: { id: null | number }) {
           </div>
         </HeaderTitle>
       )}
-
       <form className="create-submission-form">
         <Tabs
           className="scrollable mb-4"
@@ -308,7 +346,7 @@ function CPReportCreate(props: { id: null | number }) {
                 errors: errors[section.id],
                 fadeInOut: false,
                 getRowId: (props: any) => {
-                  return props.data.rowId
+                  return props.data.row_id
                 },
                 noRowsOverlayComponentParams: { label: 'No data reported' },
                 suppressCellFocus: false,
@@ -393,7 +431,7 @@ function CPReportCreate(props: { id: null | number }) {
   )
 }
 
-export default function CPReportCreateWrapper(props: { id: string }) {
+export default function CPReportEditWrapper(props: { id: string }) {
   const { blends, fetchBundle, report, setReport, substances } = useStore(
     (state) => state.cp_reports,
   )
@@ -430,5 +468,5 @@ export default function CPReportCreateWrapper(props: { id: string }) {
     )
   }
 
-  return <CPReportCreate id={id} />
+  return <CPReportEdit id={id} />
 }

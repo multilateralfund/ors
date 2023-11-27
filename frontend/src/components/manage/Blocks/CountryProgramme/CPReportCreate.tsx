@@ -29,6 +29,7 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
 import api, { getResults } from '@ors/helpers/Api/Api'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
+import useApi from '@ors/hooks/useApi'
 import useMakeClassInstance from '@ors/hooks/useMakeClassInstance'
 import { Blend, Substance } from '@ors/models/Section'
 import SectionA from '@ors/models/SectionA'
@@ -90,6 +91,7 @@ function CPReportCreate() {
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
   const { report, substances, blends } = useStore((state) => state.cp_reports)
+
   const countries = useStore((state) => [
     { id: 0, label: 'Any' },
     ...getResults(state.common.countries.data).results.map((country) => ({
@@ -136,6 +138,7 @@ function CPReportCreate() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [activeSection, setActiveSection] = useState(null)
   const [renderSection, setRenderSection] = useState(false)
+  const [currentYear] = useState(new Date().getFullYear())
   const [form, setForm] = useState<Record<string, any>>({
     country: null,
     section_a: Sections.section_a.getData(),
@@ -144,8 +147,26 @@ function CPReportCreate() {
     section_d: Sections.section_d.getData(),
     section_e: Sections.section_e.getData(),
     section_f: Sections.section_f.getData(),
-    year: new Date().getFullYear(),
+    year: currentYear,
   })
+
+  const reports = useApi({
+    path: `/api/country-programme/reports/?year_max=${currentYear}&year_min=${currentYear}&country_id=${form.country?.id}`,
+    options: {
+      triggerIf: !!form.country?.id,
+    },
+  })
+
+  useEffect(() => {
+    reports.setApiSettings({
+      path: `/api/country-programme/reports/?year_max=${currentYear}&year_min=${currentYear}&country_id=${form.country?.id}`,
+      options: {
+        ...reports.apiSettings.options,
+        triggerIf: !!form.country?.id,
+      },
+    })
+    // eslint-disable-next-line
+  }, [form.country])
 
   const getSubmitFormData = useCallback(() => {
     return {
@@ -338,7 +359,7 @@ function CPReportCreate() {
               enablePagination: false,
               fadeInOut: false,
               getRowId: (props: any) => {
-                return props.data.rowId
+                return props.data.row_id
               },
               noRowsOverlayComponentParams: { label: 'No data reported' },
               suppressCellFocus: false,

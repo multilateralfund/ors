@@ -30,8 +30,14 @@ from core.api.tests.factories import (
     BusinessPlanFactory,
     BPRecordFactory,
     BPRecordValueFactory,
+    AdmRecordFactory,
+    CPGenerationFactory,
+    CPPricesFactory,
+    CPRecordFactory,
+    CPUsageFactory,
 )
 from core.models import BPRecord
+from core.models import CPEmission
 from core.models import CPReport
 
 
@@ -192,6 +198,7 @@ def groupA():
 def substance(excluded_usage, groupA, time_frames):
     substance = SubstanceFactory.create(
         name="substance",
+        sort_order=1,
         group=groupA,
         odp=0.02,
         gwp=0.05,
@@ -206,7 +213,7 @@ def substance(excluded_usage, groupA, time_frames):
 
 @pytest.fixture
 def blend(excluded_usage, time_frames):
-    blend = BlendFactory.create(name="blend")
+    blend = BlendFactory.create(name="blend", sort_order=1)
     ExcludedUsageBlendFactory.create(
         blend=blend,
         usage=excluded_usage,
@@ -309,3 +316,114 @@ def pdf_text(pdf_file):
     text = extract_text(pdf_file)
     # Normalize to avoid weird comparisons like 'ﬃ' != 'ffi'
     return unicodedata.normalize("NFKD", text)
+
+
+@pytest.fixture(name="_setup_new_cp_report")
+def setup_new_cp_report(cp_report_2019, blend, substance):
+    # create prev tear cp report
+    prev_report = CPReportFactory.create(
+        country=cp_report_2019.country,
+        year=2018,
+        comment="Alo baza baza",
+        status=CPReport.CPReportStatus.FINAL,
+    )
+    # section A
+    CPRecordFactory.create(
+        country_programme_report=cp_report_2019, section="A", substance=substance
+    )
+
+    # section B
+    cp_rec = CPRecordFactory.create(
+        country_programme_report=cp_report_2019, section="B", blend=blend
+    )
+    # blend displayed in all
+    BlendFactory.create(
+        name="blend2B",
+        displayed_in_all=True,
+        sort_order=5,
+    )
+    # add 3 usages for one record
+    for _ in range(3):
+        CPUsageFactory.create(country_programme_record=cp_rec)
+
+    # section C (prices)
+    for cp_report in [cp_report_2019, prev_report]:
+        CPPricesFactory.create(
+            country_programme_report=cp_report,
+            blend=blend,
+            current_year_price=cp_report.year,
+        )
+    CPPricesFactory.create(
+        country_programme_report=cp_report_2019,
+        substance=substance,
+        current_year_price=cp_report_2019.year,
+        previous_year_price=cp_report_2019.year - 1,
+    )
+
+    # section D (generation)
+    CPGenerationFactory.create(country_programme_report=cp_report_2019)
+
+    # section E (emissions)
+    for _ in range(2):
+        CPEmission.objects.create(country_programme_report=cp_report_2019)
+
+
+@pytest.fixture(name="_setup_old_cp_report")
+def setup_old_cp_report(cp_report_2005, substance, blend, groupA, time_frames):
+    # section A
+    cp_rec = CPRecordFactory.create(
+        country_programme_report=cp_report_2005, section="A", substance=substance
+    )
+    # add 3 usages for one record
+    for _ in range(3):
+        CPUsageFactory.create(country_programme_record=cp_rec)
+    # substance
+    SubstanceFactory.create(name="substance2", displayed_in_all=True, group=groupA)
+
+    # section C (prices)
+    CPPricesFactory.create(country_programme_report=cp_report_2005, blend=blend)
+    CPPricesFactory.create(country_programme_report=cp_report_2005, substance=substance)
+
+    # create rows and columns
+    rows = {}
+    columns = {}
+    for section in ["B", "C", "D"]:
+        data = {
+            "section": section,
+            "time_frame": time_frames[(2000, 2011)],
+        }
+        if section != "D":
+            columns[section] = AdmColumnFactory.create(
+                display_name=f"adm_column_{section}", sort_order=1, **data
+            )
+
+        rows[section] = AdmRowFactory.create(
+            text=f"row{section}",
+            index=None,
+            type="question",
+            parent=None,
+            **data,
+        )
+        if section == "D":
+            # creat choices
+            for i in range(3):
+                last_choice = AdmChoiceFactory.create(
+                    adm_row=rows[section],
+                    value="choice1",
+                    sort_order=i,
+                )
+
+    # create records
+    for section in ["B", "C", "D"]:
+        record_data = {
+            "country_programme_report": cp_report_2005,
+            "row": rows[section],
+            "column": columns.get(section, None),
+            "value_text": f"record_{section}",
+            "section": section,
+        }
+        if section == "D":
+            record_data["value_choice"] = last_choice
+        AdmRecordFactory.create(**record_data)
+
+    return last_choice
