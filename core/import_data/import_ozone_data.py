@@ -15,14 +15,16 @@ def create_uncontrolled_group():
         "group_id": "uncontrolled",
         "annex": "unknown",
         "name": "Other",
-        "name_alt": "Other",
+        "name_alt": "Alternatives",
         "description": "Substances not controlled under the Montreal Protocol.",
         "description_alt": "",
         "is_odp": False,
         "is_gwp": False,
         "ozone_id": None,
     }
-    group, _ = Group.objects.update_or_create(**group_data)
+    group, _ = Group.objects.update_or_create(
+        name=group_data["name"], defaults=group_data
+    )
     return group.id
 
 

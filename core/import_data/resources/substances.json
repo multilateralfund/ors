@@ -624,7 +624,7 @@
         "pk": 20,
         "fields": {
             "substance_id": 119,
-            "name": "1,1,1-trichloroethane (methyl chloroform)",
+            "name": "Methyl chloroform",
             "description": "1,1,1-trichloroethane (methyl chloroform)",
             "group": 5,
             "odp": "0.1000000000",
@@ -4147,7 +4147,7 @@
             "remark": "",
             "r_code": null,
             "main_usage": "",
-            "sort_order": 112900,
+            "sort_order": 116001,
             "is_contained_in_polyols": false,
             "is_captured": false,
             "has_critical_uses": false
@@ -4302,7 +4302,7 @@
             "remark": "",
             "r_code": null,
             "main_usage": "",
-            "sort_order": 116001,
+            "sort_order": 112900,
             "is_contained_in_polyols": false,
             "is_captured": false,
             "has_critical_uses": false
