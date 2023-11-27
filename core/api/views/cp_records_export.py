@@ -1,13 +1,7 @@
 import collections
-import io
 import itertools
-import shutil
-import subprocess
-import tempfile
-from pathlib import Path
 
 from django.db.models import Prefetch
-from django.http import FileResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import ValidationError
@@ -16,6 +10,8 @@ from core.api.export.cp_report_new import CPReportNewExporter
 from core.api.export.cp_report_old import CPReportOldExporter
 from core.api.serializers import BlendSerializer
 from core.api.serializers import SubstanceSerializer
+from core.api.utils import workbook_pdf_response
+from core.api.utils import workbook_response
 from core.api.views.cp_records import CPRecordListView
 from core.api.views.cp_report_empty_form import EmptyFormView
 from core.models import Blend
@@ -55,33 +51,12 @@ class CPRecordExportView(CPRecordListView):
         return self.get_response(cp_report.name, wb)
 
     def get_response(self, name, wb):
-        """Save xlsx and return the response"""
-        xls = io.BytesIO()
-        wb.save(xls)
-        xls.seek(0)
-        return FileResponse(xls, as_attachment=True, filename=name + ".xlsx")
+        return workbook_response(name, wb)
 
 
 class CPRecordPrintView(CPRecordExportView):
     def get_response(self, name, wb):
-        """Save pdf and return the response"""
-
-        with tempfile.TemporaryDirectory(prefix="cp-report-print-") as tmpdirname:
-            pdf_file = Path(tmpdirname) / (name + ".pdf")
-            xlsx_file = Path(tmpdirname) / (name + ".xlsx")
-            wb.save(xlsx_file)
-
-            libreoffice_bin = shutil.which("libreoffice")
-            subprocess.check_call(
-                [libreoffice_bin, "--headless", "--convert-to", "pdf", str(xlsx_file)],
-                cwd=tmpdirname,
-                shell=False,
-            )
-            return FileResponse(
-                pdf_file.open("rb"),
-                as_attachment=True,
-                filename=name + ".pdf",
-            )
+        return workbook_pdf_response(name, wb)
 
 
 class CPEmptyExportView(CPRecordExportView):

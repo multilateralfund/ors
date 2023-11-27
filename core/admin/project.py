@@ -37,7 +37,7 @@ class ProjectSectorAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["projectsubsector", "businessplan", "bprecord"]
+        exclude = ["projectsubsector", "bprecord"]
         return get_final_display_list(ProjectSector, exclude)
 
 
@@ -52,7 +52,7 @@ class ProjectSubSectorAdmin(admin.ModelAdmin):
     autocomplete_fields = ["sector"]
 
     def get_list_display(self, request):
-        exclude = ["project", "businessplan", "bprecord"]
+        exclude = ["project", "bprecord"]
         return get_final_display_list(ProjectSubSector, exclude)
 
 

@@ -27,12 +27,16 @@ from core.api.tests.factories import (
     TimeFrameFactory,
     UsageFactory,
     UserFactory,
+    BusinessPlanFactory,
+    BPRecordFactory,
+    BPRecordValueFactory,
     AdmRecordFactory,
     CPGenerationFactory,
     CPPricesFactory,
     CPRecordFactory,
     CPUsageFactory,
 )
+from core.models import BPRecord
 from core.models import CPEmission
 from core.models import CPReport
 
@@ -284,6 +288,28 @@ def project_ods_odp_blend(project, blend):
         co2_mt=0.05,
         sort_order=1,
     )
+
+
+@pytest.fixture
+def business_plan(agency):
+    return BusinessPlanFactory(year_start=2020, year_end=2022, agency=agency)
+
+
+@pytest.fixture
+def bp_record(business_plan, country_ro):
+    return BPRecordFactory(
+        business_plan=business_plan,
+        country=country_ro,
+        bp_type=BPRecord.BPType.approved,
+    )
+
+
+@pytest.fixture
+def bp_record_values(bp_record):
+    return [
+        BPRecordValueFactory(bp_record=bp_record, year=year)
+        for year in (2020, 2021, 2022, 2023)
+    ]
 
 
 def pdf_text(pdf_file):

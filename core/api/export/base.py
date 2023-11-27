@@ -21,11 +21,11 @@ class BaseWriter:
         self.headers = {}
         self.all_headers = {}
 
-        nex_column_idx = self._compute_header_positions(
+        next_column_idx = self._compute_header_positions(
             headers, row=self.header_row_start_idx
         )
         self.header_row_end_idx = max(h["row"] for h in self.headers.values())
-        self.max_column_idx = nex_column_idx - 1
+        self.max_column_idx = next_column_idx - 1
 
     def write(self, data):
         self.write_headers()
@@ -70,7 +70,22 @@ class BaseWriter:
             )
 
     def write_data(self, data):
-        raise NotImplementedError
+        for row_idx, record in enumerate(data, start=self.header_row_end_idx + 1):
+            for header_id, header in self.headers.items():
+                header_type = header.get("type")
+                if method := header.get("method"):
+                    value = method(record, header)
+                else:
+                    value = record.get(header_id)
+
+                if header_type == "number":
+                    value = float(value or 0)
+                elif header_type == "bool":
+                    value = "Yes" if value else "No"
+                else:
+                    value = value or ""
+
+                self._write_record_cell(row_idx, header["column"], value)
 
     def set_dimensions(self):
         for header in self.headers.values():
@@ -157,6 +172,7 @@ class CPReportBase:
         for section in self.sections:
             name = section.replace("_", " ").title()
             sheet = wb.create_sheet(name)
+            configure_sheet_print(sheet, sheet.ORIENTATION_PORTRAIT)
             sheet.cell(1, 1, "Country: %(country)s Year: %(year)s" % cp_report)
 
             getattr(self, f"export_{section}")(
@@ -165,14 +181,19 @@ class CPReportBase:
                 usages.get(section, []),
             )
 
-            sheet.page_setup.orientation = sheet.ORIENTATION_PORTRAIT
-            sheet.page_setup.paperSize = sheet.PAPERSIZE_A4
-            sheet.sheet_properties.pageSetUpPr.fitToPage = True
-            sheet.page_margins.top = 0.25
-            sheet.page_margins.right = 0.25
-            sheet.page_margins.bottom = 0.25
-            sheet.page_margins.left = 0.25
-
         # Remove the default sheet before saving
         del wb[wb.sheetnames[0]]
         return wb
+
+
+def configure_sheet_print(sheet, orientation):
+    sheet.page_setup.orientation = orientation
+    sheet.page_setup.paperSize = sheet.PAPERSIZE_A4
+    sheet.sheet_properties.pageSetUpPr.fitToPage = True
+    sheet.sheet_properties.pageSetUpPr.autoPageBreaks = True
+    sheet.page_setup.fitToWidth = 1
+    sheet.page_setup.fitToHeight = False
+    sheet.page_margins.top = 0.25
+    sheet.page_margins.right = 0.25
+    sheet.page_margins.bottom = 0.25
+    sheet.page_margins.left = 0.25
