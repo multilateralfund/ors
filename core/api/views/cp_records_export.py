@@ -47,9 +47,9 @@ class CPRecordExportView(CPRecordListView):
     def get(self, *args, **kwargs):
         cp_report = self._get_cp_report()
         if cp_report.year > IMPORT_DB_MAX_YEAR:
-            exporter = CPReportNewExporter()
+            exporter = CPReportNewExporter(cp_report)
         else:
-            exporter = CPReportOldExporter()
+            exporter = CPReportOldExporter(cp_report)
 
         wb = exporter.get_xlsx(self.get_data(cp_report), self.get_usages(cp_report))
         return self.get_response(cp_report.name, wb)
