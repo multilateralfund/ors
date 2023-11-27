@@ -54,6 +54,13 @@ export interface ProjectsSlice {
   types: SliceData
 }
 
+export interface BusinessPlanSlice {
+  sectors: SliceData
+  subsectors: SliceData
+  types: SliceData
+  yearRanges: SliceData
+}
+
 export interface ThemeSlice {
   mode: 'dark' | 'light' | null
   setMode: (mode: 'dark' | 'light' | null) => void
@@ -75,6 +82,7 @@ export interface CommonSlice {
 // Store state
 
 export type StoreState = {
+  businessPlans: BusinessPlanSlice
   cache: CacheSlice
   common: CommonSlice
   connection: null | string
