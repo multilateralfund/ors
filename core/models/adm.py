@@ -121,6 +121,8 @@ class AdmChoice(models.Model):
     adm_row = models.ForeignKey(
         AdmRow, on_delete=models.CASCADE, related_name="choices"
     )
+    with_text = models.BooleanField(default=False)
+    text_label = models.CharField(max_length=248, null=True, blank=True)
     sort_order = models.FloatField(null=True, blank=True)
     source_file = models.CharField(max_length=248, null=True, blank=True)
 

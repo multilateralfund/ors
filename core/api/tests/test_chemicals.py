@@ -116,10 +116,10 @@ class TestSubstancesList(BaseTest):
         response = self.client.get(self.url, {"section": "B"})
         assert response.status_code == 200
         assert len(response.data) == 2
-        # section C => annex in ["C", "E", "F", "unknown"] => 4 substances
+        # section C => annex in ["C", "F", "unknown"] => 4 substances
         response = self.client.get(self.url, {"section": "C"})
         assert response.status_code == 200
-        assert len(response.data) == 8
+        assert len(response.data) == 6
 
     def test_displayed_in_all_filter(self, user, _setup_substances_list):
         self.client.force_authenticate(user=user)

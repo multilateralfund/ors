@@ -161,12 +161,17 @@ class CPReportOldExporter(CPReportBase):
         ).write(data)
 
     def export_adm_d(self, sheet, data, usages):
+        if self.cp_report.year <= 2011:
+            header = "Qualitative assessment of the operation of RMP/NPP/TPMP"
+        else:
+            header = "Qualitative assessment of the operation of HPMP"
+
         AdmWriter(
             sheet,
             [
                 {
                     "id": "sheet-title",
-                    "headerName": "ADM D. Qualitative assessment of the operation of HPMP",
+                    "headerName": f"ADM D. {header}",
                     "column_width": COLUMN_WIDTH * 16,
                     "children": [
                         {

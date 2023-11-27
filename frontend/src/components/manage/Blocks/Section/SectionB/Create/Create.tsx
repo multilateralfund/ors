@@ -46,7 +46,7 @@ function getRowData(data: any) {
           count: dataByGroup[group].length,
           display_name: group,
           group,
-          rowId: group,
+          row_id: group,
           rowType: 'group',
         },
       ],
@@ -55,7 +55,7 @@ function getRowData(data: any) {
         {
           display_name: 'Sub-total',
           group,
-          rowId: `subtotal[${group}]`,
+          row_id: `subtotal[${group}]`,
           rowType: 'subtotal',
         },
       ],
@@ -97,7 +97,7 @@ export default function SectionBCreate(props: any) {
   const chimicalsOptions = useMemo(() => {
     const data: Array<any> = []
     const chimicalsInForm = form.section_b.map(
-      (chimical: any) => chimical.rowId,
+      (chimical: any) => chimical.row_id,
     )
     each(substances, (substance) => {
       if (
@@ -124,7 +124,7 @@ export default function SectionBCreate(props: any) {
       const newData = [...form.section_b]
       const index = findIndex(
         form.section_b,
-        (substance: any) => substance.rowId == removedSubstance.rowId,
+        (substance: any) => substance.row_id == removedSubstance.row_id,
       )
       if (index > -1) {
         const groupNode = grid.current.api.getRowNode(removedSubstance.group)
@@ -245,7 +245,7 @@ export default function SectionBCreate(props: any) {
           const newData = [...form.section_b]
           const index = findIndex(
             newData,
-            (row: any) => row.rowId == event.data.rowId,
+            (row: any) => row.row_id == event.data.row_id,
           )
           if (index > -1) {
             // Should not be posible for index to be -1
@@ -265,7 +265,7 @@ export default function SectionBCreate(props: any) {
         onRowDataUpdated={() => {
           if (newNode.current) {
             scrollToElement(
-              `.ag-row[row-id=${newNode.current.data.rowId}]`,
+              `.ag-row[row-id=${newNode.current.data.row_id}]`,
               () => {
                 grid.current.api.flashCells({
                   rowNodes: [newNode.current],
@@ -333,7 +333,7 @@ export default function SectionBCreate(props: any) {
                 }
                 const added = find(
                   form.section_b,
-                  (chimical) => chimical.rowId === newChimical.rowId,
+                  (chimical) => chimical.row_id === newChimical.row_id,
                 )
                 if (!added) {
                   const groupNode = grid.current.api.getRowNode(
@@ -351,7 +351,7 @@ export default function SectionBCreate(props: any) {
                     ],
                   })
                   const chimicalNode = grid.current.api.getRowNode(
-                    newChimical.rowId,
+                    newChimical.row_id,
                   )
                   newNode.current = chimicalNode
                 }
@@ -373,19 +373,19 @@ export default function SectionBCreate(props: any) {
 
             const added = find(
               form.section_b,
-              (chimical) => chimical.rowId === serializedBlend.rowId,
+              (chimical) => chimical.row_id === serializedBlend.row_id,
             )
 
             if (added) {
               const blendNode = grid.current.api.getRowNode(
-                serializedBlend.rowId,
+                serializedBlend.row_id,
               )
               enqueueSnackbar(
                 `Blend ${serializedBlend.name} already exists in the form.`,
                 { variant: 'info' },
               )
               scrollToElement(
-                `.ag-row[row-id=${serializedBlend.rowId}]`,
+                `.ag-row[row-id=${serializedBlend.row_id}]`,
                 () => {
                   grid.current.api.flashCells({
                     rowNodes: [blendNode],
@@ -412,7 +412,7 @@ export default function SectionBCreate(props: any) {
                 ],
               })
               const blendNode = grid.current.api.getRowNode(
-                serializedBlend.rowId,
+                serializedBlend.row_id,
               )
               newNode.current = blendNode
               enqueueSnackbar(

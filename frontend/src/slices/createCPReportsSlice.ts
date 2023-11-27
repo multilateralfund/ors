@@ -89,16 +89,24 @@ export const createCPReportsSlice = ({
           path,
         },
         parseResponse: (response) => {
-          const { usage_columns = {} } = response
+          const { usage_columns } = response
           return {
             ...(response || {}),
             usage_columns: {
-              section_a: usage_columns.section_a
-                .filter((usage: any) => filterUsage(usage, report))
-                .map((usage: any) => mapUsage(usage, report, view)),
-              section_b: usage_columns.section_a
-                .filter((usage: any) => filterUsage(usage, report))
-                .map((usage: any) => mapUsage(usage, report, view)),
+              ...(usage_columns.section_a
+                ? {
+                    section_a: usage_columns.section_a
+                      .filter((usage: any) => filterUsage(usage, report))
+                      .map((usage: any) => mapUsage(usage, report, view)),
+                  }
+                : {}),
+              ...(usage_columns.section_b
+                ? {
+                    section_b: usage_columns.section_b
+                      .filter((usage: any) => filterUsage(usage, report))
+                      .map((usage: any) => mapUsage(usage, report, view)),
+                  }
+                : {}),
             },
           }
         },

@@ -1,3 +1,4 @@
+from django.db.models import Q
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, generics
@@ -12,7 +13,7 @@ from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_price import CPPricesSerializer
 from core.api.serializers.cp_record import CPRecordSerializer
 from core.api.serializers.cp_report import CPReportSerializer
-from core.api.utils import SECTION_ANNEX_MAPPING
+from core.api.utils import SECTION_ANNEX_MAPPING, SECTION_GROUP_MAPPING_12_18
 from core.models.adm import AdmRecord
 from core.models.blend import Blend
 from core.models.country_programme import (
@@ -74,7 +75,7 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
         chemical_dict,
         chemical_type,
         section,
-        cp_report_id,
+        cp_report,
     ):
         """
         Set chemical records dict
@@ -82,7 +83,7 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
         @param chemical_dict: dict of substances or blends ( key: id, value: chemical record)
         @param chemical_type: str - "substance" or "blend"
         @param section: str - section name
-        @param cp_report_id: int - country programme report id
+        @param cp_report: obj - CPReport object
 
         @return: dict of chemical records
             structure: {chemical_id: CPRecord object}
@@ -90,13 +91,18 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
         # get all substances or blends that are displayed in all formats
         chemical_list = []
         if chemical_type == "substance":
-            annexes = SECTION_ANNEX_MAPPING.get(section, [])
-            chemical_list = (
-                Substance.objects.filter(displayed_in_all=True)
-                .select_related("group")
-                .filter(group__annex__in=annexes)
-                .all()
-            )
+            chemical_list = Substance.objects.filter(
+                displayed_in_all=True
+            ).select_related("group")
+            # 2012-2018 select only substances under some groups
+            if cp_report.year < 2012 or cp_report.year > 2018:
+                annexes = SECTION_ANNEX_MAPPING.get(section, [])
+                chemical_list = chemical_list.filter(group__annex__in=annexes)
+            else:
+                chemical_list = chemical_list.filter(
+                    group__name_alt__in=SECTION_GROUP_MAPPING_12_18
+                )
+            chemical_list = chemical_list.all()
         elif chemical_type == "blend" and section in ["B", "C"]:
             chemical_list = Blend.objects.filter(displayed_in_all=True).all()
 
@@ -104,7 +110,7 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
         for chemical in chemical_list:
             if chemical.id not in chemical_dict:
                 cp_record_data = {
-                    "country_programme_report_id": cp_report_id,
+                    "country_programme_report_id": cp_report.id,
                     "substance_id": chemical.id
                     if chemical_type == "substance"
                     else None,
@@ -117,7 +123,7 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
 
         return chemical_dict
 
-    def _get_displayed_items(self, item_cls, cp_report_id, section, existing_items):
+    def _get_displayed_items(self, item_cls, cp_report, section, existing_items):
         """
         Returns a list of ItemCld objects for the given section and cp_report_id
          -> if there is no record for a substance or blend that is displayed in all formats
@@ -138,22 +144,33 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
 
         # get all substances and blends
         substances_dict = self._set_chemical_items_dict(
-            item_cls, subs_rec_dict, "substance", section, cp_report_id
+            item_cls, subs_rec_dict, "substance", section, cp_report
         )
         blends_dict = self._set_chemical_items_dict(
-            item_cls, blends_rec_dict, "blend", section, cp_report_id
+            item_cls, blends_rec_dict, "blend", section, cp_report
         )
-
         final_list = list(substances_dict.values()) + list(blends_dict.values())
         final_list.sort(
-            key=lambda x: (x.substance.group.name, x.substance.name)
-            if x.substance
-            else ("zzzzz", x.blend.name)
+            key=lambda x: (
+                (
+                    x.substance.group.name
+                    if x.substance.group.name != "Other"
+                    else "zzzbbb",  # other substances needs to be displayed last
+                    x.substance.sort_order or float("inf"),
+                    x.substance.name,
+                )
+                if x.substance
+                else (
+                    "zzzaaa",
+                    x.blend.sort_order or float("inf"),
+                    x.blend.name,
+                )
+            )
         )
 
         return final_list
 
-    def _get_displayed_records(self, cp_report_id, section):
+    def _get_displayed_records(self, cp_report, section):
         """
         Returns a list of CPRecord objects for the given section and cp_report_id
 
@@ -163,9 +180,9 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
         @return: list of CPRecord objects
         """
 
-        exist_records = self._get_cp_record(cp_report_id, section)
+        exist_records = self._get_cp_record(cp_report.id, section)
         final_list = self._get_displayed_items(
-            self.cp_record_class, cp_report_id, section, exist_records
+            self.cp_record_class, cp_report, section, exist_records
         )
 
         return final_list
@@ -173,9 +190,10 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
     def _get_adm_records(self, cp_report_id, section):
         return (
             self.adm_record_class.objects.select_related("row", "column")
-            .filter(
-                country_programme_report_id=cp_report_id,
-                section=section,
+            .filter(country_programme_report_id=cp_report_id, section=section)
+            .filter(  # filter by cp_report
+                Q(row__country_programme_report_id=cp_report_id)
+                | Q(row__country_programme_report_id__isnull=True)
             )
             .order_by("row__sort_order", "column__sort_order")
             .all()
@@ -184,23 +202,50 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
     def _get_items_filtered_by_report(self, cls, cp_report_id):
         return cls.objects.filter(country_programme_report=cp_report_id).all()
 
-    def _get_cp_prices(self, cp_report_id):
+    def _get_cp_prices(self, cp_report):
         exist_records = (
             self.cp_prices_class.objects.select_related("substance__group", "blend")
             .prefetch_related("blend__components")
-            .filter(country_programme_report=cp_report_id)
+            .filter(country_programme_report=cp_report.id)
             .all()
         )
         final_list = self._get_displayed_items(
-            self.cp_prices_class, cp_report_id, "C", exist_records
+            self.cp_prices_class, cp_report, "C", exist_records
         )
+
+        # get last_year cp_report
+        last_year_cp_report = self.cp_report_class.objects.filter(
+            country=cp_report.country, year=cp_report.year - 1
+        ).first()
+        if not last_year_cp_report:
+            return final_list
+
+        # get last_year cp_prices
+        last_year_cp_prices = self.cp_prices_class.objects.filter(
+            country_programme_report=last_year_cp_report.id
+        ).all()
+        ly_subst_prices_dict = {
+            item.substance_id: item for item in last_year_cp_prices if item.substance
+        }
+        ly_blend_prices_dict = {
+            item.blend_id: item for item in last_year_cp_prices if item.blend
+        }
+        # set last_year prices
+        for price in final_list:
+            last_year_price = None
+            if price.substance:
+                last_year_price = ly_subst_prices_dict.get(price.substance_id)
+            elif price.blend:
+                last_year_price = ly_blend_prices_dict.get(price.blend_id)
+            if last_year_price:
+                price.computed_prev_year_price = last_year_price.current_year_price
 
         return final_list
 
     def _get_new_cp_records(self, cp_report):
-        section_a = self._get_displayed_records(cp_report.id, "A")
-        section_b = self._get_displayed_records(cp_report.id, "B")
-        section_c = self._get_cp_prices(cp_report.id)
+        section_a = self._get_displayed_records(cp_report, "A")
+        section_b = self._get_displayed_records(cp_report, "B")
+        section_c = self._get_cp_prices(cp_report)
         section_d = self._get_items_filtered_by_report(
             self.cp_generation_class, cp_report.id
         )
@@ -234,15 +279,22 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
             result[row_id]["values"].append(self.adm_record_seri_class(adm_record).data)
         return list(result.values())
 
+    def _get_adm_d_records(self, adm_records):
+        result = {}
+        for adm_record in adm_records:
+            row_id = adm_record.row_id
+            result[row_id] = self.adm_record_seri_class(adm_record).data
+        return result
+
     def _get_old_cp_records(self, cp_report):
-        section_a = self._get_displayed_records(cp_report.id, "A")
+        section_a = self._get_displayed_records(cp_report, "A")
         adm_b = self._get_adm_records(cp_report.id, "B")
         adm_b = self._get_regroupped_adm_records(adm_b)
-        section_c = self._get_cp_prices(cp_report.id)
+        section_c = self._get_cp_prices(cp_report)
         adm_c = self._get_adm_records(cp_report.id, "C")
         adm_c = self._get_regroupped_adm_records(adm_c)
         adm_d = self._get_adm_records(cp_report.id, "D")
-        adm_d = self._get_regroupped_adm_records(adm_d)
+        adm_d = self._get_adm_d_records(adm_d)
 
         return {
             "cp_report": self.cp_report_seri_class(cp_report).data,

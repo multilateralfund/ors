@@ -39,12 +39,6 @@ export default function SectionCView(props: any) {
     return rowData
   }, [report])
 
-  const pinnedBottomRowData = useMemo(() => {
-    return rowData.length > 0
-      ? [{ display_name: 'TOTAL', rowType: 'total' }]
-      : []
-  }, [rowData])
-
   return (
     <>
       <Table
@@ -52,7 +46,6 @@ export default function SectionCView(props: any) {
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
         gridRef={grid}
-        pinnedBottomRowData={pinnedBottomRowData}
         rowData={rowData}
         onFirstDataRendered={() => setActiveSection(index)}
         onGridReady={() => {

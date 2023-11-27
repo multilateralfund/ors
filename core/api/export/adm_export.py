@@ -18,7 +18,7 @@ class AdmWriter(BaseWriter):
             type="list",
             formula1='"Yes,No"',
             allow_blank=True,
-            showErrorMessage=True,
+            showErrorMessage=False,
         )
         self.sheet.add_data_validation(self.yes_no_validation)
 
@@ -67,20 +67,23 @@ class AdmWriter(BaseWriter):
                 )
 
     def write_data(self, data):
+        if isinstance(data, dict):
+            data = data.values()
+
         data_headers = {
             k: v for k, v in self.headers.items() if not v.get("is_row_header")
         }
-        record_row_id = {record["row_id"]: record for record in data}
+        records_by_row_id = {record["row_id"]: record for record in data}
         for row_id, question in self.questions_index_by_id.items():
             row_idx = question["row_idx"]
-            try:
-                values_by_col_id = {
-                    value["column_id"]: value
-                    for value in record_row_id[row_id]["values"]
-                }
-            except KeyError:
-                values_by_col_id = {}
 
+            values = []
+            if row_id in records_by_row_id:
+                record = records_by_row_id[row_id]
+                # ADM D doesn't have values here
+                values = record.get("values", [record])
+
+            values_by_col_id = {value["column_id"]: value for value in values}
             for header_id, header in data_headers.items():
                 try:
                     value_obj = values_by_col_id[header_id]

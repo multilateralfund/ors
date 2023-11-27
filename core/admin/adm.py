@@ -12,7 +12,7 @@ class AdmColumnAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["admrecord", "children"]
+        exclude = ["admrecord", "admrecordarchive", "children"]
         return get_final_display_list(AdmColumn, exclude)
 
 
@@ -65,8 +65,10 @@ class AdmRowAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = [
             "admrecord",
+            "admrecordarchive",
             "children",
             "choices",
+            "admrecordarchive",
         ]
         return get_final_display_list(AdmRow, exclude)
 
@@ -78,5 +80,5 @@ class AdmChoiceAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["admrecord"]
+        exclude = ["admrecord", "admrecordarchive"]
         return get_final_display_list(AdmChoice, exclude)

@@ -1,0 +1,15 @@
+services:
+  app:
+    environment:
+      # Control how many resources to give the webapp.
+      # See full list here https://docs.gunicorn.org/en/stable/settings.html#config
+      - GUNICORN_CMD_ARGS=--timeout 60 --workers=4 --threads=2
+
+  nextjs:
+    deploy:
+      replicas: 4
+
+  nginx:
+    environment:
+      # Control how many resources to give the nginx
+      - NGINX_WORKER_PROCESSES=4

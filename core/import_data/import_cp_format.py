@@ -72,8 +72,13 @@ def import_chemicas_format(file_path):
         file_path, sheet_name="Section B", usecols=[0], names=["chemical"], skiprows=8
     ).replace({np.nan: None})
 
+    sectionc = pd.read_excel(
+        file_path, sheet_name="Section C", usecols=[0], names=["chemical"], skiprows=4
+    ).replace({np.nan: None})
+
     set_chemicals_displayed_status(sectiona)
     set_chemicals_displayed_status(sectionb)
+    set_chemicals_displayed_status(sectionc)
 
 
 def import_usages_format(file_path):

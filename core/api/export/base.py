@@ -163,6 +163,9 @@ class BaseWriter:
 class CPReportBase:
     sections = ()
 
+    def __init__(self, cp_report):
+        self.cp_report = cp_report
+
     def get_xlsx(self, data, usages):
         cp_report = data["cp_report"]
         wb = openpyxl.Workbook()

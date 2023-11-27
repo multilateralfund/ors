@@ -34,12 +34,17 @@ export default function View({ children }: { children: React.ReactNode }) {
 
   const view = getCurrentView(pathname)
 
+  // const RenderedView: React.FC<any> = useMemo(
+  //   () =>
+  //     getErrorView(errorName) ||
+  //     getViewByLayout(view.layout) ||
+  //     getViewDefault(),
+  //   [view, errorName],
+  // )
+
   const RenderedView: React.FC<any> = useMemo(
-    () =>
-      getErrorView(errorName) ||
-      getViewByLayout(view.layout) ||
-      getViewDefault(),
-    [view, errorName],
+    () => getViewByLayout(view.layout) || getViewDefault(),
+    [view],
   )
 
   useEffect(() => {

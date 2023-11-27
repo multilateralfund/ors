@@ -23,7 +23,7 @@ from core.utils import IMPORT_DB_MAX_YEAR
 
 class CPRecordExportView(CPRecordListView):
     def get_usages(self, cp_report):
-        empty_form = EmptyFormView.get_data(cp_report.year)
+        empty_form = EmptyFormView.get_data(cp_report.year, cp_report)
         usages = empty_form.pop("usage_columns")
         return {
             **usages,
@@ -43,9 +43,9 @@ class CPRecordExportView(CPRecordListView):
     def get(self, *args, **kwargs):
         cp_report = self._get_cp_report()
         if cp_report.year > IMPORT_DB_MAX_YEAR:
-            exporter = CPReportNewExporter()
+            exporter = CPReportNewExporter(cp_report)
         else:
-            exporter = CPReportOldExporter()
+            exporter = CPReportOldExporter(cp_report)
 
         wb = exporter.get_xlsx(self.get_data(cp_report), self.get_usages(cp_report))
         return self.get_response(cp_report.name, wb)

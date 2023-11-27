@@ -1,11 +1,8 @@
+/* eslint-disable */
 @import './variables.css';
 @import './header.css';
 @import './row.css';
 @import './cell.css';
-
-#next-app [class*='ag-theme-'] .ag-body-horizontal-scroll {
-  @apply !relative;
-}
 
 #next-app [class*='ag-theme-'] .ag-root-wrapper {
   @apply rounded;
@@ -52,67 +49,8 @@
   padding-top: 240px;
 }
 
-#next-app
-  [class*='ag-theme-']
-  .ag-root-wrapper
-  .ag-root-wrapper-body
-  .ag-root
-  .ag-body-horizontal-scroll {
-  order: 1;
-}
-
-#next-app
-  [class*='ag-theme-']
-  .ag-root-wrapper
-  .ag-root-wrapper-body
-  .ag-root
-  .ag-header {
-  order: 2;
-}
-
-#next-app
-  [class*='ag-theme-']
-  .ag-root-wrapper
-  .ag-root-wrapper-body
-  .ag-root
-  .ag-floating-top {
-  order: 3;
-}
-
-#next-app
-  [class*='ag-theme-']
-  .ag-root-wrapper
-  .ag-root-wrapper-body
-  .ag-root
-  .ag-body-body {
-  order: 4;
-}
-
-#next-app
-  [class*='ag-theme-']
-  .ag-root-wrapper
-  .ag-root-wrapper-body
-  .ag-root
-  .ag-sticky-top {
-  order: 5;
-}
-
-#next-app
-  [class*='ag-theme-']
-  .ag-root-wrapper
-  .ag-root-wrapper-body
-  .ag-root
-  .ag-body {
-  order: 6;
-}
-
-#next-app
-  [class*='ag-theme-']
-  .ag-root-wrapper
-  .ag-root-wrapper-body
-  .ag-root
-  .ag-floating-bottom {
-  order: 7;
+#next-app .ag-body-horizontal-scroll {
+  @apply !relative !bottom-0;
 }
 
 #next-app .ag-full-screen,
@@ -131,7 +69,3 @@
 #next-app .ag-full-screen .ag-table {
   @apply m-0 !h-full;
 }
-
-/* #next-app .ag-layout-print {
-  width: 100%;
-} */

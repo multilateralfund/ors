@@ -40,7 +40,7 @@ export default function SectionAView(props: any) {
         [{ display_name: 'Sub-total', group, rowType: 'subtotal' }],
       )
     })
-    return rowData
+    return rowData.slice(0, 5)
   }, [report])
 
   const pinnedBottomRowData = useMemo(() => {
