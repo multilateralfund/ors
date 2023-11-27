@@ -25,6 +25,7 @@ disable=
     fixme,
     consider-using-f-string,
     duplicate-code,
+    too-many-ancestors,
 
 [FORMAT]
 max-line-length=120

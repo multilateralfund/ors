@@ -1,4 +1,11 @@
 import factory.fuzzy
+
+from core.models.business_plan import (
+    BusinessPlan,
+    BPRecord,
+    BPRecordValue,
+    BPChemicalType,
+)
 from core.models.adm import AdmChoice, AdmColumn, AdmRecord, AdmRow
 from core.models.agency import Agency
 from core.models.country import Country
@@ -320,3 +327,57 @@ class ProjectOdsOdpFactory(factory.django.DjangoModelFactory):
     ods_replacement = factory.Faker("pystr", max_chars=100)
     co2_mt = factory.Faker("random_int", min=1, max=100)
     sort_order = factory.Faker("random_int", min=1, max=100)
+
+
+class BusinessPlanFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = BusinessPlan
+
+    year_start = factory.Faker("random_int", min=2000, max=2009)
+    year_end = factory.Faker("random_int", min=2010, max=2019)
+    agency = factory.SubFactory(AgencyFactory)
+    status = factory.fuzzy.FuzzyChoice(BusinessPlan.Status.choices)
+
+
+class BPChemicalTypeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = BPChemicalType
+
+    name = factory.Faker("pystr", max_chars=200, prefix="bpchemicaltype-name")
+
+
+class BPRecordFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = BPRecord
+
+    business_plan = factory.SubFactory(BusinessPlanFactory)
+    title = factory.Faker("pystr", max_chars=200, prefix="bprecord-title")
+    required_by_model = factory.Faker(
+        "pystr", max_chars=200, prefix="bprecord-required-by-model"
+    )
+    country = factory.SubFactory(CountryFactory)
+    lvc_status = factory.fuzzy.FuzzyChoice(BPRecord.LVCStatus.choices)
+    project_type = factory.SubFactory(ProjectTypeFactory)
+    bp_chemical_type = factory.SubFactory(BPChemicalTypeFactory)
+    amount_polyol = factory.Faker("random_int", min=1, max=1000)
+    sector = factory.SubFactory(ProjectSectorFactory)
+    subsector = factory.SubFactory(ProjectSubSectorFactory)
+    bp_type = factory.fuzzy.FuzzyChoice(BPRecord.BPType.choices)
+    reason_for_exceeding = factory.Faker(
+        "pystr", max_chars=200, prefix="bprecord-reason-for-exceeding"
+    )
+    remarks = factory.Faker("pystr", max_chars=200, prefix="bprecord-remarks")
+    remarks_additional = factory.Faker(
+        "pystr", max_chars=200, prefix="bprecord-remarks-additional"
+    )
+
+
+class BPRecordValueFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = BPRecordValue
+
+    bp_record = factory.SubFactory(BPRecordFactory)
+    year = factory.Faker("random_int", min=2000, max=2024)
+    value_usd = factory.Faker("random_int", min=1, max=10000)
+    value_odp = factory.Faker("random_int", min=1, max=10000)
+    value_mt = factory.Faker("random_int", min=1, max=10000)
