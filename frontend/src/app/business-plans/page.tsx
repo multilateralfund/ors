@@ -3,7 +3,7 @@ import React from 'react'
 import { Typography } from '@mui/material'
 import { Metadata } from 'next'
 
-import BusinessPlansListing from '@ors/components/manage/Blocks/Listing/BusinessPlansListing/BusinessPlansListing'
+import BusinessPlansTable from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
@@ -19,7 +19,7 @@ export default async function Reports() {
           Business Plans
         </Typography>
       </HeaderTitle>
-      <BusinessPlansListing />
+      <BusinessPlansTable />
     </PageWrapper>
   )
 }
