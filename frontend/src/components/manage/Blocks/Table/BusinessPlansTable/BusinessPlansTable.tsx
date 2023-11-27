@@ -1,5 +1,5 @@
 'use client'
-import React, { useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 
 import {
   InputAdornment,
@@ -66,29 +66,40 @@ export default function BusinessPlansTable() {
     path: 'api/business-plan-record/',
   })
   const { count, loaded, results } = getResults(data)
-  const yearRangeSelected = bpSlice.yearRanges.data.find(
-    (item: any) => item.year_start == filters.business_plan__year_start,
-  )
-  const yearColumns = []
-  for (
-    let year = yearRangeSelected.min_year;
-    year <= yearRangeSelected.max_year;
-    year++
-  ) {
-    let label = year
-    if (year === yearRangeSelected.max_year) {
-      label = `After ${year - 1}`
-    }
 
-    yearColumns.push({
-      field: `value_usd_${year}`,
-      headerName: `Value ($000) ${label}`,
-      resizable: true,
-      valueGetter: (params: any) =>
-        params.data.values.find((i: any) => i.year === year)?.value_usd,
-      width: 100,
-    })
-  }
+  const yearRangeSelected = useMemo(
+    () =>
+      bpSlice.yearRanges.data.find(
+        (item: any) => item.year_start == filters.business_plan__year_start,
+      ),
+    [bpSlice.yearRanges.data, filters.business_plan__year_start],
+  )
+  const yearColumns = useMemo(() => {
+    if (!yearRangeSelected) return []
+
+    const result = []
+
+    for (
+      let year = yearRangeSelected.min_year;
+      year <= yearRangeSelected.max_year;
+      year++
+    ) {
+      let label = year
+      if (year === yearRangeSelected.max_year) {
+        label = `After ${year - 1}`
+      }
+
+      result.push({
+        field: `value_usd_${year}`,
+        headerName: `Value ($000) ${label}`,
+        resizable: true,
+        valueGetter: (params: any) =>
+          params.data.values.find((i: any) => i.year === year)?.value_usd,
+        width: 100,
+      })
+    }
+    return result
+  }, [yearRangeSelected])
 
   function handleParamsChange(params: { [key: string]: any }) {
     setParams(params)
@@ -99,286 +110,290 @@ export default function BusinessPlansTable() {
   }
 
   return (
-    <form ref={form}>
-      <Table
-        isRowMaster={() => true}
-        loaded={loaded}
-        loading={loading}
-        paginationPageSize={PER_PAGE}
-        rowCount={count}
-        rowData={results}
-        Toolbar={() => (
-          <div className="flex items-center justify-between">
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="w-64">
-                <Field
-                  Input={{ label: 'Year' }}
-                  options={bpSlice.yearRanges.data}
-                  size="large"
-                  value={yearRangeSelected}
-                  widget="autocomplete"
-                  getOptionLabel={(option: any) =>
-                    `${option.year_start}-${option.year_end}`
-                  }
-                  isOptionEqualToValue={(option: any, value: any) =>
-                    option.year_start === value
-                  }
-                  onChange={(_: any, value: any) => {
-                    handleParamsChange({
-                      business_plan__year_start: value.year_start,
-                      offset: 0,
-                    })
-                    handleFilterChange({
-                      business_plan__year_start: value.year_start,
-                    })
-                  }}
-                />
-              </div>
-              <div className="w-80">
-                <Field
-                  Input={{ label: 'Country' }}
-                  getOptionLabel={(option: any) => option?.name}
-                  options={commonSlice.countries.data}
-                  value={filters.country_id}
-                  widget="autocomplete"
-                  onChange={(_: any, value: any) => {
-                    handleFilterChange({ country_id: value })
-                    handleParamsChange({
-                      country_id: value.map((item: any) => item.id).join(','),
-                      offset: 0,
-                    })
-                  }}
-                  multiple
-                />
-              </div>
-              <div className="w-64">
-                <Field
-                  Input={{ label: 'Sector' }}
-                  getOptionLabel={(option: any) => option?.name}
-                  options={bpSlice.sectors.data}
-                  value={filters.sector_id}
-                  widget="autocomplete"
-                  onChange={(_: any, value: any) => {
-                    handleFilterChange({ sector_id: value })
-                    handleParamsChange({
-                      offset: 0,
-                      sector_id: value.map((item: any) => item.id).join(','),
-                    })
-                  }}
-                  multiple
-                />
-              </div>
-              <div className="w-64">
-                <Field
-                  Input={{ label: 'Subsector' }}
-                  getOptionLabel={(option: any) => option?.name}
-                  options={bpSlice.subsectors.data}
-                  value={filters.subsector_id}
-                  widget="autocomplete"
-                  onChange={(_: any, value: any) => {
-                    handleFilterChange({ subsector_id: value })
-                    handleParamsChange({
-                      offset: 0,
-                      subsector_id: value.map((item: any) => item.id).join(','),
-                    })
-                  }}
-                  multiple
-                />
-              </div>
-              <div className="w-64">
-                <Field
-                  Input={{ label: 'Type' }}
-                  getOptionLabel={(option: any) => option?.name}
-                  options={bpSlice.types.data}
-                  value={filters.project_type_id}
-                  widget="autocomplete"
-                  isOptionEqualToValue={(option: any, value: any) =>
-                    option.id === value
-                  }
-                  onChange={(_: any, value: any) => {
-                    handleFilterChange({ project_type_id: value })
-                    handleParamsChange({
-                      offset: 0,
-                      project_type_id: value
-                        .map((item: any) => item.id)
-                        .join(','),
-                    })
-                  }}
-                  multiple
-                />
-              </div>
-
-              <Field
-                name="search"
-                placeholder="Search by keyword..."
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <MuiIconButton
-                        aria-label="search table"
-                        edge="start"
-                        tabIndex={-1}
-                        onClick={() => {
-                          const search = form.current.search.value
-                          handleParamsChange({
-                            offset: 0,
-                            search,
-                          })
-                          handleFilterChange({ search })
-                        }}
-                        disableRipple
-                      >
-                        <IoSearchOutline />
-                      </MuiIconButton>
-                    </InputAdornment>
-                  ),
-                }}
-                onKeyDown={(event: any) => {
-                  const search = form.current.search.value
-                  if (event.key === KEY_ENTER) {
-                    handleParamsChange({
-                      offset: 0,
-                      search,
-                    })
-                    handleFilterChange({ search })
-                  }
-                }}
-              />
-              {!!filters.search && (
-                <div className="mb-4">
-                  <Typography className="inline-flex items-center gap-2 rounded-sm border border-solid border-mui-default-border bg-action-highlight px-2 py-1 italic text-typography-secondary">
-                    {filters.search}
-                    <IoClose
-                      className="cursor-pointer rounded-sm"
-                      onClick={() => {
-                        form.current.search.value = ''
-                        handleParamsChange({ offset: 0, search: '' })
-                        handleFilterChange({ search: '' })
-                      }}
-                    />
-                  </Typography>
+    bpSlice.yearRanges.data &&
+    bpSlice.yearRanges.data.length > 0 && (
+      <form ref={form}>
+        <Table
+          loaded={loaded}
+          loading={loading}
+          paginationPageSize={PER_PAGE}
+          rowCount={count}
+          rowData={results}
+          Toolbar={() => (
+            <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="w-64">
+                  <Field
+                    Input={{ label: 'Year' }}
+                    options={bpSlice.yearRanges.data}
+                    size="large"
+                    value={yearRangeSelected}
+                    widget="autocomplete"
+                    getOptionLabel={(option: any) =>
+                      `${option.year_start}-${option.year_end}`
+                    }
+                    isOptionEqualToValue={(option: any, value: any) =>
+                      option.year_start === value
+                    }
+                    onChange={(_: any, value: any) => {
+                      handleParamsChange({
+                        business_plan__year_start: value.year_start,
+                        offset: 0,
+                      })
+                      handleFilterChange({
+                        business_plan__year_start: value.year_start,
+                      })
+                    }}
+                  />
                 </div>
-              )}
+                <div className="w-80">
+                  <Field
+                    Input={{ label: 'Country' }}
+                    getOptionLabel={(option: any) => option?.name}
+                    options={commonSlice.countries.data}
+                    value={filters.country_id}
+                    widget="autocomplete"
+                    onChange={(_: any, value: any) => {
+                      handleFilterChange({ country_id: value })
+                      handleParamsChange({
+                        country_id: value.map((item: any) => item.id).join(','),
+                        offset: 0,
+                      })
+                    }}
+                    multiple
+                  />
+                </div>
+                <div className="w-64">
+                  <Field
+                    Input={{ label: 'Sector' }}
+                    getOptionLabel={(option: any) => option?.name}
+                    options={bpSlice.sectors.data}
+                    value={filters.sector_id}
+                    widget="autocomplete"
+                    onChange={(_: any, value: any) => {
+                      handleFilterChange({ sector_id: value })
+                      handleParamsChange({
+                        offset: 0,
+                        sector_id: value.map((item: any) => item.id).join(','),
+                      })
+                    }}
+                    multiple
+                  />
+                </div>
+                <div className="w-64">
+                  <Field
+                    Input={{ label: 'Subsector' }}
+                    getOptionLabel={(option: any) => option?.name}
+                    options={bpSlice.subsectors.data}
+                    value={filters.subsector_id}
+                    widget="autocomplete"
+                    onChange={(_: any, value: any) => {
+                      handleFilterChange({ subsector_id: value })
+                      handleParamsChange({
+                        offset: 0,
+                        subsector_id: value
+                          .map((item: any) => item.id)
+                          .join(','),
+                      })
+                    }}
+                    multiple
+                  />
+                </div>
+                <div className="w-64">
+                  <Field
+                    Input={{ label: 'Type' }}
+                    getOptionLabel={(option: any) => option?.name}
+                    options={bpSlice.types.data}
+                    value={filters.project_type_id}
+                    widget="autocomplete"
+                    isOptionEqualToValue={(option: any, value: any) =>
+                      option.id === value
+                    }
+                    onChange={(_: any, value: any) => {
+                      handleFilterChange({ project_type_id: value })
+                      handleParamsChange({
+                        offset: 0,
+                        project_type_id: value
+                          .map((item: any) => item.id)
+                          .join(','),
+                      })
+                    }}
+                    multiple
+                  />
+                </div>
+
+                <Field
+                  name="search"
+                  placeholder="Search by keyword..."
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <MuiIconButton
+                          aria-label="search table"
+                          edge="start"
+                          tabIndex={-1}
+                          onClick={() => {
+                            const search = form.current.search.value
+                            handleParamsChange({
+                              offset: 0,
+                              search,
+                            })
+                            handleFilterChange({ search })
+                          }}
+                          disableRipple
+                        >
+                          <IoSearchOutline />
+                        </MuiIconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  onKeyDown={(event: any) => {
+                    const search = form.current.search.value
+                    if (event.key === KEY_ENTER) {
+                      handleParamsChange({
+                        offset: 0,
+                        search,
+                      })
+                      handleFilterChange({ search })
+                    }
+                  }}
+                />
+                {!!filters.search && (
+                  <div className="mb-4">
+                    <Typography className="inline-flex items-center gap-2 rounded-sm border border-solid border-mui-default-border bg-action-highlight px-2 py-1 italic text-typography-secondary">
+                      {filters.search}
+                      <IoClose
+                        className="cursor-pointer rounded-sm"
+                        onClick={() => {
+                          form.current.search.value = ''
+                          handleParamsChange({ offset: 0, search: '' })
+                          handleFilterChange({ search: '' })
+                        }}
+                      />
+                    </Typography>
+                  </div>
+                )}
+              </div>
+              <Dropdown
+                color="primary"
+                label={<IoDownloadOutline />}
+                tooltip="Download"
+                icon
+              >
+                <Dropdown.Item>
+                  <Link
+                    className="flex items-center gap-x-2 text-black no-underline"
+                    target="_blank"
+                    href={
+                      formatApiUrl('api/business-plan-record/export/') +
+                      '?business_plan__year_start=' +
+                      yearRangeSelected?.year_start.toString()
+                    }
+                    download
+                  >
+                    <AiFillFileExcel className="fill-green-700" size={24} />
+                    <span>XLSX</span>
+                  </Link>
+                </Dropdown.Item>
+                <Dropdown.Item>
+                  <Link
+                    className="flex items-center gap-x-2 text-black no-underline"
+                    target="_blank"
+                    href={
+                      formatApiUrl('api/business-plan-record/print/') +
+                      '?business_plan__year_start=' +
+                      yearRangeSelected?.year_start.toString()
+                    }
+                    download
+                  >
+                    <AiFillFilePdf className="fill-red-700" size={24} />
+                    <span>PDF</span>
+                  </Link>
+                </Dropdown.Item>
+              </Dropdown>
             </div>
-            <Dropdown
-              color="primary"
-              label={<IoDownloadOutline />}
-              tooltip="Download"
-              icon
-            >
-              <Dropdown.Item>
-                <Link
-                  className="flex items-center gap-x-2 text-black no-underline"
-                  target="_blank"
-                  href={
-                    formatApiUrl('api/business-plan-record/export/') +
-                    '?business_plan__year_start=' +
-                    yearRangeSelected.year_start.toString()
-                  }
-                  download
-                >
-                  <AiFillFileExcel className="fill-green-700" size={24} />
-                  <span>XLSX</span>
+          )}
+          columnDefs={[
+            {
+              cellRenderer: (params: any) => (
+                <Link href={`/business-plans/${params.data.id}`}>
+                  {params.data.title}
                 </Link>
-              </Dropdown.Item>
-              <Dropdown.Item>
-                <Link
-                  className="flex items-center gap-x-2 text-black no-underline"
-                  target="_blank"
-                  href={
-                    formatApiUrl('api/business-plan-record/print/') +
-                    '?business_plan__year_start=' +
-                    yearRangeSelected.year_start.toString()
-                  }
-                  download
-                >
-                  <AiFillFilePdf className="fill-red-700" size={24} />
-                  <span>PDF</span>
-                </Link>
-              </Dropdown.Item>
-            </Dropdown>
-          </div>
-        )}
-        columnDefs={[
-          {
-            cellRenderer: (params: any) => (
-              <Link href={`/business-plans/${params.data.id}`}>
-                {params.data.title}
-              </Link>
-            ),
-            field: 'title',
-            headerName: 'Title',
-            resizable: true,
-            sortable: true,
-            width: 200,
-          },
-          {
-            field: 'country.iso3',
-            headerName: 'Country',
-            resizable: true,
-            sortable: true,
-            width: 100,
-          },
-          {
-            field: 'business_plan.agency.name',
-            headerName: 'Agency',
-            resizable: true,
-            sortable: true,
-            width: 100,
-          },
-          {
-            field: 'project_type.code',
-            headerName: 'Type',
-            resizable: true,
-            sortable: true,
-            width: 100,
-          },
-          {
-            field: 'chemical_details',
-            headerName: 'Chemical Details',
-            resizable: true,
-            valueGetter: ({ data }) =>
-              data.substances.concat(data.blends).join('/'),
-            width: 200,
-          },
-          {
-            field: 'sector.code',
-            headerName: 'Sector',
-            resizable: true,
-            sortable: true,
-            width: 100,
-          },
-          {
-            field: 'subsector.code',
-            headerName: 'Subsector',
-            resizable: true,
-            sortable: true,
-            width: 100,
-          },
-          ...yearColumns,
-          {
-            field: 'bp_type',
-            headerName: 'A/P',
-            resizable: true,
-            sortable: true,
-            width: 70,
-          },
-          {
-            field: 'is_multi_year',
-            headerName: 'I/M',
-            resizable: true,
-            sortable: true,
-            valueGetter: ({ data }) => (data.is_multi_year ? 'M' : 'I'),
-            width: 70,
-          },
-        ]}
-        onPaginationChanged={({ page, rowsPerPage }) => {
-          setParams({
-            limit: rowsPerPage,
-            offset: page * rowsPerPage,
-          })
-        }}
-      />
-    </form>
+              ),
+              field: 'title',
+              headerName: 'Title',
+              resizable: true,
+              sortable: true,
+              width: 200,
+            },
+            {
+              field: 'country.iso3',
+              headerName: 'Country',
+              resizable: true,
+              sortable: true,
+              width: 100,
+            },
+            {
+              field: 'business_plan.agency.name',
+              headerName: 'Agency',
+              resizable: true,
+              sortable: true,
+              width: 100,
+            },
+            {
+              field: 'project_type.code',
+              headerName: 'Type',
+              resizable: true,
+              sortable: true,
+              width: 100,
+            },
+            {
+              field: 'chemical_details',
+              headerName: 'Chemical Details',
+              resizable: true,
+              valueGetter: ({ data }) =>
+                data.substances.concat(data.blends).join('/'),
+              width: 200,
+            },
+            {
+              field: 'sector.code',
+              headerName: 'Sector',
+              resizable: true,
+              sortable: true,
+              width: 100,
+            },
+            {
+              field: 'subsector.code',
+              headerName: 'Subsector',
+              resizable: true,
+              sortable: true,
+              width: 100,
+            },
+            ...yearColumns,
+            {
+              field: 'bp_type',
+              headerName: 'A/P',
+              resizable: true,
+              sortable: true,
+              width: 70,
+            },
+            {
+              field: 'is_multi_year',
+              headerName: 'I/M',
+              resizable: true,
+              sortable: true,
+              valueGetter: ({ data }) => (data.is_multi_year ? 'M' : 'I'),
+              width: 70,
+            },
+          ]}
+          onPaginationChanged={({ page, rowsPerPage }) => {
+            setParams({
+              limit: rowsPerPage,
+              offset: page * rowsPerPage,
+            })
+          }}
+        />
+      </form>
+    )
   )
 }
