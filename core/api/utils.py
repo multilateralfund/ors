@@ -15,6 +15,13 @@ SECTION_ANNEX_MAPPING = {
     "C": ["C", "F", "unknown"],
 }
 
+SECTION_GROUP_MAPPING_12_18 = [
+    # 2012-2018 only substances under Annex B Group III, Annex C Group I and Annex E
+    "Annex B, Group III",
+    "Annex C, Group I",
+    "Annex E, Group I",
+]
+
 SUBMISSION_STATUSE_CODES = ["NEWSUB", "UNK"]
 
 
