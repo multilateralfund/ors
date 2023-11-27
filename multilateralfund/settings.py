@@ -128,6 +128,9 @@ POSTGRES_DB = env.str("POSTGRES_DB", default="multilateralfund")
 POSTGRES_USER = env.str("POSTGRES_USER", default="multilateralfund")
 POSTGRES_PASSWORD = env.str("POSTGRES_PASSWORD", default="secret")
 
+READONLY_USER = env.str("POSTGRES_USER", default="readonly_explorer")
+READONLY_PASSWORD = env.str("POSTGRES_PASSWORD", default="secretreadonly")
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -136,12 +139,20 @@ DATABASES = {
         "PORT": POSTGRES_PORT,
         "USER": POSTGRES_USER,
         "PASSWORD": POSTGRES_PASSWORD,
-    }
+    },
+    "readonly": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": POSTGRES_DB,
+        "HOST": POSTGRES_HOST,
+        "PORT": POSTGRES_PORT,
+        "USER": READONLY_USER,
+        "PASSWORD": READONLY_PASSWORD,
+    },
 }
 
 # Django explorer settings
-EXPLORER_CONNECTIONS = {"Default": "default"}
-EXPLORER_DEFAULT_CONNECTION = "default"
+EXPLORER_CONNECTIONS = {"Default": "readonly"}
+EXPLORER_DEFAULT_CONNECTION = "readonly"
 
 
 # Password validation
