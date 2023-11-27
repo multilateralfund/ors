@@ -24,5 +24,7 @@ class CPReportArchiveAdmin(admin.ModelAdmin):
             "cppricesarchive",
             "cpgenerationarchive",
             "cpemissionarchive",
+            "cprecords",
+            "adm_records",
         ]
         return get_final_display_list(CPReportArchive, exclude)
