@@ -3,6 +3,10 @@ from django_filters.widgets import CSVWidget
 
 from core.models import BPRecord
 from core.models import BusinessPlan
+from core.models import Country
+from core.models import ProjectSector
+from core.models import ProjectSubSector
+from core.models import ProjectType
 
 
 class BusinessPlanFilter(filters.FilterSet):
@@ -22,6 +26,23 @@ class BusinessPlanFilter(filters.FilterSet):
 
 
 class BPRecordFilter(filters.FilterSet):
+    country_id = filters.ModelMultipleChoiceFilter(
+        queryset=Country.objects.all(),
+        widget=CSVWidget,
+    )
+    sector_id = filters.ModelMultipleChoiceFilter(
+        queryset=ProjectSector.objects.all(),
+        widget=CSVWidget,
+    )
+    subsector_id = filters.ModelMultipleChoiceFilter(
+        queryset=ProjectSubSector.objects.all(),
+        widget=CSVWidget,
+    )
+    project_type_id = filters.ModelMultipleChoiceFilter(
+        queryset=ProjectType.objects.all(),
+        widget=CSVWidget,
+    )
+
     class Meta:
         model = BPRecord
         fields = [
@@ -31,7 +52,7 @@ class BPRecordFilter(filters.FilterSet):
             "business_plan__year_end",
             "country_id",
             "lvc_status",
-            "project_type",
+            "project_type_id",
             "bp_chemical_type",
             "substances",
             "blends",

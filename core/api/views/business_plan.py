@@ -45,7 +45,7 @@ class BusinessPlanViewSet(viewsets.ReadOnlyModelViewSet):
                     min_year=Min("records__values__year"),
                     max_year=Max("records__values__year"),
                 )
-                .order_by("year_start")
+                .order_by("-year_start")
             )
         )
 

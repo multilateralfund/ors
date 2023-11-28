@@ -42,7 +42,7 @@ export default async function RootLayout({
   // const cookies = nextCookies()
   const headers = nextHeaders()
   let user, internalError
-  let cp_reports, projects, common
+  let cp_reports, projects, common, businessPlans
   const pathname = headers.get('x-next-pathname')
   // const lang = (headers.get('x-next-lang') ||
   //   config.i18n.defaultLanguage) as Language
@@ -83,6 +83,8 @@ export default async function RootLayout({
       // Country programme data
       blends,
       substances,
+      // Business Plans
+      yearRanges,
     ] = await Promise.all([
       api('api/settings/', {}, false),
       api('api/agencies/', {}, false),
@@ -94,7 +96,8 @@ export default async function RootLayout({
       api('api/project-meetings/', {}, false),
       api('api/blends/', { params: { with_usages: true } }, false),
       api('api/substances/', { params: { with_usages: true } }, false),
-      api('api/usages/', {}, false),
+      // api('api/usages/', {}, false),
+      api('api/business-plan/get-years/', {}, false),
     ])
 
     common = {
@@ -113,6 +116,12 @@ export default async function RootLayout({
       blends: getInitialSliceData(blends),
       substances: getInitialSliceData(substances),
     }
+    businessPlans = {
+      sectors: getInitialSliceData(sectors),
+      subsectors: getInitialSliceData(subsectors),
+      types: getInitialSliceData(types),
+      yearRanges: getInitialSliceData(yearRanges),
+    }
   }
 
   return (
@@ -128,6 +137,7 @@ export default async function RootLayout({
         <Script src="/critical.js" strategy="beforeInteractive" />
         <StoreProvider
           initialState={{
+            businessPlans,
             common,
             cp_reports,
             i18n: {
