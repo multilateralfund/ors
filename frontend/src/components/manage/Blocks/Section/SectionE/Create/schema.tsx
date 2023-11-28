@@ -70,7 +70,6 @@ function useGridOptions(props: {
           headerClass: 'ag-text-left',
           headerName: 'Facility name or identifier',
           ...colDefById['facility'],
-          minWidth: 160,
         },
         {
           aggFunc: 'sumTotal',
@@ -78,7 +77,8 @@ function useGridOptions(props: {
           dataType: 'number',
           field: 'total',
           headerComponentParams: {
-            footnote: 2,
+            footnote: 1,
+            info: true,
           },
           headerName: 'Total amount generated',
           ...colDefById['total_amount_generated'],
@@ -113,7 +113,8 @@ function useGridOptions(props: {
           groupId: 'amount_generated_and_captured',
           headerGroupComponent: 'agColumnHeaderGroup',
           headerGroupComponentParams: {
-            footnote: 3,
+            footnote: 2,
+            info: true,
           },
           headerName: 'Amount generated and captured',
           marryChildren: true,
@@ -124,7 +125,8 @@ function useGridOptions(props: {
           dataType: 'number',
           field: 'feedstock_wpc',
           headerComponentParams: {
-            footnote: 4,
+            footnote: 3,
+            info: true,
           },
           headerName: 'Amount used for feedstock without prior capture',
           ...colDefById['feedstock_wpc'],
@@ -135,7 +137,8 @@ function useGridOptions(props: {
           dataType: 'number',
           field: 'destruction_wpc',
           headerComponentParams: {
-            footnote: 5,
+            footnote: 4,
+            info: true,
           },
           headerName: 'Amount destroyed without prior capture',
           ...colDefById['destruction_wpc'],

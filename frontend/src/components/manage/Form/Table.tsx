@@ -16,6 +16,7 @@ import {
   isEmpty,
   isFunction,
   isObject,
+  max,
   noop,
   times,
 } from 'lodash'
@@ -42,6 +43,13 @@ function cloneStyle(original: Element, clone: Element) {
 
 function cloneClass(original: Element, clone: Element) {
   clone.className = original.className
+}
+
+function getHeight(el: HTMLElement) {
+  if (el.style.height) {
+    return Number(el.style.height.replace('px', '')) || el.clientHeight
+  }
+  return el.clientHeight
 }
 
 export default function Table(
@@ -263,6 +271,42 @@ export default function Table(
     }
   }
 
+  function updatePinnedBottomHeight() {
+    if (!tableEl.current) return
+    const pinnedBottomEl = tableEl.current.querySelector(
+      '.ag-floating-bottom',
+    ) as HTMLElement
+    const pinnedBottomViewport = pinnedBottomEl.querySelector(
+      '.ag-floating-bottom-viewport',
+    ) as HTMLElement
+
+    function setHeight(children?: HTMLCollectionOf<HTMLElement>) {
+      let height = 0
+      if (!children) return 0
+      for (const child of children) {
+        child.style.transform = `translateY(${height}px)`
+        height += getHeight(child)
+      }
+      return height
+    }
+
+    const pinnedBottomHeight = max([
+      setHeight(
+        pinnedBottomViewport.querySelector('.ag-floating-bottom-container')
+          ?.children as HTMLCollectionOf<HTMLElement>,
+      ),
+      setHeight(
+        pinnedBottomEl.querySelector('.ag-pinned-left-floating-bottom')
+          ?.children as HTMLCollectionOf<HTMLElement>,
+      ),
+      setHeight(
+        pinnedBottomEl.querySelector('.ag-pinned-right-floating-bottom')
+          ?.children as HTMLCollectionOf<HTMLElement>,
+      ),
+    ])
+    pinnedBottomEl.style.height = `${pinnedBottomHeight}px`
+  }
+
   useEffect(() => {
     if (fullScreen) {
       document.body.style.overflow = 'hidden'
@@ -328,6 +372,7 @@ export default function Table(
               className,
             )}
             style={{
+              '--row-height': `${rowHeight}px`,
               ...(tableBodyHeight > 0
                 ? {
                     height: tableBodyHeight,
@@ -480,8 +525,8 @@ export default function Table(
                 onColumnResized(props)
               }}
               onFirstDataRendered={(agGrid) => {
-                setRendering(false)
                 updateOffsetHeight()
+                setRendering(false)
                 handleErrors()
                 onFirstDataRendered(agGrid)
               }}
@@ -495,6 +540,12 @@ export default function Table(
                 const agScroll = tableRoot?.querySelector(
                   '.ag-body-horizontal-scroll',
                 )
+                const agLeftSpacer = agScroll?.querySelector(
+                  '.ag-horizontal-left-spacer',
+                )
+                const agRightSpacer = agScroll?.querySelector(
+                  '.ag-horizontal-right-spacer',
+                )
                 const agScrollViewport = agScroll?.querySelector(
                   '.ag-body-horizontal-scroll-viewport',
                 )
@@ -503,6 +554,12 @@ export default function Table(
                 )
                 // Get clone scroll
                 const cloneAgScroll = agScroll?.cloneNode(true) as Element
+                const cloneAgLeftSpacer = cloneAgScroll?.querySelector(
+                  '.ag-horizontal-left-spacer',
+                )
+                const cloneAgRightSpacer = cloneAgScroll?.querySelector(
+                  '.ag-horizontal-right-spacer',
+                )
                 const cloneAgScrollViewport = cloneAgScroll?.querySelector(
                   '.ag-body-horizontal-scroll-viewport',
                 )
@@ -512,9 +569,13 @@ export default function Table(
                 if (
                   !tableRoot ||
                   !agScroll ||
+                  !agLeftSpacer ||
+                  !agRightSpacer ||
                   !agScrollViewport ||
                   !agScrollContainer ||
                   !cloneAgScroll ||
+                  !cloneAgLeftSpacer ||
+                  !cloneAgRightSpacer ||
                   !cloneAgScrollViewport ||
                   !cloneAgScrollContainer
                 ) {
@@ -536,11 +597,15 @@ export default function Table(
                 // scroll mutation observer to keep size sync
                 const scrollElements = [
                   agScroll,
+                  agLeftSpacer,
+                  agRightSpacer,
                   agScrollViewport,
                   agScrollContainer,
                 ]
                 const cloneScrollElements = [
                   cloneAgScroll,
+                  cloneAgLeftSpacer,
+                  cloneAgRightSpacer,
                   cloneAgScrollViewport,
                   cloneAgScrollContainer,
                 ]
@@ -568,6 +633,7 @@ export default function Table(
                 })
               }}
               onGridSizeChanged={(props) => {
+                updatePinnedBottomHeight()
                 debounce(updateOffsetHeight)
                 onGridSizeChanged(props)
               }}

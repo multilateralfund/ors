@@ -22,12 +22,6 @@ export default class SectionD extends Section<
       feedstock: { dataType: 'number', defaultValue: 0 },
     }
 
-    super(
-      formFields,
-      initialData,
-      [{ id: 'hfc_23', displayed_in_latest_format: true, name: 'HFC-23' }],
-      [],
-      localStorageKey,
-    )
+    super(formFields, initialData, [], [], localStorageKey)
   }
 }

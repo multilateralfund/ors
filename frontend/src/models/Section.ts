@@ -97,8 +97,9 @@ export default class Section<DeserializedData, FormFields> {
         ...blends
           .filter((blend: Blend) => blend.displayed_in_latest_format)
           .map((blend: Blend) => this.transformBlend(blend, true)),
+        ...initialData,
       ],
-      [...initialData, ...(isArray(localStorageData) ? localStorageData : [])],
+      [...(isArray(localStorageData) ? localStorageData : [])],
       substances,
       blends,
     )
@@ -167,8 +168,6 @@ export default class Section<DeserializedData, FormFields> {
       }
     })
 
-    console.log('HERE', formData)
-
     return formData
   }
 
@@ -221,7 +220,12 @@ export default class Section<DeserializedData, FormFields> {
     const substancesById = groupBy(substances, 'id')
     const blendsById = groupBy(blends, 'id')
     const mergedMap = new Map()
-    original.forEach((item: any) => mergedMap.set(item[this.key], { ...item }))
+    original.forEach((item: any) =>
+      mergedMap.set(item[this.key], {
+        ...(mergedMap.get(item[this.key]) || {}),
+        ...item,
+      }),
+    )
     updated.forEach((data: any) => {
       const isSubstance = !!data.substance_id
       const isBlend = !!data.blend_id

@@ -50,8 +50,6 @@ function useGridOptions(props: { adm_columns: any }) {
     }
   }, [])
 
-  console.log('HERE', adm_columns)
-
   const gridOptions: GridOptions = useMemo(
     () => ({
       columnDefs: [

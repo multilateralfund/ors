@@ -16,9 +16,14 @@
     @apply text-right;
   }
 
-  .ag-cell.ag-flex-cell .ag-cell-wrapper {
-    @apply flex h-full items-center;
+  .ag-cell .MuiTypography-root {
+    line-height: var(--ag-line-height);
+    font-size: var(--ag-font-size);
   }
+
+  /* .ag-cell.ag-flex-cell .ag-cell-wrapper {
+    @apply flex h-full items-center;
+  } */
 
   .ag-ltr {
     .ag-cell,

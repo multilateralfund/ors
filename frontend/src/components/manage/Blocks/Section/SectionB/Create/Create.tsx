@@ -1,7 +1,14 @@
 import { useMemo, useRef, useState } from 'react'
 import React from 'react'
 
-import { Box, Button, IconButton, Modal, Typography } from '@mui/material'
+import {
+  Alert,
+  Box,
+  Button,
+  IconButton,
+  Modal,
+  Typography,
+} from '@mui/material'
 import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
 import cx from 'classnames'
 import { each, find, findIndex, includes, sortBy, union, uniqBy } from 'lodash'
@@ -10,6 +17,7 @@ import { useSnackbar } from 'notistack'
 
 import Field from '@ors/components/manage/Form/Field'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
+import Footnote from '@ors/components/ui/Footnote/Footnote'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
@@ -18,7 +26,12 @@ import { CreateBlend } from './CreateBlend'
 import useGridOptions from './schema'
 
 import { AiFillFilePdf } from 'react-icons/ai'
-import { IoClose, IoDownloadOutline, IoExpand } from 'react-icons/io5'
+import {
+  IoClose,
+  IoDownloadOutline,
+  IoExpand,
+  IoInformationCircleOutline,
+} from 'react-icons/io5'
 
 const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
   ssr: false,
@@ -159,6 +172,11 @@ export default function SectionBCreate(props: any) {
 
   return (
     <>
+      <Alert className="mb-4" icon={false} severity="info">
+        <Typography>
+          Edit by pressing double left-click or ENTER on a field.
+        </Typography>
+      </Alert>
       <Table
         {...TableProps}
         className="three-groups mb-4"
@@ -276,33 +294,19 @@ export default function SectionBCreate(props: any) {
           }
         }}
       />
-      <Typography className="italic" variant="body2">
-        1. Edit by pressing double left-click or ENTER on a field.
-      </Typography>
-      <Typography className="italic" variant="body2">
-        2. When reporting blends/mixtures, reporting of controlled substances
-        should not be duplicated. For the CP report, countries should report use
-        of individual controlled substances and quantities of blends/mixtures
-        used, separately, while ensuring that the amounts of controlled
-        substances are not reported more than once.
-      </Typography>
-      <Typography className="italic" variant="body2">
-        3. If a non-standard blend not listed in the above table is used, please
-        indicate the percentage of each constituent controlled substance of the
-        blend being reported in the remarks column.
-      </Typography>
-      <Typography className="italic" variant="body2">
-        4. Uses in other sectors that do not fall specifically within the listed
-        sectors in the table.
-      </Typography>
-      <Typography className="italic" variant="body2">
-        5. Provide explanation if total sector use and consumption
-        (import-export+production) is different (e.g, stockpiling).
-      </Typography>
-      <Typography className="italic" variant="body2">
-        6. If break-down of consumption in manufacturing is not available,
-        information in total can be provided.
-      </Typography>
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnote id="1">
+          When reporting blends/mixtures, reporting of controlled substances
+          should not be duplicated. For the CP report, countries should report
+          use of individual controlled substances and quantities of
+          blends/mixtures used, separately, while ensuring that the amounts of
+          controlled substances are not reported more than once.
+        </Footnote>
+        <Footnote id="2">
+          Provide explanation if total sector use and consumption
+          (import-export+production) is different (e.g, stockpiling).
+        </Footnote>
+      </Alert>
       {addChimicalModal && (
         <Modal
           aria-labelledby="add-substance-modal-title"

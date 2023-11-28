@@ -109,8 +109,6 @@ function CPReportEdit(props: { id: null | number }) {
     ]),
     section_d: useMakeClassInstance<SectionD>(SectionD, [
       report.data?.section_d,
-      substances.data,
-      blends.data,
       null,
     ]),
     section_e: useMakeClassInstance<SectionE>(SectionE, [
@@ -201,8 +199,6 @@ function CPReportEdit(props: { id: null | number }) {
       setRenderSection(true)
     }, 600)
   }, [currentIndex])
-
-  console.log('HERE EDIT')
 
   return (
     <>

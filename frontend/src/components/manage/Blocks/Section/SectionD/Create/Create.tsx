@@ -1,11 +1,14 @@
 import { useRef, useState } from 'react'
 
-import { Typography } from '@mui/material'
+import { Alert, Typography } from '@mui/material'
 import { findIndex } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
+import Footnote from '@ors/components/ui/Footnote/Footnote'
 
 import useGridOptions from './schema'
+
+import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export default function SectionDCreate(props: any) {
   const { TableProps, form, index, setActiveSection, setForm } = props
@@ -15,6 +18,11 @@ export default function SectionDCreate(props: any) {
 
   return (
     <>
+      <Alert className="mb-4" icon={false} severity="info">
+        <Typography>
+          Edit by pressing double left-click or ENTER on a field.
+        </Typography>
+      </Alert>
       <Table
         {...TableProps}
         className="mb-4"
@@ -46,17 +54,17 @@ export default function SectionDCreate(props: any) {
           }
         }}
       />
-      <Typography id="footnote-1" className="italic" variant="body2">
-        1. Edit by pressing double left-click or ENTER on a field.
-      </Typography>
-      <Typography id="footnote-2" className="italic" variant="body2">
-        2. HFC-23 generation that is captured, whether for destruction,
-        feedstock or any other use, shall be reported in this form
-      </Typography>
-      <Typography id="footnote-3" className="italic" variant="body2">
-        3. Amounts of HFC-23 captured for destruction or feedstock use will not
-        be counted as production as per Article 1 of the Montreal Protocol.
-      </Typography>
+
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnote id="1">
+          HFC-23 generation that is captured, whether for destruction, feedstock
+          or any other use, shall be reported in this form
+        </Footnote>
+        <Footnote id="2">
+          Amounts of HFC-23 captured for destruction or feedstock use will not
+          be counted as production as per Article 1 of the Montreal Protocol.
+        </Footnote>
+      </Alert>
     </>
   )
 }

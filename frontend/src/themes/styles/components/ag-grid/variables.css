@@ -18,7 +18,7 @@
   --ag-font-family: inherit;
   --ag-font-size: theme(fontSize.base);
   --ag-foreground-color: theme(colors.typography-primary);
-  --ag-grid-size: 6px;
+  --ag-grid-size: 4px;
   --ag-header-background-color: theme(colors.gray-100);
   --ag-header-cell-hover-background-color: transparent;
   --ag-header-cell-moving-background-color: theme(colors.action-highlight);
@@ -31,7 +31,7 @@
   --ag-header-column-separator-height: 100%;
   --ag-header-column-separator-width: 0.5px;
   --ag-header-foreground-color: var(--ag-secondary-foreground-color);
-  --ag-header-height: calc(var(--ag-grid-size) * 8);
+  --ag-header-height: 40px;
   --ag-icon-font-family: agGridAlpine;
   --ag-icon-size: 16px;
   --ag-input-border-color-invalid: var(--ag-invalid-color);
@@ -50,7 +50,7 @@
   --ag-row-group-indent-size: calc(
     var(--ag-cell-widget-spacing) + var(--ag-icon-size)
   );
-  --ag-row-height: calc(var(--ag-grid-size) * 7);
+  --ag-row-height: 40px;
   --ag-row-hover-color: rgb(33 150 243 / 10%);
   --ag-secondary-border-color: theme(colors.typography);
   --ag-secondary-foreground-color: theme(colors.typography-primary);

@@ -22,8 +22,6 @@ export default function AdmD(props: any) {
     /* eslint-disable-next-line  */
   }, [])
 
-  console.log('HERE', rows, form.adm_d)
-
   return (
     <>
       <Box>
@@ -43,7 +41,7 @@ export default function AdmD(props: any) {
                     form.adm_d[row.id]?.value_choice_id === choice.id
 
                   return (
-                    <React.Fragment key={choice.id}>
+                    <div id={`choice-${choice.id}`} key={choice.id}>
                       <FormControlLabel
                         label={choice.value}
                         control={
@@ -63,7 +61,11 @@ export default function AdmD(props: any) {
                                       value_text: null,
                                     }
                                   }
-                                  form.adm_d[row.id].value_text = null
+                                  const choiceEl = document.querySelector(
+                                    `#choice-${choice.id} textarea`,
+                                  ) as HTMLTextAreaElement
+                                  form.adm_d[row.id].value_text =
+                                    choiceEl?.value || null
                                   form.adm_d[row.id].value_choice_id = choice.id
                                 }),
                               )
@@ -76,12 +78,16 @@ export default function AdmD(props: any) {
                           FieldProps={{ className: 'mb-0' }}
                           disabled={!checked}
                           type="textarea"
-                          value={form.adm_d[row.id].value_text}
+                          value={form.adm_d[row.id]?.value_text}
                           onChange={(event: any) => {
                             setForm(
                               produce((form: any) => {
                                 if (!form.adm_d[row.id]) {
-                                  form.adm_d[row.id] = {}
+                                  form.adm_d[row.id] = {
+                                    row_id: row.id,
+                                    value_choice_id: null,
+                                    value_text: null,
+                                  }
                                 }
                                 form.adm_d[row.id].value_text =
                                   event.target.value
@@ -90,7 +96,7 @@ export default function AdmD(props: any) {
                           }}
                         />
                       )}
-                    </React.Fragment>
+                    </div>
                   )
                 })}
                 {!row.choices.length && (

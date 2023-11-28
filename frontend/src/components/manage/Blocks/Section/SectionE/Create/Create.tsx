@@ -1,13 +1,16 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
-import { Typography } from '@mui/material'
+import { Alert, Typography } from '@mui/material'
 import { RowNode } from 'ag-grid-community'
 import { findIndex } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
+import Footnote from '@ors/components/ui/Footnote/Footnote'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 
 import useGridOptions from './schema'
+
+import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export default function SectionECreate(props: any) {
   const { TableProps, form, index, setActiveSection, setForm } = props
@@ -74,6 +77,11 @@ export default function SectionECreate(props: any) {
 
   return (
     <>
+      <Alert className="mb-4" icon={false} severity="info">
+        <Typography>
+          Edit by pressing double left-click or ENTER on a field.
+        </Typography>
+      </Alert>
       <Table
         {...TableProps}
         className="two-groups mb-4"
@@ -120,23 +128,21 @@ export default function SectionECreate(props: any) {
           }
         }}
       />
-      <Typography id="footnote-1" className="italic" variant="body2">
-        1. Edit by pressing double left-click or ENTER on a field.
-      </Typography>
-      <Typography id="footnote-2" className="italic" variant="body2">
-        2. “Total amount generated” refers to the total amount whether captured
-        or not. The sum of these amounts is not to be reported under Section D.
-      </Typography>
-      <Typography id="footnote-3" className="italic" variant="body2">
-        3. The sums of these amounts are to be reported under Section D.
-      </Typography>
-      <Typography id="footnote-4" className="italic" variant="body2">
-        4. Amount converted to other substances in the facility. The sum of
-        these amounts is not to be reported under Section D.
-      </Typography>
-      <Typography id="footnote-5" className="italic" variant="body2">
-        5. Amount destroyed in the facility.
-      </Typography>
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnote id="1">
+          “Total amount generated” refers to the total amount whether captured
+          or not. The sum of these amounts is not to be reported under Section
+          D.
+        </Footnote>
+        <Footnote id="2">
+          The sums of these amounts are to be reported under Section D.
+        </Footnote>
+        <Footnote id="3">
+          Amount converted to other substances in the facility. The sum of these
+          amounts is not to be reported under Section D.
+        </Footnote>
+        <Footnote id="4">Amount destroyed in the facility.</Footnote>
+      </Alert>
     </>
   )
 }

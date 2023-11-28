@@ -37,27 +37,30 @@ export default function getAdmsColDef() {
     },
     B_all_other_ods_date: {
       headerComponentParams: {
-        footnote: 1,
-        info: 'If Yes, since when (Date) / If No, planned date',
+        info: true,
+        tooltip: 'If Yes, since when (Date) / If No, planned date',
       },
       headerName: 'Date',
     },
     B_cfc_date: {
       headerComponentParams: {
-        footnote: 1,
-        info: 'If Yes, since when (Date) / If No, planned date',
+        info: true,
+        tooltip: 'If Yes, since when (Date) / If No, planned date',
       },
       headerName: 'Date',
     },
     B_hcfc_date: {
       headerComponentParams: {
-        footnote: 1,
-        info: 'If Yes, since when (Date) / If No, planned date',
+        info: true,
+        tooltip: 'If Yes, since when (Date) / If No, planned date',
       },
       headerName: 'Date',
     },
     C_all_other_ods_float: {
       initialWidth: 140,
+    },
+    C_cumulative_float: {
+      initialWidth: 100,
     },
   }
 }

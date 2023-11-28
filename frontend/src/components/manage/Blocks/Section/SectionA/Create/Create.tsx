@@ -1,16 +1,19 @@
 import { useMemo, useRef, useState } from 'react'
 
-import { Box, Button, Modal, Typography } from '@mui/material'
+import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, union } from 'lodash'
 import dynamic from 'next/dynamic'
 
 import Field from '@ors/components/manage/Form/Field'
+import Footnote from '@ors/components/ui/Footnote/Footnote'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
 
 import useGridOptions from './schema'
+
+import { IoInformationCircleOutline } from 'react-icons/io5'
 
 const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
   ssr: false,
@@ -133,6 +136,11 @@ export default function SectionACreate(props: any) {
 
   return (
     <>
+      <Alert className="mb-4" icon={false} severity="info">
+        <Typography>
+          Edit by pressing double left-click or ENTER on a field.
+        </Typography>
+      </Alert>
       <Table
         {...TableProps}
         className="three-groups mb-4"
@@ -184,23 +192,17 @@ export default function SectionACreate(props: any) {
           }
         }}
       />
-      <div className="not-printable">
-        <Typography className="italic" variant="body2">
-          1. Edit by pressing double left-click or ENTER on a field.
-        </Typography>
-        <Typography className="italic" variant="body2">
-          2. Where the data involves a blend of two or more substances, the
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnote id="1">
+          Where the data involves a blend of two or more substances, the
           quantities of individual components of controlled substances must be
           indicated separately.
-        </Typography>
-        <Typography className="italic" variant="body2">
-          3. Indicate relevant controlled substances.
-        </Typography>
-        <Typography className="italic" variant="body2">
-          4. Provide explanation if total sector use and consumption
+        </Footnote>
+        <Footnote id="2">
+          Provide explanation if total sector use and consumption
           (import-export+production) is different (e.g, stockpiling).
-        </Typography>
-      </div>
+        </Footnote>
+      </Alert>
       {addSubstanceModal && (
         <Modal
           aria-labelledby="add-substance-modal-title"

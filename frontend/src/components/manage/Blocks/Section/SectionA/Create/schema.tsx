@@ -64,9 +64,9 @@ function useGridOptions(props: {
           }),
           field: 'display_name',
           headerClass: 'ag-text-left',
+          headerComponentParams: { footnote: 1, info: true },
           headerName: 'Substance',
           ...colDefById['display_name'],
-          minWidth: 160,
         },
         ...(usages.length
           ? [
@@ -131,6 +131,7 @@ function useGridOptions(props: {
           cellClass: 'ag-text-left',
           cellEditor: 'agTextCellEditor',
           field: 'remarks',
+          headerComponentParams: { footnote: 2, info: true },
           headerName: 'Remarks',
           ...colDefById['remarks'],
         },

@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 
-import { IconButton, Typography } from '@mui/material'
+import { Alert, IconButton, Typography } from '@mui/material'
 import cx from 'classnames'
 import { findIndex, groupBy, map } from 'lodash'
 
@@ -23,10 +23,7 @@ export default function AdmBCreate(props: any) {
     setForm,
   } = props
   const { columns = [], rows = [] } = emptyForm.adm_b || {}
-  // const newNode = useRef<RowNode>()
   const grid = useRef<any>()
-  // const newFacilityIndex = useRef(form.section_e.length + 1)
-  // const [addRegulationModal, setAddRegulationModal] = useState(false)
   const [initialRowData] = useState(() => {
     const dataByRowId = groupBy(form.adm_b, 'row_id')
 
@@ -45,13 +42,17 @@ export default function AdmBCreate(props: any) {
 
   return (
     <>
+      <Alert className="mb-4" icon={false} severity="info">
+        <Typography>
+          Edit by pressing double left-click or ENTER on a field.
+        </Typography>
+      </Alert>
       <Table
         {...TableProps}
         className="two-groups mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={2}
-        // pinnedBottomRowData={pinnedBottomRowData}
         rowData={initialRowData}
         Toolbar={({
           enterFullScreen,
@@ -73,12 +74,6 @@ export default function AdmBCreate(props: any) {
                 {section.title}
               </Typography>
               <div className="flex items-center justify-end">
-                {/* <Button
-                  variant="contained"
-                  onClick={() => setAddRegulationModal(true)}
-                >
-                  Add regulation
-                </Button> */}
                 <div>
                   {!fullScreen && (
                     <Dropdown
@@ -146,48 +141,8 @@ export default function AdmBCreate(props: any) {
             setActiveSection(index)
           }
         }}
-        onRowDataUpdated={() => {
-          // if (newNode.current) {
-          //   scrollToElement(
-          //     `.ag-row[row-id=${newNode.current.data.row_id}]`,
-          //     () => {
-          //       grid.current.api.flashCells({
-          //         rowNodes: [newNode.current],
-          //       })
-          //       newNode.current = undefined
-          //     },
-          //   )
-          // }
-        }}
+        onRowDataUpdated={() => {}}
       />
-      <Typography id="footnote-1" className="italic" variant="body2">
-        1. If Yes, since when (Date) / If No, planned date.
-      </Typography>
-      {/* TODO: fix this */}
-      {/* {addRegulationModal && (
-        <Modal
-          aria-labelledby="add-substance-modal-title"
-          open={addRegulationModal}
-          onClose={() => setAddRegulationModal(false)}
-          keepMounted
-        >
-          <Box className="xs:max-w-xs w-full max-w-md absolute-center sm:max-w-sm">
-            <Typography
-              id="add-substance-modal-title"
-              className="mb-4 text-typography-secondary"
-              component="h2"
-              variant="h6"
-            >
-              New regulation
-            </Typography>
-            <Typography className="text-right">
-              <Button onClick={() => setAddRegulationModal(false)}>
-                Close
-              </Button>
-            </Typography>
-          </Box>
-        </Modal>
-      )} */}
     </>
   )
 }

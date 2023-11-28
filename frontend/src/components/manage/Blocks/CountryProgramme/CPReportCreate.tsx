@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable perfectionist/sort-objects */
 'use client'
 
 import React, { useCallback, useEffect, useState } from 'react'
@@ -8,10 +6,10 @@ import {
   Alert,
   Box,
   Button,
-  Collapse,
   IconButton,
   Tab,
   Tabs,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import cx from 'classnames'
@@ -31,7 +29,6 @@ import api, { getResults } from '@ors/helpers/Api/Api'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import useApi from '@ors/hooks/useApi'
 import useMakeClassInstance from '@ors/hooks/useMakeClassInstance'
-import { Blend, Substance } from '@ors/models/Section'
 import SectionA from '@ors/models/SectionA'
 import SectionB from '@ors/models/SectionB'
 import SectionC from '@ors/models/SectionC'
@@ -43,7 +40,7 @@ import { useStore } from '@ors/store'
 import { createSections } from '.'
 
 import { AiFillFilePdf } from 'react-icons/ai'
-import { IoClose, IoDownloadOutline, IoExpand } from 'react-icons/io5'
+import { IoClose, IoDownloadOutline, IoExpand, IoLink } from 'react-icons/io5'
 
 function TabPanel(props: any) {
   const {
@@ -90,7 +87,7 @@ function TabPanel(props: any) {
 function CPReportCreate() {
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
-  const { report, substances, blends } = useStore((state) => state.cp_reports)
+  const { blends, report, substances } = useStore((state) => state.cp_reports)
 
   const countries = useStore((state) => [
     { id: 0, label: 'Any' },
@@ -119,9 +116,16 @@ function CPReportCreate() {
       'section_c_create',
     ]),
     section_d: useMakeClassInstance<SectionD>(SectionD, [
-      [],
-      substances.data,
-      blends.data,
+      [
+        {
+          all_uses: '0.000',
+          chemical_name: 'HFC-23',
+          destruction: '0.000',
+          display_name: 'HFC-23',
+          feedstock: '0.000',
+          row_id: 'generation_1',
+        },
+      ],
       'section_d_create',
     ]),
     section_e: useMakeClassInstance<SectionE>(SectionE, [
@@ -150,20 +154,20 @@ function CPReportCreate() {
     year: currentYear,
   })
 
-  const reports = useApi({
-    path: `/api/country-programme/reports/?year_max=${currentYear}&year_min=${currentYear}&country_id=${form.country?.id}`,
+  const existingReports = useApi({
     options: {
       triggerIf: !!form.country?.id,
     },
+    path: `/api/country-programme/reports/?year_max=${currentYear}&year_min=${currentYear}&country_id=${form.country?.id}`,
   })
 
   useEffect(() => {
-    reports.setApiSettings({
-      path: `/api/country-programme/reports/?year_max=${currentYear}&year_min=${currentYear}&country_id=${form.country?.id}`,
+    existingReports.setApiSettings({
       options: {
-        ...reports.apiSettings.options,
+        ...existingReports.apiSettings.options,
         triggerIf: !!form.country?.id,
       },
+      path: `/api/country-programme/reports/?year_max=${currentYear}&year_min=${currentYear}&country_id=${form.country?.id}`,
     })
     // eslint-disable-next-line
   }, [form.country])
@@ -171,14 +175,14 @@ function CPReportCreate() {
   const getSubmitFormData = useCallback(() => {
     return {
       ...form,
+      country_id: form.country?.id,
+      name: form.country?.label ? `${form.country?.label} ${form.year}` : '',
       section_a: Sections.section_a.getSubmitFormData(form.section_a),
       section_b: Sections.section_b.getSubmitFormData(form.section_b),
       section_c: Sections.section_c.getSubmitFormData(form.section_c),
       section_d: Sections.section_d.getSubmitFormData(form.section_d),
       section_e: Sections.section_e.getSubmitFormData(form.section_e),
       section_f: Sections.section_f.getSubmitFormData(form.section_f),
-      country_id: form.country?.id,
-      name: form.country?.label ? `${form.country?.label} ${form.year}` : '',
     }
     /* eslint-disable-next-line */
   }, [form])
@@ -254,10 +258,12 @@ function CPReportCreate() {
             />
           ))}
         </Tabs>
-        <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mb-4 grid grid-cols-1 gap-x-4 md:grid-cols-2 lg:grid-cols-3">
           <Field
             id="country"
             name="country_id"
+            FieldProps={{ className: 'mb-0' }}
+            disabled={existingReports.loading}
             options={countries}
             value={form.country?.id}
             widget="autocomplete"
@@ -270,7 +276,32 @@ function CPReportCreate() {
               setForm({ ...form, country })
             }}
           />
+          {!!existingReports.data?.length && (
+            <div className="flex items-center">
+              <Tooltip
+                placement="top"
+                title={`There is already a submission for ${existingReports.data[0].name}. Click on this icon to view the submission.`}
+              >
+                <Typography className="inline-flex items-center">
+                  <Link
+                    className="inline-block"
+                    href={`/country-programme/${existingReports.data[0].id}`}
+                  >
+                    <IoLink size={24} />
+                  </Link>
+                </Typography>
+              </Tooltip>
+            </div>
+          )}
         </div>
+        {!!Object.keys(errors).length && (
+          <Alert className="mb-4" severity="error">
+            <Typography>
+              Please make sure a country is selected and all the sections are
+              valid.
+            </Typography>
+          </Alert>
+        )}
         {createSections.map((section, index) => (
           <TabPanel
             key={section.panelId}
@@ -289,9 +320,9 @@ function CPReportCreate() {
               Toolbar: ({
                 enterFullScreen,
                 exitFullScreen,
+                fullScreen,
                 onPrint,
                 print,
-                fullScreen,
               }: any) => {
                 return (
                   <div
@@ -357,6 +388,7 @@ function CPReportCreate() {
               enableCellChangeFlash: true,
               enableFullScreen: true,
               enablePagination: false,
+              errors: errors[section.id],
               fadeInOut: false,
               getRowId: (props: any) => {
                 return props.data.row_id
@@ -365,7 +397,6 @@ function CPReportCreate() {
               suppressCellFocus: false,
               suppressRowHoverHighlight: false,
               withSeparators: true,
-              errors: errors[section.id],
             }}
           />
         ))}
@@ -386,6 +417,9 @@ function CPReportCreate() {
                 color="primary"
                 size="small"
                 variant="contained"
+                disabled={
+                  !!existingReports.data?.length || existingReports.loading
+                }
                 onClick={async () => {
                   try {
                     const response = await api(
@@ -412,9 +446,11 @@ function CPReportCreate() {
                     router.push(`/country-programme/${response.id}`)
                   } catch (error) {
                     if (error.status === 400) {
-                      setErrors({ ...(await error.json()) })
+                      const errors = await error.json()
+                      setErrors({ ...errors })
                       enqueueSnackbar(
-                        <>Please make sure all the inputs are correct.</>,
+                        errors.general_error ||
+                          'Please make sure all the inputs are correct.',
                         { variant: 'error' },
                       )
                     } else {
@@ -434,7 +470,7 @@ function CPReportCreate() {
 }
 
 export default function CPReportCreateWrapper() {
-  const { fetchEmptyForm, report, setReport, blends, substances } = useStore(
+  const { blends, fetchEmptyForm, report, setReport, substances } = useStore(
     (state) => state.cp_reports,
   )
 
@@ -444,8 +480,8 @@ export default function CPReportCreateWrapper() {
     return () => {
       setReport({
         ...defaultSliceData,
-        versions: defaultSliceData,
         emptyForm: defaultSliceData,
+        versions: defaultSliceData,
       })
     }
   }, [setReport])

@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { Button, IconButton } from '@mui/material'
 import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
-import { includes } from 'lodash'
+import { includes, startsWith } from 'lodash'
 
 import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
 
@@ -61,12 +61,15 @@ function useGridOptions(props: {
             className: cx({
               'font-bold': includes(['group', 'total'], props.data.rowType),
             }),
+            ...(props.data.rowType === 'group' &&
+            startsWith(props.data.display_name, 'Blends')
+              ? { footnote: 1, info: true }
+              : {}),
           }),
           field: 'display_name',
           headerClass: 'ag-text-left',
           headerName: 'Substance',
           ...colDefById['display_name'],
-          minWidth: 160,
         },
         ...(usages.length
           ? [
@@ -131,6 +134,10 @@ function useGridOptions(props: {
           cellClass: 'ag-text-left',
           cellEditor: 'agTextCellEditor',
           field: 'remarks',
+          headerComponentParams: {
+            footnote: 2,
+            info: true,
+          },
           headerName: 'Remarks',
           ...colDefById['remarks'],
         },

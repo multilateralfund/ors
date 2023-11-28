@@ -65,7 +65,6 @@ function useGridOptions(props: {
           headerClass: 'ag-text-left',
           headerName: 'Substance',
           ...colDefById['display_name'],
-          minWidth: 160,
         },
         {
           aggFunc: 'sumTotal',
@@ -86,6 +85,10 @@ function useGridOptions(props: {
         {
           cellEditor: 'agTextCellEditor',
           field: 'remarks',
+          headerComponentParams: {
+            footnote: 1,
+            info: true,
+          },
           headerName: 'Remarks',
           ...colDefById['remarks'],
         },

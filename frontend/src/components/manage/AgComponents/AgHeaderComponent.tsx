@@ -1,10 +1,19 @@
 'use client'
 import { IconButton, Typography } from '@mui/material'
 import cx from 'classnames'
+import { isString } from 'lodash'
 
 import AgTooltipComponent from './AgTooltipComponent'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
+
+function getTooltipTitle(props: any) {
+  const { displayName, tooltip } = props
+  if (tooltip && isString(tooltip)) {
+    return tooltip
+  }
+  return displayName
+}
 
 export default function AgHeaderComponent(props: any) {
   const { displayName, footnote, info } = props
@@ -12,9 +21,9 @@ export default function AgHeaderComponent(props: any) {
   return (
     <AgTooltipComponent
       {...props}
-      colDef={{ ...props.colDef, tooltip: !!info || props.tooltip }}
+      colDef={{ ...props.colDef, tooltip: props.tooltip }}
       placement="top"
-      value={info || displayName}
+      value={getTooltipTitle(props)}
     >
       <Typography
         className={cx(props.className, { 'cursor-pointer': footnote })}
@@ -23,6 +32,10 @@ export default function AgHeaderComponent(props: any) {
           const footnoteEl = document.getElementById(`footnote-${footnote}`)
           if (footnote && footnoteEl) {
             footnoteEl.scrollIntoView()
+            footnoteEl.classList.add('text-red-500')
+            setTimeout(() => {
+              footnoteEl.classList.remove('text-red-500')
+            }, 900)
           }
         }}
       >

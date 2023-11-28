@@ -19,6 +19,11 @@
   @apply transition;
 }
 
+#next-app [class*='ag-theme-'] .ag-header-cell,
+#next-app [class*='ag-theme-'] .ag-cell {
+  @apply break-words;
+}
+
 #next-app [class*='ag-theme-'] .ag-text-left {
   @apply justify-start;
 }

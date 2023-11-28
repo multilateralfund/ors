@@ -9,11 +9,13 @@ const mobile = __CLIENT__ ? window.innerWidth < 768 : false
 
 const colDefById: Record<string, ColDef> = {
   display_name: {
-    initialWidth: mobile ? 150 : 200,
+    initialWidth: mobile ? 160 : 200,
+    minWidth: 160,
     pinned: mobile ? undefined : 'left',
   },
   facility: {
-    initialWidth: mobile ? 150 : 200,
+    initialWidth: mobile ? 160 : 200,
+    minWidth: 160,
     pinned: mobile ? undefined : 'left',
   },
   imports: {
@@ -23,10 +25,7 @@ const colDefById: Record<string, ColDef> = {
     initialWidth: defaultColDef.minWidth,
   },
   production: {
-    initialWidth: defaultColDef.minWidth,
-  },
-  manufacturing_blends: {
-    initialWidth: defaultColDef.minWidth,
+    initialWidth: 100,
   },
   import_quotas: {
     initialWidth: defaultColDef.minWidth,

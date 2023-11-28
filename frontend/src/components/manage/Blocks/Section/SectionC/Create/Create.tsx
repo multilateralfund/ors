@@ -1,16 +1,19 @@
 import { useMemo, useRef, useState } from 'react'
 
-import { Box, Button, Modal, Typography } from '@mui/material'
+import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, union } from 'lodash'
 import dynamic from 'next/dynamic'
 
 import Field from '@ors/components/manage/Form/Field'
+import Footnote from '@ors/components/ui/Footnote/Footnote'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
 
 import useGridOptions from './schema'
+
+import { IoInformationCircleOutline } from 'react-icons/io5'
 
 const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
   ssr: false,
@@ -119,6 +122,11 @@ export default function SectionCCreate(props: any) {
 
   return (
     <>
+      <Alert className="mb-4" icon={false} severity="info">
+        <Typography>
+          Edit by pressing double left-click or ENTER on a field.
+        </Typography>
+      </Alert>
       <Table
         {...TableProps}
         className="three-groups mb-4'"
@@ -165,12 +173,12 @@ export default function SectionCCreate(props: any) {
           }
         }}
       />
-      <Typography className="italic" variant="body2">
-        1. Edit by pressing double left-click or ENTER on a field.
-      </Typography>
-      <Typography className="italic" variant="body2">
-        2. Indicate whether the prices are FOB or retail prices.
-      </Typography>
+
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnote id="1">
+          Indicate whether the prices are FOB or retail prices.
+        </Footnote>
+      </Alert>
 
       {addChimicalModal && (
         <Modal

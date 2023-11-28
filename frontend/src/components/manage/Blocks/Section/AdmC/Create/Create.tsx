@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 
-import { Typography } from '@mui/material'
+import { Alert, Typography } from '@mui/material'
 import { findIndex, groupBy, map } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
@@ -11,9 +11,7 @@ export default function AdmBCreate(props: any) {
   const { TableProps, emptyForm, form, index, setActiveSection, setForm } =
     props
   const { columns = [], rows = [] } = emptyForm.adm_c || {}
-  // const newNode = useRef<RowNode>()
   const grid = useRef<any>()
-  // const newFacilityIndex = useRef(form.section_e.length + 1)
   const [initialRowData] = useState(() => {
     const dataByRowId = groupBy(form.adm_c, 'row_id')
 
@@ -32,13 +30,17 @@ export default function AdmBCreate(props: any) {
 
   return (
     <>
+      <Alert className="mb-4" icon={false} severity="info">
+        <Typography>
+          Edit by pressing double left-click or ENTER on a field.
+        </Typography>
+      </Alert>
       <Table
         {...TableProps}
         className="two-groups mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={2}
-        // pinnedBottomRowData={pinnedBottomRowData}
         rowData={initialRowData}
         defaultColDef={{
           ...TableProps.defaultColDef,
@@ -64,19 +66,7 @@ export default function AdmBCreate(props: any) {
             setActiveSection(index)
           }
         }}
-        onRowDataUpdated={() => {
-          // if (newNode.current) {
-          //   scrollToElement(
-          //     `.ag-row[row-id=${newNode.current.data.row_id}]`,
-          //     () => {
-          //       grid.current.api.flashCells({
-          //         rowNodes: [newNode.current],
-          //       })
-          //       newNode.current = undefined
-          //     },
-          //   )
-          // }
-        }}
+        onRowDataUpdated={() => {}}
       />
       <Typography id="footnote-1" className="italic" variant="body2">
         1. If Yes, since when (Date) / If No, planned date.

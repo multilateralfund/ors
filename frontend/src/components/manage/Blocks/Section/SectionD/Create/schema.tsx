@@ -15,6 +15,8 @@ function useGridOptions() {
           className: cx({
             'font-bold': includes(['group', 'total'], props.data.rowType),
           }),
+          footnote: 1,
+          info: true,
         }),
         field: 'display_name',
         headerClass: 'ag-text-left',
@@ -26,7 +28,10 @@ function useGridOptions() {
         dataType: 'number',
         editable: true,
         field: 'all_uses',
-        headerComponentParams: { footnote: 2 },
+        headerComponentParams: {
+          footnote: 1,
+          info: true,
+        },
         headerName: 'Captured for all uses',
         ...colDefById['all_uses'],
       },
@@ -35,7 +40,10 @@ function useGridOptions() {
         dataType: 'number',
         editable: true,
         field: 'feedstock',
-        headerComponentParams: { footnote: 3 },
+        headerComponentParams: {
+          footnote: 2,
+          info: true,
+        },
         headerName: 'Captured for feedstock uses within your country',
         ...colDefById['feedstock'],
       },
@@ -44,6 +52,10 @@ function useGridOptions() {
         dataType: 'number',
         editable: true,
         field: 'destruction',
+        headerComponentParams: {
+          footnote: 2,
+          info: true,
+        },
         headerName: 'Captured for destruction',
         ...colDefById['destruction'],
       },

@@ -47,7 +47,7 @@ const originalColors = {
     },
     gray,
     info: {
-      DEFAULT: '#049F9A',
+      DEFAULT: '#006C9A',
     },
     mui: {
       box: {
@@ -64,7 +64,7 @@ const originalColors = {
       },
     },
     primary: {
-      DEFAULT: '#0f82cc',
+      DEFAULT: '#0095D5',
       contrastText: '#ffffff',
     },
     secondary: {
@@ -102,7 +102,7 @@ const originalColors = {
     },
     gray,
     info: {
-      DEFAULT: '#049F9A',
+      DEFAULT: '#006C9A',
     },
     mui: {
       box: {
@@ -119,7 +119,7 @@ const originalColors = {
       },
     },
     primary: {
-      DEFAULT: '#0f82cc',
+      DEFAULT: '#0095D5',
       contrastText: '#ffffff',
     },
     secondary: {
@@ -153,6 +153,7 @@ module.exports = {
     preflight: false,
     transitionProperty: false,
   },
+  safelist: ['text-red-500'],
   important: '#next-app',
   originalColors,
   plugins: [
