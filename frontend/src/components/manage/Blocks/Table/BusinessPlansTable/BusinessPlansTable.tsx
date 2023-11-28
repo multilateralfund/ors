@@ -125,6 +125,7 @@ export default function BusinessPlansTable() {
           paginationPageSize={PER_PAGE}
           rowCount={count}
           rowData={results}
+          tooltipShowDelay={200}
           Toolbar={() => (
             <div className="flex items-center justify-between">
               <div className="flex flex-wrap items-center gap-2">
