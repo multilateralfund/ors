@@ -2,7 +2,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 
 import { Alert, Typography } from '@mui/material'
 import { RowNode } from 'ag-grid-community'
-import { findIndex } from 'lodash'
+import { findIndex, last } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
 import Footnote from '@ors/components/ui/Footnote/Footnote'
@@ -16,7 +16,7 @@ export default function SectionECreate(props: any) {
   const { TableProps, form, index, setActiveSection, setForm } = props
   const newNode = useRef<RowNode>()
   const grid = useRef<any>()
-  const newFacilityIndex = useRef(form.section_e.length + 1)
+  const newFacilityIndex = useRef(last<any>(form.section_e)?.id + 1 || 1)
   const [initialRowData] = useState(form.section_e)
 
   const pinnedBottomRowData = useMemo(() => {
@@ -25,9 +25,12 @@ export default function SectionECreate(props: any) {
       : [{ rowType: 'control' }]
   }, [form.section_e])
 
+  console.log('HERE', initialRowData)
+
   const addFacility = useCallback(() => {
     const id = newFacilityIndex.current
     const newFacility = {
+      id,
       all_uses: 0,
       destruction: 0,
       destruction_wpc: 0,
