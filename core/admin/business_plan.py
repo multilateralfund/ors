@@ -27,7 +27,7 @@ class BPRecordAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["bprecordvalue"]
+        exclude = ["substances", "blends", "bprecordvalue", "values"]
         return get_final_display_list(BPRecord, exclude)
 
 
