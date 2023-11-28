@@ -16,7 +16,7 @@ import {
   isEmpty,
   isFunction,
   isObject,
-  max,
+  // max,
   noop,
   times,
 } from 'lodash'
@@ -27,12 +27,7 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import DefaultFadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { KEY_BACKSPACE } from '@ors/constants'
-import {
-  applyTransaction,
-  debounce,
-  getError,
-  // pxToNumber,
-} from '@ors/helpers/Utils/Utils'
+import { applyTransaction, debounce, getError } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
 
 import Portal from '../Utils/Portal'
@@ -45,12 +40,12 @@ function cloneClass(original: Element, clone: Element) {
   clone.className = original.className
 }
 
-function getHeight(el: HTMLElement) {
-  if (el.style.height) {
-    return Number(el.style.height.replace('px', '')) || el.clientHeight
-  }
-  return el.clientHeight
-}
+// function getHeight(el: HTMLElement) {
+//   if (el.style.height) {
+//     return Number(el.style.height.replace('px', '')) || el.clientHeight
+//   }
+//   return el.clientHeight
+// }
 
 export default function Table(
   props: AgGridReactProps & {
@@ -271,41 +266,52 @@ export default function Table(
     }
   }
 
-  function updatePinnedBottomHeight() {
-    if (!tableEl.current) return
-    const pinnedBottomEl = tableEl.current.querySelector(
-      '.ag-floating-bottom',
-    ) as HTMLElement
-    const pinnedBottomViewport = pinnedBottomEl.querySelector(
-      '.ag-floating-bottom-viewport',
-    ) as HTMLElement
+  // function updatePinnedBottomHeight() {
+  //   if (!tableEl.current) return
+  //   const pinnedBottomEl = tableEl.current.querySelector(
+  //     '.ag-floating-bottom',
+  //   ) as HTMLElement
+  //   const pinnedBottomViewport = pinnedBottomEl?.querySelector(
+  //     '.ag-floating-bottom-viewport',
+  //   ) as HTMLElement
 
-    function setHeight(children?: HTMLCollectionOf<HTMLElement>) {
-      let height = 0
-      if (!children) return 0
-      for (const child of children) {
-        child.style.transform = `translateY(${height}px)`
-        height += getHeight(child)
-      }
-      return height
-    }
+  //   if (!pinnedBottomEl || !pinnedBottomViewport) return
 
-    const pinnedBottomHeight = max([
-      setHeight(
-        pinnedBottomViewport.querySelector('.ag-floating-bottom-container')
-          ?.children as HTMLCollectionOf<HTMLElement>,
-      ),
-      setHeight(
-        pinnedBottomEl.querySelector('.ag-pinned-left-floating-bottom')
-          ?.children as HTMLCollectionOf<HTMLElement>,
-      ),
-      setHeight(
-        pinnedBottomEl.querySelector('.ag-pinned-right-floating-bottom')
-          ?.children as HTMLCollectionOf<HTMLElement>,
-      ),
-    ])
-    pinnedBottomEl.style.height = `${pinnedBottomHeight}px`
-  }
+  //   function setHeight(children?: HTMLCollectionOf<HTMLElement>) {
+  //     let height = 0
+  //     if (!children) return 0
+  //     for (const child of children) {
+  //       child.style.transform = `translateY(${height}px)`
+  //       height += getHeight(child)
+  //     }
+  //     return height
+  //   }
+
+  //   const pinnedBottomHeight = max([
+  //     setHeight(
+  //       pinnedBottomViewport.querySelector('.ag-floating-bottom-container')
+  //         ?.children as HTMLCollectionOf<HTMLElement>,
+  //     ),
+  //     setHeight(
+  //       pinnedBottomEl.querySelector('.ag-pinned-left-floating-bottom')
+  //         ?.children as HTMLCollectionOf<HTMLElement>,
+  //     ),
+  //     setHeight(
+  //       pinnedBottomEl.querySelector('.ag-pinned-right-floating-bottom')
+  //         ?.children as HTMLCollectionOf<HTMLElement>,
+  //     ),
+  //   ])
+  //   pinnedBottomEl.style.height = `${pinnedBottomHeight}px`
+  // }
+
+  const FadeInOut = useMemo(
+    () => (fadeInOut ? DefaultFadeInOut : 'div'),
+    [fadeInOut],
+  )
+
+  // useEffect(() => {
+  //   updatePinnedBottomHeight()
+  // })
 
   useEffect(() => {
     if (fullScreen) {
@@ -320,11 +326,6 @@ export default function Table(
     handleErrors()
     /* eslint-disable-next-line */
   }, [errors])
-
-  const FadeInOut = useMemo(
-    () => (fadeInOut ? DefaultFadeInOut : 'div'),
-    [fadeInOut],
-  )
 
   useEffect(() => {
     return () => {
@@ -388,7 +389,6 @@ export default function Table(
             <AgGridReact
               alwaysShowHorizontalScroll={true}
               animateRows={false}
-              defaultColDef={{ ...baseColDef, ...defaultColDef }}
               domLayout={computedDomLayout}
               enableCellTextSelection={true}
               enableRtl={i18n.dir === 'rtl'}
@@ -426,6 +426,20 @@ export default function Table(
               components={{
                 ...defaultComponents,
                 ...components,
+              }}
+              defaultColDef={{
+                ...baseColDef,
+                ...defaultColDef,
+                cellClass: (props) => {
+                  return cx(
+                    isFunction(baseColDef.cellClass)
+                      ? baseColDef.cellClass(props)
+                      : baseColDef.cellClass,
+                    isFunction(defaultColDef.cellClass)
+                      ? defaultColDef.cellClass(props)
+                      : defaultColDef.cellClass,
+                  )
+                },
               }}
               noRowsOverlayComponent={(props: any) => {
                 return (
@@ -633,7 +647,7 @@ export default function Table(
                 })
               }}
               onGridSizeChanged={(props) => {
-                updatePinnedBottomHeight()
+                // updatePinnedBottomHeight()
                 debounce(updateOffsetHeight)
                 onGridSizeChanged(props)
               }}

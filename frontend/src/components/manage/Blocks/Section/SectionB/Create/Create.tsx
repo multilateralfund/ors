@@ -255,7 +255,7 @@ export default function SectionBCreate(props: any) {
           ...gridOptions.defaultColDef,
         }}
         pinnedBottomRowData={[
-          { display_name: 'TOTAL', rowType: 'total' },
+          { display_name: 'TOTAL', rowType: 'total', tooltip: true },
           { rowType: 'control' },
         ]}
         onCellValueChanged={(event) => {

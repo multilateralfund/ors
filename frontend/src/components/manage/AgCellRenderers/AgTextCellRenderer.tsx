@@ -4,6 +4,7 @@ import cx from 'classnames'
 
 import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSkeletonCellRenderer'
 import AgTooltipComponent from '@ors/components/manage/AgComponents/AgTooltipComponent'
+import { scrollToElement } from '@ors/helpers/Utils/Utils'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
@@ -20,14 +21,15 @@ export default function AgTextCellRenderer(props: any) {
         className={cx(props.className, { 'cursor-pointer': footnote })}
         component="span"
         onClick={() => {
-          const footnoteEl = document.getElementById(`footnote-${footnote}`)
-          if (footnote && footnoteEl) {
-            footnoteEl.scrollIntoView()
+          if (!footnote) return
+          scrollToElement(`#footnote-${footnote}`, () => {
+            const footnoteEl = document.getElementById(`footnote-${footnote}`)
+            if (!footnoteEl) return
             footnoteEl.classList.add('text-red-500')
             setTimeout(() => {
               footnoteEl.classList.remove('text-red-500')
             }, 900)
-          }
+          })
         }}
       >
         {props.value}

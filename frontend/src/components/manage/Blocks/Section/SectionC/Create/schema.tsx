@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { Button, IconButton } from '@mui/material'
+import { Button } from '@mui/material'
 import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
@@ -8,6 +8,7 @@ import { includes } from 'lodash'
 import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
+import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 
 import { IoTrash } from 'react-icons/io5'
 
@@ -33,33 +34,26 @@ function useGridOptions(props: {
                 </Button>
               )
             }
-            return (
-              <AgCellRenderer
-                {...props}
-                value={
-                  <>
-                    {!props.data.rowType && !props.data.mandatory && (
-                      <>
-                        <IconButton
-                          color="error"
-                          onClick={() => {
-                            onRemoveSubstance(props)
-                          }}
-                        >
-                          <IoTrash size="1rem" />
-                        </IconButton>{' '}
-                      </>
-                    )}
-                    {props.value}
-                  </>
-                }
-              />
-            )
+            return <AgCellRenderer {...props} />
           },
           cellRendererParams: (props: any) => ({
             className: cx({
               'font-bold': includes(['group', 'total'], props.data.rowType),
             }),
+            options: !props.data.mandatory && !props.data.rowType && (
+              <>
+                <Dropdown.Item
+                  onClick={() => {
+                    onRemoveSubstance(props)
+                  }}
+                >
+                  <div className="flex items-center gap-x-2">
+                    <IoTrash className="fill-error" size={20} />
+                    <span>Delete</span>
+                  </div>
+                </Dropdown.Item>
+              </>
+            ),
           }),
           field: 'display_name',
           headerClass: 'ag-text-left',

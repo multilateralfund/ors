@@ -20,6 +20,7 @@ import { useSnackbar } from 'notistack'
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
+import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import api from '@ors/helpers/Api/Api'
 import { applyTransaction } from '@ors/helpers/Utils/Utils'
 import useStateWithPrev from '@ors/hooks/useStateWithPrev'
@@ -291,38 +292,40 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
                       <AgCellRenderer
                         {...props}
                         value={
-                          !props.data.rowType ? (
-                            <>
-                              <IconButton
-                                color="error"
-                                onClick={() => {
-                                  const newComponents = form.components
-                                  const index = findIndex(
-                                    newComponents,
-                                    (component: any) =>
-                                      component.row_id === props.data.row_id,
-                                  )
-                                  newComponents.splice(index, 1)
-                                  setForm({
-                                    ...prevForm.current,
-                                    components: newComponents,
-                                  })
-                                  applyTransaction(props.api, {
-                                    remove: [props.data],
-                                  })
-                                }}
-                              >
-                                <IoTrash size="1rem" />
-                              </IconButton>{' '}
-                              {props.value?.name}
-                            </>
-                          ) : (
-                            props.value
-                          )
+                          !props.data.rowType ? props.value?.name : props.value
                         }
                       />
                     )
                   },
+                  cellRendererParams: (props: any) => ({
+                    options: !props.data.mandatory && !props.data.rowType && (
+                      <>
+                        <Dropdown.Item
+                          onClick={() => {
+                            const newComponents = form.components
+                            const index = findIndex(
+                              newComponents,
+                              (component: any) =>
+                                component.row_id === props.data.row_id,
+                            )
+                            newComponents.splice(index, 1)
+                            setForm({
+                              ...prevForm.current,
+                              components: newComponents,
+                            })
+                            applyTransaction(props.api, {
+                              remove: [props.data],
+                            })
+                          }}
+                        >
+                          <div className="flex items-center gap-x-2">
+                            <IoTrash className="fill-error" size={20} />
+                            <span>Delete</span>
+                          </div>
+                        </Dropdown.Item>
+                      </>
+                    ),
+                  }),
                   field: 'substance',
                   flex: 1,
                   headerClass: 'ag-text-left',

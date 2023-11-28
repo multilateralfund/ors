@@ -19,7 +19,9 @@ export default function SectionEView(props: any) {
   }, [report])
 
   const pinnedBottomRowData = useMemo(() => {
-    return rowData.length > 0 ? [{ facility: 'TOTAL', rowType: 'total' }] : []
+    return rowData.length > 0
+      ? [{ facility: 'TOTAL', rowType: 'total', tooltip: true }]
+      : []
   }, [rowData])
 
   return (

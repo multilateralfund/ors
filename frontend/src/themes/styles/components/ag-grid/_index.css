@@ -24,6 +24,11 @@
   @apply break-words;
 }
 
+#next-app [class*='ag-theme-'] .ag-floating-bottom .ag-cell {
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+
 #next-app [class*='ag-theme-'] .ag-text-left {
   @apply justify-start;
 }

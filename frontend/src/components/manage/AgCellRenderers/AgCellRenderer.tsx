@@ -5,9 +5,10 @@ import { IconButton, Tooltip } from '@mui/material'
 import components from '@ors/config/Table/components'
 import renderers from '@ors/config/Table/renderers'
 
+import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import { getError } from '@ors/helpers/Utils/Utils'
 
-import { IoInformation } from 'react-icons/io5'
+import { IoInformation, IoOptions } from 'react-icons/io5'
 
 function getDefaultCellRenderer() {
   return components[renderers.default]
@@ -30,6 +31,8 @@ export default function AgCellRenderer(props: any) {
 
   const error = getError(props)
 
+  const options = props.options || null
+
   const CellRenderer =
     getCellRendererByCategory(category) ||
     getCellRendererByType(type) ||
@@ -37,6 +40,13 @@ export default function AgCellRenderer(props: any) {
 
   return (
     <>
+      {!!options && (
+        <div className="ag-cell-options inline-block">
+          <Dropdown color="primary" label={<IoOptions />} icon>
+            {options}
+          </Dropdown>
+        </div>
+      )}
       <CellRenderer {...props} />
       {!!error && (
         <Tooltip
