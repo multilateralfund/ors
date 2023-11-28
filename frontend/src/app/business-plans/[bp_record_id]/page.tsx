@@ -65,7 +65,7 @@ export default async function Submission({ params }: BPRecordProps) {
               <div>
                 <Label>Country</Label>
                 <Typography className="font-bold">
-                  {data.country.name}
+                  {data.country?.name || '-'}
                 </Typography>
               </div>
               <div>
@@ -108,13 +108,13 @@ export default async function Submission({ params }: BPRecordProps) {
               <div>
                 <Label>Sector</Label>
                 <Typography className="font-bold">
-                  {data.sector?.name}
+                  {data.sector?.name || '-'}
                 </Typography>
               </div>
               <div>
                 <Label>Subsector</Label>
                 <Typography className="font-bold">
-                  {data.subsector?.name}
+                  {data.subsector?.name || '-'}
                 </Typography>
               </div>
               <div>
@@ -133,17 +133,19 @@ export default async function Submission({ params }: BPRecordProps) {
               <div>
                 <Label>Reason for exceeding 67.5% of baseline</Label>
                 <Typography className="font-bold">
-                  {data.reason_for_exceeding}
+                  {data.reason_for_exceeding || '-'}
                 </Typography>
               </div>
               <div>
                 <Label>Remarks</Label>
-                <Typography className="font-bold">{data.remarks}</Typography>
+                <Typography className="font-bold">
+                  {data.remarks || '-'}
+                </Typography>
               </div>
               <div>
                 <Label>Additional Remarks</Label>
                 <Typography className="font-bold">
-                  {data.remarks_additional}
+                  {data.remarks_additional || '-'}
                 </Typography>
               </div>
             </div>
@@ -154,19 +156,19 @@ export default async function Submission({ params }: BPRecordProps) {
                   <div>
                     <Label>Value ($000) {item.label}</Label>
                     <Typography className="font-bold">
-                      {item.value_usd}
+                      {item.value_usd ?? '-'}
                     </Typography>
                   </div>
                   <div>
                     <Label>ODP {item.label}</Label>
                     <Typography className="font-bold">
-                      {item.value_odp}
+                      {item.value_odp ?? '-'}
                     </Typography>
                   </div>
                   <div>
                     <Label>MT {item.label} for HFC</Label>
                     <Typography className="font-bold">
-                      {item.value_mt}
+                      {item.value_mt ?? '-'}
                     </Typography>
                   </div>
                 </>
