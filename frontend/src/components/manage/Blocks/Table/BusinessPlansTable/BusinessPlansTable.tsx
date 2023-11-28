@@ -363,7 +363,7 @@ export default function BusinessPlansTable() {
               resizable: true,
               valueGetter: ({ data }) =>
                 data.substances.concat(data.blends).join('/'),
-              width: 200,
+              width: 100,
             },
             {
               field: 'sector.code',

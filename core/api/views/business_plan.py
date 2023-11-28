@@ -75,6 +75,7 @@ class BPRecordViewSet(viewsets.ReadOnlyModelViewSet):
         filters.SearchFilter,
     ]
     search_fields = ["title"]
+    ordering = ["title", "country", "id"]
     ordering_fields = [
         "title",
         "country__iso3",

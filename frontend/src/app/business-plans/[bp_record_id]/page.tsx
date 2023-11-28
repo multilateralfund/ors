@@ -129,6 +129,21 @@ export default async function Submission({ params }: BPRecordProps) {
               </div>
             </div>
             <Divider />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Substances</Label>
+                <Typography className="font-bold">
+                  {data.substances.join(' / ') || '-'}
+                </Typography>
+              </div>
+              <div>
+                <Label>Blends</Label>
+                <Typography className="font-bold">
+                  {data.blends.join(' / ') || '-'}
+                </Typography>
+              </div>
+            </div>
+            <Divider />
             <div className="grid grid-cols-1 gap-4">
               <div>
                 <Label>Reason for exceeding 67.5% of baseline</Label>
