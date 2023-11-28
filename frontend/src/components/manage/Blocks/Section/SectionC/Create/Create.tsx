@@ -129,7 +129,7 @@ export default function SectionCCreate(props: any) {
       </Alert>
       <Table
         {...TableProps}
-        className="three-groups mb-4'"
+        className="three-groups mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={3}
