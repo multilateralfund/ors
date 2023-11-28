@@ -102,7 +102,7 @@ export default async function Submission({ params }: BPRecordProps) {
               <div>
                 <Label>Amount of Polyol in Project (MT)</Label>
                 <Typography className="font-bold">
-                  {data.amount_polyol}
+                  {data.amount_polyol ?? '-'}
                 </Typography>
               </div>
               <div>

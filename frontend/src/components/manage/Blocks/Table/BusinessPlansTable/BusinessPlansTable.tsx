@@ -37,6 +37,7 @@ export default function BusinessPlansTable() {
     country_id: null,
     is_multi_year: null,
     lvc_status: null,
+    ordering: null,
     project_type_id: null,
     search: '',
     sector_id: null,
@@ -93,9 +94,14 @@ export default function BusinessPlansTable() {
         field: `value_usd_${year}`,
         headerName: `Value ($000) ${label}`,
         resizable: true,
-        valueGetter: (params: any) =>
-          params.data.values.find((i: any) => i.year === year)?.value_usd,
-        width: 100,
+        valueGetter: (params: any) => {
+          const value = params.data.values.find((i: any) => i.year === year)
+          if (value) {
+            return parseFloat(value.value_usd)
+          }
+          return ''
+        },
+        width: 120,
       })
     }
     return result
@@ -144,6 +150,7 @@ export default function BusinessPlansTable() {
                         business_plan__year_start: value.year_start,
                       })
                     }}
+                    disableClearable
                   />
                 </div>
                 <div className="w-80">
@@ -390,11 +397,27 @@ export default function BusinessPlansTable() {
               width: 100,
             },
           ]}
+          components={{
+            agColumnHeader: undefined,
+            agTextCellRenderer: undefined,
+          }}
           onPaginationChanged={({ page, rowsPerPage }) => {
             setParams({
               limit: rowsPerPage,
               offset: page * rowsPerPage,
             })
+          }}
+          onSortChanged={({ columnApi }) => {
+            const ordering = columnApi
+              .getColumnState()
+              .filter((column) => !!column.sort)
+              .map(
+                (column) =>
+                  (column.sort === 'asc' ? '' : '-') +
+                  column.colId.replaceAll('.', '__'),
+              )
+              .join(',')
+            setParams({ offset: 0, ordering })
           }}
         />
       </form>

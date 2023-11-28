@@ -67,7 +67,6 @@ class BPRecordViewSet(viewsets.ReadOnlyModelViewSet):
             "blends",
             "values",
         )
-        .order_by("country", "title", "id")
     )
     filterset_class = BPRecordFilter
     filter_backends = [
@@ -76,6 +75,17 @@ class BPRecordViewSet(viewsets.ReadOnlyModelViewSet):
         filters.SearchFilter,
     ]
     search_fields = ["title"]
+    ordering_fields = [
+        "title",
+        "country__iso3",
+        "country__name",
+        "business_plan__agency__name",
+        "project_type__code",
+        "sector__code",
+        "subsector__code",
+        "bp_type",
+        "is_multi_year",
+    ]
 
     def get_wb(self, method):
         queryset = self.filter_queryset(self.get_queryset())
