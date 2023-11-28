@@ -331,6 +331,7 @@ export default function BusinessPlansTable() {
               headerName: 'Country',
               resizable: true,
               sortable: true,
+              tooltipField: 'country.name',
               width: 100,
             },
             {
@@ -345,6 +346,7 @@ export default function BusinessPlansTable() {
               headerName: 'Type',
               resizable: true,
               sortable: true,
+              tooltipField: 'project_type.name',
               width: 100,
             },
             {
@@ -360,6 +362,7 @@ export default function BusinessPlansTable() {
               headerName: 'Sector',
               resizable: true,
               sortable: true,
+              tooltipField: 'sector.name',
               width: 100,
             },
             {
@@ -367,23 +370,24 @@ export default function BusinessPlansTable() {
               headerName: 'Subsector',
               resizable: true,
               sortable: true,
+              tooltipField: 'subsector.name',
               width: 100,
             },
             ...yearColumns,
             {
               field: 'bp_type',
-              headerName: 'A/P',
+              headerName: 'Approved / Planned',
               resizable: true,
               sortable: true,
-              width: 70,
+              width: 100,
             },
             {
               field: 'is_multi_year',
-              headerName: 'I/M',
+              headerName: 'INDV/MYA',
               resizable: true,
               sortable: true,
-              valueGetter: ({ data }) => (data.is_multi_year ? 'M' : 'I'),
-              width: 70,
+              valueGetter: ({ data }) => (data.is_multi_year ? 'MYA' : 'INDV'),
+              width: 100,
             },
           ]}
           onPaginationChanged={({ page, rowsPerPage }) => {
