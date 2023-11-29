@@ -332,6 +332,7 @@ export default function BusinessPlansTable() {
               headerName: 'Title',
               resizable: true,
               sortable: true,
+              tooltipField: 'title',
               width: 200,
             },
             {
@@ -387,14 +388,16 @@ export default function BusinessPlansTable() {
               headerName: 'Approved / Planned',
               resizable: true,
               sortable: true,
+              tooltipField: 'bp_type_display',
               width: 100,
             },
             {
               field: 'is_multi_year',
-              headerName: 'INDV/MYA',
+              headerName: 'IND/MYA',
               resizable: true,
               sortable: true,
-              valueGetter: ({ data }) => (data.is_multi_year ? 'MYA' : 'INDV'),
+              tooltipField: 'is_multi_year_display',
+              valueGetter: ({ data }) => (data.is_multi_year ? 'MYA' : 'IND'),
               width: 100,
             },
           ]}

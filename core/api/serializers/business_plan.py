@@ -110,6 +110,8 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
     project_type = ProjectTypeSerializer()
     bp_type = serializers.ChoiceField(choices=BPRecord.BPType.choices)
     bp_chemical_type = BPChemicalTypeSerializer()
+    is_multi_year_display = serializers.SerializerMethodField()
+    bp_type_display = serializers.SerializerMethodField()
 
     substances = serializers.SlugRelatedField("name", many=True, read_only=True)
     blends = serializers.SlugRelatedField(slug_field="name", many=True, read_only=True)
@@ -141,4 +143,14 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
             "remarks",
             "remarks_additional",
             "values",
+            "is_multi_year_display",
+            "bp_type_display",
         ]
+
+    def get_is_multi_year_display(self, obj):
+        if obj.is_multi_year:
+            return "Multi-Year"
+        return "Individual"
+
+    def get_bp_type_display(self, obj):
+        return obj.get_bp_type_display()
