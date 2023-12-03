@@ -1,3 +1,4 @@
+import { createBusinessPlanSlice } from '@ors/slices/createBusinessPlanSlice'
 import { createCPReportsSlice } from '@ors/slices/createCPReportsSlice'
 import { createCacheSlice } from '@ors/slices/createCacheSlice'
 import { createCommonSlice } from '@ors/slices/createCommonSlice'
@@ -10,6 +11,7 @@ import { CreateSliceProps } from '@ors/store'
 
 export default function createSlices(props: CreateSliceProps) {
   return {
+    businessPlans: { ...createBusinessPlanSlice(props) },
     cache: { ...createCacheSlice(props) },
     common: { ...createCommonSlice(props) },
     // @ts-ignore

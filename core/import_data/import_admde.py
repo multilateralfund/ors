@@ -18,6 +18,12 @@ logger = logging.getLogger(__name__)
 
 SECTION = "D"
 
+CHOICES_WITH_TEXT = [
+    "No",
+    "Not so well",
+    "Other: ___% HCFC reduction target by ___",
+]
+
 
 def create_adm_rows_for_articles(article_file, layout_file, db_name):
     """
@@ -80,6 +86,8 @@ def create_adm_choices_for_opt(opt_file, article_dict):
             "source_file": opt_file,
             "adm_row": article_dict[opt["AdmDEArticlesId"]],
         }
+        if option_data["value"] in CHOICES_WITH_TEXT:
+            option_data["with_text"] = True
 
         dict_key = (opt["OptionId"], opt["AdmDEArticlesId"])
         opt_dict[dict_key], _ = AdmChoice.objects.get_or_create(

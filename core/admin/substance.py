@@ -27,7 +27,11 @@ class SubstanceAdmin(admin.ModelAdmin):
         "name",
         "formula",
     ]
-    list_filter = [AutocompleteFilterFactory("group", "group")]
+    list_filter = [
+        AutocompleteFilterFactory("group", "group"),
+        "displayed_in_all",
+        "displayed_in_latest_format",
+    ]
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
@@ -46,5 +50,6 @@ class SubstanceAdmin(admin.ModelAdmin):
             "bprecord",
             "cprecordarchive",
             "cppricesarchive",
+            "admrecordarchive",
         ]
         return get_final_display_list(Substance, exclude)

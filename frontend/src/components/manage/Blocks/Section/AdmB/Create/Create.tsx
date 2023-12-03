@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 
-import { Box, Button, IconButton, Modal, Typography } from '@mui/material'
+import { Alert, IconButton, Typography } from '@mui/material'
 import cx from 'classnames'
 import { findIndex, groupBy, map } from 'lodash'
 
@@ -23,15 +23,12 @@ export default function AdmBCreate(props: any) {
     setForm,
   } = props
   const { columns = [], rows = [] } = emptyForm.adm_b || {}
-  // const newNode = useRef<RowNode>()
   const grid = useRef<any>()
-  // const newFacilityIndex = useRef(form.section_e.length + 1)
-  const [addRegulationModal, setAddRegulationModal] = useState(false)
   const [initialRowData] = useState(() => {
     const dataByRowId = groupBy(form.adm_b, 'row_id')
 
     return map(rows, (row) => ({
-      rowId: row.id,
+      row_id: row.id,
       values: dataByRowId[row.id]?.[0]?.values || [],
       ...row,
       ...(row.type === 'title' ? { rowType: 'group' } : {}),
@@ -45,13 +42,17 @@ export default function AdmBCreate(props: any) {
 
   return (
     <>
+      <Alert className="mb-4" icon={false} severity="info">
+        <Typography>
+          Edit by pressing double left-click or ENTER on a field.
+        </Typography>
+      </Alert>
       <Table
         {...TableProps}
         className="two-groups mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={2}
-        // pinnedBottomRowData={pinnedBottomRowData}
         rowData={initialRowData}
         Toolbar={({
           enterFullScreen,
@@ -72,13 +73,7 @@ export default function AdmBCreate(props: any) {
               <Typography className="mb-2" component="h2" variant="h6">
                 {section.title}
               </Typography>
-              <div className="flex items-center justify-between">
-                <Button
-                  variant="contained"
-                  onClick={() => setAddRegulationModal(true)}
-                >
-                  Add regulation
-                </Button>
+              <div className="flex items-center justify-end">
                 <div>
                   {!fullScreen && (
                     <Dropdown
@@ -130,9 +125,7 @@ export default function AdmBCreate(props: any) {
           const newData = [...form.adm_b]
           const index = findIndex(
             newData,
-            (row: any) =>
-              (row.row_id || row.rowId) ===
-              (event.data.row_id || event.data.rowId),
+            (row: any) => row.row_id === event.data.row_id,
           )
           if (index > -1) {
             // Should not be posible for index to be -1
@@ -148,86 +141,8 @@ export default function AdmBCreate(props: any) {
             setActiveSection(index)
           }
         }}
-        onRowDataUpdated={() => {
-          // if (newNode.current) {
-          //   scrollToElement(
-          //     `.ag-row[row-id=${newNode.current.data.rowId}]`,
-          //     () => {
-          //       grid.current.api.flashCells({
-          //         rowNodes: [newNode.current],
-          //       })
-          //       newNode.current = undefined
-          //     },
-          //   )
-          // }
-        }}
+        onRowDataUpdated={() => {}}
       />
-      <Typography id="footnote-1" className="italic" variant="body2">
-        1. If Yes, since when (Date) / If No, planned date.
-      </Typography>
-      {addRegulationModal && (
-        <Modal
-          aria-labelledby="add-substance-modal-title"
-          open={addRegulationModal}
-          onClose={() => setAddRegulationModal(false)}
-          keepMounted
-        >
-          <Box className="xs:max-w-xs w-full max-w-md absolute-center sm:max-w-sm">
-            <Typography
-              id="add-substance-modal-title"
-              className="mb-4 text-typography-secondary"
-              component="h2"
-              variant="h6"
-            >
-              New regulation
-            </Typography>
-            {/* <Field
-              Input={{ autoComplete: 'off' }}
-              getOptionLabel={(option: any) => option.display_name}
-              groupBy={(option: any) => option.group}
-              options={chimicalsOptions}
-              value={null}
-              widget="autocomplete"
-              onChange={(event: any, newChimical: any) => {
-                if (document.activeElement) {
-                  // @ts-ignore
-                  document.activeElement.blur()
-                }
-                const added = find(
-                  form.section_b,
-                  (chimical) => chimical.rowId === newChimical.rowId,
-                )
-                if (!added) {
-                  const groupNode = grid.current.api.getRowNode(
-                    newChimical.group,
-                  )
-                  setForm((form: any) => ({
-                    ...form,
-                    section_b: [...form.section_b, newChimical],
-                  }))
-                  applyTransaction(grid.current.api, {
-                    add: [newChimical],
-                    addIndex: groupNode.rowIndex + groupNode.data.count + 1,
-                    update: [
-                      { ...groupNode.data, count: groupNode.data.count + 1 },
-                    ],
-                  })
-                  const chimicalNode = grid.current.api.getRowNode(
-                    newChimical.rowId,
-                  )
-                  newNode.current = chimicalNode
-                }
-                setAddRegulationModal(false)
-              }}
-            /> */}
-            <Typography className="text-right">
-              <Button onClick={() => setAddRegulationModal(false)}>
-                Close
-              </Button>
-            </Typography>
-          </Box>
-        </Modal>
-      )}
     </>
   )
 }

@@ -15,7 +15,7 @@ export default class SectionF {
   private formFields: Record<keyof SectionFFormFields, Field> = {
     remarks: { dataType: 'string', defaultValue: '' },
   }
-  public key = 'rowId'
+  public key = 'row_id'
   public localStorageKey: null | string = null
 
   constructor(

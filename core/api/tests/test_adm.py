@@ -74,19 +74,21 @@ def setup_empty_form(country_ro, cp_report_2005, time_frames):
                 )
             if section == "B":
                 # add 1.6.1 rows
-                AdmRowFactory.create(
-                    text=f"{subtitle.text}_row_161",
-                    sort_order=10,
-                    index="1.6.1",
-                    country_programme_report=cp_report_2005,
-                    **row_data,
-                )
-                AdmRowFactory.create(
-                    text="N/A",
-                    sort_order=12,
-                    index="1.6.1",
-                    **row_data,
-                )
+                for cp_report in [cp_report_2005, cp_report_17]:
+                    AdmRowFactory.create(
+                        text=f"{subtitle.text}_row_161_{cp_report.year}",
+                        sort_order=10,
+                        index="1.6.1",
+                        country_programme_report=cp_report,
+                        **row_data,
+                    )
+                for index in ["1.6.1", "1.6.2"]:
+                    AdmRowFactory.create(
+                        text="N/A",
+                        sort_order=12,
+                        index=index,
+                        **row_data,
+                    )
 
     for time_frame in used_time_frames:
         for i in range(2):
@@ -135,15 +137,16 @@ class TestAdmEmptyFormView(BaseTest):
         # check adm_b section
         assert len(response.data["adm_b"]["columns"]) == 2
         assert len(response.data["adm_b"]["columns"][0]["children"]) == 1
-        assert len(response.data["adm_b"]["rows"]) == 5
-        assert "N/A" not in response.data["adm_b"]["rows"]
+        assert len(response.data["adm_b"]["rows"]) == 6
         # check rows sort order
         admb_rows = response.data["adm_b"]["rows"]
         assert admb_rows[0]["text"] == "title_B"
         assert admb_rows[1]["text"] == "subtitle_B"
         assert admb_rows[2]["text"] == "subtitle_B_row_0"
         assert admb_rows[3]["text"] == "subtitle_B_row_1"
-        assert admb_rows[4]["text"] == "subtitle_B_row_161"
+        assert admb_rows[4]["text"] == "subtitle_B_row_161_2005"
+        assert admb_rows[5]["text"] == "N/A"
+        assert admb_rows[5]["index"] == "1.6.2"
 
         # check adm_c section
         assert len(response.data["adm_c"]["columns"]) == 2

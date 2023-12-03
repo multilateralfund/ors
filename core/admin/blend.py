@@ -13,7 +13,11 @@ class BlendAdmin(admin.ModelAdmin):
         "other_names",
         "trade_name",
     ]
-    list_filter = ["type"]
+    list_filter = [
+        "type",
+        "displayed_in_all",
+        "displayed_in_latest_format",
+    ]
 
     def get_list_display(self, request):
         exclude = [
@@ -29,6 +33,7 @@ class BlendAdmin(admin.ModelAdmin):
             "bprecord",
             "cprecordarchive",
             "cppricesarchive",
+            "admrecordarchive",
         ]
         return get_final_display_list(Blend, exclude)
 

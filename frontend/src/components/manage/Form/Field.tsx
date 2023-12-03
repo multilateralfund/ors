@@ -43,6 +43,7 @@ export default function Field({
       className={cx(
         'widget',
         `${widget || type || 'text'}-widget`,
+        { 'max-w-full': !FieldProps?.className },
         FieldProps?.className,
       )}
     >

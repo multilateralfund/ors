@@ -40,7 +40,7 @@ export type DeserializedSubstance = {
   excluded_usages?: Array<number>
   group?: string
   mandatory: boolean
-  rowId: string
+  row_id: string
   substance_id: number
 }
 
@@ -49,7 +49,7 @@ export type DeserializedBlend = {
   display_name: string
   group?: string
   mandatory: boolean
-  rowId: string
+  row_id: string
 }
 
 type LocalDeserializedData = {
@@ -60,7 +60,7 @@ type LocalDeserializedData = {
 export default class Section<DeserializedData, FormFields> {
   private data: Array<DeserializedData & LocalDeserializedData> = []
   private formFields: FormFields
-  public key = 'rowId'
+  public key = 'row_id'
   public localStorageKey: null | string = null
 
   constructor(
@@ -97,8 +97,9 @@ export default class Section<DeserializedData, FormFields> {
         ...blends
           .filter((blend: Blend) => blend.displayed_in_latest_format)
           .map((blend: Blend) => this.transformBlend(blend, true)),
+        ...initialData,
       ],
-      [...initialData, ...(isArray(localStorageData) ? localStorageData : [])],
+      [...(isArray(localStorageData) ? localStorageData : [])],
       substances,
       blends,
     )
@@ -178,7 +179,7 @@ export default class Section<DeserializedData, FormFields> {
         get(blend, 'display_name') || `${blend.name} (${blend.composition})`,
       excluded_usages: blend.excluded_usages,
       group: blend.group,
-      rowId: `blend_${id}`,
+      row_id: `blend_${id}`,
       ...(isBoolean(mandatory) ? { mandatory } : {}),
     }
     forOwn(this.formFields, (field, fieldKey) => {
@@ -197,7 +198,7 @@ export default class Section<DeserializedData, FormFields> {
       excluded_usages: substance.excluded_usages,
       group: substance.group,
       mandatory: false,
-      rowId: `substance_${id}`,
+      row_id: `substance_${id}`,
       substance_id: id,
       ...(isBoolean(mandatory) ? { mandatory } : {}),
     }
@@ -219,7 +220,12 @@ export default class Section<DeserializedData, FormFields> {
     const substancesById = groupBy(substances, 'id')
     const blendsById = groupBy(blends, 'id')
     const mergedMap = new Map()
-    original.forEach((item: any) => mergedMap.set(item[this.key], { ...item }))
+    original.forEach((item: any) =>
+      mergedMap.set(item[this.key], {
+        ...(mergedMap.get(item[this.key]) || {}),
+        ...item,
+      }),
+    )
     updated.forEach((data: any) => {
       const isSubstance = !!data.substance_id
       const isBlend = !!data.blend_id

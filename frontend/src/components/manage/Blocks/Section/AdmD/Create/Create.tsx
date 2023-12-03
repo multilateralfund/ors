@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 
 import {
   Box,
@@ -9,27 +9,13 @@ import {
   ListItem,
   Typography,
 } from '@mui/material'
-import { groupBy, map } from 'lodash'
+import { produce } from 'immer'
+
+import Field from '@ors/components/manage/Form/Field'
 
 export default function AdmD(props: any) {
-  const { emptyForm, form, index, section, setActiveSection } = props
+  const { emptyForm, form, index, section, setActiveSection, setForm } = props
   const { rows = [] } = emptyForm.adm_d || {}
-
-  const rowData = useMemo(() => {
-    const dataByRowId = groupBy(form.adm_d, 'row_id')
-
-    return map(rows, (row) => ({
-      ...row,
-      ...(row.type === 'title' ? { rowType: 'group' } : {}),
-      ...(row.type === 'subtitle' ? { rowType: 'hashed' } : {}),
-      values: groupBy(
-        dataByRowId[row.id],
-        (item) => item.values[0]?.value_choice_id,
-      ),
-    }))
-  }, [rows, form])
-
-  console.log('HERE', form.adm_d)
 
   useEffect(() => {
     setActiveSection(index)
@@ -43,31 +29,95 @@ export default function AdmD(props: any) {
           {section.title}
         </Typography>
         <List>
-          {rowData.map((row, index) => (
+          {rows.map((row: any, index: number) => (
             <ListItem key={row.id} className="flex-col items-start pl-0">
               <Typography className="text-lg">
                 <span className="mr-2 inline-block">{index + 1}.</span>
                 {row.text}
               </Typography>
-              <FormGroup className="ml-10">
-                {row.choices.map((choice: any) => (
-                  <FormControlLabel
-                    key={choice.id}
-                    label={choice.value}
-                    control={
-                      <Checkbox
-                        checked={!!row.values[choice.id]}
-                        onChange={(event) => {
-                          console.log('HERE', event.target.checked)
-                        }}
+              <FormGroup className="w-full pl-10">
+                {row.choices.map((choice: any) => {
+                  const checked =
+                    form.adm_d[row.id]?.value_choice_id === choice.id
+
+                  return (
+                    <div id={`choice-${choice.id}`} key={choice.id}>
+                      <FormControlLabel
+                        label={choice.value}
+                        control={
+                          <Checkbox
+                            checked={checked}
+                            onChange={(event) => {
+                              const checked = event.target.checked
+                              setForm(
+                                produce((form: any) => {
+                                  if (!checked) {
+                                    return
+                                  }
+                                  if (!form.adm_d[row.id]) {
+                                    form.adm_d[row.id] = {
+                                      row_id: row.id,
+                                      value_choice_id: null,
+                                      value_text: null,
+                                    }
+                                  }
+                                  const choiceEl = document.querySelector(
+                                    `#choice-${choice.id} textarea`,
+                                  ) as HTMLTextAreaElement
+                                  form.adm_d[row.id].value_text =
+                                    choiceEl?.value || null
+                                  form.adm_d[row.id].value_choice_id = choice.id
+                                }),
+                              )
+                            }}
+                          />
+                        }
                       />
-                    }
+                      {choice.with_text && (
+                        <Field
+                          FieldProps={{ className: 'mb-0' }}
+                          disabled={!checked}
+                          type="textarea"
+                          value={form.adm_d[row.id]?.value_text}
+                          onChange={(event: any) => {
+                            setForm(
+                              produce((form: any) => {
+                                if (!form.adm_d[row.id]) {
+                                  form.adm_d[row.id] = {
+                                    row_id: row.id,
+                                    value_choice_id: null,
+                                    value_text: null,
+                                  }
+                                }
+                                form.adm_d[row.id].value_text =
+                                  event.target.value
+                              }),
+                            )
+                          }}
+                        />
+                      )}
+                    </div>
+                  )
+                })}
+                {!row.choices.length && (
+                  <Field
+                    FieldProps={{ className: 'mb-0 mt-4' }}
+                    type="textarea"
+                    value={form.adm_d?.[row.id]?.value_text}
+                    onChange={(event: any) => {
+                      setForm(
+                        produce((form: any) => {
+                          if (!form.adm_d[row.id]) {
+                            form.adm_d[row.id] = {
+                              ...row,
+                              row_id: row.id,
+                            }
+                          }
+                          form.adm_d[row.id].value_text = event.target.value
+                        }),
+                      )
+                    }}
                   />
-                ))}
-                {!!row.values['null'] && (
-                  <Typography className="mt-2">
-                    {row.values['null'][0]?.value_text}
-                  </Typography>
                 )}
               </FormGroup>
             </ListItem>

@@ -1,16 +1,19 @@
 import { useMemo, useRef, useState } from 'react'
 
-import { Box, Button, Modal, Typography } from '@mui/material'
+import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, union } from 'lodash'
 import dynamic from 'next/dynamic'
 
 import Field from '@ors/components/manage/Form/Field'
+import Footnote from '@ors/components/ui/Footnote/Footnote'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
 
 import useGridOptions from './schema'
+
+import { IoInformationCircleOutline } from 'react-icons/io5'
 
 const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
   ssr: false,
@@ -38,7 +41,7 @@ function getRowData(data: any) {
           count: dataByGroup[group].length,
           display_name: group,
           group,
-          rowId: group,
+          row_id: group,
           rowType: 'group',
         },
       ],
@@ -47,7 +50,7 @@ function getRowData(data: any) {
         {
           display_name: 'Sub-total',
           group,
-          rowId: `subtotal[${group}]`,
+          row_id: `subtotal[${group}]`,
           rowType: 'subtotal',
         },
       ],
@@ -78,7 +81,7 @@ export default function SectionACreate(props: any) {
   const substancesOptions = useMemo(() => {
     const data: Array<any> = []
     const substancesInForm = form.section_a.map(
-      (substance: any) => substance.rowId,
+      (substance: any) => substance.row_id,
     )
     each(substances, (substance) => {
       if (
@@ -98,7 +101,7 @@ export default function SectionACreate(props: any) {
       const newData = [...form.section_a]
       const index = findIndex(
         form.section_a,
-        (substance: any) => substance.rowId == removedSubstance.rowId,
+        (substance: any) => substance.row_id == removedSubstance.row_id,
       )
       if (index > -1) {
         const groupNode = grid.current.api.getRowNode(removedSubstance.group)
@@ -133,6 +136,11 @@ export default function SectionACreate(props: any) {
 
   return (
     <>
+      <Alert className="mb-4" icon={false} severity="info">
+        <Typography>
+          Edit by pressing double left-click or ENTER on a field.
+        </Typography>
+      </Alert>
       <Table
         {...TableProps}
         className="three-groups mb-4"
@@ -145,15 +153,20 @@ export default function SectionACreate(props: any) {
           ...gridOptions.defaultColDef,
         }}
         pinnedBottomRowData={[
-          { display_name: 'TOTAL', rowId: 'total', rowType: 'total' },
-          { rowId: 'control', rowType: 'control' },
+          {
+            display_name: 'TOTAL',
+            row_id: 'total',
+            rowType: 'total',
+            tooltip: true,
+          },
+          { row_id: 'control', rowType: 'control' },
         ]}
         onCellValueChanged={(event) => {
           const usages = getUsagesOnCellValueChange(event)
           const newData = [...form.section_a]
           const index = findIndex(
             newData,
-            (row: any) => row.rowId == event.data.rowId,
+            (row: any) => row.row_id == event.data.row_id,
           )
           if (index > -1) {
             // Should not be posible for index to be -1
@@ -173,7 +186,7 @@ export default function SectionACreate(props: any) {
         onRowDataUpdated={() => {
           if (newNode.current) {
             scrollToElement(
-              `.ag-row[row-id=${newNode.current.data.rowId}]`,
+              `.ag-row[row-id=${newNode.current.data.row_id}]`,
               () => {
                 grid.current.api.flashCells({
                   rowNodes: [newNode.current],
@@ -184,23 +197,17 @@ export default function SectionACreate(props: any) {
           }
         }}
       />
-      <div className="not-printable">
-        <Typography className="italic" variant="body2">
-          1. Edit by pressing double left-click or ENTER on a field.
-        </Typography>
-        <Typography className="italic" variant="body2">
-          2. Where the data involves a blend of two or more substances, the
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnote id="1">
+          Where the data involves a blend of two or more substances, the
           quantities of individual components of controlled substances must be
           indicated separately.
-        </Typography>
-        <Typography className="italic" variant="body2">
-          3. Indicate relevant controlled substances.
-        </Typography>
-        <Typography className="italic" variant="body2">
-          4. Provide explanation if total sector use and consumption
+        </Footnote>
+        <Footnote id="2">
+          Provide explanation if total sector use and consumption
           (import-export+production) is different (e.g, stockpiling).
-        </Typography>
-      </div>
+        </Footnote>
+      </Alert>
       {addSubstanceModal && (
         <Modal
           aria-labelledby="add-substance-modal-title"
@@ -231,7 +238,7 @@ export default function SectionACreate(props: any) {
                 }
                 const added = find(
                   form.section_a,
-                  (substance) => substance.rowId === newSubstance.rowId,
+                  (substance) => substance.row_id === newSubstance.row_id,
                 )
                 if (!added) {
                   const groupNode = grid.current.api.getRowNode(
@@ -249,7 +256,7 @@ export default function SectionACreate(props: any) {
                     ],
                   })
                   const substanceNode = grid.current.api.getRowNode(
-                    newSubstance.rowId,
+                    newSubstance.row_id,
                   )
                   newNode.current = substanceNode
                 }

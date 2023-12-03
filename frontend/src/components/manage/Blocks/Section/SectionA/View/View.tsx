@@ -45,7 +45,7 @@ export default function SectionAView(props: any) {
 
   const pinnedBottomRowData = useMemo(() => {
     return rowData.length > 0
-      ? [{ display_name: 'TOTAL', rowType: 'total' }]
+      ? [{ display_name: 'TOTAL', rowType: 'total', tooltip: true }]
       : []
   }, [rowData])
 

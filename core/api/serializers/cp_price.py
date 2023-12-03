@@ -13,13 +13,18 @@ class CPPricesBaseSerializer(BaseCPWChemicalSerializer):
         max_digits=12, decimal_places=3, required=True
     )
     remarks = serializers.CharField(required=False, allow_blank=True)
+    computed_prev_year_price = serializers.SerializerMethodField()
 
     class Meta:
         fields = BaseCPWChemicalSerializer.Meta.fields + [
             "previous_year_price",
             "current_year_price",
+            "computed_prev_year_price",
             "remarks",
         ]
+
+    def get_computed_prev_year_price(self, obj):
+        return getattr(obj, "computed_prev_year_price", None)
 
 
 class CPPricesSerializer(CPPricesBaseSerializer):

@@ -1,16 +1,19 @@
 import { useMemo, useRef, useState } from 'react'
 
-import { Box, Button, Modal, Typography } from '@mui/material'
+import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, union } from 'lodash'
 import dynamic from 'next/dynamic'
 
 import Field from '@ors/components/manage/Form/Field'
+import Footnote from '@ors/components/ui/Footnote/Footnote'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
 
 import useGridOptions from './schema'
+
+import { IoInformationCircleOutline } from 'react-icons/io5'
 
 const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
   ssr: false,
@@ -38,7 +41,7 @@ function getRowData(data: any) {
           count: dataByGroup[group].length,
           display_name: group,
           group,
-          rowId: group,
+          row_id: group,
           rowType: 'group',
         },
       ],
@@ -47,7 +50,7 @@ function getRowData(data: any) {
         {
           display_name: 'Sub-total',
           group,
-          rowId: `subtotal[${group}]`,
+          row_id: `subtotal[${group}]`,
           rowType: 'subtotal',
         },
       ],
@@ -71,7 +74,7 @@ export default function SectionCCreate(props: any) {
   const chimicalsOptions = useMemo(() => {
     const data: Array<any> = []
     const chimicalsInForm = form.section_c.map(
-      (chimical: any) => chimical.rowId,
+      (chimical: any) => chimical.row_id,
     )
     each(substances, (substance) => {
       if (
@@ -90,7 +93,7 @@ export default function SectionCCreate(props: any) {
       const newData = [...form.section_c]
       const index = findIndex(
         form.section_c,
-        (substance: any) => substance.rowId == removedSubstance.rowId,
+        (substance: any) => substance.row_id == removedSubstance.row_id,
       )
       if (index > -1) {
         const groupNode = grid.current.api.getRowNode(removedSubstance.group)
@@ -119,26 +122,28 @@ export default function SectionCCreate(props: any) {
 
   return (
     <>
+      <Alert className="mb-4" icon={false} severity="info">
+        <Typography>
+          Edit by pressing double left-click or ENTER on a field.
+        </Typography>
+      </Alert>
       <Table
         {...TableProps}
-        className="three-groups mb-4'"
+        className="three-groups mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={3}
+        pinnedBottomRowData={[{ rowType: 'control' }]}
         rowData={initialRowData}
         defaultColDef={{
           ...TableProps.defaultColDef,
           ...gridOptions.defaultColDef,
         }}
-        pinnedBottomRowData={[
-          { display_name: 'TOTAL', rowType: 'total' },
-          { rowType: 'control' },
-        ]}
         onCellValueChanged={(event) => {
           const newData = [...form.section_c]
           const index = findIndex(
             newData,
-            (row: any) => row.rowId == event.data.rowId,
+            (row: any) => row.row_id == event.data.row_id,
           )
           if (index > -1) {
             // Should not be posible for index to be -1
@@ -157,7 +162,7 @@ export default function SectionCCreate(props: any) {
         onRowDataUpdated={() => {
           if (newNode.current) {
             scrollToElement(
-              `.ag-row[row-id=${newNode.current.data.rowId}]`,
+              `.ag-row[row-id=${newNode.current.data.row_id}]`,
               () => {
                 grid.current.api.flashCells({
                   rowNodes: [newNode.current],
@@ -168,12 +173,12 @@ export default function SectionCCreate(props: any) {
           }
         }}
       />
-      <Typography className="italic" variant="body2">
-        1. Edit by pressing double left-click or ENTER on a field.
-      </Typography>
-      <Typography className="italic" variant="body2">
-        2. Indicate whether the prices are FOB or retail prices.
-      </Typography>
+
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnote id="1">
+          Indicate whether the prices are FOB or retail prices.
+        </Footnote>
+      </Alert>
 
       {addChimicalModal && (
         <Modal
@@ -205,7 +210,7 @@ export default function SectionCCreate(props: any) {
                 }
                 const added = find(
                   form.section_c,
-                  (chimical) => chimical.rowId === newChimical.rowId,
+                  (chimical) => chimical.row_id === newChimical.row_id,
                 )
                 if (!added) {
                   const groupNode = grid.current.api.getRowNode(
@@ -225,14 +230,14 @@ export default function SectionCCreate(props: any) {
                           count: 1,
                           display_name: group,
                           group,
-                          rowId: group,
+                          row_id: group,
                           rowType: 'group',
                         },
                         newChimical,
                         {
                           display_name: 'Sub-total',
                           group,
-                          rowId: `subtotal[${group}]`,
+                          row_id: `subtotal[${group}]`,
                           rowType: 'subtotal',
                         },
                       ],
@@ -251,7 +256,7 @@ export default function SectionCCreate(props: any) {
                     })
                   }
                   const substanceNode = grid.current.api.getRowNode(
-                    newChimical.rowId,
+                    newChimical.row_id,
                   )
                   newNode.current = substanceNode
                 }

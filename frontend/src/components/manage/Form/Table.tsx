@@ -10,10 +10,13 @@ import { AgGridReact, AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
 import {
   findIndex,
+  forEach,
   get,
+  indexOf,
   isEmpty,
   isFunction,
   isObject,
+  // max,
   noop,
   times,
 } from 'lodash'
@@ -24,15 +27,25 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import DefaultFadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { KEY_BACKSPACE } from '@ors/constants'
-import {
-  applyTransaction,
-  debounce,
-  getError,
-  // pxToNumber,
-} from '@ors/helpers/Utils/Utils'
+import { applyTransaction, debounce, getError } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
 
 import Portal from '../Utils/Portal'
+
+function cloneStyle(original: Element, clone: Element) {
+  clone.setAttribute('style', original.getAttribute('style') || '')
+}
+
+function cloneClass(original: Element, clone: Element) {
+  clone.className = original.className
+}
+
+// function getHeight(el: HTMLElement) {
+//   if (el.style.height) {
+//     return Number(el.style.height.replace('px', '')) || el.clientHeight
+//   }
+//   return el.clientHeight
+// }
 
 export default function Table(
   props: AgGridReactProps & {
@@ -48,6 +61,7 @@ export default function Table(
   const uniqueId = useId()
   const grid = useRef<any>({})
   const tableEl = useRef<HTMLDivElement>(null)
+  const scrollMutationObserver = useRef<any>(null)
   const {
     id,
     Toolbar,
@@ -78,7 +92,7 @@ export default function Table(
     rowClassRules = {},
     rowCount = 0,
     rowData = [],
-    rowHeight = 45,
+    rowHeight = 40,
     rowsVisible = 15,
     style = {},
     withFluidEmptyColumn = false,
@@ -224,7 +238,7 @@ export default function Table(
       }
       const data = { ...rowNode.data }
       const error =
-        hasErrors && isObject(errors) ? get(errors, data.rowId) : null
+        hasErrors && isObject(errors) ? get(errors, data.row_id) : null
 
       if (!hasErrors && data.error) {
         delete data.error
@@ -252,6 +266,53 @@ export default function Table(
     }
   }
 
+  // function updatePinnedBottomHeight() {
+  //   if (!tableEl.current) return
+  //   const pinnedBottomEl = tableEl.current.querySelector(
+  //     '.ag-floating-bottom',
+  //   ) as HTMLElement
+  //   const pinnedBottomViewport = pinnedBottomEl?.querySelector(
+  //     '.ag-floating-bottom-viewport',
+  //   ) as HTMLElement
+
+  //   if (!pinnedBottomEl || !pinnedBottomViewport) return
+
+  //   function setHeight(children?: HTMLCollectionOf<HTMLElement>) {
+  //     let height = 0
+  //     if (!children) return 0
+  //     for (const child of children) {
+  //       child.style.transform = `translateY(${height}px)`
+  //       height += getHeight(child)
+  //     }
+  //     return height
+  //   }
+
+  //   const pinnedBottomHeight = max([
+  //     setHeight(
+  //       pinnedBottomViewport.querySelector('.ag-floating-bottom-container')
+  //         ?.children as HTMLCollectionOf<HTMLElement>,
+  //     ),
+  //     setHeight(
+  //       pinnedBottomEl.querySelector('.ag-pinned-left-floating-bottom')
+  //         ?.children as HTMLCollectionOf<HTMLElement>,
+  //     ),
+  //     setHeight(
+  //       pinnedBottomEl.querySelector('.ag-pinned-right-floating-bottom')
+  //         ?.children as HTMLCollectionOf<HTMLElement>,
+  //     ),
+  //   ])
+  //   pinnedBottomEl.style.height = `${pinnedBottomHeight}px`
+  // }
+
+  const FadeInOut = useMemo(
+    () => (fadeInOut ? DefaultFadeInOut : 'div'),
+    [fadeInOut],
+  )
+
+  // useEffect(() => {
+  //   updatePinnedBottomHeight()
+  // })
+
   useEffect(() => {
     if (fullScreen) {
       document.body.style.overflow = 'hidden'
@@ -266,10 +327,13 @@ export default function Table(
     /* eslint-disable-next-line */
   }, [errors])
 
-  const FadeInOut = useMemo(
-    () => (fadeInOut ? DefaultFadeInOut : 'div'),
-    [fadeInOut],
-  )
+  useEffect(() => {
+    return () => {
+      if (scrollMutationObserver.current) {
+        scrollMutationObserver.current.disconnect()
+      }
+    }
+  }, [])
 
   return (
     <Portal active={print === 'solo'} domNode="print-content">
@@ -309,6 +373,7 @@ export default function Table(
               className,
             )}
             style={{
+              '--row-height': `${rowHeight}px`,
               ...(tableBodyHeight > 0
                 ? {
                     height: tableBodyHeight,
@@ -322,8 +387,8 @@ export default function Table(
                 <Loading className="bg-action-disabledBackground/5" />
               )}
             <AgGridReact
+              alwaysShowHorizontalScroll={true}
               animateRows={false}
-              defaultColDef={{ ...baseColDef, ...defaultColDef }}
               domLayout={computedDomLayout}
               enableCellTextSelection={true}
               enableRtl={i18n.dir === 'rtl'}
@@ -361,6 +426,20 @@ export default function Table(
               components={{
                 ...defaultComponents,
                 ...components,
+              }}
+              defaultColDef={{
+                ...baseColDef,
+                ...defaultColDef,
+                cellClass: (props) => {
+                  return cx(
+                    isFunction(baseColDef.cellClass)
+                      ? baseColDef.cellClass(props)
+                      : baseColDef.cellClass,
+                    isFunction(defaultColDef.cellClass)
+                      ? defaultColDef.cellClass(props)
+                      : defaultColDef.cellClass,
+                  )
+                },
               }}
               noRowsOverlayComponent={(props: any) => {
                 return (
@@ -413,14 +492,14 @@ export default function Table(
               onCellKeyDown={(props: any) => {
                 const key = props.event.key
                 const { category, dataType, editable, field } = props.colDef
-                const { rowId } = props.data
+                const { row_id } = props.data
                 const recordUsages = [...(props.data.record_usages || [])]
                 const isEditable = isFunction(editable)
                   ? editable(props)
                   : editable
-                if (isEditable && rowId && key === KEY_BACKSPACE) {
+                if (isEditable && row_id && key === KEY_BACKSPACE) {
                   let value = null
-                  const rowNode = props.api.getRowNode(rowId)
+                  const rowNode = props.api.getRowNode(row_id)
                   if (dataType === 'string') {
                     value = ''
                   }
@@ -460,16 +539,115 @@ export default function Table(
                 onColumnResized(props)
               }}
               onFirstDataRendered={(agGrid) => {
-                setRendering(false)
                 updateOffsetHeight()
+                setRendering(false)
                 handleErrors()
                 onFirstDataRendered(agGrid)
               }}
               onGridReady={(props) => {
                 updateOffsetHeight()
                 onGridReady(props)
+
+                if (!tableEl.current) return
+                const tableRoot = tableEl.current.querySelector('.ag-root')
+                // Get original scroll
+                const agScroll = tableRoot?.querySelector(
+                  '.ag-body-horizontal-scroll',
+                )
+                const agLeftSpacer = agScroll?.querySelector(
+                  '.ag-horizontal-left-spacer',
+                )
+                const agRightSpacer = agScroll?.querySelector(
+                  '.ag-horizontal-right-spacer',
+                )
+                const agScrollViewport = agScroll?.querySelector(
+                  '.ag-body-horizontal-scroll-viewport',
+                )
+                const agScrollContainer = agScroll?.querySelector(
+                  '.ag-body-horizontal-scroll-container',
+                )
+                // Get clone scroll
+                const cloneAgScroll = agScroll?.cloneNode(true) as Element
+                const cloneAgLeftSpacer = cloneAgScroll?.querySelector(
+                  '.ag-horizontal-left-spacer',
+                )
+                const cloneAgRightSpacer = cloneAgScroll?.querySelector(
+                  '.ag-horizontal-right-spacer',
+                )
+                const cloneAgScrollViewport = cloneAgScroll?.querySelector(
+                  '.ag-body-horizontal-scroll-viewport',
+                )
+                const cloneAgScrollContainer = cloneAgScroll?.querySelector(
+                  '.ag-body-horizontal-scroll-container',
+                )
+                if (
+                  !tableRoot ||
+                  !agScroll ||
+                  !agLeftSpacer ||
+                  !agRightSpacer ||
+                  !agScrollViewport ||
+                  !agScrollContainer ||
+                  !cloneAgScroll ||
+                  !cloneAgLeftSpacer ||
+                  !cloneAgRightSpacer ||
+                  !cloneAgScrollViewport ||
+                  !cloneAgScrollContainer
+                ) {
+                  return
+                }
+                // Insert clone scroll
+                tableRoot.insertBefore(cloneAgScroll, tableRoot.firstChild)
+                // add event listeners to keep scroll position synchronized
+                agScrollViewport.addEventListener('scroll', () => {
+                  cloneAgScrollViewport.scrollTo({
+                    left: agScrollViewport.scrollLeft,
+                  })
+                })
+                cloneAgScrollViewport.addEventListener('scroll', () => {
+                  agScrollViewport.scrollTo({
+                    left: cloneAgScrollViewport.scrollLeft,
+                  })
+                })
+                // scroll mutation observer to keep size sync
+                const scrollElements = [
+                  agScroll,
+                  agLeftSpacer,
+                  agRightSpacer,
+                  agScrollViewport,
+                  agScrollContainer,
+                ]
+                const cloneScrollElements = [
+                  cloneAgScroll,
+                  cloneAgLeftSpacer,
+                  cloneAgRightSpacer,
+                  cloneAgScrollViewport,
+                  cloneAgScrollContainer,
+                ]
+                scrollMutationObserver.current = new MutationObserver(
+                  (mutationList) => {
+                    forEach(mutationList, (mutation) => {
+                      const element = indexOf(scrollElements, mutation.target)
+                      if (element > -1) {
+                        cloneStyle(
+                          scrollElements[element],
+                          cloneScrollElements[element],
+                        )
+                        cloneClass(
+                          scrollElements[element],
+                          cloneScrollElements[element],
+                        )
+                      }
+                    })
+                  },
+                )
+                // start observing the scroll elements for `style` attribute changes
+                scrollMutationObserver.current.observe(agScroll, {
+                  attributeFilter: ['style', 'class'],
+                  subtree: true,
+                })
               }}
               onGridSizeChanged={(props) => {
+                // updatePinnedBottomHeight()
                 debounce(updateOffsetHeight)
                 onGridSizeChanged(props)
               }}

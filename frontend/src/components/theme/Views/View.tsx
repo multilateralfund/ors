@@ -13,7 +13,7 @@ import DefaultAlert from '@ors/components/theme/Alerts/Default'
 import { getCurrentView } from '@ors/helpers/View/View'
 import { useStore } from '@ors/store'
 
-const localStorageVersion = '1.0.1'
+const localStorageVersion = '1.0.2'
 
 const getViewByLayout = (layout?: keyof ByLayout) => {
   return layout ? config.views.layoutViews[layout] : null
@@ -34,12 +34,17 @@ export default function View({ children }: { children: React.ReactNode }) {
 
   const view = getCurrentView(pathname)
 
+  // const RenderedView: React.FC<any> = useMemo(
+  //   () =>
+  //     getErrorView(errorName) ||
+  //     getViewByLayout(view.layout) ||
+  //     getViewDefault(),
+  //   [view, errorName],
+  // )
+
   const RenderedView: React.FC<any> = useMemo(
-    () =>
-      getErrorView(errorName) ||
-      getViewByLayout(view.layout) ||
-      getViewDefault(),
-    [view, errorName],
+    () => getViewByLayout(view.layout) || getViewDefault(),
+    [view],
   )
 
   useEffect(() => {

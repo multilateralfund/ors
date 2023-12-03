@@ -99,6 +99,7 @@ function Item({ item, showCountry, showYear }: any) {
                   'text-warning': item.status === 'draft',
                 },
               )}
+              prefetch={false}
               underline="hover"
               href={
                 item.status === 'draft'
@@ -482,7 +483,7 @@ function CountrySection(props: SectionProps) {
                       const country = filters.country || []
                       return {
                         ...filters,
-                        country: union(country, [row.group]),
+                        country: union(country, [row.id]),
                       }
                     })
                   }}

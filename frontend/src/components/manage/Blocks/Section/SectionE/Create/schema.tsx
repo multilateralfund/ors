@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { Button, IconButton } from '@mui/material'
+import { Button } from '@mui/material'
 import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
@@ -8,6 +8,7 @@ import { includes } from 'lodash'
 import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
+import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 
 import { IoTrash } from 'react-icons/io5'
 
@@ -38,39 +39,31 @@ function useGridOptions(props: {
                 </Button>
               )
             }
-            return (
-              <AgCellRenderer
-                {...props}
-                value={
-                  <>
-                    {!props.data.rowType && !props.data.mandatory && (
-                      <>
-                        <IconButton
-                          color="error"
-                          onClick={() => {
-                            removeFacility(props)
-                          }}
-                        >
-                          <IoTrash size="1rem" />
-                        </IconButton>{' '}
-                      </>
-                    )}
-                    {props.value}
-                  </>
-                }
-              />
-            )
+            return <AgCellRenderer {...props} />
           },
           cellRendererParams: (props: any) => ({
             className: cx({
               'font-bold': includes(['group', 'total'], props.data.rowType),
             }),
+            options: !props.data.mandatory && !props.data.rowType && (
+              <>
+                <Dropdown.Item
+                  onClick={() => {
+                    removeFacility(props)
+                  }}
+                >
+                  <div className="flex items-center gap-x-2">
+                    <IoTrash className="fill-error" size={20} />
+                    <span>Delete</span>
+                  </div>
+                </Dropdown.Item>
+              </>
+            ),
           }),
           field: 'facility',
           headerClass: 'ag-text-left',
           headerName: 'Facility name or identifier',
           ...colDefById['facility'],
-          minWidth: 160,
         },
         {
           aggFunc: 'sumTotal',
@@ -78,7 +71,8 @@ function useGridOptions(props: {
           dataType: 'number',
           field: 'total',
           headerComponentParams: {
-            footnote: 2,
+            footnote: 1,
+            info: true,
           },
           headerName: 'Total amount generated',
           ...colDefById['total_amount_generated'],
@@ -113,7 +107,8 @@ function useGridOptions(props: {
           groupId: 'amount_generated_and_captured',
           headerGroupComponent: 'agColumnHeaderGroup',
           headerGroupComponentParams: {
-            footnote: 3,
+            footnote: 2,
+            info: true,
           },
           headerName: 'Amount generated and captured',
           marryChildren: true,
@@ -124,7 +119,8 @@ function useGridOptions(props: {
           dataType: 'number',
           field: 'feedstock_wpc',
           headerComponentParams: {
-            footnote: 4,
+            footnote: 3,
+            info: true,
           },
           headerName: 'Amount used for feedstock without prior capture',
           ...colDefById['feedstock_wpc'],
@@ -135,7 +131,8 @@ function useGridOptions(props: {
           dataType: 'number',
           field: 'destruction_wpc',
           headerComponentParams: {
-            footnote: 5,
+            footnote: 4,
+            info: true,
           },
           headerName: 'Amount destroyed without prior capture',
           ...colDefById['destruction_wpc'],

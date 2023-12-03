@@ -5,7 +5,7 @@ import type { Metadata } from 'next'
 import React from 'react'
 
 import { dir } from 'i18next'
-import { includes } from 'lodash'
+// import { includes } from 'lodash'
 import { Roboto } from 'next/font/google'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { cookies as nextCookies, headers as nextHeaders } from 'next/headers'
@@ -42,7 +42,7 @@ export default async function RootLayout({
   // const cookies = nextCookies()
   const headers = nextHeaders()
   let user, internalError
-  let cp_reports, projects, common
+  let cp_reports, projects, common, businessPlans
   const pathname = headers.get('x-next-pathname')
   // const lang = (headers.get('x-next-lang') ||
   //   config.i18n.defaultLanguage) as Language
@@ -54,18 +54,18 @@ export default async function RootLayout({
   try {
     user = await api('api/auth/user/', {})
   } catch (error) {
-    if (
-      error &&
-      includes(
-        [undefined, 'TypeError', 'ECONNREFUSED'],
-        error.status || error.name,
-      )
-    ) {
-      internalError = {
-        _info: error,
-        status: 'ECONNREFUSED',
-      }
-    }
+    // if (
+    //   error &&
+    //   includes(
+    //     [undefined, 'TypeError', 'ECONNREFUSED'],
+    //     error.status || error.name,
+    //   )
+    // ) {
+    //   internalError = {
+    //     _info: error,
+    //     status: 'ECONNREFUSED',
+    //   }
+    // }
   }
 
   if (user) {
@@ -83,6 +83,8 @@ export default async function RootLayout({
       // Country programme data
       blends,
       substances,
+      // Business Plans
+      yearRanges,
     ] = await Promise.all([
       api('api/settings/', {}, false),
       api('api/agencies/', {}, false),
@@ -94,7 +96,8 @@ export default async function RootLayout({
       api('api/project-meetings/', {}, false),
       api('api/blends/', { params: { with_usages: true } }, false),
       api('api/substances/', { params: { with_usages: true } }, false),
-      api('api/usages/', {}, false),
+      // api('api/usages/', {}, false),
+      api('api/business-plan/get-years/', {}, false),
     ])
 
     common = {
@@ -113,6 +116,12 @@ export default async function RootLayout({
       blends: getInitialSliceData(blends),
       substances: getInitialSliceData(substances),
     }
+    businessPlans = {
+      sectors: getInitialSliceData(sectors),
+      subsectors: getInitialSliceData(subsectors),
+      types: getInitialSliceData(types),
+      yearRanges: getInitialSliceData(yearRanges),
+    }
   }
 
   return (
@@ -128,6 +137,7 @@ export default async function RootLayout({
         <Script src="/critical.js" strategy="beforeInteractive" />
         <StoreProvider
           initialState={{
+            businessPlans,
             common,
             cp_reports,
             i18n: {

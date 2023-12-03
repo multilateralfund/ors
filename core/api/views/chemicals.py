@@ -250,7 +250,7 @@ class BlendCreateView(generics.CreateAPIView):
                             "component_name": component_name (string),
                             "percentage": percentage (float),
                             "substance_id": substance_id (int),
-                            "rowId": used in error response (string),
+                            "row_id": used in error response (string),
                             }
                         ],
                     "odp": odp (decimal),
@@ -271,7 +271,7 @@ class BlendCreateView(generics.CreateAPIView):
                     {"components": "There is a component that is not a dict"}
                 )
 
-            row_id = vals.pop("rowId", index)
+            row_id = vals.pop("row_id", index)
             try:
                 subst_id = vals.get("substance_id", None)
                 component_name = vals.get("component_name", None)
@@ -283,9 +283,11 @@ class BlendCreateView(generics.CreateAPIView):
 
             # get substance by id, if it does not exist return error
             try:
-                subst = Substance.objects.select_related("group").get(id=subst_id)
+                subst = Substance.objects.select_related(
+                    "group").get(id=subst_id)
             except Substance.DoesNotExist:
-                comp_errors[row_id] = {"substance": "Substance does not exist."}
+                comp_errors[row_id] = {
+                    "substance": "Substance does not exist."}
                 continue
 
             # check if component already exists in components dict
@@ -298,18 +300,16 @@ class BlendCreateView(generics.CreateAPIView):
 
             if "other" in subst.name.lower() and not component_name:
                 # components of "other" substances must have a specific name
-                comp_errors[row_id] = {"component_name": "Please add a component name"}
+                comp_errors[row_id] = {
+                    "component_name": "Please add a component name"}
                 continue
 
             # add component to the component list
             components.append(
-                {
-                    "component_name": component_name if component_name else subst.name,
-                    "percentage": prcnt_decimal,
-                    "substance_id": subst.id,
-                    "percent_100": percentage,
-                }
-            )
+                {"component_name": component_name
+                 if component_name else subst.name,
+                 "percentage": prcnt_decimal, "substance_id": subst.id,
+                 "percent_100": percentage, })
 
             # add substance to the existing substances list if it is not "other"
             if "other" not in subst.name.lower():
@@ -331,7 +331,8 @@ class BlendCreateView(generics.CreateAPIView):
 
         # check if percentage_sum is 100
         if percentage_sum != 100:
-            raise ValidationError({"components": "Sum of percentages must be 100"})
+            raise ValidationError(
+                {"components": "Sum of percentages must be 100"})
 
         return {
             "components": components,

@@ -8,6 +8,8 @@ from core.api.views import ProjectFundViewSet
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
 from core.api.views.agency import AgencyListView
+from core.api.views.business_plan import BPRecordViewSet
+from core.api.views.business_plan import BusinessPlanViewSet
 from core.api.views.chemicals import (
     BlendCreateView,
     BlendsListView,
@@ -50,6 +52,8 @@ router.register("project-ods-odp", ProjectOdsOdpViewSet)
 router.register("project-comment", ProjectCommentViewSet)
 router.register("project-rbm-measure", ProjectRbmMeasureViewSet)
 router.register("submission-amount", ProjectSubmissionAmountViewSet)
+router.register("business-plan", BusinessPlanViewSet)
+router.register("business-plan-record", BPRecordViewSet)
 
 
 schema_view = get_schema_view(
