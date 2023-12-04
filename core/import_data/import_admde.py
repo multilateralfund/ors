@@ -3,9 +3,9 @@ import logging
 
 from django.db import transaction
 from django.conf import settings
+from core.import_data.mapping_names_dict import DB_YEAR_MAPPING
 from core.import_data.utils import (
     DB_DIR_LIST,
-    DB_YEAR_MAPPING,
     delete_old_data,
     get_country_and_year_dict,
     get_cp_report_for_db_import,

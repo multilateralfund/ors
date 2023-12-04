@@ -7,18 +7,15 @@ from django.db import transaction
 
 
 from core.import_data.utils import (
-    PROJECT_TYPE_CODE_MAPPING,
-    SECTOR_CODE_MAPPING,
     get_country_by_name,
     get_meeting_by_number,
-    get_object_by_code,
     get_object_by_name,
     get_project_type_by_code,
     get_sector_by_code,
     update_or_create_project,
 )
 from core.models.agency import Agency
-from core.models.project import ProjectSector, ProjectStatus, ProjectType
+from core.models.project import ProjectStatus
 
 logger = logging.getLogger(__name__)
 

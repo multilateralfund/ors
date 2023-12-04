@@ -260,7 +260,8 @@ class AgencyFactory(factory.django.DjangoModelFactory):
         model = Agency
 
     name = factory.Faker("pystr", max_chars=100)
-    description = factory.Faker("pystr", max_chars=200)
+    code = factory.Faker("pystr", max_chars=10)
+    agency_type = Agency.AgencyType.AGENCY
 
 
 class ProjectTypeFactory(factory.django.DjangoModelFactory):
@@ -326,6 +327,7 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     description = factory.Faker("pystr", max_chars=200)
     project_type = factory.SubFactory(ProjectTypeFactory)
     status = factory.SubFactory(ProjectStatusFactory)
+    sector = factory.SubFactory(ProjectSectorFactory)
     subsector = factory.SubFactory(ProjectSubSectorFactory)
     agency = factory.SubFactory(AgencyFactory)
     country = factory.SubFactory(CountryFactory)

@@ -17,7 +17,6 @@ from core.api.serializers.meeting import MeetingSerializer
 from core.api.serializers.project import (
     ProjectClusterSerializer,
     ProjectCommentCreateSerializer,
-    ProjectCommentListSerializer,
     ProjectFundCreateSerializer,
     ProjectOdsOdpCreateSerializer,
     ProjectRbmMeasureCreateSerializer,
@@ -26,12 +25,10 @@ from core.api.serializers.project import (
 from core.api.serializers.project import (
     ProjectDetailsSerializer,
     ProjectListSerializer,
-    ProjectOdsOdpListSerializer,
     ProjectSectorSerializer,
     ProjectStatusSerializer,
     ProjectSubSectorSerializer,
     ProjectTypeSerializer,
-    ProjectFundListSerializer,
 )
 from core.models.meeting import Meeting
 from core.models.project import (

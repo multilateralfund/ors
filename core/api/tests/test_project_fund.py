@@ -30,7 +30,7 @@ class TestCreateProjectFund(BaseProjectUtilityCreate):
     def setup(self, _create_project_fund):
         self.__class__.new_utility_data = _create_project_fund
 
-    def test_invalid_meeting(self, user, _create_project_fund, project):
+    def test_invalid_meeting(self, user, _create_project_fund):
         self.client.force_authenticate(user=user)
 
         project_data = _create_project_fund

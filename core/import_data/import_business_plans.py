@@ -7,13 +7,14 @@ import re
 from django.db import transaction
 from django.conf import settings
 
-from core.import_data.utils import (
+from core.import_data.mapping_names_dict import (
     SECTOR_NAME_MAPPING,
     SUBSECTOR_NAME_MAPPING,
+)
+from core.import_data.utils import (
     get_chemical_by_name_or_components,
     get_country_by_name,
     get_decimal_from_excel_string,
-    get_object_by_code,
     get_object_by_name,
     get_project_type_by_code,
 )
@@ -24,7 +25,7 @@ from core.models.business_plan import (
     BPRecordValue,
     BusinessPlan,
 )
-from core.models.project import ProjectSector, ProjectSubSector, ProjectType
+from core.models.project import ProjectSector, ProjectSubSector
 
 logger = logging.getLogger(__name__)
 

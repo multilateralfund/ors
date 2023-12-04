@@ -1,11 +1,9 @@
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
-from core.api.serializers.base import BaseProjectUtilityCreateSerializer
 from core.api.tests.base import (
     BaseProjectUtilityCreate,
     BaseProjectUtilityDelete,
-    BaseTest,
 )
 
 from core.api.tests.factories import SubstanceFactory
@@ -16,7 +14,7 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture(name="_project_ods_subst_create")
-def project_ods_subst_create(project, substance, blend):
+def project_ods_subst_create(project, substance):
     return {
         "project_id": project.id,
         "ods_substance_id": substance.id,

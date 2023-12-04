@@ -1,14 +1,7 @@
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
-from core.api.tests.base import (
-    BaseProjectUtilityCreate,
-    BaseProjectUtilityDelete,
-    BaseTest,
-)
-from core.api.tests.factories import SubmissionAmountFactory
-
-from core.models.project import ProjectFund, SubmissionAmount
+from core.api.tests.base import BaseProjectUtilityCreate, BaseProjectUtilityDelete
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008,W0221,R0913

@@ -322,7 +322,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
     country = serializers.SlugRelatedField("name", read_only=True)
     agency = serializers.SlugRelatedField("name", read_only=True)
     coop_agencies = AgencySerializer(many=True, read_only=True)
-    sector = serializers.SerializerMethodField()
+    sector = serializers.SlugRelatedField("name", read_only=True)
     subsector = serializers.SlugRelatedField("name", read_only=True)
     project_type = serializers.SlugRelatedField("name", read_only=True)
     status = serializers.SlugRelatedField("name", read_only=True)
@@ -417,9 +417,6 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "remarks",
         ]
 
-    def get_sector(self, obj):
-        return obj.subsector.sector.name
-
     def get_approval_meeting(self, obj):
         if obj.approval_meeting:
             return obj.approval_meeting.number
@@ -454,6 +451,10 @@ class ProjectDetailsSerializer(ProjectListSerializer):
     country_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Country.objects.all().values_list("id", flat=True)
     )
+    sector_id = serializers.PrimaryKeyRelatedField(
+        required=True,
+        queryset=ProjectSector.objects.all().values_list("id", flat=True),
+    )
     subsector_id = serializers.PrimaryKeyRelatedField(
         required=True,
         queryset=ProjectSubSector.objects.all().values_list("id", flat=True),
@@ -484,6 +485,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
             "country_id",
             "agency_id",
             "coop_agencies_id",
+            "sector_id",
             "subsector_id",
             "project_type_id",
             "approval_meeting_id",

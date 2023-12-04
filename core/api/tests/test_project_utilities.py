@@ -164,6 +164,7 @@ class TestProjectCluster(BaseTest):
         response = self.client.get(self.url)
         assert response.status_code == 200
         assert len(response.data) == 2
+        assert response.data[0]["name"] == project_cluster_kpp.name
         assert response.data[1]["name"] == project_cluster_kip.name
         assert response.data[1]["code"] == project_cluster_kip.code
 

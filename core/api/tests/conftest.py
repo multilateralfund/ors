@@ -1,4 +1,4 @@
-# pylint: disable=W0621
+# pylint: disable=W0621,R0913
 import pytest
 import unicodedata
 
@@ -278,6 +278,7 @@ def project(
     agency,
     project_type,
     project_status,
+    sector,
     subsector,
     meeting,
     project_cluster_kpp,
@@ -288,6 +289,7 @@ def project(
         agency=agency,
         project_type=project_type,
         status=project_status,
+        sector=sector,
         subsector=subsector,
         approval_meeting=meeting,
         substance_type="HCFC",

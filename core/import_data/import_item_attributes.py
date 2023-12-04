@@ -4,9 +4,9 @@ from dateutil import parser
 
 from django.db import transaction
 from django.conf import settings
+from core.import_data.mapping_names_dict import USAGE_NAME_MAPPING
 from core.import_data.utils import (
     DB_DIR_LIST,
-    USAGE_NAME_MAPPING,
     check_empty_row,
     create_cp_record,
     delete_old_data,

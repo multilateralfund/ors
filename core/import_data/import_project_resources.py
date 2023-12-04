@@ -3,12 +3,14 @@ import logging
 import pandas as pd
 
 from django.db import transaction
-from core.import_data.utils import (
-    IMPORT_PROJECTS_DIR,
-    IMPORT_RESOURCES_DIR,
+from core.import_data.mapping_names_dict import (
     SECTOR_CODE_MAPPING,
     SECTOR_NAME_MAPPING,
     SUBSECTOR_NAME_MAPPING,
+)
+from core.import_data.utils import (
+    IMPORT_PROJECTS_DIR,
+    IMPORT_RESOURCES_DIR,
 )
 
 from core.models.agency import Agency

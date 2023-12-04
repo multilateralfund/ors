@@ -3,7 +3,8 @@ import logging
 import pandas as pd
 
 from django.db import transaction
-from core.import_data.utils import COUNTRY_NAME_MAPPING, IMPORT_RESOURCES_DIR
+from core.import_data.mapping_names_dict import COUNTRY_NAME_MAPPING
+from core.import_data.utils import IMPORT_RESOURCES_DIR
 
 from core.models import Country, Subregion, Region
 

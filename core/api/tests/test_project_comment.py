@@ -27,7 +27,7 @@ class TestProjectCommentCreate(BaseProjectUtilityCreate):
     def setup(self, _create_project_comment):
         self.__class__.new_utility_data = _create_project_comment
 
-    def test_invalid_meeting(self, user, _create_project_comment, project):
+    def test_invalid_meeting(self, user, _create_project_comment):
         self.client.force_authenticate(user=user)
 
         project_data = _create_project_comment

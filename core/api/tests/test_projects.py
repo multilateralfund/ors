@@ -171,7 +171,7 @@ class TestProjectUpload:
 
 @pytest.fixture(name="_setup_project_list")
 def setup_project_list(
-    country_ro, agency, project_type, project_status, subsector, meeting
+    country_ro, agency, project_type, project_status, subsector, meeting, sector
 ):
     new_country = CountryFactory.create()
     new_agency = AgencyFactory.create()
@@ -187,6 +187,7 @@ def setup_project_list(
             "agency": agency,
             "project_type": project_type,
             "status": project_status,
+            "sector": sector,
             "subsector": subsector,
             "substance_type": "HCFC",
             "approval_meeting": meeting,
@@ -196,6 +197,7 @@ def setup_project_list(
             "agency": new_agency,
             "project_type": new_project_type,
             "status": new_project_status,
+            "sector": new_sector,
             "subsector": new_subsector,
             "substance_type": "CFC",
             "approval_meeting": new_meeting,
@@ -212,7 +214,7 @@ def setup_project_list(
 
     ProjectFactory.create(
         title=f"Project {25}",
-        date_received=f"2020-01-30",
+        date_received="2020-01-30",
         **projects_data[0],
     )
 
@@ -395,6 +397,7 @@ def setup_project_create(
         "country_id": country_ro.id,
         "agency_id": agency.id,
         "coop_agencies_id": coop_agencies,
+        "sector_id": subsector.sector_id,
         "subsector_id": subsector.id,
         "project_type_id": project_type.id,
         "status_id": 1,
