@@ -165,6 +165,7 @@ class Project(models.Model):
     description = models.TextField(null=True, blank=True)
     excom_provision = models.TextField(null=True, blank=True)
     project_type = models.ForeignKey(ProjectType, on_delete=models.CASCADE)
+    project_type_legacy = models.CharField(max_length=256, null=True, blank=True)
     cluster = models.ForeignKey(
         ProjectCluster, on_delete=models.CASCADE, null=True, blank=True
     )
@@ -188,7 +189,10 @@ class Project(models.Model):
         max_length=256, choices=ProjectCompliance.choices, null=True, blank=True
     )
 
+    sector = models.ForeignKey(ProjectSector, on_delete=models.CASCADE)
+    sector_legacy = models.CharField(max_length=256, null=True, blank=True)
     subsector = models.ForeignKey(ProjectSubSector, on_delete=models.CASCADE)
+    subsector_legacy = models.CharField(max_length=256, null=True, blank=True)
     mya_subsector = models.CharField(max_length=256, null=True, blank=True)
 
     substance_type = models.CharField(max_length=256, choices=SubstancesType.choices)
