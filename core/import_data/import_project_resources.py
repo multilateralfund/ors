@@ -86,13 +86,13 @@ def import_agency(file_path):
 
     @param file_path = str (file path for import file)
     """
+    df = pd.read_excel(file_path).fillna("")
 
-    with open(file_path, "r", encoding="utf8") as f:
-        agencies_json = json.load(f)
-
-    for agency_json in agencies_json:
+    for _, row in df.iterrows():
         agency_data = {
-            "name": agency_json["AGENCY"],
+            "name": row["Agency"],
+            "code": row["Code"],
+            "agency_type": row["Type"],
         }
         Agency.objects.update_or_create(name=agency_data["name"], defaults=agency_data)
 
@@ -267,7 +267,7 @@ def import_meetings():
 
 @transaction.atomic
 def import_project_resources():
-    file_path = IMPORT_PROJECTS_DIR / "tbAgency.json"
+    file_path = IMPORT_RESOURCES_DIR / "agencies.xlsx"
     import_agency(file_path)
     logger.info("✔ agencies imported")
 

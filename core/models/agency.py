@@ -8,8 +8,15 @@ class AgencyManager(models.Manager):
 
 
 class Agency(models.Model):
+    class AgencyType(models.TextChoices):
+        AGENCY = "Agency", "Agency"
+        NATIONAL = "National", "National"
+
     name = models.CharField(max_length=255)
-    description = models.TextField()
+    code = models.CharField(max_length=16, null=True, blank=True)
+    agency_type = models.CharField(
+        max_length=16, choices=AgencyType.choices, default=AgencyType.AGENCY
+    )
 
     objects = AgencyManager()
 
