@@ -8,11 +8,14 @@ from django.db import transaction
 from django.conf import settings
 
 from core.import_data.utils import (
+    SECTOR_NAME_MAPPING,
+    SUBSECTOR_NAME_MAPPING,
     get_chemical_by_name_or_components,
     get_country_by_name,
     get_decimal_from_excel_string,
     get_object_by_code,
     get_object_by_name,
+    get_project_type_by_code,
 )
 from core.models.agency import Agency
 from core.models.business_plan import (
@@ -132,21 +135,22 @@ def get_sector_subsector(sector_subsector, index_row):
 
     # get sector
     sector_name_re = re.search(SECTOR_REGEX, sector_subsector)
-    sector_name = (
+    sector_name_str = (
         sector_name_re.group("sector").strip() if sector_name_re else sector_subsector
     )
+    sector_name = SECTOR_NAME_MAPPING.get(sector_name_str, sector_name_str)
     sector = get_object_by_name(
         ProjectSector, sector_name, index_row, "sector", with_log=False
     )
 
     # get subsector
     subsector_name_re = re.search(SUBSECTOR_REGEX, sector_subsector)
-    subsector_name = (
+    subsector_name_str = (
         subsector_name_re.group("subsector").strip()
         if subsector_name_re
         else sector_subsector
     )
-
+    subsector_name = SUBSECTOR_NAME_MAPPING.get(subsector_name_str, subsector_name_str)
     if not sector:
         subsector = get_object_by_name(
             ProjectSubSector, subsector_name, index_row, "subsector", with_log=False
@@ -216,7 +220,7 @@ def create_business_plan(row, index_row, year_start, year_end):
     @return: BusinessPlan object or None
     """
     country = get_country_by_name(row["Country"], index_row, use_offset=False)
-    project_type = get_object_by_code(ProjectType, row["Type"], "code", index_row)
+    project_type = get_project_type_by_code(row["Type"], index_row)
 
     # skip project with missing data
     if not all([country, project_type]):

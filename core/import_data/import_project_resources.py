@@ -6,6 +6,8 @@ from django.db import transaction
 from core.import_data.utils import (
     IMPORT_PROJECTS_DIR,
     IMPORT_RESOURCES_DIR,
+    SECTOR_CODE_MAPPING,
+    SECTOR_NAME_MAPPING,
     SUBSECTOR_NAME_MAPPING,
 )
 
@@ -37,6 +39,19 @@ NEW_SUBSECTORS = [
         "SEC": "PHA",
         "SUBSECTOR": "HFC phase down plan",
         "SORT_SUBSECTOR": 99,
+    },
+]
+
+NEW_SECTORS = [
+    {
+        "SECTOR": "Servicing",
+        "SEC": "SRV",
+        "SORT_SECTOR": 17,
+    },
+    {
+        "SECTOR": "Project monitoring and coordination",
+        "SEC": "PMU",
+        "SORT_SECTOR": 18,
     },
 ]
 
@@ -92,15 +107,23 @@ def import_sector(file_path):
     with open(file_path, "r", encoding="utf8") as f:
         sectors_json = json.load(f)
 
+    # add other sectors that are not in the file
+    sectors_json.extend(NEW_SECTORS)
+
     for sector_json in sectors_json:
-        sector_name = sector_json["SECTOR"].strip()
+        sector_name = SECTOR_NAME_MAPPING.get(
+            sector_json["SECTOR"].strip(), sector_json["SECTOR"].strip()
+        )
+        sector_code = SECTOR_CODE_MAPPING.get(
+            sector_json["SEC"].strip(), sector_json["SEC"].strip()
+        )
         sector_data = {
             "name": sector_name,
-            "code": sector_json["SEC"].strip(),
+            "code": sector_code,
             "sort_order": sector_json["SORT_SECTOR"],
         }
         ProjectSector.objects.update_or_create(
-            name=sector_data["name"], defaults=sector_data
+            code=sector_data["code"], defaults=sector_data
         )
 
 
@@ -121,9 +144,10 @@ def import_subsector(file_path):
 
     for subsector_json in subsectors_json:
         # get sector
-        sector = ProjectSector.objects.filter(
-            code=subsector_json["SEC"].strip()
-        ).first()
+        sector_code = SECTOR_CODE_MAPPING.get(
+            subsector_json["SEC"].strip(), subsector_json["SEC"].strip()
+        )
+        sector = ProjectSector.objects.filter(code=sector_code).first()
         if not sector:
             logger.warning(
                 f"⚠️ {subsector_json['SEC']} sector not fount => {subsector_json['SUBSECTOR']} not imported"
@@ -204,7 +228,7 @@ def import_project_clusters(file_path):
     """
 
     df = pd.read_excel(file_path).fillna("")
-    clusters = []
+
     for index, row in df.iterrows():
         cluster_data = {
             "name": row["Name"],
@@ -212,34 +236,33 @@ def import_project_clusters(file_path):
             "substance_type": row["Asscoaited Substance"].upper(),
             "sort_order": index,
         }
-        clusters.append(ProjectCluster(**cluster_data))
-
-    ProjectCluster.objects.bulk_create(clusters, batch_size=1000)
+        ProjectCluster.objects.update_or_create(
+            name=cluster_data["name"], defaults=cluster_data
+        )
 
 
 def import_rbm_measures(file_path):
     df = pd.read_excel(file_path).fillna("")
-    measures = []
+
     for index, row in df.iterrows():
         measure_data = {
             "name": row["Name"],
             "sort_order": index,
         }
-        measures.append(RBMMeasure(**measure_data))
-
-    RBMMeasure.objects.bulk_create(measures, batch_size=1000)
+        RBMMeasure.objects.update_or_create(
+            name=measure_data["name"], defaults=measure_data
+        )
 
 
 def import_meetings():
-    meetings = []
     for i in range(1, 92):
         meeting_data = {
             "number": i,
             "status": Meeting.MeetingStatus.COMPLETED,
         }
-        meetings.append(Meeting(**meeting_data))
-
-    Meeting.objects.bulk_create(meetings, batch_size=1000)
+        Meeting.objects.update_or_create(
+            number=meeting_data["number"], defaults=meeting_data
+        )
 
 
 @transaction.atomic
@@ -253,7 +276,9 @@ def import_project_resources():
     logger.info("✔ sectors imported")
 
     file_path = IMPORT_PROJECTS_DIR / "tbSubsector.json"
-    import_subsector(file_path)
+    file_path2 = IMPORT_RESOURCES_DIR / "other_subsectors.json"
+    for file_path in [file_path, file_path2]:
+        import_subsector(file_path)
     logger.info("✔ subsectors imported")
 
     file_path = IMPORT_PROJECTS_DIR / "tbStatusOfProjects.json"

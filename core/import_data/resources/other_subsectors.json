@@ -1,0 +1,187 @@
+[
+    {
+        "SEC": "SRV",
+        "SUBSECTOR": "Refrigeration servicing sector",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "REF",
+        "SUBSECTOR": "Domestic refrigeration (refrigerant)",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "REF",
+        "SUBSECTOR": "Commercial refrigeration (refrigerant)",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "REF",
+        "SUBSECTOR": "Domestic/commercial refrigeration (refrigerant)",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "REF",
+        "SUBSECTOR": "Industrial refrigeration",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "REF",
+        "SUBSECTOR": "Transport refrigeration",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "REF",
+        "SUBSECTOR": "Residential air-conditioning",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "REF",
+        "SUBSECTOR": "Commercial air-conditioning",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "REF",
+        "SUBSECTOR": "Industrial and commercial refrigeration and AC (ICR)",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "REF",
+        "SUBSECTOR": "Local installation and assembly",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "PMU",
+        "SUBSECTOR": "Project monitoring and coordination unit (PMU)",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "FOA",
+        "SUBSECTOR": "Rigid PU (insulation domestic refrigeration)",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "FOA",
+        "SUBSECTOR": "Rigid PU (insulation commercial refrigeration)",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "FOA",
+        "SUBSECTOR": "Rigid PU panels",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "FOA",
+        "SUBSECTOR": "Spray PU",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "FOA",
+        "SUBSECTOR": "Integral skin PU",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "FOA",
+        "SUBSECTOR": "Flexible PU",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "FOA",
+        "SUBSECTOR": "Several PU foam",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "FOA",
+        "SUBSECTOR": "Extruded polystyrene (XPS)",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "ARS",
+        "SUBSECTOR": "Multiple-subsectors",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "SOL",
+        "SUBSECTOR": "Multiple-subsectors",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "ARS",
+        "SUBSECTOR": "Regulations",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "DES",
+        "SUBSECTOR": "Regulations",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "FFI",
+        "SUBSECTOR": "Regulations",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "FOA",
+        "SUBSECTOR": "Regulations",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "FUM",
+        "SUBSECTOR": "Regulations",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "HAL",
+        "SUBSECTOR": "Regulations",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "KIP",
+        "SUBSECTOR": "Regulations",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "MUS",
+        "SUBSECTOR": "Regulations",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "OTH",
+        "SUBSECTOR": "Regulations",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "PAG",
+        "SUBSECTOR": "Regulations",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "PHA",
+        "SUBSECTOR": "Regulations",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "PRO",
+        "SUBSECTOR": "Regulations",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "REF",
+        "SUBSECTOR": "Regulations",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "SEV",
+        "SUBSECTOR": "Regulations",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "SOL",
+        "SUBSECTOR": "Regulations",
+        "SORT_SUBSECTOR": 99
+    },
+    {
+        "SEC": "STE",
+        "SUBSECTOR": "Regulations",
+        "SORT_SUBSECTOR": 99
+    }
+]

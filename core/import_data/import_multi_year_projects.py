@@ -7,13 +7,18 @@ from django.db import transaction
 
 
 from core.import_data.utils import (
+    PROJECT_TYPE_CODE_MAPPING,
+    SECTOR_CODE_MAPPING,
     get_country_by_name,
     get_meeting_by_number,
+    get_object_by_code,
     get_object_by_name,
+    get_project_type_by_code,
+    get_sector_by_code,
     update_or_create_project,
 )
 from core.models.agency import Agency
-from core.models.project import ProjectStatus, ProjectType
+from core.models.project import ProjectSector, ProjectStatus, ProjectType
 
 logger = logging.getLogger(__name__)
 
@@ -37,12 +42,15 @@ def parse_file(file_path):
             "agency",
             use_offset=False,
         )
-        project_type = get_object_by_name(
-            ProjectType,
+
+        project_type = get_project_type_by_code(
             project_json["Type"],
             project_json["Code"],
-            "project type",
-            use_offset=False,
+        )
+
+        sector = get_sector_by_code(
+            project_json["Sector"],
+            project_json["Code"],
         )
 
         # set approval meeting no
@@ -54,7 +62,7 @@ def parse_file(file_path):
         meeting = get_meeting_by_number(meeting_no, project_json["Code"])
 
         # skip project with missing data
-        if not all([country, agency, project_type, meeting]):
+        if not all([country, agency, project_type, meeting, sector]):
             continue
 
         # extract subsector name and stage
@@ -77,6 +85,7 @@ def parse_file(file_path):
             "code": project_json["Code"],
             "mya_code": project_json.get("MYA Code"),
             "project_type": project_type,
+            "sector": sector,
             "mya_subsector": subs_name,
             "title": project_json["Project Title"],
             "stage": stage,
