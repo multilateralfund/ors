@@ -66,6 +66,13 @@ function useGridOptions(props: { usages: Array<any> }) {
         {
           aggFunc: 'sumTotal',
           dataType: 'number',
+          field: 'manufacturing_blends',
+          headerName: 'Manufacturing of Blends',
+          ...colDefById['manufacturing_blends'],
+        },
+        {
+          aggFunc: 'sumTotal',
+          dataType: 'number',
           field: 'import_quotas',
           headerName: 'Import Quotas',
           ...colDefById['import_quotas'],

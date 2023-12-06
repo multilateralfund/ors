@@ -306,6 +306,9 @@ export default function SectionBCreate(props: any) {
           Provide explanation if total sector use and consumption
           (import-export+production) is different (e.g, stockpiling).
         </Footnote>
+        <Footnote id="3" index="*">
+          Tentative/best estimates.
+        </Footnote>
       </Alert>
       {addChimicalModal && (
         <Modal

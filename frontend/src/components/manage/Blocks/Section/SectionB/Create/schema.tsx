@@ -111,6 +111,17 @@ function useGridOptions(props: {
         },
         {
           aggFunc: 'sumTotal',
+          dataType: 'number',
+          field: 'manufacturing_blends',
+          headerComponentParams: {
+            footnote: 3,
+            footnoteIndex: '*',
+          },
+          headerName: 'Manufacturing of Blends',
+          ...colDefById['manufacturing_blends'],
+        },
+        {
+          aggFunc: 'sumTotal',
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',
           field: 'import_quotas',
