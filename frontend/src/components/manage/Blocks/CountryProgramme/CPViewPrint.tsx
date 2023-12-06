@@ -18,7 +18,7 @@ import { getViewSections, variants } from '.'
 import { AiFillFilePdf } from 'react-icons/ai'
 import { IoClose, IoDownloadOutline, IoExpand } from 'react-icons/io5'
 
-export default function CPReportView(props: { id: string }) {
+export default function CPViewPrint(props: { id: string }) {
   const { fetchBundle, report, setReport } = useStore(
     (state) => state.cp_reports,
   )

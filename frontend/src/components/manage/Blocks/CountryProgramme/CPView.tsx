@@ -80,7 +80,7 @@ function TabPanel(props: any) {
   )
 }
 
-export default function CPReportView(props: { archive?: boolean; id: string }) {
+export default function CPView(props: { archive?: boolean; id: string }) {
   const { enqueueSnackbar } = useSnackbar()
   const { archive } = props
   const { fetchBundle, report, setReport } = useStore(

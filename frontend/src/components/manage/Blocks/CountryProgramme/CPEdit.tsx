@@ -84,7 +84,7 @@ function TabPanel(props: any) {
   )
 }
 
-function CPReportEdit(props: { id: null | number }) {
+function CPEdit(props: { id: null | number }) {
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
   const { blends, report, substances } = useStore((state) => state.cp_reports)
@@ -356,7 +356,7 @@ function CPReportEdit(props: { id: null | number }) {
         {!!report.data && (
           <Portal domNode="bottom-control">
             <Box className="rounded-none border-0 border-t px-4">
-              <div className="container flex w-full justify-between">
+              <div className="container flex w-full justify-end gap-x-4">
                 <Link
                   color="secondary"
                   href={`/country-programme/${report.data?.id || ''}`}
@@ -366,58 +366,103 @@ function CPReportEdit(props: { id: null | number }) {
                 >
                   Close
                 </Link>
-                <div className="flex items-center gap-x-4">
-                  <Button
-                    color="primary"
-                    size="small"
-                    variant="contained"
-                    onClick={async () => {
-                      try {
-                        const response = await api(
-                          `api/country-programme/reports/${report.data?.id}/`,
-                          {
-                            data: {
-                              ...report.data,
-                              ...getSubmitFormData(),
-                              status: 'final',
-                            },
-                            method: 'PUT',
+                <Button
+                  color="primary"
+                  size="small"
+                  variant="contained"
+                  onClick={async () => {
+                    try {
+                      const response = await api(
+                        `api/country-programme/reports/${report.data?.id}/`,
+                        {
+                          data: {
+                            ...report.data,
+                            ...getSubmitFormData(),
                           },
-                        )
-                        setErrors({})
+                          method: 'PUT',
+                        },
+                      )
+                      setErrors({})
+                      enqueueSnackbar(
+                        <>
+                          Updated submission for {response.country}{' '}
+                          {response.year}.
+                        </>,
+                        { variant: 'success' },
+                      )
+                      router.push(`/country-programme/${response.id}`)
+                    } catch (error) {
+                      if (error.status === 400) {
+                        setErrors({ ...(await error.json()) })
                         enqueueSnackbar(
-                          <>
-                            Updated submission for {response.country}{' '}
-                            {response.year}.
-                          </>,
-                          { variant: 'success' },
+                          <>Please make sure all the inputs are correct.</>,
+                          { variant: 'error' },
                         )
-                        router.push(`/country-programme/${response.id}`)
-                      } catch (error) {
-                        if (error.status === 400) {
-                          setErrors({ ...(await error.json()) })
-                          enqueueSnackbar(
-                            <>Please make sure all the inputs are correct.</>,
-                            { variant: 'error' },
-                          )
-                        } else {
-                          const errors = await error.json()
-                          setErrors({})
-                          {
-                            errors.detail &&
-                              enqueueSnackbar(errors.detail, {
-                                variant: 'error',
-                              })
-                          }
+                      } else {
+                        const errors = await error.json()
+                        setErrors({})
+                        {
+                          errors.detail &&
+                            enqueueSnackbar(errors.detail, {
+                              variant: 'error',
+                            })
                         }
                       }
-                    }}
-                  >
-                    {report.data.status === 'draft'
-                      ? 'Submit final version'
-                      : 'Submit new version'}
-                  </Button>
-                </div>
+                    }
+                  }}
+                >
+                  Update draft
+                </Button>
+                <Button
+                  color="primary"
+                  size="small"
+                  variant="contained"
+                  onClick={async () => {
+                    try {
+                      const response = await api(
+                        `api/country-programme/reports/${report.data?.id}/`,
+                        {
+                          data: {
+                            ...report.data,
+                            ...getSubmitFormData(),
+                            status: 'final',
+                          },
+                          method: 'PUT',
+                        },
+                      )
+                      setErrors({})
+                      enqueueSnackbar(
+                        <>
+                          Updated submission for {response.country}{' '}
+                          {response.year}.
+                        </>,
+                        { variant: 'success' },
+                      )
+                      router.push(`/country-programme/${response.id}`)
+                    } catch (error) {
+                      if (error.status === 400) {
+                        setErrors({ ...(await error.json()) })
+                        enqueueSnackbar(
+                          <>Please make sure all the inputs are correct.</>,
+                          { variant: 'error' },
+                        )
+                      } else {
+                        const errors = await error.json()
+                        setErrors({})
+                        {
+                          errors.detail &&
+                            enqueueSnackbar(errors.detail, {
+                              variant: 'error',
+                            })
+                        }
+                      }
+                    }
+                  }}
+                >
+                  {report.data.status === 'draft'
+                    ? 'Submit final version'
+                    : 'Submit new version'}
+                </Button>
               </div>
             </Box>
           </Portal>
@@ -427,7 +472,7 @@ function CPReportEdit(props: { id: null | number }) {
   )
 }
 
-export default function CPReportEditWrapper(props: { id: string }) {
+export default function CPEditWrapper(props: { id: string }) {
   const { blends, fetchBundle, report, setReport, substances } = useStore(
     (state) => state.cp_reports,
   )
@@ -464,5 +509,5 @@ export default function CPReportEditWrapper(props: { id: string }) {
     )
   }
 
-  return <CPReportEdit id={id} />
+  return <CPEdit id={id} />
 }

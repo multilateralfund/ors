@@ -84,7 +84,7 @@ function TabPanel(props: any) {
   )
 }
 
-function CPReportCreate() {
+function CPCreate() {
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
   const { blends, report, substances } = useStore((state) => state.cp_reports)
@@ -469,7 +469,7 @@ function CPReportCreate() {
   )
 }
 
-export default function CPReportCreateWrapper() {
+export default function CPCreateWrapper() {
   const { blends, fetchEmptyForm, report, setReport, substances } = useStore(
     (state) => state.cp_reports,
   )
@@ -499,5 +499,5 @@ export default function CPReportCreateWrapper() {
     )
   }
 
-  return <CPReportCreate />
+  return <CPCreate />
 }
