@@ -31,11 +31,13 @@ class UsageSerializer(serializers.ModelSerializer):
 
     def get_headerName(self, obj):
         # TODO add a new table to store the alternative names
-        if obj.name == "Refrigeration":
+        if obj.full_name in ["Refrigeration", "Refrigeration Manufacturing Other"]:
             for_year = self.context.get("for_year", None)
             section = self.context.get("section", None)
             if for_year and section and for_year > 2022 and section == "B":
-                return "Refrigeration and Air Conditioning"
+                if obj.full_name in "Refrigeration":
+                    return "Refrigeration and Air Conditioning"
+                return "Other unidentified manufacturing"
 
         return obj.name
 
