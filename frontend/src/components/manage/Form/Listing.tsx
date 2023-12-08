@@ -22,6 +22,7 @@ type ListingProps = {
   enablePagination?: boolean
   loaded?: boolean
   loading?: boolean
+  noRowsToShowPlaceholder?: React.ReactNode
   onPaginationChanged?: (page: number, rowsPerPage: number) => void
   paginationPageSize?: number
   rowCount: number
@@ -39,6 +40,7 @@ const Listing = forwardRef(function Listing(props: ListingProps, ref) {
     enablePagination = true,
     loaded,
     loading,
+    noRowsToShowPlaceholder = 'No rows to show',
     onPaginationChanged,
     paginationPageSize = 50,
     rowCount = 0,
@@ -89,7 +91,7 @@ const Listing = forwardRef(function Listing(props: ListingProps, ref) {
           <>
             <Divider className="mb-3 w-full" />
             <ListItem className="block w-full py-4 text-center">
-              No rows to show
+              {noRowsToShowPlaceholder}
             </ListItem>
             <Divider className="mt-3 w-full" />
           </>

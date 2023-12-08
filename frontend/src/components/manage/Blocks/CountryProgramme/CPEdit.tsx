@@ -84,7 +84,7 @@ function TabPanel(props: any) {
   )
 }
 
-function CPReportEdit(props: { id: null | number }) {
+function CPEdit(props: { id: null | number }) {
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
   const { blends, report, substances } = useStore((state) => state.cp_reports)
@@ -427,7 +427,7 @@ function CPReportEdit(props: { id: null | number }) {
   )
 }
 
-export default function CPReportEditWrapper(props: { id: string }) {
+export default function CPEditWrapper(props: { id: string }) {
   const { blends, fetchBundle, report, setReport, substances } = useStore(
     (state) => state.cp_reports,
   )
@@ -464,5 +464,5 @@ export default function CPReportEditWrapper(props: { id: string }) {
     )
   }
 
-  return <CPReportEdit id={id} />
+  return <CPEdit id={id} />
 }

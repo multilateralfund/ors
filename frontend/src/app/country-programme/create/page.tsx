@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 import React from 'react'
 
-import CPReportCreate from '@ors/components/manage/Blocks/CountryProgramme/CPReportCreate'
+import CPCreate from '@ors/components/manage/Blocks/CountryProgramme/CPCreate'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export const metadata: Metadata = {
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default async function CreateReport() {
   return (
     <PageWrapper>
-      <CPReportCreate />
+      <CPCreate />
     </PageWrapper>
   )
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import CPReportView from '@ors/components/manage/Blocks/CountryProgramme/CPReportView'
+import CPView from '@ors/components/manage/Blocks/CountryProgramme/CPView'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export const metadata: Metadata = {
@@ -14,7 +14,7 @@ export default async function CountryProgrammeReport(props: {
 }) {
   return (
     <PageWrapper>
-      <CPReportView id={props.params.report_id} />
+      <CPView id={props.params.report_id} />
     </PageWrapper>
   )
 }
