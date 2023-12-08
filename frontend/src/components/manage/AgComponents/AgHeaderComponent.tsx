@@ -18,7 +18,7 @@ function getTooltipTitle(props: any) {
 }
 
 export default function AgHeaderComponent(props: any) {
-  const { displayName, footnote, info } = props
+  const { displayName, footnote, footnoteIndex, info } = props
 
   return (
     <AgTooltipComponent
@@ -43,10 +43,10 @@ export default function AgHeaderComponent(props: any) {
         }}
       >
         {displayName}
-        {footnote && <sup>{footnote}</sup>}
+        {footnote && <sup>{footnoteIndex || footnote}</sup>}
         {info && (
           <IconButton
-            className={cx('ml-2 p-0', { 'cursor-default': !footnote })}
+            className={cx('ml-1 p-0', { 'cursor-default': !footnote })}
             color="info"
             disableRipple
           >

@@ -93,7 +93,7 @@ export default function Table(
     rowClassRules = {},
     rowCount = 0,
     rowData = [],
-    rowHeight = 40,
+    rowHeight = 36,
     rowsVisible = 15,
     style = {},
     withFluidEmptyColumn = false,

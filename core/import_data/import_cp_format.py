@@ -96,7 +96,7 @@ def import_usages_format(file_path):
             )
             continue
 
-        usage = Usage.objects.find_by_name(row["usage"])
+        usage = Usage.objects.find_by_full_name(row["usage"])
         if not usage:
             logger.warning(f"{index_row}: {row['usage']} usage not found")
             continue

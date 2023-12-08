@@ -46,14 +46,6 @@ function getRowData(data: any) {
         },
       ],
       dataByGroup[group],
-      [
-        {
-          display_name: 'Sub-total',
-          group,
-          row_id: `subtotal[${group}]`,
-          rowType: 'subtotal',
-        },
-      ],
     )
   })
   return rowData

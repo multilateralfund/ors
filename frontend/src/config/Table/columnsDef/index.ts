@@ -24,6 +24,9 @@ const colDefById: Record<string, ColDef> = {
   exports: {
     initialWidth: defaultColDef.minWidth,
   },
+  manufacturing_blends: {
+    initialWidth: 210,
+  },
   production: {
     initialWidth: 100,
   },

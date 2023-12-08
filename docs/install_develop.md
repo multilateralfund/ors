@@ -14,6 +14,14 @@ This document describes installation steps required to install locally for devel
   ```shell
   sudo -u postgres createuser -Pds multilateralfund && sudo -u postgres createdb --encoding=UTF8 multilateralfund
   ```
+- Create readonly postgres user (run in pstgres shell):
+```shell
+CREATE USER <READONLY_USER> WITH PASSWORD '<READONLY_PASSWORD>';
+GRANT CONNECT ON DATABASE <POSTGRES_DB> TO <READONLY_USER>;
+GRANT USAGE ON SCHEMA <schema_name> TO <READONLY_USER>;
+GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO <READONLY_USER>;
+ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <READONLY_USER>;
+``` 
 - _(Recommended)_ create and activate a python virtualenv
 - Clone this repository
 

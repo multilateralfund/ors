@@ -33,7 +33,6 @@ export default function SectionCView(props: any) {
         rowData,
         [{ display_name: group, group, rowType: 'group' }],
         dataByGroup[group],
-        [{ display_name: 'Sub-total', group, rowType: 'subtotal' }],
       )
     })
     return rowData

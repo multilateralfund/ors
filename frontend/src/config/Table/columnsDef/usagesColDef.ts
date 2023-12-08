@@ -11,6 +11,13 @@ export default function getUsagesColDef() {
     'Refrigeration Manufacturing AC': {
       initialWidth: 105,
     },
+    'Refrigeration Manufacturing Other': {
+      headerComponentParams: {
+        footnote: 3,
+        info: true,
+      },
+      initialWidth: 100,
+    },
     'Refrigeration Manufacturing Refrigeration': {
       initialWidth: 120,
     },

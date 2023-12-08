@@ -36,7 +36,7 @@ export default function AgTextCellRenderer(props: any) {
         {footnote && <sup>{footnote}</sup>}
         {info && (
           <IconButton
-            className={cx('ml-2 p-0', { 'cursor-default': !footnote })}
+            className={cx('ml-1 p-0', { 'cursor-default': !footnote })}
             color="info"
             disableRipple
           >

@@ -28,6 +28,7 @@ from dj_rest_auth.views import (
 # from api import urls as apis_urls
 
 urlpatterns = [
+    path("admin/explorer/", include("explorer.urls")),
     path("admin/", admin.site.urls),
     path("api/auth/", include("dj_rest_auth.urls")),
     path(

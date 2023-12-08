@@ -11,6 +11,10 @@ class UsageManager(models.Manager):
             models.Q(name__iexact=name_str) | models.Q(full_name__iexact=name_str)
         ).first()
 
+    def find_by_full_name(self, name):
+        name_str = name.strip()
+        return self.filter(full_name__iexact=name_str).first()
+
 
 class Usage(models.Model):
     name = models.CharField(max_length=100)

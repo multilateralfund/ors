@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { Button } from '@mui/material'
+import { Button, Tooltip } from '@mui/material'
 import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
@@ -26,13 +26,18 @@ function useGridOptions(props: {
           cellRenderer: (props: any) => {
             if (props.data.rowType === 'control') {
               return (
-                <Button
-                  className="w-full"
-                  variant="contained"
-                  onClick={openAddSubstanceModal}
+                <Tooltip
+                  placement="top"
+                  title="Indicate relevant controlled substances"
                 >
-                  + Add substance
-                </Button>
+                  <Button
+                    className="w-full"
+                    variant="contained"
+                    onClick={openAddSubstanceModal}
+                  >
+                    <span>+ Add substance</span>
+                  </Button>
+                </Tooltip>
               )
             }
             return <AgCellRenderer {...props} />

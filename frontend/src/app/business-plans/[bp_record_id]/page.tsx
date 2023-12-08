@@ -105,6 +105,12 @@ export default function BPRecord({ params }: BPRecordProps) {
                     {data.business_plan.status}
                   </Typography>
                 </div>
+                <div>
+                  <Label>Required by model</Label>
+                  <Typography className="font-bold">
+                    {data.required_by_model}
+                  </Typography>
+                </div>
               </div>
               <Divider />
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -146,12 +152,14 @@ export default function BPRecord({ params }: BPRecordProps) {
                 </div>
                 <div>
                   <Label>Approved / Planned</Label>
-                  <Typography className="font-bold">{data.bp_type}</Typography>
+                  <Typography className="font-bold">
+                    {data.bp_type_display}
+                  </Typography>
                 </div>
                 <div>
                   <Label>Individual / Multi-Year</Label>
                   <Typography className="font-bold">
-                    {data.is_multi_year ? 'Multi-Year' : 'Individual'}
+                    {data.is_multi_year_display}
                   </Typography>
                 </div>
               </div>

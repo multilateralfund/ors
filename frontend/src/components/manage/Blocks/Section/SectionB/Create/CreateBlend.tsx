@@ -25,7 +25,12 @@ import api from '@ors/helpers/Api/Api'
 import { applyTransaction } from '@ors/helpers/Utils/Utils'
 import useStateWithPrev from '@ors/hooks/useStateWithPrev'
 
-import { IoRefresh, IoTrash } from 'react-icons/io5'
+import {
+  IoAddCircleSharp,
+  IoInformationCircleOutline,
+  IoRefresh,
+  IoTrash,
+} from 'react-icons/io5'
 
 function SimilarBlend({ blend, onClick, substances }: any) {
   return (
@@ -155,6 +160,17 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
             >
               Create new blend
             </Typography>
+            <Alert
+              className="mb-4"
+              icon={<IoInformationCircleOutline size={24} />}
+              severity="info"
+            >
+              <Typography>
+                If a non-standard blend not listed in the table is used, please
+                indicate the percentage of each constituent controlled substance
+                of the blend being reported in the remarks column.
+              </Typography>
+            </Alert>
             <Field
               InputLabel={{ label: 'Blend description' }}
               error={!!errors.composition}
@@ -300,6 +316,22 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
                   cellRendererParams: (props: any) => ({
                     options: !props.data.mandatory && !props.data.rowType && (
                       <>
+                        <Dropdown.Item
+                          onClick={() => {
+                            props.api.startEditingCell({
+                              colKey: props.column.colId,
+                              rowIndex: props.node.rowIndex,
+                            })
+                          }}
+                        >
+                          <div className="flex items-center gap-x-2">
+                            <IoAddCircleSharp
+                              className="fill-primary"
+                              size={20}
+                            />
+                            <span>Add substance</span>
+                          </div>
+                        </Dropdown.Item>
                         <Dropdown.Item
                           onClick={() => {
                             const newComponents = form.components

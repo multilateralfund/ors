@@ -30,9 +30,19 @@
    docker-compose exec app ./manage.py createsuperuser
    ```
 
-6. Open the site in a browser: http://localhost:8080/api
+6. Add a readonly user for django explorer
+- In postgresql shell run:
+```shell
+CREATE USER <READONLY_USER> WITH PASSWORD '<READONLY_PASSWORD>';
+GRANT CONNECT ON DATABASE <POSTGRES_DB> TO <READONLY_USER>;
+GRANT USAGE ON SCHEMA <schema_name> TO <READONLY_USER>;
+GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO <READONLY_USER>;
+ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <READONLY_USER>;
+``` 
 
-7. The admin panel: http://localhost:8080/admin/
+7. Open the site in a browser: http://localhost:8080/api
+
+8. The admin panel: http://localhost:8080/admin/
    Login in the admin panel using the superuser account created at step 5
 
 ### Updating the development environment

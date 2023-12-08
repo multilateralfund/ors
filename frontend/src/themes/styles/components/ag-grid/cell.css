@@ -88,4 +88,16 @@
     right: 0.5rem;
     transform: translateY(-50%);
   }
+
+  .ag-flex-cell {
+    @apply flex items-center justify-center;
+
+    .ag-cell-wrapper {
+      @apply w-full;
+    }
+
+    .ag-cell-value {
+      @apply flex items-center;
+    }
+  }
 }
