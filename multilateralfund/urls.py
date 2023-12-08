@@ -28,6 +28,7 @@ from dj_rest_auth.views import (
 # from api import urls as apis_urls
 
 urlpatterns = [
+    path("admin/explorer/", include("explorer.urls")),
     path("admin/", admin.site.urls),
     path("api/auth/", include("dj_rest_auth.urls")),
     path(
@@ -44,7 +45,6 @@ urlpatterns = [
         name="reset_password_frontend",
     ),
     path("api/", include("core.api.urls")),
-    path("admin/view-explorer/", include("explorer.urls")),
     path("", RedirectView.as_view(pattern_name="admin:index")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
