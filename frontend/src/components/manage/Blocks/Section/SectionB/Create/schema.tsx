@@ -114,8 +114,9 @@ function useGridOptions(props: {
           dataType: 'number',
           field: 'manufacturing_blends',
           headerComponentParams: {
-            footnote: 3,
+            footnote: 4,
             footnoteIndex: '*',
+            info: true,
           },
           headerName: 'Manufacturing of Blends',
           ...colDefById['manufacturing_blends'],

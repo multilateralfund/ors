@@ -306,7 +306,12 @@ export default function SectionBCreate(props: any) {
           Provide explanation if total sector use and consumption
           (import-export+production) is different (e.g, stockpiling).
         </Footnote>
-        <Footnote id="3" index="*">
+        <Footnote id="3">
+          Only if break-down of consumption in refrigeration and
+          air-conditioning manufacturing is not available, information in
+          &quot;Other unidentified manufacturing&quot; may be provided.
+        </Footnote>
+        <Footnote id="4" index="*">
           Tentative/best estimates.
         </Footnote>
       </Alert>
