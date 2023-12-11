@@ -2,11 +2,12 @@
 import { useMemo } from 'react'
 import ReactCountryFlag from 'react-country-flag'
 
-import { Box, Grid, Typography } from '@mui/material'
+import { Box, Button, Grid, Typography } from '@mui/material'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 import { find } from 'lodash'
 
+import Table from '@ors/components/manage/Form/Table'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { getCountryISO2 } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
@@ -69,6 +70,10 @@ export default function PView({ data }: ProjectProps) {
             <div className="mb-4">
               <Label>Project description</Label>
               <Typography>{data.description || '-'}</Typography>
+            </div>
+            <div className="mb-4">
+              <Label>Excom provision</Label>
+              <Typography>{data.excom_provision || '-'}</Typography>
             </div>
             <div className="mb-4">
               <Label>Completion by</Label>
@@ -214,12 +219,6 @@ export default function PView({ data }: ProjectProps) {
                 <Label>Plan</Label>
                 <Typography className="text-lg font-bold">
                   {data.plan || '-'}
-                </Typography>
-              </div>
-              <div>
-                <Label>Excom provision</Label>
-                <Typography className="text-lg font-bold">
-                  {data.excom_provision || '-'}
                 </Typography>
               </div>
               <div>
@@ -505,9 +504,156 @@ export default function PView({ data }: ProjectProps) {
                 </Typography>
               </div>
             </div>
+            <Divider />
+            <Typography className="mb-4 text-typography-faded" variant="h4">
+              ODS ODP
+            </Typography>
+            <Table
+              className="mb-4"
+              enablePagination={false}
+              rowData={data.ods_odp}
+              suppressCellFocus={false}
+              suppressNoRowsOverlay={true}
+              withSeparators={true}
+              columnDefs={[
+                {
+                  field: 'ods_display_name',
+                  headerName: 'Substance',
+                  initialWidth: 140,
+                  minWidth: 140,
+                },
+                {
+                  field: 'ods_replacement',
+                  headerName: 'Replacement',
+                  initialWidth: 120,
+                  minWidth: 120,
+                },
+                {
+                  dataType: 'number',
+                  field: 'odp',
+                  headerName: 'ODP',
+                  initialWidth: 120,
+                  minWidth: 120,
+                },
+                {
+                  dataType: 'number',
+                  field: 'co2_mt',
+                  headerName: 'CO2MT',
+                  initialWidth: 120,
+                  minWidth: 120,
+                },
+                {
+                  field: 'ods_type',
+                  headerName: 'ODS type',
+                  initialWidth: 120,
+                  minWidth: 120,
+                },
+              ]}
+              getRowId={(props: any) => {
+                return props.data.id
+              }}
+            />
+            <Typography className="mb-4 text-typography-faded" variant="h4">
+              Funds
+            </Typography>
+            <Table
+              className="mb-4"
+              enablePagination={false}
+              rowData={data.funds}
+              suppressCellFocus={false}
+              suppressNoRowsOverlay={true}
+              withSeparators={true}
+              columnDefs={[
+                {
+                  field: 'fund_type',
+                  headerName: 'Type',
+                  initialWidth: 140,
+                  minWidth: 140,
+                },
+                {
+                  field: 'meeting',
+                  headerName: 'Meeting',
+                  initialWidth: 140,
+                  minWidth: 140,
+                },
+                {
+                  dataType: 'number',
+                  field: 'amount',
+                  headerName: 'Amount',
+                  initialWidth: 120,
+                  minWidth: 120,
+                },
+                {
+                  dataType: 'number',
+                  field: 'support_psc',
+                  headerName: 'Support psc',
+                  initialWidth: 120,
+                  minWidth: 120,
+                },
+                {
+                  field: 'interest',
+                  headerName: 'Interest',
+                  initialWidth: 120,
+                  minWidth: 120,
+                },
+                {
+                  dataType: 'date',
+                  field: 'date',
+                  headerName: 'Date',
+                  initialWidth: 120,
+                  minWidth: 120,
+                },
+              ]}
+              getRowId={(props: any) => {
+                return props.data.id
+              }}
+            />
+            <Typography className="mb-4 text-typography-faded" variant="h4">
+              RBM measures
+            </Typography>
+            <Table
+              className="mb-4"
+              enablePagination={false}
+              rowData={data.rbm_measures}
+              suppressCellFocus={false}
+              suppressNoRowsOverlay={true}
+              withSeparators={true}
+              columnDefs={[
+                {
+                  field: 'measure_name',
+                  headerName: 'Measure',
+                  initialWidth: 140,
+                  minWidth: 140,
+                },
+                {
+                  field: 'value',
+                  headerName: 'Unit',
+                  initialWidth: 120,
+                  minWidth: 120,
+                },
+              ]}
+              getRowId={(props: any) => {
+                return props.data.id
+              }}
+            />
+            <Typography className="mb-4 text-typography-faded" variant="h4">
+              Comments
+            </Typography>
+            {data.comments?.map((comment: any) => (
+              <div key={comment.id}>
+                <Typography className="mb-4">
+                  <span className="text-lg text-primary">Secretariat:</span>{' '}
+                  {comment.secretariat_comment}
+                </Typography>
+                <Typography className="mb-4">
+                  <span className="text-lg text-primary">Agency response:</span>{' '}
+                  {comment.agency_response}
+                </Typography>
+              </div>
+            ))}
           </Box>
         </Grid>
-        {/* <Grid lg={3} xs={12} item>
+        <Grid lg={3} xs={12} item>
           <Box className="lg:border-none lg:bg-transparent lg:shadow-none">
             <Typography className="mb-4 text-typography-faded" variant="h5">
               Project decision
@@ -542,7 +688,7 @@ export default function PView({ data }: ProjectProps) {
               File history
             </Typography>
           </Box>
-        </Grid> */}
+        </Grid>
       </Grid>
     </>
   )
