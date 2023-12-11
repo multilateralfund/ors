@@ -3,6 +3,7 @@ from rest_framework.exceptions import ValidationError
 
 from core.models.blend import Blend
 from core.models.country_programme import CPReport
+from core.models.project import Project
 from core.models.substance import Substance
 
 
@@ -123,3 +124,9 @@ class BaseCPWChemicalSerializer(BaseCPRowSerializer):
             )
 
         return super().validate(attrs)
+
+
+class BaseProjectUtilityCreateSerializer(serializers.ModelSerializer):
+    project_id = serializers.PrimaryKeyRelatedField(
+        required=True, queryset=Project.objects.all().values_list("id", flat=True)
+    )

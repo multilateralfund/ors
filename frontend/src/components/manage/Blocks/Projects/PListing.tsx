@@ -16,7 +16,7 @@ import {
 import cx from 'classnames'
 import dayjs from 'dayjs'
 import { AnimatePresence } from 'framer-motion'
-import { isArray, isNumber } from 'lodash'
+import { filter, includes, isArray, map } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
 import Listing from '@ors/components/manage/Form/Listing'
@@ -120,11 +120,8 @@ function ItemDetail({ label, value }: { label: string; value: string }) {
 
 function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
   const isCollapsed = !!collapsedRows[index]
-  const funds = parseFloat(item.submission?.funds_allocated)
-  const parsedFunds =
-    !isNaN(funds) && isNumber(funds) ? funds.toLocaleString() : '-'
 
-  const dateAdded = dayjs(item.submission?.date_received).format('ll')
+  const dateAdded = dayjs(item.date_received).format('ll')
 
   return (
     <ListItem
@@ -166,7 +163,7 @@ function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
                 className={cx(
                   'align-middle text-typography no-underline decoration-primary group-hover:text-primary group-hover:underline',
                 )}
-                href={`/submissions/${item.id}`}
+                href={`/project-submissions/${item.id}`}
               >
                 {item.title}
               </Link>
@@ -214,7 +211,10 @@ function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
               />
               <ItemDetail label="Sector" value={item.sector || '-'} />
               <ItemDetail label="Subsector" value={item.subsector || '-'} />
-              <ItemDetail label="Funds requested" value={parsedFunds || '-'} />
+              <ItemDetail
+                label="Funds requested"
+                value={item.funds_allocated?.toLocaleString() || '-'}
+              />
             </div>
           </CollapseInOut>
         )}
@@ -224,7 +224,7 @@ function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
   )
 }
 
-export default function SubmissionsListing() {
+export default function PSListing() {
   const form = useRef<any>()
   const listing = useRef<any>()
   const currentYear = useMemo(() => dayjs().year(), [])
@@ -243,7 +243,7 @@ export default function SubmissionsListing() {
     options: {
       delay: 500,
       params: {
-        get_submission: true,
+        get_submission: false,
         limit: 50,
         offset: 0,
         ...initialParams,
@@ -258,6 +258,10 @@ export default function SubmissionsListing() {
     (obj: Array<string>) => ({ id: obj[0], label: obj[1] }),
   )
   const { count, loaded, results } = getResults(data)
+
+  const sectorIds = useMemo(() => {
+    return map(filters.sector_id, (item: any) => item.id)
+  }, [filters.sector_id])
 
   function handleParamsChange(params: { [key: string]: any }) {
     setParams(params)
@@ -473,10 +477,12 @@ export default function SubmissionsListing() {
               </div>
             )}
             <Listing
+              className="mb-0"
               Item={Item}
               ItemProps={{ collapsedRows, display, setCollapsedRows }}
               loaded={loaded}
               loading={loading}
+              noRowsToShowPlaceholder="No projects found."
               ref={listing}
               rowCount={count}
               rowData={results}
@@ -487,11 +493,6 @@ export default function SubmissionsListing() {
                 })
               }}
             />
-            <Typography>
-              <Link href="/submissions/create" variant="contained" button>
-                Add new submission
-              </Link>
-            </Typography>
           </Box>
         </Grid>
         <Grid md={4} sm={12} xl={3} item>
@@ -518,6 +519,20 @@ export default function SubmissionsListing() {
               </Button>
             </div>
             <Field
+              widget="chipToggle"
+              options={filter(projectSlice.statuses.data, (item) => {
+                return item.code !== 'NEWSUB'
+              })}
+              onChange={(value: Array<number> | null) => {
+                handleFilterChange({ status_id: value })
+                handleParamsChange({
+                  offset: 0,
+                  status_id: (value || initialFilters.status_id).join(','),
+                })
+              }}
+              multiple
+            />
+            <Field
               Input={{ label: 'Country' }}
               getOptionLabel={(option: any) => option?.name}
               options={commonSlice.countries.data}
@@ -538,30 +553,47 @@ export default function SubmissionsListing() {
               options={projectSlice.sectors.data}
               value={filters.sector_id}
               widget="autocomplete"
-              onChange={(_: any, value: any) => {
-                handleFilterChange({ sector_id: value })
+              onChange={(_: any, sector_id: any) => {
+                const sectorIds = map(sector_id, (item: any) => item.id)
+                const subsector_id = filter(
+                  filters.subsector_id,
+                  (item: any) => {
+                    return includes(sectorIds, item.sector_id)
+                  },
+                )
+                handleFilterChange({
+                  sector_id,
+                  subsector_id,
+                })
                 handleParamsChange({
                   offset: 0,
-                  sector_id: value.map((item: any) => item.id).join(','),
+                  sector_id: sectorIds.join(','),
+                  subsector_id: map(subsector_id, (item: any) => item.id).join(
+                    ',',
+                  ),
                 })
               }}
               multiple
             />
-            <Field
-              Input={{ label: 'Subsector' }}
-              getOptionLabel={(option: any) => option?.name}
-              options={projectSlice.subsectors.data}
-              value={filters.subsector_id}
-              widget="autocomplete"
-              onChange={(_: any, value: any) => {
-                handleFilterChange({ subsector_id: value })
-                handleParamsChange({
-                  offset: 0,
-                  subsector_id: value.map((item: any) => item.id).join(','),
-                })
-              }}
-              multiple
-            />
+            {filters.sector_id?.length > 0 && (
+              <Field
+                Input={{ label: 'Subsector' }}
+                getOptionLabel={(option: any) => option?.name}
+                value={filters.subsector_id}
+                widget="autocomplete"
+                options={filter(projectSlice.subsectors.data, (item) => {
+                  return includes(sectorIds, item.sector_id)
+                })}
+                onChange={(_: any, value: any) => {
+                  handleFilterChange({ subsector_id: value })
+                  handleParamsChange({
+                    offset: 0,
+                    subsector_id: value.map((item: any) => item.id).join(','),
+                  })
+                }}
+                multiple
+              />
+            )}
             <Field
               Input={{ label: 'Type' }}
               getOptionLabel={(option: any) => option?.name}

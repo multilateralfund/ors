@@ -6,12 +6,20 @@ import re
 from dateutil.parser import parse, ParserError
 from django.conf import settings
 from django.db import models
+from core.import_data.mapping_names_dict import (
+    CHEMICAL_NAME_MAPPING,
+    COUNTRY_NAME_MAPPING,
+    PROJECT_TYPE_CODE_MAPPING,
+    SECTOR_CODE_MAPPING,
+    SUBSECTOR_NAME_MAPPING,
+)
 
 from core.models.adm import AdmColumn, AdmRow
 from core.models.agency import Agency
 from core.models.blend import Blend
 from core.models.country import Country
 from core.models.country_programme import CPRecord, CPReport, CPUsage
+from core.models.meeting import Meeting
 from core.models.project import (
     Project,
     ProjectSector,
@@ -34,52 +42,6 @@ PCR_DIR_LIST = ["pcr2023", "hpmppcr2023"]
 # excel files are hard to check.
 # Used only for logs.
 OFFSET = 2
-
-# --- mapping dictionaries ---
-COUNTRY_NAME_MAPPING = {
-    "Brunei Darussalan": "Brunei Darussalam",
-    "Cap Verde": "Cabo Verde",
-    "Czech Republic": "Czechia",
-    "Eswatini (the Kingdom of)": "Eswatini",
-    "Federated States of Micronesia": "Micronesia (Federated States of)",
-    "Lao, PDR": "Lao PDR",
-    "SAO TOME ET PRINCIPE": "Sao Tome and Principe",
-    "Turkiye": "Turkey",
-    "USA": "United States of America",
-    "Western Samoa": "Samoa",
-    "Moldova, Rep": "Moldova",
-    "Micronesia": "Micronesia (Federated States of)",
-    "Macedonia": "The Former Yugoslav Republic of Macedonia",
-}
-
-SUBSECTOR_NAME_MAPPING = {
-    "HFC phase-down plan": "HFC phase down plan",
-}
-
-USAGE_NAME_MAPPING = {
-    "Aerosal": "Aerosol",
-    "FireFighting": "Fire fighting",
-    "ProcessAgent": "Process agent",
-    "LabUse": "Lab use",
-    "NoneQPS": "Non-QPS",
-    "TobaccoFluffing": "Tobacco fluffing",
-}
-
-CHEMICAL_NAME_MAPPING = {
-    "R-125 (65.1%), R-134a  -  (31.5%)": "R-422D",
-    "HFC-365mfc (93%)/HFC-227ea (7%) - mezcla": "CustMix-134",
-}
-
-DB_YEAR_MAPPING = {
-    "CP": {
-        "min_year": 2000,
-        "max_year": 2011,
-    },
-    "CP2012": {
-        "min_year": 2012,
-        "max_year": 2018,
-    },
-}
 
 # --- list of db names ---
 DB_DIR_LIST = ["CP", "CP2012"]
@@ -161,7 +123,33 @@ def delete_old_data(cls, source_file=None):
     logger.info(f"✔ old {cls.__name__} deleted")
 
 
-def get_chemical_by_name_or_components(chemical_name, components=None):
+def get_meeting_by_number(meeting_number, row_index):
+    """
+    get meeting by number or log error if not found in db
+    @param meeting_number: integer -> meeting number
+    @return: meeting object or None
+    """
+    if not meeting_number:
+        return None
+    # check if the meeting string is a number
+    if not str(meeting_number).isnumeric():
+        logger.info(
+            f"[row: {row_index}]: This meeting number is not valid: {meeting_number}"
+        )
+        return None
+    try:
+        return Meeting.objects.get(number=meeting_number)
+    except Meeting.DoesNotExist:
+        logger.info(
+            f"[row: {row_index}]: This meeting does not exists in data base {meeting_number}"
+        )
+        return None
+
+
+def get_chemical_by_name_or_components(
+    chemical_name,
+    components=None,
+):
     """
     get chemical by name or alt name (case insensitive) or components (blends)
     @param chemical_name: string chemical name
@@ -181,6 +169,40 @@ def get_chemical_by_name_or_components(chemical_name, components=None):
         return blend, "blend"
 
     return None, None
+
+
+def get_sector_by_code(sector_code, row_index):
+    """
+    get sector by code or log error if not found in db
+    @param sector_code: string -> sector code
+    @param row_index: integer -> index row
+    @param use_offset: boolean (if the index_row should be increased with OFFSET)
+    """
+    new_sector_code = SECTOR_CODE_MAPPING.get(sector_code, sector_code)
+    return get_object_by_code(
+        ProjectSector,
+        new_sector_code,
+        "code",
+        row_index,
+    )
+
+
+def get_project_type_by_code(project_type_code, row_index):
+    """
+    get project type by code or log error if not found in db
+    @param project_type_code: string -> project type code
+    @param row_index: integer -> index row
+    @param use_offset: boolean (if the index_row should be increased with OFFSET)
+    """
+    new_project_type_code = PROJECT_TYPE_CODE_MAPPING.get(
+        project_type_code, project_type_code
+    )
+    return get_object_by_code(
+        ProjectType,
+        new_project_type_code,
+        "code",
+        row_index,
+    )
 
 
 # pylint: disable=R0913
@@ -777,8 +799,12 @@ def get_project_base_data(item, item_index, is_submissions=True):
     @return dict = {
         "country": Country object,
         "agency": Agency object,
+        "sector": ProjectSector object,
+        "sector_legacy": string,
         "subsector": ProjectSubSector object,
+        "subsector_legacy": string,
         "project_type": ProjectType object,
+        "project_type_legacy": string,
         "status": ProjectStatus object,
         "title": string,
         "description": string,
@@ -791,7 +817,7 @@ def get_project_base_data(item, item_index, is_submissions=True):
         "excom_provision": string,
         "products_manufactured": string,
         "operating_cost": string,
-        "cost_effectiveness": string,
+        "effectiveness_cost": string,
         "local_ownership": string,
         "export_to": string,
     }
@@ -804,9 +830,7 @@ def get_project_base_data(item, item_index, is_submissions=True):
         Agency, item["AGENCY"], item_index, "agency", use_offset=is_submissions
     )
     # get sector
-    sector = get_object_by_name(
-        ProjectSector, item["SEC"], item_index, "sector", use_offset=is_submissions
-    )
+    sector = get_sector_by_code(item["SEC"], item_index)
     if not sector:
         return None
 
@@ -823,9 +847,7 @@ def get_project_base_data(item, item_index, is_submissions=True):
             f"This subsector does not exist: {item['SUBSECTOR']} (sector = {item['SEC']}))"
         )
 
-    proj_type = get_object_by_name(
-        ProjectType, item["TYPE"], item_index, "type", use_offset=is_submissions
-    )
+    proj_type = get_project_type_by_code(item["TYPE"], item_index)
 
     status_str = item["STATUS_CODE"]
     if is_submissions and not status_str:
@@ -846,8 +868,12 @@ def get_project_base_data(item, item_index, is_submissions=True):
     project_data = {
         "country": country,
         "agency": agency,
+        "sector": sector,
+        "sector_legacy": item["SEC"],
         "subsector": subsec,
+        "subsector_legacy": item["SUBSECTOR"],
         "project_type": proj_type,
+        "project_type_legacy": item["TYPE"],
         "status": project_status,
         "title": item["PROJECT_TITLE"],
         "description": item.get("PROJECT_DESCRIPTION"),
@@ -894,12 +920,18 @@ def update_or_create_project(project_data, update_status=True):
             country=project_data["country"],
             agency=project_data["agency"],
             project_type=project_data["project_type"],
-            approval_meeting_no=project_data["approval_meeting_no"],
+            approval_meeting=project_data["approval_meeting"],
         )
         if "subsector" in project_data:
             fields_filter &= models.Q(subsector=project_data["subsector"])
+        elif "sector" in project_data:
+            fields_filter &= models.Q(sector=project_data["sector"])
 
         project = Project.objects.filter(fields_filter).first()
+
+    # set project sector based on subsector
+    if "sector" not in project_data and project_data.get("subsector"):
+        project_data["sector"] = project_data["subsector"].sector
 
     # there are some projects that have the same title and country but different code
     # so we need to check if the code is different and if it is then we need to create a new project

@@ -34,7 +34,7 @@ function Divider() {
   return <div className="my-8 h-[1px] w-full bg-gray-200 bg-opacity-30" />
 }
 
-export default function PSView({ data }: ProjectProps) {
+export default function PView({ data }: ProjectProps) {
   const countries = useStore((state) => state.common.countries.data)
 
   const country = useMemo(() => {
@@ -602,48 +602,6 @@ export default function PSView({ data }: ProjectProps) {
                   headerName: 'Date',
                   initialWidth: 120,
                   minWidth: 120,
-                },
-              ]}
-              getRowId={(props: any) => {
-                return props.data.id
-              }}
-            />
-            <Typography className="mb-4 text-typography-faded" variant="h4">
-              Submission amounts
-            </Typography>
-            <Table
-              className="mb-4"
-              enablePagination={false}
-              rowData={data.submission_amounts}
-              suppressCellFocus={false}
-              suppressNoRowsOverlay={true}
-              withSeparators={true}
-              columnDefs={[
-                {
-                  dataType: 'nubmer',
-                  field: 'amount',
-                  headerName: 'Amount',
-                  initialWidth: 140,
-                  minWidth: 140,
-                },
-                {
-                  dataType: 'number',
-                  field: 'impact',
-                  headerName: 'Impact',
-                  initialWidth: 120,
-                  minWidth: 120,
-                },
-                {
-                  field: 'cost_effectiveness',
-                  headerName: 'Cost effectivness',
-                  initialWidth: 140,
-                  minWidth: 140,
-                },
-                {
-                  field: 'status',
-                  headerName: 'Status',
-                  initialWidth: 140,
-                  minWidth: 140,
                 },
               ]}
               getRowId={(props: any) => {

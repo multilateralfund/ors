@@ -31,7 +31,7 @@ function Title({ children, visible }: TitleProps) {
   )
 }
 
-export default function HeaderTitle({ children }: HeaderTitleProps) {
+export default function HeaderTitle({ children, memo }: HeaderTitleProps) {
   const { setHeaderTitleComponent } = useStore((state) => state.header)
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export default function HeaderTitle({ children }: HeaderTitleProps) {
     }
 
     /* eslint-disable-next-line */
-  }, [])
+  }, [memo])
 
   return null
 }

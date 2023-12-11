@@ -4,13 +4,16 @@ from core.api.utils import SUBMISSION_STATUSE_CODES
 
 from core.models.agency import Agency
 from core.models.country import Country
+from core.models.meeting import Meeting
 from core.models.project import (
     Project,
+    ProjectCluster,
     ProjectSector,
     ProjectStatus,
     ProjectSubSector,
     ProjectType,
 )
+from core.models.utils import SubstancesType
 
 
 class ProjectFilter(filters.FilterSet):
@@ -44,7 +47,7 @@ class ProjectFilter(filters.FilterSet):
         widget=CSVWidget,
     )
     substance_type = filters.MultipleChoiceFilter(
-        choices=Project.SubstancesType.choices,
+        choices=SubstancesType.choices,
         widget=CSVWidget,
     )
     agency_id = filters.ModelMultipleChoiceFilter(
@@ -52,13 +55,18 @@ class ProjectFilter(filters.FilterSet):
         queryset=Agency.objects.all(),
         widget=CSVWidget,
     )
-    approval_meeting_no = filters.AllValuesMultipleFilter(widget=CSVWidget)
-
-    get_submission = filters.BooleanFilter(method="filter_submission")
-
-    date_received = filters.DateFromToRangeFilter(
-        field_name="submission__date_received"
+    approval_meeting_id = filters.ModelMultipleChoiceFilter(
+        field_name="approval_meeting",
+        queryset=Meeting.objects.all(),
+        widget=CSVWidget,
     )
+    cluster_id = filters.ModelMultipleChoiceFilter(
+        field_name="cluster",
+        queryset=ProjectCluster.objects.all(),
+        widget=CSVWidget,
+    )
+    date_received = filters.DateFromToRangeFilter(field_name="date_received")
+    get_submission = filters.BooleanFilter(method="filter_submission")
 
     class Meta:
         model = Project
@@ -70,7 +78,8 @@ class ProjectFilter(filters.FilterSet):
             "project_type_id",
             "substance_type",
             "agency_id",
-            "approval_meeting_no",
+            "cluster_id",
+            "approval_meeting_id",
             "date_received",
         ]
 

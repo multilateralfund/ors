@@ -1,4 +1,4 @@
-# pylint: disable=W0621
+# pylint: disable=W0621,R0913
 import pytest
 import unicodedata
 
@@ -16,13 +16,16 @@ from core.api.tests.factories import (
     ExcludedUsageBlendFactory,
     ExcludedUsageSubstFactory,
     GroupFactory,
+    MeetingFactory,
+    ProjectClusterFactory,
     ProjectFactory,
     ProjectOdsOdpFactory,
+    ProjectRBMMeasureFactory,
     ProjectSectorFactory,
     ProjectStatusFactory,
     ProjectSubSectorFactory,
-    ProjectSubmissionFactory,
     ProjectTypeFactory,
+    RbmMeasureFactory,
     SubstanceFactory,
     TimeFrameFactory,
     UsageFactory,
@@ -250,22 +253,58 @@ def subsector(sector):
 
 
 @pytest.fixture
-def project(country_ro, agency, project_type, project_status, subsector):
+def rbm_measure():
+    return RbmMeasureFactory.create(name="RBM Measure", sort_order=1)
+
+
+@pytest.fixture
+def meeting():
+    return MeetingFactory.create(number=1, date="2019-03-14")
+
+
+@pytest.fixture
+def project_cluster_kpp():
+    return ProjectClusterFactory.create(name="KPP1", code="KPP1", sort_order=1)
+
+
+@pytest.fixture
+def project_cluster_kip():
+    return ProjectClusterFactory.create(name="KIP1", code="KIP1", sort_order=2)
+
+
+@pytest.fixture
+def project(
+    country_ro,
+    agency,
+    project_type,
+    project_status,
+    sector,
+    subsector,
+    meeting,
+    project_cluster_kpp,
+):
     project = ProjectFactory.create(
         title="Karma to Burn",
         country=country_ro,
         agency=agency,
         project_type=project_type,
         status=project_status,
+        sector=sector,
         subsector=subsector,
+        approval_meeting=meeting,
         substance_type="HCFC",
-        approval_meeting_no=1,
+        cluster=project_cluster_kpp,
+        fund_disbursed=123.1,
+        total_fund_transferred=123.1,
+        date_approved="2019-03-14",
     )
 
-    # add submission
-    ProjectSubmissionFactory.create(project=project)
-
     return project
+
+
+@pytest.fixture
+def project_rbm_measure(project, rbm_measure):
+    return ProjectRBMMeasureFactory(project=project, measure=rbm_measure, value=10)
 
 
 @pytest.fixture

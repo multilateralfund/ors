@@ -18,10 +18,10 @@ class BPChemicalType(models.Model):
 
 class BusinessPlan(models.Model):
     class Status(models.TextChoices):
-        draft = "Draft", "Draft"
-        submitted = "Submitted", "Submitted"
-        approved = "Approved", "Approved"
-        rejected = "Rejected", "Rejected"
+        draft = "Draft", "Draft"  # update => not saving versions
+        submitted = "Submitted", "Submitted"  # update => saving versions
+        approved = "Approved", "Approved"  # can't update
+        rejected = "Rejected", "Rejected"  # can't update ???
 
     year_start = models.IntegerField(
         validators=[MinValueValidator(settings.MIN_VALID_YEAR)]

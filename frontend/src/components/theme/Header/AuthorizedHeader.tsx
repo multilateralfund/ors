@@ -88,7 +88,7 @@ export default function Header() {
               <Link href="/business-plans" path="/business-plans/*">
                 Business plans
               </Link>
-              <Link href="/submissions" path="/submissions/*">
+              <Link href="/project-submissions" path="/project-submissions/*">
                 Project submissions
               </Link>
               <Link href="/projects" path="/projects/*">

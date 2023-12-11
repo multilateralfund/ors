@@ -20,15 +20,19 @@ from core.models.country_programme import (
 )
 
 from core.models.group import Group
+from core.models.meeting import Meeting
 from core.models.project import (
     Project,
+    ProjectCluster,
     ProjectOdsOdp,
+    ProjectRBMMeasure,
     ProjectSector,
     ProjectStatus,
     ProjectSubSector,
     ProjectType,
+    SubmissionAmount,
 )
-from core.models.project_submission import ProjectSubmission
+from core.models.rbm_measures import RBMMeasure
 from core.models.substance import Substance
 from core.models.time_frame import TimeFrame
 from core.models.usage import ExcludedUsage, Usage
@@ -256,7 +260,8 @@ class AgencyFactory(factory.django.DjangoModelFactory):
         model = Agency
 
     name = factory.Faker("pystr", max_chars=100)
-    description = factory.Faker("pystr", max_chars=200)
+    code = factory.Faker("pystr", max_chars=10)
+    agency_type = Agency.AgencyType.AGENCY
 
 
 class ProjectTypeFactory(factory.django.DjangoModelFactory):
@@ -295,6 +300,25 @@ class ProjectSubSectorFactory(factory.django.DjangoModelFactory):
     sector = factory.SubFactory(ProjectSectorFactory)
 
 
+class MeetingFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Meeting
+
+    number = factory.Faker("random_int", min=1, max=100)
+    date = factory.Faker("date")
+    status = Meeting.MeetingStatus.COMPLETED
+
+
+class ProjectClusterFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProjectCluster
+
+    name = factory.Faker("pystr", max_chars=100)
+    code = factory.Faker("pystr", max_chars=10)
+    substance_type = "HFC"
+    sort_order = factory.Faker("random_int", min=1, max=100)
+
+
 class ProjectFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Project
@@ -303,18 +327,12 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     description = factory.Faker("pystr", max_chars=200)
     project_type = factory.SubFactory(ProjectTypeFactory)
     status = factory.SubFactory(ProjectStatusFactory)
+    sector = factory.SubFactory(ProjectSectorFactory)
     subsector = factory.SubFactory(ProjectSubSectorFactory)
     agency = factory.SubFactory(AgencyFactory)
     country = factory.SubFactory(CountryFactory)
-    approval_meeting_no = factory.Faker("random_int", min=1, max=100)
-
-
-class ProjectSubmissionFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = ProjectSubmission
-
-    project = factory.SubFactory(ProjectFactory)
-    category = "bilateral cooperation"
+    approval_meeting = factory.SubFactory(MeetingFactory)
+    submission_category = "bilateral cooperation"
     submission_number = factory.Faker("random_int", min=1, max=100)
 
 
@@ -327,6 +345,36 @@ class ProjectOdsOdpFactory(factory.django.DjangoModelFactory):
     ods_replacement = factory.Faker("pystr", max_chars=100)
     co2_mt = factory.Faker("random_int", min=1, max=100)
     sort_order = factory.Faker("random_int", min=1, max=100)
+
+
+class RbmMeasureFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RBMMeasure
+
+    name = factory.Faker("pystr", max_chars=100)
+    description = factory.Faker("pystr", max_chars=10)
+    sort_order = factory.Faker("random_int", min=1, max=100)
+
+
+class ProjectRBMMeasureFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProjectRBMMeasure
+
+    project = factory.SubFactory(ProjectFactory)
+    measure = factory.SubFactory(RbmMeasureFactory)
+    value = factory.Faker("random_int", min=1, max=100)
+
+
+class SubmissionAmountFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = SubmissionAmount
+
+    project = factory.SubFactory(ProjectFactory)
+    status = SubmissionAmount.SubmissionStatus.REQUESTED
+    amount = factory.Faker("random_int", min=1, max=100)
+    amount_psc = factory.Faker("random_int", min=1, max=100)
+    impact = factory.Faker("random_int", min=1, max=100)
+    cost_effectiveness = factory.Faker("random_int", min=1, max=100)
 
 
 class BusinessPlanFactory(factory.django.DjangoModelFactory):

@@ -28,15 +28,19 @@ from core.api.views.cp_records import CPRecordListView
 from core.api.views.cp_records_export import CPRecordPrintView
 from core.api.views.cp_records_export import CPRecordExportView
 from core.api.views.cp_report_empty_form import EmptyFormView
+from core.api.views.meetings import MeetingListView
 from core.api.views.projects import (
+    ProjectClusterListView,
     ProjectOdsOdpViewSet,
+    ProjectRbmMeasureViewSet,
+    ProjectSubmissionAmountViewSet,
     ProjectViewSet,
-    ProjectMeetingListView,
     ProjectSectorListView,
     ProjectStatusListView,
     ProjectSubSectorListView,
     ProjectTypeListView,
 )
+from core.api.views.rbm_measures import RBMMeasureListView
 from core.api.views.settings import SettingsView
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView
@@ -46,6 +50,8 @@ router.register("projects", ProjectViewSet)
 router.register("project-fund", ProjectFundViewSet)
 router.register("project-ods-odp", ProjectOdsOdpViewSet)
 router.register("project-comment", ProjectCommentViewSet)
+router.register("project-rbm-measure", ProjectRbmMeasureViewSet)
+router.register("submission-amount", ProjectSubmissionAmountViewSet)
 router.register("business-plan", BusinessPlanViewSet)
 router.register("business-plan-record", BPRecordViewSet)
 
@@ -180,9 +186,19 @@ urlpatterns = [
         name="project-type-list",
     ),
     path(
-        "project-meetings/",
-        ProjectMeetingListView.as_view(),
-        name="project-meeting-list",
+        "meetings/",
+        MeetingListView.as_view(),
+        name="meeting-list",
+    ),
+    path(
+        "project-clusters/",
+        ProjectClusterListView.as_view(),
+        name="project-cluster-list",
+    ),
+    path(
+        "rbm-measures/",
+        RBMMeasureListView.as_view(),
+        name="rbm-measure-list",
     ),
     re_path(
         "^project-files/(?P<pk>[^/]+)/$",

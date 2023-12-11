@@ -16,7 +16,7 @@ import {
 import cx from 'classnames'
 import dayjs from 'dayjs'
 import { AnimatePresence } from 'framer-motion'
-import { filter, includes, isArray, isNumber } from 'lodash'
+import { filter, includes, isArray, map } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
 import Listing from '@ors/components/manage/Form/Listing'
@@ -69,17 +69,19 @@ const initialParams = {
   project_type_id: null,
   search: '',
   sector_id: null,
+  status_id: null,
   subsector_id: null,
   substance_type: null,
 }
 
-const initialFilters: any = {
+const initialFilters = {
   agency_id: [],
   approval_meeting_no: [],
   country_id: [],
   project_type_id: [],
   search: '',
   sector_id: [],
+  status_id: [],
   subsector_id: [],
   substance_type: [],
 }
@@ -118,9 +120,6 @@ function ItemDetail({ label, value }: { label: string; value: string }) {
 
 function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
   const isCollapsed = !!collapsedRows[index]
-  const funds = parseFloat(item.funds_allocated)
-  const parsedFunds =
-    !isNaN(funds) && isNumber(funds) ? funds.toLocaleString() : '-'
 
   const dateAdded = dayjs(item.date_received).format('ll')
 
@@ -199,6 +198,7 @@ function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
         {(display === 'detailed' || isCollapsed) && !item.isSkeleton && (
           <CollapseInOut>
             <div className="mb-2 mt-4 flex flex-wrap gap-4 px-10">
+              <ItemDetail label="Status" value={item.status || '-'} />
               <ItemDetail label="Country" value={item.country || '-'} />
               <ItemDetail label="Agency" value={item.agency || '-'} />
               <ItemDetail
@@ -211,7 +211,10 @@ function Item({ collapsedRows, display, index, item, setCollapsedRows }: any) {
               />
               <ItemDetail label="Sector" value={item.sector || '-'} />
               <ItemDetail label="Subsector" value={item.subsector || '-'} />
-              <ItemDetail label="Funds requested" value={parsedFunds || '-'} />
+              <ItemDetail
+                label="Funds requested"
+                value={item.funds_allocated?.toLocaleString() || '-'}
+              />
             </div>
           </CollapseInOut>
         )}
@@ -256,8 +259,8 @@ export default function PSListing() {
   )
   const { count, loaded, results } = getResults(data)
 
-  const sector_ids = useMemo(() => {
-    return filters.sector_id?.map((item: any) => item.id)
+  const sectorIds = useMemo(() => {
+    return map(filters.sector_id, (item: any) => item.id)
   }, [filters.sector_id])
 
   function handleParamsChange(params: { [key: string]: any }) {
@@ -267,7 +270,7 @@ export default function PSListing() {
 
   function handleFilterChange(newFilters: { [key: string]: any }) {
     listing.current.setPagination({ ...listing.current.pagination, page: 1 })
-    setFilters((filters: any) => ({ ...filters, ...newFilters }))
+    setFilters((filters) => ({ ...filters, ...newFilters }))
   }
 
   return (
@@ -478,6 +481,7 @@ export default function PSListing() {
               ItemProps={{ collapsedRows, display, setCollapsedRows }}
               loaded={loaded}
               loading={loading}
+              noRowsToShowPlaceholder="No project submissions found."
               ref={listing}
               rowCount={count}
               rowData={results}
@@ -544,20 +548,23 @@ export default function PSListing() {
               value={filters.sector_id}
               widget="autocomplete"
               onChange={(_: any, sector_id: any) => {
-                const sector_ids = sector_id.map((item: any) => item.id)
+                const sectorIds = map(sector_id, (item: any) => item.id)
                 const subsector_id = filter(
                   filters.subsector_id,
                   (item: any) => {
-                    return includes(sector_ids, item.sector_id)
+                    return includes(sectorIds, item.sector_id)
                   },
                 )
-                handleFilterChange({ sector_id, subsector_id })
+                handleFilterChange({
+                  sector_id,
+                  subsector_id,
+                })
                 handleParamsChange({
                   offset: 0,
-                  sector_id: sector_ids.join(','),
-                  subsector_id: subsector_id
-                    .map((item: any) => item.id)
-                    .join(','),
+                  sector_id: sectorIds.join(','),
+                  subsector_id: map(subsector_id, (item: any) => item.id).join(
+                    ',',
+                  ),
                 })
               }}
               multiple
@@ -568,8 +575,8 @@ export default function PSListing() {
                 getOptionLabel={(option: any) => option?.name}
                 value={filters.subsector_id}
                 widget="autocomplete"
-                options={filter(projectSlice.subsectors.data, (item: any) => {
-                  return includes(sector_ids, item.sector_id)
+                options={filter(projectSlice.subsectors.data, (item) => {
+                  return includes(sectorIds, item.sector_id)
                 })}
                 onChange={(_: any, value: any) => {
                   handleFilterChange({ subsector_id: value })

@@ -15,6 +15,7 @@ import {
   indexOf,
   isEmpty,
   isFunction,
+  isNull,
   isObject,
   // max,
   noop,
@@ -341,7 +342,7 @@ export default function Table(
         className={cx('table-root flex flex-col', {
           'ag-full-screen': fullScreen,
           'ag-print': print,
-          'ag-rendering': rendering && rowData?.length,
+          'ag-rendering': rendering || isNull(rowData) || !rowData.length,
         })}
         ref={tableEl}
       >

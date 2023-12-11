@@ -8,7 +8,6 @@ from .country_programme_archive import *
 from .group import *
 from .project_complition_report import *
 from .project import *
-from .project_submission import *
 from .substance import *
 from .time_frame import *
 from .usage import *

@@ -134,7 +134,7 @@ export default function CPView(props: { archive?: boolean; id: string }) {
       />
       {!!report.error && <Error error={report.error} />}
       {!!report.data && (
-        <HeaderTitle memo={report.data.status}>
+        <HeaderTitle memo={report.data.status && report.versions.data}>
           <div className="mb-4 flex min-h-[40px] items-center justify-between gap-x-4">
             <Typography className="text-white" component="h1" variant="h3">
               {report.data.name}{' '}

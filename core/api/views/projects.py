@@ -6,31 +6,41 @@ from django.views.static import serve
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import mixins, generics, views, viewsets, filters
+from rest_framework import mixins, generics, viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
 from core.api.filters.project import ProjectFilter
-from core.api.serializers.project import ProjectCommentSerializer
+from core.api.serializers.meeting import MeetingSerializer
+from core.api.serializers.project import (
+    ProjectClusterSerializer,
+    ProjectCommentCreateSerializer,
+    ProjectFundCreateSerializer,
+    ProjectOdsOdpCreateSerializer,
+    ProjectRbmMeasureCreateSerializer,
+    SubmissionAmountCreateSerializer,
+)
 from core.api.serializers.project import (
     ProjectDetailsSerializer,
     ProjectListSerializer,
-    ProjectOdsOdpSerializer,
     ProjectSectorSerializer,
     ProjectStatusSerializer,
     ProjectSubSectorSerializer,
     ProjectTypeSerializer,
-    ProjectFundSerializer,
 )
+from core.models.meeting import Meeting
 from core.models.project import (
     Project,
+    ProjectCluster,
     ProjectOdsOdp,
+    ProjectRBMMeasure,
     ProjectSector,
     ProjectSubSector,
     ProjectType,
     ProjectFile,
+    SubmissionAmount,
 )
 from core.models.project import ProjectComment
 from core.models.project import ProjectStatus, ProjectFund
@@ -72,15 +82,14 @@ class ProjectTypeListView(generics.ListAPIView):
     serializer_class = ProjectTypeSerializer
 
 
-class ProjectMeetingListView(views.APIView):
-    def get(self, request, *args, **kwargs):
-        meetings = (
-            Project.objects.filter(approval_meeting_no__isnull=False)
-            .values_list("approval_meeting_no", flat=True)
-            .distinct()
-            .order_by("approval_meeting_no")
-        )
-        return Response(list(meetings))
+class ProjectMeetingListView(generics.ListAPIView):
+    queryset = Meeting.objects.order_by("number").all()
+    serializer_class = MeetingSerializer
+
+
+class ProjectClusterListView(generics.ListAPIView):
+    queryset = ProjectCluster.objects.order_by("sort_order").all()
+    serializer_class = ProjectClusterSerializer
 
 
 # view for country programme reports
@@ -102,8 +111,12 @@ class ProjectViewSet(
         "subsector__sector",
         "project_type",
         "status",
-        "submission",
-    ).prefetch_related("coop_agencies__agency")
+        "cluster",
+        "approval_meeting",
+        "meeting_transf",
+    ).prefetch_related(
+        "coop_agencies__agency", "submission_amounts", "rbm_measures__measure"
+    )
     filterset_class = ProjectFilter
     filter_backends = [
         DjangoFilterBackend,
@@ -177,39 +190,70 @@ class ProjectFileView(APIView):
 
 
 class ProjectOdsOdpViewSet(
+    mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
     """
-    API endpoint that allows project ods odp to be updated and deleted.
+    API endpoint that allows project ods odp CreateUpdateDdelete
     """
 
-    queryset = ProjectOdsOdp.objects.all()
-    serializer_class = ProjectOdsOdpSerializer
+    queryset = ProjectOdsOdp.objects.select_related("ods_substance", "ods_blend").all()
+    serializer_class = ProjectOdsOdpCreateSerializer
 
 
 class ProjectFundViewSet(
+    mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
     """
-    API endpoint that allows project fund to be updated and deleted.
+    API endpoint that allows project fund CreateUpdateDdelete
     """
 
-    queryset = ProjectFund.objects.all()
-    serializer_class = ProjectFundSerializer
+    queryset = ProjectFund.objects.select_related("meeting").all()
+    serializer_class = ProjectFundCreateSerializer
 
 
 class ProjectCommentViewSet(
+    mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
     """
-    API endpoint that allows comment to be updated and deleted.
+    API endpoint that allows comment CreateUpdateDdelete
     """
 
-    queryset = ProjectComment.objects.all()
-    serializer_class = ProjectCommentSerializer
+    queryset = ProjectComment.objects.select_related("meeting_of_report").all()
+    serializer_class = ProjectCommentCreateSerializer
+
+
+class ProjectRbmMeasureViewSet(
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    API endpoint that allows project rbm measure CreateUpdateDdelete
+    """
+
+    queryset = ProjectRBMMeasure.objects.select_related("measure").all()
+    serializer_class = ProjectRbmMeasureCreateSerializer
+
+
+class ProjectSubmissionAmountViewSet(
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    API endpoint that allows project submission amount CreateUpdateDdelete
+    """
+
+    queryset = SubmissionAmount.objects.all()
+    serializer_class = SubmissionAmountCreateSerializer
