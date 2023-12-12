@@ -21,27 +21,150 @@ SECTOR_NAME_MAPPING = {
 }
 SECTOR_CODE_MAPPING = {
     "HAL": "FFI",
+    "INS": "TAS",
 }
 
-SUBSECTOR_NAME_MAPPING = {
-    "HFC phase-down plan": "HFC phase down plan",
-    "Contract filler": "Other Aeresols",
-    "Sectoral phase out plan": "Phase out Plan",
-    "Extinguisher": "Assembly Fire Protections Systems",
-    "Extinguisher/fixed system": "Assembly Fire Protections Systems",
-    "Rigid PU (insulation domestic refrigeration)": "Rigid PU",
-    "Rigid PU (insulation commercial refrigeration)": "Rigid PU",
-    "Rigid PU panels": "Rigid PU",
-    "HCFC closure": "Production Plant Closure",
-    "Domestic refrigeration (refrigerant)": "Domesitic Refrigeration",
-    "Commercial refrigeration (refrigerant)": "Commercial Refrigeration",
-    "Multiple solvents": "Solvents",
-    "MAC recovery/recycling": "Servicing",
-    "Recovery/recycling": "Servicing",
-    "Refrigerant management plan": "Servicing",
-    "Refrigeration servicing sector": "Servicing",
-    "Sterilization services": "Sterilant",
+SUBSECTOR_SECTOR_MAPPING = {
+    # subsector_name = None => Subsector deleted
+    # sector_code = None => Keep the original sector
+    "Contract filler": {
+        "subsector_name": "Other Aeresols",
+        "sector_code": "ARS",
+    },
+    "Filling plant": {
+        "subsector_name": None,
+        "sector_code": "ARS",
+    },
+    "Demonstration": {
+        "subsector_name": None,
+        "sector_code": "DES",
+    },
+    "Information exchange": {
+        "subsector_name": None,
+        "sector_code": None,
+    },
+    "Sectoral phase out plan": {
+        "subsector_name": "Phase out Plan",
+        "sector_code": None,
+    },
+    "Technical assistance/support": {
+        "subsector_name": None,
+        "sector_code": "TAS",
+    },
+    "Training programme/workshop": {
+        "subsector_name": None,
+        "sector_code": None,
+    },
+    "Extinguisher": {
+        "subsector_name": "Assembly Fire Protections Systems",
+        "sector_code": None,
+    },
+    "Extinguisher/fixed system": {
+        "subsector_name": "Assembly Fire Protections Systems",
+        "sector_code": None,
+    },
+    "Banking": {
+        "subsector_name": "Banking",
+        "sector_code": None,
+    },
+    "Rigid PU (insulation domestic refrigeration)": {
+        "subsector_name": "Rigid PU",
+        "sector_code": None,
+    },
+    "Rigid PU (insulation commercial refrigeration)": {
+        "subsector_name": "Rigid PU",
+        "sector_code": None,
+    },
+    "Rigid PU panels": {
+        "subsector_name": "Rigid PU",
+        "sector_code": None,
+    },
+    "Flexible PU": {
+        "subsector_name": None,
+        "sector_code": "FOA",
+    },
+    "Several PU foam": {
+        "subsector_name": None,
+        "sector_code": "FOA",
+    },
+    "Polyol production": {
+        "subsector_name": None,
+        "sector_code": "FOA",
+    },
+    "HFC phase-down plan": {
+        "subsector_name": "HFC phase down plan",
+        "sector_code": "",
+    },
+    "Agency programme": {
+        "subsector_name": None,
+        "sector_code": "TAS",
+    },
+    "Ozone unit support": {
+        "subsector_name": None,
+        "sector_code": "INS",
+    },
+    "Process conversion": {
+        "subsector_name": None,
+        "sector_code": "PAG",
+    },
+    "Project monitoring and coordination unit (PMU)": {
+        "subsector_name": None,
+        "sector_code": "PMU",
+    },
+    "HCFC closure": {
+        "subsector_name": "Production Plant Closure",
+        "sector_code": None,
+    },
+    "Domestic refrigeration (refrigerant)": {
+        "subsector_name": "Domesitic Refrigeration",
+        "sector_code": None,
+    },
+    "Commercial refrigeration (refrigerant)": {
+        "subsector_name": "Commercial Refrigeration",
+        "sector_code": None,
+    },
+    "Domestic/commercial refrigeration (refrigerant)": {
+        "subsector_name": None,
+        "sector_code": "REF",
+    },
+    "MAC": {
+        "subsector_name": "MAC",
+        "sector_code": "AC",
+    },
+    "MAC Compressor": {
+        "subsector_name": "Compressor",
+        "sector_code": "AC",
+    },
+    "Multiple-subsectors": {
+        "subsector_name": None,
+        "sector_code": None,
+    },
+    "Multiple solvents": {
+        "subsector_name": "Solvents",
+        "sector_code": "SOL",
+    },
+    "MAC recovery/recycling": {
+        "subsector_name": "Servicing",
+        "sector_code": "",
+    },
+    "Recovery/recycling": {
+        "subsector_name": "Servicing",
+        "sector_code": "",
+    },
+    "Refrigerant management plan": {
+        "subsector_name": "Servicing",
+        "sector_code": "",
+    },
+    "Refrigeration servicing sector": {
+        "subsector_name": "Servicing",
+        "sector_code": "",
+    },
+    "Sterilization services": {
+        "subsector_name": "Sterilant",
+        "sector_code": "",
+    },
 }
+
 PROJECT_TYPE_CODE_MAPPING = {
     "CPG": "TAS",
     "INS": "TAS",

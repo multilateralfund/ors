@@ -9,7 +9,6 @@ from django.conf import settings
 
 from core.import_data.mapping_names_dict import (
     SECTOR_NAME_MAPPING,
-    SUBSECTOR_NAME_MAPPING,
 )
 from core.import_data.utils import (
     get_chemical_by_name_or_components,
@@ -17,6 +16,7 @@ from core.import_data.utils import (
     get_decimal_from_excel_string,
     get_object_by_name,
     get_project_type_by_code,
+    get_sector_subsector_details,
 )
 from core.models.agency import Agency
 from core.models.business_plan import (
@@ -134,36 +134,23 @@ def get_sector_subsector(sector_subsector, index_row):
         logger.warning(f"[row: {index_row}]: Missing sector and subsector")
         return None, None
 
-    # get sector
+    # get sector name
     sector_name_re = re.search(SECTOR_REGEX, sector_subsector)
     sector_name_str = (
         sector_name_re.group("sector").strip() if sector_name_re else sector_subsector
     )
     sector_name = SECTOR_NAME_MAPPING.get(sector_name_str, sector_name_str)
-    sector = get_object_by_name(
-        ProjectSector, sector_name, index_row, "sector", with_log=False
-    )
 
-    # get subsector
+    # get subsector name
     subsector_name_re = re.search(SUBSECTOR_REGEX, sector_subsector)
     subsector_name_str = (
         subsector_name_re.group("subsector").strip()
         if subsector_name_re
         else sector_subsector
     )
-    subsector_name = SUBSECTOR_NAME_MAPPING.get(subsector_name_str, subsector_name_str)
-    if not sector:
-        subsector = get_object_by_name(
-            ProjectSubSector, subsector_name, index_row, "subsector", with_log=False
-        )
-    else:
-        subsector = ProjectSubSector.objects.find_by_name_and_sector(
-            subsector_name, sector
-        )
-
-    if subsector and not sector:
-        # get sector from subsector
-        sector = subsector.sector
+    sector, subsector = get_sector_subsector_details(
+        sector_name, subsector_name_str, index_row
+    )
 
     if not any([sector, subsector]):
         logger.warning(

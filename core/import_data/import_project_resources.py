@@ -6,7 +6,7 @@ from django.db import transaction
 from core.import_data.mapping_names_dict import (
     SECTOR_CODE_MAPPING,
     SECTOR_NAME_MAPPING,
-    SUBSECTOR_NAME_MAPPING,
+    SUBSECTOR_SECTOR_MAPPING,
 )
 from core.import_data.utils import (
     IMPORT_PROJECTS_DIR,
@@ -42,7 +42,34 @@ NEW_SUBSECTORS = [
         "SUBSECTOR": "HFC phase down plan",
         "SORT_SUBSECTOR": 99,
     },
+    {
+        "SEC": "FFI",
+        "SUBSECTOR": "Servicing Fire Protections Systems",
+        "SORT_SUBSECTOR": 99,
+    },
+    {
+        "SEC": "AC",
+        "SUBSECTOR": "Compressor",
+        "SORT_SUBSECTOR": 99,
+    },
 ]
+OUTDATED_SUBSECTORS = {
+    "Filling plant",
+    "Demonstration",
+    "Regulations",
+    "Information exchange",
+    "Technical assistance/support",
+    "Training programme/workshop",
+    "Flexible PU",
+    "Several PU foam",
+    "Polyol production",
+    "Agency programme",
+    "Ozone unit support",
+    "Process conversion",
+    "Project monitoring and coordination unit (PMU)",
+    "Domestic/commercial refrigeration (refrigerant)",
+    "Multiple-subsectors",
+}
 
 NEW_SECTORS = [
     {
@@ -54,6 +81,26 @@ NEW_SECTORS = [
         "SECTOR": "Project monitoring and coordination",
         "SEC": "PMU",
         "SORT_SECTOR": 18,
+    },
+    {
+        "SECTOR": "Air-Conditioning",
+        "SEC": "AC",
+        "SORT_SECTOR": 19,
+    },
+    {
+        "SECTOR": "Technical Assistance",
+        "SEC": "TAS",
+        "SORT_SECTOR": 20,
+    },
+    {
+        "SECTOR": "Emissions",
+        "SEC": "EMS",
+        "SORT_SECTOR": 21,
+    },
+    {
+        "SECTOR": "Electronics Manufacturing",
+        "SEC": "ELM",
+        "SORT_SECTOR": 22,
     },
 ]
 
@@ -145,10 +192,21 @@ def import_subsector(file_path):
     subsectors_json.extend(NEW_SUBSECTORS)
 
     for subsector_json in subsectors_json:
-        # get sector
+        subsector_name = subsector_json["SUBSECTOR"].strip()
         sector_code = SECTOR_CODE_MAPPING.get(
             subsector_json["SEC"].strip(), subsector_json["SEC"].strip()
         )
+        subs_mapping = SUBSECTOR_SECTOR_MAPPING.get(
+            subsector_name,
+            {"sector_code": sector_code, "subsector_name": subsector_name},
+        )
+        sector_code = subs_mapping["sector_code"] or sector_code
+
+        # skip outdated subsectors
+        if subsector_name in OUTDATED_SUBSECTORS or not subs_mapping["subsector_name"]:
+            continue
+
+        # get sector
         sector = ProjectSector.objects.filter(code=sector_code).first()
         if not sector:
             logger.warning(
@@ -157,15 +215,13 @@ def import_subsector(file_path):
             continue
 
         # set subsector data
-        subsector_name = subsector_json["SUBSECTOR"].strip()
-        subsector_name = SUBSECTOR_NAME_MAPPING.get(subsector_name, subsector_name)
         subsector_code = (
             subsector_json["CODE_SUBSECTOR"].strip()
             if subsector_json.get("CODE_SUBSECTOR")
             else None
         )
         subsector_data = {
-            "name": subsector_name,
+            "name": subs_mapping["subsector_name"],
             "code": subsector_code,
             "sector": sector,
             "sort_order": subsector_json["SORT_SUBSECTOR"],

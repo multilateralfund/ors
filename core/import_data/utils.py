@@ -11,7 +11,7 @@ from core.import_data.mapping_names_dict import (
     COUNTRY_NAME_MAPPING,
     PROJECT_TYPE_CODE_MAPPING,
     SECTOR_CODE_MAPPING,
-    SUBSECTOR_NAME_MAPPING,
+    SUBSECTOR_SECTOR_MAPPING,
 )
 
 from core.models.adm import AdmColumn, AdmRow
@@ -185,6 +185,58 @@ def get_sector_by_code(sector_code, row_index):
         "code",
         row_index,
     )
+
+
+def get_sector_subsector_details(sector_code, subsector_name, row_index):
+    """
+    get sector and subsector details by sector code and subsector name or log error if not found in db
+    @param sector_code: string -> sector code
+    @param subsector_name: string -> subsector name
+    @param row_index: integer -> index row
+    @return: tuple(sector, subsector) or (None, None)
+    """
+
+    if not subsector_name:
+        sector = get_sector_by_code(sector_code, row_index)
+        return sector, None
+
+    subs_mapping = SUBSECTOR_SECTOR_MAPPING.get(
+        subsector_name,
+        {
+            "subsector_name": subsector_name,
+            "sector_code": sector_code,
+        },
+    )
+    new_sector_code = subs_mapping["sector_code"] or sector_code
+    new_subsector_name = subs_mapping["subsector_name"]
+
+    sector = get_object_by_name(
+        ProjectSector, new_sector_code, row_index, "sector", with_log=False
+    )
+
+    if not new_subsector_name:
+        return sector, None
+
+    if not sector:
+        subsector = get_object_by_name(
+            ProjectSubSector, new_subsector_name, row_index, "subsector", with_log=False
+        )
+    else:
+        subsector = ProjectSubSector.objects.find_by_name_and_sector(
+            new_subsector_name, sector
+        )
+
+    if not subsector:
+        logger.info(
+            f"[row: {row_index}]: This subsector does not exists in data base: "
+            f"{subsector_name} -> search name: {new_subsector_name} (sector: {new_sector_code})"
+        )
+        return sector, None
+
+    if not sector:
+        return subsector.sector, subsector
+
+    return sector, subsector
 
 
 def get_project_type_by_code(project_type_code, row_index):
@@ -829,24 +881,9 @@ def get_project_base_data(item, item_index, is_submissions=True):
     agency = get_object_by_name(
         Agency, item["AGENCY"], item_index, "agency", use_offset=is_submissions
     )
-    # get sector
-    sector = get_sector_by_code(item["SEC"], item_index)
-    if not sector:
-        return None
-
-    # get subsector name from dict if exists else use the same name from the file
-    subsect_name = SUBSECTOR_NAME_MAPPING.get(
-        item["SUBSECTOR"],
-        item["SUBSECTOR"],
+    sector, subsec = get_sector_subsector_details(
+        item["SEC"], item["SUBSECTOR"], item_index
     )
-    subsec = ProjectSubSector.objects.find_by_name_and_sector(subsect_name, sector)
-    if not subsec:
-        index = item_index + OFFSET if is_submissions else item_index
-        logger.warning(
-            f"[row: {index}]: "
-            f"This subsector does not exist: {item['SUBSECTOR']} (sector = {item['SEC']}))"
-        )
-
     proj_type = get_project_type_by_code(item["TYPE"], item_index)
 
     status_str = item["STATUS_CODE"]

@@ -114,7 +114,7 @@ def check_project_consistency(project, item, index):
 
     for name, current_value, value in (
         ("country", project.country, country),
-        ("sector", project.subsector.sector, project_sector),
+        ("sector", project.sector, project_sector),
         ("type", project.project_type, project_type),
         ("agency", project.agency, agency),
     ):
