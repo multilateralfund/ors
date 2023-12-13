@@ -31,6 +31,8 @@ from core.models.substance import Substance
 from core.models.time_frame import TimeFrame
 from core.utils import IMPORT_DB_MAX_YEAR
 
+# pylint: disable=C0302,R0913
+
 logger = logging.getLogger(__name__)
 
 IMPORT_RESOURCES_DIR = settings.ROOT_DIR / "import_data" / "resources"
@@ -257,7 +259,6 @@ def get_project_type_by_code(project_type_code, row_index):
     )
 
 
-# pylint: disable=R0913
 def get_cp_report(
     year,
     country_name,

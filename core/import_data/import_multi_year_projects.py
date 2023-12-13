@@ -79,12 +79,16 @@ def parse_file(file_path):
             project_json["Code"]
         )
 
+        # set cluster
+        cluster = None
+
         date_agree = project_json.get("Date Completion Per Agreement")
         date_decision = project_json.get("Date Completion Per Decision")
 
         project_data = {
             "country": country,
             "agency": agency,
+            "cluster": cluster,
             "code": project_json["Code"],
             "mya_code": project_json.get("MYA Code"),
             "project_type": project_type,
