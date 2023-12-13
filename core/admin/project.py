@@ -1,3 +1,4 @@
+from admin_auto_filters.filters import AutocompleteFilterFactory
 from django.contrib import admin
 
 from core.admin.utils import get_final_display_list
@@ -95,14 +96,14 @@ class ProjectAdmin(admin.ModelAdmin):
         "code",
     ]
     list_filter = [
-        "project_type",
-        "status",
-        "agency",
-        "subsector",
+        AutocompleteFilterFactory("agency", "agency"),
+        AutocompleteFilterFactory("subsector", "subsector"),
+        AutocompleteFilterFactory("project_type", "project_type"),
         "meta_project__type",
-        "cluster",
+        "status",
+        AutocompleteFilterFactory("cluster", "cluster"),
     ]
-    autocomplete_fields = ["country", "subsector", "agency"]
+    autocomplete_fields = ["country", "subsector", "agency", "project_type"]
 
     def get_list_display(self, request):
         exclude = [
