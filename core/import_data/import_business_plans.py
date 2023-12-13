@@ -25,7 +25,6 @@ from core.models.business_plan import (
     BPRecordValue,
     BusinessPlan,
 )
-from core.models.project import ProjectSector, ProjectSubSector
 
 logger = logging.getLogger(__name__)
 
