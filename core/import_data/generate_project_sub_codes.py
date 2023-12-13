@@ -28,6 +28,7 @@ def generate_project_sub_codes():
             project.serial_number,
             project.agency,
             project.project_type,
+            project.sector,
             project.approval_meeting,
             project.meeting_transf,
         )

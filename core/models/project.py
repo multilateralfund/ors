@@ -118,11 +118,21 @@ class ProjectSubSector(models.Model):
         return self.name
 
 
+class ProjectClusterManager(models.Manager):
+    def find_by_name_or_code(self, name):
+        name_str = name.strip()
+        return self.filter(
+            models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str)
+        ).first()
+
+
 class ProjectCluster(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=10, null=True, blank=True)
     substance_type = models.CharField(max_length=255, choices=SubstancesType.choices)
     sort_order = models.FloatField(null=True, blank=True)
+
+    objects = ProjectClusterManager()
 
     def __str__(self):
         return self.name

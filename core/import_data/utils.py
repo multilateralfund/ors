@@ -920,8 +920,6 @@ def get_project_base_data(item, item_index, is_submissions=True):
     project_status = get_object_by_name(
         ProjectStatus, status_str, item_index, "status", use_offset=is_submissions
     )
-    # set cluster
-    cluster = None
 
     # if country or agency or subsector does not exists then skip this row
     if not all([country, agency, proj_type, project_status]):
@@ -936,7 +934,6 @@ def get_project_base_data(item, item_index, is_submissions=True):
     project_data = {
         "country": country,
         "agency": agency,
-        "cluster": cluster,
         "sector": sector,
         "sector_legacy": item["SEC"],
         "subsector": subsec,
