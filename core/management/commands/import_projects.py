@@ -15,6 +15,7 @@ class Command(BaseCommand):
     help = """
         Import projects
         params:
+            - type = all_projects (Proposals, projects, multy year projects, meta projects)
             - type = proposals => project proposals xlsx files
             - type = projects => projects from tbInventory
             - type = multi_year_projects => multi year projects from MultiYear-Projects
@@ -36,6 +37,7 @@ class Command(BaseCommand):
             help="Import type",
             default="all",
             choices=[
+                "all_projects",
                 "proposals",
                 "projects",
                 "multi_year_projects",
@@ -53,17 +55,17 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         imp_type = kwargs["type"]
 
-        if imp_type in ["projects", "all"]:
+        if imp_type in ["projects", "all_projects", "all"]:
             import_projects()
-        if imp_type in ["proposals", "all"]:
+        if imp_type in ["proposals", "all_projects", "all"]:
             import_proposals()
-        if imp_type in ["multi_year_projects", "all"]:
+        if imp_type in ["multi_year_projects", "all_projects", "all"]:
             import_multi_year_projects()
         if imp_type in ["progress", "all"]:
             import_progress_reports()
         if imp_type in ["comments", "all"]:
             import_project_comments()
-        if imp_type in ["meta_projects", "all"]:
+        if imp_type in ["meta_projects", "all_projects", "all"]:
             import_meta_projects()
         if imp_type in ["pcr_activities", "all_pcr", "all"]:
             import_pcr_activities()

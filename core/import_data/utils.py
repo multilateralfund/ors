@@ -840,6 +840,21 @@ def get_chemical(chemical_name, index_row):
 
 
 # --- projects import ---
+def get_serial_number_from_code(project_code):
+    """
+    get serial number from project code
+        - {Country or Region}/{Sector}/{MeetingNo where the project was approved}/{ProjectType}/{ProjectNumber}
+    @param project_code = string
+    """
+    serial_number = project_code.split("/")[4]
+    if not serial_number.isdigit():
+        logger.warning(
+            f"[Index row: {project_code}] Invalid serial number {serial_number}"
+        )
+        serial_number = None
+    return serial_number
+
+
 def get_project_base_data(item, item_index, is_submissions=True):
     """
     Get project base data
@@ -893,6 +908,8 @@ def get_project_base_data(item, item_index, is_submissions=True):
     project_status = get_object_by_name(
         ProjectStatus, status_str, item_index, "status", use_offset=is_submissions
     )
+    # set cluster
+    cluster = None
 
     # if country or agency or subsector does not exists then skip this row
     if not all([country, agency, subsec, proj_type, project_status]):
@@ -906,6 +923,7 @@ def get_project_base_data(item, item_index, is_submissions=True):
         "country": country,
         "agency": agency,
         "sector": sector,
+        "cluster": cluster,
         "sector_legacy": item["SEC"],
         "subsector": subsec,
         "subsector_legacy": item["SUBSECTOR"],

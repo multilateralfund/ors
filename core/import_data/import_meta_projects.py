@@ -3,10 +3,12 @@ import logging
 
 from django.conf import settings
 from django.db import transaction
+from core.api.utils import SUBMISSION_STATUSE_CODES
 from core.import_data.import_projects import create_project
 from core.import_data.utils import PCR_DIR_LIST, get_object_by_code
 
 from core.models.project import MetaProject, Project
+from core.utils import get_meta_project_code
 
 
 logger = logging.getLogger(__name__)
@@ -42,15 +44,55 @@ def parse_file(file_path, database_name):
         if not project:
             continue
 
+        meta_project_code = get_meta_project_code(
+            project.country, project.cluster, project.serial_number
+        )
         # create meta project
         meta_project_json = {
             "type": project_type,
+            "code": meta_project_code,
             "pcr_project_id": project_json["ProjectId"],
         }
 
-        meta_project, _ = MetaProject.objects.get_or_create(**meta_project_json)
+        meta_project, _ = MetaProject.objects.update_or_create(
+            pcr_project_id=meta_project_json["pcr_project_id"],
+            type=meta_project_json["type"],
+            defaults=meta_project_json,
+        )
 
         # set metaproject for project
+        project.meta_project = meta_project
+        project.save()
+
+
+def create_other_meta_project():
+    """
+    Create meta project for projects without meta project
+    """
+    projects = (
+        Project.objects.filter(meta_project_id=None)
+        .exclude(status__code__in=SUBMISSION_STATUSE_CODES)
+        .select_related("country", "agency", "cluster")
+        .all()
+    )
+    for project in projects:
+        meta_project_code = get_meta_project_code(
+            project.country, project.cluster, project.serial_number
+        )
+
+        # project type
+        proj_type = MetaProject.MetaProjectType.INDINV
+
+        meta_project_json = {
+            "type": proj_type,
+            "code": meta_project_code,
+        }
+        meta_project, _ = MetaProject.objects.update_or_create(
+            code=meta_project_json["code"],
+            type=meta_project_json["type"],
+            defaults=meta_project_json,
+        )
+
         project.meta_project = meta_project
         project.save()
 
@@ -62,3 +104,6 @@ def import_meta_projects():
         logger.info(f"⏳ importing pcr meta projects from {database_name}")
         parse_file(db_dir_path / database_name / "tbINVENTORY.json", database_name)
         logger.info(f"✔ pcr meta projects from {database_name} imported")
+
+    create_other_meta_project()
+    logger.info("✔ all meta projects imported")

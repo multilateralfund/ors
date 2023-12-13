@@ -12,6 +12,9 @@ COUNTRY_NAME_MAPPING = {
     "Moldova, Rep": "Moldova",
     "Micronesia": "Micronesia (Federated States of)",
     "Macedonia": "The Former Yugoslav Republic of Macedonia",
+    "United Arab Emirats": "United Arab Emirates",
+    "Timor Leste": "Timor-Leste",
+    "Guinea-Bissau": "Guinea Bissau",
 }
 
 SECTOR_NAME_MAPPING = {
