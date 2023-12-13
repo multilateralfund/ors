@@ -78,6 +78,7 @@ def parse_file(file_path, file_name, meeting):
                 "substance_type": substance_type,
                 "capital_cost": row["CAPITAL_COST"],
                 "national_agency": row["NATIONAL_AGENCY"],
+                "serial_number": row["PROJECT_NUMBER"],
                 "submission_number": row["PROJECT_NUMBER"],
                 "submission_category": parse_string(row["CATEGORY_DEFINITION"]),
                 "programme_officer": row["PROGRAMME_OFFICER"],

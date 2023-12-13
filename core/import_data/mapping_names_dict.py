@@ -56,7 +56,7 @@ SUBSECTOR_SECTOR_MAPPING = {
     },
     "Training programme/workshop": {
         "subsector_name": None,
-        "sector_code": None,
+        "sector_code": "FFI",
     },
     "Extinguisher": {
         "subsector_name": "Assembly Fire Protections Systems",
@@ -104,7 +104,7 @@ SUBSECTOR_SECTOR_MAPPING = {
     },
     "Ozone unit support": {
         "subsector_name": None,
-        "sector_code": "INS",
+        "sector_code": "SEV",
     },
     "Process conversion": {
         "subsector_name": None,

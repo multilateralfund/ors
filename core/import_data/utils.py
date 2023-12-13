@@ -198,10 +198,12 @@ def get_sector_subsector_details(sector_code, subsector_name, row_index):
     @return: tuple(sector, subsector) or (None, None)
     """
 
+    # get only the sector
     if not subsector_name:
         sector = get_sector_by_code(sector_code, row_index)
         return sector, None
 
+    # map sector and subsector names
     subs_mapping = SUBSECTOR_SECTOR_MAPPING.get(
         subsector_name,
         {
@@ -212,13 +214,22 @@ def get_sector_subsector_details(sector_code, subsector_name, row_index):
     new_sector_code = subs_mapping["sector_code"] or sector_code
     new_subsector_name = subs_mapping["subsector_name"]
 
+    # get sector by mapped string
     sector = get_object_by_name(
         ProjectSector, new_sector_code, row_index, "sector", with_log=False
     )
 
-    if not new_subsector_name:
+    # check if the subsector is not outdated and if the sector exists
+    if not new_subsector_name and sector:
         return sector, None
+    elif not new_subsector_name and not sector:
+        logger.info(
+            f"[row: {row_index}]: This prpoject does not have a sector or a subsector:"
+            f"serched info: [sector: {sector_code}, subsector: {subsector_name}]"
+        )
+        return None, None
 
+    # get subsector
     if not sector:
         subsector = get_object_by_name(
             ProjectSubSector, new_subsector_name, row_index, "subsector", with_log=False
@@ -913,7 +924,9 @@ def get_project_base_data(item, item_index, is_submissions=True):
     cluster = None
 
     # if country or agency or subsector does not exists then skip this row
-    if not all([country, agency, subsec, proj_type, project_status]):
+    if not all([country, agency, proj_type, project_status]):
+        return None
+    if not any([sector, subsec]):
         return None
 
     date_completion = item["DATE_COMPLETION"]
@@ -923,8 +936,8 @@ def get_project_base_data(item, item_index, is_submissions=True):
     project_data = {
         "country": country,
         "agency": agency,
-        "sector": sector,
         "cluster": cluster,
+        "sector": sector,
         "sector_legacy": item["SEC"],
         "subsector": subsec,
         "subsector_legacy": item["SUBSECTOR"],
@@ -966,7 +979,7 @@ def get_project_base_data(item, item_index, is_submissions=True):
 def update_or_create_project(project_data, update_status=True):
     # try to find the project by its code
     project = None
-    if "code" in project_data:
+    if project_data.get("code"):
         project = Project.objects.filter(code__iexact=project_data["code"]).first()
 
     # some projects do not have the code set so we try to find them by other fields
@@ -976,11 +989,12 @@ def update_or_create_project(project_data, update_status=True):
             country=project_data["country"],
             agency=project_data["agency"],
             project_type=project_data["project_type"],
+            serial_number=project_data["serial_number"],
             approval_meeting=project_data["approval_meeting"],
         )
-        if "subsector" in project_data:
+        if project_data.get("subsector"):
             fields_filter &= models.Q(subsector=project_data["subsector"])
-        elif "sector" in project_data:
+        elif project_data.get("sector"):
             fields_filter &= models.Q(sector=project_data["sector"])
 
         project = Project.objects.filter(fields_filter).first()
@@ -988,16 +1002,6 @@ def update_or_create_project(project_data, update_status=True):
     # set project sector based on subsector
     if "sector" not in project_data and project_data.get("subsector"):
         project_data["sector"] = project_data["subsector"].sector
-
-    # there are some projects that have the same title and country but different code
-    # so we need to check if the code is different and if it is then we need to create a new project
-    if (
-        project
-        and project_data.get("code")
-        and project.code
-        and project.code != project_data["code"]
-    ):
-        project = None
 
     if not project:
         # if the project does not exists then create it
