@@ -3,6 +3,7 @@
 import React, { useMemo, useRef, useState } from 'react'
 
 import {
+  Alert,
   Box,
   Button,
   InputAdornment,
@@ -10,13 +11,13 @@ import {
   Typography,
 } from '@mui/material'
 import { SuppressKeyboardEventParams } from 'ag-grid-community'
+import cx from 'classnames'
 import dayjs from 'dayjs'
 import {
   filter,
   find,
   get,
   includes,
-  isArray,
   isEqual,
   isObject,
   map,
@@ -24,6 +25,7 @@ import {
 } from 'lodash'
 import { useSnackbar } from 'notistack'
 
+import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/TableRework'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
@@ -31,7 +33,7 @@ import IconButton from '@ors/components/ui/IconButton/IconButton'
 import Link from '@ors/components/ui/Link/Link'
 import { KEY_ENTER } from '@ors/constants'
 import api, { getResults } from '@ors/helpers/Api/Api'
-import { scrollToElement } from '@ors/helpers/Utils/Utils'
+import { debounce, scrollToElement } from '@ors/helpers/Utils/Utils'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
 
@@ -47,13 +49,6 @@ import {
 const dayOfYear = require('dayjs/plugin/dayOfYear')
 dayjs.extend(dayOfYear)
 
-let timer: any
-
-const debounce = (func: () => void) => {
-  if (timer) clearTimeout(timer)
-  timer = setTimeout(func, 300)
-}
-
 function suppressUndo(params: SuppressKeyboardEventParams) {
   const event = params.event
   const key = event.key
@@ -67,43 +62,69 @@ function useGridOptions() {
   const projectSlice = useStore((state) => state.projects)
 
   function formatValue(value: any) {
-    return value?.name || ''
+    return value?.id || ''
   }
 
   const gridOptions = useMemo(
     () => ({
       columnDefs: [
         {
-          field: 'title',
-          headerName: 'Title',
-          initialWidth: 300,
-          suppressAutoSize: true,
+          cellRenderer: (props: any) => {
+            if (includes(['skeleton'], props.data.rowType)) {
+              return <AgCellRenderer {...props} />
+            }
+            if (!props.data.id || !props.value) return null
+            return (
+              <Link
+                className={cx(props.className)}
+                href={`/projects/${props.data.id}`}
+                variant="contained"
+              >
+                {props.value}
+              </Link>
+            )
+          },
+          editable: false,
+          field: 'code',
+          headerName: 'Code',
+        },
+        {
+          editable: false,
+          field: 'code_legacy',
+          headerName: 'Legacy code',
+        },
+        {
+          editable: false,
+          field: 'metaproject_code',
+          headerName: 'Metaproject code',
         },
         {
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select status' },
             formatValue,
+            getFormattedValue: (id: any) => {
+              return find(projectSlice.statuses.data, {
+                id,
+              })?.name
+            },
             getOptionLabel: (option: any) => {
-              return isObject(option) ? get(option, 'name') : option
+              return isObject(option)
+                ? get(option, 'name')
+                : find(projectSlice.statuses.data, { id: option })?.name || ''
             },
             options: filter(projectSlice.statuses.data, (item) => {
               return item.code !== 'NEWSUB'
             }),
           },
-          field: 'status',
+          cellRenderer: (props: any) => {
+            return <AgCellRenderer {...props} value={props.data.status} />
+          },
+          field: 'status_id',
           headerName: 'Status',
         },
         {
-          cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: { placeholder: 'Select country' },
-            formatValue,
-            getOptionLabel: (option: any) => {
-              return isObject(option) ? get(option, 'name') : option
-            },
-            options: commonSlice.countries.data,
-          },
+          editable: false,
           field: 'country',
           headerName: 'Country',
           initialWidth: 150,
@@ -113,25 +134,50 @@ function useGridOptions() {
           cellEditorParams: {
             Input: { placeholder: 'Select project type' },
             formatValue,
+            getFormattedValue: (id: any) => {
+              return find(projectSlice.types.data, {
+                id,
+              })?.name
+            },
             getOptionLabel: (option: any) => {
-              return isObject(option) ? get(option, 'name') : option
+              return isObject(option)
+                ? get(option, 'name')
+                : find(projectSlice.types.data, { id: option })?.name || ''
             },
             options: projectSlice.types.data,
           },
-          field: 'project_type',
+          cellRenderer: (props: any) => {
+            return <AgCellRenderer {...props} value={props.data.project_type} />
+          },
+          field: 'project_type_id',
           headerName: 'Project type',
+        },
+        {
+          editable: false,
+          field: 'project_type_legacy',
+          headerName: 'Legacy project type',
         },
         {
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select agency' },
             formatValue,
+            getFormattedValue: (id: any) => {
+              return find(commonSlice.agencies.data, {
+                id,
+              })?.name
+            },
             getOptionLabel: (option: any) => {
-              return isObject(option) ? get(option, 'name') : option
+              return isObject(option)
+                ? get(option, 'name')
+                : find(commonSlice.agencies.data, { id: option })?.name || ''
             },
             options: commonSlice.agencies.data,
           },
-          field: 'agency',
+          cellRenderer: (props: any) => {
+            return <AgCellRenderer {...props} value={props.data.agency} />
+          },
+          field: 'agency_id',
           headerName: 'Agency',
         },
         {
@@ -139,21 +185,43 @@ function useGridOptions() {
           cellEditorParams: {
             Input: { placeholder: 'Select sector' },
             formatValue,
+            getFormattedValue: (id: any) => {
+              return find(projectSlice.sectors.data, {
+                id,
+              })?.name
+            },
             getOptionLabel: (option: any) => {
-              return isObject(option) ? get(option, 'name') : option
+              return isObject(option)
+                ? get(option, 'name')
+                : find(projectSlice.sectors.data, { id: option })?.name || ''
             },
             options: projectSlice.sectors.data,
           },
-          field: 'sector',
+          cellRenderer: (props: any) => {
+            return <AgCellRenderer {...props} value={props.data.sector} />
+          },
+          field: 'sector_id',
           headerName: 'Sector',
+        },
+        {
+          editable: false,
+          field: 'sector_legacy',
+          headerName: 'Legacy sector',
         },
         {
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select subsector' },
             formatValue,
+            getFormattedValue: (id: any) => {
+              return find(projectSlice.subsectors.data, {
+                id,
+              })?.name
+            },
             getOptionLabel: (option: any) => {
-              return isObject(option) ? get(option, 'name') : option
+              return isObject(option)
+                ? get(option, 'name')
+                : find(projectSlice.subsectors.data, { id: option })?.name || ''
             },
             getOptions: (params: any) => {
               const sector = get(params, 'data.sector')
@@ -167,12 +235,24 @@ function useGridOptions() {
               )
             },
           },
-          field: 'subsector',
+          cellRenderer: (props: any) => {
+            return <AgCellRenderer {...props} value={props.data.subsector} />
+          },
+          field: 'subsector_id',
           headerComponentParams: {
             info: true,
             tooltip: 'Select a sector before updating subsector',
           },
           headerName: 'Subsector',
+        },
+        {
+          editable: false,
+          field: 'subsector_legacy',
+          headerComponentParams: {
+            info: true,
+            tooltip: 'Select a sector before updating subsector',
+          },
+          headerName: 'Legacy subsector',
         },
         {
           cellEditor: 'agSelectCellEditor',
@@ -191,41 +271,22 @@ function useGridOptions() {
         },
         {
           cellEditor: 'agNumberCellEditor',
+          cellEditorParams: {
+            min: 0,
+          },
           dataType: 'number',
           field: 'funds_allocated',
           headerName: 'Funds allocated',
         },
         {
           editable: false,
-          field: '',
+          field: 'substance_name',
           headerName: 'Substance',
         },
         {
-          field: 'code',
-          headerName: 'Code',
-        },
-        {
-          cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: { placeholder: 'Select cluster' },
-            formatValue,
-            getOptionLabel: (option: any) => {
-              return isObject(option) ? get(option, 'name') : option
-            },
-            options: projectSlice.clusters.data,
-          },
+          editable: false,
           field: 'cluster',
           headerName: 'Cluster',
-        },
-        {
-          editable: false,
-          field: 'metaproject_code',
-          headerName: 'Metaproject',
-        },
-        {
-          editable: false,
-          field: 'generated_code',
-          headerName: 'Subcode',
         },
         {
           editable: false,
@@ -233,53 +294,11 @@ function useGridOptions() {
           headerName: 'Metaproject category',
         },
         {
-          cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: { placeholder: 'Select project type' },
-            formatValue,
-            getOptionLabel: (option: any) => {
-              return isObject(option) ? get(option, 'name') : option
-            },
-            options: projectSlice.types.data,
-          },
-          field: 'legacy_project_type',
-          headerName: 'Legacy project type',
-        },
-        {
-          cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: { placeholder: 'Select sector' },
-            formatValue,
-            getOptionLabel: (option: any) => {
-              return isObject(option) ? get(option, 'name') : option
-            },
-            options: projectSlice.sectors.data,
-          },
-          field: 'legacy_sector',
-          headerName: 'Legacy sector',
-        },
-        {
-          cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: { placeholder: 'Select subsector' },
-            formatValue,
-            getOptionLabel: (option: any) => {
-              return isObject(option) ? get(option, 'name') : option
-            },
-            getOptions: (params: any) => {
-              const sector = get(params, 'data.legacy_sector')
-              const sectorId = find(projectSlice.sectors.data, {
-                name: sector,
-              })?.id
-              if (!sectorId) return []
-              return filter(
-                projectSlice.subsectors.data,
-                (item) => item.sector_id === sectorId,
-              )
-            },
-          },
-          field: 'legacy_subsector',
-          headerName: 'Legacy subsector',
+          field: 'title',
+          headerName: 'Title',
+          initialWidth: 300,
+          suppressAutoSize: true,
+          tooltip: true,
         },
       ],
       defaultColDef: {
@@ -334,17 +353,18 @@ const initialFilters = {
 const orderings = [
   // { field: 'date_received', label: 'Date added' },
   { field: 'title', label: 'Title' },
-  { field: 'county', label: 'Country' },
-  { field: 'agency', label: 'Agency' },
-  { field: 'sector', label: 'Sector' },
-  { field: 'subsector', label: 'Subsector' },
-  { field: 'project_type', label: 'Project type' },
+  { field: 'country__name', label: 'Country' },
+  { field: 'agency__name', label: 'Agency' },
+  { field: 'sector__name', label: 'Sector' },
+  { field: 'subsector__name', label: 'Subsector' },
+  { field: 'project_type__name', label: 'Project type' },
   { field: 'substance_type', label: 'Substance type' },
 ]
 
 const INITIAL_PAGE_SIZE = 20
 
 export default function PListing() {
+  const [lastChange, setLastChange] = useState<any>(null)
   const { enqueueSnackbar } = useSnackbar()
   const gridOptions = useGridOptions()
   const form = useRef<any>()
@@ -384,12 +404,26 @@ export default function PListing() {
     return map(filters.sector_id, (item: any) => item.id)
   }, [filters.sector_id])
 
-  function handleParamsChange(params: { [key: string]: any }) {
+  function handleParamsChange(
+    params: { [key: string]: any },
+    goToFirstPage = true,
+  ) {
+    if (goToFirstPage) {
+      debounce(
+        () => grid.current.paginationGoToPage(0),
+        300,
+        'paginaionGoToPage:1',
+      )
+    }
     setParams(params)
   }
 
   function handleFilterChange(newFilters: { [key: string]: any }) {
-    grid.current.paginationGoToPage(1)
+    debounce(
+      () => grid.current.paginationGoToPage(0),
+      300,
+      'paginaionGoToPage:1',
+    )
     setFilters((filters) => ({ ...filters, ...newFilters }))
   }
 
@@ -715,6 +749,55 @@ export default function PListing() {
             </Typography>
           </div>
         )}
+        {lastChange && (
+          <Alert className="mb-4" severity="info">
+            <Typography>
+              {lastChange.colDef.headerName} for project with code{' '}
+              {`"${lastChange.data.code}"`} has been updated from{' '}
+              {`"${lastChange.formattedOldValue}"`} to{' '}
+              {`"${lastChange.formattedNewValue}"`}.{' '}
+              <Button
+                className="p-0 text-base leading-normal"
+                variant="text"
+                onClick={() => {
+                  const rowNode = grid.current.api.getRowNode(
+                    lastChange.node.id,
+                  )
+                  if (!rowNode) {
+                    api(`api/projects/${lastChange.data.id}`, {
+                      data: { [lastChange.colId]: lastChange.oldValue },
+                      method: 'patch',
+                    })
+                      .then(() => {
+                        setLastChange(null)
+                        enqueueSnackbar(
+                          <>{lastChange.colDef.headerName} change reverted</>,
+                          {
+                            variant: 'success',
+                          },
+                        )
+                      })
+                      .catch(async (error) => {
+                        const errorData = await error.json()
+                        enqueueSnackbar(<>{errorData[lastChange.colId]}</>, {
+                          variant: 'error',
+                        })
+                      })
+                  } else {
+                    lastChange.node.setDataValue(
+                      lastChange.colId,
+                      lastChange.oldValue,
+                      'undo-last-change',
+                    )
+                  }
+                }}
+              >
+                Click here
+              </Button>{' '}
+              to undo.
+            </Typography>
+          </Alert>
+        )}
         <Table
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
@@ -727,8 +810,10 @@ export default function PListing() {
           rowCount={count}
           rowData={results}
           suppressCellFocus={false}
+          suppressColumnVirtualisation={true}
           suppressRowHoverHighlight={false}
           undoRedoCellEditing={true}
+          undoRedoCellEditingLimit={1}
           withSeparators={true}
           withSkeleton={true}
           getRowId={(props: any) => {
@@ -736,20 +821,52 @@ export default function PListing() {
           }}
           onCellValueChanged={async (event) => {
             if (isEqual(event.oldValue, event.newValue)) return
-            if (event.source === 'undo') return
+            if (event.source === 'undo') {
+              setLastChange(null)
+              return
+            }
             const colDef = event.column.getColDef()
             const colId = event.column.getColId()
+            const getFormattedValue = (value: any) => {
+              return (
+                colDef.cellEditorParams?.getFormattedValue?.(value) || value
+              )
+            }
             api(`api/projects/${event.data.id}`, {
               data: { [colId]: event.newValue },
               method: 'patch',
             })
               .then((response) => {
+                event.node.setData(response)
+                if (event.source === 'undo-last-change') {
+                  setLastChange(null)
+                  enqueueSnackbar(<>{colDef.headerName} change reverted</>, {
+                    variant: 'success',
+                  })
+
+                  return
+                }
+                setLastChange({
+                  colId,
+                  formattedNewValue: getFormattedValue(event.newValue),
+                  formattedOldValue: getFormattedValue(event.oldValue),
+                  ...event,
+                })
                 enqueueSnackbar(
-                  <>{colDef.headerName} has been updated successfully.</>,
-                  { variant: 'success' },
+                  <>{colDef.headerName} has been updated successfully</>,
+                  {
+                    variant: 'success',
+                  },
                 )
               })
               .catch(async (error) => {
+                if (event.source === 'undo-last-change') {
+                  lastChange.node.setDataValue(
+                    lastChange.colId,
+                    lastChange.newValue,
+                    'undo',
+                  )
+                }
                 const errorData = await error.json()
                 grid.current.api.undoCellEditing()
                 enqueueSnackbar(<>{errorData[colId]}</>, { variant: 'error' })
@@ -763,10 +880,13 @@ export default function PListing() {
               behavior: 'auto',
               element: form.current.querySelector('.table-wrapper'),
             })
-            handleParamsChange({
-              limit: rowsPerPage,
-              offset: page * rowsPerPage,
-            })
+            handleParamsChange(
+              {
+                limit: rowsPerPage,
+                offset: page * rowsPerPage,
+              },
+              false,
+            )
           }}
           onRowDataUpdated={() => {
             setTimeout(() => {

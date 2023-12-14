@@ -5,12 +5,14 @@ import DefaultView from '@ors/components/theme/Views/DefaultView'
 import Forbidden from '@ors/components/theme/Views/Forbidden'
 import NotFound from '@ors/components/theme/Views/NotFound'
 import PrintView from '@ors/components/theme/Views/PrintView'
+import SimpleView from '@ors/components/theme/Views/SimpleView'
 import Unauthorized from '@ors/components/theme/Views/Unauthorized'
 
 export interface ByLayout {
   authorized_document?: typeof AuthorizedView
   document?: typeof DefaultView
   print?: typeof PrintView
+  simple?: typeof SimpleView
 }
 
 export interface ByError {
@@ -30,6 +32,7 @@ export const layoutViews: ByLayout = {
   authorized_document: AuthorizedView,
   document: defaultView,
   print: PrintView,
+  simple: SimpleView,
 }
 
 export const errorViews: ByError = {
@@ -53,15 +56,15 @@ export const routes = [
     path: '/econnrefused',
   },
   {
-    layout: 'document',
+    layout: 'simple',
     path: '/login',
   },
   {
-    layout: 'document',
+    layout: 'simple',
     path: '/forgot-password',
   },
   {
-    layout: 'document',
+    layout: 'simple',
     path: '/reset-password',
   },
   {

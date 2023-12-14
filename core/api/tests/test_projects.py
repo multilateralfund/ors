@@ -18,6 +18,7 @@ from core.api.tests.factories import (
 )
 from core.models.project import Project, ProjectOdsOdp
 from core.models.project import ProjectFile
+from core.utils import get_project_sub_code
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008,W0221,R0913
@@ -111,10 +112,12 @@ class TestProjectsUpdate:
 
     def test_project_patch(self, user, project_url, project, agency):
         self.client.force_authenticate(user=user)
+        new_agency = AgencyFactory.create(code="NEWAG")
 
         update_data = {
             "title": "Into the Spell",
             "submission_category": "investment project",
+            "agency_id": new_agency.id,
             "coop_agencies_id": [agency.id],
         }
         response = self.client.patch(project_url, update_data, format="json")
@@ -124,6 +127,7 @@ class TestProjectsUpdate:
         assert project.title == "Into the Spell"
         assert project.submission_category == "investment project"
         assert project.coop_agencies.count() == 1
+        assert "NEWAG" in project.generated_code
 
     def test_project_patch_ods_odp(
         self, user, project_url, project, project_ods_odp_subst
@@ -206,17 +210,21 @@ def setup_project_list(
 
     for i in range(4):
         for project_data in projects_data:
-            ProjectFactory.create(
+            proj = ProjectFactory.create(
                 title=f"Project {i}",
+                serial_number=i,
                 date_received=f"2020-01-{i+1}",
                 **project_data,
             )
+            proj.set_generated_code()
 
-    ProjectFactory.create(
+    proj = ProjectFactory.create(
         title=f"Project {25}",
+        serial_number=25,
         date_received="2020-01-30",
         **projects_data[0],
     )
+    proj.set_generated_code()
 
     return new_agency, new_project_status, new_sector, new_meeting
 
@@ -379,12 +387,13 @@ def setup_project_create(
     project_cluster_kip,
     rbm_measure,
 ):
-    statuses = [
+    statuses_dict = [
         {"name": "New Submission", "code": "NEWSUB"},
         {"name": "New", "code": "NEW"},
     ]
-    for status in statuses:
-        ProjectStatusFactory.create(**status)
+    statuses = []
+    for status in statuses_dict:
+        statuses.append(ProjectStatusFactory.create(**status))
     new_rbm_measure = RbmMeasureFactory.create(name="new_measure")
 
     # create coop agencies
@@ -400,7 +409,7 @@ def setup_project_create(
         "sector_id": subsector.sector_id,
         "subsector_id": subsector.id,
         "project_type_id": project_type.id,
-        "status_id": 1,
+        "status_id": statuses[0].id,
         "substance_type": "HCFC",
         "approval_meeting_id": meeting.id,
         "cluster_id": project_cluster_kip.id,
@@ -478,6 +487,7 @@ class TestCreateProjects(BaseTest):
         subsector,
         rbm_measure,
         meeting,
+        project_cluster_kip,
         _setup_project_create,
     ):
         data = _setup_project_create
@@ -497,6 +507,16 @@ class TestCreateProjects(BaseTest):
         assert response.data["substance_type"] == "HCFC"
         assert response.data["national_agency"] == "National Agency"
         assert response.data["submission_category"] == "bilateral cooperation"
+        assert response.data["code"] == get_project_sub_code(
+            country_ro,
+            project_cluster_kip,
+            None,
+            agency,
+            project_type,
+            subsector.sector,
+            meeting,
+            None,
+        )
 
         ods_odp = response.data["ods_odp"]
         assert len(ods_odp) == 2

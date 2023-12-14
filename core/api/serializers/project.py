@@ -319,42 +319,79 @@ class ProjectListSerializer(serializers.ModelSerializer):
     ProjectSerializer class
     """
 
+    code = serializers.CharField(read_only=True)
     country = serializers.SlugRelatedField("name", read_only=True)
     agency = serializers.SlugRelatedField("name", read_only=True)
+    agency_id = serializers.PrimaryKeyRelatedField(
+        required=True, queryset=Agency.objects.all().values_list("id", flat=True)
+    )
     coop_agencies = AgencySerializer(many=True, read_only=True)
     sector = serializers.SlugRelatedField("name", read_only=True)
+    sector_id = serializers.PrimaryKeyRelatedField(
+        required=True,
+        queryset=ProjectSector.objects.all().values_list("id", flat=True),
+    )
+    sector_legacy = serializers.CharField(read_only=True)
     subsector = serializers.SlugRelatedField("name", read_only=True)
+    subsector_id = serializers.PrimaryKeyRelatedField(
+        allow_null=True,
+        queryset=ProjectSubSector.objects.all().values_list("id", flat=True),
+    )
+    subsector_legacy = serializers.CharField(read_only=True)
     project_type = serializers.SlugRelatedField("name", read_only=True)
+    project_type_id = serializers.PrimaryKeyRelatedField(
+        required=True, queryset=ProjectType.objects.all().values_list("id", flat=True)
+    )
+    project_type_legacy = serializers.CharField(read_only=True)
     status = serializers.SlugRelatedField("name", read_only=True)
+    status_id = serializers.PrimaryKeyRelatedField(
+        required=True, queryset=ProjectStatus.objects.all().values_list("id", flat=True)
+    )
     cluster = serializers.SlugRelatedField("name", read_only=True)
     title = serializers.CharField(required=True)
     approval_meeting = serializers.SerializerMethodField()
     meeting_transf = serializers.SerializerMethodField()
     decision = serializers.SlugField(source="number", read_only=True)
     substance_category = serializers.SerializerMethodField()
+    metaproject_code = serializers.SerializerMethodField()
+    metaproject_category = serializers.SerializerMethodField()
+    substance_name = serializers.SerializerMethodField()
+    code = serializers.SerializerMethodField()
+    code_legacy = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
         fields = [
             "id",
             "title",
-            "code",
+            "code",  # generated_code
+            "code_legacy",  # code
+            "metaproject_code",
+            "metaproject_category",
             "mya_code",
             "serial_number",
             "description",
             "country",
             "agency",
+            "agency_id",
             "national_agency",
             "coop_agencies",
             "sector",
+            "sector_id",
+            "sector_legacy",
             "subsector",
+            "subsector_id",
+            "subsector_legacy",
             "project_type",
+            "project_type_id",
+            "project_type_legacy",
             "mya_subsector",
             "cluster",
             "stage",
             "tranche",
             "compliance",
             "status",
+            "status_id",
             "substance_type",
             "substance_category",
             "approval_meeting",
@@ -415,7 +452,14 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "submission_comments",
             "plus",
             "remarks",
+            "substance_name",
         ]
+
+    def get_code(self, obj):
+        return obj.generated_code
+
+    def get_code_legacy(self, obj):
+        return obj.code
 
     def get_approval_meeting(self, obj):
         if obj.approval_meeting:
@@ -434,6 +478,26 @@ class ProjectListSerializer(serializers.ModelSerializer):
             return "Production"
         return "Consumption"
 
+    def get_substance_name(self, obj):
+        if not obj.ods_odp.count():
+            return None
+        first_ods = obj.ods_odp.first()
+        if first_ods.ods_substance:
+            return first_ods.ods_substance.name
+        if first_ods.ods_blend:
+            return first_ods.ods_blend.name
+        return None
+
+    def get_metaproject_code(self, obj):
+        if not obj.meta_project:
+            return None
+        return obj.meta_project.code
+
+    def get_metaproject_category(self, obj):
+        if not obj.meta_project:
+            return None
+        return obj.meta_project.type
+
 
 class ProjectDetailsSerializer(ProjectListSerializer):
     """
@@ -445,22 +509,8 @@ class ProjectDetailsSerializer(ProjectListSerializer):
     comments = ProjectCommentListSerializer(many=True)
     submission_amounts = SubmissionAmountListSerializer(many=True, required=False)
     rbm_measures = ProjectRbmMeasureListSerializer(many=True, required=False)
-    agency_id = serializers.PrimaryKeyRelatedField(
-        required=True, queryset=Agency.objects.all().values_list("id", flat=True)
-    )
     country_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Country.objects.all().values_list("id", flat=True)
-    )
-    sector_id = serializers.PrimaryKeyRelatedField(
-        required=True,
-        queryset=ProjectSector.objects.all().values_list("id", flat=True),
-    )
-    subsector_id = serializers.PrimaryKeyRelatedField(
-        required=True,
-        queryset=ProjectSubSector.objects.all().values_list("id", flat=True),
-    )
-    project_type_id = serializers.PrimaryKeyRelatedField(
-        required=True, queryset=ProjectType.objects.all().values_list("id", flat=True)
     )
     coop_agencies_id = serializers.PrimaryKeyRelatedField(
         queryset=Agency.objects.all().values_list("id", flat=True),
@@ -483,11 +533,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         model = Project
         fields = ProjectListSerializer.Meta.fields + [
             "country_id",
-            "agency_id",
             "coop_agencies_id",
-            "sector_id",
-            "subsector_id",
-            "project_type_id",
             "approval_meeting_id",
             "meeting_transf_id",
             "cluster_id",
@@ -528,6 +574,9 @@ class ProjectDetailsSerializer(ProjectListSerializer):
 
         # create project
         project = Project.objects.create(**validated_data)
+        # set subcode
+        project.set_generated_code()
+
         # create ods_odp
         for ods_odp in ods_odp_data:
             ProjectOdsOdp.objects.create(project=project, **ods_odp)
@@ -553,6 +602,8 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         coop_agencies_id = validated_data.pop("coop_agencies_id", None)
 
         super().update(instance, validated_data)
+        # set subcode
+        instance.set_generated_code()
 
         # update coop_agencies
         if coop_agencies_id:

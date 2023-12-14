@@ -12,6 +12,7 @@ from core.models.meeting import Decision, Meeting
 from core.models.rbm_measures import RBMMeasure
 from core.models.substance import Substance
 from core.models.utils import SubstancesType
+from core.utils import get_project_sub_code
 
 PROTECTED_STORAGE = FileSystemStorage(location=settings.PROTECTED_MEDIA_ROOT)
 
@@ -281,6 +282,19 @@ class Project(models.Model):
             return self.files.latest()
         except ProjectFile.DoesNotExist:
             return None
+
+    def set_generated_code(self):
+        self.generated_code = get_project_sub_code(
+            self.country,
+            self.cluster,
+            self.serial_number,
+            self.agency,
+            self.project_type,
+            self.sector,
+            self.approval_meeting,
+            self.meeting_transf,
+        )
+        self.save()
 
 
 class ProjectFile(models.Model):

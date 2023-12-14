@@ -6,4 +6,4 @@ from core.models import Country
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
-        fields = ["id", "name", "name_alt", "iso3"]
+        fields = ["id", "name", "abbr", "name_alt", "iso3"]

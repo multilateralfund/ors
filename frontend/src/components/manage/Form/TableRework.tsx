@@ -351,6 +351,8 @@ export default function Table(props: TableProps) {
     if (!grid.current?.api) return
     if (loading) {
       grid.current.api.showLoadingOverlay()
+    } else {
+      grid.current.api.hideOverlay()
     }
   }, [loading])
 
@@ -633,9 +635,9 @@ export default function Table(props: TableProps) {
                 debounce(updateOffsetHeight)
               }}
               onRowDataUpdated={(props) => {
-                if (!loading) {
-                  props.api.hideOverlay()
-                }
+                // if (!loading) {
+                //   props.api.hideOverlay()
+                // }
                 onRowDataUpdated(props)
               }}
               {...omit(props, [

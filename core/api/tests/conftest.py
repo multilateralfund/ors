@@ -227,7 +227,7 @@ def blend(excluded_usage, time_frames):
 
 @pytest.fixture
 def agency():
-    return AgencyFactory.create(name="Agency")
+    return AgencyFactory.create(name="Agency", code="AG")
 
 
 @pytest.fixture
@@ -297,7 +297,9 @@ def project(
         fund_disbursed=123.1,
         total_fund_transferred=123.1,
         date_approved="2019-03-14",
+        serial_number=1,
     )
+    project.set_generated_code()
 
     return project
 
