@@ -115,7 +115,10 @@ class ProjectViewSet(
         "approval_meeting",
         "meeting_transf",
     ).prefetch_related(
-        "coop_agencies__agency", "submission_amounts", "rbm_measures__measure"
+        "coop_agencies__agency",
+        "submission_amounts",
+        "rbm_measures__measure",
+        "ods_odp",
     )
     filterset_class = ProjectFilter
     filter_backends = [
@@ -123,8 +126,16 @@ class ProjectViewSet(
         filters.OrderingFilter,
         filters.SearchFilter,
     ]
-    ordering_fields = "__all__"
-    search_fields = ["title"]
+    ordering_fields = [
+        "title",
+        "county__name",
+        "agency__name",
+        "sector__name",
+        "subsector__name",
+        "project_type__name",
+        "substance_type",
+    ]
+    search_fields = ["code", "genarated_code", "meta_project__code", "title"]
 
     def get_serializer_class(self):
         if self.action == "list":

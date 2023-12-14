@@ -509,22 +509,8 @@ class ProjectDetailsSerializer(ProjectListSerializer):
     comments = ProjectCommentListSerializer(many=True)
     submission_amounts = SubmissionAmountListSerializer(many=True, required=False)
     rbm_measures = ProjectRbmMeasureListSerializer(many=True, required=False)
-    agency_id = serializers.PrimaryKeyRelatedField(
-        required=True, queryset=Agency.objects.all().values_list("id", flat=True)
-    )
     country_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Country.objects.all().values_list("id", flat=True)
-    )
-    sector_id = serializers.PrimaryKeyRelatedField(
-        required=True,
-        queryset=ProjectSector.objects.all().values_list("id", flat=True),
-    )
-    subsector_id = serializers.PrimaryKeyRelatedField(
-        required=True,
-        queryset=ProjectSubSector.objects.all().values_list("id", flat=True),
-    )
-    project_type_id = serializers.PrimaryKeyRelatedField(
-        required=True, queryset=ProjectType.objects.all().values_list("id", flat=True)
     )
     coop_agencies_id = serializers.PrimaryKeyRelatedField(
         queryset=Agency.objects.all().values_list("id", flat=True),
@@ -547,11 +533,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         model = Project
         fields = ProjectListSerializer.Meta.fields + [
             "country_id",
-            "agency_id",
             "coop_agencies_id",
-            "sector_id",
-            "subsector_id",
-            "project_type_id",
             "approval_meeting_id",
             "meeting_transf_id",
             "cluster_id",
