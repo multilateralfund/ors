@@ -8,6 +8,7 @@ from core.import_data.utils import (
     get_chemical_by_name_or_components,
     get_meeting_by_number,
     get_project_base_data,
+    get_serial_number_from_code,
     parse_date,
     update_or_create_project,
 )
@@ -229,9 +230,12 @@ def create_project(project_json):
     if not meeting:
         return None
 
+    # set serial number
+    serial_number = get_serial_number_from_code(project_json["CODE"])
+
     project_data.update(
         {
-            "serial_number": project_json["NO"],
+            "serial_number": serial_number,
             "code": project_json["CODE"],
             "approval_meeting": meeting,
             "substance_type": substance_type,

@@ -12,6 +12,7 @@ from core.import_data.utils import (
     get_object_by_name,
     get_project_type_by_code,
     get_sector_by_code,
+    get_serial_number_from_code,
     update_or_create_project,
 )
 from core.models.agency import Agency
@@ -73,6 +74,11 @@ def parse_file(file_path):
         subs_name = subs_name.strip()
         stage = stage.count("I")
 
+        # set serial number
+        serial_number = serial_number = get_serial_number_from_code(
+            project_json["Code"]
+        )
+
         date_agree = project_json.get("Date Completion Per Agreement")
         date_decision = project_json.get("Date Completion Per Decision")
 
@@ -83,6 +89,7 @@ def parse_file(file_path):
             "mya_code": project_json.get("MYA Code"),
             "project_type": project_type,
             "sector": sector,
+            "serial_number": serial_number,
             "mya_subsector": subs_name,
             "title": project_json["Project Title"],
             "stage": stage,

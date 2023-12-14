@@ -3953,7 +3953,7 @@
             "mdg_region": "760",
             "iso_alpha3_code": "SYR",
             "abbr_alt": "SYR",
-            "name_alt": "Syrian Arab Republic",
+            "name_alt": "Syria",
             "sign_date_vc": null,
             "sign_date_mp": null,
             "is_active": true
@@ -4133,7 +4133,7 @@
             "mdg_region": "792",
             "iso_alpha3_code": "TUR",
             "abbr_alt": "TUR",
-            "name_alt": "T\u00fcrkiye",
+            "name_alt": "Turkey",
             "sign_date_vc": null,
             "sign_date_mp": null,
             "is_active": true
@@ -4403,7 +4403,7 @@
             "mdg_region": "704",
             "iso_alpha3_code": "VNM",
             "abbr_alt": "VIE",
-            "name_alt": "Viet Nam",
+            "name_alt": "Vietnam",
             "sign_date_vc": null,
             "sign_date_mp": null,
             "is_active": true

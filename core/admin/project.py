@@ -99,9 +99,9 @@ class ProjectAdmin(admin.ModelAdmin):
         AutocompleteFilterFactory("agency", "agency"),
         AutocompleteFilterFactory("subsector", "subsector"),
         AutocompleteFilterFactory("project_type", "project_type"),
+        AutocompleteFilterFactory("cluster", "cluster"),
         "meta_project__type",
         "status",
-        AutocompleteFilterFactory("cluster", "cluster"),
     ]
     autocomplete_fields = ["country", "subsector", "agency", "project_type"]
 
