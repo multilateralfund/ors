@@ -76,5 +76,5 @@ class Command(BaseCommand):
             import_pcr_delay_explanations()
         if imp_type in ["pcr_learned_lessons", "all_pcr", "all"]:
             import_pcr_learned_lessons()
-        if imp_type in ["generate_sub_codes", "all"]:
+        if imp_type in ["generate_sub_codes", "all_projects", "all"]:
             generate_all_project_sub_codes()

@@ -41,12 +41,8 @@ class CountryAdmin(admin.ModelAdmin):
         "abbr",
         "abbr_alt",
     ]
-    list_filter = ["subregion", "subregion__region"]
-
-    def get_queryset(self, request):
-        queryset = super().get_queryset(request)
-        return queryset.select_related("subregion__region")
+    list_filter = ["location_type"]
 
     def get_list_display(self, request):
-        exclude = ["cpreport", "project", "bprecord", "cpreportarchive"]
+        exclude = ["cpreport", "project", "bprecord", "cpreportarchive", "country"]
         return get_final_display_list(Country, exclude)

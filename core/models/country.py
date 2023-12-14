@@ -13,6 +13,11 @@ class CountryManager(models.Manager):
 
 # country model; contains name, m49 code, and iso code
 class Country(models.Model):
+    class LocationType(models.TextChoices):
+        COUNTRY = "Country", "Country"
+        REGION = "Region", "Region"
+        SUBREGION = "Subregion", "Subregion"
+
     name = models.CharField(max_length=100, unique=True)
     name_alt = models.CharField(max_length=256, null=True, blank=True)
     abbr = models.CharField(max_length=10, null=True, blank=True)
@@ -23,12 +28,11 @@ class Country(models.Model):
     is_lvc = models.BooleanField(default=False)
     lvc_baseline = models.FloatField(null=True, blank=True)
     ozone_id = models.IntegerField(null=True, blank=True)
-    subregion = models.ForeignKey(
-        "Subregion",
-        null=True,
-        blank=True,
-        on_delete=models.CASCADE,
+    parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True)
+    location_type = models.CharField(
+        max_length=16, choices=LocationType.choices, default=LocationType.COUNTRY
     )
+    import_id = models.IntegerField(null=True, blank=True)
 
     objects = CountryManager()
 

@@ -136,8 +136,10 @@ def parse_clusters_file(file_path, database_name):
 
 def set_ind_cluster(project):
     cluster = None
-    if project.project_type.code == "INS":
-        project.cluster = ProjectCluster.objects.find_by_name_or_code("INS")
+    if project.project_type.code in ["INS", "TRA", "TAS"]:
+        project.cluster = ProjectCluster.objects.find_by_name_or_code(
+            project.project_type.code
+        )
         project.save()
         return
 

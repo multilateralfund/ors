@@ -95,8 +95,9 @@ def parse_countries_json_file(file_path, country_lvc):
             # skip unwanted territories
             continue
 
-        subregion = Subregion.objects.filter(
-            import_id=country_json["fields"]["subregion"]
+        subregion = Country.objects.filter(
+            import_id=country_json["fields"]["subregion"],
+            location_type=Country.LocationType.SUBREGION,
         ).first()
 
         country_data = {
@@ -106,7 +107,8 @@ def parse_countries_json_file(file_path, country_lvc):
             "iso3": country_json["fields"]["iso_alpha3_code"],
             "abbr_alt": country_json["fields"]["abbr_alt"],
             "name_alt": country_json["fields"]["name_alt"],
-            "subregion": subregion,
+            "parent": subregion,
+            "location_type": Country.LocationType.COUNTRY,
         }
         update_or_create_country(country_data, country_lvc)
 
@@ -125,7 +127,10 @@ def parse_countries_xlsx_file(file_path, country_lvc):
             continue
 
         # get subregion
-        subregion = Subregion.objects.find_by_name(row["SUBREGION"])
+        subregion = Country.objects.filter(
+            name__iexact=row["SUBREGION"],
+            location_type=Country.LocationType.SUBREGION,
+        ).first()
 
         # update country
         country_data = {
@@ -134,7 +139,8 @@ def parse_countries_xlsx_file(file_path, country_lvc):
                 row["COUNTRYFULLNAME"], row["COUNTRYFULLNAME"]
             ),
             "ozone_unit": row["OZONE_UNIT"],
-            "subregion": subregion,
+            "parent": subregion,
+            "location_type": Country.LocationType.COUNTRY,
         }
         update_or_create_country(country_data, country_lvc)
 
@@ -151,8 +157,11 @@ def parse_regions_file(file_path):
         region_data = {
             "name": region_json["name"],
             "abbr": region_json["abbr"],
+            "name_alt": f"Region: {region_json['abbr']}",
+            "full_name": f"Region: {region_json['name']}",
+            "location_type": Country.LocationType.REGION,
         }
-        Region.objects.get_or_create(
+        Country.objects.get_or_create(
             name=region_data["name"],
             defaults=region_data,
         )
@@ -167,14 +176,18 @@ def parse_subregions_file(file_path):
         json_data = json.load(f)
 
     for subregion_json in json_data:
-        region = Region.objects.find_by_name(subregion_json["region"])
+        region = Country.objects.filter(
+            name=subregion_json["region"],
+            location_type=Country.LocationType.REGION,
+        ).first()
         subregion_data = {
             "name": subregion_json["name"],
             "abbr": subregion_json["abbr"],
             "import_id": subregion_json["pk"],
-            "region": region,
+            "parent": region,
+            "location_type": Country.LocationType.SUBREGION,
         }
-        Subregion.objects.get_or_create(
+        Country.objects.get_or_create(
             name=subregion_data["name"],
             defaults=subregion_data,
         )
