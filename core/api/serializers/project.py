@@ -574,6 +574,9 @@ class ProjectDetailsSerializer(ProjectListSerializer):
 
         # create project
         project = Project.objects.create(**validated_data)
+        # set subcode
+        project.set_generated_code()
+
         # create ods_odp
         for ods_odp in ods_odp_data:
             ProjectOdsOdp.objects.create(project=project, **ods_odp)
@@ -599,6 +602,8 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         coop_agencies_id = validated_data.pop("coop_agencies_id", None)
 
         super().update(instance, validated_data)
+        # set subcode
+        instance.set_generated_code()
 
         # update coop_agencies
         if coop_agencies_id:

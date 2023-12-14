@@ -3,7 +3,6 @@ import logging
 from django.db import transaction
 
 from core.models.project import Project
-from core.utils import get_project_sub_code
 
 logger = logging.getLogger(__name__)
 
@@ -22,17 +21,7 @@ def generate_project_sub_codes():
     ).all()
 
     for project in projects:
-        project.generated_code = get_project_sub_code(
-            project.country,
-            project.cluster,
-            project.serial_number,
-            project.agency,
-            project.project_type,
-            project.sector,
-            project.approval_meeting,
-            project.meeting_transf,
-        )
-        project.save()
+        project.set_generated_code()
 
 
 @transaction.atomic
