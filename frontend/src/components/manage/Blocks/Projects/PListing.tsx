@@ -17,6 +17,7 @@ import {
   filter,
   find,
   get,
+  groupBy,
   includes,
   isEqual,
   isObject,
@@ -24,6 +25,7 @@ import {
   reduce,
 } from 'lodash'
 import { useSnackbar } from 'notistack'
+import resolveConfig from 'tailwindcss/resolveConfig'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import Field from '@ors/components/manage/Form/Field'
@@ -33,6 +35,7 @@ import IconButton from '@ors/components/ui/IconButton/IconButton'
 import Link from '@ors/components/ui/Link/Link'
 import { KEY_ENTER } from '@ors/constants'
 import api, { getResults } from '@ors/helpers/Api/Api'
+import { getContrastText } from '@ors/helpers/Color/Color'
 import { debounce, scrollToElement } from '@ors/helpers/Utils/Utils'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
@@ -46,7 +49,11 @@ import {
   IoSearchOutline,
 } from 'react-icons/io5'
 
+const tailwindConfigModule = require('~/tailwind.config')
 const dayOfYear = require('dayjs/plugin/dayOfYear')
+
+const tailwindConfig = resolveConfig(tailwindConfigModule)
+
 dayjs.extend(dayOfYear)
 
 function suppressUndo(params: SuppressKeyboardEventParams) {
@@ -60,6 +67,11 @@ function suppressUndo(params: SuppressKeyboardEventParams) {
 function useGridOptions() {
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
+
+  const projectStatuses = useMemo(
+    () => groupBy(projectSlice.statuses.data, 'id'),
+    [projectSlice.statuses.data],
+  )
 
   function formatValue(value: any) {
     return value?.id || ''
@@ -118,7 +130,37 @@ function useGridOptions() {
             }),
           },
           cellRenderer: (props: any) => {
-            return <AgCellRenderer {...props} value={props.data.status} />
+            const status = projectStatuses[props.data.status_id]?.[0]
+            console.log('HERE', status)
+            return (
+              <AgCellRenderer
+                {...props}
+                value={
+                  <span
+                    className={cx('relative rounded bg-primary p-1', {
+                      'animate-pulse': status?.code === 'ONG',
+                    })}
+                    style={
+                      status
+                        ? {
+                            backgroundColor: status.color,
+                            color: getContrastText({
+                              background: status.color,
+                              dark: tailwindConfig.originalColors.dark
+                                .typography.primary,
+                              light:
+                                tailwindConfig.originalColors.light.typography
+                                  .primary,
+                            }),
+                          }
+                        : {}
+                    }
+                  >
+                    {props.data.status}
+                  </span>
+                }
+              />
+            )
           },
           field: 'status_id',
           headerName: 'Status',
@@ -315,7 +357,7 @@ function useGridOptions() {
         },
       },
     }),
-    [commonSlice, projectSlice],
+    [commonSlice, projectSlice, projectStatuses],
   )
 
   return gridOptions
