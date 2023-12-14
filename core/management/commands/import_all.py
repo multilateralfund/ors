@@ -9,7 +9,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         call_command("import_resources", "all")
-        call_command("import_cp_format")
         call_command("import_records", "all")
         call_command("import_projects", "all")
         call_command("import_business_plans")
+        call_command("import_cp_format")
