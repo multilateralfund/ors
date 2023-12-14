@@ -7,6 +7,10 @@ export const createProjectSlice = ({
   initialState,
 }: CreateSliceProps): ProjectsSlice => {
   return {
+    clusters: {
+      ...defaultSliceData,
+      ...(initialState?.projects?.clusters || {}),
+    },
     meetings: {
       ...defaultSliceData,
       ...(initialState?.projects?.meetings || {}),

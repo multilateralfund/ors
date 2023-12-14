@@ -282,15 +282,15 @@ export default function SectionBCreate(props: any) {
         }}
         onRowDataUpdated={() => {
           if (newNode.current) {
-            scrollToElement(
-              `.ag-row[row-id=${newNode.current.data.row_id}]`,
-              () => {
+            scrollToElement({
+              callback: () => {
                 grid.current.api.flashCells({
                   rowNodes: [newNode.current],
                 })
                 newNode.current = undefined
               },
-            )
+              selectors: `.ag-row[row-id=${newNode.current.data.row_id}]`,
+            })
           }
         }}
       />
@@ -396,14 +396,14 @@ export default function SectionBCreate(props: any) {
                 `Blend ${serializedBlend.name} already exists in the form.`,
                 { variant: 'info' },
               )
-              scrollToElement(
-                `.ag-row[row-id=${serializedBlend.row_id}]`,
-                () => {
+              scrollToElement({
+                callback: () => {
                   grid.current.api.flashCells({
                     rowNodes: [blendNode],
                   })
                 },
-              )
+                selectors: `.ag-row[row-id=${serializedBlend.row_id}]`,
+              })
             } else {
               const groupNode = grid.current.api.getRowNode(
                 serializedBlend.group,

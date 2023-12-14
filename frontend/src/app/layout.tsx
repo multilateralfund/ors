@@ -80,6 +80,7 @@ export default async function RootLayout({
       subsectors,
       types,
       meetings,
+      clusters,
       // Country programme data
       blends,
       substances,
@@ -94,6 +95,7 @@ export default async function RootLayout({
       api('api/project-subsectors/', {}, false),
       api('api/project-types/', {}, false),
       api('api/project-meetings/', {}, false),
+      api('api/project-clusters/', {}, false),
       api('api/blends/', { params: { with_usages: true } }, false),
       api('api/substances/', { params: { with_usages: true } }, false),
       // api('api/usages/', {}, false),
@@ -106,6 +108,7 @@ export default async function RootLayout({
       settings: getInitialSliceData(settings),
     }
     projects = {
+      clusters: getInitialSliceData(clusters),
       meetings: getInitialSliceData(meetings),
       sectors: getInitialSliceData(sectors),
       statuses: getInitialSliceData(statuses),
