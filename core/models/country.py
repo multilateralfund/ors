@@ -42,34 +42,3 @@ class Country(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class RegionManager(models.Manager):
-    def find_by_name(self, name):
-        name_str = name.strip()
-        return self.filter(name__iexact=name_str).first()
-
-
-class Region(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    abbr = models.CharField(max_length=10, null=True, blank=True)
-
-    objects = RegionManager()
-
-    def __str__(self):
-        return self.name
-
-
-class Subregion(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    abbr = models.CharField(max_length=10, null=True, blank=True)
-    import_id = models.IntegerField(null=True, blank=True)
-    region = models.ForeignKey(
-        Region,
-        on_delete=models.CASCADE,
-    )
-
-    objects = RegionManager()
-
-    def __str__(self):
-        return self.name
