@@ -32,13 +32,16 @@ export default function AgHeaderGroupComponent(props: any) {
         component="span"
         onClick={() => {
           if (!footnote) return
-          scrollToElement(`#footnote-${footnote}`, () => {
-            const footnoteEl = document.getElementById(`footnote-${footnote}`)
-            if (!footnoteEl) return
-            footnoteEl.classList.add('text-red-500')
-            setTimeout(() => {
-              footnoteEl.classList.remove('text-red-500')
-            }, 900)
+          scrollToElement({
+            callback: () => {
+              const footnoteEl = document.getElementById(`footnote-${footnote}`)
+              if (!footnoteEl) return
+              footnoteEl.classList.add('text-red-500')
+              setTimeout(() => {
+                footnoteEl.classList.remove('text-red-500')
+              }, 900)
+            },
+            selectors: `#footnote-${footnote}`,
           })
         }}
       >

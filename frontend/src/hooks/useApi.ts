@@ -1,12 +1,13 @@
 import type { Api } from '@ors/helpers/Api/Api'
 import { DataType, ErrorType } from '@ors/types/primitives'
 
-import { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useId, useState } from 'react'
 
 import { produce } from 'immer'
 import { isFunction } from 'lodash'
 
 import { fetcher } from '@ors/helpers/Api/Api'
+import { debounce } from '@ors/helpers/Utils/Utils'
 
 export type ApiSettings = Api & {
   onError?: any
@@ -24,6 +25,7 @@ export default function useApi(props: ApiSettings): {
   setApiSettings: Dispatch<SetStateAction<ApiSettings>>
   setParams: (params: { [key: string]: any }) => void
 } {
+  const id = useId()
   const [apiSettings, setApiSettings] = useState(props)
   const { options, path, throwError = true } = apiSettings
   const [data, setData] = useState<DataType>(undefined)
@@ -71,14 +73,20 @@ export default function useApi(props: ApiSettings): {
   }
 
   useEffect(() => {
-    fetcher({
-      onError,
-      onPending,
-      onSuccess,
-      options,
-      path,
-      throwError,
-    })
+    debounce(
+      () => {
+        fetcher({
+          onError,
+          onPending,
+          onSuccess,
+          options,
+          path,
+          throwError,
+        })
+      },
+      300,
+      `useApi-${id}`,
+    )
     /* eslint-disable-next-line */
   }, [path, options, throwError])
 

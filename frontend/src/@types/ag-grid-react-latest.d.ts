@@ -4,7 +4,7 @@ import type {
 } from 'ag-grid-community'
 import type { MutableRefObject } from 'react'
 
-declare module 'ag-grid-community' {
+declare module 'ag-grid-community-latest' {
   interface ColDef extends AgColDef {
     category?: string
     dataType?: string
@@ -17,7 +17,7 @@ declare module 'ag-grid-community' {
   }
 }
 
-declare module 'ag-grid-react' {
+declare module 'ag-grid-react-latest' {
   interface AgGridReactProps
     extends Omit<BaseAgGridReactProps, 'onPaginationChanged'> {
     enablePagination?: boolean

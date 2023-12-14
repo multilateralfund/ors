@@ -308,14 +308,17 @@ export function pendingWorkers(name: string) {
   return !!timer[name]
 }
 
-export function scrollToElement(
-  selectors: string,
-  callback?: any,
-  wait: number = 0,
-  offset: number = 16,
-) {
+export function scrollToElement(options: {
+  behavior?: 'auto' | 'smooth'
+  callback?: any
+  element?: Element
+  offset?: number
+  selectors?: string
+  wait?: number
+}) {
+  const { callback, element, offset = 16, selectors, wait = 0 } = options
   setTimeout(() => {
-    const el = document.querySelector(selectors)
+    const el = element || (selectors ? document.querySelector(selectors) : null)
     if (!el) return
     const visible = isInViewport(el)
     if (visible) {
@@ -338,7 +341,7 @@ export function scrollToElement(
       onScroll()
     }
     window.scrollTo({
-      behavior: 'smooth',
+      behavior: options.behavior || 'smooth',
       top,
     })
   }, wait)

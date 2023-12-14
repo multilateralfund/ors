@@ -47,6 +47,7 @@ export interface I18nSlice {
 }
 
 export interface ProjectsSlice {
+  clusters: SliceData
   meetings: SliceData
   sectors: SliceData
   statuses: SliceData

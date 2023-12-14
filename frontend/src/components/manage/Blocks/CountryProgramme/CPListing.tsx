@@ -140,7 +140,7 @@ function GeneralSection(props: SectionProps) {
   const { data, loading, setParams } = useApi({
     // onSuccess: () => {
     //   if (shouldScroll.current) {
-    //     scrollToElement('#cp-listing-sections')
+    //     scrollToElement({ selectors: '#cp-listing-sections' })
     //   } else {
     //     shouldScroll.current = true
     //   }
@@ -380,7 +380,7 @@ function CountrySection(props: SectionProps) {
   const { data, loading, setParams } = useApi({
     // onSuccess: () => {
     //   if (shouldScroll.current) {
-    //     scrollToElement('#cp-listing-sections')
+    //     scrollToElement({ selectors: '#cp-listing-sections' })
     //   } else {
     //     shouldScroll.current = true
     //   }
