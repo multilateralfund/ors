@@ -16,7 +16,7 @@ from core.api.tests.factories import (
     ProjectTypeFactory,
     RbmMeasureFactory,
 )
-from core.models.project import Project, ProjectOdsOdp
+from core.models.project import Project, ProjectOdsOdp, ProjectStatus
 from core.models.project import ProjectFile
 
 pytestmark = pytest.mark.django_db
@@ -379,12 +379,13 @@ def setup_project_create(
     project_cluster_kip,
     rbm_measure,
 ):
-    statuses = [
+    statuses_dict = [
         {"name": "New Submission", "code": "NEWSUB"},
         {"name": "New", "code": "NEW"},
     ]
-    for status in statuses:
-        ProjectStatusFactory.create(**status)
+    statuses = []
+    for status in statuses_dict:
+        statuses.append(ProjectStatusFactory.create(**status))
     new_rbm_measure = RbmMeasureFactory.create(name="new_measure")
 
     # create coop agencies
@@ -400,7 +401,7 @@ def setup_project_create(
         "sector_id": subsector.sector_id,
         "subsector_id": subsector.id,
         "project_type_id": project_type.id,
-        "status_id": 1,
+        "status_id": statuses[0].id,
         "substance_type": "HCFC",
         "approval_meeting_id": meeting.id,
         "cluster_id": project_cluster_kip.id,
