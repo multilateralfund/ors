@@ -334,7 +334,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
     sector_legacy = serializers.CharField(read_only=True)
     subsector = serializers.SlugRelatedField("name", read_only=True)
     subsector_id = serializers.PrimaryKeyRelatedField(
-        required=True,
+        allow_null=True,
         queryset=ProjectSubSector.objects.all().values_list("id", flat=True),
     )
     subsector_legacy = serializers.CharField(read_only=True)

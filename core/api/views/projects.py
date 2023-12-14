@@ -128,14 +128,14 @@ class ProjectViewSet(
     ]
     ordering_fields = [
         "title",
-        "county__name",
+        "country__name",
         "agency__name",
         "sector__name",
         "subsector__name",
         "project_type__name",
         "substance_type",
     ]
-    search_fields = ["code", "genarated_code", "meta_project__code", "title"]
+    search_fields = ["code", "generated_code", "meta_project__code", "title"]
 
     def get_serializer_class(self):
         if self.action == "list":

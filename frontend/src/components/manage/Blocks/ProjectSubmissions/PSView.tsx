@@ -9,7 +9,6 @@ import { find } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
-import { getCountryISO2 } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
 
 type ProjectProps = {
@@ -57,7 +56,7 @@ export default function PSView({ data }: ProjectProps) {
                 <Typography className="text-lg font-bold">
                   <ReactCountryFlag
                     className="mr-1 !text-[32px]"
-                    countryCode={getCountryISO2(country.iso3)}
+                    countryCode={country.abbr}
                   />
                   {country.name}
                 </Typography>

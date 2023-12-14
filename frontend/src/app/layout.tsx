@@ -94,7 +94,7 @@ export default async function RootLayout({
       api('api/project-sectors/', {}, false),
       api('api/project-subsectors/', {}, false),
       api('api/project-types/', {}, false),
-      api('api/project-meetings/', {}, false),
+      api('api/meetings/', {}, false),
       api('api/project-clusters/', {}, false),
       api('api/blends/', { params: { with_usages: true } }, false),
       api('api/substances/', { params: { with_usages: true } }, false),
@@ -137,27 +137,29 @@ export default async function RootLayout({
       dir={dir(lang)}
     >
       <body id="next-app" className={roboto.className}>
-        <Script src="/critical.js" strategy="beforeInteractive" />
-        <StoreProvider
-          initialState={{
-            businessPlans,
-            common,
-            cp_reports,
-            i18n: {
-              lang,
-            },
-            internalError,
-            projects,
-            theme: {
-              mode: theme.value as 'dark' | 'light' | null,
-            },
-            user: { data: user, loaded: !!user },
-          }}
-        >
-          <ThemeProvider options={{ key: 'tw', prepend: true }}>
-            <View>{children}</View>
-          </ThemeProvider>
-        </StoreProvider>
+        <div id="layout">
+          <Script src="/critical.js" strategy="beforeInteractive" />
+          <StoreProvider
+            initialState={{
+              businessPlans,
+              common,
+              cp_reports,
+              i18n: {
+                lang,
+              },
+              internalError,
+              projects,
+              theme: {
+                mode: theme.value as 'dark' | 'light' | null,
+              },
+              user: { data: user, loaded: !!user },
+            }}
+          >
+            <ThemeProvider options={{ key: 'tw', prepend: true }}>
+              <View>{children}</View>
+            </ThemeProvider>
+          </StoreProvider>
+        </div>
         <noscript>
           <link href="/no-script.css" rel="stylesheet" type="text/css" />
         </noscript>
