@@ -222,7 +222,8 @@ def get_sector_subsector_details(sector_code, subsector_name, row_index):
     # check if the subsector is not outdated and if the sector exists
     if not new_subsector_name and sector:
         return sector, None
-    elif not new_subsector_name and not sector:
+
+    if not new_subsector_name and not sector:
         logger.info(
             f"[row: {row_index}]: This prpoject does not have a sector or a subsector:"
             f"serched info: [sector: {sector_code}, subsector: {subsector_name}]"

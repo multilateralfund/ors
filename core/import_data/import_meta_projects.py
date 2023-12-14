@@ -141,7 +141,7 @@ def set_ind_cluster(project):
         project.save()
         return
 
-    cluster_names = []
+    cluster_names = set()
     for ods_odp in project.ods_odp.all():
         chemical_name = None
         if ods_odp.ods_substance:
@@ -151,13 +151,13 @@ def set_ind_cluster(project):
         if not chemical_name:
             continue
         if "HCFC" in chemical_name:
-            cluster_names.append("HCFC Individual")
+            cluster_names.add("HCFC Individual")
             continue
         if "CFC" in chemical_name:
-            cluster_names.append("CFC Individual")
+            cluster_names.add("CFC Individual")
             continue
         if "HFC" in chemical_name:
-            cluster_names.append("HFC Individual")
+            cluster_names.add("HFC Individual")
             continue
 
     if not cluster_names:
@@ -169,12 +169,13 @@ def set_ind_cluster(project):
         )
         return
 
-    cluster = ProjectCluster.objects.find_by_name_or_code(cluster_names[0])
+    cluster_name = cluster_names.pop()
+    cluster = ProjectCluster.objects.find_by_name_or_code(cluster_name)
     if cluster:
         project.cluster = cluster
         project.save()
     else:
-        logger.error(f"Cluster not found: {cluster_names[0]}")
+        logger.error(f"Cluster not found: {cluster_name}")
 
 
 def create_other_meta_project():
