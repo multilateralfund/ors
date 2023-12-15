@@ -224,6 +224,13 @@ def create_business_plan(row, index_row, year_start, year_end):
         return None
 
     bp_chemical_type = get_or_create_bp_chemical_type(row["Chemical"])
+    if not bp_chemical_type:
+        logger.warning(
+            f"[row: {index_row}]: Missing chemical type: {row['Chemical']} "
+            "=> business plan record not created"
+        )
+        return None
+
     sector, subsector = get_sector_subsector(row["Sector and Subsector"], index_row)
 
     # create business plan data
