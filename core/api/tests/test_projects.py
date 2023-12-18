@@ -391,9 +391,6 @@ class TestProjectStatistics(BaseTest):
 
     def test_project_statistics(self, user, _setup_project_list):
         self.client.force_authenticate(user=user)
-        projs = Project.objects.all()
-        for p in projs:
-            print(p.generated_code)
 
         # get project list
         response = self.client.get(self.url)
@@ -411,6 +408,25 @@ class TestProjectStatistics(BaseTest):
         assert response.data["projects_count_per_sector"][1]["count"] == 4
         assert response.data["projects_count_per_cluster"][0]["count"] == 4
         assert response.data["projects_count_per_cluster"][1]["count"] == 4
+
+    def test_proj_stat_w_filters(self, user, _setup_project_list, project_cluster_kpp):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"cluster_id": project_cluster_kpp.id})
+        assert response.status_code == 200
+        assert response.data["projects_total_count"] == 9
+        assert response.data["projects_count"] == 4
+        assert response.data["projects_code_count"] == 0
+        assert response.data["projects_code_subcode_count"] == 4
+        assert len(response.data["projects_count_per_sector"]) == 1
+        assert response.data["projects_count_per_sector"][0]["sector__name"] == "Sector"
+        assert response.data["projects_count_per_sector"][0]["count"] == 4
+        assert len(response.data["projects_count_per_cluster"]) == 1
+        assert (
+            response.data["projects_count_per_cluster"][0]["cluster__name"]
+            == project_cluster_kpp.name
+        )
+        assert response.data["projects_count_per_cluster"][0]["count"] == 4
 
 
 @pytest.fixture(name="_setup_project_create")
