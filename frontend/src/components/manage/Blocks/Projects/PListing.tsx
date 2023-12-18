@@ -401,6 +401,7 @@ const initialParams = {
 const initialFilters = {
   agency_id: [],
   approval_meeting_no: [],
+  cluster_id: [],
   country_id: [],
   project_type_id: [],
   search: '',
@@ -623,7 +624,7 @@ export default function PListing() {
       delay: 500,
       params: {
         get_submission: false,
-        ...initialParams,
+        ...omit(initialParams, ['ordering']),
       },
     },
     path: 'api/projects-statistics/',
@@ -653,7 +654,7 @@ export default function PListing() {
       )
     }
     setParams(params)
-    statistics.setParams(omit(params, ['limit', 'offset']))
+    statistics.setParams(omit(params, ['limit', 'offset', 'ordering']))
   }
 
   function handleFilterChange(newFilters: { [key: string]: any }) {
@@ -785,6 +786,21 @@ export default function PListing() {
               multiple
             />
           )}
+          <Field
+            Input={{ label: 'Cluster' }}
+            getOptionLabel={(option: any) => option?.name}
+            options={projectSlice.clusters.data}
+            value={filters.cluster_id}
+            widget="autocomplete"
+            onChange={(_: any, value: any) => {
+              handleFilterChange({ cluster_id: value })
+              handleParamsChange({
+                cluster_id: value.map((item: any) => item.id).join(','),
+                offset: 0,
+              })
+            }}
+            multiple
+          />
           <Field
             Input={{ label: 'Type' }}
             getOptionLabel={(option: any) => option?.name}
