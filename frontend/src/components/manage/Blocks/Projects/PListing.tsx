@@ -629,7 +629,7 @@ export default function PListing() {
         event.preventDefault()
       }}
     >
-      <div className="filters-wrapper mb-4 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_2fr_2fr]">
+      <div className="filters-wrapper mb-4 grid grid-cols-2 gap-4 md:grid-cols-[1fr_2fr] lg:grid-cols-2">
         <Box className="md:min-w-[300px]">
           <div className="mb-4 flex items-center justify-between">
             <Typography component="h2" variant="h5">
@@ -954,10 +954,10 @@ export default function PListing() {
                   //   '?business_plan__year_start=' +
                   //   yearRangeSelected?.year_start.toString()
                   // }
-                  download
+                  // download
                 >
                   <AiFillFileExcel className="fill-green-700" size={24} />
-                  <span>XLSX</span>
+                  <span>XLSX (WIP)</span>
                 </Link>
               </Dropdown.Item>
             </Dropdown>
