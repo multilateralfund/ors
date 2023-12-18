@@ -7,7 +7,7 @@ import {
   layoutViews,
   routes,
 } from './Views'
-import { ByType, ByWidget, defaultWidget, widgetsMapping } from './Widgets'
+import { defaultWidget, widgetsMapping } from './Widgets'
 import baseConfig, { BaseConfig } from './base'
 
 export interface Config extends BaseConfig {
@@ -31,8 +31,8 @@ export interface Config extends BaseConfig {
   }
   widgets: {
     default: typeof defaultWidget
-    type: ByType
-    widget: ByWidget
+    type: typeof widgetsMapping.type
+    widget: typeof widgetsMapping.widget
   }
 }
 

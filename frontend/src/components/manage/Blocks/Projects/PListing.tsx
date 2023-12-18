@@ -111,65 +111,14 @@ function useGridOptions() {
           headerName: 'Metaproject code',
         },
         {
-          cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: { placeholder: 'Select status' },
-            formatValue,
-            getFormattedValue: (id: any) => {
-              return find(projectSlice.statuses.data, {
-                id,
-              })?.name
-            },
-            getOptionLabel: (option: any) => {
-              return isObject(option)
-                ? get(option, 'name')
-                : find(projectSlice.statuses.data, { id: option })?.name || ''
-            },
-            options: filter(projectSlice.statuses.data, (item) => {
-              return item.code !== 'NEWSUB'
-            }),
-          },
-          cellRenderer: (props: any) => {
-            const status = projectStatuses[props.data.status_id]?.[0]
-            console.log('HERE', status)
-            return (
-              <AgCellRenderer
-                {...props}
-                value={
-                  <span
-                    className={cx('relative rounded bg-primary p-1', {
-                      'animate-pulse': status?.code === 'ONG',
-                    })}
-                    style={
-                      status
-                        ? {
-                            backgroundColor: status.color,
-                            color: getContrastText({
-                              background: status.color,
-                              dark: tailwindConfig.originalColors.dark
-                                .typography.primary,
-                              light:
-                                tailwindConfig.originalColors.light.typography
-                                  .primary,
-                            }),
-                          }
-                        : {}
-                    }
-                  >
-                    {props.data.status}
-                  </span>
-                }
-              />
-            )
-          },
-          field: 'status_id',
-          headerName: 'Status',
+          editable: false,
+          field: 'cluster',
+          headerName: 'Cluster',
         },
         {
           editable: false,
-          field: 'country',
-          headerName: 'Country',
-          initialWidth: 150,
+          field: 'metaproject_category',
+          headerName: 'Metaproject category',
         },
         {
           cellEditor: 'agSelectCellEditor',
@@ -312,28 +261,9 @@ function useGridOptions() {
           headerName: 'Substance type',
         },
         {
-          cellEditor: 'agNumberCellEditor',
-          cellEditorParams: {
-            min: 0,
-          },
-          dataType: 'number',
-          field: 'funds_allocated',
-          headerName: 'Funds allocated',
-        },
-        {
           editable: false,
           field: 'substance_name',
           headerName: 'Substance',
-        },
-        {
-          editable: false,
-          field: 'cluster',
-          headerName: 'Cluster',
-        },
-        {
-          editable: false,
-          field: 'metaproject_category',
-          headerName: 'Metaproject category',
         },
         {
           field: 'title',
@@ -341,6 +271,75 @@ function useGridOptions() {
           initialWidth: 300,
           suppressAutoSize: true,
           tooltip: true,
+        },
+        {
+          cellEditor: 'agSelectCellEditor',
+          cellEditorParams: {
+            Input: { placeholder: 'Select status' },
+            formatValue,
+            getFormattedValue: (id: any) => {
+              return find(projectSlice.statuses.data, {
+                id,
+              })?.name
+            },
+            getOptionLabel: (option: any) => {
+              return isObject(option)
+                ? get(option, 'name')
+                : find(projectSlice.statuses.data, { id: option })?.name || ''
+            },
+            options: filter(projectSlice.statuses.data, (item) => {
+              return item.code !== 'NEWSUB'
+            }),
+          },
+          cellRenderer: (props: any) => {
+            const status = projectStatuses[props.data.status_id]?.[0]
+            return (
+              <AgCellRenderer
+                {...props}
+                value={
+                  <span
+                    className={cx('relative rounded bg-primary p-1', {
+                      'animate-pulse': status?.code === 'ONG',
+                    })}
+                    style={
+                      status
+                        ? {
+                            backgroundColor: status.color,
+                            color: getContrastText({
+                              background: status.color,
+                              dark: tailwindConfig.originalColors.dark
+                                .typography.primary,
+                              light:
+                                tailwindConfig.originalColors.light.typography
+                                  .primary,
+                            }),
+                          }
+                        : {}
+                    }
+                  >
+                    {props.data.status}
+                  </span>
+                }
+              />
+            )
+          },
+          field: 'status_id',
+          headerName: 'Status',
+        },
+        {
+          editable: false,
+          field: 'country',
+          headerName: 'Country',
+          initialWidth: 150,
+        },
+        {
+          cellEditor: 'agNumberCellEditor',
+          cellEditorParams: {
+            min: 0,
+          },
+          dataType: 'number',
+          field: 'funds_allocated',
+          headerName: 'Funds allocated',
         },
       ],
       defaultColDef: {
@@ -516,19 +515,19 @@ export default function PListing() {
             </Button>
           </div>
           <Field
+            multiple={true}
             value={filters.status_id}
             widget="chipToggle"
             options={filter(projectSlice.statuses.data, (item) => {
               return item.code !== 'NEWSUB'
             })}
-            onChange={(value: Array<number> | null) => {
+            onChange={(value) => {
               handleFilterChange({ status_id: value })
               handleParamsChange({
                 offset: 0,
                 status_id: (value || initialFilters.status_id).join(','),
               })
             }}
-            multiple
           />
           <Field
             Input={{ label: 'Country' }}

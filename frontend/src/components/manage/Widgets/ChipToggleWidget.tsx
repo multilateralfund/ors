@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 
 import { Box, Chip } from '@mui/material'
-import { isUndefined } from 'lodash'
+import { isNumber, isUndefined } from 'lodash'
 import resolveConfig from 'tailwindcss/resolveConfig'
 
 import { getContrastText } from '@ors/helpers/Color/Color'
@@ -16,51 +16,71 @@ export type ChipData = {
 }
 
 export type ChipToggleWidgetProps = {
-  multiple?: boolean
-  onChange?: (ids: Array<number> | null | number) => void
   options: ChipData[]
-  value?: Array<number> | null
+  value?: number[]
+} & (
+  | {
+      multiple: false
+      onChange?: (value: number) => void
+    }
+  | {
+      multiple: true
+      onChange?: (value: number[]) => void
+    }
+  | {
+      multiple?: null
+      onChange?: (value: number[]) => void
+    }
+)
+
+function convertToArray(value?: number | number[]) {
+  if (!value) {
+    return []
+  }
+  return isNumber(value) ? [value] : value
 }
 
-export default function ChipToggleWidget(
-  props: ChipToggleWidgetProps,
-): JSX.Element {
-  const [selected, setSelected] = React.useState<Array<number> | null>(null)
+export default function ChipToggleWidget({
+  multiple,
+  ...props
+}: ChipToggleWidgetProps): JSX.Element {
+  const [selected, setSelected] = React.useState<number[]>([])
 
   const isControlled = useMemo(() => {
     return !isUndefined(props.value)
   }, [props.value])
 
   const items = useMemo(() => {
-    return isControlled ? props.value : selected
+    return isControlled ? convertToArray(props.value) : selected
   }, [props.value, isControlled, selected])
 
-  function getSelected(selected: Array<number> | null, chipId: number) {
-    const chipIndex = (selected || []).indexOf(chipId)
+  function getSelected(selected: number[], chipId: number) {
+    const chipIndex = selected.indexOf(chipId)
 
-    if (!props.multiple) {
-      const newSelected = chipIndex > -1 ? null : [chipId]
-      return newSelected
+    if (!multiple) {
+      return chipIndex > -1 ? [] : [chipId]
     }
-    let newSelected = [...(selected || [])]
+    let newSelected = [...selected]
     if (chipIndex > -1) {
       newSelected.splice(chipIndex, 1)
     } else {
-      newSelected = [...(selected || []), chipId]
+      newSelected = [...selected, chipId]
     }
-    return newSelected.length > 0 ? newSelected : null
+    return newSelected
   }
 
   function handleClick(chipId: number) {
     const newSelected = getSelected(
-      !isControlled ? selected : props.value || null,
+      !isControlled ? selected : convertToArray(props.value),
       chipId,
     )
-    if (!isControlled) {
+    if (isControlled) {
       setSelected(newSelected)
-      props.onChange?.(props.multiple ? newSelected : newSelected?.[0] || null)
+    }
+    if (multiple) {
+      props.onChange?.(newSelected as number & number[])
     } else {
-      props.onChange?.(props.multiple ? newSelected : newSelected?.[0] || null)
+      props.onChange?.(newSelected[0] as number & number[])
     }
   }
 
@@ -73,7 +93,7 @@ export default function ChipToggleWidget(
             className="m-1"
             label={chipData.name}
             style={
-              items && items?.indexOf?.(chipData.id) !== -1
+              items.indexOf?.(chipData.id) !== -1
                 ? {
                     backgroundColor: chipData.color,
                     borderColor: chipData.color,
@@ -91,9 +111,7 @@ export default function ChipToggleWidget(
                 : {}
             }
             variant={
-              items && items?.indexOf?.(chipData.id) !== -1
-                ? 'filled'
-                : 'outlined'
+              items.indexOf?.(chipData.id) !== -1 ? 'filled' : 'outlined'
             }
             onClick={() => {
               handleClick(chipData.id)
