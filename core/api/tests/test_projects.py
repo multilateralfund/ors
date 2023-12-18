@@ -9,6 +9,7 @@ from core.api.tests.factories import (
     AgencyFactory,
     CountryFactory,
     MeetingFactory,
+    ProjectClusterFactory,
     ProjectFactory,
     ProjectSectorFactory,
     ProjectStatusFactory,
@@ -175,13 +176,21 @@ class TestProjectUpload:
 
 @pytest.fixture(name="_setup_project_list")
 def setup_project_list(
-    country_ro, agency, project_type, project_status, subsector, meeting, sector
+    country_ro,
+    agency,
+    project_type,
+    project_status,
+    subsector,
+    meeting,
+    sector,
+    project_cluster_kpp,
+    project_cluster_kip,
 ):
-    new_country = CountryFactory.create()
-    new_agency = AgencyFactory.create()
-    new_project_type = ProjectTypeFactory.create()
+    new_country = CountryFactory.create(iso3="NwC")
+    new_agency = AgencyFactory.create(code="NewAg")
+    new_project_type = ProjectTypeFactory.create(code="NewType")
     new_project_status = ProjectStatusFactory.create(code="NEWSUB")
-    new_sector = ProjectSectorFactory.create()
+    new_sector = ProjectSectorFactory.create(name="New Sector")
     new_subsector = ProjectSubSectorFactory.create(sector=new_sector)
     new_meeting = MeetingFactory.create(number=3, date="2020-03-14")
 
@@ -195,6 +204,7 @@ def setup_project_list(
             "subsector": subsector,
             "substance_type": "HCFC",
             "approval_meeting": meeting,
+            "cluster": project_cluster_kpp,
         },
         {
             "country": new_country,
@@ -205,6 +215,7 @@ def setup_project_list(
             "subsector": new_subsector,
             "substance_type": "CFC",
             "approval_meeting": new_meeting,
+            "cluster": project_cluster_kip,
         },
     ]
 
@@ -212,15 +223,15 @@ def setup_project_list(
         for project_data in projects_data:
             proj = ProjectFactory.create(
                 title=f"Project {i}",
-                serial_number=i,
+                serial_number=i + 1,
                 date_received=f"2020-01-{i+1}",
                 **project_data,
             )
             proj.set_generated_code()
 
+    projects_data[0].pop("cluster")
     proj = ProjectFactory.create(
         title=f"Project {25}",
-        serial_number=25,
         date_received="2020-01-30",
         **projects_data[0],
     )
@@ -373,6 +384,49 @@ class TestProjectList(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 2
         assert response.data[0]["date_received"] == "2020-01-01"
+
+
+class TestProjectStatistics(BaseTest):
+    url = reverse("project-statistics")
+
+    def test_project_statistics(self, user, _setup_project_list):
+        self.client.force_authenticate(user=user)
+
+        # get project list
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert response.data["projects_total_count"] == 9
+        assert response.data["projects_count"] == 9
+        assert response.data["projects_code_count"] == 1
+        assert response.data["projects_code_subcode_count"] == 8
+        assert response.data["projects_count_per_sector"][0]["sector__name"] == "Sector"
+        assert response.data["projects_count_per_sector"][0]["count"] == 5
+        assert (
+            response.data["projects_count_per_sector"][1]["sector__name"]
+            == "New Sector"
+        )
+        assert response.data["projects_count_per_sector"][1]["count"] == 4
+        assert response.data["projects_count_per_cluster"][0]["count"] == 4
+        assert response.data["projects_count_per_cluster"][1]["count"] == 4
+
+    def test_proj_stat_w_filters(self, user, _setup_project_list, project_cluster_kpp):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"cluster_id": project_cluster_kpp.id})
+        assert response.status_code == 200
+        assert response.data["projects_total_count"] == 9
+        assert response.data["projects_count"] == 4
+        assert response.data["projects_code_count"] == 0
+        assert response.data["projects_code_subcode_count"] == 4
+        assert len(response.data["projects_count_per_sector"]) == 1
+        assert response.data["projects_count_per_sector"][0]["sector__name"] == "Sector"
+        assert response.data["projects_count_per_sector"][0]["count"] == 4
+        assert len(response.data["projects_count_per_cluster"]) == 1
+        assert (
+            response.data["projects_count_per_cluster"][0]["cluster__name"]
+            == project_cluster_kpp.name
+        )
+        assert response.data["projects_count_per_cluster"][0]["count"] == 4
 
 
 @pytest.fixture(name="_setup_project_create")

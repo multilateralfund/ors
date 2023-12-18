@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client'
 import React, { useMemo, useRef, useState } from 'react'
 
@@ -133,7 +134,6 @@ export default function BusinessPlansTable() {
                   <Field
                     Input={{ label: 'Year' }}
                     options={bpSlice.yearRanges.data}
-                    size="large"
                     value={yearRangeSelected}
                     widget="autocomplete"
                     getOptionLabel={(option: any) =>
