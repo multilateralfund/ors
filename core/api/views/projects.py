@@ -1,4 +1,5 @@
 import os
+import openpyxl
 
 from django.conf import settings
 from django.db import models
@@ -12,6 +13,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from core.api.export.base import configure_sheet_print
+from core.api.export.projects import ProjectWriter
 
 from core.api.filters.project import ProjectFilter
 from core.api.serializers.meeting import MeetingSerializer
@@ -31,6 +34,7 @@ from core.api.serializers.project import (
     ProjectSubSectorSerializer,
     ProjectTypeSerializer,
 )
+from core.api.utils import workbook_pdf_response, workbook_response
 from core.models.meeting import Meeting
 from core.models.project import (
     Project,
@@ -177,6 +181,31 @@ class ProjectViewSet(
         file = request.FILES["file"]
         ProjectFile.objects.create(file=file, project=project)
         return Response({}, status.HTTP_201_CREATED)
+
+    def get_wb(self, method):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        data = ProjectListSerializer(queryset, many=True).data
+
+        wb = openpyxl.Workbook()
+        sheet = wb.active
+        sheet.title = "Projects"
+        configure_sheet_print(sheet, sheet.ORIENTATION_LANDSCAPE)
+
+        ProjectWriter(
+            sheet,
+        ).write(data)
+
+        name = "Projects"
+        return method(name, wb)
+
+    @action(methods=["GET"], detail=False)
+    def export(self, *args, **kwargs):
+        return self.get_wb(workbook_response)
+
+    @action(methods=["GET"], detail=False)
+    def print(self, *args, **kwargs):
+        return self.get_wb(workbook_pdf_response)
 
 
 class ProjectFileView(APIView):
