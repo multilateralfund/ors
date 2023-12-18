@@ -1,27 +1,20 @@
 'use client'
-import type { ByType, ByWidget, WidgetProps } from '@ors/config/Widgets'
-
 import { useMemo } from 'react'
 
 import cx from 'classnames'
 
 import config from '@ors/config'
-
-export type Field =
-  | (typeof config.widgets.type)[keyof typeof config.widgets.type]
-  | (typeof config.widgets.widget)[keyof typeof config.widgets.widget]
-  | null
-  | typeof config.widgets.default
+import { WidgetProps } from '@ors/config/Widgets'
 
 function getWidgetDefault() {
   return config.widgets.default
 }
 
-function getWidgetByName(widget?: keyof ByWidget) {
+function getWidgetByName(widget?: keyof typeof config.widgets.widget) {
   return widget ? config.widgets.widget[widget] : null
 }
 
-function getWidgetByType(type?: keyof ByType) {
+function getWidgetByType(type?: keyof typeof config.widgets.type) {
   return type ? config.widgets.type[type] : null
 }
 
@@ -30,23 +23,28 @@ export default function Field({
   type,
   widget,
   ...props
-}: WidgetProps): React.ReactElement {
+}: WidgetProps): React.ReactNode {
   const Widget = useMemo(
     () =>
       getWidgetByName(widget) || getWidgetByType(type) || getWidgetDefault(),
     [widget, type],
   )
 
+  if (!Widget) {
+    return null
+  }
+
   return (
     <div
       {...FieldProps}
       className={cx(
         'widget',
-        `${widget || type || 'text'}-widget`,
+        `${String(widget || type || 'text')}-widget`,
         { 'max-w-full': !FieldProps?.className },
         FieldProps?.className,
       )}
     >
+      {/* @ts-ignore */}
       <Widget {...props} />
     </div>
   )

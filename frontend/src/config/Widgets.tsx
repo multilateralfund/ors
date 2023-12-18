@@ -1,3 +1,10 @@
+import type { AutocompleteWidgetProps } from '@ors/components/manage/Widgets/AutocompleteWidget'
+import type { ChipToggleWidgetProps } from '@ors/components/manage/Widgets/ChipToggleWidget'
+import type { PasswordWidgetProps } from '@ors/components/manage/Widgets/PasswordWidget'
+import type { RangeWidgetProps } from '@ors/components/manage/Widgets/RangeWidget'
+import type { TextWidgetProps } from '@ors/components/manage/Widgets/TextWidget'
+import type { TextareaWidgetProps } from '@ors/components/manage/Widgets/TextareaWidget'
+
 import AutocompleteWidget from '@ors/components/manage/Widgets/AutocompleteWidget'
 import ChipToggleWidget from '@ors/components/manage/Widgets/ChipToggleWidget'
 import PasswordWidget from '@ors/components/manage/Widgets/PasswordWidget'
@@ -5,25 +12,23 @@ import RangeWidget from '@ors/components/manage/Widgets/RangeWidget'
 import TextWidget from '@ors/components/manage/Widgets/TextWidget'
 import TextareaWidget from '@ors/components/manage/Widgets/TextareaWidget'
 
-export interface ByType {
-  email?: typeof TextWidget
-  password?: typeof PasswordWidget
-  text?: typeof TextWidget
-  textarea?: typeof TextareaWidget
-}
-
-export interface ByWidget {
-  autocomplete?: typeof AutocompleteWidget
-  chipToggle?: typeof ChipToggleWidget
-  range?: typeof RangeWidget
-}
-
-export interface WidgetsMapping {
-  type: ByType
-  widget: ByWidget
-}
-
-export type WidgetProps = any
+export type WidgetProps = {
+  FieldProps?: any
+  type?: keyof typeof widgetsMapping.type
+  widget?: keyof typeof widgetsMapping.widget
+} & (
+  | ({
+      type?: null
+      widget?: null
+    } & TextWidgetProps)
+  | ({ type: 'email' } & TextWidgetProps)
+  | ({ type: 'password' } & PasswordWidgetProps)
+  | ({ type: 'text' } & TextWidgetProps)
+  | ({ type: 'textarea' } & TextareaWidgetProps)
+  | ({ widget: 'autocomplete' } & AutocompleteWidgetProps)
+  | ({ widget: 'chipToggle' } & ChipToggleWidgetProps)
+  | ({ widget: 'range' } & RangeWidgetProps)
+)
 
 // Default Widget
 export const defaultWidget = TextWidget

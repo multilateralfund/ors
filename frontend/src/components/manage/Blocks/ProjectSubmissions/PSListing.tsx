@@ -68,6 +68,11 @@ function useGridOptions() {
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
 
+  // const projectStatuses = useMemo(
+  //   () => groupBy(projectSlice.statuses.data, 'id'),
+  //   [projectSlice.statuses.data],
+  // )
+
   function formatValue(value: any) {
     return value?.id || ''
   }
@@ -107,9 +112,13 @@ function useGridOptions() {
         },
         {
           editable: false,
-          field: 'country',
-          headerName: 'Country',
-          initialWidth: 150,
+          field: 'cluster',
+          headerName: 'Cluster',
+        },
+        {
+          editable: false,
+          field: 'metaproject_category',
+          headerName: 'Metaproject category',
         },
         {
           cellEditor: 'agSelectCellEditor',
@@ -252,28 +261,9 @@ function useGridOptions() {
           headerName: 'Substance type',
         },
         {
-          cellEditor: 'agNumberCellEditor',
-          cellEditorParams: {
-            min: 0,
-          },
-          dataType: 'number',
-          field: 'funds_allocated',
-          headerName: 'Funds allocated',
-        },
-        {
           editable: false,
           field: 'substance_name',
           headerName: 'Substance',
-        },
-        {
-          editable: false,
-          field: 'cluster',
-          headerName: 'Cluster',
-        },
-        {
-          editable: false,
-          field: 'metaproject_category',
-          headerName: 'Metaproject category',
         },
         {
           field: 'title',
@@ -281,6 +271,75 @@ function useGridOptions() {
           initialWidth: 300,
           suppressAutoSize: true,
           tooltip: true,
+        },
+        // {
+        //   cellEditor: 'agSelectCellEditor',
+        //   cellEditorParams: {
+        //     Input: { placeholder: 'Select status' },
+        //     formatValue,
+        //     getFormattedValue: (id: any) => {
+        //       return find(projectSlice.statuses.data, {
+        //         id,
+        //       })?.name
+        //     },
+        //     getOptionLabel: (option: any) => {
+        //       return isObject(option)
+        //         ? get(option, 'name')
+        //         : find(projectSlice.statuses.data, { id: option })?.name || ''
+        //     },
+        //     options: filter(projectSlice.statuses.data, (item) => {
+        //       return item.code !== 'NEWSUB'
+        //     }),
+        //   },
+        //   cellRenderer: (props: any) => {
+        //     const status = projectStatuses[props.data.status_id]?.[0]
+        //     return (
+        //       <AgCellRenderer
+        //         {...props}
+        //         value={
+        //           <span
+        //             className={cx('relative rounded bg-primary p-1', {
+        //               'animate-pulse': status?.code === 'ONG',
+        //             })}
+        //             style={
+        //               status
+        //                 ? {
+        //                     backgroundColor: status.color,
+        //                     color: getContrastText({
+        //                       background: status.color,
+        //                       dark: tailwindConfig.originalColors.dark
+        //                         .typography.primary,
+        //                       light:
+        //                         tailwindConfig.originalColors.light.typography
+        //                           .primary,
+        //                     }),
+        //                   }
+        //                 : {}
+        //             }
+        //           >
+        //             {props.data.status}
+        //           </span>
+        //         }
+        //       />
+        //     )
+        //   },
+        //   field: 'status_id',
+        //   headerName: 'Status',
+        // },
+        {
+          editable: false,
+          field: 'country',
+          headerName: 'Country',
+          initialWidth: 150,
+        },
+        {
+          cellEditor: 'agNumberCellEditor',
+          cellEditorParams: {
+            min: 0,
+          },
+          dataType: 'number',
+          field: 'funds_allocated',
+          headerName: 'Funds allocated',
         },
       ],
       defaultColDef: {
@@ -345,7 +404,7 @@ const orderings = [
 
 const INITIAL_PAGE_SIZE = 20
 
-export default function PSListing() {
+export default function PListing() {
   const [lastChange, setLastChange] = useState<any>(null)
   const { enqueueSnackbar } = useSnackbar()
   const gridOptions = useGridOptions()
@@ -365,7 +424,7 @@ export default function PSListing() {
     options: {
       delay: 500,
       params: {
-        get_submission: true,
+        get_submission: false,
         limit: INITIAL_PAGE_SIZE,
         offset: 0,
         ...initialParams,
@@ -455,6 +514,21 @@ export default function PSListing() {
               Clear all
             </Button>
           </div>
+          {/* <Field
+            multiple={true}
+            value={filters.status_id}
+            widget="chipToggle"
+            options={filter(projectSlice.statuses.data, (item) => {
+              return item.code !== 'NEWSUB'
+            })}
+            onChange={(value) => {
+              handleFilterChange({ status_id: value })
+              handleParamsChange({
+                offset: 0,
+                status_id: (value || initialFilters.status_id).join(','),
+              })
+            }}
+          /> */}
           <Field
             Input={{ label: 'Country' }}
             getOptionLabel={(option: any) => option?.name}
