@@ -384,10 +384,11 @@ function useGridOptions() {
 const initialParams = {
   agency_id: null,
   approval_meeting_no: null,
-  country_id: null,
+  cluster_id: null,
   // @ts-ignore
   // date_received_after: dayjs().year(1990).dayOfYear(1).format('YYYY-MM-DD'),
   // @ts-ignore
+  country_id: null,
   // date_received_before: dayjs().dayOfYear(365).format('YYYY-MM-DD'),
   ordering: 'title',
   project_type_id: null,
