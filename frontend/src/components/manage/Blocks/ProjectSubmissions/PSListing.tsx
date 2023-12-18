@@ -424,7 +424,7 @@ export default function PListing() {
     options: {
       delay: 500,
       params: {
-        get_submission: false,
+        get_submission: true,
         limit: INITIAL_PAGE_SIZE,
         offset: 0,
         ...initialParams,

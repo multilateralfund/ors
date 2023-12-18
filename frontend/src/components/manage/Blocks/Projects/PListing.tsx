@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   Alert,
@@ -22,9 +22,29 @@ import {
   isEqual,
   isObject,
   map,
+  omit,
   reduce,
 } from 'lodash'
 import { useSnackbar } from 'notistack'
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
+  ResponsiveContainer,
+  Tooltip,
+  Treemap,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import resolveConfig from 'tailwindcss/resolveConfig'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
@@ -307,11 +327,8 @@ function useGridOptions() {
                             backgroundColor: status.color,
                             color: getContrastText({
                               background: status.color,
-                              dark: tailwindConfig.originalColors.dark
-                                .typography.primary,
-                              light:
-                                tailwindConfig.originalColors.light.typography
-                                  .primary,
+                              dark: tailwindConfig.theme.colors.black,
+                              light: tailwindConfig.theme.colors.white,
                             }),
                           }
                         : {}
@@ -404,6 +421,124 @@ const orderings = [
 
 const INITIAL_PAGE_SIZE = 20
 
+function PStatistics(props: { params: any }) {
+  const { params } = props
+  const statistics = useApi({
+    options: {
+      delay: 500,
+      params: omit(params, ['limit', 'offset']),
+    },
+    path: 'api/projects-statistics/',
+  })
+  const { data, loaded } = statistics
+  const [setParams] = useState(() => statistics.setParams)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    if (!mounted) {
+      setMounted(true)
+    }
+    setParams(omit(params, ['limit', 'offset']))
+  }, [mounted, params, setParams])
+
+  const chartData = useMemo(
+    () => [
+      { count: data?.projects_count || 0, name: 'Total projects' },
+      {
+        count: data?.projects_code_subcode_count || 0,
+        name: 'Total projects with code and subcode',
+      },
+      {
+        count: data?.projects_code_count || 0,
+        name: 'Total projects with code, missing subcode',
+      },
+    ],
+    [data],
+  )
+
+  console.log('HERE', data)
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8']
+
+  if (!mounted) return null
+  return (
+    <>
+      <ResponsiveContainer className="max-h-[300px] min-h-[300px] max-w-[600px]">
+        <BarChart
+          data={chartData}
+          height={300}
+          title="Projects count"
+          width={600}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" tick={false} />
+          <YAxis />
+          <Tooltip />
+          <Legend
+            content={(props: any) => {
+              const payload = props.payload?.[0]?.payload
+
+              if (!payload) return null
+              return (
+                <div className="ml-10 flex flex-col justify-center gap-x-6 gap-y-2">
+                  {chartData.map((entry, index) => (
+                    <p
+                      key={`item-${index}`}
+                      className="m-0 flex items-center gap-x-2 text-sm"
+                      style={{ color: payload.children[index].props.fill }}
+                    >
+                      <span className="flex items-center">
+                        <span
+                          className="inline-block h-4 w-4"
+                          style={{
+                            backgroundColor: payload.children[index].props.fill,
+                          }}
+                        />
+                      </span>
+                      <span>{chartData[index].name}</span>
+                    </p>
+                  ))}
+                </div>
+              )
+            }}
+          />
+          <Bar name="Projects count" dataKey="count">
+            {chartData.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+      {/* {data && (
+        <ResponsiveContainer className="max-h-[300px] min-h-[300px] max-w-[600px]">
+          <BarChart
+            data={data.projects_count_per_cluster}
+            height={300}
+            width={600}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="cluster__name"
+              tick={{ fill: 'black', fontSize: 12 }}
+            />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar
+              name="Projects count"
+              dataKey="count"
+              fill={tailwindConfig.originalColors.light.primary.DEFAULT}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      )} */}
+    </>
+  )
+}
+
 export default function PListing() {
   const [lastChange, setLastChange] = useState<any>(null)
   const { enqueueSnackbar } = useSnackbar()
@@ -420,7 +555,7 @@ export default function PListing() {
     label: 'Title',
   })
   const [filters, setFilters] = useState({ ...initialFilters })
-  const { data, loading, setParams } = useApi({
+  const { data, loading, params, setParams } = useApi({
     options: {
       delay: 500,
       params: {
@@ -491,8 +626,8 @@ export default function PListing() {
         event.preventDefault()
       }}
     >
-      <div className="filters-wrapper mb-4 flex flex-col  gap-4 md:flex-row">
-        <Box className="w-full md:max-w-[50%]">
+      <div className="filters-wrapper mb-4 grid grid-cols-1 gap-4 md:grid-cols-[auto_auto] lg:grid-cols-[1fr_3fr]">
+        <Box className="md:min-w-[300px]">
           <div className="mb-4 flex items-center justify-between">
             <Typography component="h2" variant="h5">
               Filters
@@ -636,7 +771,9 @@ export default function PListing() {
             multiple
           />
         </Box>
-        <Box className="w-full md:max-w-[50%]"></Box>
+        <Box className="flex items-center md:min-w-[400px]">
+          <PStatistics params={params} />
+        </Box>
       </div>
       <Box className="table-wrapper">
         <div className="mb-4 block flex-wrap justify-between gap-4 lg:flex">

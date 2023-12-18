@@ -100,11 +100,8 @@ export default function ChipToggleWidget({
                     color: chipData.color
                       ? getContrastText({
                           background: chipData.color,
-                          dark: tailwindConfig.originalColors.dark.typography
-                            .primary,
-                          light:
-                            tailwindConfig.originalColors.light.typography
-                              .primary,
+                          dark: tailwindConfig.theme.colors.black,
+                          light: tailwindConfig.theme.colors.white,
                         })
                       : 'inherit',
                   }

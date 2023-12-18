@@ -22,6 +22,7 @@ export default function useApi(props: ApiSettings): {
   error: ErrorType
   loaded: boolean
   loading: boolean
+  params?: { [key: string]: any }
   setApiSettings: Dispatch<SetStateAction<ApiSettings>>
   setParams: (params: { [key: string]: any }) => void
 } {
@@ -96,6 +97,7 @@ export default function useApi(props: ApiSettings): {
     error,
     loaded,
     loading,
+    params: options.params,
     setApiSettings,
     setParams,
   }
