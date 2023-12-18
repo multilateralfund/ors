@@ -16,6 +16,7 @@ export type ChipData = {
 }
 
 export type ChipToggleWidgetProps = {
+  disabled?: boolean
   options: ChipData[]
   value?: number[]
 } & (
@@ -41,6 +42,7 @@ function convertToArray(value?: number | number[]) {
 }
 
 export default function ChipToggleWidget({
+  disabled,
   multiple,
   ...props
 }: ChipToggleWidgetProps): JSX.Element {
@@ -91,6 +93,7 @@ export default function ChipToggleWidget({
           <Chip
             key={chipData.id}
             className="m-1"
+            disabled={disabled}
             label={chipData.name}
             style={
               items.indexOf?.(chipData.id) !== -1

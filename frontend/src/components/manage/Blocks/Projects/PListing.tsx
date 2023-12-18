@@ -508,89 +508,6 @@ function ProjectsStatistics(props: any) {
   )
 }
 
-function ClustersStatistics(props: any) {
-  const { statistics }: any = props
-
-  return (
-    <Box className="flex flex-col">
-      <Typography className="mb-4 text-lg font-semibold">
-        Number of projects by cluster
-      </Typography>
-      <Table
-        enablePagination={false}
-        withSeparators={true}
-        columnDefs={[
-          {
-            field: 'cluster__name',
-            flex: 1,
-            headerName: 'Cluster name',
-            resizable: false,
-          },
-          {
-            field: 'count',
-            headerName: 'Count',
-            initialWidth: 60,
-            minWidth: 60,
-            resizable: false,
-          },
-        ]}
-        defaultColDef={{
-          autoHeight: true,
-          minWidth: 60,
-          wrapText: true,
-        }}
-        rowData={statistics.data?.projects_count_per_cluster.filter(
-          (cluster: any) => cluster.cluster__name,
-        )}
-        onRowDataUpdated={(params) => {
-          params.api.autoSizeAllColumns(true)
-        }}
-      />
-    </Box>
-  )
-}
-
-function SectorsStatistics(props: any) {
-  const { statistics }: any = props
-  return (
-    <Box>
-      <Typography className="mb-4 text-lg font-semibold">
-        Number of projects by sector
-      </Typography>
-      <Table
-        enablePagination={false}
-        withSeparators={true}
-        columnDefs={[
-          {
-            field: 'sector__name',
-            flex: 1,
-            headerName: 'Sector name',
-            resizable: false,
-          },
-          {
-            field: 'count',
-            headerName: 'Count',
-            initialWidth: 60,
-            minWidth: 60,
-            resizable: false,
-          },
-        ]}
-        defaultColDef={{
-          autoHeight: true,
-          minWidth: 60,
-          wrapText: true,
-        }}
-        rowData={statistics.data?.projects_count_per_sector.filter(
-          (sector: any) => sector.sector__name,
-        )}
-        onRowDataUpdated={(params) => {
-          params.api.autoSizeAllColumns(true)
-        }}
-      />
-    </Box>
-  )
-}
-
 export default function PListing() {
   const [lastChange, setLastChange] = useState<any>(null)
   const { enqueueSnackbar } = useSnackbar()
@@ -641,6 +558,28 @@ export default function PListing() {
   const sectorIds = useMemo(() => {
     return map(filters.sector_id, (item: any) => item.id)
   }, [filters.sector_id])
+
+  const sectorStatistics = useMemo(() => {
+    return reduce(
+      statistics.data?.projects_count_per_sector || [],
+      (acc: any, item: any) => {
+        acc[item.sector__name] = item.count
+        return acc
+      },
+      {},
+    )
+  }, [statistics.data])
+
+  const clusterStatistics = useMemo(() => {
+    return reduce(
+      statistics.data?.projects_count_per_cluster || [],
+      (acc: any, item: any) => {
+        acc[item.cluster__name] = item.count
+        return acc
+      },
+      {},
+    )
+  }, [statistics.data])
 
   function handleParamsChange(
     params: { [key: string]: any },
@@ -713,6 +652,7 @@ export default function PListing() {
             </Button>
           </div>
           <Field
+            disabled={loading}
             multiple={true}
             value={filters.status_id}
             widget="chipToggle"
@@ -729,6 +669,7 @@ export default function PListing() {
           />
           <Field
             Input={{ label: 'Country' }}
+            disabled={loading}
             getOptionLabel={(option: any) => option?.name}
             options={commonSlice.countries.data}
             value={filters.country_id}
@@ -744,6 +685,8 @@ export default function PListing() {
           />
           <Field
             Input={{ label: 'Sector' }}
+            disabled={loading}
+            getCount={(option: any) => sectorStatistics[option?.name] || 0}
             getOptionLabel={(option: any) => option?.name}
             options={projectSlice.sectors.data}
             value={filters.sector_id}
@@ -770,6 +713,7 @@ export default function PListing() {
           {filters.sector_id?.length > 0 && (
             <Field
               Input={{ label: 'Subsector' }}
+              disabled={loading}
               getOptionLabel={(option: any) => option?.name}
               value={filters.subsector_id}
               widget="autocomplete"
@@ -788,6 +732,8 @@ export default function PListing() {
           )}
           <Field
             Input={{ label: 'Cluster' }}
+            disabled={loading}
+            getCount={(option: any) => clusterStatistics[option?.name] || 0}
             getOptionLabel={(option: any) => option?.name}
             options={projectSlice.clusters.data}
             value={filters.cluster_id}
@@ -803,6 +749,7 @@ export default function PListing() {
           />
           <Field
             Input={{ label: 'Type' }}
+            disabled={loading}
             getOptionLabel={(option: any) => option?.name}
             options={projectSlice.types.data}
             value={filters.project_type_id}
@@ -821,6 +768,7 @@ export default function PListing() {
           />
           <Field
             Input={{ label: 'Substance Type' }}
+            disabled={loading}
             options={substanceTypes}
             value={filters.substance_type}
             widget="autocomplete"
@@ -835,6 +783,7 @@ export default function PListing() {
           />
           <Field
             Input={{ label: 'Agency' }}
+            disabled={loading}
             getOptionLabel={(option: any) => option?.name}
             options={commonSlice.agencies.data}
             value={filters.agency_id}
@@ -851,15 +800,12 @@ export default function PListing() {
         </Box>
         <ProjectsStatistics statistics={statistics} />
       </div>
-      <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-[1fr_1fr]">
-        <ClustersStatistics statistics={statistics} />
-        <SectorsStatistics statistics={statistics} />
-      </div>
       <Box className="table-wrapper">
         <div className="mb-4 block flex-wrap justify-between gap-4 lg:flex">
           <div className="mb-4 flex justify-between gap-4 lg:mb-0">
             <Field
               name="search"
+              disabled={loading}
               placeholder="Search by keyword..."
               FieldProps={{
                 className:
