@@ -33,6 +33,7 @@ from core.api.views.projects import (
     ProjectClusterListView,
     ProjectOdsOdpViewSet,
     ProjectRbmMeasureViewSet,
+    ProjectStatisticsView,
     ProjectSubmissionAmountViewSet,
     ProjectViewSet,
     ProjectSectorListView,
@@ -184,6 +185,11 @@ urlpatterns = [
         "project-types/",
         ProjectTypeListView.as_view(),
         name="project-type-list",
+    ),
+    path(
+        "projects-statistics/",
+        ProjectStatisticsView.as_view(),
+        name="project-statistics",
     ),
     path(
         "meetings/",

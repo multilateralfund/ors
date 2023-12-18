@@ -1,6 +1,7 @@
 import os
 
 from django.conf import settings
+from django.db import models
 from django.shortcuts import get_object_or_404
 from django.views.static import serve
 from django_filters.rest_framework import DjangoFilterBackend
@@ -114,6 +115,7 @@ class ProjectViewSet(
         "cluster",
         "approval_meeting",
         "meeting_transf",
+        "meta_project",
     ).prefetch_related(
         "coop_agencies__agency",
         "submission_amounts",
@@ -268,3 +270,45 @@ class ProjectSubmissionAmountViewSet(
 
     queryset = SubmissionAmount.objects.all()
     serializer_class = SubmissionAmountCreateSerializer
+
+
+class ProjectStatisticsView(generics.ListAPIView):
+    """
+    API endpoint that allows project statistics to be viewed.
+    """
+
+    filterset_class = ProjectFilter
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+    ]
+    queryset = Project.objects.select_related("meta_project", "sector", "cluster").all()
+
+    def get(self, request, *args, **kwargs):
+        """
+        Return project statistics
+        """
+        filtered_projects = self.filter_queryset(self.get_queryset())
+        valid_codes_count = filtered_projects.exclude(
+            generated_code__contains="%-%"
+        ).count()
+        project_count_per_sector = (
+            filtered_projects.values("sector__name")
+            .annotate(count=models.Count("sector__name"))
+            .order_by("-count")
+        )
+        project_count_per_cluster = (
+            filtered_projects.values("cluster__name")
+            .annotate(count=models.Count("cluster__name"))
+            .order_by("-count")
+        )
+
+        data = {
+            "projects_total_count": Project.objects.count(),
+            "projects_count": filtered_projects.count(),
+            "projects_valid_code_count": valid_codes_count,
+            "total_meetings": Meeting.objects.count(),
+            "projects_count_per_sector": project_count_per_sector,
+            "projects_count_per_cluster": project_count_per_cluster,
+        }
+        return Response(data)
