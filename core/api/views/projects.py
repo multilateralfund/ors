@@ -292,6 +292,17 @@ class ProjectStatisticsView(generics.ListAPIView):
         valid_codes_count = filtered_projects.exclude(
             generated_code__contains="%-%"
         ).count()
+        invalid_code_count = filtered_projects.filter(
+            meta_project__code__contains="%-%"
+        ).count()
+        invalid_subcode_count = filtered_projects.filter(
+            generated_code__contains="%-%"
+        ).count()
+        valid_code_invalid_subcode_count = (
+            filtered_projects.filter(generated_code__contains="%-%")  # invalid subcodes
+            .exclude(meta_project__code__contains="%-%")  # valid codes
+            .count()
+        )
         project_count_per_sector = (
             filtered_projects.values("sector__name")
             .annotate(count=models.Count("sector__name"))
@@ -307,7 +318,9 @@ class ProjectStatisticsView(generics.ListAPIView):
             "projects_total_count": Project.objects.count(),
             "projects_count": filtered_projects.count(),
             "projects_valid_code_count": valid_codes_count,
-            "total_meetings": Meeting.objects.count(),
+            "projects_valid_code_invalid_subcode_count": valid_code_invalid_subcode_count,
+            "projects_invalid_code_count": invalid_code_count,
+            "projects_invalid_subcode_count": invalid_subcode_count,
             "projects_count_per_sector": project_count_per_sector,
             "projects_count_per_cluster": project_count_per_cluster,
         }
