@@ -112,7 +112,7 @@ function useGridOptions() {
               <Link
                 className={cx(props.className)}
                 href={`/projects/${props.data.id}`}
-                variant="contained"
+                prefetch={false}
               >
                 {props.value}
               </Link>
