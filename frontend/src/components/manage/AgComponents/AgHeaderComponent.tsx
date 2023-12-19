@@ -18,7 +18,7 @@ function getTooltipTitle(props: any) {
 }
 
 export default function AgHeaderComponent(props: any) {
-  const { displayName, footnote, footnoteIndex, info } = props
+  const { details, displayName, footnote, footnoteIndex, info } = props
 
   return (
     <AgTooltipComponent
@@ -56,6 +56,7 @@ export default function AgHeaderComponent(props: any) {
             <IoInformationCircleOutline className="inline-block" />
           </IconButton>
         )}
+        {details}
       </Typography>
     </AgTooltipComponent>
   )
