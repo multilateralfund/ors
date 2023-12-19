@@ -17,6 +17,7 @@ from core.api.tests.factories import (
     ExcludedUsageSubstFactory,
     GroupFactory,
     MeetingFactory,
+    MetaProjectFactory,
     ProjectClusterFactory,
     ProjectFactory,
     ProjectOdsOdpFactory,
@@ -42,6 +43,7 @@ from core.api.tests.factories import (
 from core.models import BPRecord
 from core.models import CPEmission
 from core.models import CPReport
+from core.utils import get_meta_project_code
 
 
 @pytest.fixture
@@ -273,6 +275,13 @@ def project_cluster_kip():
 
 
 @pytest.fixture
+def meta_project(country_ro, project_cluster_kpp):
+    code = get_meta_project_code(country_ro, project_cluster_kpp, 1)
+
+    return MetaProjectFactory.create(code=code)
+
+
+@pytest.fixture
 def project(
     country_ro,
     agency,
@@ -282,8 +291,10 @@ def project(
     subsector,
     meeting,
     project_cluster_kpp,
+    meta_project,
 ):
     project = ProjectFactory.create(
+        meta_project=meta_project,
         title="Karma to Burn",
         country=country_ro,
         agency=agency,

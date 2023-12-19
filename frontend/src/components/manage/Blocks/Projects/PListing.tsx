@@ -8,6 +8,7 @@ import {
   Button,
   InputAdornment,
   IconButton as MuiIconButton,
+  Tooltip as MuiTooltip,
   Typography,
 } from '@mui/material'
 import { SuppressKeyboardEventParams } from 'ag-grid-community'
@@ -32,16 +33,8 @@ import {
   CartesianGrid,
   Cell,
   Legend,
-  Pie,
-  PieChart,
-  PolarAngleAxis,
-  PolarGrid,
-  PolarRadiusAxis,
-  Radar,
-  RadarChart,
   ResponsiveContainer,
   Tooltip,
-  Treemap,
   XAxis,
   YAxis,
 } from 'recharts'
@@ -54,13 +47,14 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import IconButton from '@ors/components/ui/IconButton/IconButton'
 import Link from '@ors/components/ui/Link/Link'
 import { KEY_ENTER } from '@ors/constants'
-import api, { formatApiUrl, getResults } from '@ors/helpers/Api/Api'
+import api, { getResults } from '@ors/helpers/Api/Api'
 import { getContrastText } from '@ors/helpers/Color/Color'
 import { debounce, scrollToElement } from '@ors/helpers/Utils/Utils'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
 
 import { AiFillFileExcel } from 'react-icons/ai'
+import { FaEdit } from 'react-icons/fa'
 import {
   IoArrowDown,
   IoArrowUp,
@@ -163,6 +157,19 @@ function useGridOptions() {
             return <AgCellRenderer {...props} value={props.data.project_type} />
           },
           field: 'project_type_id',
+          headerComponentParams: {
+            className: 'flex justify-center gap-2',
+            details: (
+              <MuiTooltip
+                placement="top"
+                title="Double left click on a cell to edit"
+              >
+                <span className="flex items-center gap-1">
+                  <FaEdit size={16} />
+                </span>
+              </MuiTooltip>
+            ),
+          },
           headerName: 'Project type',
         },
         {
@@ -191,6 +198,19 @@ function useGridOptions() {
             return <AgCellRenderer {...props} value={props.data.agency} />
           },
           field: 'agency_id',
+          headerComponentParams: {
+            className: 'flex justify-center gap-2',
+            details: (
+              <MuiTooltip
+                placement="top"
+                title="Double left click on a cell to edit"
+              >
+                <span className="flex items-center gap-1">
+                  <FaEdit size={16} />
+                </span>
+              </MuiTooltip>
+            ),
+          },
           headerName: 'Agency',
         },
         {
@@ -214,6 +234,19 @@ function useGridOptions() {
             return <AgCellRenderer {...props} value={props.data.sector} />
           },
           field: 'sector_id',
+          headerComponentParams: {
+            className: 'flex justify-center gap-2',
+            details: (
+              <MuiTooltip
+                placement="top"
+                title="Double left click on a cell to edit"
+              >
+                <span className="flex items-center gap-1">
+                  <FaEdit size={16} />
+                </span>
+              </MuiTooltip>
+            ),
+          },
           headerName: 'Sector',
         },
         {
@@ -253,8 +286,24 @@ function useGridOptions() {
           },
           field: 'subsector_id',
           headerComponentParams: {
-            info: true,
-            tooltip: 'Select a sector before updating subsector',
+            className: 'flex justify-center gap-2',
+            details: (
+              <MuiTooltip
+                placement="top"
+                title={
+                  <>
+                    <Typography>Double left click on a cell to edit</Typography>
+                    <Typography>
+                      Select a sector before updating subsector
+                    </Typography>
+                  </>
+                }
+              >
+                <span className="flex items-center gap-1">
+                  <FaEdit size={16} />
+                </span>
+              </MuiTooltip>
+            ),
           },
           headerName: 'Subsector',
         },
@@ -280,6 +329,19 @@ function useGridOptions() {
             ),
           },
           field: 'substance_type',
+          headerComponentParams: {
+            className: 'flex justify-center gap-2',
+            details: (
+              <MuiTooltip
+                placement="top"
+                title="Double left click on a cell to edit"
+              >
+                <span className="flex items-center gap-1">
+                  <FaEdit size={16} />
+                </span>
+              </MuiTooltip>
+            ),
+          },
           headerName: 'Substance type',
         },
         {
@@ -289,6 +351,19 @@ function useGridOptions() {
         },
         {
           field: 'title',
+          headerComponentParams: {
+            className: 'flex justify-center gap-2',
+            details: (
+              <MuiTooltip
+                placement="top"
+                title="Double left click on a cell to edit"
+              >
+                <span className="flex items-center gap-1">
+                  <FaEdit size={16} />
+                </span>
+              </MuiTooltip>
+            ),
+          },
           headerName: 'Title',
           initialWidth: 300,
           suppressAutoSize: true,
@@ -343,6 +418,19 @@ function useGridOptions() {
             )
           },
           field: 'status_id',
+          headerComponentParams: {
+            className: 'flex justify-center gap-2',
+            details: (
+              <MuiTooltip
+                placement="top"
+                title="Double left click on a cell to edit"
+              >
+                <span className="flex items-center gap-1">
+                  <FaEdit size={16} />
+                </span>
+              </MuiTooltip>
+            ),
+          },
           headerName: 'Status',
         },
         {
@@ -358,6 +446,19 @@ function useGridOptions() {
           },
           dataType: 'number',
           field: 'funds_allocated',
+          headerComponentParams: {
+            className: 'flex justify-center2 gap-2',
+            details: (
+              <MuiTooltip
+                placement="top"
+                title="Double left click on a cell to edit"
+              >
+                <span className="flex items-center gap-1">
+                  <FaEdit size={16} />
+                </span>
+              </MuiTooltip>
+            ),
+          },
           headerName: 'Funds allocated',
         },
       ],

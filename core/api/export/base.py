@@ -1,4 +1,5 @@
 import openpyxl
+from openpyxl.cell import WriteOnlyCell
 from openpyxl.comments import Comment
 from openpyxl.styles import Alignment
 from openpyxl.styles import Border
@@ -186,9 +187,105 @@ class CPReportBase:
         return wb
 
 
+class WriteOnlyBase:
+    header_row_start_idx = 1
+
+    def __init__(self, sheet, headers):
+        self.sheet = sheet
+        self.headers = headers
+        self.header_row_end_idx = 1
+        self.max_column_idx = len(self.headers)
+
+    def write(self, data):
+        self.set_dimensions()
+        self.write_headers()
+        self.write_data(data)
+        # # Freeze so top and side headers always stay visible.
+        # # Help with scrolling in the very large sections.
+        # self.sheet.freeze_panes = f"B{self.header_row_end_idx + 1}"
+
+    def write_headers(self):
+        header_row = []
+        for parsed_header in self.headers:
+            comment = None
+            name = parsed_header.get("headerName") or parsed_header.get("display_name")
+            if parsed_header.get("type") == "date":
+                comment = name
+                name = "Date"
+            header_row.append(
+                self.write_header_cell(
+                    name,
+                    comment=comment,
+                )
+            )
+        self.sheet.append(header_row)
+
+    def write_data(self, data):
+        for record in data:
+            record_row = []
+            for header in self.headers:
+                header_id = header.get("id")
+                header_type = header.get("type")
+                if method := header.get("method"):
+                    value = method(record, header)
+                else:
+                    value = record.get(header_id)
+
+                if header_type == "number":
+                    value = float(value or 0)
+                elif header_type == "bool":
+                    value = "Yes" if value else "No"
+                else:
+                    value = value or ""
+
+                record_row.append(self.write_record_cell(value))
+            self.sheet.append(record_row)
+
+    def set_dimensions(self):
+        for i, header in enumerate(self.headers):
+            column_letter = get_column_letter(i + 1)
+            self.sheet.column_dimensions[column_letter].width = header.get(
+                "column_width", COLUMN_WIDTH
+            )
+
+    def write_header_cell(self, value, comment=None):
+        cell = WriteOnlyCell(self.sheet, value=value)
+        cell.font = Font(name=DEFAULT_FONT.name, bold=True)
+        cell.border = Border(
+            left=Side(style="thin"),
+            right=Side(style="thin"),
+            top=Side(style="thin"),
+            bottom=Side(style="thin"),
+        )
+        cell.alignment = Alignment(
+            horizontal="center", vertical="center", wrap_text=True
+        )
+        cell.fill = PatternFill(
+            start_color="CCCCCC", end_color="CCCCCC", fill_type="solid"
+        )
+        if comment:
+            cell.comment = Comment(comment, "")
+        return cell
+
+    def write_record_cell(self, value, read_only=False):
+        cell = WriteOnlyCell(self.sheet, value=value)
+        cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+        cell.border = Border(
+            left=Side(style="hair"),
+            right=Side(style="hair"),
+            top=Side(style="hair"),
+            bottom=Side(style="hair"),
+        )
+        if read_only:
+            cell.fill = PatternFill(
+                start_color="EEEEEE", end_color="EEEEEE", fill_type="solid"
+            )
+        return cell
+
+
 def configure_sheet_print(sheet, orientation):
     sheet.page_setup.orientation = orientation
-    sheet.page_setup.paperSize = sheet.PAPERSIZE_A4
+    sheet.page_setup.paperSize = getattr(sheet.page_setup, "PAPERSIZE_A4", 9)
     sheet.sheet_properties.pageSetUpPr.fitToPage = True
     sheet.sheet_properties.pageSetUpPr.autoPageBreaks = True
     sheet.page_setup.fitToWidth = 1

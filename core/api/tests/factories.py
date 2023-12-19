@@ -22,6 +22,7 @@ from core.models.country_programme import (
 from core.models.group import Group
 from core.models.meeting import Meeting
 from core.models.project import (
+    MetaProject,
     Project,
     ProjectCluster,
     ProjectOdsOdp,
@@ -317,6 +318,14 @@ class ProjectClusterFactory(factory.django.DjangoModelFactory):
     code = factory.Faker("pystr", max_chars=10)
     substance_type = "HFC"
     sort_order = factory.Faker("random_int", min=1, max=100)
+
+
+class MetaProjectFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = MetaProject
+
+    code = factory.Faker("pystr", max_chars=10)
+    type = "Individual investment"
 
 
 class ProjectFactory(factory.django.DjangoModelFactory):
