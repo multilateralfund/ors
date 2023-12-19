@@ -9,8 +9,8 @@ import cx from 'classnames'
 import NextLink, { LinkProps as NextLinkProps } from 'next/link'
 
 export type LinkProps = MuiLinkProps &
-  NextLinkProps & { button?: boolean; href: string }
-export type ButtonProps = MuiButtonProps & { button?: boolean; href: string }
+  NextLinkProps & { button?: false; href: string }
+export type ButtonProps = MuiButtonProps & { button: true; href: string }
 
 function Link({
   button,

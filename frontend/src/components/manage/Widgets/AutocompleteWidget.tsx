@@ -1,7 +1,7 @@
 import type { TextWidgetProps } from './TextWidget'
 import type { AutocompleteProps } from '@mui/material'
 
-import { forwardRef } from 'react'
+import { Fragment, forwardRef } from 'react'
 
 import { Autocomplete } from '@mui/material'
 import cx from 'classnames'
@@ -17,6 +17,9 @@ export interface AutocompleteWidgetProps
     boolean | undefined
   > {
   Input?: TextWidgetProps
+  getCount?: (
+    option: { [key: string]: any; id: number; label?: string } | undefined,
+  ) => number
   options?:
     | Array<{ [key: string]: any; id: number; label?: string } | undefined>
     | undefined
@@ -26,6 +29,7 @@ const AutocompleteWidget = forwardRef(function AutocompleteWidget(
   {
     Input,
     className,
+    getCount,
     getOptionLabel,
     isOptionEqualToValue,
     options,
@@ -72,9 +76,18 @@ const AutocompleteWidget = forwardRef(function AutocompleteWidget(
         if (!!renderOption) {
           return renderOption(props, option, ...args)
         }
+        const count = !!getCount ? getCount(option) : null
+        if (!!getCount && !count) {
+          return <Fragment key={option.id} />
+        }
         return (
           <li {...props} key={option.id}>
-            {getOptionLabel?.(option) ?? option.label}
+            <div className="flex w-full items-start justify-between gap-x-4">
+              <span>
+                {!!getOptionLabel ? getOptionLabel(option) : option.label}
+              </span>
+              {!!getCount && <span>({count})</span>}
+            </div>
           </li>
         )
       }}
