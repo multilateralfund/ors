@@ -17,7 +17,7 @@ fi
 
 
 if [[ "$RUN_COMMAND" == *"$1"* ]]; then
-  gunicorn multilateralfund.wsgi --bind 0.0.0.0:8000 $GOPTS
+  gunicorn multilateralfund.wsgi --bind 0.0.0.0:8000 -t 120 $GOPTS
 fi
 
 exec "$@"

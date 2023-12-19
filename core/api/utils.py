@@ -63,10 +63,13 @@ class RelatedExistsFilter(filters.BooleanFilter):
 
 def workbook_response(name, wb):
     """Save xlsx and return the response"""
-    xls = io.BytesIO()
-    wb.save(xls)
-    xls.seek(0)
-    return FileResponse(xls, as_attachment=True, filename=name + ".xlsx")
+    with tempfile.TemporaryDirectory(prefix="mlf-print-") as tmpdirname:
+        xlsx_file = Path(tmpdirname) / (name + ".xlsx")
+        wb.save(xlsx_file)
+        res = FileResponse(
+            xlsx_file.open("rb"), as_attachment=True, filename=name + ".xlsx"
+        )
+        return res
 
 
 def workbook_pdf_response(name, wb):
