@@ -21,7 +21,7 @@ from core.models.project import ProjectFile
 from core.utils import get_project_sub_code
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008,W0221,R0913
+# pylint: disable=C8008,W0221,R0913,R0914
 
 
 @pytest.fixture(name="project_url")
