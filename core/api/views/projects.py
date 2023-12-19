@@ -187,10 +187,9 @@ class ProjectViewSet(
 
         data = ProjectListSerializer(queryset, many=True).data
 
-        wb = openpyxl.Workbook()
-        sheet = wb.active
-        sheet.title = "Projects"
-        configure_sheet_print(sheet, sheet.ORIENTATION_LANDSCAPE)
+        wb = openpyxl.Workbook(write_only=True)
+        sheet = wb.create_sheet("Projects")
+        configure_sheet_print(sheet, "landscape")
 
         ProjectWriter(
             sheet,

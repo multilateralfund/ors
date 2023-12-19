@@ -1,8 +1,8 @@
-from core.api.export.base import BaseWriter
+from core.api.export.base import WriteOnlyBase
 from core.api.export.base import COLUMN_WIDTH
 
 
-class ProjectWriter(BaseWriter):
+class ProjectWriter(WriteOnlyBase):
     header_row_start_idx = 1
 
     def __init__(self, sheet):
@@ -15,6 +15,7 @@ class ProjectWriter(BaseWriter):
             {
                 "id": "code_legacy",
                 "headerName": "Legacy code",
+                "column_width": COLUMN_WIDTH * 2,
             },
             {
                 "id": "metaproject_code",
@@ -23,6 +24,7 @@ class ProjectWriter(BaseWriter):
             {
                 "id": "cluster",
                 "headerName": "Cluster",
+                "column_width": COLUMN_WIDTH * 2,
             },
             {
                 "id": "metaproject_category",
@@ -43,6 +45,7 @@ class ProjectWriter(BaseWriter):
             {
                 "id": "sector",
                 "headerName": "Sector",
+                "column_width": COLUMN_WIDTH * 1.5,
             },
             {
                 "id": "sector_legacy",
@@ -51,6 +54,7 @@ class ProjectWriter(BaseWriter):
             {
                 "id": "subsector",
                 "headerName": "Subsector",
+                "column_width": COLUMN_WIDTH * 1.5,
             },
             {
                 "id": "subsector_legacy",
@@ -67,6 +71,7 @@ class ProjectWriter(BaseWriter):
             {
                 "id": "status",
                 "headerName": "Status",
+                "column_width": COLUMN_WIDTH * 1.5,
             },
             {
                 "id": "country",
@@ -75,6 +80,7 @@ class ProjectWriter(BaseWriter):
             {
                 "id": "title",
                 "headerName": "Title",
+                "column_width": COLUMN_WIDTH * 5,
             },
         ]
 
