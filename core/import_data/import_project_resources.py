@@ -104,6 +104,12 @@ NEW_SECTORS = [
     },
 ]
 
+OUTDATED_SECTORS = [
+    "MUS",
+    "OTH",
+    "SEV",
+]
+
 NEW_TYPES = [
     {
         "TYPE": "DOC",
@@ -160,11 +166,13 @@ def import_sector(file_path):
     sectors_json.extend(NEW_SECTORS)
 
     for sector_json in sectors_json:
-        sector_name = SECTOR_NAME_MAPPING.get(
-            sector_json["SECTOR"].strip(), sector_json["SECTOR"].strip()
-        )
         sector_code = SECTOR_CODE_MAPPING.get(
             sector_json["SEC"].strip(), sector_json["SEC"].strip()
+        )
+        if sector_code in OUTDATED_SECTORS:
+            continue
+        sector_name = SECTOR_NAME_MAPPING.get(
+            sector_json["SECTOR"].strip(), sector_json["SECTOR"].strip()
         )
         sector_data = {
             "name": sector_name,

@@ -201,7 +201,9 @@ class Project(models.Model):
         max_length=256, choices=ProjectCompliance.choices, null=True, blank=True
     )
 
-    sector = models.ForeignKey(ProjectSector, on_delete=models.CASCADE)
+    sector = models.ForeignKey(
+        ProjectSector, on_delete=models.CASCADE, null=True, blank=True
+    )
     sector_legacy = models.CharField(max_length=256, null=True, blank=True)
     subsector = models.ForeignKey(
         ProjectSubSector, on_delete=models.CASCADE, null=True, blank=True

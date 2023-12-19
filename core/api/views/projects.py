@@ -299,20 +299,22 @@ class ProjectStatisticsView(generics.ListAPIView):
         ).count()
         project_count_per_sector = (
             filtered_projects.values("sector__name")
+            .filter(sector__isnull=False)
             .annotate(count=models.Count("sector__name"))
             .order_by("-count")
         )
         project_count_per_cluster = (
             filtered_projects.values("cluster__name")
+            .filter(cluster__isnull=False)
             .annotate(count=models.Count("cluster__name"))
             .order_by("-count")
         )
 
         data = {
             "projects_total_count": Project.objects.count(),
-            "projects_count": filtered_projects.count(),
-            "projects_code_count": valid_code_inv_subcode_count,
-            "projects_code_subcode_count": valid_subcode_count,  # subcode contains codes
+            "projects_count": filtered_projects.count(),  # filtered projects
+            "projects_code_count": valid_code_inv_subcode_count,  # valid codes invalid subcodes
+            "projects_code_subcode_count": valid_subcode_count,  # valid subcodes
             "projects_count_per_sector": project_count_per_sector,
             "projects_count_per_cluster": project_count_per_cluster,
         }

@@ -228,11 +228,25 @@ def setup_project_list(
             )
             proj.set_generated_code()
 
-    projects_data[0].pop("cluster")
+    # project_without cluster
+    proj_data = projects_data[0].copy()
+    proj_data.pop("cluster")
     proj = ProjectFactory.create(
         title=f"Project {25}",
         date_received="2020-01-30",
-        **projects_data[0],
+        **proj_data,
+    )
+    proj.set_generated_code()
+
+    # project_without sector and subsector
+    proj_data = projects_data[0].copy()
+    proj_data["sector"] = None
+    proj_data["subsector"] = None
+    proj = ProjectFactory.create(
+        title=f"Project {26}",
+        serial_number=26,
+        date_received="2020-01-30",
+        **proj_data,
     )
     proj.set_generated_code()
 
@@ -248,7 +262,7 @@ class TestProjectList(BaseTest):
         # get project list
         response = self.client.get(self.url)
         assert response.status_code == 200
-        assert len(response.data) == 9
+        assert len(response.data) == 10
 
     def test_project_list_w_submission(self, user, _setup_project_list):
         self.client.force_authenticate(user=user)
@@ -262,7 +276,7 @@ class TestProjectList(BaseTest):
 
         response = self.client.get(self.url, {"get_submission": False})
         assert response.status_code == 200
-        assert len(response.data) == 5
+        assert len(response.data) == 6
 
     def test_project_list_agency_filter(self, user, agency, _setup_project_list):
         new_agency, _, _, _ = _setup_project_list
@@ -270,7 +284,7 @@ class TestProjectList(BaseTest):
 
         response = self.client.get(self.url, {"agency_id": agency.id})
         assert response.status_code == 200
-        assert len(response.data) == 5
+        assert len(response.data) == 6
         for project in response.data:
             assert project["agency"] == agency.name
 
@@ -278,14 +292,14 @@ class TestProjectList(BaseTest):
             self.url, {"agency_id": f"{agency.id},{new_agency.id}"}
         )
         assert response.status_code == 200
-        assert len(response.data) == 9
+        assert len(response.data) == 10
 
     def test_project_list_type_filter(self, user, project_type, _setup_project_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"project_type_id": project_type.id})
         assert response.status_code == 200
-        assert len(response.data) == 5
+        assert len(response.data) == 6
         for project in response.data:
             assert project["project_type"] == project_type.name
 
@@ -297,7 +311,7 @@ class TestProjectList(BaseTest):
 
         response = self.client.get(self.url, {"status_id": project_status.id})
         assert response.status_code == 200
-        assert len(response.data) == 5
+        assert len(response.data) == 6
         for project in response.data:
             assert project["status"] == project_status.name
 
@@ -305,7 +319,7 @@ class TestProjectList(BaseTest):
             self.url, {"status_id": f"{project_status.id},{new_project_status.id}"}
         )
         assert response.status_code == 200
-        assert len(response.data) == 9
+        assert len(response.data) == 10
 
     def test_project_list_sector_filter(self, user, sector, _setup_project_list):
         _, _, new_sector, _ = _setup_project_list
@@ -337,7 +351,7 @@ class TestProjectList(BaseTest):
 
         response = self.client.get(self.url, {"substance_type": "HCFC"})
         assert response.status_code == 200
-        assert len(response.data) == 5
+        assert len(response.data) == 6
         for project in response.data:
             assert project["substance_type"] == "HCFC"
 
@@ -347,7 +361,7 @@ class TestProjectList(BaseTest):
 
         response = self.client.get(self.url, {"approval_meeting_id": meeting.id})
         assert response.status_code == 200
-        assert len(response.data) == 5
+        assert len(response.data) == 6
         for project in response.data:
             assert project["approval_meeting"] == meeting.number
 
@@ -355,14 +369,14 @@ class TestProjectList(BaseTest):
             self.url, {"approval_meeting_id": f"{new_meeting.id},{meeting.id}"}
         )
         assert response.status_code == 200
-        assert len(response.data) == 9
+        assert len(response.data) == 10
 
     def test_project_list_country_filter(self, user, country_ro, _setup_project_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"country_id": country_ro.id})
         assert response.status_code == 200
-        assert len(response.data) == 5
+        assert len(response.data) == 6
         for project in response.data:
             assert project["country"] == country_ro.name
 
@@ -371,7 +385,7 @@ class TestProjectList(BaseTest):
 
         response = self.client.get(self.url, {"date_received_after": "2020-01-03"})
         assert response.status_code == 200
-        assert len(response.data) == 5
+        assert len(response.data) == 6
         for project in response.data:
             assert project["date_received"] in [
                 "2020-01-03",
@@ -394,9 +408,9 @@ class TestProjectStatistics(BaseTest):
         # get project list
         response = self.client.get(self.url)
         assert response.status_code == 200
-        assert response.data["projects_total_count"] == 9
-        assert response.data["projects_count"] == 9
-        assert response.data["projects_code_count"] == 1
+        assert response.data["projects_total_count"] == 10
+        assert response.data["projects_count"] == 10
+        assert response.data["projects_code_count"] == 2
         assert response.data["projects_code_subcode_count"] == 8
         assert response.data["projects_count_per_sector"][0]["sector__name"] == "Sector"
         assert response.data["projects_count_per_sector"][0]["count"] == 5
@@ -405,7 +419,7 @@ class TestProjectStatistics(BaseTest):
             == "New Sector"
         )
         assert response.data["projects_count_per_sector"][1]["count"] == 4
-        assert response.data["projects_count_per_cluster"][0]["count"] == 4
+        assert response.data["projects_count_per_cluster"][0]["count"] == 5
         assert response.data["projects_count_per_cluster"][1]["count"] == 4
 
     def test_proj_stat_w_filters(self, user, _setup_project_list, project_cluster_kpp):
@@ -413,9 +427,9 @@ class TestProjectStatistics(BaseTest):
 
         response = self.client.get(self.url, {"cluster_id": project_cluster_kpp.id})
         assert response.status_code == 200
-        assert response.data["projects_total_count"] == 9
-        assert response.data["projects_count"] == 4
-        assert response.data["projects_code_count"] == 0
+        assert response.data["projects_total_count"] == 10
+        assert response.data["projects_count"] == 5
+        assert response.data["projects_code_count"] == 1
         assert response.data["projects_code_subcode_count"] == 4
         assert len(response.data["projects_count_per_sector"]) == 1
         assert response.data["projects_count_per_sector"][0]["sector__name"] == "Sector"
@@ -425,7 +439,7 @@ class TestProjectStatistics(BaseTest):
             response.data["projects_count_per_cluster"][0]["cluster__name"]
             == project_cluster_kpp.name
         )
-        assert response.data["projects_count_per_cluster"][0]["count"] == 4
+        assert response.data["projects_count_per_cluster"][0]["count"] == 5
 
 
 @pytest.fixture(name="_setup_project_create")
