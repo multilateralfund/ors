@@ -54,18 +54,20 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import IconButton from '@ors/components/ui/IconButton/IconButton'
 import Link from '@ors/components/ui/Link/Link'
 import { KEY_ENTER } from '@ors/constants'
-import api, { getResults } from '@ors/helpers/Api/Api'
+import api, { formatApiUrl, getResults } from '@ors/helpers/Api/Api'
 import { getContrastText } from '@ors/helpers/Color/Color'
 import { debounce, scrollToElement } from '@ors/helpers/Utils/Utils'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
 
+import { AiFillFileExcel } from 'react-icons/ai'
 import {
   IoArrowDown,
   IoArrowUp,
   IoCaretDown,
   IoCaretUp,
   IoClose,
+  IoDownloadOutline,
   IoSearchOutline,
 } from 'react-icons/io5'
 
@@ -421,25 +423,14 @@ const orderings = [
 
 const INITIAL_PAGE_SIZE = 20
 
-function PStatistics(props: { params: any }) {
-  const { params } = props
-  const statistics = useApi({
-    options: {
-      delay: 500,
-      params: omit(params, ['limit', 'offset']),
-    },
-    path: 'api/projects-statistics/',
-  })
-  const { data, loaded } = statistics
-  const [setParams] = useState(() => statistics.setParams)
+function ProjectsStatistics(props: any) {
   const [mounted, setMounted] = useState(false)
+  const { statistics }: any = props
+  const { data, loaded } = statistics
 
   useEffect(() => {
-    if (!mounted) {
-      setMounted(true)
-    }
-    setParams(omit(params, ['limit', 'offset']))
-  }, [mounted, params, setParams])
+    setMounted(true)
+  }, [])
 
   const chartData = useMemo(
     () => [
@@ -456,14 +447,14 @@ function PStatistics(props: { params: any }) {
     [data],
   )
 
-  console.log('HERE', data)
-
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8']
 
-  if (!mounted) return null
   return (
-    <>
-      <ResponsiveContainer className="max-h-[300px] min-h-[300px] max-w-[600px]">
+    <Box className="flex flex-col items-center">
+      <Typography className="text-lg font-semibold">
+        Number of projects
+      </Typography>
+      <ResponsiveContainer className="min-h-[300px]">
         <BarChart
           data={chartData}
           height={300}
@@ -512,30 +503,90 @@ function PStatistics(props: { params: any }) {
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-      {/* {data && (
-        <ResponsiveContainer className="max-h-[300px] min-h-[300px] max-w-[600px]">
-          <BarChart
-            data={data.projects_count_per_cluster}
-            height={300}
-            width={600}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="cluster__name"
-              tick={{ fill: 'black', fontSize: 12 }}
-            />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar
-              name="Projects count"
-              dataKey="count"
-              fill={tailwindConfig.originalColors.light.primary.DEFAULT}
-            />
-          </BarChart>
-        </ResponsiveContainer>
-      )} */}
-    </>
+    </Box>
+  )
+}
+
+function ClustersStatistics(props: any) {
+  const { statistics }: any = props
+
+  return (
+    <Box className="flex flex-col">
+      <Typography className="mb-4 text-lg font-semibold">
+        Number of projects by cluster
+      </Typography>
+      <Table
+        enablePagination={false}
+        withSeparators={true}
+        columnDefs={[
+          {
+            field: 'cluster__name',
+            flex: 1,
+            headerName: 'Cluster name',
+            resizable: false,
+          },
+          {
+            field: 'count',
+            headerName: 'Count',
+            initialWidth: 60,
+            minWidth: 60,
+            resizable: false,
+          },
+        ]}
+        defaultColDef={{
+          autoHeight: true,
+          minWidth: 60,
+          wrapText: true,
+        }}
+        rowData={statistics.data?.projects_count_per_cluster.filter(
+          (cluster: any) => cluster.cluster__name,
+        )}
+        onRowDataUpdated={(params) => {
+          params.api.autoSizeAllColumns(true)
+        }}
+      />
+    </Box>
+  )
+}
+
+function SectorsStatistics(props: any) {
+  const { statistics }: any = props
+  return (
+    <Box>
+      <Typography className="mb-4 text-lg font-semibold">
+        Number of projects by sector
+      </Typography>
+      <Table
+        enablePagination={false}
+        withSeparators={true}
+        columnDefs={[
+          {
+            field: 'sector__name',
+            flex: 1,
+            headerName: 'Sector name',
+            resizable: false,
+          },
+          {
+            field: 'count',
+            headerName: 'Count',
+            initialWidth: 60,
+            minWidth: 60,
+            resizable: false,
+          },
+        ]}
+        defaultColDef={{
+          autoHeight: true,
+          minWidth: 60,
+          wrapText: true,
+        }}
+        rowData={statistics.data?.projects_count_per_sector.filter(
+          (sector: any) => sector.sector__name,
+        )}
+        onRowDataUpdated={(params) => {
+          params.api.autoSizeAllColumns(true)
+        }}
+      />
+    </Box>
   )
 }
 
@@ -567,6 +618,16 @@ export default function PListing() {
     },
     path: 'api/projects/',
   })
+  const statistics = useApi({
+    options: {
+      delay: 500,
+      params: {
+        get_submission: false,
+        ...initialParams,
+      },
+    },
+    path: 'api/projects-statistics/',
+  })
 
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
@@ -592,6 +653,7 @@ export default function PListing() {
       )
     }
     setParams(params)
+    statistics.setParams(omit(params, ['limit', 'offset']))
   }
 
   function handleFilterChange(newFilters: { [key: string]: any }) {
@@ -626,7 +688,7 @@ export default function PListing() {
         event.preventDefault()
       }}
     >
-      <div className="filters-wrapper mb-4 grid grid-cols-1 gap-4 md:grid-cols-[auto_auto] lg:grid-cols-[1fr_3fr]">
+      <div className="filters-wrapper mb-4 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_2fr_2fr]">
         <Box className="md:min-w-[300px]">
           <div className="mb-4 flex items-center justify-between">
             <Typography component="h2" variant="h5">
@@ -771,9 +833,11 @@ export default function PListing() {
             multiple
           />
         </Box>
-        <Box className="flex items-center md:min-w-[400px]">
-          <PStatistics params={params} />
-        </Box>
+        <ProjectsStatistics statistics={statistics} />
+      </div>
+      <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-[1fr_1fr]">
+        <ClustersStatistics statistics={statistics} />
+        <SectorsStatistics statistics={statistics} />
       </div>
       <Box className="table-wrapper">
         <div className="mb-4 block flex-wrap justify-between gap-4 lg:flex">
@@ -822,7 +886,7 @@ export default function PListing() {
               }}
             />
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-4 lg:justify-normal">
+          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-4 lg:justify-normal">
             {/* <Field
               FieldProps={{ className: 'mb-0' }}
               label="Date range"
@@ -850,6 +914,7 @@ export default function PListing() {
                 }
               }}
             /> */}
+
             <div className="ordering-control flex items-center gap-2">
               <Typography
                 className="text-typography-secondary"
@@ -910,6 +975,29 @@ export default function PListing() {
                 )}
               </IconButton>
             </div>
+            <Dropdown
+              color="primary"
+              label={<IoDownloadOutline />}
+              tooltip="Download"
+              icon
+            >
+              <Dropdown.Item>
+                <Link
+                  className="flex items-center gap-x-2 text-black no-underline"
+                  href="#"
+                  target="_blank"
+                  // href={
+                  //   formatApiUrl('api/business-plan-record/export/') +
+                  //   '?business_plan__year_start=' +
+                  //   yearRangeSelected?.year_start.toString()
+                  // }
+                  download
+                >
+                  <AiFillFileExcel className="fill-green-700" size={24} />
+                  <span>XLSX</span>
+                </Link>
+              </Dropdown.Item>
+            </Dropdown>
           </div>
         </div>
         {!!filters.search && (

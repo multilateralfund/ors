@@ -9,7 +9,6 @@ from core.api.tests.factories import (
     AgencyFactory,
     CountryFactory,
     MeetingFactory,
-    ProjectClusterFactory,
     ProjectFactory,
     ProjectSectorFactory,
     ProjectStatusFactory,

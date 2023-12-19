@@ -32,7 +32,7 @@ class ProjectFilter(filters.FilterSet):
         widget=CSVWidget,
     )
     sector_id = filters.ModelMultipleChoiceFilter(
-        field_name="subsector__sector_id",
+        field_name="sector_id",
         queryset=ProjectSector.objects.all(),
         widget=CSVWidget,
     )
