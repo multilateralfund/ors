@@ -1,3 +1,5 @@
+import io
+import openpyxl
 from pathlib import Path
 
 import pytest
@@ -679,3 +681,33 @@ class TestCreateProjects(BaseTest):
 
         # check project count
         assert Project.objects.count() == 0
+
+
+class TestProjectsExport(BaseTest):
+    url = reverse("project-export")
+
+    def test_export(self, user, project):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert response.filename == "Projects.xlsx"
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        sheet = wb.active
+        assert sheet["A2"].value == project.generated_code
+        assert sheet["B2"].value == project.code
+        assert sheet["C2"].value == project.meta_project.code
+        assert sheet["D2"].value == project.cluster.name
+        assert sheet["E2"].value == project.meta_project.type
+        assert sheet["F2"].value == project.project_type.name
+        assert sheet["G2"].value == project.project_type_legacy
+        assert sheet["H2"].value == project.agency.name
+        assert sheet["I2"].value == project.sector.name
+        assert sheet["J2"].value == project.sector_legacy
+        assert sheet["K2"].value == project.subsector.name
+        assert sheet["L2"].value == project.subsector_legacy
+        assert sheet["M2"].value == project.substance_type
+        assert sheet["O2"].value == project.status.name
+        assert sheet["P2"].value == project.country.name
+        assert sheet["Q2"].value == project.title

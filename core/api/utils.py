@@ -1,4 +1,3 @@
-import io
 import shutil
 import subprocess
 import tempfile
@@ -63,7 +62,7 @@ class RelatedExistsFilter(filters.BooleanFilter):
 
 def workbook_response(name, wb):
     """Save xlsx and return the response"""
-    with tempfile.TemporaryDirectory(prefix="mlf-print-") as tmpdirname:
+    with tempfile.TemporaryDirectory(prefix="mlf-export-") as tmpdirname:
         xlsx_file = Path(tmpdirname) / (name + ".xlsx")
         wb.save(xlsx_file)
         res = FileResponse(
