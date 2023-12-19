@@ -66,6 +66,14 @@ BLEND_COMPOSITION_RE = r"((/[a-zA-Z0-9/-]{3,15})+\s?\(\d{1,3}\.?\,?\d{,2}?%)"
 # e.g. 3143.32 ==> 3143.320000000001
 EXCEL_BUG_RE = r"[09]{5,}\d$"
 
+OUTDATED_SECTORS = [
+    "MUS",
+    "Multi-sector",
+    "OTH",
+    "Other",
+    "SEV",
+    "Several",
+]
 
 # --- import utils ---
 
@@ -198,8 +206,11 @@ def get_sector_subsector_details(sector_code, subsector_name, row_index):
     @return: tuple(sector, subsector) or (None, None)
     """
 
+    if sector_code in OUTDATED_SECTORS:
+        sector_code = None
+    sector = None
     # get only the sector
-    if not subsector_name:
+    if not subsector_name and sector_code:
         sector = get_sector_by_code(sector_code, row_index)
         return sector, None
 
@@ -215,19 +226,22 @@ def get_sector_subsector_details(sector_code, subsector_name, row_index):
     new_subsector_name = subs_mapping["subsector_name"]
 
     # get sector by mapped string
-    sector = get_object_by_name(
-        ProjectSector, new_sector_code, row_index, "sector", with_log=False
-    )
+    if new_sector_code:
+        sector = get_object_by_name(
+            ProjectSector, new_sector_code, row_index, "sector", with_log=False
+        )
 
     # check if the subsector is not outdated and if the sector exists
     if not new_subsector_name and sector:
         return sector, None
 
     if not new_subsector_name and not sector:
-        logger.info(
-            f"[row: {row_index}]: This prpoject does not have a sector or a subsector:"
-            f"serched info: [sector: {sector_code}, subsector: {subsector_name}]"
-        )
+        if sector_code:
+            # if the sector is not outdated, log error
+            logger.info(
+                f"[row: {row_index}]: This prpoject does not have a sector or a subsector:"
+                f"serched info: [sector: {sector_code}, subsector: {subsector_name}]"
+            )
         return None, None
 
     # get subsector
@@ -241,10 +255,12 @@ def get_sector_subsector_details(sector_code, subsector_name, row_index):
         )
 
     if not subsector:
-        logger.info(
-            f"[row: {row_index}]: This subsector does not exists in data base: "
-            f"{subsector_name} -> search name: {new_subsector_name} (sector: {new_sector_code})"
-        )
+        if sector_code:
+            # if the sector is not outdated, log error
+            logger.info(
+                f"[row: {row_index}]: This subsector does not exists in data base: "
+                f"{subsector_name} -> search name: {new_subsector_name} (sector: {new_sector_code})"
+            )
         return sector, None
 
     if not sector:
@@ -924,8 +940,6 @@ def get_project_base_data(item, item_index, is_submissions=True):
 
     # if country or agency or subsector does not exists then skip this row
     if not all([country, agency, proj_type, project_status]):
-        return None
-    if not any([sector, subsec]):
         return None
 
     date_completion = item["DATE_COMPLETION"]
