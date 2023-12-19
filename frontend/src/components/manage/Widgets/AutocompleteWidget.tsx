@@ -1,7 +1,7 @@
 import type { TextWidgetProps } from './TextWidget'
 import type { AutocompleteProps } from '@mui/material'
 
-import { Fragment, forwardRef } from 'react'
+import { forwardRef } from 'react'
 
 import { Autocomplete } from '@mui/material'
 import cx from 'classnames'
@@ -77,9 +77,9 @@ const AutocompleteWidget = forwardRef(function AutocompleteWidget(
           return renderOption(props, option, ...args)
         }
         const count = !!getCount ? getCount(option) : null
-        if (!!getCount && !count) {
-          return <Fragment key={option.id} />
-        }
+        // if (!!getCount && !count) {
+        //   return <Fragment key={option.id} />
+        // }
         return (
           <li {...props} key={option.id}>
             <div className="flex w-full items-start justify-between gap-x-4">

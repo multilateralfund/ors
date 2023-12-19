@@ -47,7 +47,7 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import IconButton from '@ors/components/ui/IconButton/IconButton'
 import Link from '@ors/components/ui/Link/Link'
 import { KEY_ENTER } from '@ors/constants'
-import api, { getResults } from '@ors/helpers/Api/Api'
+import api, { formatApiUrl, getResults } from '@ors/helpers/Api/Api'
 import { getContrastText } from '@ors/helpers/Color/Color'
 import { debounce, scrollToElement } from '@ors/helpers/Utils/Utils'
 import useApi from '@ors/hooks/useApi'
@@ -310,10 +310,6 @@ function useGridOptions() {
         {
           editable: false,
           field: 'subsector_legacy',
-          headerComponentParams: {
-            info: true,
-            tooltip: 'Select a sector before updating subsector',
-          },
           headerName: 'Legacy subsector',
         },
         {
@@ -1048,14 +1044,9 @@ export default function PListing() {
               <Dropdown.Item>
                 <Link
                   className="flex items-center gap-x-2 text-black no-underline"
-                  href="#"
+                  href={formatApiUrl('api/projects/export/?')}
                   target="_blank"
-                  // href={
-                  //   formatApiUrl('api/business-plan-record/export/') +
-                  //   '?business_plan__year_start=' +
-                  //   yearRangeSelected?.year_start.toString()
-                  // }
-                  // download
+                  download
                 >
                   <AiFillFileExcel className="fill-green-700" size={24} />
                   <span>XLSX (WIP)</span>
