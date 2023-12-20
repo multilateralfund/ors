@@ -871,17 +871,25 @@ def get_chemical(chemical_name, index_row):
 # --- projects import ---
 def get_serial_number_from_code(project_code):
     """
-    get serial number from project code
+    get serial number from project code and check if the project has additional funding
         - {Country or Region}/{Sector}/{MeetingNo where the project was approved}/{ProjectType}/{ProjectNumber}
+        - if the serial number contains "+" then the project has additional funding
     @param project_code = string
+
+    @return tuple => (serial_number, additional_funding)
     """
     serial_number = project_code.split("/")[4]
+    additional_funding = "+" in serial_number
+
+    # remove + from serial number
+    serial_number = serial_number.replace("+", "")
     if not serial_number.isdigit():
         logger.warning(
             f"[Index row: {project_code}] Invalid serial number {serial_number}"
         )
-        serial_number = None
-    return serial_number
+        return None, False
+
+    return serial_number, additional_funding
 
 
 def get_project_base_data(item, item_index, is_submissions=True):
