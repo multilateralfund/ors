@@ -8,7 +8,6 @@ import {
   Button,
   InputAdornment,
   IconButton as MuiIconButton,
-  Tooltip as MuiTooltip,
   Typography,
 } from '@mui/material'
 import {
@@ -17,9 +16,11 @@ import {
   isArray,
   isEqual,
   isPlainObject,
+  keys,
   map,
   mapValues,
   omit,
+  pick,
   reduce,
 } from 'lodash'
 import { useSnackbar } from 'notistack'
@@ -297,8 +298,8 @@ export default function PListing() {
     }
     if (goToFirstPage) {
       debounce(
-        () => grid.current.paginationGoToPage(0),
-        300,
+        () => grid.current.paginationGoToPage(0, false),
+        0,
         'PListing:paginaionGoToPage:1',
       )
       currentParams.offset = 0
@@ -313,6 +314,7 @@ export default function PListing() {
   }
 
   function autoSizeColumns() {
+    if (!grid.current.api) return
     grid.current.api.autoSizeColumns(
       reduce(
         gridOptions.columnDefs,
@@ -550,13 +552,16 @@ export default function PListing() {
                   <Dropdown.Item
                     key={item.field}
                     onClick={() => {
-                      applyParams({
-                        ordering: {
-                          direction: params.ordering.direction,
-                          field: item.field,
-                          label: item.label,
+                      applyParams(
+                        {
+                          ordering: {
+                            direction: params.ordering.direction,
+                            field: item.field,
+                            label: item.label,
+                          },
                         },
-                      })
+                        false,
+                      )
                     }}
                   >
                     {item.label}
@@ -567,12 +572,15 @@ export default function PListing() {
                 onClick={() => {
                   const direction =
                     params.ordering.direction === 'asc' ? 'desc' : 'asc'
-                  applyParams({
-                    ordering: {
-                      ...params.ordering,
-                      direction,
+                  applyParams(
+                    {
+                      ordering: {
+                        ...params.ordering,
+                        direction,
+                      },
                     },
-                  })
+                    false,
+                  )
                 }}
               >
                 {params.ordering.direction === 'asc' ? (
@@ -674,12 +682,13 @@ export default function PListing() {
           domLayout="normal"
           enableCellChangeFlash={true}
           enablePagination={true}
+          getRowId={(params: any) => params.data.id}
           gridRef={grid}
           loading={loading}
           noRowsOverlayComponentParams={{ label: 'No data reported' }}
           paginationPageSize={INITIAL_PAGE_SIZE}
-          paginationPageSizeSelector={[10, 25, 50, 100, 200]}
-          rowBuffer={25}
+          paginationPageSizeSelector={[10, 25, 50, 100, 250, 500, 1000]}
+          rowBuffer={50}
           rowCount={count}
           rowData={results}
           rowsVisible={25}
@@ -690,9 +699,6 @@ export default function PListing() {
           undoRedoCellEditingLimit={1}
           withSeparators={true}
           withSkeleton={true}
-          getRowId={(props: any) => {
-            return props.data.id
-          }}
           onCellValueChanged={async (event) => {
             if (isEqual(event.oldValue, event.newValue)) return
             if (event.source === 'undo') {
@@ -711,7 +717,7 @@ export default function PListing() {
               method: 'patch',
             })
               .then((response) => {
-                event.node.setData(response)
+                event.node.updateData(pick(response, keys(event.data)))
                 if (event.source === 'undo-last-change') {
                   setLastChange(null)
                   enqueueSnackbar(<>{colDef.headerName} change reverted</>, {
@@ -747,7 +753,7 @@ export default function PListing() {
               })
           }}
           onFirstDataRendered={() => {
-            autoSizeColumns()
+            debounce(autoSizeColumns, 0)
           }}
           onPaginationChanged={({ page, rowsPerPage }) => {
             applyParams(
@@ -759,11 +765,7 @@ export default function PListing() {
             )
           }}
           onRowDataUpdated={() => {
-            if (!loading) {
-              setTimeout(() => {
-                autoSizeColumns()
-              }, 0)
-            }
+            debounce(autoSizeColumns, 0)
           }}
         />
         <Typography>

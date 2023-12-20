@@ -9,6 +9,7 @@ import resolveConfig from 'tailwindcss/resolveConfig'
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import Link from '@ors/components/ui/Link/Link'
 import { getContrastText } from '@ors/helpers/Color/Color'
+import { parseNumber } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
 
 import { FaEdit } from 'react-icons/fa'
@@ -383,6 +384,11 @@ export function usePListingGridOptions() {
         {
           cellEditor: 'agNumberCellEditor',
           cellEditorParams: {
+            getFormattedValue: (value: any) => {
+              return parseNumber(value || 0)?.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })
+            },
             min: 0,
           },
           dataType: 'number',

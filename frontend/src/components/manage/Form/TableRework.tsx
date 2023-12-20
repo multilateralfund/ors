@@ -9,7 +9,6 @@ import { ColDef, RowClassRules, RowNode } from 'ag-grid-community-latest'
 import { AgGridReact, AgGridReactProps } from 'ag-grid-react-latest'
 import cx from 'classnames'
 import {
-  findIndex,
   forEach,
   get,
   indexOf,
@@ -26,7 +25,7 @@ import { components as defaultComponents } from '@ors/config/Table/Table'
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import DefaultFadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import { KEY_BACKSPACE } from '@ors/constants'
-import { applyTransaction, debounce, getError } from '@ors/helpers/Utils/Utils'
+import { debounce, getError } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
 
 type Pagination = {
@@ -60,10 +59,10 @@ function cloneClass(original: Element, clone: Element) {
 //   return el.clientHeight
 // }
 
-function getRowData({ pagination, rowData, withSkeleton }: any) {
+function getRowData({ rowData, rowsVisible, withSkeleton }: any) {
   if (!withSkeleton) return rowData
   if (!rowData || rowData.length === 0) {
-    return times(pagination.rowsPerPage, (row) => {
+    return times(rowsVisible, (row) => {
       return {
         id: `skeleton-${row}`,
         rowType: 'skeleton',
@@ -87,7 +86,6 @@ export default function Table(props: TableProps) {
     headerDepth = 1,
     loading,
     onCellKeyDown = noop,
-    onCellValueChanged = noop,
     onColumnResized = noop,
     onFirstDataRendered = noop,
     onGridReady = noop,
@@ -168,7 +166,7 @@ export default function Table(props: TableProps) {
 
   // Define row data with skeleton
   const [initialRowData] = useState(
-    getRowData({ pagination, rowData: props.rowData, withSkeleton }),
+    getRowData({ rowData: props.rowData, rowsVisible, withSkeleton }),
   )
   const [initialPinnedBottomRowData] = useState(pinnedBottomRowData)
 
@@ -180,7 +178,6 @@ export default function Table(props: TableProps) {
   function handleErrors() {
     const rowNodes: Array<any> = []
     const hasErrors = !isEmpty(errors)
-
     grid.current.api.forEachNode((rowNode: RowNode) => {
       if (rowNode.data.rowType) {
         return
@@ -188,7 +185,6 @@ export default function Table(props: TableProps) {
       const data = { ...rowNode.data }
       const error =
         hasErrors && isObject(errors) ? get(errors, data.row_id) : null
-
       if (!hasErrors && data.error) {
         delete data.error
         rowNodes.push({ ...rowNode, data })
@@ -202,23 +198,17 @@ export default function Table(props: TableProps) {
         rowNodes.push({ ...rowNode, data })
       }
     })
-
     if (rowNodes.length > 0) {
-      applyTransaction(grid.current.api, {
+      grid.current.api.applyTransactionAsync({
         update: rowNodes.map((rowNode) => rowNode.data),
-      })
-      grid.current.api.refreshCells({
-        force: true,
-        rowNodes,
-        suppressFlash: true,
       })
     }
   }
 
   function updatePagination(newPagination: any, triggerEvent = false) {
     const currentPagination = {
-      page: newPagination.page || pagination.page,
-      rowsPerPage: newPagination.rowsPerPage || pagination.rowsPerPage,
+      page: newPagination.page ?? pagination.page,
+      rowsPerPage: newPagination.rowsPerPage ?? pagination.rowsPerPage,
     }
     if (triggerEvent) {
       onPaginationChanged(currentPagination)
@@ -379,45 +369,6 @@ export default function Table(props: TableProps) {
             }}
             onCellKeyDown={(props: any) => {
               onCellKeyDown(props)
-              const key = props.event.key
-              const { category, dataType, editable, field } = props.colDef
-              const { row_id } = props.data
-              const recordUsages = [...(props.data.record_usages || [])]
-              const isEditable = isFunction(editable)
-                ? editable(props)
-                : editable
-              if (isEditable && row_id && key === KEY_BACKSPACE) {
-                let value = null
-                const rowNode = props.api.getRowNode(row_id)
-                if (dataType === 'string') {
-                  value = ''
-                }
-                if (dataType === 'number') {
-                  value = 0
-                }
-                if (category === 'usage') {
-                  const usageId = props.colDef.id
-                  const index = findIndex(
-                    recordUsages,
-                    (item: any) => item.usage_id === usageId,
-                  )
-                  if (index > -1) {
-                    recordUsages.splice(index, 1, {
-                      ...recordUsages[index],
-                      quantity: 0,
-                    })
-                  }
-                }
-                const data = { ...rowNode.data, [field]: value }
-                applyTransaction(props.api, {
-                  update: [{ ...data, record_usages: recordUsages }],
-                })
-                onCellValueChanged({
-                  ...props,
-                  data,
-                  source: 'cellClear',
-                })
-              }
             }}
             onColumnResized={(props) => {
               onColumnResized(props)
