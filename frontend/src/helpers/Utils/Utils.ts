@@ -4,13 +4,36 @@ import {
   isArray,
   isFunction,
   isNaN,
+  isNil,
   isNull,
   isNumber,
   isObject,
+  isPlainObject,
   isString,
+  omitBy,
 } from 'lodash'
 
 const timer: Record<string, any> = {}
+
+export function removeEmptyValues(
+  obj: Record<string, any>,
+): Record<string, any> {
+  return omitBy(obj, (value) => {
+    if (isArray(value)) {
+      return value.length === 0
+    }
+    if (isNumber(value)) {
+      return isNaN(value)
+    }
+    if (isString(value)) {
+      return value === ''
+    }
+    if (isPlainObject(value)) {
+      return removeEmptyValues(value)
+    }
+    return isNil(value)
+  })
+}
 
 export function parseNumber(number: any) {
   const parsedNumber = isString(number)

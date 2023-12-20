@@ -14,6 +14,7 @@ export type ApiSettings = Api & {
   onPending?: any
   onSuccess?: any
   onSuccessNoCatch?: any
+  parseParams?: any
 }
 
 export default function useApi(props: ApiSettings): {
@@ -22,9 +23,9 @@ export default function useApi(props: ApiSettings): {
   error: ErrorType
   loaded: boolean
   loading: boolean
-  params?: { [key: string]: any }
+  params: Record<string, any>
   setApiSettings: Dispatch<SetStateAction<ApiSettings>>
-  setParams: (params: { [key: string]: any }) => void
+  setParams: (params: Record<string, any>) => void
 } {
   const id = useId()
   const [apiSettings, setApiSettings] = useState(props)
@@ -62,7 +63,7 @@ export default function useApi(props: ApiSettings): {
     setLoaded(true)
   }
 
-  function setParams(params: { [key: string]: any }) {
+  function setParams(params: Record<string, any>) {
     setApiSettings(
       produce((apiSettings) => {
         apiSettings.options.params = {
@@ -76,11 +77,17 @@ export default function useApi(props: ApiSettings): {
   useEffect(() => {
     debounce(
       () => {
+        const params = isFunction(props.parseParams)
+          ? props.parseParams(options?.params)
+          : options?.params
         fetcher({
           onError,
           onPending,
           onSuccess,
-          options,
+          options: {
+            ...(options || {}),
+            params,
+          },
           path,
           throwError,
         })
@@ -97,7 +104,7 @@ export default function useApi(props: ApiSettings): {
     error,
     loaded,
     loading,
-    params: options.params,
+    params: options.params || {},
     setApiSettings,
     setParams,
   }

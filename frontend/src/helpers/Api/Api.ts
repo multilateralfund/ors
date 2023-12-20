@@ -5,7 +5,7 @@ import { includes } from 'lodash'
 import hash from 'object-hash'
 
 import { addTrailingSlash, removeFirstSlash } from '@ors/helpers/Url/Url'
-import { debounce } from '@ors/helpers/Utils/Utils'
+import { debounce, removeEmptyValues } from '@ors/helpers/Utils/Utils'
 import config from '@ors/registry'
 import { store } from '@ors/store'
 
@@ -113,13 +113,10 @@ async function api(
   }
 
   if (params) {
-    fullPath +=
-      '?' +
-      new URLSearchParams(
-        Object.entries(params).filter(
-          ([, value]) => value !== null && value !== undefined && value !== '',
-        ),
-      ).toString()
+    const querystring = new URLSearchParams(
+      removeEmptyValues(params),
+    ).toString()
+    fullPath += querystring ? '?' + querystring : ''
   }
 
   if (state && withStoreCache && state.cache.data[id]) {
