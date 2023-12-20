@@ -172,6 +172,7 @@ class Project(models.Model):
     code = models.CharField(max_length=128, unique=True, null=True, blank=True)
     generated_code = models.CharField(max_length=128, null=True, blank=True)
     serial_number = models.IntegerField(null=True, blank=True)  # number
+    additional_funding = models.BooleanField(default=False)
     mya_code = models.CharField(max_length=128, null=True, blank=True)
     title = models.CharField(max_length=256)
     description = models.TextField(null=True, blank=True)
