@@ -28,7 +28,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Cell,
   Legend,
   ResponsiveContainer,
   Tooltip,
@@ -42,12 +41,8 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import IconButton from '@ors/components/ui/IconButton/IconButton'
 import Link from '@ors/components/ui/Link/Link'
 import { KEY_ENTER } from '@ors/constants'
-import api, { formatApiUrl, getResults } from '@ors/helpers/Api/Api'
-import {
-  debounce,
-  removeEmptyValues,
-  scrollToElement,
-} from '@ors/helpers/Utils/Utils'
+import api, { formatApiUrl } from '@ors/helpers/Api/Api'
+import { debounce } from '@ors/helpers/Utils/Utils'
 import useApi from '@ors/hooks/useApi'
 import useResults from '@ors/hooks/useResults'
 import { useStore } from '@ors/store'
@@ -110,27 +105,23 @@ function ProjectsStatistics(props: any) {
 
   const chartData = useMemo(
     () => [
-      { count: data?.projects_count || 0, name: 'Total projects' },
       {
-        count: data?.projects_code_subcode_count || 0,
-        name: 'Total projects with code and subcode',
-      },
-      {
-        count: data?.projects_code_count || 0,
-        name: 'Total projects with code, missing subcode',
+        projects_code_count: data?.projects_code_count || 0,
+        projects_code_subcode_count: data?.projects_code_subcode_count || 0,
+        projects_count: data?.projects_count || 0,
       },
     ],
     [data],
   )
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8']
+  const COLORS = ['#0088FE', '#00C49F', '#FF8042']
 
   return (
     <Box className="flex flex-col items-center">
       <Typography className="text-lg font-semibold">
         Number of projects
       </Typography>
-      <ResponsiveContainer className="min-h-[300px]">
+      <ResponsiveContainer className="max-h-[460px] min-h-[300px] max-w-[600px]">
         <BarChart
           data={chartData}
           height={300}
@@ -141,42 +132,28 @@ function ProjectsStatistics(props: any) {
           <XAxis dataKey="name" tick={false} />
           <YAxis />
           <Tooltip />
-          <Legend
-            content={(props: any) => {
-              const payload = props.payload?.[0]?.payload
-
-              if (!payload) return null
-              return (
-                <div className="ml-10 flex flex-col justify-center gap-x-6 gap-y-2">
-                  {chartData.map((entry, index) => (
-                    <p
-                      key={`item-${index}`}
-                      className="m-0 flex items-center gap-x-2 text-sm"
-                      style={{ color: payload.children[index].props.fill }}
-                    >
-                      <span className="flex items-center">
-                        <span
-                          className="inline-block h-4 w-4"
-                          style={{
-                            backgroundColor: payload.children[index].props.fill,
-                          }}
-                        />
-                      </span>
-                      <span>{chartData[index].name}</span>
-                    </p>
-                  ))}
-                </div>
-              )
-            }}
+          <Legend />
+          <Bar
+            name="Total projects"
+            dataKey="projects_count"
+            fill={COLORS[0]}
+            maxBarSize={120}
+            stackId="a"
           />
-          <Bar name="Projects count" dataKey="count">
-            {chartData.map((entry, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={COLORS[index % COLORS.length]}
-              />
-            ))}
-          </Bar>
+          <Bar
+            name="Total projects with code and subcode"
+            dataKey="projects_code_subcode_count"
+            fill={COLORS[1]}
+            maxBarSize={120}
+            stackId="b"
+          />
+          <Bar
+            name="Total projects with code, missing subcode"
+            dataKey="projects_code_count"
+            fill={COLORS[2]}
+            maxBarSize={120}
+            stackId="b"
+          />
         </BarChart>
       </ResponsiveContainer>
     </Box>
@@ -341,7 +318,7 @@ export default function PListing() {
         event.preventDefault()
       }}
     >
-      <div className="filters-wrapper mb-4 grid grid-cols-2 gap-4 md:grid-cols-[1fr_2fr] lg:grid-cols-2">
+      <div className="filters-wrapper mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-[1fr_2fr]">
         <Box className="flex flex-col justify-between md:min-w-[300px]">
           <div>
             <div className="mb-4 flex items-center justify-between">
