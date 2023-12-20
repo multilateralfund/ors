@@ -9,6 +9,18 @@ from core.models.substance import SubstanceAltName
 
 logger = logging.getLogger(__name__)
 
+SUBSTACES_W_NOTE = [
+    "HFC-41",
+    "HFC-134",
+    "HFC-143",
+    "HFC-152",
+]
+
+SUBSTANCE_NOTE = (
+    "These substances are not commonly used; please check "
+    "the substance is used while reporting."
+)
+
 
 def create_uncontrolled_group():
     group_data = {
@@ -167,6 +179,15 @@ def import_alternative_names(
             )
 
 
+def set_substance_cp_notes():
+    """
+    Set substance cp notes
+    """
+    Substance.objects.filter(name__in=SUBSTACES_W_NOTE).update(
+        cp_report_note=SUBSTANCE_NOTE
+    )
+
+
 def import_substances():
     """
     Import substances from json file and create alternative names
@@ -194,6 +215,8 @@ def import_substances():
         "substance",
         ["party_blend_component"],
     )
+
+    set_substance_cp_notes()
     logger.info("✔ substances alternative names imported")
 
 

@@ -59,6 +59,7 @@ class BaseCPRowSerializer(serializers.ModelSerializer):
 class BaseCPWChemicalSerializer(BaseCPRowSerializer):
     group = serializers.SerializerMethodField()
     chemical_name = serializers.SerializerMethodField()
+    chemical_note = serializers.SerializerMethodField()
     substance_id = serializers.PrimaryKeyRelatedField(
         required=False,
         allow_null=True,
@@ -83,6 +84,7 @@ class BaseCPWChemicalSerializer(BaseCPRowSerializer):
             "country_programme_report_id",
             "display_name",
             "chemical_name",
+            "chemical_note",
             "substance_id",
             "blend_id",
             "group",
@@ -91,6 +93,11 @@ class BaseCPWChemicalSerializer(BaseCPRowSerializer):
 
     def get_chemical_name(self, obj):
         return obj.substance.name if obj.substance else obj.blend.name
+
+    def get_chemical_note(self, obj):
+        return (
+            obj.substance.cp_report_note if obj.substance else obj.blend.cp_report_note
+        )
 
     def get_group(self, obj):
         if obj.blend:

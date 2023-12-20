@@ -35,6 +35,7 @@ class SubstanceSerializer(ChemicalsBaseSerializer):
             "displayed_in_latest_format",
             "excluded_usages",
             "sort_order",
+            "cp_report_note",
         ]
 
     def get_sections(self, obj):
@@ -73,6 +74,7 @@ class BlendSerializer(ChemicalsBaseSerializer):
             "sort_order",
             "components",
             "sections",
+            "cp_report_note",
         ]
 
     def get_composition(self, obj):
