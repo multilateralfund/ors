@@ -16,8 +16,8 @@ import dynamic from 'next/dynamic'
 import { useSnackbar } from 'notistack'
 
 import Field from '@ors/components/manage/Form/Field'
+import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
-import Footnote from '@ors/components/ui/Footnote/Footnote'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
@@ -295,25 +295,7 @@ export default function SectionBCreate(props: any) {
         }}
       />
       <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnote id="1">
-          When reporting blends/mixtures, reporting of controlled substances
-          should not be duplicated. For the CP report, countries should report
-          use of individual controlled substances and quantities of
-          blends/mixtures used, separately, while ensuring that the amounts of
-          controlled substances are not reported more than once.
-        </Footnote>
-        <Footnote id="2">
-          Provide explanation if total sector use and consumption
-          (import-export+production) is different (e.g, stockpiling).
-        </Footnote>
-        <Footnote id="3">
-          Only if break-down of consumption in refrigeration and
-          air-conditioning manufacturing is not available, information in
-          &quot;Other unidentified manufacturing&quot; may be provided.
-        </Footnote>
-        <Footnote id="4" index="*">
-          Tentative/best estimates.
-        </Footnote>
+        <Footnotes />
       </Alert>
       {addChimicalModal && (
         <Modal

@@ -88,6 +88,7 @@ function CPEdit(props: { id: null | number }) {
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
   const { blends, report, substances } = useStore((state) => state.cp_reports)
+  const setNotes = useStore((state) => state.footnotes.setNotes)
 
   const Sections = {
     section_a: useMakeClassInstance<SectionA>(SectionA, [
@@ -236,6 +237,7 @@ function CPEdit(props: { id: null | number }) {
           value={currentIndex}
           variant="scrollable"
           onChange={(event: React.SyntheticEvent, index: number) => {
+            setNotes([])
             setCurrentIndex(index)
             setRenderSection(false)
           }}

@@ -4,7 +4,7 @@ import { Alert, Typography } from '@mui/material'
 import { findIndex } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
-import Footnote from '@ors/components/ui/Footnote/Footnote'
+import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 
 import useGridOptions from './schema'
 
@@ -56,14 +56,7 @@ export default function SectionDCreate(props: any) {
       />
 
       <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnote id="1">
-          HFC-23 generation that is captured, whether for destruction, feedstock
-          or any other use, shall be reported in this form
-        </Footnote>
-        <Footnote id="2">
-          Amounts of HFC-23 captured for destruction or feedstock use will not
-          be counted as production as per Article 1 of the Montreal Protocol.
-        </Footnote>
+        <Footnotes />
       </Alert>
     </>
   )

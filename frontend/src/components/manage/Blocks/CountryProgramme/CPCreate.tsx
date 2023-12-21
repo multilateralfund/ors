@@ -88,6 +88,7 @@ function CPCreate() {
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
   const { blends, report, substances } = useStore((state) => state.cp_reports)
+  const setNotes = useStore((state) => state.footnotes.setNotes)
 
   const countries = useStore((state) => [
     { id: 0, label: 'Any' },
@@ -244,6 +245,7 @@ function CPCreate() {
           value={currentIndex}
           variant="scrollable"
           onChange={(event: React.SyntheticEvent, index: number) => {
+            setNotes([])
             setCurrentIndex(index)
             setRenderSection(false)
           }}

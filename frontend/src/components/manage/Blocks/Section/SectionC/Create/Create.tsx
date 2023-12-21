@@ -6,7 +6,7 @@ import { each, find, findIndex, includes, union } from 'lodash'
 import dynamic from 'next/dynamic'
 
 import Field from '@ors/components/manage/Form/Field'
-import Footnote from '@ors/components/ui/Footnote/Footnote'
+import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
@@ -167,9 +167,7 @@ export default function SectionCCreate(props: any) {
       />
 
       <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnote id="1">
-          Indicate whether the prices are FOB or retail prices.
-        </Footnote>
+        <Footnotes />
       </Alert>
 
       {addChimicalModal && (

@@ -14,7 +14,7 @@ export default function Footnote(props: FootnoteProps) {
       className="italic transition-all"
       {...rest}
     >
-      {index || `${id}.`} {children}
+      <span className="font-semibold">{index || `${id}.`}</span> {children}
     </Typography>
   )
 }

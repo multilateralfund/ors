@@ -5,7 +5,7 @@ import { RowNode } from 'ag-grid-community'
 import { findIndex, last } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
-import Footnote from '@ors/components/ui/Footnote/Footnote'
+import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 
 import useGridOptions from './schema'
@@ -135,19 +135,7 @@ export default function SectionECreate(props: any) {
         }}
       />
       <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnote id="1">
-          “Total amount generated” refers to the total amount whether captured
-          or not. The sum of these amounts is not to be reported under Section
-          D.
-        </Footnote>
-        <Footnote id="2">
-          The sums of these amounts are to be reported under Section D.
-        </Footnote>
-        <Footnote id="3">
-          Amount converted to other substances in the facility. The sum of these
-          amounts is not to be reported under Section D.
-        </Footnote>
-        <Footnote id="4">Amount destroyed in the facility.</Footnote>
+        <Footnotes />
       </Alert>
     </>
   )

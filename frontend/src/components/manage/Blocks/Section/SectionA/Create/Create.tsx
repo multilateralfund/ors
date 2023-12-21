@@ -6,7 +6,7 @@ import { each, find, findIndex, includes, union } from 'lodash'
 import dynamic from 'next/dynamic'
 
 import Field from '@ors/components/manage/Form/Field'
-import Footnote from '@ors/components/ui/Footnote/Footnote'
+import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
@@ -198,7 +198,8 @@ export default function SectionACreate(props: any) {
         }}
       />
       <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnote id="1">
+        <Footnotes />
+        {/* <Footnote id="1">
           Where the data involves a blend of two or more substances, the
           quantities of individual components of controlled substances must be
           indicated separately.
@@ -206,7 +207,7 @@ export default function SectionACreate(props: any) {
         <Footnote id="2">
           Provide explanation if total sector use and consumption
           (import-export+production) is different (e.g, stockpiling).
-        </Footnote>
+        </Footnote> */}
       </Alert>
       {addSubstanceModal && (
         <Modal
