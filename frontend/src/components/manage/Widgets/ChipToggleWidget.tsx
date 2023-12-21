@@ -2,12 +2,8 @@ import React, { useMemo } from 'react'
 
 import { Box, Chip } from '@mui/material'
 import { isNumber, isUndefined } from 'lodash'
-import resolveConfig from 'tailwindcss/resolveConfig'
 
 import { getContrastText } from '@ors/helpers/Color/Color'
-
-const tailwindConfigModule = require('~/tailwind.config')
-const tailwindConfig = resolveConfig(tailwindConfigModule)
 
 export type ChipData = {
   color: string
@@ -101,11 +97,7 @@ export default function ChipToggleWidget({
                     backgroundColor: chipData.color,
                     borderColor: chipData.color,
                     color: chipData.color
-                      ? getContrastText({
-                          background: chipData.color,
-                          dark: tailwindConfig.theme.colors.black,
-                          light: tailwindConfig.theme.colors.white,
-                        })
+                      ? getContrastText({ background: chipData.color })
                       : 'inherit',
                   }
                 : {}

@@ -3,11 +3,10 @@ import { useMemo } from 'react'
 import { Tooltip, Typography } from '@mui/material'
 import { SuppressKeyboardEventParams } from 'ag-grid-community'
 import cx from 'classnames'
-import { filter, find, get, groupBy, includes, isObject } from 'lodash'
+import { filter, find, get, includes, isObject } from 'lodash'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import Link from '@ors/components/ui/Link/Link'
-import { getContrastText } from '@ors/helpers/Color/Color'
 import { parseNumber } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
 
@@ -21,14 +20,9 @@ function suppressUndo(params: SuppressKeyboardEventParams) {
   return suppress
 }
 
-export function usePListingGridOptions() {
+export function usePSListingGridOptions() {
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
-
-  const projectStatuses = useMemo(
-    () => groupBy(projectSlice.statuses.data, 'id'),
-    [projectSlice.statuses.data],
-  )
 
   function formatValue(value: any) {
     return value?.id || ''
@@ -307,68 +301,6 @@ export function usePListingGridOptions() {
           tooltip: true,
         },
         {
-          cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: { placeholder: 'Select status' },
-            formatValue,
-            getFormattedValue: (id: any) => {
-              return find(projectSlice.statuses.data, {
-                id,
-              })?.name
-            },
-            getOptionLabel: (option: any) => {
-              return isObject(option)
-                ? get(option, 'name')
-                : find(projectSlice.statuses.data, { id: option })?.name || ''
-            },
-            options: filter(projectSlice.statuses.data, (item) => {
-              return item.code !== 'NEWSUB'
-            }),
-          },
-          cellRenderer: (props: any) => {
-            const status = projectStatuses[props.data.status_id]?.[0]
-            return (
-              <AgCellRenderer
-                {...props}
-                value={
-                  <span
-                    className={cx('relative rounded bg-primary p-1', {
-                      'animate-pulse': status?.code === 'ONG',
-                    })}
-                    style={
-                      status
-                        ? {
-                            backgroundColor: status.color,
-                            color: getContrastText({
-                              background: status.color,
-                            }),
-                          }
-                        : {}
-                    }
-                  >
-                    {props.data.status}
-                  </span>
-                }
-              />
-            )
-          },
-          field: 'status_id',
-          headerComponentParams: {
-            className: 'flex justify-center gap-2',
-            details: (
-              <Tooltip
-                placement="top"
-                title="Double left click on a cell to edit"
-              >
-                <span className="flex items-center gap-1">
-                  <FaEdit size={16} />
-                </span>
-              </Tooltip>
-            ),
-          },
-          headerName: 'Status',
-        },
-        {
           editable: false,
           field: 'country',
           headerName: 'Country',
@@ -416,7 +348,7 @@ export function usePListingGridOptions() {
         },
       },
     }),
-    [commonSlice, projectSlice, projectStatuses],
+    [commonSlice, projectSlice],
   )
 
   return gridOptions
