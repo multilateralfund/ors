@@ -4,7 +4,15 @@
 import type { PaletteColorOptions } from '@mui/material'
 import { ColorRecordType } from '@ors/types/tailwind'
 
-import { warning } from '../Log/Log'
+import chroma from 'chroma-js'
+import resolveConfig from 'tailwindcss/resolveConfig'
+
+import { warning } from '@ors/helpers/Log/Log'
+
+const tailwindConfigModule = require('~/tailwind.config')
+const tailwindConfig = resolveConfig(tailwindConfigModule)
+
+const contrastColors: any = {}
 
 export function getPaletteColor(color: ColorRecordType): PaletteColorOptions {
   const { DEFAULT, contrastText, dark, light } = color
@@ -15,45 +23,52 @@ export function getPaletteColor(color: ColorRecordType): PaletteColorOptions {
     ...(contrastText ? { contrastText } : {}),
   }
 }
-
 export function getContrastText({
   background,
   contrast,
-  contrastThreshold = 4.5,
-  dark,
-  light,
+  dark = tailwindConfig.theme.colors.black,
+  light = tailwindConfig.theme.colors.white,
 }: {
   background: string
   contrast?: string
   contrastThreshold?: number
-  dark: string
-  light: string
+  dark?: string
+  light?: string
 }) {
   warning(
     background,
     `Material-UI: missing background argument in getContrastText(${background}).`,
   )
 
-  const contrastText =
-    !!dark && !!light
-      ? getContrastRatio(background, dark) >= contrastThreshold
-        ? dark
-        : light
-      : contrast || '#ffffff'
-
-  if (process.env.NODE_ENV !== 'production') {
-    const contrast = getContrastRatio(background, contrastText)
-    warning(
-      contrast >= 3,
-      [
-        `Material-UI: the contrast ratio of ${contrast}:1 for ${contrastText} on ${background}`,
-        'falls below the WACG recommended absolute minimum contrast ratio of 3:1.',
-        'https://www.w3.org/TR/2008/REC-WCAG20-20081211/#visual-audio-contrast-contrast',
-      ].join('\n'),
-    )
+  if (contrast) {
+    return contrast
   }
 
-  return contrastText
+  const darkContrast = chroma.contrast(background, dark) || 0
+  const lightContrast = chroma.contrast(background, light) || 0
+
+  return darkContrast >= lightContrast ? dark : light
+}
+
+export function getContrastColor(background: any) {
+  // Generate a random color
+  if (contrastColors[background]) {
+    return contrastColors[background]
+  }
+  let color,
+    lastContrast = 0,
+    iterations = 0
+  do {
+    const randomColor = chroma.random().hex()
+    const randomColorContrast = chroma.contrast(randomColor, background)
+    if (randomColorContrast > lastContrast) {
+      color = randomColor
+      lastContrast = randomColorContrast
+    }
+    iterations++
+  } while (lastContrast < 7 && iterations < 5)
+  contrastColors[background] = color
+  return color
 }
 
 export function getContrastTextForPaletteColor(

@@ -114,7 +114,7 @@ function ProjectsStatistics(props: any) {
     [data],
   )
 
-  const COLORS = ['#0088FE', '#00C49F', '#FF8042']
+  const COLORS = ['#0075DB', '#00856C', '#D14600']
 
   return (
     <Box className="flex flex-col items-center">

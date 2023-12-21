@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   Alert,
@@ -10,390 +10,60 @@ import {
   IconButton as MuiIconButton,
   Typography,
 } from '@mui/material'
-import { SuppressKeyboardEventParams } from 'ag-grid-community'
-import cx from 'classnames'
-import dayjs from 'dayjs'
 import {
   filter,
-  find,
-  get,
-  groupBy,
   includes,
+  isArray,
   isEqual,
-  isObject,
+  isPlainObject,
+  keys,
   map,
+  mapValues,
+  omit,
+  pick,
   reduce,
 } from 'lodash'
 import { useSnackbar } from 'notistack'
-import resolveConfig from 'tailwindcss/resolveConfig'
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
 
-import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/TableRework'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import IconButton from '@ors/components/ui/IconButton/IconButton'
 import Link from '@ors/components/ui/Link/Link'
 import { KEY_ENTER } from '@ors/constants'
-import api, { getResults } from '@ors/helpers/Api/Api'
-import { getContrastText } from '@ors/helpers/Color/Color'
-import { debounce, scrollToElement } from '@ors/helpers/Utils/Utils'
+import api, { formatApiUrl } from '@ors/helpers/Api/Api'
+import { debounce } from '@ors/helpers/Utils/Utils'
 import useApi from '@ors/hooks/useApi'
+import useResults from '@ors/hooks/useResults'
 import { useStore } from '@ors/store'
 
+import { usePSListingGridOptions as useGridOptions } from './schema'
+
+import { AiFillFileExcel } from 'react-icons/ai'
 import {
   IoArrowDown,
   IoArrowUp,
   IoCaretDown,
   IoCaretUp,
   IoClose,
+  IoDownloadOutline,
   IoSearchOutline,
 } from 'react-icons/io5'
 
-const tailwindConfigModule = require('~/tailwind.config')
-const dayOfYear = require('dayjs/plugin/dayOfYear')
-
-const tailwindConfig = resolveConfig(tailwindConfigModule)
-
-dayjs.extend(dayOfYear)
-
-function suppressUndo(params: SuppressKeyboardEventParams) {
-  const event = params.event
-  const key = event.key
-  const suppress = key === 'z' && (event.ctrlKey || event.metaKey)
-
-  return suppress
-}
-
-function useGridOptions() {
-  const commonSlice = useStore((state) => state.common)
-  const projectSlice = useStore((state) => state.projects)
-
-  // const projectStatuses = useMemo(
-  //   () => groupBy(projectSlice.statuses.data, 'id'),
-  //   [projectSlice.statuses.data],
-  // )
-
-  function formatValue(value: any) {
-    return value?.id || ''
-  }
-
-  const gridOptions = useMemo(
-    () => ({
-      columnDefs: [
-        {
-          cellRenderer: (props: any) => {
-            if (includes(['skeleton'], props.data.rowType)) {
-              return <AgCellRenderer {...props} />
-            }
-            if (!props.data.id || !props.value) return null
-            return (
-              <Link
-                className={cx(props.className)}
-                href={`/projects/${props.data.id}`}
-                prefetch={false}
-              >
-                {props.value}
-              </Link>
-            )
-          },
-          editable: false,
-          field: 'code',
-          headerName: 'Code',
-        },
-        {
-          editable: false,
-          field: 'code_legacy',
-          headerName: 'Legacy code',
-        },
-        {
-          editable: false,
-          field: 'metaproject_code',
-          headerName: 'Metaproject code',
-        },
-        {
-          editable: false,
-          field: 'cluster',
-          headerName: 'Cluster',
-        },
-        {
-          editable: false,
-          field: 'metaproject_category',
-          headerName: 'Metaproject category',
-        },
-        {
-          cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: { placeholder: 'Select project type' },
-            formatValue,
-            getFormattedValue: (id: any) => {
-              return find(projectSlice.types.data, {
-                id,
-              })?.name
-            },
-            getOptionLabel: (option: any) => {
-              return isObject(option)
-                ? get(option, 'name')
-                : find(projectSlice.types.data, { id: option })?.name || ''
-            },
-            options: projectSlice.types.data,
-          },
-          cellRenderer: (props: any) => {
-            return <AgCellRenderer {...props} value={props.data.project_type} />
-          },
-          field: 'project_type_id',
-          headerName: 'Project type',
-        },
-        {
-          editable: false,
-          field: 'project_type_legacy',
-          headerName: 'Legacy project type',
-        },
-        {
-          cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: { placeholder: 'Select agency' },
-            formatValue,
-            getFormattedValue: (id: any) => {
-              return find(commonSlice.agencies.data, {
-                id,
-              })?.name
-            },
-            getOptionLabel: (option: any) => {
-              return isObject(option)
-                ? get(option, 'name')
-                : find(commonSlice.agencies.data, { id: option })?.name || ''
-            },
-            options: commonSlice.agencies.data,
-          },
-          cellRenderer: (props: any) => {
-            return <AgCellRenderer {...props} value={props.data.agency} />
-          },
-          field: 'agency_id',
-          headerName: 'Agency',
-        },
-        {
-          cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: { placeholder: 'Select sector' },
-            formatValue,
-            getFormattedValue: (id: any) => {
-              return find(projectSlice.sectors.data, {
-                id,
-              })?.name
-            },
-            getOptionLabel: (option: any) => {
-              return isObject(option)
-                ? get(option, 'name')
-                : find(projectSlice.sectors.data, { id: option })?.name || ''
-            },
-            options: projectSlice.sectors.data,
-          },
-          cellRenderer: (props: any) => {
-            return <AgCellRenderer {...props} value={props.data.sector} />
-          },
-          field: 'sector_id',
-          headerName: 'Sector',
-        },
-        {
-          editable: false,
-          field: 'sector_legacy',
-          headerName: 'Legacy sector',
-        },
-        {
-          cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: { placeholder: 'Select subsector' },
-            formatValue,
-            getFormattedValue: (id: any) => {
-              return find(projectSlice.subsectors.data, {
-                id,
-              })?.name
-            },
-            getOptionLabel: (option: any) => {
-              return isObject(option)
-                ? get(option, 'name')
-                : find(projectSlice.subsectors.data, { id: option })?.name || ''
-            },
-            getOptions: (params: any) => {
-              const sector = get(params, 'data.sector')
-              const sectorId = find(projectSlice.sectors.data, {
-                name: sector,
-              })?.id
-              if (!sectorId) return []
-              return filter(
-                projectSlice.subsectors.data,
-                (item) => item.sector_id === sectorId,
-              )
-            },
-          },
-          cellRenderer: (props: any) => {
-            return <AgCellRenderer {...props} value={props.data.subsector} />
-          },
-          field: 'subsector_id',
-          headerComponentParams: {
-            info: true,
-            tooltip: 'Select a sector before updating subsector',
-          },
-          headerName: 'Subsector',
-        },
-        {
-          editable: false,
-          field: 'subsector_legacy',
-          headerComponentParams: {
-            info: true,
-            tooltip: 'Select a sector before updating subsector',
-          },
-          headerName: 'Legacy subsector',
-        },
-        {
-          cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: { placeholder: 'Select substance type' },
-            formatValue,
-            getOptionLabel: (option: any) => {
-              return isObject(option) ? get(option, 'name') : option
-            },
-            options: commonSlice.settings.data?.project_substance_types.map(
-              (obj: Array<string>) => ({ id: obj[0], name: obj[1] }),
-            ),
-          },
-          field: 'substance_type',
-          headerName: 'Substance type',
-        },
-        {
-          editable: false,
-          field: 'substance_name',
-          headerName: 'Substance',
-        },
-        {
-          field: 'title',
-          headerName: 'Title',
-          initialWidth: 300,
-          suppressAutoSize: true,
-          tooltip: true,
-        },
-        // {
-        //   cellEditor: 'agSelectCellEditor',
-        //   cellEditorParams: {
-        //     Input: { placeholder: 'Select status' },
-        //     formatValue,
-        //     getFormattedValue: (id: any) => {
-        //       return find(projectSlice.statuses.data, {
-        //         id,
-        //       })?.name
-        //     },
-        //     getOptionLabel: (option: any) => {
-        //       return isObject(option)
-        //         ? get(option, 'name')
-        //         : find(projectSlice.statuses.data, { id: option })?.name || ''
-        //     },
-        //     options: filter(projectSlice.statuses.data, (item) => {
-        //       return item.code !== 'NEWSUB'
-        //     }),
-        //   },
-        //   cellRenderer: (props: any) => {
-        //     const status = projectStatuses[props.data.status_id]?.[0]
-        //     return (
-        //       <AgCellRenderer
-        //         {...props}
-        //         value={
-        //           <span
-        //             className={cx('relative rounded bg-primary p-1', {
-        //               'animate-pulse': status?.code === 'ONG',
-        //             })}
-        //             style={
-        //               status
-        //                 ? {
-        //                     backgroundColor: status.color,
-        //                     color: getContrastText({
-        //                       background: status.color,
-        //                       dark: tailwindConfig.originalColors.dark
-        //                         .typography.primary,
-        //                       light:
-        //                         tailwindConfig.originalColors.light.typography
-        //                           .primary,
-        //                     }),
-        //                   }
-        //                 : {}
-        //             }
-        //           >
-        //             {props.data.status}
-        //           </span>
-        //         }
-        //       />
-        //     )
-        //   },
-        //   field: 'status_id',
-        //   headerName: 'Status',
-        // },
-        {
-          editable: false,
-          field: 'country',
-          headerName: 'Country',
-          initialWidth: 150,
-        },
-        {
-          cellEditor: 'agNumberCellEditor',
-          cellEditorParams: {
-            min: 0,
-          },
-          dataType: 'number',
-          field: 'funds_allocated',
-          headerName: 'Funds allocated',
-        },
-      ],
-      defaultColDef: {
-        // autoHeight: true,
-        editable: true,
-        headerClass: 'ag-text-center',
-        initialWidth: 100,
-        minWidth: 100,
-        resizable: true,
-        // tooltip: true,
-        // wrapText: true,
-        suppressKeyboardEvent: (params: any) => {
-          return suppressUndo(params)
-        },
-      },
-    }),
-    [commonSlice, projectSlice],
-  )
-
-  return gridOptions
-}
-
-const initialParams = {
-  agency_id: null,
-  approval_meeting_no: null,
-  country_id: null,
-  // @ts-ignore
-  // date_received_after: dayjs().year(1990).dayOfYear(1).format('YYYY-MM-DD'),
-  // @ts-ignore
-  // date_received_before: dayjs().dayOfYear(365).format('YYYY-MM-DD'),
-  ordering: 'title',
-  project_type_id: null,
-  search: '',
-  sector_id: null,
-  status_id: null,
-  subsector_id: null,
-  substance_type: null,
-}
-
-const initialFilters = {
-  agency_id: [],
-  approval_meeting_no: [],
-  country_id: [],
-  project_type_id: [],
-  search: '',
-  sector_id: [],
-  status_id: [],
-  subsector_id: [],
-  substance_type: [],
-}
+const INITIAL_PAGE_SIZE = 25
 
 const orderings = [
-  // { field: 'date_received', label: 'Date added' },
-  { field: 'title', label: 'Title' },
+  { direction: 'asc', field: 'title', label: 'Title' },
   { field: 'country__name', label: 'Country' },
   { field: 'agency__name', label: 'Agency' },
   { field: 'sector__name', label: 'Sector' },
@@ -402,73 +72,225 @@ const orderings = [
   { field: 'substance_type', label: 'Substance type' },
 ]
 
-const INITIAL_PAGE_SIZE = 20
+const initialParams = {
+  agency_id: [],
+  cluster_id: [],
+  country_id: [],
+  get_submission: true,
+  offset: 0,
+  ordering: orderings[0],
+  project_type_id: [],
+  search: '',
+  sector_id: [],
+  subsector_id: [],
+  substance_type: [],
+}
 
-export default function PListing() {
-  const [lastChange, setLastChange] = useState<any>(null)
+function parseParams(params: any) {
+  return mapValues(params, (o, key) => {
+    if (key === 'ordering' && o) {
+      return `${o.direction === 'asc' ? '' : '-'}${o.field}`
+    }
+    if (isArray(o)) {
+      return map(o, (item) => (isPlainObject(item) ? item.id : item))
+    }
+    return o
+  })
+}
+
+function ProjectsStatistics(props: any) {
+  const { statistics }: any = props
+  const { data } = statistics
+
+  const chartData = useMemo(
+    () => [
+      {
+        projects_code_count: data?.projects_code_count || 0,
+        projects_code_subcode_count: data?.projects_code_subcode_count || 0,
+        projects_count: data?.projects_count || 0,
+      },
+    ],
+    [data],
+  )
+
+  const COLORS = ['#0075DB', '#00856C', '#D14600']
+
+  return (
+    <Box className="flex flex-col items-center">
+      <Typography className="text-lg font-semibold">
+        Number of projects
+      </Typography>
+      <ResponsiveContainer className="max-h-[460px] min-h-[300px] max-w-[600px]">
+        <BarChart
+          data={chartData}
+          height={300}
+          title="Projects count"
+          width={600}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" tick={false} />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar
+            name="Total projects"
+            dataKey="projects_count"
+            fill={COLORS[0]}
+            maxBarSize={120}
+            stackId="a"
+          />
+          <Bar
+            name="Total projects with code and subcode"
+            dataKey="projects_code_subcode_count"
+            fill={COLORS[1]}
+            maxBarSize={120}
+            stackId="b"
+          />
+          <Bar
+            name="Total projects with code, missing subcode"
+            dataKey="projects_code_count"
+            fill={COLORS[2]}
+            maxBarSize={120}
+            stackId="b"
+          />
+        </BarChart>
+      </ResponsiveContainer>
+    </Box>
+  )
+}
+
+export default function PSListing() {
   const { enqueueSnackbar } = useSnackbar()
+  const [commonSlice, projectSlice] = useStore((state) => [
+    state.common,
+    state.projects,
+  ])
   const gridOptions = useGridOptions()
   const form = useRef<any>()
   const grid = useRef<any>()
-  const currentYear = useMemo(() => dayjs().year(), [])
-  const minDateRange = 1990
-  const maxDateRange = currentYear
-  const [dateRange, setDateRange] = useState([minDateRange, currentYear])
-  const [ordering, setOrdering] = useState({
-    direction: 'asc',
-    field: 'title',
-    label: 'Title',
+  const [lastChange, setLastChange] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
+  const [unappliedParams, setUnappliedParams] = useState(false)
+  const [params, setParams] = useState<Record<string, any>>({
+    ...initialParams,
+    limit: INITIAL_PAGE_SIZE,
   })
-  const [filters, setFilters] = useState({ ...initialFilters })
-  const { data, loading, setParams } = useApi({
+  const projects = useApi({
     options: {
-      delay: 500,
-      params: {
-        get_submission: true,
-        limit: INITIAL_PAGE_SIZE,
-        offset: 0,
-        ...initialParams,
-      },
+      params,
     },
+    parseParams,
     path: 'api/projects/',
   })
+  const statistics = useApi({
+    options: {
+      params: omit(params, ['ordering', 'limit', 'offset']),
+    },
+    parseParams,
+    path: 'api/projects-statistics/',
+  })
 
-  const commonSlice = useStore((state) => state.common)
-  const projectSlice = useStore((state) => state.projects)
-  const substanceTypes =
-    commonSlice.settings.data?.project_substance_types?.map(
-      (obj: Array<string>) => ({ id: obj[0], label: obj[1] }),
+  /**
+   * Retrieves the count and results from the provided data.
+   */
+  const { count, results, ...projectsResults } = useResults(projects)
+
+  /**
+   * Retrieves the substance types from the commonSlice settings data and maps them to an array of objects with id and label properties.
+   */
+  const substanceTypes = useMemo(() => {
+    return (
+      commonSlice.settings.data?.project_substance_types?.map(
+        (obj: Array<string>) => ({ id: obj[0], label: obj[1] }),
+      ) || []
     )
-  const { count, results } = getResults(data)
+  }, [commonSlice.settings.data])
 
+  /**
+   * Returns an array of sector IDs based on the provided parameters.
+   * @returns {Array<number>} The array of sector IDs.
+   */
   const sectorIds = useMemo(() => {
-    return map(filters.sector_id, (item: any) => item.id)
-  }, [filters.sector_id])
+    return map(params.sector_id, (item: any) => item.id)
+  }, [params.sector_id])
 
-  function handleParamsChange(
-    params: { [key: string]: any },
-    goToFirstPage = true,
-  ) {
-    if (goToFirstPage) {
-      debounce(
-        () => grid.current.paginationGoToPage(0),
-        300,
-        'paginaionGoToPage:1',
-      )
+  /**
+   * Calculates sector statistics based on the projects count per sector.
+   * @returns An object containing the sector names as keys and the corresponding project counts as values.
+   */
+  const sectorStatistics = useMemo(() => {
+    return reduce(
+      statistics.data?.projects_count_per_sector || [],
+      (acc: any, item: any) => {
+        acc[item.sector__name] = item.count
+        return acc
+      },
+      {},
+    )
+  }, [statistics.data])
+
+  /**
+   * Calculates the cluster statistics based on the projects count per cluster data.
+   * @returns An object containing the cluster names as keys and the corresponding project counts as values.
+   */
+  const clusterStatistics = useMemo(() => {
+    return reduce(
+      statistics.data?.projects_count_per_cluster || [],
+      (acc: any, item: any) => {
+        acc[item.cluster__name] = item.count
+        return acc
+      },
+      {},
+    )
+  }, [statistics.data])
+
+  /**
+   * Updates the parameters with the provided new parameters.
+   * @param newParams - The new parameters to update.
+   */
+  function updateParams(newParams: any) {
+    if (!unappliedParams) {
+      setUnappliedParams(true)
     }
-    setParams(params)
+    setParams({
+      ...params,
+      ...newParams,
+    })
   }
 
-  function handleFilterChange(newFilters: { [key: string]: any }) {
-    debounce(
-      () => grid.current.paginationGoToPage(0),
-      300,
-      'paginaionGoToPage:1',
-    )
-    setFilters((filters) => ({ ...filters, ...newFilters }))
+  /**
+   * Applies the given parameters to the current params object and updates the state.
+   * If `goToFirstPage` is true, it also resets the pagination to the first page.
+   * @param newParams - The new parameters to apply.
+   * @param goToFirstPage - Whether to go to the first page of pagination. Default is true.
+   */
+  function applyParams(
+    newParams?: Record<string, any> | undefined,
+    goToFirstPage = true,
+  ) {
+    const currentParams = {
+      ...params,
+      ...(newParams || {}),
+    }
+    if (goToFirstPage) {
+      debounce(
+        () => grid.current.paginationGoToPage(0, false),
+        0,
+        'PSListing:paginaionGoToPage:1',
+      )
+      currentParams.offset = 0
+      updateParams(currentParams)
+    }
+    if (newParams) {
+      updateParams(currentParams)
+    }
+    setUnappliedParams(false)
+    projects.setParams(currentParams)
+    statistics.setParams(omit(currentParams, ['limit', 'offset', 'ordering']))
   }
 
   function autoSizeColumns() {
+    if (!grid.current.api) return
     grid.current.api.autoSizeColumns(
       reduce(
         gridOptions.columnDefs,
@@ -483,6 +305,10 @@ export default function PListing() {
     )
   }
 
+  useEffect(() => {
+    setLoading(projectsResults.loading)
+  }, [projectsResults.loading])
+
   return (
     <form
       ref={form}
@@ -491,158 +317,148 @@ export default function PListing() {
         event.preventDefault()
       }}
     >
-      <div className="filters-wrapper mb-4 flex flex-col  gap-4 md:flex-row">
-        <Box className="w-full md:max-w-[50%]">
-          <div className="mb-4 flex items-center justify-between">
-            <Typography component="h2" variant="h5">
-              Filters
-            </Typography>
-            <Button
-              className="p-0"
-              onClick={() => {
-                form.current.search.value = ''
-                handleParamsChange({ offset: 0, ...initialParams })
-                handleFilterChange({ ...initialFilters })
-                setOrdering({
-                  direction: 'asc',
-                  field: 'date_received',
-                  label: 'Date added',
-                })
-                setDateRange([minDateRange, maxDateRange])
-              }}
-            >
-              Clear all
-            </Button>
-          </div>
-          {/* <Field
-            multiple={true}
-            value={filters.status_id}
-            widget="chipToggle"
-            options={filter(projectSlice.statuses.data, (item) => {
-              return item.code !== 'NEWSUB'
-            })}
-            onChange={(value) => {
-              handleFilterChange({ status_id: value })
-              handleParamsChange({
-                offset: 0,
-                status_id: (value || initialFilters.status_id).join(','),
-              })
-            }}
-          /> */}
-          <Field
-            Input={{ label: 'Country' }}
-            getOptionLabel={(option: any) => option?.name}
-            options={commonSlice.countries.data}
-            value={filters.country_id}
-            widget="autocomplete"
-            onChange={(_: any, value: any) => {
-              handleFilterChange({ country_id: value })
-              handleParamsChange({
-                country_id: value.map((item: any) => item.id).join(','),
-                offset: 0,
-              })
-            }}
-            multiple
-          />
-          <Field
-            Input={{ label: 'Sector' }}
-            getOptionLabel={(option: any) => option?.name}
-            options={projectSlice.sectors.data}
-            value={filters.sector_id}
-            widget="autocomplete"
-            onChange={(_: any, sector_id: any) => {
-              const sectorIds = map(sector_id, (item: any) => item.id)
-              const subsector_id = filter(filters.subsector_id, (item: any) => {
-                return includes(sectorIds, item.sector_id)
-              })
-              handleFilterChange({
-                sector_id,
-                subsector_id,
-              })
-              handleParamsChange({
-                offset: 0,
-                sector_id: sectorIds.join(','),
-                subsector_id: map(subsector_id, (item: any) => item.id).join(
-                  ',',
-                ),
-              })
-            }}
-            multiple
-          />
-          {filters.sector_id?.length > 0 && (
+      <div className="filters-wrapper mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-[1fr_2fr]">
+        <Box className="flex flex-col justify-between md:min-w-[300px]">
+          <div>
+            <div className="mb-4 flex items-center justify-between">
+              <Typography component="h2" variant="h5">
+                Filters
+              </Typography>
+            </div>
             <Field
-              Input={{ label: 'Subsector' }}
+              Input={{ label: 'Country' }}
+              disabled={loading}
               getOptionLabel={(option: any) => option?.name}
-              value={filters.subsector_id}
+              options={commonSlice.countries.data}
+              value={params.country_id}
               widget="autocomplete"
-              options={filter(projectSlice.subsectors.data, (item) => {
-                return includes(sectorIds, item.sector_id)
-              })}
-              onChange={(_: any, value: any) => {
-                handleFilterChange({ subsector_id: value })
-                handleParamsChange({
-                  offset: 0,
-                  subsector_id: value.map((item: any) => item.id).join(','),
+              onChange={(_: any, country_id: any) => {
+                updateParams({ country_id })
+              }}
+              multiple
+            />
+            <Field
+              Input={{ label: 'Sector' }}
+              disabled={loading}
+              getCount={(option: any) => sectorStatistics[option?.name] || 0}
+              getOptionLabel={(option: any) => option?.name}
+              options={projectSlice.sectors.data}
+              value={params.sector_id}
+              widget="autocomplete"
+              onChange={(_: any, sector_id: any) => {
+                const sectorIds = map(sector_id, (item: any) => item.id)
+                const subsector_id = filter(
+                  params.subsector_id,
+                  (item: any) => {
+                    return includes(sectorIds, item.sector_id)
+                  },
+                )
+                updateParams({
+                  sector_id,
+                  subsector_id,
                 })
               }}
               multiple
             />
-          )}
-          <Field
-            Input={{ label: 'Type' }}
-            getOptionLabel={(option: any) => option?.name}
-            options={projectSlice.types.data}
-            value={filters.project_type_id}
-            widget="autocomplete"
-            isOptionEqualToValue={(option: any, value: any) =>
-              option.id === value
-            }
-            onChange={(_: any, value: any) => {
-              handleFilterChange({ project_type_id: value })
-              handleParamsChange({
-                offset: 0,
-                project_type_id: value.map((item: any) => item.id).join(','),
-              })
-            }}
-            multiple
-          />
-          <Field
-            Input={{ label: 'Substance Type' }}
-            options={substanceTypes}
-            value={filters.substance_type}
-            widget="autocomplete"
-            onChange={(_: any, value: any) => {
-              handleFilterChange({ substance_type: value })
-              handleParamsChange({
-                offset: 0,
-                substance_type: value.map((item: any) => item.id).join(','),
-              })
-            }}
-            multiple
-          />
-          <Field
-            Input={{ label: 'Agency' }}
-            getOptionLabel={(option: any) => option?.name}
-            options={commonSlice.agencies.data}
-            value={filters.agency_id}
-            widget="autocomplete"
-            onChange={(_: any, value: any) => {
-              handleFilterChange({ agency_id: value })
-              handleParamsChange({
-                agency_id: value.map((item: any) => item.id).join(','),
-                offset: 0,
-              })
-            }}
-            multiple
-          />
+            {params.sector_id?.length > 0 && (
+              <Field
+                Input={{ label: 'Subsector' }}
+                disabled={loading}
+                getOptionLabel={(option: any) => option?.name}
+                value={params.subsector_id}
+                widget="autocomplete"
+                options={filter(projectSlice.subsectors.data, (item) => {
+                  return includes(sectorIds, item.sector_id)
+                })}
+                onChange={(_: any, subsector_id: any) => {
+                  updateParams({ subsector_id })
+                }}
+                multiple
+              />
+            )}
+            <Field
+              Input={{ label: 'Cluster' }}
+              disabled={loading}
+              getCount={(option: any) => clusterStatistics[option?.name] || 0}
+              getOptionLabel={(option: any) => option?.name}
+              options={projectSlice.clusters.data}
+              value={params.cluster_id}
+              widget="autocomplete"
+              onChange={(_: any, cluster_id: any) => {
+                updateParams({ cluster_id })
+              }}
+              multiple
+            />
+            <Field
+              Input={{ label: 'Type' }}
+              disabled={loading}
+              getOptionLabel={(option: any) => option?.name}
+              options={projectSlice.types.data}
+              value={params.project_type_id}
+              widget="autocomplete"
+              isOptionEqualToValue={(option: any, value: any) =>
+                option.id === value
+              }
+              onChange={(_: any, project_type_id: any) => {
+                updateParams({ project_type_id })
+              }}
+              multiple
+            />
+            <Field
+              Input={{ label: 'Substance Type' }}
+              disabled={loading}
+              options={substanceTypes}
+              value={params.substance_type}
+              widget="autocomplete"
+              onChange={(_: any, substance_type: any) => {
+                updateParams({ substance_type })
+              }}
+              multiple
+            />
+            <Field
+              Input={{ label: 'Agency' }}
+              disabled={loading}
+              getOptionLabel={(option: any) => option?.name}
+              options={commonSlice.agencies.data}
+              value={params.agency_id}
+              widget="autocomplete"
+              onChange={(_: any, agency_id: any) => {
+                updateParams({ agency_id })
+              }}
+              multiple
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              onClick={() => {
+                form.current.search.value = ''
+                applyParams(initialParams)
+              }}
+            >
+              Clear all
+            </Button>
+            <Button
+              className="relative"
+              variant="contained"
+              onClick={() => {
+                applyParams()
+              }}
+            >
+              Apply filters
+              {unappliedParams && (
+                <span className="absolute -right-2 -top-2 h-4 w-4 rounded-full bg-warning" />
+              )}
+            </Button>
+          </div>
         </Box>
-        <Box className="w-full md:max-w-[50%]"></Box>
+        <ProjectsStatistics statistics={statistics} />
       </div>
       <Box className="table-wrapper">
         <div className="mb-4 block flex-wrap justify-between gap-4 lg:flex">
           <div className="mb-4 flex justify-between gap-4 lg:mb-0">
             <Field
               name="search"
+              disabled={loading}
               placeholder="Search by keyword..."
               FieldProps={{
                 className:
@@ -660,11 +476,7 @@ export default function PListing() {
                       tabIndex={-1}
                       onClick={() => {
                         const search = form.current.search.value
-                        handleParamsChange({
-                          offset: 0,
-                          search,
-                        })
-                        handleFilterChange({ search })
+                        applyParams({ search })
                       }}
                       disableRipple
                     >
@@ -676,43 +488,12 @@ export default function PListing() {
               onKeyDown={(event: any) => {
                 const search = form.current.search.value
                 if (event.key === KEY_ENTER) {
-                  handleParamsChange({
-                    offset: 0,
-                    search,
-                  })
-                  handleFilterChange({ search })
+                  applyParams({ search })
                 }
               }}
             />
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-4 lg:justify-normal">
-            {/* <Field
-              FieldProps={{ className: 'mb-0' }}
-              label="Date range"
-              max={maxDateRange}
-              min={minDateRange}
-              value={dateRange}
-              widget="range"
-              onChange={(event: Event, value: number | number[]) => {
-                if (isArray(value) && value[1] - value[0] >= 1) {
-                  setDateRange(value)
-                  debounce(() => {
-                    handleParamsChange({
-                      date_received_after: dayjs()
-                        .year(value[0])
-                        // @ts-ignore
-                        .dayOfYear(1)
-                        .format('YYYY-MM-DD'),
-                      date_received_before: dayjs()
-                        .year(value[1])
-                        // @ts-ignore
-                        .dayOfYear(365)
-                        .format('YYYY-MM-DD'),
-                    })
-                  })
-                }
-              }}
-            /> */}
+          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-4 lg:justify-normal">
             <div className="ordering-control flex items-center gap-2">
               <Typography
                 className="text-typography-secondary"
@@ -725,7 +506,7 @@ export default function PListing() {
                 label={(props) => {
                   return (
                     <Typography className="flex items-center gap-2 leading-none">
-                      {ordering.label}
+                      {params.ordering.label}
                       {props.open ? <IoCaretUp /> : <IoCaretDown />}
                     </Typography>
                   )
@@ -735,16 +516,16 @@ export default function PListing() {
                   <Dropdown.Item
                     key={item.field}
                     onClick={() => {
-                      setOrdering({
-                        ...ordering,
-                        field: item.field,
-                        label: item.label,
-                      })
-                      handleParamsChange({
-                        ordering: `${ordering.direction === 'asc' ? '' : '-'}${
-                          item.field
-                        }`,
-                      })
+                      applyParams(
+                        {
+                          ordering: {
+                            direction: params.ordering.direction,
+                            field: item.field,
+                            label: item.label,
+                          },
+                        },
+                        false,
+                      )
                     }}
                   >
                     {item.label}
@@ -754,37 +535,57 @@ export default function PListing() {
               <IconButton
                 onClick={() => {
                   const direction =
-                    ordering.direction === 'asc' ? 'desc' : 'asc'
-                  setOrdering({
-                    ...ordering,
-                    direction,
-                  })
-                  handleParamsChange({
-                    ordering: `${direction === 'asc' ? '' : '-'}${
-                      ordering.field
-                    }`,
-                  })
+                    params.ordering.direction === 'asc' ? 'desc' : 'asc'
+                  applyParams(
+                    {
+                      ordering: {
+                        ...params.ordering,
+                        direction,
+                      },
+                    },
+                    false,
+                  )
                 }}
               >
-                {ordering.direction === 'asc' ? (
+                {params.ordering.direction === 'asc' ? (
                   <IoArrowUp size={16} />
                 ) : (
                   <IoArrowDown size={16} />
                 )}
               </IconButton>
             </div>
+            <Dropdown
+              color="primary"
+              label={<IoDownloadOutline />}
+              tooltip="Download"
+              icon
+            >
+              <Dropdown.Item>
+                <Link
+                  className="flex items-center gap-x-2 text-black no-underline"
+                  prefetch={false}
+                  target="_blank"
+                  href={formatApiUrl(
+                    `api/projects/export/?get_submission=true`,
+                  )}
+                  download
+                >
+                  <AiFillFileExcel className="fill-green-700" size={24} />
+                  <span>XLSX</span>
+                </Link>
+              </Dropdown.Item>
+            </Dropdown>
           </div>
         </div>
-        {!!filters.search && (
+        {!!params.search && (
           <div className="mb-4">
             <Typography className="inline-flex items-center gap-2 rounded-sm border border-solid border-mui-default-border bg-action-highlight px-2 py-1 italic text-typography-secondary">
-              {filters.search}
+              {params.search}
               <IoClose
                 className="cursor-pointer rounded-sm"
                 onClick={() => {
                   form.current.search.value = ''
-                  handleParamsChange({ offset: 0, search: '' })
-                  handleFilterChange({ search: '' })
+                  applyParams({ search: '' })
                 }}
               />
             </Typography>
@@ -842,14 +643,19 @@ export default function PListing() {
         <Table
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
+          domLayout="normal"
           enableCellChangeFlash={true}
+          enablePagination={true}
+          getRowId={(params: any) => params.data.id}
           gridRef={grid}
           loading={loading}
           noRowsOverlayComponentParams={{ label: 'No data reported' }}
           paginationPageSize={INITIAL_PAGE_SIZE}
-          rowBuffer={10}
+          paginationPageSizeSelector={[10, 25, 50, 100, 250, 500, 1000]}
+          rowBuffer={50}
           rowCount={count}
           rowData={results}
+          rowsVisible={25}
           suppressCellFocus={false}
           suppressColumnVirtualisation={true}
           suppressRowHoverHighlight={false}
@@ -857,9 +663,6 @@ export default function PListing() {
           undoRedoCellEditingLimit={1}
           withSeparators={true}
           withSkeleton={true}
-          getRowId={(props: any) => {
-            return props.data.id
-          }}
           onCellValueChanged={async (event) => {
             if (isEqual(event.oldValue, event.newValue)) return
             if (event.source === 'undo') {
@@ -878,7 +681,7 @@ export default function PListing() {
               method: 'patch',
             })
               .then((response) => {
-                event.node.setData(response)
+                event.node.updateData(pick(response, keys(event.data)))
                 if (event.source === 'undo-last-change') {
                   setLastChange(null)
                   enqueueSnackbar(<>{colDef.headerName} change reverted</>, {
@@ -914,14 +717,10 @@ export default function PListing() {
               })
           }}
           onFirstDataRendered={() => {
-            autoSizeColumns()
+            debounce(autoSizeColumns, 0)
           }}
           onPaginationChanged={({ page, rowsPerPage }) => {
-            scrollToElement({
-              behavior: 'auto',
-              element: form.current.querySelector('.table-wrapper'),
-            })
-            handleParamsChange(
+            applyParams(
               {
                 limit: rowsPerPage,
                 offset: page * rowsPerPage,
@@ -930,9 +729,7 @@ export default function PListing() {
             )
           }}
           onRowDataUpdated={() => {
-            setTimeout(() => {
-              autoSizeColumns()
-            }, 0)
+            debounce(autoSizeColumns, 0)
           }}
         />
         <Typography>
