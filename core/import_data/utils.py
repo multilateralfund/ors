@@ -315,6 +315,7 @@ def get_cp_report(
         "name": cp_name,
         "year": year,
         "country_id": country_id,
+        "status": CPReport.CPReportStatus.FINAL,
     }
     if other_args:
         data.update(other_args)
