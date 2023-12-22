@@ -12,6 +12,8 @@ class ChemicalsBaseSerializer(serializers.ModelSerializer):
         if self.context.get("with_usages", False):
             return list({usage.usage_id for usage in obj.excluded_usages.all()})
         return []
+    def get_chemical_note(self, obj):
+        return obj.cp_report_note
 
 
 # substance serializer with excluded usages if the request has a with_usages query param
@@ -19,6 +21,7 @@ class SubstanceSerializer(ChemicalsBaseSerializer):
     excluded_usages = serializers.SerializerMethodField()
     group = serializers.SlugField(source="group.name_alt", read_only=True)
     sections = serializers.SerializerMethodField()
+    chemical_note = serializers.SerializerMethodField()
 
     class Meta:
         model = Substance
@@ -35,7 +38,7 @@ class SubstanceSerializer(ChemicalsBaseSerializer):
             "displayed_in_latest_format",
             "excluded_usages",
             "sort_order",
-            "cp_report_note",
+            "chemical_note",
         ]
 
     def get_sections(self, obj):
@@ -54,6 +57,7 @@ class BlendSerializer(ChemicalsBaseSerializer):
     group = serializers.SerializerMethodField()
     components = serializers.SerializerMethodField()
     sections = serializers.SerializerMethodField()
+    chemical_note = serializers.SerializerMethodField()
 
     class Meta:
         model = Blend
@@ -74,7 +78,7 @@ class BlendSerializer(ChemicalsBaseSerializer):
             "sort_order",
             "components",
             "sections",
-            "cp_report_note",
+            "chemical_note",
         ]
 
     def get_composition(self, obj):
