@@ -17,6 +17,7 @@ import { parseNumber } from '@ors/helpers/Utils/Utils'
 export type Field = { dataType: string; defaultValue: any }
 
 export type Substance = {
+  chemical_note?: string
   displayed_in_latest_format: boolean
   excluded_usages?: Array<number>
   group?: string
@@ -194,6 +195,7 @@ export default class Section<DeserializedData, FormFields> {
   public transformSubstance(substance: Substance, mandatory?: boolean) {
     const id = get(substance, 'substance_id') || substance.id
     const transformed: any = {
+      chemical_note: substance.chemical_note,
       display_name: get(substance, 'display_name') || substance.name,
       excluded_usages: substance.excluded_usages,
       group: substance.group,

@@ -133,6 +133,7 @@ class Blend(models.Model):
     )
     sort_order = models.FloatField(null=True, blank=True)
     ozone_id = models.IntegerField(null=True, blank=True)
+    cp_report_note = models.TextField(null=True, blank=True)
 
     objects = BlendManager()
 

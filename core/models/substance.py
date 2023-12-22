@@ -61,6 +61,7 @@ class Substance(models.Model):
         related_name="substances",
         on_delete=models.SET_NULL,
     )
+    cp_report_note = models.TextField(null=True, blank=True)
 
     objects = SubstanceManager()
 

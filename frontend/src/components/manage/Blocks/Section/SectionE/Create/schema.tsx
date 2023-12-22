@@ -71,7 +71,13 @@ function useGridOptions(props: {
           dataType: 'number',
           field: 'total',
           headerComponentParams: {
-            footnote: 1,
+            footnote: {
+              id: '1',
+              content:
+                '"Total amount generated" refers to the total amount whether captured or not. The sum of these amounts is not to be reported under Section D.',
+              icon: true,
+              order: 1,
+            },
             info: true,
           },
           headerName: 'Total amount generated',
@@ -107,8 +113,13 @@ function useGridOptions(props: {
           groupId: 'amount_generated_and_captured',
           headerGroupComponent: 'agColumnHeaderGroup',
           headerGroupComponentParams: {
-            footnote: 2,
-            info: true,
+            footnote: {
+              id: '2',
+              content:
+                'The sums of these amounts are to be reported under Section D.',
+              icon: true,
+              order: 2,
+            },
           },
           headerName: 'Amount generated and captured',
           marryChildren: true,
@@ -119,8 +130,13 @@ function useGridOptions(props: {
           dataType: 'number',
           field: 'feedstock_wpc',
           headerComponentParams: {
-            footnote: 3,
-            info: true,
+            footnote: {
+              id: '3',
+              content:
+                'Amount converted to other substances in the facility. The sum of these amounts is not to be reported under Section D.',
+              icon: true,
+              order: 3,
+            },
           },
           headerName: 'Amount used for feedstock without prior capture',
           ...colDefById['feedstock_wpc'],
@@ -131,8 +147,12 @@ function useGridOptions(props: {
           dataType: 'number',
           field: 'destruction_wpc',
           headerComponentParams: {
-            footnote: 4,
-            info: true,
+            footnote: {
+              id: '4',
+              content: 'Amount destroyed in the facility.',
+              icon: true,
+              order: 4,
+            },
           },
           headerName: 'Amount destroyed without prior capture',
           ...colDefById['destruction_wpc'],

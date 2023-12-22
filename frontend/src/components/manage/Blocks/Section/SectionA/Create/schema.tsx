@@ -61,7 +61,14 @@ function useGridOptions(props: {
           }),
           field: 'display_name',
           headerClass: 'ag-text-left',
-          headerComponentParams: { footnote: 1, info: true },
+          headerComponentParams: {
+            footnote: {
+              id: '1',
+              content:
+                'Where the data involves a blend of two or more substances, the quantities of individual components of controlled substances must be indicated separately.',
+              icon: true,
+            },
+          },
           headerName: 'Substance',
           ...colDefById['display_name'],
         },
@@ -128,7 +135,14 @@ function useGridOptions(props: {
           cellClass: 'ag-text-left',
           cellEditor: 'agTextCellEditor',
           field: 'remarks',
-          headerComponentParams: { footnote: 2, info: true },
+          headerComponentParams: {
+            footnote: {
+              id: '2',
+              content:
+                'Provide explanation if total sector use and consumption (import-export+production) is different (e.g, stockpiling).',
+              icon: true,
+            },
+          },
           headerName: 'Remarks',
           ...colDefById['remarks'],
         },

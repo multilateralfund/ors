@@ -79,7 +79,7 @@ export function pendingWorkers(name: string) {
 
 export function scrollToElement(options: {
   behavior?: 'auto' | 'smooth'
-  callback?: any
+  callback?: (el: Element) => void
   element?: Element
   offset?: number
   selectors?: string
@@ -91,9 +91,7 @@ export function scrollToElement(options: {
     if (!el) return
     const visible = isInViewport(el)
     if (visible) {
-      if (isFunction(callback)) {
-        callback()
-      }
+      callback?.(el)
       return
     }
     const top = el.getBoundingClientRect().top + window.scrollY - offset
@@ -101,7 +99,7 @@ export function scrollToElement(options: {
       debounce(function scrollToElement() {
         if (isInViewport(el)) {
           window.removeEventListener('scroll', onScroll)
-          callback()
+          callback?.(el)
         }
       }, 50)
     }

@@ -1,9 +1,13 @@
 'use client'
+import { useEffect, useState } from 'react'
+
 import { IconButton, Typography } from '@mui/material'
 import cx from 'classnames'
 import { isString } from 'lodash'
+import hash from 'object-hash'
 
 import { scrollToElement } from '@ors/helpers/Utils/Utils'
+import { useStore } from '@ors/store'
 
 import AgTooltipComponent from './AgTooltipComponent'
 
@@ -18,7 +22,24 @@ function getTooltipTitle(props: any) {
 }
 
 export default function AgHeaderGroupComponent(props: any) {
-  const { displayName, footnote, info } = props
+  const [addNote] = useStore((state) => [state.footnotes.addNote])
+  const [footnote] = useState(props.footnote)
+  const [footnoteId] = useState(
+    () =>
+      !!footnote &&
+      (footnote.id || (footnote.content ? hash(footnote.content) : null)),
+  )
+  const { displayName } = props
+
+  useEffect(() => {
+    if (!footnote || !footnoteId) return
+    addNote({
+      id: footnoteId,
+      content: footnote.content,
+      index: footnote.index,
+      order: footnote.order,
+    })
+  }, [addNote, footnote, footnoteId])
 
   return (
     <AgTooltipComponent
@@ -28,26 +49,26 @@ export default function AgHeaderGroupComponent(props: any) {
       value={getTooltipTitle(props)}
     >
       <Typography
-        className={cx(props.className, { 'cursor-pointer': footnote })}
+        className={cx(props.className, { 'cursor-pointer': !!footnote })}
         component="span"
         onClick={() => {
           if (!footnote) return
           scrollToElement({
-            callback: () => {
-              const footnoteEl = document.getElementById(`footnote-${footnote}`)
-              if (!footnoteEl) return
+            callback: (footnoteEl) => {
               footnoteEl.classList.add('text-red-500')
               setTimeout(() => {
                 footnoteEl.classList.remove('text-red-500')
               }, 900)
             },
-            selectors: `#footnote-${footnote}`,
+            selectors: `#footnote-${footnoteId}`,
           })
         }}
       >
         {displayName}
-        {footnote && <sup>{footnote}</sup>}
-        {info && (
+        {!!footnote && (
+          <sup className="font-bold">{footnote.index || footnoteId}</sup>
+        )}
+        {!!footnote?.icon && (
           <IconButton
             className={cx('ml-1 p-0', { 'cursor-default': !footnote })}
             color="info"

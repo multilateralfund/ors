@@ -2,12 +2,21 @@ import type { Language } from '@ors/types/locales'
 import type { DataType, SliceData } from '@ors/types/primitives'
 import type { PartialDeep, UnknownArray } from 'type-fest'
 
+import { ReactNode } from 'react'
+
 type Report = SliceData<
   Record<string, any> | null,
   Record<string, any> | null
 > & {
   emptyForm: SliceData
   versions: SliceData<UnknownArray>
+}
+
+type Note = {
+  content: string
+  id: string
+  index?: string
+  order: number | string
 }
 
 export interface CacheSlice {
@@ -80,14 +89,21 @@ export interface CommonSlice {
   settings: SliceData
 }
 
-// Store state
+export interface FootnotesSlice {
+  addNote: (note: Note) => void
+  notes: Array<Note>
+  removeNote: (id: string) => void
+  setNotes: (notes: Array<Note>) => void
+}
 
+// Store state
 export type StoreState = {
   businessPlans: BusinessPlanSlice
   cache: CacheSlice
   common: CommonSlice
   connection: null | string
   cp_reports: CPReportsSlice
+  footnotes: FootnotesSlice
   header: HeaderSlice
   i18n: I18nSlice
   internalError: any
@@ -97,7 +113,6 @@ export type StoreState = {
 }
 
 // Initial store state
-
 export type InitialStoreState = PartialDeep<StoreState> & {
   connection?: null | string
 }

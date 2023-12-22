@@ -278,11 +278,11 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
                           className="w-full"
                           variant="contained"
                           onClick={() => {
-                            const rowId = `${newNodeIndex.current}`
+                            const row_id = `${newNodeIndex.current}`
                             const newComponent = {
                               component_name: '',
                               percentage: 0,
-                              row_id: rowId,
+                              row_id,
                               substance: null,
                               substance_id: null,
                             }

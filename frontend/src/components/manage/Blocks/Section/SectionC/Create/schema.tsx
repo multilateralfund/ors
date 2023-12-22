@@ -80,8 +80,11 @@ function useGridOptions(props: {
           cellEditor: 'agTextCellEditor',
           field: 'remarks',
           headerComponentParams: {
-            footnote: 1,
-            info: true,
+            footnote: {
+              id: '1',
+              content: 'Indicate whether the prices are FOB or retail prices.',
+              icon: true,
+            },
           },
           headerName: 'Remarks',
           ...colDefById['remarks'],

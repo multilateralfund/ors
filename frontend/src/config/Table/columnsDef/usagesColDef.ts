@@ -13,8 +13,13 @@ export default function getUsagesColDef() {
     },
     'Refrigeration Manufacturing Other': {
       headerComponentParams: {
-        footnote: 3,
-        info: true,
+        footnote: {
+          id: '3',
+          content:
+            'Only if break-down of consumption in refrigeration and air-conditioning manufacturing is not available, information in "Other unidentified manufacturing" may be provided.',
+          icon: true,
+          order: 3,
+        },
       },
       initialWidth: 100,
     },
