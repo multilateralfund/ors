@@ -22,7 +22,7 @@ import SectionFView from '@ors/components/manage/Blocks/Section/SectionF/View'
 export const variants = [
   {
     maxYear: 2004,
-    minYear: -Infinity,
+    minYear: 1995,
     model: 'I',
   },
   {
@@ -45,11 +45,8 @@ export const variants = [
 export function getViewSections(variant: any) {
   const { model } = variant
   const ids = [
-    ...((includes(['I', 'II', 'III', 'IV'], model) && [
-      'section_a',
-      'section_c',
-    ]) ||
-      []),
+    ...((includes(['I', 'II', 'III', 'IV'], model) && ['section_a']) || []),
+    ...((includes(['II', 'III', 'IV'], model) && ['section_c']) || []),
     ...((includes(['IV'], model) && [
       'section_b',
       'section_d',
@@ -57,8 +54,7 @@ export function getViewSections(variant: any) {
       'section_f',
     ]) ||
       []),
-    ...((includes(['I', 'II', 'III'], model) && ['adm_b']) || []),
-    ...((includes(['II', 'III'], model) && ['adm_c', 'adm_d']) || []),
+    ...((includes(['II', 'III'], model) && ['adm_b', 'adm_c', 'adm_d']) || []),
   ]
 
   return filter(
@@ -165,11 +161,8 @@ export function getEditSection(variant: any): Array<{
 }> {
   const { model } = variant
   const ids = [
-    ...((includes(['I', 'II', 'III', 'IV'], model) && [
-      'section_a',
-      'section_c',
-    ]) ||
-      []),
+    ...((includes(['I', 'II', 'III', 'IV'], model) && ['section_a']) || []),
+    ...((includes(['II', 'III', 'IV'], model) && ['section_c']) || []),
     ...((includes(['IV'], model) && [
       'section_b',
       'section_d',
@@ -177,8 +170,7 @@ export function getEditSection(variant: any): Array<{
       'section_f',
     ]) ||
       []),
-    ...((includes(['I', 'II', 'III'], model) && ['adm_b']) || []),
-    ...((includes(['II', 'III'], model) && ['adm_c', 'adm_d']) || []),
+    ...((includes(['II', 'III'], model) && ['adm_b', 'adm_c', 'adm_d']) || []),
   ]
 
   return filter(

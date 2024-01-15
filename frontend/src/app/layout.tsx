@@ -140,7 +140,7 @@ export default async function RootLayout({
       dir={dir(lang)}
     >
       <body id="next-app">
-        <div id="layout">
+        <div id="layout" className="h-full">
           <Script src="/critical.js" strategy="beforeInteractive" />
           <StoreProvider
             initialState={{

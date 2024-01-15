@@ -43,7 +43,7 @@ import { getEditSection, variants } from '.'
 import { IoClose, IoExpand } from 'react-icons/io5'
 
 function defaults(arr: Array<any>, value: any) {
-  if (arr.length > 0) return arr
+  if (arr?.length > 0) return arr
   return [value]
 }
 
