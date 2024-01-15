@@ -24,7 +24,7 @@ from core.models.country_programme import (
     CPReport,
 )
 from core.models.substance import Substance
-from core.utils import IMPORT_DB_MAX_YEAR
+from core.utils import IMPORT_DB_MAX_YEAR, IMPORT_DB_OLDEST_MAX_YEAR
 
 # pylint: disable=E1102
 
@@ -242,6 +242,13 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
 
         return final_list
 
+    def _get_04_cp_records(self, cp_report):
+        section_a = self._get_displayed_records(cp_report, "A")
+        return {
+            "cp_report": self.cp_report_seri_class(cp_report).data,
+            "section_a": self.cp_record_seri_class(section_a, many=True).data,
+        }
+
     def _get_new_cp_records(self, cp_report):
         section_a = self._get_displayed_records(cp_report, "A")
         section_b = self._get_displayed_records(cp_report, "B")
@@ -318,6 +325,8 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
             raise ValidationError({"cp_report_id": "invalid id"}) from e
 
     def get_data(self, cp_report):
+        if cp_report.year < IMPORT_DB_OLDEST_MAX_YEAR:
+            return self._get_04_cp_records(cp_report)
         if cp_report.year > IMPORT_DB_MAX_YEAR:
             return self._get_new_cp_records(cp_report)
 
