@@ -13,7 +13,7 @@ import useGridOptions from './schema'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export default function SectionECreate(props: any) {
-  const { TableProps, form, index, setActiveSection, setForm } = props
+  const { TableProps, form, setForm } = props
   const newNode = useRef<RowNode>()
   const grid = useRef<any>()
   const newFacilityIndex = useRef(last<any>(form.section_e)?.id + 1 || 1)
@@ -27,8 +27,6 @@ export default function SectionECreate(props: any) {
         ]
       : [{ rowType: 'control' }]
   }, [form.section_e])
-
-  console.log('HERE', initialRowData)
 
   const addFacility = useCallback(() => {
     const id = newFacilityIndex.current
@@ -90,7 +88,7 @@ export default function SectionECreate(props: any) {
       </Alert>
       <Table
         {...TableProps}
-        className="two-groups mb-4"
+        className="mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={2}
@@ -112,12 +110,6 @@ export default function SectionECreate(props: any) {
               ...event.data,
             })
             setForm({ ...form, section_e: newData })
-          }
-        }}
-        onFirstDataRendered={() => setActiveSection(index)}
-        onGridReady={() => {
-          if (!initialRowData.length) {
-            setActiveSection(index)
           }
         }}
         onRowDataUpdated={() => {

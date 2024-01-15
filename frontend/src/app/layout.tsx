@@ -47,6 +47,8 @@ export default async function RootLayout({
   // const lang = (headers.get('x-next-lang') ||
   //   config.i18n.defaultLanguage) as Language
   const lang = 'en'
+  const host = headers.get('x-next-host')
+  const protocol = headers.get('x-next-protocol')
   // const theme = cookies.get(config.cookies.theme) || { value: null }
   const theme = { value: 'light' }
   const currentView = getCurrentView(pathname || '')
@@ -131,12 +133,13 @@ export default async function RootLayout({
     <html
       lang={lang}
       {...(theme.value ? { 'data-theme': theme.value } : {})}
+      className={roboto.className}
       data-layout={currentView?.layout}
       data-printing="no"
       data-ssr="yes"
       dir={dir(lang)}
     >
-      <body id="next-app" className={roboto.className}>
+      <body id="next-app">
         <div id="layout">
           <Script src="/critical.js" strategy="beforeInteractive" />
           <StoreProvider
@@ -149,13 +152,23 @@ export default async function RootLayout({
               },
               internalError,
               projects,
+              settings: {
+                host,
+                protocol,
+              },
               theme: {
                 mode: theme.value as 'dark' | 'light' | null,
               },
               user: { data: user, loaded: !!user },
             }}
           >
-            <ThemeProvider options={{ key: 'tw', prepend: true }}>
+            <ThemeProvider
+              options={{
+                enableCssLayer: true,
+                prepend: true,
+                speedy: true,
+              }}
+            >
               <View>{children}</View>
             </ThemeProvider>
           </StoreProvider>

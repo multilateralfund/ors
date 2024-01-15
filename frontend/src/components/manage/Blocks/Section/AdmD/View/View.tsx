@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 
 import {
   Box,
@@ -13,13 +13,8 @@ import {
 import Field from '@ors/components/manage/Form/Field'
 
 export default function AdmD(props: any) {
-  const { emptyForm, index, report, section, setActiveSection } = props
+  const { emptyForm, report, section } = props
   const { rows = [] } = emptyForm.adm_d || {}
-
-  useEffect(() => {
-    setActiveSection(index)
-    /* eslint-disable-next-line  */
-  }, [])
 
   return (
     <>
@@ -28,7 +23,7 @@ export default function AdmD(props: any) {
           {section.title}
         </Typography>
         <List>
-          {rows.map((row: any) => (
+          {rows.map((row: any, index: number) => (
             <ListItem key={row.id} className="flex-col items-start pl-0">
               <Typography className="text-lg">
                 <span className="mr-2 inline-block">{index + 1}.</span>

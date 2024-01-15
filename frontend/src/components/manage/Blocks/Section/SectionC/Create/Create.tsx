@@ -3,9 +3,9 @@ import { useMemo, useRef, useState } from 'react'
 import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, union } from 'lodash'
-import dynamic from 'next/dynamic'
 
 import Field from '@ors/components/manage/Form/Field'
+import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
@@ -14,10 +14,6 @@ import { useStore } from '@ors/store'
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
-
-const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
-  ssr: false,
-})
 
 function getRowData(data: any) {
   let rowData: Array<any> = []
@@ -52,7 +48,7 @@ function getRowData(data: any) {
 }
 
 export default function SectionCCreate(props: any) {
-  const { Section, TableProps, form, index, setActiveSection, setForm } = props
+  const { Section, TableProps, form, setForm } = props
   const newNode = useRef<RowNode>()
   const substances = useStore(
     (state) => getResults(state.cp_reports.substances.data).results,
@@ -60,6 +56,7 @@ export default function SectionCCreate(props: any) {
 
   const grid = useRef<any>()
   const [initialRowData] = useState(() => getRowData(form.section_c))
+  const [pinnedBottomRowData] = useState([{ rowType: 'control' }])
 
   const [addChimicalModal, setAddChimicalModal] = useState(false)
 
@@ -121,11 +118,11 @@ export default function SectionCCreate(props: any) {
       </Alert>
       <Table
         {...TableProps}
-        className="three-groups mb-4"
+        className="mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={3}
-        pinnedBottomRowData={[{ rowType: 'control' }]}
+        pinnedBottomRowData={pinnedBottomRowData}
         rowData={initialRowData}
         defaultColDef={{
           ...TableProps.defaultColDef,
@@ -143,12 +140,6 @@ export default function SectionCCreate(props: any) {
               ...event.data,
             })
             setForm({ ...form, section_c: newData })
-          }
-        }}
-        onFirstDataRendered={() => setActiveSection(index)}
-        onGridReady={() => {
-          if (!initialRowData.length) {
-            setActiveSection(index)
           }
         }}
         onRowDataUpdated={() => {

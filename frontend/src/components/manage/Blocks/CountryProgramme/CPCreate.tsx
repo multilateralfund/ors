@@ -13,18 +13,17 @@ import {
   Typography,
 } from '@mui/material'
 import cx from 'classnames'
-import { AnimatePresence } from 'framer-motion'
-import { isEmpty } from 'lodash'
+import { produce } from 'immer'
+import { get, includes, isEmpty } from 'lodash'
 import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
 import Field from '@ors/components/manage/Form/Field'
-import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Portal from '@ors/components/manage/Utils/Portal'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
-import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
+import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
 import api, { getResults } from '@ors/helpers/Api/Api'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import useApi from '@ors/hooks/useApi'
@@ -39,56 +38,75 @@ import { useStore } from '@ors/store'
 
 import { createSections } from '.'
 
-import { AiFillFilePdf } from 'react-icons/ai'
-import { IoClose, IoDownloadOutline, IoExpand, IoLink } from 'react-icons/io5'
+import { IoClose, IoExpand, IoLink } from 'react-icons/io5'
 
-function TabPanel(props: any) {
-  const {
-    activeSection,
-    currentIndex,
-    index,
-    renderSection,
-    section,
-    setActiveSection,
-    ...rest
-  } = props
-  const Section: React.FC<any> = section.component
-
-  return (
-    <div
-      id={section.panelId}
-      key={section.panelId}
-      aria-labelledby={section.id}
-      hidden={activeSection !== index}
-      role="tabpanel"
-    >
-      <AnimatePresence>
-        <FadeInOut
-          animate={{
-            opacity: activeSection === currentIndex ? 1 : 0,
-          }}
-          transition={{ duration: 0.5 }}
+const TableProps = {
+  Toolbar: ({ enterFullScreen, exitFullScreen, fullScreen, section }: any) => {
+    return (
+      <div
+        className={cx('mb-2 flex', {
+          'flex-col': !fullScreen,
+          'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
+            fullScreen,
+          'px-4': fullScreen,
+        })}
+      >
+        <Typography
+          className={cx({ 'mb-4 md:mb-0': fullScreen })}
+          component="h2"
+          variant="h6"
         >
-          {((currentIndex === index && renderSection) ||
-            (activeSection !== currentIndex && activeSection === index)) && (
-            <Section
-              index={index}
-              section={section}
-              setActiveSection={setActiveSection}
-              {...rest}
-            />
+          {section.title}
+        </Typography>
+        <div className="flex items-center justify-end">
+          {section.allowFullScreen && !fullScreen && (
+            <IconButton
+              color="primary"
+              onClick={() => {
+                enterFullScreen()
+              }}
+            >
+              <IoExpand />
+            </IconButton>
           )}
-        </FadeInOut>
-      </AnimatePresence>
-    </div>
-  )
+          {fullScreen && (
+            <div>
+              <IconButton
+                className="exit-fullscreen not-printable p-2 text-primary"
+                aria-label="exit fullscreen"
+                onClick={() => {
+                  exitFullScreen()
+                }}
+              >
+                <IoClose size={32} />
+              </IconButton>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  },
+  domLayout: 'autoHeight',
+  enableCellChangeFlash: true,
+  enableFullScreen: true,
+  enablePagination: false,
+  getRowId: (props: any) => {
+    return props.data.row_id
+  },
+  noRowsOverlayComponentParams: { label: 'No data reported' },
+  rowsVisible: 20,
+  suppressCellFocus: false,
+  suppressColumnVirtualisation: true,
+  suppressLoadingOverlay: true,
+  suppressRowHoverHighlight: false,
+  withSeparators: true,
 }
 
-function CPCreate() {
+function CPCreate(props: any) {
+  const tabsEl = React.useRef<HTMLDivElement>(null)
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
   const { blends, report, substances } = useStore((state) => state.cp_reports)
-  const setNotes = useStore((state) => state.footnotes.setNotes)
 
   const countries = useStore((state) => [
     { id: 0, label: 'Any' },
@@ -140,9 +158,6 @@ function CPCreate() {
   }
 
   const [errors, setErrors] = useState<Record<string, any>>({})
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [activeSection, setActiveSection] = useState(null)
-  const [renderSection, setRenderSection] = useState(false)
   const [currentYear] = useState(new Date().getFullYear())
   const [form, setForm] = useState<Record<string, any>>({
     country: null,
@@ -154,6 +169,8 @@ function CPCreate() {
     section_f: Sections.section_f.getData(),
     year: currentYear,
   })
+  const [activeTab, setActiveTab] = useState(0)
+  const [renderedSections, setRenderedSections] = useState<Array<number>>([])
 
   const existingReports = useApi({
     options: {
@@ -189,12 +206,6 @@ function CPCreate() {
   }, [form])
 
   useEffect(() => {
-    setTimeout(() => {
-      setRenderSection(true)
-    }, 600)
-  }, [currentIndex])
-
-  useEffect(() => {
     Sections.section_a.updateLocalStorage(form.section_a)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.section_a])
@@ -224,11 +235,35 @@ function CPCreate() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.section_f])
 
+  useEffect(() => {
+    const indicator = tabsEl.current?.querySelector('.MuiTabs-indicator')
+
+    function handleTransitionEnd() {
+      setRenderedSections(
+        produce((sections) => {
+          if (includes(sections, activeTab)) return
+          sections.push(activeTab)
+        }),
+      )
+      if (!indicator) return
+      indicator.removeEventListener('transitionend', handleTransitionEnd)
+    }
+
+    if (!indicator || activeTab === 0) {
+      return handleTransitionEnd()
+    }
+
+    indicator.addEventListener('transitionend', handleTransitionEnd)
+  }, [activeTab])
+
   return (
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
-        active={currentIndex !== activeSection || !renderSection}
+        active={
+          !report.error &&
+          (report.loading || !includes(renderedSections, activeTab))
+        }
       />
       <HeaderTitle>
         <div className="mb-4 min-h-[40px]">
@@ -241,13 +276,15 @@ function CPCreate() {
         <Tabs
           className="scrollable mb-4"
           aria-label="create submission sections"
+          ref={tabsEl}
           scrollButtons="auto"
-          value={currentIndex}
+          value={activeTab}
           variant="scrollable"
+          TabIndicatorProps={{
+            style: { transitionDuration: '150ms' },
+          }}
           onChange={(event: React.SyntheticEvent, index: number) => {
-            setNotes([])
-            setCurrentIndex(index)
-            setRenderSection(false)
+            setActiveTab(index)
           }}
           allowScrollButtonsMobile
         >
@@ -304,105 +341,41 @@ function CPCreate() {
             </Typography>
           </Alert>
         )}
-        {createSections.map((section, index) => (
-          <TabPanel
-            key={section.panelId}
-            Section={Sections[section.id]}
-            activeSection={activeSection}
-            currentIndex={currentIndex}
-            emptyForm={report.emptyForm.data || {}}
-            errors={errors}
-            form={form}
-            index={index}
-            renderSection={renderSection}
-            section={section}
-            setActiveSection={setActiveSection}
-            setForm={setForm}
-            TableProps={{
-              Toolbar: ({
-                enterFullScreen,
-                exitFullScreen,
-                fullScreen,
-                onPrint,
-                print,
-              }: any) => {
-                return (
-                  <div
-                    className={cx('mb-2 flex', {
-                      'flex-col': !fullScreen,
-                      'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
-                        fullScreen,
-                      'px-4': fullScreen && !print,
-                    })}
-                  >
-                    <Typography
-                      className={cx({ 'mb-4 md:mb-0': fullScreen })}
-                      component="h2"
-                      variant="h6"
-                    >
-                      {section.title}
-                    </Typography>
-                    <div className="flex items-center justify-end">
-                      {!fullScreen && (
-                        <Dropdown
-                          color="primary"
-                          label={<IoDownloadOutline />}
-                          icon
-                        >
-                          <Dropdown.Item onClick={onPrint}>
-                            <div className="flex items-center gap-x-2">
-                              <AiFillFilePdf
-                                className="fill-red-700"
-                                size={24}
-                              />
-                              <span>PDF</span>
-                            </div>
-                          </Dropdown.Item>
-                        </Dropdown>
-                      )}
-                      {section.allowFullScreen && !fullScreen && (
-                        <IconButton
-                          color="primary"
-                          onClick={() => {
-                            enterFullScreen()
-                          }}
-                        >
-                          <IoExpand />
-                        </IconButton>
-                      )}
-                      {fullScreen && (
-                        <div>
-                          <IconButton
-                            className="exit-fullscreen not-printable p-2 text-primary"
-                            aria-label="exit fullscreen"
-                            onClick={() => {
-                              exitFullScreen()
-                            }}
-                          >
-                            <IoClose size={32} />
-                          </IconButton>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )
-              },
-              enableCellChangeFlash: true,
-              enableFullScreen: true,
-              enablePagination: false,
-              errors: errors[section.id],
-              fadeInOut: false,
-              getRowId: (props: any) => {
-                return props.data.row_id
-              },
-              noRowsOverlayComponentParams: { label: 'No data reported' },
-              suppressCellFocus: false,
-              suppressRowHoverHighlight: false,
-              withSeparators: true,
-            }}
-          />
-        ))}
-
+        {createSections.map((section, index) => {
+          if (!includes(renderedSections, index)) return null
+          const Section: React.FC<any> = section.component
+          return (
+            <div
+              id={section.panelId}
+              key={section.panelId}
+              className={cx('transition', {
+                'absolute -left-[9999px] -top-[9999px] opacity-0':
+                  activeTab !== index,
+              })}
+              aria-labelledby={section.id}
+              role="tabpanel"
+            >
+              <FootnotesProvider>
+                <Section
+                  {...props}
+                  Section={get(Sections, section.id)}
+                  emptyForm={report.emptyForm.data || {}}
+                  errors={errors}
+                  form={form}
+                  report={report.data}
+                  section={section}
+                  setForm={setForm}
+                  TableProps={{
+                    ...TableProps,
+                    errors: errors[section.id],
+                    report,
+                    section,
+                  }}
+                />
+              </FootnotesProvider>
+            </div>
+          )
+        })}
         <Portal domNode="bottom-control">
           <Box className="rounded-none border-0 border-t px-4">
             <div className="container flex w-full justify-between">

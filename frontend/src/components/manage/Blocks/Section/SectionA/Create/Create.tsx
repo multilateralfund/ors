@@ -3,9 +3,9 @@ import { useMemo, useRef, useState } from 'react'
 import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, union } from 'lodash'
-import dynamic from 'next/dynamic'
 
 import Field from '@ors/components/manage/Form/Field'
+import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
@@ -14,10 +14,6 @@ import { useStore } from '@ors/store'
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
-
-const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
-  ssr: false,
-})
 
 function getRowData(data: any) {
   let rowData: Array<any> = []
@@ -60,15 +56,7 @@ function getRowData(data: any) {
 }
 
 export default function SectionACreate(props: any) {
-  const {
-    Section,
-    TableProps,
-    emptyForm,
-    form,
-    index,
-    setActiveSection,
-    setForm,
-  } = props
+  const { Section, TableProps, emptyForm, form, setForm } = props
   const newNode = useRef<RowNode>()
 
   const substances = useStore(
@@ -76,6 +64,15 @@ export default function SectionACreate(props: any) {
   )
   const grid = useRef<any>()
   const [initialRowData] = useState(() => getRowData(form.section_a))
+  const [pinnedBottomRowData] = useState<any>([
+    {
+      display_name: 'TOTAL',
+      row_id: 'total',
+      rowType: 'total',
+      tooltip: true,
+    },
+    { row_id: 'control', rowType: 'control' },
+  ])
   const [addSubstanceModal, setAddSubstanceModal] = useState(false)
 
   const substancesOptions = useMemo(() => {
@@ -143,25 +140,17 @@ export default function SectionACreate(props: any) {
       </Alert>
       <Table
         {...TableProps}
-        className="three-groups mb-4"
+        className="mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={3}
+        pinnedBottomRowData={pinnedBottomRowData}
         rowData={initialRowData}
         defaultColDef={{
           ...TableProps.defaultColDef,
           ...gridOptions.defaultColDef,
         }}
-        pinnedBottomRowData={[
-          {
-            display_name: 'TOTAL',
-            row_id: 'total',
-            rowType: 'total',
-            tooltip: true,
-          },
-          { row_id: 'control', rowType: 'control' },
-        ]}
-        onCellValueChanged={(event) => {
+        onCellValueChanged={(event: any) => {
           const usages = getUsagesOnCellValueChange(event)
           const newData = [...form.section_a]
           const index = findIndex(
@@ -175,12 +164,6 @@ export default function SectionACreate(props: any) {
               record_usages: usages,
             })
             setForm({ ...form, section_a: newData })
-          }
-        }}
-        onFirstDataRendered={() => setActiveSection(index)}
-        onGridReady={() => {
-          if (!initialRowData.length) {
-            setActiveSection(index)
           }
         }}
         onRowDataUpdated={() => {
@@ -199,15 +182,6 @@ export default function SectionACreate(props: any) {
       />
       <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
         <Footnotes />
-        {/* <Footnote id="1">
-          Where the data involves a blend of two or more substances, the
-          quantities of individual components of controlled substances must be
-          indicated separately.
-        </Footnote>
-        <Footnote id="2">
-          Provide explanation if total sector use and consumption
-          (import-export+production) is different (e.g, stockpiling).
-        </Footnote> */}
       </Alert>
       {addSubstanceModal && (
         <Modal

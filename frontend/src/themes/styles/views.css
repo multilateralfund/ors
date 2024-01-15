@@ -1,15 +1,17 @@
-:root[data-layout='authorized_document'] #layout {
-  @apply grid h-full grid-rows-[auto_auto_1fr_auto];
-}
+@layer base {
+  :root[data-layout='authorized_document'] #layout {
+    @apply grid h-full grid-rows-[auto_auto_1fr_auto];
+  }
 
-:root[data-layout='document'] #layout {
-  @apply grid h-full grid-rows-[auto_1fr_auto];
-}
+  :root[data-layout='document'] #layout {
+    @apply grid h-full grid-rows-[auto_1fr_auto];
+  }
 
-:root[data-layout='simple'] #layout {
-  @apply grid h-full grid-rows-[auto];
-}
+  :root[data-layout='simple'] #layout {
+    @apply grid h-full grid-rows-[auto];
+  }
 
-:root[data-layout='authorized_document'] main {
-  @apply grid;
+  :root[data-layout='authorized_document'] main {
+    @apply grid;
+  }
 }

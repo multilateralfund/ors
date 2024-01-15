@@ -30,6 +30,7 @@
     "BottomNavigationAction": "@mui/material/BottomNavigationAction/BottomNavigationAction",
     "bottomNavigationActionClasses": "@mui/material/BottomNavigationAction/bottomNavigationActionClasses",
     "Box": "@mui/material/Box/Box",
+    "boxClasses": "@mui/material/Box/boxClasses",
     "BreadcrumbCollapsed": "@mui/material/Breadcrumbs/BreadcrumbCollapsed",
     "Breadcrumbs": "@mui/material/Breadcrumbs/Breadcrumbs",
     "breadcrumbsClasses": "@mui/material/Breadcrumbs/breadcrumbsClasses",

@@ -36,7 +36,7 @@ import {
 } from 'recharts'
 
 import Field from '@ors/components/manage/Form/Field'
-import Table from '@ors/components/manage/Form/TableRework'
+import Table from '@ors/components/manage/Form/Table'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import IconButton from '@ors/components/ui/IconButton/IconButton'
 import Link from '@ors/components/ui/Link/Link'
@@ -651,7 +651,7 @@ export default function PSListing() {
           loading={loading}
           noRowsOverlayComponentParams={{ label: 'No data reported' }}
           paginationPageSize={INITIAL_PAGE_SIZE}
-          paginationPageSizeSelector={[10, 25, 50, 100, 250, 500, 1000]}
+          paginationPageSizeSelector={[10, 25, 50, 100, 250]}
           rowBuffer={50}
           rowCount={count}
           rowData={results}

@@ -1,33 +1,31 @@
-import { useMemo, useRef } from 'react'
+import { useRef, useState } from 'react'
 
 import { Typography } from '@mui/material'
 import { groupBy, map } from 'lodash'
-import dynamic from 'next/dynamic'
+
+import Table from '@ors/components/manage/Form/Table'
 
 import useGridOptions from './schema'
 
-const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
-  ssr: false,
-})
+function getRowData(report: any, rows: any) {
+  const dataByRowId = groupBy(report.adm_b, 'row_id')
+
+  return map(rows, (row) => ({
+    values: dataByRowId[row.id]?.[0]?.values || [],
+    ...row,
+    ...(row.type === 'title' ? { rowType: 'group' } : {}),
+    ...(row.type === 'subtitle' ? { rowType: 'hashed' } : {}),
+  }))
+}
 
 export default function AdmB(props: any) {
-  const { TableProps, emptyForm, index, report, setActiveSection } = props
+  const { TableProps, emptyForm, report } = props
   const { columns = [], rows = [] } = emptyForm.adm_b || {}
-  const grid = useRef<any>()
   const gridOptions = useGridOptions({
     adm_columns: columns,
   })
-
-  const rowData = useMemo(() => {
-    const dataByRowId = groupBy(report.adm_b, 'row_id')
-
-    return map(rows, (row) => ({
-      values: dataByRowId[row.id]?.[0]?.values || [],
-      ...row,
-      ...(row.type === 'title' ? { rowType: 'group' } : {}),
-      ...(row.type === 'subtitle' ? { rowType: 'hashed' } : {}),
-    }))
-  }, [rows, report])
+  const grid = useRef<any>()
+  const [rowData] = useState(() => getRowData(report, rows))
 
   return (
     <>
@@ -39,12 +37,6 @@ export default function AdmB(props: any) {
         gridRef={grid}
         headerDepth={2}
         rowData={rowData}
-        onFirstDataRendered={() => setActiveSection(index)}
-        onGridReady={() => {
-          if (!rowData.length) {
-            setActiveSection(index)
-          }
-        }}
       />
       <Typography id="footnote-1" className="italic" variant="body2">
         1. If Yes, since when (Date) / If No, planned date.

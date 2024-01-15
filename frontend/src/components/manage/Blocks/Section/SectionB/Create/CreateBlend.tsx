@@ -254,12 +254,14 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
             <Table
               className="mb-4"
               defaultColDef={defaultColDef}
+              domLayout="autoHeight"
               enableCellChangeFlash={true}
               enablePagination={false}
               errors={errors?.components}
               gridRef={grid}
               rowData={null}
               suppressCellFocus={false}
+              suppressLoadingOverlay={true}
               suppressNoRowsOverlay={true}
               withSeparators={true}
               columnDefs={[

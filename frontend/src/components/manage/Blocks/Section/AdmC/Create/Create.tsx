@@ -8,8 +8,7 @@ import Table from '@ors/components/manage/Form/Table'
 import useGridOptions from './schema'
 
 export default function AdmBCreate(props: any) {
-  const { TableProps, emptyForm, form, index, setActiveSection, setForm } =
-    props
+  const { TableProps, emptyForm, form, setForm } = props
   const { columns = [], rows = [] } = emptyForm.adm_c || {}
   const grid = useRef<any>()
   const [initialRowData] = useState(() => {
@@ -37,7 +36,7 @@ export default function AdmBCreate(props: any) {
       </Alert>
       <Table
         {...TableProps}
-        className="two-groups mb-4"
+        className="mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={2}
@@ -58,12 +57,6 @@ export default function AdmBCreate(props: any) {
               ...event.data,
             })
             setForm({ ...form, adm_c: newData })
-          }
-        }}
-        onFirstDataRendered={() => setActiveSection(index)}
-        onGridReady={() => {
-          if (!initialRowData.length) {
-            setActiveSection(index)
           }
         }}
         onRowDataUpdated={() => {}}

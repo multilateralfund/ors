@@ -13,15 +13,7 @@ import { AiFillFilePdf } from 'react-icons/ai'
 import { IoClose, IoDownloadOutline, IoExpand } from 'react-icons/io5'
 
 export default function AdmBCreate(props: any) {
-  const {
-    TableProps,
-    emptyForm,
-    form,
-    index,
-    section,
-    setActiveSection,
-    setForm,
-  } = props
+  const { TableProps, emptyForm, form, section, setForm } = props
   const { columns = [], rows = [] } = emptyForm.adm_b || {}
   const grid = useRef<any>()
   const [initialRowData] = useState(() => {
@@ -49,7 +41,7 @@ export default function AdmBCreate(props: any) {
       </Alert>
       <Table
         {...TableProps}
-        className="two-groups mb-4"
+        className="mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={2}
@@ -133,12 +125,6 @@ export default function AdmBCreate(props: any) {
               ...event.data,
             })
             setForm({ ...form, adm_b: newData })
-          }
-        }}
-        onFirstDataRendered={() => setActiveSection(index)}
-        onGridReady={() => {
-          if (!initialRowData.length) {
-            setActiveSection(index)
           }
         }}
         onRowDataUpdated={() => {}}

@@ -12,11 +12,9 @@ type Report = SliceData<
   versions: SliceData<UnknownArray>
 }
 
-type Note = {
-  content: string
-  id: string
-  index?: string
-  order: number | string
+export interface SettingsSlice {
+  host: null | string
+  protocol: null | string
 }
 
 export interface CacheSlice {
@@ -89,13 +87,6 @@ export interface CommonSlice {
   settings: SliceData
 }
 
-export interface FootnotesSlice {
-  addNote: (note: Note) => void
-  notes: Array<Note>
-  removeNote: (id: string) => void
-  setNotes: (notes: Array<Note>) => void
-}
-
 // Store state
 export type StoreState = {
   businessPlans: BusinessPlanSlice
@@ -103,11 +94,11 @@ export type StoreState = {
   common: CommonSlice
   connection: null | string
   cp_reports: CPReportsSlice
-  footnotes: FootnotesSlice
   header: HeaderSlice
   i18n: I18nSlice
   internalError: any
   projects: ProjectsSlice
+  settings: SettingsSlice
   theme: ThemeSlice
   user: UserSlice
 }

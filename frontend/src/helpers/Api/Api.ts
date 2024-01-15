@@ -54,20 +54,19 @@ function delayExecution(ms: number) {
 export function formatApiUrl(path: string) {
   // Check if the path is external
   if (path.startsWith('http://') || path.startsWith('https://')) return path
-  const { settings } = config
-  let apiPath = ''
-  let adjustedPath
+  let adjustedPath,
+    apiPath = ''
+  const settings = __CLIENT__ ? store.current.getState().settings : null
+  const headers = __SERVER__ ? require('next/headers').headers() : null
+  const protocol = (
+    __CLIENT__ ? settings?.protocol : headers?.get('x-next-protocol')
+  ).split(',')[0]
+  const host = __CLIENT__ ? settings?.host : headers?.get('x-next-host')
 
-  if (__DEVELOPMENT__ || settings.apiPath) {
-    apiPath = settings.apiPath || 'http://127.0.0.1:8000'
-  } else if (__SERVER__) {
-    const headers = require('next/headers').headers()
-    apiPath =
-      headers.get('x-next-protocol').split(',')[0] +
-      '://' +
-      headers.get('x-next-host')
-  } else if (__CLIENT__) {
-    apiPath = window.location.origin
+  if (config.settings.apiPath) {
+    apiPath = config.settings.apiPath
+  } else {
+    apiPath = protocol + '://' + host
   }
 
   apiPath = addTrailingSlash(apiPath)
@@ -159,7 +158,7 @@ async function api(
             state.cache.removeCache(id)
           },
           removeCacheTimeout * 1000,
-          `remove_cache_${id}`,
+          `Api:removeCache:${id}`,
         )
         state.cache.setCache(id, data)
       }

@@ -4,67 +4,53 @@
 @import './row.css';
 @import './cell.css';
 
-#next-app [class*='ag-theme-'] .ag-root-wrapper {
+.ag-table .ag-root-wrapper {
   @apply rounded;
 
   border: var(--ag-borders) theme(colors.mui-box-border);
 }
 
-#next-app [class*='ag-theme-'] .ag-header,
-#next-app [class*='ag-theme-'] .ag-advanced-filter-header,
-#next-app [class*='ag-theme-'] .ag-root-wrapper,
-#next-app [class*='ag-theme-'] .ag-sticky-top,
-#next-app [class*='ag-theme-'] .ag-dnd-ghost,
-#next-app [class*='ag-theme-'] .ag-row-animation .ag-row {
+.ag-table .ag-header,
+.ag-table .ag-advanced-filter-header,
+.ag-table .ag-root-wrapper,
+.ag-table .ag-sticky-top,
+.ag-table .ag-dnd-ghost,
+.ag-table .ag-row-animation .ag-row {
   @apply transition;
 }
 
-#next-app [class*='ag-theme-'] .ag-header-cell,
-#next-app [class*='ag-theme-'] .ag-cell {
+.ag-table .ag-header-cell,
+.ag-table .ag-cell {
   @apply break-words;
 }
 
-#next-app [class*='ag-theme-'] .ag-floating-bottom .ag-cell {
+.ag-table .ag-floating-bottom .ag-cell {
   word-break: keep-all;
   overflow-wrap: normal;
 }
 
-#next-app [class*='ag-theme-'] .ag-text-left {
+.ag-table .ag-text-left {
   @apply justify-start;
 }
 
-#next-app [class*='ag-theme-'] .ag-text-center {
+.ag-table .ag-text-center {
   @apply justify-center;
 }
 
-#next-app [class*='ag-theme-'] .ag-text-right {
+.ag-table .ag-text-right {
   @apply justify-end;
 }
 
-#next-app
-  [class*='ag-theme-'].two-groups
-  .ag-overlay-no-rows-wrapper.ag-layout-auto-height {
-  padding-top: 120px;
+.ag-table .ag-overlay-no-rows-wrapper.ag-layout-auto-height {
+  padding-top: calc(var(--ag-header-depth, 1) * var(--ag-header-height, 36px));
 }
 
-#next-app
-  [class*='ag-theme-'].three-groups
-  .ag-overlay-no-rows-wrapper.ag-layout-auto-height {
-  padding-top: 180px;
-}
-
-#next-app
-  [class*='ag-theme-'].four-groups
-  .ag-overlay-no-rows-wrapper.ag-layout-auto-height {
-  padding-top: 240px;
-}
-
-#next-app .ag-body-horizontal-scroll {
+.ag-table .ag-body-horizontal-scroll {
   @apply !relative !bottom-0;
 }
 
-#next-app .ag-full-screen,
-#next-app .ag-hide-print {
+.ag-table-root.ag-full-screen,
+.ag-table-root.ag-hide-print {
   @apply z-50;
 
   position: fixed;
@@ -75,7 +61,6 @@
   background-color: theme(colors.mui-box-background);
 }
 
-#next-app .ag-full-screen [class*='ag-theme-'],
-#next-app .ag-full-screen .ag-table {
+.ag-table-root.ag-full-screen .ag-table {
   @apply m-0 !h-full;
 }

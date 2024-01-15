@@ -4,12 +4,13 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
 import cx from 'classnames'
-import { AnimatePresence } from 'framer-motion'
+import { produce } from 'immer'
 import {
   capitalize,
   filter,
   findIndex,
   get,
+  includes,
   isEmpty,
   map,
   pickBy,
@@ -19,12 +20,12 @@ import {
 import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
-import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Portal from '@ors/components/manage/Utils/Portal'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
-import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
+import Error from '@ors/components/theme/Views/Error'
 import Link from '@ors/components/ui/Link/Link'
+import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
 import api from '@ors/helpers/Api/Api'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import { parseNumber } from '@ors/helpers/Utils/Utils'
@@ -39,56 +40,90 @@ import { useStore } from '@ors/store'
 
 import { getEditSection, variants } from '.'
 
-import { AiFillFilePdf } from 'react-icons/ai'
-import { IoClose, IoDownloadOutline, IoExpand } from 'react-icons/io5'
+import { IoClose, IoExpand } from 'react-icons/io5'
 
-function TabPanel(props: any) {
-  const {
-    activeSection,
-    currentIndex,
-    index,
-    renderSection,
-    section,
-    setActiveSection,
-    ...rest
-  } = props
-  const Section: React.FC<any> = section.component
+function defaults(arr: Array<any>, value: any) {
+  if (arr.length > 0) return arr
+  return [value]
+}
 
-  return (
-    <div
-      id={section.panelId}
-      key={section.panelId}
-      aria-labelledby={section.id}
-      hidden={activeSection !== index}
-      role="tabpanel"
-    >
-      <AnimatePresence>
-        <FadeInOut
-          animate={{
-            opacity: activeSection === currentIndex ? 1 : 0,
-          }}
-          transition={{ duration: 0.5 }}
+const TableProps = {
+  Toolbar: ({ enterFullScreen, exitFullScreen, fullScreen, section }: any) => {
+    return (
+      <div
+        className={cx('mb-2 flex', {
+          'flex-col': !fullScreen,
+          'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
+            fullScreen,
+          'px-4': fullScreen,
+        })}
+      >
+        <Typography
+          className={cx({ 'mb-4 md:mb-0': fullScreen })}
+          component="h2"
+          variant="h6"
         >
-          {((currentIndex === index && renderSection) ||
-            (activeSection !== currentIndex && activeSection === index)) && (
-            <Section
-              index={index}
-              section={section}
-              setActiveSection={setActiveSection}
-              {...rest}
-            />
+          {section.title}
+        </Typography>
+        <div className="flex items-center justify-end">
+          {/* {!fullScreen && (
+            <Dropdown color="primary" label={<IoDownloadOutline />} icon>
+              <Dropdown.Item>
+                <div className="flex items-center gap-x-2">
+                  <AiFillFilePdf className="fill-red-700" size={24} />
+                  <span>PDF</span>
+                </div>
+              </Dropdown.Item>
+            </Dropdown>
+          )} */}
+          {section.allowFullScreen && !fullScreen && (
+            <IconButton
+              color="primary"
+              onClick={() => {
+                enterFullScreen()
+              }}
+            >
+              <IoExpand />
+            </IconButton>
           )}
-        </FadeInOut>
-      </AnimatePresence>
-    </div>
-  )
+          {fullScreen && (
+            <div>
+              <IconButton
+                className="exit-fullscreen not-printable p-2 text-primary"
+                aria-label="exit fullscreen"
+                onClick={() => {
+                  exitFullScreen()
+                }}
+              >
+                <IoClose size={32} />
+              </IconButton>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  },
+  domLayout: 'autoHeight',
+  enableCellChangeFlash: true,
+  enableFullScreen: true,
+  enablePagination: false,
+  getRowId: (props: any) => {
+    return props.data.row_id
+  },
+  noRowsOverlayComponentParams: { label: 'No data reported' },
+  rowsVisible: 20,
+  suppressCellFocus: false,
+  suppressColumnVirtualisation: true,
+  suppressLoadingOverlay: true,
+  suppressRowHoverHighlight: false,
+  withSeparators: true,
 }
 
 function CPEdit(props: { id: null | number }) {
+  const tabsEl = React.useRef<HTMLDivElement>(null)
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
   const { blends, report, substances } = useStore((state) => state.cp_reports)
-  const setNotes = useStore((state) => state.footnotes.setNotes)
 
   const Sections = {
     section_a: useMakeClassInstance<SectionA>(SectionA, [
@@ -109,7 +144,14 @@ function CPEdit(props: { id: null | number }) {
       null,
     ]),
     section_d: useMakeClassInstance<SectionD>(SectionD, [
-      report.data?.section_d,
+      defaults(report.data?.section_d, {
+        all_uses: '0.000',
+        chemical_name: 'HFC-23',
+        destruction: '0.000',
+        display_name: 'HFC-23',
+        feedstock: '0.000',
+        row_id: 'generation_1',
+      }),
       null,
     ]),
     section_e: useMakeClassInstance<SectionE>(SectionE, [
@@ -123,9 +165,6 @@ function CPEdit(props: { id: null | number }) {
   }
 
   const [errors, setErrors] = useState<Record<string, any>>({})
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [activeSection, setActiveSection] = useState(null)
-  const [renderSection, setRenderSection] = useState(false)
   const [form, setForm] = useState<Record<string, any>>({
     adm_b: report.data?.adm_b,
     adm_c: report.data?.adm_c,
@@ -137,6 +176,8 @@ function CPEdit(props: { id: null | number }) {
     section_e: Sections.section_e.getData(),
     section_f: Sections.section_f.getData(),
   })
+  const [activeTab, setActiveTab] = useState(0)
+  const [renderedSections, setRenderedSections] = useState<Array<number>>([])
 
   const variant = useMemo(() => {
     if (!report.data) return null
@@ -196,10 +237,25 @@ function CPEdit(props: { id: null | number }) {
   }, [form])
 
   useEffect(() => {
-    setTimeout(() => {
-      setRenderSection(true)
-    }, 600)
-  }, [currentIndex])
+    const indicator = tabsEl.current?.querySelector('.MuiTabs-indicator')
+
+    function handleTransitionEnd() {
+      setRenderedSections(
+        produce((sections) => {
+          if (includes(sections, activeTab)) return
+          sections.push(activeTab)
+        }),
+      )
+      if (!indicator) return
+      indicator.removeEventListener('transitionend', handleTransitionEnd)
+    }
+
+    if (!indicator || activeTab === 0) {
+      return handleTransitionEnd()
+    }
+
+    indicator.addEventListener('transitionend', handleTransitionEnd)
+  }, [activeTab])
 
   return (
     <>
@@ -207,9 +263,10 @@ function CPEdit(props: { id: null | number }) {
         className="!fixed bg-action-disabledBackground"
         active={
           !report.error &&
-          (report.loading || currentIndex !== activeSection || !renderSection)
+          (report.loading || !includes(renderedSections, activeTab))
         }
       />
+      {!!report.error && <Error error={report.error} />}
       {!!report.data && (
         <HeaderTitle memo={report.data.status}>
           <div className="mb-4 flex min-h-[40px] items-center justify-between gap-x-4">
@@ -233,13 +290,15 @@ function CPEdit(props: { id: null | number }) {
         <Tabs
           className="scrollable mb-4"
           aria-label="create submission sections"
+          ref={tabsEl}
           scrollButtons="auto"
-          value={currentIndex}
+          value={activeTab}
           variant="scrollable"
+          TabIndicatorProps={{
+            style: { transitionDuration: '150ms' },
+          }}
           onChange={(event: React.SyntheticEvent, index: number) => {
-            setNotes([])
-            setCurrentIndex(index)
-            setRenderSection(false)
+            setActiveTab(index)
           }}
           allowScrollButtonsMobile
         >
@@ -255,105 +314,42 @@ function CPEdit(props: { id: null | number }) {
           ))}
         </Tabs>
         {!!report.data &&
-          sections.map((section, index) => (
-            <TabPanel
-              key={section.panelId}
-              Section={get(Sections, section.id)}
-              activeSection={activeSection}
-              currentIndex={currentIndex}
-              emptyForm={report.emptyForm.data || {}}
-              errors={errors}
-              form={form}
-              index={index}
-              renderSection={renderSection}
-              section={section}
-              setActiveSection={setActiveSection}
-              setForm={setForm}
-              TableProps={{
-                Toolbar: ({
-                  enterFullScreen,
-                  exitFullScreen,
-                  fullScreen,
-                  onPrint,
-                  print,
-                }: any) => {
-                  return (
-                    <div
-                      className={cx('mb-2 flex', {
-                        'flex-col': !fullScreen,
-                        'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
-                          fullScreen,
-                        'px-4': fullScreen && !print,
-                      })}
-                    >
-                      <Typography
-                        className={cx({ 'mb-4 md:mb-0': fullScreen })}
-                        component="h2"
-                        variant="h6"
-                      >
-                        {section.title}
-                      </Typography>
-                      <div className="flex items-center justify-end">
-                        {!fullScreen && (
-                          <Dropdown
-                            color="primary"
-                            label={<IoDownloadOutline />}
-                            icon
-                          >
-                            <Dropdown.Item onClick={onPrint}>
-                              <div className="flex items-center gap-x-2">
-                                <AiFillFilePdf
-                                  className="fill-red-700"
-                                  size={24}
-                                />
-                                <span>PDF</span>
-                              </div>
-                            </Dropdown.Item>
-                          </Dropdown>
-                        )}
-                        {section.allowFullScreen && !fullScreen && (
-                          <IconButton
-                            color="primary"
-                            onClick={() => {
-                              enterFullScreen()
-                            }}
-                          >
-                            <IoExpand />
-                          </IconButton>
-                        )}
-                        {fullScreen && (
-                          <div>
-                            <IconButton
-                              className="exit-fullscreen not-printable p-2 text-primary"
-                              aria-label="exit fullscreen"
-                              onClick={() => {
-                                exitFullScreen()
-                              }}
-                            >
-                              <IoClose size={32} />
-                            </IconButton>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )
-                },
-                enableCellChangeFlash: true,
-                enableFullScreen: true,
-                enablePagination: false,
-                errors: errors[section.id],
-                fadeInOut: false,
-                getRowId: (props: any) => {
-                  return props.data.row_id
-                },
-                noRowsOverlayComponentParams: { label: 'No data reported' },
-                suppressCellFocus: false,
-                suppressRowHoverHighlight: false,
-                withSeparators: true,
-              }}
-              {...props}
-            />
-          ))}
+          sections.map((section, index) => {
+            if (!includes(renderedSections, index)) return null
+            const Section: React.FC<any> = section.component
+            return (
+              <div
+                id={section.panelId}
+                key={section.panelId}
+                className={cx('transition', {
+                  'absolute -left-[9999px] -top-[9999px] opacity-0':
+                    activeTab !== index,
+                })}
+                aria-labelledby={section.id}
+                role="tabpanel"
+              >
+                <FootnotesProvider>
+                  <Section
+                    {...props}
+                    Section={get(Sections, section.id)}
+                    emptyForm={report.emptyForm.data || {}}
+                    errors={errors}
+                    form={form}
+                    report={report.data}
+                    section={section}
+                    setForm={setForm}
+                    variant={variant}
+                    TableProps={{
+                      ...TableProps,
+                      errors: errors[section.id],
+                      report,
+                      section,
+                    }}
+                  />
+                </FootnotesProvider>
+              </div>
+            )
+          })}
 
         {!!report.data && (
           <Portal domNode="bottom-control">
@@ -368,53 +364,55 @@ function CPEdit(props: { id: null | number }) {
                 >
                   Close
                 </Link>
-                <Button
-                  color="primary"
-                  size="small"
-                  variant="contained"
-                  onClick={async () => {
-                    try {
-                      const response = await api(
-                        `api/country-programme/reports/${report.data?.id}/`,
-                        {
-                          data: {
-                            ...report.data,
-                            ...getSubmitFormData(),
+                {report.data.status === 'draft' && (
+                  <Button
+                    color="primary"
+                    size="small"
+                    variant="contained"
+                    onClick={async () => {
+                      try {
+                        const response = await api(
+                          `api/country-programme/reports/${report.data?.id}/`,
+                          {
+                            data: {
+                              ...report.data,
+                              ...getSubmitFormData(),
+                            },
+                            method: 'PUT',
                           },
-                          method: 'PUT',
-                        },
-                      )
-                      setErrors({})
-                      enqueueSnackbar(
-                        <>
-                          Updated submission for {response.country}{' '}
-                          {response.year}.
-                        </>,
-                        { variant: 'success' },
-                      )
-                      router.push(`/country-programme/${response.id}`)
-                    } catch (error) {
-                      if (error.status === 400) {
-                        setErrors({ ...(await error.json()) })
-                        enqueueSnackbar(
-                          <>Please make sure all the inputs are correct.</>,
-                          { variant: 'error' },
                         )
-                      } else {
-                        const errors = await error.json()
                         setErrors({})
-                        {
-                          errors.detail &&
-                            enqueueSnackbar(errors.detail, {
-                              variant: 'error',
-                            })
+                        enqueueSnackbar(
+                          <>
+                            Updated submission for {response.country}{' '}
+                            {response.year}.
+                          </>,
+                          { variant: 'success' },
+                        )
+                        router.push(`/country-programme/${response.id}`)
+                      } catch (error) {
+                        if (error.status === 400) {
+                          setErrors({ ...(await error.json()) })
+                          enqueueSnackbar(
+                            <>Please make sure all the inputs are correct.</>,
+                            { variant: 'error' },
+                          )
+                        } else {
+                          const errors = await error.json()
+                          setErrors({})
+                          {
+                            errors.detail &&
+                              enqueueSnackbar(errors.detail, {
+                                variant: 'error',
+                              })
+                          }
                         }
                       }
-                    }
-                  }}
-                >
-                  Update draft
-                </Button>
+                    }}
+                  >
+                    Update draft
+                  </Button>
+                )}
                 <Button
                   color="primary"
                   size="small"

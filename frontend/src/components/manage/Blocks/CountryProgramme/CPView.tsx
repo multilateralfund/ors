@@ -11,11 +11,10 @@ import {
   Typography,
 } from '@mui/material'
 import cx from 'classnames'
-import { AnimatePresence } from 'framer-motion'
-import { capitalize, filter, orderBy } from 'lodash'
+import { produce } from 'immer'
+import { capitalize, filter, includes, orderBy } from 'lodash'
 import { useSnackbar } from 'notistack'
 
-import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Portal from '@ors/components/manage/Utils/Portal'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -38,59 +37,120 @@ import {
   IoExpand,
 } from 'react-icons/io5'
 
-function TabPanel(props: any) {
-  const {
-    activeSection,
-    currentIndex,
-    index,
-    renderSection,
+const TableProps = {
+  Toolbar: ({
+    enterFullScreen,
+    exitFullScreen,
+    fullScreen,
+    onPrint,
+    print,
+    report,
     section,
-    setActiveSection,
-    ...rest
-  } = props
-  const Section: React.FC<any> = section.component
-
-  return (
-    <div
-      id={section.panelId}
-      key={section.panelId}
-      aria-labelledby={section.id}
-      hidden={activeSection !== index}
-      role="tabpanel"
-    >
-      <AnimatePresence>
-        <FadeInOut
-          animate={{
-            opacity: activeSection === currentIndex && renderSection ? 1 : 0,
-          }}
-          transition={{ duration: 0.3 }}
+  }: any) => {
+    return (
+      <div
+        className={cx('mb-2 flex', {
+          'flex-col': !fullScreen,
+          'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
+            fullScreen,
+          'px-4': fullScreen && !print,
+        })}
+      >
+        <Typography
+          className={cx({ 'mb-4 md:mb-0': fullScreen })}
+          component="h2"
+          variant="h6"
         >
-          {((currentIndex === index && renderSection) ||
-            (activeSection !== currentIndex && activeSection === index)) && (
-            <Section
-              index={index}
-              section={section}
-              setActiveSection={setActiveSection}
-              {...rest}
-            />
+          {section.title}
+        </Typography>
+        <div className="flex items-center justify-end">
+          <Dropdown
+            color="primary"
+            label={<IoDownloadOutline />}
+            tooltip="Download"
+            icon
+          >
+            <Dropdown.Item>
+              <Link
+                className="flex items-center gap-x-2 text-black no-underline"
+                target="_blank"
+                href={
+                  formatApiUrl('api/country-programme/export/') +
+                  '?cp_report_id=' +
+                  report.data?.id.toString()
+                }
+                download
+              >
+                <AiFillFileExcel className="fill-green-700" size={24} />
+                <span>XLSX</span>
+              </Link>
+            </Dropdown.Item>
+            <Dropdown.Item onClick={onPrint}>
+              <Link
+                className="flex items-center gap-x-2 text-black no-underline"
+                target="_blank"
+                href={
+                  formatApiUrl('api/country-programme/print/') +
+                  '?cp_report_id=' +
+                  report.data?.id.toString()
+                }
+                download
+              >
+                <AiFillFilePdf className="fill-red-700" size={24} />
+                <span>PDF</span>
+              </Link>
+            </Dropdown.Item>
+          </Dropdown>
+          {section.allowFullScreen && !fullScreen && (
+            <Tooltip placement="top" title="Enter fullscreen">
+              <IconButton
+                color="primary"
+                onClick={() => {
+                  enterFullScreen()
+                }}
+              >
+                <IoExpand />
+              </IconButton>
+            </Tooltip>
           )}
-        </FadeInOut>
-      </AnimatePresence>
-    </div>
-  )
+          {fullScreen && (
+            <Tooltip placement="top" title="Exit fullscreen">
+              <IconButton
+                className="exit-fullscreen not-printable p-2 text-primary"
+                aria-label="exit fullscreen"
+                onClick={() => {
+                  exitFullScreen()
+                }}
+              >
+                <IoClose size={24} />
+              </IconButton>
+            </Tooltip>
+          )}
+        </div>
+      </div>
+    )
+  },
+  domLayout: 'autoHeight',
+  enableCellChangeFlash: true,
+  enableFullScreen: true,
+  enablePagination: false,
+  noRowsOverlayComponentParams: { label: 'No data reported' },
+  rowsVisible: 20,
+  suppressCellFocus: false,
+  suppressColumnVirtualisation: true,
+  suppressLoadingOverlay: true,
+  suppressRowHoverHighlight: false,
+  withSeparators: true,
 }
 
-export default function CPView(props: { archive?: boolean; id: string }) {
+function CPView(props: { archive?: boolean; id: string }) {
+  const tabsEl = React.useRef<HTMLDivElement>(null)
   const { enqueueSnackbar } = useSnackbar()
   const { archive } = props
-  const { fetchBundle, report, setReport } = useStore(
-    (state) => state.cp_reports,
-  )
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [activeSection, setActiveSection] = useState(null)
-  const [renderSection, setRenderSection] = useState(false)
+  const { report, setReport } = useStore((state) => state.cp_reports)
+  const [activeTab, setActiveTab] = useState(0)
+  const [renderedSections, setRenderedSections] = useState<Array<number>>([])
 
-  const id = useMemo(() => parseNumber(props.id), [props.id])
   const variant = useMemo(() => {
     if (!report.data) return null
     return filter(variants, (variant) => {
@@ -104,24 +164,25 @@ export default function CPView(props: { archive?: boolean; id: string }) {
   )
 
   useEffect(() => {
-    return () => {
-      setReport({
-        ...defaultSliceData,
-        emptyForm: defaultSliceData,
-        versions: defaultSliceData,
-      })
+    const indicator = tabsEl.current?.querySelector('.MuiTabs-indicator')
+
+    function handleTransitionEnd() {
+      setRenderedSections(
+        produce((sections) => {
+          if (includes(sections, activeTab)) return
+          sections.push(activeTab)
+        }),
+      )
+      if (!indicator) return
+      indicator.removeEventListener('transitionend', handleTransitionEnd)
     }
-  }, [setReport])
 
-  useEffect(() => {
-    fetchBundle(id, true, archive)
-  }, [id, archive, fetchBundle])
+    if (!indicator || activeTab === 0) {
+      return handleTransitionEnd()
+    }
 
-  useEffect(() => {
-    setTimeout(() => {
-      setRenderSection(true)
-    }, 600)
-  }, [currentIndex])
+    indicator.addEventListener('transitionend', handleTransitionEnd)
+  }, [activeTab])
 
   return (
     <>
@@ -129,7 +190,7 @@ export default function CPView(props: { archive?: boolean; id: string }) {
         className="!fixed bg-action-disabledBackground"
         active={
           !report.error &&
-          (report.loading || currentIndex !== activeSection || !renderSection)
+          (report.loading || !includes(renderedSections, activeTab))
         }
       />
       {!!report.error && <Error error={report.error} />}
@@ -204,141 +265,58 @@ export default function CPView(props: { archive?: boolean; id: string }) {
       )}
       <Tabs
         className="scrollable mb-4"
-        aria-label="view submission sections"
+        aria-label="view country programme report"
+        ref={tabsEl}
         scrollButtons="auto"
-        value={currentIndex}
+        value={activeTab}
         variant="scrollable"
-        onChange={(event: React.SyntheticEvent, index: number) => {
-          setCurrentIndex(index)
-          setRenderSection(false)
+        TabIndicatorProps={{
+          style: { transitionDuration: '150ms' },
+        }}
+        onChange={(event, newValue) => {
+          setActiveTab(newValue)
         }}
         allowScrollButtonsMobile
       >
         {sections.map((section) => (
           <Tab
+            id={section.id}
             key={section.id}
             aria-controls={section.panelId}
             label={section.label}
           />
         ))}
       </Tabs>
-      {!!report.data &&
-        sections.map((section, index) => (
-          <TabPanel
-            key={section.panelId}
-            activeSection={activeSection}
-            currentIndex={currentIndex}
-            emptyForm={report.emptyForm.data || {}}
-            index={index}
-            renderSection={renderSection}
-            report={report.data}
-            section={section}
-            setActiveSection={setActiveSection}
-            variant={variant}
-            TableProps={{
-              Toolbar: ({
-                enterFullScreen,
-                exitFullScreen,
-                fullScreen,
-                onPrint,
-                print,
-              }: any) => {
-                return (
-                  <div
-                    className={cx('mb-2 flex', {
-                      'flex-col': !fullScreen,
-                      'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
-                        fullScreen,
-                      'px-4': fullScreen && !print,
-                    })}
-                  >
-                    <Typography
-                      className={cx({ 'mb-4 md:mb-0': fullScreen })}
-                      component="h2"
-                      variant="h6"
-                    >
-                      {section.title}
-                    </Typography>
-                    <div className="flex items-center justify-end">
-                      <Dropdown
-                        color="primary"
-                        label={<IoDownloadOutline />}
-                        tooltip="Download"
-                        icon
-                      >
-                        <Dropdown.Item>
-                          <Link
-                            className="flex items-center gap-x-2 text-black no-underline"
-                            target="_blank"
-                            href={
-                              formatApiUrl('api/country-programme/export/') +
-                              '?cp_report_id=' +
-                              report.data?.id.toString()
-                            }
-                            download
-                          >
-                            <AiFillFileExcel
-                              className="fill-green-700"
-                              size={24}
-                            />
-                            <span>XLSX</span>
-                          </Link>
-                        </Dropdown.Item>
-                        <Dropdown.Item onClick={onPrint}>
-                          <Link
-                            className="flex items-center gap-x-2 text-black no-underline"
-                            target="_blank"
-                            href={
-                              formatApiUrl('api/country-programme/print/') +
-                              '?cp_report_id=' +
-                              report.data?.id.toString()
-                            }
-                            download
-                          >
-                            <AiFillFilePdf className="fill-red-700" size={24} />
-                            <span>PDF</span>
-                          </Link>
-                        </Dropdown.Item>
-                      </Dropdown>
-                      {section.allowFullScreen && !fullScreen && (
-                        <Tooltip placement="top" title="Enter fullscreen">
-                          <IconButton
-                            color="primary"
-                            onClick={() => {
-                              enterFullScreen()
-                            }}
-                          >
-                            <IoExpand />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                      {fullScreen && (
-                        <Tooltip placement="top" title="Exit fullscreen">
-                          <IconButton
-                            className="exit-fullscreen not-printable p-2 text-primary"
-                            aria-label="exit fullscreen"
-                            onClick={() => {
-                              exitFullScreen()
-                            }}
-                          >
-                            <IoClose size={24} />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                    </div>
-                  </div>
-                )
-              },
-              enableCellChangeFlash: true,
-              enableFullScreen: true,
-              enablePagination: false,
-              noRowsOverlayComponentParams: { label: 'No data reported' },
-              suppressCellFocus: false,
-              suppressRowHoverHighlight: false,
-              withSeparators: true,
-            }}
-          />
-        ))}
+
+      {report.emptyForm.loaded &&
+        sections.map((section, index) => {
+          if (!includes(renderedSections, index)) return null
+          const Section = section.component
+          return (
+            <div
+              id={section.panelId}
+              key={section.panelId}
+              className={cx('transition', {
+                'absolute -left-[9999px] -top-[9999px] opacity-0':
+                  activeTab !== index,
+              })}
+              aria-labelledby={section.id}
+              role="tabpanel"
+            >
+              <Section
+                emptyForm={report.emptyForm.data || {}}
+                report={report.data}
+                section={section}
+                variant={variant}
+                TableProps={{
+                  ...TableProps,
+                  report,
+                  section,
+                }}
+              />
+            </div>
+          )
+        })}
       {!archive && !!report.data && (
         <Portal domNode="bottom-control">
           <Box className="rounded-none border-0 border-t px-4">
@@ -409,4 +387,43 @@ export default function CPView(props: { archive?: boolean; id: string }) {
       )}
     </>
   )
+}
+
+export default function CPViewWrapper(props: {
+  archive?: boolean
+  id: string
+}) {
+  const { fetchBundle, report, setReport } = useStore(
+    (state) => state.cp_reports,
+  )
+  const { archive } = props
+
+  const id = useMemo(() => parseNumber(props.id), [props.id])
+
+  const dataReady =
+    report.data && report.emptyForm.data && report.data.id === id
+
+  useEffect(() => {
+    return () => {
+      setReport({
+        ...defaultSliceData,
+        emptyForm: defaultSliceData,
+        versions: defaultSliceData,
+      })
+    }
+  }, [setReport])
+
+  useEffect(() => {
+    fetchBundle(id, true, archive)
+  }, [id, archive, fetchBundle])
+
+  if (!dataReady)
+    return (
+      <Loading
+        className="!fixed bg-action-disabledBackground"
+        active={!report.error && report.loading}
+      />
+    )
+
+  return <CPView {...props} />
 }

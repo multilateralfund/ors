@@ -1,16 +1,16 @@
 'use client'
 
+import type { Options as OptionsOfCreateCache } from '@emotion/cache'
 import { ThemeSlice } from '@ors/types/store'
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 
-import createCache from '@emotion/cache'
-import { CacheProvider } from '@emotion/react'
 import { CssBaseline } from '@mui/material'
 import MuiThemeProvider from '@mui/material/styles/ThemeProvider'
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter'
 import { LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-import { useServerInsertedHTML } from 'next/navigation'
+import { union } from 'lodash'
 import { prefixer } from 'stylis'
 import rtlPlugin from 'stylis-plugin-rtl'
 
@@ -24,7 +24,9 @@ export default function ThemeProvider({
   options,
 }: {
   children: React.ReactNode
-  options: any
+  options: Partial<OptionsOfCreateCache> & {
+    enableCssLayer?: boolean
+  }
 }) {
   const [loadingDir, setLoadingDir] = useState<boolean>(false)
   const theme: ThemeSlice = useStore((state) => state.theme)
@@ -34,90 +36,6 @@ export default function ThemeProvider({
   const muiTheme = useMemo(() => {
     return createTheme(theme.mode || 'light', dir)
   }, [theme.mode, dir])
-
-  // https://github.com/emotion-js/emotion/issues/2928#issuecomment-1636030444
-  const initCache = () => {
-    const cache = createCache({
-      ...options,
-      stylisPlugins: [
-        ...(options.stylisPlugins || []),
-        prefixer,
-        ...(dir === 'rtl' ? [rtlPlugin] : []),
-      ],
-    })
-    cache.compat = true
-    const prevInsert = cache.insert
-    let inserted: { isGlobal: boolean; name: string }[] = []
-    cache.insert = (...args) => {
-      const [selector, serialized] = args
-      if (cache.inserted[serialized.name] === undefined) {
-        inserted.push({
-          isGlobal: selector === '',
-          name: serialized.name,
-        })
-      }
-      return prevInsert(...args)
-    }
-    const flush = () => {
-      const prevInserted = inserted
-      inserted = []
-      return prevInserted
-    }
-    return { cache, flush }
-  }
-
-  const [{ cache, flush }] = React.useState(initCache)
-
-  useServerInsertedHTML(() => {
-    const inserted = flush()
-    if (inserted.length === 0) {
-      return null
-    }
-    let styles = ''
-    let dataEmotionAttribute = cache.key
-
-    const globals: {
-      name: string
-      style: string
-    }[] = []
-
-    for (const { isGlobal, name } of inserted) {
-      const style = cache.inserted[name]
-
-      if (typeof style === 'boolean') {
-        continue
-      }
-
-      if (isGlobal) {
-        globals.push({ name, style })
-      } else {
-        styles += style
-        dataEmotionAttribute += ` ${name}`
-      }
-    }
-
-    return (
-      <>
-        {globals.map(({ name, style }) => (
-          <style
-            key={name}
-            data-emotion={`${cache.key}-global ${name}`}
-            dangerouslySetInnerHTML={{
-              __html: style,
-            }}
-          />
-        ))}
-        {styles !== '' && (
-          <style
-            data-emotion={dataEmotionAttribute}
-            dangerouslySetInnerHTML={{
-              __html: styles,
-            }}
-          />
-        )}
-      </>
-    )
-  })
 
   const currentTheme = React.useMemo(() => theme.mode || 'light', [theme.mode])
 
@@ -152,7 +70,12 @@ export default function ThemeProvider({
   }, [currentTheme, theme])
 
   return (
-    <CacheProvider value={cache}>
+    <AppRouterCacheProvider
+      options={{
+        ...options,
+        stylisPlugins: union([prefixer], dir === 'rtl' ? [rtlPlugin] : []),
+      }}
+    >
       <MuiThemeProvider theme={muiTheme}>
         <CssBaseline enableColorScheme />
         {loadingDir && (
@@ -166,6 +89,6 @@ export default function ThemeProvider({
           {children}
         </LocalizationProvider>
       </MuiThemeProvider>
-    </CacheProvider>
+    </AppRouterCacheProvider>
   )
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 import { Box, Typography } from '@mui/material'
 import cx from 'classnames'

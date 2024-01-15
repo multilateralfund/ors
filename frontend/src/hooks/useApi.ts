@@ -93,7 +93,7 @@ export default function useApi(props: ApiSettings): {
         })
       },
       300,
-      `useApi-${id}`,
+      `useApi:${id}`,
     )
     /* eslint-disable-next-line */
   }, [path, options, throwError])

@@ -8,8 +8,8 @@ import chroma from 'chroma-js'
 import resolveConfig from 'tailwindcss/resolveConfig'
 
 import { warning } from '@ors/helpers/Log/Log'
+import tailwindConfigModule from '~/tailwind.config'
 
-const tailwindConfigModule = require('~/tailwind.config')
 const tailwindConfig = resolveConfig(tailwindConfigModule)
 
 const contrastColors: any = {}

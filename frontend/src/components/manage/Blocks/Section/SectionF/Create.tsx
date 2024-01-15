@@ -1,16 +1,9 @@
-import { useEffect } from 'react'
-
 import { Box, Typography } from '@mui/material'
 
 import Field from '@ors/components/manage/Form/Field'
 
 export default function SectionFCreate(props: any) {
-  const { form, index, section, setActiveSection, setForm } = props
-
-  useEffect(() => {
-    setActiveSection(index)
-    /* eslint-disable-next-line  */
-  }, [])
+  const { form, section, setForm } = props
 
   return (
     <>

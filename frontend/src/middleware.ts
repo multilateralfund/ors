@@ -8,7 +8,7 @@ import appConfig from '@ors/registry'
 
 import { removeTrailingSlash } from './helpers/Url/Url'
 
-const { cookies, i18n } = appConfig
+const { cookies, i18n, settings } = appConfig
 const { defaultLanguage, locales } = i18n
 
 const languageCookie = cookies.language
@@ -43,13 +43,16 @@ export default function middleware(request: NextRequest) {
   const locale = getLocale(request, headers) ?? defaultLanguage
   const pathname = removeTrailingSlash(request.nextUrl.pathname)
   const protocol =
-    headers.get('X-Forwarded-Proto') || request.nextUrl.protocol || 'http'
-  const host = headers.get('X-Forwarded-Host') || request.nextUrl.host
+    settings.protocol ||
+    headers.get('X-Forwarded-Proto') ||
+    request.nextUrl.protocol
+  const host =
+    settings.host || headers.get('X-Forwarded-Host') || request.nextUrl.host
 
-  headers.set('x-next-host', host)
   headers.set('x-next-pathname', pathname)
-  headers.set('x-next-protocol', protocol)
   headers.set('x-next-lang', locale.code)
+  headers.set('x-next-host', host)
+  headers.set('x-next-protocol', protocol)
 
   return NextResponse.next({ request: { headers } })
 }

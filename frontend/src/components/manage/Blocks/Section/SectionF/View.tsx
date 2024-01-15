@@ -1,16 +1,9 @@
-import { useEffect } from 'react'
-
 import { Box, Typography } from '@mui/material'
 
 import Field from '@ors/components/manage/Form/Field'
 
 export default function SectionFView(props: any) {
-  const { index, report, section, setActiveSection } = props
-
-  useEffect(() => {
-    setActiveSection(index)
-    /* eslint-disable-next-line  */
-  }, [])
+  const { report, section } = props
 
   return (
     <>
