@@ -7,6 +7,7 @@ COUNTRY_NAME_MAPPING = {
     "Lao, PDR": "Lao PDR",
     "SAO TOME ET PRINCIPE": "Sao Tome and Principe",
     "Turkiye": "Turkey",
+    "Tuerkiye": "Turkey",
     "USA": "United States of America",
     "Western Samoa": "Samoa",
     "Moldova, Rep": "Moldova",
@@ -15,6 +16,11 @@ COUNTRY_NAME_MAPPING = {
     "United Arab Emirats": "United Arab Emirates",
     "Timor Leste": "Timor-Leste",
     "Guinea-Bissau": "Guinea Bissau",
+    "Colmbia": "Colombia",
+    "Islamic Republic of Iran": "Iran",
+    "St. Kitts and Nevis": "Saint Kitts and Nevis",
+    "St. Lucia": "Saint Lucia",
+    "St. Vincent and the Grenadines": "Saint Vincent and the Grenadines",
 }
 
 SECTOR_NAME_MAPPING = {

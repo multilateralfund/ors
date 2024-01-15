@@ -29,6 +29,7 @@ from core.models.project import (
 )
 from core.models.substance import Substance
 from core.models.time_frame import TimeFrame
+from core.models.usage import Usage
 from core.utils import IMPORT_DB_MAX_YEAR
 
 # pylint: disable=C0302,R0913
@@ -315,7 +316,6 @@ def get_cp_report(
         "name": cp_name,
         "year": year,
         "country_id": country_id,
-        "status": CPReport.CPReportStatus.FINAL,
     }
     if other_args:
         data.update(other_args)
@@ -729,6 +729,29 @@ def check_headers(df, required_columns):
             logger.warning(f"The following columns are required: {required_columns}")
             return False
     return True
+
+
+def get_usages_from_sheet(df, non_usage_columns):
+    """
+    parse the df columns and extract the usages
+    @param df = pandas dataFrame
+
+    @return usage_dict = dictionary ({column_name: Usage obj})
+    """
+    usage_dict = {}
+    for column_name in df.columns:
+        if column_name in non_usage_columns:
+            continue
+
+        usage_name = column_name.replace("- ", "")
+
+        usage = Usage.objects.find_by_name(usage_name)
+        if not usage:
+            logger.warning(f"This usage is not exists: {column_name} ({usage_name})")
+            continue
+        usage_dict[column_name] = usage
+
+    return usage_dict
 
 
 def check_empty_row(row, index_row, quantity_columns):
