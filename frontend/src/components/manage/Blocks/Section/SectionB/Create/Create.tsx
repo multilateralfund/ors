@@ -12,12 +12,11 @@ import {
 import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
 import cx from 'classnames'
 import { each, find, findIndex, includes, sortBy, union, uniqBy } from 'lodash'
-import dynamic from 'next/dynamic'
 import { useSnackbar } from 'notistack'
 
 import Field from '@ors/components/manage/Form/Field'
+import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
-import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
@@ -25,17 +24,7 @@ import { useStore } from '@ors/store'
 import { CreateBlend } from './CreateBlend'
 import useGridOptions from './schema'
 
-import { AiFillFilePdf } from 'react-icons/ai'
-import {
-  IoClose,
-  IoDownloadOutline,
-  IoExpand,
-  IoInformationCircleOutline,
-} from 'react-icons/io5'
-
-const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
-  ssr: false,
-})
+import { IoClose, IoExpand, IoInformationCircleOutline } from 'react-icons/io5'
 
 function getRowData(data: any) {
   let rowData: Array<any> = []
@@ -79,16 +68,7 @@ function getRowData(data: any) {
 
 export default function SectionBCreate(props: any) {
   const { enqueueSnackbar } = useSnackbar()
-  const {
-    Section,
-    TableProps,
-    emptyForm,
-    form,
-    index,
-    section,
-    setActiveSection,
-    setForm,
-  } = props
+  const { Section, TableProps, emptyForm, form, section, setForm } = props
 
   const newNode = useRef<RowNode>()
 
@@ -179,22 +159,16 @@ export default function SectionBCreate(props: any) {
       </Alert>
       <Table
         {...TableProps}
-        className="three-groups mb-4"
+        className="mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={3}
         rowData={initialRowData}
-        Toolbar={({
-          enterFullScreen,
-          exitFullScreen,
-          fullScreen,
-          onPrint,
-          print,
-        }: any) => {
+        Toolbar={({ enterFullScreen, exitFullScreen, fullScreen }: any) => {
           return (
             <div
               className={cx('mb-2 flex flex-col', {
-                'px-4 pt-2': fullScreen && !print,
+                'px-4 pt-2': fullScreen,
               })}
             >
               <Typography className="mb-2" component="h2" variant="h6">
@@ -208,20 +182,6 @@ export default function SectionBCreate(props: any) {
                   Create blend
                 </Button>
                 <div>
-                  {!fullScreen && (
-                    <Dropdown
-                      color="primary"
-                      label={<IoDownloadOutline />}
-                      icon
-                    >
-                      <Dropdown.Item onClick={onPrint}>
-                        <div className="flex items-center gap-x-2">
-                          <AiFillFilePdf className="fill-red-700" size={24} />
-                          <span>PDF</span>
-                        </div>
-                      </Dropdown.Item>
-                    </Dropdown>
-                  )}
                   {section.allowFullScreen && !fullScreen && (
                     <IconButton
                       color="primary"
@@ -258,7 +218,7 @@ export default function SectionBCreate(props: any) {
           { display_name: 'TOTAL', rowType: 'total', tooltip: true },
           { rowType: 'control' },
         ]}
-        onCellValueChanged={(event) => {
+        onCellValueChanged={(event: any) => {
           const usages = getUsagesOnCellValueChange(event)
           const newData = [...form.section_b]
           const index = findIndex(
@@ -272,12 +232,6 @@ export default function SectionBCreate(props: any) {
               record_usages: usages,
             })
             setForm({ ...form, section_b: newData })
-          }
-        }}
-        onFirstDataRendered={() => setActiveSection(index)}
-        onGridReady={() => {
-          if (!initialRowData.length) {
-            setActiveSection(index)
           }
         }}
         onRowDataUpdated={() => {

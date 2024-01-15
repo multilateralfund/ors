@@ -1,46 +1,36 @@
-import { useMemo, useRef } from 'react'
+import { useRef, useState } from 'react'
 
-import dynamic from 'next/dynamic'
+import Table from '@ors/components/manage/Form/Table'
 
 import useGridOptions from './schema'
 
-const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
-  ssr: false,
-})
+function getRowData(report: any) {
+  return [...report.section_e]
+}
+
+function getPinnedRowData(rowData: any) {
+  return rowData.length > 0
+    ? [{ facility: 'TOTAL', rowType: 'total', tooltip: true }]
+    : []
+}
 
 export default function SectionEView(props: any) {
-  const { TableProps, index, report, setActiveSection } = props
-  const grid = useRef<any>()
+  const { TableProps, report } = props
   const gridOptions = useGridOptions()
-
-  const rowData = useMemo(() => {
-    const rowData = report.section_e
-    return [...rowData]
-  }, [report])
-
-  const pinnedBottomRowData = useMemo(() => {
-    return rowData.length > 0
-      ? [{ facility: 'TOTAL', rowType: 'total', tooltip: true }]
-      : []
-  }, [rowData])
+  const grid = useRef<any>()
+  const [rowData] = useState(() => getRowData(report))
+  const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
   return (
     <>
       <Table
         {...TableProps}
-        className="two-groups mb-4"
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
         gridRef={grid}
         headerDepth={2}
         pinnedBottomRowData={pinnedBottomRowData}
         rowData={rowData}
-        onFirstDataRendered={() => setActiveSection(index)}
-        onGridReady={() => {
-          if (!rowData.length) {
-            setActiveSection(index)
-          }
-        }}
       />
     </>
   )

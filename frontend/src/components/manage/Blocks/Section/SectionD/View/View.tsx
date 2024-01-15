@@ -1,27 +1,23 @@
-import { useMemo, useRef } from 'react'
+import { useRef, useState } from 'react'
 
 import { Typography } from '@mui/material'
-import dynamic from 'next/dynamic'
+
+import Table from '@ors/components/manage/Form/Table'
 
 import useGridOptions from './schema'
 
-const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
-  ssr: false,
-})
+function getRowData(report: any) {
+  return (report.section_d || []).map((item: any) => ({
+    ...item,
+    group: item.group || 'Other',
+  }))
+}
 
 export default function SectionDView(props: any) {
-  const { TableProps, index, report, setActiveSection } = props
-  const grid = useRef<any>()
+  const { TableProps, report } = props
   const gridOptions = useGridOptions()
-
-  const rowData = useMemo(() => {
-    const rowData = (report.section_d || []).map((item: any) => ({
-      ...item,
-      group: item.group || 'Other',
-    }))
-
-    return rowData
-  }, [report])
+  const grid = useRef<any>()
+  const [rowData] = useState(() => getRowData(report))
 
   return (
     <>
@@ -32,12 +28,6 @@ export default function SectionDView(props: any) {
         defaultColDef={gridOptions.defaultColDef}
         gridRef={grid}
         rowData={rowData}
-        onFirstDataRendered={() => setActiveSection(index)}
-        onGridReady={() => {
-          if (!rowData.length) {
-            setActiveSection(index)
-          }
-        }}
       />
       <Typography className="italic" variant="body2">
         1. Amounts of HFC-23 captured for destruction or feedstock use will not

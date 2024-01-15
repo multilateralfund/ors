@@ -1,5 +1,5 @@
 /* stylelint-disable no-descending-specificity */
-#next-app [class*='ag-theme-'] {
+.ag-table {
   .ag-header-group-cell {
     justify-content: center;
   }

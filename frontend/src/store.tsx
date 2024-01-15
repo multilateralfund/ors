@@ -32,8 +32,6 @@ export type Store = ReturnType<typeof createStore>
 
 export let store: MutableRefObject<StoreApi<StoreState>>
 
-export const test = {}
-
 export const initialStore = createZustandStore<InitialStoreState>(() => ({}))
 
 export const createStore = (initialState: InitialStoreState) => {

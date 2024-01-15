@@ -4,7 +4,11 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+import {
+  colDefByDataType,
+  colDefById,
+  defaultColDef,
+} from '@ors/config/Table/columnsDef'
 
 function useGridOptions(props: { adm_columns: any }) {
   const { adm_columns } = props
@@ -17,6 +21,7 @@ function useGridOptions(props: { adm_columns: any }) {
       field: 'values',
       headerName: column.display_name,
       initialWidth: defaultColDef.minWidth,
+      ...(colDefByDataType[column.type] || {}),
       ...(column.children.length
         ? {
             children: column.children.map(mapAdmColumn),

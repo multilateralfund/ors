@@ -1,13 +1,13 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 
 import { IconButton, Typography } from '@mui/material'
 import cx from 'classnames'
 import { isString } from 'lodash'
 import hash from 'object-hash'
 
+import { FootnotesContext } from '@ors/contexts/Footnote/Footnote'
 import { scrollToElement } from '@ors/helpers/Utils/Utils'
-import { useStore } from '@ors/store'
 
 import AgTooltipComponent from './AgTooltipComponent'
 
@@ -21,8 +21,9 @@ function getTooltipTitle(props: any) {
   return displayName
 }
 
-export default function AgHeaderGroupComponent(props: any) {
-  const [addNote] = useStore((state) => [state.footnotes.addNote])
+function AgHeaderGroupComponent(props: any) {
+  const footnotes = useContext(FootnotesContext)
+
   const [footnote] = useState(props.footnote)
   const [footnoteId] = useState(
     () =>
@@ -32,14 +33,16 @@ export default function AgHeaderGroupComponent(props: any) {
   const { displayName } = props
 
   useEffect(() => {
-    if (!footnote || !footnoteId) return
-    addNote({
+    if (!footnotes || !footnote || !footnoteId) {
+      return
+    }
+    footnotes.addNote({
       id: footnoteId,
       content: footnote.content,
       index: footnote.index,
       order: footnote.order,
     })
-  }, [addNote, footnote, footnoteId])
+  }, [footnotes, footnote, footnoteId])
 
   return (
     <AgTooltipComponent
@@ -60,7 +63,8 @@ export default function AgHeaderGroupComponent(props: any) {
                 footnoteEl.classList.remove('text-red-500')
               }, 900)
             },
-            selectors: `#footnote-${footnoteId}`,
+            selectors:
+              '#' + CSS.escape(`${footnotes.id}-footnote-${footnoteId}`),
           })
         }}
       >
@@ -81,3 +85,5 @@ export default function AgHeaderGroupComponent(props: any) {
     </AgTooltipComponent>
   )
 }
+
+export default AgHeaderGroupComponent

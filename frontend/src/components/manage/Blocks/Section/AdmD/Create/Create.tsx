@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 
 import {
   Box,
@@ -14,13 +14,8 @@ import { produce } from 'immer'
 import Field from '@ors/components/manage/Form/Field'
 
 export default function AdmD(props: any) {
-  const { emptyForm, form, index, section, setActiveSection, setForm } = props
+  const { emptyForm, form, section, setForm } = props
   const { rows = [] } = emptyForm.adm_d || {}
-
-  useEffect(() => {
-    setActiveSection(index)
-    /* eslint-disable-next-line  */
-  }, [])
 
   return (
     <>

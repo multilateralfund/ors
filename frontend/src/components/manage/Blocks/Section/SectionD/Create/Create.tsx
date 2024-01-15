@@ -11,7 +11,7 @@ import useGridOptions from './schema'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export default function SectionDCreate(props: any) {
-  const { TableProps, form, index, setActiveSection, setForm } = props
+  const { TableProps, form, setForm } = props
   const grid = useRef<any>()
   const gridOptions = useGridOptions()
   const [initialRowData] = useState(form.section_d)
@@ -45,12 +45,6 @@ export default function SectionDCreate(props: any) {
               ...event.data,
             })
             setForm({ ...form, section_d: newData })
-          }
-        }}
-        onFirstDataRendered={() => setActiveSection(index)}
-        onGridReady={() => {
-          if (!initialRowData.length) {
-            setActiveSection(index)
           }
         }}
       />

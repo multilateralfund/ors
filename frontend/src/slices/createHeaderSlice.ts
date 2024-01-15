@@ -4,8 +4,8 @@ import { produce } from 'immer'
 import resolveConfig from 'tailwindcss/resolveConfig'
 
 import { CreateSliceProps } from '@ors/store'
+import tailwindConfigModule from '~/tailwind.config'
 
-const tailwindConfigModule = require('~/tailwind.config')
 const tailwindConfig = resolveConfig(tailwindConfigModule)
 
 export const createHeaderSlice = ({

@@ -1,4 +1,4 @@
-#next-app [class*='ag-theme-'] {
+.ag-table.ag-theme-ors {
   --ag-alpine-active-color: theme(colors.primary);
   --ag-background-color: theme(colors.mui-box-background);
   --ag-border-color: theme(colors.typography);
@@ -31,7 +31,7 @@
   --ag-header-column-separator-height: 100%;
   --ag-header-column-separator-width: 0.5px;
   --ag-header-foreground-color: var(--ag-secondary-foreground-color);
-  --ag-header-height: 40px;
+  --ag-header-height: var(--ag-row-height);
   --ag-icon-font-family: agGridAlpine;
   --ag-icon-size: 16px;
   --ag-input-border-color-invalid: var(--ag-invalid-color);
@@ -62,20 +62,20 @@
   --ag-widget-container-vertical-padding: calc(var(--ag-grid-size) * 2);
   --ag-widget-horizontal-spacing: calc(var(--ag-grid-size) * 2);
   --ag-widget-vertical-spacing: calc(var(--ag-grid-size) * 1.5);
-
-  .ag-value-change-value-highlight,
-  .ag-cell-data-changed,
-  .ag-cell-highlight {
-    --twc-primary-opacity: 0.4;
-    --ag-value-change-value-highlight-background-color: theme(colors.primary);
-  }
 }
 
-#next-app [class*='ag-theme-'].with-separators {
+.ag-table.ag-theme-ors .ag-value-change-value-highlight,
+.ag-table.ag-theme-ors .ag-cell-data-changed,
+.ag-table.ag-theme-ors .ag-cell-highlight {
+  --twc-primary-opacity: 0.4;
+  --ag-value-change-value-highlight-background-color: theme(colors.primary);
+}
+
+.ag-table.ag-theme-ors.with-separators {
   --ag-cell-horizontal-border: 1px solid var(--ag-secondary-border-color);
 }
 
-:root[data-theme='dark'] #next-app [class*='ag-theme-'] {
+:root[data-theme='dark'] .ag-table.ag-theme-ors {
   --twc-gray-900-opacity: 0.4;
   --ag-header-background-color: theme(colors.gray-900);
   --ag-row-group-border-color: theme(colors.white);

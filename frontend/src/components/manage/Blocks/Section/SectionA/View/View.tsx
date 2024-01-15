@@ -1,72 +1,64 @@
-import { useMemo, useRef } from 'react'
+import { useRef, useState } from 'react'
 
 import { each, includes, union } from 'lodash'
-import dynamic from 'next/dynamic'
+
+import components from '@ors/config/Table/components'
+
+import Table from '@ors/components/manage/Form/Table'
 
 import useGridOptions from './schema'
 
-const Table = dynamic(() => import('@ors/components/manage/Form/Table'), {
-  ssr: false,
-})
+function getRowData(report: any) {
+  let rowData: Array<any> = []
+  const dataByGroup: Record<string, any> = {}
+  const groups: Array<string> = []
+  each(report.section_a, (item) => {
+    const group = item.group || 'Other'
+    if (!dataByGroup[group]) {
+      dataByGroup[group] = []
+    }
+    if (!includes(groups, group)) {
+      groups.push(group)
+    }
+    dataByGroup[group].push({ ...item, group })
+  })
+  each(groups, (group: string) => {
+    rowData = union(
+      rowData,
+      [{ display_name: group, group, rowType: 'group' }],
+      dataByGroup[group],
+      [{ display_name: 'Sub-total', group, rowType: 'subtotal' }],
+    )
+  })
+  return rowData
+}
+
+function getPinnedRowData(rowData: any) {
+  return rowData.length > 0
+    ? [{ display_name: 'TOTAL', rowType: 'total', tooltip: true }]
+    : []
+}
 
 export default function SectionAView(props: any) {
-  const { TableProps, emptyForm, index, report, setActiveSection, variant } =
-    props
-  const grid = useRef<any>()
+  const { TableProps, emptyForm, report, variant } = props
   const gridOptions = useGridOptions({
     model: variant.model,
     usages: emptyForm.usage_columns?.section_a || [],
   })
-
-  const rowData = useMemo(() => {
-    let rowData: Array<any> = []
-    const dataByGroup: Record<string, any> = {}
-    const groups: Array<string> = []
-    each(report.section_a, (item) => {
-      const group = item.group || 'Other'
-      if (!dataByGroup[group]) {
-        dataByGroup[group] = []
-      }
-      if (!includes(groups, group)) {
-        groups.push(group)
-      }
-      dataByGroup[group].push({ ...item, group })
-    })
-    each(groups, (group: string) => {
-      rowData = union(
-        rowData,
-        [{ display_name: group, group, rowType: 'group' }],
-        dataByGroup[group],
-        [{ display_name: 'Sub-total', group, rowType: 'subtotal' }],
-      )
-    })
-    return rowData
-  }, [report])
-
-  const pinnedBottomRowData = useMemo(() => {
-    return rowData.length > 0
-      ? [{ display_name: 'TOTAL', rowType: 'total', tooltip: true }]
-      : []
-  }, [rowData])
+  const grid = useRef<any>()
+  const [rowData] = useState(() => getRowData(report))
+  const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
   return (
-    <>
-      <Table
-        {...TableProps}
-        className="three-groups"
-        columnDefs={gridOptions.columnDefs}
-        defaultColDef={gridOptions.defaultColDef}
-        gridRef={grid}
-        headerDepth={3}
-        pinnedBottomRowData={pinnedBottomRowData}
-        rowData={rowData}
-        onFirstDataRendered={() => setActiveSection(index)}
-        onGridReady={() => {
-          if (!rowData.length) {
-            setActiveSection(index)
-          }
-        }}
-      />
-    </>
+    <Table
+      {...TableProps}
+      columnDefs={gridOptions.columnDefs}
+      components={components}
+      defaultColDef={gridOptions.defaultColDef}
+      gridRef={grid}
+      headerDepth={3}
+      pinnedBottomRowData={pinnedBottomRowData}
+      rowData={rowData}
+    />
   )
 }
