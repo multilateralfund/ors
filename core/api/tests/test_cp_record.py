@@ -83,3 +83,15 @@ class TestCPRecordList(BaseTest):
             response.data["adm_d"][last_choice.adm_row_id]["value_choice_id"]
             == last_choice.id
         )
+
+    def test_get_96_records_list(
+        self, user, _setup_96_cp_report, cp_report_1996, substance
+    ):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.url, {"cp_report_id": cp_report_1996.id})
+        assert response.status_code == 200
+        assert len(response.data) == 2  # section_a, country program report
+        assert len(response.data["section_a"]) == 1
+        assert len(response.data["section_a"][0]["excluded_usages"]) == 1
+        assert response.data["section_a"][0]["chemical_name"] == substance.name
+        assert response.data["section_a"][0]["row_id"] == f"substance_{substance.id}"

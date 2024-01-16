@@ -57,6 +57,16 @@ def country_ro():
 
 
 @pytest.fixture
+def cp_report_1996(country_ro):
+    return CPReportFactory.create(
+        country=country_ro,
+        year=1996,
+        comment="Cand apar iti tai tot cheful",
+        status=CPReport.CPReportStatus.FINAL,
+    )
+
+
+@pytest.fixture
 def cp_report_2005(country_ro):
     return CPReportFactory.create(
         country=country_ro,
@@ -479,3 +489,13 @@ def setup_old_cp_report(cp_report_2005, substance, blend, groupA, time_frames):
         AdmRecordFactory.create(**record_data)
 
     return last_choice
+
+
+@pytest.fixture(name="_setup_96_cp_report")
+def setup_96_cp_report(cp_report_1996, substance):
+    cp_rec = CPRecordFactory.create(
+        country_programme_report=cp_report_1996, section="A", substance=substance
+    )
+    # add 3 usages for one record
+    for _ in range(3):
+        CPUsageFactory.create(country_programme_record=cp_rec)

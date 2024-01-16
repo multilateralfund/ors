@@ -56,6 +56,7 @@ docker-compose exec app ./manage.py import_records cp_db
 ```
 ### Command options:
 - xlsx_files -> records from xlsx files
+- records_95_04 -> records from 1995 to 2004 (xlsx file)
 - section_ab -> records from section A and B (xlsx files)
 - section_c -> records from section C (xlsx files)
 - section_d -> records from section D (xlsx files)
@@ -70,7 +71,7 @@ docker-compose exec app ./manage.py import_records cp_db
 
 - xlsx_files
 : download files from nextcloud
-    - **nextcloud path** OzoneMlf/Country Programme/data
+    - **nextcloud path** OzoneMlf/Data/1. Country Programme/data
     - **local path** .fs/import_files/records
 
     |nextcloud name | local name |
@@ -78,10 +79,12 @@ docker-compose exec app ./manage.py import_records cp_db
     | SectionA(ODPTonnes)-Datafor2019-2022(May 10, 2023).xlsx | SectionA.xlsx |
     | SectionB(MetricTonnes)-Datafor2019-2022(May 10, 2023)withGWP.xlsx | SectionB.xlsx |
     | SectionC,D,E-2019-2022(May 10, 2023).xlsx | SectionCDE.xlsx |
+    | 1995-2004 CP Data Submitted[38].xlsx | CPDataSubmitted_94_04.xlsx |
+
 
 - cp_db_records
 : download folders from nexcloud
-    - **nextcloud path** OzoneMlf/Country Programme/data/json
+    - **nextcloud path** OzoneMlf/Data/1. Country Programme/data/json
     - **local path** .fs/import_files/databases
 
     |nextcloud name | local name |
@@ -118,7 +121,7 @@ docker-compose exec app ./manage.py import_projects proposals
 
 - proposals
 : download files from nextcloud
-    - **nextcloud path** OzoneMlf/Project submissions/data
+    - **nextcloud path** OzoneMlf/Data/2.1 Project submissions/data
     - **local path** .fs/import_files/proposals
 
     |nextcloud name | local name |
@@ -128,27 +131,27 @@ docker-compose exec app ./manage.py import_projects proposals
 
 - projects
 : download files from nextcloud
-    - **nextcloud path** OzoneMlf/Projects inventory/data/json/tbINVENTORY.json
+    - **nextcloud path** OzoneMlf/Data/2.2 Projects inventory/data/json/tbINVENTORY.json
     - **local path** .fs/import_files/project_database
 
 - multi_year_projects
 : download files from nextcloud
-    - **nextcloud path** OzoneMlf/Progress reports/data/json/MultiYear-Projects.json
+    - **nextcloud path** OzoneMlf/Data/2.3 Progress reports/data/json/MultiYear-Projects.json
     - **local path** .fs/import_files/progress_report
 
 - progress
 : download files from nextcloud
-    - **nextcloud path** OzoneMlf/Progress reports/data/csv/tbProgress.csv
+    - **nextcloud path** OzoneMlf/Data/2.3 Progress reports/data/csv/tbProgress.csv
     - **local path** .fs/import_files/progress_report
 
 - countries 
 : download files from nextcloud
-    - **nextcloud path** OzoneMlf/Progress reports/data/json/tbCountryID.json
+    - **nextcloud path** OzoneMlf/Data/2.3 Progress reports/data/json/tbCountryID.json
     - **local path** .fs/import_files/progress_report
 
 - comments 
 : download files from nextcloud
-    - **nextcloud path** OzoneMlf/Progress reports/data/json/tbComment.json
+    - **nextcloud path** OzoneMlf/Data/2.3 Progress reports/data/json/tbComment.json
     - **local path** .fs/import_files/progress_report
 
 - meta_projects 

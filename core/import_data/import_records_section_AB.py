@@ -15,11 +15,11 @@ from core.import_data.utils import (
     get_chemical,
     OFFSET,
     get_decimal_from_excel_string,
+    get_usages_from_sheet,
 )
 
 from core.models import (
     CPRecord,
-    Usage,
 )
 from core.models.country_programme import CPUsage
 
@@ -75,29 +75,6 @@ FILE_LIST = [
 GWP_EPSILON = 0.0001
 
 
-def get_usages_from_sheet(df):
-    """
-    parse the df columns and extract the usages
-    @param df = pandas dataFrame
-
-    @return usage_dict = dictionary ({column_name: Usage obj})
-    """
-    usage_dict = {}
-    for column_name in df.columns:
-        if column_name in NON_USAGE_COLUMNS:
-            continue
-
-        usage_name = column_name.replace("- ", "")
-
-        usage = Usage.objects.find_by_name(usage_name)
-        if not usage:
-            logger.warning(f"This usage is not exists: {column_name} ({usage_name})")
-            continue
-        usage_dict[column_name] = usage
-
-    return usage_dict
-
-
 def check_gwp_value(obj, gwp_value, index_row):
     """
     check if the gwp_value is the same as chemical gwp value from database
@@ -136,7 +113,7 @@ def parse_sheet(df, file_details):
     if not check_headers(df, REQUIRED_COLUMNS):
         logger.error("Couldn't parse this sheet")
         return
-    usage_dict = get_usages_from_sheet(df)
+    usage_dict = get_usages_from_sheet(df, NON_USAGE_COLUMNS)
     quantity_columns = list(usage_dict) + list(RECORD_COLUMNS_MAPPING)
     current_country = {
         "name": None,

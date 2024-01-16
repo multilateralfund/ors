@@ -3,6 +3,9 @@
 # the max year for the cp reports to be imported
 # if the year is greater than this value, the cp report will not be imported
 IMPORT_DB_MAX_YEAR = 2018
+# the records from 95-04 are the oldest records that we have
+# we only have data for section A
+IMPORT_DB_OLDEST_MAX_YEAR = 2004
 
 
 def get_meta_project_code(country, cluster, serial_number):

@@ -16,7 +16,7 @@ from core.models.country_programme import (
     CPReport,
     CPReportFormat,
 )
-from core.utils import IMPORT_DB_MAX_YEAR
+from core.utils import IMPORT_DB_MAX_YEAR, IMPORT_DB_OLDEST_MAX_YEAR
 
 
 class EmptyFormView(views.APIView):
@@ -76,7 +76,11 @@ class EmptyFormView(views.APIView):
         # get the usage tree for each section
         usage_columns = {}
         for section, usages in section_usages.items():
-            usage_tree = cls.get_usages_tree(usages)
+            if year <= IMPORT_DB_OLDEST_MAX_YEAR:
+                # for the oldest years we don't have the usages tree
+                usage_tree = usages.values()
+            else:
+                usage_tree = cls.get_usages_tree(usages)
             key_name = f"section_{section.lower()}"
 
             usage_columns[key_name] = UsageSerializer(
@@ -167,7 +171,15 @@ class EmptyFormView(views.APIView):
         return sections
 
     @classmethod
+    def get_04_empty_form(cls, year):
+        return {
+            "usage_columns": cls.get_usage_columns(year),
+        }
+
+    @classmethod
     def get_data(cls, year, cp_report):
+        if year <= IMPORT_DB_OLDEST_MAX_YEAR:
+            return cls.get_04_empty_form(year)
         if year <= IMPORT_DB_MAX_YEAR:
             return cls.get_old_empty_form(year, cp_report)
 

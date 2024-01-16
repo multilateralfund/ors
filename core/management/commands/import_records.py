@@ -6,6 +6,7 @@ from core.import_data.import_admde import import_admde_items
 from core.import_data.import_item_attributes import (
     import_records_from_databases as rec_cp_db,
 )
+from core.import_data.import_records_95_24 import import_records_95_04
 from core.import_data.import_records_section_AB import import_records as rec_xlsx_sec_AB
 from core.import_data.import_records_section_C import import_records as rec_xlsx_sec_C
 from core.import_data.import_records_section_D import import_records as rec_xlsx_sec_D
@@ -17,6 +18,7 @@ class Command(BaseCommand):
         Import records
         params:
             - type = xlsx_files => records from xlsx files
+            - type = records_95_04 => records from 1995 to 2004 (xlsx files)
             - type = section_ab => records from section A and B (xlsx files)
             - type = section_c => records from section C (xlsx files)
             - type = section_d => records from section D (xlsx files)
@@ -36,6 +38,7 @@ class Command(BaseCommand):
             default="all",
             choices=[
                 "xlsx_files",
+                "records_95_04",
                 "section_ab",
                 "section_c",
                 "section_d",
@@ -52,6 +55,8 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         rec_type = kwargs["type"]
 
+        if rec_type in ["records_95_04", "xlsx_files", "all"]:
+            import_records_95_04()
         if rec_type in ["section_ab", "xlsx_files", "all"]:
             rec_xlsx_sec_AB()
         if rec_type in ["section_c", "xlsx_files", "all"]:
