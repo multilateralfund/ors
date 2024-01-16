@@ -1,4 +1,3 @@
-import decimal
 import logging
 import pandas as pd
 import numpy as np
@@ -9,21 +8,16 @@ from core.import_data.utils import (
     check_empty_row,
     check_headers,
     create_cp_record,
-    delete_old_data,
     get_cp_report,
     get_country_by_name,
     get_chemical,
-    OFFSET,
     get_decimal_from_excel_string,
     get_usages_from_sheet,
 )
 
-from core.models import (
-    CPRecord,
-    Usage,
-)
 from core.models.country_programme import CPUsage
 
+# pylint: disable=R0914
 logger = logging.getLogger(__name__)
 
 SECTION = "A"

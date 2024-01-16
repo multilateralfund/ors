@@ -20,7 +20,6 @@ from core.import_data.utils import (
 
 from core.models import (
     CPRecord,
-    Usage,
 )
 from core.models.country_programme import CPUsage
 
