@@ -7,7 +7,7 @@ from core.api.utils import SUBMISSION_STATUSE_CODES
 from core.import_data.import_projects import create_project
 from core.import_data.utils import PCR_DIR_LIST, get_object_by_code
 
-from core.models.project import MetaProject, Project, ProjectCluster
+from core.models.project import MetaProject, Project, ProjectCluster, ProjectSector
 from core.utils import get_meta_project_code
 
 
@@ -218,6 +218,16 @@ def create_other_meta_project():
         project.save()
 
 
+def set_ins_sectors():
+    """
+    All projects with Cluster INS will have sector GOV
+    """
+    sector = ProjectSector.objects.get(code="GOV")
+    Project.objects.filter(cluster__code="INS", sector__isnull=True).update(
+        sector=sector
+    )
+
+
 @transaction.atomic
 def import_meta_projects():
     db_dir_path = settings.IMPORT_DATA_DIR / "pcr"
@@ -232,4 +242,5 @@ def import_meta_projects():
         logger.info(f"✔ pcr meta projects from {database_name} imported")
 
     create_other_meta_project()
+    set_ins_sectors()
     logger.info("✔ all meta projects imported")

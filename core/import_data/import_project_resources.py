@@ -117,6 +117,11 @@ NEW_SECTORS = [
         "SEC": "PCAP",
         "SORT_SECTOR": 25,
     },
+    {
+        "SECTOR": "GOV",
+        "SEC": "GOV",
+        "SORT_SECTOR": 26,
+    },
 ]
 
 OUTDATED_SECTORS = [
