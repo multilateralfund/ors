@@ -176,8 +176,8 @@ SUBSECTOR_SECTOR_MAPPING = {
         "subsector_name": "Network",
         "sector_code": "PCAP",
     },
-    "Document Video Cassette": {
-        "subsector_name": "Document Video Cassette",
+    "Document/video/diskette": {
+        "subsector_name": None,
         "sector_code": "PCAP",
     },
 }
