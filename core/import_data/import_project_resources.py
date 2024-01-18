@@ -102,6 +102,21 @@ NEW_SECTORS = [
         "SEC": "ELM",
         "SORT_SECTOR": 22,
     },
+    {
+        "SECTOR": "Compliance Assistance Program",
+        "SEC": "CAP",
+        "SORT_SECTOR": 23,
+    },
+    {
+        "SECTOR": "Core Unit",
+        "SEC": "CU",
+        "SORT_SECTOR": 24,
+    },
+    {
+        "SECTOR": "Pre-CAP",
+        "SEC": "PCAP",
+        "SORT_SECTOR": 25,
+    },
 ]
 
 OUTDATED_SECTORS = [

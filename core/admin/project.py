@@ -97,13 +97,14 @@ class ProjectAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         AutocompleteFilterFactory("agency", "agency"),
+        AutocompleteFilterFactory("sector", "sector"),
         AutocompleteFilterFactory("subsector", "subsector"),
         AutocompleteFilterFactory("project_type", "project_type"),
         AutocompleteFilterFactory("cluster", "cluster"),
         "meta_project__type",
         "status",
     ]
-    autocomplete_fields = ["country", "subsector", "agency", "project_type"]
+    autocomplete_fields = ["country", "sector", "subsector", "agency", "project_type"]
 
     def get_list_display(self, request):
         exclude = [

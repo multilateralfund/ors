@@ -49,8 +49,8 @@ SUBSECTOR_SECTOR_MAPPING = {
         "sector_code": "DES",
     },
     "Information exchange": {
-        "subsector_name": None,
-        "sector_code": None,
+        "subsector_name": "Information Exchange",
+        "sector_code": "PCAP",
     },
     "Sectoral phase out plan": {
         "subsector_name": "Phase out Plan",
@@ -171,6 +171,14 @@ SUBSECTOR_SECTOR_MAPPING = {
     "Sterilization services": {
         "subsector_name": "Sterilant",
         "sector_code": "",
+    },
+    "Network": {
+        "subsector_name": "Network",
+        "sector_code": "PCAP",
+    },
+    "Document Video Cassette": {
+        "subsector_name": "Document Video Cassette",
+        "sector_code": "PCAP",
     },
 }
 
