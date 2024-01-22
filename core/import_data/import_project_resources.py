@@ -38,11 +38,6 @@ NEW_SUBSECTORS = [
         "SORT_SUBSECTOR": 99,
     },
     {
-        "SEC": "PHA",
-        "SUBSECTOR": "HFC phase down plan",
-        "SORT_SUBSECTOR": 99,
-    },
-    {
         "SEC": "FFI",
         "SUBSECTOR": "Servicing Fire Protections Systems",
         "SORT_SUBSECTOR": 99,
@@ -88,39 +83,34 @@ NEW_SECTORS = [
         "SORT_SECTOR": 19,
     },
     {
-        "SECTOR": "Technical Assistance",
-        "SEC": "TAS",
-        "SORT_SECTOR": 20,
-    },
-    {
         "SECTOR": "Emissions",
         "SEC": "EMS",
-        "SORT_SECTOR": 21,
+        "SORT_SECTOR": 20,
     },
     {
         "SECTOR": "Electronics Manufacturing",
         "SEC": "ELM",
-        "SORT_SECTOR": 22,
+        "SORT_SECTOR": 21,
     },
     {
         "SECTOR": "Compliance Assistance Program",
         "SEC": "CAP",
-        "SORT_SECTOR": 23,
+        "SORT_SECTOR": 22,
     },
     {
         "SECTOR": "Core Unit",
         "SEC": "CU",
-        "SORT_SECTOR": 24,
+        "SORT_SECTOR": 23,
     },
     {
         "SECTOR": "Pre-CAP",
         "SEC": "PCAP",
-        "SORT_SECTOR": 25,
+        "SORT_SECTOR": 24,
     },
     {
-        "SECTOR": "GOV",
+        "SECTOR": "Government",
         "SEC": "GOV",
-        "SORT_SECTOR": 26,
+        "SORT_SECTOR": 25,
     },
 ]
 
@@ -128,6 +118,7 @@ OUTDATED_SECTORS = [
     "MUS",
     "OTH",
     "SEV",
+    "PHA",
 ]
 
 NEW_TYPES = [

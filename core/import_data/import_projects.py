@@ -217,7 +217,9 @@ def create_project(project_json):
         return None
 
     # set substance type
-    substance_type = "HCFC"
+    substance_type = "CFC"
+    if project_json["HCFC"]:
+        substance_type = "HCFC"
     if project_json["HFC"]:
         substance_type = "HFC"
     elif project_json["HFC_PLUS"]:

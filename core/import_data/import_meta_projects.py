@@ -140,7 +140,7 @@ def set_ind_cluster(project):
         project.save()
         return
 
-    if project.project_type.code in ["INS", "TRA", "TAS"]:
+    if project.project_type.code in ["INS", "TRA"]:
         project.cluster = ProjectCluster.objects.find_by_name_or_code(
             project.project_type.code
         )

@@ -30,7 +30,6 @@ SECTOR_NAME_MAPPING = {
 }
 SECTOR_CODE_MAPPING = {
     "HAL": "FFI",
-    "INS": "TAS",
 }
 
 SUBSECTOR_SECTOR_MAPPING = {
@@ -58,7 +57,7 @@ SUBSECTOR_SECTOR_MAPPING = {
     },
     "Technical assistance/support": {
         "subsector_name": None,
-        "sector_code": "TAS",
+        "sector_code": None,
     },
     "Training programme/workshop": {
         "subsector_name": None,
