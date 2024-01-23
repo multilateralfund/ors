@@ -4,49 +4,13 @@ import logging
 from django.conf import settings
 from django.db import transaction
 from core.api.utils import SUBMISSION_STATUSE_CODES
-from core.import_data.import_projects import create_project
 from core.import_data.utils import PCR_DIR_LIST, get_object_by_code
 
-from core.models.project import MetaProject, Project, ProjectCluster, ProjectSector
+from core.models.project import MetaProject, Project
 from core.utils import get_meta_project_code
 
 
 logger = logging.getLogger(__name__)
-
-
-SECTOR_CLUSTER_MAPPING = {
-    "pcr2023": {
-        "CFC phase out plan": "CFC Phase-out Plans",
-        "CFCs/CTC/Halon Accelerated Phase-Out Plan": "Other ODS Sector Plans",
-        "CTC phase out plan": "Other ODS Sector Plans",
-        "Domestic Refrigeration": "CFC Phase-out Plans",
-        "Foam": "CFC Phase-out Plans",
-        "Halon": "Other ODS Sector Plans",
-        "Methyl bromide": "Other ODS Sector Plans",
-        "Accelerated Production CFC": "CFC Production Phase out Plans",
-        "ODS phase out plan": "Other ODS Sector Plans",
-        "Process Agent (Phase I)": "Other ODS Sector Plans",
-        "Process Agent (Phase II)": "Other ODS Sector Plans",
-        "Production CFC": "CFC Production Phase out Plans",
-        "Production Methyl Bromide": "Other ODS Production Phase out Plans",
-        "Production ODS": "Other ODS Production Phase out Plans",
-        "Production TCA": "Other ODS Production Phase out Plans",
-        "Refrigerant management plan": "CFC Phase-out Plans",
-        "Refrigeration Servicing": "CFC Phase-out Plans",
-        "Solvent": "Other ODS Sector Plans",
-        "Tobacco Expansion": "Other ODS Sector Plans",
-        "Tobacco": "Other ODS Sector Plans",
-    },
-    "hpmppcr2023": {
-        "HCFC Phase Out Plan (Stage I)": "HPMP1",
-        "HCFC Phase Out Plan (Stage II)": "HPMP2",
-        "HCFC Phase Out Plan (Stage III)": "HPMP3",
-        "Production HCFC (Stage I)": "HPPMP1",
-        "HCFC Production (Stage I)": "HPPMP1",
-        "HCFC Production (Stage II)": "HPPMP2",
-        "HCFC Production (Stage III)": "HPPMP3",
-    },
-}
 
 
 def parse_meta_projects_file(file_path, database_name):
@@ -72,17 +36,20 @@ def parse_meta_projects_file(file_path, database_name):
         project = get_object_by_code(
             Project, project_json["CODE"], "code", project_json["CODE"], with_log=False
         )
-        # create project if not exists
+        # skip project if not exists
         if not project:
-            project = create_project(project_json)
-        # skip project if not created (invalid data)
-        if not project:
+            logger.info(f"Project not found: {project_json['CODE']}")
             continue
 
         # create meta project
+        meta_project_code = get_meta_project_code(
+            project.country, project.cluster, project.serial_number
+        )
+
         meta_project_json = {
             "type": project_type,
             "pcr_project_id": project_json["ProjectId"],
+            "code": meta_project_code,
         }
 
         meta_project, _ = MetaProject.objects.update_or_create(
@@ -96,94 +63,6 @@ def parse_meta_projects_file(file_path, database_name):
         project.save()
 
 
-def parse_clusters_file(file_path, database_name):
-    with open(file_path, "r", encoding="utf8") as f:
-        json_data = json.load(f)
-
-    for project_json in json_data:
-        # get project by code
-        project = get_object_by_code(
-            Project, project_json["Code"], "code", project_json["Code"], with_log=False
-        )
-        # skip project if not created (invalid data)
-        if not project:
-            continue
-
-        # set cluster
-        cluster_name = SECTOR_CLUSTER_MAPPING[database_name].get(
-            project_json["MYASector"]
-        )
-        if not cluster_name:
-            logger.error(
-                f"Cluster not found for project {project_json['Code']}, {project_json['MYASector']}"
-            )
-        else:
-            cluster = ProjectCluster.objects.find_by_name_or_code(cluster_name)
-            if cluster:
-                project.cluster = cluster
-                project.save()
-            else:
-                logger.error(f"Cluster not found: {cluster_name}")
-
-        # set meta project code
-        if project.meta_project:
-            meta_project_code = get_meta_project_code(
-                project.country, project.cluster, project.serial_number
-            )
-            project.meta_project.code = meta_project_code
-            project.meta_project.save()
-
-
-def set_ind_cluster(project):
-    if project.subsector_legacy.lower() == "ozone unit support":
-        project.cluster = ProjectCluster.objects.find_by_name_or_code("INS")
-        project.save()
-        return
-
-    if project.project_type.code in ["INS", "TRA", "TAS"]:
-        project.cluster = ProjectCluster.objects.find_by_name_or_code(
-            project.project_type.code
-        )
-        project.save()
-        return
-
-    cluster_names = set()
-    for ods_odp in project.ods_odp.all():
-        chemical_name = None
-        if ods_odp.ods_substance:
-            chemical_name = ods_odp.ods_substance.name
-        elif ods_odp.ods_blend:
-            chemical_name = ods_odp.ods_blend.name
-        if not chemical_name:
-            continue
-        if "HCFC" in chemical_name:
-            cluster_names.add("HCFC Individual")
-            continue
-        if "CFC" in chemical_name:
-            cluster_names.add("CFC Individual")
-            continue
-        if "HFC" in chemical_name:
-            cluster_names.add("HFC Individual")
-            continue
-
-    if not cluster_names:
-        return
-
-    if len(cluster_names) > 1:
-        logger.warning(
-            f"Project {project.code} has multiple substance types: {cluster_names}"
-        )
-        return
-
-    cluster_name = cluster_names.pop()
-    cluster = ProjectCluster.objects.find_by_name_or_code(cluster_name)
-    if cluster:
-        project.cluster = cluster
-        project.save()
-    else:
-        logger.error(f"Cluster not found: {cluster_name}")
-
-
 def create_other_meta_project():
     """
     Create meta project for projects without meta project
@@ -195,14 +74,14 @@ def create_other_meta_project():
         .prefetch_related("ods_odp__ods_substance", "ods_odp__ods_blend")
         .all()
     )
+
+    # project type
+    proj_type = MetaProject.MetaProjectType.INDINV
+
     for project in projects:
-        set_ind_cluster(project)
         meta_project_code = get_meta_project_code(
             project.country, project.cluster, project.serial_number
         )
-
-        # project type
-        proj_type = MetaProject.MetaProjectType.INDINV
 
         meta_project_json = {
             "type": proj_type,
@@ -218,16 +97,6 @@ def create_other_meta_project():
         project.save()
 
 
-def set_ins_sectors():
-    """
-    All projects with Cluster INS will have sector GOV
-    """
-    sector = ProjectSector.objects.get(code="GOV")
-    Project.objects.filter(cluster__code="INS", sector__isnull=True).update(
-        sector=sector
-    )
-
-
 @transaction.atomic
 def import_meta_projects():
     db_dir_path = settings.IMPORT_DATA_DIR / "pcr"
@@ -236,11 +105,7 @@ def import_meta_projects():
         parse_meta_projects_file(
             db_dir_path / database_name / "tbINVENTORY.json", database_name
         )
-        parse_clusters_file(
-            db_dir_path / database_name / "Import_ListofMYAProjects.json", database_name
-        )
         logger.info(f"✔ pcr meta projects from {database_name} imported")
 
     create_other_meta_project()
-    set_ins_sectors()
     logger.info("✔ all meta projects imported")

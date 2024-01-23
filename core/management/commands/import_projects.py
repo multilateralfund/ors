@@ -10,6 +10,7 @@ from core.import_data.import_progress_reports import import_progress_reports
 from core.import_data.import_project_comments import import_project_comments
 from core.import_data.import_proposals import import_proposals
 from core.import_data.import_projects import import_projects
+from core.import_data.set_project_clusters import set_project_clusters
 
 
 class Command(BaseCommand):
@@ -20,6 +21,7 @@ class Command(BaseCommand):
             - type = proposals => project proposals xlsx files
             - type = projects => projects from tbInventory
             - type = multi_year_projects => multi year projects from MultiYear-Projects
+            - type = set_project_clusters => set project clusters
             - type = progress => project progress reports
             - type = comments => project comments
             - type = meta_projects => project meta projects
@@ -43,6 +45,7 @@ class Command(BaseCommand):
                 "proposals",
                 "projects",
                 "multi_year_projects",
+                "set_project_clusters",
                 "progress",
                 "comments",
                 "meta_projects",
@@ -64,6 +67,8 @@ class Command(BaseCommand):
             import_proposals()
         if imp_type in ["multi_year_projects", "all_projects", "all"]:
             import_multi_year_projects()
+        if imp_type in ["set_project_clusters", "all_projects", "all"]:
+            set_project_clusters()
         if imp_type in ["progress", "all"]:
             import_progress_reports()
         if imp_type in ["comments", "all"]:

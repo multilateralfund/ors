@@ -108,9 +108,10 @@ docker-compose exec app ./manage.py import_projects proposals
 - proposals -> project proposals xlsx files
 - projects -> projects from tbInventory
 - multi_year_projects -> multi year projects from MultiYear-Projects
+- set_project_clusters -> set project clusters (make sure that the projectare imported)
 - progress -> progress reports from tbProgress 
 - comments -> project comments
-- meta_projects -> project meta projects
+- meta_projects -> project meta projects (make sure that the clusters are set)
 - all_pcr -> all data for project complition reports (activities, delay_explanation, learned_lessons)
 - pcr_activities -> project complition report activities
 - pcr_delay_explanation -> project complition report delay explanation
@@ -138,6 +139,16 @@ docker-compose exec app ./manage.py import_projects proposals
 : download files from nextcloud
     - **nextcloud path** OzoneMlf/Data/2.3 Progress reports/data/json/MultiYear-Projects.json
     - **local path** .fs/import_files/progress_report
+
+- set_project_clusters 
+: download files from nextcloud
+    - **nextcloud path** OzoneMlf/Data/2.4 PCR/data/json
+    - **local path** .fs/import_files/pcr
+
+    |nextcloud name | local name |
+    | :----:    | :----:  |
+    | hpmppcr2023/Import_ListofMYAProjects.json | hpmppcr2023/Import_ListofMYAProjects.json |
+    | pcr2023/Import_ListofMYAProjects.json | pcr2023/Import_ListofMYAProjects.json |
 
 - progress
 : download files from nextcloud

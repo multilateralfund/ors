@@ -101,6 +101,7 @@ class ProjectAdmin(admin.ModelAdmin):
         AutocompleteFilterFactory("subsector", "subsector"),
         AutocompleteFilterFactory("project_type", "project_type"),
         AutocompleteFilterFactory("cluster", "cluster"),
+        "substance_type",
         "meta_project__type",
         "status",
     ]
