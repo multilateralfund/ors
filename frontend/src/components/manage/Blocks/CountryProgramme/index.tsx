@@ -98,7 +98,7 @@ export function getViewSections(variant: any) {
         id: 'section_c',
         allowFullScreen: true,
         component: SectionCView,
-        label: 'Section C',
+        label: includes(['II', 'III'], model) ? 'Adm C prices' : 'Section C',
         panelId: 'section-C-panel',
         title:
           'SECTION C. AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US $/kg)',
@@ -106,7 +106,7 @@ export function getViewSections(variant: any) {
       {
         id: 'adm_d',
         component: AdmDView,
-        label: 'Adm D',
+        label: 'Adm D-E',
         panelId: 'adm-D-panel',
         title: includes(['II'], variant.model)
           ? 'D. Qualitative assessment of the operation of RMP/NPP/TPMP'
@@ -142,23 +142,7 @@ export function getViewSections(variant: any) {
   )
 }
 
-export function getEditSection(variant: any): Array<{
-  allowFullScreen: boolean
-  component: React.FC
-  id:
-    | 'adm_b'
-    | 'adm_c'
-    | 'adm_d'
-    | 'section_a'
-    | 'section_b'
-    | 'section_c'
-    | 'section_d'
-    | 'section_e'
-    | 'section_f'
-  label: string
-  panelId: string
-  title: string
-}> {
+export function getEditSection(variant: any) {
   const { model } = variant
   const ids = [
     ...((includes(['I', 'II', 'III', 'IV'], model) && ['section_a']) || []),
@@ -213,7 +197,7 @@ export function getEditSection(variant: any): Array<{
         id: 'section_c',
         allowFullScreen: true,
         component: SectionCCreate,
-        label: 'Section C',
+        label: includes(['II', 'III'], model) ? 'Adm C prices' : 'Section C',
         panelId: 'section-C-panel',
         title:
           'SECTION C. AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US $/kg)',
@@ -222,7 +206,7 @@ export function getEditSection(variant: any): Array<{
         id: 'adm_d',
         allowFullScreen: true,
         component: AdmDCreate,
-        label: 'Adm D',
+        label: 'Adm D-E',
         panelId: 'adm-D-panel',
         title: includes(['II'], variant.model)
           ? 'D. Qualitative assessment of the operation of RMP/NPP/TPMP'
