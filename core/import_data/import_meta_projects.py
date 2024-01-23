@@ -4,10 +4,9 @@ import logging
 from django.conf import settings
 from django.db import transaction
 from core.api.utils import SUBMISSION_STATUSE_CODES
-from core.import_data.import_projects import create_project
 from core.import_data.utils import PCR_DIR_LIST, get_object_by_code
 
-from core.models.project import MetaProject, Project, ProjectCluster, ProjectSector
+from core.models.project import MetaProject, Project
 from core.utils import get_meta_project_code
 
 
