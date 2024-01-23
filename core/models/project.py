@@ -352,7 +352,7 @@ class ProjectOdsOdp(models.Model):
     def __str__(self):
         return_str = self.ods_display_name
         if self.ods_replacement:
-            return_str += " replacement: " + self.ods_replacement.name
+            return_str += " replacement: " + self.ods_replacement
         return return_str
 
 

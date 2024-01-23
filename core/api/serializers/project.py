@@ -499,6 +499,28 @@ class ProjectListSerializer(serializers.ModelSerializer):
         return obj.meta_project.type
 
 
+class ProjectExportSerializer(ProjectListSerializer):
+    substances_list = serializers.SerializerMethodField()
+
+    class Meta(ProjectListSerializer.Meta):
+        fields = ProjectListSerializer.Meta.fields + [
+            "substances_list",
+        ]
+
+    def get_substances_list(self, obj):
+        "substances names separated by comma for project list export"
+        if not obj.ods_odp.count():
+            return None
+
+        substances = []
+        for ods_odp in obj.ods_odp.all():
+            if ods_odp.ods_substance:
+                substances.append(ods_odp.ods_substance.name)
+            elif ods_odp.ods_blend:
+                substances.append(ods_odp.ods_blend.name)
+        return ", ".join(substances)
+
+
 class ProjectDetailsSerializer(ProjectListSerializer):
     """
     ProjectSerializer class

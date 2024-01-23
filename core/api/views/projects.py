@@ -21,6 +21,7 @@ from core.api.serializers.meeting import MeetingSerializer
 from core.api.serializers.project import (
     ProjectClusterSerializer,
     ProjectCommentCreateSerializer,
+    ProjectExportSerializer,
     ProjectFundCreateSerializer,
     ProjectOdsOdpCreateSerializer,
     ProjectRbmMeasureCreateSerializer,
@@ -185,7 +186,7 @@ class ProjectViewSet(
     def get_wb(self, method):
         queryset = self.filter_queryset(self.get_queryset())
 
-        data = ProjectListSerializer(queryset, many=True).data
+        data = ProjectExportSerializer(queryset, many=True).data
 
         wb = openpyxl.Workbook(write_only=True)
         sheet = wb.create_sheet("Projects")

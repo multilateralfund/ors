@@ -65,8 +65,8 @@ class ProjectWriter(WriteOnlyBase):
                 "headerName": "Substance type",
             },
             {
-                "id": "substance_name",
-                "headerName": "Substance",
+                "id": "substances_list",
+                "headerName": "Substances",
             },
             {
                 "id": "status",
