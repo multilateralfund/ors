@@ -112,6 +112,11 @@ NEW_SECTORS = [
         "SEC": "GOV",
         "SORT_SECTOR": 25,
     },
+    {
+        "SECTOR": "National Ozone Unit",
+        "SEC": "NOU",
+        "SORT_SECTOR": 26,
+    },
 ]
 
 OUTDATED_SECTORS = [
@@ -128,9 +133,14 @@ NEW_TYPES = [
         "SORT_TYPE": 20,
     },
     {
+        "TYPE": "PS",
+        "TYPE_PRO": "Project Support",
+        "SORT_TYPE": 21,
+    },
+    {
         "TYPE": "PHA",
         "TYPE_PRO": "Phase Out",
-        "SORT_TYPE": 90,
+        "SORT_TYPE": 22,
     },
 ]
 

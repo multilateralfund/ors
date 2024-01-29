@@ -215,6 +215,7 @@ def get_sector_subsector_details(sector_code, subsector_name, row_index):
         sector = get_sector_by_code(sector_code, row_index)
         return sector, None
 
+    sector_code = SECTOR_CODE_MAPPING.get(sector_code, sector_code)
     # map sector and subsector names
     subs_mapping = SUBSECTOR_SECTOR_MAPPING.get(
         subsector_name,
