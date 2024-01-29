@@ -6,4 +6,5 @@ class SubstancesType(models.TextChoices):
     HCFC = "HCFC", "HCFC"
     HFC = "HFC", "HFC"
     BOTH = "BOTH", "Both"
+    METBR = "Methyl Bromide", "Methyl Bromide"
     HFC_Plus = "HFC_Plus", "HFC_Plus"

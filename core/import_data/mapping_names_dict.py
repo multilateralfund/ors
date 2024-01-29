@@ -61,7 +61,7 @@ SUBSECTOR_SECTOR_MAPPING = {
     },
     "Training programme/workshop": {
         "subsector_name": None,
-        "sector_code": "FFI",
+        "sector_code": None,
     },
     "Extinguisher": {
         "subsector_name": "Assembly Fire Protections Systems",
@@ -105,7 +105,7 @@ SUBSECTOR_SECTOR_MAPPING = {
     },
     "Agency programme": {
         "subsector_name": None,
-        "sector_code": "TAS",
+        "sector_code": "TAS",  # deleted sectorctor => set sector = None
     },
     "Ozone unit support": {
         "subsector_name": None,
@@ -183,7 +183,6 @@ SUBSECTOR_SECTOR_MAPPING = {
 
 PROJECT_TYPE_CODE_MAPPING = {
     "CPG": "TAS",
-    "INS": "TAS",
     "TRA": "TAS",
 }
 

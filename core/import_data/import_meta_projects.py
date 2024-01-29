@@ -13,6 +13,39 @@ from core.utils import get_meta_project_code
 logger = logging.getLogger(__name__)
 
 
+def create_metaproj_for_projects(metaproject_data, project_codes):
+    meta_proj, _ = MetaProject.objects.update_or_create(
+        code=metaproject_data["code"], defaults=metaproject_data
+    )
+    Project.objects.filter(code__in=project_codes).update(meta_project=meta_proj)
+
+
+def create_custom_metaprojects():
+    """
+    create metaprojects for specific projects
+    """
+
+    # NER/KIP/91/TAS/47, NER/KIP/91/INV/46
+    metaproject_data = {
+        "pcr_project_id": None,
+        "type": MetaProject.MetaProjectType.MYAHCFC,
+        "code": "NER/KIP/47",
+    }
+    create_metaproj_for_projects(
+        metaproject_data, ["NER/KIP/91/TAS/47", "NER/KIP/91/INV/46"]
+    )
+
+    # IND/ARS/17/DEM/50, IND/ARS/19/DEM/69
+    metaproject_data = {
+        "pcr_project_id": None,
+        "type": MetaProject.MetaProjectType.MYACFC,
+        "code": "IND/ARS/69",
+    }
+    create_metaproj_for_projects(
+        metaproject_data, ["IND/ARS/17/DEM/50", "IND/ARS/19/DEM/69"]
+    )
+
+
 def parse_meta_projects_file(file_path, database_name):
     """
     Import meta projects from json file
@@ -36,9 +69,14 @@ def parse_meta_projects_file(file_path, database_name):
         project = get_object_by_code(
             Project, project_json["CODE"], "code", project_json["CODE"], with_log=False
         )
+
         # skip project if not exists
         if not project:
             logger.info(f"Project not found: {project_json['CODE']}")
+            continue
+
+        # skip project if already has meta project
+        if project.meta_project:
             continue
 
         # create meta project
@@ -99,6 +137,7 @@ def create_other_meta_project():
 
 @transaction.atomic
 def import_meta_projects():
+    create_custom_metaprojects()
     db_dir_path = settings.IMPORT_DATA_DIR / "pcr"
     for database_name in PCR_DIR_LIST:
         logger.info(f"⏳ importing pcr meta projects from {database_name}")
