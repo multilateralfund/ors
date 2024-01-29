@@ -14,6 +14,7 @@ from core.models.project import (
     ProjectType,
 )
 
+# pylint: disable=R0915
 
 logger = logging.getLogger(__name__)
 
