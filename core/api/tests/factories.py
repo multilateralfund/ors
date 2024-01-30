@@ -316,7 +316,7 @@ class ProjectClusterFactory(factory.django.DjangoModelFactory):
 
     name = factory.Faker("pystr", max_chars=100)
     code = factory.Faker("pystr", max_chars=10)
-    substance_type = "HFC"
+    category = ProjectCluster.ProjectClusterCategory.BOTH
     sort_order = factory.Faker("random_int", min=1, max=100)
 
 

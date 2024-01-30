@@ -117,6 +117,11 @@ NEW_SECTORS = [
         "SEC": "NOU",
         "SORT_SECTOR": 26,
     },
+    {
+        "SECTOR": "Country Assistance",
+        "SEC": "CA",
+        "SORT_SECTOR": 27,
+    },
 ]
 
 OUTDATED_SECTORS = [
@@ -320,7 +325,7 @@ def import_project_clusters(file_path):
         cluster_data = {
             "name": row["Name"],
             "code": row["Acronym"],
-            "substance_type": row["Asscoaited Substance"].upper(),
+            "category": row["Category"].upper(),
             "sort_order": index,
         }
         ProjectCluster.objects.update_or_create(

@@ -411,7 +411,7 @@ def create_cp_record(record_data, usages_data, index_row):
                 "source_file",
                 "display_name",
             ]:
-                inconsistent_data.append(f"{key}={value}")
+                inconsistent_data.append(f"{key}={getattr(record, key)}")
     else:
         # create record if it doesn't exist
         record = CPRecord.objects.create(**record_data)
@@ -429,7 +429,7 @@ def create_cp_record(record_data, usages_data, index_row):
         # check for inconsistent data and update cp usage if needed
         if cp_usage and cp_usage.quantity != usage_data["quantity"]:
             inconsistent_data.append(
-                f"quantity: {usage_data['usage'].name}={usage_data['quantity']}"
+                f"quantity: {usage_data['usage'].name}={cp_usage.quantity}"
             )
         elif not cp_usage:
             cp_usages.append(CPUsage(**usage_data))

@@ -128,9 +128,18 @@ class ProjectClusterManager(models.Manager):
 
 
 class ProjectCluster(models.Model):
+    class ProjectClusterCategory(models.TextChoices):
+        MYA = "MYA", "Multi-year agreement"
+        IND = "IND", "Individual"
+        BOTH = "BOTH", "Both"
+
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=10, null=True, blank=True)
-    substance_type = models.CharField(max_length=255, choices=SubstancesType.choices)
+    category = models.CharField(
+        max_length=255,
+        choices=ProjectClusterCategory.choices,
+        default=ProjectClusterCategory.BOTH,
+    )
     sort_order = models.FloatField(null=True, blank=True)
 
     objects = ProjectClusterManager()
