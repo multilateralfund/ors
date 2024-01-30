@@ -294,7 +294,7 @@ class ProjectClusterSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "code",
-            "substance_type",
+            "category",
             "sort_order",
         ]
 

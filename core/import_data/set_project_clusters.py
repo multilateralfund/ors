@@ -403,6 +403,19 @@ def set_ind_clusters():
         sector__code__in=["CAP", "PCAP"],
     ).update(project_type=current_proj_type, cluster=current_cluster)
 
+    # legacy_subsector = Country programme/country survey => cluster = CP & project_type = TAS & sector = CA
+    current_proj_type = ProjectType.objects.find_by_name("TAS")
+    current_cluster = ProjectCluster.objects.find_by_name_or_code("CP")
+    current_sector = ProjectSector.objects.find_by_name("CA")
+    Project.objects.select_related("sector").filter(
+        cluster_id__isnull=True,
+        subsector_legacy__iexact="Country programme/country survey",
+    ).update(
+        project_type=current_proj_type,
+        cluster=current_cluster,
+        sector=current_sector,
+    )
+
 
 def set_ins_sectors():
     """
