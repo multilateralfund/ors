@@ -73,7 +73,7 @@ class AdmColumnSerializer(serializers.ModelSerializer):
 
     def get_display_name(self, obj):
         year = self.context.get("year", None)
-        if year and int(year) > 2004 and obj.alt_display_name:
+        if year and int(year) > 2011 and obj.alt_display_name:
             # for years after 2004, we use the alt_display_name
             return obj.alt_display_name
         return obj.display_name
