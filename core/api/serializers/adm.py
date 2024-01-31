@@ -50,6 +50,7 @@ class AdmColumnSerializer(serializers.ModelSerializer):
     children = RecursiveField(read_only=True, many=True)
     full_name = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
+    display_name = serializers.SerializerMethodField()
 
     class Meta:
         model = AdmColumn
@@ -69,6 +70,13 @@ class AdmColumnSerializer(serializers.ModelSerializer):
 
     def get_category(self, _obj):
         return "adm"
+
+    def get_display_name(self, obj):
+        year = self.context.get("year", None)
+        if year and int(year) > 2004 and obj.alt_display_name:
+            # for years after 2004, we use the alt_display_name
+            return obj.alt_display_name
+        return obj.display_name
 
 
 class AdmRecordBaseSerializer(serializers.ModelSerializer):
