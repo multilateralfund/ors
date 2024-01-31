@@ -102,18 +102,19 @@
     {
         "name": "HCFC float",
         "display_name": "HCFC",
+        "alt_display_name": "Annual",
         "parent_name": null,
-        "sort_order": 2,
+        "sort_order": 1,
         "type": "float",
         "section": "C",
-        "min_year": 2012,
+        "min_year": 2000,
         "max_year": 2018
     },
     {
         "name": "Cumulative float",
         "display_name": "Cumulative",
         "parent_name": null,
-        "sort_order": 1,
+        "sort_order": 2,
         "type": "float",
         "section": "C",
         "min_year": 2012,

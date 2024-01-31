@@ -120,7 +120,7 @@ class EmptyFormView(views.APIView):
         # so it is enough to filter by the year only the parent columns
         columns = AdmColumn.objects.get_for_year(year)
         for col in columns:
-            serial_col = AdmColumnSerializer(col).data
+            serial_col = AdmColumnSerializer(col, context={"year": year}).data
             if col.section == AdmColumn.AdmColumnSection.B:
                 sections["adm_b"]["columns"].append(serial_col)
             elif col.section == AdmColumn.AdmColumnSection.C:

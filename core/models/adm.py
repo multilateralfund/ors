@@ -36,6 +36,7 @@ class AdmColumn(models.Model):
         "self", on_delete=models.CASCADE, related_name="children", null=True, blank=True
     )
     display_name = models.CharField(max_length=248)
+    alt_display_name = models.CharField(max_length=248, null=True, blank=True)
     type = models.CharField(max_length=248, choices=AdmColumnType.choices)
     section = models.CharField(max_length=10, choices=AdmColumnSection.choices)
     time_frame = models.ForeignKey(TimeFrame, on_delete=models.CASCADE)
