@@ -81,7 +81,7 @@ def parse_meta_projects_file(file_path, database_name):
 
         # create meta project
         meta_project_code = get_meta_project_code(
-            project.country, project.cluster, project.serial_number
+            project.country, project.cluster, project.serial_number_legacy
         )
 
         meta_project_json = {
@@ -118,7 +118,7 @@ def create_other_meta_project():
 
     for project in projects:
         meta_project_code = get_meta_project_code(
-            project.country, project.cluster, project.serial_number
+            project.country, project.cluster, project.serial_number_legacy
         )
 
         meta_project_json = {

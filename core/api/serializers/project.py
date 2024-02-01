@@ -370,6 +370,8 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "metaproject_category",
             "mya_code",
             "serial_number",
+            "serial_number_legacy",
+            "meta_serial_number",
             "description",
             "country",
             "agency",

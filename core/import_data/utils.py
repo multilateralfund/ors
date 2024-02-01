@@ -1035,7 +1035,7 @@ def update_or_create_project(project_data, update_status=True):
             country=project_data["country"],
             agency=project_data["agency"],
             project_type=project_data["project_type"],
-            serial_number=project_data["serial_number"],
+            serial_number_legacy=project_data["serial_number_legacy"],
             approval_meeting=project_data["approval_meeting"],
         )
         if project_data.get("subsector"):
