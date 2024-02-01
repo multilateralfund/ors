@@ -108,19 +108,14 @@ NEW_SECTORS = [
         "SORT_SECTOR": 24,
     },
     {
-        "SECTOR": "Government",
-        "SEC": "GOV",
-        "SORT_SECTOR": 25,
-    },
-    {
         "SECTOR": "National Ozone Unit",
         "SEC": "NOU",
-        "SORT_SECTOR": 26,
+        "SORT_SECTOR": 25,
     },
     {
         "SECTOR": "Country Assistance",
         "SEC": "CA",
-        "SORT_SECTOR": 27,
+        "SORT_SECTOR": 26,
     },
 ]
 
@@ -129,6 +124,7 @@ OUTDATED_SECTORS = [
     "OTH",
     "SEV",
     "PHA",
+    "KIP",
 ]
 
 NEW_TYPES = [

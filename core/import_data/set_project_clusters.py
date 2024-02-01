@@ -198,10 +198,10 @@ def set_ind_clusters():
     ).filter(substance_type="HCFC").update(cluster=hcfcind_cluster)
 
     # sector=FOA or sector=REF and substance_type ="HFC" => cluster = HFCIND
-    current_cluster = ProjectCluster.objects.find_by_name_or_code("HFCIND")
+    hfcind_cluster = ProjectCluster.objects.find_by_name_or_code("HFCIND")
     Project.objects.select_related("sector").filter(cluster_id__isnull=True).filter(
         Q(sector__code="FOA") | Q(sector__code="REF")
-    ).filter(substance_type="HFC").update(cluster=current_cluster)
+    ).filter(substance_type="HFC").update(cluster=hfcind_cluster)
 
     # project type=INV and sector in [FUM, FFI, PAG] => cluster = OOI
     Project.objects.select_related("project_type", "sector").filter(
@@ -296,11 +296,11 @@ def set_ind_clusters():
         subsector_legacy__iexact="Methyl Bromide",
     ).update(cluster=ooi_cluster, substance_type="Methyl Bromide")
 
-    # lecacy_sector = KIP => cluster = HCFCIND
+    # lecacy_sector = KIP => cluster = HFCIND
     Project.objects.select_related().filter(
         cluster_id__isnull=True,
         sector_legacy="KIP",
-    ).update(cluster=hcfcind_cluster)
+    ).update(cluster=hfcind_cluster)
 
     # legacy_sector = PHA & substance_type = HCFC => cluster = HCFCIND
     Project.objects.select_related().filter(
@@ -371,12 +371,11 @@ def set_ind_clusters():
     ).update(cluster=cfcind_cluster)
 
     # legacy_sector = SEV & title contains "Enabling Activities" => cluster = HFCIND
-    current_cluster = ProjectCluster.objects.find_by_name_or_code("HFCIND")
     Project.objects.select_related().filter(
         cluster_id__isnull=True,
         sector_legacy="SEV",
         title__icontains="Enabling Activities",
-    ).update(cluster=current_cluster)
+    ).update(cluster=hfcind_cluster)
 
     # legacy_sector = SEV & title contains "Survey" & substance_type = HCFC
     # => cluster = HCFCIND
@@ -393,7 +392,7 @@ def set_ind_clusters():
         sector_legacy="SEV",
         title__icontains="Survey",
         substance_type="HFC",
-    ).update(cluster=current_cluster)
+    ).update(cluster=hfcind_cluster)
 
     # sector in {CAP, PreCAP} => project_type = TAS & cluster = AGC
     current_proj_type = ProjectType.objects.find_by_name("TAS")
@@ -419,10 +418,10 @@ def set_ind_clusters():
 
 def set_ins_sectors():
     """
-    All projects with Cluster INS will have sector GOV
+    All projects with Cluster GOV will have sector NOU
     """
     # cluster = ins => sector = gov ????
-    sector = ProjectSector.objects.get(code="GOV")
+    sector = ProjectSector.objects.get(code="NOU")
     Project.objects.filter(cluster__code="GOV", sector__isnull=True).update(
         sector=sector
     )
