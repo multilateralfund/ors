@@ -21,6 +21,7 @@ COUNTRY_NAME_MAPPING = {
     "St. Kitts and Nevis": "Saint Kitts and Nevis",
     "St. Lucia": "Saint Lucia",
     "St. Vincent and the Grenadines": "Saint Vincent and the Grenadines",
+    "Commonwealth of Dominica": "Dominica",
 }
 
 SECTOR_NAME_MAPPING = {
@@ -193,6 +194,8 @@ USAGE_NAME_MAPPING = {
     "LabUse": "Lab use",
     "NoneQPS": "Non-QPS",
     "TobaccoFluffing": "Tobacco fluffing",
+    "refrigeration air conditioning": "Refrigeration Manufacturing AC",
+    "air conditioning": "Refrigeration Manufacturing AC",
 }
 
 CHEMICAL_NAME_MAPPING = {
