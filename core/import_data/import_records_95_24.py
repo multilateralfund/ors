@@ -113,9 +113,14 @@ def parse_sheet(df, year, file_name):
                     "quantity": quantity,
                 }
             )
-
-        cp_usages.extend(create_cp_record(record_data, usages_data, index_row))
-
+        cp_usages.extend(
+            create_cp_record(
+                record_data,
+                usages_data,
+                index_row,
+                update_or_log="update",
+            )
+        )
     CPUsage.objects.bulk_create(cp_usages, batch_size=1000)
 
     logger.info("✔ sheet parsed")
