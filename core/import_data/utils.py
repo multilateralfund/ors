@@ -12,6 +12,7 @@ from core.import_data.mapping_names_dict import (
     PROJECT_TYPE_CODE_MAPPING,
     SECTOR_CODE_MAPPING,
     SUBSECTOR_SECTOR_MAPPING,
+    USAGE_NAME_MAPPING,
 )
 
 from core.models.adm import AdmColumn, AdmRow
@@ -378,7 +379,7 @@ def get_object_by_code(cls, code, column, index_row, with_log=True):
         return None
 
 
-def create_cp_record(record_data, usages_data, index_row):
+def create_cp_record(record_data, usages_data, index_row, update_or_log="log"):
     """
     create cp record and usages objects from data
     -> if the record / usages exists, update it and log inconsistent data
@@ -387,6 +388,8 @@ def create_cp_record(record_data, usages_data, index_row):
     @param record_data = dict (record data)
     @param usages_data = list (list of usages data)
     @param index_row = int
+    @param update_or_log = str (update or log)
+        (if the record should be updated or logged the inconsistent data)
 
     @return cp_usages = list (list of CPUsage objects)
     """
@@ -404,6 +407,12 @@ def create_cp_record(record_data, usages_data, index_row):
     if record:
         # check for inconsistent data and update record if needed
         for key, value in record_data.items():
+            if update_or_log == "update" and key not in ["source_file"]:
+                # no need to check for inconsistent data, just update the record
+                setattr(record, key, value)
+                continue
+
+            # check for inconsistent data and log it
             if not getattr(record, key, None):
                 # set attribute if it's not set
                 setattr(record, key, value)
@@ -425,14 +434,21 @@ def create_cp_record(record_data, usages_data, index_row):
             country_programme_record_id=usage_data["country_programme_record_id"],
             usage=usage_data["usage"],
         ).first()
+        if not cp_usage:
+            cp_usages.append(CPUsage(**usage_data))
+            continue
+
+        if update_or_log == "update":
+            # no need to check for inconsistent data, just update the cp usage
+            cp_usage.quantity = usage_data["quantity"]
+            cp_usage.save()
+            continue
 
         # check for inconsistent data and update cp usage if needed
-        if cp_usage and cp_usage.quantity != usage_data["quantity"]:
+        if cp_usage.quantity != usage_data["quantity"]:
             inconsistent_data.append(
                 f"quantity: {usage_data['usage'].name}={cp_usage.quantity}"
             )
-        elif not cp_usage:
-            cp_usages.append(CPUsage(**usage_data))
 
     # log inconsistent data
     if inconsistent_data:
@@ -746,6 +762,7 @@ def get_usages_from_sheet(df, non_usage_columns):
             continue
 
         usage_name = column_name.replace("- ", "")
+        usage_name = USAGE_NAME_MAPPING.get(usage_name, usage_name)
 
         usage = Usage.objects.find_by_name(usage_name)
         if not usage:

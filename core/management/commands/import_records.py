@@ -55,8 +55,6 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         rec_type = kwargs["type"]
 
-        if rec_type in ["records_95_04", "xlsx_files", "all"]:
-            import_records_95_04()
         if rec_type in ["section_ab", "xlsx_files", "all"]:
             rec_xlsx_sec_AB()
         if rec_type in ["section_c", "xlsx_files", "all"]:
@@ -73,3 +71,5 @@ class Command(BaseCommand):
             import_admc_items()
         if rec_type in ["admde_items", "cp_db_records", "all"]:
             import_admde_items()
+        if rec_type in ["records_95_04", "xlsx_files", "all"]:
+            import_records_95_04()
