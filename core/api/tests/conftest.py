@@ -43,7 +43,7 @@ from core.api.tests.factories import (
 from core.models import BPRecord
 from core.models import CPEmission
 from core.models import CPReport
-from core.utils import get_meta_project_code
+from core.utils import get_meta_project_code, get_project_sub_code
 
 
 @pytest.fixture
@@ -286,7 +286,7 @@ def project_cluster_kip():
 
 @pytest.fixture
 def meta_project(country_ro, project_cluster_kpp):
-    code = get_meta_project_code(country_ro, project_cluster_kpp, 1)
+    code = get_meta_project_code(country_ro, project_cluster_kpp)
 
     return MetaProjectFactory.create(code=code)
 
@@ -303,6 +303,7 @@ def project(
     project_cluster_kpp,
     meta_project,
 ):
+    generated_code = get_project_sub_code(country_ro, project_cluster_kpp)
     project = ProjectFactory.create(
         meta_project=meta_project,
         title="Karma to Burn",
@@ -319,8 +320,8 @@ def project(
         total_fund_transferred=123.1,
         date_approved="2019-03-14",
         serial_number=1,
+        generated_code=generated_code,
     )
-    project.set_generated_code()
 
     return project
 

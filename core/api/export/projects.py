@@ -74,6 +74,14 @@ class ProjectWriter(WriteOnlyBase):
                 "column_width": COLUMN_WIDTH * 1.5,
             },
             {
+                "id": "serial_number",
+                "headerName": "Serial number",
+            },
+            {
+                "id": "serial_number_legacy",
+                "headerName": "Legacy serial number",
+            },
+            {
                 "id": "country",
                 "headerName": "Country",
             },

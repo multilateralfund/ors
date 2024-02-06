@@ -12,7 +12,6 @@ from core.models.meeting import Decision, Meeting
 from core.models.rbm_measures import RBMMeasure
 from core.models.substance import Substance
 from core.models.utils import SubstancesType
-from core.utils import get_project_sub_code
 
 PROTECTED_STORAGE = FileSystemStorage(location=settings.PROTECTED_MEDIA_ROOT)
 
@@ -146,6 +145,11 @@ class ProjectCluster(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ProjectManager(models.Manager):
+    def get_next_serial_number(self, country_id):
+        return self.filter(country_id=country_id).count() + 1
 
 
 class Project(models.Model):
@@ -287,6 +291,8 @@ class Project(models.Model):
     plus = models.BooleanField(default=False)
     source_file = models.CharField(max_length=255, null=True, blank=True)
 
+    objects = ProjectManager()
+
     def __str__(self):
         return self.title
 
@@ -296,19 +302,6 @@ class Project(models.Model):
             return self.files.latest()
         except ProjectFile.DoesNotExist:
             return None
-
-    def set_generated_code(self):
-        self.generated_code = get_project_sub_code(
-            self.country,
-            self.cluster,
-            self.serial_number_legacy,
-            self.agency,
-            self.project_type,
-            self.sector,
-            self.approval_meeting,
-            self.meeting_transf,
-        )
-        self.save()
 
 
 class ProjectFile(models.Model):

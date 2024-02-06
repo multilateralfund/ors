@@ -6,7 +6,7 @@ from django.db import transaction
 from core.api.utils import SUBMISSION_STATUSE_CODES
 from core.import_data.utils import PCR_DIR_LIST, get_object_by_code
 
-from core.models.project import MetaProject, Project
+from core.models.project import MetaProject, Project, ProjectStatus
 from core.utils import get_meta_project_code
 
 
@@ -101,6 +101,68 @@ def parse_meta_projects_file(file_path, database_name):
         project.save()
 
 
+def create_transf_meta_project():
+    """
+    Create meta project for transferred projects
+    Set same meta prokect for the transferred project and another one
+     -> based on legacy sector, legacy subsector and legacy project type
+     -> if there are multiple projects after filtering => filter by title too
+     -> if there are no projects after filtering => log a warning and create just one meta project
+
+    """
+    transf_status = ProjectStatus.objects.get(code="TRF")
+    proj_type = MetaProject.MetaProjectType.INDINV
+    projects = Project.objects.filter(
+        code__isnull=False, status=transf_status, meta_project_id=None
+    ).all()
+    for project in projects:
+        # create meta project
+        meta_project_code = get_meta_project_code(
+            project.country, project.cluster, project.serial_number_legacy
+        )
+
+        meta_project_json = {
+            "type": proj_type,
+            "code": meta_project_code,
+        }
+        meta_project, _ = MetaProject.objects.update_or_create(
+            code=meta_project_json["code"],
+            type=meta_project_json["type"],
+            defaults=meta_project_json,
+        )
+        project.meta_project = meta_project
+        project.save()
+
+        # get the completed project
+        completed_project = Project.objects.filter(
+            code__isnull=False,
+            country=project.country,
+            sector_legacy__iexact=project.sector_legacy,
+            subsector_legacy__iexact=project.subsector_legacy,
+            project_type_legacy__iexact=project.project_type_legacy,
+            meta_project_id=None,
+        ).exclude(pk=project.pk)
+        if completed_project.count() > 1:
+            completed_project = completed_project.filter(title__iexact=project.title)
+
+        if completed_project.count() == 0:
+            logger.warning(
+                f"Transferred project {project.code} has no completed project"
+            )
+            continue
+
+        if completed_project.count() > 1:
+            similar_projects = ", ".join([p.code for p in completed_project.all()])
+            logger.warning(
+                f"Transferred project {project.code} has multiple completed projects: {similar_projects}"
+            )
+            continue
+
+        completed_project = completed_project.first()
+        completed_project.meta_project = meta_project
+        completed_project.save()
+
+
 def create_other_meta_project():
     """
     Create meta project for projects without meta project
@@ -108,8 +170,7 @@ def create_other_meta_project():
     projects = (
         Project.objects.filter(meta_project_id=None)
         .exclude(status__code__in=SUBMISSION_STATUSE_CODES)
-        .select_related("country", "agency", "project_type")
-        .prefetch_related("ods_odp__ods_substance", "ods_odp__ods_blend")
+        .select_related("country", "cluster")
         .all()
     )
 
@@ -117,6 +178,9 @@ def create_other_meta_project():
     proj_type = MetaProject.MetaProjectType.INDINV
 
     for project in projects:
+        if project.meta_project:
+            # there might be some projects that were updated in the previous step
+            continue
         meta_project_code = get_meta_project_code(
             project.country, project.cluster, project.serial_number_legacy
         )
@@ -134,6 +198,8 @@ def create_other_meta_project():
         project.meta_project = meta_project
         project.save()
 
+        # check if thist project is a transferred project
+
 
 @transaction.atomic
 def import_meta_projects():
@@ -144,7 +210,9 @@ def import_meta_projects():
         parse_meta_projects_file(
             db_dir_path / database_name / "tbINVENTORY.json", database_name
         )
-        logger.info(f"✔ pcr meta projects from {database_name} imported")
 
+    logger.info("⏳ creating meta projects for transferred projects")
+    create_transf_meta_project()
+    logger.info("⏳ creating meta projects for other projects")
     create_other_meta_project()
     logger.info("✔ all meta projects imported")

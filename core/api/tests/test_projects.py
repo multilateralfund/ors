@@ -129,7 +129,6 @@ class TestProjectsUpdate:
         assert project.title == "Into the Spell"
         assert project.submission_category == "investment project"
         assert project.coop_agencies.count() == 1
-        assert "NEWAG" in project.generated_code
 
     def test_project_patch_ods_odp(
         self, user, project_url, project, project_ods_odp_subst
@@ -222,35 +221,39 @@ def setup_project_list(
 
     for i in range(4):
         for project_data in projects_data:
-            proj = ProjectFactory.create(
+            project_data["generated_code"] = get_project_sub_code(
+                project_data["country"], project_data["cluster"], i + 1
+            )
+            ProjectFactory.create(
                 title=f"Project {i}",
                 serial_number=i + 1,
                 date_received=f"2020-01-{i+1}",
                 **project_data,
             )
-            proj.set_generated_code()
 
     # project_without cluster
     proj_data = projects_data[0].copy()
     proj_data.pop("cluster")
-    proj = ProjectFactory.create(
+    proj_data["generated_code"] = get_project_sub_code(proj_data["country"], None, 25)
+    ProjectFactory.create(
         title=f"Project {25}",
         date_received="2020-01-30",
         **proj_data,
     )
-    proj.set_generated_code()
 
     # project_without sector and subsector
     proj_data = projects_data[0].copy()
     proj_data["sector"] = None
     proj_data["subsector"] = None
-    proj = ProjectFactory.create(
+    proj_data["generated_code"] = get_project_sub_code(
+        proj_data["country"], proj_data["cluster"], 26
+    )
+    ProjectFactory.create(
         title=f"Project {26}",
         serial_number=26,
         date_received="2020-01-30",
         **proj_data,
     )
-    proj.set_generated_code()
 
     return new_agency, new_project_status, new_sector, new_meeting
 
@@ -412,8 +415,8 @@ class TestProjectStatistics(BaseTest):
         assert response.status_code == 200
         assert response.data["projects_total_count"] == 10
         assert response.data["projects_count"] == 10
-        assert response.data["projects_code_count"] == 2
-        assert response.data["projects_code_subcode_count"] == 8
+        assert response.data["projects_code_count"] == 1
+        assert response.data["projects_code_subcode_count"] == 9
         assert response.data["projects_count_per_sector"][0]["sector__name"] == "Sector"
         assert response.data["projects_count_per_sector"][0]["count"] == 5
         assert (
@@ -431,8 +434,8 @@ class TestProjectStatistics(BaseTest):
         assert response.status_code == 200
         assert response.data["projects_total_count"] == 10
         assert response.data["projects_count"] == 5
-        assert response.data["projects_code_count"] == 1
-        assert response.data["projects_code_subcode_count"] == 4
+        assert response.data["projects_code_count"] == 0
+        assert response.data["projects_code_subcode_count"] == 5
         assert len(response.data["projects_count_per_sector"]) == 1
         assert response.data["projects_count_per_sector"][0]["sector__name"] == "Sector"
         assert response.data["projects_count_per_sector"][0]["count"] == 4
@@ -577,14 +580,7 @@ class TestCreateProjects(BaseTest):
         assert response.data["national_agency"] == "National Agency"
         assert response.data["submission_category"] == "bilateral cooperation"
         assert response.data["code"] == get_project_sub_code(
-            country_ro,
-            project_cluster_kip,
-            None,
-            agency,
-            project_type,
-            subsector.sector,
-            meeting,
-            None,
+            country_ro, project_cluster_kip, 1
         )
 
         ods_odp = response.data["ods_odp"]

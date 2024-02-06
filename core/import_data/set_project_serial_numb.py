@@ -4,7 +4,8 @@ from django.db import transaction
 from django.db.models import Min
 from core.models.country import Country
 
-from core.models.project import MetaProject, Project
+from core.models.project import MetaProject, Project, ProjectCluster
+from core.utils import get_meta_project_code, get_project_sub_code
 
 logger = logging.getLogger(__name__)
 
@@ -17,14 +18,17 @@ def set_serial_number():
     - set serial_number based on the order
     """
 
-    countries = Country.objects.values_list("id", flat=True)
-    for country_id in countries:
+    countries = Country.objects.all()
+    for country in countries:
         projects = (
-            Project.objects.select_related("approval_meeting")
-            .filter(country_id=country_id)
+            Project.objects.select_related("approval_meeting", "cluster")
+            .filter(country_id=country.id, code__isnull=False)
             .order_by("approval_meeting__number", "serial_number_legacy")
         )
         for i, project in enumerate(projects):
+            project.generated_code = get_project_sub_code(
+                country, project.cluster, i + 1
+            )
             project.serial_number = i + 1
             project.save()
 
@@ -36,12 +40,13 @@ def set_meta_serial_number():
     - order by meeting number and serial_number_legacy (asc)
     - set serial_number based on the order and the pair country/cluster
     """
-    countries = Country.objects.values_list("id", flat=True)
-    for country_id in countries:
+    countries = Country.objects.all()
+    for country in countries:
         projects = (
             Project.objects.select_related()
             .filter(
-                country_id=country_id,
+                code__isnull=False,
+                country_id=country.id,
                 meta_project__isnull=False,
             )
             .values("cluster_id", "meta_project_id")
@@ -49,11 +54,11 @@ def set_meta_serial_number():
             .order_by("min_serial_number")
         )
         for i, project in enumerate(projects):
-            Project.objects.select_related().filter(
-                country_id=country_id,
-                cluster_id=project["cluster_id"],
-                meta_project_id=project["meta_project_id"],
-            ).update(meta_serial_number=i + 1)
+            cluster = ProjectCluster.objects.filter(pk=project["cluster_id"]).first()
+            meta_code = get_meta_project_code(country, cluster, i + 1)
+            MetaProject.objects.filter(
+                pk=project["meta_project_id"],
+            ).update(code=meta_code)
 
 
 @transaction.atomic
