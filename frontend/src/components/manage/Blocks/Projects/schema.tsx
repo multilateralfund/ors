@@ -30,7 +30,7 @@ export function usePListingGridOptions() {
     [projectSlice.statuses.data],
   )
 
-  function formatValue(value: any) {
+  function agFormatValue(value: any) {
     return value?.id || ''
   }
 
@@ -81,7 +81,7 @@ export function usePListingGridOptions() {
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select project type' },
-            formatValue,
+            agFormatValue,
             getFormattedValue: (id: any) => {
               return find(projectSlice.types.data, {
                 id,
@@ -122,7 +122,7 @@ export function usePListingGridOptions() {
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select agency' },
-            formatValue,
+            agFormatValue,
             getFormattedValue: (id: any) => {
               return find(commonSlice.agencies.data, {
                 id,
@@ -158,7 +158,7 @@ export function usePListingGridOptions() {
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select sector' },
-            formatValue,
+            agFormatValue,
             getFormattedValue: (id: any) => {
               return find(projectSlice.sectors.data, {
                 id,
@@ -199,7 +199,7 @@ export function usePListingGridOptions() {
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select subsector' },
-            formatValue,
+            agFormatValue,
             getFormattedValue: (id: any) => {
               return find(projectSlice.subsectors.data, {
                 id,
@@ -257,7 +257,7 @@ export function usePListingGridOptions() {
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select substance type' },
-            formatValue,
+            agFormatValue,
             getOptionLabel: (option: any) => {
               return isObject(option) ? get(option, 'name') : option
             },
@@ -310,7 +310,7 @@ export function usePListingGridOptions() {
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select status' },
-            formatValue,
+            agFormatValue,
             getFormattedValue: (id: any) => {
               return find(projectSlice.statuses.data, {
                 id,
