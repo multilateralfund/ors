@@ -6,8 +6,8 @@ import { includes } from 'lodash'
 
 import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
 
-function useGridOptions(props: { usages: Array<any> }) {
-  const { usages } = props
+function useGridOptions(props: { model: string; usages: Array<any> }) {
+  const { model, usages } = props
   const gridOptions: GridOptions = useMemo(
     () => ({
       columnDefs: [
@@ -63,13 +63,17 @@ function useGridOptions(props: { usages: Array<any> }) {
           headerName: 'Production',
           ...colDefById['production'],
         },
-        {
-          aggFunc: 'sumTotal',
-          dataType: 'number',
-          field: 'manufacturing_blends',
-          headerName: 'Manufacturing of Blends',
-          ...colDefById['manufacturing_blends'],
-        },
+        ...(includes(['V'], model)
+          ? [
+              {
+                aggFunc: 'sumTotal',
+                dataType: 'number',
+                field: 'manufacturing_blends',
+                headerName: 'Manufacturing of Blends',
+                ...colDefById['manufacturing_blends'],
+              },
+            ]
+          : []),
         {
           aggFunc: 'sumTotal',
           dataType: 'number',

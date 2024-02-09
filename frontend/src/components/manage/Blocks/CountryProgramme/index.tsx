@@ -9,7 +9,7 @@ import AdmDView from '@ors/components/manage/Blocks/Section/AdmD/View/View'
 import SectionACreate from '@ors/components/manage/Blocks/Section/SectionA/Create/Create'
 import SectionAView from '@ors/components/manage/Blocks/Section/SectionA/View/View'
 import SectionBCreate from '@ors/components/manage/Blocks/Section/SectionB/Create/Create'
-import SectionB from '@ors/components/manage/Blocks/Section/SectionB/View/View'
+import SectionBView from '@ors/components/manage/Blocks/Section/SectionB/View/View'
 import SectionCCreate from '@ors/components/manage/Blocks/Section/SectionC/Create/Create'
 import SectionCView from '@ors/components/manage/Blocks/Section/SectionC/View/View'
 import SectionDCreate from '@ors/components/manage/Blocks/Section/SectionD/Create/Create'
@@ -18,6 +18,82 @@ import SectionECreate from '@ors/components/manage/Blocks/Section/SectionE/Creat
 import SectionEView from '@ors/components/manage/Blocks/Section/SectionE/View/View'
 import SectionFCreate from '@ors/components/manage/Blocks/Section/SectionF/Create'
 import SectionFView from '@ors/components/manage/Blocks/Section/SectionF/View'
+
+const constants: any = {
+  II: {
+    adm_d: {
+      title: 'D. Qualitative assessment of the operation of RMP/NPP/TPMP',
+    },
+    section_a: {
+      label: 'Datasheet',
+    },
+    section_c: {
+      label: 'Adm C prices',
+    },
+  },
+  III: {
+    section_c: {
+      label: 'Adm C prices',
+    },
+  },
+  IV: {
+    section_a: {
+      title:
+        'SECTION A. ANNEX A, ANNEX B, ANNEX C - GROUP I AND ANNEX E - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)',
+    },
+  },
+  V: {
+    section_a: {
+      title:
+        'SECTION A. ANNEX A, ANNEX B, ANNEX C - GROUP I AND ANNEX E - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)',
+    },
+  },
+}
+
+const components: {
+  [key: string]: {
+    adm_b?: typeof AdmBCreate | typeof AdmBView
+    adm_c?: typeof AdmCCreate | typeof AdmCView
+    adm_d?: typeof AdmDCreate | typeof AdmDView
+    section_a?: typeof SectionACreate | typeof SectionAView
+    section_b?: typeof SectionBCreate | typeof SectionBView
+    section_c?: typeof SectionCCreate | typeof SectionCView
+    section_d?: typeof SectionDCreate | typeof SectionDView
+    section_e?: typeof SectionECreate | typeof SectionEView
+    section_f?: typeof SectionFCreate | typeof SectionFView
+  }
+} = {
+  create: {
+    section_a: SectionACreate,
+    section_b: SectionBCreate,
+    section_c: SectionCCreate,
+    section_d: SectionDCreate,
+    section_e: SectionECreate,
+    section_f: SectionFCreate,
+  },
+  edit: {
+    adm_b: AdmBCreate,
+    adm_c: AdmCCreate,
+    adm_d: AdmDCreate,
+    section_a: SectionACreate,
+    section_b: SectionBCreate,
+    section_c: SectionCCreate,
+    section_d: SectionDCreate,
+    section_e: SectionECreate,
+    section_f: SectionFCreate,
+  },
+  view: {
+    adm_b: AdmBView,
+    adm_c: AdmCView,
+    adm_d: AdmDView,
+    section_a: SectionAView,
+    section_b: SectionBView,
+    section_c: SectionCView,
+    section_d: SectionDView,
+    section_e: SectionEView,
+    section_f: SectionFView,
+  },
+}
 
 export const variants = [
   {
@@ -36,18 +112,31 @@ export const variants = [
     model: 'III',
   },
   {
-    maxYear: Infinity,
+    maxYear: 2021,
     minYear: 2019,
     model: 'IV',
   },
+  {
+    maxYear: Infinity,
+    minYear: 2022,
+    model: 'V',
+  },
 ]
 
-export function getViewSections(variant: any) {
+export function getSections(
+  variant: {
+    maxYear: number
+    minYear: number
+    model: string
+  },
+  mode = 'view',
+) {
   const { model } = variant
   const ids = [
-    ...((includes(['I', 'II', 'III', 'IV'], model) && ['section_a']) || []),
-    ...((includes(['II', 'III', 'IV'], model) && ['section_c']) || []),
-    ...((includes(['IV'], model) && [
+    ...((includes(['I', 'II', 'III', 'IV', 'V'], model) && ['section_a']) ||
+      []),
+    ...((includes(['II', 'III', 'IV', 'V'], model) && ['section_c']) || []),
+    ...((includes(['IV', 'V'], model) && [
       'section_b',
       'section_d',
       'section_e',
@@ -57,22 +146,24 @@ export function getViewSections(variant: any) {
     ...((includes(['II', 'III'], model) && ['adm_b', 'adm_c', 'adm_d']) || []),
   ]
 
+  const DefaultComponent = () => <div>Not implemented</div>
+
   return filter(
     [
       {
         id: 'section_a',
         allowFullScreen: true,
-        component: SectionAView,
-        label: 'Section A',
+        component: components[mode].section_a || DefaultComponent,
+        label: constants[model]?.section_a?.label || 'Section A',
         panelId: 'section-A-panel',
-        title: includes(['IV'], variant.model)
-          ? 'SECTION A. ANNEX A, ANNEX B, ANNEX C - GROUP I AND ANNEX E - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)'
-          : 'A. Data on Controlled Substances (in METRIC TONNES)',
+        title:
+          constants[model]?.section_a?.title ||
+          'A. Data on Controlled Substances (in METRIC TONNES)',
       },
       {
         id: 'adm_b',
         allowFullScreen: true,
-        component: AdmBView,
+        component: components[mode].adm_b || DefaultComponent,
         label: 'Adm B',
         panelId: 'adm-B-panel',
         title: 'B. Regulatory, administrative and supportive actions',
@@ -80,7 +171,7 @@ export function getViewSections(variant: any) {
       {
         id: 'section_b',
         allowFullScreen: true,
-        component: SectionB,
+        component: components[mode].section_b || DefaultComponent,
         label: 'Section B',
         panelId: 'section-B-panel',
         title:
@@ -89,7 +180,7 @@ export function getViewSections(variant: any) {
       {
         id: 'adm_c',
         allowFullScreen: true,
-        component: AdmCView,
+        component: components[mode].adm_c || DefaultComponent,
         label: 'Adm C',
         panelId: 'adm-C-panel',
         title: 'C. Quantitative assessment of the phase-out programme',
@@ -97,25 +188,25 @@ export function getViewSections(variant: any) {
       {
         id: 'section_c',
         allowFullScreen: true,
-        component: SectionCView,
-        label: includes(['II', 'III'], model) ? 'Adm C prices' : 'Section C',
+        component: components[mode].section_c || DefaultComponent,
+        label: constants[model]?.section_c?.label || 'Section C',
         panelId: 'section-C-panel',
         title:
           'SECTION C. AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US $/kg)',
       },
       {
         id: 'adm_d',
-        component: AdmDView,
+        component: components[mode].adm_d || DefaultComponent,
         label: 'Adm D-E',
         panelId: 'adm-D-panel',
-        title: includes(['II'], variant.model)
-          ? 'D. Qualitative assessment of the operation of RMP/NPP/TPMP'
-          : 'D. Qualitative assessment of the operation of HPMP',
+        title:
+          constants[model]?.adm_d?.title ||
+          'D. Qualitative assessment of the operation of HPMP',
       },
       {
         id: 'section_d',
         allowFullScreen: true,
-        component: SectionDView,
+        component: components[mode].section_d || DefaultComponent,
         label: 'Section D',
         panelId: 'section-D-panel',
         title:
@@ -124,7 +215,7 @@ export function getViewSections(variant: any) {
       {
         id: 'section_e',
         allowFullScreen: true,
-        component: SectionEView,
+        component: components[mode].section_e || DefaultComponent,
         label: 'Section E',
         panelId: 'section-E-panel',
         title:
@@ -132,7 +223,7 @@ export function getViewSections(variant: any) {
       },
       {
         id: 'section_f',
-        component: SectionFView,
+        component: components[mode].section_f || DefaultComponent,
         label: 'Section F',
         panelId: 'section-F-panel',
         title: 'SECTION F. COMMENTS BY BILATERAL/IMPLEMENTING AGENCIES',
@@ -141,172 +232,3 @@ export function getViewSections(variant: any) {
     (section) => includes(ids, section.id),
   )
 }
-
-export function getEditSection(variant: any) {
-  const { model } = variant
-  const ids = [
-    ...((includes(['I', 'II', 'III', 'IV'], model) && ['section_a']) || []),
-    ...((includes(['II', 'III', 'IV'], model) && ['section_c']) || []),
-    ...((includes(['IV'], model) && [
-      'section_b',
-      'section_d',
-      'section_e',
-      'section_f',
-    ]) ||
-      []),
-    ...((includes(['II', 'III'], model) && ['adm_b', 'adm_c', 'adm_d']) || []),
-  ]
-
-  return filter(
-    [
-      {
-        id: 'section_a',
-        allowFullScreen: true,
-        component: SectionACreate,
-        label: 'Section A',
-        panelId: 'section-A-panel',
-        title:
-          'SECTION A. ANNEX A, ANNEX B, ANNEX C - GROUP I AND ANNEX E - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)',
-      },
-      {
-        id: 'adm_b',
-        allowFullScreen: true,
-        component: AdmBCreate,
-        label: 'Adm B',
-        panelId: 'adm-B-panel',
-        title: 'B. Regulatory, administrative and supportive actions',
-      },
-      {
-        id: 'section_b',
-        allowFullScreen: true,
-        component: SectionBCreate,
-        label: 'Section B',
-        panelId: 'section-B-panel',
-        title:
-          'SECTION B. ANNEX F - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)',
-      },
-      {
-        id: 'adm_c',
-        allowFullScreen: true,
-        component: AdmCCreate,
-        label: 'Adm C',
-        panelId: 'adm-C-panel',
-        title: 'C. Quantitative assessment of the phase-out programme',
-      },
-      {
-        id: 'section_c',
-        allowFullScreen: true,
-        component: SectionCCreate,
-        label: includes(['II', 'III'], model) ? 'Adm C prices' : 'Section C',
-        panelId: 'section-C-panel',
-        title:
-          'SECTION C. AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US $/kg)',
-      },
-      {
-        id: 'adm_d',
-        allowFullScreen: true,
-        component: AdmDCreate,
-        label: 'Adm D-E',
-        panelId: 'adm-D-panel',
-        title: includes(['II'], variant.model)
-          ? 'D. Qualitative assessment of the operation of RMP/NPP/TPMP'
-          : 'D. Qualitative assessment of the operation of HPMP',
-      },
-      {
-        id: 'section_d',
-        allowFullScreen: true,
-        component: SectionDCreate,
-        label: 'Section D',
-        panelId: 'section-D-panel',
-        title:
-          'SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)',
-      },
-      {
-        id: 'section_e',
-        allowFullScreen: true,
-        component: SectionECreate,
-        label: 'Section E',
-        panelId: 'section-E-panel',
-        title:
-          'SECTION E. ANNEX F, GROUP II - DATA ON HFC-23 EMISSIONS (METRIC TONNES)',
-      },
-      {
-        id: 'section_f',
-        allowFullScreen: false,
-        component: SectionFCreate,
-        label: 'Section F',
-        panelId: 'section-F-panel',
-        title: 'SECTION F. COMMENTS BY BILATERAL/IMPLEMENTING AGENCIES',
-      },
-    ],
-    (section) => includes(ids, section.id),
-  )
-}
-
-export const createSections: Array<{
-  allowFullScreen: boolean
-  component: React.FC
-  id:
-    | 'section_a'
-    | 'section_b'
-    | 'section_c'
-    | 'section_d'
-    | 'section_e'
-    | 'section_f'
-  label: string
-  panelId: string
-  title: string
-}> = [
-  {
-    id: 'section_a',
-    allowFullScreen: true,
-    component: SectionACreate,
-    label: 'Section A',
-    panelId: 'section-A-panel',
-    title:
-      'SECTION A. ANNEX A, ANNEX B, ANNEX C - GROUP I AND ANNEX E - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)',
-  },
-  {
-    id: 'section_b',
-    allowFullScreen: true,
-    component: SectionBCreate,
-    label: 'Section B',
-    panelId: 'section-B-panel',
-    title: 'SECTION B. ANNEX F - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)',
-  },
-  {
-    id: 'section_c',
-    allowFullScreen: true,
-    component: SectionCCreate,
-    label: 'Section C',
-    panelId: 'section-C-panel',
-    title:
-      'SECTION C. AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US $/kg)',
-  },
-  {
-    id: 'section_d',
-    allowFullScreen: true,
-    component: SectionDCreate,
-    label: 'Section D',
-    panelId: 'section-D-panel',
-    title:
-      'SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)',
-  },
-  {
-    id: 'section_e',
-    allowFullScreen: true,
-    component: SectionECreate,
-    label: 'Section E',
-    panelId: 'section-E-panel',
-    title:
-      'SECTION E. ANNEX F, GROUP II - DATA ON HFC-23 EMISSIONS (METRIC TONNES)',
-  },
-  {
-    id: 'section_f',
-    allowFullScreen: false,
-    component: SectionFCreate,
-    label: 'Section F',
-    panelId: 'section-F-panel',
-    title: 'SECTION F. COMMENTS BY BILATERAL/IMPLEMENTING AGENCIES',
-  },
-]

@@ -13,11 +13,12 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import { IoTrash } from 'react-icons/io5'
 
 function useGridOptions(props: {
+  model: string
   onRemoveSubstance: any
   openAddChimicalModal: any
   usages: any
 }) {
-  const { onRemoveSubstance, openAddChimicalModal, usages } = props
+  const { model, onRemoveSubstance, openAddChimicalModal, usages } = props
 
   const gridOptions: GridOptions = useMemo(
     () => ({
@@ -122,22 +123,26 @@ function useGridOptions(props: {
           headerName: 'Production',
           ...colDefById['production'],
         },
-        {
-          aggFunc: 'sumTotal',
-          dataType: 'number',
-          field: 'manufacturing_blends',
-          headerComponentParams: {
-            footnote: {
-              id: '4',
-              content: 'Tentative/best estimates.',
-              icon: true,
-              index: '*',
-              order: 4,
-            },
-          },
-          headerName: 'Manufacturing of Blends',
-          ...colDefById['manufacturing_blends'],
-        },
+        ...(includes(['V'], model)
+          ? [
+              {
+                aggFunc: 'sumTotal',
+                dataType: 'number',
+                field: 'manufacturing_blends',
+                headerComponentParams: {
+                  footnote: {
+                    id: '4',
+                    content: 'Tentative/best estimates.',
+                    icon: true,
+                    index: '*',
+                    order: 4,
+                  },
+                },
+                headerName: 'Manufacturing of Blends',
+                ...colDefById['manufacturing_blends'],
+              },
+            ]
+          : []),
         {
           aggFunc: 'sumTotal',
           cellEditor: 'agNumberCellEditor',

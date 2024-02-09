@@ -26,7 +26,7 @@ import { defaultSliceData } from '@ors/helpers/Store/Store'
 import { parseNumber } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
 
-import { getViewSections, variants } from '.'
+import { getSections, variants } from '.'
 
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 import {
@@ -159,7 +159,7 @@ function CPView(props: { archive?: boolean; id: string }) {
     })[0]
   }, [report.data])
   const sections = useMemo(
-    () => (variant ? getViewSections(variant) : []),
+    () => (variant ? getSections(variant, 'view') : []),
     [variant],
   )
 

@@ -68,7 +68,8 @@ function getRowData(data: any) {
 
 export default function SectionBCreate(props: any) {
   const { enqueueSnackbar } = useSnackbar()
-  const { Section, TableProps, emptyForm, form, section, setForm } = props
+  const { Section, TableProps, emptyForm, form, section, setForm, variant } =
+    props
 
   const newNode = useRef<RowNode>()
 
@@ -112,6 +113,7 @@ export default function SectionBCreate(props: any) {
   }, [substances, blends, form.section_b, createdBlends, Section])
 
   const gridOptions = useGridOptions({
+    model: variant.model,
     onRemoveSubstance: (props: any) => {
       const removedSubstance = props.data
       const newData = [...form.section_b]

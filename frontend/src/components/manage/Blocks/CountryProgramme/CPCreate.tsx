@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
   Alert,
@@ -14,7 +14,7 @@ import {
 } from '@mui/material'
 import cx from 'classnames'
 import { produce } from 'immer'
-import { get, includes, isEmpty } from 'lodash'
+import { filter, get, includes, isEmpty } from 'lodash'
 import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
@@ -36,7 +36,7 @@ import SectionE from '@ors/models/SectionE'
 import SectionF from '@ors/models/SectionF'
 import { useStore } from '@ors/store'
 
-import { createSections } from '.'
+import { getSections, variants } from '.'
 
 import { IoClose, IoExpand, IoLink } from 'react-icons/io5'
 
@@ -179,16 +179,16 @@ function CPCreate(props: any) {
     path: `/api/country-programme/reports/?year_max=${currentYear}&year_min=${currentYear}&country_id=${form.country?.id}`,
   })
 
-  useEffect(() => {
-    existingReports.setApiSettings({
-      options: {
-        ...existingReports.apiSettings.options,
-        triggerIf: !!form.country?.id,
-      },
-      path: `/api/country-programme/reports/?year_max=${currentYear}&year_min=${currentYear}&country_id=${form.country?.id}`,
-    })
-    // eslint-disable-next-line
-  }, [form.country])
+  const [variant] = useState(() => {
+    return filter(variants, (variant) => {
+      const year = new Date().getFullYear()
+      return variant.minYear <= year && variant.maxYear >= year
+    })[0]
+  })
+  const sections = useMemo(
+    () => (variant ? getSections(variant, 'edit') : []),
+    [variant],
+  )
 
   const getSubmitFormData = useCallback(() => {
     return {
@@ -204,6 +204,17 @@ function CPCreate(props: any) {
     }
     /* eslint-disable-next-line */
   }, [form])
+
+  useEffect(() => {
+    existingReports.setApiSettings({
+      options: {
+        ...existingReports.apiSettings.options,
+        triggerIf: !!form.country?.id,
+      },
+      path: `/api/country-programme/reports/?year_max=${currentYear}&year_min=${currentYear}&country_id=${form.country?.id}`,
+    })
+    // eslint-disable-next-line
+  }, [form.country])
 
   useEffect(() => {
     Sections.section_a.updateLocalStorage(form.section_a)
@@ -288,7 +299,7 @@ function CPCreate(props: any) {
           }}
           allowScrollButtonsMobile
         >
-          {createSections.map((section) => (
+          {sections.map((section) => (
             <Tab
               key={section.id}
               className={cx({ 'MuiTab-error': !isEmpty(errors?.[section.id]) })}
@@ -341,7 +352,7 @@ function CPCreate(props: any) {
             </Typography>
           </Alert>
         )}
-        {createSections.map((section, index) => {
+        {sections.map((section, index) => {
           if (!includes(renderedSections, index)) return null
           const Section: React.FC<any> = section.component
           return (
