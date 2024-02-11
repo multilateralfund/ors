@@ -13,7 +13,31 @@ from core.utils import get_meta_project_code
 logger = logging.getLogger(__name__)
 
 
-def create_metaproj_for_projects(metaproject_data, project_codes):
+def set_correct_status():
+    """
+    Some projects have the wrong status. This function sets the correct status
+    """
+    closed_projects_codes = [
+        "CPR/SEV/30/TAS/346",
+        "EGY/REF/36/PRP/84",
+        "JOR/FOA/07/INV/05",
+        "KEN/SEV/44/INS/39",
+        "KUW/REF/76/DEM/32",
+        "PNG/REF/21/PRP/03",
+    ]
+    closed_status = ProjectStatus.objects.get(code="CLO")
+    if not closed_status:
+        logger.error("Project status CLO not found")
+        return
+    Project.objects.filter(code__in=closed_projects_codes).update(status=closed_status)
+
+
+def create_metaproj_for_custproj(project_codes, meta_type, code):
+    metaproject_data = {
+        "pcr_project_id": None,
+        "type": meta_type,
+        "code": code,
+    }
     meta_proj, _ = MetaProject.objects.update_or_create(
         code=metaproject_data["code"], defaults=metaproject_data
     )
@@ -25,25 +49,31 @@ def create_custom_metaprojects():
     create metaprojects for specific projects
     """
 
-    # NER/KIP/91/TAS/47, NER/KIP/91/INV/46
-    metaproject_data = {
-        "pcr_project_id": None,
-        "type": MetaProject.MetaProjectType.MYAHCFC,
-        "code": "NER/KIP/47",
+    myahcfc_type = MetaProject.MetaProjectType.MYAHCFC
+    indinv_type = MetaProject.MetaProjectType.INDINV
+    projects_list = {
+        myahcfc_type: {
+            "NER/KIP/47": ["NER/KIP/91/TAS/47", "NER/KIP/91/INV/46"],
+            "IND/ARS/69": ["IND/ARS/17/DEM/50", "IND/ARS/19/DEM/69"],
+        },
+        indinv_type: {
+            "ARG/PHA/157": ["ARG/PHA/55/PRP/157", "ARG/PHA/64/PRP/165"],
+            "COL/PAG/64": ["COL/PAG/47/INV/64", "COL/PAG/48/INV/66"],
+            "CPR/FOA/46": ["CPR/FOA/10/INV/46", "CPR/FOA/13/INV/74"],
+            "ECU/SEV/20": ["ECU/SEV/20/INV/20", "ECU/SEV/21/INV/21"],
+            "ECU/PHA/55": [
+                "ECU/PHA/55/PRP/40",
+                "ECU/PHA/59/PRP/44",
+                "ECU/PHA/59/PRP/45",
+            ],
+            "GLO/REF/06": ["GLO/REF/06/TRA/18", "GLO/REF/10/TRA/45"],
+            "SRL/PHA/57": ["SRL/PHA/57/PRP/36", "SRL/REF/61/PRP/39"],
+        },
     }
-    create_metaproj_for_projects(
-        metaproject_data, ["NER/KIP/91/TAS/47", "NER/KIP/91/INV/46"]
-    )
 
-    # IND/ARS/17/DEM/50, IND/ARS/19/DEM/69
-    metaproject_data = {
-        "pcr_project_id": None,
-        "type": MetaProject.MetaProjectType.MYACFC,
-        "code": "IND/ARS/69",
-    }
-    create_metaproj_for_projects(
-        metaproject_data, ["IND/ARS/17/DEM/50", "IND/ARS/19/DEM/69"]
-    )
+    for meta_type, projects in projects_list.items():
+        for code, project_codes in projects.items():
+            create_metaproj_for_custproj(project_codes, meta_type, code)
 
 
 def parse_meta_projects_file(file_path, database_name):
@@ -203,6 +233,7 @@ def create_other_meta_project():
 
 @transaction.atomic
 def import_meta_projects():
+    set_correct_status()
     create_custom_metaprojects()
     db_dir_path = settings.IMPORT_DATA_DIR / "pcr"
     for database_name in PCR_DIR_LIST:

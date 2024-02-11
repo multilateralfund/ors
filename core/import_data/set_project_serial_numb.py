@@ -4,7 +4,7 @@ from django.db import transaction
 from django.db.models import Min
 from core.models.country import Country
 
-from core.models.project import MetaProject, Project, ProjectCluster
+from core.models.project import MetaProject, Project, ProjectCluster, ProjectStatus
 from core.utils import get_meta_project_code, get_project_sub_code
 
 logger = logging.getLogger(__name__)

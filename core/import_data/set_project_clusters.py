@@ -1,10 +1,15 @@
 import json
 import logging
+import pandas as pd
 
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
-from core.import_data.utils import PCR_DIR_LIST, get_object_by_code
+from core.import_data.utils import (
+    IMPORT_RESOURCES_DIR,
+    PCR_DIR_LIST,
+    get_object_by_code,
+)
 
 from core.models.project import (
     Project,
@@ -52,6 +57,42 @@ SECTOR_CLUSTER_MAPPING = {
         "HCFC Production (Stage III)": "HPPMP3",
     },
 }
+
+
+def set_custom_clusters(file_path):
+    """
+    Set project clusters from a xlsx file
+    """
+    df = pd.read_excel(file_path).fillna("")
+    current_cluster = None
+    current_sector = None
+    current_type = None
+    for _, row in df.iterrows():
+        if current_cluster and current_cluster.code != row["ClusterCode"]:
+            current_cluster = ProjectCluster.objects.find_by_name_or_code(
+                row["ClusterCode"]
+            )
+            if not current_cluster:
+                logger.error(f"Cluster not found: {row['ClusterCode']}")
+                return
+        update_data = {
+            "cluster": current_cluster,
+        }
+        if row["SectorCode"]:
+            if not current_sector or current_sector.code != row["SectorCode"]:
+                current_sector = ProjectSector.objects.find_by_name(row["SectorCode"])
+            if not current_sector:
+                logger.error(f"Sector not found: {row['SectorCode']}")
+                return
+            update_data["sector"] = current_sector
+        if row["TypeCode"]:
+            if not current_type or current_type.code != row["TypeCode"]:
+                current_type = ProjectType.objects.find_by_name(row["TypeCode"])
+            if not current_type:
+                logger.error(f"Type not found: {row['TypeCode']}")
+                return
+            update_data["project_type"] = current_type
+        Project.objects.filter(code=row["ProjectCode"]).update(**update_data)
 
 
 def parse_clusters_file(file_path, database_name):
@@ -415,6 +456,15 @@ def set_ind_clusters():
         sector=current_sector,
     )
 
+    # legacy_subsector = CFC phaseout plan & legacy_type = PRP & title contains “terminal”
+    # => cluster = CFCIND
+    Project.objects.filter(
+        cluster_id__isnull=True,
+        subsector_legacy__iexact="CFC phase out plan",
+        project_type_legacy__iexact="PRP",
+        title__icontains="terminal",
+    ).update(cluster=cfcind_cluster)
+
 
 def set_ins_sectors():
     """
@@ -436,6 +486,11 @@ def set_project_clusters():
         file_path = db_dir_path / database_name / "Import_ListofMYAProjects.json"
         parse_clusters_file(file_path, database_name)
     logger.info("✅ setting project clusters for multi year projects")
+
+    logger.info("⏳ setting project clusters for custom projects")
+    file_path = IMPORT_RESOURCES_DIR / "cluster_project_mapping.xlsx"
+    set_custom_clusters(file_path)
+    logger.info("✅ setting project clusters for custom projects")
 
     logger.info("⏳ setting project clusters for individual projects")
     set_ind_clusters()
