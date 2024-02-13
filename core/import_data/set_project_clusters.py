@@ -68,7 +68,7 @@ def set_custom_clusters(file_path):
     current_sector = None
     current_type = None
     for _, row in df.iterrows():
-        if current_cluster and current_cluster.code != row["ClusterCode"]:
+        if not current_cluster or current_cluster.code != row["ClusterCode"]:
             current_cluster = ProjectCluster.objects.find_by_name_or_code(
                 row["ClusterCode"]
             )
@@ -93,6 +93,11 @@ def set_custom_clusters(file_path):
                 return
             update_data["project_type"] = current_type
         Project.objects.filter(code=row["ProjectCode"]).update(**update_data)
+
+    # legacy_code = TLS/PHA/59/PRP/02 => substance_type = CFC
+    Project.objects.select_related("sector").filter(
+        code="TLS/PHA/59/PRP/02",
+    ).update(substance_type="CFC")
 
 
 def parse_clusters_file(file_path, database_name):
@@ -162,34 +167,9 @@ def set_substance_cluster(project):
 
 
 def set_ind_clusters():
-    # legacy_code = CPR/PRO/13/INV/76 = CLuster = OOI
     ooi_cluster = ProjectCluster.objects.find_by_name_or_code("OOI")
-    Project.objects.select_related("sector").filter(
-        code="CPR/PRO/13/INV/76",
-    ).update(cluster=ooi_cluster)
-
-    # legacy_code in {NER/KIP/91/TAS/47, NER/KIP/91/INV/46} => cluster = KIP1
-    current_cluster = ProjectCluster.objects.find_by_name_or_code("KIP1")
-    Project.objects.select_related("sector").filter(
-        code__in=["NER/KIP/91/TAS/47", "NER/KIP/91/INV/46"],
-    ).update(cluster=current_cluster)
-
-    # legacy_code = TLS/PHA/59/PRP/02 => substance_type = CFC
-    Project.objects.select_related("sector").filter(
-        code="TLS/PHA/59/PRP/02",
-    ).update(substance_type="CFC")
-
-    # legacy_code = MAR/PHA/88/TAS/33 => cluster = HCFCIND
-    hcfcind_cluster = ProjectCluster.objects.find_by_name_or_code("HCFCIND")
-    Project.objects.select_related("sector").filter(
-        code="MAR/PHA/88/TAS/33",
-    ).update(cluster=hcfcind_cluster)
-
-    # legacy_code in {OMA/PHA/57/TAS/20, TRI/PHA/51/TAS/22} => cluster = CFCIND
     cfcind_cluster = ProjectCluster.objects.find_by_name_or_code("CFCIND")
-    Project.objects.select_related("sector").filter(
-        code__in=["OMA/PHA/57/TAS/20", "TRI/PHA/51/TAS/22"],
-    ).update(cluster=cfcind_cluster)
+    hcfcind_cluster = ProjectCluster.objects.find_by_name_or_code("HCFCIND")
 
     # project type INS or subsector_legacy Ozone unit support => cluster to INS
     current_cluster = ProjectCluster.objects.find_by_name_or_code("INS")
@@ -284,7 +264,7 @@ def set_ind_clusters():
         subsector__code="113",
     ).update(cluster=cfcind_cluster)
 
-    # project_type =PRP and sector in(FUM,PAG) => cluster = OOI
+    # project_type =PRP and sector in (FUM,PAG) => cluster = OOI
     Project.objects.select_related("project_type", "sector").filter(
         cluster_id__isnull=True,
         project_type__code="PRP",
@@ -357,7 +337,7 @@ def set_ind_clusters():
         cluster_id__isnull=True,
         sector_legacy="PHA",
         substance_type="CFC",
-        subsector_legacy__iexact="CFC phaseout plan",
+        subsector_legacy__iexact="CFC phase out plan",
     ).filter(
         Q(project_type__code="PRP") | Q(title__icontains="Verification"),
     ).update(
@@ -378,7 +358,7 @@ def set_ind_clusters():
     ).update(cluster=current_cluster)
 
     # legacy_sector = SEV lecacy_subsector = Agency Programme => cluster = Agency
-    current_cluster = ProjectCluster.objects.find_by_name_or_code("Agency")
+    current_cluster = ProjectCluster.objects.find_by_name_or_code("AGC")
     Project.objects.select_related().filter(
         cluster_id__isnull=True,
         sector_legacy="SEV",
@@ -386,7 +366,7 @@ def set_ind_clusters():
     ).update(cluster=current_cluster)
 
     # cluster = AGC, title contains "Core unit"
-    # => sector = Core Unit & project_type =  Project Support
+    # => sector = Core Unit & project_type = Project Support
     current_sector = ProjectSector.objects.find_by_name("Core Unit")
     current_proj_type = ProjectType.objects.find_by_name("Project Support")
     Project.objects.select_related("cluster").filter(
