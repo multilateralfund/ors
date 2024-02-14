@@ -705,5 +705,7 @@ class TestProjectsExport(BaseTest):
         assert sheet["L2"].value == project.subsector_legacy
         assert sheet["M2"].value == project.substance_type
         assert sheet["O2"].value == project.status.name
-        assert sheet["P2"].value == project.country.name
-        assert sheet["Q2"].value == project.title
+        assert sheet["P2"].value == project.serial_number
+        assert sheet["Q2"].value == project.serial_number_legacy
+        assert sheet["R2"].value == project.country.name
+        assert sheet["S2"].value == project.title
