@@ -24,7 +24,7 @@ export function usePSListingGridOptions() {
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
 
-  function formatValue(value: any) {
+  function agFormatValue(value: any) {
     return value?.id || ''
   }
 
@@ -75,7 +75,7 @@ export function usePSListingGridOptions() {
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select project type' },
-            formatValue,
+            agFormatValue,
             getFormattedValue: (id: any) => {
               return find(projectSlice.types.data, {
                 id,
@@ -116,7 +116,7 @@ export function usePSListingGridOptions() {
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select agency' },
-            formatValue,
+            agFormatValue,
             getFormattedValue: (id: any) => {
               return find(commonSlice.agencies.data, {
                 id,
@@ -152,7 +152,7 @@ export function usePSListingGridOptions() {
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select sector' },
-            formatValue,
+            agFormatValue,
             getFormattedValue: (id: any) => {
               return find(projectSlice.sectors.data, {
                 id,
@@ -193,7 +193,7 @@ export function usePSListingGridOptions() {
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select subsector' },
-            formatValue,
+            agFormatValue,
             getFormattedValue: (id: any) => {
               return find(projectSlice.subsectors.data, {
                 id,
@@ -251,7 +251,7 @@ export function usePSListingGridOptions() {
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select substance type' },
-            formatValue,
+            agFormatValue,
             getOptionLabel: (option: any) => {
               return isObject(option) ? get(option, 'name') : option
             },

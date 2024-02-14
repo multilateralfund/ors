@@ -38,7 +38,7 @@ import SectionE from '@ors/models/SectionE'
 import SectionF from '@ors/models/SectionF'
 import { useStore } from '@ors/store'
 
-import { getEditSection, variants } from '.'
+import { getSections, variants } from '.'
 
 import { IoClose, IoExpand } from 'react-icons/io5'
 
@@ -187,11 +187,12 @@ function CPEdit(props: { id: null | number }) {
     })[0]
   }, [report.data])
   const sections = useMemo(
-    () => (variant ? getEditSection(variant) : []),
+    () => (variant ? getSections(variant, 'edit') : []),
     [variant],
   )
 
   const getSubmitFormData = useCallback(() => {
+    console.log('HERE ON SUBMIT', form.section_c)
     return pickBy(
       {
         ...form,

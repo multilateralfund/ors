@@ -27,7 +27,7 @@ export const CellAutocompleteWidget = memo(
     (
       props: AutocompleteWidgetProps &
         ICellEditorParams & {
-          formatValue?: (value: any) => any
+          agFormatValue?: (value: any) => any
           getOptions?: (params: ICellEditorParams) => any
         },
       ref,
@@ -128,7 +128,7 @@ export const CellAutocompleteWidget = memo(
             borderRadius: 0,
           }}
           onChange={(event: any, value: any) => {
-            const parsedValue = props.formatValue?.(value) || value
+            const parsedValue = props.agFormatValue?.(value) || value
             setValue(parsedValue)
           }}
           onKeyDown={(event: any) => onKeyDown(event)}

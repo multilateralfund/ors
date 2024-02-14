@@ -45,8 +45,9 @@ function getPinnedRowData(rowData: any) {
 }
 
 export default function SectionBView(props: any) {
-  const { TableProps, emptyForm, report } = props
+  const { TableProps, emptyForm, report, variant } = props
   const gridOptions = useGridOptions({
+    model: variant.model,
     usages: emptyForm.usage_columns?.section_b || [],
   })
   const grid = useRef<any>()

@@ -116,7 +116,8 @@ export default class Section<DeserializedData, FormFields> {
     return this.data
   }
 
-  public getFormFieldValue(field: any, value: any) {
+  public getFormFieldValue(field: any, _value: any) {
+    const value = this.getFormattedValue(field, _value)
     if (
       isNull(value) ||
       (field.dataType === 'number' && (!isNumber(value) || isNaN(value))) ||
@@ -132,6 +133,13 @@ export default class Section<DeserializedData, FormFields> {
         const quantity = parseNumber(usage.quantity)
         return usage.usage_id && isNumber(quantity) && !isNaN(quantity)
       })
+    }
+    return value
+  }
+
+  public getFormattedValue(field: any, value: any) {
+    if (field.dataType === 'number') {
+      return parseNumber(value)
     }
     return value
   }

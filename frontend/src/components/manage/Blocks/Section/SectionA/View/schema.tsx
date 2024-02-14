@@ -63,7 +63,7 @@ function useGridOptions(props: { model: string; usages: any }) {
           headerName: 'Production',
           ...colDefById['production'],
         },
-        ...(includes(['IV'], model)
+        ...(includes(['IV', 'V'], model)
           ? [
               {
                 aggFunc: 'sumTotal',
@@ -74,7 +74,7 @@ function useGridOptions(props: { model: string; usages: any }) {
               },
             ]
           : []),
-        ...(includes(['IV'], model)
+        ...(includes(['IV', 'V'], model)
           ? [
               {
                 dataType: 'date',
@@ -84,7 +84,7 @@ function useGridOptions(props: { model: string; usages: any }) {
               },
             ]
           : []),
-        ...(includes(['II', 'III', 'IV'], model)
+        ...(includes(['II', 'III', 'IV', 'V'], model)
           ? [
               {
                 cellClass: 'ag-text-left',
