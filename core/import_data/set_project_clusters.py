@@ -171,15 +171,20 @@ def set_ind_clusters():
     cfcind_cluster = ProjectCluster.objects.find_by_name_or_code("CFCIND")
     hcfcind_cluster = ProjectCluster.objects.find_by_name_or_code("HCFCIND")
 
-    # project type INS or subsector_legacy Ozone unit support => cluster to INS
-    current_cluster = ProjectCluster.objects.find_by_name_or_code("INS")
+    # project type INS or subsector_legacy Ozone unit support
+    # => cluster = GOV & project_type = INS & sector = NOU
+    gov_cluster = ProjectCluster.objects.find_by_name_or_code("GOV")
+    current_proj_type = ProjectType.objects.find_by_name("INS")
+    current_sector = ProjectSector.objects.find_by_name("NOU")
     Project.objects.select_related("project_type").filter(
         cluster_id__isnull=True
     ).filter(
         Q(project_type__code="INS")
         | Q(subsector_legacy__icontains="ozone unit support")
     ).update(
-        cluster=current_cluster
+        cluster=gov_cluster,
+        project_type=current_proj_type,
+        sector=current_sector,
     )
 
     # project type TRA => cluster to TRA
@@ -271,60 +276,64 @@ def set_ind_clusters():
         sector__code__in=["FUM", "PAG"],
     ).update(cluster=ooi_cluster)
 
-    # cluster INS => cluster = GOV & project_type = INS & sector = NOU
-    ins_cluster = ProjectCluster.objects.find_by_name_or_code("INS")
-    gov_cluster = ProjectCluster.objects.find_by_name_or_code("GOV")
-    current_proj_type = ProjectType.objects.find_by_name("INS")
-    current_sector = ProjectSector.objects.find_by_name("NOU")
-    Project.objects.select_related().filter(
-        cluster_id=ins_cluster.id,
-    ).update(
-        cluster=gov_cluster,
-        project_type=current_proj_type,
-        sector=current_sector,
-    )
-
     # legacy_sector in {SOL,ARS} & substance_type = CFC => cluster = CFCIND
-    Project.objects.select_related().filter(
+    Project.objects.filter(
         cluster_id__isnull=True,
         sector_legacy__in=["SOL", "ARS"],
         substance_type="CFC",
     ).update(cluster=cfcind_cluster)
 
     # legacy_sector in {SOL,ARS} & substance_type = HCFC => cluster = HCFCIND
-    Project.objects.select_related().filter(
+    Project.objects.filter(
         cluster_id__isnull=True,
         sector_legacy__in=["SOL", "ARS"],
         substance_type="HCFC",
     ).update(cluster=hcfcind_cluster)
 
-    # legacy_sector = FUM => cluster = OOI & substance_type = Methyl Bromide
-    Project.objects.select_related().filter(
+    # legacy_sector = FUM & ods substance = "Methyl Bromide" => cluster = OOI
+    project_ids = (
+        ProjectOdsOdp.objects.select_related("ods_substance")
+        .filter(ods_substance__name__iexact="methyl bromide")
+        .values_list("project_id", flat=True)
+    )
+    Project.objects.filter(
         cluster_id__isnull=True,
         sector_legacy="FUM",
-    ).update(cluster=ooi_cluster, substance_type="Methyl Bromide")
+        id__in=project_ids,
+    ).update(cluster=ooi_cluster)
 
-    # legacy_sector = HAL => cluster = OOI & sector = FFI
-    current_sector = ProjectSector.objects.find_by_name("FFI")
-    Project.objects.select_related().filter(
+    # legacy_sector = FUM & cluster = OOI => substance_type = Methyl Bromide
+    Project.objects.filter(
+        sector_legacy="FUM",
+        cluster_id=ooi_cluster.id,
+    ).update(substance_type="Methyl Bromide")
+
+    # legacy_sector = HAL => cluster = OOI
+    Project.objects.filter(
         cluster_id__isnull=True,
         sector_legacy="HAL",
-    ).update(cluster=ooi_cluster, sector=current_sector)
+    ).update(cluster=ooi_cluster)
 
-    # legacy_subsector = Methyl Bromide => cluster = OOI & substance_type = Methyl Bromide
-    Project.objects.select_related().filter(
-        cluster_id__isnull=True,
+    # legacy_sector HAL => sector = FFI
+    current_sector = ProjectSector.objects.find_by_name("FFI")
+    Project.objects.filter(
+        sector_legacy="HAL",
+    ).update(sector=current_sector)
+
+    # legacy_subsector = Methyl Bromide & cluster = OOI => substance_type = Methyl Bromide
+    Project.objects.filter(
         subsector_legacy__iexact="Methyl Bromide",
-    ).update(cluster=ooi_cluster, substance_type="Methyl Bromide")
+        cluster_id=ooi_cluster.id,
+    ).update(substance_type="Methyl Bromide")
 
     # lecacy_sector = KIP => cluster = HFCIND
-    Project.objects.select_related().filter(
+    Project.objects.filter(
         cluster_id__isnull=True,
         sector_legacy="KIP",
     ).update(cluster=hfcind_cluster)
 
     # legacy_sector = PHA & substance_type = HCFC => cluster = HCFCIND
-    Project.objects.select_related().filter(
+    Project.objects.filter(
         cluster_id__isnull=True,
         sector_legacy="PHA",
         substance_type="HCFC",
@@ -345,25 +354,32 @@ def set_ind_clusters():
     )
 
     # legacy_sector = SOL => cluster = CFCIND
-    Project.objects.select_related().filter(
+    Project.objects.filter(
         cluster_id__isnull=True,
         sector_legacy="SOL",
     ).update(cluster=cfcind_cluster)
 
     # legacy_sector = DES => cluster = Disposal
     current_cluster = ProjectCluster.objects.find_by_name_or_code("Disposal")
-    Project.objects.select_related().filter(
+    Project.objects.filter(
         cluster_id__isnull=True,
         sector_legacy="DES",
     ).update(cluster=current_cluster)
 
     # legacy_sector = SEV lecacy_subsector = Agency Programme => cluster = Agency
     current_cluster = ProjectCluster.objects.find_by_name_or_code("AGC")
-    Project.objects.select_related().filter(
+    Project.objects.filter(
         cluster_id__isnull=True,
         sector_legacy="SEV",
         subsector_legacy__icontains="Agency Programme",
     ).update(cluster=current_cluster)
+
+    # sector in {CAP, PreCAP} => project_type = TAS & cluster = AGC
+    current_proj_type = ProjectType.objects.find_by_name("TAS")
+    Project.objects.select_related("sector").filter(
+        cluster_id__isnull=True,
+        sector__code__in=["CAP", "PCAP"],
+    ).update(project_type=current_proj_type, cluster=current_cluster)
 
     # cluster = AGC, title contains "Core unit"
     # => sector = Core Unit & project_type = Project Support
@@ -385,14 +401,14 @@ def set_ind_clusters():
 
     # legacy_sector = PHA & legacy_subsector = Preparation of project proposal
     # => cluster = CFCIND
-    Project.objects.select_related().filter(
+    Project.objects.filter(
         cluster_id__isnull=True,
         sector_legacy="PHA",
         subsector_legacy__iexact="Preparation of project proposal",
     ).update(cluster=cfcind_cluster)
 
     # legacy_sector = SEV & title contains "Enabling Activities" => cluster = HFCIND
-    Project.objects.select_related().filter(
+    Project.objects.filter(
         cluster_id__isnull=True,
         sector_legacy="SEV",
         title__icontains="Enabling Activities",
@@ -400,7 +416,7 @@ def set_ind_clusters():
 
     # legacy_sector = SEV & title contains "Survey" & substance_type = HCFC
     # => cluster = HCFCIND
-    Project.objects.select_related().filter(
+    Project.objects.filter(
         cluster_id__isnull=True,
         sector_legacy="SEV",
         title__icontains="Survey",
@@ -408,20 +424,12 @@ def set_ind_clusters():
     ).update(cluster=hcfcind_cluster)
 
     # legacy_sector = SEV & title contains "Survey" & substance_type = HFC => cluster = HFCIND
-    Project.objects.select_related().filter(
+    Project.objects.filter(
         cluster_id__isnull=True,
         sector_legacy="SEV",
         title__icontains="Survey",
         substance_type="HFC",
     ).update(cluster=hfcind_cluster)
-
-    # sector in {CAP, PreCAP} => project_type = TAS & cluster = AGC
-    current_proj_type = ProjectType.objects.find_by_name("TAS")
-    current_cluster = ProjectCluster.objects.find_by_name_or_code("AGC")
-    Project.objects.select_related("sector").filter(
-        cluster_id__isnull=True,
-        sector__code__in=["CAP", "PCAP"],
-    ).update(project_type=current_proj_type, cluster=current_cluster)
 
     # legacy_subsector = Country programme/country survey => cluster = CP & project_type = TAS & sector = CA
     current_proj_type = ProjectType.objects.find_by_name("TAS")

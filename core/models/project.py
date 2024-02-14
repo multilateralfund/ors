@@ -18,10 +18,8 @@ PROTECTED_STORAGE = FileSystemStorage(location=settings.PROTECTED_MEDIA_ROOT)
 
 class MetaProject(models.Model):
     class MetaProjectType(models.TextChoices):
-        MYACFC = "MYA CFC", "MYA CFC"
-        MYAHCFC = "MYA HCFC", "MYA HCFC"
-        INDINV = "Individual investment", "Individual investment"
-        INDNONINV = "Individual non-investment", "Individual non-investment"
+        MYA = "Multi-year agreement", "Multi-year agreement"
+        IND = "Individual", "Individual"
 
     type = models.CharField(max_length=255)
     code = models.CharField(max_length=255, null=True, blank=True)

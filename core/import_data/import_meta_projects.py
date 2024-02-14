@@ -49,14 +49,14 @@ def create_custom_metaprojects():
     create metaprojects for specific projects
     """
 
-    myahcfc_type = MetaProject.MetaProjectType.MYAHCFC
-    indinv_type = MetaProject.MetaProjectType.INDINV
+    mya_type = MetaProject.MetaProjectType.MYA
+    ind_type = MetaProject.MetaProjectType.IND
     projects_list = {
-        myahcfc_type: {
+        mya_type: {
             "NER/KIP/47": ["NER/KIP/91/TAS/47", "NER/KIP/91/INV/46"],
             "IND/ARS/69": ["IND/ARS/17/DEM/50", "IND/ARS/19/DEM/69"],
         },
-        indinv_type: {
+        ind_type: {
             "ARG/PHA/157": ["ARG/PHA/55/PRP/157", "ARG/PHA/64/PRP/165"],
             "COL/PAG/64": ["COL/PAG/47/INV/64", "COL/PAG/48/INV/66"],
             "CPR/FOA/46": ["CPR/FOA/10/INV/46", "CPR/FOA/13/INV/74"],
@@ -86,10 +86,7 @@ def parse_meta_projects_file(file_path, database_name):
         json_data = json.load(f)
 
     # set projects type
-    if database_name == "pcr2023":
-        project_type = MetaProject.MetaProjectType.MYACFC
-    else:
-        project_type = MetaProject.MetaProjectType.MYAHCFC
+    project_type = MetaProject.MetaProjectType.MYA
 
     for project_json in json_data:
         if not project_json["ProjectId"]:
@@ -141,7 +138,7 @@ def create_transf_meta_project():
 
     """
     transf_status = ProjectStatus.objects.get(code="TRF")
-    proj_type = MetaProject.MetaProjectType.INDINV
+    proj_type = MetaProject.MetaProjectType.IND
     projects = Project.objects.filter(
         code__isnull=False, status=transf_status, meta_project_id=None
     ).all()
@@ -205,7 +202,7 @@ def create_other_meta_project():
     )
 
     # project type
-    proj_type = MetaProject.MetaProjectType.INDINV
+    proj_type = MetaProject.MetaProjectType.IND
 
     for project in projects:
         if project.meta_project:
