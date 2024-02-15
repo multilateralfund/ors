@@ -181,8 +181,7 @@ function CPCreate(props: any) {
 
   const [variant] = useState(() => {
     return filter(variants, (variant) => {
-      const year = new Date().getFullYear()
-      return variant.minYear <= year && variant.maxYear >= year
+      return variant.minYear <= currentYear && variant.maxYear >= currentYear
     })[0]
   })
   const sections = useMemo(
@@ -376,6 +375,7 @@ function CPCreate(props: any) {
                   report={report.data}
                   section={section}
                   setForm={setForm}
+                  variant={variant}
                   TableProps={{
                     ...TableProps,
                     errors: errors[section.id],

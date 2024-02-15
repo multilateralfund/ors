@@ -192,7 +192,6 @@ function CPEdit(props: { id: null | number }) {
   )
 
   const getSubmitFormData = useCallback(() => {
-    console.log('HERE ON SUBMIT', form.section_c)
     return pickBy(
       {
         ...form,

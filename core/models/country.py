@@ -1,5 +1,7 @@
 from django.db import models
 
+from core.models.country_programme import CPReport
+
 
 class CountryManager(models.Manager):
     def find_by_name(self, name):
@@ -9,6 +11,17 @@ class CountryManager(models.Manager):
             | models.Q(full_name__iexact=name_str)
             | models.Q(name_alt__iexact=name_str)
         ).first()
+
+    def with_has_cp_report(self):
+        """
+        Returns a queryset of countries with a boolean field has_cp_report
+        """
+
+        return self.annotate(
+            has_cp_report=models.Exists(
+                CPReport.objects.filter(country_id=models.OuterRef("pk"))
+            )
+        )
 
 
 # country model; contains name, m49 code, and iso code
