@@ -11,7 +11,7 @@ class CountryListView(mixins.ListModelMixin, generics.GenericAPIView):
     """
 
     serializer_class = CountrySerializer
-    queryset = Country.objects.order_by("name")
+    queryset = Country.objects.with_has_cp_report().order_by("name")
     filterset_class = CountryFilter
 
     def get(self, request, *args, **kwargs):
