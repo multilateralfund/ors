@@ -249,9 +249,16 @@ def get_sector_subsector_details(sector_code, subsector_name, row_index):
 
     # get subsector
     if not sector:
-        subsector = get_object_by_name(
-            ProjectSubSector, new_subsector_name, row_index, "subsector", with_log=False
-        )
+        subsector = ProjectSubSector.objects.get_all_by_name_or_code(new_subsector_name)
+
+        if subsector.count() > 1:
+            logger.info(
+                f"[row: {row_index}]: There are multiple subsectors: {subsector_name} -> "
+                f"search name: {new_subsector_name} (sector: {new_sector_code})"
+            )
+            return sector, None
+
+        subsector = subsector.first()
     else:
         subsector = ProjectSubSector.objects.find_by_name_and_sector(
             new_subsector_name, sector

@@ -96,6 +96,11 @@ class ProjectSubSectorManager(models.Manager):
             models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str)
         ).first()
 
+    def get_all_by_name_or_code(self, search_str):
+        return self.filter(
+            models.Q(name__icontains=search_str) | models.Q(code__icontains=search_str)
+        ).all()
+
     def find_by_name_and_sector(self, name, sector):
         name_str = name.strip()
         return self.filter(

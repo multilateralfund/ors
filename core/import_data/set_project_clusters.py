@@ -453,6 +453,12 @@ def set_ind_clusters():
         title__icontains="terminal",
     ).update(cluster=cfcind_cluster)
 
+    # sector = fumigant => cluster= OOI
+    Project.objects.filter(
+        cluster_id__isnull=True,
+        sector__code="FUM",
+    ).update(cluster=ooi_cluster)
+
 
 def set_ins_sectors():
     """
