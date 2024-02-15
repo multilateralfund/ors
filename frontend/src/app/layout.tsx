@@ -127,6 +127,8 @@ export default async function RootLayout({
       types: getInitialSliceData(types),
       yearRanges: getInitialSliceData(yearRanges),
     }
+
+    console.log('HERE', countries)
   }
 
   return (
