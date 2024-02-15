@@ -1,7 +1,6 @@
 from django.db import models
 from core.models.blend import Blend
 
-from core.models.country import Country
 from core.models.substance import Substance
 from core.models.usage import Usage
 
@@ -21,7 +20,7 @@ class AbstractCPReport(models.Model):
     reporting_email = models.CharField(max_length=248, null=True, blank=True)
     submission_date = models.DateField(null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    country = models.ForeignKey("Country", on_delete=models.CASCADE)
 
     class Meta:
         abstract = True

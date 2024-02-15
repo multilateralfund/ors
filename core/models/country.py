@@ -1,5 +1,7 @@
 from django.db import models
 
+from core.models.country_programme import CPReport
+
 
 class CountryManager(models.Manager):
     def find_by_name(self, name):
@@ -14,7 +16,6 @@ class CountryManager(models.Manager):
         """
         Returns a queryset of countries with a boolean field has_cp_report
         """
-        from core.models.country_programme import CPReport
 
         return self.annotate(
             has_cp_report=models.Exists(
