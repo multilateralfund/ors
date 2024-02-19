@@ -24,6 +24,7 @@ from core.models.project import ProjectFund
 from core.models.project import ProjectFile
 from core.models.rbm_measures import RBMMeasure
 from core.models.substance import Substance
+from core.utils import get_project_sub_code
 
 
 class ProjectStatusSerializer(serializers.ModelSerializer):
@@ -505,6 +506,7 @@ class ProjectExportSerializer(ProjectListSerializer):
     class Meta(ProjectListSerializer.Meta):
         fields = ProjectListSerializer.Meta.fields + [
             "substances_list",
+            "serial_number_legacy",
         ]
 
     def get_substances_list(self, obj):
@@ -595,9 +597,16 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         validated_data["status_id"] = status.id
 
         # create project
+        # we should generate this fo submissions?
+        validated_data["serial_number"] = Project.objects.get_next_serial_number(
+            validated_data["country_id"]
+        )
         project = Project.objects.create(**validated_data)
         # set subcode
-        project.set_generated_code()
+        project.generated_code = get_project_sub_code(
+            project.country, project.cluster, project.serial_number
+        )
+        project.save()
 
         # create ods_odp
         for ods_odp in ods_odp_data:
@@ -624,8 +633,6 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         coop_agencies_id = validated_data.pop("coop_agencies_id", None)
 
         super().update(instance, validated_data)
-        # set subcode
-        instance.set_generated_code()
 
         # update coop_agencies
         if coop_agencies_id:

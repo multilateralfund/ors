@@ -233,13 +233,13 @@ def create_project(project_json):
         return None
 
     # set serial number
-    serial_number, additional_funding = get_serial_number_from_code(
+    serial_number_legacy, additional_funding = get_serial_number_from_code(
         project_json["CODE"]
     )
 
     project_data.update(
         {
-            "serial_number": serial_number,
+            "serial_number_legacy": serial_number_legacy,
             "additional_funding": additional_funding,
             "code": project_json["CODE"],
             "approval_meeting": meeting,

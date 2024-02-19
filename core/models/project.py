@@ -12,17 +12,14 @@ from core.models.meeting import Decision, Meeting
 from core.models.rbm_measures import RBMMeasure
 from core.models.substance import Substance
 from core.models.utils import SubstancesType
-from core.utils import get_project_sub_code
 
 PROTECTED_STORAGE = FileSystemStorage(location=settings.PROTECTED_MEDIA_ROOT)
 
 
 class MetaProject(models.Model):
     class MetaProjectType(models.TextChoices):
-        MYACFC = "MYA CFC", "MYA CFC"
-        MYAHCFC = "MYA HCFC", "MYA HCFC"
-        INDINV = "Individual investment", "Individual investment"
-        INDNONINV = "Individual non-investment", "Individual non-investment"
+        MYA = "Multi-year agreement", "Multi-year agreement"
+        IND = "Individual", "Individual"
 
     type = models.CharField(max_length=255)
     code = models.CharField(max_length=255, null=True, blank=True)
@@ -99,6 +96,11 @@ class ProjectSubSectorManager(models.Manager):
             models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str)
         ).first()
 
+    def get_all_by_name_or_code(self, search_str):
+        return self.filter(
+            models.Q(name__icontains=search_str) | models.Q(code__icontains=search_str)
+        ).all()
+
     def find_by_name_and_sector(self, name, sector):
         name_str = name.strip()
         return self.filter(
@@ -148,6 +150,11 @@ class ProjectCluster(models.Model):
         return self.name
 
 
+class ProjectManager(models.Manager):
+    def get_next_serial_number(self, country_id):
+        return self.filter(country_id=country_id).count() + 1
+
+
 class Project(models.Model):
     class SubmissionCategory(models.TextChoices):
         BIL_COOP = (
@@ -180,7 +187,8 @@ class Project(models.Model):
 
     code = models.CharField(max_length=128, unique=True, null=True, blank=True)
     generated_code = models.CharField(max_length=128, null=True, blank=True)
-    serial_number = models.IntegerField(null=True, blank=True)  # number
+    serial_number_legacy = models.IntegerField(null=True, blank=True)  # number
+    serial_number = models.IntegerField(null=True, blank=True)
     additional_funding = models.BooleanField(default=False)
     mya_code = models.CharField(max_length=128, null=True, blank=True)
     title = models.CharField(max_length=256)
@@ -285,6 +293,8 @@ class Project(models.Model):
     plus = models.BooleanField(default=False)
     source_file = models.CharField(max_length=255, null=True, blank=True)
 
+    objects = ProjectManager()
+
     def __str__(self):
         return self.title
 
@@ -294,19 +304,6 @@ class Project(models.Model):
             return self.files.latest()
         except ProjectFile.DoesNotExist:
             return None
-
-    def set_generated_code(self):
-        self.generated_code = get_project_sub_code(
-            self.country,
-            self.cluster,
-            self.serial_number,
-            self.agency,
-            self.project_type,
-            self.sector,
-            self.approval_meeting,
-            self.meeting_transf,
-        )
-        self.save()
 
 
 class ProjectFile(models.Model):
