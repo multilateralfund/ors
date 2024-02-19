@@ -274,7 +274,7 @@ def get_sector_subsector_details(sector_code, subsector_name, row_index):
         return sector, None
 
     if not sector:
-        return subsector.sector, subsector
+        sector = subsector.sector
 
     return sector, subsector
 

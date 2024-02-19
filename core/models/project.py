@@ -189,7 +189,6 @@ class Project(models.Model):
     generated_code = models.CharField(max_length=128, null=True, blank=True)
     serial_number_legacy = models.IntegerField(null=True, blank=True)  # number
     serial_number = models.IntegerField(null=True, blank=True)
-    meta_serial_number = models.IntegerField(null=True, blank=True)
     additional_funding = models.BooleanField(default=False)
     mya_code = models.CharField(max_length=128, null=True, blank=True)
     title = models.CharField(max_length=256)

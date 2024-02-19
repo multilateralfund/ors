@@ -76,7 +76,7 @@ def create_custom_metaprojects():
             create_metaproj_for_custproj(project_codes, meta_type, code)
 
 
-def parse_meta_projects_file(file_path, database_name):
+def parse_meta_projects_file(file_path):
     """
     Import meta projects from json file
 
@@ -235,9 +235,7 @@ def import_meta_projects():
     db_dir_path = settings.IMPORT_DATA_DIR / "pcr"
     for database_name in PCR_DIR_LIST:
         logger.info(f"⏳ importing pcr meta projects from {database_name}")
-        parse_meta_projects_file(
-            db_dir_path / database_name / "tbINVENTORY.json", database_name
-        )
+        parse_meta_projects_file(db_dir_path / database_name / "tbINVENTORY.json")
 
     logger.info("⏳ creating meta projects for transferred projects")
     create_transf_meta_project()
