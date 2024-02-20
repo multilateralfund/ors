@@ -76,9 +76,9 @@ docker-compose exec app ./manage.py import_records cp_db
 
     |nextcloud name | local name |
     | :----    | :----:  |
-    | SectionA(ODPTonnes)-Datafor2019-2022(May 10, 2023).xlsx | SectionA.xlsx |
-    | SectionB(MetricTonnes)-Datafor2019-2022(May 10, 2023)withGWP.xlsx | SectionB.xlsx |
-    | SectionC,D,E-2019-2022(May 10, 2023).xlsx | SectionCDE.xlsx |
+    | SectionA(ODPT)-Datafor2019-2022(February1,2024).xlsx | SectionA.xlsx |
+    | SectionB(MetricTonnes)-Datafor2019-2022(February1,2024).xlsx | SectionB.xlsx |
+    | SectionC,D,E-2019-2022(February1,2024).xlsx | SectionCDE.xlsx |
     | 1995-2004 CP Data Submitted[38].xlsx | CPDataSubmitted_94_04.xlsx |
 
 
