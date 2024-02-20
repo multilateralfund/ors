@@ -44,7 +44,6 @@ NON_USAGE_COLUMNS = {
 REQUIRED_COLUMNS = [
     "country",
     "chemical",
-    "year",
     "total",
 ]
 
@@ -104,7 +103,7 @@ def check_gwp_value(obj, gwp_value, index_row):
 
 
 # pylint: disable=R0914
-def parse_sheet(df, file_details):
+def parse_sheet(df, file_details, year):
     """
     parse the sheet and import the data in database
     @param df = pandas dataframe
@@ -137,7 +136,7 @@ def parse_sheet(df, file_details):
             )
             if current_country["obj"]:
                 current_cp = get_cp_report(
-                    row["year"], current_country["obj"].name, current_country["obj"].id
+                    year, current_country["obj"].name, current_country["obj"].id
                 )
 
         if not current_country["obj"]:
@@ -145,9 +144,9 @@ def parse_sheet(df, file_details):
             continue
 
         # another year => another country program
-        if current_cp.year != row["year"]:
+        if current_cp.year != year:
             current_cp = get_cp_report(
-                row["year"], current_country["obj"].name, current_country["obj"].id
+                year, current_country["obj"].name, current_country["obj"].id
             )
 
         # get chemical
@@ -217,15 +216,15 @@ def parse_file(file_path, file_details):
         # if the sheet_name is not a year => skip
         if not sheet_name.strip().isdigit():
             continue
-
-        logger.info(f"Start parsing sheet: {sheet_name}")
+        year = int(sheet_name.strip())
+        logger.info(f"Start parsing sheet: {year}")
 
         # set column names
         df = df.rename(columns=lambda x: x.replace("(MT)", "").strip().lower())
         # replace nan with None
         df = df.replace(np.nan, None)
 
-        parse_sheet(df, file_details)
+        parse_sheet(df, file_details, year)
 
 
 @transaction.atomic
