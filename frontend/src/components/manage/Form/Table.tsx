@@ -106,7 +106,7 @@ function Table(props: TableProps) {
     pinnedBottomRowData,
     rowBuffer = 20,
     rowCount = 0,
-    rowHeight = 36,
+    rowHeight = 28,
     rowsVisible = 15,
     withFluidEmptyColumn = false,
     withSeparators = false,

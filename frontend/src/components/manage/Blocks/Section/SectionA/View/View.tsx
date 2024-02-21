@@ -49,6 +49,8 @@ export default function SectionAView(props: any) {
   const [rowData] = useState(() => getRowData(report))
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
+  console.log(gridOptions);
+
   return (
     <Table
       {...TableProps}
