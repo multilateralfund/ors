@@ -110,6 +110,11 @@ function useGridOptions(props: { model: string; usages: any }) {
             ),
           })
         },
+        cellRendererParams: () => {
+          return {
+            maximumFractionDigits: 2,
+          };
+        },
         headerClass: 'ag-text-center',
         minWidth: defaultColDef.minWidth,
         resizable: true,
