@@ -1,8 +1,7 @@
 'use client'
 import { I18nSlice, ThemeSlice } from '@ors/types/store'
 
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
-import React from 'react'
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
 
 import styled from '@emotion/styled'
 import { TablePagination, Typography } from '@mui/material'
@@ -22,6 +21,10 @@ import {
 } from 'lodash'
 
 import { components as defaultComponents } from '@ors/config/Table/Table'
+import {
+  defaultColDef as globalColDef,
+  defaultColGroupDef as globalColGroupDef,
+} from '@ors/config/Table/columnsDef'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import DefaultFadeInOut from '@ors/components/manage/Transitions/FadeInOut'
@@ -128,6 +131,7 @@ function Table(props: TableProps) {
 
   // defaultColDef sets props common to all Columns
   const [defaultColDef] = useState<ColDef>(() => ({
+    ...globalColDef,
     autoHeaderHeight: true,
     cellClass: (params) => {
       return cx(
@@ -347,6 +351,7 @@ function Table(props: TableProps) {
             animateRows={false}
             components={components}
             defaultColDef={defaultColDef}
+            defaultColGroupDef={props?.defaultColGroupDef || globalColGroupDef}
             enableCellTextSelection={true}
             enableRtl={i18n.dir === 'rtl'}
             ensureDomOrder={true}
@@ -539,6 +544,7 @@ function Table(props: TableProps) {
               'gridRef',
               'components',
               'defaultColDef',
+              'defaultColGroupDef',
               'enableRtl',
               'pinnedBottomRowData',
               'rowBuffer',

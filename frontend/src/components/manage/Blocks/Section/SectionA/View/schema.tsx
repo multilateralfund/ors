@@ -6,7 +6,7 @@ import { includes } from 'lodash'
 
 import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
 
-function useGridOptions(props: { model: string; usages: any }) {
+function useGridOptions(props: { model: string; usages: object[] }) {
   const { model, usages } = props
 
   const gridOptions: GridOptions = useMemo(
