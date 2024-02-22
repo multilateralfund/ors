@@ -36,7 +36,9 @@ export default function AgFloatCellRenderer(props: any) {
   const maximumFractionDigits = props.maximumFractionDigits || 3;
   const minimumFractionDigits = props.minimumFractionDigits || props.maximumFractionDigits || 2;
 
-  const formattedValue = value.toLocaleString(undefined, {
+  const valueToAvoidRounding = Math.floor(value * 10**maximumFractionDigits) / 10**maximumFractionDigits;
+
+  const formattedValue = valueToAvoidRounding.toLocaleString(undefined, {
     maximumFractionDigits,
     minimumFractionDigits
   })
