@@ -59,12 +59,15 @@ export default function AgTextCellRenderer(props: any) {
       >
         {props.value}
         {!!footnote && (
-          <sup className="font-bold">{footnote.index || footnoteId}</sup>
+          <sup className="font-bold" title={footnote.content}>
+            {footnote.index || footnoteId}
+          </sup>
         )}
         {!!footnote?.icon && (
           <IconButton
             className={cx('ml-1 p-0', { 'cursor-default': !footnote })}
             color="info"
+            title={footnote.content}
             disableRipple
           >
             <IoInformationCircleOutline className="inline-block" />

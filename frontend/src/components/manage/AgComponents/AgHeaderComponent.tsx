@@ -1,5 +1,5 @@
 'use client'
-import React, { ReactNode, useContext, useEffect, useState } from 'react'
+import { ReactNode, useContext, useEffect, useState } from 'react'
 
 import { IconButton, Typography } from '@mui/material'
 import { ColDef, IHeaderParams } from 'ag-grid-community'
@@ -79,12 +79,15 @@ export default function AgHeaderComponent(props: IAgHeaderParams) {
       >
         {displayName}
         {!!footnote && (
-          <sup className="font-bold">{footnote.index || footnoteId}</sup>
+          <sup className="font-bold" title={footnote.content}>
+            {footnote.index || footnoteId}
+          </sup>
         )}
         {!!footnote?.icon && (
           <IconButton
             className={cx('ml-1 p-0', { 'cursor-default': !footnote })}
             color="info"
+            title={footnote.content}
             disableRipple
           >
             <IoInformationCircleOutline className="inline-block" />

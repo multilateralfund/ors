@@ -1,12 +1,16 @@
 import { useRef, useState } from 'react'
 
+import { Alert } from '@mui/material'
 import { each, includes, union } from 'lodash'
 
 import components from '@ors/config/Table/components'
 
 import Table from '@ors/components/manage/Form/Table'
+import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 
 import useGridOptions from './schema'
+
+import { IoInformationCircleOutline } from 'react-icons/io5'
 
 function getRowData(report: any) {
   let rowData: Array<any> = []
@@ -49,18 +53,21 @@ export default function SectionAView(props: any) {
   const [rowData] = useState(() => getRowData(report))
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
-  console.log(gridOptions);
-
   return (
-    <Table
-      {...TableProps}
-      columnDefs={gridOptions.columnDefs}
-      components={components}
-      defaultColDef={gridOptions.defaultColDef}
-      gridRef={grid}
-      headerDepth={3}
-      pinnedBottomRowData={pinnedBottomRowData}
-      rowData={rowData}
-    />
+    <>
+      <Table
+        {...TableProps}
+        columnDefs={gridOptions.columnDefs}
+        components={components}
+        defaultColDef={gridOptions.defaultColDef}
+        gridRef={grid}
+        headerDepth={3}
+        pinnedBottomRowData={pinnedBottomRowData}
+        rowData={rowData}
+      />
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnotes />
+      </Alert>
+    </>
   )
 }
