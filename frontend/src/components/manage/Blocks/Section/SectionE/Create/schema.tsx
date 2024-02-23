@@ -5,10 +5,12 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+import { defaultColDef } from '@ors/config/Table/columnsDef'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
+
+import { sectionColDefById, sectionColGroupDefById } from '../sectionColumnsDef'
 
 import { IoTrash } from 'react-icons/io5'
 
@@ -63,25 +65,15 @@ function useGridOptions(props: {
           field: 'facility',
           headerClass: 'ag-text-left',
           headerName: 'Facility name or identifier',
-          ...colDefById['facility'],
+          ...sectionColDefById['facility'],
         },
         {
           aggFunc: 'sumTotal',
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',
           field: 'total',
-          headerComponentParams: {
-            footnote: {
-              id: '1',
-              content:
-                '"Total amount generated" refers to the total amount whether captured or not. The sum of these amounts is not to be reported under Section D.',
-              icon: true,
-              order: 1,
-            },
-            info: true,
-          },
           headerName: 'Total amount generated',
-          ...colDefById['total_amount_generated'],
+          ...sectionColDefById['total_amount_generated'],
         },
         {
           children: [
@@ -91,7 +83,7 @@ function useGridOptions(props: {
               dataType: 'number',
               field: 'all_uses',
               headerName: 'For all uses',
-              ...colDefById['all_uses'],
+              ...sectionColDefById['all_uses'],
             },
             {
               aggFunc: 'sumTotal',
@@ -99,7 +91,7 @@ function useGridOptions(props: {
               dataType: 'number',
               field: 'feedstock_gc',
               headerName: 'For feedstock use in your country',
-              ...colDefById['feedstock_gc'],
+              ...sectionColDefById['feedstock_gc'],
             },
             {
               aggFunc: 'sumTotal',
@@ -107,55 +99,30 @@ function useGridOptions(props: {
               dataType: 'number',
               field: 'destruction',
               headerName: 'For destruction',
-              ...colDefById['destruction'],
+              ...sectionColDefById['destruction'],
             },
           ],
           groupId: 'amount_generated_and_captured',
           headerGroupComponent: 'agColumnHeaderGroup',
-          headerGroupComponentParams: {
-            footnote: {
-              id: '2',
-              content:
-                'The sums of these amounts are to be reported under Section D.',
-              icon: true,
-              order: 2,
-            },
-          },
           headerName: 'Amount generated and captured',
           marryChildren: true,
+          ...sectionColGroupDefById["amount_generated_and_captured"],
         },
         {
           aggFunc: 'sumTotal',
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',
           field: 'feedstock_wpc',
-          headerComponentParams: {
-            footnote: {
-              id: '3',
-              content:
-                'Amount converted to other substances in the facility. The sum of these amounts is not to be reported under Section D.',
-              icon: true,
-              order: 3,
-            },
-          },
           headerName: 'Amount used for feedstock without prior capture',
-          ...colDefById['feedstock_wpc'],
+          ...sectionColDefById['feedstock_wpc'],
         },
         {
           aggFunc: 'sumTotal',
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',
           field: 'destruction_wpc',
-          headerComponentParams: {
-            footnote: {
-              id: '4',
-              content: 'Amount destroyed in the facility.',
-              icon: true,
-              order: 4,
-            },
-          },
           headerName: 'Amount destroyed without prior capture',
-          ...colDefById['destruction_wpc'],
+          ...sectionColDefById['destruction_wpc'],
         },
         {
           aggFunc: 'sumTotal',
@@ -163,13 +130,13 @@ function useGridOptions(props: {
           dataType: 'number',
           field: 'generated_emissions',
           headerName: 'Amount of generated emission',
-          ...colDefById['generated_emissions'],
+          ...sectionColDefById['generated_emissions'],
         },
         {
           cellEditor: 'agTextCellEditor',
           field: 'remarks',
           headerName: 'Remarks',
-          ...colDefById['remarks'],
+          ...sectionColDefById['remarks'],
         },
       ],
       defaultColDef: {

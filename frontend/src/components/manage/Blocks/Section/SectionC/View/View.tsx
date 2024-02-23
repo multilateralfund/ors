@@ -1,10 +1,14 @@
 import { useRef, useState } from 'react'
 
+import { Alert } from '@mui/material'
 import { each, includes, union } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
+import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 
 import useGridOptions from './schema'
+
+import { IoInformationCircleOutline } from 'react-icons/io5'
 
 function getRowData(report: any) {
   let rowData: Array<any> = []
@@ -45,6 +49,9 @@ export default function SectionCView(props: any) {
         gridRef={grid}
         rowData={rowData}
       />
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnotes />
+      </Alert>
     </>
   )
 }

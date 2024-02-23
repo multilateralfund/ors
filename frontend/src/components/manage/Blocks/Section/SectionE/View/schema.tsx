@@ -4,7 +4,9 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+import { defaultColDef } from '@ors/config/Table/columnsDef'
+
+import { sectionColDefById, sectionColGroupDefById } from '../sectionColumnsDef'
 
 function useGridOptions() {
   const [gridOptions] = useState<GridOptions>({
@@ -19,14 +21,14 @@ function useGridOptions() {
         field: 'facility',
         headerClass: 'ag-text-left',
         headerName: 'Facility name or identifier',
-        ...colDefById['facility'],
+        ...sectionColDefById['facility'],
       },
       {
         aggFunc: 'sumTotal',
         dataType: 'number',
         field: 'total',
         headerName: 'Total amount generated',
-        ...colDefById['total_amount_generated'],
+        ...sectionColDefById['total_amount_generated'],
       },
       {
         children: [
@@ -35,53 +37,54 @@ function useGridOptions() {
             dataType: 'number',
             field: 'all_uses',
             headerName: 'For all uses',
-            ...colDefById['all_uses'],
+            ...sectionColDefById['all_uses'],
           },
           {
             aggFunc: 'sumTotal',
             dataType: 'number',
             field: 'feedstock_gc',
             headerName: 'For feedstock use in your country',
-            ...colDefById['feedstock_gc'],
+            ...sectionColDefById['feedstock_gc'],
           },
           {
             aggFunc: 'sumTotal',
             dataType: 'number',
             field: 'destruction',
             headerName: 'For destruction',
-            ...colDefById['destruction'],
+            ...sectionColDefById['destruction'],
           },
         ],
         groupId: 'amount_generated_and_captured',
         headerGroupComponent: 'agColumnHeaderGroup',
         headerName: 'Amount generated and captured',
         marryChildren: true,
+        ...sectionColGroupDefById['amount_generated_and_captured'],
       },
       {
         aggFunc: 'sumTotal',
         dataType: 'number',
         field: 'feedstock_wpc',
         headerName: 'Amount used for feedstock without prior capture',
-        ...colDefById['feedstock_wpc'],
+        ...sectionColDefById['feedstock_wpc'],
       },
       {
         aggFunc: 'sumTotal',
         dataType: 'number',
         field: 'destruction_wpc',
         headerName: 'Amount destroyed without prior capture',
-        ...colDefById['destruction_wpc'],
+        ...sectionColDefById['destruction_wpc'],
       },
       {
         aggFunc: 'sumTotal',
         dataType: 'number',
         field: 'generated_emissions',
         headerName: 'Amount of generated emission',
-        ...colDefById['generated_emissions'],
+        ...sectionColDefById['generated_emissions'],
       },
       {
         field: 'remarks',
         headerName: 'Remarks',
-        ...colDefById['remarks'],
+        ...sectionColDefById['remarks'],
       },
     ],
     defaultColDef: {
