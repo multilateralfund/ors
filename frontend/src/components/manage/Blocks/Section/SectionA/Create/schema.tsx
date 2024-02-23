@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 
-import { Button, Tooltip } from '@mui/material'
+import { Button, Link, Tooltip } from '@mui/material'
 import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
-import { includes } from 'lodash'
+import { includes, omit } from 'lodash'
 
 import { defaultColDef } from '@ors/config/Table/columnsDef'
 
@@ -26,7 +26,10 @@ function useGridOptions(props: {
       columnDefs: [
         {
           cellRenderer: (props: any) => {
-            if (props.data.rowType === 'control') {
+            if (
+              props.data.rowType === 'control' &&
+              props.data.row_id === 'control'
+            ) {
               return (
                 <Tooltip
                   placement="top"
@@ -41,7 +44,39 @@ function useGridOptions(props: {
                   </Button>
                 </Tooltip>
               )
+            } else if (
+              props.data.rowType === 'control' &&
+              props.data.row_id.startsWith('other-')
+            ) {
+              console.log(props)
+              const renderValue = (
+                <Tooltip
+                  placement="top"
+                  title="Indicate relevant controlled substances"
+                >
+                  <Link
+                    className="cursor-pointer"
+                    color={'inherit'}
+                    underline="hover"
+                    onClick={openAddSubstanceModal}
+                  >
+                    <span>Other</span>
+                  </Link>
+                </Tooltip>
+              )
+              return (
+                <AgCellRenderer
+                  {...omit(props, ['value', 'footnote'])}
+                  value={renderValue}
+                  footnote={{
+                    id: '2',
+                    content: 'Indicate relevant controlled substances.',
+                    icon: true,
+                  }}
+                />
+              )
             }
+
             return <AgCellRenderer {...props} />
           },
           cellRendererParams: (props: any) => ({
@@ -131,6 +166,13 @@ function useGridOptions(props: {
           field: 'remarks',
           headerName: 'Remarks',
           ...sectionColDefById['remarks'],
+          headerComponentParams: {
+            ...sectionColDefById['remarks'].headerComponentParams,
+            footnote: {
+              ...sectionColDefById['remarks'].headerComponentParams.footnote,
+              id: '3',
+            },
+          },
         },
       ],
       defaultColDef: {

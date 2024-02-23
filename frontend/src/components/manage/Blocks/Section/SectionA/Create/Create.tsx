@@ -42,6 +42,16 @@ function getRowData(data: any) {
         },
       ],
       dataByGroup[group],
+      group === 'Annex C, Group I'
+        ? [
+            {
+              display_name: 'Other',
+              group,
+              row_id: `other-[${group}]`,
+              rowType: 'control',
+            },
+          ]
+        : [],
       [
         {
           display_name: 'Sub-total',
