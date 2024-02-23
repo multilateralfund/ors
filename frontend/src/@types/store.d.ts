@@ -2,7 +2,6 @@ import type { Language } from '@ors/types/locales'
 import type { DataType, SliceData } from '@ors/types/primitives'
 import type { PartialDeep, UnknownArray } from 'type-fest'
 
-import { ReactNode } from 'react'
 
 type Report = SliceData<
   Record<string, any> | null,
@@ -84,6 +83,7 @@ export interface UserSlice
 export interface CommonSlice {
   agencies: SliceData
   countries: SliceData
+  countries_cp_report: SliceData
   settings: SliceData
 }
 

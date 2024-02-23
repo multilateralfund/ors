@@ -91,7 +91,7 @@ export default async function RootLayout({
     ] = await Promise.all([
       api('api/settings/', {}, false),
       api('api/agencies/', {}, false),
-      api('api/countries/', { params: { with_cp_report: true } }, false),
+      api('api/countries/', {}, false),
       api('api/project-statuses/', {}, false),
       api('api/project-sectors/', {}, false),
       api('api/project-subsectors/', {}, false),
@@ -107,6 +107,9 @@ export default async function RootLayout({
     common = {
       agencies: getInitialSliceData(agencies),
       countries: getInitialSliceData(countries),
+      countries_cp_report: getInitialSliceData(
+        countries.filter((c: any) => !!c.has_cp_report),
+      ),
       settings: getInitialSliceData(settings),
     }
     projects = {
@@ -127,8 +130,6 @@ export default async function RootLayout({
       types: getInitialSliceData(types),
       yearRanges: getInitialSliceData(yearRanges),
     }
-
-    console.log('HERE', countries)
   }
 
   return (

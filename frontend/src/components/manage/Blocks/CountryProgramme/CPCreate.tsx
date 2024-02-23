@@ -109,8 +109,7 @@ function CPCreate(props: any) {
   const { blends, report, substances } = useStore((state) => state.cp_reports)
 
   const countries = useStore((state) => [
-    { id: 0, label: 'Any' },
-    ...getResults(state.common.countries.data).results.map((country) => ({
+    ...getResults(state.common.countries_cp_report.data).results.map((country) => ({
       id: country.id,
       label: country.name,
     })),
