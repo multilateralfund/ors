@@ -5,10 +5,12 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+import { defaultColDef } from '@ors/config/Table/columnsDef'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
+
+import { sectionColDefById } from '../sectionColumnsDef'
 
 import { IoTrash } from 'react-icons/io5'
 
@@ -61,16 +63,8 @@ function useGridOptions(props: {
           }),
           field: 'display_name',
           headerClass: 'ag-text-left',
-          headerComponentParams: {
-            footnote: {
-              id: '1',
-              content:
-                'Where the data involves a blend of two or more substances, the quantities of individual components of controlled substances must be indicated separately.',
-              icon: true,
-            },
-          },
           headerName: 'Substance',
-          ...colDefById['display_name'],
+          ...sectionColDefById['display_name'],
         },
         ...(usages.length
           ? [
@@ -83,7 +77,7 @@ function useGridOptions(props: {
                     category: 'usage',
                     field: 'total_usages',
                     headerName: 'TOTAL',
-                    ...colDefById['total_usages'],
+                    ...sectionColDefById['total_usages'],
                   },
                 ],
                 headerGroupComponent: 'agColumnHeaderGroup',
@@ -98,7 +92,7 @@ function useGridOptions(props: {
           dataType: 'number',
           field: 'imports',
           headerName: 'Import',
-          ...colDefById['imports'],
+          ...sectionColDefById['imports'],
         },
         {
           aggFunc: 'sumTotal',
@@ -106,7 +100,7 @@ function useGridOptions(props: {
           dataType: 'number',
           field: 'exports',
           headerName: 'Export',
-          ...colDefById['exports'],
+          ...sectionColDefById['exports'],
         },
         {
           aggFunc: 'sumTotal',
@@ -114,7 +108,7 @@ function useGridOptions(props: {
           dataType: 'number',
           field: 'production',
           headerName: 'Production',
-          ...colDefById['production'],
+          ...sectionColDefById['production'],
         },
         {
           aggFunc: 'sumTotal',
@@ -122,29 +116,21 @@ function useGridOptions(props: {
           dataType: 'number',
           field: 'import_quotas',
           headerName: 'Import Quotas',
-          ...colDefById['import_quotas'],
+          ...sectionColDefById['import_quotas'],
         },
         {
           cellEditor: 'agDateCellEditor',
           dataType: 'date',
           field: 'banned_date',
           headerName: 'Date ban commenced (DD/MM/YYYY)',
-          ...colDefById['banned_date'],
+          ...sectionColDefById['banned_date'],
         },
         {
           cellClass: 'ag-text-left',
           cellEditor: 'agTextCellEditor',
           field: 'remarks',
-          headerComponentParams: {
-            footnote: {
-              id: '2',
-              content:
-                'Provide explanation if total sector use and consumption (import-export+production) is different (e.g, stockpiling).',
-              icon: true,
-            },
-          },
           headerName: 'Remarks',
-          ...colDefById['remarks'],
+          ...sectionColDefById['remarks'],
         },
       ],
       defaultColDef: {

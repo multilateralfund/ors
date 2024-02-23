@@ -1,5 +1,4 @@
 import { useMemo, useRef, useState } from 'react'
-import React from 'react'
 
 import {
   Alert,

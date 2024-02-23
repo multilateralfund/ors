@@ -4,7 +4,9 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+import { defaultColDef } from '@ors/config/Table/columnsDef'
+
+import { sectionColDefById } from '../sectionColumnsDef'
 
 function useGridOptions(props: { model: string; usages: object[] }) {
   const { model, usages } = props
@@ -20,16 +22,8 @@ function useGridOptions(props: { model: string; usages: object[] }) {
           }),
           field: 'display_name',
           headerClass: 'ag-text-left',
-          headerComponentParams: {
-            footnote: {
-              id: '1',
-              content:
-                'Where the data involves a blend of two or more substances, the quantities of individual components of controlled substances must be indicated separately.',
-              icon: true,
-            },
-          },
           headerName: 'Substance',
-          ...colDefById['display_name'],
+          ...sectionColDefById['display_name'],
         },
         ...(usages.length
           ? [
@@ -41,7 +35,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
                     aggFunc: 'sumTotalUsages',
                     category: 'usage',
                     headerName: 'TOTAL',
-                    ...colDefById['total_usages'],
+                    ...sectionColDefById['total_usages'],
                   },
                 ],
                 headerGroupComponent: 'agColumnHeaderGroup',
@@ -55,21 +49,21 @@ function useGridOptions(props: { model: string; usages: object[] }) {
           dataType: 'number',
           field: 'imports',
           headerName: 'Import',
-          ...colDefById['imports'],
+          ...sectionColDefById['imports'],
         },
         {
           aggFunc: 'sumTotal',
           dataType: 'number',
           field: 'exports',
           headerName: 'Export',
-          ...colDefById['exports'],
+          ...sectionColDefById['exports'],
         },
         {
           aggFunc: 'sumTotal',
           dataType: 'number',
           field: 'production',
           headerName: 'Production',
-          ...colDefById['production'],
+          ...sectionColDefById['production'],
         },
         ...(includes(['IV', 'V'], model)
           ? [
@@ -78,7 +72,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
                 dataType: 'number',
                 field: 'import_quotas',
                 headerName: 'Import Quotas',
-                ...colDefById['import_quotas'],
+                ...sectionColDefById['import_quotas'],
               },
             ]
           : []),
@@ -88,7 +82,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
                 dataType: 'date',
                 field: 'banned_date',
                 headerName: 'Date ban commenced (DD/MM/YYYY)',
-                ...colDefById['banned_date'],
+                ...sectionColDefById['banned_date'],
               },
             ]
           : []),
@@ -97,16 +91,8 @@ function useGridOptions(props: { model: string; usages: object[] }) {
               {
                 cellClass: 'ag-text-left',
                 field: 'remarks',
-                headerComponentParams: {
-                  footnote: {
-                    id: '2',
-                    content:
-                      'Provide explanation if total sector use and consumption (import-export+production) is different (e.g, stockpiling).',
-                    icon: true,
-                  },
-                },
                 headerName: 'Remarks',
-                ...colDefById['remarks'],
+                ...sectionColDefById['remarks'],
               },
             ]
           : []),
@@ -129,7 +115,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
         cellRendererParams: () => {
           return {
             maximumFractionDigits: 2,
-          };
+          }
         },
         headerClass: 'ag-text-center',
         minWidth: defaultColDef.minWidth,
