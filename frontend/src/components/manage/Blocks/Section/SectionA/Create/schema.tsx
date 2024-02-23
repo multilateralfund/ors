@@ -36,7 +36,7 @@ function useGridOptions(props: {
                   title="Indicate relevant controlled substances"
                 >
                   <Button
-                    className="w-full"
+                    className="w-full leading-3"
                     variant="contained"
                     onClick={openAddSubstanceModal}
                   >
@@ -48,7 +48,6 @@ function useGridOptions(props: {
               props.data.rowType === 'control' &&
               props.data.row_id.startsWith('other-')
             ) {
-              console.log(props)
               const renderValue = (
                 <Tooltip
                   placement="top"
@@ -157,7 +156,7 @@ function useGridOptions(props: {
           cellEditor: 'agDateCellEditor',
           dataType: 'date',
           field: 'banned_date',
-          headerName: 'Date ban commenced (DD/MM/YYYY)',
+          headerName: 'If imports are banned, indicate date ban commenced',
           ...sectionColDefById['banned_date'],
         },
         {

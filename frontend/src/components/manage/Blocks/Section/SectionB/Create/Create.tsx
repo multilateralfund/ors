@@ -52,6 +52,16 @@ function getRowData(data: any) {
         },
       ],
       dataByGroup[group],
+      group.startsWith('Blends')
+        ? [
+            {
+              display_name: 'Other',
+              group,
+              row_id: 'other-new_substance',
+              rowType: 'control',
+            },
+          ]
+        : [],
       [
         {
           display_name: 'Sub-total',
@@ -131,6 +141,7 @@ export default function SectionBCreate(props: any) {
       }
     },
     openAddChemicalModal: () => setAddChemicalModal(true),
+    openCreateBlendModal: () => setCreateBlendModal(true),
     usages: emptyForm.usage_columns?.section_b || [],
   })
 
@@ -176,12 +187,6 @@ export default function SectionBCreate(props: any) {
                 {section.title}
               </Typography>
               <div className="flex items-center justify-between gap-x-4">
-                <Button
-                  variant="contained"
-                  onClick={() => setCreateBlendModal(true)}
-                >
-                  Create blend
-                </Button>
                 <div>
                   {section.allowFullScreen && !fullScreen && (
                     <IconButton
@@ -217,7 +222,8 @@ export default function SectionBCreate(props: any) {
         }}
         pinnedBottomRowData={[
           { display_name: 'TOTAL', rowType: 'total', tooltip: true },
-          { rowType: 'control' },
+          { row_id: 'control-add_chemical', rowType: 'control' },
+          { row_id: 'control-add_blend', rowType: 'control' },
         ]}
         onCellValueChanged={(event: any) => {
           const usages = getUsagesOnCellValueChange(event)

@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 
-import { Button } from '@mui/material'
-import { GridOptions } from 'ag-grid-community'
+import { Button, Link } from '@mui/material'
+import { GridOptions, ICellRendererParams } from 'ag-grid-community'
 import cx from 'classnames'
-import { includes } from 'lodash'
+import { includes, omit } from 'lodash'
 
 import { defaultColDef } from '@ors/config/Table/columnsDef'
 
@@ -16,11 +16,18 @@ import { IoTrash } from 'react-icons/io5'
 
 function useGridOptions(props: {
   model: string
-  onRemoveSubstance: any
-  openAddChemicalModal: any
+  onRemoveSubstance: (props: ICellRendererParams) => void
+  openAddChemicalModal: () => void
+  openCreateBlendModal: () => void
   usages: any
 }) {
-  const { model, onRemoveSubstance, openAddChemicalModal, usages } = props
+  const {
+    model,
+    onRemoveSubstance,
+    openAddChemicalModal,
+    openCreateBlendModal,
+    usages,
+  } = props
 
   const gridOptions: GridOptions = useMemo(
     () => ({
@@ -28,20 +35,54 @@ function useGridOptions(props: {
         {
           ...sectionColDefById['display_name'],
           cellRenderer: (props: any) => {
-            if (props.data.rowType === 'control') {
+            if (props.data.row_id === 'control-add_chemical') {
               return (
                 <Button
-                  className="w-full"
+                  className="w-full leading-3"
                   variant="contained"
                   onClick={openAddChemicalModal}
                 >
                   + Add chemical
                 </Button>
               )
+            } else if (props.data.row_id === 'control-add_blend') {
+              return (
+                <Button
+                  className="w-full leading-3"
+                  variant="contained"
+                  onClick={openCreateBlendModal}
+                >
+                  Create blend
+                </Button>
+              )
+            }
+            else if (props.data.row_id === 'other-new_substance') {
+              const renderValue = (
+                <Link
+                  className="cursor-pointer"
+                  color={'inherit'}
+                  underline="hover"
+                  onClick={openAddChemicalModal}
+                >
+                  <span>Other</span>
+                </Link>
+              )
+              return (
+                <AgCellRenderer
+                  {...omit(props, ['value', 'footnote'])}
+                  value={renderValue}
+                  footnote={{
+                    id: '2',
+                    content: 'If a non-standard blend not listed in the above table is used, please indicate the percentage of each constituent controlled substance of the blend being reported in the remarks column.',
+                    icon: true,
+                    order: 2,
+                  }}
+                />
+              )
             }
             return <AgCellRenderer {...props} />
           },
-          cellRendererParams: (props: any) => ({
+          cellRendererParams: (props: ICellRendererParams) => ({
             ...sectionColDefById['display_name'].cellRendererParams(props),
             options: !props.data.mandatory && !props.data.rowType && (
               <>
@@ -129,7 +170,7 @@ function useGridOptions(props: {
           cellEditor: 'agDateCellEditor',
           dataType: 'date',
           field: 'banned_date',
-          headerName: 'Date ban commenced (DD/MM/YYYY)',
+          headerName: 'If imports are banned, indicate date ban commenced',
           ...sectionColDefById['banned_date'],
         },
         {
@@ -138,6 +179,14 @@ function useGridOptions(props: {
           field: 'remarks',
           headerName: 'Remarks',
           ...sectionColDefById['remarks'],
+          headerComponentParams: {
+            ...sectionColDefById['remarks'].headerComponentParams,
+            footnote: {
+              ...sectionColDefById['remarks'].headerComponentParams.footnote,
+              id: '4',
+              order: 4,
+            },
+          },
         },
       ],
       defaultColDef: {

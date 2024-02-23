@@ -33,7 +33,7 @@ function useGridOptions(props: {
             if (props.data.rowType === 'control') {
               return (
                 <Button
-                  className="w-full"
+                  className="w-full leading-3"
                   variant="contained"
                   onClick={addFacility}
                 >
