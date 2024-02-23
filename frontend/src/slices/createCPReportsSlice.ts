@@ -38,10 +38,7 @@ function mapUsage(usage: any, report: any, view = true): any {
     dataType: 'number',
     headerName: usage.headerName,
     initialWidth: defaultColDef.minWidth,
-    ...omit(
-      colDefById[usage.full_name] || {},
-      view ? 'headerComponentParams.footnote' : [],
-    ),
+    ...(colDefById[usage.full_name] || {}),
     ...(children.length
       ? {
           children: map(children, (usage) => mapUsage(usage, report, view)),

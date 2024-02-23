@@ -1,11 +1,14 @@
 import { useRef, useState } from 'react'
 
+import { Alert } from '@mui/material'
 import { each, includes, union } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
+import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 
 import useGridOptions from './schema'
 
+import { IoInformationCircleOutline } from 'react-icons/io5'
 function getGroupName(substance: any) {
   if (substance.blend_id) {
     return 'Blends (Mixture of Controlled Substances)'
@@ -65,6 +68,9 @@ export default function SectionBView(props: any) {
         pinnedBottomRowData={pinnedBottomRowData}
         rowData={rowData}
       />
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnotes />
+      </Alert>
     </>
   )
 }

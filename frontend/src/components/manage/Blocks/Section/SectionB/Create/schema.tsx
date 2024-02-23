@@ -3,12 +3,14 @@ import { useMemo } from 'react'
 import { Button } from '@mui/material'
 import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
-import { includes, startsWith } from 'lodash'
+import { includes } from 'lodash'
 
-import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+import { defaultColDef } from '@ors/config/Table/columnsDef'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
+
+import { sectionColDefById } from '../sectionColumnsDef'
 
 import { IoTrash } from 'react-icons/io5'
 
@@ -24,6 +26,7 @@ function useGridOptions(props: {
     () => ({
       columnDefs: [
         {
+          ...sectionColDefById['display_name'],
           cellRenderer: (props: any) => {
             if (props.data.rowType === 'control') {
               return (
@@ -39,14 +42,7 @@ function useGridOptions(props: {
             return <AgCellRenderer {...props} />
           },
           cellRendererParams: (props: any) => ({
-            className: cx({
-              'font-bold': includes(['group', 'total'], props.data.rowType),
-            }),
-            footnote: !!props.data.chemical_note && {
-              content: props.data.chemical_note,
-              index: '**',
-              order: 999,
-            },
+            ...sectionColDefById['display_name'].cellRendererParams(props),
             options: !props.data.mandatory && !props.data.rowType && (
               <>
                 <Dropdown.Item
@@ -61,23 +57,10 @@ function useGridOptions(props: {
                 </Dropdown.Item>
               </>
             ),
-            ...(props.data.rowType === 'group' &&
-            startsWith(props.data.display_name, 'Blends')
-              ? {
-                  footnote: {
-                    id: '1',
-                    content:
-                      'When reporting blends/mixtures, reporting of controlled substances should not be duplicated. For the CP report, countries should report use of individual controlled substances and quantities of blends/mixtures used, separately, while ensuring that the amounts of controlled substances are not reported more than once.',
-                    icon: true,
-                    order: 1,
-                  },
-                }
-              : {}),
           }),
           field: 'display_name',
           headerClass: 'ag-text-left',
           headerName: 'Substance',
-          ...colDefById['display_name'],
         },
         ...(usages.length
           ? [
@@ -90,7 +73,7 @@ function useGridOptions(props: {
                     category: 'usage',
                     field: 'total_usages',
                     headerName: 'TOTAL',
-                    ...colDefById['total_usages'],
+                    ...sectionColDefById['total_usages'],
                   },
                 ],
                 headerGroupComponent: 'agColumnHeaderGroup',
@@ -105,7 +88,7 @@ function useGridOptions(props: {
           dataType: 'number',
           field: 'imports',
           headerName: 'Import',
-          ...colDefById['imports'],
+          ...sectionColDefById['imports'],
         },
         {
           aggFunc: 'sumTotal',
@@ -113,7 +96,7 @@ function useGridOptions(props: {
           dataType: 'number',
           field: 'exports',
           headerName: 'Export',
-          ...colDefById['exports'],
+          ...sectionColDefById['exports'],
         },
         {
           aggFunc: 'sumTotal',
@@ -121,7 +104,7 @@ function useGridOptions(props: {
           dataType: 'number',
           field: 'production',
           headerName: 'Production',
-          ...colDefById['production'],
+          ...sectionColDefById['production'],
         },
         ...(includes(['V'], model)
           ? [
@@ -129,17 +112,8 @@ function useGridOptions(props: {
                 aggFunc: 'sumTotal',
                 dataType: 'number',
                 field: 'manufacturing_blends',
-                headerComponentParams: {
-                  footnote: {
-                    id: '4',
-                    content: 'Tentative/best estimates.',
-                    icon: true,
-                    index: '*',
-                    order: 4,
-                  },
-                },
                 headerName: 'Manufacturing of Blends',
-                ...colDefById['manufacturing_blends'],
+                ...sectionColDefById['manufacturing_blends'],
               },
             ]
           : []),
@@ -149,30 +123,21 @@ function useGridOptions(props: {
           dataType: 'number',
           field: 'import_quotas',
           headerName: 'Import Quotas',
-          ...colDefById['import_quotas'],
+          ...sectionColDefById['import_quotas'],
         },
         {
           cellEditor: 'agDateCellEditor',
           dataType: 'date',
           field: 'banned_date',
           headerName: 'Date ban commenced (DD/MM/YYYY)',
-          ...colDefById['banned_date'],
+          ...sectionColDefById['banned_date'],
         },
         {
           cellClass: 'ag-text-left',
           cellEditor: 'agTextCellEditor',
           field: 'remarks',
-          headerComponentParams: {
-            footnote: {
-              id: '2',
-              content:
-                'Provide explanation if total sector use and consumption (import-export+production) is different (e.g, stockpiling).',
-              icon: true,
-              order: 2,
-            },
-          },
           headerName: 'Remarks',
-          ...colDefById['remarks'],
+          ...sectionColDefById['remarks'],
         },
       ],
       defaultColDef: {

@@ -1,9 +1,13 @@
 import { useRef, useState } from 'react'
 
+import { Alert } from '@mui/material'
+
 import Table from '@ors/components/manage/Form/Table'
+import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 
 import useGridOptions from './schema'
 
+import { IoInformationCircleOutline } from 'react-icons/io5'
 function getRowData(report: any) {
   return [...report.section_e]
 }
@@ -32,6 +36,9 @@ export default function SectionEView(props: any) {
         pinnedBottomRowData={pinnedBottomRowData}
         rowData={rowData}
       />
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnotes />
+      </Alert>
     </>
   )
 }

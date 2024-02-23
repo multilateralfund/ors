@@ -3,6 +3,7 @@ import { ColDef } from 'ag-grid-community'
 
 import getAdmsColDef from './admsColDef'
 import defaultColDef from './defaultColDef'
+import defaultColGroupDef from './defaultColGroupDef'
 import getUsagesColDef from './usagesColDef'
 
 const mobile = __CLIENT__ ? window.innerWidth < 768 : false
@@ -79,4 +80,4 @@ const colDefByDataType: Record<string, ColDef> = {
   },
 }
 
-export { colDefByDataType, colDefById, defaultColDef }
+export { colDefByDataType, colDefById, defaultColDef, defaultColGroupDef }

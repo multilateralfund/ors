@@ -1,11 +1,13 @@
 import { useRef, useState } from 'react'
 
-import { Typography } from '@mui/material'
+import { Alert } from '@mui/material'
 
 import Table from '@ors/components/manage/Form/Table'
+import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 
 import useGridOptions from './schema'
 
+import { IoInformationCircleOutline } from 'react-icons/io5'
 function getRowData(report: any) {
   return (report.section_d || []).map((item: any) => ({
     ...item,
@@ -29,10 +31,9 @@ export default function SectionDView(props: any) {
         gridRef={grid}
         rowData={rowData}
       />
-      <Typography className="italic" variant="body2">
-        1. Amounts of HFC-23 captured for destruction or feedstock use will not
-        be counted as production as per Article 1 of the Montreal Protocol.
-      </Typography>
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnotes />
+      </Alert>
     </>
   )
 }

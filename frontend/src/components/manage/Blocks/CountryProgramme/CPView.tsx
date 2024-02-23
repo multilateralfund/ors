@@ -21,6 +21,7 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
+import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
 import api, { formatApiUrl } from '@ors/helpers/Api/Api'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import { parseNumber } from '@ors/helpers/Utils/Utils'
@@ -130,7 +131,7 @@ const TableProps = {
       </div>
     )
   },
-  domLayout: 'autoHeight',
+  // domLayout: 'autoHeight',
   enableCellChangeFlash: true,
   enableFullScreen: true,
   enablePagination: false,
@@ -303,17 +304,19 @@ function CPView(props: { archive?: boolean; id: string }) {
               aria-labelledby={section.id}
               role="tabpanel"
             >
-              <Section
-                emptyForm={report.emptyForm.data || {}}
-                report={report.data}
-                section={section}
-                variant={variant}
-                TableProps={{
-                  ...TableProps,
-                  report,
-                  section,
-                }}
-              />
+              <FootnotesProvider>
+                <Section
+                  emptyForm={report.emptyForm.data || {}}
+                  report={report.data}
+                  section={section}
+                  variant={variant}
+                  TableProps={{
+                    ...TableProps,
+                    report,
+                    section,
+                  }}
+                />
+              </FootnotesProvider>
             </div>
           )
         })}

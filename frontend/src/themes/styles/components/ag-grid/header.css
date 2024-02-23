@@ -8,6 +8,11 @@
     display: none;
   }
 
+  /* .ag-header-cell span,
+  .ag-header-group-cell span {
+    font-weight: bold;
+  } */
+
   .ag-header-cell.ag-text-left .ag-header-cell-label,
   .ag-header-group-cell.ag-text-left,
   .ag-header-cell.ag-text-left .ag-header-cell-comp-wrapper {

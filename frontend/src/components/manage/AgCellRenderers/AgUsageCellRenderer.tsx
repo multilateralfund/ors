@@ -57,8 +57,14 @@ export default function AgUsageCellRenderer(props: any) {
     value = 0
   }
 
-  const formattedValue = value.toLocaleString(undefined, {
-    minimumFractionDigits: props.minimumFractionDigits || 2,
+  const maximumFractionDigits = props.maximumFractionDigits || 3;
+  const minimumFractionDigits = props.minimumFractionDigits || props.maximumFractionDigits || 2;
+
+  const valueToAvoidRounding = Math.floor(value * 10**maximumFractionDigits) / 10**maximumFractionDigits;
+
+  const formattedValue = valueToAvoidRounding.toLocaleString(undefined, {
+    maximumFractionDigits,
+    minimumFractionDigits
   })
 
   return (

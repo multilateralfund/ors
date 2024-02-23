@@ -4,9 +4,11 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+import { defaultColDef } from '@ors/config/Table/columnsDef'
 
-function useGridOptions(props: { model: string; usages: any }) {
+import { sectionColDefById } from '../sectionColumnsDef'
+
+function useGridOptions(props: { model: string; usages: object[] }) {
   const { model, usages } = props
 
   const gridOptions: GridOptions = useMemo(
@@ -21,7 +23,7 @@ function useGridOptions(props: { model: string; usages: any }) {
           field: 'display_name',
           headerClass: 'ag-text-left',
           headerName: 'Substance',
-          ...colDefById['display_name'],
+          ...sectionColDefById['display_name'],
         },
         ...(usages.length
           ? [
@@ -33,7 +35,7 @@ function useGridOptions(props: { model: string; usages: any }) {
                     aggFunc: 'sumTotalUsages',
                     category: 'usage',
                     headerName: 'TOTAL',
-                    ...colDefById['total_usages'],
+                    ...sectionColDefById['total_usages'],
                   },
                 ],
                 headerGroupComponent: 'agColumnHeaderGroup',
@@ -47,21 +49,21 @@ function useGridOptions(props: { model: string; usages: any }) {
           dataType: 'number',
           field: 'imports',
           headerName: 'Import',
-          ...colDefById['imports'],
+          ...sectionColDefById['imports'],
         },
         {
           aggFunc: 'sumTotal',
           dataType: 'number',
           field: 'exports',
           headerName: 'Export',
-          ...colDefById['exports'],
+          ...sectionColDefById['exports'],
         },
         {
           aggFunc: 'sumTotal',
           dataType: 'number',
           field: 'production',
           headerName: 'Production',
-          ...colDefById['production'],
+          ...sectionColDefById['production'],
         },
         ...(includes(['IV', 'V'], model)
           ? [
@@ -70,7 +72,7 @@ function useGridOptions(props: { model: string; usages: any }) {
                 dataType: 'number',
                 field: 'import_quotas',
                 headerName: 'Import Quotas',
-                ...colDefById['import_quotas'],
+                ...sectionColDefById['import_quotas'],
               },
             ]
           : []),
@@ -80,7 +82,7 @@ function useGridOptions(props: { model: string; usages: any }) {
                 dataType: 'date',
                 field: 'banned_date',
                 headerName: 'Date ban commenced (DD/MM/YYYY)',
-                ...colDefById['banned_date'],
+                ...sectionColDefById['banned_date'],
               },
             ]
           : []),
@@ -90,7 +92,7 @@ function useGridOptions(props: { model: string; usages: any }) {
                 cellClass: 'ag-text-left',
                 field: 'remarks',
                 headerName: 'Remarks',
-                ...colDefById['remarks'],
+                ...sectionColDefById['remarks'],
               },
             ]
           : []),
@@ -109,6 +111,11 @@ function useGridOptions(props: { model: string; usages: any }) {
               props.colDef.field,
             ),
           })
+        },
+        cellRendererParams: () => {
+          return {
+            maximumFractionDigits: 2,
+          }
         },
         headerClass: 'ag-text-center',
         minWidth: defaultColDef.minWidth,

@@ -132,10 +132,10 @@ function GeneralSection(props: SectionProps) {
     rowsPerPage: PER_PAGE_GENERAL,
   })
   const [ordering, setOrdering] = useState<'asc' | 'desc'>(
-    groupBy === 'country' ? 'asc' : 'desc',
+    groupBy === 'country' ? 'desc' : 'asc',
   )
   const orderField =
-    groupBy === 'country' ? 'country__name,year' : 'year,country__name'
+    groupBy === 'country' ? 'year,country__name' : 'year,country__name'
 
   const { data, loading, setParams } = useApi({
     // onSuccess: () => {
