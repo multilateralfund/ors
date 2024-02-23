@@ -16,9 +16,9 @@ import { IoTrash } from 'react-icons/io5'
 
 function useGridOptions(props: {
   onRemoveSubstance: any
-  openAddChimicalModal: any
+  openAddChemicalModal: any
 }) {
-  const { onRemoveSubstance, openAddChimicalModal } = props
+  const { onRemoveSubstance, openAddChemicalModal } = props
 
   const gridOptions: GridOptions = useMemo(
     () => ({
@@ -30,9 +30,9 @@ function useGridOptions(props: {
                 <Button
                   className="w-full"
                   variant="contained"
-                  onClick={openAddChimicalModal}
+                  onClick={openAddChemicalModal}
                 >
-                  + Add chimical
+                  + Add chemical
                 </Button>
               )
             }
@@ -113,7 +113,7 @@ function useGridOptions(props: {
       },
     }),
     // eslint-disable-next-line
-    [openAddChimicalModal, onRemoveSubstance],
+    [openAddChemicalModal, onRemoveSubstance],
   )
 
   return gridOptions

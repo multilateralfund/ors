@@ -84,18 +84,18 @@ export default function SectionBCreate(props: any) {
   const grid = useRef<any>()
   const [initialRowData] = useState(() => getRowData(form.section_b))
 
-  const [addChimicalModal, setAddChimicalModal] = useState(false)
+  const [addChemicalModal, setAddChemicalModal] = useState(false)
   const [createBlendModal, setCreateBlendModal] = useState(false)
 
-  const chimicalsOptions = useMemo(() => {
+  const chemicalsOptions = useMemo(() => {
     const data: Array<any> = []
-    const chimicalsInForm = form.section_b.map(
-      (chimical: any) => chimical.row_id,
+    const chemicalsInForm = form.section_b.map(
+      (chemical: any) => chemical.row_id,
     )
     each(substances, (substance) => {
       if (
         includes(substance.sections, 'B') &&
-        !includes(chimicalsInForm, `substance_${substance.id}`)
+        !includes(chemicalsInForm, `substance_${substance.id}`)
       ) {
         data.push(Section.transformSubstance(substance))
       }
@@ -103,7 +103,7 @@ export default function SectionBCreate(props: any) {
     each(
       sortBy(uniqBy([...blends, ...createdBlends], 'id'), 'sort_order'),
       (blend) => {
-        if (!includes(chimicalsInForm, `blend_${blend.id}`)) {
+        if (!includes(chemicalsInForm, `blend_${blend.id}`)) {
           data.push(Section.transformBlend(blend))
         }
       },
@@ -130,7 +130,7 @@ export default function SectionBCreate(props: any) {
         })
       }
     },
-    openAddChimicalModal: () => setAddChimicalModal(true),
+    openAddChemicalModal: () => setAddChemicalModal(true),
     usages: emptyForm.usage_columns?.section_b || [],
   })
 
@@ -252,11 +252,11 @@ export default function SectionBCreate(props: any) {
       <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
         <Footnotes />
       </Alert>
-      {addChimicalModal && (
+      {addChemicalModal && (
         <Modal
           aria-labelledby="add-substance-modal-title"
-          open={addChimicalModal}
-          onClose={() => setAddChimicalModal(false)}
+          open={addChemicalModal}
+          onClose={() => setAddChemicalModal(false)}
           keepMounted
         >
           <Box className="xs:max-w-xs w-full max-w-md absolute-center sm:max-w-sm">
@@ -266,49 +266,49 @@ export default function SectionBCreate(props: any) {
               component="h2"
               variant="h6"
             >
-              Select chimical
+              Select chemical
             </Typography>
             <Field
               Input={{ autoComplete: 'off' }}
               getOptionLabel={(option: any) => option.display_name}
               groupBy={(option: any) => option.group}
-              options={chimicalsOptions}
+              options={chemicalsOptions}
               value={null}
               widget="autocomplete"
-              onChange={(event: any, newChimical: any) => {
+              onChange={(event: any, newChemical: any) => {
                 if (document.activeElement) {
                   // @ts-ignore
                   document.activeElement.blur()
                 }
                 const added = find(
                   form.section_b,
-                  (chimical) => chimical.row_id === newChimical.row_id,
+                  (chemical) => chemical.row_id === newChemical.row_id,
                 )
                 if (!added) {
                   const groupNode = grid.current.api.getRowNode(
-                    newChimical.group,
+                    newChemical.group,
                   )
                   setForm((form: any) => ({
                     ...form,
-                    section_b: [...form.section_b, newChimical],
+                    section_b: [...form.section_b, newChemical],
                   }))
                   applyTransaction(grid.current.api, {
-                    add: [newChimical],
+                    add: [newChemical],
                     addIndex: groupNode.rowIndex + groupNode.data.count + 1,
                     update: [
                       { ...groupNode.data, count: groupNode.data.count + 1 },
                     ],
                   })
-                  const chimicalNode = grid.current.api.getRowNode(
-                    newChimical.row_id,
+                  const chemicalNode = grid.current.api.getRowNode(
+                    newChemical.row_id,
                   )
-                  newNode.current = chimicalNode
+                  newNode.current = chemicalNode
                 }
-                setAddChimicalModal(false)
+                setAddChemicalModal(false)
               }}
             />
             <Typography className="text-right">
-              <Button onClick={() => setAddChimicalModal(false)}>Close</Button>
+              <Button onClick={() => setAddChemicalModal(false)}>Close</Button>
             </Typography>
           </Box>
         </Modal>
@@ -322,7 +322,7 @@ export default function SectionBCreate(props: any) {
 
             const added = find(
               form.section_b,
-              (chimical) => chimical.row_id === serializedBlend.row_id,
+              (chemical) => chemical.row_id === serializedBlend.row_id,
             )
 
             if (added) {
