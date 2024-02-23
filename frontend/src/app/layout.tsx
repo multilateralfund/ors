@@ -8,7 +8,7 @@ import { dir } from 'i18next'
 // import { includes } from 'lodash'
 import { Roboto } from 'next/font/google'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { cookies as nextCookies, headers as nextHeaders } from 'next/headers'
+import { headers as nextHeaders } from 'next/headers'
 import Script from 'next/script'
 
 import View from '@ors/components/theme/Views/View'
@@ -91,7 +91,7 @@ export default async function RootLayout({
     ] = await Promise.all([
       api('api/settings/', {}, false),
       api('api/agencies/', {}, false),
-      api('api/countries/', {}, false),
+      api('api/countries/', { params: { with_cp_report: true } }, false),
       api('api/project-statuses/', {}, false),
       api('api/project-sectors/', {}, false),
       api('api/project-subsectors/', {}, false),
