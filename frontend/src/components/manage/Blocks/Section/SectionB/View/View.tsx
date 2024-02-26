@@ -35,6 +35,16 @@ function getRowData(report: any) {
       rowData,
       [{ display_name: group, group, rowType: 'group' }],
       dataByGroup[group],
+      group.startsWith('Blends')
+      ? [
+          {
+            display_name: 'Other',
+            group,
+            row_id: 'other-new_substance',
+            rowType: 'control',
+          },
+        ]
+      : [],
       [{ display_name: 'Sub-total', group, rowType: 'subtotal' }],
     )
   })

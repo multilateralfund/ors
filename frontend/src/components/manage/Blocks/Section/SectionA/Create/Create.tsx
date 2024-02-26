@@ -47,7 +47,7 @@ function getRowData(data: any) {
             {
               display_name: 'Other',
               group,
-              row_id: `other-[${group}]`,
+              row_id: 'other-new_substance',
               rowType: 'control',
             },
           ]

@@ -1,4 +1,5 @@
 import { ColDef } from 'ag-grid-community'
+import { CustomCellRendererProps } from 'ag-grid-react'
 
 import { colDefById } from '@ors/config/Table/columnsDef'
 
@@ -6,6 +7,17 @@ const sectionColDefById: Record<string, ColDef> = {
   ...colDefById,
   display_name: {
     ...colDefById['display_name'],
+    cellRendererParams: (props: CustomCellRendererProps) => ({
+      ...(props.data.row_id === 'other-new_substance'
+        ? {
+            footnote: {
+              id: '2',
+              content: 'Indicate relevant controlled substances.',
+              icon: true,
+            },
+          }
+        : {}),
+    }),
     headerComponentParams: {
       footnote: {
         id: '1',
@@ -19,14 +31,13 @@ const sectionColDefById: Record<string, ColDef> = {
     ...colDefById['remarks'],
     headerComponentParams: {
       footnote: {
-        id: '2',
+        id: '3',
         content:
           'Provide explanation if total sector use and consumption (import-export+production) is different (e.g, stockpiling).',
         icon: true,
       },
     },
-  }
+  },
 }
 
 export { sectionColDefById }
-

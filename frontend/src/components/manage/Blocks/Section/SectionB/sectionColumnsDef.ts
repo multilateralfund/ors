@@ -29,6 +29,17 @@ const sectionColDefById: Record<string, ColDef> = {
             },
           }
         : {}),
+      ...(props.data.row_id === 'other-new_substance'
+        ? {
+            footnote: {
+              id: '2',
+              content:
+                'If a non-standard blend not listed in the above table is used, please indicate the percentage of each constituent controlled substance of the blend being reported in the remarks column.',
+              icon: true,
+              order: 2,
+            },
+          }
+        : {}),
     }),
   },
   manufacturing_blends: {
@@ -47,11 +58,11 @@ const sectionColDefById: Record<string, ColDef> = {
     ...colDefById['remarks'],
     headerComponentParams: {
       footnote: {
-        id: '2',
+        id: '4',
         content:
           'Provide explanation if total sector use and consumption (import-export+production) is different (e.g, stockpiling).',
         icon: true,
-        order: 2,
+        order: 4,
       },
     },
   },

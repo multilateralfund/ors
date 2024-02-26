@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 
 import { Button, Link, Tooltip } from '@mui/material'
 import { GridOptions } from 'ag-grid-community'
+import { CustomCellRendererProps } from 'ag-grid-react'
 import cx from 'classnames'
 import { includes, omit } from 'lodash'
 
@@ -25,7 +26,7 @@ function useGridOptions(props: {
     () => ({
       columnDefs: [
         {
-          cellRenderer: (props: any) => {
+          cellRenderer: (props: CustomCellRendererProps) => {
             if (
               props.data.rowType === 'control' &&
               props.data.row_id === 'control'
@@ -44,10 +45,7 @@ function useGridOptions(props: {
                   </Button>
                 </Tooltip>
               )
-            } else if (
-              props.data.rowType === 'control' &&
-              props.data.row_id.startsWith('other-')
-            ) {
+            } else if (props.data.row_id === 'other-new_substance') {
               const renderValue = (
                 <Tooltip
                   placement="top"
@@ -65,13 +63,8 @@ function useGridOptions(props: {
               )
               return (
                 <AgCellRenderer
-                  {...omit(props, ['value', 'footnote'])}
+                  {...omit(props, ['value'])}
                   value={renderValue}
-                  footnote={{
-                    id: '2',
-                    content: 'Indicate relevant controlled substances.',
-                    icon: true,
-                  }}
                 />
               )
             }
@@ -79,9 +72,7 @@ function useGridOptions(props: {
             return <AgCellRenderer {...props} />
           },
           cellRendererParams: (props: any) => ({
-            className: cx({
-              'font-bold': includes(['group', 'total'], props.data.rowType),
-            }),
+            ...sectionColDefById['display_name'].cellRendererParams(props),
             options: !props.data.mandatory && !props.data.rowType && (
               <Dropdown.Item
                 onClick={() => {

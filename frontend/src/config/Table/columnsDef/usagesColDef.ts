@@ -2,7 +2,7 @@ import defaultColDef from './defaultColDef'
 
 export default function getUsagesColDef() {
   return {
-    'Other': {
+    Other: {
       headerComponentParams: {
         footnote: {
           id: '3',

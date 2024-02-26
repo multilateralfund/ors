@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 
 import { Button, Link } from '@mui/material'
 import { GridOptions, ICellRendererParams } from 'ag-grid-community'
+import { CustomCellRendererProps } from 'ag-grid-react'
 import cx from 'classnames'
 import { includes, omit } from 'lodash'
 
@@ -34,7 +35,7 @@ function useGridOptions(props: {
       columnDefs: [
         {
           ...sectionColDefById['display_name'],
-          cellRenderer: (props: any) => {
+          cellRenderer: (props: CustomCellRendererProps) => {
             if (props.data.row_id === 'control-add_chemical') {
               return (
                 <Button
@@ -55,8 +56,7 @@ function useGridOptions(props: {
                   Create blend
                 </Button>
               )
-            }
-            else if (props.data.row_id === 'other-new_substance') {
+            } else if (props.data.row_id === 'other-new_substance') {
               const renderValue = (
                 <Link
                   className="cursor-pointer"
@@ -69,20 +69,14 @@ function useGridOptions(props: {
               )
               return (
                 <AgCellRenderer
-                  {...omit(props, ['value', 'footnote'])}
+                  {...omit(props, ['value'])}
                   value={renderValue}
-                  footnote={{
-                    id: '2',
-                    content: 'If a non-standard blend not listed in the above table is used, please indicate the percentage of each constituent controlled substance of the blend being reported in the remarks column.',
-                    icon: true,
-                    order: 2,
-                  }}
                 />
               )
             }
             return <AgCellRenderer {...props} />
           },
-          cellRendererParams: (props: ICellRendererParams) => ({
+          cellRendererParams: (props: any) => ({
             ...sectionColDefById['display_name'].cellRendererParams(props),
             options: !props.data.mandatory && !props.data.rowType && (
               <>
@@ -179,14 +173,6 @@ function useGridOptions(props: {
           field: 'remarks',
           headerName: 'Remarks',
           ...sectionColDefById['remarks'],
-          headerComponentParams: {
-            ...sectionColDefById['remarks'].headerComponentParams,
-            footnote: {
-              ...sectionColDefById['remarks'].headerComponentParams.footnote,
-              id: '4',
-              order: 4,
-            },
-          },
         },
       ],
       defaultColDef: {

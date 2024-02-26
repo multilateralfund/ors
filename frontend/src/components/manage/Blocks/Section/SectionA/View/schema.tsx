@@ -15,11 +15,6 @@ function useGridOptions(props: { model: string; usages: object[] }) {
     () => ({
       columnDefs: [
         {
-          cellRendererParams: (props: any) => ({
-            className: cx({
-              'font-bold': includes(['group', 'total'], props.data.rowType),
-            }),
-          }),
           field: 'display_name',
           headerClass: 'ag-text-left',
           headerName: 'Substance',
@@ -81,7 +76,8 @@ function useGridOptions(props: { model: string; usages: object[] }) {
               {
                 dataType: 'date',
                 field: 'banned_date',
-                headerName: 'If imports are banned, indicate date ban commenced',
+                headerName:
+                  'If imports are banned, indicate date ban commenced',
                 ...sectionColDefById['banned_date'],
               },
             ]

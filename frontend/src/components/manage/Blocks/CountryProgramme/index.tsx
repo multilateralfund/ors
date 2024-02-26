@@ -32,6 +32,9 @@ const constants: any = {
     },
   },
   III: {
+    section_a: {
+      label: 'Datasheet',
+    },
     section_c: {
       label: 'Adm C prices',
     },
