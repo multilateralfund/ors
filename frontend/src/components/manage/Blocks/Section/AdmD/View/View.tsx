@@ -5,6 +5,7 @@ import {
   Checkbox,
   FormControlLabel,
   FormGroup,
+  FormHelperText,
   List,
   ListItem,
   Typography,
@@ -50,8 +51,29 @@ export default function AdmD(props: any) {
                         readOnly
                       />
                     )}
+                    {!!choice.text_label && (
+                      <FormHelperText className="text-lg">
+                        {choice.text_label}
+                      </FormHelperText>
+                    )}
+                    {choice.with_text && (
+                      <Field
+                        FieldProps={{ className: 'mb-0' }}
+                        disabled={true}
+                        type="textarea"
+                        value={report.adm_d[row.id]?.value_text}
+                      />
+                    )}
                   </React.Fragment>
                 ))}
+                {!row.choices.length && (
+                  <Field
+                    FieldProps={{ className: 'mb-0 mt-4' }}
+                    disabled={true}
+                    type="textarea"
+                    value={report.adm_d?.[row.id]?.value_text}
+                  />
+                )}
               </FormGroup>
             </ListItem>
           ))}

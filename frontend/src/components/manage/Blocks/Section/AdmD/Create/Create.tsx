@@ -1,10 +1,9 @@
-import React from 'react'
-
 import {
   Box,
   Checkbox,
   FormControlLabel,
   FormGroup,
+  FormHelperText,
   List,
   ListItem,
   Typography,
@@ -68,6 +67,11 @@ export default function AdmD(props: any) {
                           />
                         }
                       />
+                      {!!choice.text_label && (
+                        <FormHelperText className="text-lg">
+                          {choice.text_label}
+                        </FormHelperText>
+                      )}
                       {choice.with_text && (
                         <Field
                           FieldProps={{ className: 'mb-0' }}

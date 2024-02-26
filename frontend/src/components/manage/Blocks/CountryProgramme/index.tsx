@@ -54,7 +54,7 @@ const constants: any = {
 }
 
 const components: {
-  [key: string]: {
+  [key in 'create' | 'edit' | 'view']: {
     adm_b?: typeof AdmBCreate | typeof AdmBView
     adm_c?: typeof AdmCCreate | typeof AdmCView
     adm_d?: typeof AdmDCreate | typeof AdmDView
@@ -132,7 +132,7 @@ export function getSections(
     minYear: number
     model: string
   },
-  mode = 'view',
+  mode: 'create' | 'edit' | 'view' = 'view',
 ) {
   const { model } = variant
   const ids = [
