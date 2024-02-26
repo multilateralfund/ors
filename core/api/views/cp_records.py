@@ -111,9 +111,9 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
             if chemical.id not in chemical_dict:
                 cp_record_data = {
                     "country_programme_report_id": cp_report.id,
-                    "substance_id": chemical.id
-                    if chemical_type == "substance"
-                    else None,
+                    "substance_id": (
+                        chemical.id if chemical_type == "substance" else None
+                    ),
                     "blend_id": chemical.id if chemical_type == "blend" else None,
                     "id": 0,
                 }
@@ -123,7 +123,9 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
 
         return chemical_dict
 
-    def _get_displayed_items(self, item_cls, cp_report, section, existing_items):
+    def _get_displayed_items(
+        self, item_cls, cp_report, section, existing_items, with_sort=True
+    ):
         """
         Returns a list of ItemCld objects for the given section and cp_report_id
          -> if there is no record for a substance or blend that is displayed in all formats
@@ -134,6 +136,7 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
         @param cp_report_id: int - country programme report id
         @param section: str - section name
         @param existing_items: list of existing ItemCls objects
+        @param with_sort: bool - if True, sort the final list
 
         @return: final list of ItemCls objects
         """
@@ -150,23 +153,26 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
             item_cls, blends_rec_dict, "blend", section, cp_report
         )
         final_list = list(substances_dict.values()) + list(blends_dict.values())
-        final_list.sort(
-            key=lambda x: (
-                (
-                    x.substance.group.name
-                    if x.substance.group.name != "Other"
-                    else "zzzbbb",  # other substances needs to be displayed last
-                    x.substance.sort_order or float("inf"),
-                    x.substance.name,
-                )
-                if x.substance
-                else (
-                    "zzzaaa",
-                    x.blend.sort_order or float("inf"),
-                    x.blend.name,
+        if with_sort:
+            final_list.sort(
+                key=lambda x: (
+                    (
+                        (
+                            x.substance.group.name
+                            if x.substance.group.name != "Other"
+                            else "zzzbbb"
+                        ),  # other substances needs to be displayed last
+                        x.substance.sort_order or float("inf"),
+                        x.substance.name,
+                    )
+                    if x.substance
+                    else (
+                        "zzzaaa",
+                        x.blend.sort_order or float("inf"),
+                        x.blend.name,
+                    )
                 )
             )
-        )
 
         return final_list
 
@@ -210,7 +216,29 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
             .all()
         )
         final_list = self._get_displayed_items(
-            self.cp_prices_class, cp_report, "C", exist_records
+            self.cp_prices_class, cp_report, "C", exist_records, with_sort=False
+        )
+        # set sort order for section C
+        final_list.sort(
+            key=lambda x: (
+                (
+                    (
+                        x.substance.name[:4]
+                        if "HCFC" in x.substance.name or "HFC" in x.substance.name
+                        else "zzzBBB"
+                    ),  # other substances needs to be displayed last
+                    x.substance.sort_order_sectionC
+                    or x.substance.sort_order
+                    or float("inf"),
+                    x.substance.name,
+                )
+                if x.substance
+                else (
+                    "zzzAAA",
+                    x.blend.sort_order_sectionC or x.blend.sort_order or float("inf"),
+                    x.blend.name,
+                )
+            )
         )
 
         # get last_year cp_report

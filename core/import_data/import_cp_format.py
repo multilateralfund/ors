@@ -34,31 +34,54 @@ def reset_old_format():
     Blend.objects.update(displayed_in_all=False, displayed_in_latest_format=False)
 
 
+def get_chemical_by_name(chemical_name, index_row):
+    if not chemical_name:
+        return None
+    chemical_name = chemical_name.strip()
+
+    # skip some chemical names that are not real chemicals
+    skip_found = [
+        skip_name
+        for skip_name in SKIP_CHEMICAL_NAMES
+        if skip_name in chemical_name.lower()
+    ]
+    if skip_found:
+        return None
+
+    # parse chemical name
+    substance, blend = get_chemical(chemical_name, index_row)
+    chemical = substance or blend
+
+    return chemical
+
+
 def set_chemicals_displayed_status(df):
     for index_row, row in df.iterrows():
         chemical_name = row["chemical"]
-        if not chemical_name:
-            continue
-        chemical_name = chemical_name.strip()
-
-        # skip some chemical names that are not real chemicals
-        skip_found = [
-            skip_name
-            for skip_name in SKIP_CHEMICAL_NAMES
-            if skip_name in chemical_name.lower()
-        ]
-        if skip_found:
-            continue
-
-        # parse chemical name
-        substance, blend = get_chemical(chemical_name, index_row)
-        chemical = substance or blend
+        chemical = get_chemical_by_name(chemical_name, index_row)
         if not chemical:
             continue
 
         # set displayed status
         chemical.displayed_in_all = True
         chemical.displayed_in_latest_format = True
+        chemical.save()
+
+
+def set_chemical_order_C(df):
+    """
+    set the sort order for the chemicals for section C
+    """
+    i = 100
+    for index_row, row in df.iterrows():
+        chemical_name = row["chemical"]
+        chemical = get_chemical_by_name(chemical_name, index_row)
+        if not chemical:
+            continue
+
+        # set displayed status
+        chemical.sort_order_sectionC = i
+        i += 100
         chemical.save()
 
 
@@ -79,6 +102,7 @@ def import_chemicas_format(file_path):
     set_chemicals_displayed_status(sectiona)
     set_chemicals_displayed_status(sectionb)
     set_chemicals_displayed_status(sectionc)
+    set_chemical_order_C(sectionc)
 
 
 def import_usages_format(file_path):

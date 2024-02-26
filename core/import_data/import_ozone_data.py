@@ -21,6 +21,11 @@ SUBSTANCE_NOTE = (
     "the substance is used while reporting."
 )
 
+CUSTOM_SUBS_GROUP_MAPPING = {
+    "HFC-245fa in imported pre-blended polyol": "Other",
+    "HFC-365mfc in imported pre-blended polyol": "Other",
+}
+
 
 def create_uncontrolled_group():
     group_data = {
@@ -89,9 +94,7 @@ def import_data(cls, file_path, exclude=None, uncontrolled_group_id=None):
                     ozone_id=substance_ozone_id
                 ).id
             except Blend.DoesNotExist:
-                logger.warning(
-                    f"⚠️ blend with ozone_id {blend_ozone_id} does not exist"
-                )
+                logger.warning(f"⚠️ blend with ozone_id {blend_ozone_id} does not exist")
                 continue
             except Substance.DoesNotExist:
                 logger.warning(
@@ -188,6 +191,15 @@ def set_substance_cp_notes():
     )
 
 
+def set_new_group_for_substances():
+    """
+    Set new group for substances
+    """
+    for name, group in CUSTOM_SUBS_GROUP_MAPPING.items():
+        group = Group.objects.get(name=group)
+        Substance.objects.filter(name=name).update(group_id=group.id)
+
+
 def import_substances():
     """
     Import substances from json file and create alternative names
@@ -207,6 +219,9 @@ def import_substances():
         exclude,
         uncontrolled_group_id,
     )
+    set_substance_cp_notes()
+    set_new_group_for_substances()
+
     logger.info("✔ substances imported")
     import_alternative_names(
         Substance,
@@ -215,8 +230,6 @@ def import_substances():
         "substance",
         ["party_blend_component"],
     )
-
-    set_substance_cp_notes()
     logger.info("✔ substances alternative names imported")
 
 
