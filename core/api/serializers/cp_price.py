@@ -26,6 +26,18 @@ class CPPricesBaseSerializer(BaseCPWChemicalSerializer):
     def get_computed_prev_year_price(self, obj):
         return getattr(obj, "computed_prev_year_price", None)
 
+    def get_group(self, obj):
+        if obj.blend:
+            return "Blends (Mixture of Controlled Substances)"
+        if obj.substance:
+            if "HCFC" in obj.substance.name:
+                return "HCFCs"
+            if "HFC" in obj.substance.name:
+                return "HFCs"
+            return "Alternatives"
+
+        return None
+
 
 class CPPricesSerializer(CPPricesBaseSerializer):
     class Meta(CPPricesBaseSerializer.Meta):

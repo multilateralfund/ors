@@ -24,6 +24,12 @@ CHOICES_WITH_TEXT = [
     "Other: ___% HCFC reduction target by ___",
 ]
 
+CHOICE_LABLE_MAPPING = {
+    "No": "If not, please specify milestones and completion dates with delays, "
+    "and explain reasons for the delay and measures taken to overcome the problems:",
+    "Not so well": "Please specify problems encountered:",
+}
+
 
 def create_adm_rows_for_articles(article_file, layout_file, db_name):
     """
@@ -88,6 +94,9 @@ def create_adm_choices_for_opt(opt_file, article_dict):
         }
         if option_data["value"] in CHOICES_WITH_TEXT:
             option_data["with_text"] = True
+
+        if option_data["value"] in CHOICE_LABLE_MAPPING:
+            option_data["text_label"] = CHOICE_LABLE_MAPPING[option_data["value"]]
 
         dict_key = (opt["OptionId"], opt["AdmDEArticlesId"])
         opt_dict[dict_key], _ = AdmChoice.objects.get_or_create(

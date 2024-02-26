@@ -212,7 +212,7 @@ def groupA():
 @pytest.fixture
 def substance(excluded_usage, groupA, time_frames):
     substance = SubstanceFactory.create(
-        name="substance",
+        name="HCFC-substance",
         sort_order=1,
         group=groupA,
         odp=0.02,
