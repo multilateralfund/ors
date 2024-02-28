@@ -22,6 +22,7 @@ CHOICES_WITH_TEXT = [
     "No",
     "Not so well",
     "Other: ___% HCFC reduction target by ___",
+    "Accelerated total phase-out by",
 ]
 
 CHOICE_LABLE_MAPPING = {
