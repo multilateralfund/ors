@@ -29,8 +29,6 @@ class SubstanceAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         AutocompleteFilterFactory("group", "group"),
-        "displayed_in_all",
-        "displayed_in_latest_format",
     ]
 
     def get_queryset(self, request):

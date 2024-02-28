@@ -55,8 +55,6 @@ def setup_substances_list(time_frames):
                 SubstanceFactory.create(
                     group=group,
                     sort_order=i,
-                    displayed_in_all=(i == 0),
-                    displayed_in_latest_format=(i == 1),
                 )
             )
     # add 3 usages
@@ -121,30 +119,6 @@ class TestSubstancesList(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 6
 
-    def test_displayed_in_all_filter(self, user, _setup_substances_list):
-        self.client.force_authenticate(user=user)
-
-        # displayed_in_all = True => 7 substances
-        response = self.client.get(self.url, {"displayed_in_all": True})
-        assert response.status_code == 200
-        assert len(response.data) == 7
-        # displayed_in_all = False => 7 substances
-        response = self.client.get(self.url, {"displayed_in_all": False})
-        assert response.status_code == 200
-        assert len(response.data) == 7
-
-    def test_displayed_in_latest_format_filter(self, user, _setup_substances_list):
-        self.client.force_authenticate(user=user)
-
-        # displayed_in_latest_format = True => 7 substances
-        response = self.client.get(self.url, {"displayed_in_latest_format": True})
-        assert response.status_code == 200
-        assert len(response.data) == 7
-        # displayed_in_latest_format = False => 7 substances
-        response = self.client.get(self.url, {"displayed_in_latest_format": False})
-        assert response.status_code == 200
-        assert len(response.data) == 7
-
 
 @pytest.fixture(name="_setup_blend_list")
 def setup_blend_list(time_frames):
@@ -155,8 +129,6 @@ def setup_blend_list(time_frames):
             BlendFactory.create(
                 name="Blend" + str(i),
                 sort_order=i,
-                displayed_in_all=(i == 0),
-                displayed_in_latest_format=(i == 1),
             )
         )
     # add some usages
@@ -210,30 +182,6 @@ class TestBlendList(BaseTest):
         excluded_usages_list = response.data[0]["excluded_usages"]
         assert len(excluded_usages_list) == 1
         assert excluded_usages_list[0] == usages[0].id
-
-    def test_displayed_in_all_filter(self, user, _setup_blend_list):
-        self.client.force_authenticate(user=user)
-
-        # displayed_in_all = True => 1 blend
-        response = self.client.get(self.url, {"displayed_in_all": True})
-        assert response.status_code == 200
-        assert len(response.data) == 1
-        # displayed_in_all = False => 2 blends
-        response = self.client.get(self.url, {"displayed_in_all": False})
-        assert response.status_code == 200
-        assert len(response.data) == 2
-
-    def test_displayed_in_latest_format_filter(self, user, _setup_blend_list):
-        self.client.force_authenticate(user=user)
-
-        # displayed_in_latest_format = True => 1 blend
-        response = self.client.get(self.url, {"displayed_in_latest_format": True})
-        assert response.status_code == 200
-        assert len(response.data) == 1
-        # displayed_in_latest_format = False => 2 blends
-        response = self.client.get(self.url, {"displayed_in_latest_format": False})
-        assert response.status_code == 200
-        assert len(response.data) == 2
 
 
 @pytest.fixture(name="_setup_blend_create")

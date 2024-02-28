@@ -15,8 +15,6 @@ class BlendAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         "type",
-        "displayed_in_all",
-        "displayed_in_latest_format",
     ]
 
     def get_list_display(self, request):

@@ -14,7 +14,7 @@ from core.api.serializers.usage import UsageSerializer
 from core.models.adm import AdmColumn, AdmRow
 from core.models.country_programme import (
     CPReport,
-    CPReportFormat,
+    CPReportFormatColumn,
 )
 from core.utils import IMPORT_DB_MAX_YEAR, IMPORT_DB_OLDEST_MAX_YEAR
 
@@ -61,7 +61,7 @@ class EmptyFormView(views.APIView):
         """
         # get all usages for the given year
         cp_report_formats = (
-            CPReportFormat.objects.get_for_year(year)
+            CPReportFormatColumn.objects.get_for_year(year)
             .select_related("usage")
             .order_by("section", "usage__sort_order")
         )

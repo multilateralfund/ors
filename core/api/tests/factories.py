@@ -15,7 +15,8 @@ from core.models.country_programme import (
     CPPrices,
     CPRecord,
     CPReport,
-    CPReportFormat,
+    CPReportFormatColumn,
+    CPReportFormatRow,
     CPUsage,
 )
 
@@ -134,13 +135,24 @@ class CountryFactory(factory.django.DjangoModelFactory):
     abbr = factory.Faker("pystr", max_chars=5)
 
 
-class CPRaportFormatFactory(factory.django.DjangoModelFactory):
+class CPRaportFormatColumnFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = CPReportFormat
+        model = CPReportFormatColumn
 
     usage = factory.SubFactory(UsageFactory)
     time_frame = factory.SubFactory(TimeFrameFactory)
     section = factory.fuzzy.FuzzyChoice(["A", "B"])
+
+
+class CPRaportFormatRowFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = CPReportFormatRow
+
+    substance = factory.SubFactory(SubstanceFactory)
+    blend = factory.SubFactory(BlendFactory)
+    time_frame = factory.SubFactory(TimeFrameFactory)
+    section = factory.fuzzy.FuzzyChoice(["A", "B", "C"])
+    sort_order = factory.Faker("random_int", min=1, max=100)
 
 
 # country_programme_report factory

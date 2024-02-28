@@ -13,15 +13,14 @@ from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_price import CPPricesSerializer
 from core.api.serializers.cp_record import CPRecordSerializer
 from core.api.serializers.cp_report import CPReportSerializer
-from core.api.utils import SECTION_ANNEX_MAPPING, SECTION_GROUP_MAPPING_12_18
 from core.models.adm import AdmRecord
-from core.models.blend import Blend
 from core.models.country_programme import (
     CPEmission,
     CPGeneration,
     CPPrices,
     CPRecord,
     CPReport,
+    CPReportFormatRow,
 )
 from core.models.substance import Substance
 from core.utils import IMPORT_DB_MAX_YEAR, IMPORT_DB_OLDEST_MAX_YEAR
@@ -72,62 +71,63 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
     def _set_chemical_items_dict(
         self,
         item_cls,
-        chemical_dict,
-        chemical_type,
+        existing_items,
         section,
         cp_report,
     ):
         """
-        Set chemical records dict
+        Set chemical records dict that are displayed for this report and section
 
-        @param chemical_dict: dict of substances or blends ( key: id, value: chemical record)
-        @param chemical_type: str - "substance" or "blend"
+        @param existing_items: list of existing ItemCls objects (CPRecord / CPPrices)
         @param section: str - section name
         @param cp_report: obj - CPReport object
 
         @return: dict of chemical records
             structure: {chemical_id: CPRecord object}
         """
-        # get all substances or blends that are displayed in all formats
-        chemical_list = []
-        if chemical_type == "substance":
-            chemical_list = Substance.objects.filter(
-                displayed_in_all=True
-            ).select_related("group")
-            # 2012-2018 select only substances under some groups
-            if cp_report.year < 2012 or cp_report.year > 2018:
-                annexes = SECTION_ANNEX_MAPPING.get(section, [])
-                chemical_list = chemical_list.filter(group__annex__in=annexes)
-            else:
-                chemical_list = chemical_list.filter(
-                    group__name_alt__in=SECTION_GROUP_MAPPING_12_18
-                )
-            chemical_list = chemical_list.all()
-        elif chemical_type == "blend" and section in ["B", "C"]:
-            chemical_list = Blend.objects.filter(displayed_in_all=True).all()
+        # set existing_items_dict
+        existing_items_dict = {}
+        for item in existing_items:
+            dict_key = (
+                f"blend_{item.blend_id}"
+                if item.blend
+                else f"substance_{item.substance_id}"
+            )
+            existing_items_dict[dict_key] = item
 
-        # set the chemical dict
-        for chemical in chemical_list:
-            if chemical.id not in chemical_dict:
+        # get all substances or blends that are displayed in all formats
+        displayed_rows = (
+            CPReportFormatRow.objects.get_for_year(cp_report.year)
+            .filter(section=section)
+            .select_related("substance", "blend")
+            .all()
+        )
+
+        # add substances or blends that are not in the existing_items_dict yet
+        for row in displayed_rows:
+            chemical = row.substance or row.blend
+            chemical_key = (
+                f"blend_{chemical.id}" if row.blend else f"substance_{chemical.id}"
+            )
+            if chemical_key not in existing_items_dict:
                 cp_record_data = {
                     "country_programme_report_id": cp_report.id,
-                    "substance_id": (
-                        chemical.id if chemical_type == "substance" else None
-                    ),
-                    "blend_id": chemical.id if chemical_type == "blend" else None,
+                    "substance_id": chemical.id if row.substance else None,
+                    "blend_id": chemical.id if row.blend else None,
                     "id": 0,
                 }
                 if section in ["A", "B"]:
                     cp_record_data["section"] = section
-                chemical_dict[chemical.id] = item_cls(**cp_record_data)
+                existing_items_dict[chemical_key] = item_cls(**cp_record_data)
+            existing_items_dict[chemical_key].sort_order = row.sort_order
 
-        return chemical_dict
+        return list(existing_items_dict.values())
 
     def _get_displayed_items(
         self, item_cls, cp_report, section, existing_items, with_sort=True
     ):
         """
-        Returns a list of ItemCld objects for the given section and cp_report_id
+        Returns a list of ItemCls objects for the given section and cp_report_id
          -> if there is no record for a substance or blend that is displayed in all formats
                 then append a new ItemCls object to the list with the substance or blend
                 and the cp_report_id
@@ -140,19 +140,12 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
 
         @return: final list of ItemCls objects
         """
-        subs_rec_dict = {
-            item.substance_id: item for item in existing_items if item.substance
-        }
-        blends_rec_dict = {item.blend_id: item for item in existing_items if item.blend}
 
-        # get all substances and blends
-        substances_dict = self._set_chemical_items_dict(
-            item_cls, subs_rec_dict, "substance", section, cp_report
+        # set the list of chemicals that are displayed for this report and section
+        final_list = self._set_chemical_items_dict(
+            item_cls, existing_items, section, cp_report
         )
-        blends_dict = self._set_chemical_items_dict(
-            item_cls, blends_rec_dict, "blend", section, cp_report
-        )
-        final_list = list(substances_dict.values()) + list(blends_dict.values())
+
         if with_sort:
             final_list.sort(
                 key=lambda x: (
@@ -162,13 +155,13 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
                             if x.substance.group.name != "Other"
                             else "zzzbbb"
                         ),  # other substances needs to be displayed last
-                        x.substance.sort_order or float("inf"),
+                        getattr(x, "sort_order", float("inf")),
                         x.substance.name,
                     )
                     if x.substance
                     else (
                         "zzzaaa",
-                        x.blend.sort_order or float("inf"),
+                        getattr(x, "sort_order", float("inf")),
                         x.blend.name,
                     )
                 )
@@ -218,7 +211,7 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
         final_list = self._get_displayed_items(
             self.cp_prices_class, cp_report, "C", exist_records, with_sort=False
         )
-        # set sort order for section C
+        # set sort order for section C (we have set sor_order )
         final_list.sort(
             key=lambda x: (
                 (
@@ -227,15 +220,13 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
                         if "HCFC" in x.substance.name or "HFC" in x.substance.name
                         else "zzzBBB"
                     ),  # other substances needs to be displayed last
-                    x.substance.sort_order_sectionC
-                    or x.substance.sort_order
-                    or float("inf"),
+                    getattr(x, "sort_order", float("inf")),
                     x.substance.name,
                 )
                 if x.substance
                 else (
                     "zzzAAA",
-                    x.blend.sort_order_sectionC or x.blend.sort_order or float("inf"),
+                    getattr(x, "sort_order", float("inf")),
                     x.blend.name,
                 )
             )

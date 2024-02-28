@@ -12,6 +12,7 @@ class ChemicalsBaseSerializer(serializers.ModelSerializer):
         if self.context.get("with_usages", False):
             return list({usage.usage_id for usage in obj.excluded_usages.all()})
         return []
+
     def get_chemical_note(self, obj):
         return obj.cp_report_note
 
@@ -34,8 +35,6 @@ class SubstanceSerializer(ChemicalsBaseSerializer):
             "formula",
             "odp",
             "is_contained_in_polyols",
-            "displayed_in_all",
-            "displayed_in_latest_format",
             "excluded_usages",
             "sort_order",
             "chemical_note",
@@ -73,8 +72,6 @@ class BlendSerializer(ChemicalsBaseSerializer):
             "gwp",
             "excluded_usages",
             "is_contained_in_polyols",
-            "displayed_in_all",
-            "displayed_in_latest_format",
             "sort_order",
             "components",
             "sections",

@@ -26,6 +26,7 @@ class AdmRecordAdmin(admin.ModelAdmin):
         "section",
         AutocompleteFilterFactory("country", "country_programme_report__country"),
         AutocompleteFilterFactory("column", "column"),
+        AutocompleteFilterFactory("value_choice", "value_choice"),
         "country_programme_report__year",
     ]
     readonly_fields = ["country_programme_report"]

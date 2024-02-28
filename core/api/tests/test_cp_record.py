@@ -40,21 +40,23 @@ class TestCPRecordList(BaseTest):
         assert response.data["section_a"][0]["row_id"] == f"substance_{substance.id}"
 
         assert len(response.data["section_b"]) == 2
-        assert response.data["section_b"][0]["chemical_name"] == blend.name
-        assert response.data["section_b"][0]["row_id"] == f"blend_{blend.id}"
-        assert len(response.data["section_b"][0]["record_usages"]) == 3
+        assert response.data["section_b"][1]["chemical_name"] == blend.name
+        assert response.data["section_b"][1]["row_id"] == f"blend_{blend.id}"
+        assert len(response.data["section_b"][1]["record_usages"]) == 3
 
         section_c = response.data["section_c"]
         assert len(section_c) == 3
         assert section_c[0]["chemical_name"] == substance.name
         assert section_c[0]["computed_prev_year_price"] is None
         assert int(float(section_c[0]["current_year_price"])) == 2019
-        assert section_c[1]["chemical_name"] == blend.name
-        assert int(section_c[1]["computed_prev_year_price"]) == 2018
-        assert int(float(section_c[1]["current_year_price"])) == 2019
+
         # chemical displayed without prices
-        assert section_c[2]["computed_prev_year_price"] is None
-        assert section_c[2]["current_year_price"] is None
+        assert section_c[1]["computed_prev_year_price"] is None
+        assert section_c[1]["current_year_price"] is None
+
+        assert section_c[2]["chemical_name"] == blend.name
+        assert int(section_c[2]["computed_prev_year_price"]) == 2018
+        assert int(float(section_c[2]["current_year_price"])) == 2019
 
         assert response.data["section_d"][0]["chemical_name"] == "HFC-23"
         assert response.data["section_d"][0]["row_id"] == "generation_1"

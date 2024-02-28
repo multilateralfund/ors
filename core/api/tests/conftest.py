@@ -10,7 +10,8 @@ from core.api.tests.factories import (
     AdmRowFactory,
     AgencyFactory,
     BlendFactory,
-    CPRaportFormatFactory,
+    CPRaportFormatColumnFactory,
+    CPRaportFormatRowFactory,
     CPReportFactory,
     CountryFactory,
     ExcludedUsageBlendFactory,
@@ -139,7 +140,7 @@ def cp_report_format(time_frames):
     )
     cp_report_formats = []
     for data in create_data:
-        cp_report_formats.append(CPRaportFormatFactory.create(**data))
+        cp_report_formats.append(CPRaportFormatColumnFactory.create(**data))
 
     return cp_report_formats
 
@@ -382,7 +383,7 @@ def pdf_text(pdf_file):
 
 
 @pytest.fixture(name="_setup_new_cp_report")
-def setup_new_cp_report(cp_report_2019, blend, substance):
+def setup_new_cp_report(cp_report_2019, blend, substance, time_frames):
     # create prev tear cp report
     prev_report = CPReportFactory.create(
         country=cp_report_2019.country,
@@ -399,12 +400,18 @@ def setup_new_cp_report(cp_report_2019, blend, substance):
     cp_rec = CPRecordFactory.create(
         country_programme_report=cp_report_2019, section="B", blend=blend
     )
-    # blend displayed in all
-    BlendFactory.create(
+    # create blend and add row in cp format
+    new_blend = BlendFactory.create(
         name="blend2B",
-        displayed_in_all=True,
-        sort_order=5,
     )
+    for sect in ["B", "C"]:
+        CPRaportFormatRowFactory.create(
+            blend=new_blend,
+            substance=None,
+            section=sect,
+            time_frame=time_frames[(2019, None)],
+            sort_order=5,
+        )
     # add 3 usages for one record
     for _ in range(3):
         CPUsageFactory.create(country_programme_record=cp_rec)
@@ -441,7 +448,15 @@ def setup_old_cp_report(cp_report_2005, substance, blend, groupA, time_frames):
     for _ in range(3):
         CPUsageFactory.create(country_programme_record=cp_rec)
     # substance
-    SubstanceFactory.create(name="substance2", displayed_in_all=True, group=groupA)
+    new_subst = SubstanceFactory.create(name="substance2", group=groupA)
+
+    CPRaportFormatRowFactory.create(
+        blend=None,
+        substance=new_subst,
+        section="A",
+        time_frame=time_frames[(2000, 2011)],
+        sort_order=5,
+    )
 
     # section C (prices)
     CPPricesFactory.create(country_programme_report=cp_report_2005, blend=blend)

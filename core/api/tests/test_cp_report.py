@@ -5,7 +5,7 @@ from django.urls import reverse
 
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
-    CPRaportFormatFactory,
+    CPRaportFormatColumnFactory,
     CountryFactory,
     CPReportFactory,
     GroupFactory,
@@ -842,7 +842,7 @@ def setup_get_empty_form(usage):
         "time_frame": time_frame,
         "section": "B",
     }
-    CPRaportFormatFactory.create(**cerate_data)
+    CPRaportFormatColumnFactory.create(**cerate_data)
 
 
 class TestGetEmptyForm(BaseTest):

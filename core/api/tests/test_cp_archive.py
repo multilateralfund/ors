@@ -2,6 +2,7 @@ import pytest
 from django.urls import reverse
 
 from core.api.tests.base import BaseTest
+from core.api.tests.factories import CPRaportFormatRowFactory
 from core.models import AdmRecordArchive
 from core.models.country_programme import CPReport
 from core.models.country_programme_archive import CPReportArchive
@@ -64,16 +65,26 @@ class TestVersionsList(BaseTest):
 
 
 @pytest.fixture(name="_setup_old_version_2019")
-def setup_old_version_2019(cp_report_2019, substance, blend):
+def setup_old_version_2019(cp_report_2019, substance, blend, time_frames):
     cp_report_2019.status = CPReport.CPReportStatus.FINAL
     cp_report_2019.version = 2
     cp_report_2019.save()
 
-    substance.displayed_in_all = True
-    substance.save()
+    CPRaportFormatRowFactory.create(
+        blend=blend,
+        substance=None,
+        section="B",
+        time_frame=time_frames[(2000, None)],
+        sort_order=2,
+    )
 
-    blend.displayed_in_all = True
-    blend.save()
+    CPRaportFormatRowFactory.create(
+        blend=None,
+        substance=substance,
+        section="A",
+        time_frame=time_frames[(2000, None)],
+        sort_order=1,
+    )
 
     cp_ar = CPReportArchive.objects.create(
         name=cp_report_2019.name,
@@ -87,16 +98,28 @@ def setup_old_version_2019(cp_report_2019, substance, blend):
 
 
 @pytest.fixture(name="_setup_old_version_2005")
-def setup_old_version_2005(cp_report_2005, substance, blend, adm_rows, adm_columns):
+def setup_old_version_2005(
+    cp_report_2005, substance, blend, adm_rows, adm_columns, time_frames
+):
     cp_report_2005.status = CPReport.CPReportStatus.FINAL
     cp_report_2005.version = 2
     cp_report_2005.save()
 
-    substance.displayed_in_all = True
-    substance.save()
+    CPRaportFormatRowFactory.create(
+        blend=blend,
+        substance=None,
+        section="B",
+        time_frame=time_frames[(2000, None)],
+        sort_order=2,
+    )
 
-    blend.displayed_in_all = True
-    blend.save()
+    CPRaportFormatRowFactory.create(
+        blend=None,
+        substance=substance,
+        section="A",
+        time_frame=time_frames[(2000, None)],
+        sort_order=1,
+    )
 
     cp_ar = CPReportArchive.objects.create(
         name=cp_report_2005.name,
