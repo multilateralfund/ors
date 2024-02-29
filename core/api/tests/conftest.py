@@ -1,4 +1,4 @@
-# pylint: disable=W0621,R0913
+# pylint: disable=W0621,R0913, R0914
 import pytest
 import unicodedata
 
@@ -207,7 +207,7 @@ def excluded_usage():
 
 @pytest.fixture
 def groupA():
-    return GroupFactory.create(name="group A", annex="A")
+    return GroupFactory.create(name="group A", annex="A", name_alt="group A A")
 
 
 @pytest.fixture
@@ -383,52 +383,105 @@ def pdf_text(pdf_file):
 
 
 @pytest.fixture(name="_setup_new_cp_report")
-def setup_new_cp_report(cp_report_2019, blend, substance, time_frames):
-    # create prev tear cp report
+def setup_new_cp_report(cp_report_2019, blend, substance, time_frames, groupA):
+    # create prev year cp report
     prev_report = CPReportFactory.create(
         country=cp_report_2019.country,
         year=2018,
         comment="Alo baza baza",
         status=CPReport.CPReportStatus.FINAL,
     )
-    # section A
-    CPRecordFactory.create(
-        country_programme_report=cp_report_2019, section="A", substance=substance
+    # create cp format rows
+    substAinform = SubstanceFactory.create(name="HCFC-substance2", group=groupA)  # 200
+    substAnoform = SubstanceFactory.create(name="HCFC-substance3", group=groupA)  # inf
+    current_group = GroupFactory.create(name="group B", annex="B", name_alt="group B B")
+    substBinform = SubstanceFactory.create(
+        name="HCFC-substance4", group=current_group
+    )  # 300
+    current_group = GroupFactory.create(name="group F", annex="F", name_alt="group F F")
+    substF1inform = SubstanceFactory.create(
+        name="HFC-substance5", group=current_group
+    )  # 100
+    substF2inform = SubstanceFactory.create(
+        name="HFC-substance6", group=current_group
+    )  # 200
+    current_group = GroupFactory.create(
+        name="Other", annex="unknown", name_alt="group O"
     )
+    substO1inform = SubstanceFactory.create(
+        name="substance5", group=current_group
+    )  # 300
+    substOnoform = SubstanceFactory.create(
+        name="substance6", group=current_group
+    )  # inf
+
+    blend2inform = BlendFactory.create(name="blend2inform")  # 211
+    blend3noform = BlendFactory.create(name="blend2noform")  # inf
+
+    for i, subst in enumerate([substance, substAinform, substBinform]):
+        for sect in ["A", "C"]:
+            CPRaportFormatRowFactory.create(
+                blend=None,
+                substance=subst,
+                section=sect,
+                time_frame=time_frames[(2000, None)],
+                sort_order=(i + 1) * 100,
+            )
+    for i, subst in enumerate([substF1inform, substF2inform, substO1inform]):
+        for sect in ["B", "C"]:
+            CPRaportFormatRowFactory.create(
+                blend=None,
+                substance=subst,
+                section=sect,
+                time_frame=time_frames[(2000, None)],
+                sort_order=(i + 1) * 100,
+            )
+
+    for i, ble in enumerate([blend, blend2inform]):
+        for sect in ["B", "C"]:
+            CPRaportFormatRowFactory.create(
+                blend=ble,
+                substance=None,
+                section=sect,
+                time_frame=time_frames[(2000, None)],
+                sort_order=i + 210,
+            )
+
+    # section A
+    for subst in [substance, substAnoform]:
+        CPRecordFactory.create(
+            country_programme_report=cp_report_2019, section="A", substance=subst
+        )
 
     # section B
-    cp_rec = CPRecordFactory.create(
-        country_programme_report=cp_report_2019, section="B", blend=blend
-    )
-    # create blend and add row in cp format
-    new_blend = BlendFactory.create(
-        name="blend2B",
-    )
-    for sect in ["B", "C"]:
-        CPRaportFormatRowFactory.create(
-            blend=new_blend,
-            substance=None,
-            section=sect,
-            time_frame=time_frames[(2019, None)],
-            sort_order=5,
+    for subst in [substF2inform, substOnoform]:
+        CPRecordFactory.create(
+            country_programme_report=cp_report_2019, section="B", substance=subst
         )
+    for ble in [blend3noform, blend]:
+        cp_rec = CPRecordFactory.create(
+            country_programme_report=cp_report_2019, section="B", blend=ble
+        )
+
     # add 3 usages for one record
     for _ in range(3):
         CPUsageFactory.create(country_programme_record=cp_rec)
 
     # section C (prices)
     for cp_report in [cp_report_2019, prev_report]:
+        for ble in [blend, blend3noform]:
+            CPPricesFactory.create(
+                country_programme_report=cp_report,
+                blend=ble,
+                current_year_price=cp_report.year,
+            )
+    for subst in [substance, substAnoform, substF2inform, substOnoform]:
         CPPricesFactory.create(
-            country_programme_report=cp_report,
-            blend=blend,
-            current_year_price=cp_report.year,
+            country_programme_report=cp_report_2019,
+            substance=subst,
+            current_year_price=cp_report_2019.year,
+            previous_year_price=cp_report_2019.year - 1,
         )
-    CPPricesFactory.create(
-        country_programme_report=cp_report_2019,
-        substance=substance,
-        current_year_price=cp_report_2019.year,
-        previous_year_price=cp_report_2019.year - 1,
-    )
 
     # section D (generation)
     CPGenerationFactory.create(country_programme_report=cp_report_2019)

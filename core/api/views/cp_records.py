@@ -22,7 +22,6 @@ from core.models.country_programme import (
     CPReport,
     CPReportFormatRow,
 )
-from core.models.substance import Substance
 from core.utils import IMPORT_DB_MAX_YEAR, IMPORT_DB_OLDEST_MAX_YEAR
 
 # pylint: disable=E1102
