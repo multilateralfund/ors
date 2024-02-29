@@ -47,18 +47,9 @@ class Substance(models.Model):
     sort_order = models.FloatField(
         null=True, blank=True, help_text="General sort order"
     )
-    sort_order_sectionC = models.FloatField(
-        null=True, blank=True, help_text="Sort order for section C"
-    )
     is_contained_in_polyols = models.BooleanField()
     is_captured = models.BooleanField(default=False)
     ozone_id = models.IntegerField(null=True, blank=True)
-    displayed_in_all = models.BooleanField(
-        default=False, help_text="Controls all-years visibility."
-    )
-    displayed_in_latest_format = models.BooleanField(
-        default=False, help_text="Controls current-year visibility."
-    )
     group = models.ForeignKey(
         "Group",
         null=True,
@@ -81,7 +72,7 @@ class SubstanceAltNameManager(models.Manager):
 
 
 class SubstanceAltName(models.Model):
-    substance = models.ForeignKey(Substance, on_delete=models.CASCADE)
+    substance = models.ForeignKey("Substance", on_delete=models.CASCADE)
     name = models.CharField(max_length=128, unique=True)
     ozone_id = models.IntegerField(null=True, blank=True)
 

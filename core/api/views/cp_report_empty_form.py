@@ -14,7 +14,8 @@ from core.api.serializers.usage import UsageSerializer
 from core.models.adm import AdmColumn, AdmRow
 from core.models.country_programme import (
     CPReport,
-    CPReportFormat,
+    CPReportFormatColumn,
+    CPReportFormatRow,
 )
 from core.utils import IMPORT_DB_MAX_YEAR, IMPORT_DB_OLDEST_MAX_YEAR
 
@@ -61,7 +62,7 @@ class EmptyFormView(views.APIView):
         """
         # get all usages for the given year
         cp_report_formats = (
-            CPReportFormat.objects.get_for_year(year)
+            CPReportFormatColumn.objects.get_for_year(year)
             .select_related("usage")
             .order_by("section", "usage__sort_order")
         )
@@ -90,17 +91,60 @@ class EmptyFormView(views.APIView):
         return usage_columns
 
     @classmethod
+    def get_substance_rows(cls, year):
+        cp_report_rows = (
+            CPReportFormatRow.objects.get_for_year(year)
+            .select_related("substance__group", "blend")
+            .order_by("section", "sort_order")
+        )
+        substance_rows = {
+            "section_a": [],
+            "section_b": [],
+            "section_c": [],
+        }
+        for row in cp_report_rows:
+            # set special group for section C
+            group_name = row.get_group_name()
+            if row.section == "C" and row.substance:
+                if "hfc" in row.substance.name.lower():
+                    group_name = "HFCs"
+                elif "hcfc" in row.substance.name.lower():
+                    group_name = "HCFCs"
+                else:
+                    group_name = "Alternatives"
+            row_data = {
+                "chemical_name": row.get_chemical_display_name(),
+                "substance_id": row.substance_id,
+                "blend_id": row.blend_id,
+                "group": group_name,
+                "sort_order": row.sort_order,
+            }
+            section_key = f"section_{row.section.lower()}"
+            substance_rows[section_key].append(row_data)
+
+        for k in ["section_a", "section_b", "section_c"]:
+            if len(substance_rows[k]) == 0:
+                del substance_rows[k]
+
+        return substance_rows
+
+    @classmethod
     def get_new_empty_form(cls, year=None):
         # for now, we return only the list of columns for usages
         if not year:
             year = datetime.now().year
         usage_columns = cls.get_usage_columns(year)
-        return {"usage_columns": usage_columns}
+        substance_rows = cls.get_substance_rows(year)
+        return {
+            "usage_columns": usage_columns,
+            "substance_rows": substance_rows,
+        }
 
     @classmethod
     def get_old_empty_form(cls, year, cp_report):
         sections = {
             "usage_columns": cls.get_usage_columns(year),
+            "substance_rows": cls.get_substance_rows(year),
             "adm_b": {
                 "columns": [],
                 "rows": [],

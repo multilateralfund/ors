@@ -1,5 +1,5 @@
 from django.db import models
-from core.models.base import BaseWTimeFrameManager
+from core.models.base import AbstractWChemical, BaseWTimeFrameManager
 from core.models.base_country_programme import (
     AbstractCPEmission,
     AbstractCPGeneration,
@@ -8,8 +8,6 @@ from core.models.base_country_programme import (
     AbstractCPReport,
     AbstractCPUsage,
 )
-from core.models.time_frame import TimeFrame
-from core.models.usage import Usage
 
 
 class CPReport(AbstractCPReport):
@@ -24,7 +22,7 @@ class CPReport(AbstractCPReport):
 
 class CPRecord(AbstractCPRecord):
     country_programme_report = models.ForeignKey(
-        CPReport, on_delete=models.CASCADE, related_name="cprecords"
+        "CPReport", on_delete=models.CASCADE, related_name="cprecords"
     )
 
     class Meta:
@@ -44,7 +42,7 @@ class CPRecord(AbstractCPRecord):
 
 class CPUsage(AbstractCPUsage):
     country_programme_record = models.ForeignKey(
-        CPRecord, on_delete=models.CASCADE, related_name="record_usages"
+        "CPRecord", on_delete=models.CASCADE, related_name="record_usages"
     )
 
     class Meta:
@@ -55,7 +53,7 @@ class CPUsage(AbstractCPUsage):
 
 class CPPrices(AbstractCPPrices):
     country_programme_report = models.ForeignKey(
-        CPReport,
+        "CPReport",
         on_delete=models.CASCADE,
         related_name="prices",
     )
@@ -76,7 +74,7 @@ class CPPrices(AbstractCPPrices):
 # model used for data regarding only HFC-23 substance
 class CPGeneration(AbstractCPGeneration):
     country_programme_report = models.ForeignKey(
-        CPReport,
+        "CPReport",
         on_delete=models.CASCADE,
         related_name="cpgenerations",
     )
@@ -93,7 +91,7 @@ class CPGeneration(AbstractCPGeneration):
 # model used for data regarding only HFC-23 substance
 class CPEmission(AbstractCPEmission):
     country_programme_report = models.ForeignKey(
-        CPReport,
+        "CPReport",
         on_delete=models.CASCADE,
         related_name="cpemissions",
     )
@@ -107,9 +105,17 @@ class CPEmission(AbstractCPEmission):
         return self.country_programme_report.name
 
 
-class CPReportFormat(models.Model):
-    usage = models.ForeignKey(Usage, on_delete=models.CASCADE)
-    time_frame = models.ForeignKey(TimeFrame, on_delete=models.CASCADE)
+class CPReportFormatColumn(models.Model):
+    usage = models.ForeignKey("Usage", on_delete=models.CASCADE)
+    time_frame = models.ForeignKey("TimeFrame", on_delete=models.CASCADE)
+    section = models.CharField(max_length=10)
+    sort_order = models.FloatField(null=True, blank=True)
+
+    objects = BaseWTimeFrameManager()
+
+
+class CPReportFormatRow(AbstractWChemical):
+    time_frame = models.ForeignKey("TimeFrame", on_delete=models.CASCADE)
     section = models.CharField(max_length=10)
     sort_order = models.FloatField(null=True, blank=True)
 

@@ -125,12 +125,6 @@ class Blend(models.Model):
         help_text="Global Warming Potential",
     )
     is_contained_in_polyols = models.BooleanField(default=False)
-    displayed_in_all = models.BooleanField(
-        default=False, help_text="Controls all-years visibility."
-    )
-    displayed_in_latest_format = models.BooleanField(
-        default=False, help_text="Controls current-year visibility."
-    )
     sort_order = models.FloatField(
         null=True, blank=True, help_text="General sort order"
     )
@@ -178,7 +172,7 @@ class BlendAltNameManager(models.Manager):
 
 class BlendAltName(models.Model):
     name = models.CharField(max_length=256)
-    blend = models.ForeignKey(Blend, on_delete=models.CASCADE)
+    blend = models.ForeignKey("Blend", on_delete=models.CASCADE)
     ozone_id = models.IntegerField(null=True, blank=True)
 
     objects = BlendAltNameManager()
@@ -267,9 +261,9 @@ class BlendComponentManager(models.Manager):
 
 class BlendComponents(models.Model):
     blend = models.ForeignKey(
-        Blend, on_delete=models.CASCADE, related_name="components"
+        "Blend", on_delete=models.CASCADE, related_name="components"
     )
-    substance = models.ForeignKey(Substance, on_delete=models.CASCADE)
+    substance = models.ForeignKey("Substance", on_delete=models.CASCADE)
     percentage = models.DecimalField(
         max_digits=6,
         decimal_places=5,

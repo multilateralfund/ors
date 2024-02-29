@@ -5,7 +5,8 @@ from core.admin.utils import get_final_display_list
 from core.models.country_programme import (
     CPRecord,
     CPReport,
-    CPReportFormat,
+    CPReportFormatColumn,
+    CPReportFormatRow,
     CPUsage,
     CPPrices,
     CPGeneration,
@@ -165,8 +166,8 @@ class CPEmissionAdmin(admin.ModelAdmin):
         return get_final_display_list(CPEmission, exclude)
 
 
-@admin.register(CPReportFormat)
-class CPReportFormatAdmin(admin.ModelAdmin):
+@admin.register(CPReportFormatColumn)
+class CPReportFormatColumnAdmin(admin.ModelAdmin):
     search_fields = ["usage__name"]
     list_filter = [
         "section",
@@ -179,4 +180,21 @@ class CPReportFormatAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request):
         exclude = []
-        return get_final_display_list(CPReportFormat, exclude)
+        return get_final_display_list(CPReportFormatColumn, exclude)
+
+
+@admin.register(CPReportFormatRow)
+class CPReportFormatRowAdmin(admin.ModelAdmin):
+    search_fields = ["substance__name", "blend__name"]
+    list_filter = [
+        "section",
+        "time_frame",
+    ]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("substance", "blend", "time_frame")
+
+    def get_list_display(self, request):
+        exclude = []
+        return get_final_display_list(CPReportFormatRow, exclude)

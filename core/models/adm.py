@@ -1,11 +1,9 @@
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey, TreeManager
 
-from core.models.base import BaseWTimeFrameManager
-from core.models.blend import Blend
+from core.models.base import AbstractWChemical, BaseWTimeFrameManager
 from core.models.country_programme import CPReport
 from core.models.country_programme_archive import CPReportArchive
-from core.models.substance import Substance
 from core.models.time_frame import TimeFrame
 
 
@@ -134,17 +132,11 @@ class AdmChoice(models.Model):
         return self.value
 
 
-class BaseAdmRecord(models.Model):
+class BaseAdmRecord(AbstractWChemical):
     row = models.ForeignKey(AdmRow, on_delete=models.CASCADE)
     column = models.ForeignKey(
         AdmColumn, on_delete=models.CASCADE, null=True, blank=True
     )
-
-    substance = models.ForeignKey(
-        Substance, on_delete=models.CASCADE, null=True, blank=True
-    )
-    blend = models.ForeignKey(Blend, on_delete=models.CASCADE, null=True, blank=True)
-
     value_text = models.TextField(null=True, blank=True)
     value_choice = models.ForeignKey(
         AdmChoice, on_delete=models.CASCADE, null=True, blank=True

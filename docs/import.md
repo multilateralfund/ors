@@ -209,5 +209,13 @@ docker-compose exec app ./manage.py import_cp_format
 ```
 
 ### Import Files
-  - **nextcloud path** OzoneMlf/Data/1. Country Programme/CP Format/CP Format - 2022 and beyond(Final-92ndMtg)Consultant.xls
-  - **local path** .fs/import_files/cp_format/CP_Format_2022.xls
+: download folders from nextcloud
+    - **nextcloud path** OzoneMlf/3. Country programmes specs and documentation/CP Format/
+    - **local path** .fs/import_files/cp_format
+
+    |nextcloud name | local name |
+    | :----:    | :----:  |
+    | CP Format - 2022 and beyond(Final-92ndMtg)Consultant.xls | CP_Format_2022.xls |
+    | CP Format - 2019-2021.xls | CP_Format_2019_2021.xls |
+    | CP Format - 2012-2018.xls | CP_Format_2012_2018.xls |
+    | CP Format - 2005-2011.xls | CP_Format_2005_2011.xls |

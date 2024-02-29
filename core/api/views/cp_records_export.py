@@ -6,6 +6,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import ValidationError
 
+
 from core.api.export.cp_report_new import CPReportNewExporter
 from core.api.export.cp_report_old import CPReportOldExporter
 from core.api.serializers import BlendSerializer
@@ -18,6 +19,7 @@ from core.models import Blend
 from core.models import CPReport
 from core.models import ExcludedUsage
 from core.models import Substance
+from core.models.country_programme import CPReportFormatRow
 from core.utils import IMPORT_DB_MAX_YEAR
 
 
@@ -82,6 +84,9 @@ class CPEmptyExportView(CPRecordExportView):
         return CPReport(year=year, name=f"Empty Country Programme {year}")
 
     def get_data(self, cp_report):
+        displayed_chemicals = CPReportFormatRow.objects.get_for_year(cp_report.year)
+        substances_ids = [x.substance_id for x in displayed_chemicals if x.substance_id]
+        blends_ids = [x.blend_id for x in displayed_chemicals if x.blend_id]
         substances = SubstanceSerializer(
             Substance.objects.select_related("group")
             .prefetch_related(
@@ -90,7 +95,7 @@ class CPEmptyExportView(CPRecordExportView):
                     queryset=ExcludedUsage.objects.get_for_year(cp_report.year),
                 ),
             )
-            .filter(displayed_in_all=True)
+            .filter(id__in=substances_ids)
             .order_by("group__name", "sort_order"),
             many=True,
             context={"with_usages": True},
@@ -102,7 +107,7 @@ class CPEmptyExportView(CPRecordExportView):
                     queryset=ExcludedUsage.objects.get_for_year(cp_report.year),
                 ),
             )
-            .filter(displayed_in_all=True)
+            .filter(id__in=blends_ids)
             .order_by("sort_order"),
             many=True,
             context={"with_usages": True},

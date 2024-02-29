@@ -1,7 +1,5 @@
 from django.db import models
-from core.models.blend import Blend
-
-from core.models.substance import Substance
+from core.models.base import AbstractWChemical
 from core.models.usage import Usage
 
 
@@ -26,11 +24,7 @@ class AbstractCPReport(models.Model):
         abstract = True
 
 
-class AbstractCPRecord(models.Model):
-    blend = models.ForeignKey(Blend, on_delete=models.CASCADE, null=True, blank=True)
-    substance = models.ForeignKey(
-        Substance, on_delete=models.CASCADE, null=True, blank=True
-    )
+class AbstractCPRecord(AbstractWChemical):
     display_name = models.CharField(max_length=248, null=True, blank=True)
     section = models.CharField(max_length=164)
     imports = models.DecimalField(
@@ -68,11 +62,7 @@ class AbstractCPUsage(models.Model):
         abstract = True
 
 
-class AbstractCPPrices(models.Model):
-    blend = models.ForeignKey(Blend, on_delete=models.CASCADE, null=True, blank=True)
-    substance = models.ForeignKey(
-        Substance, on_delete=models.CASCADE, null=True, blank=True
-    )
+class AbstractCPPrices(AbstractWChemical):
     display_name = models.CharField(max_length=248, null=True, blank=True)
     remarks = models.TextField(null=True, blank=True)
     source_file = models.CharField(max_length=248)

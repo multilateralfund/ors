@@ -5,7 +5,8 @@ from django.urls import reverse
 
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
-    CPRaportFormatFactory,
+    CPRaportFormatColumnFactory,
+    CPRaportFormatRowFactory,
     CountryFactory,
     CPReportFactory,
     GroupFactory,
@@ -832,7 +833,7 @@ class TestCPReportUpdate(BaseTest):
 
 
 @pytest.fixture(name="_setup_get_empty_form")
-def setup_get_empty_form(usage):
+def setup_get_empty_form(usage, substance, blend):
     time_frame = TimeFrameFactory.create(
         min_year=2022,
         max_year=None,
@@ -842,7 +843,24 @@ def setup_get_empty_form(usage):
         "time_frame": time_frame,
         "section": "B",
     }
-    CPRaportFormatFactory.create(**cerate_data)
+    time_frame = TimeFrameFactory.create(min_year=2000, max_year=None)
+    CPRaportFormatColumnFactory.create(**cerate_data)
+    for sect in ["A", "C"]:
+        create_data = {
+            "substance": substance,
+            "time_frame": time_frame,
+            "section": sect,
+            "sort_order": 1,
+        }
+        CPRaportFormatRowFactory.create(**create_data)
+    for sect in ["B", "C"]:
+        create_data = {
+            "blend": blend,
+            "time_frame": time_frame,
+            "section": sect,
+            "sort_order": 2,
+        }
+        CPRaportFormatRowFactory.create(**create_data)
 
 
 class TestGetEmptyForm(BaseTest):
@@ -854,6 +872,9 @@ class TestGetEmptyForm(BaseTest):
         assert response.status_code == 200
         assert len(response.data["usage_columns"]["section_a"]) == 1
         assert len(response.data["usage_columns"]["section_b"]) == 2
+        assert len(response.data["substance_rows"]["section_a"]) == 1
+        assert len(response.data["substance_rows"]["section_b"]) == 1
+        assert len(response.data["substance_rows"]["section_c"]) == 2
 
     def test_with_cp_report_id(
         self, user, cp_report_2019, _setup_get_empty_form, _cp_report_format
@@ -863,3 +884,6 @@ class TestGetEmptyForm(BaseTest):
         assert response.status_code == 200
         assert len(response.data["usage_columns"]["section_a"]) == 1
         assert len(response.data["usage_columns"]["section_b"]) == 1
+        assert len(response.data["substance_rows"]["section_a"]) == 1
+        assert len(response.data["substance_rows"]["section_b"]) == 1
+        assert len(response.data["substance_rows"]["section_c"]) == 2
