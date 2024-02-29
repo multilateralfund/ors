@@ -2,10 +2,8 @@ from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey, TreeManager
 
 from core.models.base import AbstractWChemical, BaseWTimeFrameManager
-from core.models.blend import Blend
 from core.models.country_programme import CPReport
 from core.models.country_programme_archive import CPReportArchive
-from core.models.substance import Substance
 from core.models.time_frame import TimeFrame
 
 
