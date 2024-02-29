@@ -31,16 +31,24 @@ SKIP_CHEMICAL_NAMES = [
     "where applicable",
     "indicate whether",
     "*  qps =",
+    "number of",
+    "estimated",
+    "training programmes",
+    "export quotas",
 ]
 
 FILE_DATA_MAPPING = {
     "CP_Format_2005_2011.xls": {
-        "sheets": {"Data Sheet": "A"},
+        "sheets": {
+            "Data Sheet": "A",
+            "Adm-C": "C",
+        },
         "time_frame": {"min_year": 1995, "max_year": 2011},
     },
     "CP_Format_2012_2018.xls": {
         "sheets": {
             "Data Sheet": "A",
+            "Adm-C": "C",
         },
         "time_frame": {"min_year": 2012, "max_year": 2018},
     },
@@ -139,7 +147,13 @@ def import_cp_format_row(dir_path):
             # set skip rows
             sk_rows = 8
             if section == "C":
-                sk_rows = 5
+                if "adm" in sheet.lower():
+                    if file == "CP_Format_2005_2011.xls":
+                        sk_rows = 47
+                    else:
+                        sk_rows = 33
+                else:
+                    sk_rows = 5
             # read data
             df = pd.read_excel(
                 file_path,

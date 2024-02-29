@@ -1,5 +1,5 @@
 from django.db import models
-from core.models.base import BaseWTimeFrameManager
+from core.models.base import AbstractWChemical, BaseWTimeFrameManager
 from core.models.base_country_programme import (
     AbstractCPEmission,
     AbstractCPGeneration,
@@ -114,19 +114,7 @@ class CPReportFormatColumn(models.Model):
     objects = BaseWTimeFrameManager()
 
 
-class CPReportFormatRow(models.Model):
-    substance = models.ForeignKey(
-        "Substance",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-    )
-    blend = models.ForeignKey(
-        "Blend",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-    )
+class CPReportFormatRow(AbstractWChemical):
     time_frame = models.ForeignKey("TimeFrame", on_delete=models.CASCADE)
     section = models.CharField(max_length=10)
     sort_order = models.FloatField(null=True, blank=True)
