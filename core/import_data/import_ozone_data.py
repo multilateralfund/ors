@@ -32,7 +32,7 @@ def create_uncontrolled_group():
         "group_id": "uncontrolled",
         "annex": "unknown",
         "name": "Other",
-        "name_alt": "Alternatives",
+        "name_alt": "Other",
         "description": "Substances not controlled under the Montreal Protocol.",
         "description_alt": "",
         "is_odp": False,
