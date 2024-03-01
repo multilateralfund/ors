@@ -38,7 +38,7 @@ type Pagination = {
   rowsPerPageOptions?: Array<number>
 }
 
-type TableProps = AgGridReactProps & {
+export type TableProps = AgGridReactProps & {
   Toolbar?: React.FC<any>
   enableFullScreen?: boolean
   errors?: any

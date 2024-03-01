@@ -53,18 +53,46 @@ const constants: any = {
   },
 }
 
+type ComponentsCreate = {
+  adm_b?: typeof DefaultComponent
+  adm_c?: typeof DefaultComponent
+  adm_d?: typeof DefaultComponent
+  section_a: typeof SectionACreate
+  section_b: typeof SectionBCreate
+  section_c: typeof SectionCCreate
+  section_d: typeof SectionDCreate
+  section_e: typeof SectionECreate
+  section_f: typeof SectionFCreate
+}
+
+type ComponentsView = {
+  adm_b: typeof AdmBView
+  adm_c: typeof AdmCView
+  adm_d: typeof AdmDView
+  section_a: typeof SectionAView
+  section_b: typeof SectionBView
+  section_c: typeof SectionCView
+  section_d: typeof SectionDView
+  section_e: typeof SectionEView
+  section_f: typeof SectionFView
+}
+
+type ComponentsEdit = {
+  adm_b: typeof AdmBCreate
+  adm_c: typeof AdmCCreate
+  adm_d: typeof AdmDCreate
+  section_a: typeof SectionACreate
+  section_b: typeof SectionBCreate
+  section_c: typeof SectionCCreate
+  section_d: typeof SectionDCreate
+  section_e: typeof SectionECreate
+  section_f: typeof SectionFCreate
+}
+
 const components: {
-  [key in 'create' | 'edit' | 'view']: {
-    adm_b?: typeof AdmBCreate | typeof AdmBView
-    adm_c?: typeof AdmCCreate | typeof AdmCView
-    adm_d?: typeof AdmDCreate | typeof AdmDView
-    section_a?: typeof SectionACreate | typeof SectionAView
-    section_b?: typeof SectionBCreate | typeof SectionBView
-    section_c?: typeof SectionCCreate | typeof SectionCView
-    section_d?: typeof SectionDCreate | typeof SectionDView
-    section_e?: typeof SectionECreate | typeof SectionEView
-    section_f?: typeof SectionFCreate | typeof SectionFView
-  }
+  create: ComponentsCreate
+  edit: ComponentsEdit
+  view: ComponentsView
 } = {
   create: {
     section_a: SectionACreate,
@@ -126,6 +154,8 @@ export const variants = [
   },
 ]
 
+const DefaultComponent = () => <div>Not implemented</div>
+
 export function getSections(
   variant: {
     maxYear: number
@@ -148,8 +178,6 @@ export function getSections(
       []),
     ...((includes(['II', 'III'], model) && ['adm_b', 'adm_c', 'adm_d']) || []),
   ]
-
-  const DefaultComponent = () => <div>Not implemented</div>
 
   return filter(
     [

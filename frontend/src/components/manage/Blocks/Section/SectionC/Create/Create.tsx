@@ -1,24 +1,53 @@
+import { EmptyReportSubstanceRowType, EmptyReportType } from '@ors/types/store'
+
 import { useMemo, useRef, useState } from 'react'
 
 import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, union } from 'lodash'
 
+import {
+  CPBaseForm,
+  PassedCPCreateTableProps,
+} from '@ors/components/manage/Blocks/CountryProgramme/CPCreate'
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
+import SectionC, { SectionCFormFields } from '@ors/models/SectionC'
 import { useStore } from '@ors/store'
 
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-function getRowData(data: any) {
-  let rowData: Array<any> = []
-  const dataByGroup: Record<string, any> = {}
+type RowData = SectionCFormFields & {
+  count?: number
+  display_name?: string
+  group?: string
+  row_id: string
+  rowType: string
+  tooltip?: boolean
+}
+
+function getRowData(
+  data: SectionC['data'],
+  substanceRows: EmptyReportSubstanceRowType[],
+): RowData[] {
+  let rowData: RowData[] = []
+  const dataByGroup: Record<string, any[]> = {}
   const groups: Array<string> = []
+  const substanceOrder = substanceRows.reduce(
+    (acc: Record<number, number>, val) => {
+      const substanceId = val.substance_id
+      if (!acc[substanceId]) {
+        acc[substanceId] = val.sort_order
+      }
+      return acc
+    },
+    {},
+  )
   each(data, (item) => {
     const group = item.group || 'Other'
     if (!dataByGroup[group]) {
@@ -41,21 +70,32 @@ function getRowData(data: any) {
           rowType: 'group',
         },
       ],
-      dataByGroup[group],
+      dataByGroup[group].sort(
+        (a, b) =>
+          substanceOrder[a.substance_id] - substanceOrder[b.substance_id],
+      ),
     )
   })
   return rowData
 }
 
-export default function SectionCCreate(props: any) {
-  const { Section, TableProps, form, setForm } = props
+export default function SectionCCreate(props: {
+  Section: SectionC
+  TableProps: PassedCPCreateTableProps
+  emptyForm: EmptyReportType
+  form: CPBaseForm
+  setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
+}) {
+  const { Section, TableProps, emptyForm, form, setForm } = props
   const newNode = useRef<RowNode>()
   const substances = useStore(
     (state) => getResults(state.cp_reports.substances.data).results,
   )
 
   const grid = useRef<any>()
-  const [initialRowData] = useState(() => getRowData(form.section_c))
+  const [initialRowData] = useState(() =>
+    getRowData(form.section_c, emptyForm.substance_rows?.section_c || []),
+  )
   const [pinnedBottomRowData] = useState([{ rowType: 'control' }])
 
   const [addChemicalModal, setAddChemicalModal] = useState(false)

@@ -1,3 +1,5 @@
+import { EmptyReportSubstanceRowType, EmptyReportType } from '@ors/types/store'
+
 import { useMemo, useRef, useState } from 'react'
 
 import {
@@ -13,11 +15,16 @@ import cx from 'classnames'
 import { each, find, findIndex, includes, sortBy, union, uniqBy } from 'lodash'
 import { useSnackbar } from 'notistack'
 
+import {
+  CPBaseForm,
+  PassedCPCreateTableProps,
+} from '@ors/components/manage/Blocks/CountryProgramme/CPCreate'
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
+import SectionB, { SectionBFormFields } from '@ors/models/SectionB'
 import { useStore } from '@ors/store'
 
 import { CreateBlend } from './CreateBlend'
@@ -25,10 +32,32 @@ import useGridOptions from './schema'
 
 import { IoClose, IoExpand, IoInformationCircleOutline } from 'react-icons/io5'
 
-function getRowData(data: any) {
-  let rowData: Array<any> = []
-  const dataByGroup: Record<string, any> = {}
+type RowData = SectionBFormFields & {
+  count?: number
+  display_name?: string
+  group?: string
+  row_id: string
+  rowType: string
+  tooltip?: boolean
+}
+
+function getRowData(
+  data: SectionB['data'],
+  substanceRows: EmptyReportSubstanceRowType[],
+): RowData[] {
+  let rowData: RowData[] = []
+  const dataByGroup: Record<string, any[]> = {}
   const groups: Array<string> = []
+  const substanceOrder = substanceRows.reduce(
+    (acc: Record<number, number>, val) => {
+      const substanceId = val.substance_id
+      if (!acc[substanceId]) {
+        acc[substanceId] = val.sort_order
+      }
+      return acc
+    },
+    {},
+  )
   each(data, (item) => {
     const group = item.group || 'Other'
     if (!dataByGroup[group]) {
@@ -51,7 +80,10 @@ function getRowData(data: any) {
           rowType: 'group',
         },
       ],
-      dataByGroup[group],
+      dataByGroup[group].sort(
+        (a, b) =>
+          substanceOrder[a.substance_id] - substanceOrder[b.substance_id],
+      ),
       group.startsWith('Blends')
         ? [
             {
@@ -75,7 +107,22 @@ function getRowData(data: any) {
   return rowData
 }
 
-export default function SectionBCreate(props: any) {
+export default function SectionBCreate(props: {
+  Section: SectionB
+  TableProps: PassedCPCreateTableProps
+  emptyForm: EmptyReportType
+  form: CPBaseForm
+  section: {
+    allowFullScreen: boolean
+    component: React.FC
+    id: string
+    label: string
+    panelId: string
+    title: string
+  }
+  setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
+  variant: { maxYear: number; minYear: number; model: string }
+}) {
   const { enqueueSnackbar } = useSnackbar()
   const { Section, TableProps, emptyForm, form, section, setForm, variant } =
     props
@@ -92,7 +139,9 @@ export default function SectionBCreate(props: any) {
   )
 
   const grid = useRef<any>()
-  const [initialRowData] = useState(() => getRowData(form.section_b))
+  const [initialRowData] = useState(() =>
+    getRowData(form.section_b, emptyForm.substance_rows?.section_b || []),
+  )
 
   const [addChemicalModal, setAddChemicalModal] = useState(false)
   const [createBlendModal, setCreateBlendModal] = useState(false)

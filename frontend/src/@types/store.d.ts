@@ -2,12 +2,40 @@ import type { Language } from '@ors/types/locales'
 import type { DataType, SliceData } from '@ors/types/primitives'
 import type { PartialDeep, UnknownArray } from 'type-fest'
 
+export type EmptyReportUsageColumnType = {
+  columnCategory: string
+  dataType: object
+  full_name: string
+  headerName: string
+  id: number
+  sort_order: number
+}
+
+export type EmptyReportSubstanceRowType = {
+  blend_id: number
+  chemical_name: string
+  group: string
+  sort_order: number
+  substance_id: number
+}
+
+export type EmptyReportType = {
+  substance_rows?: {
+    [key in
+      | 'section_a'
+      | 'section_b'
+      | 'section_c']: EmptyReportSubstanceRowType[]
+  }
+  usage_columns?: {
+    [key in 'section_a' | 'section_b']: EmptyReportUsageColumnType[]
+  }
+}
 
 type Report = SliceData<
   Record<string, any> | null,
   Record<string, any> | null
 > & {
-  emptyForm: SliceData
+  emptyForm: SliceData<EmptyReportType, Record<string, any> | null>
   versions: SliceData<UnknownArray>
 }
 
@@ -82,9 +110,9 @@ export interface UserSlice
 
 export interface CommonSlice {
   agencies: SliceData
-  countries: SliceData
-  countries_cp_report: SliceData
-  settings: SliceData
+  countries: SliceData<Country[]>
+  countries_cp_report: SliceData<Country[]>
+  settings: SliceData<Settings>
 }
 
 // Store state
@@ -106,4 +134,28 @@ export type StoreState = {
 // Initial store state
 export type InitialStoreState = PartialDeep<StoreState> & {
   connection?: null | string
+}
+
+export type Country = {
+  abbr: string
+  has_cp_report: boolean
+  id: number
+  iso3: string
+  name: string
+  name_alt: string
+}
+
+export type Settings = {
+  blend_types: [string, string][]
+  cp_reports: {
+    max_year: number
+    min_year: number
+    nr_reports: number
+  }
+  project_fund_types: [string, string][]
+  project_ods_odp_types: [string, string][]
+  project_submission_categories: [string, string][]
+  project_substance_types: [string, string][]
+  submission_amount_statuses: [string, string][]
+  year_section_mapping: { max_year: number; sections: string[] }[]
 }
