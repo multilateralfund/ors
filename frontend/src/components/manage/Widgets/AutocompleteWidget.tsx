@@ -11,17 +11,21 @@ import TextWidget from './TextWidget'
 
 export interface AutocompleteWidgetProps
   extends AutocompleteProps<
-    { [key: string]: any; id: number; label?: string } | undefined,
+    { [key: string]: any; id: number | string; label?: string } | undefined,
     boolean | undefined,
     boolean | undefined,
     boolean | undefined
   > {
   Input?: TextWidgetProps
   getCount?: (
-    option: { [key: string]: any; id: number; label?: string } | undefined,
+    option:
+      | { [key: string]: any; id: number | string; label?: string }
+      | undefined,
   ) => number
   options?:
-    | Array<{ [key: string]: any; id: number; label?: string } | undefined>
+    | Array<
+        { [key: string]: any; id: number | string; label?: string } | undefined
+      >
     | undefined
 }
 

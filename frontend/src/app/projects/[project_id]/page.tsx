@@ -1,3 +1,5 @@
+import { ProjectType } from '@ors/types/projects'
+
 import { Metadata } from 'next'
 
 import PView from '@ors/components/manage/Blocks/Projects/PView'
@@ -22,7 +24,11 @@ export async function generateMetadata({
 }
 
 export default async function Project({ params }: ProjectProps) {
-  const data = await api(`api/projects/${params.project_id}/`, {}, false)
+  const data: ProjectType = await api(
+    `api/projects/${params.project_id}/`,
+    {},
+    false,
+  )
 
   return (
     <PageWrapper>

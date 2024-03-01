@@ -1,24 +1,54 @@
+import type { Substance } from '@ors/models/Section'
+import { EmptyReportSubstanceRowType, EmptyReportType } from '@ors/types/store'
+
 import { useMemo, useRef, useState } from 'react'
 
 import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, union } from 'lodash'
 
+import {
+  CPBaseForm,
+  PassedCPCreateTableProps,
+} from '@ors/components/manage/Blocks/CountryProgramme/CPCreate'
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
+import SectionA, { SectionAFormFields } from '@ors/models/SectionA'
 import { useStore } from '@ors/store'
 
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-function getRowData(data: any) {
-  let rowData: Array<any> = []
-  const dataByGroup: Record<string, any> = {}
+type RowData = SectionAFormFields & {
+  count?: number
+  display_name?: string
+  group?: string
+  row_id: string
+  rowType: string
+  tooltip?: boolean
+}
+
+function getRowData(
+  data: SectionA['data'],
+  substanceRows: EmptyReportSubstanceRowType[],
+): RowData[] {
+  let rowData: RowData[] = []
+  const dataByGroup: Record<string, any[]> = {}
   const groups: Array<string> = []
+  const substanceOrder = substanceRows.reduce(
+    (acc: Record<number, number>, val) => {
+      const substanceId = val.substance_id
+      if (!acc[substanceId]) {
+        acc[substanceId] = val.sort_order
+      }
+      return acc
+    },
+    {},
+  )
   each(data, (item) => {
     const group = item.group || 'Other'
     if (!dataByGroup[group]) {
@@ -41,7 +71,10 @@ function getRowData(data: any) {
           rowType: 'group',
         },
       ],
-      dataByGroup[group],
+      dataByGroup[group].sort(
+        (a, b) =>
+          substanceOrder[a.substance_id] - substanceOrder[b.substance_id],
+      ),
       group === 'Annex C, Group I'
         ? [
             {
@@ -65,16 +98,25 @@ function getRowData(data: any) {
   return rowData
 }
 
-export default function SectionACreate(props: any) {
+export default function SectionACreate(props: {
+  Section: SectionA
+  TableProps: PassedCPCreateTableProps
+  emptyForm: EmptyReportType
+  form: CPBaseForm
+  setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
+}) {
   const { Section, TableProps, emptyForm, form, setForm } = props
   const newNode = useRef<RowNode>()
 
-  const substances = useStore(
+  const substances: Substance[] = useStore(
     (state) => getResults(state.cp_reports.substances.data).results,
   )
+
   const grid = useRef<any>()
-  const [initialRowData] = useState(() => getRowData(form.section_a))
-  const [pinnedBottomRowData] = useState<any>([
+  const [initialRowData] = useState(() =>
+    getRowData(form.section_a, emptyForm.substance_rows?.section_a || []),
+  )
+  const [pinnedBottomRowData] = useState<RowData[]>([
     {
       display_name: 'TOTAL',
       row_id: 'total',
@@ -113,7 +155,7 @@ export default function SectionACreate(props: any) {
       if (index > -1) {
         const groupNode = grid.current.api.getRowNode(removedSubstance.group)
         newData.splice(index, 1)
-        setForm((form: any) => ({ ...form, section_a: newData }))
+        setForm((form) => ({ ...form, section_a: newData }))
         applyTransaction(grid.current.api, {
           remove: [props.data],
           update: [{ ...groupNode.data, count: groupNode.data.count - 1 }],
@@ -160,12 +202,12 @@ export default function SectionACreate(props: any) {
           ...TableProps.defaultColDef,
           ...gridOptions.defaultColDef,
         }}
-        onCellValueChanged={(event: any) => {
+        onCellValueChanged={(event) => {
           const usages = getUsagesOnCellValueChange(event)
           const newData = [...form.section_a]
           const index = findIndex(
             newData,
-            (row: any) => row.row_id == event.data.row_id,
+            (row) => row.row_id == event.data.row_id,
           )
           if (index > -1) {
             // Should not be posible for index to be -1
@@ -216,7 +258,7 @@ export default function SectionACreate(props: any) {
               options={substancesOptions}
               value={null}
               widget="autocomplete"
-              onChange={(event: any, newSubstance: any) => {
+              onChange={(_event, newSubstance: any) => {
                 if (document.activeElement) {
                   // @ts-ignore
                   document.activeElement.blur()

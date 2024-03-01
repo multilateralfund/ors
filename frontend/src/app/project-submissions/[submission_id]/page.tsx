@@ -1,3 +1,5 @@
+import { ProjectType } from '@ors/types/projects'
+
 import { Metadata } from 'next'
 
 import PSView from '@ors/components/manage/Blocks/ProjectSubmissions/PSView'
@@ -24,7 +26,11 @@ export async function generateMetadata({
 export default async function ProjectSubmission({
   params,
 }: ProjectSubmissionProps) {
-  const data = await api(`api/projects/${params.submission_id}/`, {}, false)
+  const data: ProjectType = await api(
+    `api/projects/${params.submission_id}/`,
+    {},
+    false,
+  )
 
   return (
     <PageWrapper>

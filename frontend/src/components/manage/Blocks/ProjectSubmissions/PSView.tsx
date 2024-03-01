@@ -1,4 +1,6 @@
 'use client'
+import { ProjectType } from '@ors/types/projects'
+
 import { useMemo } from 'react'
 import ReactCountryFlag from 'react-country-flag'
 
@@ -12,7 +14,7 @@ import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { useStore } from '@ors/store'
 
 type ProjectProps = {
-  data: any
+  data: ProjectType
 }
 
 function Label({
@@ -56,9 +58,9 @@ export default function PSView({ data }: ProjectProps) {
                 <Typography className="text-lg font-bold">
                   <ReactCountryFlag
                     className="mr-1 !text-[32px]"
-                    countryCode={country.abbr}
+                    countryCode={country?.abbr || data.country}
                   />
-                  {country.name}
+                  {country?.name || data.country}
                 </Typography>
                 <Typography className="text-lg font-bold">
                   MTG. {data.approval_meeting}
@@ -223,7 +225,7 @@ export default function PSView({ data }: ProjectProps) {
               <div>
                 <Label>Technology</Label>
                 <Typography className="text-lg font-bold">
-                  {data.Technology || '-'}
+                  {data.technology || '-'}
                 </Typography>
               </div>
               <div>
@@ -253,7 +255,7 @@ export default function PSView({ data }: ProjectProps) {
               <div>
                 <Label>Substance phasedout</Label>
                 <Typography className="text-lg font-bold">
-                  {data.substance_fhasedout || '-'}
+                  {data.substance_phasedout || '-'}
                 </Typography>
               </div>
               <div>
@@ -283,7 +285,7 @@ export default function PSView({ data }: ProjectProps) {
               <div>
                 <Label>Effectivness cost</Label>
                 <Typography className="text-lg font-bold">
-                  {data.effectivness_cost || '-'}
+                  {data.effectiveness_cost || '-'}
                 </Typography>
               </div>
               <div>
@@ -301,7 +303,7 @@ export default function PSView({ data }: ProjectProps) {
               <div>
                 <Label>Total psc transfered</Label>
                 <Typography className="text-lg font-bold">
-                  {data.total_psc_transfered || '-'}
+                  {data.total_psc_transferred || '-'}
                 </Typography>
               </div>
               <div>
@@ -355,7 +357,7 @@ export default function PSView({ data }: ProjectProps) {
               <div>
                 <Label>Date per agreement</Label>
                 <Typography className="text-lg font-bold">
-                  {data.date_per_Agreement || '-'}
+                  {data.date_per_agreement || '-'}
                 </Typography>
               </div>
               <div>
@@ -367,7 +369,7 @@ export default function PSView({ data }: ProjectProps) {
               <div>
                 <Label>Date received</Label>
                 <Typography className="text-lg font-bold">
-                  {data.date_Received || '-'}
+                  {data.date_received || '-'}
                 </Typography>
               </div>
               <div>
@@ -409,7 +411,7 @@ export default function PSView({ data }: ProjectProps) {
               <div>
                 <Label>Loan</Label>
                 <Typography className="text-lg font-bold">
-                  {data.Loan || '-'}
+                  {data.loan || '-'}
                 </Typography>
               </div>
               <div>

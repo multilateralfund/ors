@@ -2,14 +2,8 @@
   "eslint.workingDirectories": [
     { "directory": "./frontend", "changeProcessCWD": true }
   ],
-  "python.linting.enabled": true,
-  "python.linting.pylintEnabled": true,
-  "python.linting.flake8Enabled": true,
-  "python.linting.pylintArgs": [
-    "--rcfile=${env:HOME}/.pylintrc",
-  ],
   "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": true,
   },
 }

@@ -1,5 +1,7 @@
 'use client'
 
+import type { TableProps } from '@ors/components/manage/Form/Table'
+
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
@@ -40,8 +42,51 @@ import { getSections, variants } from '.'
 
 import { IoClose, IoExpand, IoLink } from 'react-icons/io5'
 
-const TableProps = {
-  Toolbar: ({ enterFullScreen, exitFullScreen, fullScreen, section }: any) => {
+type ToolbarProps = {
+  enterFullScreen: () => void
+  exitFullScreen: () => void
+  fullScreen: boolean
+  section: any
+}
+
+interface WidgetCountry {
+  id: number
+  label: string
+}
+
+interface CPCreateTableProps extends TableProps {
+  Toolbar: React.FC<ToolbarProps>
+  enableCellChangeFlash: boolean
+  enableFullScreen: boolean
+  enablePagination: boolean
+  getRowId: (props: any) => string
+  rowsVisible: number
+  suppressCellFocus: boolean
+  suppressColumnVirtualisation: boolean
+  suppressLoadingOverlay: boolean
+  suppressRowHoverHighlight: boolean
+  withSeparators: boolean
+}
+
+export interface PassedCPCreateTableProps extends CPCreateTableProps {
+  errors: Record<string, any>
+  report: Report
+  section: any
+}
+
+export interface CPBaseForm {
+  country: WidgetCountry | null
+  section_a: SectionA['data']
+  section_b: SectionB['data']
+  section_c: SectionC['data']
+  section_d: SectionD['data']
+  section_e: SectionE['data']
+  section_f: SectionF['data']
+  year: number
+}
+
+const TableProps: CPCreateTableProps = {
+  Toolbar: ({ enterFullScreen, exitFullScreen, fullScreen, section }) => {
     return (
       <div
         className={cx('mb-2 flex', {
@@ -108,11 +153,13 @@ function CPCreate(props: any) {
   const { enqueueSnackbar } = useSnackbar()
   const { blends, report, substances } = useStore((state) => state.cp_reports)
 
-  const countries = useStore((state) => [
-    ...getResults(state.common.countries_cp_report.data).results.map((country) => ({
-      id: country.id,
-      label: country.name,
-    })),
+  const countries: WidgetCountry[] = useStore((state) => [
+    ...getResults(state.common.countries_cp_report.data).results.map(
+      (country) => ({
+        id: country.id,
+        label: country.name,
+      }),
+    ),
   ])
 
   const Sections = {
@@ -158,7 +205,7 @@ function CPCreate(props: any) {
 
   const [errors, setErrors] = useState<Record<string, any>>({})
   const [currentYear] = useState(new Date().getFullYear())
-  const [form, setForm] = useState<Record<string, any>>({
+  const [form, setForm] = useState<CPBaseForm>({
     country: null,
     section_a: Sections.section_a.getData(),
     section_b: Sections.section_b.getData(),
@@ -313,15 +360,16 @@ function CPCreate(props: any) {
             FieldProps={{ className: 'mb-0' }}
             disabled={existingReports.loading}
             options={countries}
-            value={form.country?.id}
+            value={form.country}
             widget="autocomplete"
             Input={{
               error: !!errors.country_id,
               helperText: errors.country_id?.general_error,
               label: 'Country',
             }}
-            onChange={(_: any, country: any) => {
-              setForm({ ...form, country })
+            onChange={(_event, value) => {
+              console.log(value)
+              setForm({ ...form, country: value as WidgetCountry })
             }}
           />
           {!!existingReports.data?.length && (
@@ -423,7 +471,7 @@ function CPCreate(props: any) {
                     Sections.section_f.clearLocalStorage()
                     enqueueSnackbar(
                       <>
-                        Added new submission for {form.country.label}{' '}
+                        Added new submission for {form.country!.label}{' '}
                         {form.year}.
                       </>,
                       { variant: 'success' },
