@@ -368,15 +368,14 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
                   showRowError: true,
                 },
                 {
-                  aggFunc: 'sumTotal',
                   cellEditor: 'agTextCellEditor',
                   field: 'component_name',
                   headerName: 'Component name',
                   initialWidth: 200,
                   minWidth: 200,
+                  orsAggFunc: 'sumTotal',
                 },
                 {
-                  aggFunc: 'sumTotal',
                   cellEditor: 'agNumberCellEditor',
                   cellEditorParams: {
                     max: 100,
@@ -387,6 +386,7 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
                   headerName: 'Percentage',
                   initialWidth: 120,
                   minWidth: 120,
+                  orsAggFunc: 'sumTotal',
                 },
               ]}
               getRowId={(props: any) => {

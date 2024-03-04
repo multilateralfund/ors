@@ -46,7 +46,7 @@ function mapUsage(usage: any, report: any, view = true): any {
           marryChildren: true,
         }
       : {
-          aggFunc: 'sumTotalUsages',
+          orsAggFunc: 'sumTotalUsages',
           ...(!view
             ? {
                 cellEditor: 'agUsageCellEditor',

@@ -69,19 +69,19 @@ function useGridOptions(props: {
           ...sectionColDefById['display_name'],
         },
         {
-          aggFunc: 'sumTotal',
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',
           field: 'previous_year_price',
           headerName: 'Previous year price',
+          orsAggFunc: 'sumTotal',
           ...sectionColDefById['previous_year_price'],
         },
         {
-          aggFunc: 'sumTotal',
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',
           field: 'current_year_price',
           headerName: 'Current prices',
+          orsAggFunc: 'sumTotal',
           ...sectionColDefById['current_year_price'],
         },
         {

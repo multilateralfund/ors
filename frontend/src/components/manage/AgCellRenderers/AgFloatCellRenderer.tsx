@@ -15,7 +15,7 @@ export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
   }
 
   let value = null
-  const aggFunc = get(aggFuncs, (props.colDef?.aggFunc || '') as string)
+  const aggFunc = get(aggFuncs, (props.colDef?.orsAggFunc || '') as string)
 
   if (includes(['control', 'group', 'hashed', 'control'], props.data.rowType)) {
     return null

@@ -15,7 +15,7 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
   }
 
   let value: any = null
-  const aggFunc = get(aggFuncs, (props.colDef?.aggFunc || '') as string)
+  const aggFunc = get(aggFuncs, props.colDef?.orsAggFunc || '')
   const usageId = props.colDef?.id
   const recordUsages = props.data.record_usages || []
 

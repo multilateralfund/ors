@@ -26,9 +26,9 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
                   ...usages,
                   {
                     id: 'total_usages',
-                    aggFunc: 'sumTotalUsages',
                     category: 'usage',
                     headerName: 'TOTAL',
+                    orsAggFunc: 'sumTotalUsages',
                     ...sectionColDefById['total_usages'],
                   },
                 ],
@@ -39,42 +39,42 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
             ]
           : []),
         {
-          aggFunc: 'sumTotal',
           dataType: 'number',
           field: 'imports',
           headerName: 'Import',
+          orsAggFunc: 'sumTotal',
           ...sectionColDefById['imports'],
         },
         {
-          aggFunc: 'sumTotal',
           dataType: 'number',
           field: 'exports',
           headerName: 'Export',
+          orsAggFunc: 'sumTotal',
           ...sectionColDefById['exports'],
         },
         {
-          aggFunc: 'sumTotal',
           dataType: 'number',
           field: 'production',
           headerName: 'Production',
+          orsAggFunc: 'sumTotal',
           ...sectionColDefById['production'],
         },
         ...(includes(['V'], model)
           ? [
               {
-                aggFunc: 'sumTotal',
                 dataType: 'number',
                 field: 'manufacturing_blends',
                 headerName: 'Manufacturing of Blends',
+                orsAggFunc: 'sumTotal',
                 ...sectionColDefById['manufacturing_blends'],
               },
             ]
           : []),
         {
-          aggFunc: 'sumTotal',
           dataType: 'number',
           field: 'import_quotas',
           headerName: 'Import Quotas',
+          orsAggFunc: 'sumTotal',
           ...sectionColDefById['import_quotas'],
         },
         {

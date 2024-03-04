@@ -24,17 +24,17 @@ function useGridOptions() {
         ...sectionColDefById['display_name'],
       },
       {
-        aggFunc: 'sumTotal',
         dataType: 'number',
         field: 'previous_year_price',
         headerName: 'Previous year price',
+        orsAggFunc: 'sumTotal',
         ...sectionColDefById['previous_year_price'],
       },
       {
-        aggFunc: 'sumTotal',
         dataType: 'number',
         field: 'current_year_price',
         headerName: 'Current year prices',
+        orsAggFunc: 'sumTotal',
         ...sectionColDefById['current_year_price'],
       },
       {

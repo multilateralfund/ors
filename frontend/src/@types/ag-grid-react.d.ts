@@ -2,7 +2,7 @@ import type {
   ColDef as AgColDef,
   AgGridReactProps as BaseAgGridReactProps,
 } from 'ag-grid-community'
-import type { CustomCellRendererProps as BaseCustomCellRendererProps } from 'ag-grid-react'
+import type { CustomCellRendererProps as AgCustomCellRendererProps } from 'ag-grid-react'
 import type { MutableRefObject } from 'react'
 
 declare module 'ag-grid-community' {
@@ -12,6 +12,7 @@ declare module 'ag-grid-community' {
     disabled?: boolean
     error?: ((props: any) => void) | string
     id?: number | string
+    orsAggFunc?: string
     showRowError?: boolean
     tooltip?: boolean
     type?: string
@@ -38,8 +39,7 @@ declare module 'ag-grid-react' {
     withSkeleton?: boolean
   }
 
-  interface CustomCellRendererProps extends BaseCustomCellRendererProps {
-    aggFunc?: string
+  interface CustomCellRendererProps extends AgCustomCellRendererProps {
     className: string
     footnote: {
       content: string
