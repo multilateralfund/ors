@@ -16,14 +16,14 @@ import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
-import SectionA, { SectionAFormFields } from '@ors/models/SectionA'
+import SectionA, { DeserializedDataA } from '@ors/models/SectionA'
 import { useStore } from '@ors/store'
 
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-type RowData = SectionAFormFields & {
+export type RowData = DeserializedDataA & {
   count?: number
   display_name?: string
   group?: string
@@ -119,11 +119,19 @@ export default function SectionACreate(props: {
   const [pinnedBottomRowData] = useState<RowData[]>([
     {
       display_name: 'TOTAL',
+      mandatory: false,
       row_id: 'total',
       rowType: 'total',
+      substance_id: Infinity,
       tooltip: true,
     },
-    { row_id: 'control', rowType: 'control' },
+    {
+      display_name: '',
+      mandatory: false,
+      row_id: 'control',
+      rowType: 'control',
+      substance_id: Infinity,
+    },
   ])
   const [addSubstanceModal, setAddSubstanceModal] = useState(false)
 

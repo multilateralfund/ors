@@ -24,7 +24,7 @@ import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
-import SectionB, { SectionBFormFields } from '@ors/models/SectionB'
+import SectionB, { DeserializedDataB } from '@ors/models/SectionB'
 import { useStore } from '@ors/store'
 
 import { CreateBlend } from './CreateBlend'
@@ -32,7 +32,7 @@ import useGridOptions from './schema'
 
 import { IoClose, IoExpand, IoInformationCircleOutline } from 'react-icons/io5'
 
-type RowData = SectionBFormFields & {
+export type RowData = DeserializedDataB & {
   count?: number
   display_name?: string
   group?: string

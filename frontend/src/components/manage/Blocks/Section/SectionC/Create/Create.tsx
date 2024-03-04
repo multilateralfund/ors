@@ -15,14 +15,14 @@ import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
-import SectionC, { SectionCFormFields } from '@ors/models/SectionC'
+import SectionC, { DeserializedDataC } from '@ors/models/SectionC'
 import { useStore } from '@ors/store'
 
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-type RowData = SectionCFormFields & {
+export type RowData = DeserializedDataC & {
   count?: number
   display_name?: string
   group?: string

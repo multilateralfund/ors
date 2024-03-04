@@ -1,7 +1,12 @@
 import { useMemo } from 'react'
 
 import { Button } from '@mui/material'
-import { GridOptions } from 'ag-grid-community'
+import {
+  CellClassParams,
+  EditableCallbackParams,
+  GridOptions,
+} from 'ag-grid-community'
+import { CustomCellRendererProps } from 'ag-grid-react'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
@@ -11,6 +16,7 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 
 import { sectionColDefById } from '../sectionColumnsDef'
+import { RowData } from './Create'
 
 import { IoTrash } from 'react-icons/io5'
 
@@ -38,11 +44,11 @@ function useGridOptions(props: {
             }
             return <AgCellRenderer {...props} />
           },
-          cellRendererParams: (props: any) => ({
+          cellRendererParams: (props: CustomCellRendererProps<RowData>) => ({
             className: cx({
-              'font-bold': includes(['group', 'total'], props.data.rowType),
+              'font-bold': includes(['group', 'total'], props?.data?.rowType),
             }),
-            options: !props.data.mandatory && !props.data.rowType && (
+            options: !props?.data?.mandatory && !props?.data?.rowType && (
               <>
                 <Dropdown.Item
                   onClick={() => {
@@ -87,9 +93,9 @@ function useGridOptions(props: {
       ],
       defaultColDef: {
         autoHeight: true,
-        cellClass: (props: any) => {
+        cellClass: (props: CellClassParams<RowData>) => {
           return cx({
-            'ag-flex-cell': props.data.rowType === 'control',
+            'ag-flex-cell': props?.data?.rowType === 'control',
             'ag-text-right': !includes(['display_name'], props.colDef.field),
             'bg-mui-box-background': includes(
               ['display_name'],
@@ -97,9 +103,9 @@ function useGridOptions(props: {
             ),
           })
         },
-        editable: (props) => {
+        editable: (props: EditableCallbackParams<RowData>) => {
           if (
-            includes(['total', 'subtotal'], props.data.rowType) ||
+            includes(['total', 'subtotal'], props?.data?.rowType) ||
             includes(['display_name'], props.colDef.field)
           ) {
             return false

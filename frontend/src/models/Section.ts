@@ -48,6 +48,7 @@ export type DeserializedSubstance = {
 export type DeserializedBlend = {
   blend_id: number
   display_name: string
+  excluded_usages?: Array<number>
   group?: string
   mandatory: boolean
   row_id: string

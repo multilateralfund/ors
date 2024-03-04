@@ -1,5 +1,6 @@
 'use client'
 import { Typography } from '@mui/material'
+import { CustomCellRendererProps } from 'ag-grid-react'
 import { get, includes, isNull, isUndefined } from 'lodash'
 
 import aggFuncs from '@ors/config/Table/aggFuncs'
@@ -8,13 +9,13 @@ import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSke
 import AgTooltipComponent from '@ors/components/manage/AgComponents/AgTooltipComponent'
 import { parseNumber } from '@ors/helpers/Utils/Utils'
 
-export default function AgFloatCellRenderer(props: any) {
+export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
   if (props.data.rowType === 'skeleton') {
     return <AgSkeletonCellRenderer {...props} />
   }
 
   let value = null
-  const aggFunc = get(aggFuncs, props.colDef.aggFunc)
+  const aggFunc = get(aggFuncs, (props.colDef?.aggFunc || '') as string)
 
   if (includes(['control', 'group', 'hashed', 'control'], props.data.rowType)) {
     return null
@@ -33,14 +34,17 @@ export default function AgFloatCellRenderer(props: any) {
     value = 0
   }
 
-  const maximumFractionDigits = props.maximumFractionDigits || 3;
-  const minimumFractionDigits = props.minimumFractionDigits || props.maximumFractionDigits || 2;
+  const maximumFractionDigits = props?.maximumFractionDigits || 3
+  const minimumFractionDigits =
+    props?.minimumFractionDigits || props?.maximumFractionDigits || 2
 
-  const valueToAvoidRounding = Math.floor(value * 10**maximumFractionDigits) / 10**maximumFractionDigits;
+  const valueToAvoidRounding =
+    Math.floor(value * 10 ** maximumFractionDigits) /
+    10 ** maximumFractionDigits
 
   const formattedValue = valueToAvoidRounding.toLocaleString(undefined, {
     maximumFractionDigits,
-    minimumFractionDigits
+    minimumFractionDigits,
   })
 
   return (

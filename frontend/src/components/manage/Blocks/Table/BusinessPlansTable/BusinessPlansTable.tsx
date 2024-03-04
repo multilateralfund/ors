@@ -411,8 +411,8 @@ export default function BusinessPlansTable() {
               offset: page * rowsPerPage,
             })
           }}
-          onSortChanged={({ columnApi }) => {
-            const ordering = columnApi
+          onSortChanged={({ api }) => {
+            const ordering = api
               .getColumnState()
               .filter((column) => !!column.sort)
               .map(

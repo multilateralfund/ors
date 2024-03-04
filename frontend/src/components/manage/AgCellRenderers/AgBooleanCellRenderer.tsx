@@ -1,11 +1,12 @@
 'use client'
 import { Typography } from '@mui/material'
+import { CustomCellRendererProps } from 'ag-grid-react'
 import { includes, isBoolean, isString } from 'lodash'
 
 import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSkeletonCellRenderer'
 import AgTooltipComponent from '@ors/components/manage/AgComponents/AgTooltipComponent'
 
-export default function AgBooleanCellRenderer(props: any) {
+export default function AgBooleanCellRenderer(props: CustomCellRendererProps) {
   if (props.data.rowType === 'skeleton') {
     return <AgSkeletonCellRenderer {...props} />
   }

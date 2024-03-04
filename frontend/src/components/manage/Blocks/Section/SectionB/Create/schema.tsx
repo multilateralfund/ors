@@ -1,7 +1,12 @@
 import { useMemo } from 'react'
 
 import { Button, Link } from '@mui/material'
-import { GridOptions, ICellRendererParams } from 'ag-grid-community'
+import {
+  CellClassParams,
+  EditableCallbackParams,
+  GridOptions,
+  ICellRendererParams,
+} from 'ag-grid-community'
 import { CustomCellRendererProps } from 'ag-grid-react'
 import cx from 'classnames'
 import { includes, omit } from 'lodash'
@@ -12,6 +17,7 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 
 import { sectionColDefById } from '../sectionColumnsDef'
+import { RowData } from './Create'
 
 import { IoTrash } from 'react-icons/io5'
 
@@ -76,9 +82,9 @@ function useGridOptions(props: {
             }
             return <AgCellRenderer {...props} />
           },
-          cellRendererParams: (props: any) => ({
+          cellRendererParams: (props: ICellRendererParams<RowData>) => ({
             ...sectionColDefById['display_name'].cellRendererParams(props),
-            options: !props.data.mandatory && !props.data.rowType && (
+            options: !props?.data?.mandatory && !props?.data?.rowType && (
               <>
                 <Dropdown.Item
                   onClick={() => {
@@ -177,12 +183,12 @@ function useGridOptions(props: {
       ],
       defaultColDef: {
         autoHeight: true,
-        cellClass: (props: any) => {
+        cellClass: (props: CellClassParams<RowData>) => {
           return cx({
-            'ag-flex-cell': props.data.rowType === 'control',
+            'ag-flex-cell': props?.data?.rowType === 'control',
             'ag-text-right': !includes(['display_name'], props.colDef.field),
             'bg-gray-100 theme-dark:bg-gray-900/40': includes(
-              props.data.excluded_usages || [],
+              props?.data?.excluded_usages || [],
               props.colDef.id,
             ),
             'bg-mui-box-background': includes(
@@ -191,12 +197,12 @@ function useGridOptions(props: {
             ),
           })
         },
-        editable: (props) => {
+        editable: (props: EditableCallbackParams<RowData>) => {
           if (
-            includes(['total', 'subtotal'], props.data.rowType) ||
+            includes(['total', 'subtotal'], props?.data?.rowType) ||
             includes(['display_name'], props.colDef.field) ||
             includes(['total_usages'], props.colDef.id) ||
-            includes(props.data.excluded_usages || [], props.colDef.id)
+            includes(props?.data?.excluded_usages || [], props.colDef.id)
           ) {
             return false
           }
