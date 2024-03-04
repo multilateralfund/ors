@@ -46,11 +46,10 @@ const sectionColDefById: Record<string, ColDef> = {
     ...colDefById['manufacturing_blends'],
     headerComponentParams: {
       footnote: {
-        id: '4',
         content: 'Tentative/best estimates.',
         icon: true,
         index: '*',
-        order: 4,
+        order: 888,
       },
     },
   },
