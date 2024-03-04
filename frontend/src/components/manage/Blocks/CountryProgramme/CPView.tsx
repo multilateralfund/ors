@@ -10,6 +10,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
+import { AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
 import { produce } from 'immer'
 import { capitalize, filter, includes, orderBy } from 'lodash'
@@ -38,7 +39,18 @@ import {
   IoExpand,
 } from 'react-icons/io5'
 
-const TableProps = {
+export type TableProps = AgGridReactProps & {
+  Toolbar?: React.FC<any>
+  enableFullScreen?: boolean
+  errors?: any
+  fadeInOut?: boolean
+  headerDepth?: number
+  paginationPageSizeSelector?: Array<number>
+  rowsVisible?: number
+  withFluidEmptyColumn?: boolean
+}
+
+const TableProps: TableProps = {
   Toolbar: ({
     enterFullScreen,
     exitFullScreen,
@@ -131,12 +143,12 @@ const TableProps = {
       </div>
     )
   },
-  domLayout: 'autoHeight',
+  // domLayout: 'autoHeight',
   enableCellChangeFlash: true,
   enableFullScreen: true,
   enablePagination: false,
   noRowsOverlayComponentParams: { label: 'No data reported' },
-  rowsVisible: 20,
+  rowsVisible: 30,
   suppressCellFocus: false,
   suppressColumnVirtualisation: true,
   suppressLoadingOverlay: true,

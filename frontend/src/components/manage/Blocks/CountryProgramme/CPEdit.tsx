@@ -111,7 +111,7 @@ const TableProps = {
     return props.data.row_id
   },
   noRowsOverlayComponentParams: { label: 'No data reported' },
-  rowsVisible: 20,
+  rowsVisible: 30,
   suppressCellFocus: false,
   suppressColumnVirtualisation: true,
   suppressLoadingOverlay: true,
