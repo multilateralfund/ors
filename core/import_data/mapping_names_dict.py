@@ -213,3 +213,36 @@ DB_YEAR_MAPPING = {
         "max_year": 2018,
     },
 }
+
+CP_FORMAT_FILE_DATA_MAPPING = {
+    "CP_Format_2005_2011.xls": {
+        "sheets": {
+            "Data Sheet": "A",
+            "Adm-C": "C",
+        },
+        "time_frame": {"min_year": 1995, "max_year": 2011},
+    },
+    "CP_Format_2012_2018.xls": {
+        "sheets": {
+            "Data Sheet": "A",
+            "Adm-C": "C",
+        },
+        "time_frame": {"min_year": 2012, "max_year": 2018},
+    },
+    "CP_Format_2019_2021.xls": {
+        "sheets": {
+            "Section A": "A",
+            "Section B": "B",
+            "Section C": "C",
+        },
+        "time_frame": {"min_year": 2019, "max_year": 2021},
+    },
+    "CP_Format_2022.xls": {
+        "sheets": {
+            "Section A": "A",
+            "Section B": "B",
+            "Section C": "C",
+        },
+        "time_frame": {"min_year": 2022, "max_year": None},
+    },
+}

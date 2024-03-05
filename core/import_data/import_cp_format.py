@@ -4,7 +4,9 @@ import pandas as pd
 
 from django.conf import settings
 from django.db import transaction
+from core.import_data.mapping_names_dict import CP_FORMAT_FILE_DATA_MAPPING
 from core.import_data.utils import IMPORT_RESOURCES_DIR, delete_old_data, get_chemical
+from core.models.adm import AdmColumn, AdmEmptyImmutableCell, AdmRow
 from core.models.country_programme import CPReportFormatColumn, CPReportFormatRow
 
 from core.models.time_frame import TimeFrame
@@ -37,37 +39,11 @@ SKIP_CHEMICAL_NAMES = [
     "export quotas",
 ]
 
-FILE_DATA_MAPPING = {
-    "CP_Format_2005_2011.xls": {
-        "sheets": {
-            "Data Sheet": "A",
-            "Adm-C": "C",
-        },
-        "time_frame": {"min_year": 1995, "max_year": 2011},
-    },
-    "CP_Format_2012_2018.xls": {
-        "sheets": {
-            "Data Sheet": "A",
-            "Adm-C": "C",
-        },
-        "time_frame": {"min_year": 2012, "max_year": 2018},
-    },
-    "CP_Format_2019_2021.xls": {
-        "sheets": {
-            "Section A": "A",
-            "Section B": "B",
-            "Section C": "C",
-        },
-        "time_frame": {"min_year": 2019, "max_year": 2021},
-    },
-    "CP_Format_2022.xls": {
-        "sheets": {
-            "Section A": "A",
-            "Section B": "B",
-            "Section C": "C",
-        },
-        "time_frame": {"min_year": 2022, "max_year": None},
-    },
+ADM_ENABLE_CELLS = {
+    "B": {
+        "CFC": ["1.1", "1.2", "1.4", "2"],
+        "ALL OTHER ODS": ["1.3", "1.5"],
+    }
 }
 
 
@@ -140,7 +116,7 @@ def set_chemicals_displayed_status(df, time_frame, section):
 def import_cp_format_row(dir_path):
     delete_old_data(CPReportFormatRow)
 
-    for file, file_data in FILE_DATA_MAPPING.items():
+    for file, file_data in CP_FORMAT_FILE_DATA_MAPPING.items():
         file_path = dir_path / file
 
         for sheet, section in file_data["sheets"].items():
@@ -198,6 +174,33 @@ def import_usages_format(file_path):
     CPReportFormatColumn.objects.bulk_create(cp_fomats)
 
 
+def set_adm_immutable_cells():
+    """
+    Set adm rows as cells
+    """
+    delete_old_data(AdmEmptyImmutableCell)
+
+    for section, columns in ADM_ENABLE_CELLS.items():
+        for column, row_indexes in columns.items():
+            adm_columns = (
+                AdmColumn.objects.filter(name__startswith=column, section=section)
+                .exclude(name__icontains="parent")
+                .all()
+            )
+            for row_index in row_indexes:
+                adm_rows = AdmRow.objects.filter(
+                    section=section, index__startswith=row_index
+                ).all()
+                for column in adm_columns:
+                    for row in adm_rows:
+                        data = {
+                            "row": row,
+                            "column": column,
+                            "section": section,
+                        }
+                        AdmEmptyImmutableCell.objects.get_or_create(**data)
+
+
 @transaction.atomic
 def import_cp_format():
     logger.info("⏳ importing country programme report format")
@@ -207,4 +210,5 @@ def import_cp_format():
     file_path = IMPORT_RESOURCES_DIR / "usages_cp_format.xlsx"
     import_usages_format(file_path)
 
+    set_adm_immutable_cells()
     logger.info("✔ country programme report format imported")
