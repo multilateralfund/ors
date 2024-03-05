@@ -143,7 +143,7 @@ const TableProps: TableProps = {
       </div>
     )
   },
-  // domLayout: 'autoHeight',
+  domLayout: 'autoHeight',
   enableCellChangeFlash: true,
   enableFullScreen: true,
   enablePagination: false,

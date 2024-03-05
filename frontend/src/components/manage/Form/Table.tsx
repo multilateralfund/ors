@@ -17,6 +17,7 @@ import {
   isObject,
   noop,
   omit,
+  range,
   times,
 } from 'lodash'
 
@@ -77,6 +78,28 @@ function getInitialRowData({ rowData, rowsVisible, withSkeleton }: any) {
   return rowData
 }
 
+function setupFixedHeaderObserver(agHeader: HTMLDivElement) {
+  const agHeaderParent = agHeader.parentElement as HTMLDivElement
+  const agHeaderIntialWidth = agHeader.style.width
+
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      if (entry.intersectionRect.top == 0) {
+        agHeader.classList.add('fixed', 'top-0', 'z-10')
+        agHeader.style.width = `${entry.boundingClientRect.width}px`
+      } else {
+        agHeader.classList.remove('fixed', 'top-0', 'z-10')
+        agHeader.style.width = agHeaderIntialWidth
+      }
+    },
+    {
+      threshold: range(0.0, 1.0, 0.01),
+    },
+  )
+  observer.observe(agHeaderParent)
+  return observer
+}
+
 const AgGridWrapper: any = styled('div')`
   --ag-header-depth: ${(props: any) => props.headerDepth ?? 1} !important;
   --ag-header-height: ${(props: any) => props.headerHeight ?? 28}px !important;
@@ -119,6 +142,7 @@ function Table(props: TableProps) {
   const grid = useRef<any>({})
   const tableEl = useRef<HTMLDivElement>(null)
   const scrollMutationObserver = useRef<any>(null)
+  const headerIntersectionObserver = useRef<IntersectionObserver | null>(null)
 
   const theme: ThemeSlice = useStore((state) => state.theme)
   const i18n: I18nSlice = useStore((state) => state.i18n)
@@ -310,6 +334,20 @@ function Table(props: TableProps) {
     return () => {
       if (scrollMutationObserver.current) {
         scrollMutationObserver.current.disconnect()
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    // This is mostly for hot reload...
+    const agHeader =
+      tableEl.current?.querySelector<HTMLDivElement>('.ag-header')
+    if (agHeader) {
+      headerIntersectionObserver.current = setupFixedHeaderObserver(agHeader)
+    }
+    return () => {
+      if (headerIntersectionObserver.current) {
+        headerIntersectionObserver.current.disconnect()
       }
     }
   }, [])
@@ -527,6 +565,13 @@ function Table(props: TableProps) {
                 attributeFilter: ['style', 'class'],
                 subtree: true,
               })
+
+              const agHeader =
+                tableEl.current?.querySelector<HTMLDivElement>('.ag-header')
+              if (agHeader) {
+                headerIntersectionObserver.current =
+                  setupFixedHeaderObserver(agHeader)
+              }
             }}
             onGridSizeChanged={(props) => {
               onGridSizeChanged(props)

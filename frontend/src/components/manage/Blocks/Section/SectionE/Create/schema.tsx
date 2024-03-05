@@ -48,18 +48,16 @@ function useGridOptions(props: {
               'font-bold': includes(['group', 'total'], props.data.rowType),
             }),
             options: !props.data.mandatory && !props.data.rowType && (
-              <>
-                <Dropdown.Item
-                  onClick={() => {
-                    removeFacility(props)
-                  }}
-                >
-                  <div className="flex items-center gap-x-2">
-                    <IoTrash className="fill-error" size={20} />
-                    <span>Delete</span>
-                  </div>
-                </Dropdown.Item>
-              </>
+              <Dropdown.Item
+                onClick={() => {
+                  removeFacility(props)
+                }}
+              >
+                <div className="flex items-center gap-x-2">
+                  <IoTrash className="fill-error" size={20} />
+                  <span>Delete</span>
+                </div>
+              </Dropdown.Item>
             ),
           }),
           field: 'facility',
