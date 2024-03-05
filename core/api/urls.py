@@ -17,6 +17,7 @@ from core.api.views.chemicals import (
     SubstancesListView,
 )
 from core.api.views.cp_archive import CPRecordsArchiveListView, CPReportVersionsListView
+from core.api.views.cp_prices import CPPricesView
 from core.api.views.cp_records_export import CPEmptyExportView
 from core.api.views.cp_reports import (
     CPReportStatusUpdateView,
@@ -130,6 +131,11 @@ urlpatterns = [
         "country-programme/records/",
         CPRecordListView.as_view(),
         name="country-programme-record-list",
+    ),
+    path(
+        "country-programme/prices/",
+        CPPricesView.as_view(),
+        name="country-programme-price-list",
     ),
     path(
         "country-programme/export/",
