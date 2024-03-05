@@ -2,7 +2,7 @@ from django_filters import rest_framework as filters
 from django_filters.widgets import CSVWidget
 
 from core.models import Country
-from core.models.country_programme import CPReport
+from core.models.country_programme import CPPrices, CPReport
 from core.models.country_programme_archive import CPReportArchive
 
 
@@ -12,9 +12,7 @@ class CPReportFilter(filters.FilterSet):
     """
 
     country_id = filters.ModelMultipleChoiceFilter(
-        field_name="country_id",
-        queryset=Country.objects.all(),
-        widget=CSVWidget,
+        field_name="country_id", queryset=Country.objects.all(), widget=CSVWidget
     )
     name = filters.CharFilter(field_name="name", lookup_expr="icontains")
     year = filters.RangeFilter(field_name="year")
@@ -52,3 +50,22 @@ class CPReportArchiveFilter(CPReportFilter):
     class Meta:
         model = CPReportArchive
         fields = CPReportFilter.Meta.fields + ["country_programme_report_id"]
+
+
+class CPPricesFilter(filters.FilterSet):
+    """
+    Filter for CP Prices
+    """
+
+    country_id = filters.ModelChoiceFilter(
+        required=True,
+        queryset=Country.objects.all(),
+        field_name="country_programme_report__country_id",
+    )
+    year = filters.NumberFilter(
+        required=True, field_name="country_programme_report__year"
+    )
+
+    class Meta:
+        model = CPPrices
+        fields = ["country_id", "year"]

@@ -6,12 +6,8 @@ from core.models.country_programme_archive import CPPricesArchive
 
 
 class CPPricesBaseSerializer(BaseCPWChemicalSerializer):
-    previous_year_price = serializers.DecimalField(
-        max_digits=12, decimal_places=3, required=False, allow_null=True
-    )
-    current_year_price = serializers.DecimalField(
-        max_digits=12, decimal_places=3, required=True
-    )
+    previous_year_price = serializers.CharField(required=False, allow_null=True)
+    current_year_price = serializers.CharField(required=True)
     remarks = serializers.CharField(required=False, allow_blank=True)
     computed_prev_year_price = serializers.SerializerMethodField()
 
@@ -38,6 +34,20 @@ class CPPricesBaseSerializer(BaseCPWChemicalSerializer):
 
         return None
 
+    def validate_previous_year_price(self, value):
+        # check if the value is a float number
+        try:
+            float(value)
+        except ValueError:
+            raise serializers.ValidationError("Previous year price must be a number")
+
+    def validate_current_year_price(self, value):
+        # check if the value is a float number
+        try:
+            float(value)
+        except ValueError:
+            raise serializers.ValidationError("Current year price must be a number")
+
 
 class CPPricesSerializer(CPPricesBaseSerializer):
     class Meta(CPPricesBaseSerializer.Meta):
@@ -47,3 +57,16 @@ class CPPricesSerializer(CPPricesBaseSerializer):
 class CPPricesArchiveSerializer(CPPricesBaseSerializer):
     class Meta(CPPricesBaseSerializer.Meta):
         model = CPPricesArchive
+
+
+class CPPricesListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CPPrices
+        fields = [
+            "substance_id",
+            "blend_id",
+            "previous_year_price",
+            "current_year_price",
+            "remarks",
+        ]
+        read_only_fields = fields
