@@ -174,9 +174,13 @@ class EmptyFormView(views.APIView):
             return sections
 
         # set rows
-        rows = AdmRow.objects.get_for_year(year).filter(  # filter by cp_report
-            Q(country_programme_report_id=cp_report.id)
-            | Q(country_programme_report_id__isnull=True)
+        rows = (
+            AdmRow.objects.get_for_year(year)
+            .filter(  # filter by cp_report
+                Q(country_programme_report_id=cp_report.id)
+                | Q(country_programme_report_id__isnull=True)
+            )
+            .prefetch_related("immutable_cells")
         )
 
         # the rows with index 1.6.1 and 1.6.2 are special cases
@@ -185,6 +189,9 @@ class EmptyFormView(views.APIView):
         admb_162 = False
         for row in rows:
             serial_row = AdmRowSerializer(row).data
+            serial_row["excluded_columns"] = row.immutable_cells.values_list(
+                "column_id", flat=True
+            )
             if row.section == AdmRow.AdmRowSection.B:
                 if row.index not in ["1.6.1", "1.6.2"]:
                     sections["adm_b"]["rows"].append(serial_row)
