@@ -17,9 +17,11 @@ export type ApiSettings = Api & {
   parseParams?: any
 }
 
-export default function useApi(props: ApiSettings): {
+export default function useApi<DT = DataType>(
+  props: ApiSettings,
+): {
   apiSettings: ApiSettings
-  data: DataType
+  data: DT | null | undefined
   error: ErrorType
   loaded: boolean
   loading: boolean
@@ -30,7 +32,7 @@ export default function useApi(props: ApiSettings): {
   const id = useId()
   const [apiSettings, setApiSettings] = useState(props)
   const { options, path, throwError = true } = apiSettings
-  const [data, setData] = useState<DataType>(undefined)
+  const [data, setData] = useState<DT | null | undefined>(undefined)
   const [error, setError] = useState<ErrorType>(undefined)
   const [loading, setLoading] = useState<boolean>(false)
   const [loaded, setLoaded] = useState<boolean>(false)
@@ -43,7 +45,7 @@ export default function useApi(props: ApiSettings): {
     setLoaded(false)
   }
 
-  function onSuccess(data: DataType) {
+  function onSuccess(data: DT) {
     if (isFunction(props.onSuccess)) {
       props.onSuccess(data)
     }
