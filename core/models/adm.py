@@ -174,3 +174,16 @@ class AdmRecordArchive(BaseAdmRecord):
 
     class Meta:
         db_table = "cp_admrecord_archive"
+
+
+class AdmEmptyImmutableCell(models.Model):
+    row = models.ForeignKey(
+        AdmRow, on_delete=models.CASCADE, related_name="immutable_cells"
+    )
+    column = models.ForeignKey(
+        AdmColumn, on_delete=models.CASCADE, related_name="immutable_cells"
+    )
+    section = models.CharField(max_length=10)
+
+    def __str__(self):
+        return f"{self.row} - {self.column}"
