@@ -204,7 +204,7 @@ function CPCreate(props: any) {
   }
 
   const [errors, setErrors] = useState<Record<string, any>>({})
-  const [currentYear] = useState(new Date().getFullYear())
+  const [currentYear] = useState(new Date().getFullYear() - 1)
   const [form, setForm] = useState<CPBaseForm>({
     country: null,
     section_a: Sections.section_a.getData(),

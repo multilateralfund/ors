@@ -1,6 +1,6 @@
 import { EmptyReportSubstanceRowType, EmptyReportType } from '@ors/types/store'
 
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { RowNode } from 'ag-grid-community'
@@ -15,6 +15,7 @@ import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
+import useApi from '@ors/hooks/useApi'
 import SectionC, { DeserializedDataC } from '@ors/models/SectionC'
 import { useStore } from '@ors/store'
 
@@ -31,9 +32,19 @@ export type RowData = DeserializedDataC & {
   tooltip?: boolean
 }
 
+export type SubstancePrice = {
+  blend_id: number
+  current_year_price: string
+  previous_year_price: string
+  remarks: string
+  substance_id: number
+}
+export type SubstancePrices = SubstancePrice[]
+
 function getRowData(
   data: SectionC['data'],
   substanceRows: EmptyReportSubstanceRowType[],
+  substancePrices: SubstancePrices,
 ): RowData[] {
   let rowData: RowData[] = []
   const dataByGroup: Record<string, any[]> = {}
@@ -48,6 +59,19 @@ function getRowData(
     },
     {},
   )
+  const substancePriceMapping = substancePrices.reduce(
+    (acc: Record<string, SubstancePrice>, price) => {
+      if (!!price.substance_id) {
+        acc[`substance_id_${price.substance_id}`] = price
+      }
+      if (!!price.blend_id) {
+        acc[`blend_id_${price.blend_id}`] = price
+      }
+      return acc
+    },
+    {},
+  )
+  console.log(substancePrices, substancePriceMapping)
   each(data, (item) => {
     const group = item.group || 'Other'
     if (!dataByGroup[group]) {
@@ -56,7 +80,22 @@ function getRowData(
     if (!includes(groups, group)) {
       groups.push(group)
     }
-    dataByGroup[group].push({ ...item, group })
+    const itemData: any = { ...item, group }
+    if (
+      !itemData.previous_year_price &&
+      (itemData.blend_id || itemData.substance_id)
+    ) {
+      const priceKey = itemData.blend_id
+        ? `blend_id_${itemData.blend_id}`
+        : `substance_id_${itemData.substance_id}`
+      const prevYearPrice = parseFloat(
+        substancePriceMapping[priceKey]?.current_year_price,
+      )
+      if (prevYearPrice) {
+        itemData.previous_year_price = prevYearPrice
+      }
+    }
+    dataByGroup[group].push(itemData)
   })
   each(groups, (group: string) => {
     rowData = union(
@@ -92,9 +131,22 @@ export default function SectionCCreate(props: {
     (state) => getResults(state.cp_reports.substances.data).results,
   )
 
+  const substancePrices = useApi<SubstancePrices>({
+    options: {
+      triggerIf: !!form.country?.id,
+    },
+    path: `/api/country-programme/prices/?year=${form.year - 1}&country_id=${form.country?.id}`,
+  })
+
   const grid = useRef<any>()
-  const [initialRowData] = useState(() =>
-    getRowData(form.section_c, emptyForm.substance_rows?.section_c || []),
+  const initialRowData = useMemo(
+    () =>
+      getRowData(
+        form.section_c,
+        emptyForm.substance_rows?.section_c || [],
+        substancePrices.data || [],
+      ),
+    [form, emptyForm, substancePrices.data],
   )
   const [pinnedBottomRowData] = useState([{ rowType: 'control' }])
 
@@ -148,6 +200,17 @@ export default function SectionCCreate(props: {
     },
     openAddChemicalModal: () => setAddChemicalModal(true),
   })
+
+  useEffect(() => {
+    substancePrices.setApiSettings({
+      options: {
+        ...substancePrices.apiSettings.options,
+        triggerIf: !!form.country?.id,
+      },
+      path: `/api/country-programme/prices/?year=${form.year - 1}&country_id=${form.country?.id}`,
+    })
+    // eslint-disable-next-line
+  }, [form.country])
 
   return (
     <>
