@@ -38,15 +38,19 @@ class CPPricesBaseSerializer(BaseCPWChemicalSerializer):
         # check if the value is a float number
         try:
             float(value)
-        except ValueError:
-            raise serializers.ValidationError("Previous year price must be a number")
+        except ValueError as exc:
+            raise serializers.ValidationError("Previous year price must be a number") from exc
+
+        return value
 
     def validate_current_year_price(self, value):
         # check if the value is a float number
         try:
             float(value)
-        except ValueError:
-            raise serializers.ValidationError("Current year price must be a number")
+        except ValueError as exc:
+            raise serializers.ValidationError("Current year price must be a number") from exc
+
+        return value
 
 
 class CPPricesSerializer(CPPricesBaseSerializer):
