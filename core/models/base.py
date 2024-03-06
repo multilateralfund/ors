@@ -28,6 +28,7 @@ class AbstractWChemical(models.Model):
         blank=True,
     )
 
+
     def get_chemical_display_name(self):
         # pylint: disable=E1101
         if self.blend:
@@ -41,6 +42,15 @@ class AbstractWChemical(models.Model):
         if self.substance:
             return self.substance.group.name_alt
         return None
+
+    def get_chemical_note(self):
+        # pylint: disable=E1101
+        chemical = self.substance if self.substance else self.blend
+        return chemical.cp_report_note
+
+    def get_excluded_usages_list(self):
+        chemical = self.substance if self.substance else self.blend
+        return list({usage.usage_id for usage in chemical.excluded_usages.all()})
 
     class Meta:
         abstract = True

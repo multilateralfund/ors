@@ -95,6 +95,7 @@ class EmptyFormView(views.APIView):
         cp_report_rows = (
             CPReportFormatRow.objects.get_for_year(year)
             .select_related("substance__group", "blend")
+            .prefetch_related("substance__excluded_usages","blend__excluded_usages")
             .order_by("section", "sort_order")
         )
         substance_rows = {
@@ -112,12 +113,18 @@ class EmptyFormView(views.APIView):
                     group_name = "HCFCs"
                 else:
                     group_name = "Alternatives"
+            if row.section == "C" and row.blend:
+                group_name = "HFCs"
+
             row_data = {
                 "chemical_name": row.get_chemical_display_name(),
                 "substance_id": row.substance_id,
                 "blend_id": row.blend_id,
                 "group": group_name,
                 "sort_order": row.sort_order,
+                "excluded_usages": row.get_excluded_usages_list(),
+                "chemical_note": row.get_chemical_note(),
+
             }
             section_key = f"section_{row.section.lower()}"
             substance_rows[section_key].append(row_data)

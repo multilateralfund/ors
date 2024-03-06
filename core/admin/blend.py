@@ -32,6 +32,7 @@ class BlendAdmin(admin.ModelAdmin):
             "cprecordarchive",
             "cppricesarchive",
             "admrecordarchive",
+            "cpreportformatrow",
         ]
         return get_final_display_list(Blend, exclude)
 

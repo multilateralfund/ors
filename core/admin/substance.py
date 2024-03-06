@@ -49,5 +49,6 @@ class SubstanceAdmin(admin.ModelAdmin):
             "cprecordarchive",
             "cppricesarchive",
             "admrecordarchive",
+            "cpreportformatrow",
         ]
         return get_final_display_list(Substance, exclude)
