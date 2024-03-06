@@ -156,6 +156,16 @@ export const variants = [
 
 const DefaultComponent = () => <div>Not implemented</div>
 
+export type SectionMeta = {
+  allowFullScreen: boolean
+  component: React.FC<any>
+  id: string
+  label: string
+  note?: string
+  panelId: string
+  title: string
+}
+
 export function getSections(
   variant: {
     maxYear: number
@@ -239,6 +249,7 @@ export function getSections(
         allowFullScreen: true,
         component: components[mode].section_d || DefaultComponent,
         label: 'Section D',
+        note: 'NOTE:  Fill in this form only if your country generated HFC-23 from any facility that produced (manufactured) Annex C Group I or Annex F substances',
         panelId: 'section-D-panel',
         title:
           'SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)',

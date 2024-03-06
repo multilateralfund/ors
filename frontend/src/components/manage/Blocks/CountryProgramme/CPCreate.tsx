@@ -38,7 +38,7 @@ import SectionE from '@ors/models/SectionE'
 import SectionF from '@ors/models/SectionF'
 import { useStore } from '@ors/store'
 
-import { getSections, variants } from '.'
+import { SectionMeta, getSections, variants } from '.'
 
 import { IoClose, IoExpand, IoLink } from 'react-icons/io5'
 
@@ -46,7 +46,7 @@ type ToolbarProps = {
   enterFullScreen: () => void
   exitFullScreen: () => void
   fullScreen: boolean
-  section: any
+  section: SectionMeta
 }
 
 interface WidgetCountry {
@@ -87,22 +87,50 @@ export interface CPBaseForm {
 
 const TableProps: CPCreateTableProps = {
   Toolbar: ({ enterFullScreen, exitFullScreen, fullScreen, section }) => {
+    useEffect(() => {
+      const listener = (ev: KeyboardEvent) => {
+        if (ev.key === 'Escape') {
+          exitFullScreen()
+        }
+      }
+      window.addEventListener('keydown', listener)
+      return () => {
+        window.removeEventListener('keydown', listener)
+      }
+    }, [fullScreen, exitFullScreen])
+
     return (
       <div
-        className={cx('mb-2 flex', {
-          'flex-col': !fullScreen,
-          'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
-            fullScreen,
-          'px-4': fullScreen,
-        })}
+        className={cx(
+          'mb-2 flex md:flex-row md:items-center md:justify-between md:py-2',
+          {
+            'flex-col': !fullScreen,
+            'flex-col-reverse': fullScreen,
+            'px-4': fullScreen,
+          },
+        )}
       >
-        <Typography
-          className={cx({ 'mb-4 md:mb-0': fullScreen })}
-          component="h2"
-          variant="h6"
-        >
-          {section.title}
-        </Typography>
+        <div className="flex flex-col">
+          <Typography
+            className={cx({ 'mb-4 md:mb-0': fullScreen })}
+            component="h2"
+            variant="h6"
+          >
+            {section.title}
+          </Typography>
+          {section.note && (
+            <Typography
+              className={cx(
+                'border border-solid border-black px-2 py-4 font-bold',
+                {
+                  'mb-4 md:mb-0': fullScreen,
+                },
+              )}
+            >
+              {section.note}
+            </Typography>
+          )}
+        </div>
         <div className="flex items-center justify-end">
           {section.allowFullScreen && !fullScreen && (
             <IconButton
@@ -378,7 +406,6 @@ function CPCreate(props: any) {
               label: 'Country',
             }}
             onChange={(_event, value) => {
-              console.log(value)
               setForm({ ...form, country: value as WidgetCountry })
             }}
           />
@@ -452,6 +479,14 @@ function CPCreate(props: any) {
                 href="/country-programme"
                 size="small"
                 variant="contained"
+                onClick={() => {
+                  Sections.section_a.clearLocalStorage()
+                  Sections.section_b.clearLocalStorage()
+                  Sections.section_c.clearLocalStorage()
+                  Sections.section_d.clearLocalStorage()
+                  Sections.section_e.clearLocalStorage()
+                  Sections.section_f.clearLocalStorage()
+                }}
                 button
               >
                 Close

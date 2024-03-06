@@ -2,16 +2,8 @@ import { EmptyReportType } from '@ors/types/api_empty-form'
 
 import { useMemo, useRef, useState } from 'react'
 
-import {
-  Alert,
-  Box,
-  Button,
-  IconButton,
-  Modal,
-  Typography,
-} from '@mui/material'
+import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
-import cx from 'classnames'
 import { each, find, findIndex, includes, sortBy, union, uniqBy } from 'lodash'
 import { useSnackbar } from 'notistack'
 
@@ -30,7 +22,7 @@ import { useStore } from '@ors/store'
 import { CreateBlend } from './CreateBlend'
 import useGridOptions from './schema'
 
-import { IoClose, IoExpand, IoInformationCircleOutline } from 'react-icons/io5'
+import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export type RowData = DeserializedDataB & {
   count?: number
@@ -108,8 +100,7 @@ export default function SectionBCreate(props: {
   variant: { maxYear: number; minYear: number; model: string }
 }) {
   const { enqueueSnackbar } = useSnackbar()
-  const { Section, TableProps, emptyForm, form, section, setForm, variant } =
-    props
+  const { Section, TableProps, emptyForm, form, setForm, variant } = props
 
   const newNode = useRef<RowNode>()
 
@@ -222,46 +213,6 @@ export default function SectionBCreate(props: {
         gridRef={grid}
         headerDepth={3}
         rowData={initialRowData}
-        Toolbar={({ enterFullScreen, exitFullScreen, fullScreen }: any) => {
-          return (
-            <div
-              className={cx('mb-2 flex flex-col', {
-                'px-4 pt-2': fullScreen,
-              })}
-            >
-              <Typography className="mb-2" component="h2" variant="h6">
-                {section.title}
-              </Typography>
-              <div className="flex items-center justify-between gap-x-4">
-                <div>
-                  {section.allowFullScreen && !fullScreen && (
-                    <IconButton
-                      color="primary"
-                      onClick={() => {
-                        enterFullScreen()
-                      }}
-                    >
-                      <IoExpand />
-                    </IconButton>
-                  )}
-                  {fullScreen && (
-                    <div>
-                      <IconButton
-                        className="exit-fullscreen not-printable p-2 text-primary"
-                        aria-label="exit fullscreen"
-                        onClick={() => {
-                          exitFullScreen()
-                        }}
-                      >
-                        <IoClose size={32} />
-                      </IconButton>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )
-        }}
         defaultColDef={{
           ...TableProps.defaultColDef,
           ...gridOptions.defaultColDef,

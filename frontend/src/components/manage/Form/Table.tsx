@@ -84,7 +84,7 @@ function setupFixedHeaderObserver(agHeader: HTMLDivElement) {
 
   const observer = new IntersectionObserver(
     ([entry]) => {
-      if (entry.intersectionRect.top == 0) {
+      if (entry.intersectionRatio && entry.intersectionRect.top == 0) {
         agHeader.classList.add('fixed', 'top-0', 'z-10')
         agHeader.style.width = `${entry.boundingClientRect.width}px`
       } else {
