@@ -24,7 +24,7 @@ class CPPricesBaseSerializer(BaseCPWChemicalSerializer):
 
     def get_group(self, obj):
         if obj.blend:
-            return "Blends (Mixture of Controlled Substances)"
+            return "HFCs"
         if obj.substance:
             if "HCFC" in obj.substance.name:
                 return "HCFCs"
