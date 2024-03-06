@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-before-interactive-script-outside-document */
+import { ApiSubstance } from '@ors/types/api_substances'
 /* eslint-disable @next/next/no-css-tags */
 import type { Metadata } from 'next'
 
@@ -122,7 +123,7 @@ export default async function RootLayout({
     }
     cp_reports = {
       blends: getInitialSliceData(blends),
-      substances: getInitialSliceData(substances),
+      substances: getInitialSliceData<ApiSubstance[]>(substances),
     }
     businessPlans = {
       sectors: getInitialSliceData(sectors),

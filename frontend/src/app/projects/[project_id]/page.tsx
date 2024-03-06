@@ -1,4 +1,4 @@
-import { ProjectType } from '@ors/types/projects'
+import { ProjectType } from '@ors/types/api_projects'
 
 import { Metadata } from 'next'
 

@@ -1,4 +1,4 @@
-import { EmptyReportSubstanceRowType, EmptyReportType } from '@ors/types/store'
+import { EmptyFormSubstance, EmptyReportType } from '@ors/types/api_empty-form'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 
@@ -25,36 +25,39 @@ import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export type RowData = DeserializedDataC & {
   count?: number
-  display_name?: string
-  group?: string
-  row_id: string
-  rowType: string
+  rowType?: string
   tooltip?: boolean
 }
 
 export type SubstancePrice = {
-  blend_id: number
+  blend_id: null | number
   current_year_price: string
   previous_year_price: string
   remarks: string
-  substance_id: number
+  substance_id: null | number
 }
 export type SubstancePrices = SubstancePrice[]
 
+function indexKey(elem: {
+  blend_id?: null | number
+  substance_id?: null | number
+}): string {
+  return elem.blend_id
+    ? `blend_id_${elem.blend_id}`
+    : `substance_id_${elem.substance_id}`
+}
+
 function getRowData(
   data: SectionC['data'],
-  substanceRows: EmptyReportSubstanceRowType[],
+  substanceRows: EmptyFormSubstance[],
   substancePrices: SubstancePrices,
 ): RowData[] {
   let rowData: RowData[] = []
-  const dataByGroup: Record<string, any[]> = {}
-  const groups: Array<string> = []
+  const dataByGroup: Record<string, RowData[]> = {}
+  const groups: string[] = []
   const substanceOrder = substanceRows.reduce(
-    (acc: Record<number, number>, val) => {
-      const substanceId = val.substance_id
-      if (!acc[substanceId]) {
-        acc[substanceId] = val.sort_order
-      }
+    (acc: Record<string, number>, val) => {
+      acc[indexKey(val)] = val.sort_order
       return acc
     },
     {},
@@ -71,7 +74,6 @@ function getRowData(
     },
     {},
   )
-  console.log(substancePrices, substancePriceMapping)
   each(data, (item) => {
     const group = item.group || 'Other'
     if (!dataByGroup[group]) {
@@ -80,16 +82,13 @@ function getRowData(
     if (!includes(groups, group)) {
       groups.push(group)
     }
-    const itemData: any = { ...item, group }
+    const itemData = { ...item, group }
     if (
       !itemData.previous_year_price &&
       (itemData.blend_id || itemData.substance_id)
     ) {
-      const priceKey = itemData.blend_id
-        ? `blend_id_${itemData.blend_id}`
-        : `substance_id_${itemData.substance_id}`
       const prevYearPrice = parseFloat(
-        substancePriceMapping[priceKey]?.current_year_price,
+        substancePriceMapping[indexKey(itemData)]?.current_year_price,
       )
       if (prevYearPrice) {
         itemData.previous_year_price = prevYearPrice
@@ -97,7 +96,7 @@ function getRowData(
     }
     dataByGroup[group].push(itemData)
   })
-  each(groups, (group: string) => {
+  each(groups, (group) => {
     rowData = union(
       rowData,
       [
@@ -105,13 +104,13 @@ function getRowData(
           count: dataByGroup[group].length,
           display_name: group,
           group,
+          mandatory: false,
           row_id: group,
           rowType: 'group',
         },
       ],
       dataByGroup[group].sort(
-        (a, b) =>
-          substanceOrder[a.substance_id] - substanceOrder[b.substance_id],
+        (a, b) => substanceOrder[indexKey(a)] - substanceOrder[indexKey(b)],
       ),
     )
   })
@@ -162,7 +161,14 @@ export default function SectionCCreate(props: {
         includes(substance.sections, 'C') &&
         !includes(chemicalsInForm, `substance_${substance.id}`)
       ) {
-        data.push(Section.transformSubstance(substance))
+        data.push(
+          Section.transformSubstance({
+            ...substance,
+            blend_id: null,
+            chemical_name: substance.name,
+            substance_id: substance.id,
+          }),
+        )
       }
     })
     return data

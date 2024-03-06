@@ -1,5 +1,5 @@
 'use client'
-import { ProjectType } from '@ors/types/projects'
+import { ProjectType } from '@ors/types/api_projects'
 
 import { useMemo } from 'react'
 import ReactCountryFlag from 'react-country-flag'

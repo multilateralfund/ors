@@ -1,5 +1,4 @@
-import type { Substance } from '@ors/models/Section'
-import { EmptyReportSubstanceRowType, EmptyReportType } from '@ors/types/store'
+import { EmptyReportType } from '@ors/types/api_empty-form'
 
 import { useMemo, useRef, useState } from 'react'
 
@@ -32,23 +31,10 @@ export type RowData = DeserializedDataA & {
   tooltip?: boolean
 }
 
-function getRowData(
-  data: SectionA['data'],
-  substanceRows: EmptyReportSubstanceRowType[],
-): RowData[] {
+function getRowData(data: SectionA['data']): RowData[] {
   let rowData: RowData[] = []
   const dataByGroup: Record<string, any[]> = {}
   const groups: Array<string> = []
-  const substanceOrder = substanceRows.reduce(
-    (acc: Record<number, number>, val) => {
-      const substanceId = val.substance_id
-      if (!acc[substanceId]) {
-        acc[substanceId] = val.sort_order
-      }
-      return acc
-    },
-    {},
-  )
   each(data, (item) => {
     const group = item.group || 'Other'
     if (!dataByGroup[group]) {
@@ -71,10 +57,7 @@ function getRowData(
           rowType: 'group',
         },
       ],
-      dataByGroup[group].sort(
-        (a, b) =>
-          substanceOrder[a.substance_id] - substanceOrder[b.substance_id],
-      ),
+      dataByGroup[group],
       group === 'Annex C, Group I'
         ? [
             {
@@ -108,14 +91,12 @@ export default function SectionACreate(props: {
   const { Section, TableProps, emptyForm, form, setForm } = props
   const newNode = useRef<RowNode>()
 
-  const substances: Substance[] = useStore(
+  const substances = useStore(
     (state) => getResults(state.cp_reports.substances.data).results,
   )
 
   const grid = useRef<any>()
-  const [initialRowData] = useState(() =>
-    getRowData(form.section_a, emptyForm.substance_rows?.section_a || []),
-  )
+  const [initialRowData] = useState(() => getRowData(form.section_a))
   const [pinnedBottomRowData] = useState<RowData[]>([
     {
       display_name: 'TOTAL',
@@ -137,16 +118,21 @@ export default function SectionACreate(props: {
 
   const substancesOptions = useMemo(() => {
     const data: Array<any> = []
-    const substancesInForm = form.section_a.map(
-      (substance: any) => substance.row_id,
-    )
+    const substancesInForm = form.section_a.map((substance) => substance.row_id)
     each(substances, (substance) => {
       if (
         includes(['Annex C, Group I'], substance.group) &&
         includes(substance.sections, 'A') &&
         !includes(substancesInForm, `substance_${substance.id}`)
       ) {
-        data.push(Section?.transformSubstance(substance))
+        data.push(
+          Section?.transformSubstance({
+            ...substance,
+            blend_id: null,
+            chemical_name: substance.name,
+            substance_id: substance.id,
+          }),
+        )
       }
     })
     return data

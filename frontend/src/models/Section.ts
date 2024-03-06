@@ -16,16 +16,6 @@ import { parseNumber } from '@ors/helpers/Utils/Utils'
 
 export type Field = { dataType: string; defaultValue: any }
 
-export type Substance = {
-  chemical_note?: string
-  displayed_in_latest_format: boolean
-  excluded_usages?: Array<number>
-  group?: string
-  id: number | string
-  name: string
-  sections?: Array<string>
-}
-
 export type Blend = {
   composition: string
   displayed_in_latest_format: boolean
@@ -37,21 +27,23 @@ export type Blend = {
 }
 
 export type DeserializedSubstance = {
+  blend_id?: number
   display_name: string
-  excluded_usages?: Array<number>
+  excluded_usages?: number[]
   group?: string
   mandatory: boolean
   row_id: string
-  substance_id: number
+  substance_id?: number
 }
 
-export type DeserializedBlend = {
-  blend_id: number
-  display_name: string
-  excluded_usages?: Array<number>
-  group?: string
-  mandatory: boolean
-  row_id: string
+export type EmptyFormSubstance = {
+  blend_id: null | number
+  chemical_name: string
+  chemical_note: null | string
+  excluded_usages: number[]
+  group: string
+  sort_order: number
+  substance_id: null | number
 }
 
 type LocalDeserializedData = {
@@ -68,8 +60,8 @@ export default class Section<DeserializedData, FormFields> {
   constructor(
     formFields: FormFields,
     initialData: Array<DeserializedData & LocalDeserializedData> = [],
-    substances: Array<Substance> = [],
-    blends: Array<Blend> = [],
+    substances: Array<EmptyFormSubstance> = [],
+    blends: Array<EmptyFormSubstance> = [],
     localStorageKey: null | string,
   ) {
     this.formFields = formFields
@@ -89,16 +81,10 @@ export default class Section<DeserializedData, FormFields> {
 
     this.data = this.union(
       [
-        ...substances
-          .filter(
-            (substance: Substance) => substance.displayed_in_latest_format,
-          )
-          .map((substance: Substance) =>
-            this.transformSubstance(substance, true),
-          ),
-        ...blends
-          .filter((blend: Blend) => blend.displayed_in_latest_format)
-          .map((blend: Blend) => this.transformBlend(blend, true)),
+        ...substances.map((substance) =>
+          this.transformSubstance(substance, true),
+        ),
+        ...blends.map((blend) => this.transformBlend(blend, true)),
         ...initialData,
       ],
       [...(isArray(localStorageData) ? localStorageData : [])],
@@ -181,15 +167,11 @@ export default class Section<DeserializedData, FormFields> {
     return formData
   }
 
-  public transformBlend(blend: Blend, mandatory?: boolean) {
-    const id = get(blend, 'blend_id') || blend.id
-    const transformed: any = {
-      blend_id: id,
-      display_name:
-        get(blend, 'display_name') || `${blend.name} (${blend.composition})`,
-      excluded_usages: blend.excluded_usages,
-      group: blend.group,
-      row_id: `blend_${id}`,
+  public transformBlend(blend: EmptyFormSubstance, mandatory?: boolean) {
+    const transformed: Record<string, any> & EmptyFormSubstance = {
+      ...blend,
+      display_name: blend.chemical_name,
+      row_id: `blend_${blend.blend_id}`,
       ...(isBoolean(mandatory) ? { mandatory } : {}),
     }
     forOwn(this.formFields, (field, fieldKey) => {
@@ -201,16 +183,15 @@ export default class Section<DeserializedData, FormFields> {
     return transformed
   }
 
-  public transformSubstance(substance: Substance, mandatory?: boolean) {
-    const id = get(substance, 'substance_id') || substance.id
-    const transformed: any = {
-      chemical_note: substance.chemical_note,
-      display_name: get(substance, 'display_name') || substance.name,
-      excluded_usages: substance.excluded_usages,
-      group: substance.group,
+  public transformSubstance(
+    substance: EmptyFormSubstance,
+    mandatory?: boolean,
+  ) {
+    const transformed: Record<string, any> & EmptyFormSubstance = {
+      ...substance,
+      display_name: substance.chemical_name,
       mandatory: false,
-      row_id: `substance_${id}`,
-      substance_id: id,
+      row_id: `substance_${substance.substance_id}`,
       ...(isBoolean(mandatory) ? { mandatory } : {}),
     }
     forOwn(this.formFields, (field, fieldKey) => {
@@ -225,11 +206,11 @@ export default class Section<DeserializedData, FormFields> {
   public union(
     original: Array<any>,
     updated: Array<any>,
-    substances: Array<Substance>,
-    blends: Array<Blend>,
+    substances: Array<EmptyFormSubstance>,
+    blends: Array<EmptyFormSubstance>,
   ) {
-    const substancesById = groupBy(substances, 'id')
-    const blendsById = groupBy(blends, 'id')
+    const substancesById = groupBy(substances, 'substance_id')
+    const blendsById = groupBy(blends, 'blend_id')
     const mergedMap = new Map()
     original.forEach((item: any) =>
       mergedMap.set(item[this.key], {

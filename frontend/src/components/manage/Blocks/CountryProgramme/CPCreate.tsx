@@ -151,7 +151,7 @@ function CPCreate(props: any) {
   const tabsEl = React.useRef<HTMLDivElement>(null)
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
-  const { blends, report, substances } = useStore((state) => state.cp_reports)
+  const { report } = useStore((state) => state.cp_reports)
 
   const countries: WidgetCountry[] = useStore((state) => [
     ...getResults(state.common.countries_cp_report.data).results.map(
@@ -165,19 +165,29 @@ function CPCreate(props: any) {
   const Sections = {
     section_a: useMakeClassInstance<SectionA>(SectionA, [
       [],
-      substances.data,
+      report.emptyForm.data.substance_rows.section_a.filter(
+        (item) => item.substance_id,
+      ),
       'section_a_create',
     ]),
     section_b: useMakeClassInstance<SectionB>(SectionB, [
       [],
-      substances.data,
-      blends.data,
+      report.emptyForm.data.substance_rows.section_b.filter(
+        (item) => item.substance_id,
+      ),
+      report.emptyForm.data.substance_rows.section_b.filter(
+        (item) => item.blend_id,
+      ),
       'section_b_create',
     ]),
     section_c: useMakeClassInstance<SectionC>(SectionC, [
       [],
-      substances.data,
-      blends.data,
+      report.emptyForm.data.substance_rows.section_c.filter(
+        (item) => item.substance_id,
+      ),
+      report.emptyForm.data.substance_rows.section_c.filter(
+        (item) => item.blend_id,
+      ),
       'section_c_create',
     ]),
     section_d: useMakeClassInstance<SectionD>(SectionD, [
