@@ -1,5 +1,7 @@
 import { ColDef } from 'ag-grid-community'
 import { CustomCellRendererProps } from 'ag-grid-react'
+import cx from 'classnames'
+import { includes } from 'lodash'
 
 import { colDefById } from '@ors/config/Table/columnsDef'
 
@@ -8,6 +10,9 @@ const sectionColDefById: Record<string, ColDef> = {
   display_name: {
     ...colDefById['display_name'],
     cellRendererParams: (props: CustomCellRendererProps) => ({
+      className: cx({
+        'font-bold': includes(['group', 'total'], props.data.rowType),
+      }),
       ...(props.data.row_id === 'other-new_substance'
         ? {
             footnote: {

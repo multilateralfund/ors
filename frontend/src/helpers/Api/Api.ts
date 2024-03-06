@@ -206,11 +206,15 @@ async function api(
   }
 }
 
-export function getResults(data: DataType): {
+type ResultsType<D> = {
   count: number
   loaded: boolean
-  results: Array<any>
-} {
+  results: D[]
+}
+
+export function getResults<D = DataType>(
+  data: D[] | ResultsType<D>,
+): ResultsType<D> {
   if (Array.isArray(data)) {
     return {
       count: data.length,
@@ -218,12 +222,19 @@ export function getResults(data: DataType): {
       results: data,
     }
   }
-  if (data && typeof data === 'object' && Array.isArray(data.results)) {
+  if (
+    data &&
+    typeof data === 'object' &&
+    Array.isArray((data as ResultsType<D>).results)
+  ) {
     return {
       ...(data || {}),
-      count: typeof data.count === 'number' ? data.count : 0,
+      count:
+        typeof (data as ResultsType<D>).count === 'number'
+          ? (data as ResultsType<D>).count
+          : 0,
       loaded: true,
-      results: data.results || [],
+      results: (data as ResultsType<D>).results || [],
     }
   }
   return {

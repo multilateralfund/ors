@@ -1,35 +1,9 @@
+import type { EmptyReportType } from './api_empty-form'
 import type { Language } from '@ors/types/locales'
 import type { DataType, SliceData } from '@ors/types/primitives'
 import type { PartialDeep, UnknownArray } from 'type-fest'
 
-export type EmptyReportUsageColumnType = {
-  columnCategory: string
-  dataType: object
-  full_name: string
-  headerName: string
-  id: number
-  sort_order: number
-}
-
-export type EmptyReportSubstanceRowType = {
-  blend_id: number
-  chemical_name: string
-  group: string
-  sort_order: number
-  substance_id: number
-}
-
-export type EmptyReportType = {
-  substance_rows?: {
-    [key in
-      | 'section_a'
-      | 'section_b'
-      | 'section_c']: EmptyReportSubstanceRowType[]
-  }
-  usage_columns?: {
-    [key in 'section_a' | 'section_b']: EmptyReportUsageColumnType[]
-  }
-}
+import { ApiSubstance } from './api_substances'
 
 type Report = SliceData<
   Record<string, any> | null,
@@ -54,14 +28,14 @@ export interface CacheSlice {
 }
 
 export interface CPReportsSlice {
-  blends: SliceData
+  blends: SliceData<ApiBlend[]>
   fetchBundle: (id: null | number, view?: boolean, archive?: boolean) => void
   fetchEmptyForm: (id: null | number, view?: boolean) => void
   fetchReport: (id: null | number, archive?: boolean) => void
   fetchVersions: (id: null | number, archive?: boolean) => void
   report: Report
   setReport: (report: Partial<Report>) => void
-  substances: SliceData
+  substances: SliceData<ApiSubstance[]>
 }
 
 export interface HeaderSlice {

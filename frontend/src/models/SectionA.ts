@@ -1,6 +1,6 @@
-import { includes } from 'lodash'
+import { EmptyFormSubstance } from '@ors/types/api_empty-form'
 
-import Section, { DeserializedSubstance, Field, Substance } from './Section'
+import Section, { DeserializedSubstance, Field } from './Section'
 
 export type SectionAFormFields = {
   banned_date?: null | string
@@ -21,7 +21,7 @@ export default class SectionA extends Section<
 > {
   constructor(
     initialData: Array<DeserializedDataA> = [],
-    substances: Array<Substance>,
+    substances: Array<EmptyFormSubstance>,
     localStorageKey: null | string,
   ) {
     const formFields = {
@@ -35,12 +35,6 @@ export default class SectionA extends Section<
       remarks: { dataType: 'string', defaultValue: '' },
     }
 
-    super(
-      formFields,
-      initialData,
-      substances.filter((substance) => includes(substance.sections, 'A')),
-      [],
-      localStorageKey,
-    )
+    super(formFields, initialData, substances, [], localStorageKey)
   }
 }

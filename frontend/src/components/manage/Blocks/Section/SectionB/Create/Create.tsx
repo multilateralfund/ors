@@ -1,4 +1,4 @@
-import { EmptyReportSubstanceRowType, EmptyReportType } from '@ors/types/store'
+import { EmptyReportType } from '@ors/types/api_empty-form'
 
 import { useMemo, useRef, useState } from 'react'
 
@@ -41,23 +41,10 @@ export type RowData = DeserializedDataB & {
   tooltip?: boolean
 }
 
-function getRowData(
-  data: SectionB['data'],
-  substanceRows: EmptyReportSubstanceRowType[],
-): RowData[] {
+function getRowData(data: SectionB['data']): RowData[] {
   let rowData: RowData[] = []
   const dataByGroup: Record<string, any[]> = {}
   const groups: Array<string> = []
-  const substanceOrder = substanceRows.reduce(
-    (acc: Record<number, number>, val) => {
-      const substanceId = val.substance_id
-      if (!acc[substanceId]) {
-        acc[substanceId] = val.sort_order
-      }
-      return acc
-    },
-    {},
-  )
   each(data, (item) => {
     const group = item.group || 'Other'
     if (!dataByGroup[group]) {
@@ -80,10 +67,7 @@ function getRowData(
           rowType: 'group',
         },
       ],
-      dataByGroup[group].sort(
-        (a, b) =>
-          substanceOrder[a.substance_id] - substanceOrder[b.substance_id],
-      ),
+      dataByGroup[group],
       group.startsWith('Blends')
         ? [
             {
@@ -139,9 +123,7 @@ export default function SectionBCreate(props: {
   )
 
   const grid = useRef<any>()
-  const [initialRowData] = useState(() =>
-    getRowData(form.section_b, emptyForm.substance_rows?.section_b || []),
-  )
+  const [initialRowData] = useState(() => getRowData(form.section_b))
 
   const [addChemicalModal, setAddChemicalModal] = useState(false)
   const [createBlendModal, setCreateBlendModal] = useState(false)
@@ -156,14 +138,29 @@ export default function SectionBCreate(props: {
         includes(substance.sections, 'B') &&
         !includes(chemicalsInForm, `substance_${substance.id}`)
       ) {
-        data.push(Section.transformSubstance(substance))
+        data.push(
+          Section.transformSubstance({
+            ...substance,
+            blend_id: null,
+            chemical_name: substance.name,
+            substance_id: substance.id,
+          }),
+        )
       }
     })
     each(
       sortBy(uniqBy([...blends, ...createdBlends], 'id'), 'sort_order'),
       (blend) => {
         if (!includes(chemicalsInForm, `blend_${blend.id}`)) {
-          data.push(Section.transformBlend(blend))
+          data.push(
+            Section.transformBlend({
+              ...blend,
+              blend_id: blend.id,
+              chemical_name:
+                blend?.display_name || `${blend.name} (${blend.composition})`,
+              substance_id: null,
+            }),
+          )
         }
       },
     )
