@@ -473,6 +473,7 @@ def setup_new_cp_report(cp_report_2019, blend, substance, time_frames, groupA):
             CPPricesFactory.create(
                 country_programme_report=cp_report,
                 blend=ble,
+                previous_year_price=None,
                 current_year_price=cp_report.year,
             )
     for subst in [substance, substAnoform, substF2inform, substOnoform]:
