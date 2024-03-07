@@ -32,7 +32,7 @@ function useGridOptions(props: {
       columnDefs: [
         {
           cellRenderer: (props: CustomCellRendererProps<RowData>) => {
-            if (props?.data?.rowType === 'control') {
+            if (props.data?.rowType === 'control') {
               return (
                 <Button
                   className="w-full leading-3"
@@ -47,9 +47,12 @@ function useGridOptions(props: {
           },
           cellRendererParams: (props: ICellRendererParams<RowData>) => ({
             className: cx({
-              'font-bold': includes(['group', 'total'], props?.data?.rowType),
+              'font-bold': includes(
+                ['group', 'total', 'subtotal'],
+                props.data?.rowType,
+              ),
             }),
-            options: !props?.data?.mandatory && !props?.data?.rowType && (
+            options: !props.data?.mandatory && !props.data?.rowType && (
               <Dropdown.Item
                 onClick={() => {
                   onRemoveSubstance(props)
@@ -94,7 +97,7 @@ function useGridOptions(props: {
         autoHeight: true,
         cellClass: (props: CellClassParams<RowData>) => {
           return cx({
-            'ag-flex-cell': props?.data?.rowType === 'control',
+            'ag-flex-cell': props.data?.rowType === 'control',
             'ag-text-right': !includes(['display_name'], props.colDef.field),
             'bg-mui-box-background': includes(
               ['display_name'],
@@ -104,7 +107,7 @@ function useGridOptions(props: {
         },
         editable: (props: EditableCallbackParams<RowData>) => {
           if (
-            includes(['total', 'subtotal'], props?.data?.rowType) ||
+            includes(['total', 'subtotal'], props.data?.rowType) ||
             includes(['display_name'], props.colDef.field)
           ) {
             return false

@@ -34,8 +34,8 @@ function useGridOptions(props: {
         {
           cellRenderer: (props: CustomCellRendererProps<RowData>) => {
             if (
-              props?.data?.rowType === 'control' &&
-              props?.data?.row_id === 'control'
+              props.data?.rowType === 'control' &&
+              props.data?.row_id === 'control'
             ) {
               return (
                 <Tooltip
@@ -51,7 +51,7 @@ function useGridOptions(props: {
                   </Button>
                 </Tooltip>
               )
-            } else if (props?.data?.row_id === 'other-new_substance') {
+            } else if (props.data?.row_id === 'other-new_substance') {
               const renderValue = (
                 <Tooltip
                   placement="top"
@@ -79,7 +79,7 @@ function useGridOptions(props: {
           },
           cellRendererParams: (props: ICellRendererParams<RowData>) => ({
             ...sectionColDefById['display_name'].cellRendererParams(props),
-            options: !props?.data?.mandatory && !props?.data?.rowType && (
+            options: !props.data?.mandatory && !props.data?.rowType && (
               <Dropdown.Item
                 onClick={() => {
                   onRemoveSubstance(props)
@@ -175,10 +175,10 @@ function useGridOptions(props: {
         autoHeight: true,
         cellClass: (props: CellClassParams<RowData>) => {
           return cx({
-            'ag-flex-cell': props?.data?.rowType === 'control',
+            'ag-flex-cell': props.data?.rowType === 'control',
             'ag-text-right': !includes(['display_name'], props.colDef.field),
             'bg-gray-100 theme-dark:bg-gray-900/40': includes(
-              props?.data?.excluded_usages || [],
+              props.data?.excluded_usages || [],
               props.colDef.id,
             ),
             'bg-mui-box-background': includes(
@@ -189,10 +189,10 @@ function useGridOptions(props: {
         },
         editable: (props: EditableCallbackParams<RowData>) => {
           if (
-            includes(['total', 'subtotal'], props?.data?.rowType) ||
+            includes(['total', 'subtotal'], props.data?.rowType) ||
             includes(['display_name'], props.colDef.field) ||
             includes(['total_usages'], props.colDef.id) ||
-            includes(props?.data?.excluded_usages || [], props.colDef.id)
+            includes(props.data?.excluded_usages || [], props.colDef.id)
           ) {
             return false
           }

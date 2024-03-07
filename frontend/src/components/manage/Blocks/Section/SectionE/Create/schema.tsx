@@ -45,7 +45,10 @@ function useGridOptions(props: {
           },
           cellRendererParams: (props: any) => ({
             className: cx({
-              'font-bold': includes(['group', 'total'], props.data.rowType),
+              'font-bold': includes(
+                ['group', 'total', 'subtotal'],
+                props.data.rowType,
+              ),
             }),
             options: !props.data.mandatory && !props.data.rowType && (
               <Dropdown.Item

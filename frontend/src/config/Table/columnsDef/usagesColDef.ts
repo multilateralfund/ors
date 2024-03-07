@@ -33,7 +33,7 @@ export default function getUsagesColDef() {
           order: 5,
         },
       },
-      initialWidth: 100,
+      initialWidth: 130,
     },
     'Refrigeration Manufacturing Refrigeration': {
       initialWidth: 120,

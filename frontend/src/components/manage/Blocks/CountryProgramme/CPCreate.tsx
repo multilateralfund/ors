@@ -54,12 +54,15 @@ interface WidgetCountry {
   label: string
 }
 
+type FormError = Record<string, string>
+type FormErrors = Record<string, FormError>
+
 interface CPCreateTableProps extends TableProps {
   Toolbar: React.FC<ToolbarProps>
   enableCellChangeFlash: boolean
   enableFullScreen: boolean
   enablePagination: boolean
-  getRowId: (props: any) => string
+  // getRowId: (props: any) => string
   rowsVisible: number
   suppressCellFocus: boolean
   suppressColumnVirtualisation: boolean
@@ -69,9 +72,15 @@ interface CPCreateTableProps extends TableProps {
 }
 
 export interface PassedCPCreateTableProps extends CPCreateTableProps {
-  errors: Record<string, any>
+  errors: FormErrors
   report: Report
-  section: any
+  section:
+    | SectionA['data']
+    | SectionB['data']
+    | SectionC['data']
+    | SectionD['data']
+    | SectionE['data']
+    | SectionF['data']
 }
 
 export interface CPBaseForm {
@@ -163,7 +172,7 @@ const TableProps: CPCreateTableProps = {
   enableCellChangeFlash: true,
   enableFullScreen: true,
   enablePagination: false,
-  getRowId: (props: any) => {
+  getRowId: (props) => {
     return props.data.row_id
   },
   noRowsOverlayComponentParams: { label: 'No data reported' },
@@ -175,7 +184,7 @@ const TableProps: CPCreateTableProps = {
   withSeparators: true,
 }
 
-function CPCreate(props: any) {
+const CPCreate: React.FC = () => {
   const tabsEl = React.useRef<HTMLDivElement>(null)
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
@@ -241,7 +250,7 @@ function CPCreate(props: any) {
     ]),
   }
 
-  const [errors, setErrors] = useState<Record<string, any>>({})
+  const [errors, setErrors] = useState<FormErrors>({})
   const [currentYear] = useState(new Date().getFullYear() - 1)
   const [form, setForm] = useState<CPBaseForm>({
     country: null,
@@ -437,7 +446,7 @@ function CPCreate(props: any) {
         )}
         {sections.map((section, index) => {
           if (!includes(renderedSections, index)) return null
-          const Section: React.FC<any> = section.component
+          const Section = section.component
           return (
             <div
               id={section.panelId}
@@ -451,7 +460,6 @@ function CPCreate(props: any) {
             >
               <FootnotesProvider>
                 <Section
-                  {...props}
                   Section={get(Sections, section.id)}
                   emptyForm={report.emptyForm.data || {}}
                   errors={errors}

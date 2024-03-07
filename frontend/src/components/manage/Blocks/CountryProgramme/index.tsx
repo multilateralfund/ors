@@ -19,7 +19,17 @@ import SectionEView from '@ors/components/manage/Blocks/Section/SectionE/View/Vi
 import SectionFCreate from '@ors/components/manage/Blocks/Section/SectionF/Create'
 import SectionFView from '@ors/components/manage/Blocks/Section/SectionF/View'
 
-const constants: any = {
+type ConstantsType = {
+  [key in 'I' | 'II' | 'III' | 'IV' | 'V']?: {
+    [key in 'adm_d' | 'section_a' | 'section_c']?: {
+      label?: string
+      title?: string
+    }
+  }
+}
+
+const constants: ConstantsType = {
+  I: undefined,
   II: {
     adm_d: {
       title: 'D. Qualitative assessment of the operation of RMP/NPP/TPMP',
@@ -126,7 +136,11 @@ const components: {
   },
 }
 
-export const variants = [
+export const variants: {
+  maxYear: number
+  minYear: number
+  model: keyof ConstantsType
+}[] = [
   {
     maxYear: 2004,
     minYear: 1995,
@@ -157,9 +171,9 @@ export const variants = [
 const DefaultComponent = () => <div>Not implemented</div>
 
 export type SectionMeta = {
-  allowFullScreen: boolean
+  allowFullScreen?: boolean
   component: React.FC<any>
-  id: string
+  id: keyof ComponentsCreate
   label: string
   note?: string
   panelId: string
@@ -170,10 +184,10 @@ export function getSections(
   variant: {
     maxYear: number
     minYear: number
-    model: string
+    model: keyof ConstantsType
   },
-  mode: 'create' | 'edit' | 'view' = 'view',
-) {
+  mode: keyof typeof components = 'view',
+): SectionMeta[] {
   const { model } = variant
   const ids = [
     ...((includes(['I', 'II', 'III', 'IV', 'V'], model) && ['section_a']) ||

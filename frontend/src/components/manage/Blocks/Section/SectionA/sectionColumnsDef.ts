@@ -1,28 +1,34 @@
-import { ColDef } from 'ag-grid-community'
-import { CustomCellRendererProps } from 'ag-grid-react'
+import { ColDef, ICellRendererParams } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
 import { colDefById } from '@ors/config/Table/columnsDef'
 
+import { RowData } from './Create/Create'
+
 const sectionColDefById: Record<string, ColDef> = {
   ...colDefById,
   display_name: {
     ...colDefById['display_name'],
-    cellRendererParams: (props: CustomCellRendererProps) => ({
-      className: cx({
-        'font-bold': includes(['group', 'total'], props.data.rowType),
-      }),
-      ...(props.data.row_id === 'other-new_substance'
-        ? {
-            footnote: {
-              id: '2',
-              content: 'Indicate relevant controlled substances.',
-              icon: true,
-            },
-          }
-        : {}),
-    }),
+    cellRendererParams: (props: ICellRendererParams<RowData>) => {
+      return {
+        className: cx({
+          'font-bold': includes(
+            ['group', 'total', 'subtotal'],
+            props.data?.rowType,
+          ),
+        }),
+        ...(props.data?.row_id === 'other-new_substance'
+          ? {
+              footnote: {
+                id: '2',
+                content: 'Indicate relevant controlled substances.',
+                icon: true,
+              },
+            }
+          : {}),
+      }
+    },
     headerComponentParams: {
       footnote: {
         id: '1',

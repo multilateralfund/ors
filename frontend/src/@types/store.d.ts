@@ -3,12 +3,10 @@ import type { Language } from '@ors/types/locales'
 import type { DataType, SliceData } from '@ors/types/primitives'
 import type { PartialDeep, UnknownArray } from 'type-fest'
 
+import { CPReport } from './api_country-programme_records'
 import { ApiSubstance } from './api_substances'
 
-type Report = SliceData<
-  Record<string, any> | null,
-  Record<string, any> | null
-> & {
+type Report = SliceData<CPReport | null, Record<string, any> | null> & {
   emptyForm: SliceData<EmptyReportType, Record<string, any> | null>
   versions: SliceData<UnknownArray>
 }

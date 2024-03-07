@@ -34,7 +34,10 @@ const sectionColDefById: Record<string, ColDef> = {
     ...colDefById['display_name'],
     cellRendererParams: (props: any) => ({
       className: cx({
-        'font-bold': includes(['group', 'total'], props.data.rowType),
+        'font-bold': includes(
+          ['group', 'total', 'subtotal'],
+          props.data.rowType,
+        ),
       }),
       footnote: {
         id: '1',
@@ -59,4 +62,3 @@ const sectionColDefById: Record<string, ColDef> = {
 }
 
 export { sectionColDefById }
-

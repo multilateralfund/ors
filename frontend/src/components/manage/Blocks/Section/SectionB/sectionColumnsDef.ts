@@ -1,4 +1,4 @@
-import { ColDef } from 'ag-grid-community'
+import { ColDef, ICellRendererParams } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes, startsWith } from 'lodash'
 
@@ -8,9 +8,12 @@ const sectionColDefById: Record<string, ColDef> = {
   ...colDefById,
   display_name: {
     ...colDefById['display_name'],
-    cellRendererParams: (props: any) => ({
+    cellRendererParams: (props: ICellRendererParams) => ({
       className: cx({
-        'font-bold': includes(['group', 'total'], props.data.rowType),
+        'font-bold': includes(
+          ['group', 'total', 'subtotal'],
+          props.data.rowType,
+        ),
       }),
       footnote: !!props.data.chemical_note && {
         content: props.data.chemical_note,
