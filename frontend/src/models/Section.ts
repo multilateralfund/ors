@@ -71,7 +71,7 @@ export default class Section<DeserializedData, FormFields> {
       | Array<DeserializedData & LocalDeserializedData>
       | string =
       __CLIENT__ && this.localStorageKey
-        ? window.localStorage.getItem(this.localStorageKey) || []
+        ? window.sessionStorage.getItem(this.localStorageKey) || []
         : []
     if (isString(localStorageData)) {
       try {
@@ -95,7 +95,7 @@ export default class Section<DeserializedData, FormFields> {
 
   public clearLocalStorage() {
     if (this.localStorageKey) {
-      window.localStorage.removeItem(this.localStorageKey)
+      window.sessionStorage.removeItem(this.localStorageKey)
     }
   }
 
@@ -250,7 +250,7 @@ export default class Section<DeserializedData, FormFields> {
   ) {
     if (this.localStorageKey) {
       try {
-        window.localStorage.setItem(
+        window.sessionStorage.setItem(
           this.localStorageKey,
           JSON.stringify(newData),
         )

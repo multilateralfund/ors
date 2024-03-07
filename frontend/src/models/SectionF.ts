@@ -26,7 +26,7 @@ export default class SectionF {
 
     let localStorageData: DeserializedDataF | string =
       __CLIENT__ && this.localStorageKey
-        ? window.localStorage.getItem(this.localStorageKey) || {}
+        ? window.sessionStorage.getItem(this.localStorageKey) || {}
         : {}
     if (isString(localStorageData)) {
       try {
@@ -50,7 +50,7 @@ export default class SectionF {
 
   public clearLocalStorage() {
     if (this.localStorageKey) {
-      window.localStorage.removeItem(this.localStorageKey)
+      window.sessionStorage.removeItem(this.localStorageKey)
     }
   }
 
@@ -82,7 +82,7 @@ export default class SectionF {
   public updateLocalStorage(newData: DeserializedDataF) {
     if (this.localStorageKey) {
       try {
-        window.localStorage.setItem(
+        window.sessionStorage.setItem(
           this.localStorageKey,
           JSON.stringify(newData),
         )
