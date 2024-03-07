@@ -37,17 +37,13 @@ export type CPReport = {
     }[]
   }[]
 } & {
-  []
-  cp_report: {
-    comment: null | string
-    country: string
-    country_id: number
-    id: number
-    name: string
-    status: string
-    version: number
-    year: number
-  }
+  comment: null | string
+  country: string
+  country_id: number
+  created_at?: string
+  final_version_id?: number
+  id: number
+  name: string
   section_c: {
     blend_id: null | number
     chemical_name: string
@@ -88,4 +84,7 @@ export type CPReport = {
   section_f: {
     remarks: null | string
   }
+  status: string
+  version: number
+  year: number
 }

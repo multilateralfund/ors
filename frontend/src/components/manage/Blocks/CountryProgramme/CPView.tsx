@@ -167,7 +167,7 @@ function CPView(props: { archive?: boolean; id: string }) {
   const variant = useMemo(() => {
     if (!report.data) return null
     return filter(variants, (variant) => {
-      const year = report.data?.year
+      const year = report.data!.year
       return variant.minYear <= year && variant.maxYear >= year
     })[0]
   }, [report.data])

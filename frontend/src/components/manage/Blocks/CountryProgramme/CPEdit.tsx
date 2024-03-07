@@ -144,7 +144,7 @@ function CPEdit(props: { id: null | number }) {
       null,
     ]),
     section_d: useMakeClassInstance<SectionD>(SectionD, [
-      defaults(report.data?.section_d, {
+      defaults(report.data?.section_d || [], {
         all_uses: '0.000',
         chemical_name: 'HFC-23',
         destruction: '0.000',
@@ -182,7 +182,7 @@ function CPEdit(props: { id: null | number }) {
   const variant = useMemo(() => {
     if (!report.data) return null
     return filter(variants, (variant) => {
-      const year = report.data?.year
+      const year = report.data!.year
       return variant.minYear <= year && variant.maxYear >= year
     })[0]
   }, [report.data])
