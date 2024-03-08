@@ -29,8 +29,6 @@ function useGridOptions(props: {
 }) {
   const { model, onRemoveSubstance, openAddSubstanceModal, usages } = props
 
-  console.log(model)
-
   const gridOptions: GridOptions = useMemo(
     () => ({
       columnDefs: [

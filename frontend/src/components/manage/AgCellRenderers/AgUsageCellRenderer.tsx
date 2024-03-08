@@ -18,7 +18,6 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
   const aggFunc = get(aggFuncs, props.colDef?.orsAggFunc || '')
   const usageId = props.colDef?.id
   const recordUsages = props.data.record_usages || []
-  let className = props.className
 
   if (
     includes(['group', 'control'], props.data.rowType) ||
@@ -27,7 +26,6 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
     return null
   }
   if (aggFunc && includes(['subtotal', 'total'], props.data.rowType)) {
-    className = `${className} font-bold`
     value = aggFunc({ ...props })
   } else if (usageId === 'total_usages') {
     value = []
@@ -75,7 +73,7 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
 
   return (
     <AgTooltipComponent {...props} value={formattedValue}>
-      <Typography className={className} component="span" lineHeight={1}>
+      <Typography className={props.className} component="span" lineHeight={1}>
         {formattedValue}
       </Typography>
     </AgTooltipComponent>

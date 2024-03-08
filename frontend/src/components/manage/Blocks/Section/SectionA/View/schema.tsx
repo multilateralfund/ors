@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { GridOptions } from 'ag-grid-community'
+import { CellClassParams, GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
@@ -106,7 +106,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
       ],
       defaultColDef: {
         autoHeight: true,
-        cellClass: (props: any) => {
+        cellClass: (props: CellClassParams) => {
           return cx({
             'ag-text-right': !includes(['display_name'], props.colDef.field),
             'bg-gray-100 theme-dark:bg-gray-900/40': includes(
@@ -118,11 +118,6 @@ function useGridOptions(props: { model: string; usages: object[] }) {
               props.colDef.field,
             ),
           })
-        },
-        cellRendererParams: () => {
-          return {
-            maximumFractionDigits: 2,
-          }
         },
         headerClass: 'ag-text-center',
         minWidth: defaultColDef.minWidth,
