@@ -38,6 +38,9 @@ const sectionColDefById: Record<string, ColDef> = {
       },
     },
   },
+  export_quotas: {
+    initialWidth: 80,
+  },
   remarks: {
     ...colDefById['remarks'],
     headerComponentParams: {

@@ -60,7 +60,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
           orsAggFunc: 'sumTotal',
           ...sectionColDefById['production'],
         },
-        ...(includes(['IV', 'V'], model)
+        ...(includes(['III', 'IV', 'V'], model)
           ? [
               {
                 dataType: 'number',
@@ -68,6 +68,17 @@ function useGridOptions(props: { model: string; usages: object[] }) {
                 headerName: 'Import Quotas',
                 orsAggFunc: 'sumTotal',
                 ...sectionColDefById['import_quotas'],
+              },
+            ]
+          : []),
+        ...(includes(['III', 'IV'], model)
+          ? [
+              {
+                dataType: 'number',
+                field: 'export_quotas',
+                headerName: 'Export Quotas',
+                orsAggFunc: 'sumTotal',
+                ...sectionColDefById['export_quotas'],
               },
             ]
           : []),

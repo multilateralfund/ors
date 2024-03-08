@@ -18,6 +18,7 @@ import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import SectionA, { DeserializedDataA } from '@ors/models/SectionA'
 import { useStore } from '@ors/store'
 
+import { ReportVariant } from '../../../CountryProgramme'
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
@@ -87,8 +88,9 @@ export default function SectionACreate(props: {
   emptyForm: EmptyReportType
   form: CPBaseForm
   setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
+  variant: ReportVariant
 }) {
-  const { Section, TableProps, emptyForm, form, setForm } = props
+  const { Section, TableProps, emptyForm, form, setForm, variant } = props
   const newNode = useRef<RowNode>()
 
   const substances = useStore(
@@ -139,6 +141,7 @@ export default function SectionACreate(props: {
   }, [substances, form.section_a, Section])
 
   const gridOptions = useGridOptions({
+    model: variant.model,
     onRemoveSubstance: (props: any) => {
       const removedSubstance = props.data
       const newData = [...form.section_a]

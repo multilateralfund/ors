@@ -136,11 +136,13 @@ const components: {
   },
 }
 
-export const variants: {
+export type ReportVariant = {
   maxYear: number
   minYear: number
   model: keyof ConstantsType
-}[] = [
+}
+
+export const variants: ReportVariant[] = [
   {
     maxYear: 2004,
     minYear: 1995,

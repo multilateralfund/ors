@@ -1,4 +1,16 @@
-export type CPReport = {
+type cp_report = {
+  comment: null | string
+  country: string
+  country_id: number
+  created_at?: string
+  final_version_id?: number
+  id: number
+  name: string
+  status: string
+  version: number
+  year: number
+}
+type ApiBase = {
   [key in 'section_a' | 'section_b']: {
     banned_date: null | string
     blend_id: null | number
@@ -37,13 +49,6 @@ export type CPReport = {
     }[]
   }[]
 } & {
-  comment: null | string
-  country: string
-  country_id: number
-  created_at?: string
-  final_version_id?: number
-  id: number
-  name: string
   section_c: {
     blend_id: null | number
     chemical_name: string
@@ -84,7 +89,8 @@ export type CPReport = {
   section_f: {
     remarks: null | string
   }
-  status: string
-  version: number
-  year: number
 }
+
+// The server response contains the cp_report property which is destructured into the root by the client.
+export type ApiCPReport = ApiBase & { cp_report: cp_report }
+export type CPReport = ApiBase & cp_report

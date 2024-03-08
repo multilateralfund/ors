@@ -22,11 +22,14 @@ import { RowData } from './Create'
 import { IoTrash } from 'react-icons/io5'
 
 function useGridOptions(props: {
+  model: string
   onRemoveSubstance: any
   openAddSubstanceModal: any
   usages: any
 }) {
-  const { onRemoveSubstance, openAddSubstanceModal, usages } = props
+  const { model, onRemoveSubstance, openAddSubstanceModal, usages } = props
+
+  console.log(model)
 
   const gridOptions: GridOptions = useMemo(
     () => ({
@@ -149,6 +152,18 @@ function useGridOptions(props: {
           orsAggFunc: 'sumTotal',
           ...sectionColDefById['import_quotas'],
         },
+        ...(includes(['III', 'IV'], model)
+          ? [
+              {
+                cellEditor: 'agNumberCellEditor',
+                dataType: 'number',
+                field: 'export_quotas',
+                headerName: 'Export Quotas',
+                orsAggFunc: 'sumTotal',
+                ...sectionColDefById['export_quotas'],
+              },
+            ]
+          : []),
         {
           cellEditor: 'agDateCellEditor',
           dataType: 'date',
