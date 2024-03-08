@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { GridOptions } from 'ag-grid-community'
+import { CellClassParams, GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
@@ -74,7 +74,13 @@ function useGridOptions(props: { adm_columns: any }) {
       ],
       defaultColDef: {
         autoHeight: true,
-        cellClass: 'ag-text-center',
+        cellClass: (props: CellClassParams) => {
+          return cx('ag-text-center', {
+            'bg-gray-100 theme-dark:bg-gray-900/40':
+              includes(props.data?.excluded_columns || [], props.colDef.id) &&
+              !includes(['control', 'group', 'hashed'], props.data.rowType),
+          })
+        },
         headerClass: 'ag-text-center',
         minWidth: defaultColDef.minWidth,
         resizable: true,
