@@ -158,14 +158,18 @@ function useGridOptions(props: {
               },
             ]
           : []),
-        {
-          cellEditor: 'agNumberCellEditor',
-          dataType: 'number',
-          field: 'import_quotas',
-          headerName: 'Import Quotas',
-          orsAggFunc: 'sumTotal',
-          ...sectionColDefById['import_quotas'],
-        },
+        ...(includes(['III'], model)
+          ? [
+              {
+                cellEditor: 'agNumberCellEditor',
+                dataType: 'number',
+                field: 'import_quotas',
+                headerName: 'Import Quotas',
+                orsAggFunc: 'sumTotal',
+                ...sectionColDefById['import_quotas'],
+              },
+            ]
+          : []),
         {
           cellEditor: 'agDateCellEditor',
           dataType: 'date',

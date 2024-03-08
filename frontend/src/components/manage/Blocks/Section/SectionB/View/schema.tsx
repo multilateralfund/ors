@@ -70,13 +70,17 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
               },
             ]
           : []),
-        {
-          dataType: 'number',
-          field: 'import_quotas',
-          headerName: 'Import Quotas',
-          orsAggFunc: 'sumTotal',
-          ...sectionColDefById['import_quotas'],
-        },
+        ...(includes(['III'], model)
+          ? [
+              {
+                dataType: 'number',
+                field: 'import_quotas',
+                headerName: 'Import Quotas',
+                orsAggFunc: 'sumTotal',
+                ...sectionColDefById['import_quotas'],
+              },
+            ]
+          : []),
         {
           dataType: 'date',
           field: 'banned_date',

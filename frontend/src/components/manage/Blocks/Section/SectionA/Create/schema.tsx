@@ -142,15 +142,19 @@ function useGridOptions(props: {
           orsAggFunc: 'sumTotal',
           ...sectionColDefById['production'],
         },
-        {
-          cellEditor: 'agNumberCellEditor',
-          dataType: 'number',
-          field: 'import_quotas',
-          headerName: 'Import Quotas',
-          orsAggFunc: 'sumTotal',
-          ...sectionColDefById['import_quotas'],
-        },
-        ...(includes(['III', 'IV'], model)
+        ...(includes(['III'], model)
+          ? [
+              {
+                cellEditor: 'agNumberCellEditor',
+                dataType: 'number',
+                field: 'import_quotas',
+                headerName: 'Import Quotas',
+                orsAggFunc: 'sumTotal',
+                ...sectionColDefById['import_quotas'],
+              },
+            ]
+          : []),
+        ...(includes(['III'], model)
           ? [
               {
                 cellEditor: 'agNumberCellEditor',
