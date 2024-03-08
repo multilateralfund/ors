@@ -42,7 +42,12 @@ export default function AgCellRenderer(props: any) {
     <>
       {!!options && (
         <div className="ag-cell-options inline-block">
-          <Dropdown color="primary" label={<IoOptions />} icon>
+          <Dropdown
+            className="py-0 pl-0"
+            color="primary"
+            label={<IoOptions />}
+            icon
+          >
             {options}
           </Dropdown>
         </div>

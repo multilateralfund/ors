@@ -2,10 +2,27 @@ import { ColDef, ColGroupDef } from 'ag-grid-community'
 
 import { colDefById, defaultColGroupDef } from '@ors/config/Table/columnsDef'
 
+const VOLUNTARY_CLASS = 'bg-gray-200 theme-dark:bg-gray-900/40'
+
 const sectionColDefById: Record<string, ColDef> = {
   ...colDefById,
+  all_uses: {
+    ...colDefById['all_uses'],
+    cellClass: () => {
+      return VOLUNTARY_CLASS
+    },
+  },
+  destruction: {
+    ...colDefById['destruction'],
+    cellClass: () => {
+      return VOLUNTARY_CLASS
+    },
+  },
   destruction_wpc: {
     ...colDefById['destruction_wpc'],
+    cellClass: () => {
+      return VOLUNTARY_CLASS
+    },
     headerComponentParams: {
       footnote: {
         id: '4',
@@ -15,8 +32,17 @@ const sectionColDefById: Record<string, ColDef> = {
       },
     },
   },
+  feedstock_gc: {
+    ...colDefById['feedstock_gc'],
+    cellClass: () => {
+      return VOLUNTARY_CLASS
+    },
+  },
   feedstock_wpc: {
     ...colDefById['feedstock_wpc'],
+    cellClass: () => {
+      return VOLUNTARY_CLASS
+    },
     headerComponentParams: {
       footnote: {
         id: '3',
@@ -29,6 +55,9 @@ const sectionColDefById: Record<string, ColDef> = {
   },
   total_amount_generated: {
     ...colDefById['total_amount_generated'],
+    cellClass: () => {
+      return VOLUNTARY_CLASS
+    },
     headerComponentParams: {
       footnote: {
         id: '1',
@@ -39,9 +68,9 @@ const sectionColDefById: Record<string, ColDef> = {
       },
       info: true,
     },
-  }
+  },
 }
-const sectionColGroupDefById: Record<string, Omit<ColGroupDef, "children">> = {
+const sectionColGroupDefById: Record<string, Omit<ColGroupDef, 'children'>> = {
   amount_generated_and_captured: {
     headerGroupComponentParams: {
       ...defaultColGroupDef.headerGroupComponentParams,
@@ -57,4 +86,3 @@ const sectionColGroupDefById: Record<string, Omit<ColGroupDef, "children">> = {
 }
 
 export { sectionColDefById, sectionColGroupDefById }
-
