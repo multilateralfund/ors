@@ -17,6 +17,7 @@ const sectionColDefById: Record<string, ColDef> = {
         order: 1,
       },
     },
+    initialWidth: 200,
   },
   destruction: {
     ...colDefById['destruction'],

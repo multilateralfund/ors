@@ -15,7 +15,7 @@ const colDefById: Record<string, ColDef> = {
     pinned: mobile ? undefined : 'left',
   },
   facility: {
-    initialWidth: mobile ? 160 : 200,
+    initialWidth: mobile ? 160 : 300,
     minWidth: 160,
     pinned: mobile ? undefined : 'left',
   },
@@ -47,28 +47,28 @@ const colDefById: Record<string, ColDef> = {
     initialWidth: mobile ? 200 : 250,
   },
   total_amount_generated: {
-    initialWidth: 120,
+    initialWidth: 250,
   },
   all_uses: {
     initialWidth: 140,
   },
   feedstock: {
-    initialWidth: 140,
+    initialWidth: 280,
   },
   feedstock_gc: {
-    initialWidth: 120,
+    initialWidth: 300,
   },
   feedstock_wpc: {
-    initialWidth: 120,
+    initialWidth: 250,
   },
   destruction: {
-    initialWidth: 140,
+    initialWidth: 280,
   },
   destruction_wpc: {
-    initialWidth: 120,
+    initialWidth: 250,
   },
   generated_emissions: {
-    initialWidth: 120,
+    initialWidth: 200,
   },
   ...getAdmsColDef(),
   ...getUsagesColDef(),
