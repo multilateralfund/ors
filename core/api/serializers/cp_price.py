@@ -52,6 +52,15 @@ class CPPricesBaseSerializer(BaseCPWChemicalSerializer):
 
         return value
 
+    def get_display_name(self, obj):
+        if obj.display_name:
+            return obj.display_name
+        if obj.substance:
+            return obj.substance.name
+        if obj.blend:
+            return obj.blend.name
+        return None
+
 
 class CPPricesSerializer(CPPricesBaseSerializer):
     class Meta(CPPricesBaseSerializer.Meta):
