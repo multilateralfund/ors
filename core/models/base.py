@@ -35,6 +35,10 @@ class AbstractWChemical(models.Model):
             return self.blend.get_display_name()
         return self.substance.name
 
+    def get_chemical_name(self):
+        # pylint: disable=E1101
+        return self.substance.name if self.substance else self.blend.name
+
     def get_group_name(self):
         # pylint: disable=E1101
         if self.blend:
