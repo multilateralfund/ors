@@ -8,7 +8,7 @@ class CountrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Country
-        fields = ["id", "name", "abbr", "name_alt", "iso3", "has_cp_report"]
+        fields = ["id", "name", "abbr", "name_alt", "iso3", "has_cp_report", "is_a2"]
 
     def get_has_cp_report(self, obj):
         return getattr(obj, "has_cp_report", None)

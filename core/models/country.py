@@ -46,6 +46,7 @@ class Country(models.Model):
         max_length=16, choices=LocationType.choices, default=LocationType.COUNTRY
     )
     import_id = models.IntegerField(null=True, blank=True)
+    is_a2 = models.BooleanField(default=False)
 
     objects = CountryManager()
 

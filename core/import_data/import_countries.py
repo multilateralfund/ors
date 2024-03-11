@@ -10,6 +10,19 @@ from core.models import Country
 
 logger = logging.getLogger(__name__)
 
+A2_COUNTRY_LIST = [
+"Bulgaria",
+"Canada",
+"Croatia",
+"Estonia",
+"France",
+"Kazakhstan",
+"Romania",
+"Ukraine",
+"United Arab Emirates",
+"United States of America",
+"Yugoslavia",
+]
 
 def parse_country_lvc_file(file_path):
     """
@@ -192,6 +205,18 @@ def parse_subregions_file(file_path):
             defaults=subregion_data,
         )
 
+def set_a2_countries():
+    """
+    Set A2 countries
+    """
+    for country_name in A2_COUNTRY_LIST:
+        country = Country.objects.find_by_name(country_name)
+        if country:
+            country.is_a2 = True
+            country.save()
+        else:
+            logger.error(f"Country {country_name} not found => A2 not set")
+
 
 @transaction.atomic
 def import_countries():
@@ -205,3 +230,4 @@ def import_countries():
     logger.info("✔ countries json parsed")
     parse_countries_xlsx_file(IMPORT_RESOURCES_DIR / "countries.xlsx", country_lvc)
     logger.info("✔ countries xlsx parsed")
+    set_a2_countries()
