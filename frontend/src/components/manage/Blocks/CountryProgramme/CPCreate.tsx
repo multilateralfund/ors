@@ -191,7 +191,7 @@ const CPCreate: React.FC = () => {
   const { report } = useStore((state) => state.cp_reports)
 
   const countries: WidgetCountry[] = useStore((state) => [
-    ...getResults(state.common.countries_cp_report.data).results.map(
+    ...getResults(state.common.countries_for_create.data).results.map(
       (country) => ({
         id: country.id,
         label: country.name,

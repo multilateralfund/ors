@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-before-interactive-script-outside-document */
 import { ApiSubstance } from '@ors/types/api_substances'
+import { Country } from '@ors/types/store'
 /* eslint-disable @next/next/no-css-tags */
 import type { Metadata } from 'next'
 
@@ -107,9 +108,12 @@ export default async function RootLayout({
 
     common = {
       agencies: getInitialSliceData(agencies),
-      countries: getInitialSliceData(countries),
-      countries_cp_report: getInitialSliceData(
-        countries.filter((c: any) => !!c.has_cp_report),
+      countries: getInitialSliceData<Country[]>(countries),
+      countries_for_create: getInitialSliceData<Country[]>(
+        countries.filter((c: Country) => c.has_cp_report && !c.is_a2),
+      ),
+      countries_for_listing: getInitialSliceData<Country[]>(
+        countries.filter((c: Country) => c.has_cp_report),
       ),
       settings: getInitialSliceData(settings),
     }

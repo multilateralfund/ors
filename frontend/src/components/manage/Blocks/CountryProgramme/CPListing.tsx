@@ -121,7 +121,7 @@ function Item({ item, showCountry, showYear }: any) {
 function GeneralSection(props: SectionProps) {
   // const shouldScroll = useRef(false)
   const listing = useRef<any>()
-  const countries = useStore((state) => state.common.countries_cp_report.data)
+  const countries = useStore((state) => state.common.countries_for_listing.data)
   const countriesById = new Map<number, any>(
     countries.map((country: any) => [country.id, country]),
   )
@@ -376,7 +376,9 @@ function CountrySection(props: SectionProps) {
     rowsPerPage: PER_PAGE_COUNTRY,
   })
   const [ordering, setOrdering] = useState<'asc' | 'desc'>('asc')
-  const countries = useStore((state) => state.common.countries_cp_report.data)
+  const countries = useStore((state) => {
+    return state.common.countries_for_listing.data
+  })
   const { data, loading, setParams } = useApi({
     // onSuccess: () => {
     //   if (shouldScroll.current) {

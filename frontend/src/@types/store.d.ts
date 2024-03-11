@@ -83,7 +83,8 @@ export interface UserSlice
 export interface CommonSlice {
   agencies: SliceData
   countries: SliceData<Country[]>
-  countries_cp_report: SliceData<Country[]>
+  countries_for_create: SliceData<Country[]>
+  countries_for_listing: SliceData<Country[]>
   settings: SliceData<Settings>
 }
 
@@ -112,6 +113,7 @@ export type Country = {
   abbr: string
   has_cp_report: boolean
   id: number
+  is_a2: boolean
   iso3: string
   name: string
   name_alt: string

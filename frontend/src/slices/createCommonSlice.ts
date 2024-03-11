@@ -15,9 +15,13 @@ export const createCommonSlice = ({
       ...defaultSliceData,
       ...(initialState?.common?.countries || {}),
     },
-    countries_cp_report: {
+    countries_for_create: {
       ...defaultSliceData,
-      ...(initialState?.common?.countries_cp_report || {}),
+      ...(initialState?.common?.countries_for_create || {}),
+    },
+    countries_for_listing: {
+      ...defaultSliceData,
+      ...(initialState?.common?.countries_for_listing || {}),
     },
     settings: {
       ...defaultSliceData,
