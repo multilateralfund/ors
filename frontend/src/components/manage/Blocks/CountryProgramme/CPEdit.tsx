@@ -124,24 +124,34 @@ function CPEdit(props: { id: null | number }) {
   const tabsEl = React.useRef<HTMLDivElement>(null)
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
-  const { blends, report, substances } = useStore((state) => state.cp_reports)
+  const { report } = useStore((state) => state.cp_reports)
 
   const Sections = {
     section_a: useMakeClassInstance<SectionA>(SectionA, [
       report.data?.section_a,
-      substances.data,
+      report.emptyForm.data.substance_rows.section_a.filter(
+        (item) => item.substance_id,
+      ),
       null,
     ]),
     section_b: useMakeClassInstance<SectionB>(SectionB, [
       report.data?.section_b,
-      substances.data,
-      blends.data,
+      report.emptyForm.data.substance_rows.section_b.filter(
+        (item) => item.substance_id,
+      ),
+      report.emptyForm.data.substance_rows.section_b.filter(
+        (item) => item.blend_id,
+      ),
       null,
     ]),
     section_c: useMakeClassInstance<SectionC>(SectionC, [
       report.data?.section_c,
-      substances.data,
-      blends.data,
+      report.emptyForm.data.substance_rows.section_c.filter(
+        (item) => item.substance_id,
+      ),
+      report.emptyForm.data.substance_rows.section_c.filter(
+        (item) => item.blend_id,
+      ),
       null,
     ]),
     section_d: useMakeClassInstance<SectionD>(SectionD, [

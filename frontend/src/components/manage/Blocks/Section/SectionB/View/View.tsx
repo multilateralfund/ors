@@ -1,3 +1,8 @@
+import type { TableProps } from '../../../CountryProgramme/CPView'
+import { CPReport } from '@ors/types/api_country-programme_records'
+import { EmptyReportType } from '@ors/types/api_empty-form'
+import { ReportVariant } from '@ors/types/variants'
+
 import { useRef, useState } from 'react'
 
 import { Alert } from '@mui/material'
@@ -17,7 +22,7 @@ function getGroupName(substance: any) {
   return substance.group || 'Other'
 }
 
-function getRowData(report: any) {
+function getRowData(report: CPReport) {
   const variant = getVariant(report)
   let rowData: Array<any> = []
   const dataByGroup: Record<string, any> = {}
@@ -69,7 +74,12 @@ function getPinnedRowData(rowData: any) {
     : []
 }
 
-export default function SectionBView(props: any) {
+export default function SectionBView(props: {
+  TableProps: TableProps
+  emptyForm: EmptyReportType
+  report: CPReport
+  variant: ReportVariant
+}) {
   const { TableProps, emptyForm, report, variant } = props
   const gridOptions = useGridOptions({
     model: variant.model,
@@ -78,6 +88,7 @@ export default function SectionBView(props: any) {
   const grid = useRef<any>()
   const [rowData] = useState(() => getRowData(report))
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
+
   return (
     <>
       <Table

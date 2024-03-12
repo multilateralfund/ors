@@ -1,4 +1,5 @@
 import { EmptyReportType } from '@ors/types/api_empty-form'
+import { ReportVariant } from '@ors/types/variants'
 
 import { useMemo, useRef, useState } from 'react'
 
@@ -33,7 +34,7 @@ export type RowData = DeserializedDataB & {
   tooltip?: boolean
 }
 
-function getRowData(data: SectionB['data']): RowData[] {
+function getRowData(data: SectionB['data'], variant: ReportVariant): RowData[] {
   let rowData: RowData[] = []
   const dataByGroup: Record<string, any[]> = {}
   const groups: Array<string> = []
@@ -59,7 +60,7 @@ function getRowData(data: SectionB['data']): RowData[] {
           rowType: 'group',
         },
       ],
-      group.startsWith('Annex F')
+      group.startsWith('Annex F') && includes(variant?.model, 'IV')
         ? [
             {
               display_name: 'Controlled substances',
@@ -107,7 +108,7 @@ export default function SectionBCreate(props: {
     title: string
   }
   setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
-  variant: { maxYear: number; minYear: number; model: string }
+  variant: ReportVariant
 }) {
   const { enqueueSnackbar } = useSnackbar()
   const { Section, TableProps, emptyForm, form, setForm, variant } = props
@@ -124,7 +125,7 @@ export default function SectionBCreate(props: {
   )
 
   const grid = useRef<any>()
-  const [initialRowData] = useState(() => getRowData(form.section_b))
+  const [initialRowData] = useState(() => getRowData(form.section_b, variant))
 
   const [addChemicalModal, setAddChemicalModal] = useState(false)
   const [createBlendModal, setCreateBlendModal] = useState(false)

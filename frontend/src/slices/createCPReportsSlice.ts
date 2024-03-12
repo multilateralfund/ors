@@ -62,9 +62,8 @@ export const getVariant = (report: CPReport | null): ReportVariant | null => {
 
 function mapUsage(
   usage: EmptyReportUsageColumn,
-  report: CPReport | null,
-  view = true,
   variant: ReportVariant | null,
+  view = true,
 ): ColDef {
   const children = usage.children || []
   return {
@@ -79,9 +78,7 @@ function mapUsage(
       : {}),
     ...(children.length
       ? {
-          children: map(children, (usage) =>
-            mapUsage(usage, report, view, variant),
-          ),
+          children: map(children, (usage) => mapUsage(usage, variant, view)),
           headerGroupComponent: 'agColumnHeaderGroup',
           marryChildren: true,
         }
@@ -115,7 +112,7 @@ export const createCPReportsSlice = ({
       }
     },
     fetchEmptyForm: async (id, view = true) => {
-      const report = view ? getSlice<CPReport>('cp_reports.report.data') : null
+      const report = getSlice<CPReport>('cp_reports.report.data')
       const variant = getVariant(report)
       const options = {
         removeCacheTimeout: 60,
@@ -138,14 +135,14 @@ export const createCPReportsSlice = ({
               ...(usage_columns.section_a
                 ? {
                     section_a: usage_columns.section_a.map((usage) =>
-                      mapUsage(usage, report, view, variant),
+                      mapUsage(usage, variant, view),
                     ),
                   }
                 : {}),
               ...(usage_columns.section_b
                 ? {
                     section_b: usage_columns.section_b.map((usage) =>
-                      mapUsage(usage, report, view, variant),
+                      mapUsage(usage, variant, view),
                     ),
                   }
                 : {}),

@@ -1,5 +1,5 @@
 .MuiPaper-root {
-  @apply border-mui-paper-border transition duration-300;
+  @apply border-mui-paper-border duration-300 transition;
   @apply rounded border border-solid;
 }
 

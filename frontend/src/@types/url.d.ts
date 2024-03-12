@@ -15,12 +15,12 @@ type _PathParam<Path extends string> =
   Path extends `${infer L}/${infer R}`
     ? _PathParam<L> | _PathParam<R>
     : // find params after `:`
-    Path extends `:${infer Param}`
-    ? Param extends `${infer Optional}?`
-      ? Optional
-      : Param
-    : // otherwise, there aren't any params present
-      never
+      Path extends `:${infer Param}`
+      ? Param extends `${infer Optional}?`
+        ? Optional
+        : Param
+      : // otherwise, there aren't any params present
+        never
 
 /**
  * Examples:
@@ -36,10 +36,10 @@ type PathParam<Path extends string> =
   Path extends '*' | '/*'
     ? '*'
     : // look for wildcard at the end of the path
-    Path extends `${infer Rest}/*`
-    ? '*' | _PathParam<Rest>
-    : // look for params in the absence of wildcards
-      _PathParam<Path>
+      Path extends `${infer Rest}/*`
+      ? '*' | _PathParam<Rest>
+      : // look for params in the absence of wildcards
+        _PathParam<Path>
 
 // Attempt to parse the given string segment. If it fails, then just return the
 // plain string type as a default fallback. Otherwise return the union of the
