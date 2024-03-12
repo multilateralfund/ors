@@ -167,7 +167,7 @@ def import_usages_format(file_path):
                 "usage": usage,
                 "time_frame": time_frame,
                 "section": section,
-                "sort_order": usage.sort_order,
+                "sort_order": row["sort_order"],
             }
             cp_fomats.append(CPReportFormatColumn(**cp_format_data))
 

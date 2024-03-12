@@ -64,7 +64,7 @@ class EmptyFormView(views.APIView):
         cp_report_formats = (
             CPReportFormatColumn.objects.get_for_year(year)
             .select_related("usage")
-            .order_by("section", "usage__sort_order")
+            .order_by("section", "sort_order")
         )
         # group usages by section
         section_usages = {}
