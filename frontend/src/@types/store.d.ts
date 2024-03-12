@@ -29,7 +29,7 @@ export interface CPReportsSlice {
   blends: SliceData<ApiBlend[]>
   fetchBundle: (id: null | number, view?: boolean, archive?: boolean) => void
   fetchEmptyForm: (id: null | number, view?: boolean) => void
-  fetchReport: (id: null | number, archive?: boolean) => void
+  fetchReport: (id: null | number, archive?: boolean) => Promise<void>
   fetchVersions: (id: null | number, archive?: boolean) => void
   report: Report
   setReport: (report: Partial<Report>) => void

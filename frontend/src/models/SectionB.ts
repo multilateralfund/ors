@@ -1,4 +1,4 @@
-import { EmptyFormSubstance } from '@ors/types/api_empty-form'
+import { EmptyReportSubstance } from '@ors/types/api_empty-form'
 
 import Section, { DeserializedSubstance, Field } from './Section'
 
@@ -21,8 +21,8 @@ export default class SectionB extends Section<
 > {
   constructor(
     initialData: Array<DeserializedDataB> = [],
-    substances: Array<EmptyFormSubstance>,
-    blends: Array<EmptyFormSubstance>,
+    substances: Array<EmptyReportSubstance>,
+    blends: Array<EmptyReportSubstance>,
     localStorageKey: null | string,
   ) {
     const formFields = {

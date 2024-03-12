@@ -36,15 +36,15 @@ function getRowData(report: any) {
       [{ display_name: group, group, rowType: 'group' }],
       dataByGroup[group],
       group.startsWith('Blends')
-      ? [
-          {
-            display_name: 'Other',
-            group,
-            row_id: 'other-new_substance',
-            rowType: 'control',
-          },
-        ]
-      : [],
+        ? [
+            {
+              display_name: 'Other',
+              group,
+              row_id: 'other-new_substance',
+              rowType: 'control',
+            },
+          ]
+        : [],
       [{ display_name: 'Sub-total', group, rowType: 'subtotal' }],
     )
   })
@@ -66,7 +66,6 @@ export default function SectionBView(props: any) {
   const grid = useRef<any>()
   const [rowData] = useState(() => getRowData(report))
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
-
   return (
     <>
       <Table

@@ -26,9 +26,10 @@ import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
 import api, { formatApiUrl } from '@ors/helpers/Api/Api'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import { parseNumber } from '@ors/helpers/Utils/Utils'
+import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
-import { getSections, variants } from '.'
+import { getSections } from '.'
 
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 import {

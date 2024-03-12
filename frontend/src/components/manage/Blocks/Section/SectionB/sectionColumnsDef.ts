@@ -6,6 +6,9 @@ import { colDefById } from '@ors/config/Table/columnsDef'
 
 const sectionColDefById: Record<string, ColDef> = {
   ...colDefById,
+  'Refrigeration Manufacturing Other': {
+    initialWidth: 300,
+  },
   display_name: {
     ...colDefById['display_name'],
     cellRendererParams: (props: ICellRendererParams) => ({

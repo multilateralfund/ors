@@ -9,9 +9,10 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import { parseNumber } from '@ors/helpers/Utils/Utils'
+import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
-import { getSections, variants } from '.'
+import { getSections } from '.'
 
 const TableProps = {
   Toolbar: ({ section }: any) => {

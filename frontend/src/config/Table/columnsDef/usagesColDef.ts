@@ -21,7 +21,11 @@ export default function getUsagesColDef() {
       initialWidth: 132,
     },
     'Refrigeration Manufacturing AC': {
-      initialWidth: 105,
+      initialWidth: 130,
+    },
+    'Refrigeration Manufacturing AC IV': {
+      headerName: 'AC',
+      initialWidth: 80,
     },
     'Refrigeration Manufacturing Other': {
       headerComponentParams: {
@@ -35,7 +39,22 @@ export default function getUsagesColDef() {
       },
       initialWidth: 130,
     },
+    'Refrigeration Manufacturing Other IV': {
+      headerComponentParams: {},
+    },
     'Refrigeration Manufacturing Refrigeration': {
+      initialWidth: 120,
+    },
+    'Refrigeration Manufacturing Total IV': {
+      headerComponentParams: {
+        footnote: {
+          id: '5',
+          content:
+            'If break-down of consumption in manufacturing is not available, information in total can be provided.',
+          icon: true,
+          order: 5,
+        },
+      },
       initialWidth: 120,
     },
     total_usages: {

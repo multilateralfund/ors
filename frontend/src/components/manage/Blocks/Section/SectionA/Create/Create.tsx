@@ -1,4 +1,5 @@
 import { EmptyReportType } from '@ors/types/api_empty-form'
+import { ReportVariant } from '@ors/types/variants'
 
 import { useMemo, useRef, useState } from 'react'
 
@@ -18,7 +19,6 @@ import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import SectionA, { DeserializedDataA } from '@ors/models/SectionA'
 import { useStore } from '@ors/store'
 
-import { ReportVariant } from '../../../CountryProgramme'
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'

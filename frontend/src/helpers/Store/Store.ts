@@ -13,7 +13,7 @@ export const defaultSliceData: SliceData = {
   loading: false,
 }
 
-export function getSlice(path: PropertyPath): SliceData {
+export function getSlice<T>(path: PropertyPath): T {
   return get(store.current.getState(), path)
 }
 

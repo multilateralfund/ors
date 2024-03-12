@@ -1,3 +1,5 @@
+import { ConstantsType } from '@ors/types/variants'
+
 import { filter, includes } from 'lodash'
 
 import AdmBCreate from '@ors/components/manage/Blocks/Section/AdmB/Create/Create'
@@ -18,15 +20,6 @@ import SectionECreate from '@ors/components/manage/Blocks/Section/SectionE/Creat
 import SectionEView from '@ors/components/manage/Blocks/Section/SectionE/View/View'
 import SectionFCreate from '@ors/components/manage/Blocks/Section/SectionF/Create'
 import SectionFView from '@ors/components/manage/Blocks/Section/SectionF/View'
-
-type ConstantsType = {
-  [key in 'I' | 'II' | 'III' | 'IV' | 'V']?: {
-    [key in 'adm_d' | 'section_a' | 'section_c']?: {
-      label?: string
-      title?: string
-    }
-  }
-}
 
 const constants: ConstantsType = {
   I: undefined,
@@ -135,40 +128,6 @@ const components: {
     section_f: SectionFView,
   },
 }
-
-export type ReportVariant = {
-  maxYear: number
-  minYear: number
-  model: keyof ConstantsType
-}
-
-export const variants: ReportVariant[] = [
-  {
-    maxYear: 2004,
-    minYear: 1995,
-    model: 'I',
-  },
-  {
-    maxYear: 2011,
-    minYear: 2005,
-    model: 'II',
-  },
-  {
-    maxYear: 2018,
-    minYear: 2012,
-    model: 'III',
-  },
-  {
-    maxYear: 2021,
-    minYear: 2019,
-    model: 'IV',
-  },
-  {
-    maxYear: Infinity,
-    minYear: 2022,
-    model: 'V',
-  },
-]
 
 const DefaultComponent = () => <div>Not implemented</div>
 

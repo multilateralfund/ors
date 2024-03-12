@@ -1,6 +1,13 @@
+import { CPReport } from '@ors/types/api_country-programme_records'
+import {
+  EmptyReportType,
+  EmptyReportUsageColumn,
+} from '@ors/types/api_empty-form'
 import type { CPReportsSlice } from '@ors/types/store'
+import { ReportVariant } from '@ors/types/variants'
 
-import { filter, isNull, isUndefined, map, omit } from 'lodash'
+import { ColDef } from 'ag-grid-community'
+import { filter, map, omit } from 'lodash'
 
 import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
 
@@ -13,25 +20,53 @@ import {
 } from '@ors/helpers/Store/Store'
 import { CreateSliceProps } from '@ors/store'
 
-function filterUsage(usage: any, report: any) {
-  const year = report?.year || new Date().getFullYear()
-  const minYear = isNull(usage.min_year) ? -Infinity : usage.min_year
-  const maxYear = isNull(usage.max_year) ? Infinity : usage.max_year
-  if (
-    (minYear <= year && maxYear >= year) ||
-    isUndefined(minYear) ||
-    isUndefined(maxYear)
-  ) {
-    return true
+export const variants: ReportVariant[] = [
+  {
+    maxYear: 2004,
+    minYear: 1995,
+    model: 'I',
+  },
+  {
+    maxYear: 2011,
+    minYear: 2005,
+    model: 'II',
+  },
+  {
+    maxYear: 2018,
+    minYear: 2012,
+    model: 'III',
+  },
+  {
+    maxYear: 2021,
+    minYear: 2019,
+    model: 'IV',
+  },
+  {
+    maxYear: Infinity,
+    minYear: 2022,
+    model: 'V',
+  },
+]
+
+function getVariant(report: CPReport | null): ReportVariant | null {
+  let found = null
+  if (report) {
+    found = filter(
+      variants,
+      (variant) =>
+        variant.minYear <= report.year && variant.maxYear >= report.year,
+    )[0]
   }
-  return false
+  return found || null
 }
 
-function mapUsage(usage: any, report: any, view = true): any {
-  const children = filter(usage.children || [], (usage) =>
-    filterUsage(usage, report),
-  )
-
+function mapUsage(
+  usage: EmptyReportUsageColumn,
+  report: CPReport | null,
+  view = true,
+  variant: ReportVariant | null,
+): ColDef {
+  const children = usage.children || []
   return {
     id: usage.id,
     category: usage.columnCategory,
@@ -39,9 +74,14 @@ function mapUsage(usage: any, report: any, view = true): any {
     headerName: usage.headerName,
     initialWidth: defaultColDef.minWidth,
     ...(colDefById[usage.full_name] || {}),
+    ...(variant?.model
+      ? colDefById[`${usage.full_name} ${variant.model}`] || {}
+      : {}),
     ...(children.length
       ? {
-          children: map(children, (usage) => mapUsage(usage, report, view)),
+          children: map(children, (usage) =>
+            mapUsage(usage, report, view, variant),
+          ),
           headerGroupComponent: 'agColumnHeaderGroup',
           marryChildren: true,
         }
@@ -75,7 +115,8 @@ export const createCPReportsSlice = ({
       }
     },
     fetchEmptyForm: async (id, view = true) => {
-      const report = view ? getSlice('cp_reports.report.data') : null
+      const report = view ? getSlice<CPReport>('cp_reports.report.data') : null
+      const variant = getVariant(report)
       const options = {
         removeCacheTimeout: 60,
         withStoreCache: true,
@@ -88,23 +129,24 @@ export const createCPReportsSlice = ({
           options,
           path,
         },
-        parseResponse: (response) => {
+        parseResponse: (response: EmptyReportType) => {
           const { usage_columns } = response
+
           return {
             ...(response || {}),
             usage_columns: {
               ...(usage_columns.section_a
                 ? {
-                    section_a: usage_columns.section_a
-                      .filter((usage: any) => filterUsage(usage, report))
-                      .map((usage: any) => mapUsage(usage, report, view)),
+                    section_a: usage_columns.section_a.map((usage) =>
+                      mapUsage(usage, report, view, variant),
+                    ),
                   }
                 : {}),
               ...(usage_columns.section_b
                 ? {
-                    section_b: usage_columns.section_b
-                      .filter((usage: any) => filterUsage(usage, report))
-                      .map((usage: any) => mapUsage(usage, report, view)),
+                    section_b: usage_columns.section_b.map((usage) =>
+                      mapUsage(usage, report, view, variant),
+                    ),
                   }
                 : {}),
             },

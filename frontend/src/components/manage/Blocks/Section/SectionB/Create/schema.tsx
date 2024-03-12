@@ -1,4 +1,4 @@
-import { EmptyFormUsageColumn } from '@ors/types/api_empty-form'
+import { EmptyReportUsageColumn } from '@ors/types/api_empty-form'
 
 import { useMemo } from 'react'
 
@@ -28,7 +28,7 @@ function useGridOptions(props: {
   onRemoveSubstance: (props: ICellRendererParams) => void
   openAddChemicalModal: () => void
   openCreateBlendModal: () => void
-  usages: EmptyFormUsageColumn[]
+  usages: EmptyReportUsageColumn[]
 }) {
   const {
     model,

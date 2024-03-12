@@ -1,4 +1,7 @@
-import { EmptyFormSubstance, EmptyReportType } from '@ors/types/api_empty-form'
+import {
+  EmptyReportSubstance,
+  EmptyReportType,
+} from '@ors/types/api_empty-form'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 
@@ -49,7 +52,7 @@ function indexKey(elem: {
 
 function getRowData(
   data: SectionC['data'],
-  substanceRows: EmptyFormSubstance[],
+  substanceRows: EmptyReportSubstance[],
   substancePrices: SubstancePrices,
 ): RowData[] {
   let rowData: RowData[] = []

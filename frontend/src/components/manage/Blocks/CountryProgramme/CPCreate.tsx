@@ -36,9 +36,10 @@ import SectionC from '@ors/models/SectionC'
 import SectionD from '@ors/models/SectionD'
 import SectionE from '@ors/models/SectionE'
 import SectionF from '@ors/models/SectionF'
+import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
-import { SectionMeta, getSections, variants } from '.'
+import { SectionMeta, getSections } from '.'
 
 import { IoClose, IoExpand, IoLink } from 'react-icons/io5'
 
