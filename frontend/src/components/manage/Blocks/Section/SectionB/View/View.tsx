@@ -5,6 +5,7 @@ import { each, includes, union } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
+import { getVariant } from '@ors/slices/createCPReportsSlice'
 
 import useGridOptions from './schema'
 
@@ -17,6 +18,7 @@ function getGroupName(substance: any) {
 }
 
 function getRowData(report: any) {
+  const variant = getVariant(report)
   let rowData: Array<any> = []
   const dataByGroup: Record<string, any> = {}
   const groups: Array<string> = []
@@ -34,6 +36,16 @@ function getRowData(report: any) {
     rowData = union(
       rowData,
       [{ display_name: group, group, rowType: 'group' }],
+      group.startsWith('Annex F') && includes(variant?.model, 'IV')
+        ? [
+            {
+              display_name: 'Controlled substances',
+              group,
+              row_id: 'group-controlled_substances',
+              rowType: 'group',
+            },
+          ]
+        : [],
       dataByGroup[group],
       group.startsWith('Blends')
         ? [

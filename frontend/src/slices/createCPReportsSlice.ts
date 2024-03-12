@@ -48,7 +48,7 @@ export const variants: ReportVariant[] = [
   },
 ]
 
-function getVariant(report: CPReport | null): ReportVariant | null {
+export const getVariant = (report: CPReport | null): ReportVariant | null => {
   let found = null
   if (report) {
     found = filter(

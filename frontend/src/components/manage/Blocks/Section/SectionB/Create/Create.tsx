@@ -59,6 +59,16 @@ function getRowData(data: SectionB['data']): RowData[] {
           rowType: 'group',
         },
       ],
+      group.startsWith('Annex F')
+        ? [
+            {
+              display_name: 'Controlled substances',
+              group,
+              row_id: 'group-controlled_substances',
+              rowType: 'group',
+            },
+          ]
+        : [],
       dataByGroup[group],
       group.startsWith('Blends')
         ? [
