@@ -101,7 +101,7 @@ function useGridOptions(props: {
           }),
           field: 'display_name',
           headerClass: 'ag-text-left',
-          headerName: 'Substance',
+          headerName: includes('IV', model) ? '' : 'Substance',
         },
         ...(usages.length
           ? [
