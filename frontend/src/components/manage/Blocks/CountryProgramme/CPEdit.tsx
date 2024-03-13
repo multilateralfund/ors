@@ -352,6 +352,7 @@ function CPEdit(props: { id: null | number }) {
                     variant={variant}
                     TableProps={{
                       ...TableProps,
+                      context: { variant },
                       errors: errors[section.id],
                       report,
                       section,

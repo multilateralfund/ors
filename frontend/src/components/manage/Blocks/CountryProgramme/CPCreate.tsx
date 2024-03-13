@@ -1,6 +1,7 @@
 'use client'
 
 import type { TableProps } from '@ors/components/manage/Form/Table'
+import { ReportVariant } from '@ors/types/variants'
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -73,6 +74,7 @@ interface CPCreateTableProps extends TableProps {
 }
 
 export interface PassedCPCreateTableProps extends CPCreateTableProps {
+  context: { variant: ReportVariant }
   errors: FormErrors
   report: Report
   section:
@@ -471,6 +473,7 @@ const CPCreate: React.FC = () => {
                   variant={variant}
                   TableProps={{
                     ...TableProps,
+                    context: { variant },
                     errors: errors[section.id],
                     report,
                     section,

@@ -9,6 +9,27 @@ import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSke
 import AgTooltipComponent from '@ors/components/manage/AgComponents/AgTooltipComponent'
 import { parseNumber } from '@ors/helpers/Utils/Utils'
 
+const formatValue = (
+  value: number,
+  props: {
+    maximumFractionDigits?: number
+    minimumFractionDigits?: number
+  } = {},
+) => {
+  const maximumFractionDigits = props.maximumFractionDigits || 3
+  const minimumFractionDigits =
+    props.minimumFractionDigits || props.maximumFractionDigits || 2
+
+  const valueToAvoidRounding =
+    Math.floor(value * 10 ** maximumFractionDigits) /
+    10 ** maximumFractionDigits
+
+  return valueToAvoidRounding.toLocaleString(undefined, {
+    maximumFractionDigits,
+    minimumFractionDigits,
+  })
+}
+
 export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
   if (props.data.rowType === 'skeleton') {
     return <AgSkeletonCellRenderer {...props} />
@@ -23,7 +44,12 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
     includes(['group', 'control'], props.data.rowType) ||
     includes(props.data.excluded_usages, usageId)
   ) {
-    return null
+    return includes(props?.context?.variant.model, 'IV') &&
+      !includes(['group', 'control'], props.data.rowType) ? (
+      <Typography className={props.className} component="span" lineHeight={1}>
+        {formatValue(0)}
+      </Typography>
+    ) : null
   }
   if (aggFunc && includes(['subtotal', 'total'], props.data.rowType)) {
     value = aggFunc({ ...props })
@@ -58,18 +84,7 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
     value = 0
   }
 
-  const maximumFractionDigits = props.maximumFractionDigits || 3
-  const minimumFractionDigits =
-    props.minimumFractionDigits || props.maximumFractionDigits || 2
-
-  const valueToAvoidRounding =
-    Math.floor(value * 10 ** maximumFractionDigits) /
-    10 ** maximumFractionDigits
-
-  const formattedValue = valueToAvoidRounding.toLocaleString(undefined, {
-    maximumFractionDigits,
-    minimumFractionDigits,
-  })
+  const formattedValue = formatValue(value, props)
 
   return (
     <AgTooltipComponent {...props} value={formattedValue}>
