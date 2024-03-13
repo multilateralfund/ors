@@ -44,12 +44,7 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
     includes(['group', 'control'], props.data.rowType) ||
     includes(props.data.excluded_usages, usageId)
   ) {
-    return includes(props?.context?.variant.model, 'IV') &&
-      !includes(['group', 'control'], props.data.rowType) ? (
-      <Typography className={props.className} component="span" lineHeight={1}>
-        {formatValue(0)}
-      </Typography>
-    ) : null
+    return null
   }
   if (aggFunc && includes(['subtotal', 'total'], props.data.rowType)) {
     value = aggFunc({ ...props })

@@ -74,7 +74,16 @@ interface CPCreateTableProps extends TableProps {
 }
 
 export interface PassedCPCreateTableProps extends CPCreateTableProps {
-  context: { variant: ReportVariant }
+  context: {
+    section:
+      | SectionA['data']
+      | SectionB['data']
+      | SectionC['data']
+      | SectionD['data']
+      | SectionE['data']
+      | SectionF['data']
+    variant: ReportVariant
+  }
   errors: FormErrors
   report: Report
   section:
@@ -205,29 +214,29 @@ const CPCreate: React.FC = () => {
   const Sections = {
     section_a: useMakeClassInstance<SectionA>(SectionA, [
       [],
-      report.emptyForm.data.substance_rows.section_a.filter(
+      report.emptyForm.data.substance_rows.section_a?.filter(
         (item) => item.substance_id,
-      ),
+      ) || [],
       'section_a_create',
     ]),
     section_b: useMakeClassInstance<SectionB>(SectionB, [
       [],
-      report.emptyForm.data.substance_rows.section_b.filter(
+      report.emptyForm.data.substance_rows.section_b?.filter(
         (item) => item.substance_id,
-      ),
-      report.emptyForm.data.substance_rows.section_b.filter(
+      ) || [],
+      report.emptyForm.data.substance_rows.section_b?.filter(
         (item) => item.blend_id,
-      ),
+      ) || [],
       'section_b_create',
     ]),
     section_c: useMakeClassInstance<SectionC>(SectionC, [
       [],
-      report.emptyForm.data.substance_rows.section_c.filter(
+      report.emptyForm.data.substance_rows.section_c?.filter(
         (item) => item.substance_id,
-      ),
-      report.emptyForm.data.substance_rows.section_c.filter(
+      ) || [],
+      report.emptyForm.data.substance_rows.section_c?.filter(
         (item) => item.blend_id,
-      ),
+      ) || [],
       'section_c_create',
     ]),
     section_d: useMakeClassInstance<SectionD>(SectionD, [
@@ -473,7 +482,7 @@ const CPCreate: React.FC = () => {
                   variant={variant}
                   TableProps={{
                     ...TableProps,
-                    context: { variant },
+                    context: { section, variant },
                     errors: errors[section.id],
                     report,
                     section,

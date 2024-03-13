@@ -325,7 +325,7 @@ function CPView(props: { archive?: boolean; id: string }) {
                   variant={variant}
                   TableProps={{
                     ...TableProps,
-                    context: { variant },
+                    context: { section, variant },
                     report,
                     section,
                   }}
