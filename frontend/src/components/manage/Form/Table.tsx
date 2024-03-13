@@ -309,11 +309,6 @@ function Table(props: TableProps) {
 
   useEffect(() => {
     if (!grid.current?.api) return
-    grid.current.api.setGridOption('context', props.context)
-  }, [props.context])
-
-  useEffect(() => {
-    if (!grid.current?.api) return
     if (loading) {
       grid.current.api.showLoadingOverlay()
     } else if (!loading && props.rowData?.length) {
@@ -393,6 +388,7 @@ function Table(props: TableProps) {
             alwaysShowHorizontalScroll={true}
             animateRows={false}
             components={components}
+            context={props.context}
             defaultColDef={defaultColDef}
             defaultColGroupDef={props?.defaultColGroupDef || globalColGroupDef}
             enableCellTextSelection={true}
