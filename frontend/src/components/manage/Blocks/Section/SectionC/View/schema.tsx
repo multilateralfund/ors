@@ -8,7 +8,8 @@ import { defaultColDef } from '@ors/config/Table/columnsDef'
 
 import { sectionColDefById } from '../sectionColumnsDef'
 
-function useGridOptions() {
+function useGridOptions(props: { model: string }) {
+  const { model } = props
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
       {
@@ -23,7 +24,7 @@ function useGridOptions() {
         }),
         field: 'display_name',
         headerClass: 'ag-text-left',
-        headerName: 'Substance',
+        headerName: includes(['IV'], model) ? 'Description' : 'Substance',
         ...sectionColDefById['display_name'],
       },
       {

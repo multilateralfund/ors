@@ -22,10 +22,11 @@ import { RowData } from './Create'
 import { IoTrash } from 'react-icons/io5'
 
 function useGridOptions(props: {
-  onRemoveSubstance: any
-  openAddChemicalModal: any
+  model: string
+  onRemoveSubstance: (props: ICellRendererParams) => void
+  openAddChemicalModal: () => void
 }) {
-  const { onRemoveSubstance, openAddChemicalModal } = props
+  const { model, onRemoveSubstance, openAddChemicalModal } = props
 
   const gridOptions: GridOptions = useMemo(
     () => ({
@@ -67,7 +68,7 @@ function useGridOptions(props: {
           }),
           field: 'display_name',
           headerClass: 'ag-text-left',
-          headerName: 'Substance',
+          headerName: includes(['IV'], model) ? 'Description' : 'Substance',
           ...sectionColDefById['display_name'],
         },
         {

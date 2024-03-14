@@ -1,3 +1,7 @@
+import type { TableProps } from '@ors/components/manage/Blocks/CountryProgramme/CPView'
+import { CPReport } from '@ors/types/api_country-programme_records'
+import { ReportVariant } from '@ors/types/variants'
+
 import { useRef, useState } from 'react'
 
 import { Alert } from '@mui/material'
@@ -5,6 +9,7 @@ import { each, includes, union } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
+import SectionC from '@ors/models/SectionC'
 
 import useGridOptions from './schema'
 
@@ -34,9 +39,22 @@ function getRowData(report: any) {
   return rowData
 }
 
-export default function SectionCView(props: any) {
-  const { TableProps, report } = props
-  const gridOptions = useGridOptions()
+export default function SectionCView(props: {
+  TableProps: TableProps & {
+    context: {
+      section: SectionC['data']
+      variant: ReportVariant
+    }
+    report: CPReport
+    section: SectionC['data']
+  }
+  report: CPReport
+  variant: ReportVariant
+}) {
+  const { TableProps, report, variant } = props
+  const gridOptions = useGridOptions({
+    model: variant.model,
+  })
   const grid = useRef<any>()
   const [rowData] = useState(() => getRowData(report))
 
