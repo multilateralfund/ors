@@ -63,7 +63,7 @@ function Legend() {
         <span>Draft</span>
       </div>
       <div className="flex items-center gap-x-2">
-        <span className="inline-block h-4 w-4 rounded-full bg-success" />
+        <span className="inline-block h-4 w-4 rounded-full bg-secondary" />
         <span>Final</span>
       </div>
     </div>
@@ -94,7 +94,7 @@ function Item({ item, showCountry, showYear }: any) {
               className={cx(
                 'inline-block max-w-full font-semibold hover:text-primary md:truncate',
                 {
-                  'text-success': item.status === 'final',
+                  'text-secondary': item.status === 'final',
                   'text-typography-secondary': !item.status,
                   'text-warning': item.status === 'draft',
                 },
@@ -222,7 +222,7 @@ function GeneralSection(props: SectionProps) {
         </div>
         <Legend />
         <div className="flex items-center gap-2">
-          <Typography className="text-typography-secondary" component="span">
+          <Typography className="text-typography-primary" component="span">
             Ordering
           </Typography>
           <IconButton
@@ -430,10 +430,11 @@ function CountrySection(props: SectionProps) {
         </div>
         <Legend />
         <div className="flex items-center gap-2">
-          <Typography className="text-typography-secondary" component="span">
+          <Typography className="text-typography-primary" component="span">
             Ordering
           </Typography>
           <IconButton
+            className="bg-transparent"
             onClick={() => {
               const newOrder = ordering === 'asc' ? 'desc' : 'asc'
               setOrdering(newOrder)
@@ -454,7 +455,7 @@ function CountrySection(props: SectionProps) {
           <Grid key={row.id} lg={3} sm={6} xs={12} item>
             <Box className="h-full p-2">
               <Typography
-                className="mb-4 inline-flex cursor-pointer items-center gap-2 px-4 font-normal"
+                className="my-3 inline-flex cursor-pointer items-center gap-2 px-4 text-xl font-bold"
                 component="p"
                 variant="h6"
                 onClick={() => {
@@ -467,6 +468,7 @@ function CountrySection(props: SectionProps) {
                 {row.group}
                 <IoArrowForward size={20} />
               </Typography>
+              <hr className="mx-4 mb-6 border-b-0 border-gray-50/25" />
               <Listing
                 className="mb-3"
                 Item={Item}
@@ -569,7 +571,7 @@ function YearSection(props: SectionProps) {
         </div>
         <Legend />
         <div className="flex items-center gap-2">
-          <Typography className="text-typography-secondary" component="span">
+          <Typography className="text-typography-primary" component="span">
             Ordering
           </Typography>
           <IconButton
@@ -726,12 +728,14 @@ export default function CPListing() {
   return (
     <>
       <div className="mb-4 flex items-center justify-between gap-x-4">
-        <div className="flex items-center gap-x-4">
-          <Typography className="text-xl font-medium text-typography-secondary">
+        <div className="flex flex-col gap-x-4">
+          <Typography className="-mb-2 text-sm font-medium uppercase">
             Group by:
           </Typography>
           <Tabs
+            TabIndicatorProps={{ style: { visibility: 'hidden' } }}
             aria-label="country programme listing"
+            textColor="primary"
             value={activeSection}
             onChange={(event: React.SyntheticEvent, newSection: number) => {
               setActiveSection(newSection)
@@ -748,7 +752,12 @@ export default function CPListing() {
             ))}
           </Tabs>
         </div>
-        <Link href="/country-programme/create" variant="contained" button>
+        <Link
+          color="secondary"
+          href="/country-programme/create"
+          variant="contained"
+          button
+        >
           New submission
         </Link>
       </div>

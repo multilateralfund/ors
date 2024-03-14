@@ -12,9 +12,9 @@ export default function IconButton({
   return (
     <Button
       className={cx(
-        'min-w-fit rounded-sm border border-solid border-mui-default-border p-[6px] hover:border-typography',
+        'min-w-fit rounded-lg border border-solid border-primary p-[6px] hover:border-typography',
         {
-          'bg-action-highlight text-typography-secondary': isActive,
+          'bg-action-highlight text-typography-primary': isActive,
           'bg-action-highlight/10 text-typography-faded theme-dark:bg-action-highlight/20':
             !isActive,
         },

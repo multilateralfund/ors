@@ -22,6 +22,18 @@
   @apply text-error;
 }
 
+.MuiTab-root {
+  @apply mt-0 py-0 font-bold;
+}
+
+.MuiTab-root.Mui-selected {
+  @apply text-primary;
+}
+
+.MuiTab-textColorPrimary {
+  @apply text-gray-400;
+}
+
 .MuiButtonBase-root.MuiTab-root.MuiTab-error::after {
   content: '';
   width: 100%;

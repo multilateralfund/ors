@@ -68,18 +68,18 @@ const originalColors = {
       contrastText: '#ffffff',
     },
     secondary: {
-      DEFAULT: '#333333',
+      DEFAULT: '#0095D5',
       contrastText: '#ffffff',
     },
     success: {
       DEFAULT: '#36A41D',
     },
     typography: {
-      DEFAULT: 'rgba(255, 255, 255, 1)',
+      DEFAULT: 'rgba(0, 42, 60, 1)',
       disabled: 'rgba(255, 255, 255, 0.4)',
       faded: 'rgba(255, 255, 255, 0.5)',
-      primary: 'rgba(255, 255, 255, 1)',
-      secondary: 'rgba(255, 255, 255, 0.7)',
+      primary: 'rgba(0, 42, 60, 1)',
+      secondary: 'rgba(0, 149, 213, 1)',
     },
     warning: {
       DEFAULT: '#FF8A00',
@@ -119,11 +119,11 @@ const originalColors = {
       },
     },
     primary: {
-      DEFAULT: '#0095D5',
+      DEFAULT: '#002A3C',
       contrastText: '#ffffff',
     },
     secondary: {
-      DEFAULT: gray[700],
+      DEFAULT: '#0095D5',
       contrastText: '#ffffff',
     },
     success: {
@@ -134,7 +134,7 @@ const originalColors = {
       disabled: gray[400],
       faded: gray[500],
       primary: gray[900],
-      secondary: gray[700],
+      secondary: '#0095D5',
     },
     warning: {
       DEFAULT: '#FF8A00',

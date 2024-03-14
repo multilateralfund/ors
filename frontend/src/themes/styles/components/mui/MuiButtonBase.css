@@ -1,0 +1,3 @@
+.MuiButtonBase-root {
+  @apply rounded-lg;
+}

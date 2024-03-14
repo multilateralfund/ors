@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
-import { Box, Typography } from '@mui/material'
+import { Box, Divider, Typography } from '@mui/material'
 import cx from 'classnames'
 import { AnimatePresence } from 'framer-motion'
 import { isFunction } from 'lodash'
@@ -15,6 +15,8 @@ import UnstyledLink, { LinkProps } from '@ors/components/ui/Link/Link'
 import { formatApiUrl } from '@ors/helpers/Api/Api'
 import { matchPath } from '@ors/helpers/Url/Url'
 import { useStore } from '@ors/store'
+
+import { IoSettingsOutline } from 'react-icons/io5'
 
 function Link({
   children,
@@ -52,12 +54,19 @@ export default function Header() {
         id="header"
         className="rounded-none border-0 px-0 pb-0 pt-4"
         component="nav"
+        style={{ backgroundColor: '#e6f4fb' }}
       >
         <div className="container flex w-full items-center justify-between pb-4">
-          <div className="flex items-center gap-x-12">
+          <div className="flex items-center gap-x-8">
             <UnstyledLink href="/">
               <Logo />
             </UnstyledLink>
+            <Divider
+              className="my-5 border-2 border-secondary"
+              orientation="vertical"
+              variant="middle"
+              flexItem
+            />
             <Typography
               className="hidden text-typography-secondary md:block"
               component="p"
@@ -73,7 +82,10 @@ export default function Header() {
               href={formatApiUrl('/admin/')}
               button
             >
-              Admin
+              <div className="flex flex-row items-center justify-between gap-x-2 text-xl font-normal uppercase">
+                <IoSettingsOutline className="text-secondary" />
+                Admin
+              </div>
             </UnstyledLink>
             <ProfileDropdown className="ltr:mr-2 rtl:ml-2" />
             {/* {__DEVELOPMENT__ && <ThemeSelector />} */}

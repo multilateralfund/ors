@@ -1,4 +1,6 @@
 .MuiBox-root {
   @apply border-mui-box-border bg-mui-box-background duration-300 transition;
-  @apply rounded border border-solid p-4 shadow-sm;
+  @apply rounded rounded-lg border border-solid p-4;
+
+  box-shadow: 0 4px 12px 0 rgb(0 0 0 / 15%);
 }
