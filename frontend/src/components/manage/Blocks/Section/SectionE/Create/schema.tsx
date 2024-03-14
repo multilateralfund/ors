@@ -6,6 +6,7 @@ import cx from 'classnames'
 import { includes } from 'lodash'
 
 import { defaultColDef } from '@ors/config/Table/columnsDef'
+import { NON_EDITABLE_ROWS } from '@ors/config/Table/columnsDef/settings'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
@@ -153,8 +154,7 @@ function useGridOptions(props: {
       defaultColDef: {
         autoHeight: true,
         cellClass: 'ag-text-right',
-        editable: (props) =>
-          !includes(['total', 'control'], props.data.rowType),
+        editable: (props) => !includes(NON_EDITABLE_ROWS, props.data.rowType),
         headerClass: 'ag-text-center',
         minWidth: defaultColDef.minWidth,
         resizable: true,

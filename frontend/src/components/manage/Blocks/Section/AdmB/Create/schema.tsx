@@ -9,6 +9,7 @@ import {
   colDefById,
   defaultColDef,
 } from '@ors/config/Table/columnsDef'
+import { NON_EDITABLE_ROWS } from '@ors/config/Table/columnsDef/settings'
 
 function useGridOptions(props: { adm_columns: any }) {
   const { adm_columns } = props
@@ -90,7 +91,7 @@ function useGridOptions(props: { adm_columns: any }) {
         // cellClass: 'ag-text-left',
         editable: (props) =>
           includes(props.data?.excluded_columns || [], props.colDef.id) &&
-          !includes(['control', 'group', 'hashed'], props.data.rowType),
+          !includes(NON_EDITABLE_ROWS, props.data.rowType),
         headerClass: 'ag-text-center',
         minWidth: defaultColDef.minWidth,
         resizable: true,

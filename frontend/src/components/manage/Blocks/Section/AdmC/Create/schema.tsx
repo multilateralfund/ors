@@ -9,6 +9,7 @@ import {
   colDefById,
   defaultColDef,
 } from '@ors/config/Table/columnsDef'
+import { NON_EDITABLE_ROWS } from '@ors/config/Table/columnsDef/settings'
 
 function getCellEditor(type: string) {
   switch (type) {
@@ -80,11 +81,7 @@ function useGridOptions(props: { adm_columns: any }) {
       defaultColDef: {
         autoHeight: true,
         cellClass: 'ag-text-left',
-        editable: (props) =>
-          !includes(
-            ['total', 'control', 'group', 'hashed'],
-            props.data.rowType,
-          ),
+        editable: (props) => !includes(NON_EDITABLE_ROWS, props.data.rowType),
         headerClass: 'ag-text-center',
         minWidth: defaultColDef.minWidth,
         resizable: true,

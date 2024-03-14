@@ -1,6 +1,12 @@
-import { ColDef, ICellRendererParams } from 'ag-grid-community'
+import {
+  ColDef,
+  EditableCallbackParams,
+  ICellRendererParams,
+} from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
+
+import { NON_EDITABLE_ROWS } from './settings'
 
 const defaultColDef: ColDef = {
   cellRendererParams: (props: ICellRendererParams) => {
@@ -10,6 +16,12 @@ const defaultColDef: ColDef = {
       }),
       maximumFractionDigits: 2,
     }
+  },
+  editable: (props: EditableCallbackParams) => {
+    if (includes(NON_EDITABLE_ROWS, props.data?.rowType)) {
+      return false
+    }
+    return true
   },
   headerComponentParams: {
     className: 'font-bold',

@@ -17,6 +17,8 @@ import cx from 'classnames'
 import { find, findIndex, includes, isString } from 'lodash'
 import { useSnackbar } from 'notistack'
 
+import { NON_EDITABLE_ROWS } from '@ors/config/Table/columnsDef/settings'
+
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
@@ -108,7 +110,7 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
     },
     editable: (props) => {
       if (
-        includes(['total', 'control'], props.data.rowType) ||
+        includes(NON_EDITABLE_ROWS, props.data.rowType) ||
         includes(props.data.excluded_usages || [], props.colDef.id)
       ) {
         return false
