@@ -16,7 +16,11 @@ export default async function CountryProgramme() {
   return (
     <PageWrapper>
       <HeaderTitle>
-        <Typography className="text-white" component="h1" variant="h3">
+        <Typography
+          className="text-typography-primary"
+          component="h1"
+          variant="h3"
+        >
           Country programmes
         </Typography>
       </HeaderTitle>

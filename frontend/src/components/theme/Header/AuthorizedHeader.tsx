@@ -31,11 +31,15 @@ function Link({
   return (
     <UnstyledLink
       className={cx(
-        'font-bold no-underline theme-dark hover:text-white',
-        { 'text-typography-secondary': !active, 'text-white': active },
+        'align-center flex rounded-lg px-4 py-2 font-bold no-underline theme-dark hover:outline hover:outline-1 hover:outline-typography-primary',
+        {
+          'bg-primary text-mlfs-hlYellow': active,
+          'bg-white text-primary': !active,
+        },
         className,
       )}
       href={href}
+      style={{ boxShadow: '0px 10px 10px 0px rgba(0, 0, 0, 0.15)' }}
       {...rest}
     >
       {children}
@@ -52,7 +56,7 @@ export default function Header() {
     <FadeInOut className="header-motion">
       <Box
         id="header"
-        className="rounded-none border-0 px-0 pb-0 pt-4"
+        className="rounded-none border-0 px-0 pb-0 pt-4 shadow-none"
         component="nav"
         style={{ backgroundColor: '#e6f4fb' }}
       >
@@ -92,11 +96,12 @@ export default function Header() {
             <div id="header-control" />
           </div>
         </div>
-        <Box
-          className={'rounded-none border-0 shadow-none'}
-          style={{ backgroundColor: navigationBackground }}
-        >
-          <div className="container">
+        <Box className={'relative -mt-2 rounded-none border-0 p-0 shadow-none'}>
+          <div
+            className="absolute top-0 h-6 w-full"
+            style={{ backgroundColor: '#e6f4fb' }}
+          ></div>
+          <div className="container relative">
             <div id="header-nav" className="flex flex-wrap gap-x-8 gap-y-4">
               <Link href="/business-plans" path="/business-plans/*">
                 Business plans

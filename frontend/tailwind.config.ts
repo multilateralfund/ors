@@ -29,6 +29,11 @@ const gray = {
   MUI900: grey[900],
 }
 
+const mlfs = {
+  hlYellow: 'hsla(65, 100%, 50%, 1)',
+  hlYellowTint: 'hsla(65, 100%, 75%, 1)',
+}
+
 const originalColors = {
   dark: {
     action: {
@@ -64,7 +69,7 @@ const originalColors = {
       },
     },
     primary: {
-      DEFAULT: '#0095D5',
+      DEFAULT: 'hsla(198, 100%, 12%, 1)',
       contrastText: '#ffffff',
     },
     secondary: {
@@ -119,7 +124,7 @@ const originalColors = {
       },
     },
     primary: {
-      DEFAULT: '#002A3C',
+      DEFAULT: 'hsla(198, 100%, 12%, 1)',
       contrastText: '#ffffff',
     },
     secondary: {
@@ -286,6 +291,7 @@ export default {
     extend: {
       colors: {
         gray,
+        mlfs,
       },
       zIndex: {
         absolute: '9999',
