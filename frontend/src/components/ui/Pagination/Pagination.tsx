@@ -38,29 +38,30 @@ export function Pagination({
 
         return (
           <Button
-            className={cx(
-              'flex min-w-fit border-collapse gap-2 rounded-none border-y border-r border-solid border-mui-default-border p-3 text-xs leading-none',
-              {
-                'bg-action-highlight': item.selected,
-                'bg-mui-box-background': !item.selected,
-                'border-l': item.type === 'previous',
-                'cursor-default': isEllipsis,
-                'rounded-sm': ['next', 'previous'].includes(item.type),
-                'text-typography-faded': disabled,
-                'text-typography-secondary': !disabled,
-              },
-            )}
+            className={cx('mx-2 h-8 w-8 min-w-0 rounded-full p-4 text-lg', {
+              'bg-mlfs-hlYellowTint': item.selected,
+              'bg-mui-box-background': !item.selected,
+              'border-l': item.type === 'previous',
+              'cursor-default': isEllipsis,
+              'text-typography-faded': disabled,
+              'text-typography-primary': !disabled,
+              'w-auto min-w-fit': ['next', 'previous'].includes(item.type),
+            })}
             disabled={disabled}
             onClick={isEllipsis ? () => {} : item.onClick}
             disableRipple
           >
-            {item.type === 'previous' && <IoArrowBack />}
+            {item.type === 'previous' && (
+              <IoArrowBack className="mr-2" size={18} />
+            )}
             {['next', 'previous'].includes(item.type) && (
               <span className="hidden md:inline">{capitalize(item.type)}</span>
             )}
             {item.type === 'page' && item.page}
             {isEllipsis && '...'}
-            {item.type === 'next' && <IoArrowForward />}
+            {item.type === 'next' && (
+              <IoArrowForward className="ml-2" size={18} />
+            )}
           </Button>
         )
       }}

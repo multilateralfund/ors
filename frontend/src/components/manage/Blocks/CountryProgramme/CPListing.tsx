@@ -761,7 +761,7 @@ export default function CPListing() {
           New submission
         </Link>
       </div>
-      <Box id="cp-listing-sections">
+      <div id="cp-listing-sections">
         {sections.map((section, index) => (
           <SectionPanel
             key={section.id}
@@ -773,7 +773,7 @@ export default function CPListing() {
             setFilters={setFilters}
           />
         ))}
-      </Box>
+      </div>
     </>
   )
 }

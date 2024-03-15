@@ -96,7 +96,10 @@ export default function Header() {
             <div id="header-control" />
           </div>
         </div>
-        <Box className={'relative -mt-2 rounded-none border-0 p-0 shadow-none'}>
+        <Box
+          className={'relative -mt-2 rounded-none border-0 p-0 shadow-none'}
+          style={{ backgroundColor: 'hsla(210, 20%, 98%, 1)' }}
+        >
           <div
             className="absolute top-0 h-6 w-full"
             style={{ backgroundColor: '#e6f4fb' }}
