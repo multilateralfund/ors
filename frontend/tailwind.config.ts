@@ -32,6 +32,7 @@ const gray = {
 const mlfs = {
   hlYellow: 'hsla(65, 100%, 50%, 1)',
   hlYellowTint: 'hsla(65, 100%, 75%, 1)',
+  deepTealShade: 'hsla(199, 100%, 8%, 1);',
 }
 
 const originalColors = {
@@ -80,10 +81,10 @@ const originalColors = {
       DEFAULT: '#36A41D',
     },
     typography: {
-      DEFAULT: 'rgba(0, 42, 60, 1)',
+      DEFAULT: 'hsla(198, 100%, 12%, 1)',
       disabled: 'rgba(255, 255, 255, 0.4)',
       faded: 'rgba(255, 255, 255, 0.5)',
-      primary: 'rgba(0, 42, 60, 1)',
+      primary: 'hsla(198, 100%, 12%, 1)',
       secondary: 'rgba(0, 149, 213, 1)',
     },
     warning: {

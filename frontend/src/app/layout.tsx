@@ -6,6 +6,7 @@ import type { Metadata } from 'next'
 
 import React from 'react'
 
+import cx from 'classnames'
 import { dir } from 'i18next'
 // import { includes } from 'lodash'
 import { Roboto } from 'next/font/google'
@@ -148,7 +149,12 @@ export default async function RootLayout({
       dir={dir(lang)}
     >
       <body id="next-app">
-        <div id="layout" className="h-full">
+        <div
+          id="layout"
+          className={cx('h-full', {
+            'bg-mlfs-deepTealShade': currentView?.path === '/login',
+          })}
+        >
           <Script src="/critical.js" strategy="beforeInteractive" />
           <StoreProvider
             initialState={{

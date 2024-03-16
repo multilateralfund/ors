@@ -65,6 +65,7 @@ export default function LoginForm() {
         error={!!user.error?.username}
         helperText={user.error?.username}
         InputLabel={{
+          className: 'text-lg font-bold',
           label: <Trans id="username">Username</Trans>,
         }}
       />
@@ -76,11 +77,16 @@ export default function LoginForm() {
         helperText={user.error?.password}
         type="password"
         InputLabel={{
+          className: 'text-lg font-bold',
           label: <Trans id="password">Password</Trans>,
         }}
       />
       <Typography className="mb-4 text-right">
-        <Link href="forgot-password" underline="hover">
+        <Link
+          className="font-bold text-secondary"
+          href="forgot-password"
+          underline="hover"
+        >
           <Trans id="forgot-password">Forgot password?</Trans>
         </Link>
       </Typography>
@@ -89,7 +95,11 @@ export default function LoginForm() {
           {user.error?.non_field_errors}
         </Alert>
       </Collapse>
-      <Button type="submit" variant="contained">
+      <Button
+        className="bg-secondary text-lg font-bold shadow-none"
+        type="submit"
+        variant="contained"
+      >
         <Trans id="submit">Submit</Trans>
       </Button>
     </Paper>
