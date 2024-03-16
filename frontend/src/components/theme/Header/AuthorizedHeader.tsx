@@ -1,22 +1,24 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
-import { Box, Divider, Typography } from '@mui/material'
+import { Box, Button, Divider, Typography } from '@mui/material'
 import cx from 'classnames'
 import { AnimatePresence } from 'framer-motion'
 import { isFunction } from 'lodash'
 import { usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 // import CollapseInOut from '@ors/components/manage/Transitions/CollapseInOut'
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Logo from '@ors/components/theme/Logo/Logo'
 import ProfileDropdown from '@ors/components/theme/Profile/ProfileDropdown'
+import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 // import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
 import UnstyledLink, { LinkProps } from '@ors/components/ui/Link/Link'
 import { formatApiUrl } from '@ors/helpers/Api/Api'
 import { matchPath } from '@ors/helpers/Url/Url'
 import { useStore } from '@ors/store'
 
-import { IoSettingsOutline } from 'react-icons/io5'
+import { IoChevronDown, IoSettingsOutline } from 'react-icons/io5'
 
 function Link({
   children,
@@ -48,9 +50,30 @@ function Link({
 }
 
 export default function Header() {
+  const router = useRouter()
+  const pathname = usePathname()
+
   const { HeaderTitle, navigationBackground } = useStore(
     (state) => state.header,
   )
+
+  const navSections = [
+    { current: false, label: 'Business plans', url: '/business-plans' },
+    {
+      current: false,
+      label: 'Project submissions',
+      url: '/project-submissions',
+    },
+    { current: false, label: 'Projects', url: '/projects' },
+    { current: false, label: 'Country programme', url: '/country-programme' },
+    { current: false, label: 'Enterprises', url: '/enterprises' },
+  ].map((section) => ({
+    ...section,
+    current: !!matchPath(`${section.url}/*`, pathname || ''),
+  }))
+
+  const currentSection =
+    navSections.filter((section) => section.current)[0]?.label || 'Home'
 
   return (
     <FadeInOut className="header-motion">
@@ -104,22 +127,41 @@ export default function Header() {
             style={{ backgroundColor: '#e6f4fb' }}
           ></div>
           <div className="container relative">
-            <div id="header-nav" className="flex flex-wrap gap-x-8 gap-y-4">
-              <Link href="/business-plans" path="/business-plans/*">
-                Business plans
-              </Link>
-              <Link href="/project-submissions" path="/project-submissions/*">
-                Project submissions
-              </Link>
-              <Link href="/projects" path="/projects/*">
-                Projects
-              </Link>
-              <Link href="/country-programme" path="/country-programme/*">
-                Country programme
-              </Link>
-              <Link href="/enterprises" path="/enterprises/*">
-                Enterprises
-              </Link>
+            <Dropdown
+              className="-mt-2 md:hidden"
+              MenuProps={{ classes: { list: 'py-2' } }}
+              label={
+                <div className="flex items-center justify-between gap-x-4 rounded-xl bg-primary px-4 py-2 text-center text-xl font-bold text-mlfs-hlYellow">
+                  {currentSection}
+                  <IoChevronDown />
+                </div>
+              }
+            >
+              {navSections.map((section, idx) => {
+                return (
+                  <Dropdown.Item key={idx}>
+                    <Link
+                      className="text-xl"
+                      href={section.url}
+                      path={`${section.url}/*`}
+                    >
+                      {section.label}
+                    </Link>
+                  </Dropdown.Item>
+                )
+              })}
+            </Dropdown>
+            <div
+              id="header-nav"
+              className="hidden flex-wrap gap-x-8 gap-y-4 md:flex"
+            >
+              {navSections.map((section, idx) => {
+                return (
+                  <Link key={idx} href={section.url} path={`${section.url}/*`}>
+                    {section.label}
+                  </Link>
+                )
+              })}
             </div>
             <div id="header-title">
               <AnimatePresence>
