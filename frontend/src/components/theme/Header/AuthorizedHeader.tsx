@@ -63,23 +63,22 @@ export default function Header() {
         <div className="container flex w-full items-center justify-between pb-4">
           <div className="flex items-center gap-x-8">
             <UnstyledLink href="/">
-              <Logo />
+              <Logo className="h-[100px] w-[160px] md:w-[240px]" />
             </UnstyledLink>
             <Divider
-              className="my-5 border-2 border-secondary"
+              className="my-5 border-secondary md:border-2"
               orientation="vertical"
               variant="middle"
               flexItem
             />
             <Typography
-              className="hidden text-typography-secondary md:block"
+              className="text-5xl font-bold leading-none text-typography-secondary md:text-6xl"
               component="p"
-              variant="h1"
             >
               Data portal
             </Typography>
           </div>
-          <div>
+          <div className="self-baseline md:self-auto">
             {/* <LanguageSelector className="ltr:mr-2 rtl:ml-2" /> */}
             <UnstyledLink
               className="hidden theme-dark:text-white md:inline-block"
@@ -91,7 +90,7 @@ export default function Header() {
                 Admin
               </div>
             </UnstyledLink>
-            <ProfileDropdown className="ltr:mr-2 rtl:ml-2" />
+            <ProfileDropdown className="md:p-auto md:min-w-auto mr-0 min-w-0 pr-0 md:m-auto ltr:mr-2 rtl:ml-2" />
             {/* {__DEVELOPMENT__ && <ThemeSelector />} */}
             <div id="header-control" />
           </div>

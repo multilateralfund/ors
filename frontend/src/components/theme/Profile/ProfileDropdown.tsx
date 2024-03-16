@@ -8,7 +8,7 @@ import { formatApiUrl } from '@ors/helpers/Api/Api'
 import { useStore } from '@ors/store'
 import version from '~/version.json'
 
-import { IoPersonOutline } from 'react-icons/io5'
+import { IoMenu, IoPersonOutline } from 'react-icons/io5'
 
 export type ProfileDropdownProps = {
   className?: string
@@ -23,8 +23,12 @@ export default function ProfileDropdown({ className }: ProfileDropdownProps) {
       className={className}
       label={
         <div className="flex flex-row items-center justify-between gap-x-2 text-xl font-normal uppercase">
-          <IoPersonOutline className="text-secondary theme-dark:text-white" />
-          My account
+          <IoMenu
+            className="block text-secondary theme-dark:text-white md:hidden"
+            size={24}
+          />
+          <IoPersonOutline className="hidden text-secondary theme-dark:text-white md:block" />
+          <span className="hidden md:inline">My account</span>
         </div>
       }
     >

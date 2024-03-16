@@ -15,12 +15,7 @@ export default function Logo({ className, variant }: LogoProps) {
       ? '/assets/logos/logo_en_white.png'
       : '/assets/logos/logo_en.png'
   return (
-    <div
-      className={cx(
-        'logo relative block h-[100px] w-[240px] items-center',
-        className,
-      )}
-    >
+    <div className={cx('logo relative block items-center', className)}>
       <Image
         id="logo"
         alt="Multilateral Fund"
