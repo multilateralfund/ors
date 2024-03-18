@@ -86,6 +86,7 @@ class CPUsageAdmin(admin.ModelAdmin):
         AutocompleteFilterFactory(
             "country", "country_programme_record__country_programme_report__country"
         ),
+        "country_programme_record__country_programme_report__year",
         AutocompleteFilterFactory("usage", "usage"),
     ]
     search_fields = [
