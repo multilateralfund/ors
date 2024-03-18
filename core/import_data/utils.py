@@ -211,6 +211,7 @@ def get_sector_subsector_details(sector_code, subsector_name, row_index):
     if sector_code in OUTDATED_SECTORS:
         sector_code = None
     sector = None
+    subsector = None
     # get only the sector
     if not subsector_name and sector_code:
         sector = get_sector_by_code(sector_code, row_index)
@@ -234,46 +235,37 @@ def get_sector_subsector_details(sector_code, subsector_name, row_index):
             ProjectSector, new_sector_code, row_index, "sector", with_log=False
         )
 
-    # check if the subsector is not outdated and if the sector exists
-    if not new_subsector_name and sector:
-        return sector, None
-
-    if not new_subsector_name and not sector:
-        if sector_code:
-            # if the sector is not outdated, log error
-            logger.info(
-                f"[row: {row_index}]: This prpoject does not have a sector or a subsector:"
-                f"serched info: [sector: {sector_code}, subsector: {subsector_name}]"
-            )
-        return None, None
-
     # get subsector
-    if not sector:
-        subsector = ProjectSubSector.objects.get_all_by_name_or_code(new_subsector_name)
+    if new_subsector_name:
+        if not sector:
+            subsector = ProjectSubSector.objects.get_all_by_name_or_code(new_subsector_name)
 
-        if subsector.count() > 1:
-            logger.info(
-                f"[row: {row_index}]: There are multiple subsectors: {subsector_name} -> "
-                f"search name: {new_subsector_name} (sector: {new_sector_code})"
+            if subsector.count() > 1:
+                logger.info(
+                    f"[row: {row_index}]: There are multiple subsectors: {subsector_name} -> "
+                    f"search name: {new_subsector_name} (sector: {new_sector_code})"
+                )
+                return sector, None
+
+            subsector = subsector.first()
+        else:
+            subsector = ProjectSubSector.objects.find_by_name_and_sector(
+                new_subsector_name, sector
             )
-            return sector, None
 
-        subsector = subsector.first()
-    else:
-        subsector = ProjectSubSector.objects.find_by_name_and_sector(
-            new_subsector_name, sector
+    if not subsector and not sector:
+        logger.info(
+            f"[row: {row_index}]: Sector and subsector not found: "
+            f"serched info: [sector: {new_sector_code}, subsector: {new_subsector_name}]"
         )
 
-    if not subsector:
-        if sector_code:
-            # if the sector is not outdated, log error
-            logger.info(
-                f"[row: {row_index}]: This subsector does not exists in data base: "
-                f"{subsector_name} -> search name: {new_subsector_name} (sector: {new_sector_code})"
-            )
-        return sector, None
+    if sector and not subsector:
+        logger.info(
+            f"[row: {row_index}]: This subsector does not exists in data base: "
+            f"{subsector_name} -> search name: {new_subsector_name} (sector: {sector.code})"
+        )
 
-    if not sector:
+    if subsector and not sector:
         sector = subsector.sector
 
     return sector, subsector

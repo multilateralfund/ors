@@ -187,6 +187,49 @@ PROJECT_TYPE_CODE_MAPPING = {
     "TRA": "TAS",
 }
 
+BP_SECTOR_SUBSECTOR_MAPPING = {
+    "DESTRUCTION": {
+        "sector": "DES",
+        "subsector": None,
+    },
+    "FOA - Rigid PU foam": {
+        "sector": "FOA",
+        "subsector": "Rigid PU",
+    },
+    "FOA-Rigid PU foam": {
+        "sector": "FOA",
+        "subsector": "Rigid PU",
+    },
+    "Fumigation":{
+        "sector": "FUM",
+        "subsector": None,
+    },
+    "REF - AC":{
+        "sector": "REF",
+        "subsector": "Air conditioning",
+    },
+    "REF - (Commercial ref)": { 
+        "sector": "REF",
+        "subsector": "Commercial Refrigeration",
+    },
+    "REF - Commercial ref": {
+        "sector": "REF",
+        "subsector": "Commercial Refrigeration",
+    },
+    "REF-Commerical refrigeration": {   
+        "sector": "REF",
+        "subsector": "Commercial Refrigeration",
+    },
+    "REF - Industrial ref": {
+        "sector": "REF",
+        "subsector": "Industrial refrigeration",
+    },
+    "Ref-Servicing": {
+        "sector": "REF",
+        "subsector": "Servicing",
+    },
+}
+
 USAGE_NAME_MAPPING = {
     "Aerosal": "Aerosol",
     "FireFighting": "Fire fighting",
