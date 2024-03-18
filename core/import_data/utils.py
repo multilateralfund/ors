@@ -771,7 +771,7 @@ def get_usages_from_sheet(df, non_usage_columns):
         usage_name = column_name.replace("- ", "")
         usage_name = USAGE_NAME_MAPPING.get(usage_name, usage_name)
 
-        usage = Usage.objects.find_by_name(usage_name)
+        usage = Usage.objects.find_by_full_name(usage_name)
         if not usage:
             logger.warning(f"This usage is not exists: {column_name} ({usage_name})")
             continue
