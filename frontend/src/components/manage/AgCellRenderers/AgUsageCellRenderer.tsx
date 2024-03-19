@@ -56,7 +56,7 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
         value.push(quantity)
       }
     })
-    value = value.length > 0 ? sum(value) : undefined
+    value = value.length > 0 ? sum(value) : 0
   } else if (usageId === 'total_refrigeration') {
     value = []
     each(recordUsages, (usage: any) => {
