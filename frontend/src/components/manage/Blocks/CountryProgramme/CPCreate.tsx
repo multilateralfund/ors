@@ -385,7 +385,7 @@ const CPCreate: React.FC = () => {
       />
       <HeaderTitle>
         <div className="mb-4 min-h-[40px]">
-          <Typography className="text-white" component="h1" variant="h3">
+          <Typography component="h1" variant="h3">
             New submission - {currentYear}
           </Typography>
         </div>
