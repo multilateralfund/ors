@@ -15,7 +15,7 @@ import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-function getRowData(report: any) {
+function getRowData(report: any, model: string) {
   let rowData: Array<any> = []
   const dataByGroup: Record<string, any> = {}
   const groups: Array<string> = []
@@ -34,6 +34,17 @@ function getRowData(report: any) {
       rowData,
       [{ display_name: group, group, rowType: 'group' }],
       dataByGroup[group],
+      ['IV'].includes(model) && group === 'Alternatives'
+        ? [
+            {
+              display_name: 'Other alternatives (optional):',
+              group,
+              mandatory: false,
+              row_id: 'other_alternatives',
+              rowType: 'hashed',
+            },
+          ]
+        : [],
     )
   })
   return rowData
@@ -56,7 +67,7 @@ export default function SectionCView(props: {
     model: variant.model,
   })
   const grid = useRef<any>()
-  const [rowData] = useState(() => getRowData(report))
+  const [rowData] = useState(() => getRowData(report, variant.model))
 
   return (
     <>

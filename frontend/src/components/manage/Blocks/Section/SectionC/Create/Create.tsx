@@ -55,6 +55,7 @@ function getRowData(
   data: SectionC['data'],
   substanceRows: EmptyReportSubstance[],
   substancePrices: SubstancePrices,
+  model: string,
 ): RowData[] {
   let rowData: RowData[] = []
   const dataByGroup: Record<string, RowData[]> = {}
@@ -116,6 +117,17 @@ function getRowData(
       dataByGroup[group].sort(
         (a, b) => substanceOrder[indexKey(a)] - substanceOrder[indexKey(b)],
       ),
+      ['IV'].includes(model) && group === 'Alternatives'
+        ? [
+            {
+              display_name: 'Other alternatives (optional):',
+              group,
+              mandatory: false,
+              row_id: 'other_alternatives',
+              rowType: 'hashed',
+            },
+          ]
+        : [],
     )
   })
   return rowData
@@ -149,6 +161,7 @@ export default function SectionCCreate(props: {
         form.section_c,
         emptyForm.substance_rows?.section_c || [],
         substancePrices.data || [],
+        variant.model,
       ),
     [form, emptyForm, substancePrices.data],
   )
