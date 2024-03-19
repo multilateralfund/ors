@@ -19,6 +19,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
           headerClass: 'ag-text-left',
           headerName: 'Substance',
           ...sectionColDefById['display_name'],
+          editable: false,
         },
         ...(usages.length
           ? [

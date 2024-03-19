@@ -20,6 +20,8 @@ import {
 import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
+import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
+
 import Portal from '@ors/components/manage/Utils/Portal'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -104,6 +106,7 @@ const TableProps = {
       </div>
     )
   },
+  defaultColDef: defaultColDefEdit,
   domLayout: 'autoHeight',
   enableCellChangeFlash: true,
   enableFullScreen: true,

@@ -17,16 +17,20 @@ const defaultColDef: ColDef = {
       maximumFractionDigits: 2,
     }
   },
-  editable: (props: EditableCallbackParams) => {
-    if (includes(NON_EDITABLE_ROWS, props.data?.rowType)) {
-      return false
-    }
-    return true
-  },
   headerComponentParams: {
     className: 'font-bold',
   },
   minWidth: 80,
 }
 
+const defaultColDefEdit: ColDef = {
+  editable: (props: EditableCallbackParams) => {
+    if (includes(NON_EDITABLE_ROWS, props.data?.rowType)) {
+      return false
+    }
+    return true
+  },
+}
+
 export default defaultColDef
+export { defaultColDefEdit }

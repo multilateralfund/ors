@@ -21,6 +21,8 @@ import { filter, get, includes, isEmpty } from 'lodash'
 import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
+import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
+
 import Field from '@ors/components/manage/Form/Field'
 import Portal from '@ors/components/manage/Utils/Portal'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
@@ -180,6 +182,7 @@ const TableProps: CPCreateTableProps = {
       </div>
     )
   },
+  defaultColDef: defaultColDefEdit,
   domLayout: 'autoHeight',
   enableCellChangeFlash: true,
   enableFullScreen: true,
