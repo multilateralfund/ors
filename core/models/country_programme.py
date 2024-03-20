@@ -108,6 +108,7 @@ class CPEmission(AbstractCPEmission):
 class CPReportFormatColumn(models.Model):
     usage = models.ForeignKey("Usage", on_delete=models.CASCADE)
     time_frame = models.ForeignKey("TimeFrame", on_delete=models.CASCADE)
+    header_name = models.CharField(max_length=256, null=True, blank=True)
     section = models.CharField(max_length=10)
     sort_order = models.FloatField(null=True, blank=True)
 
