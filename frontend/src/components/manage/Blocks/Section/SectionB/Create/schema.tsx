@@ -159,7 +159,7 @@ function useGridOptions(props: {
               },
             ]
           : []),
-        ...(includes(['III'], model)
+        ...(includes(['II', 'III', 'IV', 'V'], model)
           ? [
               {
                 cellEditor: 'agNumberCellEditor',

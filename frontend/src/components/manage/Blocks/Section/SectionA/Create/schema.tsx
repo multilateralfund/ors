@@ -143,7 +143,7 @@ function useGridOptions(props: {
           orsAggFunc: 'sumTotal',
           ...sectionColDefById['production'],
         },
-        ...(includes(['III'], model)
+        ...(includes(['II', 'III', 'IV', 'V'], model)
           ? [
               {
                 cellEditor: 'agNumberCellEditor',
@@ -155,7 +155,7 @@ function useGridOptions(props: {
               },
             ]
           : []),
-        ...(includes(['III'], model)
+        ...(includes(['II', 'III'], model)
           ? [
               {
                 cellEditor: 'agNumberCellEditor',

@@ -61,7 +61,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
           orsAggFunc: 'sumTotal',
           ...sectionColDefById['production'],
         },
-        ...(includes(['III'], model)
+        ...(includes(['II', 'III', 'IV', 'V'], model)
           ? [
               {
                 dataType: 'number',
@@ -72,7 +72,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
               },
             ]
           : []),
-        ...(includes(['III'], model)
+        ...(includes(['II', 'III'], model)
           ? [
               {
                 dataType: 'number',
