@@ -36,6 +36,11 @@ export interface CPReportsSlice {
   substances: SliceData<ApiSubstance[]>
 }
 
+export interface CPCurrentTabSlice {
+  activeTab: number
+  setActiveTab: (nr: number) => void
+}
+
 export interface HeaderSlice {
   HeaderTitle: React.FC | React.ReactNode | null
   navigationBackground: string
@@ -94,6 +99,7 @@ export type StoreState = {
   cache: CacheSlice
   common: CommonSlice
   connection: null | string
+  cp_current_tab: CPCurrentTabSlice
   cp_reports: CPReportsSlice
   header: HeaderSlice
   i18n: I18nSlice

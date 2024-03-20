@@ -8,11 +8,13 @@ export default function Footer() {
     <FadeInOut>
       <Box
         id="footer"
-        className={
-          'flex h-48 w-full items-center rounded-none border-0 bg-mlfs-deepTealShade shadow-none'
-        }
+        className="flex h-48 w-full items-center rounded-none border-0 bg-mlfs-deepTealShade shadow-none"
       >
-        <Logo variant="white" />
+        <div className="container w-full">
+          <div className="flex items-center">
+            <Logo variant="white" />
+          </div>
+        </div>
       </Box>
     </FadeInOut>
   )

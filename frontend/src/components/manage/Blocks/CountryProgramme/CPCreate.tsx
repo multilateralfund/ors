@@ -278,7 +278,7 @@ const CPCreate: React.FC = () => {
     year: currentYear,
   })
   const [activeTab, setActiveTab] = useState(0)
-  const [renderedSections, setRenderedSections] = useState<Array<number>>([])
+  const [renderedSections, setRenderedSections] = useState<number[]>([])
 
   const existingReports = useApi({
     options: {
@@ -367,7 +367,7 @@ const CPCreate: React.FC = () => {
       indicator.removeEventListener('transitionend', handleTransitionEnd)
     }
 
-    if (!indicator || activeTab === 0) {
+    if (!indicator || renderedSections.length == 0) {
       return handleTransitionEnd()
     }
 

@@ -162,8 +162,8 @@ function CPView(props: { archive?: boolean; id: string }) {
   const { enqueueSnackbar } = useSnackbar()
   const { archive } = props
   const { report, setReport } = useStore((state) => state.cp_reports)
-  const [activeTab, setActiveTab] = useState(0)
-  const [renderedSections, setRenderedSections] = useState<Array<number>>([])
+  const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
+  const [renderedSections, setRenderedSections] = useState<number[]>([])
 
   const variant = useMemo(() => {
     if (!report.data) return null
@@ -191,7 +191,7 @@ function CPView(props: { archive?: boolean; id: string }) {
       indicator.removeEventListener('transitionend', handleTransitionEnd)
     }
 
-    if (!indicator || activeTab === 0) {
+    if (!indicator || renderedSections.length == 0) {
       return handleTransitionEnd()
     }
 

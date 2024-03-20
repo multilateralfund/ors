@@ -525,6 +525,7 @@ function YearSection(props: SectionProps) {
   })
   const [range, setRange] = useState([filters.range[0], filters.range[1]])
   const [ordering, setOrdering] = useState<'asc' | 'desc'>('desc')
+  const { setActiveTab } = useStore((state) => state.cp_current_tab)
   const { data, loading, setParams } = useApi({
     options: {
       params: {
@@ -545,6 +546,11 @@ function YearSection(props: SectionProps) {
     }
     /* eslint-disable-next-line */
   }, [filters.range])
+
+  useEffect(() => {
+    // Reset active tab.
+    setActiveTab(0)
+  }, [])
 
   return (
     <div id="year-section">
