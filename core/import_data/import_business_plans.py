@@ -8,6 +8,7 @@ from django.db import transaction
 from django.conf import settings
 
 from core.import_data.mapping_names_dict import (
+    BP_SECTOR_SUBSECTOR_MAPPING,
     SECTOR_NAME_MAPPING,
 )
 from core.import_data.utils import (
@@ -133,28 +134,30 @@ def get_sector_subsector(sector_subsector, index_row):
         logger.warning(f"[row: {index_row}]: Missing sector and subsector")
         return None, None
 
-    # get sector name
-    sector_name_re = re.search(SECTOR_REGEX, sector_subsector)
-    sector_name_str = (
-        sector_name_re.group("sector").strip() if sector_name_re else sector_subsector
-    )
-    sector_name = SECTOR_NAME_MAPPING.get(sector_name_str, sector_name_str)
-
-    # get subsector name
-    subsector_name_re = re.search(SUBSECTOR_REGEX, sector_subsector)
-    subsector_name_str = (
-        subsector_name_re.group("subsector").strip()
-        if subsector_name_re
-        else sector_subsector
-    )
-    sector, subsector = get_sector_subsector_details(
-        sector_name, subsector_name_str, index_row
-    )
-
-    if not any([sector, subsector]):
-        logger.warning(
-            f"[row: {index_row}]: Sector and subsector not found: {sector_subsector}"
+    # check if we have a mapping for this string
+    if sector_subsector in BP_SECTOR_SUBSECTOR_MAPPING:
+        sector_name = BP_SECTOR_SUBSECTOR_MAPPING[sector_subsector]['sector']
+        subsector_name = BP_SECTOR_SUBSECTOR_MAPPING[sector_subsector]['subsector']
+    else:
+        # get sector name
+        sector_name_re = re.search(SECTOR_REGEX, sector_subsector)
+        sector_name_str = (
+            sector_name_re.group("sector").strip() if sector_name_re else sector_subsector
         )
+        sector_name = SECTOR_NAME_MAPPING.get(sector_name_str, sector_name_str)
+
+        # get subsector name
+        subsector_name_re = re.search(SUBSECTOR_REGEX, sector_subsector)
+        subsector_name = (
+            subsector_name_re.group("subsector").strip()
+            if subsector_name_re
+            else sector_subsector
+        )
+
+    # get sector and subsector objects
+    sector, subsector = get_sector_subsector_details(
+        sector_name, subsector_name, index_row
+    )
 
     return sector, subsector
 
@@ -241,13 +244,14 @@ def create_business_plan(row, index_row, year_start, year_end):
         "country": country,
         "lvc_status": row["HCFC Status"] if row["HCFC Status"] else "Undefined",
         "project_type": project_type,
+        "legacy_project_type": row["Type"],
         "bp_chemical_type": bp_chemical_type,
         "amount_polyol": get_decimal_from_excel_string(
             row["Amount of Polyol in Project (MT)"]
         ),
         "sector": sector,
         "subsector": subsector,
-        "sector_subsector": row["Sector and Subsector"],
+        "legacy_sector_and_subsector": row["Sector and Subsector"],
         "bp_type": row["A-Appr. P-Plan'd"] if row["A-Appr. P-Plan'd"] else "U",
         "is_multi_year": row["I-Indiv M-MY"] == "M",
         "reason_for_exceeding": row["Reason for exceeding"],

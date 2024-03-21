@@ -72,6 +72,7 @@ class BusinessPlanWriter(BaseWriter):
             },
             {"id": "sector", "headerName": "Sector"},
             {"id": "subsector", "headerName": "Subsector"},
+            {"id": "legacy_sector_and_subsector", "headerName": "Legacy Sector and Subsector"},
             {
                 "id": "title",
                 "headerName": "Title",

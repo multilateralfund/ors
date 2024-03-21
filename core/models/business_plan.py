@@ -5,7 +5,7 @@ from core.models.agency import Agency
 from core.models.blend import Blend
 
 from core.models.country import Country
-from core.models.project import ProjectSector, ProjectSubSector, ProjectType
+from core.models.project import ProjectCluster, ProjectSector, ProjectSubSector, ProjectType
 from core.models.substance import Substance
 
 
@@ -57,7 +57,11 @@ class BPRecord(models.Model):
     required_by_model = models.CharField(max_length=255, null=True, blank=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     lvc_status = models.CharField(max_length=32, choices=LVCStatus.choices)
+    project_cluster = models.ForeignKey(
+        ProjectCluster, on_delete=models.CASCADE, null=True, blank=True
+    )
     project_type = models.ForeignKey(ProjectType, on_delete=models.CASCADE)
+    legacy_project_type = models.CharField(max_length=255, null=True, blank=True)
     bp_chemical_type = models.ForeignKey(
         BPChemicalType, on_delete=models.CASCADE
     )  # cluster
@@ -72,7 +76,7 @@ class BPRecord(models.Model):
     subsector = models.ForeignKey(
         ProjectSubSector, on_delete=models.CASCADE, null=True, blank=True
     )
-    sector_subsector = models.CharField(max_length=255, null=True, blank=True)
+    legacy_sector_and_subsector = models.CharField(max_length=255, null=True, blank=True)
     bp_type = models.CharField(max_length=16, choices=BPType.choices)
     is_multi_year = models.BooleanField(default=False)
     reason_for_exceeding = models.TextField(null=True, blank=True)
