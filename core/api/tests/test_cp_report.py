@@ -887,3 +887,17 @@ class TestGetEmptyForm(BaseTest):
         assert len(response.data["substance_rows"]["section_a"]) == 1
         assert len(response.data["substance_rows"]["section_b"]) == 1
         assert len(response.data["substance_rows"]["section_c"]) == 2
+
+    def test_with_country_and_year(
+        self, user, cp_report_2019, _setup_get_empty_form, _cp_report_format
+    ):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(
+            self.url, {"country_id": cp_report_2019.country_id, "year": 2019}
+        )
+        assert response.status_code == 200
+        assert len(response.data["usage_columns"]["section_a"]) == 1
+        assert len(response.data["usage_columns"]["section_b"]) == 1
+        assert len(response.data["substance_rows"]["section_a"]) == 1
+        assert len(response.data["substance_rows"]["section_b"]) == 1
+        assert len(response.data["substance_rows"]["section_c"]) == 2

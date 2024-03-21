@@ -1,7 +1,7 @@
 from django.db.models import Q
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import mixins, generics
+from rest_framework import views
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
@@ -13,6 +13,7 @@ from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_price import CPPricesSerializer
 from core.api.serializers.cp_record import CPRecordSerializer
 from core.api.serializers.cp_report import CPReportSerializer
+from core.api.views.utils import get_cp_report_from_request
 from core.models.adm import AdmRecord
 from core.models.country_programme import (
     CPEmission,
@@ -27,7 +28,7 @@ from core.utils import IMPORT_DB_MAX_YEAR, IMPORT_DB_OLDEST_MAX_YEAR
 # pylint: disable=E1102
 
 
-class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
+class CPRecordBaseListView(views.APIView):
     """
     API endpoint that allows country programme records to be viewed.
     !!!! We also use this view for CPRecordsArchiveListView
@@ -331,16 +332,10 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
         }
 
     def _get_cp_report(self):
-        try:
-            return self.cp_report_class.objects.get(
-                id=self.request.query_params["cp_report_id"]
-            )
-        except KeyError as e:
-            raise ValidationError(
-                {"cp_report_id": "query parameter is required"}
-            ) from e
-        except CPReport.DoesNotExist as e:
-            raise ValidationError({"cp_report_id": "invalid id"}) from e
+        cp_report = get_cp_report_from_request(self.request, self.cp_report_class)
+        if not cp_report:
+            raise ValidationError({"error": "Country programme report not found"})
+        return cp_report
 
     def get_data(self, cp_report):
         if cp_report.year < IMPORT_DB_OLDEST_MAX_YEAR:
@@ -356,6 +351,18 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
                 "cp_report_id",
                 openapi.IN_QUERY,
                 description="Country programme report id",
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "country_id",
+                openapi.IN_QUERY,
+                description="Country id for the country programme report",
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "year",
+                openapi.IN_QUERY,
+                description="Year for the country programme report",
                 type=openapi.TYPE_INTEGER,
             ),
         ],
