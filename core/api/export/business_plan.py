@@ -57,6 +57,10 @@ class BusinessPlanWriter(BaseWriter):
                 "headerName": "Type",
             },
             {
+                "id": "legacy_project_type",
+                "headerName": "Legacy Type",
+            },
+            {
                 "id": "bp_chemical_type",
                 "headerName": "Chemical",
             },
@@ -70,6 +74,7 @@ class BusinessPlanWriter(BaseWriter):
                 "type": "number",
                 "column_width": COLUMN_WIDTH * 1.5,
             },
+            {"id": "project_cluster","headerName": "Cluster"},
             {"id": "sector", "headerName": "Sector"},
             {"id": "subsector", "headerName": "Subsector"},
             {"id": "legacy_sector_and_subsector", "headerName": "Legacy Sector and Subsector"},

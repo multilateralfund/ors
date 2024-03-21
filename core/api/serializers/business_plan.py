@@ -60,9 +60,10 @@ class BPRecordExportSerializer(serializers.ModelSerializer):
     bp_chemical_type = serializers.SlugRelatedField("name", read_only=True)
     chemical_detail = serializers.SerializerMethodField()
     country = serializers.SlugRelatedField("name", read_only=True)
+    project_cluster = serializers.SlugRelatedField("name", read_only=True)
 
-    sector = serializers.SlugRelatedField("code", read_only=True)
-    subsector = serializers.SlugRelatedField("code", read_only=True)
+    sector = serializers.SlugRelatedField("name", read_only=True)
+    subsector = serializers.SlugRelatedField("name", read_only=True)
     values = BPRecordValueSerializer(many=True)
 
     class Meta:
@@ -76,7 +77,9 @@ class BPRecordExportSerializer(serializers.ModelSerializer):
             "country",
             "lvc_status",
             "project_type",
+            "legacy_project_type",
             "bp_chemical_type",
+            "project_cluster",
             "chemical_detail",
             "amount_polyol",
             "sector",

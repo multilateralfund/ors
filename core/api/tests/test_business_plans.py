@@ -36,23 +36,23 @@ class TestBPExport(BaseTest):
         sheet = wb.active
         assert sheet["A2"].value == bp_record.country.name
         assert sheet["B2"].value == business_plan.agency.name
-        assert sheet["K2"].value == bp_record.title
+        assert sheet["M2"].value == bp_record.title
 
-        assert sheet["M2"].value == bp_record_values[0].value_usd
-        assert sheet["N2"].value == bp_record_values[0].value_odp
-        assert sheet["O2"].value == bp_record_values[0].value_mt
+        assert sheet["O2"].value == bp_record_values[0].value_usd
+        assert sheet["P2"].value == bp_record_values[0].value_odp
+        assert sheet["Q2"].value == bp_record_values[0].value_mt
 
-        assert sheet["P2"].value == bp_record_values[1].value_usd
-        assert sheet["Q2"].value == bp_record_values[1].value_odp
-        assert sheet["R2"].value == bp_record_values[1].value_mt
+        assert sheet["R2"].value == bp_record_values[1].value_usd
+        assert sheet["S2"].value == bp_record_values[1].value_odp
+        assert sheet["T2"].value == bp_record_values[1].value_mt
 
-        assert sheet["S2"].value == bp_record_values[2].value_usd
-        assert sheet["T2"].value == bp_record_values[2].value_odp
-        assert sheet["U2"].value == bp_record_values[2].value_mt
+        assert sheet["U2"].value == bp_record_values[2].value_usd
+        assert sheet["V2"].value == bp_record_values[2].value_odp
+        assert sheet["W2"].value == bp_record_values[2].value_mt
 
-        assert sheet["V2"].value == bp_record_values[3].value_usd
-        assert sheet["W2"].value == bp_record_values[3].value_odp
-        assert sheet["X2"].value == bp_record_values[3].value_mt
+        assert sheet["X2"].value == bp_record_values[3].value_usd
+        assert sheet["Y2"].value == bp_record_values[3].value_odp
+        assert sheet["Z2"].value == bp_record_values[3].value_mt
 
 
 class TestBPPrint(BaseTest):
