@@ -29,6 +29,12 @@ const gray = {
   MUI900: grey[900],
 }
 
+const mlfs = {
+  hlYellow: 'hsla(65, 100%, 50%, 1)',
+  hlYellowTint: 'hsla(65, 100%, 75%, 1)',
+  deepTealShade: 'hsla(199, 100%, 8%, 1);',
+}
+
 const originalColors = {
   dark: {
     action: {
@@ -64,22 +70,22 @@ const originalColors = {
       },
     },
     primary: {
-      DEFAULT: '#0095D5',
+      DEFAULT: 'hsla(198, 100%, 12%, 1)',
       contrastText: '#ffffff',
     },
     secondary: {
-      DEFAULT: '#333333',
+      DEFAULT: '#0095D5',
       contrastText: '#ffffff',
     },
     success: {
       DEFAULT: '#36A41D',
     },
     typography: {
-      DEFAULT: 'rgba(255, 255, 255, 1)',
+      DEFAULT: 'hsla(198, 100%, 12%, 1)',
       disabled: 'rgba(255, 255, 255, 0.4)',
       faded: 'rgba(255, 255, 255, 0.5)',
-      primary: 'rgba(255, 255, 255, 1)',
-      secondary: 'rgba(255, 255, 255, 0.7)',
+      primary: 'hsla(198, 100%, 12%, 1)',
+      secondary: 'rgba(0, 149, 213, 1)',
     },
     warning: {
       DEFAULT: '#FF8A00',
@@ -119,11 +125,11 @@ const originalColors = {
       },
     },
     primary: {
-      DEFAULT: '#0095D5',
+      DEFAULT: 'hsla(198, 100%, 12%, 1)',
       contrastText: '#ffffff',
     },
     secondary: {
-      DEFAULT: gray[700],
+      DEFAULT: '#0095D5',
       contrastText: '#ffffff',
     },
     success: {
@@ -134,7 +140,7 @@ const originalColors = {
       disabled: gray[400],
       faded: gray[500],
       primary: gray[900],
-      secondary: gray[700],
+      secondary: '#0095D5',
     },
     warning: {
       DEFAULT: '#FF8A00',
@@ -286,6 +292,7 @@ export default {
     extend: {
       colors: {
         gray,
+        mlfs,
       },
       zIndex: {
         absolute: '9999',

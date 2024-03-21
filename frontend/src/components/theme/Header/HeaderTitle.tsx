@@ -1,7 +1,6 @@
 'use client'
 import { useEffect } from 'react'
 
-import { Divider } from '@mui/material'
 import cx from 'classnames'
 
 import { useStore } from '@ors/store'
@@ -19,8 +18,8 @@ export type HeaderTitleProps = {
 function Title({ children, visible }: TitleProps) {
   return (
     <div>
-      <Divider
-        className={cx('mb-12 mt-4 w-full border-gray-200', {
+      <div
+        className={cx('mb-12 mt-2 w-full border-gray-200', {
           'pointer-events-none absolute left-0 top-0 hidden opacity-0':
             !visible,
         })}

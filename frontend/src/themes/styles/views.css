@@ -1,6 +1,6 @@
 @layer base {
   :root[data-layout='authorized_document'] #layout {
-    @apply grid h-full grid-rows-[auto_auto_1fr_auto];
+    @apply h-full;
   }
 
   :root[data-layout='document'] #layout {

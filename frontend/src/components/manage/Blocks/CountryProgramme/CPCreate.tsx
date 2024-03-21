@@ -21,6 +21,8 @@ import { filter, get, includes, isEmpty } from 'lodash'
 import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
+import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
+
 import Field from '@ors/components/manage/Form/Field'
 import Portal from '@ors/components/manage/Utils/Portal'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
@@ -74,7 +76,16 @@ interface CPCreateTableProps extends TableProps {
 }
 
 export interface PassedCPCreateTableProps extends CPCreateTableProps {
-  context: { variant: ReportVariant }
+  context: {
+    section:
+      | SectionA['data']
+      | SectionB['data']
+      | SectionC['data']
+      | SectionD['data']
+      | SectionE['data']
+      | SectionF['data']
+    variant: ReportVariant
+  }
   errors: FormErrors
   report: Report
   section:
@@ -171,6 +182,7 @@ const TableProps: CPCreateTableProps = {
       </div>
     )
   },
+  defaultColDef: defaultColDefEdit,
   domLayout: 'autoHeight',
   enableCellChangeFlash: true,
   enableFullScreen: true,
@@ -205,29 +217,29 @@ const CPCreate: React.FC = () => {
   const Sections = {
     section_a: useMakeClassInstance<SectionA>(SectionA, [
       [],
-      report.emptyForm.data.substance_rows.section_a.filter(
+      report.emptyForm.data.substance_rows.section_a?.filter(
         (item) => item.substance_id,
-      ),
+      ) || [],
       'section_a_create',
     ]),
     section_b: useMakeClassInstance<SectionB>(SectionB, [
       [],
-      report.emptyForm.data.substance_rows.section_b.filter(
+      report.emptyForm.data.substance_rows.section_b?.filter(
         (item) => item.substance_id,
-      ),
-      report.emptyForm.data.substance_rows.section_b.filter(
+      ) || [],
+      report.emptyForm.data.substance_rows.section_b?.filter(
         (item) => item.blend_id,
-      ),
+      ) || [],
       'section_b_create',
     ]),
     section_c: useMakeClassInstance<SectionC>(SectionC, [
       [],
-      report.emptyForm.data.substance_rows.section_c.filter(
+      report.emptyForm.data.substance_rows.section_c?.filter(
         (item) => item.substance_id,
-      ),
-      report.emptyForm.data.substance_rows.section_c.filter(
+      ) || [],
+      report.emptyForm.data.substance_rows.section_c?.filter(
         (item) => item.blend_id,
-      ),
+      ) || [],
       'section_c_create',
     ]),
     section_d: useMakeClassInstance<SectionD>(SectionD, [
@@ -266,7 +278,7 @@ const CPCreate: React.FC = () => {
     year: currentYear,
   })
   const [activeTab, setActiveTab] = useState(0)
-  const [renderedSections, setRenderedSections] = useState<Array<number>>([])
+  const [renderedSections, setRenderedSections] = useState<number[]>([])
 
   const existingReports = useApi({
     options: {
@@ -355,7 +367,7 @@ const CPCreate: React.FC = () => {
       indicator.removeEventListener('transitionend', handleTransitionEnd)
     }
 
-    if (!indicator || activeTab === 0) {
+    if (!indicator || renderedSections.length == 0) {
       return handleTransitionEnd()
     }
 
@@ -373,7 +385,7 @@ const CPCreate: React.FC = () => {
       />
       <HeaderTitle>
         <div className="mb-4 min-h-[40px]">
-          <Typography className="text-white" component="h1" variant="h3">
+          <Typography component="h1" variant="h3">
             New submission - {currentYear}
           </Typography>
         </div>
@@ -473,7 +485,7 @@ const CPCreate: React.FC = () => {
                   variant={variant}
                   TableProps={{
                     ...TableProps,
-                    context: { variant },
+                    context: { section, variant },
                     errors: errors[section.id],
                     report,
                     section,

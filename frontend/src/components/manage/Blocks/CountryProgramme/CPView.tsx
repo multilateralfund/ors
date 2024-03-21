@@ -162,8 +162,8 @@ function CPView(props: { archive?: boolean; id: string }) {
   const { enqueueSnackbar } = useSnackbar()
   const { archive } = props
   const { report, setReport } = useStore((state) => state.cp_reports)
-  const [activeTab, setActiveTab] = useState(0)
-  const [renderedSections, setRenderedSections] = useState<Array<number>>([])
+  const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
+  const [renderedSections, setRenderedSections] = useState<number[]>([])
 
   const variant = useMemo(() => {
     if (!report.data) return null
@@ -191,7 +191,7 @@ function CPView(props: { archive?: boolean; id: string }) {
       indicator.removeEventListener('transitionend', handleTransitionEnd)
     }
 
-    if (!indicator || activeTab === 0) {
+    if (!indicator || renderedSections.length == 0) {
       return handleTransitionEnd()
     }
 
@@ -211,10 +211,10 @@ function CPView(props: { archive?: boolean; id: string }) {
       {!!report.data && (
         <HeaderTitle memo={report.data.status && report.versions.data}>
           <div className="mb-4 flex min-h-[40px] items-center justify-between gap-x-4">
-            <Typography className="text-white" component="h1" variant="h3">
+            <Typography component="h1" variant="h3">
               {report.data.name}{' '}
               <span
-                className={cx({
+                className={cx('text-white', {
                   'rounded bg-success px-2 py-1':
                     report.data.status === 'final',
                   'rounded bg-warning px-2 py-1':
@@ -325,7 +325,7 @@ function CPView(props: { archive?: boolean; id: string }) {
                   variant={variant}
                   TableProps={{
                     ...TableProps,
-                    context: { variant },
+                    context: { section, variant },
                     report,
                     section,
                   }}

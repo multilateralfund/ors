@@ -2,6 +2,7 @@ import {
   EmptyReportSubstance,
   EmptyReportType,
 } from '@ors/types/api_empty-form'
+import { ReportVariant } from '@ors/types/variants'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 
@@ -54,6 +55,7 @@ function getRowData(
   data: SectionC['data'],
   substanceRows: EmptyReportSubstance[],
   substancePrices: SubstancePrices,
+  model: string,
 ): RowData[] {
   let rowData: RowData[] = []
   const dataByGroup: Record<string, RowData[]> = {}
@@ -115,6 +117,17 @@ function getRowData(
       dataByGroup[group].sort(
         (a, b) => substanceOrder[indexKey(a)] - substanceOrder[indexKey(b)],
       ),
+      ['IV'].includes(model) && group === 'Alternatives'
+        ? [
+            {
+              display_name: 'Other alternatives (optional):',
+              group,
+              mandatory: false,
+              row_id: 'other_alternatives',
+              rowType: 'hashed',
+            },
+          ]
+        : [],
     )
   })
   return rowData
@@ -126,8 +139,9 @@ export default function SectionCCreate(props: {
   emptyForm: EmptyReportType
   form: CPBaseForm
   setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
+  variant: ReportVariant
 }) {
-  const { Section, TableProps, emptyForm, form, setForm } = props
+  const { Section, TableProps, emptyForm, form, setForm, variant } = props
   const newNode = useRef<RowNode>()
   const substances = useStore(
     (state) => getResults(state.cp_reports.substances.data).results,
@@ -147,6 +161,7 @@ export default function SectionCCreate(props: {
         form.section_c,
         emptyForm.substance_rows?.section_c || [],
         substancePrices.data || [],
+        variant.model,
       ),
     [form, emptyForm, substancePrices.data],
   )
@@ -178,6 +193,7 @@ export default function SectionCCreate(props: {
   }, [substances, form.section_c, Section])
 
   const gridOptions = useGridOptions({
+    model: variant.model,
     onRemoveSubstance: (props: any) => {
       const removedSubstance = props.data
       const newData = [...form.section_c]

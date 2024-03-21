@@ -1,4 +1,5 @@
 import { createBusinessPlanSlice } from '@ors/slices/createBusinessPlanSlice'
+import { createCPCurrentTabSlice } from '@ors/slices/createCPCurrentTabSlice'
 import { createCPReportsSlice } from '@ors/slices/createCPReportsSlice'
 import { createCacheSlice } from '@ors/slices/createCacheSlice'
 import { createCommonSlice } from '@ors/slices/createCommonSlice'
@@ -17,6 +18,7 @@ export default function createSlices(props: CreateSliceProps) {
     common: { ...createCommonSlice(props) },
     // @ts-ignore
     connection: (__CLIENT__ && navigator?.connection?.effectiveType) || null,
+    cp_current_tab: { ...createCPCurrentTabSlice(props) },
     cp_reports: { ...createCPReportsSlice(props) },
     header: { ...createHeaderSlice(props) },
     i18n: { ...createI18nSlice(props) },

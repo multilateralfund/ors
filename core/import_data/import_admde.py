@@ -18,25 +18,26 @@ logger = logging.getLogger(__name__)
 
 SECTION = "D"
 
-CHOICES_WITH_TEXT = [
-    "No",
-    "Not so well",
-    "Other: ___% HCFC reduction target by ___",
-    "Accelerated total phase-out by",
-]
+CHOICES_WITH_TEXT = {
+    "1.": ["N/A"],
+    "2.": ["Not so well"],
+    "3.": ["Not so well"],
+    "4.": ["Other:", "Acceleraded"],
+}
 
 CHOICE_LABLE_MAPPING = {
-    "No": "If not, please specify milestones and completion dates with delays, "
+    "N/A": "If not, please specify milestones and completion dates with delays, "
     "and explain reasons for the delay and measures taken to overcome the problems:",
     "Not so well": "Please specify problems encountered:",
 }
 
 
-def create_adm_rows_for_articles(article_file, layout_file, db_name):
+def create_adm_rows_for_articles(article_file, strings_file, layout_file, db_name):
     """
     Create AdmRow objects for each article in the article file.
 
-    @param article_file: path to article file (used to get article text and id)
+    @param article_file: path to article file (used to get article id)
+    @param strings_file: path to strings file (used to get article text)
     @param layout_file: path to layout file (used to get article sort order)
 
     @return: dictionary
@@ -48,6 +49,15 @@ def create_adm_rows_for_articles(article_file, layout_file, db_name):
     with open(layout_file, "r", encoding="utf8") as f:
         json_data = json.load(f)
 
+    strings_json = []
+    with open(strings_file, "r", encoding="utf8") as f:
+        strings_json = json.load(f)
+    stings_dict = {}
+    for strin_data in strings_json:
+        if strin_data["LanguageId"] == 1 and strin_data["ObjectType"] == 7:
+            stings_dict[strin_data["ObjectId"]] = strin_data["StringText"].strip()
+
+
     for layout in json_data:
         article_order_dict[layout["AdmDEArticlesId"]] = layout["SortOrder"]
 
@@ -57,20 +67,21 @@ def create_adm_rows_for_articles(article_file, layout_file, db_name):
         json_data = json.load(f)
 
     for article in json_data:
+        article_id = article["AdmDEArticlesId"]
         row_data = {
-            "text": article["Name"].strip(),
+            "text": stings_dict[article_id],
             "type": AdmRow.AdmRowType.QUESTION,
             "section": SECTION,
-            "sort_order": article_order_dict[article["AdmDEArticlesId"]],
+            "sort_order": article_order_dict[article_id],
             "source_file": article_file,
             **DB_YEAR_MAPPING[db_name],
         }
-        article_dict[article["AdmDEArticlesId"]] = get_or_create_adm_row(row_data)
+        article_dict[article_id] = get_or_create_adm_row(row_data)
 
     return article_dict
 
 
-def create_adm_choices_for_opt(opt_file, article_dict):
+def create_adm_choices_for_opt(opt_file, strings_file, article_dict):
     """
     Create AdmChoice objects for each option in the options file.
 
@@ -86,18 +97,33 @@ def create_adm_choices_for_opt(opt_file, article_dict):
     with open(opt_file, "r", encoding="utf8") as f:
         json_data = json.load(f)
 
+    strings_json = []
+    with open(strings_file, "r", encoding="utf8") as f:
+        strings_json = json.load(f)
+    stings_dict = {}
+    for strin_data in strings_json:
+        if strin_data["LanguageId"] == 1 and strin_data["ObjectType"] == 9:
+            stings_dict[strin_data["ObjectId"]] = strin_data["LangDefault"] or strin_data["StringText"]
+
+
     for opt in json_data:
+        adm_row = article_dict[opt["AdmDEArticlesId"]]
         option_data = {
-            "value": opt["OptionName"].strip(),
+            "value": stings_dict[opt["ArtOptId"]].strip(),
             "sort_order": opt["SortOrder"],
             "source_file": opt_file,
-            "adm_row": article_dict[opt["AdmDEArticlesId"]],
+            "adm_row": adm_row,
         }
-        if option_data["value"] in CHOICES_WITH_TEXT:
-            option_data["with_text"] = True
+        # check if the option has a text field
+        row_index = adm_row.text[:2]
+        if row_index in CHOICES_WITH_TEXT:
+            for word in  CHOICES_WITH_TEXT[row_index]:
+                if word in option_data["value"]:
+                    option_data["with_text"] = True
 
-        if option_data["value"] in CHOICE_LABLE_MAPPING:
-            option_data["text_label"] = CHOICE_LABLE_MAPPING[option_data["value"]]
+        for word, text_lable in CHOICE_LABLE_MAPPING.items():
+            if word in option_data["value"]:
+                option_data["text_label"] = text_lable
 
         dict_key = (opt["OptionId"], opt["AdmDEArticlesId"])
         opt_dict[dict_key], _ = AdmChoice.objects.get_or_create(
@@ -161,11 +187,12 @@ def parse_db_files(dir_path, db_name):
     """
     article_file = dir_path / "AdmDEArticles.json"
     layout_file = dir_path / "AdmDELayout.json"
-    article_dict = create_adm_rows_for_articles(article_file, layout_file, db_name)
+    strings_file = dir_path / "Strings.json"
+    article_dict = create_adm_rows_for_articles(article_file, strings_file, layout_file, db_name)
     logger.info(f"✔ {article_file} parsed, AdmRows imported")
 
     opt_file = dir_path / "AdmDEArticleOpts.json"
-    opt_dict = create_adm_choices_for_opt(opt_file, article_dict)
+    opt_dict = create_adm_choices_for_opt(opt_file, strings_file, article_dict)
     logger.info(f"✔ {opt_file} parsed, AdmChoices imported")
 
     file_name = dir_path / "AdmDEArticleEntries.json"

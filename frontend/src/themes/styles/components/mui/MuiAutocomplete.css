@@ -1,0 +1,3 @@
+.MuiAutocomplete-inputRoot fieldset {
+  @apply border-primary;
+}

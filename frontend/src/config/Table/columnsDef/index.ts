@@ -2,7 +2,7 @@
 import { ColDef } from 'ag-grid-community'
 
 import getAdmsColDef from './admsColDef'
-import defaultColDef from './defaultColDef'
+import defaultColDef, { defaultColDefEdit } from './defaultColDef'
 import defaultColGroupDef from './defaultColGroupDef'
 import getUsagesColDef from './usagesColDef'
 
@@ -80,4 +80,10 @@ const colDefByDataType: Record<string, ColDef> = {
   },
 }
 
-export { colDefByDataType, colDefById, defaultColDef, defaultColGroupDef }
+export {
+  colDefByDataType,
+  colDefById,
+  defaultColDef,
+  defaultColDefEdit,
+  defaultColGroupDef,
+}

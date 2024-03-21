@@ -77,7 +77,7 @@ class AdmRowAdmin(admin.ModelAdmin):
             "children",
             "choices",
             "admrecordarchive",
-            "admemptyimmutablecell",
+            "immutable_cells",
         ]
         return get_final_display_list(AdmRow, exclude)
 

@@ -14,6 +14,7 @@ import cx from 'classnames'
 import { includes, omit } from 'lodash'
 
 import { defaultColDef } from '@ors/config/Table/columnsDef'
+import { NON_EDITABLE_ROWS } from '@ors/config/Table/columnsDef/settings'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
@@ -101,7 +102,7 @@ function useGridOptions(props: {
           }),
           field: 'display_name',
           headerClass: 'ag-text-left',
-          headerName: 'Substance',
+          headerName: includes('IV', model) ? '' : 'Substance',
         },
         ...(usages.length
           ? [
@@ -158,7 +159,7 @@ function useGridOptions(props: {
               },
             ]
           : []),
-        ...(includes(['III'], model)
+        ...(includes(['II', 'III', 'IV', 'V'], model)
           ? [
               {
                 cellEditor: 'agNumberCellEditor',
@@ -203,7 +204,7 @@ function useGridOptions(props: {
         },
         editable: (props: EditableCallbackParams<RowData>) => {
           if (
-            includes(['total', 'subtotal'], props.data?.rowType) ||
+            includes(NON_EDITABLE_ROWS, props.data?.rowType) ||
             includes(['display_name'], props.colDef.field) ||
             includes(['total_usages'], props.colDef.id) ||
             includes(props.data?.excluded_usages || [], props.colDef.id)

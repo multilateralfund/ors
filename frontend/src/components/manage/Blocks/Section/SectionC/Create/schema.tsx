@@ -12,6 +12,7 @@ import cx from 'classnames'
 import { includes } from 'lodash'
 
 import { defaultColDef } from '@ors/config/Table/columnsDef'
+import { NON_EDITABLE_ROWS } from '@ors/config/Table/columnsDef/settings'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
@@ -22,10 +23,11 @@ import { RowData } from './Create'
 import { IoTrash } from 'react-icons/io5'
 
 function useGridOptions(props: {
-  onRemoveSubstance: any
-  openAddChemicalModal: any
+  model: string
+  onRemoveSubstance: (props: ICellRendererParams) => void
+  openAddChemicalModal: () => void
 }) {
-  const { onRemoveSubstance, openAddChemicalModal } = props
+  const { model, onRemoveSubstance, openAddChemicalModal } = props
 
   const gridOptions: GridOptions = useMemo(
     () => ({
@@ -67,7 +69,7 @@ function useGridOptions(props: {
           }),
           field: 'display_name',
           headerClass: 'ag-text-left',
-          headerName: 'Substance',
+          headerName: includes(['IV'], model) ? 'Description' : 'Substance',
           ...sectionColDefById['display_name'],
         },
         {
@@ -107,7 +109,7 @@ function useGridOptions(props: {
         },
         editable: (props: EditableCallbackParams<RowData>) => {
           if (
-            includes(['total', 'subtotal'], props.data?.rowType) ||
+            includes(NON_EDITABLE_ROWS, props.data?.rowType) ||
             includes(['display_name'], props.colDef.field)
           ) {
             return false

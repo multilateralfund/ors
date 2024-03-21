@@ -24,12 +24,9 @@ export default function AdmD(props: any) {
           {section.title}
         </Typography>
         <List>
-          {rows.map((row: any, index: number) => (
+          {rows.map((row: any) => (
             <ListItem key={row.id} className="flex-col items-start pl-0">
-              <Typography className="text-lg">
-                <span className="mr-2 inline-block">{index + 1}.</span>
-                {row.text}
-              </Typography>
+              <Typography className="text-lg">{row.text}</Typography>
               <FormGroup className="w-full pl-10">
                 {row.choices.map((choice: any) => (
                   <React.Fragment key={choice.id}>

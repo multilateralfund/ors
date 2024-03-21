@@ -70,7 +70,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
               },
             ]
           : []),
-        ...(includes(['III'], model)
+        ...(includes(['II', 'III', 'IV', 'V'], model)
           ? [
               {
                 dataType: 'number',

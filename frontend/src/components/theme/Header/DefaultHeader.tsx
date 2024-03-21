@@ -11,7 +11,7 @@ export default function Header() {
     <FadeInOut className="header-motion">
       <Box id="header" className="rounded-none border-0 px-0 pb-0 pt-4">
         <div className="container flex w-full items-center justify-between pb-4">
-          <div className="flex items-center gap-x-8">
+          <div className="flex items-center gap-x-6 md:gap-x-8">
             <Link href="/">
               <Logo />
             </Link>

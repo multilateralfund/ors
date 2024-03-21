@@ -29,7 +29,11 @@ const TextWidget = forwardRef(function TextWidget(
 ): JSX.Element {
   return (
     <>
-      <Label {...(InputLabel || {})} id={rest.id} />
+      <Label
+        {...(InputLabel || {})}
+        id={rest.id}
+        error={rest?.error || false}
+      />
       <TextField
         className={cx('w-full', className)}
         ref={ref}

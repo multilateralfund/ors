@@ -20,6 +20,8 @@ import {
 import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
+import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
+
 import Portal from '@ors/components/manage/Utils/Portal'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -104,6 +106,7 @@ const TableProps = {
       </div>
     )
   },
+  defaultColDef: defaultColDefEdit,
   domLayout: 'autoHeight',
   enableCellChangeFlash: true,
   enableFullScreen: true,
@@ -129,29 +132,29 @@ function CPEdit(props: { id: null | number }) {
   const Sections = {
     section_a: useMakeClassInstance<SectionA>(SectionA, [
       report.data?.section_a,
-      report.emptyForm.data.substance_rows.section_a.filter(
+      report.emptyForm.data.substance_rows.section_a?.filter(
         (item) => item.substance_id,
-      ),
+      ) || [],
       null,
     ]),
     section_b: useMakeClassInstance<SectionB>(SectionB, [
       report.data?.section_b,
-      report.emptyForm.data.substance_rows.section_b.filter(
+      report.emptyForm.data.substance_rows.section_b?.filter(
         (item) => item.substance_id,
-      ),
-      report.emptyForm.data.substance_rows.section_b.filter(
+      ) || [],
+      report.emptyForm.data.substance_rows.section_b?.filter(
         (item) => item.blend_id,
       ),
       null,
     ]),
     section_c: useMakeClassInstance<SectionC>(SectionC, [
       report.data?.section_c,
-      report.emptyForm.data.substance_rows.section_c.filter(
+      report.emptyForm.data.substance_rows.section_c?.filter(
         (item) => item.substance_id,
-      ),
-      report.emptyForm.data.substance_rows.section_c.filter(
+      ) || [],
+      report.emptyForm.data.substance_rows.section_c?.filter(
         (item) => item.blend_id,
-      ),
+      ) || [],
       null,
     ]),
     section_d: useMakeClassInstance<SectionD>(SectionD, [
@@ -187,8 +190,8 @@ function CPEdit(props: { id: null | number }) {
     section_e: Sections.section_e.getData(),
     section_f: Sections.section_f.getData(),
   })
-  const [activeTab, setActiveTab] = useState(0)
-  const [renderedSections, setRenderedSections] = useState<Array<number>>([])
+  const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
+  const [renderedSections, setRenderedSections] = useState<number[]>([])
 
   const variant = useMemo(() => {
     if (!report.data) return null
@@ -261,7 +264,7 @@ function CPEdit(props: { id: null | number }) {
       indicator.removeEventListener('transitionend', handleTransitionEnd)
     }
 
-    if (!indicator || activeTab === 0) {
+    if (!indicator || renderedSections.length == 0) {
       return handleTransitionEnd()
     }
 
@@ -281,10 +284,10 @@ function CPEdit(props: { id: null | number }) {
       {!!report.data && (
         <HeaderTitle memo={report.data.status}>
           <div className="mb-4 flex min-h-[40px] items-center justify-between gap-x-4">
-            <Typography className="text-white" component="h1" variant="h3">
+            <Typography component="h1" variant="h3">
               Edit {report.data.name}{' '}
               <span
-                className={cx({
+                className={cx('text-white', {
                   'rounded bg-success px-2 py-1':
                     report.data.status === 'final',
                   'rounded bg-warning px-2 py-1':
@@ -352,7 +355,7 @@ function CPEdit(props: { id: null | number }) {
                     variant={variant}
                     TableProps={{
                       ...TableProps,
-                      context: { variant },
+                      context: { section, variant },
                       errors: errors[section.id],
                       report,
                       section,
