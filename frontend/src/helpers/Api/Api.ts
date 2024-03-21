@@ -1,7 +1,7 @@
 import { DataType } from '@ors/types/primitives'
 
 import Cookies from 'js-cookie'
-import { includes } from 'lodash'
+import { includes, omit } from 'lodash'
 import hash from 'object-hash'
 
 import { addTrailingSlash, removeFirstSlash } from '@ors/helpers/Url/Url'
@@ -14,6 +14,7 @@ export type Api = {
     data?: any
     delay?: number | undefined
     headers?: any
+    invalidateCache?: boolean
     method?: string
     next?: any
     params?: Record<string, any>
@@ -90,6 +91,7 @@ async function api(
     data = null,
     delay,
     headers = {},
+    invalidateCache = false,
     method = 'get',
     next = {},
     params = undefined,
@@ -99,7 +101,9 @@ async function api(
     ...opts
   } = options || {}
   let fullPath = formatApiUrl(path)
-  const id = withStoreCache ? hash({ options, path }) : ''
+  const id = withStoreCache
+    ? hash({ options: { ...omit(options, ['invalidateCache']) }, path })
+    : ''
   const csrftoken = __CLIENT__ && Cookies.get('csrftoken')
   const sendRequestTime = delay ? new Date().getTime() : 0
 
@@ -119,7 +123,11 @@ async function api(
   }
 
   if (state && withStoreCache && state.cache.data[id]) {
-    return state.cache.data[id]
+    if (invalidateCache) {
+      state.cache.removeCache(id)
+    } else {
+      return state.cache.data[id]
+    }
   }
 
   if (!triggerIf) {
@@ -152,6 +160,11 @@ async function api(
   async function handleResponse(response: any) {
     try {
       const data = await response.json()
+      console.debug(
+        'API handleResponse: %s (cached: %s)',
+        fullPath,
+        withStoreCache ? id : 'no',
+      )
       if (state && withStoreCache) {
         debounce(
           () => {
@@ -213,7 +226,7 @@ type ResultsType<D> = {
 }
 
 export function getResults<D = DataType>(
-  data: D[] | ResultsType<D>,
+  data?: { results: D[] } | D[] | ResultsType<D> | null,
 ): ResultsType<D> {
   if (Array.isArray(data)) {
     return {

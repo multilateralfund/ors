@@ -7,7 +7,9 @@ import type { CPReportsSlice } from '@ors/types/store'
 import { ReportVariant } from '@ors/types/variants'
 
 import { ColDef } from 'ag-grid-community'
+import { produce } from 'immer'
 import { filter, map, omit } from 'lodash'
+import hash from 'object-hash'
 
 import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
 
@@ -97,29 +99,70 @@ function mapUsage(
 export const createCPReportsSlice = ({
   initialState,
   get,
+  set,
 }: CreateSliceProps): CPReportsSlice => {
   return {
     blends: {
       ...defaultSliceData,
       ...(initialState?.cp_reports?.blends || {}),
     },
-    fetchBundle: async (id, view = true, archive = false) => {
-      const { fetchEmptyForm, fetchReport, fetchVersions } = get().cp_reports
-      await fetchReport(id, archive)
-      fetchEmptyForm(id, view)
+    cacheInvalidate: [],
+    cacheInvalidateReport: (country_id: number, year: number) => {
+      set(
+        produce((state) => {
+          state.cp_reports.cacheInvalidate = [
+            ...state.cp_reports.cacheInvalidate,
+            hash({ country_id, year }),
+          ]
+        }),
+      )
+    },
+    fetchArchivedBundle: async (report_id, view = true) => {
+      const { fetchArchivedReport, fetchEmptyForm, fetchVersions } =
+        get().cp_reports
+      await fetchArchivedReport(report_id)
+      const report = getSlice<CPReport>('cp_reports.report.data')
+      fetchEmptyForm(report, view)
       if (view) {
-        fetchVersions(id)
+        fetchVersions(report.id)
       }
     },
-    fetchEmptyForm: async (id, view = true) => {
+    fetchArchivedReport: async (report_id) => {
+      const options = {
+        removeCacheTimeout: 60,
+        withStoreCache: true,
+      }
+      const path = `api/country-programme-archive/records/?report_id=${report_id}`
+
+      return await fetchSliceData({
+        apiSettings: {
+          options,
+          path,
+        },
+        parseResponse: (response) => ({
+          ...(response.cp_report || {}),
+          ...omit(response, 'cp_report'),
+        }),
+        slice: 'cp_reports.report',
+      })
+    },
+    fetchBundle: async (country_id, year, view = true) => {
+      const { fetchEmptyForm, fetchReport, fetchVersions } = get().cp_reports
+      await fetchReport(country_id, year)
       const report = getSlice<CPReport>('cp_reports.report.data')
+      fetchEmptyForm(report, view)
+      if (view) {
+        fetchVersions(report.id)
+      }
+    },
+    fetchEmptyForm: async (report = null, view = true) => {
       const variant = getVariant(report)
       const options = {
         removeCacheTimeout: 60,
         withStoreCache: true,
       }
-      const path = id
-        ? `api/country-programme/empty-form/?cp_report_id=${id}`
+      const path = report
+        ? `api/country-programme/empty-form/?cp_report_id=${report.id}`
         : 'api/country-programme/empty-form/'
       return await fetchSliceData({
         apiSettings: {
@@ -152,14 +195,14 @@ export const createCPReportsSlice = ({
         slice: 'cp_reports.report.emptyForm',
       })
     },
-    fetchReport: async (id, archive = false) => {
+    fetchReport: async (country_id, year) => {
+      const { cacheInvalidate } = get().cp_reports
       const options = {
+        invalidateCache: cacheInvalidate.includes(hash({ country_id, year })),
         removeCacheTimeout: 60,
         withStoreCache: true,
       }
-      const path = archive
-        ? `api/country-programme-archive/records/?cp_report_id=${id}`
-        : `api/country-programme/records/?cp_report_id=${id}`
+      const path = `api/country-programme/records/?country_id=${country_id}&year=${year}`
 
       return await fetchSliceData({
         apiSettings: {

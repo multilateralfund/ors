@@ -18,12 +18,12 @@ function getWidgetByType(type?: keyof typeof config.widgets.type) {
   return type ? config.widgets.type[type] : null
 }
 
-export default function Field({
+export default function Field<T>({
   FieldProps = {},
   type,
   widget,
   ...props
-}: WidgetProps): React.ReactNode {
+}: WidgetProps<T>): React.ReactNode {
   const Widget = useMemo(
     () =>
       getWidgetByName(widget) || getWidgetByType(type) || getWidgetDefault(),
@@ -45,7 +45,7 @@ export default function Field({
       )}
     >
       {/* @ts-ignore */}
-      <Widget {...props} />
+      <Widget<T> {...props} />
     </div>
   )
 }

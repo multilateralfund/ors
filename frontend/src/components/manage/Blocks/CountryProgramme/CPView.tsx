@@ -25,7 +25,6 @@ import Link from '@ors/components/ui/Link/Link'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
 import api, { formatApiUrl } from '@ors/helpers/Api/Api'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
-import { parseNumber } from '@ors/helpers/Utils/Utils'
 import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
@@ -157,13 +156,17 @@ const TableProps: TableProps = {
   withSeparators: true,
 }
 
-function CPView(props: { archive?: boolean; id: string }) {
+function CPView(props: { archive?: boolean }) {
   const tabsEl = React.useRef<HTMLDivElement>(null)
   const { enqueueSnackbar } = useSnackbar()
   const { archive } = props
   const { report, setReport } = useStore((state) => state.cp_reports)
   const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
   const [renderedSections, setRenderedSections] = useState<number[]>([])
+  const countries = useStore((state) => state.common.countries_for_listing.data)
+  const country = countries.filter(
+    (country) => country.id === report.data?.country_id,
+  )[0]
 
   const variant = useMemo(() => {
     if (!report.data) return null
@@ -196,7 +199,7 @@ function CPView(props: { archive?: boolean; id: string }) {
     }
 
     indicator.addEventListener('transitionend', handleTransitionEnd)
-  }, [activeTab])
+  }, [activeTab, renderedSections])
 
   return (
     <>
@@ -230,7 +233,7 @@ function CPView(props: { archive?: boolean; id: string }) {
               {archive && (
                 <Link
                   className="flex gap-x-2 text-white"
-                  href={`/country-programme/${report.data.final_version_id}`}
+                  href={`/country-programme/${country.iso3}/${report.data.year}`}
                   button
                 >
                   <IoArrowUndoOutline size={24} />
@@ -350,7 +353,7 @@ function CPView(props: { archive?: boolean; id: string }) {
               <div className="flex gap-x-4">
                 <Link
                   color="primary"
-                  href={`/country-programme/edit/${report.data.id}`}
+                  href={`/country-programme/edit/${country?.iso3}/${report.data?.year}`}
                   size="small"
                   variant="contained"
                   button
@@ -406,16 +409,50 @@ function CPView(props: { archive?: boolean; id: string }) {
   )
 }
 
-export default function CPViewWrapper(props: {
-  archive?: boolean
-  id: string
-}) {
+export default function CPViewWrapper(props: { iso3: string; year: number }) {
+  const { iso3, year } = props
+  const countries = useStore((state) => state.common.countries_for_listing.data)
+  const country = countries.filter((country) => country.iso3 === iso3)[0]
+
   const { fetchBundle, report, setReport } = useStore(
     (state) => state.cp_reports,
   )
-  const { archive } = props
 
-  const id = useMemo(() => parseNumber(props.id), [props.id])
+  const dataReady =
+    report.data &&
+    report.emptyForm.data &&
+    report.data.country_id === country.id &&
+    report.data.year == year
+
+  useEffect(() => {
+    return () => {
+      setReport({
+        ...defaultSliceData,
+        emptyForm: defaultSliceData,
+        versions: defaultSliceData,
+      })
+    }
+  }, [setReport])
+
+  useEffect(() => {
+    fetchBundle(country.id, year, true)
+  }, [country, year, fetchBundle])
+
+  if (!dataReady)
+    return (
+      <Loading
+        className="!fixed bg-action-disabledBackground"
+        active={!report.error && report.loading}
+      />
+    )
+
+  return <CPView />
+}
+
+export function CPArchiveViewWrapper({ id }: { id: number }) {
+  const { fetchArchivedBundle, report, setReport } = useStore(
+    (state) => state.cp_reports,
+  )
 
   const dataReady =
     report.data && report.emptyForm.data && report.data.id === id
@@ -431,8 +468,8 @@ export default function CPViewWrapper(props: {
   }, [setReport])
 
   useEffect(() => {
-    fetchBundle(id, true, archive)
-  }, [id, archive, fetchBundle])
+    fetchArchivedBundle(id, true)
+  }, [fetchArchivedBundle, id])
 
   if (!dataReady)
     return (
@@ -442,5 +479,5 @@ export default function CPViewWrapper(props: {
       />
     )
 
-  return <CPView {...props} />
+  return <CPView archive={true} />
 }

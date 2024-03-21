@@ -1,4 +1,6 @@
 'use client'
+import { Country } from '@ors/types/store'
+
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
@@ -44,6 +46,24 @@ interface SectionProps {
   setFilters: any
 }
 
+type ReportResponse = {
+  comment: null | string
+  country: string
+  country_id: number
+  id: number
+  name: string
+  status: 'draft' | 'final'
+  version: number
+  year: number
+}
+
+type ReportsResponse = {
+  count: number
+  next: null | string
+  previous: null | string
+  results: ReportResponse[]
+}
+
 const PER_PAGE_GENERAL = 48
 const PER_PAGE_COUNTRY = 48
 const PER_PAGE_YEAR = 500
@@ -70,8 +90,20 @@ function Legend() {
   )
 }
 
-function Item({ item, showCountry, showYear }: any) {
+function Item({
+  item,
+  showCountry,
+  showYear,
+}: {
+  item: ReportResponse
+  showCountry: boolean
+  showYear: boolean
+}) {
   const showAll = !showCountry && !showYear
+  const countries = useStore((state) => state.common.countries_for_listing.data)
+  const country = countries.filter(
+    (country) => country.id === item.country_id,
+  )[0]
 
   return (
     <ListItem
@@ -103,8 +135,8 @@ function Item({ item, showCountry, showYear }: any) {
               underline="hover"
               href={
                 item.status === 'draft'
-                  ? `/country-programme/edit/${item.id}`
-                  : `/country-programme/${item.id}`
+                  ? `/country-programme/${country?.iso3}/${item?.year}/edit`
+                  : `/country-programme/${country?.iso3}/${item?.year}`
               }
             >
               {showAll && item.name}
@@ -137,7 +169,7 @@ function GeneralSection(props: SectionProps) {
   const orderField =
     groupBy === 'country' ? 'year,country__name' : 'year,country__name'
 
-  const { data, loading, setParams } = useApi({
+  const { data, loading, setParams } = useApi<ReportsResponse>({
     // onSuccess: () => {
     //   if (shouldScroll.current) {
     //     scrollToElement({ selectors: '#cp-listing-sections' })
@@ -158,15 +190,15 @@ function GeneralSection(props: SectionProps) {
     },
     path: 'api/country-programme/reports/',
   })
-  const { count, loaded, results } = getResults(data)
+  const { count, loaded, results } = getResults<ReportResponse>(data)
 
   return (
     <div id="general-section">
       <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
         <div className="flex flex-1 items-center gap-4">
-          <Field
+          <Field<Country>
             FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
-            getOptionLabel={(option: any) => option?.name}
+            getOptionLabel={(option) => (option as Country).name}
             options={countries}
             popupIcon={<IoFilter className="p-1" size={24} />}
             value={null}

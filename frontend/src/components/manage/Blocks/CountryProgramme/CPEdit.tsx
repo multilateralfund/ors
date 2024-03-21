@@ -1,5 +1,7 @@
 'use client'
 
+import { Country } from '@ors/types/store'
+
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
@@ -30,7 +32,6 @@ import Link from '@ors/components/ui/Link/Link'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
 import api from '@ors/helpers/Api/Api'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
-import { parseNumber } from '@ors/helpers/Utils/Utils'
 import useMakeClassInstance from '@ors/hooks/useMakeClassInstance'
 import SectionA from '@ors/models/SectionA'
 import SectionB from '@ors/models/SectionB'
@@ -123,7 +124,13 @@ const TableProps = {
   withSeparators: true,
 }
 
-function CPEdit(props: { id: null | number }) {
+function CPEdit({
+  cacheInvalidateReport,
+  country,
+}: {
+  cacheInvalidateReport: (country_id: number, year: number) => void
+  country: Country
+}) {
   const tabsEl = React.useRef<HTMLDivElement>(null)
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
@@ -344,7 +351,6 @@ function CPEdit(props: { id: null | number }) {
               >
                 <FootnotesProvider>
                   <Section
-                    {...props}
                     Section={get(Sections, section.id)}
                     emptyForm={report.emptyForm.data || {}}
                     errors={errors}
@@ -372,7 +378,7 @@ function CPEdit(props: { id: null | number }) {
               <div className="container flex w-full justify-end gap-x-4">
                 <Link
                   color="secondary"
-                  href={`/country-programme/${report.data?.id || ''}`}
+                  href={`/country-programme/${country.iso3}/${report.data.year}`}
                   size="small"
                   variant="contained"
                   button
@@ -404,7 +410,13 @@ function CPEdit(props: { id: null | number }) {
                           </>,
                           { variant: 'success' },
                         )
-                        router.push(`/country-programme/${response.id}`)
+                        cacheInvalidateReport(
+                          response.country_id,
+                          response.year,
+                        )
+                        router.push(
+                          `/country-programme/${country.iso3}/${response.year}`,
+                        )
                       } catch (error) {
                         if (error.status === 400) {
                           setErrors({ ...(await error.json()) })
@@ -453,7 +465,10 @@ function CPEdit(props: { id: null | number }) {
                         </>,
                         { variant: 'success' },
                       )
-                      router.push(`/country-programme/${response.id}`)
+                      cacheInvalidateReport(response.country_id, response.year)
+                      router.push(
+                        `/country-programme/${country.iso3}/${response.year}`,
+                      )
                     } catch (error) {
                       if (error.status === 400) {
                         setErrors({ ...(await error.json()) })
@@ -487,19 +502,27 @@ function CPEdit(props: { id: null | number }) {
   )
 }
 
-export default function CPEditWrapper(props: { id: string }) {
-  const { blends, fetchBundle, report, setReport, substances } = useStore(
-    (state) => state.cp_reports,
-  )
+export default function CPEditWrapper(props: { iso3: string; year: number }) {
+  const { iso3, year } = props
+  const countries = useStore((state) => state.common.countries_for_listing.data)
+  const country = countries.filter((country) => country.iso3 === iso3)[0]
 
-  const id = useMemo(() => parseNumber(props.id), [props.id])
+  const {
+    blends,
+    cacheInvalidateReport,
+    fetchBundle,
+    report,
+    setReport,
+    substances,
+  } = useStore((state) => state.cp_reports)
 
   const dataReady =
     report.data &&
     report.emptyForm.data &&
     blends.data &&
     substances.data &&
-    report.data.id === id
+    report.data.country_id === country.id &&
+    report.data.year === year
 
   useEffect(() => {
     return () => {
@@ -512,8 +535,8 @@ export default function CPEditWrapper(props: { id: string }) {
   }, [setReport])
 
   useEffect(() => {
-    fetchBundle(id, false)
-  }, [id, fetchBundle])
+    fetchBundle(country.id, year, false)
+  }, [country, year, fetchBundle])
 
   if (!dataReady) {
     return (
@@ -524,5 +547,7 @@ export default function CPEditWrapper(props: { id: string }) {
     )
   }
 
-  return <CPEdit id={id} />
+  return (
+    <CPEdit cacheInvalidateReport={cacheInvalidateReport} country={country} />
+  )
 }
