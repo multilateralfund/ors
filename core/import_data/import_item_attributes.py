@@ -4,7 +4,7 @@ from dateutil import parser
 
 from django.db import transaction
 from django.conf import settings
-from core.import_data.mapping_names_dict import USAGE_NAME_MAPPING
+from core.import_data.mapping_names_dict import CHEMICAL_NAME_MAPPING, USAGE_NAME_MAPPING
 from core.import_data.utils import (
     DB_DIR_LIST,
     check_empty_row,
@@ -58,8 +58,9 @@ def get_chemical_dict(file_name):
 
     for chemical_json in json_data:
         # get chemical by name
+        chemical_name = CHEMICAL_NAME_MAPPING.get(chemical_json["Name"], chemical_json["Name"])
         chemical, chemical_type = get_chemical_by_name_or_components(
-            chemical_json["Name"]
+            chemical_name
         )
         if not chemical:
             # if ItemCategoryId is not None, it means the item is for sure chemical

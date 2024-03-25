@@ -258,7 +258,6 @@ CHEMICAL_NAME_MAPPING = {
     "Ammoniac (R-717)": "R-717 (ammonia (NH3))",
     "Ammoniac (R718)": "R-717 (ammonia (NH3))",
     "R-717": "R-717 (ammonia (NH3))",
-    "R-717": "R-717 (ammonia (NH3))",
     "HFC-417A": "R-417A",
     "R-1234yf": "HFO-1234yf",
     "R-406A (containing R-22)": "R-406A",
@@ -296,8 +295,12 @@ CHEMICAL_NAME_MAPPING = {
     "Other3": "Other",
     "Others": "Other",
     "OTHER (R502 and HCFC-115 blend)": "Other",
-    "R32/R125/R134a/other uncontrolled substances(26%/21%/20%/33%)": "	LegacyMix-6",
     "HFO en poliol formulado": "HFO in imported pre-blended polyol",
+    "Whacool 38A": "CustMix-317",
+    "R23/R125/R245fa/R236fa/other uncontrolled": "CustMix-327",
+    "R32/R125/R134a/R227ea/R236fa/other uncontrolled": "CustMix-332",
+    "R32/R125/R134a/other uncontrolled substances(26%/21%/20%/33%)": "CustMix-331",
+    "R32/R125/R134a/other uncontrolled": "CustMix-331",
 }
 
 DB_YEAR_MAPPING = {

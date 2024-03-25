@@ -40,9 +40,9 @@ def create_other_groups():
         "ozone_id": None,
     }, {
         "group_id": "legacy",
-        "annex": "Legacy",
-        "name": "Legacy Group",
-        "name_alt": "Legacy Group",
+        "annex": "unknown",
+        "name": "Legacy",
+        "name_alt": "Other - Legacy",
         "description": "Substances that are not in the ozone datababse.",
         "description_alt": "",
         "is_odp": False,
@@ -62,7 +62,7 @@ def get_uncontrolled_group_id():
     except Group.DoesNotExist:
         create_other_groups()
         return Group.objects.get(group_id="uncontrolled").id
-    
+
 def get_legacy_group_id():
     try:
         return Group.objects.get(group_id="legacy").id
@@ -223,9 +223,9 @@ def import_legacy_substances():
 
     with open(file_path, "r", encoding="utf8") as f:
         substance_list = json.load(f)
-    
+
     last_sort_order = Substance.objects.order_by("-sort_order").first().sort_order
-    
+    legacy_group_id = get_legacy_group_id()
     for subst_data in substance_list:
         # check if it is a new substance
         if Substance.objects.find_by_name(subst_data["name"]):
@@ -233,8 +233,7 @@ def import_legacy_substances():
             continue
 
         # get group
-        group_id = get_legacy_group_id()
-        subst_data["group_id"] = group_id
+        subst_data["group_id"] = legacy_group_id
         # set sort order
         last_sort_order += 100
         subst_data["sort_order"] = last_sort_order
@@ -248,7 +247,25 @@ def import_legacy_substances():
             subst_data["sort_order"] += 1
             Substance.objects.create(**subst_data)
 
-    logger.info("✔ other substances imported")
+    # create Cyclopentane in Imported Pre-blended Polyol
+    cyclopentane = Substance.objects.find_by_name("Cyclopentane")
+    if cyclopentane:
+        # check if already exists
+        subst_data = {
+            "name": "Cyclopentane in imported pre-blended polyol",
+            "sort_order": cyclopentane.sort_order + 1,
+            "group_id": legacy_group_id,
+            "cp_report_note": cyclopentane.cp_report_note,
+            "is_contained_in_polyols": True,
+            "formula": cyclopentane.formula,
+            "gwp": cyclopentane.gwp,
+            "max_odp": cyclopentane.max_odp,
+            "min_odp": cyclopentane.min_odp,
+
+        }
+        Substance.objects.get_or_create(name=subst_data["name"], defaults=subst_data)
+
+    logger.info("✔ legacy substances imported")
 
 
 def import_substances():
@@ -297,7 +314,7 @@ def add_components_to_blend(blend, components):
         )
 
 def get_next_legacy_mix_name():
-    legacy_number = Blend.objects.filter(name__startswith="Legacy").count() + 1 
+    legacy_number = Blend.objects.filter(name__startswith="Legacy").count() + 1
     return f"LegacyMix-{legacy_number}"
 
 def import_legacy_blends():
@@ -305,7 +322,7 @@ def import_legacy_blends():
 
     with open(file_path, "r", encoding="utf8") as f:
         blend_list = json.load(f)
-    
+
     last_sort_order = (
             Blend.objects
             .filter(sort_order__isnull=False)
@@ -323,20 +340,21 @@ def import_legacy_blends():
         if blend_components:
             components = [(comp["name"], comp["percentage"]) for comp in blend_components]
             if Blend.objects.find_by_components(components):
-                logger.warning(f"Blend {blend_data['name']} already exists")
+                logger.warning(f"Blend {blend_data['name']} - "
+                               f"{blend_components} already exists")
                 continue
 
         # create blend
         blend_data["sort_order"] = last_sort_order + 100
         last_sort_order = blend_data["sort_order"]
         blend_data["is_legacy"] = True
-        
+
         if not blend_data["name"]:
             blend_data["name"] = get_next_legacy_mix_name()
         blend = Blend.objects.create(**blend_data)
         add_components_to_blend(blend, blend_components)
 
-    logger.info("✔ other blends imported")
+    logger.info("✔ legacy blends imported")
 
 def import_blends():
     exclude = [
