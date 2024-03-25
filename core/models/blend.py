@@ -125,6 +125,7 @@ class Blend(models.Model):
         help_text="Global Warming Potential",
     )
     is_contained_in_polyols = models.BooleanField(default=False)
+    is_legacy = models.BooleanField(default=False)
     sort_order = models.FloatField(
         null=True, blank=True, help_text="General sort order"
     )

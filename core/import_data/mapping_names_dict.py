@@ -288,6 +288,7 @@ CHEMICAL_NAME_MAPPING = {
     "R32/ R125/ R134a/ R601a/R600) (8.5%/45%/44.2%/0.6%/1.7%)": "R-438A",
     "Opteon SF79 (HFC-43-10mee=1%; HCO-1130(E)=95%;Methoxytridecafluoroheptene=4%)": "CustMix-166",
     "Vertrel MCA (HFC-43-10mee=62%; HCO-1130(E)=38%)": "CustMix-174",
+    "Vertrel MCA": "CustMix-174",
     "R502": "R-502",
     "OTHER (R502)": "R-502",
     "PFC 672FC (HFC-125=15%, HFC-236fa=10%)": "PFC-672FC",
@@ -295,7 +296,7 @@ CHEMICAL_NAME_MAPPING = {
     "Other3": "Other",
     "Others": "Other",
     "OTHER (R502 and HCFC-115 blend)": "Other",
-    "R32/R125/R134a/other uncontrolled substances(26%/21%/20%/33%)": "CustMix-334",
+    "R32/R125/R134a/other uncontrolled substances(26%/21%/20%/33%)": "	LegacyMix-6",
     "HFO en poliol formulado": "HFO in imported pre-blended polyol",
 }
 

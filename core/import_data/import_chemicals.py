@@ -27,8 +27,8 @@ CUSTOM_SUBS_GROUP_MAPPING = {
 }
 
 
-def create_uncontrolled_group():
-    group_data = {
+def create_other_groups():
+    group_data_list = [{
         "group_id": "uncontrolled",
         "annex": "unknown",
         "name": "Other",
@@ -38,10 +38,21 @@ def create_uncontrolled_group():
         "is_odp": False,
         "is_gwp": False,
         "ozone_id": None,
-    }
-    group, _ = Group.objects.update_or_create(
-        name=group_data["name"], defaults=group_data
-    )
+    }, {
+        "group_id": "legacy",
+        "annex": "Legacy",
+        "name": "Legacy Group",
+        "name_alt": "Legacy Group",
+        "description": "Substances that are not in the ozone datababse.",
+        "description_alt": "",
+        "is_odp": False,
+        "is_gwp": False,
+        "ozone_id": None,
+    }]
+    for group_data in group_data_list:
+        group, _ = Group.objects.update_or_create(
+            name=group_data["name"], defaults=group_data
+        )
     return group.id
 
 
@@ -49,7 +60,15 @@ def get_uncontrolled_group_id():
     try:
         return Group.objects.get(group_id="uncontrolled").id
     except Group.DoesNotExist:
-        return create_uncontrolled_group()
+        create_other_groups()
+        return Group.objects.get(group_id="uncontrolled").id
+    
+def get_legacy_group_id():
+    try:
+        return Group.objects.get(group_id="legacy").id
+    except Group.DoesNotExist:
+        create_other_groups()
+        return Group.objects.get(group_id="legacy").id
 
 
 @transaction.atomic
@@ -134,7 +153,7 @@ def import_groups():
     ]
     import_data(Group, IMPORT_RESOURCES_DIR / "groups.json", exclude)
     # create a group for substances that don't have a group
-    create_uncontrolled_group()
+    create_other_groups()
     logger.info("✔ groups imported")
 
 
@@ -199,8 +218,8 @@ def set_new_group_for_substances():
         group = Group.objects.get(name=group)
         Substance.objects.filter(name=name).update(group_id=group.id)
 
-def import_other_substances():
-    file_path = IMPORT_RESOURCES_DIR / "other_substances.json"
+def import_legacy_substances():
+    file_path = IMPORT_RESOURCES_DIR / "legacy_substances.json"
 
     with open(file_path, "r", encoding="utf8") as f:
         substance_list = json.load(f)
@@ -214,20 +233,16 @@ def import_other_substances():
             continue
 
         # get group
-        group = Group.objects.filter(name = subst_data["group"])
-        if not group:
-            logger.error(f"Group {subst_data['group']} not found")
-            continue
-
-        # create substance
-        subst_data["group_id"] = group[0].id
-        subst_data.pop("group")
-        #set sort order
+        group_id = get_legacy_group_id()
+        subst_data["group_id"] = group_id
+        # set sort order
         last_sort_order += 100
         subst_data["sort_order"] = last_sort_order
+
+        # create substance
         Substance.objects.create(**subst_data)
 
-        #check if the substance is contained in pre-blended polyol
+        # check if the substance is contained in pre-blended polyol
         if subst_data["is_contained_in_polyols"]:
             subst_data["name"] += " in imported pre-blended polyol"
             subst_data["sort_order"] += 1
@@ -257,7 +272,7 @@ def import_substances():
     )
     set_substance_cp_notes()
     set_new_group_for_substances()
-    import_other_substances()
+    import_legacy_substances()
 
     logger.info("✔ substances imported")
     import_alternative_names(
@@ -281,8 +296,12 @@ def add_components_to_blend(blend, components):
             blend=blend, substance=substance, percentage=float(comp["percentage"])/100
         )
 
-def import_other_blends():
-    file_path = IMPORT_RESOURCES_DIR / "other_blends.json"
+def get_next_legacy_mix_name():
+    legacy_number = Blend.objects.filter(name__startswith="Legacy").count() + 1 
+    return f"LegacyMix-{legacy_number}"
+
+def import_legacy_blends():
+    file_path = IMPORT_RESOURCES_DIR / "legacy_blends.json"
 
     with open(file_path, "r", encoding="utf8") as f:
         blend_list = json.load(f)
@@ -310,9 +329,10 @@ def import_other_blends():
         # create blend
         blend_data["sort_order"] = last_sort_order + 100
         last_sort_order = blend_data["sort_order"]
+        blend_data["is_legacy"] = True
         
         if not blend_data["name"]:
-            blend_data["name"] = Blend.objects.get_next_cust_mx_name()
+            blend_data["name"] = get_next_legacy_mix_name()
         blend = Blend.objects.create(**blend_data)
         add_components_to_blend(blend, blend_components)
 
@@ -341,7 +361,7 @@ def import_blends():
     )
     logger.info("✔ blends alternative names imported")
 
-    import_other_blends()
+    import_legacy_blends()
 
 
 def import_blend_components():

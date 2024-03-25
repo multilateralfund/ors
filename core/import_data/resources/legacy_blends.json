@@ -298,17 +298,6 @@
         "components": null
     },
     {
-        "name": "Vertrel MCA",
-        "composition": null,
-        "composition_alt": null,
-        "other_names": "Trans-Dichloroethylene",
-        "type": "Other",
-        "odp": "0.0000",
-        "gwp": "0.00",
-        "remarks": "Details of composition not provided.",
-        "components": null
-    },
-    {
         "name": "MDI",
         "composition": null,
         "composition_alt": null,

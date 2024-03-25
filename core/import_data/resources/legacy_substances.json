@@ -2,7 +2,6 @@
     {
         "name": "Halon-2404",
         "description": "Dibromotetrafluoroethane",
-        "group": "A/II",
         "odp": "6.0000000000",
         "min_odp": "6.0000000000",
         "max_odp": "6.0000000000",
@@ -14,7 +13,6 @@
     {
         "name": "HFO-1234zd(E)",
         "description": null,
-        "group": "Other",
         "odp": "0.0000000000",
         "min_odp": "0.0000000000",
         "max_odp": "0.0000000000",
@@ -26,7 +24,6 @@
     {
         "name": "Methylal",
         "description": null,
-        "group": "Other",
         "odp": "0.0000000000",
         "min_odp": "0.0000000000",
         "max_odp": "0.0000000000",
@@ -38,7 +35,6 @@
     {
         "name": "HFO (Solstice LBA)",
         "description": "Solstice LBA",
-        "group": "Other",
         "odp": "0.0000000000",
         "min_odp": "0.0000000000",
         "max_odp": "0.0000000000",
@@ -50,7 +46,6 @@
     {
         "name": "HCFC-125",
         "description": null,
-        "group": "Other",
         "odp": "0.0000000000",
         "min_odp": "0.0000000000",
         "max_odp": "0.0000000000",
@@ -62,7 +57,6 @@
     {
         "name": "Eau (R-718)",
         "description": null,
-        "group": "Other",
         "odp": "0.0000000000",
         "min_odp": "0.0000000000",
         "max_odp": "0.0000000000",
@@ -74,7 +68,6 @@
     {
         "name": "HFO-1336zd",
         "description": null,
-        "group": "Other",
         "odp": "0.0000000000",
         "min_odp": "0.0000000000",
         "max_odp": "0.0000000000",
@@ -86,7 +79,6 @@
     {
         "name": "Aquion Limpieza (Mezcla HFC)",
         "description": null,
-        "group": "Other",
         "odp": "0.0000000000",
         "min_odp": "0.0000000000",
         "max_odp": "0.0000000000",
@@ -98,7 +90,6 @@
     {
         "name": "R-406",
         "description": null,
-        "group": "Other",
         "odp": "0.0000000000",
         "min_odp": "0.0000000000",
         "max_odp": "0.0000000000",
@@ -110,7 +101,6 @@
     {
         "name": "HFO",
         "description": null,
-        "group": "Other",
         "odp": "0.0000000000",
         "min_odp": "0.0000000000",
         "max_odp": "0.0000000000",
