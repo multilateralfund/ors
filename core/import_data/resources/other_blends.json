@@ -1,0 +1,322 @@
+[
+    {
+        "name": "Whacool 38A",
+        "composition": null,
+        "composition_alt": null,
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "0.0000",
+        "remarks": "Details of composition not provided. The composition is not available for auto computation of GWP.",
+        "components": null
+    },
+    {
+        "name": "Chesterton 279",
+        "composition": "HFC-134a=35%;Unspecified substance(s)=75%",
+        "composition_alt": null,
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "500.5000",
+        "remarks": null,
+        "components": [
+            {
+                "name": "HFC-134a",
+                "percentage": 35
+            },
+            {
+                "name": "Other",
+                "percentage": 65
+            }
+        ]
+    },
+    {
+        "name": "PFC-672FC",
+        "composition": "HFC-125=15%; HFC-236fa=10%;Unspecified substance(s)=75%",
+        "composition_alt": null,
+        "other_names": "PFC-672C",
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "1506.000",
+        "remarks": null,
+        "components": [
+            {
+                "name": "HFC-125",
+                "percentage": 15
+            },
+            {
+                "name": "HFC-236fa",
+                "percentage": 10
+            },
+            {
+                "name": "Other",
+                "percentage": 75
+            }
+        ]
+    },
+    {
+        "name": "Top Off 90",
+        "composition": "HFC-125=90%;Unspecified substance(s)=10%",
+        "composition_alt": null,
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "3150.000",
+        "remarks": null,
+        "components": [
+            {
+                "name": "HFC-125",
+                "percentage": 90
+            },
+            {
+                "name": "Other",
+                "percentage": 10
+            }
+        ]
+    },
+    {
+        "name": "Top Off 24",
+        "composition": "R-125=24%;R-23=6%;Unspecified substance(s)=70%",
+        "composition_alt": "(HFC-125=24%, HFC-23=6%, Other=70%)",
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "1728.000",
+        "remarks": null,
+        "components": [
+            {
+                "name": "HFC-125",
+                "percentage": 24
+            },
+            {
+                "name": "HFC-23",
+                "percentage": 6
+            },
+            {
+                "name": "Other",
+                "percentage": 70
+            }
+        ]
+    },
+    {
+        "name": null,
+        "composition": "HFC-365mfc=85%;Unspecified substance(s)=15%",
+        "composition_alt": null,
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "0.000",
+        "remarks": "Details of gwp not provided.",
+        "components": [
+            {
+                "name": "HFC-365mfc",
+                "percentage": 85
+            },
+            {
+                "name": "Other",
+                "percentage": 15
+            }
+        ]
+    },
+    {
+        "name": null,
+        "composition": null,
+        "composition_alt": "R23/R125/R245fa/R236fa/other uncontrolled",
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "0.000",
+        "remarks": "Details of composition not provided. The composition is not available for auto computation of GWP.",
+        "components": null
+    },
+    {
+        "name": null,
+        "composition": null,
+        "composition_alt": "R32/R125/R134a/R227ea/R236fa/other uncontrolled",
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "0.000",
+        "remarks": "Details of composition not provided. The composition is not available for auto computation of GWP.",
+        "components": null
+    },
+    {
+        "name": null,
+        "composition": null,
+        "composition_alt": "R32/R125/R134a/other uncontrolled",
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "0.000",
+        "remarks": "Details of composition not provided. The composition is not available for auto computation of GWP.",
+        "components": null
+    },
+    {
+        "name": null,
+        "composition": "HFC-32=31.5%; HFC-125=30%; HFC-134a=38.5%",
+        "composition_alt": "R32/R125/R134a(31.5%/30%/38.5%)",
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "1600.000",
+        "remarks": null,
+        "components": [
+            {
+                "name": "HFC-32",
+                "percentage": 31.5
+            },
+            {
+                "name": "HFC-125",
+                "percentage": 30
+            },
+            {
+                "name": "HFC-134a",
+                "percentage": 38.5
+            }
+        ]
+    },
+    {
+        "name": null,
+        "composition": "HFC-32=6%, HFC-125=48%, HFC-134a=45%, Isobutane=1%",
+        "composition_alt": "R32/R125/R134a/R600a(6%/48%/45%/1%)",
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "2323.000",
+        "remarks": null,
+        "components": [
+            {
+                "name": "HFC-32",
+                "percentage": 6
+            },
+            {
+                "name": "HFC-125",
+                "percentage": 48
+            },
+            {
+                "name": "HFC-134a",
+                "percentage": 45
+            },
+            {
+                "name": "Isobutane",
+                "percentage": 1
+            }
+        ]
+    },
+    {
+        "name": null,
+        "composition": "HFC-32=26%, HFC-125=21%, HFC-134a=20%, Unspecified substance(s)=33%",
+        "composition_alt": "R32/R125/R134a/other uncontrolled substances(26%/21%/20%/33%)",
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "0.000",
+        "remarks": null,
+        "components": [
+            {
+                "name": "HFC-32",
+                "percentage": 26
+            },
+            {
+                "name": "HFC-125",
+                "percentage": 21
+            },
+            {
+                "name": "HFC-134a",
+                "percentage": 20
+            },
+            {
+                "name": "Other",
+                "percentage": 33
+            }
+        ]
+    },
+    {
+        "name": "R-513",
+        "composition": null,
+        "composition_alt": null,
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "629.200",
+        "remarks": "Can be 513A or 513B. Composition to be provided by NOU based on substance",
+        "components": null
+    },
+    {
+        "name": "R-410C",
+        "composition": null,
+        "composition_alt": null,
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "0.000",
+        "remarks": "Details of composition not provided. The composition is not available for auto computation of GWP.",
+        "components": null
+    },
+    {
+        "name": "R-22A",
+        "composition": null,
+        "composition_alt": null,
+        "other_names": "R22A (HC Blend, RedTek)",
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "0.000",
+        "remarks": "Details of composition not provided. The composition is not available for auto computation of GWP.",
+        "components": null
+    },
+    {
+        "name": "R-417",
+        "composition": null,
+        "composition_alt": null,
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "3026.690",
+        "remarks": "Can be 417A or 417B or 417C; contains HFC-125/HFC-134a/HC-600 with varying composition. Details of composition not provided.",
+        "components": null
+    },
+    {
+        "name": "Poliol 9721 M-LX",
+        "composition": null,
+        "composition_alt": null,
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "0.00",
+        "remarks": "Details of composition not provided. The composition is not available for auto computation of GWP.",
+        "components": null
+    },
+    {
+        "name": "Opteon SF79",
+        "composition": null,
+        "composition_alt": null,
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "0.00",
+        "remarks": "Details of composition not provided.",
+        "components": null
+    },
+    {
+        "name": "Vertrel MCA",
+        "composition": null,
+        "composition_alt": null,
+        "other_names": "Trans-Dichloroethylene",
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "0.00",
+        "remarks": "Details of composition not provided.",
+        "components": null
+    },
+    {
+        "name": "MDI",
+        "composition": null,
+        "composition_alt": null,
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "0.00",
+        "remarks": "Not available.Details of composition not provided. The composition is not available for auto computation of GWP.",
+        "components": null
+    }
+]

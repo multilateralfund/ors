@@ -133,6 +133,7 @@ class Blend(models.Model):
     )
     ozone_id = models.IntegerField(null=True, blank=True)
     cp_report_note = models.TextField(null=True, blank=True)
+    remarks = models.TextField(null=True, blank=True)
 
     objects = BlendManager()
 
@@ -146,6 +147,9 @@ class Blend(models.Model):
         @return: composition string
         """
         # sort the components by percentage
+        comonents_list = self.components.all()
+        if not comonents_list:
+            return ""
         components = [
             (c.component_name, round(c.percentage * 100, 2))
             for c in self.components.all()
@@ -227,6 +231,9 @@ class BlendComponentManager(models.Manager):
             as the components_list
         @return: list of Blend objects
         """
+        if not components_list:
+            return Blend.objects.none()
+
         filter_list = []
         # set the filter list for the query using the components list
         for substance_id, _ in components_list:

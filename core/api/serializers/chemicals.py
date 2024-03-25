@@ -76,6 +76,7 @@ class BlendSerializer(ChemicalsBaseSerializer):
             "components",
             "sections",
             "chemical_note",
+            "remarks"
         ]
 
     def get_composition(self, obj):

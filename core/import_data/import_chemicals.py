@@ -199,6 +199,42 @@ def set_new_group_for_substances():
         group = Group.objects.get(name=group)
         Substance.objects.filter(name=name).update(group_id=group.id)
 
+def import_other_substances():
+    file_path = IMPORT_RESOURCES_DIR / "other_substances.json"
+
+    with open(file_path, "r", encoding="utf8") as f:
+        substance_list = json.load(f)
+    
+    last_sort_order = Substance.objects.order_by("-sort_order").first().sort_order
+    
+    for subst_data in substance_list:
+        # check if it is a new substance
+        if Substance.objects.find_by_name(subst_data["name"]):
+            logger.warning(f"Substance {subst_data['name']} already exists")
+            continue
+
+        # get group
+        group = Group.objects.filter(name = subst_data["group"])
+        if not group:
+            logger.error(f"Group {subst_data['group']} not found")
+            continue
+
+        # create substance
+        subst_data["group_id"] = group[0].id
+        subst_data.pop("group")
+        #set sort order
+        last_sort_order += 100
+        subst_data["sort_order"] = last_sort_order
+        Substance.objects.create(**subst_data)
+
+        #check if the substance is contained in pre-blended polyol
+        if subst_data["is_contained_in_polyols"]:
+            subst_data["name"] += " in imported pre-blended polyol"
+            subst_data["sort_order"] += 1
+            Substance.objects.create(**subst_data)
+
+    logger.info("✔ other substances imported")
+
 
 def import_substances():
     """
@@ -221,6 +257,7 @@ def import_substances():
     )
     set_substance_cp_notes()
     set_new_group_for_substances()
+    import_other_substances()
 
     logger.info("✔ substances imported")
     import_alternative_names(
@@ -232,6 +269,54 @@ def import_substances():
     )
     logger.info("✔ substances alternative names imported")
 
+def add_components_to_blend(blend, components):
+    if not components:
+        return
+    for comp in components:
+        substance = Substance.objects.find_by_name(comp["name"])
+        if not substance:
+            logger.error(f"Substance {comp['name']} not found for blend {blend.name}")
+            continue
+        BlendComponents.objects.create(
+            blend=blend, substance=substance, percentage=float(comp["percentage"])/100
+        )
+
+def import_other_blends():
+    file_path = IMPORT_RESOURCES_DIR / "other_blends.json"
+
+    with open(file_path, "r", encoding="utf8") as f:
+        blend_list = json.load(f)
+    
+    last_sort_order = (
+            Blend.objects
+            .filter(sort_order__isnull=False)
+            .order_by("-sort_order")
+            .first()
+        ).sort_order
+
+    for blend_data in blend_list:
+        # check if it is a new blend
+        if blend_data["name"] and Blend.objects.find_by_name(blend_data["name"]):
+            logger.warning(f"Blend {blend_data['name']} already exists")
+            continue
+        # try to find by components
+        blend_components = blend_data.pop("components")
+        if blend_components:
+            components = [(comp["name"], comp["percentage"]) for comp in blend_components]
+            if Blend.objects.find_by_components(components):
+                logger.warning(f"Blend {blend_data['name']} already exists")
+                continue
+
+        # create blend
+        blend_data["sort_order"] = last_sort_order + 100
+        last_sort_order = blend_data["sort_order"]
+        
+        if not blend_data["name"]:
+            blend_data["name"] = Blend.objects.get_next_cust_mx_name()
+        blend = Blend.objects.create(**blend_data)
+        add_components_to_blend(blend, blend_components)
+
+    logger.info("✔ other blends imported")
 
 def import_blends():
     exclude = [
@@ -255,6 +340,8 @@ def import_blends():
         lambda value: value == "Found in MLFS data" or value.isnumeric(),
     )
     logger.info("✔ blends alternative names imported")
+
+    import_other_blends()
 
 
 def import_blend_components():

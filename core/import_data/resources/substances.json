@@ -4551,7 +4551,7 @@
             "r_code": null,
             "main_usage": "",
             "sort_order": 120001,
-            "is_contained_in_polyols": false,
+            "is_contained_in_polyols": true,
             "is_captured": false,
             "has_critical_uses": false
         }

@@ -26,6 +26,7 @@ class SubstanceAdmin(admin.ModelAdmin):
     search_fields = [
         "name",
         "formula",
+        "description",
     ]
     list_filter = [
         AutocompleteFilterFactory("group", "group"),
