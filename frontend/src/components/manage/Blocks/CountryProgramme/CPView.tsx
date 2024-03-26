@@ -352,7 +352,7 @@ function CPView(props: { archive?: boolean }) {
               <div className="flex gap-x-4">
                 <Link
                   color="primary"
-                  href={`/country-programme/edit/${country?.iso3}/${report.data?.year}`}
+                  href={`/country-programme/${country?.iso3}/${report.data?.year}/edit/`}
                   size="small"
                   variant="contained"
                   button
