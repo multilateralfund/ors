@@ -282,6 +282,10 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
         if not serializer.is_valid():
             custom_errors = self.customize_errors(serializer.errors)
             return Response(custom_errors, status=status.HTTP_400_BAD_REQUEST)
+        # do not let the user update the country and the year
+        serializer.initial_data["country_id"] = current_obj.country_id
+        serializer.initial_data["year"] = current_obj.year
+
         self.perform_create(serializer)
         # update version number
         new_instance = serializer.instance

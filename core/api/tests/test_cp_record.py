@@ -108,3 +108,23 @@ class TestCPRecordList(BaseTest):
         assert len(response.data["section_a"][0]["excluded_usages"]) == 1
         assert response.data["section_a"][0]["chemical_name"] == substance.name
         assert response.data["section_a"][0]["row_id"] == f"substance_{substance.id}"
+
+
+    def get_by_country_and_year(
+        self, user, cp_report_2019, _setup_new_cp_report
+    ):
+        self.client.force_authenticate(user=user)
+
+        # get cp records list
+        response = self.client.get(self.url, {
+            "country_id": cp_report_2019.country_id, 
+            "year": cp_report_2019.year
+        })
+        assert response.status_code == 200
+        assert response.data["cp_report"]["id"] == cp_report_2019.id
+        assert len(response.data["section_a"]) == 4
+        assert len(response.data["section_b"]) == 7
+        assert len(response.data["section_c"]) == 11
+        assert len(response.data["section_d"]) == 1
+        assert len(response.data["section_e"]) == 2
+        assert len(response.data["section_f"]["remarks"]) == cp_report_2019.comment

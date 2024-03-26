@@ -10,7 +10,8 @@ export const createCacheSlice = ({
 }: CreateSliceProps): CacheSlice => ({
   data: {},
   getCache: (id) => {
-    get().cache.data[id]
+    console.debug('CACHE getCache: %s', id)
+    return get().cache.data[id]
   },
   removeCache: (id) => {
     const data = { ...get().cache.data }
@@ -20,6 +21,7 @@ export const createCacheSlice = ({
         state.cache.data = data
       }),
     )
+    console.debug('CACHE removeCache: %s', id)
   },
   setCache: (id, data) => {
     set(
@@ -27,5 +29,6 @@ export const createCacheSlice = ({
         state.cache.data[id] = data
       }),
     )
+    console.debug('CACHE setCache: %s', id)
   },
 })

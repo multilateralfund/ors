@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 
 import { Typography } from '@mui/material'
 import { filter } from 'lodash'
@@ -8,7 +8,6 @@ import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
-import { parseNumber } from '@ors/helpers/Utils/Utils'
 import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
@@ -35,11 +34,14 @@ const TableProps = {
   withSkeleton: true,
 }
 
-export default function CPViewPrint(props: { id: string }) {
+export default function CPViewPrint(props: { iso3: string; year: number }) {
+  const { iso3, year } = props
+  const countries = useStore((state) => state.common.countries_for_listing.data)
+  const country = countries.filter((country) => country.iso3 === iso3)[0]
+
   const { fetchBundle, report, setReport } = useStore(
     (state) => state.cp_reports,
   )
-  const id = useMemo(() => parseNumber(props.id), [props.id])
   const variant = useMemo(() => {
     if (!report.data) return null
     return filter(variants, (variant) => {
@@ -63,8 +65,8 @@ export default function CPViewPrint(props: { id: string }) {
   }, [setReport])
 
   useEffect(() => {
-    fetchBundle(id)
-  }, [id, fetchBundle])
+    fetchBundle(country.id, year, true)
+  }, [country, year, fetchBundle])
 
   return (
     <div className="mx-4">

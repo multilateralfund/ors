@@ -6,11 +6,13 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import views
 from rest_framework.response import Response
 
+
 from core.api.serializers.adm import (
     AdmColumnSerializer,
     AdmRowSerializer,
 )
 from core.api.serializers.usage import UsageSerializer
+from core.api.views.utils import get_cp_report_from_request
 from core.models.adm import AdmColumn, AdmRow
 from core.models.country_programme import (
     CPReport,
@@ -261,16 +263,26 @@ class EmptyFormView(views.APIView):
                 description="Country programme report id",
                 type=openapi.TYPE_INTEGER,
             ),
+            openapi.Parameter(
+                "country_id",
+                openapi.IN_QUERY,
+                description="Country id for the country programme report",
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "year",
+                openapi.IN_QUERY,
+                description="Year for the country programme report",
+                type=openapi.TYPE_INTEGER,
+            ),
         ],
     )
     def get(self, request, *args, **kwargs):
-        cp_report_id = request.query_params.get(
-            "cp_report_id",
-        )
-        cp_report = None
-        try:
-            cp_report = CPReport.objects.get(id=cp_report_id)
+        cp_report = get_cp_report_from_request(self.request, CPReport)
+
+        if not cp_report:
+            year = request.query_params.get("year", date.today().year)
+        else:
             year = cp_report.year
-        except CPReport.DoesNotExist:
-            year = date.today().year
+
         return Response(self.get_data(year, cp_report))

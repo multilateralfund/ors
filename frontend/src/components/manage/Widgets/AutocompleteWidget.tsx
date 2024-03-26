@@ -9,24 +9,22 @@ import { isObject, isString } from 'lodash'
 
 import TextWidget from './TextWidget'
 
-export interface AutocompleteWidgetProps
+type DefaultValue = {
+  [key: string]: any
+  id: number | string
+  label?: string
+}
+
+export interface AutocompleteWidgetProps<T = DefaultValue | undefined>
   extends AutocompleteProps<
-    { [key: string]: any; id: number | string; label?: string } | undefined,
+    T,
     boolean | undefined,
     boolean | undefined,
     boolean | undefined
   > {
   Input?: TextWidgetProps
-  getCount?: (
-    option:
-      | { [key: string]: any; id: number | string; label?: string }
-      | undefined,
-  ) => number
-  options?:
-    | Array<
-        { [key: string]: any; id: number | string; label?: string } | undefined
-      >
-    | undefined
+  getCount?: (option: T) => number
+  options?: T[] | undefined
 }
 
 const AutocompleteWidget = forwardRef(function AutocompleteWidget(

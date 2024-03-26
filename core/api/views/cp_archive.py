@@ -26,7 +26,7 @@ class CPReportVersionsListView(generics.ListAPIView):
     serializer_class = CPReportSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_class = CPReportArchiveFilter
-    ordering_fields = ["year", "name", "country__name"]
+    ordering_fields = ["year", "name", "country__name", "country_id"]
 
 
 class CPRecordsArchiveListView(CPRecordBaseListView):

@@ -1,14 +1,14 @@
 import type { EmptyReportType } from './api_empty-form'
 import type { Language } from '@ors/types/locales'
 import type { DataType, SliceData } from '@ors/types/primitives'
-import type { PartialDeep, UnknownArray } from 'type-fest'
+import type { PartialDeep } from 'type-fest'
 
 import { CPReport } from './api_country-programme_records'
 import { ApiSubstance } from './api_substances'
 
 type Report = SliceData<CPReport | null, Record<string, any> | null> & {
   emptyForm: SliceData<EmptyReportType, Record<string, any> | null>
-  versions: SliceData<UnknownArray>
+  versions: SliceData<CPVersionInfo[]>
 }
 
 export interface SettingsSlice {
@@ -27,9 +27,13 @@ export interface CacheSlice {
 
 export interface CPReportsSlice {
   blends: SliceData<ApiBlend[]>
-  fetchBundle: (id: null | number, view?: boolean, archive?: boolean) => void
-  fetchEmptyForm: (id: null | number, view?: boolean) => void
-  fetchReport: (id: null | number, archive?: boolean) => Promise<void>
+  cacheInvalidate: string[]
+  cacheInvalidateReport: (country_id: number, year: number) => void
+  fetchArchivedBundle: (report_id: number, view: boolean) => void
+  fetchArchivedReport: (report_id: number) => Promise<void>
+  fetchBundle: (country_id: number, year: number, view: boolean) => void
+  fetchEmptyForm: (report: CPReport | null, view: boolean) => void
+  fetchReport: (country_id: number, year: number) => Promise<void>
   fetchVersions: (id: null | number, archive?: boolean) => void
   report: Report
   setReport: (report: Partial<Report>) => void
@@ -123,6 +127,17 @@ export type Country = {
   iso3: string
   name: string
   name_alt: string
+}
+
+export type CPVersionInfo = {
+  comment: null
+  country: string
+  country_id: number
+  id: number
+  name: string
+  status: string
+  version: number
+  year: number
 }
 
 export type Settings = {

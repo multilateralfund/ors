@@ -1,6 +1,7 @@
 'use client'
 
 import type { TableProps } from '@ors/components/manage/Form/Table'
+import { Country } from '@ors/types/store'
 import { ReportVariant } from '@ors/types/variants'
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
@@ -204,6 +205,10 @@ const CPCreate: React.FC = () => {
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
   const { report } = useStore((state) => state.cp_reports)
+  const all_countries = useStore(
+    (state) => state.common.countries_for_listing.data,
+  )
+  const [currentCountry, setCurrentCountry] = useState<Country | null>(null)
 
   const countries: WidgetCountry[] = useStore((state) => [
     ...getResults(state.common.countries_for_create.data).results.map(
@@ -430,10 +435,14 @@ const CPCreate: React.FC = () => {
               label: 'Country',
             }}
             onChange={(_event, value) => {
-              setForm({ ...form, country: value as WidgetCountry })
+              const country = value as WidgetCountry
+              setForm({ ...form, country })
+              setCurrentCountry(
+                all_countries.filter((c) => c.id == country.id)[0],
+              )
             }}
           />
-          {!!existingReports.data?.length && (
+          {!!existingReports.data?.length && currentCountry && (
             <div className="flex items-center">
               <Tooltip
                 placement="top"
@@ -442,7 +451,7 @@ const CPCreate: React.FC = () => {
                 <Typography className="inline-flex items-center">
                   <Link
                     className="inline-block"
-                    href={`/country-programme/${existingReports.data[0].id}`}
+                    href={`/country-programme/${currentCountry.iso3}/${form.year}`}
                   >
                     <IoLink size={24} />
                   </Link>
@@ -524,13 +533,10 @@ const CPCreate: React.FC = () => {
                 }
                 onClick={async () => {
                   try {
-                    const response = await api(
-                      'api/country-programme/reports/',
-                      {
-                        data: getSubmitFormData(),
-                        method: 'POST',
-                      },
-                    )
+                    await api('api/country-programme/reports/', {
+                      data: getSubmitFormData(),
+                      method: 'POST',
+                    })
                     setErrors({})
                     Sections.section_a.clearLocalStorage()
                     Sections.section_b.clearLocalStorage()
@@ -545,7 +551,9 @@ const CPCreate: React.FC = () => {
                       </>,
                       { variant: 'success' },
                     )
-                    router.push(`/country-programme/${response.id}`)
+                    router.push(
+                      `/country-programme/${currentCountry!.iso3}/${form.year}`,
+                    )
                   } catch (error) {
                     if (error.status === 400) {
                       const errors = await error.json()
