@@ -11,7 +11,7 @@ class CPUsageSerializer(serializers.ModelSerializer):
         required=True,
         queryset=Usage.objects.all().values_list("id", flat=True),
     )
-    quantity = serializers.DecimalField(max_digits=12, decimal_places=3)
+    quantity = serializers.DecimalField(max_digits=25, decimal_places=15)
 
     class Meta:
         model = CPUsage
