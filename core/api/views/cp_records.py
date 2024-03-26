@@ -155,12 +155,14 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
                             else "zzzbbb"
                         ),  # other substances needs to be displayed last
                         getattr(x, "sort_order", float("inf")),
+                        x.substance.sort_order,
                         x.substance.name,
                     )
                     if x.substance
                     else (
                         "zzzaaa",
                         getattr(x, "sort_order", float("inf")),
+                        x.blend.sort_order,
                         x.blend.name,
                     )
                 )
@@ -220,12 +222,14 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
                         else "zzzBBB"
                     ),  # other substances needs to be displayed last
                     getattr(x, "sort_order", float("inf")),
+                    x.substance.sort_order,
                     x.substance.name,
                 )
                 if x.substance
                 else (
                     "zzzAAA",
                     getattr(x, "sort_order", float("inf")),
+                    x.blend.sort_order,
                     x.blend.name,
                 )
             )

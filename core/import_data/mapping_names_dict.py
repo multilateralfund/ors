@@ -247,6 +247,7 @@ USAGE_NAME_MAPPING = {
 
 CHEMICAL_NAME_MAPPING = {
     "R-125 (65.1%), R-134a  -  (31.5%)": "R-422D",
+    "hcfrc-141b": "HCFC-141B",
     "HFC-365mfc (93%)/HFC-227ea (7%) - mezcla": "CustMix-134",
     "Solkane 365/227 (Mezcla HFC)": "CustMix-134",
     "(HFC-365mfc=93%, HFC-227ea=7%)": "CustMix-134",
