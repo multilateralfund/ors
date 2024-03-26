@@ -78,11 +78,11 @@ export function formatApiUrl(path: string) {
   return `${apiPath}${adjustedPath}`
 }
 
-async function api(
+async function api<T = any>(
   path: Api['path'],
   options?: Api['options'],
   throwError: Api['throwError'] = true,
-) {
+): Promise<T | null | undefined> {
   const [state, setState] = __CLIENT__
     ? [store.current.getState(), store.current.setState]
     : [null, null]

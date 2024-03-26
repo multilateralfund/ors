@@ -261,13 +261,13 @@ function CPView(props: { archive?: boolean }) {
                   }
                 >
                   {orderBy(report.versions.data, 'version', 'desc').map(
-                    (report: any) => (
+                    (report, idx, arr) => (
                       <Dropdown.Item
                         key={report.id}
                         className="flex items-center gap-x-2 text-black no-underline"
                         component={Link}
                         // @ts-ignore
-                        href={`/country-programme/archive/${report.id}`}
+                        href={`/country-programme/${country.iso3}/${report.year}/archive/${arr.length - idx}`}
                       >
                         Version {report.version}
                       </Dropdown.Item>

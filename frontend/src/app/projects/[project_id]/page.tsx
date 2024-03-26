@@ -24,7 +24,7 @@ export async function generateMetadata({
 }
 
 export default async function Project({ params }: ProjectProps) {
-  const data: ProjectType = await api(
+  const data = await api<ProjectType>(
     `api/projects/${params.project_id}/`,
     {},
     false,
@@ -32,7 +32,7 @@ export default async function Project({ params }: ProjectProps) {
 
   return (
     <PageWrapper>
-      <PView data={data} />
+      <PView data={data!} />
     </PageWrapper>
   )
 }

@@ -26,7 +26,7 @@ export async function generateMetadata({
 export default async function ProjectSubmission({
   params,
 }: ProjectSubmissionProps) {
-  const data: ProjectType = await api(
+  const data = await api<ProjectType>(
     `api/projects/${params.submission_id}/`,
     {},
     false,
@@ -34,7 +34,7 @@ export default async function ProjectSubmission({
 
   return (
     <PageWrapper>
-      <PSView data={data} />
+      <PSView data={data!} />
     </PageWrapper>
   )
 }
