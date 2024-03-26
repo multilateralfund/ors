@@ -132,7 +132,7 @@ export const createCPReportsSlice = ({
         removeCacheTimeout: 60,
         withStoreCache: true,
       }
-      const path = `api/country-programme-archive/records/?report_id=${report_id}`
+      const path = `api/country-programme-archive/records/?cp_report_id=${report_id}`
 
       return await fetchSliceData({
         apiSettings: {
@@ -162,7 +162,7 @@ export const createCPReportsSlice = ({
         withStoreCache: true,
       }
       const path = report
-        ? `api/country-programme/empty-form/?cp_report_id=${report.id}`
+        ? `api/country-programme/empty-form/?country_id=${report.country_id}&year=${report.year}`
         : 'api/country-programme/empty-form/'
       return await fetchSliceData({
         apiSettings: {

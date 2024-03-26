@@ -232,7 +232,7 @@ function CPView(props: { archive?: boolean }) {
             <div className="flex items-center">
               {archive && (
                 <Link
-                  className="flex gap-x-2 text-white"
+                  className="flex gap-x-2"
                   href={`/country-programme/${country.iso3}/${report.data.year}`}
                   button
                 >
@@ -242,7 +242,6 @@ function CPView(props: { archive?: boolean }) {
               )}
               {report.versions.loaded && !!report.versions.data?.length && (
                 <Dropdown
-                  className="text-white"
                   MenuProps={{
                     slotProps: {
                       paper: {
