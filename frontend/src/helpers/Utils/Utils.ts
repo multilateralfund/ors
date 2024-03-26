@@ -176,3 +176,24 @@ export const getOSName = () => {
     return 'unknown'
   }
 }
+
+export const formatDecimalValue = (
+  value: number,
+  props: {
+    maximumFractionDigits?: number
+    minimumFractionDigits?: number
+  } = {},
+) => {
+  const maximumFractionDigits = props.maximumFractionDigits || 3
+  const minimumFractionDigits =
+    props.minimumFractionDigits || props.maximumFractionDigits || 2
+
+  const valueToAvoidRounding =
+    Math.round(value * 10 ** maximumFractionDigits) /
+    10 ** maximumFractionDigits
+
+  return valueToAvoidRounding.toLocaleString(undefined, {
+    maximumFractionDigits,
+    minimumFractionDigits,
+  })
+}

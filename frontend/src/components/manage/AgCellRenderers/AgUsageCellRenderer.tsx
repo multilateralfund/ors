@@ -7,28 +7,7 @@ import aggFuncs from '@ors/config/Table/aggFuncs'
 
 import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSkeletonCellRenderer'
 import AgTooltipComponent from '@ors/components/manage/AgComponents/AgTooltipComponent'
-import { parseNumber } from '@ors/helpers/Utils/Utils'
-
-const formatValue = (
-  value: number,
-  props: {
-    maximumFractionDigits?: number
-    minimumFractionDigits?: number
-  } = {},
-) => {
-  const maximumFractionDigits = props.maximumFractionDigits || 3
-  const minimumFractionDigits =
-    props.minimumFractionDigits || props.maximumFractionDigits || 2
-
-  const valueToAvoidRounding =
-    Math.floor(value * 10 ** maximumFractionDigits) /
-    10 ** maximumFractionDigits
-
-  return valueToAvoidRounding.toLocaleString(undefined, {
-    maximumFractionDigits,
-    minimumFractionDigits,
-  })
-}
+import { formatDecimalValue, parseNumber } from '@ors/helpers/Utils/Utils'
 
 export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
   if (props.data.rowType === 'skeleton') {
@@ -79,7 +58,7 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
     value = 0
   }
 
-  const formattedValue = formatValue(value, props)
+  const formattedValue = formatDecimalValue(value, props)
 
   return (
     <AgTooltipComponent {...props} value={formattedValue}>

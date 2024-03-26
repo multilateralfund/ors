@@ -66,7 +66,6 @@ export default function Header() {
     },
     { current: false, label: 'Projects', url: '/projects' },
     { current: false, label: 'Country programme', url: '/country-programme' },
-    { current: false, label: 'Enterprises', url: '/enterprises' },
   ].map((section) => ({
     ...section,
     current: !!matchPath(`${section.url}/*`, pathname || ''),
