@@ -151,7 +151,7 @@ class CPRecordBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
                     (
                         (
                             x.substance.group.name
-                            if x.substance.group.name != "Other"
+                            if "Other" not in x.substance.group.name_alt
                             else "zzzbbb"
                         ),  # other substances needs to be displayed last
                         getattr(x, "sort_order", float("inf")),

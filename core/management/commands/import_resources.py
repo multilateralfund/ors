@@ -4,7 +4,7 @@ from core.import_data.import_time_frames import import_time_frames
 from core.import_data.import_adm_columns import import_adm_columns
 from core.import_data.import_project_resources import import_project_resources
 from core.import_data.import_countries import import_countries
-from core.import_data.import_ozone_data import (
+from core.import_data.import_chemicals import (
     import_all_data as ozone_all_data,
     import_blend_components,
     import_blends,

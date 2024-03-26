@@ -9,7 +9,7 @@ from core.import_data.utils import (
     DB_DIR_LIST,
     delete_old_data,
     get_adm_column,
-    get_chemical_by_name_or_components,
+    get_chemical,
     get_country_and_year_dict,
     get_cp_report_for_db_import,
     get_or_create_adm_row,
@@ -161,12 +161,8 @@ def get_itmes_dict(file_name, articles_dict):
         if item_json["ArticleId"] not in articles_dict:
             # This Item is Chemical
             chemical_name = item_json["Label"].replace("(Optional)", "").strip()
-            chemical, chemical_type = get_chemical_by_name_or_components(chemical_name)
+            chemical, chemical_type = get_chemical(chemical_name, item_json['ItemId'])
             if not chemical:
-                logger.warning(
-                    f"Chemical not found: {chemical_name} "
-                    f"(ItemId: {item_json['ItemId']})",
-                )
                 continue
 
             # add item to items dict

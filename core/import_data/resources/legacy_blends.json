@@ -1,0 +1,112 @@
+[
+    {
+        "name": "Chesterton 279",
+        "composition": "HFC-134a=35%;Unspecified substance(s)=75%",
+        "composition_alt": null,
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "500.5000",
+        "remarks": null,
+        "components": [
+            {
+                "name": "HFC-134a",
+                "percentage": 35
+            },
+            {
+                "name": "Other",
+                "percentage": 65
+            }
+        ]
+    },
+    {
+        "name": "PFC-672FC",
+        "composition": "HFC-125=15%; HFC-236fa=10%;Unspecified substance(s)=75%",
+        "composition_alt": null,
+        "other_names": "PFC-672C",
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "1506.000",
+        "remarks": null,
+        "components": [
+            {
+                "name": "HFC-125",
+                "percentage": 15
+            },
+            {
+                "name": "HFC-236fa",
+                "percentage": 10
+            },
+            {
+                "name": "Other",
+                "percentage": 75
+            }
+        ]
+    },
+    {
+        "name": "R-513",
+        "composition": null,
+        "composition_alt": null,
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "629.200",
+        "remarks": "Can be 513A or 513B. Composition to be provided by NOU based on substance",
+        "components": null
+    },
+    {
+        "name": "R-410C",
+        "composition": null,
+        "composition_alt": null,
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "0.000",
+        "remarks": "Details of composition not provided. The composition is not available for auto computation of GWP.",
+        "components": null
+    },
+    {
+        "name": "R-406",
+        "composition": null,
+        "composition_alt": null,
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "0.000",
+        "remarks": "Details of composition not provided. The composition is not available for auto computation of GWP.",
+        "components": null
+    },
+    {
+        "name": "R-22A",
+        "composition": null,
+        "composition_alt": null,
+        "other_names": "R22A (HC Blend, RedTek)",
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "0.000",
+        "remarks": "Details of composition not provided. The composition is not available for auto computation of GWP.",
+        "components": null
+    },
+    {
+        "name": "R-417",
+        "composition": null,
+        "composition_alt": null,
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "3026.690",
+        "remarks": "Can be 417A or 417B or 417C; contains HFC-125/HFC-134a/HC-600 with varying composition. Details of composition not provided.",
+        "components": null
+    },
+    {
+        "name": "MDI",
+        "composition": null,
+        "composition_alt": null,
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "0.00",
+        "remarks": "Not available.Details of composition not provided. The composition is not available for auto computation of GWP.",
+        "components": null
+    }
+]

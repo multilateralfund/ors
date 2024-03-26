@@ -1,0 +1,123 @@
+[
+    {
+        "name": "Halon-2404",
+        "description": "Dibromotetrafluoroethane",
+        "odp": "6.0000000000",
+        "min_odp": "6.0000000000",
+        "max_odp": "6.0000000000",
+        "gwp": "1640.0000000000",
+        "formula": null,
+        "is_contained_in_polyols": false,
+        "is_captured": false
+    },
+    {
+        "name": "HFO-1234zd(E)",
+        "description": null,
+        "odp": "0.0000000000",
+        "min_odp": "0.0000000000",
+        "max_odp": "0.0000000000",
+        "gwp": "0.0000000000",
+        "formula": null,
+        "is_contained_in_polyols": false,
+        "is_captured": false
+    },
+    {
+        "name": "Methylal",
+        "description": null,
+        "odp": "0.0000000000",
+        "min_odp": "0.0000000000",
+        "max_odp": "0.0000000000",
+        "gwp": "0.0000000000",
+        "formula": null,
+        "is_contained_in_polyols": false,
+        "is_captured": false
+    },
+    {
+        "name": "HFO (Solstice LBA)",
+        "description": "Solstice LBA",
+        "odp": "0.0000000000",
+        "min_odp": "0.0000000000",
+        "max_odp": "0.0000000000",
+        "gwp": "0.0000000000",
+        "formula": null,
+        "is_contained_in_polyols": false,
+        "is_captured": false
+    },
+    {
+        "name": "HCFC-125",
+        "description": null,
+        "odp": "0.0000000000",
+        "min_odp": "0.0000000000",
+        "max_odp": "0.0000000000",
+        "gwp": "0.0000000000",
+        "formula": null,
+        "is_contained_in_polyols": false,
+        "is_captured": false
+    },
+    {
+        "name": "Eau (R-718)",
+        "description": null,
+        "odp": "0.0000000000",
+        "min_odp": "0.0000000000",
+        "max_odp": "0.0000000000",
+        "gwp": "0.0000000000",
+        "formula": null,
+        "is_contained_in_polyols": false,
+        "is_captured": false
+    },
+    {
+        "name": "HFO-1336zd",
+        "description": null,
+        "odp": "0.0000000000",
+        "min_odp": "0.0000000000",
+        "max_odp": "0.0000000000",
+        "gwp": "0.0000000000",
+        "formula": null,
+        "is_contained_in_polyols": false,
+        "is_captured": false
+    },
+    {
+        "name": "Aquion Limpieza (Mezcla HFC)",
+        "description": null,
+        "odp": "0.0000000000",
+        "min_odp": "0.0000000000",
+        "max_odp": "0.0000000000",
+        "gwp": "0.0000000000",
+        "formula": null,
+        "is_contained_in_polyols": false,
+        "is_captured": false
+    },
+    {
+        "name": "R-406",
+        "description": null,
+        "odp": "0.0000000000",
+        "min_odp": "0.0000000000",
+        "max_odp": "0.0000000000",
+        "gwp": "0.0000000000",
+        "formula": null,
+        "is_contained_in_polyols": false,
+        "is_captured": false
+    },
+    {
+        "name": "HFO",
+        "description": null,
+        "odp": "0.0000000000",
+        "min_odp": "0.0000000000",
+        "max_odp": "0.0000000000",
+        "gwp": "0.0000000000",
+        "formula": null,
+        "is_contained_in_polyols": true,
+        "is_captured": false
+    },
+    {
+        "name": "HFO",
+        "description": null,
+        "odp": "0.0000000000",
+        "min_odp": "0.0000000000",
+        "max_odp": "0.0000000000",
+        "gwp": "0.0000000000",
+        "formula": null,
+        "is_contained_in_polyols": true,
+        "is_captured": false
+    }
+]
