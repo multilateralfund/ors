@@ -22,6 +22,7 @@ COUNTRY_NAME_MAPPING = {
     "St. Lucia": "Saint Lucia",
     "St. Vincent and the Grenadines": "Saint Vincent and the Grenadines",
     "Commonwealth of Dominica": "Dominica",
+    "Lao, DPR": "Lao People's Democratic Republic"
 }
 
 SECTOR_NAME_MAPPING = {
@@ -241,6 +242,7 @@ USAGE_NAME_MAPPING = {
     "air conditioning": "Refrigeration Manufacturing AC",
     "solvent": "Solvent application",
     "manufacturing" : "Refrigeration Manufacturing",
+    "processing agent": "Process agent",
 }
 
 CHEMICAL_NAME_MAPPING = {

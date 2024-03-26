@@ -76,6 +76,7 @@ class BlendSerializer(ChemicalsBaseSerializer):
             "components",
             "sections",
             "chemical_note",
+            "is_legacy",
             "remarks"
         ]
 
