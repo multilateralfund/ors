@@ -108,5 +108,16 @@
         "formula": null,
         "is_contained_in_polyols": true,
         "is_captured": false
+    },
+    {
+        "name": "HFO",
+        "description": null,
+        "odp": "0.0000000000",
+        "min_odp": "0.0000000000",
+        "max_odp": "0.0000000000",
+        "gwp": "0.0000000000",
+        "formula": null,
+        "is_contained_in_polyols": true,
+        "is_captured": false
     }
 ]

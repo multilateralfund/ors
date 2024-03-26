@@ -66,6 +66,17 @@
         "components": null
     },
     {
+        "name": "R-406",
+        "composition": null,
+        "composition_alt": null,
+        "other_names": null,
+        "type": "Other",
+        "odp": "0.0000",
+        "gwp": "0.000",
+        "remarks": "Details of composition not provided. The composition is not available for auto computation of GWP.",
+        "components": null
+    },
+    {
         "name": "R-22A",
         "composition": null,
         "composition_alt": null,
