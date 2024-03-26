@@ -406,7 +406,7 @@ def setup_new_cp_report(cp_report_2019, blend, substance, time_frames, groupA):
         name="HFC-substance6", group=current_group
     )  # 200
     current_group = GroupFactory.create(
-        name="Other", annex="unknown", name_alt="group O"
+        name="Other", annex="unknown", name_alt="group Other"
     )
     substO1inform = SubstanceFactory.create(
         name="substance5", group=current_group
