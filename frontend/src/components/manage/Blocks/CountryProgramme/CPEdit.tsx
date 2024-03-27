@@ -1,14 +1,11 @@
 'use client'
 
-import { Country } from '@ors/types/store'
-
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { Box, Button, IconButton, Tab, Tabs, Typography } from '@mui/material'
+import { IconButton, Tab, Tabs, Typography } from '@mui/material'
 import cx from 'classnames'
 import { produce } from 'immer'
 import {
-  capitalize,
   filter,
   findIndex,
   get,
@@ -19,18 +16,12 @@ import {
   reduce,
   values,
 } from 'lodash'
-import { useRouter } from 'next/navigation'
-import { useSnackbar } from 'notistack'
 
 import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
 
-import Portal from '@ors/components/manage/Utils/Portal'
-import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
-import Link from '@ors/components/ui/Link/Link'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
-import api from '@ors/helpers/Api/Api'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import useMakeClassInstance from '@ors/hooks/useMakeClassInstance'
 import SectionA from '@ors/models/SectionA'
@@ -43,6 +34,7 @@ import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
 import { getSections } from '.'
+import { CPEditHeader } from './CPHeader'
 
 import { IoClose, IoExpand } from 'react-icons/io5'
 
@@ -124,16 +116,8 @@ const TableProps = {
   withSeparators: true,
 }
 
-function CPEdit({
-  cacheInvalidateReport,
-  country,
-}: {
-  cacheInvalidateReport: (country_id: number, year: number) => void
-  country: Country
-}) {
+function CPEdit() {
   const tabsEl = React.useRef<HTMLDivElement>(null)
-  const router = useRouter()
-  const { enqueueSnackbar } = useSnackbar()
   const { report } = useStore((state) => state.cp_reports)
 
   const Sections = {
@@ -288,25 +272,10 @@ function CPEdit({
         }
       />
       {!!report.error && <Error error={report.error} />}
-      {!!report.data && (
-        <HeaderTitle memo={report.data.status}>
-          <div className="mb-4 flex min-h-[40px] items-center justify-between gap-x-4">
-            <Typography component="h1" variant="h3">
-              Edit {report.data.name}{' '}
-              <span
-                className={cx('text-white', {
-                  'rounded bg-success px-2 py-1':
-                    report.data.status === 'final',
-                  'rounded bg-warning px-2 py-1':
-                    report.data.status === 'draft',
-                })}
-              >
-                {capitalize(report.data.status)}
-              </span>
-            </Typography>
-          </div>
-        </HeaderTitle>
-      )}
+      <CPEditHeader
+        getSubmitFormData={getSubmitFormData}
+        setErrors={setErrors}
+      />
       <form className="create-submission-form">
         <Tabs
           className="scrollable mb-4"
@@ -371,132 +340,6 @@ function CPEdit({
               </div>
             )
           })}
-
-        {!!report.data && (
-          <Portal domNode="bottom-control">
-            <Box className="rounded-none border-0 border-t px-4">
-              <div className="container flex w-full justify-end gap-x-4">
-                <Link
-                  color="secondary"
-                  href={`/country-programme/${country.iso3}/${report.data.year}`}
-                  size="small"
-                  variant="contained"
-                  button
-                >
-                  Close
-                </Link>
-                {report.data.status === 'draft' && (
-                  <Button
-                    color="primary"
-                    size="small"
-                    variant="contained"
-                    onClick={async () => {
-                      try {
-                        const response = await api(
-                          `api/country-programme/reports/${report.data?.id}/`,
-                          {
-                            data: {
-                              ...report.data,
-                              ...getSubmitFormData(),
-                            },
-                            method: 'PUT',
-                          },
-                        )
-                        setErrors({})
-                        enqueueSnackbar(
-                          <>
-                            Updated submission for {response.country}{' '}
-                            {response.year}.
-                          </>,
-                          { variant: 'success' },
-                        )
-                        cacheInvalidateReport(
-                          response.country_id,
-                          response.year,
-                        )
-                        router.push(
-                          `/country-programme/${country.iso3}/${response.year}`,
-                        )
-                      } catch (error) {
-                        if (error.status === 400) {
-                          setErrors({ ...(await error.json()) })
-                          enqueueSnackbar(
-                            <>Please make sure all the inputs are correct.</>,
-                            { variant: 'error' },
-                          )
-                        } else {
-                          const errors = await error.json()
-                          setErrors({})
-                          {
-                            errors.detail &&
-                              enqueueSnackbar(errors.detail, {
-                                variant: 'error',
-                              })
-                          }
-                        }
-                      }
-                    }}
-                  >
-                    Update draft
-                  </Button>
-                )}
-                <Button
-                  color="primary"
-                  size="small"
-                  variant="contained"
-                  onClick={async () => {
-                    try {
-                      const response = await api(
-                        `api/country-programme/reports/${report.data?.id}/`,
-                        {
-                          data: {
-                            ...report.data,
-                            ...getSubmitFormData(),
-                            status: 'final',
-                          },
-                          method: 'PUT',
-                        },
-                      )
-                      setErrors({})
-                      enqueueSnackbar(
-                        <>
-                          Updated submission for {response.country}{' '}
-                          {response.year}.
-                        </>,
-                        { variant: 'success' },
-                      )
-                      cacheInvalidateReport(response.country_id, response.year)
-                      router.push(
-                        `/country-programme/${country.iso3}/${response.year}`,
-                      )
-                    } catch (error) {
-                      if (error.status === 400) {
-                        setErrors({ ...(await error.json()) })
-                        enqueueSnackbar(
-                          <>Please make sure all the inputs are correct.</>,
-                          { variant: 'error' },
-                        )
-                      } else {
-                        const errors = await error.json()
-                        setErrors({})
-                        {
-                          errors.detail &&
-                            enqueueSnackbar(errors.detail, {
-                              variant: 'error',
-                            })
-                        }
-                      }
-                    }
-                  }}
-                >
-                  {report.data.status === 'draft'
-                    ? 'Submit final version'
-                    : 'Submit new version'}
-                </Button>
-              </div>
-            </Box>
-          </Portal>
-        )}
       </form>
     </>
   )
@@ -507,14 +350,9 @@ export default function CPEditWrapper(props: { iso3: string; year: number }) {
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const country = countries.filter((country) => country.iso3 === iso3)[0]
 
-  const {
-    blends,
-    cacheInvalidateReport,
-    fetchBundle,
-    report,
-    setReport,
-    substances,
-  } = useStore((state) => state.cp_reports)
+  const { blends, fetchBundle, report, setReport, substances } = useStore(
+    (state) => state.cp_reports,
+  )
 
   const dataReady =
     report.data &&
@@ -547,7 +385,5 @@ export default function CPEditWrapper(props: { iso3: string; year: number }) {
     )
   }
 
-  return (
-    <CPEdit cacheInvalidateReport={cacheInvalidateReport} country={country} />
-  )
+  return <CPEdit />
 }

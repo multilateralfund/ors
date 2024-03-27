@@ -7,6 +7,7 @@ import { CPReport } from './api_country-programme_records'
 import { ApiSubstance } from './api_substances'
 
 type Report = SliceData<CPReport | null, Record<string, any> | null> & {
+  country?: Country
   emptyForm: SliceData<EmptyReportType, Record<string, any> | null>
   versions: SliceData<CPVersionInfo[]>
 }
@@ -37,6 +38,7 @@ export interface CPReportsSlice {
   fetchVersions: (id: null | number, archive?: boolean) => void
   report: Report
   setReport: (report: Partial<Report>) => void
+  setReportCountry: (report: CPReport) => void
   substances: SliceData<ApiSubstance[]>
 }
 
@@ -130,7 +132,7 @@ export type Country = {
 }
 
 export type CPVersionInfo = {
-  comment: null
+  comment: null | string
   country: string
   country_id: number
   id: number

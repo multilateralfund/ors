@@ -16,7 +16,8 @@ export default async function CountryProgrammeReport(props: {
     year: string
   }
 }) {
-  const { iso3, version_nr, year } = props.params
+  const { iso3, year } = props.params
+  const version_nr = parseInt(props.params.version_nr, 10)
 
   const countries =
     (await api<Country[]>(
@@ -34,7 +35,7 @@ export default async function CountryProgrammeReport(props: {
       false,
     )) || []
 
-  const id = versions[parseInt(version_nr, 10) - 1].id
+  const id = versions[version_nr - 1].id
 
   return (
     <PageWrapper>

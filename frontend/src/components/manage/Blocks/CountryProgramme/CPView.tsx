@@ -1,43 +1,27 @@
 'use client'
 import React, { useEffect, useMemo, useState } from 'react'
 
-import {
-  Box,
-  Button,
-  IconButton,
-  Tab,
-  Tabs,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import { IconButton, Tab, Tabs, Tooltip, Typography } from '@mui/material'
 import { AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
 import { produce } from 'immer'
-import { capitalize, filter, includes, orderBy } from 'lodash'
-import { useSnackbar } from 'notistack'
+import { filter, includes } from 'lodash'
 
-import Portal from '@ors/components/manage/Utils/Portal'
-import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
-import api, { formatApiUrl } from '@ors/helpers/Api/Api'
+import { formatApiUrl } from '@ors/helpers/Api/Api'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
 import { getSections } from '.'
+import { CPViewHeader } from './CPHeader'
 
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
-import {
-  IoAlbumsOutline,
-  IoArrowUndoOutline,
-  IoClose,
-  IoDownloadOutline,
-  IoExpand,
-} from 'react-icons/io5'
+import { IoClose, IoDownloadOutline, IoExpand } from 'react-icons/io5'
 
 export type TableProps = AgGridReactProps & {
   Toolbar?: React.FC<any>
@@ -158,15 +142,10 @@ const TableProps: TableProps = {
 
 function CPView(props: { archive?: boolean }) {
   const tabsEl = React.useRef<HTMLDivElement>(null)
-  const { enqueueSnackbar } = useSnackbar()
   const { archive } = props
-  const { report, setReport } = useStore((state) => state.cp_reports)
+  const { report } = useStore((state) => state.cp_reports)
   const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
   const [renderedSections, setRenderedSections] = useState<number[]>([])
-  const countries = useStore((state) => state.common.countries_for_listing.data)
-  const country = countries.filter(
-    (country) => country.id === report.data?.country_id,
-  )[0]
 
   const variant = useMemo(() => {
     if (!report.data) return null
@@ -211,74 +190,7 @@ function CPView(props: { archive?: boolean }) {
         }
       />
       {!!report.error && <Error error={report.error} />}
-      {!!report.data && (
-        <HeaderTitle memo={report.data.status && report.versions.data}>
-          <div className="mb-4 flex min-h-[40px] items-center justify-between gap-x-4">
-            <Typography component="h1" variant="h3">
-              {report.data.name}{' '}
-              <span
-                className={cx('text-white', {
-                  'rounded bg-success px-2 py-1':
-                    report.data.status === 'final',
-                  'rounded bg-warning px-2 py-1':
-                    report.data.status === 'draft',
-                })}
-              >
-                {archive
-                  ? `Version ${report.data.version}`
-                  : capitalize(report.data.status)}
-              </span>
-            </Typography>
-            <div className="flex items-center">
-              {archive && (
-                <Link
-                  className="flex gap-x-2"
-                  href={`/country-programme/${country.iso3}/${report.data.year}`}
-                  button
-                >
-                  <IoArrowUndoOutline size={24} />
-                  <span>Final version</span>
-                </Link>
-              )}
-              {report.versions.loaded && !!report.versions.data?.length && (
-                <Dropdown
-                  MenuProps={{
-                    slotProps: {
-                      paper: {
-                        className: 'max-h-[200px] overflow-y-auto',
-                      },
-                    },
-                  }}
-                  label={
-                    <div className="flex gap-x-2">
-                      <IoAlbumsOutline size={24} />
-                      {archive ? (
-                        <span>Other versions</span>
-                      ) : (
-                        <span>Old versions</span>
-                      )}
-                    </div>
-                  }
-                >
-                  {orderBy(report.versions.data, 'version', 'desc').map(
-                    (report, idx, arr) => (
-                      <Dropdown.Item
-                        key={report.id}
-                        className="flex items-center gap-x-2 text-black no-underline"
-                        component={Link}
-                        // @ts-ignore
-                        href={`/country-programme/${country.iso3}/${report.year}/archive/${arr.length - idx}`}
-                      >
-                        Version {report.version}
-                      </Dropdown.Item>
-                    ),
-                  )}
-                </Dropdown>
-              )}
-            </div>
-          </div>
-        </HeaderTitle>
-      )}
+      <CPViewHeader archive={archive} />
       <Tabs
         className="scrollable mb-4"
         aria-label="view country programme report"
@@ -336,74 +248,6 @@ function CPView(props: { archive?: boolean }) {
             </div>
           )
         })}
-      {!archive && !!report.data && (
-        <Portal domNode="bottom-control">
-          <Box className="rounded-none border-0 border-t px-4">
-            <div className="container flex w-full justify-between">
-              <Link
-                color="secondary"
-                href="/country-programme"
-                size="small"
-                variant="contained"
-                button
-              >
-                Close
-              </Link>
-              <div className="flex gap-x-4">
-                <Link
-                  color="primary"
-                  href={`/country-programme/${country?.iso3}/${report.data?.year}/edit/`}
-                  size="small"
-                  variant="contained"
-                  button
-                >
-                  Edit
-                </Link>
-                {report.data.status === 'draft' && (
-                  <Button
-                    color="primary"
-                    size="small"
-                    variant="contained"
-                    onClick={async () => {
-                      try {
-                        const response = await api(
-                          `/api/country-programme/report/${report.data?.id}/status-update/`,
-                          {
-                            data: {
-                              status: 'final',
-                            },
-                            method: 'PUT',
-                          },
-                        )
-                        enqueueSnackbar(
-                          <>
-                            Submit submission for {response.country}{' '}
-                            {response.year}.
-                          </>,
-                          { variant: 'success' },
-                        )
-                        setReport({
-                          data: {
-                            ...report.data,
-                            ...response,
-                          },
-                        })
-                        window.scrollTo({ behavior: 'smooth', top: 0 })
-                      } catch (error) {
-                        const errors = await error.json()
-                        errors.detail &&
-                          enqueueSnackbar(errors.detail, { variant: 'error' })
-                      }
-                    }}
-                  >
-                    Submit final version
-                  </Button>
-                )}
-              </div>
-            </div>
-          </Box>
-        </Portal>
-      )}
     </>
   )
 }
