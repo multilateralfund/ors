@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { Button, Typography } from '@mui/material'
 import cx from 'classnames'
@@ -221,6 +221,7 @@ const EditHeaderActions = ({
           >
             Close
           </Link>
+          <button onClick={() => console.log(getSubmitFormData())}>test</button>
           {report.data.status === 'draft' && (
             <Button
               className="px-4 py-2 shadow-none"
@@ -340,10 +341,15 @@ const CPHeader = ({
   archive?: boolean
 }) => {
   const { report } = useStore((state) => state.cp_reports)
+  const [memo, setMemo] = useState(0)
+
+  useEffect(() => {
+    setMemo((prev) => prev + 1)
+  }, [report.data?.status, report.versions.data, actions])
 
   return (
     !!report.data && (
-      <HeaderTitle memo={report.data.status && report.versions.data}>
+      <HeaderTitle memo={memo}>
         <div className="mb-2 font-[500] uppercase">
           Country programme report
         </div>
