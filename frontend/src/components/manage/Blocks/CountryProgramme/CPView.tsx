@@ -138,7 +138,7 @@ const TableProps: TableProps = {
   suppressColumnVirtualisation: true,
   suppressLoadingOverlay: true,
   suppressRowHoverHighlight: false,
-  withSeparators: true,
+  withSeparators: false,
 }
 
 function CPView(props: { archive?: boolean }) {

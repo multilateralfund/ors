@@ -76,7 +76,7 @@ function useGridOptions(props: { adm_columns: any }) {
         autoHeight: true,
         cellClass: (props: CellClassParams) => {
           return cx('ag-text-center', {
-            'bg-gray-100 theme-dark:bg-gray-900/40':
+            'ag-cell-hashed theme-dark:bg-gray-900/40':
               includes(props.data?.excluded_columns || [], props.colDef.id) &&
               !includes(['control', 'group', 'hashed'], props.data.rowType),
           })

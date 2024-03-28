@@ -4,15 +4,21 @@
 }
 
 .ag-table .ag-row-group,
-.ag-table .ag-row-control,
-.ag-table .ag-row-hashed {
-  @apply pattern-diagonal-lines pattern-bg-transparent pattern-slate-500 
-  pattern-opacity-100 pattern-size-2;
+.ag-table .ag-row-control {
+  @apply bg-white
 }
 
-.ag-table .ag-row-sub-total,
-.ag-table .ag-row-total {
+.ag-table .ag-row-hashed {
+  @apply pattern-diagonal-lines pattern-bg-transparent pattern-slate-200 
+  pattern-opacity-40 pattern-size-1;
+}
+
+.ag-table .ag-row-sub-total {
   @apply bg-gray-100 theme-dark:bg-gray-900/40;
+}
+
+.ag-table .ag-row-total {
+  @apply bg-yellow-50 theme-dark:bg-gray-900/40;
 }
 
 .ag-table .ag-row-group::after,

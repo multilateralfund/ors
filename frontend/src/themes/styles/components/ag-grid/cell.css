@@ -16,6 +16,11 @@
     @apply text-right;
   }
 
+  .ag-cell-hashed {
+    @apply pattern-diagonal-lines pattern-bg-transparent pattern-slate-200 
+    pattern-opacity-40 pattern-size-1;
+  }
+
   .ag-cell .MuiTypography-root {
     line-height: var(--ag-line-height);
     font-size: var(--ag-font-size);
@@ -31,9 +36,18 @@
         .ag-cell-range-right,
         .ag-cell-range-single-cell
       ) {
-      border-right: var(--ag-row-border-width) var(--ag-row-border-style)
-        var(--ag-row-border-color);
+      /* border-right: var(--ag-row-border-width) var(--ag-row-border-style)
+        var(--ag-row-border-color); */
+        @apply border-r-transparent
     }
+  }
+
+  .ag-row .ag-cell {
+    @apply border-r-transparent
+  }
+
+  .ag-row-group .ag-cell {
+    @apply border-transparent
   }
 
   .ag-row-group .ag-cell-focus:focus-within::after,

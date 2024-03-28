@@ -22,10 +22,10 @@
   --ag-header-background-color: theme(colors.gray-100);
   --ag-header-cell-hover-background-color: transparent;
   --ag-header-cell-moving-background-color: theme(colors.action-highlight);
-  --ag-header-column-resize-handle-color: theme(colors.typography-disabled);
+  --ag-header-column-resize-handle-color: theme(colors.gray-200);
   --ag-header-column-resize-handle-display: block;
-  --ag-header-column-resize-handle-height: 30%;
-  --ag-header-column-resize-handle-width: 2px;
+  --ag-header-column-resize-handle-height: 100%;
+  --ag-header-column-resize-handle-width: 1px;
   --ag-header-column-separator-color: var(--ag-border-color);
   --ag-header-column-separator-display: none;
   --ag-header-column-separator-height: 100%;
@@ -52,7 +52,7 @@
   );
   --ag-row-height: 40px;
   --ag-row-hover-color: rgb(33 150 243 / 10%);
-  --ag-secondary-border-color: theme(colors.typography);
+  --ag-secondary-border-color: theme(colors.gray[200]);
   --ag-secondary-foreground-color: theme(colors.typography-primary);
   --ag-tooltip-background-color: #f8f8f8;
   --ag-value-change-delta-down-color: theme(colors.error);

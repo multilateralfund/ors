@@ -101,10 +101,6 @@ function useGridOptions(props: {
           return cx({
             'ag-flex-cell': props.data?.rowType === 'control',
             'ag-text-right': !includes(['display_name'], props.colDef.field),
-            'bg-mui-box-background': includes(
-              ['display_name'],
-              props.colDef.field,
-            ),
           })
         },
         editable: (props: EditableCallbackParams<RowData>) => {

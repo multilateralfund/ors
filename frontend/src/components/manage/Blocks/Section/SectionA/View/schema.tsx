@@ -109,15 +109,11 @@ function useGridOptions(props: { model: string; usages: object[] }) {
         autoHeight: true,
         cellClass: (props: CellClassParams) => {
           return cx({
-            'ag-text-right': !includes(['display_name'], props.colDef.field),
-            'bg-gray-100 theme-dark:bg-gray-900/40': includes(
+            'ag-cell-hashed theme-dark:bg-gray-900/40': includes(
               props.data.excluded_usages || [],
               props.colDef.id,
             ),
-            'bg-mui-box-background': includes(
-              ['display_name'],
-              props.colDef.field,
-            ),
+            'ag-text-right': !includes(['display_name'], props.colDef.field),
           })
         },
         headerClass: 'ag-text-center',

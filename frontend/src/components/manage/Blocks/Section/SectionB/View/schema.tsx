@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
-import { GridOptions } from 'ag-grid-community'
+import { CellClassParams, GridOptions } from 'ag-grid-community'
+import cx from 'classnames'
 import { includes } from 'lodash'
 
 import { defaultColDef } from '@ors/config/Table/columnsDef'
@@ -13,7 +14,6 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
     () => ({
       columnDefs: [
         {
-          cellClass: 'bg-mui-box-background',
           field: 'display_name',
           headerClass: 'ag-text-left',
           headerName: 'Substance',
@@ -95,7 +95,11 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
       ],
       defaultColDef: {
         autoHeight: true,
-        cellClass: 'ag-text-right',
+        cellClass: (props: CellClassParams) => {
+          return cx({
+            'ag-text-right': !includes(['display_name'], props.colDef.field),
+          })
+        },
         headerClass: 'ag-text-center',
         minWidth: defaultColDef.minWidth,
         resizable: true,

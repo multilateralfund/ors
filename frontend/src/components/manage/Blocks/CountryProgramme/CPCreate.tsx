@@ -198,7 +198,7 @@ const TableProps: CPCreateTableProps = {
   suppressColumnVirtualisation: true,
   suppressLoadingOverlay: true,
   suppressRowHoverHighlight: false,
-  withSeparators: true,
+  withSeparators: false,
 }
 
 const CPCreate: React.FC = () => {

@@ -99,13 +99,12 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
     autoHeight: true,
     cellClass: (props: any) => {
       return cx({
-        'ag-flex-cell': props.data.rowType === 'control',
-        'ag-text-right': !includes(['substance'], props.colDef.field),
-        'bg-gray-100 theme-dark:bg-gray-900/40': includes(
+        'ag-cell-hashed theme-dark:bg-gray-900/40': includes(
           props.data.excluded_usages || [],
           props.colDef.id,
         ),
-        'bg-mui-box-background': includes(['substance'], props.colDef.field),
+        'ag-flex-cell': props.data.rowType === 'control',
+        'ag-text-right': !includes(['substance'], props.colDef.field),
       })
     },
     editable: (props) => {
