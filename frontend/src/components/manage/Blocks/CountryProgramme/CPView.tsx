@@ -19,6 +19,7 @@ import { useStore } from '@ors/store'
 
 import { getSections } from '.'
 import { CPViewHeader } from './CPHeader'
+import CPSectionWrapper from './CPSectionWrapper'
 
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 import { IoClose, IoDownloadOutline, IoExpand } from 'react-icons/io5'
@@ -192,13 +193,14 @@ function CPView(props: { archive?: boolean }) {
       {!!report.error && <Error error={report.error} />}
       <CPViewHeader archive={archive} />
       <Tabs
-        className="scrollable mb-4"
+        className="scrollable"
         aria-label="view country programme report"
         ref={tabsEl}
         scrollButtons="auto"
         value={activeTab}
         variant="scrollable"
         TabIndicatorProps={{
+          className: 'h-0',
           style: { transitionDuration: '150ms' },
         }}
         onChange={(event, newValue) => {
@@ -210,8 +212,13 @@ function CPView(props: { archive?: boolean }) {
           <Tab
             id={section.id}
             key={section.id}
+            className="rounded-b-none px-3 py-2"
             aria-controls={section.panelId}
             label={section.label}
+            classes={{
+              selected:
+                'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
+            }}
           />
         ))}
       </Tabs>
@@ -232,18 +239,20 @@ function CPView(props: { archive?: boolean }) {
               role="tabpanel"
             >
               <FootnotesProvider>
-                <Section
-                  emptyForm={report.emptyForm.data || {}}
-                  report={report.data}
-                  section={section}
-                  variant={variant}
-                  TableProps={{
-                    ...TableProps,
-                    context: { section, variant },
-                    report,
-                    section,
-                  }}
-                />
+                <CPSectionWrapper>
+                  <Section
+                    emptyForm={report.emptyForm.data || {}}
+                    report={report.data}
+                    section={section}
+                    variant={variant}
+                    TableProps={{
+                      ...TableProps,
+                      context: { section, variant },
+                      report,
+                      section,
+                    }}
+                  />
+                </CPSectionWrapper>
               </FootnotesProvider>
             </div>
           )

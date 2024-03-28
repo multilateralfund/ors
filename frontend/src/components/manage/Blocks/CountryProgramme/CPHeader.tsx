@@ -221,7 +221,6 @@ const EditHeaderActions = ({
           >
             Close
           </Link>
-          <button onClick={() => console.log(getSubmitFormData())}>test</button>
           {report.data.status === 'draft' && (
             <Button
               className="px-4 py-2 shadow-none"

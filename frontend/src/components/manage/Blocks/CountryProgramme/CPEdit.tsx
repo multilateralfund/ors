@@ -35,6 +35,7 @@ import { useStore } from '@ors/store'
 
 import { getSections } from '.'
 import { CPEditHeader } from './CPHeader'
+import CPSectionWrapper from './CPSectionWrapper'
 
 import { IoClose, IoExpand } from 'react-icons/io5'
 
@@ -278,13 +279,14 @@ function CPEdit() {
       />
       <form className="create-submission-form">
         <Tabs
-          className="scrollable mb-4"
+          className="scrollable"
           aria-label="create submission sections"
           ref={tabsEl}
           scrollButtons="auto"
           value={activeTab}
           variant="scrollable"
           TabIndicatorProps={{
+            className: 'h-0',
             style: { transitionDuration: '150ms' },
           }}
           onChange={(event: React.SyntheticEvent, index: number) => {
@@ -295,11 +297,15 @@ function CPEdit() {
           {sections.map((section) => (
             <Tab
               key={section.id}
-              className={cx({
+              className={cx('rounded-b-none px-3 py-2', {
                 'MuiTab-error': !isEmpty(errors?.[section.id]),
               })}
               aria-controls={section.panelId}
               label={section.label}
+              classes={{
+                selected:
+                  'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
+              }}
             />
           ))}
         </Tabs>
@@ -319,23 +325,25 @@ function CPEdit() {
                 role="tabpanel"
               >
                 <FootnotesProvider>
-                  <Section
-                    Section={get(Sections, section.id)}
-                    emptyForm={report.emptyForm.data || {}}
-                    errors={errors}
-                    form={form}
-                    report={report.data}
-                    section={section}
-                    setForm={setForm}
-                    variant={variant}
-                    TableProps={{
-                      ...TableProps,
-                      context: { section, variant },
-                      errors: errors[section.id],
-                      report,
-                      section,
-                    }}
-                  />
+                  <CPSectionWrapper>
+                    <Section
+                      Section={get(Sections, section.id)}
+                      emptyForm={report.emptyForm.data || {}}
+                      errors={errors}
+                      form={form}
+                      report={report.data}
+                      section={section}
+                      setForm={setForm}
+                      variant={variant}
+                      TableProps={{
+                        ...TableProps,
+                        context: { section, variant },
+                        errors: errors[section.id],
+                        report,
+                        section,
+                      }}
+                    />
+                  </CPSectionWrapper>
                 </FootnotesProvider>
               </div>
             )

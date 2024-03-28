@@ -44,6 +44,7 @@ import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
 import { SectionMeta, getSections } from '.'
+import CPSectionWrapper from './CPSectionWrapper'
 
 import { IoClose, IoExpand, IoLink } from 'react-icons/io5'
 
@@ -397,13 +398,14 @@ const CPCreate: React.FC = () => {
       </HeaderTitle>
       <form className="create-submission-form">
         <Tabs
-          className="scrollable mb-4"
+          className="scrollable"
           aria-label="create submission sections"
           ref={tabsEl}
           scrollButtons="auto"
           value={activeTab}
           variant="scrollable"
           TabIndicatorProps={{
+            className: 'h-0',
             style: { transitionDuration: '150ms' },
           }}
           onChange={(event: React.SyntheticEvent, index: number) => {
@@ -414,96 +416,105 @@ const CPCreate: React.FC = () => {
           {sections.map((section) => (
             <Tab
               key={section.id}
-              className={cx({ 'MuiTab-error': !isEmpty(errors?.[section.id]) })}
+              className={cx('rounded-b-none px-3 py-2', {
+                'MuiTab-error': !isEmpty(errors?.[section.id]),
+              })}
               aria-controls={section.panelId}
               label={section.label}
+              classes={{
+                selected:
+                  'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
+              }}
             />
           ))}
         </Tabs>
-        <div className="mb-4 grid grid-cols-1 gap-x-4 md:grid-cols-2 lg:grid-cols-3">
-          <Field
-            id="country"
-            name="country_id"
-            FieldProps={{ className: 'mb-0' }}
-            disabled={existingReports.loading}
-            options={countries}
-            value={form.country}
-            widget="autocomplete"
-            Input={{
-              error: !!errors.country_id,
-              helperText: errors.country_id?.general_error,
-              label: 'Country',
-            }}
-            onChange={(_event, value) => {
-              const country = value as WidgetCountry
-              setForm({ ...form, country })
-              setCurrentCountry(
-                all_countries.filter((c) => c.id == country.id)[0],
-              )
-            }}
-          />
-          {!!existingReports.data?.length && currentCountry && (
-            <div className="flex items-center">
-              <Tooltip
-                placement="top"
-                title={`There is already a submission for ${existingReports.data[0].name}. Click on this icon to view the submission.`}
-              >
-                <Typography className="inline-flex items-center">
-                  <Link
-                    className="inline-block"
-                    href={`/country-programme/${currentCountry.iso3}/${form.year}`}
-                  >
-                    <IoLink size={24} />
-                  </Link>
-                </Typography>
-              </Tooltip>
-            </div>
+        <CPSectionWrapper>
+          <div className="mb-4 grid grid-cols-1 gap-x-4 md:grid-cols-2 lg:grid-cols-3">
+            <Field
+              id="country"
+              name="country_id"
+              FieldProps={{ className: 'mb-0' }}
+              disabled={existingReports.loading}
+              options={countries}
+              value={form.country}
+              widget="autocomplete"
+              Input={{
+                error: !!errors.country_id,
+                helperText: errors.country_id?.general_error,
+                label: 'Country',
+              }}
+              onChange={(_event, value) => {
+                const country = value as WidgetCountry
+                setForm({ ...form, country })
+                setCurrentCountry(
+                  all_countries.filter((c) => c.id == country.id)[0],
+                )
+              }}
+            />
+            {!!existingReports.data?.length && currentCountry && (
+              <div className="flex items-center">
+                <Tooltip
+                  placement="top"
+                  title={`There is already a submission for ${existingReports.data[0].name}. Click on this icon to view the submission.`}
+                >
+                  <Typography className="inline-flex items-center">
+                    <Link
+                      className="inline-block"
+                      href={`/country-programme/${currentCountry.iso3}/${form.year}`}
+                    >
+                      <IoLink size={24} />
+                    </Link>
+                  </Typography>
+                </Tooltip>
+              </div>
+            )}
+          </div>
+
+          {!!Object.keys(errors).length && (
+            <Alert className="mb-4" severity="error">
+              <Typography>
+                Please make sure a country is selected and all the sections are
+                valid.
+              </Typography>
+            </Alert>
           )}
-        </div>
-        {!!Object.keys(errors).length && (
-          <Alert className="mb-4" severity="error">
-            <Typography>
-              Please make sure a country is selected and all the sections are
-              valid.
-            </Typography>
-          </Alert>
-        )}
-        {sections.map((section, index) => {
-          if (!includes(renderedSections, index)) return null
-          const Section = section.component
-          return (
-            <div
-              id={section.panelId}
-              key={section.panelId}
-              className={cx('transition', {
-                'absolute -left-[9999px] -top-[9999px] opacity-0':
-                  activeTab !== index,
-              })}
-              aria-labelledby={section.id}
-              role="tabpanel"
-            >
-              <FootnotesProvider>
-                <Section
-                  Section={get(Sections, section.id)}
-                  emptyForm={report.emptyForm.data || {}}
-                  errors={errors}
-                  form={form}
-                  report={report.data}
-                  section={section}
-                  setForm={setForm}
-                  variant={variant}
-                  TableProps={{
-                    ...TableProps,
-                    context: { section, variant },
-                    errors: errors[section.id],
-                    report,
-                    section,
-                  }}
-                />
-              </FootnotesProvider>
-            </div>
-          )
-        })}
+          {sections.map((section, index) => {
+            if (!includes(renderedSections, index)) return null
+            const Section = section.component
+            return (
+              <div
+                id={section.panelId}
+                key={section.panelId}
+                className={cx('transition', {
+                  'absolute -left-[9999px] -top-[9999px] opacity-0':
+                    activeTab !== index,
+                })}
+                aria-labelledby={section.id}
+                role="tabpanel"
+              >
+                <FootnotesProvider>
+                  <Section
+                    Section={get(Sections, section.id)}
+                    emptyForm={report.emptyForm.data || {}}
+                    errors={errors}
+                    form={form}
+                    report={report.data}
+                    section={section}
+                    setForm={setForm}
+                    variant={variant}
+                    TableProps={{
+                      ...TableProps,
+                      context: { section, variant },
+                      errors: errors[section.id],
+                      report,
+                      section,
+                    }}
+                  />
+                </FootnotesProvider>
+              </div>
+            )
+          })}
+        </CPSectionWrapper>
         <Portal domNode="bottom-control">
           <Box className="rounded-none border-0 border-t px-4">
             <div className="container flex w-full justify-between">
