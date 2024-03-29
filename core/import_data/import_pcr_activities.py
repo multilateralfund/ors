@@ -63,8 +63,17 @@ def parse_file(file_path, sectors_dict):
     activities = []
     for activity_json in json_data:
         if not check_pcr_json_data(activity_json, IMPORTANT_ARGS):
+            meta_proj = get_object_by_code(
+                MetaProject,
+                activity_json["ProjectId"],
+                "pcr_project_id",
+                activity_json["Id"],
+                with_log=False,
+            )
+            metaproj_code = meta_proj.code if meta_proj else None
             logger.warning(
-                f"⚠️ activity {activity_json['Id']} not imported (too few data)"
+                f"{file_path} ⚠️ activity {activity_json['Id']} not imported (too few data)"
+                f" project_id: {activity_json['ProjectId']} metaproject code: {metaproj_code}"
             )
             continue
 
@@ -82,8 +91,9 @@ def parse_file(file_path, sectors_dict):
         sector = sectors_dict.get(activity_json["SectorId"])
         if not sector:
             logger.warning(
-                f"⚠️ could not find sector {activity_json['SectorId']} "
-                f"for activity {activity_json['Id']}"
+                f"{file_path} ⚠️ could not find sector {activity_json['SectorId']} "
+                f"for activity {activity_json['Id']} project_id: {activity_json['ProjectId']}"
+                f" metaproject code: {meta_proj.code}"
             )
             continue
 

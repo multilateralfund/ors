@@ -1,6 +1,105 @@
 [
 {
     "model": "core.blendmapping",
+    "pk": 243,
+    "fields": {
+        "party": 47,
+        "blend": 537,
+        "party_blend_id": "CHESTERTON 279",
+        "remarks": "Found in MLFS data (Chile 2021)",
+        "created": "2024-03-27T10:05:31.590Z"
+    }
+},
+{
+    "model": "core.blendmapping",
+    "pk": 242,
+    "fields": {
+        "party": 87,
+        "blend": 26,
+        "party_blend_id": "R-406",
+        "remarks": "Found in MLFS data (Gambia, prices), assumed to be R-406A",
+        "created": "2024-03-27T07:50:35.303Z"
+    }
+},
+{
+    "model": "core.blendmapping",
+    "pk": 241,
+    "fields": {
+        "party": 47,
+        "blend": 140,
+        "party_blend_id": "R-513",
+        "remarks": "Found in MLFS data (Chile 2019, prices), assumed to be R-513A",
+        "created": "2024-03-27T07:43:09.905Z"
+    }
+},
+{
+    "model": "core.blendmapping",
+    "pk": 240,
+    "fields": {
+        "party": 49,
+        "blend": 530,
+        "party_blend_id": "R32/R125/R134a/other uncontrolled",
+        "remarks": "Found in MLFS data - China 2022 (prices)",
+        "created": "2024-03-27T07:33:23.245Z"
+    }
+},
+{
+    "model": "core.blendmapping",
+    "pk": 239,
+    "fields": {
+        "party": 49,
+        "blend": 530,
+        "party_blend_id": "R32/R125/R134a/other uncontrolled substances(26%/21%/20%/33%)",
+        "remarks": "Found in MLFS data - China 2022",
+        "created": "2024-03-27T07:30:12.585Z"
+    }
+},
+{
+    "model": "core.blendmapping",
+    "pk": 238,
+    "fields": {
+        "party": 49,
+        "blend": 531,
+        "party_blend_id": "R32/R125/R134a/R227ea/R236fa/other uncontrolled",
+        "remarks": "Found in MLFS data - China 2022",
+        "created": "2024-03-27T07:27:05.362Z"
+    }
+},
+{
+    "model": "core.blendmapping",
+    "pk": 237,
+    "fields": {
+        "party": 49,
+        "blend": 526,
+        "party_blend_id": "R23/R125/R245fa/R236fa/other uncontrolled",
+        "remarks": "Found in MLFS data - China 2022",
+        "created": "2024-03-27T07:25:41.783Z"
+    }
+},
+{
+    "model": "core.blendmapping",
+    "pk": 236,
+    "fields": {
+        "party": 11,
+        "blend": 520,
+        "party_blend_id": "PFC 672FC",
+        "remarks": "Found in MLFS Data - Argentina 2022",
+        "created": "2024-03-27T07:16:00.137Z"
+    }
+},
+{
+    "model": "core.blendmapping",
+    "pk": 235,
+    "fields": {
+        "party": 188,
+        "blend": 493,
+        "party_blend_id": "Whacool 38A",
+        "remarks": "Found in MLFS Data - Paraguay 2020",
+        "created": "2024-03-27T07:13:43.932Z"
+    }
+},
+{
+    "model": "core.blendmapping",
     "pk": 234,
     "fields": {
         "party": 236,

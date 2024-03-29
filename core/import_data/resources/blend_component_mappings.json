@@ -1,6 +1,72 @@
 [
 {
     "model": "core.blendcomponentmapping",
+    "pk": 153,
+    "fields": {
+        "party": 47,
+        "party_blend_component": "HFO (Solstice LBA)",
+        "substance": 374,
+        "remarks": "Found in MLFS data",
+        "created": "2024-03-27T11:03:06.779Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 152,
+    "fields": {
+        "party": 217,
+        "party_blend_component": "Eau (R-718)",
+        "substance": 373,
+        "remarks": "Found in MLFS data",
+        "created": "2024-03-27T11:02:03.106Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 151,
+    "fields": {
+        "party": 32,
+        "party_blend_component": "Methylal",
+        "substance": 372,
+        "remarks": "Found in MLFS data",
+        "created": "2024-03-27T11:01:45.060Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 150,
+    "fields": {
+        "party": 11,
+        "party_blend_component": "MDI (for production of foam)",
+        "substance": 375,
+        "remarks": "Found in MLFS data",
+        "created": "2024-03-27T10:51:20.714Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 148,
+    "fields": {
+        "party": 50,
+        "party_blend_component": "HCFC-125",
+        "substance": 97,
+        "remarks": "Found in MLFS data (Colombia, prices)",
+        "created": "2024-03-27T09:38:04.483Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
+    "pk": 147,
+    "fields": {
+        "party": 32,
+        "party_blend_component": "HFO-1234zd (E)",
+        "substance": 301,
+        "remarks": "Found in MLFS data (Brazil 2022), assumed to be a typo",
+        "created": "2024-03-27T09:17:41.019Z"
+    }
+},
+{
+    "model": "core.blendcomponentmapping",
     "pk": 146,
     "fields": {
         "party": null,

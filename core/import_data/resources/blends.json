@@ -9505,6 +9505,30 @@
 },
 {
     "model": "core.blend",
+    "pk": 537,
+    "fields": {
+        "blend_id": "CustMix-334",
+        "legacy_blend_id": null,
+        "party": null,
+        "composition": "HFC-134a=35%; Other substances=65%",
+        "other_names": "Chesterton 279 PCS",
+        "type": "Custom",
+        "odp": "0E-10",
+        "gwp": "500.0000000000",
+        "hfc": null,
+        "hcfc": null,
+        "main_usage": "",
+        "remark": "HFC-134a 25%-35%; Other ingredients (Methyl Nonafluoro Ethers) 65%-75%",
+        "trade_name": "Chesterton 279 PCS",
+        "composition_alt": "HFC-134a 25%-35%; Other ingredients (Methyl Nonafluoro Ethers) 65%-75%",
+        "cnumber": "",
+        "is_contained_in_polyols": false,
+        "is_deactivated": false,
+        "sort_order": 150334
+    }
+},
+{
+    "model": "core.blend",
     "pk": 145,
     "fields": {
         "blend_id": "Other mixture (ODS or HFC or both or neither)",
