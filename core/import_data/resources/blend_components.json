@@ -15192,6 +15192,28 @@
 },
 {
     "model": "core.blendcomponent",
+    "pk": 1496,
+    "fields": {
+        "blend": 537,
+        "substance": 99,
+        "percentage": "0.35000",
+        "component_name": "HFC-134a",
+        "cnumber": ""
+    }
+},
+{
+    "model": "core.blendcomponent",
+    "pk": 1497,
+    "fields": {
+        "blend": 537,
+        "substance": 281,
+        "percentage": "0.65000",
+        "component_name": "Methyl Nonafluoro Ethers",
+        "cnumber": ""
+    }
+},
+{
+    "model": "core.blendcomponent",
     "pk": 459,
     "fields": {
         "blend": 157,

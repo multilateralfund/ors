@@ -3,13 +3,13 @@ import logging
 
 from django.db import transaction
 from django.conf import settings
-from core.import_data.mapping_names_dict import DB_YEAR_MAPPING
+from core.import_data.mapping_names_dict import CHEMICAL_NAME_MAPPING, DB_YEAR_MAPPING
 
 from core.import_data.utils import (
     DB_DIR_LIST,
     delete_old_data,
     get_adm_column,
-    get_chemical,
+    get_chemical_by_name_or_components,
     get_country_and_year_dict,
     get_cp_report_for_db_import,
     get_or_create_adm_row,
@@ -161,7 +161,8 @@ def get_itmes_dict(file_name, articles_dict):
         if item_json["ArticleId"] not in articles_dict:
             # This Item is Chemical
             chemical_name = item_json["Label"].replace("(Optional)", "").strip()
-            chemical, chemical_type = get_chemical(chemical_name, item_json['ItemId'])
+            chemical_name = CHEMICAL_NAME_MAPPING.get(chemical_name, chemical_name)
+            chemical, chemical_type = get_chemical_by_name_or_components(chemical_name, item_json['ItemId'])
             if not chemical:
                 continue
 
