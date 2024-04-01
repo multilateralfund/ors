@@ -129,7 +129,7 @@ export const createCPReportsSlice = ({
       setReportCountry(report)
       fetchEmptyForm(report, view)
       if (view) {
-        fetchVersions(report.id, true)
+        fetchVersions(report.country_id, report.year)
       }
     },
     fetchArchivedReport: async (report_id) => {
@@ -158,7 +158,7 @@ export const createCPReportsSlice = ({
       const report = getSlice<CPReport>('cp_reports.report.data')
       setReportCountry(report)
       fetchEmptyForm(report, view)
-      fetchVersions(report.id)
+      fetchVersions(country_id, year)
     },
     fetchEmptyForm: async (report = null, view = true) => {
       const variant = getVariant(report)
@@ -221,14 +221,12 @@ export const createCPReportsSlice = ({
         slice: 'cp_reports.report',
       })
     },
-    fetchVersions: async (id, archive = false) => {
+    fetchVersions: async (country_id, year) => {
       const options = {
         removeCacheTimeout: 60,
         withStoreCache: true,
       }
-      const versionsPath = archive
-        ? `api/country-programme/versions/?cp_report_archive_id=${id}`
-        : `api/country-programme/versions/?country_programme_report_id=${id}`
+      const versionsPath = `api/country-programme/versions/?country_id=${country_id}&year=${year}`
 
       return await fetchSliceData({
         apiSettings: {
