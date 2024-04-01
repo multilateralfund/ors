@@ -91,7 +91,7 @@ export default function SectionAView(props: any) {
       case 'trade':
         return gridOptionsBySubstanceTrade
       default:
-        return { columnDefs: [], defaultColDef: [] }
+        return {}
     }
   }, [
     gridOptionsAll,

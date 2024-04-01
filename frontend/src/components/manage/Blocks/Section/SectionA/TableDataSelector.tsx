@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { ToggleButton, ToggleButtonGroup } from '@mui/material'
 import cx from 'classnames'
 
-const TableDataSelectorValues = ['sector', 'trade', 'all']
+const TableDataSelectorOrder = ['sector', 'trade', 'all']
 type TableDataSelectorValuesType = 'all' | 'sector' | 'trade'
 
 const TableDataSelectorLabels: Record<string, string> = {
@@ -43,7 +43,7 @@ export default function TableDataSelector({
       onChange={changeHandler}
       exclusive
     >
-      {TableDataSelectorValues.map((key) => (
+      {TableDataSelectorOrder.map((key) => (
         <ToggleButton
           key={key}
           className="rounded-none border-primary py-2 text-base tracking-wide first:rounded-l-lg last:rounded-r-lg"
