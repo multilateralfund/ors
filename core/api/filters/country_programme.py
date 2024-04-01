@@ -23,33 +23,20 @@ class CPReportFilter(filters.FilterSet):
         fields = ["country_id", "name", "year", "status"]
 
 
-class CPReportArchiveFilter(CPReportFilter):
+class CPReportArchiveFilter(filters.FilterSet):
     """
     Filter for cp report archive
     """
-
-    country_programme_report_id = filters.NumberFilter(
-        method="filter_by_country_programme_report_id"
+    country_id = filters.ModelMultipleChoiceFilter(
+        field_name="country_id", queryset=Country.objects.all(), widget=CSVWidget,
+        required=True
     )
-    cp_report_archive_id = filters.NumberFilter(method="filter_by_cp_report_archive_id")
+    year = filters.NumberFilter(field_name="year", required=True)
 
-    def filter_by_country_programme_report_id(self, queryset, _, value):
-        cp_report = CPReport.objects.filter(id=value).first()
-        if not cp_report:
-            return queryset.none()
-        return queryset.filter(country_id=cp_report.country_id, year=cp_report.year)
-
-    def filter_by_cp_report_archive_id(self, queryset, _, value):
-        cp_report_archive = CPReportArchive.objects.filter(id=value).first()
-        if not cp_report_archive:
-            return queryset.none()
-        return queryset.filter(
-            country_id=cp_report_archive.country_id, year=cp_report_archive.year
-        )
 
     class Meta:
         model = CPReportArchive
-        fields = CPReportFilter.Meta.fields + ["country_programme_report_id"]
+        fields = ["country_id", "year"]
 
 
 class CPPricesFilter(filters.FilterSet):

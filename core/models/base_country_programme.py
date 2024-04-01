@@ -8,6 +8,10 @@ class AbstractCPReport(models.Model):
         DRAFT = "draft", "Draft"
         FINAL = "final", "Final"
 
+    created_at = models.DateTimeField(
+        auto_now_add=True,help_text="Date of creation of the report archive"
+    )
+
     name = models.CharField(max_length=248)
     year = models.IntegerField()
     status = models.CharField(
