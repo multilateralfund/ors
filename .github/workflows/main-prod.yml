@@ -1,0 +1,11 @@
+name: "CI"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  docker-build:
+    uses: ./.github/workflows/docker-build.yml
+  deploy-prod:
+    needs: docker-build
+    uses: ./.github/workflows/deploy-prod.yml
