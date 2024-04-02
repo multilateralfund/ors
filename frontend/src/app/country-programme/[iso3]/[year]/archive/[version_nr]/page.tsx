@@ -35,7 +35,7 @@ export default async function CountryProgrammeReport(props: {
       false,
     )) || []
 
-  const id = versions[version_nr - 1].id
+  const id = versions.filter((ver) => ver.version == version_nr).pop()!.id
 
   return (
     <PageWrapper>
