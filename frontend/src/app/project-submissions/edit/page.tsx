@@ -8,7 +8,7 @@ export default async function CreateSubmission() {
   return (
     <PageWrapper>
       <HeaderTitle>
-        <Typography className="text-white" component="h1" variant="h3">
+        <Typography component="h1" variant="h3">
           New Submission
         </Typography>
       </HeaderTitle>

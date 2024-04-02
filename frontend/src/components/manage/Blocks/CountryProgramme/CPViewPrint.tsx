@@ -78,7 +78,7 @@ export default function CPViewPrint(props: { iso3: string; year: number }) {
       {report.loaded && !!report.data && (
         <HeaderTitle memo={report.data.status}>
           <div className="mb-4 min-h-[40px]">
-            <Typography className="text-white" component="h1" variant="h3">
+            <Typography component="h1" variant="h3">
               {report.data.name}
             </Typography>
           </div>

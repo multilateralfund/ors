@@ -45,7 +45,7 @@ export default function PSView({ data }: ProjectProps) {
   return (
     <>
       <HeaderTitle>
-        <Typography className="text-white" component="h1" variant="h3">
+        <Typography component="h1" variant="h3">
           {data.title}
         </Typography>
       </HeaderTitle>
