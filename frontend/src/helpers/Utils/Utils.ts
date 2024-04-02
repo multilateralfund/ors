@@ -177,23 +177,29 @@ export const getOSName = () => {
   }
 }
 
+interface formatDecimalValueProps {
+  maximumFractionDigits?: number
+  minimumFractionDigits?: number
+}
+
 export const formatDecimalValue = (
   value: number,
-  props: {
-    maximumFractionDigits?: number
-    minimumFractionDigits?: number
-  } = {},
+  {
+    maximumFractionDigits = 3,
+    minimumFractionDigits = maximumFractionDigits || 2,
+  }: formatDecimalValueProps,
 ) => {
-  const maximumFractionDigits = props.maximumFractionDigits || 3
-  const minimumFractionDigits =
-    props.minimumFractionDigits || props.maximumFractionDigits || 2
+  const [whole, decimal] = value.toString().split('.')
 
-  const valueToAvoidRounding =
-    Math.round(value * 10 ** maximumFractionDigits) /
-    10 ** maximumFractionDigits
+  const formatted =
+    whole && decimal
+      ? parseFloat(
+          `${whole}.${decimal.slice(0, maximumFractionDigits)}`,
+        ).toLocaleString()
+      : value.toLocaleString(undefined, {
+          maximumFractionDigits,
+          minimumFractionDigits,
+        })
 
-  return valueToAvoidRounding.toLocaleString(undefined, {
-    maximumFractionDigits,
-    minimumFractionDigits,
-  })
+  return formatted
 }

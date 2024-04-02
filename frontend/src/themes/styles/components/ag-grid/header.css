@@ -42,22 +42,22 @@
     .ag-header-cell:not(.ag-header-span-height.ag-header-span-total),
   .ag-header-row:not(:first-child)
     .ag-header-group-cell.ag-header-group-cell-with-group {
-    @apply border-transparent
+    @apply border-transparent;
   }
 
   .ag-header-group-cell-with-group {
-    @apply bg-gray-200
+    @apply bg-gray-200;
   }
 
   .ag-pinned-left-header {
-    @apply border-r-transparent
+    @apply border-r-transparent;
   }
 
   .ag-ltr {
     .ag-header-cell,
     .ag-header-group-cell {
       /* border-right: var(--ag-cell-horizontal-border); */
-      @apply border-r-transparent
+      @apply border-r-transparent;
     }
   }
 }

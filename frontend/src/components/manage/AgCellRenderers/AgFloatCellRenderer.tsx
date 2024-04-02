@@ -1,4 +1,5 @@
 'use client'
+import { Tooltip } from '@mui/material'
 import { Typography } from '@mui/material'
 import { CustomCellRendererProps } from 'ag-grid-react'
 import { get, includes, isNull, isUndefined } from 'lodash'
@@ -6,7 +7,6 @@ import { get, includes, isNull, isUndefined } from 'lodash'
 import aggFuncs from '@ors/config/Table/aggFuncs'
 
 import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSkeletonCellRenderer'
-import AgTooltipComponent from '@ors/components/manage/AgComponents/AgTooltipComponent'
 import { formatDecimalValue, parseNumber } from '@ors/helpers/Utils/Utils'
 
 export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
@@ -37,10 +37,14 @@ export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
   const formattedValue = formatDecimalValue(value, props)
 
   return (
-    <AgTooltipComponent {...props} value={formattedValue}>
+    <Tooltip
+      enterDelay={300}
+      placement={'top-start'}
+      title={value ? value.toLocaleString() : value}
+    >
       <Typography className={props.className} component="span" lineHeight={1}>
         {formattedValue}
       </Typography>
-    </AgTooltipComponent>
+    </Tooltip>
   )
 }
