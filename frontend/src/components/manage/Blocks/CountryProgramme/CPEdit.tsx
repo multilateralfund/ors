@@ -124,27 +124,27 @@ function CPEdit() {
   const Sections = {
     section_a: useMakeClassInstance<SectionA>(SectionA, [
       report.data?.section_a,
-      report.emptyForm.data.substance_rows.section_a?.filter(
+      report.emptyForm.data?.substance_rows?.section_a?.filter(
         (item) => item.substance_id,
       ) || [],
       null,
     ]),
     section_b: useMakeClassInstance<SectionB>(SectionB, [
       report.data?.section_b,
-      report.emptyForm.data.substance_rows.section_b?.filter(
+      report.emptyForm.data?.substance_rows?.section_b?.filter(
         (item) => item.substance_id,
       ) || [],
-      report.emptyForm.data.substance_rows.section_b?.filter(
+      report.emptyForm.data?.substance_rows?.section_b?.filter(
         (item) => item.blend_id,
       ),
       null,
     ]),
     section_c: useMakeClassInstance<SectionC>(SectionC, [
       report.data?.section_c,
-      report.emptyForm.data.substance_rows.section_c?.filter(
+      report.emptyForm.data?.substance_rows?.section_c?.filter(
         (item) => item.substance_id,
       ) || [],
-      report.emptyForm.data.substance_rows.section_c?.filter(
+      report.emptyForm.data?.substance_rows?.section_c?.filter(
         (item) => item.blend_id,
       ) || [],
       null,
