@@ -343,7 +343,7 @@ CP_FORMAT_FILE_DATA_MAPPING = {
             "Section B": "B",
             "Section C": "C",
         },
-        "time_frame": {"min_year": 2019, "max_year": 2021},
+        "time_frame": {"min_year": 2019, "max_year": 2022}, # 2019-2021 is actually 2019-2022
     },
     "CP_Format_2022.xls": {
         "sheets": {
@@ -351,6 +351,6 @@ CP_FORMAT_FILE_DATA_MAPPING = {
             "Section B": "B",
             "Section C": "C",
         },
-        "time_frame": {"min_year": 2022, "max_year": None},
+        "time_frame": {"min_year": 2023, "max_year": None}, # 2022 and beyond is actually 2023
     },
 }
