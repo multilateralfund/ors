@@ -245,7 +245,7 @@ const EditHeaderActions = ({
       {!!report.data && (
         <div className="container flex w-full justify-between gap-x-4">
           <Link
-            className="bg-gray-600  px-4 py-2 shadow-none"
+            className="bg-gray-600 px-4 py-2 shadow-none"
             color="secondary"
             href={`/country-programme/${report.country?.iso3}/${report.data.year}`}
             size="large"
@@ -396,6 +396,24 @@ const CPHeader = ({
     )
   )
 }
+const CPCreateHeader = ({
+  actions,
+  currentYear,
+}: {
+  actions: React.JSX.Element
+  currentYear: number
+}) => {
+  return (
+    <div className="my-12 flex min-h-[40px] items-center justify-between gap-x-8">
+      <div className="flex items-center gap-x-2">
+        <Typography component="h1" variant="h3">
+          New submission - {currentYear}
+        </Typography>
+      </div>
+      {actions}
+    </div>
+  )
+}
 
 const CPViewHeader = () => {
   return <CPHeader actions={<ViewHeaderActions />} tag={<ViewHeaderTag />} />
@@ -416,4 +434,4 @@ const CPArchiveHeader = () => {
   )
 }
 
-export { CPArchiveHeader, CPEditHeader, CPViewHeader }
+export { CPArchiveHeader, CPCreateHeader, CPEditHeader, CPViewHeader }

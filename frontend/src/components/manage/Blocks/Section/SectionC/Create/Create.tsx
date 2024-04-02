@@ -239,11 +239,6 @@ export default function SectionCCreate(props: {
 
   return (
     <>
-      <Alert className="mb-4" icon={false} severity="info">
-        <Typography>
-          Edit by pressing double left-click or ENTER on a field.
-        </Typography>
-      </Alert>
       <Table
         {...TableProps}
         className="mb-4"
