@@ -37,31 +37,29 @@ class TestVersionsList(BaseTest):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
-            self.url, {"country_programme_report_id": cp_report_2019.id}
+            self.url, {"country_id": cp_report_2019.country_id, "year": 2019}
         )
         assert response.status_code == 200
-        assert len(response.data) == 5
+        assert len(response.data) == 6
+        assert response.data[0]["id"] == cp_report_2019.id
 
         response = self.client.get(
-            self.url, {"country_programme_report_id": cp_report_2005.id}
+            self.url, {"country_id": cp_report_2005.country_id, "year": 2005}
         )
         assert response.status_code == 200
-        assert len(response.data) == 5
+        assert len(response.data) == 6
 
-    def test_versions_list_invalid_cp_report_id(self, user, _setup_version_list):
+    def test_versions_list_invalid_country_id(self, user, _setup_version_list):
         self.client.force_authenticate(user=user)
 
-        response = self.client.get(self.url, {"country_programme_report_id": 999})
-        assert response.status_code == 200
-        assert len(response.data) == 0
+        response = self.client.get(self.url, {"country_id": 999, "year": 2005})
+        assert response.status_code == 400
 
-    def test_version_list_filter_by_archive_id(self, user, _setup_version_list):
+    def test_versions_list_without_year(self, user, cp_report_2019, _setup_version_list):
         self.client.force_authenticate(user=user)
 
-        last_archive = CPReportArchive.objects.last()
-        response = self.client.get(self.url, {"cp_report_archive_id": last_archive.id})
-        assert response.status_code == 200
-        assert len(response.data) == 5
+        response = self.client.get(self.url, {"country_id": cp_report_2019.country_id})
+        assert response.status_code == 400
 
 
 @pytest.fixture(name="_setup_old_version_2019")

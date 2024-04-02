@@ -35,7 +35,7 @@ export interface CPReportsSlice {
   fetchBundle: (country_id: number, year: number, view: boolean) => void
   fetchEmptyForm: (report: CPReport | null, view: boolean) => void
   fetchReport: (country_id: number, year: number) => Promise<void>
-  fetchVersions: (id: null | number, archive?: boolean) => void
+  fetchVersions: (country_id: number, year: number) => void
   report: Report
   setReport: (report: Partial<Report>) => void
   setReportCountry: (report: CPReport) => void
@@ -135,6 +135,8 @@ export type CPVersionInfo = {
   comment: null | string
   country: string
   country_id: number
+  created_at: string
+  final_version_id: number
   id: number
   name: string
   status: string
