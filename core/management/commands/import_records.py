@@ -1,5 +1,6 @@
 from django.core.management import BaseCommand
 
+from core.import_data.import_cp_format import import_cp_format
 from core.import_data.import_admb import import_admb_items
 from core.import_data.import_admc import import_admc_items
 from core.import_data.import_admde import import_admde_items
@@ -28,6 +29,7 @@ class Command(BaseCommand):
             - type = admb_items => admb items from databases
             - type = admc_items => admc items from databases
             - type = admde_items => admde items from databases
+            - type = cp_format => country programme report format
     """
 
     def add_arguments(self, parser):
@@ -48,6 +50,7 @@ class Command(BaseCommand):
                 "admb_items",
                 "admc_items",
                 "admde_items",
+                "cp_format",
                 "all",
             ],
         )
@@ -73,3 +76,5 @@ class Command(BaseCommand):
             import_admde_items()
         if rec_type in ["records_95_04", "xlsx_files", "all"]:
             import_records_95_04()
+        if rec_type in ["cp_format", "cp_db_records", "xlsx_files", "admb_items", "admc_items", "all"]:
+            import_cp_format()

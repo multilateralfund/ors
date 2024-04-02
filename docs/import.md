@@ -66,6 +66,7 @@ docker-compose exec app ./manage.py import_records cp_db
 - admb_items -> admb items from databases
 - admc_items -> admc items from databases
 - admde_items -> admde items from databases
+- cp_format -> country programme report formats
 
 ### Import files
 
@@ -91,6 +92,19 @@ docker-compose exec app ./manage.py import_records cp_db
     | :----    | :----  |
     | CP | CP |
     | CP2012 | CP2012 |
+
+
+- cp_format
+: download folders from nextcloud
+    - **nextcloud path** OzoneMlf/3. Country programmes specs and documentation/CP Format/
+    - **local path** .fs/import_files/cp_format
+
+    |nextcloud name | local name |
+    | :----:    | :----:  |
+    | CP Format - 2022 and beyond(Final-92ndMtg)Consultant.xls | CP_Format_2022.xls |
+    | CP Format - 2019-2021.xls | CP_Format_2019_2021.xls |
+    | CP Format - 2012-2018.xls | CP_Format_2012_2018.xls |
+    | CP Format - 2005-2011.xls | CP_Format_2005_2011.xls |
 
 
 ---
@@ -197,25 +211,3 @@ docker-compose exec app ./manage.py import_business_plans
 : download all files from nextcloud except "Business Plan Template and Sample" file
   - **nextcloud path** OzoneMlf/Data/2.7 Business plans
   - **local path** .fs/import_files/business_plans
-
-
-
----
-
-## Country programme format
-To import country programme formats
-```shell
-docker-compose exec app ./manage.py import_cp_format
-```
-
-### Import Files
-: download folders from nextcloud
-    - **nextcloud path** OzoneMlf/3. Country programmes specs and documentation/CP Format/
-    - **local path** .fs/import_files/cp_format
-
-    |nextcloud name | local name |
-    | :----:    | :----:  |
-    | CP Format - 2022 and beyond(Final-92ndMtg)Consultant.xls | CP_Format_2022.xls |
-    | CP Format - 2019-2021.xls | CP_Format_2019_2021.xls |
-    | CP Format - 2012-2018.xls | CP_Format_2012_2018.xls |
-    | CP Format - 2005-2011.xls | CP_Format_2005_2011.xls |

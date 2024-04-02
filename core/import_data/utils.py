@@ -20,6 +20,7 @@ from core.models.agency import Agency
 from core.models.blend import Blend
 from core.models.country import Country
 from core.models.country_programme import CPRecord, CPReport, CPUsage
+from core.models.country_programme_archive import CPReportArchive
 from core.models.meeting import Meeting
 from core.models.project import (
     Project,
@@ -133,6 +134,23 @@ def delete_old_data(cls, source_file=None):
         return
     cls.objects.all().delete()
     logger.info(f"✔ old {cls.__name__} deleted")
+
+def delete_archive_reports_data(min_year, max_year):
+    """
+    Delete old data from db for a specific time frame
+
+    @param cls: Class instance
+    @param min_year: int
+    @param max_year: int
+    """
+    filters = []
+    if min_year:
+        filters.append(models.Q(year__gte=min_year))
+    if max_year:
+        filters.append(models.Q(year__lte=max_year))
+    CPReportArchive.objects.filter(*filters).all().delete()
+
+    logger.info(f"✔ CPReportArchive for {min_year}-{max_year} deleted")
 
 
 def get_meeting_by_number(meeting_number, row_index):
