@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from core.api.filters.country_programme import (
     CPReportArchiveFilter,
 )
+from core.api.permissions import IsUserAllowedCP
 from core.api.serializers.adm import AdmRecordArchiveSerializer
 from core.api.serializers.cp_emission import CPEmissionArchiveSerializer
 from core.api.serializers.cp_generation import CPGenerationArchiveSerializer
@@ -25,10 +26,17 @@ from core.models.country_programme_archive import (
 
 
 class CPReportVersionsListView(generics.GenericAPIView):
-    queryset = CPReportArchive.objects.all()
+    permission_classes = [IsUserAllowedCP]
     serializer_class = CPReportArchiveSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_class = CPReportArchiveFilter
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = CPReportArchive.objects.all()
+        if user.is_country_user:
+            queryset = queryset.filter(country=user.country)
+        return queryset
 
     def get(self, request, *args, **kwargs):
         # add the current version of the report

@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from core.api.filters.country_programme import (
     CPReportFilter,
 )
+from core.api.permissions import IsUserAllowedCP
 from core.api.serializers import CPReportGroupSerializer
 from core.api.serializers.cp_report import CPReportCreateSerializer, CPReportSerializer
 from core.models.adm import AdmRecordArchive
@@ -35,6 +36,7 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
     API endpoint that allows country programmes to be viewed or created.
     """
 
+    permission_classes = [IsUserAllowedCP]
     filterset_class = CPReportFilter
     filter_backends = [
         DjangoFilterBackend,
@@ -44,9 +46,14 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
     ordering_fields = ["year", "country__name"]
 
     def get_queryset(self):
+        user = self.request.user
+        cp_reports = CPReport.objects.all()
+        if user.is_country_user:
+            cp_reports = cp_reports.filter(country=user.country)
+
         if self.request.method == "PUT":
-            return CPReport.objects.select_for_update()
-        return CPReport.objects.select_related("country").order_by("name")
+            return cp_reports.select_for_update()
+        return cp_reports.select_related("country").order_by("name")
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -315,9 +322,16 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
     API endpoint that allows updating country programme report status.
     """
 
-    queryset = CPReport.objects.all()
+    permission_classes = [IsUserAllowedCP]
     serializer_class = CPReportSerializer
     lookup_field = "id"
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = CPReport.objects.all()
+        if user.is_country_user:
+            queryset = queryset.filter(country=user.country)
+        return queryset
 
     @swagger_auto_schema(
         operation_description="Update country programme report status",
@@ -352,6 +366,7 @@ class CPReportGroupByYearView(generics.ListAPIView):
     API endpoint that allows listing country programme reports grouped.
     """
 
+    permission_classes = [IsUserAllowedCP]
     serializer_class = CPReportGroupSerializer
     group_by = "year"
     group_pk = "year"
@@ -368,8 +383,13 @@ class CPReportGroupByYearView(generics.ListAPIView):
         return "-" + self.group_by
 
     def get_queryset(self):
+        user = self.request.user
+        cp_reports = CPReport.objects.all()
+        if user.is_country_user:
+            cp_reports = cp_reports.filter(country=user.country)
+
         return (
-            CPReport.objects.values_list(self.group_by, flat=True)
+            cp_reports.values_list(self.group_by, flat=True)
             .distinct()
             .order_by(self.order_field)
         )

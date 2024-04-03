@@ -56,6 +56,7 @@ class UserFactory(factory.django.DjangoModelFactory):
         upper_case=True,
         lower_case=True,
     )
+    is_secretariat = True
 
 
 class UsageFactory(factory.django.DjangoModelFactory):

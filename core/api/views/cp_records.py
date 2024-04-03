@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from core.api.serializers.adm import (
     AdmRecordSerializer,
 )
+from core.api.permissions import IsUserAllowedCP
 from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_price import CPPricesSerializer
@@ -36,6 +37,8 @@ class CPRecordBaseListView(views.APIView):
     @param name: str - query filter for name (contains)
     @param year: int - query filter for year (exact)
     """
+
+    permission_classes = [IsUserAllowedCP]
 
     cp_report_class = None
     cp_record_class = None
