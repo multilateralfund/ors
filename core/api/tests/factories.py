@@ -46,7 +46,7 @@ class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
 
-    username = factory.Faker("last_name")
+    username = factory.Faker("email")
     email = factory.Faker("email")
     password = factory.Faker(
         "password",
@@ -163,6 +163,8 @@ class CPReportFactory(factory.django.DjangoModelFactory):
     country = factory.SubFactory(CountryFactory)
     name = factory.Faker("pystr", max_chars=100)
     year = factory.Faker("random_int", min=1995, max=2030)
+    created_by = factory.SubFactory(UserFactory)
+    last_updated_by = factory.SubFactory(UserFactory)
 
 
 class CPRecordFactory(factory.django.DjangoModelFactory):

@@ -353,6 +353,8 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
             )
 
         cp_report.status = cp_status
+        cp_report.last_updated_by = request.user
+        cp_report.event_description = "Status updated by user"
         cp_report.save()
         serializer = self.get_serializer(cp_report)
 

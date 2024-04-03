@@ -35,7 +35,7 @@ from core.models.country_programme_archive import (
 )
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008, W0221
+# pylint: disable=C8008, W0221, R0915
 
 
 @pytest.fixture(name="_setup_cp_report_list")
@@ -216,11 +216,13 @@ class TestCPReportStatusUpdate(BaseTest):
         assert "status" in response.data
         assert "Invalid value" in response.data["status"]
 
-    def test_update_status(self, user, cp_report_2019):
-        self.client.force_authenticate(user=user)
+    def test_update_status(self, second_user, cp_report_2019):
+        self.client.force_authenticate(user=second_user)
         response = self.client.put(self.url, {"status": "final"})
         assert response.status_code == 200
         assert response.data["status"] == "final"
+        assert "status updated" in response.data["event_description"].lower()
+        assert response.data["last_updated_by"] == second_user.username
         assert response.data["id"] == cp_report_2019.id
 
 
@@ -378,6 +380,9 @@ class TestCPReportCreate(BaseTest):
         assert response.data["country"] == "Romania"
         assert response.data["status"] == CPReport.CPReportStatus.DRAFT
         assert response.data["version"] == 1
+        assert response.data["created_by"] == user.username
+        assert response.data["last_updated_by"] == user.username
+        assert "created" in response.data["event_description"].lower()
         assert response.data["comment"] == "S-a nascut un fenomen"
         cp_report_id = response.data["id"]
 
@@ -423,6 +428,9 @@ class TestCPReportCreate(BaseTest):
         assert response.data["name"] == "Romania2000"
         assert response.data["year"] == 2000
         assert response.data["country"] == "Romania"
+        assert response.data["created_by"] == user.username
+        assert response.data["last_updated_by"] == user.username
+        assert "created" in response.data["event_description"].lower()
         cp_report_id = response.data["id"]
 
         # check cp records
@@ -587,13 +595,15 @@ class TestCPReportUpdate(BaseTest):
         assert response.status_code == 403
 
     def test_update_cp_report_draft(
-        self, user, _setup_new_cp_report_create, cp_report_2019
+        self, second_user, _setup_new_cp_report_create, cp_report_2019, user
     ):
         self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
-        self.client.force_authenticate(user=user)
+
+        self.client.force_authenticate(user=second_user)
         data = _setup_new_cp_report_create
         data["name"] = "Alo baza baza"
         data["section_f"]["remarks"] = "Alo Delta Force"
+        data["event_description"] = "Sichi-sichi-sichi boom"
         response = self.client.put(self.url, data, format="json")
         assert response.status_code == 200
         assert response.data["name"] == "Alo baza baza"
@@ -602,6 +612,9 @@ class TestCPReportUpdate(BaseTest):
         assert response.data["status"] == CPReport.CPReportStatus.DRAFT
         assert response.data["version"] == 1
         assert response.data["comment"] == "Alo Delta Force"
+        assert response.data["event_description"] == "Sichi-sichi-sichi boom"
+        assert response.data["created_by"] == user.username
+        assert response.data["last_updated_by"] == second_user.username
         cp_report_id = response.data["id"]
 
         # check cp records
@@ -630,10 +643,10 @@ class TestCPReportUpdate(BaseTest):
         assert CPReportArchive.objects.count() == 0
 
     def test_update_cp_report_final(
-        self, user, _setup_new_cp_report_create, cp_report_2019
+        self, second_user, _setup_new_cp_report_create, cp_report_2019, user
     ):
         self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=second_user)
 
         # change status to final
         cp_report_2019.status = CPReport.CPReportStatus.FINAL
@@ -643,33 +656,65 @@ class TestCPReportUpdate(BaseTest):
         data = _setup_new_cp_report_create
         data["name"] = "O valoare mare, o mare valoare"
         data["section_f"]["remarks"] = "Sunt din cap până în picioare"
+        data["event_description"] = (
+            "Eu îmi fac prezenta, Tu faci diferenta, Imi lipseste concurenta"
+        )
 
         response = self.client.put(self.url, data, format="json")
         assert response.status_code == 200
         assert response.data["name"] == "O valoare mare, o mare valoare"
         assert response.data["status"] == CPReport.CPReportStatus.FINAL
         assert response.data["version"] == 2
+        assert "Eu îmi fac prezenta" in response.data["event_description"]
+        assert response.data["created_by"] == user.username
+        assert response.data["last_updated_by"] == second_user.username
 
         new_id = response.data["id"]
         self.url = reverse("country-programme-reports") + f"{new_id}/"
+        self.client.force_authenticate(user=user)
 
         # update again
-        data["name"] = "Mai bine vorbe puține"
-        data["section_f"]["remarks"] = "Și buzunarele pline"
+        data["name"] = "Sunt destept si calculat"
+        data["section_f"]["remarks"] = "La dusmani le-am pus capac."
+        data.pop("event_description")
         response = self.client.put(self.url, data, format="json")
         assert response.status_code == 200
-        assert response.data["name"] == "Mai bine vorbe puține"
+        assert response.data["name"] == "Sunt destept si calculat"
         assert response.data["status"] == CPReport.CPReportStatus.FINAL
         assert response.data["version"] == 3
+        assert "updated" in response.data["event_description"].lower()
+        assert response.data["created_by"] == user.username
+        assert response.data["last_updated_by"] == user.username
 
         # check report archive
         assert CPReportArchive.objects.count() == 2
-        ar = CPReportArchive.objects.filter(
-            name="O valoare mare, o mare valoare"
-        ).first()
+        # check first archive
+        ar = (
+            CPReportArchive.objects.filter(name=cp_report_2019.name)
+            .select_related("created_by", "last_updated_by")
+            .first()
+        )
+        assert ar is not None
+        assert ar.comment == cp_report_2019.comment
+        assert ar.version == 1
+        assert ar.created_by.username == user.username
+        assert ar.last_updated_by.username == user.username
+        assert "created" in ar.event_description.lower()
+
+        # check second archive
+        ar = (
+            CPReportArchive.objects.filter(name="O valoare mare, o mare valoare")
+            .select_related("created_by", "last_updated_by")
+            .first()
+        )
         assert ar is not None
         assert ar.comment == "Sunt din cap până în picioare"
         assert ar.version == 2
+        assert ar.created_by.username == user.username
+        assert ar.last_updated_by.username == second_user.username
+        assert ar.event_description == (
+            "Eu îmi fac prezenta, Tu faci diferenta, Imi lipseste concurenta"
+        )
         assert ar.created_at is not None
 
         # check record usage archive
