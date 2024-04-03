@@ -58,6 +58,7 @@ export default function Header() {
   )
 
   const navSections = [
+    { current: false, label: 'Country programmes', url: '/country-programme' },
     { current: false, label: 'Business plans', url: '/business-plans' },
     {
       current: false,
@@ -65,7 +66,6 @@ export default function Header() {
       url: '/project-submissions',
     },
     { current: false, label: 'Projects', url: '/projects' },
-    { current: false, label: 'Country programme', url: '/country-programme' },
   ].map((section) => ({
     ...section,
     current: !!matchPath(`${section.url}/*`, pathname || ''),
