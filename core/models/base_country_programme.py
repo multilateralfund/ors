@@ -9,9 +9,9 @@ class AbstractCPReport(models.Model):
         FINAL = "final", "Final"
 
     created_at = models.DateTimeField(
-        auto_now_add=True,help_text="Date of creation of the report archive"
+        auto_now_add=True, help_text="Date of creation of the report"
     )
-
+    event_description = models.TextField(null=True, blank=True)
     name = models.CharField(max_length=248)
     year = models.IntegerField()
     status = models.CharField(

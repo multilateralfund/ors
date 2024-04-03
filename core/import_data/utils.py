@@ -32,6 +32,7 @@ from core.models.project import (
 from core.models.substance import Substance
 from core.models.time_frame import TimeFrame
 from core.models.usage import Usage
+from core.models.user import User
 from core.utils import IMPORT_DB_MAX_YEAR
 
 # pylint: disable=C0302,R0913
@@ -121,6 +122,25 @@ def parse_noop(value):
     return value
 
 
+def get_import_user():
+    """
+    Get import user
+    If there is no user with the username "import", create one
+    """
+
+    try:
+        return User.objects.get(username="system")
+    except User.DoesNotExist:
+        import_user = User.objects.create_user(
+            username="system",
+            first_name="Import",
+            last_name="User",
+            email="import@systemuser.com",
+        )
+        import_user.save()
+        return import_user
+
+
 def delete_old_data(cls, source_file=None):
     """
     Delete old data from db for a specific source file
@@ -134,6 +154,7 @@ def delete_old_data(cls, source_file=None):
         return
     cls.objects.all().delete()
     logger.info(f"✔ old {cls.__name__} deleted")
+
 
 def delete_archive_reports_data(min_year, max_year):
     """
@@ -256,7 +277,9 @@ def get_sector_subsector_details(sector_code, subsector_name, row_index):
     # get subsector
     if new_subsector_name:
         if not sector:
-            subsector = ProjectSubSector.objects.get_all_by_name_or_code(new_subsector_name)
+            subsector = ProjectSubSector.objects.get_all_by_name_or_code(
+                new_subsector_name
+            )
 
             if subsector.count() > 1:
                 logger.info(
@@ -331,11 +354,15 @@ def get_cp_report(
         country_id = country.id
 
     cp_name = f"{country_name} {year}"
+    import_user = get_import_user()
     data = {
         "name": cp_name,
         "year": year,
         "country_id": country_id,
         "status": CPReport.CPReportStatus.FINAL,
+        "created_by": import_user,
+        "last_updated_by": import_user,
+        "event_description": "Imported by the system",
     }
     if other_args:
         data.update(other_args)

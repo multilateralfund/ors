@@ -8,9 +8,24 @@ from core.models.base_country_programme import (
     AbstractCPReport,
     AbstractCPUsage,
 )
+from core.models.user import User
 
 
 class CPReport(AbstractCPReport):
+
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="created_cp_reports",
+        help_text="User who created the report",
+    )
+    last_updated_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="updated_cp_reports",
+        help_text="User who last updated the report",
+    )
+
     class Meta:
         verbose_name = "CP report"
         verbose_name_plural = "CP reports"
