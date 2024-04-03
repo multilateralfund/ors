@@ -287,6 +287,7 @@ def setup_new_cp_report_create(blend, country_ro, _setup_section_a_c):
         "country_id": country_ro.id,
         "name": "Romania2019",
         "year": 2019,
+        "status": CPReport.CPReportStatus.DRAFT,
         "section_a": section_a,
         "section_b": [
             {
@@ -428,6 +429,7 @@ class TestCPReportCreate(BaseTest):
         assert response.data["name"] == "Romania2000"
         assert response.data["year"] == 2000
         assert response.data["country"] == "Romania"
+        assert response.data["status"] == CPReport.CPReportStatus.FINAL
         assert response.data["created_by"] == user.username
         assert response.data["last_updated_by"] == user.username
         assert "created" in response.data["event_description"].lower()
