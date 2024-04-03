@@ -4,6 +4,8 @@ import { includes, startsWith } from 'lodash'
 
 import { colDefById } from '@ors/config/Table/columnsDef'
 
+const mobile = __CLIENT__ ? window.innerWidth < 768 : false
+
 const sectionColDefById: Record<string, ColDef> = {
   ...colDefById,
   'Refrigeration Manufacturing Other': {
@@ -47,6 +49,7 @@ const sectionColDefById: Record<string, ColDef> = {
           }
         : {}),
     }),
+    initialWidth: mobile ? 160 : 410,
   },
   manufacturing_blends: {
     ...colDefById['manufacturing_blends'],

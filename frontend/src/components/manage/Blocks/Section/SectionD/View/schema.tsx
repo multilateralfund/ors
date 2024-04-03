@@ -6,7 +6,7 @@ import { includes } from 'lodash'
 
 import { defaultColDef } from '@ors/config/Table/columnsDef'
 
-import { sectionColDefById } from '../sectionColumnsDef'
+import { sectionColDefById, sectionDefaultColDef } from '../sectionColumnsDef'
 
 function useGridOptions() {
   const [gridOptions] = useState<GridOptions>({
@@ -49,6 +49,7 @@ function useGridOptions() {
       },
     ],
     defaultColDef: {
+      ...sectionDefaultColDef,
       autoHeight: true,
       cellClass: 'ag-text-right',
       headerClass: 'ag-text-center',

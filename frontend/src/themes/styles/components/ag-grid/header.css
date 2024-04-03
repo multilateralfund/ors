@@ -4,9 +4,9 @@
     justify-content: center;
   }
 
-  .ag-header-group-cell .ag-header-cell-resize::after {
+  /* .ag-header-group-cell .ag-header-cell-resize::after {
     display: none;
-  }
+  } */
 
   /* .ag-header-cell span,
   .ag-header-group-cell span {
@@ -46,11 +46,13 @@
   }
 
   .ag-header-group-cell-with-group {
+    --ag-header-cell-hover-background-color: hsl(var(--twc-gray-200));
+
     @apply bg-gray-200;
   }
 
   .ag-pinned-left-header {
-    @apply border-r-transparent;
+    @apply border-none;
   }
 
   .ag-ltr {

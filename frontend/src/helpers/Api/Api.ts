@@ -61,7 +61,7 @@ export function formatApiUrl(path: string) {
   const headers = __SERVER__ ? require('next/headers').headers() : null
   const protocol = (
     __CLIENT__ ? settings?.protocol : headers?.get('x-next-protocol')
-  ).split(',')[0]
+  )?.split(',')[0]
   const host = __CLIENT__ ? settings?.host : headers?.get('x-next-host')
 
   if (config.settings.apiPath) {

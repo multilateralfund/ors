@@ -10,7 +10,7 @@ const mobile = __CLIENT__ ? window.innerWidth < 768 : false
 
 const colDefById: Record<string, ColDef> = {
   display_name: {
-    initialWidth: mobile ? 160 : 200,
+    initialWidth: mobile ? 160 : 300,
     minWidth: 160,
     pinned: mobile ? undefined : 'left',
   },
@@ -32,7 +32,7 @@ const colDefById: Record<string, ColDef> = {
     initialWidth: 100,
   },
   import_quotas: {
-    initialWidth: defaultColDef.minWidth,
+    initialWidth: 120,
   },
   previous_year_price: {
     initialWidth: 160,

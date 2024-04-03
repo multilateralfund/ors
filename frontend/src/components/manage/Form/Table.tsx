@@ -156,7 +156,7 @@ function Table(props: TableProps) {
   // defaultColDef sets props common to all Columns
   const [defaultColDef] = useState<ColDef>(() => ({
     ...globalColDef,
-    autoHeaderHeight: true,
+    autoHeaderHeight: false, // setting this to true will cause header cells to not span rows, it can be set on individual columns, where needed
     cellClass: (params) => {
       return cx(
         {

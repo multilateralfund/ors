@@ -62,4 +62,8 @@ const sectionColDefById: Record<string, ColDef> = {
   },
 }
 
-export { sectionColDefById }
+const sectionDefaultColDef: ColDef<any, any> = {
+  autoHeaderHeight: true,
+}
+
+export { sectionColDefById, sectionDefaultColDef }
