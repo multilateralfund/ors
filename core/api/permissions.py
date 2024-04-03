@@ -7,6 +7,7 @@ class IsUserAllowedCP(permissions.BasePermission):
         if user.is_authenticated:
             if user.is_country_user or user.is_secretariat:
                 return True
-            if request.method in permissions.SAFE_METHODS:
-                return True
+            if user.is_agency or user.is_stakeholder:
+                if request.method in permissions.SAFE_METHODS:
+                    return True
         return False
