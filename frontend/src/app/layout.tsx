@@ -138,7 +138,7 @@ export default async function RootLayout({
       yearRanges: getInitialSliceData(yearRanges),
     }
   } else if (currentView.layout === 'authorized_document') {
-    redirect('/login')
+    redirect(pathname !== '/' ? `/login?redirect=${pathname}` : '/login')
   }
 
   return (
