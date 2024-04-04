@@ -1,5 +1,13 @@
 import { useState } from 'react'
 
+import {
+  Collapse,
+  Drawer,
+  IconButton,
+  List,
+  ListItem,
+  ListItemButton,
+} from '@mui/material'
 import cx from 'classnames'
 import { AnimatePresence } from 'framer-motion'
 import { DebouncedFunc, debounce } from 'lodash'
@@ -10,7 +18,7 @@ import { usePathname } from 'next/navigation'
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import { matchPath } from '@ors/helpers/Url/Url'
 
-import { IoChevronDown } from 'react-icons/io5'
+import { IoChevronDown, IoChevronUp, IoClose, IoMenu } from 'react-icons/io5'
 
 const robotoCondensed = Roboto_Condensed({
   display: 'swap',
@@ -112,10 +120,17 @@ const useMenuItems = () => {
   ]
 }
 
-const HeaderNavigation = () => {
+const DesktopHeaderNavigation = ({
+  className = '',
+  items = [],
+}: {
+  className: string
+  items: ReturnType<typeof useMenuItems>
+}) => {
   const [showMenu, setShowMenu] = useState<Record<string, boolean>>({})
-  const [hideInProgress, setHideInProgress] =
-    useState<Record<string, DebouncedFunc<any> | null>>({})
+  const [hideInProgress, setHideInProgress] = useState<
+    Record<string, DebouncedFunc<any> | null>
+  >({})
 
   const handleShowMenu = (label: string) => {
     hideInProgress[label]?.cancel?.()
@@ -124,20 +139,22 @@ const HeaderNavigation = () => {
 
   const handleHideAllMenus = () => {
     Object.keys(showMenu).forEach((key) => {
-      const eta = debounce(() => setShowMenu((prev) => ({...prev, [key]: false})), 300)
-      setHideInProgress((prev) => ({...prev, [key]: eta}))
+      const eta = debounce(
+        () => setShowMenu((prev) => ({ ...prev, [key]: false })),
+        300,
+      )
+      setHideInProgress((prev) => ({ ...prev, [key]: eta }))
       eta()
     })
   }
-
-  const items = useMenuItems()
 
   return (
     <div
       id="header-navigation"
       className={cx(
-        'hidden sm:flex gap-x-4 text-nowrap rounded-full bg-white px-5 py-3 text-xl font-normal uppercase',
+        'gap-x-4 text-nowrap rounded-full bg-white px-5 py-3 text-xl font-normal uppercase',
         robotoCondensed.className,
+        className,
       )}
       onMouseLeave={handleHideAllMenus}
     >
@@ -191,6 +208,126 @@ const HeaderNavigation = () => {
         </div>
       ))}
     </div>
+  )
+}
+
+const MobileHeaderNavigation = ({
+  className = '',
+  items = [],
+}: {
+  className: string
+  items: ReturnType<typeof useMenuItems>
+}) => {
+  const initiallyExpanded = items
+    .filter((item) => item.current)
+    .reduce((acc, item) => ({ ...acc, [item.label]: true }), {})
+
+  const [open, setOpen] = useState(false)
+  const [openMenus, setOpenMenus] =
+    useState<Record<string, boolean>>(initiallyExpanded)
+
+  const toggleOpenMenu = (label: string) => {
+    setOpenMenus((prev) => ({ ...prev, [label]: !prev[label] }))
+  }
+
+  const toggleDrawer = (newOpen: boolean) => () => {
+    setOpen(newOpen)
+  }
+
+  return (
+    <div className={cx('text-primary', robotoCondensed.className, className)}>
+      <IconButton
+        className="mobile-header-navigation-button rounded-full"
+        onClick={toggleDrawer(true)}
+      >
+        <IoMenu size={42} />
+      </IconButton>
+      <Drawer
+        className={cx('radius-none', robotoCondensed.className)}
+        anchor="right"
+        open={open}
+        onClose={toggleDrawer(false)}
+      >
+        <div className="flex justify-end">
+          <IconButton
+            className="mobile-header-navigation-button m-6 rounded-full"
+            onClick={toggleDrawer(false)}
+          >
+            <IoClose size={42} />
+          </IconButton>
+        </div>
+        <List className="min-w-96 px-4">
+          {items.map((item) => {
+            const styling =
+              'block border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-primary px-6 py-4 text-xl uppercase text-primary no-underline transition-all hover:bg-mlfs-hlYellowTint'
+            const regularLink = !item.menu ? (
+              <ListItem
+                key={item.label}
+                className={styling}
+                slotProps={{ root: { href: item.url } as any }}
+                slots={{ root: 'a' }}
+              >
+                {item.label}
+              </ListItem>
+            ) : null
+
+            return (
+              regularLink || (
+                <>
+                  <ListItemButton
+                    key={item.label}
+                    className={cx(
+                      'flex items-center justify-between rounded-none',
+                      styling,
+                    )}
+                    onClick={() => toggleOpenMenu(item.label)}
+                  >
+                    {item.label}
+                    {openMenus[item.label] ? (
+                      <IoChevronUp />
+                    ) : (
+                      <IoChevronDown />
+                    )}
+                  </ListItemButton>
+                  <Collapse
+                    in={openMenus[item.label]}
+                    timeout="auto"
+                    unmountOnExit
+                  >
+                    <List component="div">
+                      {item.menu &&
+                        item.menu.map((menuItem) => (
+                          <ListItem
+                            key={menuItem.label}
+                            className={cx(
+                              'block py-4 pl-10 text-xl uppercase text-primary no-underline transition-all hover:bg-mlfs-hlYellowTint',
+                              { 'bg-mlfs-hlYellowTint': menuItem.current },
+                            )}
+                            slotProps={{ root: { href: menuItem.url } as any }}
+                            slots={{ root: 'a' }}
+                          >
+                            {menuItem.label}
+                          </ListItem>
+                        ))}
+                    </List>
+                  </Collapse>
+                </>
+              )
+            )
+          })}
+        </List>
+      </Drawer>
+    </div>
+  )
+}
+
+const HeaderNavigation = () => {
+  const items = useMenuItems()
+  return (
+    <>
+      <DesktopHeaderNavigation className="hidden lg:flex" items={items} />
+      <MobileHeaderNavigation className="lg:hidden" items={items} />
+    </>
   )
 }
 

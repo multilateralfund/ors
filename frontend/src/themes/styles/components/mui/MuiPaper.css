@@ -1,4 +1,4 @@
-.MuiPaper-root {
+.MuiPaper-root:not(.MuiDrawer-paper) {
   @apply border-mui-paper-border duration-300 transition;
   @apply rounded border border-solid;
 }
