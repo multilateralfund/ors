@@ -27,24 +27,22 @@ from core.models.country_programme_archive import (
 
 class CPReportVersionsListView(generics.GenericAPIView):
     permission_classes = [IsUserAllowedCP]
+    queryset = CPReportArchive.objects.all()
     serializer_class = CPReportArchiveSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_class = CPReportArchiveFilter
 
-    def get_queryset(self):
-        user = self.request.user
-        queryset = CPReportArchive.objects.all()
-        if user.user_type == user.UserType.COUNTRY_USER:
-            queryset = queryset.filter(country=user.country)
-        return queryset
-
     def get(self, request, *args, **kwargs):
         # add the current version of the report
+        user = request.user
         country_id = request.query_params.get("country_id")
         year = request.query_params.get("year")
         current_version = None
         if country_id and year:
-            current_version = CPReport.objects.filter(country_id=country_id, year=year).first()
+            cp_reports = CPReport.objects.all()
+            if user.user_type == user.UserType.COUNTRY_USER:
+                cp_reports = cp_reports.filter(country=user.country)
+            current_version = cp_reports.filter(country_id=country_id, year=year).first()
         if not current_version:
             raise ValidationError("Could not find the current version of the report")
 

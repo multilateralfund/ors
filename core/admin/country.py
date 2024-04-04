@@ -17,5 +17,12 @@ class CountryAdmin(admin.ModelAdmin):
     list_filter = ["location_type"]
 
     def get_list_display(self, request):
-        exclude = ["cpreport", "project", "bprecord", "cpreportarchive", "country"]
+        exclude = [
+            "cpreport",
+            "project",
+            "bprecord",
+            "cpreportarchive",
+            "country",
+            "user",
+        ]
         return get_final_display_list(Country, exclude)
