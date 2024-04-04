@@ -26,6 +26,14 @@ export default function AuthorizedView({
     }
   }, [user, pathname, router])
 
+  if (!user) {
+    return (
+      <>
+        {!user && <Loading className="bg-action-disabledBackground" />}
+      </>
+    )
+  }
+
   return (
     <>
       {!user && <Loading className="bg-action-disabledBackground" />}
