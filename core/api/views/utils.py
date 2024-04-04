@@ -18,7 +18,7 @@ def get_cp_report_from_request(request, cp_report_class):
     try:
         user = request.user
         cp_report_qs = cp_report_class.objects.all()
-        if user.is_country_user:
+        if user.user_type == user.UserType.COUNTRY_USER:
             cp_report_qs = cp_report_qs.filter(country=user.country)
 
         if cp_report_id:

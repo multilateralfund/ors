@@ -48,7 +48,7 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
     def get_queryset(self):
         user = self.request.user
         cp_reports = CPReport.objects.all()
-        if user.is_country_user:
+        if user.user_type == user.UserType.COUNTRY_USER:
             cp_reports = cp_reports.filter(country=user.country)
 
         if self.request.method == "PUT":
@@ -329,7 +329,7 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
     def get_queryset(self):
         user = self.request.user
         queryset = CPReport.objects.all()
-        if user.is_country_user:
+        if user.user_type == user.UserType.COUNTRY_USER:
             queryset = queryset.filter(country=user.country)
         return queryset
 
@@ -384,15 +384,10 @@ class CPReportGroupByYearView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        cp_reports = CPReport.objects.all()
-        if user.is_country_user:
-            cp_reports = cp_reports.filter(country=user.country)
-
-        return (
-            cp_reports.values_list(self.group_by, flat=True)
-            .distinct()
-            .order_by(self.order_field)
-        )
+        queryset = CPReport.objects.all()
+        if user.user_type == user.UserType.COUNTRY_USER:
+            queryset = queryset.filter(country=user.country)
+        return queryset
 
     @staticmethod
     def get_group(obj):
@@ -421,10 +416,15 @@ class CPReportGroupByYearView(generics.ListAPIView):
 
         # Only paginate the query based on unique Group IDs
         queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
+        page_queryset = (
+            queryset.values_list(self.group_by, flat=True)
+            .distinct()
+            .order_by(self.order_field)
+        )
+        page = self.paginate_queryset(page_queryset)
 
         queryset = (
-            CPReport.objects.annotate(
+            queryset.annotate(
                 row_number=Window(
                     expression=RowNumber(),
                     partition_by=[F(self.group_by)],
@@ -435,7 +435,7 @@ class CPReportGroupByYearView(generics.ListAPIView):
                 **{
                     # Filter results base on the group and the MAX number of
                     # reports to display.
-                    f"{self.group_by}__in": (page or queryset),
+                    f"{self.group_by}__in": (page or page_queryset),
                     "row_number__lte": config.CP_NR_REPORTS,
                 }
             )

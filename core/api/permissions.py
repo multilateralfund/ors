@@ -5,9 +5,16 @@ class IsUserAllowedCP(permissions.BasePermission):
     def has_permission(self, request, view):
         user = request.user
         if user.is_authenticated:
-            if user.is_country_user or user.is_secretariat:
+            if (
+                user.user_type == user.UserType.COUNTRY_USER
+                or user.user_type == user.UserType.SECRETARIAT
+            ):
                 return True
-            if user.is_agency or user.is_stakeholder:
+
+            if (
+                user.user_type == user.UserType.AGENCY
+                or user.user_type == user.UserType.STAKEHOLDER
+            ):
                 if request.method in permissions.SAFE_METHODS:
                     return True
         return False

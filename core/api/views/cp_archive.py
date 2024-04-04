@@ -34,7 +34,7 @@ class CPReportVersionsListView(generics.GenericAPIView):
     def get_queryset(self):
         user = self.request.user
         queryset = CPReportArchive.objects.all()
-        if user.is_country_user:
+        if user.user_type == user.UserType.COUNTRY_USER:
             queryset = queryset.filter(country=user.country)
         return queryset
 

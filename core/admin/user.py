@@ -1,12 +1,13 @@
 from django.conf import settings
 from django.contrib import admin
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import PasswordResetForm
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
 from django.utils.translation import gettext_lazy as _
 
-from core.models.user import User
+User = get_user_model()
 
 
 class UserEditAdminForm(ModelForm):
@@ -16,9 +17,9 @@ class UserEditAdminForm(ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        is_country_user = cleaned_data["is_country_user"]
+        user_type = cleaned_data["user_type"]
         country = cleaned_data["country"]
-        if is_country_user and not country:
+        if user_type == User.UserType.COUNTRY_USER and not country:
             raise ValidationError(
                 _("Country users need to be assigned to countries. Choose a country and try again.")
             )
@@ -38,10 +39,7 @@ class UserAdmin(admin.ModelAdmin):
         "is_active",
         "is_superuser",
         "country",
-        "is_country_user",
-        "is_stakeholder",
-        "is_agency",
-        "is_secretariat",
+        "user_type",
     ]
 
     fields = (
@@ -53,10 +51,7 @@ class UserAdmin(admin.ModelAdmin):
         "is_active",
         "is_superuser",
         "country",
-        "is_country_user",
-        "is_stakeholder",
-        "is_agency",
-        "is_secretariat",
+        "user_type",
         "last_login",
         "date_joined",
     )
