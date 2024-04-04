@@ -45,7 +45,10 @@ def setup_cp_report_list():
         for i in range(3):
             year = 2010 + i
             CPReportFactory.create(
-                country=country, name=country.name + str(year), year=year
+                country=country,
+                name=country.name + str(year),
+                year=year,
+                status=CPReport.CPReportStatus.DRAFT,
             )
 
     return country
@@ -600,6 +603,10 @@ class TestCPReportUpdate(BaseTest):
         self, second_user, _setup_new_cp_report_create, cp_report_2019, user
     ):
         self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
+
+        # set status draft
+        cp_report_2019.status = CPReport.CPReportStatus.DRAFT
+        cp_report_2019.save()
 
         self.client.force_authenticate(user=second_user)
         data = _setup_new_cp_report_create

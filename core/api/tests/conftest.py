@@ -93,7 +93,7 @@ def cp_report_2019(country_ro, user):
     return CPReportFactory.create(
         country=country_ro,
         year=2019,
-        comment="Valore eu la toti va dau",
+        comment="Valoare eu la toti va dau",
         created_by=user,
         last_updated_by=user,
         event_description="Created ban pe ban",

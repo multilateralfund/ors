@@ -15,7 +15,7 @@ class AbstractCPReport(models.Model):
     name = models.CharField(max_length=248)
     year = models.IntegerField()
     status = models.CharField(
-        max_length=10, choices=CPReportStatus.choices, default=CPReportStatus.DRAFT
+        max_length=10, choices=CPReportStatus.choices, default=CPReportStatus.FINAL
     )
     version = models.FloatField(default=1)
     reporting_entry = models.CharField(max_length=248, null=True, blank=True)
