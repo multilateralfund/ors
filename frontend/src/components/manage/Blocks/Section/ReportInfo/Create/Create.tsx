@@ -1,10 +1,10 @@
 import React, {ChangeEvent, useState} from 'react';
 
+import {TextField} from "@mui/material";
 import Typography from '@mui/material/Typography';
 
 import {SectionMeta} from "@ors/components/manage/Blocks/CountryProgramme";
 import IconButton from "@ors/components/ui/IconButton/IconButton";
-
 
 const FileInput: React.FC = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -21,35 +21,40 @@ const FileInput: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center w-full h-fit grow">
-      <input
-        id="file_attachments"
-        className="hidden"
-        type="file"
-        accept="image/*, application/pdf, application/msword,
+    <TextField
+      type="text"
+      value={selectedFiles.length === 0 ? 'No files selected' : formatFileNames()}
+      variant="standard"
+      InputProps={{
+        className: "flex bg-white rounded-lg border border-solid border-gray-400 pl-2 h-11",
+        disableUnderline: true,
+        endAdornment: (
+          <IconButton
+            className="flex items-center justify-center text-nowrap text-lg font-normal rounded-l-none h-full border-y-0 border-r-0 border-gray-400"
+            aria-label="upload files"
+            component="label"
+          >
+            <input
+              id="file_attachments"
+              name="file_attachments"
+              type="file"
+              accept="image/*, application/pdf, application/msword,
                 application/vnd.openxmlformats-officedocument.wordprocessingml.document,
                 application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
                 application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation,
                 .zip, .rar"
-        onChange={handleFileChange}
-        multiple
-      />
-      <div className="flex w-full bg-white rounded-l-lg border-2 border-gray-900 p-2">
-        <Typography component="span" variant="body2">
-          {selectedFiles.length === 0 ? 'No files selected' : formatFileNames()}
-        </Typography>
-      </div>
-      <label htmlFor="file_attachments">
-        <IconButton
-          className="flex items-center justify-center text-nowrap rounded-r-lg"
-          aria-label="upload image"
-          component="span"
-        >
-          Browse files
-          {/*<AiOutlineCloudUpload size={24}/>*/}
-        </IconButton>
-      </label>
-    </div>
+              onChange={handleFileChange}
+              hidden
+              multiple
+              // onChange={handleUpload}
+            />
+            Browse files
+          </IconButton>
+        ),
+        readOnly: true,
+      }}
+      fullWidth
+    />
   );
 };
 
@@ -71,7 +76,8 @@ const ReportInfoCreate = ({section}: { section: SectionMeta }) => {
           </label>
           <input id="name"
                  name="name"
-                 className="bg-gray-50 border border-gray-300 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                 className="h-11 bg-white shadow-none border border-solid border-gray-400 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                 autoComplete="off"
                  type="text"/>
         </div>
         <div className="grid gap-6 md:grid-cols-2">
@@ -81,7 +87,8 @@ const ReportInfoCreate = ({section}: { section: SectionMeta }) => {
             </label>
             <input id="country"
                    name="country"
-                   className="bg-gray-50 border border-gray-300 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                   className="h-11 bg-white shadow-none border border-solid border-gray-400 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                   autoComplete="off"
                    type="text"/>
           </div>
           <div>
@@ -90,13 +97,14 @@ const ReportInfoCreate = ({section}: { section: SectionMeta }) => {
             </label>
             <input id="reporting_year"
                    name="reporting_year"
-                   className="bg-gray-50 border border-gray-300 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                   className="h-11 bg-white shadow-none border border-solid border-gray-400 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                   autoComplete="off"
                    type="text"/>
           </div>
         </div>
 
         <FileInput/>
-        <p id="file_input_help" className="mt-1 text-xs text-gray-900">
+        <p id="file_input_help" className="mt-1 text-sm text-pretty text-gray-900">
           Allowed files extensions: .pdf, .doc, .docx, .xls, .xlsx, .csv, .ppt, .pptx, .jpg, .jpeg, .png, .gif, .zip,
           .rar, .7z
         </p>
