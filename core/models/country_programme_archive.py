@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from core.models.base_country_programme import (
     AbstractCPEmission,
@@ -7,20 +8,19 @@ from core.models.base_country_programme import (
     AbstractCPRecord,
     AbstractCPUsage,
 )
-from core.models.user import User
 
 
 class CPReportArchive(AbstractCPReport):
 
     created_by = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
         related_name="created_cp_reports_archive",
         help_text="User who created the report",
     )
     last_updated_by = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
         related_name="updated_cp_reports_archive",
         help_text="User who last updated the report",
     )

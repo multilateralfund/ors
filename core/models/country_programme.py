@@ -15,13 +15,13 @@ class CPReport(AbstractCPReport):
 
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="created_cp_reports",
         help_text="User who created the report",
     )
     last_updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="updated_cp_reports",
         help_text="User who last updated the report",
     )
