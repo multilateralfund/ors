@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from core.models.base import AbstractWChemical, BaseWTimeFrameManager
 from core.models.base_country_programme import (
@@ -8,19 +9,18 @@ from core.models.base_country_programme import (
     AbstractCPReport,
     AbstractCPUsage,
 )
-from core.models.user import User
 
 
 class CPReport(AbstractCPReport):
 
     created_by = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="created_cp_reports",
         help_text="User who created the report",
     )
     last_updated_by = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="updated_cp_reports",
         help_text="User who last updated the report",

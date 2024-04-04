@@ -5,6 +5,7 @@ import re
 
 from dateutil.parser import parse, ParserError
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
 from core.import_data.mapping_names_dict import (
     CHEMICAL_NAME_MAPPING,
@@ -32,7 +33,6 @@ from core.models.project import (
 from core.models.substance import Substance
 from core.models.time_frame import TimeFrame
 from core.models.usage import Usage
-from core.models.user import User
 from core.utils import IMPORT_DB_MAX_YEAR
 
 # pylint: disable=C0302,R0913
@@ -127,11 +127,11 @@ def get_import_user():
     Get import user
     If there is no user with the username "import", create one
     """
-
+    user_model = get_user_model()
     try:
-        return User.objects.get(username="system")
-    except User.DoesNotExist:
-        import_user = User.objects.create_user(
+        return user_model.objects.get(username="system")
+    except user_model.DoesNotExist:
+        import_user = user_model.objects.create_user(
             username="system",
             first_name="Import",
             last_name="User",
