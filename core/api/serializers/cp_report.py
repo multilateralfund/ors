@@ -25,7 +25,14 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
     status = serializers.ChoiceField(
         choices=CPReport.CPReportStatus.choices, required=False
     )
+    event_description = serializers.CharField(required=False)
     version = serializers.FloatField(read_only=True)
+    created_by = serializers.StringRelatedField(
+        read_only=True, source="created_by.username"
+    )
+    last_updated_by = serializers.StringRelatedField(
+        read_only=True, source="last_updated_by.username"
+    )
 
     class Meta:
         fields = [
@@ -37,6 +44,10 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
             "country",
             "country_id",
             "comment",
+            "created_at",
+            "created_by",
+            "last_updated_by",
+            "event_description",
         ]
 
 
@@ -50,8 +61,7 @@ class CPReportArchiveSerializer(CPReportBaseSerializer):
 
     class Meta(CPReportBaseSerializer.Meta):
         model = CPReportArchive
-        fields = CPReportBaseSerializer.Meta.fields + ["created_at",
-                                                       "final_version_id"]
+        fields = CPReportBaseSerializer.Meta.fields + ["final_version_id"]
 
     def get_final_version_id(self, obj):
         cp_report_final = CPReport.objects.filter(
@@ -85,6 +95,7 @@ class CPReportCreateSerializer(serializers.Serializer):
     status = serializers.ChoiceField(
         choices=CPReport.CPReportStatus.choices, required=False
     )
+    event_description = serializers.CharField(required=False)
     section_a = CPRecordSerializer(many=True, required=False)
     section_b = CPRecordSerializer(many=True, required=False)
     section_c = CPPricesSerializer(many=True, required=False)
@@ -101,6 +112,7 @@ class CPReportCreateSerializer(serializers.Serializer):
         fields = [
             "name",
             "year",
+            "event_description",
             "status",
             "country_id",
             "section_a",
@@ -173,12 +185,21 @@ class CPReportCreateSerializer(serializers.Serializer):
             "name": validated_data.get("name"),
             "year": validated_data.get("year"),
             "status": validated_data.get("status",
-                                         CPReport.CPReportStatus.DRAFT),
+                                         CPReport.CPReportStatus.FINAL),
             "country_id": validated_data.get("country_id"),
+            "event_description": validated_data.get(
+                "event_description", "Created by user"
+            ),
         }
 
         cp_report_serializer = CPReportSerializer(data=cp_report_data)
         cp_report_serializer.is_valid(raise_exception=True)
+
+        # add user
+        request_user = self.context["user"]
+        cp_report_serializer.validated_data["created_by"] = request_user
+        cp_report_serializer.validated_data["last_updated_by"] = request_user
+
         cp_report = cp_report_serializer.save()
 
         self._create_cp_records(cp_report, validated_data.get("section_a", []),

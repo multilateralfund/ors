@@ -9,11 +9,11 @@ from core.models.country_programme_archive import CPReportArchive
 
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008
+# pylint: disable=C8008, R0913
 
 
 @pytest.fixture(name="_setup_version_list")
-def setup_version_list(cp_report_2019, cp_report_2005):
+def setup_version_list(cp_report_2019, cp_report_2005, user):
     cp_report_2019.status = CPReport.CPReportStatus.FINAL
     cp_report_2019.save()
 
@@ -25,6 +25,8 @@ def setup_version_list(cp_report_2019, cp_report_2005):
                 country=cp_report.country,
                 status=cp_report.status,
                 version=i + 1,
+                created_by=user,
+                last_updated_by=user,
             )
 
 
@@ -55,7 +57,9 @@ class TestVersionsList(BaseTest):
         response = self.client.get(self.url, {"country_id": 999, "year": 2005})
         assert response.status_code == 400
 
-    def test_versions_list_without_year(self, user, cp_report_2019, _setup_version_list):
+    def test_versions_list_without_year(
+        self, user, cp_report_2019, _setup_version_list
+    ):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"country_id": cp_report_2019.country_id})
@@ -63,7 +67,7 @@ class TestVersionsList(BaseTest):
 
 
 @pytest.fixture(name="_setup_old_version_2019")
-def setup_old_version_2019(cp_report_2019, substance, blend, time_frames):
+def setup_old_version_2019(cp_report_2019, substance, blend, time_frames, user):
     cp_report_2019.status = CPReport.CPReportStatus.FINAL
     cp_report_2019.version = 2
     cp_report_2019.save()
@@ -90,6 +94,8 @@ def setup_old_version_2019(cp_report_2019, substance, blend, time_frames):
         country=cp_report_2019.country,
         status=cp_report_2019.status,
         version=1,
+        created_by=user,
+        last_updated_by=user,
     )
 
     return cp_ar
@@ -97,7 +103,7 @@ def setup_old_version_2019(cp_report_2019, substance, blend, time_frames):
 
 @pytest.fixture(name="_setup_old_version_2005")
 def setup_old_version_2005(
-    cp_report_2005, substance, blend, adm_rows, adm_columns, time_frames
+    cp_report_2005, substance, blend, adm_rows, adm_columns, time_frames, user
 ):
     cp_report_2005.status = CPReport.CPReportStatus.FINAL
     cp_report_2005.version = 2
@@ -125,6 +131,8 @@ def setup_old_version_2005(
         country=cp_report_2005.country,
         status=cp_report_2005.status,
         version=1,
+        created_by=user,
+        last_updated_by=user,
     )
 
     adm_b_row = adm_rows[0]

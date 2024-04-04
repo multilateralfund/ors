@@ -342,7 +342,7 @@ class CPRecordBaseListView(views.APIView):
         return cp_report
 
     def get_data(self, cp_report):
-        if cp_report.year < IMPORT_DB_OLDEST_MAX_YEAR:
+        if cp_report.year <= IMPORT_DB_OLDEST_MAX_YEAR:
             return self._get_04_cp_records(cp_report)
         if cp_report.year > IMPORT_DB_MAX_YEAR:
             return self._get_new_cp_records(cp_report)
