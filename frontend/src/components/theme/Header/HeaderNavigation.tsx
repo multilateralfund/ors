@@ -115,25 +115,28 @@ const useMenuItems = () => {
 const HeaderNavigation = () => {
   const [showMenu, setShowMenu] = useState<Record<string, boolean>>({})
   const [hideInProgress, setHideInProgress] =
-    useState<DebouncedFunc<any> | null>(null)
+    useState<Record<string, DebouncedFunc<any> | null>>({})
 
   const handleShowMenu = (label: string) => {
-    hideInProgress?.cancel()
+    hideInProgress[label]?.cancel?.()
     setShowMenu(() => ({ [label]: true }))
   }
 
   const handleHideAllMenus = () => {
-    const eta = debounce(() => setShowMenu(() => ({})), 300)
-    setHideInProgress(() => eta)
-    eta()
+    Object.keys(showMenu).forEach((key) => {
+      const eta = debounce(() => setShowMenu((prev) => ({...prev, [key]: false})), 300)
+      setHideInProgress((prev) => ({...prev, [key]: eta}))
+      eta()
+    })
   }
 
   const items = useMenuItems()
 
   return (
     <div
+      id="header-navigation"
       className={cx(
-        'flex gap-x-4 text-nowrap rounded-full bg-white px-5 py-3 text-xl font-normal uppercase shadow-xl',
+        'flex gap-x-4 text-nowrap rounded-full bg-white px-5 py-3 text-xl font-normal uppercase',
         robotoCondensed.className,
       )}
       onMouseLeave={handleHideAllMenus}
@@ -147,7 +150,7 @@ const HeaderNavigation = () => {
             className={cx(
               'flex items-center justify-between gap-x-2 rounded-full px-4 py-2 text-primary no-underline hover:text-mlfs-hlYellow',
               {
-                'bg-mlfs-hlYellowTint hover:text-primary': item.current,
+                'bg-mlfs-hlYellow hover:text-primary': item.current,
                 'hover:bg-primary': !item.current,
               },
             )}
@@ -171,8 +174,8 @@ const HeaderNavigation = () => {
                       <Component
                         key={menuItem.label}
                         className={cx(
-                          'border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0 hover:bg-mlfs-hlYellowTint',
-                          { 'bg-mlfs-hlYellowTint': menuItem.current },
+                          'border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0 hover:bg-mlfs-hlYellow',
+                          { 'bg-mlfs-hlYellow': menuItem.current },
                         )}
                         href={menuItem.url}
                         {...(menuItem.external ? { target: '_blank' } : {})}

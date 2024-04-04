@@ -20,7 +20,7 @@ export default function Logo({ className, variant }: LogoProps) {
         id="logo"
         alt="Multilateral Fund"
         priority={true}
-        sizes="240px"
+        sizes="260px"
         src={src}
       />
     </div>

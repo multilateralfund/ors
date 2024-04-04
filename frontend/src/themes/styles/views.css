@@ -1,4 +1,8 @@
 @layer base {
+  #header-navigation {
+    box-shadow: 0 15px 25px 0 hsl(0deg 0% 0% / 25%);
+  }
+
   :root[data-layout='authorized_document'] #layout {
     @apply h-full;
   }

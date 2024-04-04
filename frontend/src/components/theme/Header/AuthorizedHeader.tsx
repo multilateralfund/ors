@@ -25,7 +25,7 @@ export default function Header() {
         component="nav"
       >
         <div className="container flex w-full items-center justify-between pb-4">
-          <div className="flex w-full flex-auto items-center justify-between gap-x-8 ">
+          <div className="flex w-full flex-auto items-center justify-center gap-x-8 ">
             <UnstyledLink href="/">
               <Logo className="h-[100px] w-[160px] md:w-[240px]" />
             </UnstyledLink>
