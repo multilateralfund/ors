@@ -6,9 +6,7 @@ from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_price import CPPricesSerializer
 from core.api.serializers.cp_record import CPRecordSerializer
-from core.api.validations.cp_reports_validations import validate_section_a, \
-    validate_section_b, validate_section_c, validate_section_d, \
-    validate_section_e, validate_section_f
+from core.api.validations.cp_reports_validations import validate_cp_report
 from core.models.country import Country
 from core.models.country_programme import CPReport
 from core.models.country_programme_archive import CPReportArchive
@@ -52,7 +50,8 @@ class CPReportArchiveSerializer(CPReportBaseSerializer):
 
     class Meta(CPReportBaseSerializer.Meta):
         model = CPReportArchive
-        fields = CPReportBaseSerializer.Meta.fields + ["created_at", "final_version_id"]
+        fields = CPReportBaseSerializer.Meta.fields + ["created_at",
+                                                       "final_version_id"]
 
     def get_final_version_id(self, obj):
         cp_report_final = CPReport.objects.filter(
@@ -123,12 +122,7 @@ class CPReportCreateSerializer(serializers.Serializer):
         if attrs.get("year") < VALIDATION_MIN_YEAR:
             return super().validate(attrs)
 
-        validate_section_a(attrs.get("section_a"))
-        validate_section_b(attrs.get("section_b"))
-        validate_section_c(attrs.get("section_c"))
-        validate_section_d(attrs.get("section_d"))
-        validate_section_e(attrs.get("section_e"))
-        validate_section_f(attrs.get("section_f"))
+        validate_cp_report(attrs)
 
         return super().validate(attrs)
 
@@ -178,7 +172,8 @@ class CPReportCreateSerializer(serializers.Serializer):
         cp_report_data = {
             "name": validated_data.get("name"),
             "year": validated_data.get("year"),
-            "status": validated_data.get("status", CPReport.CPReportStatus.DRAFT),
+            "status": validated_data.get("status",
+                                         CPReport.CPReportStatus.DRAFT),
             "country_id": validated_data.get("country_id"),
         }
 
@@ -186,17 +181,24 @@ class CPReportCreateSerializer(serializers.Serializer):
         cp_report_serializer.is_valid(raise_exception=True)
         cp_report = cp_report_serializer.save()
 
-        self._create_cp_records(cp_report, validated_data.get("section_a", []), "A")
+        self._create_cp_records(cp_report, validated_data.get("section_a", []),
+                                "A")
         self._create_prices(cp_report, validated_data.get("section_c", []))
 
         if cp_report_data["year"] > IMPORT_DB_MAX_YEAR:
-            self._create_cp_records(cp_report, validated_data.get("section_b", []), "B")
-            self._create_generation(cp_report, validated_data.get("section_d", []))
-            self._create_emission(cp_report, validated_data.get("section_e", []))
+            self._create_cp_records(cp_report,
+                                    validated_data.get("section_b", []), "B")
+            self._create_generation(cp_report,
+                                    validated_data.get("section_d", []))
+            self._create_emission(cp_report,
+                                  validated_data.get("section_e", []))
             self._add_remarks(cp_report, validated_data.get("section_f", {}))
         else:
-            self._create_adm_records(cp_report, validated_data.get("adm_b", []), "B")
-            self._create_adm_records(cp_report, validated_data.get("adm_c", []), "C")
-            self._create_adm_records(cp_report, validated_data.get("adm_d", []), "D")
+            self._create_adm_records(cp_report, validated_data.get("adm_b", []),
+                                     "B")
+            self._create_adm_records(cp_report, validated_data.get("adm_c", []),
+                                     "C")
+            self._create_adm_records(cp_report, validated_data.get("adm_d", []),
+                                     "D")
 
         return cp_report
