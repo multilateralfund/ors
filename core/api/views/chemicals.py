@@ -65,6 +65,9 @@ class SubstancesListView(ChemicalBaseListView):
     def get_queryset(self):
         queryset = super().get_queryset()
 
+        # do not list legacy substances
+        queryset = queryset.exclude(group__name__icontains="legacy")
+
         section = self.request.query_params.get("section", None)
         if section:
             annexes = SECTION_ANNEX_MAPPING.get(section, [])
@@ -114,6 +117,9 @@ class BlendsListView(ChemicalBaseListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        # do not list legacy blends
+        queryset = queryset.exclude(is_legacy=True)
+
         return queryset.order_by("sort_order")
 
     @swagger_auto_schema(
