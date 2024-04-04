@@ -49,7 +49,12 @@ from core.utils import get_meta_project_code, get_project_sub_code
 
 @pytest.fixture
 def user():
-    return UserFactory()
+    return UserFactory(username="FlorinSalam", email="salam@reggaeton.ta")
+
+
+@pytest.fixture
+def second_user():
+    return UserFactory(username="Plebii", email="restul@cantaretilor.ro")
 
 
 @pytest.fixture
@@ -73,29 +78,40 @@ def country_user(country_ro):
 
 
 @pytest.fixture
-def cp_report_1996(country_ro):
+def cp_report_1996(country_ro, user):
     return CPReportFactory.create(
         country=country_ro,
         year=1996,
-        comment="Cand apar iti tai tot cheful",
+        comment="Am viatza de Barosan chiar daca sunt un pushtan",
         status=CPReport.CPReportStatus.FINAL,
+        created_by=user,
+        last_updated_by=user,
+        event_description="Created barosan",
     )
 
 
 @pytest.fixture
-def cp_report_2005(country_ro):
+def cp_report_2005(country_ro, user):
     return CPReportFactory.create(
         country=country_ro,
         year=2005,
-        comment="Si daca e rau, tot e bine",
+        comment="Am fost si vom fi o legenda vie",
         status=CPReport.CPReportStatus.FINAL,
+        created_by=user,
+        last_updated_by=user,
+        event_description="Created Cap si pajura",
     )
 
 
 @pytest.fixture
-def cp_report_2019(country_ro):
+def cp_report_2019(country_ro, user):
     return CPReportFactory.create(
-        country=country_ro, year=2019, comment="Daca ploua nu ma ploua"
+        country=country_ro,
+        year=2019,
+        comment="Valoare eu la toti va dau",
+        created_by=user,
+        last_updated_by=user,
+        event_description="Created ban pe ban",
     )
 
 

@@ -95,3 +95,6 @@ class UserAdmin(admin.ModelAdmin):
             f"Email sent to {obj.email} for password reset",
             level=messages.SUCCESS,
         )
+
+    def has_delete_permission(self, request, obj=None):
+        return False

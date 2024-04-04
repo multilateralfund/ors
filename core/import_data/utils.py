@@ -5,6 +5,7 @@ import re
 
 from dateutil.parser import parse, ParserError
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
 from core.import_data.mapping_names_dict import (
     CHEMICAL_NAME_MAPPING,
@@ -121,6 +122,25 @@ def parse_noop(value):
     return value
 
 
+def get_import_user():
+    """
+    Get import user
+    If there is no user with the username "import", create one
+    """
+    user_model = get_user_model()
+    try:
+        return user_model.objects.get(username="system")
+    except user_model.DoesNotExist:
+        import_user = user_model.objects.create_user(
+            username="system",
+            first_name="Import",
+            last_name="User",
+            email="import@systemuser.com",
+        )
+        import_user.save()
+        return import_user
+
+
 def delete_old_data(cls, source_file=None):
     """
     Delete old data from db for a specific source file
@@ -134,6 +154,7 @@ def delete_old_data(cls, source_file=None):
         return
     cls.objects.all().delete()
     logger.info(f"✔ old {cls.__name__} deleted")
+
 
 def delete_archive_reports_data(min_year, max_year):
     """
@@ -256,7 +277,9 @@ def get_sector_subsector_details(sector_code, subsector_name, row_index):
     # get subsector
     if new_subsector_name:
         if not sector:
-            subsector = ProjectSubSector.objects.get_all_by_name_or_code(new_subsector_name)
+            subsector = ProjectSubSector.objects.get_all_by_name_or_code(
+                new_subsector_name
+            )
 
             if subsector.count() > 1:
                 logger.info(
@@ -331,11 +354,15 @@ def get_cp_report(
         country_id = country.id
 
     cp_name = f"{country_name} {year}"
+    import_user = get_import_user()
     data = {
         "name": cp_name,
         "year": year,
         "country_id": country_id,
         "status": CPReport.CPReportStatus.FINAL,
+        "created_by": import_user,
+        "last_updated_by": import_user,
+        "event_description": "Imported by the system",
     }
     if other_args:
         data.update(other_args)
