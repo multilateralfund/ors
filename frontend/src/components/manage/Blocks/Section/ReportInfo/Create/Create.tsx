@@ -1,116 +1,233 @@
-import React, {ChangeEvent, useState} from 'react';
+import React, { ChangeEvent, useState } from 'react'
 
-import {TextField} from "@mui/material";
-import Typography from '@mui/material/Typography';
+import { TextField } from '@mui/material'
+import Checkbox from '@mui/material/Checkbox'
+import FormControl from '@mui/material/FormControl'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import FormGroup from '@mui/material/FormGroup'
+import Typography from '@mui/material/Typography'
 
-import {SectionMeta} from "@ors/components/manage/Blocks/CountryProgramme";
-import IconButton from "@ors/components/ui/IconButton/IconButton";
+import { SectionMeta } from '@ors/components/manage/Blocks/CountryProgramme'
+import IconButton from '@ors/components/ui/IconButton/IconButton'
 
 const FileInput: React.FC = () => {
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      const filesArray = Array.from(event.target.files);
-      setSelectedFiles(filesArray);
+      const filesArray = Array.from(event.target.files)
+      setSelectedFiles(filesArray)
     }
-  };
+  }
 
   const formatFileNames = () => {
-    return selectedFiles.map(file => file.name).join('; ');
-  };
+    return selectedFiles.map((file) => file.name).join('; ')
+  }
 
   return (
-    <TextField
-      type="text"
-      value={selectedFiles.length === 0 ? 'No files selected' : formatFileNames()}
-      variant="standard"
-      InputProps={{
-        className: "flex bg-white rounded-lg border border-solid border-gray-400 pl-2 h-11",
-        disableUnderline: true,
-        endAdornment: (
-          <IconButton
-            className="flex items-center justify-center text-nowrap text-lg font-normal rounded-l-none h-full border-y-0 border-r-0 border-gray-400"
-            aria-label="upload files"
-            component="label"
-          >
-            <input
-              id="file_attachments"
-              name="file_attachments"
-              type="file"
-              accept="image/*, application/pdf, application/msword,
+    <div className="flex flex-col">
+      <span className="mb-2 text-2xl font-normal">File attachments</span>
+      <TextField
+        type="text"
+        variant="standard"
+        InputProps={{
+          className:
+            'flex bg-white rounded-lg border border-solid border-gray-400 pl-2 h-11',
+          disableUnderline: true,
+          endAdornment: (
+            <IconButton
+              className="flex h-full items-center justify-center text-nowrap rounded-l-none border-y-0 border-r-0 border-gray-400 text-lg font-normal"
+              aria-label="upload files"
+              component="label"
+            >
+              <input
+                id="file_attachments"
+                name="file_attachments"
+                type="file"
+                accept="image/*, application/pdf, application/msword,
                 application/vnd.openxmlformats-officedocument.wordprocessingml.document,
                 application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
                 application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation,
                 .zip, .rar"
-              onChange={handleFileChange}
-              hidden
-              multiple
-              // onChange={handleUpload}
-            />
-            Browse files
-          </IconButton>
-        ),
-        readOnly: true,
-      }}
-      fullWidth
-    />
-  );
-};
-
-const ReportInfoCreate = ({section}: { section: SectionMeta }) => {
-  return (
-    <section className="grid grid-cols-2 auto-rows-auto gap-4">
-      <Typography
-        className="col-span-2"
-        component="h2"
-        variant="h6"
+                onChange={handleFileChange}
+                hidden
+                multiple
+                // onChange={handleUpload}
+              />
+              Browse files
+            </IconButton>
+          ),
+          readOnly: true,
+        }}
+        value={
+          selectedFiles.length === 0 ? 'No files selected' : formatFileNames()
+        }
+        fullWidth
+      />
+      <p
+        id="file_input_help"
+        className="mt-1 text-pretty text-sm text-gray-900"
       >
+        Allowed files extensions: .pdf, .doc, .docx, .xls, .xlsx, .csv, .ppt,
+        .pptx, .jpg, .jpeg, .png, .gif, .zip, .rar, .7z
+      </p>
+    </div>
+  )
+}
+
+const ReportInfoCreate = ({ section }: { section: SectionMeta }) => {
+  return (
+    <section className="grid gap-4 md:auto-rows-auto md:grid-cols-2">
+      <Typography className="md:col-span-2" component="h2" variant="h6">
         {section.title}
       </Typography>
-      <div className="bg-gray-100 rounded-lg p-4 flex flex-col gap-4">
-        <h2>Summary</h2>
+      <div className="flex flex-col gap-4 rounded-lg bg-gray-100 p-4">
+        <legend className="mb-2 text-2xl font-normal">Summary</legend>
         <div>
-          <label className="block mb-2 text-md font-normal text-gray-900" htmlFor="name">
+          <label
+            className="text-md mb-2 block font-normal text-gray-900"
+            htmlFor="name"
+          >
             Name of reporting entity
           </label>
-          <input id="name"
-                 name="name"
-                 className="h-11 bg-white shadow-none border border-solid border-gray-400 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                 autoComplete="off"
-                 type="text"/>
+          <input
+            id="name"
+            name="name"
+            className="text-md block h-11 w-full rounded-lg border border-solid border-gray-400 bg-white p-2.5 text-gray-900 shadow-none focus:border-blue-500 focus:ring-blue-500"
+            autoComplete="off"
+            type="text"
+          />
         </div>
         <div className="grid gap-6 md:grid-cols-2">
           <div>
-            <label className="block mb-2 text-md font-normal text-gray-900" htmlFor="country">
+            <label
+              className="text-md mb-2 block font-normal text-gray-900"
+              htmlFor="country"
+            >
               Country
             </label>
-            <input id="country"
-                   name="country"
-                   className="h-11 bg-white shadow-none border border-solid border-gray-400 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                   autoComplete="off"
-                   type="text"/>
+            <input
+              id="country"
+              name="country"
+              className="text-md block h-11 w-full rounded-lg border border-solid border-gray-400 bg-white p-2.5 text-gray-900 shadow-none focus:border-blue-500 focus:ring-blue-500"
+              autoComplete="off"
+              type="text"
+            />
           </div>
           <div>
-            <label className="block mb-2 text-md font-normal text-gray-900" htmlFor="reporting_year">
+            <label
+              className="text-md mb-2 block font-normal text-gray-900"
+              htmlFor="reporting_year"
+            >
               Reporting for year
             </label>
-            <input id="reporting_year"
-                   name="reporting_year"
-                   className="h-11 bg-white shadow-none border border-solid border-gray-400 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                   autoComplete="off"
-                   type="text"/>
+            <input
+              id="reporting_year"
+              name="reporting_year"
+              className="text-md block h-11 w-full rounded-lg border border-solid border-gray-400 bg-white p-2.5 text-gray-900 shadow-none focus:border-blue-500 focus:ring-blue-500"
+              autoComplete="off"
+              type="text"
+            />
           </div>
         </div>
-
-        <FileInput/>
-        <p id="file_input_help" className="mt-1 text-sm text-pretty text-gray-900">
-          Allowed files extensions: .pdf, .doc, .docx, .xls, .xlsx, .csv, .ppt, .pptx, .jpg, .jpeg, .png, .gif, .zip,
-          .rar, .7z
-        </p>
-
+        <FileInput />
       </div>
-      <div></div>
+
+      <div className="flex flex-col rounded-lg bg-gray-100 p-4">
+        <div className="flex flex-wrap gap-4">
+          <FormControl
+            className="inline-flex flex-col"
+            component="fieldset"
+            fullWidth={false}
+            variant="standard"
+          >
+            <legend className="mb-3 text-2xl font-normal">Status</legend>
+            <FormGroup className="rounded-lg bg-white px-4 py-1 shadow-lg" row>
+              <FormControlLabel
+                control={<Checkbox size="small" defaultChecked />}
+                label="Final"
+                disabled
+              />
+            </FormGroup>
+          </FormControl>
+          <FormControl
+            className="inline-flex flex-col"
+            component="fieldset"
+            fullWidth={false}
+            variant="standard"
+          >
+            <legend className="mb-3 text-2xl font-normal">
+              Sections reported
+            </legend>
+            <FormGroup className="rounded-lg bg-white px-4 py-1 shadow-lg" row>
+              <FormControlLabel
+                color="primary"
+                control={<Checkbox size="small" />}
+                label="Section A"
+              />
+              <FormControlLabel
+                control={<Checkbox size="small" />}
+                label="Section B"
+              />
+              <FormControlLabel
+                control={<Checkbox size="small" />}
+                label="Section C"
+              />
+              <FormControlLabel
+                control={<Checkbox size="small" />}
+                label="Section D"
+              />
+              <FormControlLabel
+                control={<Checkbox size="small" />}
+                label="Section E"
+              />
+              <FormControlLabel
+                control={<Checkbox size="small" />}
+                label="Section F"
+              />
+            </FormGroup>
+          </FormControl>
+        </div>
+        <div>
+          <p className="mb-3 text-2xl font-normal">History</p>
+          <div className="flex flex-col flex-wrap justify-center gap-2 rounded-lg bg-white px-4 py-1 shadow-lg">
+            {[...Array(3)].map((_, index) => {
+              const randomDate = new Date(
+                +new Date() - Math.floor(Math.random() * 10000000000),
+              )
+              return (
+                <div
+                  key={index}
+                  className="flex grow items-center justify-between gap-3 text-pretty"
+                >
+                  <div className="flex items-center gap-2">
+                    <p
+                      id={`report_date_${index}`}
+                      className="my-1 min-w-24 text-right text-sm font-normal text-gray-500"
+                    >
+                      {randomDate.toDateString()}
+                    </p>
+                    <p
+                      id={`report_summary_${index}`}
+                      className="text-md my-1 font-medium text-gray-900"
+                    >
+                      Report commentary {index}
+                    </p>
+                  </div>
+                  <div>
+                    <p
+                      id={`report_user_${index}`}
+                      className="my-1 w-fit rounded bg-gray-100 px-1 text-sm font-normal text-gray-500"
+                    >
+                      Reported by user {index}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
     </section>
   )
 }
