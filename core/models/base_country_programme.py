@@ -9,13 +9,13 @@ class AbstractCPReport(models.Model):
         FINAL = "final", "Final"
 
     created_at = models.DateTimeField(
-        auto_now_add=True,help_text="Date of creation of the report archive"
+        auto_now_add=True, help_text="Date of creation of the report"
     )
-
+    event_description = models.TextField(null=True, blank=True)
     name = models.CharField(max_length=248)
     year = models.IntegerField()
     status = models.CharField(
-        max_length=10, choices=CPReportStatus.choices, default=CPReportStatus.DRAFT
+        max_length=10, choices=CPReportStatus.choices, default=CPReportStatus.FINAL
     )
     version = models.FloatField(default=1)
     reporting_entry = models.CharField(max_length=248, null=True, blank=True)

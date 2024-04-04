@@ -67,10 +67,13 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        serializer = CPReportCreateSerializer(data=request.data)
+        serializer = CPReportCreateSerializer(
+            data=request.data, context={"user": request.user}
+        )
 
         if serializer.is_valid():
             self.perform_create(serializer)
+
             headers = self.get_success_headers(serializer.data)
             return Response(
                 serializer.data, status=status.HTTP_201_CREATED, headers=headers
@@ -278,7 +281,14 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
     @transaction.atomic
     def put(self, request, *args, **kwargs):
         current_obj = self.get_object()
-        serializer = CPReportCreateSerializer(data=request.data)
+
+        # set event description
+        if not request.data.get("event_description"):
+            request.data["event_description"] = "Updated by user"
+
+        serializer = CPReportCreateSerializer(
+            data=request.data, context={"user": request.user}
+        )
         if not serializer.is_valid():
             custom_errors = self.customize_errors(serializer.errors)
             return Response(custom_errors, status=status.HTTP_400_BAD_REQUEST)
@@ -299,6 +309,8 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
             new_instance.status == CPReport.CPReportStatus.FINAL
         )
 
+        # set created_by to the current object created_by
+        new_instance.created_by = current_obj.created_by
         new_instance.save()
 
         if new_instance.status == CPReport.CPReportStatus.FINAL:
@@ -341,6 +353,8 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
             )
 
         cp_report.status = cp_status
+        cp_report.last_updated_by = request.user
+        cp_report.event_description = "Status updated by user"
         cp_report.save()
         serializer = self.get_serializer(cp_report)
 
