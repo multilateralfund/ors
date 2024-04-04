@@ -6,10 +6,14 @@ from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_price import CPPricesSerializer
 from core.api.serializers.cp_record import CPRecordSerializer
+from core.api.validations.cp_reports_validations import validate_section_a, \
+    validate_section_b, validate_section_c, validate_section_d, \
+    validate_section_e, validate_section_f
 from core.models.country import Country
 from core.models.country_programme import CPReport
 from core.models.country_programme_archive import CPReportArchive
-from core.utils import IMPORT_DB_MAX_YEAR
+from core.utils import IMPORT_DB_MAX_YEAR, VALIDATION_MIN_YEAR
+
 
 # pylint: disable=W0223
 
@@ -115,36 +119,18 @@ class CPReportCreateSerializer(serializers.Serializer):
         return CPReportSerializer(instance).data
 
     # waiting for the decision on the validation rules
-    # def validate(self, attrs):
-    #     if attrs["year"] > IMPORT_DB_MAX_YEAR:
-    #         if not all(
-    #             [
-    #                 attrs.get("section_b"),
-    #                 attrs.get("section_d"),
-    #                 attrs.get("section_e"),
-    #                 attrs.get("section_f"),
-    #             ]
-    #         ):
-    #             raise serializers.ValidationError(
-    #                 f"Sections B, D, E and F are required for years after {IMPORT_DB_MAX_YEAR}"
-    #             )
-    #         if attrs["section_f"].get("remarks") is None:
-    #             raise serializers.ValidationError(
-    #                 f"Remarks are required for years after {IMPORT_DB_MAX_YEAR}"
-    #             )
-    #     else:
-    #         if not all(
-    #             [
-    #                 attrs.get("adm_b"),
-    #                 attrs.get("adm_c"),
-    #                 attrs.get("adm_d"),
-    #             ]
-    #         ):
-    #             raise serializers.ValidationError(
-    #                 f"Adm B, C and D are required for years before {IMPORT_DB_MAX_YEAR}"
-    #             )
+    def validate(self, attrs):
+        if attrs.get("year") < VALIDATION_MIN_YEAR:
+            return super().validate(attrs)
 
-    #     return super().validate(attrs)
+        validate_section_a(attrs.get("section_a"))
+        validate_section_b(attrs.get("section_b"))
+        validate_section_c(attrs.get("section_c"))
+        validate_section_d(attrs.get("section_d"))
+        validate_section_e(attrs.get("section_e"))
+        validate_section_f(attrs.get("section_f"))
+
+        return super().validate(attrs)
 
     def _create_cp_records(self, cp_report, section_data, section):
         for record in section_data:
