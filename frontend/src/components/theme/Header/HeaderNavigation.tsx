@@ -136,7 +136,7 @@ const HeaderNavigation = () => {
     <div
       id="header-navigation"
       className={cx(
-        'flex gap-x-4 text-nowrap rounded-full bg-white px-5 py-3 text-xl font-normal uppercase',
+        'hidden sm:flex gap-x-4 text-nowrap rounded-full bg-white px-5 py-3 text-xl font-normal uppercase',
         robotoCondensed.className,
       )}
       onMouseLeave={handleHideAllMenus}
