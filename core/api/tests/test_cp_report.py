@@ -35,7 +35,7 @@ from core.models.country_programme_archive import (
 )
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008, W0221, R0915
+# pylint: disable=C8008, W0221, R0915, C0302
 
 
 @pytest.fixture(name="_setup_cp_report_list")
