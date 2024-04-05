@@ -331,6 +331,7 @@ function CPEdit() {
                       emptyForm={report.emptyForm.data || {}}
                       errors={errors}
                       form={form}
+                      isEdit={true}
                       report={report.data}
                       section={section}
                       setForm={setForm}

@@ -23,7 +23,6 @@ import { useSnackbar } from 'notistack'
 
 import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
 
-import Field from '@ors/components/manage/Form/Field'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Link from '@ors/components/ui/Link/Link'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
@@ -301,6 +300,25 @@ const CPCreate: React.FC = () => {
     [variant],
   )
 
+  const fieldProps = {
+    id: 'country',
+    Input: {
+      error: !!errors.country_id,
+      helperText: errors.country_id?.general_error,
+      // label: 'Country',
+    },
+    disabled: existingReports.loading,
+    name: 'country_id',
+    onChange: (_event: any, value: WidgetCountry) => {
+      const country = value as WidgetCountry
+      setForm({ ...form, country })
+      setCurrentCountry(all_countries.filter((c) => c.id === country.id)[0])
+    },
+    options: countries,
+    value: form.country,
+    widget: 'autocomplete',
+  }
+
   const getSubmitFormData = useCallback(() => {
     return {
       ...form,
@@ -496,27 +514,27 @@ const CPCreate: React.FC = () => {
         </Tabs>
         <CPSectionWrapper>
           <div className="mb-4 grid grid-cols-1 gap-x-4 md:grid-cols-2 lg:grid-cols-3">
-            <Field
-              id="country"
-              name="country_id"
-              FieldProps={{ className: 'mb-0' }}
-              disabled={existingReports.loading}
-              options={countries}
-              value={form.country}
-              widget="autocomplete"
-              Input={{
-                error: !!errors.country_id,
-                helperText: errors.country_id?.general_error,
-                label: 'Country',
-              }}
-              onChange={(_event, value) => {
-                const country = value as WidgetCountry
-                setForm({ ...form, country })
-                setCurrentCountry(
-                  all_countries.filter((c) => c.id == country.id)[0],
-                )
-              }}
-            />
+            {/*<Field*/}
+            {/*  id="country"*/}
+            {/*  name="country_id"*/}
+            {/*  FieldProps={{ className: 'mb-0' }}*/}
+            {/*  disabled={existingReports.loading}*/}
+            {/*  options={countries}*/}
+            {/*  value={form.country}*/}
+            {/*  widget="autocomplete"*/}
+            {/*  Input={{*/}
+            {/*    error: !!errors.country_id,*/}
+            {/*    helperText: errors.country_id?.general_error,*/}
+            {/*    label: 'Country',*/}
+            {/*  }}*/}
+            {/*  onChange={(_event, value) => {*/}
+            {/*    const country = value as WidgetCountry*/}
+            {/*    setForm({ ...form, country })*/}
+            {/*    setCurrentCountry(*/}
+            {/*      all_countries.filter((c) => c.id == country.id)[0],*/}
+            {/*    )*/}
+            {/*  }}*/}
+            {/*/>*/}
             {!!existingReports.data?.length && currentCountry && (
               <div className="flex items-center">
                 <Tooltip
@@ -563,6 +581,7 @@ const CPCreate: React.FC = () => {
                     Section={get(Sections, section.id)}
                     emptyForm={report.emptyForm.data || {}}
                     errors={errors}
+                    fieldProps={fieldProps}
                     form={form}
                     report={report.data}
                     section={section}
