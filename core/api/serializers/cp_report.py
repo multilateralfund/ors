@@ -131,10 +131,8 @@ class CPReportCreateSerializer(serializers.Serializer):
 
     # waiting for the decision on the validation rules
     def validate(self, attrs):
-        if attrs.get("year") < VALIDATION_MIN_YEAR:
-            return super().validate(attrs)
-
-        validate_cp_report(attrs)
+        if attrs.get("year") >= VALIDATION_MIN_YEAR:
+            validate_cp_report(attrs)
 
         return super().validate(attrs)
 
@@ -184,8 +182,7 @@ class CPReportCreateSerializer(serializers.Serializer):
         cp_report_data = {
             "name": validated_data.get("name"),
             "year": validated_data.get("year"),
-            "status": validated_data.get("status",
-                                         CPReport.CPReportStatus.FINAL),
+            "status": validated_data.get("status", CPReport.CPReportStatus.FINAL),
             "country_id": validated_data.get("country_id"),
             "event_description": validated_data.get(
                 "event_description", "Created by user"
@@ -202,24 +199,17 @@ class CPReportCreateSerializer(serializers.Serializer):
 
         cp_report = cp_report_serializer.save()
 
-        self._create_cp_records(cp_report, validated_data.get("section_a", []),
-                                "A")
+        self._create_cp_records(cp_report, validated_data.get("section_a", []), "A")
         self._create_prices(cp_report, validated_data.get("section_c", []))
 
         if cp_report_data["year"] > IMPORT_DB_MAX_YEAR:
-            self._create_cp_records(cp_report,
-                                    validated_data.get("section_b", []), "B")
-            self._create_generation(cp_report,
-                                    validated_data.get("section_d", []))
-            self._create_emission(cp_report,
-                                  validated_data.get("section_e", []))
+            self._create_cp_records(cp_report, validated_data.get("section_b", []), "B")
+            self._create_generation(cp_report, validated_data.get("section_d", []))
+            self._create_emission(cp_report, validated_data.get("section_e", []))
             self._add_remarks(cp_report, validated_data.get("section_f", {}))
         else:
-            self._create_adm_records(cp_report, validated_data.get("adm_b", []),
-                                     "B")
-            self._create_adm_records(cp_report, validated_data.get("adm_c", []),
-                                     "C")
-            self._create_adm_records(cp_report, validated_data.get("adm_d", []),
-                                     "D")
+            self._create_adm_records(cp_report, validated_data.get("adm_b", []), "B")
+            self._create_adm_records(cp_report, validated_data.get("adm_c", []), "C")
+            self._create_adm_records(cp_report, validated_data.get("adm_d", []), "D")
 
         return cp_report

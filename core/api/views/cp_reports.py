@@ -295,7 +295,9 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
         serializer = CPReportCreateSerializer(
             data=request.data, context={"user": request.user}
         )
-        if not serializer.is_valid() or self.check_readonly_fields(serializer, current_obj):
+        if not serializer.is_valid() or self.check_readonly_fields(
+            serializer, current_obj
+        ):
             custom_errors = self.customize_errors(serializer.errors)
             return Response(custom_errors, status=status.HTTP_400_BAD_REQUEST)
 
