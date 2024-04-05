@@ -442,3 +442,7 @@ cython_debug/
 /.fs
 
 /docker-compose.override.yml
+
+# venv
+lib/
+share/
