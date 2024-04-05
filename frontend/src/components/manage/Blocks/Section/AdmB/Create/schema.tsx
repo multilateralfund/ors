@@ -90,7 +90,7 @@ function useGridOptions(props: { adm_columns: any }) {
         },
         // cellClass: 'ag-text-left',
         editable: (props) =>
-          includes(props.data?.excluded_columns || [], props.colDef.id) &&
+          !includes(props.data?.excluded_columns || [], props.colDef.id) &&
           !includes(NON_EDITABLE_ROWS, props.data.rowType),
         headerClass: 'ag-text-center',
         minWidth: defaultColDef.minWidth,

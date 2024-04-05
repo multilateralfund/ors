@@ -191,7 +191,7 @@ const DesktopHeaderNavigation = ({
                       <Component
                         key={menuItem.label}
                         className={cx(
-                          'border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0 hover:bg-mlfs-hlYellow',
+                          'text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0 hover:bg-mlfs-hlYellow',
                           { 'bg-mlfs-hlYellow': menuItem.current },
                         )}
                         href={menuItem.url}
@@ -264,8 +264,9 @@ const MobileHeaderNavigation = ({
               <ListItem
                 key={item.label}
                 className={styling}
-                slotProps={{ root: { href: item.url } as any }}
-                slots={{ root: 'a' }}
+                component={'a'}
+                href={item.url}
+                {...(item.external ? { target: '_blank' } : {})}
               >
                 {item.label}
               </ListItem>
@@ -273,9 +274,8 @@ const MobileHeaderNavigation = ({
 
             return (
               regularLink || (
-                <>
+                <div key={item.label}>
                   <ListItemButton
-                    key={item.label}
                     className={cx(
                       'flex items-center justify-between rounded-none',
                       styling,
@@ -296,22 +296,28 @@ const MobileHeaderNavigation = ({
                   >
                     <List component="div">
                       {item.menu &&
-                        item.menu.map((menuItem) => (
-                          <ListItem
-                            key={menuItem.label}
-                            className={cx(
-                              'block py-4 pl-10 text-xl uppercase text-primary no-underline transition-all hover:bg-mlfs-hlYellowTint',
-                              { 'bg-mlfs-hlYellowTint': menuItem.current },
-                            )}
-                            slotProps={{ root: { href: menuItem.url } as any }}
-                            slots={{ root: 'a' }}
-                          >
-                            {menuItem.label}
-                          </ListItem>
-                        ))}
+                        item.menu.map((menuItem) => {
+                          const Component = menuItem?.internal ? NextLink : 'a'
+                          return (
+                            <ListItem
+                              key={menuItem.label}
+                              className={cx(
+                                'block py-4 pl-10 text-xl uppercase text-primary no-underline transition-all hover:bg-mlfs-hlYellowTint',
+                                { 'bg-mlfs-hlYellowTint': menuItem.current },
+                              )}
+                              component={Component}
+                              href={menuItem.url}
+                              {...(menuItem.external
+                                ? { target: '_blank' }
+                                : {})}
+                            >
+                              {menuItem.label}
+                            </ListItem>
+                          )
+                        })}
                     </List>
                   </Collapse>
-                </>
+                </div>
               )
             )
           })}

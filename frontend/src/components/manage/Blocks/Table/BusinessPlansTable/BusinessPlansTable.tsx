@@ -92,6 +92,7 @@ export default function BusinessPlansTable() {
       }
 
       result.push({
+        autoHeaderHeight: true,
         field: `value_usd_${year}`,
         headerName: `Value ($000) ${label}`,
         resizable: true,
@@ -359,6 +360,7 @@ export default function BusinessPlansTable() {
               width: 100,
             },
             {
+              autoHeaderHeight: true,
               field: 'chemical_details',
               headerName: 'Chemical Details',
               resizable: true,
