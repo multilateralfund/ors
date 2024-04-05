@@ -21,7 +21,7 @@ import { useStore } from '@ors/store'
 
 import useGridOptions from './schema'
 
-import { IoInformationCircleOutline } from 'react-icons/io5'
+import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
 
 export type RowData = DeserializedDataA & {
   count?: number
@@ -82,6 +82,29 @@ function getRowData(data: SectionA['data']): RowData[] {
   return rowData
 }
 
+function getInitialPinnedBottomRowData(model: string): RowData[] {
+  const pinnedBottomRowData: RowData[] = [
+    {
+      display_name: 'TOTAL',
+      mandatory: false,
+      row_id: 'total',
+      rowType: 'total',
+      substance_id: Infinity,
+      tooltip: true,
+    },
+  ]
+  if (!includes(['V'], model)) {
+    pinnedBottomRowData.push({
+      display_name: '',
+      mandatory: false,
+      row_id: 'control',
+      rowType: 'control',
+      substance_id: Infinity,
+    })
+  }
+  return pinnedBottomRowData
+}
+
 export default function SectionACreate(props: {
   Section: SectionA
   TableProps: PassedCPCreateTableProps
@@ -99,23 +122,9 @@ export default function SectionACreate(props: {
 
   const grid = useRef<any>()
   const [initialRowData] = useState(() => getRowData(form.section_a))
-  const [pinnedBottomRowData] = useState<RowData[]>([
-    {
-      display_name: 'TOTAL',
-      mandatory: false,
-      row_id: 'total',
-      rowType: 'total',
-      substance_id: Infinity,
-      tooltip: true,
-    },
-    {
-      display_name: '',
-      mandatory: false,
-      row_id: 'control',
-      rowType: 'control',
-      substance_id: Infinity,
-    },
-  ])
+  const [pinnedBottomRowData] = useState<RowData[]>(
+    getInitialPinnedBottomRowData(variant.model),
+  )
   const [addSubstanceModal, setAddSubstanceModal] = useState(false)
 
   const substancesOptions = useMemo(() => {
@@ -182,6 +191,16 @@ export default function SectionACreate(props: {
 
   return (
     <>
+      {includes(['V'], variant.model) && (
+        <div className="flex justify-end">
+          <Button
+            className="rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
+            onClick={() => setAddSubstanceModal(true)}
+          >
+            Add substance <IoAddCircle className="ml-1.5" size={18} />
+          </Button>
+        </div>
+      )}
       <Table
         {...TableProps}
         className="mb-4"
