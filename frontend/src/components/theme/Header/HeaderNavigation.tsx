@@ -274,9 +274,8 @@ const MobileHeaderNavigation = ({
 
             return (
               regularLink || (
-                <>
+                <div key={item.label}>
                   <ListItemButton
-                    key={item.label}
                     className={cx(
                       'flex items-center justify-between rounded-none',
                       styling,
@@ -318,7 +317,7 @@ const MobileHeaderNavigation = ({
                         })}
                     </List>
                   </Collapse>
-                </>
+                </div>
               )
             )
           })}
