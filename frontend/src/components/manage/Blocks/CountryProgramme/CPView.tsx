@@ -18,7 +18,7 @@ import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
 import { getSections } from '.'
-import { CPViewHeader } from './CPHeader'
+import { CPArchiveHeader, CPViewHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
 
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
@@ -191,7 +191,7 @@ function CPView(props: { archive?: boolean }) {
         }
       />
       {!!report.error && <Error error={report.error} />}
-      <CPViewHeader archive={archive} />
+      {archive ? <CPArchiveHeader /> : <CPViewHeader />}
       <Tabs
         className="scrollable"
         aria-label="view country programme report"

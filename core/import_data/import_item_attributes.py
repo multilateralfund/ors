@@ -9,6 +9,7 @@ from core.import_data.utils import (
     DB_DIR_LIST,
     check_empty_row,
     create_cp_record,
+    delete_archive_reports_data,
     delete_old_data,
     get_chemical_by_name_or_components,
     get_country_dict_from_db_file,
@@ -254,6 +255,7 @@ def import_records_from_databases():
     Import records from databases
     """
     db_dir_path = settings.IMPORT_DATA_DIR / "databases"
+    delete_archive_reports_data(2000, 2018)
     for dir_name in DB_DIR_LIST:
         logger.info(f"⏳ importing records from {dir_name}")
         parse_db_files(db_dir_path / dir_name)

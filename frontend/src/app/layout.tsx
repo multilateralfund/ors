@@ -12,6 +12,7 @@ import { dir } from 'i18next'
 import { Roboto } from 'next/font/google'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { headers as nextHeaders } from 'next/headers'
+import { redirect } from 'next/navigation'
 import Script from 'next/script'
 
 import View from '@ors/components/theme/Views/View'
@@ -136,6 +137,8 @@ export default async function RootLayout({
       types: getInitialSliceData(types),
       yearRanges: getInitialSliceData(yearRanges),
     }
+  } else if (currentView.layout === 'authorized_document') {
+    redirect('/login')
   }
 
   return (

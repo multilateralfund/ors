@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from core.api.filters.country_programme import (
     CPReportFilter,
 )
+from core.api.permissions import IsUserAllowedCP
 from core.api.serializers import CPReportGroupSerializer
 from core.api.serializers.cp_report import CPReportCreateSerializer, CPReportSerializer
 from core.models.adm import AdmRecordArchive
@@ -35,6 +36,7 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
     API endpoint that allows country programmes to be viewed or created.
     """
 
+    permission_classes = [IsUserAllowedCP]
     filterset_class = CPReportFilter
     filter_backends = [
         DjangoFilterBackend,
@@ -44,9 +46,14 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
     ordering_fields = ["year", "country__name"]
 
     def get_queryset(self):
+        user = self.request.user
+        cp_reports = CPReport.objects.all()
+        if user.user_type == user.UserType.COUNTRY_USER:
+            cp_reports = cp_reports.filter(country=user.country)
+
         if self.request.method == "PUT":
-            return CPReport.objects.select_for_update()
-        return CPReport.objects.select_related("country").order_by("name")
+            return cp_reports.select_for_update()
+        return cp_reports.select_related("country").order_by("name")
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -67,10 +74,13 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        serializer = CPReportCreateSerializer(data=request.data)
+        serializer = CPReportCreateSerializer(
+            data=request.data, context={"user": request.user}
+        )
 
         if serializer.is_valid():
             self.perform_create(serializer)
+
             headers = self.get_success_headers(serializer.data)
             return Response(
                 serializer.data, status=status.HTTP_201_CREATED, headers=headers
@@ -278,7 +288,14 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
     @transaction.atomic
     def put(self, request, *args, **kwargs):
         current_obj = self.get_object()
-        serializer = CPReportCreateSerializer(data=request.data)
+
+        # set event description
+        if not request.data.get("event_description"):
+            request.data["event_description"] = "Updated by user"
+
+        serializer = CPReportCreateSerializer(
+            data=request.data, context={"user": request.user}
+        )
         if not serializer.is_valid():
             custom_errors = self.customize_errors(serializer.errors)
             return Response(custom_errors, status=status.HTTP_400_BAD_REQUEST)
@@ -299,6 +316,8 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
             new_instance.status == CPReport.CPReportStatus.FINAL
         )
 
+        # set created_by to the current object created_by
+        new_instance.created_by = current_obj.created_by
         new_instance.save()
 
         if new_instance.status == CPReport.CPReportStatus.FINAL:
@@ -315,9 +334,16 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
     API endpoint that allows updating country programme report status.
     """
 
-    queryset = CPReport.objects.all()
+    permission_classes = [IsUserAllowedCP]
     serializer_class = CPReportSerializer
     lookup_field = "id"
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = CPReport.objects.all()
+        if user.user_type == user.UserType.COUNTRY_USER:
+            queryset = queryset.filter(country=user.country)
+        return queryset
 
     @swagger_auto_schema(
         operation_description="Update country programme report status",
@@ -341,6 +367,8 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
             )
 
         cp_report.status = cp_status
+        cp_report.last_updated_by = request.user
+        cp_report.event_description = "Status updated by user"
         cp_report.save()
         serializer = self.get_serializer(cp_report)
 
@@ -352,6 +380,7 @@ class CPReportGroupByYearView(generics.ListAPIView):
     API endpoint that allows listing country programme reports grouped.
     """
 
+    permission_classes = [IsUserAllowedCP]
     serializer_class = CPReportGroupSerializer
     group_by = "year"
     group_pk = "year"
@@ -368,11 +397,11 @@ class CPReportGroupByYearView(generics.ListAPIView):
         return "-" + self.group_by
 
     def get_queryset(self):
-        return (
-            CPReport.objects.values_list(self.group_by, flat=True)
-            .distinct()
-            .order_by(self.order_field)
-        )
+        user = self.request.user
+        queryset = CPReport.objects.all()
+        if user.user_type == user.UserType.COUNTRY_USER:
+            queryset = queryset.filter(country=user.country)
+        return queryset
 
     @staticmethod
     def get_group(obj):
@@ -401,10 +430,15 @@ class CPReportGroupByYearView(generics.ListAPIView):
 
         # Only paginate the query based on unique Group IDs
         queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
+        page_queryset = (
+            queryset.values_list(self.group_by, flat=True)
+            .distinct()
+            .order_by(self.order_field)
+        )
+        page = self.paginate_queryset(page_queryset)
 
         queryset = (
-            CPReport.objects.annotate(
+            queryset.annotate(
                 row_number=Window(
                     expression=RowNumber(),
                     partition_by=[F(self.group_by)],
@@ -415,7 +449,7 @@ class CPReportGroupByYearView(generics.ListAPIView):
                 **{
                     # Filter results base on the group and the MAX number of
                     # reports to display.
-                    f"{self.group_by}__in": (page or queryset),
+                    f"{self.group_by}__in": (page or page_queryset),
                     "row_number__lte": config.CP_NR_REPORTS,
                 }
             )

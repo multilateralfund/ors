@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import { Button, Typography } from '@mui/material'
 import cx from 'classnames'
-import { Dictionary, capitalize, concat, orderBy } from 'lodash'
+import { Dictionary, capitalize, orderBy } from 'lodash'
 import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
@@ -14,28 +14,31 @@ import { useStore } from '@ors/store'
 
 import { IoChevronDown } from 'react-icons/io5'
 
+function padDateNr(n: number) {
+  return n < 10 ? `0${n}` : `${n}`
+}
+
+const formattedDateFromTimestamp = (timestring: string) => {
+  const date = new Date(timestring)
+  return `${padDateNr(date.getDate())}.${padDateNr(date.getMonth() + 1)}.${date.getFullYear()}`
+}
+
 const HeaderVersionsDropdown = () => {
   const { report } = useStore((state) => state.cp_reports)
-  const versions = concat(
-    [
-      {
-        id: 0,
-        date: report.data?.year,
-        label: `Version ${(report.versions?.data?.length || 0) + 1}`,
-        url: `/country-programme/${report.country!.iso3}/${report.data?.year}`,
-      },
-    ],
+  const versions =
     report.data && report.country
       ? orderBy(report.versions.data, 'version', 'desc').map(
-          (version, idx, arr) => ({
+          (version, idx) => ({
             id: version.id,
-            date: version.year,
+            formattedDate: formattedDateFromTimestamp(version.created_at),
             label: `Version ${version.version}`,
-            url: `/country-programme/${report.country!.iso3}/${version.year}/archive/${arr.length - idx}`,
+            url:
+              idx == 0
+                ? `/country-programme/${report.country!.iso3}/${version.year}`
+                : `/country-programme/${report.country!.iso3}/${version.year}/archive/${version.version}`,
           }),
         )
-      : [],
-  )
+      : []
 
   return (
     <Dropdown
@@ -73,7 +76,7 @@ const HeaderVersionsDropdown = () => {
                   LATEST
                 </span>
               )}
-              {info.date}
+              {info.formattedDate}
             </div>
           </div>
         </Dropdown.Item>
@@ -82,21 +85,9 @@ const HeaderVersionsDropdown = () => {
   )
 }
 
-const HeaderTag = ({ archive }: { archive?: boolean }) => {
+const HeaderTag = ({ children }: React.PropsWithChildren) => {
   const { report } = useStore((state) => state.cp_reports)
-  const { status, version } = report?.data || {}
-  let label = ''
-
-  switch (status) {
-    case 'final':
-      label = 'Latest'
-      break
-    case 'draft':
-      label = 'Draft'
-      break
-    default:
-      break
-  }
+  const { status } = report?.data || {}
 
   return (
     <span
@@ -108,21 +99,63 @@ const HeaderTag = ({ archive }: { archive?: boolean }) => {
         },
       )}
     >
-      {archive ? `Version ${version}` : capitalize(label)}
+      {children}
     </span>
   )
 }
 
-interface HeaderActions {
-  archive?: boolean
+const ViewHeaderTag = () => {
+  const { report } = useStore((state) => state.cp_reports)
+  const { status } = report?.data || {}
+  const label = useMemo(() => {
+    switch (status) {
+      case 'final':
+        return 'Latest'
+      case 'draft':
+        return 'Draft'
+      default:
+        return ''
+    }
+  }, [status])
+
+  return <HeaderTag>{capitalize(label)}</HeaderTag>
 }
 
-const ViewHeaderActions = ({ archive = false }: HeaderActions) => {
+const EditHeaderTag = () => {
+  const { report } = useStore((state) => state.cp_reports)
+  const latest = useMemo(() => {
+    return report.versions.data?.[0]
+  }, [report.versions.data])
+
+  const date = useMemo(
+    () => (latest ? formattedDateFromTimestamp(latest.created_at) : '...'),
+    [latest],
+  )
+
+  return (
+    <HeaderTag>
+      Latest: <span className="text-gray">{date}</span>
+    </HeaderTag>
+  )
+}
+
+const ArchiveHeaderTag = () => {
+  const { report } = useStore((state) => state.cp_reports)
+  const { version } = report?.data || {}
+
+  return <HeaderTag>{`Version ${version}`}</HeaderTag>
+}
+
+const ArchiveHeaderActions = () => {
+  return <div className="flex items-center"></div>
+}
+
+const ViewHeaderActions = () => {
   const { report, setReport } = useStore((state) => state.cp_reports)
   const { enqueueSnackbar } = useSnackbar()
   return (
     <div className="flex items-center">
-      {!archive && !!report.data && (
+      {!!report.data && (
         <div className="container flex w-full justify-between gap-x-4">
           {/* <Link
             className="bg-gray-600 px-4 py-2 shadow-none"
@@ -212,7 +245,7 @@ const EditHeaderActions = ({
       {!!report.data && (
         <div className="container flex w-full justify-between gap-x-4">
           <Link
-            className="bg-gray-600  px-4 py-2 shadow-none"
+            className="bg-gray-600 px-4 py-2 shadow-none"
             color="secondary"
             href={`/country-programme/${report.country?.iso3}/${report.data.year}`}
             size="large"
@@ -334,10 +367,10 @@ const EditHeaderActions = ({
 
 const CPHeader = ({
   actions = <ViewHeaderActions />,
-  archive,
+  tag = <ViewHeaderTag />,
 }: {
   actions?: React.JSX.Element
-  archive?: boolean
+  tag?: React.JSX.Element
 }) => {
   const { report } = useStore((state) => state.cp_reports)
   const [memo, setMemo] = useState(0)
@@ -355,7 +388,7 @@ const CPHeader = ({
         <div className="mb-4 flex min-h-[40px] items-center justify-between gap-x-8">
           <div className="flex items-center gap-x-2">
             <HeaderVersionsDropdown />
-            <HeaderTag archive={archive} />
+            {tag}
           </div>
           {actions}
         </div>
@@ -363,13 +396,42 @@ const CPHeader = ({
     )
   )
 }
+const CPCreateHeader = ({
+  actions,
+  currentYear,
+}: {
+  actions: React.JSX.Element
+  currentYear: number
+}) => {
+  return (
+    <div className="my-12 flex min-h-[40px] items-center justify-between gap-x-8">
+      <div className="flex items-center gap-x-2">
+        <Typography component="h1" variant="h3">
+          New submission - {currentYear}
+        </Typography>
+      </div>
+      {actions}
+    </div>
+  )
+}
 
-const CPViewHeader = ({ archive }: { archive?: boolean }) => {
-  return <CPHeader actions={<ViewHeaderActions archive={archive} />} />
+const CPViewHeader = () => {
+  return <CPHeader actions={<ViewHeaderActions />} tag={<ViewHeaderTag />} />
 }
 
 const CPEditHeader = (props: EditHeaderActionsProps) => {
-  return <CPHeader actions={<EditHeaderActions {...props} />} />
+  return (
+    <CPHeader
+      actions={<EditHeaderActions {...props} />}
+      tag={<EditHeaderTag />}
+    />
+  )
 }
 
-export { CPEditHeader, CPViewHeader }
+const CPArchiveHeader = () => {
+  return (
+    <CPHeader actions={<ArchiveHeaderActions />} tag={<ArchiveHeaderTag />} />
+  )
+}
+
+export { CPArchiveHeader, CPCreateHeader, CPEditHeader, CPViewHeader }

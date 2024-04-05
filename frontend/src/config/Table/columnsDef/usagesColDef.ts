@@ -18,6 +18,7 @@ export default function getUsagesColDef() {
       initialWidth: 132,
     },
     'Refrigeration Manufacturing': {
+      autoHeaderHeight: true,
       initialWidth: 132,
     },
     'Refrigeration Manufacturing AC': {
@@ -28,6 +29,7 @@ export default function getUsagesColDef() {
       initialWidth: 80,
     },
     'Refrigeration Manufacturing Other': {
+      autoHeaderHeight: true,
       headerComponentParams: {
         footnote: {
           id: '5',
@@ -37,7 +39,7 @@ export default function getUsagesColDef() {
           order: 5,
         },
       },
-      initialWidth: 130,
+      initialWidth: 300,
     },
     'Refrigeration Manufacturing Other IV': {
       headerComponentParams: {},

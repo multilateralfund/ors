@@ -38,16 +38,16 @@
       ) {
       /* border-right: var(--ag-row-border-width) var(--ag-row-border-style)
         var(--ag-row-border-color); */
-        @apply border-r-transparent
+      @apply border-r-transparent;
     }
   }
 
   .ag-row .ag-cell {
-    @apply border-r-transparent
+    @apply border-r-transparent;
   }
 
   .ag-row-group .ag-cell {
-    @apply border-transparent
+    @apply border-transparent;
   }
 
   .ag-row-group .ag-cell-focus:focus-within::after,

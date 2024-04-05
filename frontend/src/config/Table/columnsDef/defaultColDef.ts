@@ -24,6 +24,11 @@ const defaultColDef: ColDef = {
 }
 
 const defaultColDefEdit: ColDef = {
+  cellRendererParams: () => {
+    return {
+      maximumFractionDigits: 3,
+    }
+  },
   editable: (props: EditableCallbackParams) => {
     if (includes(NON_EDITABLE_ROWS, props.data?.rowType)) {
       return false

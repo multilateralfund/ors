@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 
-import { Alert, IconButton, Typography } from '@mui/material'
+import { IconButton, Typography } from '@mui/material'
 import cx from 'classnames'
 import { findIndex, groupBy, map } from 'lodash'
 
@@ -34,11 +34,6 @@ export default function AdmBCreate(props: any) {
 
   return (
     <>
-      <Alert className="mb-4" icon={false} severity="info">
-        <Typography>
-          Edit by pressing double left-click or ENTER on a field.
-        </Typography>
-      </Alert>
       <Table
         {...TableProps}
         className="mb-4"

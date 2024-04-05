@@ -26,6 +26,15 @@ class TestCountries(BaseTest):
         assert response.data[1]["name"] == country_ro.name
         assert response.data[1]["has_cp_report"] is False
 
+    def test_countries_list_country_user(self, country_user, _setup_countries):
+        self.client.force_authenticate(user=country_user)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 1
+        assert response.data[0]["name"] == country_user.country.name
+        assert response.data[0]["has_cp_report"] is False
+
     def test_countries_with_cp_report(
         self, user, country_ro, _setup_countries, cp_report_2005
     ):

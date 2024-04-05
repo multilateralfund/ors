@@ -8,7 +8,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
   Alert,
-  Box,
   Button,
   IconButton,
   Tab,
@@ -25,8 +24,6 @@ import { useSnackbar } from 'notistack'
 import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
 
 import Field from '@ors/components/manage/Form/Field'
-import Portal from '@ors/components/manage/Utils/Portal'
-import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Link from '@ors/components/ui/Link/Link'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
@@ -44,6 +41,7 @@ import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
 import { SectionMeta, getSections } from '.'
+import { CPCreateHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
 
 import { IoClose, IoExpand, IoLink } from 'react-icons/io5'
@@ -389,13 +387,81 @@ const CPCreate: React.FC = () => {
           (report.loading || !includes(renderedSections, activeTab))
         }
       />
-      <HeaderTitle>
-        <div className="mb-4 min-h-[40px]">
-          <Typography component="h1" variant="h3">
-            New submission - {currentYear}
-          </Typography>
-        </div>
-      </HeaderTitle>
+      <CPCreateHeader
+        currentYear={currentYear}
+        actions={
+          <div className="flex items-center">
+            <div className="container flex w-full justify-between gap-x-4">
+              <Link
+                className="bg-gray-600 px-4 py-2 shadow-none"
+                color="secondary"
+                href="/country-programme"
+                size="large"
+                variant="contained"
+                onClick={() => {
+                  Sections.section_a.clearLocalStorage()
+                  Sections.section_b.clearLocalStorage()
+                  Sections.section_c.clearLocalStorage()
+                  Sections.section_d.clearLocalStorage()
+                  Sections.section_e.clearLocalStorage()
+                  Sections.section_f.clearLocalStorage()
+                }}
+                button
+              >
+                Close
+              </Link>
+              <Button
+                className="px-4 py-2 shadow-none"
+                color="secondary"
+                size="large"
+                variant="contained"
+                disabled={
+                  !!existingReports.data?.length || existingReports.loading
+                }
+                onClick={async () => {
+                  try {
+                    await api('api/country-programme/reports/', {
+                      data: getSubmitFormData(),
+                      method: 'POST',
+                    })
+                    setErrors({})
+                    Sections.section_a.clearLocalStorage()
+                    Sections.section_b.clearLocalStorage()
+                    Sections.section_c.clearLocalStorage()
+                    Sections.section_d.clearLocalStorage()
+                    Sections.section_e.clearLocalStorage()
+                    Sections.section_f.clearLocalStorage()
+                    enqueueSnackbar(
+                      <>
+                        Added new submission for {form.country!.label}{' '}
+                        {form.year}.
+                      </>,
+                      { variant: 'success' },
+                    )
+                    router.push(
+                      `/country-programme/${currentCountry!.iso3}/${form.year}`,
+                    )
+                  } catch (error) {
+                    if (error.status === 400) {
+                      const errors = await error.json()
+                      setErrors({ ...errors })
+                      enqueueSnackbar(
+                        errors.general_error ||
+                          'Please make sure all the inputs are correct.',
+                        { variant: 'error' },
+                      )
+                    } else {
+                      setErrors({})
+                    }
+                  }
+                }}
+              >
+                Submit
+              </Button>
+            </div>
+          </div>
+        }
+      />
       <form className="create-submission-form">
         <Tabs
           className="scrollable"
@@ -515,76 +581,6 @@ const CPCreate: React.FC = () => {
             )
           })}
         </CPSectionWrapper>
-        <Portal domNode="bottom-control">
-          <Box className="rounded-none border-0 border-t px-4">
-            <div className="container flex w-full justify-between">
-              <Link
-                color="secondary"
-                href="/country-programme"
-                size="small"
-                variant="contained"
-                onClick={() => {
-                  Sections.section_a.clearLocalStorage()
-                  Sections.section_b.clearLocalStorage()
-                  Sections.section_c.clearLocalStorage()
-                  Sections.section_d.clearLocalStorage()
-                  Sections.section_e.clearLocalStorage()
-                  Sections.section_f.clearLocalStorage()
-                }}
-                button
-              >
-                Close
-              </Link>
-              <Button
-                color="primary"
-                size="small"
-                variant="contained"
-                disabled={
-                  !!existingReports.data?.length || existingReports.loading
-                }
-                onClick={async () => {
-                  try {
-                    await api('api/country-programme/reports/', {
-                      data: getSubmitFormData(),
-                      method: 'POST',
-                    })
-                    setErrors({})
-                    Sections.section_a.clearLocalStorage()
-                    Sections.section_b.clearLocalStorage()
-                    Sections.section_c.clearLocalStorage()
-                    Sections.section_d.clearLocalStorage()
-                    Sections.section_e.clearLocalStorage()
-                    Sections.section_f.clearLocalStorage()
-                    enqueueSnackbar(
-                      <>
-                        Added new submission for {form.country!.label}{' '}
-                        {form.year}.
-                      </>,
-                      { variant: 'success' },
-                    )
-                    router.push(
-                      `/country-programme/${currentCountry!.iso3}/${form.year}`,
-                    )
-                  } catch (error) {
-                    if (error.status === 400) {
-                      const errors = await error.json()
-                      setErrors({ ...errors })
-                      enqueueSnackbar(
-                        errors.general_error ||
-                          'Please make sure all the inputs are correct.',
-                        { variant: 'error' },
-                      )
-                    } else {
-                      setErrors({})
-                    }
-                  }
-                }}
-              >
-                Submit
-              </Button>
-            </div>
-          </Box>
-        </Portal>
       </form>
     </>
   )

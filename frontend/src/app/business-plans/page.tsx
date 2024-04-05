@@ -15,7 +15,7 @@ export default async function Reports() {
   return (
     <PageWrapper>
       <HeaderTitle>
-        <Typography className="text-white" component="h1" variant="h3">
+        <Typography component="h1" variant="h3">
           Business Plans
         </Typography>
       </HeaderTitle>

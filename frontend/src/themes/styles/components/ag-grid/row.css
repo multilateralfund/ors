@@ -5,7 +5,7 @@
 
 .ag-table .ag-row-group,
 .ag-table .ag-row-control {
-  @apply bg-white
+  @apply bg-white;
 }
 
 .ag-table .ag-row-hashed {

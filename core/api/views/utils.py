@@ -16,10 +16,15 @@ def get_cp_report_from_request(request, cp_report_class):
     cp_report = None
 
     try:
+        user = request.user
+        cp_report_qs = cp_report_class.objects.all()
+        if user.user_type == user.UserType.COUNTRY_USER:
+            cp_report_qs = cp_report_qs.filter(country=user.country)
+
         if cp_report_id:
-            cp_report = cp_report_class.objects.get(id=cp_report_id)
+            cp_report = cp_report_qs.get(id=cp_report_id)
         elif country_id and year:
-            cp_report = cp_report_class.objects.get(
+            cp_report = cp_report_qs.get(
                 country_id=country_id, year=year
             )
     except cp_report_class.DoesNotExist as e:

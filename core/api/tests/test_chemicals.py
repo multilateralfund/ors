@@ -16,7 +16,7 @@ from core.models.blend import Blend
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008
 
-GROUP_LIST = ["A", "B", "C", "D", "E", "F", "unknown"]
+GROUP_LIST = ["A", "B", "C", "D", "E", "F", "unknown", "legacy"]
 
 
 def create_usages(count=3):
@@ -131,6 +131,13 @@ def setup_blend_list(time_frames):
                 sort_order=i,
             )
         )
+        # add legacy blends
+        BlendFactory.create(
+            name="BlendLegacy" + str(i),
+            sort_order=i + 10,
+            is_legacy=True,
+        )
+
     # add some usages
     usages = create_usages()
     # create excluded usages

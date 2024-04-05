@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from core.api.filters.country_programme import (
     CPReportArchiveFilter,
 )
+from core.api.permissions import IsUserAllowedCP
 from core.api.serializers.adm import AdmRecordArchiveSerializer
 from core.api.serializers.cp_emission import CPEmissionArchiveSerializer
 from core.api.serializers.cp_generation import CPGenerationArchiveSerializer
@@ -25,6 +26,7 @@ from core.models.country_programme_archive import (
 
 
 class CPReportVersionsListView(generics.GenericAPIView):
+    permission_classes = [IsUserAllowedCP]
     queryset = CPReportArchive.objects.all()
     serializer_class = CPReportArchiveSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
@@ -32,11 +34,15 @@ class CPReportVersionsListView(generics.GenericAPIView):
 
     def get(self, request, *args, **kwargs):
         # add the current version of the report
+        user = request.user
         country_id = request.query_params.get("country_id")
         year = request.query_params.get("year")
         current_version = None
         if country_id and year:
-            current_version = CPReport.objects.filter(country_id=country_id, year=year).first()
+            cp_reports = CPReport.objects.all()
+            if user.user_type == user.UserType.COUNTRY_USER:
+                cp_reports = cp_reports.filter(country=user.country)
+            current_version = cp_reports.filter(country_id=country_id, year=year).first()
         if not current_version:
             raise ValidationError("Could not find the current version of the report")
 

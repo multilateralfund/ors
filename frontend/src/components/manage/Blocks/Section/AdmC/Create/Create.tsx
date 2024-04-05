@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 
-import { Alert, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { findIndex, groupBy, map } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
@@ -29,11 +29,6 @@ export default function AdmBCreate(props: any) {
 
   return (
     <>
-      <Alert className="mb-4" icon={false} severity="info">
-        <Typography>
-          Edit by pressing double left-click or ENTER on a field.
-        </Typography>
-      </Alert>
       <Table
         {...TableProps}
         className="mb-4"

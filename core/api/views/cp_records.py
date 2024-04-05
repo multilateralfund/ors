@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from core.api.serializers.adm import (
     AdmRecordSerializer,
 )
+from core.api.permissions import IsUserAllowedCP
 from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_price import CPPricesSerializer
@@ -36,6 +37,8 @@ class CPRecordBaseListView(views.APIView):
     @param name: str - query filter for name (contains)
     @param year: int - query filter for year (exact)
     """
+
+    permission_classes = [IsUserAllowedCP]
 
     cp_report_class = None
     cp_record_class = None
@@ -342,7 +345,7 @@ class CPRecordBaseListView(views.APIView):
         return cp_report
 
     def get_data(self, cp_report):
-        if cp_report.year < IMPORT_DB_OLDEST_MAX_YEAR:
+        if cp_report.year <= IMPORT_DB_OLDEST_MAX_YEAR:
             return self._get_04_cp_records(cp_report)
         if cp_report.year > IMPORT_DB_MAX_YEAR:
             return self._get_new_cp_records(cp_report)
