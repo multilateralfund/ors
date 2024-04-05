@@ -287,6 +287,7 @@ REST_AUTH = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "PASSWORD_RESET_USE_SITES_DOMAIN": True,
     "PASSWORD_RESET_SERIALIZER": "core.api.serializers.CustomPasswordResetSerializer",
+    "USER_DETAILS_SERIALIZER": "core.api.serializers.CustomUserDetailsSerializer",
 }
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
