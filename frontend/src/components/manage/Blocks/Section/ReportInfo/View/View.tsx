@@ -1,9 +1,7 @@
-import Checkbox from '@mui/material/Checkbox'
-import FormControl from '@mui/material/FormControl'
-import FormControlLabel from '@mui/material/FormControlLabel'
-import FormGroup from '@mui/material/FormGroup'
 import Typography from '@mui/material/Typography'
 
+import ReportHistory from "@ors/components/manage/Blocks/Section/ReportInfo/ReportHistory";
+import ReportStatus from "@ors/components/manage/Blocks/Section/ReportInfo/ReportStatus";
 import { useStore } from '@ors/store'
 
 import { IoDocumentTextOutline } from 'react-icons/io5'
@@ -81,99 +79,8 @@ const ReportInfoView = (props: any) => {
       </div>
 
       <div className="flex flex-col rounded-lg bg-gray-100 p-4">
-        <div className="flex flex-wrap gap-4">
-          <FormControl
-            className="inline-flex flex-col"
-            component="fieldset"
-            fullWidth={false}
-            variant="standard"
-          >
-            <legend className="mb-3 text-2xl font-normal">Status</legend>
-            <FormGroup className="rounded-lg bg-white px-4 py-1 shadow-lg" row>
-              <FormControlLabel
-                control={<Checkbox size="small" defaultChecked />}
-                label="Final"
-                disabled
-              />
-            </FormGroup>
-          </FormControl>
-          <FormControl
-            className="inline-flex flex-col"
-            component="fieldset"
-            fullWidth={false}
-            variant="standard"
-          >
-            <legend className="mb-3 text-2xl font-normal">
-              Sections reported
-            </legend>
-            <FormGroup className="rounded-lg bg-white px-4 py-1 shadow-lg" row>
-              <FormControlLabel
-                color="primary"
-                control={<Checkbox size="small" />}
-                label="Section A"
-              />
-              <FormControlLabel
-                control={<Checkbox size="small" />}
-                label="Section B"
-              />
-              <FormControlLabel
-                control={<Checkbox size="small" />}
-                label="Section C"
-              />
-              <FormControlLabel
-                control={<Checkbox size="small" />}
-                label="Section D"
-              />
-              <FormControlLabel
-                control={<Checkbox size="small" />}
-                label="Section E"
-              />
-              <FormControlLabel
-                control={<Checkbox size="small" />}
-                label="Section F"
-              />
-            </FormGroup>
-          </FormControl>
-        </div>
-        <div>
-          <p className="mb-3 text-2xl font-normal">History</p>
-          <div className="flex flex-col flex-wrap justify-center gap-2 rounded-lg bg-white px-4 py-1 shadow-lg">
-            {[...Array(3)].map((_, index) => {
-              const randomDate = new Date(
-                +new Date() - Math.floor(Math.random() * 10000000000),
-              )
-              return (
-                <div
-                  key={index}
-                  className="flex grow items-center justify-between gap-3 text-pretty"
-                >
-                  <div className="flex items-center gap-2">
-                    <p
-                      id={`report_date_${index}`}
-                      className="my-1 min-w-24 text-right text-sm font-normal text-gray-500"
-                    >
-                      {randomDate.toDateString()}
-                    </p>
-                    <p
-                      id={`report_summary_${index}`}
-                      className="text-md my-1 font-medium text-gray-900"
-                    >
-                      Report commentary {index}
-                    </p>
-                  </div>
-                  <div>
-                    <p
-                      id={`report_user_${index}`}
-                      className="my-1 w-fit rounded bg-gray-100 px-1 text-sm font-normal text-gray-500"
-                    >
-                      Reported by user {index}
-                    </p>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
+        <ReportStatus />
+        <ReportHistory />
       </div>
     </section>
   )
