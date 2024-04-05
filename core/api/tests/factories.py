@@ -1,4 +1,5 @@
 import factory.fuzzy
+from django.contrib.auth import get_user_model
 
 from core.models.business_plan import (
     BusinessPlan,
@@ -39,7 +40,8 @@ from core.models.substance import Substance
 from core.models.time_frame import TimeFrame
 from core.models.usage import ExcludedUsage, Usage
 from core.models.blend import Blend
-from core.models.user import User
+
+User = get_user_model()
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -56,6 +58,7 @@ class UserFactory(factory.django.DjangoModelFactory):
         upper_case=True,
         lower_case=True,
     )
+    user_type = User.UserType.SECRETARIAT
 
 
 class UsageFactory(factory.django.DjangoModelFactory):
@@ -130,6 +133,7 @@ class ExcludedUsageBlendFactory(factory.django.DjangoModelFactory):
 class CountryFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Country
+        django_get_or_create = ("name",)
 
     name = factory.Faker("pystr", max_chars=50)
     abbr = factory.Faker("pystr", max_chars=5)

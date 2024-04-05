@@ -58,8 +58,23 @@ def second_user():
 
 
 @pytest.fixture
+def agency_user():
+    return UserFactory(user_type="agency")
+
+
+@pytest.fixture
+def stakeholder_user():
+    return UserFactory(user_type="stakeholder")
+
+
+@pytest.fixture
 def country_ro():
     return CountryFactory.create(name="Romania")
+
+
+@pytest.fixture
+def country_user(country_ro):
+    return UserFactory(user_type="country_user", country=country_ro)
 
 
 @pytest.fixture

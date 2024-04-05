@@ -35,7 +35,7 @@ from core.models.country_programme_archive import (
 )
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008, W0221, R0915
+# pylint: disable=C8008, W0221, R0915, C0302
 
 
 @pytest.fixture(name="_setup_cp_report_list")
@@ -66,6 +66,32 @@ class TestCPReportList(BaseTest):
         assert len(response.data) == 9
         assert response.data[0]["name"] == "Bulgaria2010"
         assert response.data[8]["name"] == "Romania2012"
+
+    def test_get_cp_report_list_country_user(self, country_user, _setup_cp_report_list):
+        self.client.force_authenticate(user=country_user)
+
+        # get cp reports list
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 3
+        assert response.data[0]["name"] == "Romania2010"
+        assert response.data[2]["name"] == "Romania2012"
+
+    def test_get_cp_report_list_agency(self, agency_user, _setup_cp_report_list):
+        self.client.force_authenticate(user=agency_user)
+
+        # get cp reports list
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 9
+
+    def test_get_cp_report_list_stakeholder(self, stakeholder_user, _setup_cp_report_list):
+        self.client.force_authenticate(user=stakeholder_user)
+
+        # get cp reports list
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 9
 
     def test_get_cp_report_list_country_filter(self, user, _setup_cp_report_list):
         self.client.force_authenticate(user=user)
@@ -156,6 +182,17 @@ class TestCPReportListGroupByYear(BaseTest):
             "Romania",
         ]
 
+    def test_get_cp_report_list_country_user(self, country_user, _setup_cp_report_list):
+        self.client.force_authenticate(user=country_user)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 3
+        assert response.data[0]["id"] == 2010
+        assert [report["country"] for report in response.data[0]["reports"]] == [
+            "Romania",
+        ]
+
     def test_get_cp_report_list_order(self, user, _setup_cp_report_list):
         self.client.force_authenticate(user=user)
 
@@ -186,6 +223,19 @@ class TestCPReportListGroupByCountry(BaseTest):
             2010,
         ]
 
+    def test_get_cp_report_list_country_user(self, country_user, _setup_cp_report_list):
+        self.client.force_authenticate(user=country_user)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 1
+        assert response.data[0]["group"] == "Romania"
+        assert [report["year"] for report in response.data[0]["reports"]] == [
+            2012,
+            2011,
+            2010,
+        ]
+
     def test_get_cp_report_list_order(self, user, _setup_cp_report_list):
         self.client.force_authenticate(user=user)
 
@@ -209,6 +259,16 @@ class TestCPReportStatusUpdate(BaseTest):
 
     def test_without_login(self):
         self.client.force_authenticate(user=None)
+        response = self.client.put(self.url, {"status": "draft"})
+        assert response.status_code == 403
+
+    def test_without_permission_agency(self, agency_user):
+        self.client.force_authenticate(user=agency_user)
+        response = self.client.put(self.url, {"status": "draft"})
+        assert response.status_code == 403
+
+    def test_without_permission_stakeholder(self, stakeholder_user):
+        self.client.force_authenticate(user=stakeholder_user)
         response = self.client.put(self.url, {"status": "draft"})
         assert response.status_code == 403
 
@@ -368,6 +428,20 @@ class TestCPReportCreate(BaseTest):
 
     def test_without_login(self, _setup_new_cp_report_create):
         self.client.force_authenticate(user=None)
+        response = self.client.post(
+            self.url, _setup_new_cp_report_create, format="json"
+        )
+        assert response.status_code == 403
+
+    def test_without_permission_agency(self, agency_user, _setup_new_cp_report_create):
+        self.client.force_authenticate(user=agency_user)
+        response = self.client.post(
+            self.url, _setup_new_cp_report_create, format="json"
+        )
+        assert response.status_code == 403
+
+    def test_without_permission_stakeholder(self, stakeholder_user, _setup_new_cp_report_create):
+        self.client.force_authenticate(user=stakeholder_user)
         response = self.client.post(
             self.url, _setup_new_cp_report_create, format="json"
         )
@@ -594,6 +668,22 @@ class TestCPReportUpdate(BaseTest):
     def test_without_login(self, cp_report_2019):
         self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
         self.client.force_authenticate(user=None)
+        response = self.client.put(
+            self.url, {"id": cp_report_2019.id, "name": "Romania2019"}, format="json"
+        )
+        assert response.status_code == 403
+
+    def test_without_permission_agency(self, agency_user, cp_report_2019):
+        self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
+        self.client.force_authenticate(user=agency_user)
+        response = self.client.put(
+            self.url, {"id": cp_report_2019.id, "name": "Romania2019"}, format="json"
+        )
+        assert response.status_code == 403
+
+    def test_without_permission_stakeholder(self, stakeholder_user, cp_report_2019):
+        self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
+        self.client.force_authenticate(user=stakeholder_user)
         response = self.client.put(
             self.url, {"id": cp_report_2019.id, "name": "Romania2019"}, format="json"
         )
