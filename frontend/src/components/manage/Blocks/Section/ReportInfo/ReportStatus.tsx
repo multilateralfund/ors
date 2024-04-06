@@ -1,9 +1,25 @@
+import { FC } from 'react'
+
 import Checkbox from '@mui/material/Checkbox'
 import FormControl from '@mui/material/FormControl'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import FormGroup from '@mui/material/FormGroup'
 
-const ReportStatus = () => {
+interface ReportStatusProps {
+  isEdit: boolean
+  onSectionCheckChange: (section: string, isChecked: boolean) => void
+  sectionsChecked: Record<string, boolean>
+}
+
+const ReportStatus: FC<ReportStatusProps> = ({
+  isEdit,
+  onSectionCheckChange,
+  sectionsChecked,
+}) => {
+  const handleSectionCheckChange = (section: string, isChecked: boolean) => {
+    onSectionCheckChange(section, isChecked)
+  }
+
   return (
     <div className="flex flex-wrap gap-4">
       <FormControl
@@ -21,40 +37,38 @@ const ReportStatus = () => {
           />
         </FormGroup>
       </FormControl>
+
       <FormControl
         className="inline-flex flex-col"
         component="fieldset"
         fullWidth={false}
         variant="standard"
       >
-        <legend className="mb-3 text-2xl font-normal">Sections reported</legend>
-        <FormGroup className="rounded-lg bg-white px-4 py-1 shadow-lg" row>
-          <FormControlLabel
-            color="primary"
-            control={<Checkbox size="small" />}
-            label="Section A"
-          />
-          <FormControlLabel
-            control={<Checkbox size="small" />}
-            label="Section B"
-          />
-          <FormControlLabel
-            control={<Checkbox size="small" />}
-            label="Section C"
-          />
-          <FormControlLabel
-            control={<Checkbox size="small" />}
-            label="Section D"
-          />
-          <FormControlLabel
-            control={<Checkbox size="small" />}
-            label="Section E"
-          />
-          <FormControlLabel
-            control={<Checkbox size="small" />}
-            label="Section F"
-          />
-        </FormGroup>
+        {Object.keys(sectionsChecked).length > 0 && (
+          <>
+            <legend className="mb-3 text-2xl font-normal">
+              Sections reported
+            </legend>
+            <FormGroup className="rounded-lg bg-white px-4 py-1 shadow-lg" row>
+              {Object.entries(sectionsChecked).map(([section, checked]) => (
+                <FormControlLabel
+                  key={section}
+                  label={`Section ${section.slice(-1).toUpperCase()}`}
+                  control={
+                    <Checkbox
+                      checked={checked}
+                      disabled={!isEdit}
+                      size="small"
+                      onChange={(event) =>
+                        handleSectionCheckChange(section, event.target.checked)
+                      }
+                    />
+                  }
+                />
+              ))}
+            </FormGroup>
+          </>
+        )}
       </FormControl>
     </div>
   )

@@ -1,39 +1,14 @@
 import Typography from '@mui/material/Typography'
 
-import ReportHistory from "@ors/components/manage/Blocks/Section/ReportInfo/ReportHistory";
-import ReportStatus from "@ors/components/manage/Blocks/Section/ReportInfo/ReportStatus";
+import ReportHistory from '@ors/components/manage/Blocks/Section/ReportInfo/ReportHistory'
+import ReportStatus from '@ors/components/manage/Blocks/Section/ReportInfo/ReportStatus'
+import SimpleField from "@ors/components/manage/Blocks/Section/ReportInfo/SimpleField";
 import { useStore } from '@ors/store'
 
 import { IoDocumentTextOutline } from 'react-icons/io5'
 
-const SimpleField = ({
-  id,
-  className,
-  data,
-  hasName,
-  label,
-}: {
-  className?: string
-  data: string
-  hasName?: boolean
-  id: string
-  label: string
-}) => {
-  return (
-    <div className={className}>
-      <label className="block text-lg font-normal text-gray-900" htmlFor={id}>
-        {label}
-      </label>
-      <p className="my-0 text-xl font-semibold">{data}</p>
-      {hasName && (
-        <input id={id} name={id} type="text" value={data} hidden readOnly />
-      )}
-    </div>
-  )
-}
-
 const ReportInfoView = (props: any) => {
-  const { report, section } = props
+  const { onSectionCheckChange, report, section, sectionsChecked } = props
   const user = useStore((state) => state.user)
 
   return (
@@ -79,7 +54,11 @@ const ReportInfoView = (props: any) => {
       </div>
 
       <div className="flex flex-col rounded-lg bg-gray-100 p-4">
-        <ReportStatus />
+        <ReportStatus
+          isEdit={false}
+          sectionsChecked={sectionsChecked}
+          onSectionCheckChange={onSectionCheckChange}
+        />
         <ReportHistory />
       </div>
     </section>

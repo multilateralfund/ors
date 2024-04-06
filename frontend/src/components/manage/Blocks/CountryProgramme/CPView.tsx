@@ -147,6 +147,22 @@ function CPView(props: { archive?: boolean }) {
   const { report } = useStore((state) => state.cp_reports)
   const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
   const [renderedSections, setRenderedSections] = useState<number[]>([])
+  // Take data from report.data and set it to sectionsChecked
+  const [sectionsChecked, setSectionsChecked] = useState({
+    section_a: false,
+    section_b: false,
+    section_c: false,
+    section_d: false,
+    section_e: false,
+    section_f: false,
+  })
+
+  const handleSectionCheckChange = (section: any, isChecked: any) => {
+    setSectionsChecked((prevState) => ({
+      ...prevState,
+      [section]: isChecked,
+    }))
+  }
 
   const variant = useMemo(() => {
     if (!report.data) return null
@@ -244,6 +260,7 @@ function CPView(props: { archive?: boolean }) {
                     emptyForm={report.emptyForm.data || {}}
                     report={report.data}
                     section={section}
+                    sectionsChecked={sectionsChecked}
                     variant={variant}
                     TableProps={{
                       ...TableProps,
@@ -251,6 +268,7 @@ function CPView(props: { archive?: boolean }) {
                       report,
                       section,
                     }}
+                    onSectionCheckChange={handleSectionCheckChange}
                   />
                 </CPSectionWrapper>
               </FootnotesProvider>
@@ -297,6 +315,7 @@ export default function CPViewWrapper(props: { iso3: string; year: number }) {
         active={!report.error && report.loading}
       />
     )
+
 
   return <CPView />
 }
