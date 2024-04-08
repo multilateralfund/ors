@@ -285,6 +285,12 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
             )
         AdmRecordArchive.objects.bulk_create(adm_records, batch_size=1000)
 
+    def check_readonly_fields(self, serializer, current_obj):
+        return (
+            serializer.initial_data["country_id"] != current_obj.country_id
+            or serializer.initial_data["year"] != current_obj.year
+        )
+
     @transaction.atomic
     def put(self, request, *args, **kwargs):
         current_obj = self.get_object()
@@ -296,12 +302,11 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
         serializer = CPReportCreateSerializer(
             data=request.data, context={"user": request.user}
         )
-        if not serializer.is_valid():
+        if not serializer.is_valid() or self.check_readonly_fields(
+            serializer, current_obj
+        ):
             custom_errors = self.customize_errors(serializer.errors)
             return Response(custom_errors, status=status.HTTP_400_BAD_REQUEST)
-        # do not let the user update the country and the year
-        serializer.initial_data["country_id"] = current_obj.country_id
-        serializer.initial_data["year"] = current_obj.year
 
         self.perform_create(serializer)
         # update version number
