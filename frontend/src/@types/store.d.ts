@@ -99,17 +99,6 @@ export interface CommonSlice {
   settings: SliceData<Settings>
 }
 
-export interface CPSectionsReportedSlice {
-  section_a: boolean;
-  section_b: boolean;
-  section_c: boolean;
-  section_d: boolean;
-  section_e: boolean;
-  section_f: boolean;
-  setSectionChecked: (section: string, isChecked: boolean) => void
-}
-
-
 // Store state
 export type StoreState = {
   businessPlans: BusinessPlanSlice
@@ -118,7 +107,6 @@ export type StoreState = {
   connection: null | string
   cp_current_tab: CPCurrentTabSlice
   cp_reports: CPReportsSlice
-  cp_sections_reported: CPSectionsReportedSlice
   header: HeaderSlice
   i18n: I18nSlice
   internalError: any
