@@ -12,7 +12,6 @@ import {
   CPBaseForm,
   PassedCPCreateTableProps,
 } from '@ors/components/manage/Blocks/CountryProgramme/CPCreate'
-import SectionReportedSelect from '@ors/components/manage/Blocks/Section/SectionReportedSelect'
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
@@ -119,16 +118,11 @@ export default function SectionBCreate(props: {
     TableProps,
     emptyForm,
     form,
-    onSectionCheckChange,
-    sectionsChecked,
     setForm,
     variant,
   } = props
 
   const newNode = useRef<RowNode>()
-
-  const sectionName = 'reported_section_b'
-  const isSectionChecked = sectionsChecked[sectionName]
 
   const [createdBlends, setCreatedBlends] = useState<Array<any>>([])
 
@@ -227,11 +221,6 @@ export default function SectionBCreate(props: {
 
   return (
     <>
-      <SectionReportedSelect
-        isSectionChecked={isSectionChecked}
-        sectionName={sectionName}
-        onSectionCheckChange={onSectionCheckChange}
-      />
       <Table
         {...TableProps}
         className="mb-4"

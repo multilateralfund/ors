@@ -119,8 +119,8 @@ const ReportInfoCreate = (props: any) => {
           />
         </div>
         <div className="grid gap-6 md:grid-cols-4">
-          <div className="items-center md:col-span-3">
-            <div>
+          <div className="items-center md:col-span-3 w-full h-full">
+            <div className="h-full flex flex-col justify-end">
               <label
                 className="mb-2 block text-lg font-normal text-gray-900"
                 htmlFor={isEdit ? undefined : 'country'}

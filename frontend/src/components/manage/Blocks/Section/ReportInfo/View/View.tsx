@@ -11,6 +11,8 @@ const ReportInfoView = (props: any) => {
   const { report, section } = props
   const user = useStore((state) => state.user)
 
+  console.log(report)
+
   return (
     <section className="grid items-start gap-4 md:auto-rows-auto md:grid-cols-2">
       <Typography className="md:col-span-2" component="h2" variant="h6">
@@ -28,12 +30,12 @@ const ReportInfoView = (props: any) => {
           />
           <SimpleField
             id="name_reporting_officer"
-            data={user.data.username}
+            data={report.reporting_entry}
             label="Name of reporting officer"
           />
           <SimpleField
             id="email_reporting_officer"
-            data={user.data.email}
+            data={report.reporting_email}
             label="Email of reporting officer"
           />
           <SimpleField id="country" data={report.country} label="Country" />

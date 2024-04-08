@@ -16,7 +16,7 @@ const SimpleInput = ({
   type: string
 }) => {
   return (
-    <div>
+    <div className="flex flex-col h-full justify-end">
       <label
         className="mb-2 block text-lg font-normal text-gray-900"
         htmlFor={id}

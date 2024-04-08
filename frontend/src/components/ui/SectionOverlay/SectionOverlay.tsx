@@ -1,6 +1,6 @@
 const SectionOverlay = () => {
   return (
-    <div className="absolute inset-0 bg-black opacity-30 z-50"></div>
+    <div className="absolute inset-0 bg-gray-100 opacity-70 z-50"></div>
   );
 };
 

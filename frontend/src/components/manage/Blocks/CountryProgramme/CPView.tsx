@@ -256,7 +256,9 @@ function CPView(props: { archive?: boolean }) {
                       section,
                     }}
                   />
-                  {!isSectionChecked && <SectionOverlay />}
+                  {!isSectionChecked && variant?.model === 'V' ? (
+                    <SectionOverlay />
+                  ) : null}
                 </CPSectionWrapper>
               </FootnotesProvider>
             </div>

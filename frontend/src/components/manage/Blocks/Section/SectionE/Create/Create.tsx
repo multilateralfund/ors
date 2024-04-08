@@ -4,7 +4,6 @@ import { Alert } from '@mui/material'
 import { RowNode } from 'ag-grid-community'
 import { findIndex, last } from 'lodash'
 
-import SectionReportedSelect from '@ors/components/manage/Blocks/Section/SectionReportedSelect'
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
@@ -14,15 +13,11 @@ import useGridOptions from './schema'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export default function SectionECreate(props: any) {
-  const { TableProps, form, onSectionCheckChange, sectionsChecked, setForm } =
-    props
+  const { TableProps, form, setForm } = props
   const newNode = useRef<RowNode>()
   const grid = useRef<any>()
   const newFacilityIndex = useRef(last<any>(form.section_e)?.id + 1 || 1)
   const [initialRowData] = useState(form.section_e)
-
-  const sectionName = 'reported_section_e'
-  const isSectionChecked = sectionsChecked[sectionName]
 
   const pinnedBottomRowData = useMemo(() => {
     return form.section_e.length > 0
@@ -86,11 +81,6 @@ export default function SectionECreate(props: any) {
 
   return (
     <>
-      <SectionReportedSelect
-        isSectionChecked={isSectionChecked}
-        sectionName={sectionName}
-        onSectionCheckChange={onSectionCheckChange}
-      />
       <Table
         {...TableProps}
         className="mb-4"

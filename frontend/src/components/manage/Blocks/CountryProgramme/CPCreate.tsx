@@ -23,8 +23,10 @@ import { useSnackbar } from 'notistack'
 
 import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
 
+import SectionReportedSelect from '@ors/components/manage/Blocks/Section/SectionReportedSelect'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Link from '@ors/components/ui/Link/Link'
+import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
 import api, { getResults } from '@ors/helpers/Api/Api'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
@@ -575,6 +577,11 @@ const CPCreate: React.FC = () => {
           )}
           {sections.map((section, index) => {
             if (!includes(renderedSections, index)) return null
+            const sectionName = `reported_${section.id}`
+            const isSectionChecked: boolean =
+              section.id === 'report_info' ||
+              sectionsChecked[sectionName] ||
+              false
             const Section = section.component
             return (
               <div
@@ -587,29 +594,41 @@ const CPCreate: React.FC = () => {
                 aria-labelledby={section.id}
                 role="tabpanel"
               >
-                <FootnotesProvider>
-                  <Section
-                    Section={get(Sections, section.id)}
-                    emptyForm={report.emptyForm.data || {}}
-                    errors={errors}
-                    fieldProps={fieldProps}
-                    form={form}
-                    isCreate={true}
-                    report={report.data}
-                    section={section}
+                {section.id !== 'report_info' && (
+                  <SectionReportedSelect
+                    sectionName={sectionName}
                     sectionsChecked={sectionsChecked}
-                    setForm={setForm}
-                    variant={variant}
-                    TableProps={{
-                      ...TableProps,
-                      context: { section, variant },
-                      errors: errors[section.id],
-                      report,
-                      section,
-                    }}
                     onSectionCheckChange={onSectionCheckChange}
                   />
-                </FootnotesProvider>
+                )}
+                <div className="relative">
+                  <FootnotesProvider>
+                    <Section
+                      Section={get(Sections, section.id)}
+                      emptyForm={report.emptyForm.data || {}}
+                      errors={errors}
+                      fieldProps={fieldProps}
+                      form={form}
+                      isCreate={true}
+                      report={report.data}
+                      section={section}
+                      sectionsChecked={sectionsChecked}
+                      setForm={setForm}
+                      variant={variant}
+                      TableProps={{
+                        ...TableProps,
+                        context: { section, variant },
+                        errors: errors[section.id],
+                        report,
+                        section,
+                      }}
+                      onSectionCheckChange={onSectionCheckChange}
+                    />
+                    {!isSectionChecked && variant?.model === 'V' ? (
+                      <SectionOverlay />
+                    ) : null}
+                  </FootnotesProvider>
+                </div>
               </div>
             )
           })}
