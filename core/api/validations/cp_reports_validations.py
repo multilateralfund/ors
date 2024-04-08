@@ -4,7 +4,31 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import ValidationError
 from rest_framework import serializers
 
+from core.models.blend import Blend
 from core.models.substance import Substance
+from core.models.usage import Usage
+
+
+def eliminate_used_excluded_usages(section_records):
+    """
+    Eliminate used and excluded usages from the section records
+
+    @param section_records: list of dict
+    @return updated section records
+    """
+    for record in section_records:
+        chemical = get_chemical_for_record(record)
+        if not chemical:
+            return []
+        excluded_usages = chemical.excluded_usages.values_list(
+            "usage_id", flat=True
+        ).all()
+        record["record_usages"] = [
+            usage
+            for usage in record["record_usages"]
+            if usage["usage_id"] not in excluded_usages
+        ]
+    return section_records
 
 
 def validate_cp_report(attrs):
@@ -24,7 +48,12 @@ def validate_cp_report(attrs):
     errors_dict = {f"section_{key}": value for key, value in errors.items() if value}
     if errors_dict:
         raise ValidationError(errors_dict)
-    
+
+    # eliminate used excluded usages
+    attrs["section_a"] = eliminate_used_excluded_usages(attrs.get("section_a"))
+    attrs["section_b"] = eliminate_used_excluded_usages(attrs.get("section_b"))
+    return attrs
+
 
 def format_error_dict(error_dict):
     """
@@ -38,13 +67,9 @@ def format_error_dict(error_dict):
     """
     error_list = []
     for row_id, errors in error_dict.items():
-        error_list.append(
-            {
-                "row_id": row_id,
-                "errors": errors
-            }
-        )
+        error_list.append({"row_id": row_id, "errors": errors})
     return error_list
+
 
 def validate_quantity_sum(record):
     """
@@ -61,6 +86,25 @@ def validate_quantity_sum(record):
             f"Please provide an explanation in the remarks field."
         )
 
+
+def get_chemical_for_record(record):
+    """
+    Get chemical for the record
+
+    @param record: dict
+    @return: Substance or Blend
+    """
+    substance_id = record.get("substance_id")
+    blend_id = record.get("blend_id")
+    if substance_id:
+        return Substance.objects.prefetch_related("excluded_usages").get(
+            id=substance_id
+        )
+    if blend_id:
+        return Blend.objects.prefetch_related("excluded_usages").get(id=blend_id)
+    return None
+
+
 def validate_section_a(section_records):
     """
     Validate section A records
@@ -74,17 +118,44 @@ def validate_section_a(section_records):
     if not section_records:
         return
     error_dict = {}
+
+    methil_bromide = Substance.objects.filter(name__icontains="methyl bromide").first()
+    methil_bromide_usages = list(
+        Usage.objects.filter(full_name__icontains="methyl bromide")
+        .values_list("id", flat=True)
+        .all()
+    )
+
     # validate usages_sum
     for record in section_records:
         row_id = record.get("row_id")
         try:
             validate_quantity_sum(record)
         except ValidationError as e:
-            error_dict[row_id]= {
-                    "imports": e.detail,
-                    "export": e.detail,
-                    "production": e.detail,
-                }
+            error_dict[row_id] = {
+                "imports": e.detail,
+                "export": e.detail,
+                "production": e.detail,
+            }
+
+        # if any of the 2 cells for "Annex E Group I - Methyl Bromide" <->
+        # "Methyl bromide - QPS" or "Methyl bromide - non QPS" are filled in,
+        # then the corresponding row has to have text in the column "Remarks"
+        if methil_bromide and record.get("substance_id") == methil_bromide.id:
+            mb_quantity = sum(
+                [
+                    usage["quantity"]
+                    for usage in record.get("record_usages", [])
+                    if usage["usage_id"] in methil_bromide_usages
+                ]
+            )
+            if mb_quantity > 0 and not record.get("remarks"):
+                if row_id not in error_dict:
+                    error_dict[row_id] = {}
+                error_dict[row_id]["remarks"] = ValidationError(
+                    _("Please provide an explanation for methyl bromide consumption.")
+                ).detail
+
     error_list = format_error_dict(error_dict)
     return error_list
 
