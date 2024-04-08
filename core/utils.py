@@ -10,6 +10,9 @@ IMPORT_DB_MAX_YEAR = 2018
 # we only have data for section A
 IMPORT_DB_OLDEST_MAX_YEAR = 2004
 
+# the min year for the cp reports to be validated
+VALIDATION_MIN_YEAR = 2023
+
 
 def get_meta_project_code(country, cluster, serial_number=None):
     """

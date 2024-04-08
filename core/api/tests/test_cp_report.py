@@ -856,6 +856,7 @@ class TestCPReportUpdate(BaseTest):
         self.client.force_authenticate(user=user)
 
         data = _setup_old_cp_report_create
+        data["year"] = cp_report_2005.year
         data["name"] = "Komorebi"
 
         response = self.client.put(self.url, data, format="json")
@@ -869,6 +870,7 @@ class TestCPReportUpdate(BaseTest):
 
         # update again
         data = _setup_old_cp_report_create
+        data["year"] = cp_report_2005.year
         data["section_a"][0]["record_usages"][0]["quantity"] = 42.0
         data["section_c"][0]["remarks"] = "Sunlight leaking through trees"
         data["adm_b"][0]["value_text"] = "Lumina care se filtrează printre copaci"
@@ -944,6 +946,19 @@ class TestCPReportUpdate(BaseTest):
         response = self.client.put(self.url, data, format="json")
         assert response.status_code == 400
         assert "country_id" in response.data
+
+        # check no archive is created
+        assert CPReportArchive.objects.count() == 0
+
+    def test_update_cp_report_invalid_year(
+        self, user, _setup_new_cp_report_create, cp_report_2019
+    ):
+        self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
+        self.client.force_authenticate(user=user)
+        data = _setup_new_cp_report_create
+        data["year"] = _setup_new_cp_report_create["year"] - 1
+        response = self.client.put(self.url, data, format="json")
+        assert response.status_code == 400
 
         # check no archive is created
         assert CPReportArchive.objects.count() == 0
