@@ -52,8 +52,11 @@ class BaseCPRowSerializer(serializers.ModelSerializer):
                 "errors": e.detail,
             }
             raise ValidationError(raport_error) from e
-        internal_value.pop("row_id", None)
         return internal_value
+    
+    def save(self, **kwargs):
+        self.validated_data.pop("row_id", None)
+        return super().save(**kwargs)
 
 
 class BaseCPWChemicalSerializer(BaseCPRowSerializer):
