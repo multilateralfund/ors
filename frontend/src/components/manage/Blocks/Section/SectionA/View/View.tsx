@@ -2,7 +2,7 @@ import { CPReport } from '@ors/types/api_country-programme_records'
 
 import { useMemo, useRef, useState } from 'react'
 
-import { Alert } from '@mui/material'
+import { Alert, Checkbox, FormControlLabel } from '@mui/material'
 import { each, includes, union } from 'lodash'
 
 import components from '@ors/config/Table/components'
@@ -21,6 +21,7 @@ export type RowData = DeserializedDataA & {
   display_name?: string
   field?: string
   group?: string
+  id?: number
   row_id: string
   rowType: string
   tooltip?: boolean
@@ -75,6 +76,7 @@ export default function SectionAView(props: any) {
       usages: emptyForm.usage_columns?.section_a || [],
     })
   const grid = useRef<any>()
+  const [showEmptyRows, setShowEmptyRows] = useState(true)
   const [rowData] = useState(() => getRowData(report))
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
   const { setValue: setTableDataValue, value: tableDataValue } =
@@ -102,13 +104,26 @@ export default function SectionAView(props: any) {
 
   return (
     <>
-      {includes(['IV', 'V'], variant.model) && (
-        <TableDataSelector
-          className="py-4"
-          changeHandler={(_, value) => setTableDataValue(value)}
-          value={tableDataValue}
-        />
-      )}
+      <div className="flex justify-between">
+        {includes(['IV', 'V'], variant.model) && (
+          <TableDataSelector
+            className="py-4"
+            changeHandler={(_, value) => setTableDataValue(value)}
+            value={tableDataValue}
+          />
+        )}
+        {includes(['V'], variant.model) && (
+          <FormControlLabel
+            label="Show empty rows"
+            control={
+              <Checkbox
+                checked={showEmptyRows}
+                onChange={(event) => setShowEmptyRows(event.target.checked)}
+              />
+            }
+          />
+        )}
+      </div>
       <Table
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
@@ -117,7 +132,7 @@ export default function SectionAView(props: any) {
         gridRef={grid}
         headerDepth={3}
         pinnedBottomRowData={pinnedBottomRowData}
-        rowData={rowData}
+        rowData={showEmptyRows ? rowData : rowData.filter((row) => row.id !== 0)}
       />
       <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
         <Footnotes />
