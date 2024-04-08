@@ -3,6 +3,8 @@ import math
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
+from core.models.substance import Substance
+
 
 def validate_cp_report(attrs):
     validate_section_a(attrs.get("section_a"))
@@ -50,13 +52,31 @@ def validate_section_d(
         return
 
     hfc_substances_produced = False
+    section_a_substances = [
+        row["substance_id"] for row in section_a_values if row.get("substance_id")
+    ]
+    annex_c_substances = Substance.objects.filter(
+        id__in=section_a_substances, group__name="C/I"
+    ).values_list("id", flat=True)
     for row in section_a_values:
-        if row.get("substance_id") and row.get("production", 0) > 0:
+        if (
+            row.get("substance_id") in annex_c_substances
+            and row.get("production", 0) > 0
+        ):
             hfc_substances_produced = True
             break
 
+    section_b_substances = [
+        row["substance_id"] for row in section_b_values if row.get("substance_id")
+    ]
+    annex_f_substances = Substance.objects.filter(
+        id__in=section_b_substances, group__name="F"
+    ).values_list("id", flat=True)
     for row in section_b_values:
-        if row.get("substance_id") and row.get("production", 0) > 0:
+        if (
+            row.get("substance_id") in annex_f_substances
+            and row.get("production", 0) > 0
+        ):
             hfc_substances_produced = True
             break
 
@@ -82,9 +102,7 @@ def validate_section_d(
 
     abs_tol = 0.1
     if (
-        not math.isclose(
-            values[0].get("all_uses", 0), sum_all_uses, abs_tol=abs_tol
-        )
+        not math.isclose(values[0].get("all_uses", 0), sum_all_uses, abs_tol=abs_tol)
         or not math.isclose(
             values[0].get("feedstock", 0), sum_feedstock, abs_tol=abs_tol
         )
