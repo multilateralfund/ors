@@ -129,13 +129,12 @@ function CPEdit() {
     section_e: false,
     section_f: false,
   })
-  const handleSectionCheckChange = (section: any, isChecked: any) => {
+  const onSectionCheckChange = (section: any, isChecked: any) => {
     setSectionsChecked((prevState) => ({
       ...prevState,
       [section]: isChecked,
     }))
   }
-  console.log('report', report)
 
   const Sections = {
     section_a: useMakeClassInstance<SectionA>(SectionA, [
@@ -360,7 +359,7 @@ function CPEdit() {
                         report,
                         section,
                       }}
-                      onSectionCheckChange={handleSectionCheckChange}
+                      onSectionCheckChange={onSectionCheckChange}
                     />
                   </CPSectionWrapper>
                 </FootnotesProvider>

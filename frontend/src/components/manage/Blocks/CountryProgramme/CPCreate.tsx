@@ -208,7 +208,6 @@ const CPCreate: React.FC = () => {
   )
   const [currentCountry, setCurrentCountry] = useState<Country | null>(null)
 
-  console.log('report', report)
   // Take data from report.data and set it to sectionsChecked
   const [sectionsChecked, setSectionsChecked] = useState({
     section_a: false,
@@ -219,7 +218,7 @@ const CPCreate: React.FC = () => {
     section_f: false,
   })
 
-  const handleSectionCheckChange = (section: any, isChecked: any) => {
+  const onSectionCheckChange = (section: string, isChecked: boolean) => {
     setSectionsChecked((prevState) => ({
       ...prevState,
       [section]: isChecked,
@@ -531,29 +530,8 @@ const CPCreate: React.FC = () => {
           ))}
         </Tabs>
         <CPSectionWrapper>
-          <div className="mb-4 grid grid-cols-1 gap-x-4 md:grid-cols-2 lg:grid-cols-3">
-            {/*<Field*/}
-            {/*  id="country"*/}
-            {/*  name="country_id"*/}
-            {/*  FieldProps={{ className: 'mb-0' }}*/}
-            {/*  disabled={existingReports.loading}*/}
-            {/*  options={countries}*/}
-            {/*  value={form.country}*/}
-            {/*  widget="autocomplete"*/}
-            {/*  Input={{*/}
-            {/*    error: !!errors.country_id,*/}
-            {/*    helperText: errors.country_id?.general_error,*/}
-            {/*    label: 'Country',*/}
-            {/*  }}*/}
-            {/*  onChange={(_event, value) => {*/}
-            {/*    const country = value as WidgetCountry*/}
-            {/*    setForm({ ...form, country })*/}
-            {/*    setCurrentCountry(*/}
-            {/*      all_countries.filter((c) => c.id == country.id)[0],*/}
-            {/*    )*/}
-            {/*  }}*/}
-            {/*/>*/}
-            {!!existingReports.data?.length && currentCountry && (
+          {!!existingReports.data?.length && currentCountry && (
+            <div className="mb-4 grid grid-cols-1 gap-x-4 md:grid-cols-2 lg:grid-cols-3">
               <div className="flex items-center">
                 <Tooltip
                   placement="top"
@@ -569,8 +547,8 @@ const CPCreate: React.FC = () => {
                   </Typography>
                 </Tooltip>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {!!Object.keys(errors).length && (
             <Alert className="mb-4" severity="error">
@@ -614,7 +592,7 @@ const CPCreate: React.FC = () => {
                       report,
                       section,
                     }}
-                    onSectionCheckChange={handleSectionCheckChange}
+                    onSectionCheckChange={onSectionCheckChange}
                   />
                 </FootnotesProvider>
               </div>
