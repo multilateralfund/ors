@@ -136,3 +136,18 @@ class CPReportFormatRow(AbstractWChemical):
     sort_order = models.FloatField(null=True, blank=True)
 
     objects = BaseWTimeFrameManager()
+
+
+class CPReportSections(models.Model):
+    country_programme_report = models.OneToOneField(
+        "CPReport",
+        on_delete=models.CASCADE,
+        related_name="cpreportedsections",
+    )
+
+    reported_section_a = models.BooleanField(default=False)
+    reported_section_b = models.BooleanField(default=False)
+    reported_section_c = models.BooleanField(default=False)
+    reported_section_d = models.BooleanField(default=False)
+    reported_section_e = models.BooleanField(default=False)
+    reported_section_f = models.BooleanField(default=False)

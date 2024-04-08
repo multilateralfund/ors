@@ -8,12 +8,32 @@ from core.api.serializers.cp_price import CPPricesSerializer
 from core.api.serializers.cp_record import CPRecordSerializer
 from core.api.validations.cp_reports_validations import validate_cp_report
 from core.models.country import Country
-from core.models.country_programme import CPReport
+from core.models.country_programme import CPReport, CPReportSections
 from core.models.country_programme_archive import CPReportArchive
 from core.utils import IMPORT_DB_MAX_YEAR, VALIDATION_MIN_YEAR
 
 
 # pylint: disable=W0223
+
+class CPReportSectionsSerializer(serializers.ModelSerializer):
+    country_programme_report_id = serializers.PrimaryKeyRelatedField(
+        required=False,
+        queryset=CPReport.objects.all().values_list("id", flat=True),
+        write_only=True,
+    )
+
+    class Meta:
+        fields = [
+            "country_programme_report_id",
+            "reported_section_a",
+            "reported_section_b",
+            "reported_section_c",
+            "reported_section_d",
+            "reported_section_e",
+            "reported_section_f",
+        ]
+        #read_only_fields = ["country_programme_report_id"]
+        model = CPReportSections
 
 
 class CPReportBaseSerializer(serializers.ModelSerializer):
@@ -33,6 +53,9 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
     last_updated_by = serializers.StringRelatedField(
         read_only=True, source="last_updated_by.username"
     )
+    reported_sections = CPReportSectionsSerializer(
+        many=False, required=False, source="cpreportedsections"
+    )
 
     class Meta:
         fields = [
@@ -47,6 +70,9 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
             "created_at",
             "created_by",
             "last_updated_by",
+            "reporting_entry",
+            "reporting_email",
+            "reported_sections",
             "event_description",
         ]
 
@@ -96,6 +122,7 @@ class CPReportCreateSerializer(serializers.Serializer):
         choices=CPReport.CPReportStatus.choices, required=False
     )
     event_description = serializers.CharField(required=False)
+    reported_sections = CPReportSectionsSerializer(many=False, required=False)
     section_a = CPRecordSerializer(many=True, required=False)
     section_b = CPRecordSerializer(many=True, required=False)
     section_c = CPPricesSerializer(many=True, required=False)
@@ -115,6 +142,7 @@ class CPReportCreateSerializer(serializers.Serializer):
             "event_description",
             "status",
             "country_id",
+            "reported_sections",
             "section_a",
             "section_b",
             "section_c",
@@ -177,6 +205,15 @@ class CPReportCreateSerializer(serializers.Serializer):
             record_serializer.is_valid(raise_exception=True)
             record_serializer.save()
 
+    def _create_reported_sections(self, cp_report, reported_sections_data):
+        reported_sections_data["country_programme_report_id"] = cp_report.id
+        print(f"YES, WE GOT HERE: {cp_report.id}")
+        reported_sections_serializer = CPReportSectionsSerializer(
+            data=reported_sections_data
+        )
+        reported_sections_serializer.is_valid(raise_exception=True)
+        reported_sections_serializer.save()
+
     @transaction.atomic
     def create(self, validated_data):
         cp_report_data = {
@@ -211,5 +248,11 @@ class CPReportCreateSerializer(serializers.Serializer):
             self._create_adm_records(cp_report, validated_data.get("adm_b", []), "B")
             self._create_adm_records(cp_report, validated_data.get("adm_c", []), "C")
             self._create_adm_records(cp_report, validated_data.get("adm_d", []), "D")
+
+
+        # TODO: Neeed to make sure this happens ONLY for the latest reporting format !!!
+        self._create_reported_sections(
+            cp_report, validated_data.get("reported_sections", {})
+        )
 
         return cp_report
