@@ -120,6 +120,22 @@ const TableProps = {
 function CPEdit() {
   const tabsEl = React.useRef<HTMLDivElement>(null)
   const { report } = useStore((state) => state.cp_reports)
+  // Take data from report.data and set it to sectionsChecked
+  const [sectionsChecked, setSectionsChecked] = useState({
+    section_a: false,
+    section_b: false,
+    section_c: false,
+    section_d: false,
+    section_e: false,
+    section_f: false,
+  })
+  const handleSectionCheckChange = (section: any, isChecked: any) => {
+    setSectionsChecked((prevState) => ({
+      ...prevState,
+      [section]: isChecked,
+    }))
+  }
+  console.log('report', report)
 
   const Sections = {
     section_a: useMakeClassInstance<SectionA>(SectionA, [
@@ -334,6 +350,7 @@ function CPEdit() {
                       isEdit={true}
                       report={report.data}
                       section={section}
+                      sectionsChecked={sectionsChecked}
                       setForm={setForm}
                       variant={variant}
                       TableProps={{
@@ -343,6 +360,7 @@ function CPEdit() {
                         report,
                         section,
                       }}
+                      onSectionCheckChange={handleSectionCheckChange}
                     />
                   </CPSectionWrapper>
                 </FootnotesProvider>

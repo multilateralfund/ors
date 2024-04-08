@@ -77,7 +77,16 @@ const FileInput: React.FC = () => {
 }
 
 const ReportInfoCreate = (props: any) => {
-  const { fieldProps, form, isEdit, report, section } = props
+  const {
+    fieldProps,
+    form,
+    isCreate,
+    isEdit,
+    onSectionCheckChange,
+    report,
+    section,
+    sectionsChecked,
+  } = props
   const user = useStore((state) => state.user)
 
   return (
@@ -107,18 +116,15 @@ const ReportInfoCreate = (props: any) => {
             <div>
               <label
                 className="mb-2 block text-lg font-normal text-gray-900"
-                htmlFor="country"
+                htmlFor={isEdit ? undefined : 'country'}
               >
                 Country
               </label>
               <Field
                 {...fieldProps}
-                FieldProps={{ className: 'mb-0 bg-white' }}
+                FieldProps={{ className: 'mb-0 ReportInfo' }}
                 defaultValue={isEdit ? report.country : null}
                 disabled={isEdit}
-                sx={{
-                  backgroundColor: 'white',
-                }}
               />
             </div>
           </div>
@@ -135,9 +141,10 @@ const ReportInfoCreate = (props: any) => {
 
       <div className="flex flex-col rounded-lg bg-gray-100 p-4">
         <ReportStatus
+          isCreate={isCreate}
           isEdit={isEdit}
-          sectionsChecked={{}}
-          onSectionCheckChange={() => {}}
+          sectionsChecked={sectionsChecked}
+          onSectionCheckChange={onSectionCheckChange}
         />
         {isEdit && <ReportHistory />}
       </div>

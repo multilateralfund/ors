@@ -1,3 +1,11 @@
 .MuiAutocomplete-inputRoot fieldset {
   @apply border-primary;
 }
+
+.ReportInfo .MuiAutocomplete-inputRoot {
+  @apply bg-white rounded-lg border border-gray-400 h-10;
+}
+
+.ReportInfo .Mui-disabled:first-of-type {
+  @apply bg-white rounded-lg border border-gray-400 h-10;
+}

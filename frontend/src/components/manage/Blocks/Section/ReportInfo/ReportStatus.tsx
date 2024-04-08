@@ -6,12 +6,14 @@ import FormControlLabel from '@mui/material/FormControlLabel'
 import FormGroup from '@mui/material/FormGroup'
 
 interface ReportStatusProps {
-  isEdit: boolean
+  isCreate?: boolean
+  isEdit?: boolean
   onSectionCheckChange: (section: string, isChecked: boolean) => void
   sectionsChecked: Record<string, boolean>
 }
 
 const ReportStatus: FC<ReportStatusProps> = ({
+  isCreate,
   isEdit,
   onSectionCheckChange,
   sectionsChecked,
@@ -57,7 +59,7 @@ const ReportStatus: FC<ReportStatusProps> = ({
                   control={
                     <Checkbox
                       checked={checked}
-                      disabled={!isEdit}
+                      disabled={!isEdit && !isCreate}
                       size="small"
                       onChange={(event) =>
                         handleSectionCheckChange(section, event.target.checked)

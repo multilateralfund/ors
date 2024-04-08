@@ -208,6 +208,24 @@ const CPCreate: React.FC = () => {
   )
   const [currentCountry, setCurrentCountry] = useState<Country | null>(null)
 
+  console.log('report', report)
+  // Take data from report.data and set it to sectionsChecked
+  const [sectionsChecked, setSectionsChecked] = useState({
+    section_a: false,
+    section_b: false,
+    section_c: false,
+    section_d: false,
+    section_e: false,
+    section_f: false,
+  })
+
+  const handleSectionCheckChange = (section: any, isChecked: any) => {
+    setSectionsChecked((prevState) => ({
+      ...prevState,
+      [section]: isChecked,
+    }))
+  }
+
   const countries: WidgetCountry[] = useStore((state) => [
     ...getResults(state.common.countries_for_create.data).results.map(
       (country) => ({
@@ -583,8 +601,10 @@ const CPCreate: React.FC = () => {
                     errors={errors}
                     fieldProps={fieldProps}
                     form={form}
+                    isCreate={true}
                     report={report.data}
                     section={section}
+                    sectionsChecked={sectionsChecked}
                     setForm={setForm}
                     variant={variant}
                     TableProps={{
@@ -594,6 +614,7 @@ const CPCreate: React.FC = () => {
                       report,
                       section,
                     }}
+                    onSectionCheckChange={handleSectionCheckChange}
                   />
                 </FootnotesProvider>
               </div>

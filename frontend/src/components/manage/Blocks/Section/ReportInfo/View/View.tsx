@@ -55,7 +55,6 @@ const ReportInfoView = (props: any) => {
 
       <div className="flex flex-col rounded-lg bg-gray-100 p-4">
         <ReportStatus
-          isEdit={false}
           sectionsChecked={sectionsChecked}
           onSectionCheckChange={onSectionCheckChange}
         />

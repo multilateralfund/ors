@@ -147,6 +147,8 @@ function CPView(props: { archive?: boolean }) {
   const { report } = useStore((state) => state.cp_reports)
   const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
   const [renderedSections, setRenderedSections] = useState<number[]>([])
+
+  console.log('report', report)
   // Take data from report.data and set it to sectionsChecked
   const [sectionsChecked, setSectionsChecked] = useState({
     section_a: false,

@@ -13,7 +13,7 @@ const SimpleField = ({
 }) => {
   return (
     <div className={className}>
-      <label className="block text-lg font-normal text-gray-900" htmlFor={id}>
+      <label className="block text-lg font-normal text-gray-900" htmlFor={hasName ? id : undefined}>
         {label}
       </label>
       <p className="my-0 text-xl font-semibold">{data}</p>
