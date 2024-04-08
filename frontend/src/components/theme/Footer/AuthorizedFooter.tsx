@@ -23,11 +23,22 @@ const FooterLinks = () => {
     { label: 'Terms of service', url: makeExternalUrl('/') },
   ]
   return (
-    <div className={cx('flex flex-col lg:flex-row items-center gap-y-8 gap-x-8 font-normal text-xl text-nowrap', robotoCondensed.className)}>
-      {items.map((item) =>
-        <a key={item.label} className="block rounded-full border border-solid border-mlfs-hlYellow px-4 uppercase text-mlfs-hlYellow no-underline hover:bg-black" href={item.url} target="_blank">
+    <div
+      className={cx(
+        'flex flex-col items-center gap-x-8 gap-y-8 text-nowrap text-xl font-normal lg:flex-row',
+        robotoCondensed.className,
+      )}
+    >
+      {items.map((item) => (
+        <a
+          key={item.label}
+          className="block rounded-full border border-solid border-mlfs-hlYellow px-4 uppercase text-mlfs-hlYellow no-underline hover:bg-black"
+          href={item.url}
+          target="_blank"
+        >
           {item.label}
-        </a>)}
+        </a>
+      ))}
     </div>
   )
 }
@@ -40,8 +51,8 @@ export default function Footer() {
         className="flex h-auto w-full items-center rounded-none border-0 bg-mlfs-deepTealShade shadow-none"
       >
         <div className="container w-full">
-          <div className="flex flex-col py-12 md:flex-row items-center justify-center gap-x-72 gap-y-14 md:gap-y-0">
-            <Logo className="min-w-[260px]" variant="white"/>
+          <div className="flex flex-col items-center justify-center gap-x-72 gap-y-14 py-12 md:flex-row md:gap-y-0">
+            <Logo className="min-w-[260px]" variant="white" />
             <FooterLinks />
           </div>
         </div>

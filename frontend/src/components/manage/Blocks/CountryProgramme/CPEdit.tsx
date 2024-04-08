@@ -34,6 +34,7 @@ import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
 import { getSections } from '.'
+import Portal from '../../Utils/Portal'
 import { CPEditHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
 
@@ -45,7 +46,13 @@ function defaults(arr: Array<any>, value: any) {
 }
 
 const TableProps = {
-  Toolbar: ({ enterFullScreen, exitFullScreen, fullScreen, section }: any) => {
+  Toolbar: ({
+    enterFullScreen,
+    exitFullScreen,
+    fullScreen,
+    isActiveSection,
+    section,
+  }: any) => {
     return (
       <div
         className={cx('mb-2 flex', {
@@ -62,41 +69,54 @@ const TableProps = {
         >
           {section.title}
         </Typography>
-        <div className="flex items-center justify-end">
-          {/* {!fullScreen && (
-            <Dropdown color="primary" label={<IoDownloadOutline />} icon>
-              <Dropdown.Item>
-                <div className="flex items-center gap-x-2">
-                  <AiFillFilePdf className="fill-red-700" size={24} />
-                  <span>PDF</span>
-                </div>
-              </Dropdown.Item>
-            </Dropdown>
-          )} */}
-          {section.allowFullScreen && !fullScreen && (
-            <IconButton
-              color="primary"
-              onClick={() => {
-                enterFullScreen()
-              }}
-            >
-              <IoExpand />
-            </IconButton>
-          )}
-          {fullScreen && (
-            <div>
+        <Portal
+          active={isActiveSection && !fullScreen}
+          domNode="sectionToolbar"
+        >
+          <div className="flex items-center justify-end">
+            {/* {!fullScreen && (
+              <Dropdown color="primary" label={<IoDownloadOutline />} icon>
+                <Dropdown.Item>
+                  <div className="flex items-center gap-x-2">
+                    <AiFillFilePdf className="fill-red-700" size={24} />
+                    <span>PDF</span>
+                  </div>
+                </Dropdown.Item>
+              </Dropdown>
+            )} */}
+            {section.allowFullScreen && !fullScreen && (
               <IconButton
-                className="exit-fullscreen not-printable p-2 text-primary"
-                aria-label="exit fullscreen"
+                color="primary"
                 onClick={() => {
-                  exitFullScreen()
+                  enterFullScreen()
                 }}
               >
-                <IoClose size={32} />
+                <div className="flex items-center justify-between gap-x-2 text-base">
+                  <span className="font-medium text-primary">Fullscreen</span>
+                  <IoExpand className="text-xl text-secondary" />
+                </div>
               </IconButton>
-            </div>
-          )}
-        </div>
+            )}
+            {fullScreen && (
+              <div>
+                <IconButton
+                  className="exit-fullscreen not-printable p-2 text-primary"
+                  aria-label="exit fullscreen"
+                  onClick={() => {
+                    exitFullScreen()
+                  }}
+                >
+                  <div className="flex items-center justify-between gap-x-2 text-base">
+                    <span className="font-medium text-primary">
+                      Exit fullscreen
+                    </span>
+                    <IoClose className="text-xl text-secondary" />
+                  </div>
+                </IconButton>
+              </div>
+            )}
+          </div>
+        </Portal>
       </div>
     )
   },
@@ -278,37 +298,40 @@ function CPEdit() {
         setErrors={setErrors}
       />
       <form className="create-submission-form">
-        <Tabs
-          className="scrollable"
-          aria-label="create submission sections"
-          ref={tabsEl}
-          scrollButtons="auto"
-          value={activeTab}
-          variant="scrollable"
-          TabIndicatorProps={{
-            className: 'h-0',
-            style: { transitionDuration: '150ms' },
-          }}
-          onChange={(event: React.SyntheticEvent, index: number) => {
-            setActiveTab(index)
-          }}
-          allowScrollButtonsMobile
-        >
-          {sections.map((section) => (
-            <Tab
-              key={section.id}
-              className={cx('rounded-b-none px-3 py-2', {
-                'MuiTab-error': !isEmpty(errors?.[section.id]),
-              })}
-              aria-controls={section.panelId}
-              label={section.label}
-              classes={{
-                selected:
-                  'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
-              }}
-            />
-          ))}
-        </Tabs>
+        <div className="flex items-center justify-between">
+          <Tabs
+            className="scrollable"
+            aria-label="create submission sections"
+            ref={tabsEl}
+            scrollButtons="auto"
+            value={activeTab}
+            variant="scrollable"
+            TabIndicatorProps={{
+              className: 'h-0',
+              style: { transitionDuration: '150ms' },
+            }}
+            onChange={(event: React.SyntheticEvent, index: number) => {
+              setActiveTab(index)
+            }}
+            allowScrollButtonsMobile
+          >
+            {sections.map((section) => (
+              <Tab
+                key={section.id}
+                className={cx('rounded-b-none px-3 py-2', {
+                  'MuiTab-error': !isEmpty(errors?.[section.id]),
+                })}
+                aria-controls={section.panelId}
+                label={section.label}
+                classes={{
+                  selected:
+                    'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
+                }}
+              />
+            ))}
+          </Tabs>
+          <div id="sectionToolbar"></div>
+        </div>
         {!!report.data &&
           sections.map((section, index) => {
             if (!includes(renderedSections, index)) return null
@@ -339,6 +362,7 @@ function CPEdit() {
                         ...TableProps,
                         context: { section, variant },
                         errors: errors[section.id],
+                        isActiveSection: activeTab == index,
                         report,
                         section,
                       }}
