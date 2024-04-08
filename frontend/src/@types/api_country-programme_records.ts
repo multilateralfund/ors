@@ -6,6 +6,7 @@ type cp_report = {
   final_version_id?: number
   id: number
   name: string
+  reported_sections?: { [key: string]: boolean };
   status: string
   version: number
   year: number

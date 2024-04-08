@@ -2,13 +2,13 @@ import Typography from '@mui/material/Typography'
 
 import ReportHistory from '@ors/components/manage/Blocks/Section/ReportInfo/ReportHistory'
 import ReportStatus from '@ors/components/manage/Blocks/Section/ReportInfo/ReportStatus'
-import SimpleField from "@ors/components/manage/Blocks/Section/ReportInfo/SimpleField";
+import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
 import { useStore } from '@ors/store'
 
 import { IoDocumentTextOutline } from 'react-icons/io5'
 
 const ReportInfoView = (props: any) => {
-  const { onSectionCheckChange, report, section, sectionsChecked } = props
+  const { report, section } = props
   const user = useStore((state) => state.user)
 
   return (
@@ -54,10 +54,7 @@ const ReportInfoView = (props: any) => {
       </div>
 
       <div className="flex flex-col rounded-lg bg-gray-100 p-4">
-        <ReportStatus
-          sectionsChecked={sectionsChecked}
-          onSectionCheckChange={onSectionCheckChange}
-        />
+        <ReportStatus sectionsChecked={report.reported_sections} />
         <ReportHistory />
       </div>
     </section>

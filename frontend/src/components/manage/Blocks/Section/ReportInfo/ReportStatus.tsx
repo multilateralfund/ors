@@ -8,7 +8,7 @@ import FormGroup from '@mui/material/FormGroup'
 interface ReportStatusProps {
   isCreate?: boolean
   isEdit?: boolean
-  onSectionCheckChange: (section: string, isChecked: boolean) => void
+  onSectionCheckChange?: (section: string, isChecked: boolean) => void
   sectionsChecked: Record<string, boolean>
 }
 
@@ -19,7 +19,9 @@ const ReportStatus: FC<ReportStatusProps> = ({
   sectionsChecked,
 }) => {
   const handleSectionCheckChange = (section: string, isChecked: boolean) => {
-    onSectionCheckChange(section, isChecked)
+    if (onSectionCheckChange) {
+      onSectionCheckChange(section, isChecked)
+    }
   }
 
   return (

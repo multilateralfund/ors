@@ -21,6 +21,7 @@ import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
 
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
+import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import useMakeClassInstance from '@ors/hooks/useMakeClassInstance'
@@ -242,7 +243,9 @@ function CPEdit() {
     /* eslint-disable-next-line */
   }, [form])
 
-  const [sectionsChecked, setSectionsChecked] = useState({ ...report.data.reported_sections})
+  const [sectionsChecked, setSectionsChecked] = useState(
+    report.data?.reported_sections || {},
+  )
   const onSectionCheckChange = (section: any, isChecked: any) => {
     setSectionsChecked((prevState: any) => ({
       ...prevState,
@@ -250,7 +253,7 @@ function CPEdit() {
     }))
     setForm({
       ...form,
-      reported_sections: { ...reported_sections, [section]: isChecked },
+      reported_sections: { ...form.reported_sections, [section]: isChecked },
     })
   }
 
@@ -274,6 +277,8 @@ function CPEdit() {
 
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [activeTab])
+
+  console.log(form)
 
   return (
     <>
@@ -323,6 +328,9 @@ function CPEdit() {
         </Tabs>
         {!!report.data &&
           sections.map((section, index) => {
+            const isSectionChecked =
+              section.id === 'report_info' ||
+              report.data?.reported_sections?.[`reported_${section.id}`]
             if (!includes(renderedSections, index)) return null
             const Section: React.FC<any> = section.component
             return (
@@ -358,6 +366,7 @@ function CPEdit() {
                       }}
                       onSectionCheckChange={onSectionCheckChange}
                     />
+                    {!isSectionChecked && <SectionOverlay />}
                   </CPSectionWrapper>
                 </FootnotesProvider>
               </div>

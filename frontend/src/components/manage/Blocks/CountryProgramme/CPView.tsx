@@ -11,6 +11,7 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
+import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
 import { formatApiUrl } from '@ors/helpers/Api/Api'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
@@ -148,24 +149,6 @@ function CPView(props: { archive?: boolean }) {
   const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
   const [renderedSections, setRenderedSections] = useState<number[]>([])
 
-  console.log('report', report)
-  // Take data from report.data and set it to sectionsChecked
-  const [sectionsChecked, setSectionsChecked] = useState({
-    section_a: false,
-    section_b: false,
-    section_c: false,
-    section_d: false,
-    section_e: false,
-    section_f: false,
-  })
-
-  const handleSectionCheckChange = (section: any, isChecked: any) => {
-    setSectionsChecked((prevState) => ({
-      ...prevState,
-      [section]: isChecked,
-    }))
-  }
-
   const variant = useMemo(() => {
     if (!report.data) return null
     return filter(variants, (variant) => {
@@ -243,6 +226,9 @@ function CPView(props: { archive?: boolean }) {
 
       {report.emptyForm.loaded &&
         sections.map((section, index) => {
+          const isSectionChecked =
+            section.id === 'report_info' ||
+            report.data?.reported_sections?.[`reported_${section.id}`]
           if (!includes(renderedSections, index)) return null
           const Section = section.component
           return (
@@ -262,7 +248,6 @@ function CPView(props: { archive?: boolean }) {
                     emptyForm={report.emptyForm.data || {}}
                     report={report.data}
                     section={section}
-                    sectionsChecked={sectionsChecked}
                     variant={variant}
                     TableProps={{
                       ...TableProps,
@@ -270,8 +255,8 @@ function CPView(props: { archive?: boolean }) {
                       report,
                       section,
                     }}
-                    onSectionCheckChange={handleSectionCheckChange}
                   />
+                  {!isSectionChecked && <SectionOverlay />}
                 </CPSectionWrapper>
               </FootnotesProvider>
             </div>
@@ -317,7 +302,6 @@ export default function CPViewWrapper(props: { iso3: string; year: number }) {
         active={!report.error && report.loading}
       />
     )
-
 
   return <CPView />
 }
