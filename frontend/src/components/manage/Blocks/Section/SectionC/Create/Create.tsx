@@ -156,7 +156,7 @@ export default function SectionCCreate(props: {
   } = props
   const newNode = useRef<RowNode>()
 
-  const sectionName = 'section_c'
+  const sectionName = 'reported_section_c'
   const isSectionChecked = sectionsChecked[sectionName]
 
   const substances = useStore(

@@ -98,6 +98,7 @@ export interface PassedCPCreateTableProps extends CPCreateTableProps {
 
 export interface CPBaseForm {
   country: WidgetCountry | null
+  reported_sections: Record<string, boolean>
   section_a: SectionA['data']
   section_b: SectionB['data']
   section_c: SectionC['data']
@@ -208,23 +209,6 @@ const CPCreate: React.FC = () => {
   )
   const [currentCountry, setCurrentCountry] = useState<Country | null>(null)
 
-  // Take data from report.data and set it to sectionsChecked
-  const [sectionsChecked, setSectionsChecked] = useState({
-    section_a: false,
-    section_b: false,
-    section_c: false,
-    section_d: false,
-    section_e: false,
-    section_f: false,
-  })
-
-  const onSectionCheckChange = (section: string, isChecked: boolean) => {
-    setSectionsChecked((prevState) => ({
-      ...prevState,
-      [section]: isChecked,
-    }))
-  }
-
   const countries: WidgetCountry[] = useStore((state) => [
     ...getResults(state.common.countries_for_create.data).results.map(
       (country) => ({
@@ -289,6 +273,14 @@ const CPCreate: React.FC = () => {
   const [currentYear] = useState(new Date().getFullYear() - 1)
   const [form, setForm] = useState<CPBaseForm>({
     country: null,
+    reported_sections: {
+      reported_section_a: false,
+      reported_section_b: false,
+      reported_section_c: false,
+      reported_section_d: false,
+      reported_section_e: false,
+      reported_section_f: false,
+    },
     section_a: Sections.section_a.getData(),
     section_b: Sections.section_b.getData(),
     section_c: Sections.section_c.getData(),
@@ -412,6 +404,29 @@ const CPCreate: React.FC = () => {
 
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [activeTab])
+
+  const [sectionsChecked, setSectionsChecked] = useState(form.reported_sections)
+
+  const onSectionCheckChange = (section: string, isChecked: boolean) => {
+    setSectionsChecked((prevState) => ({
+      ...prevState,
+      [section]: isChecked,
+    }))
+
+    setForm((prevForm) => {
+      // Initialize reported_sections as an empty object if it doesn't exist
+      const updatedReportedSections = prevForm.reported_sections || {}
+
+      // Update reported_sections with the new section and isChecked value
+      return {
+        ...prevForm,
+        reported_sections: {
+          ...updatedReportedSections,
+          [section]: isChecked,
+        },
+      }
+    })
+  }
 
   return (
     <>

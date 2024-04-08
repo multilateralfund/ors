@@ -1,16 +1,18 @@
-import React from "react";
+import React from 'react'
 
 const SimpleInput = ({
   id,
   defaultValue,
   disabled = false,
   label,
+  onChange,
   type,
 }: {
   defaultValue?: any
   disabled?: boolean
   id: string
   label: string
+  onChange?: (event: any) => void
   type: string
 }) => {
   return (
@@ -29,6 +31,7 @@ const SimpleInput = ({
         defaultValue={defaultValue}
         disabled={disabled}
         type={type}
+        onChange={onChange}
       />
     </div>
   )

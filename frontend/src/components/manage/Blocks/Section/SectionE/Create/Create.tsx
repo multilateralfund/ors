@@ -21,7 +21,7 @@ export default function SectionECreate(props: any) {
   const newFacilityIndex = useRef(last<any>(form.section_e)?.id + 1 || 1)
   const [initialRowData] = useState(form.section_e)
 
-  const sectionName = 'section_e'
+  const sectionName = 'reported_section_e'
   const isSectionChecked = sectionsChecked[sectionName]
 
   const pinnedBottomRowData = useMemo(() => {

@@ -9,7 +9,7 @@ export default function SectionFCreate(props: any) {
   const { form, onSectionCheckChange, section, sectionsChecked, setForm } =
     props
 
-  const sectionName = 'section_f'
+  const sectionName = 'reported_section_f'
   const isSectionChecked = sectionsChecked[sectionName]
 
   return (

@@ -86,6 +86,7 @@ const ReportInfoCreate = (props: any) => {
     report,
     section,
     sectionsChecked,
+    setForm,
   } = props
   const user = useStore((state) => state.user)
 
@@ -103,12 +104,18 @@ const ReportInfoCreate = (props: any) => {
             id="name_reporting_officer"
             label="Name of reporting officer"
             type="text"
+            onChange={(event: any) => {
+              setForm({ ...form, reporting_entry: event.target.value })
+            }}
           />
           <SimpleInput
             id="email_reporting_officer"
             defaultValue={user.data.email}
             label="Email of reporting officer"
             type="email"
+            onChange={(event: any) => {
+              setForm({ ...form, reporting_email: event.target.value })
+            }}
           />
         </div>
         <div className="grid gap-6 md:grid-cols-4">
@@ -134,6 +141,9 @@ const ReportInfoCreate = (props: any) => {
             disabled={isEdit}
             label="Reporting for year"
             type="number"
+            onChange={(event: any) => {
+              setForm({ ...form, report_year: event.target.value })
+            }}
           />
         </div>
         <FileInput />

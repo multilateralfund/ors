@@ -18,7 +18,7 @@ export default function SectionDCreate(props: any) {
   const gridOptions = useGridOptions()
   const [initialRowData] = useState(form.section_d)
 
-  const sectionName = 'section_d'
+  const sectionName = 'reported_section_d'
   const isSectionChecked = sectionsChecked[sectionName]
 
   return (

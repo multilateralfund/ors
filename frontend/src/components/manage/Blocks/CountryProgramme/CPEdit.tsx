@@ -120,21 +120,6 @@ const TableProps = {
 function CPEdit() {
   const tabsEl = React.useRef<HTMLDivElement>(null)
   const { report } = useStore((state) => state.cp_reports)
-  // Take data from report.data and set it to sectionsChecked
-  const [sectionsChecked, setSectionsChecked] = useState({
-    section_a: false,
-    section_b: false,
-    section_c: false,
-    section_d: false,
-    section_e: false,
-    section_f: false,
-  })
-  const onSectionCheckChange = (section: any, isChecked: any) => {
-    setSectionsChecked((prevState) => ({
-      ...prevState,
-      [section]: isChecked,
-    }))
-  }
 
   const Sections = {
     section_a: useMakeClassInstance<SectionA>(SectionA, [
@@ -256,6 +241,18 @@ function CPEdit() {
     )
     /* eslint-disable-next-line */
   }, [form])
+
+  const [sectionsChecked, setSectionsChecked] = useState({ ...report.data.reported_sections})
+  const onSectionCheckChange = (section: any, isChecked: any) => {
+    setSectionsChecked((prevState: any) => ({
+      ...prevState,
+      [section]: isChecked,
+    }))
+    setForm({
+      ...form,
+      reported_sections: { ...reported_sections, [section]: isChecked },
+    })
+  }
 
   useEffect(() => {
     const indicator = tabsEl.current?.querySelector('.MuiTabs-indicator')

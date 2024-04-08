@@ -127,7 +127,7 @@ export default function SectionBCreate(props: {
 
   const newNode = useRef<RowNode>()
 
-  const sectionName = 'section_b'
+  const sectionName = 'reported_section_b'
   const isSectionChecked = sectionsChecked[sectionName]
 
   const [createdBlends, setCreatedBlends] = useState<Array<any>>([])
