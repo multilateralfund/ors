@@ -129,7 +129,7 @@ class CPReportCreateSerializer(serializers.Serializer):
         choices=CPReport.CPReportStatus.choices, required=False
     )
     event_description = serializers.CharField(required=False)
-    report_info = CPReportInfoSerializer(many=False, required=False)
+    report_info = CPReportInfoSerializer(many=False, required=False, allow_null=True)
     section_a = CPRecordSerializer(many=True, required=False)
     section_b = CPRecordSerializer(many=True, required=False)
     section_c = CPPricesSerializer(many=True, required=False)
@@ -225,6 +225,8 @@ class CPReportCreateSerializer(serializers.Serializer):
         request_user = self.context["user"]
 
         cp_report_info = validated_data.get("report_info", {})
+        if cp_report_info is None:
+            cp_report_info = {}
 
         # TODO: we need to find a better way!
         cp_reporting = cp_report_info.get("country_programme_report", {})
@@ -272,8 +274,7 @@ class CPReportCreateSerializer(serializers.Serializer):
 
 
         # TODO: Neeed to make sure this happens ONLY for the latest reporting format !!!
-        self._create_report_info(
-            cp_report, validated_data.get("report_info", {})
-        )
+        if cp_report_info:
+            self._create_report_info(cp_report, cp_report_info)
 
         return cp_report
