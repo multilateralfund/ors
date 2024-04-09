@@ -290,11 +290,8 @@ class CPRecordBaseListView(views.APIView):
             "remarks": cp_report.comment,
         }
 
-        return {
+        ret = {
             "cp_report": self.cp_report_seri_class(cp_report).data,
-            "report_info": self.cp_report_info_seri_class(
-                cp_report.cpreportedsections
-            ).data,
             "section_a": self.cp_record_seri_class(section_a, many=True).data,
             "section_b": self.cp_record_seri_class(section_b, many=True).data,
             "section_c": self.cp_prices_seri_class(section_c, many=True).data,
@@ -302,6 +299,13 @@ class CPRecordBaseListView(views.APIView):
             "section_e": self.cp_emission_seri_class(section_e, many=True).data,
             "section_f": section_f,
         }
+        if cp_report.cpreportedsections:
+            # This property will not be present for pre-2023
+            ret["report_info"] = self.cp_report_info_seri_class(
+                cp_report.cpreportedsections
+            ).data
+
+        return ret
 
     def _get_regroupped_adm_records(self, adm_records):
         result = {}
