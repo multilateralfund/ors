@@ -225,17 +225,21 @@ class CPReportCreateSerializer(serializers.Serializer):
         request_user = self.context["user"]
 
         cp_report_info = validated_data.get("report_info", {})
+
+        # TODO: we need to find a better way!
+        cp_reporting = cp_report_info.get("country_programme_report", {})
+        reporting_entry = cp_reporting.get(
+            "reporting_entry", request_user.get_full_name()
+        )
+        reporting_email = cp_reporting.get(
+            "reporting_email", request_user.email
+        )
+
         cp_report_data = {
             "name": validated_data.get("name"),
             "year": validated_data.get("year"),
             "status": validated_data.get("status", CPReport.CPReportStatus.FINAL),
             "country_id": validated_data.get("country_id"),
-            "reporting_entry": cp_report_info.pop(
-                "reporting_entry", request_user.get_full_name()
-            ),
-            "reporting_email": cp_report_info.pop(
-                "reporting_email", request_user.email
-            ),
             "event_description": validated_data.get(
                 "event_description", "Created by user"
             ),
@@ -249,6 +253,9 @@ class CPReportCreateSerializer(serializers.Serializer):
         cp_report_serializer.validated_data["last_updated_by"] = request_user
 
         cp_report = cp_report_serializer.save()
+        cp_report.reporting_entry = reporting_entry
+        cp_report.reporting_email = reporting_email
+        cp_report.save()
 
         self._create_cp_records(cp_report, validated_data.get("section_a", []), "A")
         self._create_prices(cp_report, validated_data.get("section_c", []))
