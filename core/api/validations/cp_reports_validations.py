@@ -1,8 +1,7 @@
-import math
+from collections import defaultdict
 
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import ValidationError
-from rest_framework import serializers
 
 from core.models.blend import Blend
 from core.models.substance import Substance
@@ -116,7 +115,7 @@ def validate_section_a(section_records):
     """
 
     if not section_records:
-        return
+        return []
     error_dict = {}
 
     methil_bromide = Substance.objects.filter(name__icontains="methyl bromide").first()
@@ -160,115 +159,145 @@ def validate_section_a(section_records):
     return error_list
 
 
-def validate_section_b(values):
-    if not values:
-        return
+def validate_section_b(section_records):
+    if not section_records:
+        return []
 
 
-def validate_section_c(values):
-    if not values:
-        return
+def validate_section_c(section_records):
+    if not section_records:
+        return []
 
-    for row in values:
+    error_dict = {}
+    for row in section_records:
         remarks = row.get("remarks", "").lower()
         if not any(price_type in remarks for price_type in ["fob", "retail"]):
-            raise serializers.ValidationError(
-                _("Indicate whether the prices are FOB or retail prices.")
-            )
+            row_id = row.get("row_id")
+            error_dict[row_id] = {
+                "remarks": ValidationError(
+                    _("Indicate whether the prices are FOB or retail prices.")
+                ).detail,
+            }
+
+    error_list = format_error_dict(error_dict)
+    return error_list
 
 
-def validate_section_d(
-    values,
-    section_a_values,
-    section_b_values,
-    section_e_values,
-):
-    if not values:
-        return
-
-    hfc_substances_produced = False
+def check_hfc_produced(section_a_records, section_b_records):
     section_a_substances = [
-        row["substance_id"] for row in section_a_values if row.get("substance_id")
+        row["substance_id"] for row in section_a_records if row.get("substance_id")
     ]
     annex_c_substances = Substance.objects.filter(
         id__in=section_a_substances, group__name="C/I"
     ).values_list("id", flat=True)
-    for row in section_a_values:
-        if (
-            row.get("substance_id") in annex_c_substances
-            and row.get("production", 0) > 0
-        ):
-            hfc_substances_produced = True
-            break
+    for row in section_a_records:
+        if row.get("substance_id") in annex_c_substances and row.get("production"):
+            return True
 
     section_b_substances = [
-        row["substance_id"] for row in section_b_values if row.get("substance_id")
+        row["substance_id"] for row in section_b_records if row.get("substance_id")
     ]
     annex_f_substances = Substance.objects.filter(
         id__in=section_b_substances, group__name="F"
     ).values_list("id", flat=True)
-    for row in section_b_values:
-        if (
-            row.get("substance_id") in annex_f_substances
-            and row.get("production", 0) > 0
-        ):
-            hfc_substances_produced = True
-            break
+    for row in section_b_records:
+        if row.get("substance_id") in annex_f_substances and row.get("production"):
+            return True
 
-    if not hfc_substances_produced:
-        raise serializers.ValidationError(
-            _(
-                "This form should be filled only if the country generated HFC-23"
-                " from any facility that produced (manufactured)"
-                " HCFC (Annex C – Group I) or HFC (Annex F) substances."
-            )
+    return False
+
+
+def check_section_d_filled(row):
+    all_uses = row.get("all_uses")
+    feedstock_gc = row.get("feedstock_gc")
+    destruction = row.get("destruction")
+    if all_uses or feedstock_gc or destruction:
+        return True
+
+    return False
+
+
+def validate_section_d(
+    section_d_records,
+    section_a_records,
+    section_b_records,
+    section_e_records,
+):
+    if check_section_d_filled(section_d_records[0]):
+        hfc_substances_produced = check_hfc_produced(
+            section_a_records, section_b_records
         )
+        if not hfc_substances_produced:
+            return [
+                {
+                    "row_id": "general_error",
+                    "errors": ValidationError(
+                        _(
+                            "This form should be filled only if the country generated HFC-23 "
+                            "from any facility that produced (manufactured) "
+                            "HCFC (Annex C – Group I) or HFC (Annex F) substances."
+                        )
+                    ).detail,
+                }
+            ]
 
     sum_all_uses = 0
     sum_feedstock = 0
     sum_destruction = 0
-    for row in section_e_values:
+    for row in section_e_records:
         sum_all_uses += row.get("all_uses", 0)
         sum_feedstock += row.get("feedstock_gc", 0)
         sum_destruction += row.get("destruction", 0)
 
     if sum_all_uses == 0 and sum_feedstock == 0 and sum_destruction == 0:
-        return
+        return []
 
-    abs_tol = 0.1
-    if (
-        not math.isclose(values[0].get("all_uses", 0), sum_all_uses, abs_tol=abs_tol)
-        or not math.isclose(
-            values[0].get("feedstock", 0), sum_feedstock, abs_tol=abs_tol
+    row = section_d_records[0]
+    row_id = row.get("row_id")
+    error_dict = defaultdict(dict)
+    detail = ValidationError(
+        _(
+            "Total for columns under 'Amount generated and captured' in Section E "
+            "should be reported in Section D under the respective column."
         )
-        or not math.isclose(
-            values[0].get("destruction", 0), sum_destruction, abs_tol=abs_tol
-        )
-    ):
-        raise serializers.ValidationError(
-            _(
-                "Total for columns under 'Amount generated and captured' in Section E"
-                " should be reported in Section D under the respective column."
-            )
-        )
+    ).detail
+
+    if row.get("all_uses") != sum_all_uses:
+        error_dict[row_id]["all_uses"] = detail
+
+    if row.get("feedstock") != sum_feedstock:
+        error_dict[row_id]["feedstock"] = detail
+
+    if row.get("destruction") != sum_destruction:
+        error_dict[row_id]["destruction"] = detail
+
+    error_list = format_error_dict(error_dict)
+    return error_list
 
 
-def validate_section_e(values, section_d_values):
-    if not section_d_values:
-        return
+def validate_section_e(section_e_records, section_d_records):
+    if not check_section_d_filled(section_d_records[0]):
+        return []
 
-    if not values:
-        raise serializers.ValidationError(
+    error_dict = {}
+    detail = (
+        ValidationError(
             _("Facility name must be provided if data in Section D is provided.")
-        )
+        ).detail,
+    )
 
-    for row in values:
+    if not section_e_records:
+        error_dict["general_error"] = {"facility": detail}
+
+    for row in section_e_records:
         if not row.get("facility"):
-            raise serializers.ValidationError(
-                _("Facility name must be provided if data in Section D is provided.")
-            )
+            row_id = row.get("row_id")
+            error_dict[row_id] = {"facility": detail}
+
+    error_list = format_error_dict(error_dict)
+    return error_list
 
 
-def validate_section_f(values):
-    if not values:
-        return
+def validate_section_f(section_records):
+    if not section_records:
+        return []
