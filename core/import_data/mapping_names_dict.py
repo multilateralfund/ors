@@ -22,7 +22,7 @@ COUNTRY_NAME_MAPPING = {
     "St. Lucia": "Saint Lucia",
     "St. Vincent and the Grenadines": "Saint Vincent and the Grenadines",
     "Commonwealth of Dominica": "Dominica",
-    "Lao, DPR": "Lao People's Democratic Republic"
+    "Lao, DPR": "Lao People's Democratic Republic",
 }
 
 SECTOR_NAME_MAPPING = {
@@ -201,15 +201,15 @@ BP_SECTOR_SUBSECTOR_MAPPING = {
         "sector": "FOA",
         "subsector": "Rigid PU",
     },
-    "Fumigation":{
+    "Fumigation": {
         "sector": "FUM",
         "subsector": None,
     },
-    "REF - AC":{
+    "REF - AC": {
         "sector": "REF",
         "subsector": "Air conditioning",
     },
-    "REF - (Commercial ref)": { 
+    "REF - (Commercial ref)": {
         "sector": "REF",
         "subsector": "Commercial Refrigeration",
     },
@@ -217,7 +217,7 @@ BP_SECTOR_SUBSECTOR_MAPPING = {
         "sector": "REF",
         "subsector": "Commercial Refrigeration",
     },
-    "REF-Commerical refrigeration": {   
+    "REF-Commerical refrigeration": {
         "sector": "REF",
         "subsector": "Commercial Refrigeration",
     },
@@ -241,7 +241,7 @@ USAGE_NAME_MAPPING = {
     "refrigeration air conditioning": "Refrigeration Manufacturing AC",
     "air conditioning": "Refrigeration Manufacturing AC",
     "solvent": "Solvent application",
-    "manufacturing" : "Refrigeration Manufacturing",
+    "manufacturing": "Refrigeration Manufacturing",
     "processing agent": "Process agent",
 }
 
@@ -264,7 +264,7 @@ CHEMICAL_NAME_MAPPING = {
     "HFC-417A": "R-417A",
     "R-1234yf": "HFO-1234yf",
     "R-406A (containing R-22)": "R-406A",
-    "R-507" : "R-507A",
+    "R-507": "R-507A",
     "R-32": "HFC-32",
     "R-152a": "HFC-152a",
     "R-1233zd": "HFO-1233zd",
@@ -343,7 +343,10 @@ CP_FORMAT_FILE_DATA_MAPPING = {
             "Section B": "B",
             "Section C": "C",
         },
-        "time_frame": {"min_year": 2019, "max_year": 2022}, # 2019-2021 is actually 2019-2022
+        "time_frame": {
+            "min_year": 2019,
+            "max_year": 2022,
+        },  # 2019-2021 is actually 2019-2022
     },
     "CP_Format_2022.xls": {
         "sheets": {
@@ -351,6 +354,13 @@ CP_FORMAT_FILE_DATA_MAPPING = {
             "Section B": "B",
             "Section C": "C",
         },
-        "time_frame": {"min_year": 2023, "max_year": None}, # 2022 and beyond is actually 2023
+        "time_frame": {
+            "min_year": 2023,
+            "max_year": None,
+        },  # 2022 and beyond is actually 2023
     },
+}
+
+ADM_DE_MAPPING = {
+    "N/A RMP already completed": "N/A RMP/NPP/TPMP already completed"
 }

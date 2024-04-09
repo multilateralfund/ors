@@ -3,7 +3,7 @@ import logging
 
 from django.db import transaction
 from django.conf import settings
-from core.import_data.mapping_names_dict import DB_YEAR_MAPPING
+from core.import_data.mapping_names_dict import DB_YEAR_MAPPING, ADM_DE_MAPPING
 from core.import_data.utils import (
     DB_DIR_LIST,
     delete_old_data,
@@ -57,7 +57,6 @@ def create_adm_rows_for_articles(article_file, strings_file, layout_file, db_nam
         if strin_data["LanguageId"] == 1 and strin_data["ObjectType"] == 7:
             stings_dict[strin_data["ObjectId"]] = strin_data["StringText"].strip()
 
-
     for layout in json_data:
         article_order_dict[layout["AdmDEArticlesId"]] = layout["SortOrder"]
 
@@ -103,8 +102,12 @@ def create_adm_choices_for_opt(opt_file, strings_file, article_dict):
     stings_dict = {}
     for strin_data in strings_json:
         if strin_data["LanguageId"] == 1 and strin_data["ObjectType"] == 9:
-            stings_dict[strin_data["ObjectId"]] = strin_data["LangDefault"] or strin_data["StringText"]
-
+            initial_str = strin_data["LangDefault"] or strin_data["StringText"]
+            if strin_data["StringText"] == "the 65% HCFC reduction target in 2025":
+                initial_str = "the 65% HCFC reduction target in 2025"
+            stings_dict[strin_data["ObjectId"]] = ADM_DE_MAPPING.get(
+                initial_str, initial_str
+            )
 
     for opt in json_data:
         adm_row = article_dict[opt["AdmDEArticlesId"]]
@@ -117,7 +120,7 @@ def create_adm_choices_for_opt(opt_file, strings_file, article_dict):
         # check if the option has a text field
         row_index = adm_row.text[:2]
         if row_index in CHOICES_WITH_TEXT:
-            for word in  CHOICES_WITH_TEXT[row_index]:
+            for word in CHOICES_WITH_TEXT[row_index]:
                 if word in option_data["value"]:
                     option_data["with_text"] = True
 
@@ -188,7 +191,9 @@ def parse_db_files(dir_path, db_name):
     article_file = dir_path / "AdmDEArticles.json"
     layout_file = dir_path / "AdmDELayout.json"
     strings_file = dir_path / "Strings.json"
-    article_dict = create_adm_rows_for_articles(article_file, strings_file, layout_file, db_name)
+    article_dict = create_adm_rows_for_articles(
+        article_file, strings_file, layout_file, db_name
+    )
     logger.info(f"✔ {article_file} parsed, AdmRows imported")
 
     opt_file = dir_path / "AdmDEArticleOpts.json"

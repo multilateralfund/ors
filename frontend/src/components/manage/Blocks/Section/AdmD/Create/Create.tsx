@@ -72,7 +72,6 @@ export default function AdmD(props: any) {
                       {choice.with_text && (
                         <Field
                           FieldProps={{ className: 'mb-0' }}
-                          disabled={!checked}
                           type="textarea"
                           value={form.adm_d[row.id]?.value_text}
                           onChange={(event: any) => {
