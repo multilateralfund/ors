@@ -15,11 +15,19 @@ from core.utils import IMPORT_DB_MAX_YEAR, VALIDATION_MIN_YEAR
 
 # pylint: disable=W0223
 
-class CPReportSectionsSerializer(serializers.ModelSerializer):
+class CPReportInfoSerializer(serializers.ModelSerializer):
     country_programme_report_id = serializers.PrimaryKeyRelatedField(
         required=False,
         queryset=CPReport.objects.all().values_list("id", flat=True),
         write_only=True,
+    )
+    reporting_entry = serializers.CharField(
+        required=False,
+        source="country_programme_report.reporting_entry"
+    )
+    reporting_email = serializers.CharField(
+        required=False,
+        source="country_programme_report.reporting_email"
     )
 
     class Meta:
@@ -31,8 +39,9 @@ class CPReportSectionsSerializer(serializers.ModelSerializer):
             "reported_section_d",
             "reported_section_e",
             "reported_section_f",
+            "reporting_entry",
+            "reporting_email",
         ]
-        #read_only_fields = ["country_programme_report_id"]
         model = CPReportSections
 
 
@@ -53,7 +62,7 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
     last_updated_by = serializers.StringRelatedField(
         read_only=True, source="last_updated_by.username"
     )
-    reported_sections = CPReportSectionsSerializer(
+    report_info = CPReportInfoSerializer(
         many=False, required=False, source="cpreportedsections"
     )
 
@@ -70,9 +79,7 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
             "created_at",
             "created_by",
             "last_updated_by",
-            "reporting_entry",
-            "reporting_email",
-            "reported_sections",
+            "report_info",
             "event_description",
         ]
 
@@ -122,7 +129,7 @@ class CPReportCreateSerializer(serializers.Serializer):
         choices=CPReport.CPReportStatus.choices, required=False
     )
     event_description = serializers.CharField(required=False)
-    reported_sections = CPReportSectionsSerializer(many=False, required=False)
+    report_info = CPReportInfoSerializer(many=False, required=False)
     section_a = CPRecordSerializer(many=True, required=False)
     section_b = CPRecordSerializer(many=True, required=False)
     section_c = CPPricesSerializer(many=True, required=False)
@@ -142,7 +149,7 @@ class CPReportCreateSerializer(serializers.Serializer):
             "event_description",
             "status",
             "country_id",
-            "reported_sections",
+            "report_info",
             "section_a",
             "section_b",
             "section_c",
@@ -205,27 +212,28 @@ class CPReportCreateSerializer(serializers.Serializer):
             record_serializer.is_valid(raise_exception=True)
             record_serializer.save()
 
-    def _create_reported_sections(self, cp_report, reported_sections_data):
-        reported_sections_data["country_programme_report_id"] = cp_report.id
-        reported_sections_serializer = CPReportSectionsSerializer(
-            data=reported_sections_data
+    def _create_report_info(self, cp_report, report_info_data):
+        report_info_data["country_programme_report_id"] = cp_report.id
+        report_info_serializer = CPReportInfoSerializer(
+            data=report_info_data
         )
-        reported_sections_serializer.is_valid(raise_exception=True)
-        reported_sections_serializer.save()
+        report_info_serializer.is_valid(raise_exception=True)
+        report_info_serializer.save()
 
     @transaction.atomic
     def create(self, validated_data):
         request_user = self.context["user"]
 
+        cp_report_info = validated_data.get("report_info", {})
         cp_report_data = {
             "name": validated_data.get("name"),
             "year": validated_data.get("year"),
             "status": validated_data.get("status", CPReport.CPReportStatus.FINAL),
             "country_id": validated_data.get("country_id"),
-            "reporting_entry": validated_data.get(
+            "reporting_entry": cp_report_info.pop(
                 "reporting_entry", request_user.get_full_name()
             ),
-            "reporting_email": validated_data.get(
+            "reporting_email": cp_report_info.pop(
                 "reporting_email", request_user.email
             ),
             "event_description": validated_data.get(
@@ -257,8 +265,8 @@ class CPReportCreateSerializer(serializers.Serializer):
 
 
         # TODO: Neeed to make sure this happens ONLY for the latest reporting format !!!
-        self._create_reported_sections(
-            cp_report, validated_data.get("reported_sections", {})
+        self._create_report_info(
+            cp_report, validated_data.get("report_info", {})
         )
 
         return cp_report

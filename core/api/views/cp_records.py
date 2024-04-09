@@ -13,7 +13,7 @@ from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_price import CPPricesSerializer
 from core.api.serializers.cp_record import CPRecordSerializer
-from core.api.serializers.cp_report import CPReportSerializer
+from core.api.serializers.cp_report import CPReportSerializer, CPReportInfoSerializer
 from core.api.views.utils import get_cp_report_from_request
 from core.models.adm import AdmRecord
 from core.models.country_programme import (
@@ -48,6 +48,7 @@ class CPRecordBaseListView(views.APIView):
     adm_record_class = None
 
     cp_report_seri_class = None
+    cp_report_info_seri_class = None
     cp_record_seri_class = None
     cp_prices_seri_class = None
     cp_generation_seri_class = None
@@ -291,6 +292,9 @@ class CPRecordBaseListView(views.APIView):
 
         return {
             "cp_report": self.cp_report_seri_class(cp_report).data,
+            "report_info": self.cp_report_info_seri_class(
+                cp_report.cpreportedsections
+            ).data,
             "section_a": self.cp_record_seri_class(section_a, many=True).data,
             "section_b": self.cp_record_seri_class(section_b, many=True).data,
             "section_c": self.cp_prices_seri_class(section_c, many=True).data,
@@ -387,6 +391,7 @@ class CPRecordListView(CPRecordBaseListView):
     adm_record_class = AdmRecord
 
     cp_report_seri_class = CPReportSerializer
+    cp_report_info_seri_class = CPReportInfoSerializer
     cp_record_seri_class = CPRecordSerializer
     cp_prices_seri_class = CPPricesSerializer
     cp_generation_seri_class = CPGenerationSerializer
