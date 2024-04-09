@@ -207,7 +207,6 @@ class CPReportCreateSerializer(serializers.Serializer):
 
     def _create_reported_sections(self, cp_report, reported_sections_data):
         reported_sections_data["country_programme_report_id"] = cp_report.id
-        print(f"YES, WE GOT HERE: {cp_report.id}")
         reported_sections_serializer = CPReportSectionsSerializer(
             data=reported_sections_data
         )
@@ -216,11 +215,19 @@ class CPReportCreateSerializer(serializers.Serializer):
 
     @transaction.atomic
     def create(self, validated_data):
+        request_user = self.context["user"]
+
         cp_report_data = {
             "name": validated_data.get("name"),
             "year": validated_data.get("year"),
             "status": validated_data.get("status", CPReport.CPReportStatus.FINAL),
             "country_id": validated_data.get("country_id"),
+            "reporting_entry": validated_data.get(
+                "reporting_entry", request_user.get_full_name()
+            ),
+            "reporting_email": validated_data.get(
+                "reporting_email", request_user.email
+            ),
             "event_description": validated_data.get(
                 "event_description", "Created by user"
             ),
@@ -230,7 +237,6 @@ class CPReportCreateSerializer(serializers.Serializer):
         cp_report_serializer.is_valid(raise_exception=True)
 
         # add user
-        request_user = self.context["user"]
         cp_report_serializer.validated_data["created_by"] = request_user
         cp_report_serializer.validated_data["last_updated_by"] = request_user
 
