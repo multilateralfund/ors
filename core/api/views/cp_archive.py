@@ -1,8 +1,12 @@
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, filters
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
+from core.api.export.cp_report_new import CPReportNewExporter
+from core.api.export.cp_report_old import CPReportOldExporter
 from core.api.filters.country_programme import (
     CPReportArchiveFilter,
 )
@@ -13,7 +17,10 @@ from core.api.serializers.cp_generation import CPGenerationArchiveSerializer
 from core.api.serializers.cp_price import CPPricesArchiveSerializer
 from core.api.serializers.cp_record import CPRecordArchiveSerializer
 from core.api.serializers.cp_report import CPReportArchiveSerializer
+from core.api.utils import workbook_pdf_response
+from core.api.utils import workbook_response
 from core.api.views.cp_records import CPRecordBaseListView
+from core.api.views.cp_report_empty_form import EmptyFormView
 from core.models import AdmRecordArchive
 from core.models.country_programme import CPReport
 from core.models.country_programme_archive import (
@@ -23,6 +30,7 @@ from core.models.country_programme_archive import (
     CPRecordArchive,
     CPReportArchive,
 )
+from core.utils import IMPORT_DB_MAX_YEAR
 
 
 class CPReportVersionsListView(generics.GenericAPIView):
@@ -42,7 +50,9 @@ class CPReportVersionsListView(generics.GenericAPIView):
             cp_reports = CPReport.objects.all()
             if user.user_type == user.UserType.COUNTRY_USER:
                 cp_reports = cp_reports.filter(country=user.country)
-            current_version = cp_reports.filter(country_id=country_id, year=year).first()
+            current_version = cp_reports.filter(
+                country_id=country_id, year=year
+            ).first()
         if not current_version:
             raise ValidationError("Could not find the current version of the report")
 
@@ -75,3 +85,41 @@ class CPRecordsArchiveListView(CPRecordBaseListView):
     cp_generation_seri_class = CPGenerationArchiveSerializer
     cp_emission_seri_class = CPEmissionArchiveSerializer
     adm_record_seri_class = AdmRecordArchiveSerializer
+
+
+class CPRecordArchiveExportView(CPRecordsArchiveListView):
+    def get_usages(self, cp_report):
+        empty_form = EmptyFormView.get_data(cp_report.year, cp_report)
+        usages = empty_form.pop("usage_columns")
+        return {
+            **usages,
+            **empty_form,
+        }
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "cp_report_id",
+                openapi.IN_QUERY,
+                description="Country programme report archive id",
+                type=openapi.TYPE_INTEGER,
+            ),
+        ],
+    )
+    def get(self, *args, **kwargs):
+        cp_report = self._get_cp_report()
+        if cp_report.year > IMPORT_DB_MAX_YEAR:
+            exporter = CPReportNewExporter(cp_report)
+        else:
+            exporter = CPReportOldExporter(cp_report)
+
+        wb = exporter.get_xlsx(self.get_data(cp_report), self.get_usages(cp_report))
+        return self.get_response(cp_report.name, wb)
+
+    def get_response(self, name, wb):
+        return workbook_response(name, wb)
+
+
+class CPRecordArchivePrintView(CPRecordArchiveExportView):
+    def get_response(self, name, wb):
+        return workbook_pdf_response(name, wb)
