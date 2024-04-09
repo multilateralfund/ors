@@ -177,7 +177,11 @@ function CPEdit() {
     adm_b: report.data?.adm_b,
     adm_c: report.data?.adm_c,
     adm_d: report.data?.adm_d,
-    reported_sections: report.data?.reported_sections,
+    report_info: {
+      reported_sections: report.data?.reported_sections,
+      reporting_email: report.data?.reporting_email,
+      reporting_entry: report.data?.reporting_entry,
+    },
     section_a: Sections.section_a.getData(),
     section_b: Sections.section_b.getData(),
     section_c: Sections.section_c.getData(),
@@ -231,6 +235,7 @@ function CPEdit() {
           [],
         ),
         adm_d: values(form.adm_d),
+        report_info: form.report_info,
         section_a: Sections.section_a.getSubmitFormData(form.section_a),
         section_b: Sections.section_b.getSubmitFormData(form.section_b),
         section_c: Sections.section_c.getSubmitFormData(form.section_c),
@@ -253,9 +258,16 @@ function CPEdit() {
       ...prevState,
       [section]: isChecked,
     }))
+    console.log("CPEdit onSectionCheckChange form", form)
     setForm({
       ...form,
-      reported_sections: { ...form.reported_sections, [section]: isChecked },
+      report_info: {
+        ...form.report_info,
+        reported_sections: {
+          ...form.report_info.reported_sections,
+          [section]: isChecked,
+        },
+      },
     })
   }
 
@@ -280,8 +292,8 @@ function CPEdit() {
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [activeTab])
 
-  console.log("CPEdit form", form)
-  console.log("CPEdit getSubmitFormData", getSubmitFormData())
+  console.log('CPEdit form', form)
+  console.log('CPEdit getSubmitFormData', getSubmitFormData())
 
   return (
     <>
@@ -352,8 +364,8 @@ function CPEdit() {
                 >
                   {section.id !== 'report_info' && (
                     <SectionReportedSelect
+                      isSectionChecked={isSectionChecked}
                       sectionName={sectionName}
-                      sectionsChecked={sectionsChecked}
                       onSectionCheckChange={onSectionCheckChange}
                     />
                   )}

@@ -89,6 +89,22 @@ const ReportInfoCreate = (props: any) => {
     setForm,
   } = props
   const user = useStore((state) => state.user)
+  const updateForm = (event: { target: { value: any } }, key: string) =>
+    setForm({
+      ...form,
+      report_info: {
+        ...form.report_info,
+        [key]: event.target.value,
+      },
+    })
+  console.log("ReportInfoCreate user", user.data)
+  const user_fullname = isEdit ? form.report_info.reporting_entry : user.data.full_name
+  const user_email = isEdit ? form.report_info.reporting_email : user.data.email
+  console.log("user_fullname", user_fullname)
+  console.log("user_email", user_email)
+  console.log("ReportInfoCreate form", form)
+
+
 
   return (
     <section className="grid items-start gap-4 md:auto-rows-auto md:grid-cols-2">
@@ -102,25 +118,22 @@ const ReportInfoCreate = (props: any) => {
         <div className="grid gap-6 md:grid-cols-2">
           <SimpleInput
             id="name_reporting_officer"
+            defaultValue={user_fullname}
             label="Name of reporting officer"
             type="text"
-            onChange={(event: any) => {
-              setForm({ ...form, reporting_entry: event.target.value })
-            }}
+            onChange={(event: any) => updateForm(event, 'reporting_entry')}
           />
           <SimpleInput
             id="email_reporting_officer"
-            defaultValue={user.data.email}
+            defaultValue={user_email}
             label="Email of reporting officer"
             type="email"
-            onChange={(event: any) => {
-              setForm({ ...form, reporting_email: event.target.value })
-            }}
+            onChange={(event: any) => updateForm(event, 'reporting_email')}
           />
         </div>
         <div className="grid gap-6 md:grid-cols-4">
-          <div className="items-center md:col-span-3 w-full h-full">
-            <div className="h-full flex flex-col justify-end">
+          <div className="h-full w-full items-center md:col-span-3">
+            <div className="flex h-full flex-col justify-end">
               <label
                 className="mb-2 block text-lg font-normal text-gray-900"
                 htmlFor={isEdit ? undefined : 'country'}
@@ -138,12 +151,9 @@ const ReportInfoCreate = (props: any) => {
           <SimpleInput
             id="report_year"
             defaultValue={isEdit ? report.year : form.year}
-            disabled={isEdit}
+            disabled={true}
             label="Reporting for year"
             type="number"
-            onChange={(event: any) => {
-              setForm({ ...form, report_year: event.target.value })
-            }}
           />
         </div>
         <FileInput />

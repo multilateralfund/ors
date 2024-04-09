@@ -7,6 +7,8 @@ type cp_report = {
   id: number
   name: string
   reported_sections?: { [key: string]: boolean };
+  reporting_email?: string
+  reporting_entry?: string
   status: string
   version: number
   year: number

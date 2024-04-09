@@ -148,7 +148,7 @@ function CPView(props: { archive?: boolean }) {
   const { report } = useStore((state) => state.cp_reports)
   const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
   const [renderedSections, setRenderedSections] = useState<number[]>([])
-
+  console.log("CPView report", report);
   const variant = useMemo(() => {
     if (!report.data) return null
     return filter(variants, (variant) => {

@@ -11,7 +11,7 @@ const ReportInfoView = (props: any) => {
   const { report, section } = props
   const user = useStore((state) => state.user)
 
-  console.log(report)
+  console.log("ReportInfoView", report);
 
   return (
     <section className="grid items-start gap-4 md:auto-rows-auto md:grid-cols-2">
