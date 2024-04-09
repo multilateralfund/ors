@@ -42,6 +42,7 @@ import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
 import { SectionMeta, getSections } from '.'
+import Portal from '../../Utils/Portal'
 import { CPCreateHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
 
@@ -51,6 +52,7 @@ type ToolbarProps = {
   enterFullScreen: () => void
   exitFullScreen: () => void
   fullScreen: boolean
+  isActiveSection: boolean
   section: SectionMeta
 }
 
@@ -120,7 +122,13 @@ export interface CPBaseForm {
 }
 
 const TableProps: CPCreateTableProps = {
-  Toolbar: ({ enterFullScreen, exitFullScreen, fullScreen, section }) => {
+  Toolbar: ({
+    enterFullScreen,
+    exitFullScreen,
+    fullScreen,
+    isActiveSection,
+    section,
+  }) => {
     useEffect(() => {
       const listener = (ev: KeyboardEvent) => {
         if (ev.key === 'Escape') {
@@ -165,31 +173,44 @@ const TableProps: CPCreateTableProps = {
             </Typography>
           )}
         </div>
-        <div className="flex items-center justify-end">
-          {section.allowFullScreen && !fullScreen && (
-            <IconButton
-              color="primary"
-              onClick={() => {
-                enterFullScreen()
-              }}
-            >
-              <IoExpand />
-            </IconButton>
-          )}
-          {fullScreen && (
-            <div>
+        <Portal
+          active={isActiveSection && !fullScreen}
+          domNode="sectionToolbar"
+        >
+          <div className="flex items-center justify-end">
+            {section.allowFullScreen && !fullScreen && (
               <IconButton
-                className="exit-fullscreen not-printable p-2 text-primary"
-                aria-label="exit fullscreen"
+                color="primary"
                 onClick={() => {
-                  exitFullScreen()
+                  enterFullScreen()
                 }}
               >
-                <IoClose size={32} />
+                <div className="flex items-center justify-between gap-x-2 text-base">
+                  <span className="font-medium text-primary">Fullscreen</span>
+                  <IoExpand className="text-xl text-secondary" />
+                </div>
               </IconButton>
-            </div>
-          )}
-        </div>
+            )}
+            {fullScreen && (
+              <div>
+                <IconButton
+                  className="exit-fullscreen not-printable p-2 text-primary"
+                  aria-label="exit fullscreen"
+                  onClick={() => {
+                    exitFullScreen()
+                  }}
+                >
+                  <div className="flex items-center justify-between gap-x-2 text-base">
+                    <span className="font-medium text-primary">
+                      Exit fullscreen
+                    </span>
+                    <IoClose className="text-xl text-secondary" />
+                  </div>
+                </IconButton>
+              </div>
+            )}
+          </div>
+        </Portal>
       </div>
     )
   },
@@ -280,8 +301,6 @@ const CPCreate: React.FC = () => {
       'section_f_create',
     ]),
   }
-
-  console.log(user.data)
 
   const [errors, setErrors] = useState<FormErrors>({})
   const [currentYear] = useState(new Date().getFullYear() - 1)
@@ -539,37 +558,40 @@ const CPCreate: React.FC = () => {
         }
       />
       <form className="create-submission-form">
-        <Tabs
-          className="scrollable"
-          aria-label="create submission sections"
-          ref={tabsEl}
-          scrollButtons="auto"
-          value={activeTab}
-          variant="scrollable"
-          TabIndicatorProps={{
-            className: 'h-0',
-            style: { transitionDuration: '150ms' },
-          }}
-          onChange={(event: React.SyntheticEvent, index: number) => {
-            setActiveTab(index)
-          }}
-          allowScrollButtonsMobile
-        >
-          {sections.map((section) => (
-            <Tab
-              key={section.id}
-              className={cx('rounded-b-none px-3 py-2', {
-                'MuiTab-error': !isEmpty(errors?.[section.id]),
-              })}
-              aria-controls={section.panelId}
-              label={section.label}
-              classes={{
-                selected:
-                  'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
-              }}
-            />
-          ))}
-        </Tabs>
+        <div className="flex items-center justify-between">
+          <Tabs
+            className="scrollable"
+            aria-label="create submission sections"
+            ref={tabsEl}
+            scrollButtons="auto"
+            value={activeTab}
+            variant="scrollable"
+            TabIndicatorProps={{
+              className: 'h-0',
+              style: { transitionDuration: '150ms' },
+            }}
+            onChange={(event: React.SyntheticEvent, index: number) => {
+              setActiveTab(index)
+            }}
+            allowScrollButtonsMobile
+          >
+            {sections.map((section) => (
+              <Tab
+                key={section.id}
+                className={cx('rounded-b-none px-3 py-2', {
+                  'MuiTab-error': !isEmpty(errors?.[section.id]),
+                })}
+                aria-controls={section.panelId}
+                label={section.label}
+                classes={{
+                  selected:
+                    'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
+                }}
+              />
+            ))}
+          </Tabs>
+          <div id="sectionToolbar"></div>
+        </div>
         <CPSectionWrapper>
           {!!existingReports.data?.length && currentCountry && (
             <div className="mb-4 grid grid-cols-1 gap-x-4 md:grid-cols-2 lg:grid-cols-3">
@@ -646,6 +668,7 @@ const CPCreate: React.FC = () => {
                         ...TableProps,
                         context: { section, variant },
                         errors: errors[section.id],
+                        isActiveSection: activeTab == index,
                         report,
                         section,
                       }}

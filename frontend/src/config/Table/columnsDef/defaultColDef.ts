@@ -17,6 +17,7 @@ const defaultColDef: ColDef = {
       maximumFractionDigits: 2,
     }
   },
+  flex: 1,
   headerComponentParams: {
     className: 'font-bold',
   },

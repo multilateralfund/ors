@@ -44,6 +44,8 @@ from core.api.tests.factories import (
 from core.models import BPRecord
 from core.models import CPEmission
 from core.models import CPReport
+from core.models.adm import AdmRecordArchive
+from core.models.country_programme_archive import CPReportArchive
 from core.utils import get_meta_project_code, get_project_sub_code
 
 
@@ -600,3 +602,86 @@ def setup_96_cp_report(cp_report_1996, substance):
     # add 3 usages for one record
     for _ in range(3):
         CPUsageFactory.create(country_programme_record=cp_rec)
+
+
+@pytest.fixture(name="_setup_old_version_2019")
+def setup_old_version_2019(cp_report_2019, substance, blend, time_frames, user):
+    cp_report_2019.status = CPReport.CPReportStatus.FINAL
+    cp_report_2019.version = 2
+    cp_report_2019.save()
+
+    CPRaportFormatRowFactory.create(
+        blend=blend,
+        substance=None,
+        section="B",
+        time_frame=time_frames[(2000, None)],
+        sort_order=2,
+    )
+
+    CPRaportFormatRowFactory.create(
+        blend=None,
+        substance=substance,
+        section="A",
+        time_frame=time_frames[(2000, None)],
+        sort_order=1,
+    )
+
+    cp_ar = CPReportArchive.objects.create(
+        name=cp_report_2019.name,
+        year=cp_report_2019.year,
+        country=cp_report_2019.country,
+        status=cp_report_2019.status,
+        version=1,
+        created_by=user,
+        last_updated_by=user,
+    )
+
+    return cp_ar
+
+
+@pytest.fixture(name="_setup_old_version_2005")
+def setup_old_version_2005(
+    cp_report_2005, substance, blend, adm_rows, adm_columns, time_frames, user
+):
+    cp_report_2005.status = CPReport.CPReportStatus.FINAL
+    cp_report_2005.version = 2
+    cp_report_2005.save()
+
+    CPRaportFormatRowFactory.create(
+        blend=blend,
+        substance=None,
+        section="B",
+        time_frame=time_frames[(2000, None)],
+        sort_order=2,
+    )
+
+    CPRaportFormatRowFactory.create(
+        blend=None,
+        substance=substance,
+        section="A",
+        time_frame=time_frames[(2000, None)],
+        sort_order=1,
+    )
+
+    cp_ar = CPReportArchive.objects.create(
+        name=cp_report_2005.name,
+        year=cp_report_2005.year,
+        country=cp_report_2005.country,
+        status=cp_report_2005.status,
+        version=1,
+        created_by=user,
+        last_updated_by=user,
+    )
+
+    adm_b_row = adm_rows[0]
+    adm_b_col = adm_columns[0]
+
+    AdmRecordArchive.objects.create(
+        row=adm_b_row,
+        column=adm_b_col,
+        section="B",
+        value_text="Treviso",
+        country_programme_report=cp_ar,
+    )
+
+    return cp_ar

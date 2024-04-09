@@ -19,6 +19,7 @@ import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
 import { getSections } from '.'
+import Portal from '../../Utils/Portal'
 import { CPArchiveHeader, CPViewHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
 
@@ -38,9 +39,11 @@ export type TableProps = AgGridReactProps & {
 
 const TableProps: TableProps = {
   Toolbar: ({
+    archive,
     enterFullScreen,
     exitFullScreen,
     fullScreen,
+    isActiveSection,
     onPrint,
     print,
     report,
@@ -62,70 +65,92 @@ const TableProps: TableProps = {
         >
           {section.title}
         </Typography>
-        <div className="flex items-center justify-end">
-          <Dropdown
-            color="primary"
-            label={<IoDownloadOutline />}
-            tooltip="Download"
-            icon
-          >
-            <Dropdown.Item>
-              <Link
-                className="flex items-center gap-x-2 text-black no-underline"
-                target="_blank"
-                href={
-                  formatApiUrl('api/country-programme/export/') +
-                  '?cp_report_id=' +
-                  report.data?.id.toString()
-                }
-                download
-              >
-                <AiFillFileExcel className="fill-green-700" size={24} />
-                <span>XLSX</span>
-              </Link>
-            </Dropdown.Item>
-            <Dropdown.Item onClick={onPrint}>
-              <Link
-                className="flex items-center gap-x-2 text-black no-underline"
-                target="_blank"
-                href={
-                  formatApiUrl('api/country-programme/print/') +
-                  '?cp_report_id=' +
-                  report.data?.id.toString()
-                }
-                download
-              >
-                <AiFillFilePdf className="fill-red-700" size={24} />
-                <span>PDF</span>
-              </Link>
-            </Dropdown.Item>
-          </Dropdown>
-          {section.allowFullScreen && !fullScreen && (
-            <Tooltip placement="top" title="Enter fullscreen">
-              <IconButton
-                color="primary"
-                onClick={() => {
-                  enterFullScreen()
-                }}
-              >
-                <IoExpand />
-              </IconButton>
-            </Tooltip>
-          )}
-          {fullScreen && (
-            <Tooltip placement="top" title="Exit fullscreen">
-              <IconButton
-                className="exit-fullscreen not-printable p-2 text-primary"
-                aria-label="exit fullscreen"
-                onClick={() => {
-                  exitFullScreen()
-                }}
-              >
-                <IoClose size={24} />
-              </IconButton>
-            </Tooltip>
-          )}
-        </div>
+        <Portal
+          active={isActiveSection && !fullScreen}
+          domNode="sectionToolbar"
+        >
+          <div className="flex items-center justify-end">
+            <Dropdown
+              color="primary"
+              tooltip="Download"
+              label={
+                <div className="flex items-center justify-between gap-x-2 text-base">
+                  <span className="font-medium text-primary">Download</span>
+                  <IoDownloadOutline className="text-xl text-secondary" />
+                </div>
+              }
+              icon
+            >
+              <Dropdown.Item>
+                <Link
+                  className="flex items-center gap-x-2 text-black no-underline"
+                  target="_blank"
+                  href={
+                    formatApiUrl(
+                      `api/country-programme${archive ? '-archive' : ''}/export/`,
+                    ) +
+                    '?cp_report_id=' +
+                    report.data?.id.toString()
+                  }
+                  download
+                >
+                  <AiFillFileExcel className="fill-green-700" size={24} />
+                  <span>XLSX</span>
+                </Link>
+              </Dropdown.Item>
+              <Dropdown.Item onClick={onPrint}>
+                <Link
+                  className="flex items-center gap-x-2 text-black no-underline"
+                  target="_blank"
+                  href={
+                    formatApiUrl(
+                      `api/country-programme${archive ? '-archive' : ''}/print/`,
+                    ) +
+                    '?cp_report_id=' +
+                    report.data?.id.toString()
+                  }
+                  download
+                >
+                  <AiFillFilePdf className="fill-red-700" size={24} />
+                  <span>PDF</span>
+                </Link>
+              </Dropdown.Item>
+            </Dropdown>
+            {section.allowFullScreen && !fullScreen && (
+              <Tooltip placement="top" title="Enter fullscreen">
+                <IconButton
+                  color="primary"
+                  onClick={() => {
+                    enterFullScreen()
+                  }}
+                >
+                  <div className="flex items-center justify-between gap-x-2 text-base">
+                    <span className="font-medium text-primary">Fullscreen</span>
+                    <IoExpand className="text-xl text-secondary" />
+                  </div>
+                </IconButton>
+              </Tooltip>
+            )}
+            {fullScreen && (
+              <Tooltip placement="top" title="Exit fullscreen">
+                <IconButton
+                  className="exit-fullscreen not-printable p-2 text-primary"
+                  aria-label="exit fullscreen"
+                  onClick={() => {
+                    exitFullScreen()
+                  }}
+                >
+                  <div className="flex items-center justify-between gap-x-2 text-base">
+                    <span className="font-medium text-primary">
+                      Exit fullscreen
+                    </span>
+                    <IoClose className="text-xl text-secondary" />
+                  </div>
+                </IconButton>
+              </Tooltip>
+            )}
+          </div>
+        </Portal>
       </div>
     )
   },
@@ -195,36 +220,39 @@ function CPView(props: { archive?: boolean }) {
       />
       {!!report.error && <Error error={report.error} />}
       {archive ? <CPArchiveHeader /> : <CPViewHeader />}
-      <Tabs
-        className="scrollable"
-        aria-label="view country programme report"
-        ref={tabsEl}
-        scrollButtons="auto"
-        value={activeTab}
-        variant="scrollable"
-        TabIndicatorProps={{
-          className: 'h-0',
-          style: { transitionDuration: '150ms' },
-        }}
-        onChange={(event, newValue) => {
-          setActiveTab(newValue)
-        }}
-        allowScrollButtonsMobile
-      >
-        {sections.map((section) => (
-          <Tab
-            id={section.id}
-            key={section.id}
-            className="rounded-b-none px-3 py-2"
-            aria-controls={section.panelId}
-            label={section.label}
-            classes={{
-              selected:
-                'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
-            }}
-          />
-        ))}
-      </Tabs>
+      <div className="flex items-center justify-between">
+        <Tabs
+          className="scrollable"
+          aria-label="view country programme report"
+          ref={tabsEl}
+          scrollButtons="auto"
+          value={activeTab}
+          variant="scrollable"
+          TabIndicatorProps={{
+            className: 'h-0',
+            style: { transitionDuration: '150ms' },
+          }}
+          onChange={(event, newValue) => {
+            setActiveTab(newValue)
+          }}
+          allowScrollButtonsMobile
+        >
+          {sections.map((section) => (
+            <Tab
+              id={section.id}
+              key={section.id}
+              className="rounded-b-none px-3 py-2"
+              aria-controls={section.panelId}
+              label={section.label}
+              classes={{
+                selected:
+                  'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
+              }}
+            />
+          ))}
+        </Tabs>
+        <div id="sectionToolbar"></div>
+      </div>
 
       {report.emptyForm.loaded &&
         sections.map((section, index) => {
@@ -254,7 +282,9 @@ function CPView(props: { archive?: boolean }) {
                     variant={variant}
                     TableProps={{
                       ...TableProps,
+                      archive,
                       context: { section, variant },
+                      isActiveSection: activeTab == index,
                       report,
                       section,
                     }}

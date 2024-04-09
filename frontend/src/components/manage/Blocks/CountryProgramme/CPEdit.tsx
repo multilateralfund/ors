@@ -36,6 +36,7 @@ import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
 import { getSections } from '.'
+import Portal from '../../Utils/Portal'
 import { CPEditHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
 
@@ -47,7 +48,13 @@ function defaults(arr: Array<any>, value: any) {
 }
 
 const TableProps = {
-  Toolbar: ({ enterFullScreen, exitFullScreen, fullScreen, section }: any) => {
+  Toolbar: ({
+    enterFullScreen,
+    exitFullScreen,
+    fullScreen,
+    isActiveSection,
+    section,
+  }: any) => {
     return (
       <div
         className={cx('mb-2 flex', {
@@ -64,41 +71,54 @@ const TableProps = {
         >
           {section.title}
         </Typography>
-        <div className="flex items-center justify-end">
-          {/* {!fullScreen && (
-            <Dropdown color="primary" label={<IoDownloadOutline />} icon>
-              <Dropdown.Item>
-                <div className="flex items-center gap-x-2">
-                  <AiFillFilePdf className="fill-red-700" size={24} />
-                  <span>PDF</span>
-                </div>
-              </Dropdown.Item>
-            </Dropdown>
-          )} */}
-          {section.allowFullScreen && !fullScreen && (
-            <IconButton
-              color="primary"
-              onClick={() => {
-                enterFullScreen()
-              }}
-            >
-              <IoExpand />
-            </IconButton>
-          )}
-          {fullScreen && (
-            <div>
+        <Portal
+          active={isActiveSection && !fullScreen}
+          domNode="sectionToolbar"
+        >
+          <div className="flex items-center justify-end">
+            {/* {!fullScreen && (
+              <Dropdown color="primary" label={<IoDownloadOutline />} icon>
+                <Dropdown.Item>
+                  <div className="flex items-center gap-x-2">
+                    <AiFillFilePdf className="fill-red-700" size={24} />
+                    <span>PDF</span>
+                  </div>
+                </Dropdown.Item>
+              </Dropdown>
+            )} */}
+            {section.allowFullScreen && !fullScreen && (
               <IconButton
-                className="exit-fullscreen not-printable p-2 text-primary"
-                aria-label="exit fullscreen"
+                color="primary"
                 onClick={() => {
-                  exitFullScreen()
+                  enterFullScreen()
                 }}
               >
-                <IoClose size={32} />
+                <div className="flex items-center justify-between gap-x-2 text-base">
+                  <span className="font-medium text-primary">Fullscreen</span>
+                  <IoExpand className="text-xl text-secondary" />
+                </div>
               </IconButton>
-            </div>
-          )}
-        </div>
+            )}
+            {fullScreen && (
+              <div>
+                <IconButton
+                  className="exit-fullscreen not-printable p-2 text-primary"
+                  aria-label="exit fullscreen"
+                  onClick={() => {
+                    exitFullScreen()
+                  }}
+                >
+                  <div className="flex items-center justify-between gap-x-2 text-base">
+                    <span className="font-medium text-primary">
+                      Exit fullscreen
+                    </span>
+                    <IoClose className="text-xl text-secondary" />
+                  </div>
+                </IconButton>
+              </div>
+            )}
+          </div>
+        </Portal>
       </div>
     )
   },
@@ -299,9 +319,6 @@ function CPEdit() {
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [activeTab])
 
-  console.log('CPEdit form', form)
-  console.log('CPEdit getSubmitFormData', getSubmitFormData())
-
   return (
     <>
       <Loading
@@ -317,42 +334,45 @@ function CPEdit() {
         setErrors={setErrors}
       />
       <form className="create-submission-form">
-        <Tabs
-          className="scrollable"
-          aria-label="create submission sections"
-          ref={tabsEl}
-          scrollButtons="auto"
-          value={activeTab}
-          variant="scrollable"
-          TabIndicatorProps={{
-            className: 'h-0',
-            style: { transitionDuration: '150ms' },
-          }}
-          onChange={(event: React.SyntheticEvent, index: number) => {
-            setActiveTab(index)
-          }}
-          allowScrollButtonsMobile
-        >
-          {sections.map((section) => (
-            <Tab
-              key={section.id}
-              className={cx('rounded-b-none px-3 py-2', {
-                'MuiTab-error': !isEmpty(errors?.[section.id]),
-              })}
-              aria-controls={section.panelId}
-              label={section.label}
-              classes={{
-                selected:
-                  'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
-              }}
-            />
-          ))}
-        </Tabs>
-        <CPSectionWrapper>
-          {!!report.data &&
-            sections.map((section, index) => {
-              if (!includes(renderedSections, index)) return null
-              const sectionName = `reported_${section.id}`
+        <div className="flex items-center justify-between">
+          <Tabs
+            className="scrollable"
+            aria-label="create submission sections"
+            ref={tabsEl}
+            scrollButtons="auto"
+            value={activeTab}
+            variant="scrollable"
+            TabIndicatorProps={{
+              className: 'h-0',
+              style: { transitionDuration: '150ms' },
+            }}
+            onChange={(event: React.SyntheticEvent, index: number) => {
+              setActiveTab(index)
+            }}
+            allowScrollButtonsMobile
+          >
+            {sections.map((section) => (
+              <Tab
+                key={section.id}
+                className={cx('rounded-b-none px-3 py-2', {
+                  'MuiTab-error': !isEmpty(errors?.[section.id]),
+                })}
+                aria-controls={section.panelId}
+                label={section.label}
+                classes={{
+                  selected:
+                    'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
+                }}
+              />
+            ))}
+          </Tabs>
+          <div id="sectionToolbar"></div>
+        </div>
+                  <CPSectionWrapper>
+        {!!report.data &&
+          sections.map((section, index) => {
+            if (!includes(renderedSections, index)) return null
+                         const sectionName = `reported_${section.id}`
               const isSectionChecked: boolean =
                 section.id === 'report_info' ||
                 // @ts-ignore
@@ -360,67 +380,68 @@ function CPEdit() {
                 false
               const showSectionSelect =
                 variant?.model === 'V' && section.id !== 'report_info'
-              const Section: React.FC<any> = section.component
-              return (
-                <div
-                  id={section.panelId}
-                  key={section.panelId}
-                  className={cx('transition', {
-                    'absolute -left-[9999px] -top-[9999px] opacity-0':
-                      activeTab !== index,
-                  })}
-                  aria-labelledby={section.id}
-                  role="tabpanel"
-                >
-                  {showSectionSelect && (
-                    <SectionReportedSelect
-                      isSectionChecked={isSectionChecked}
-                      sectionName={sectionName}
+               const Section: React.FC<any> = section.component
+            return (
+              <div
+                id={section.panelId}
+                key={section.panelId}
+                className={cx('transition', {
+                  'absolute -left-[9999px] -top-[9999px] opacity-0':
+                    activeTab !== index,
+                })}
+                aria-labelledby={section.id}
+                role="tabpanel"
+              >
+                {showSectionSelect && (
+                  <SectionReportedSelect
+                    isSectionChecked={isSectionChecked}
+                    sectionName={sectionName}
+                    onSectionCheckChange={onSectionCheckChange}
+                  />
+                )}
+                <div className="relative">
+                  <FootnotesProvider>
+                    <Section
+                      Section={get(Sections, section.id)}
+                      emptyForm={report.emptyForm.data || {}}
+                      errors={errors}
+                      form={form}
+                      isEdit={true}
+                      report={report.data}
+                      section={section}
+                      sectionsChecked={sectionsChecked}
+                      setForm={setForm}
+                      variant={variant}
+                      TableProps={{
+                        ...TableProps,
+                        context: {section, variant},
+                        errors: errors[section.id],
+                        isActiveSection: activeTab == index,
+                        report,
+                        section,
+                      }}
                       onSectionCheckChange={onSectionCheckChange}
                     />
-                  )}
-                  <div className="relative">
-                    <FootnotesProvider>
-                      <Section
-                        Section={get(Sections, section.id)}
-                        emptyForm={report.emptyForm.data || {}}
-                        errors={errors}
-                        form={form}
-                        isEdit={true}
-                        report={report.data}
-                        section={section}
-                        sectionsChecked={sectionsChecked}
-                        setForm={setForm}
-                        variant={variant}
-                        TableProps={{
-                          ...TableProps,
-                          context: { section, variant },
-                          errors: errors[section.id],
-                          report,
-                          section,
-                        }}
-                        onSectionCheckChange={onSectionCheckChange}
-                      />
-                      {!isSectionChecked && variant?.model === 'V' ? (
-                        <SectionOverlay />
-                      ) : null}
-                    </FootnotesProvider>
-                  </div>
+                    {!isSectionChecked && variant?.model === 'V' ? (
+                      <SectionOverlay/>
+                    ) : null}
+                  </FootnotesProvider>
                 </div>
-              )
-            })}
-        </CPSectionWrapper>
+              </div>
+            )
+          })}
+                  </CPSectionWrapper>
       </form>
     </>
   )
 }
 
 export default function CPEditWrapper(props: { iso3: string; year: number }) {
-  const { iso3, year } = props
+  const {iso3, year} = props
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const country = countries.filter((country) => country.iso3 === iso3)[0]
 
-  const { blends, fetchBundle, report, setReport, substances } = useStore(
+  const {blends, fetchBundle, report, setReport, substances} = useStore(
     (state) => state.cp_reports,
   )
 
@@ -455,5 +476,5 @@ export default function CPEditWrapper(props: { iso3: string; year: number }) {
     )
   }
 
-  return <CPEdit />
+  return <CPEdit/>
 }

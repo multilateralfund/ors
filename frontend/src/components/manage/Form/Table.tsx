@@ -102,8 +102,8 @@ function setupFixedHeaderObserver(agHeader: HTMLDivElement) {
 
 const AgGridWrapper: any = styled('div')`
   --ag-header-depth: ${(props: any) => props.headerDepth ?? 1} !important;
-  --ag-header-height: ${(props: any) => props.headerHeight ?? 28}px !important;
-  --ag-row-height: ${(props: any) => props.rowHeight ?? 28}px !important;
+  --ag-header-height: ${(props: any) => props.headerHeight ?? 36}px !important;
+  --ag-row-height: ${(props: any) => props.rowHeight ?? 36}px !important;
 `
 
 function Table(props: TableProps) {
@@ -132,7 +132,7 @@ function Table(props: TableProps) {
     pinnedBottomRowData,
     rowBuffer = 20,
     rowCount = 0,
-    rowHeight = 28,
+    rowHeight = 36,
     rowsVisible = 15,
     withFluidEmptyColumn = false,
     withSeparators = false,
