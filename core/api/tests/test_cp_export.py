@@ -139,3 +139,50 @@ class TestCPExportEmpty(BaseTest):
             "Adm D",
         ]
         assert wb["Section A"]["A1"].value == "Country: XXXX Year: 2005"
+
+
+class TestCPArchiveExportXLSX(BaseTest):
+    url = reverse("country-programme-archive-export")
+
+    def test_get_cp_export_anon(self, cp_report_2019):
+        response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
+        assert response.status_code == 403
+
+    def test_get_cp_archive_export_new(self, user, _setup_old_version_2019):
+        self.client.force_authenticate(user=user)
+
+        cp_ar = _setup_old_version_2019
+
+        response = self.client.get(self.url, {"cp_report_id": cp_ar.id})
+        assert response.status_code == 200
+        assert response.filename == cp_ar.name + ".xlsx"
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        assert wb.sheetnames == [
+            "Section A",
+            "Section B",
+            "Section C",
+            "Section D",
+            "Section E",
+            "Section F",
+        ]
+        assert wb["Section A"]["A1"].value == "Country: Romania Year: 2019"
+
+    def test_get_cp_export_old(self, user, _setup_old_version_2005):
+        self.client.force_authenticate(user=user)
+
+        cp_ar = _setup_old_version_2005
+
+        response = self.client.get(self.url, {"cp_report_id": cp_ar.id})
+        assert response.status_code == 200
+        assert response.filename == cp_ar.name + ".xlsx"
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        assert wb.sheetnames == [
+            "Section A",
+            "Adm B",
+            "Adm C",
+            "Section C",
+            "Adm D",
+        ]
+        assert wb["Section A"]["A1"].value == "Country: Romania Year: 2005"
