@@ -41,13 +41,6 @@ export default function AdmD(props: any) {
                         />
                       }
                     />
-                    {choice.with_text && report.adm_d[row.id].value_text && (
-                      <Field
-                        type="textarea"
-                        value={report.adm_d[row.id].value_text}
-                        readOnly
-                      />
-                    )}
                     {!!choice.text_label && (
                       <FormHelperText className="text-lg">
                         {choice.text_label}
