@@ -160,8 +160,7 @@ def validate_section_a(section_records):
 
 
 def validate_section_b(section_records):
-    if not section_records:
-        return []
+    return []
 
 
 def validate_section_c(section_records):
@@ -207,7 +206,10 @@ def check_hfc_produced(section_a_records, section_b_records):
     return False
 
 
-def check_section_d_filled(row):
+def check_section_d_filled(section_d_records):
+    if not section_d_records:
+        return False
+    row = section_d_records[0]
     all_uses = row.get("all_uses")
     feedstock_gc = row.get("feedstock_gc")
     destruction = row.get("destruction")
@@ -223,7 +225,7 @@ def validate_section_d(
     section_b_records,
     section_e_records,
 ):
-    if check_section_d_filled(section_d_records[0]):
+    if check_section_d_filled(section_d_records):
         hfc_substances_produced = check_hfc_produced(
             section_a_records, section_b_records
         )
@@ -252,7 +254,7 @@ def validate_section_d(
     if sum_all_uses == 0 and sum_feedstock == 0 and sum_destruction == 0:
         return []
 
-    row = section_d_records[0]
+    row = section_d_records[0] if section_d_records else {}
     row_id = row.get("row_id")
     error_dict = defaultdict(dict)
     detail = ValidationError(
@@ -276,19 +278,23 @@ def validate_section_d(
 
 
 def validate_section_e(section_e_records, section_d_records):
-    if not check_section_d_filled(section_d_records[0]):
-        return []
-
-    error_dict = {}
     detail = (
         ValidationError(
             _("Facility name must be provided if data in Section D is provided.")
         ).detail,
     )
 
+    if check_section_d_filled(section_d_records) and not section_e_records:
+        return [
+            {
+                "row_id": "general_error",
+                "errors": detail,
+            },
+        ]
     if not section_e_records:
-        error_dict["general_error"] = {"facility": detail}
+        return []
 
+    error_dict = {}
     for row in section_e_records:
         if not row.get("facility"):
             row_id = row.get("row_id")
@@ -299,5 +305,4 @@ def validate_section_e(section_e_records, section_d_records):
 
 
 def validate_section_f(section_records):
-    if not section_records:
-        return []
+    return []
