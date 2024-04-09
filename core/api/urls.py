@@ -16,7 +16,12 @@ from core.api.views.chemicals import (
     SimilarBlendsListView,
     SubstancesListView,
 )
-from core.api.views.cp_archive import CPRecordsArchiveListView, CPReportVersionsListView
+from core.api.views.cp_archive import (
+    CPRecordArchiveExportView,
+    CPRecordArchivePrintView,
+    CPRecordsArchiveListView,
+    CPReportVersionsListView,
+)
 from core.api.views.cp_prices import CPPricesView
 from core.api.views.cp_records_export import CPEmptyExportView
 from core.api.views.cp_reports import (
@@ -166,6 +171,16 @@ urlpatterns = [
         "country-programme-archive/records/",
         CPRecordsArchiveListView.as_view(),
         name="country-programme-archive-record-list",
+    ),
+    path(
+        "country-programme-archive/export/",
+        CPRecordArchiveExportView.as_view(),
+        name="country-programme-archive-export",
+    ),
+    path(
+        "country-programme-archive/print/",
+        CPRecordArchivePrintView.as_view(),
+        name="country-programme-archive-print",
     ),
     path(
         "countries/",
