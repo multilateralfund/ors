@@ -167,27 +167,37 @@ function useGridOptions(props: {
               },
             ]
           : []),
-        {
-          cellEditor: 'agDateCellEditor',
-          dataType: 'date',
-          field: 'banned_date',
-          headerName: 'If imports are banned, indicate date ban commenced',
-          ...sectionColDefById['banned_date'],
-        },
-        {
-          cellClass: 'ag-text-left',
-          cellEditor: 'agTextCellEditor',
-          field: 'remarks',
-          headerName: 'Remarks',
-          ...sectionColDefById['remarks'],
-          headerComponentParams: {
-            ...sectionColDefById['remarks'].headerComponentParams,
-            footnote: {
-              ...sectionColDefById['remarks'].headerComponentParams.footnote,
-              id: '3',
-            },
-          },
-        },
+        ...(includes(['IV', 'V'], model)
+          ? [
+              {
+                cellEditor: 'agDateCellEditor',
+                dataType: 'date',
+                field: 'banned_date',
+                headerName:
+                  'If imports are banned, indicate date ban commenced',
+                ...sectionColDefById['banned_date'],
+              },
+            ]
+          : []),
+        ...(includes(['II', 'III', 'IV', 'V'], model)
+          ? [
+              {
+                cellClass: 'ag-text-left',
+                cellEditor: 'agTextCellEditor',
+                field: 'remarks',
+                headerName: 'Remarks',
+                ...sectionColDefById['remarks'],
+                headerComponentParams: {
+                  ...sectionColDefById['remarks'].headerComponentParams,
+                  footnote: {
+                    ...sectionColDefById['remarks'].headerComponentParams
+                      .footnote,
+                    id: '3',
+                  },
+                },
+              },
+            ]
+          : []),
       ],
       defaultColDef: {
         autoHeight: true,
