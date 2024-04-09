@@ -8,6 +8,8 @@ import AdmCCreate from '@ors/components/manage/Blocks/Section/AdmC/Create/Create
 import AdmCView from '@ors/components/manage/Blocks/Section/AdmC/View/View'
 import AdmDCreate from '@ors/components/manage/Blocks/Section/AdmD/Create/Create'
 import AdmDView from '@ors/components/manage/Blocks/Section/AdmD/View/View'
+import ReportInfoCreate from '@ors/components/manage/Blocks/Section/ReportInfo/Create/Create'
+import ReportInfoView from '@ors/components/manage/Blocks/Section/ReportInfo/View/View'
 import SectionACreate from '@ors/components/manage/Blocks/Section/SectionA/Create/Create'
 import SectionAView from '@ors/components/manage/Blocks/Section/SectionA/View/View'
 import SectionBCreate from '@ors/components/manage/Blocks/Section/SectionB/Create/Create'
@@ -60,6 +62,7 @@ type ComponentsCreate = {
   adm_b?: typeof DefaultComponent
   adm_c?: typeof DefaultComponent
   adm_d?: typeof DefaultComponent
+  report_info: typeof ReportInfoCreate
   section_a: typeof SectionACreate
   section_b: typeof SectionBCreate
   section_c: typeof SectionCCreate
@@ -72,6 +75,7 @@ type ComponentsView = {
   adm_b: typeof AdmBView
   adm_c: typeof AdmCView
   adm_d: typeof AdmDView
+  report_info: typeof ReportInfoView
   section_a: typeof SectionAView
   section_b: typeof SectionBView
   section_c: typeof SectionCView
@@ -84,6 +88,7 @@ type ComponentsEdit = {
   adm_b: typeof AdmBCreate
   adm_c: typeof AdmCCreate
   adm_d: typeof AdmDCreate
+  report_info: typeof ReportInfoCreate
   section_a: typeof SectionACreate
   section_b: typeof SectionBCreate
   section_c: typeof SectionCCreate
@@ -98,6 +103,7 @@ const components: {
   view: ComponentsView
 } = {
   create: {
+    report_info: ReportInfoCreate,
     section_a: SectionACreate,
     section_b: SectionBCreate,
     section_c: SectionCCreate,
@@ -109,6 +115,7 @@ const components: {
     adm_b: AdmBCreate,
     adm_c: AdmCCreate,
     adm_d: AdmDCreate,
+    report_info: ReportInfoCreate,
     section_a: SectionACreate,
     section_b: SectionBCreate,
     section_c: SectionCCreate,
@@ -120,6 +127,7 @@ const components: {
     adm_b: AdmBView,
     adm_c: AdmCView,
     adm_d: AdmDView,
+    report_info: ReportInfoView,
     section_a: SectionAView,
     section_b: SectionBView,
     section_c: SectionCView,
@@ -162,10 +170,18 @@ export function getSections(
     ]) ||
       []),
     ...((includes(['II', 'III'], model) && ['adm_b', 'adm_c', 'adm_d']) || []),
+    ...((model === 'V' && ['report_info']) || []),
   ]
 
   return filter(
     [
+      {
+        id: 'report_info',
+        component: components[mode].report_info || DefaultComponent,
+        label: 'Report Info',
+        panelId: 'report-info-panel',
+        title: 'Report information and status',
+      },
       {
         id: 'section_a',
         allowFullScreen: true,

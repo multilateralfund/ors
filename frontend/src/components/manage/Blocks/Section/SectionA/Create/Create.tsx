@@ -1,7 +1,7 @@
 import { EmptyReportType } from '@ors/types/api_empty-form'
 import { ReportVariant } from '@ors/types/variants'
 
-import { useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 
 import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
@@ -110,12 +110,13 @@ export default function SectionACreate(props: {
   TableProps: PassedCPCreateTableProps
   emptyForm: EmptyReportType
   form: CPBaseForm
+  onSectionCheckChange: (section: string, isChecked: boolean) => void
+  sectionsChecked: Record<string, boolean>
   setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
   variant: ReportVariant
 }) {
   const { Section, TableProps, emptyForm, form, setForm, variant } = props
   const newNode = useRef<RowNode>()
-
   const substances = useStore(
     (state) => getResults(state.cp_reports.substances.data).results,
   )

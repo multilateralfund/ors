@@ -124,9 +124,11 @@ export const createCPReportsSlice = ({
         fetchVersions,
         setReportCountry,
       } = get().cp_reports
+      // const {setSectionsCHecked} = get().cp_sections;
       await fetchArchivedReport(report_id)
       const report = getSlice<CPReport>('cp_reports.report.data')
       setReportCountry(report)
+      // setSectionsCHecked(report.)
       fetchEmptyForm(report, view)
       if (view) {
         fetchVersions(report.country_id, report.year)

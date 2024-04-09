@@ -13,7 +13,7 @@ from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_price import CPPricesSerializer
 from core.api.serializers.cp_record import CPRecordSerializer
-from core.api.serializers.cp_report import CPReportSerializer
+from core.api.serializers.cp_report import CPReportSerializer, CPReportInfoSerializer
 from core.api.views.utils import get_cp_report_from_request
 from core.models.adm import AdmRecord
 from core.models.country_programme import (
@@ -48,6 +48,7 @@ class CPRecordBaseListView(views.APIView):
     adm_record_class = None
 
     cp_report_seri_class = None
+    cp_report_info_seri_class = None
     cp_record_seri_class = None
     cp_prices_seri_class = None
     cp_generation_seri_class = None
@@ -289,7 +290,7 @@ class CPRecordBaseListView(views.APIView):
             "remarks": cp_report.comment,
         }
 
-        return {
+        ret = {
             "cp_report": self.cp_report_seri_class(cp_report).data,
             "section_a": self.cp_record_seri_class(section_a, many=True).data,
             "section_b": self.cp_record_seri_class(section_b, many=True).data,
@@ -298,6 +299,13 @@ class CPRecordBaseListView(views.APIView):
             "section_e": self.cp_emission_seri_class(section_e, many=True).data,
             "section_f": section_f,
         }
+        if hasattr(cp_report, "cpreportedsections"):
+            # This property will not be present for pre-2023
+            ret["report_info"] = self.cp_report_info_seri_class(
+                cp_report.cpreportedsections
+            ).data
+
+        return ret
 
     def _get_regroupped_adm_records(self, adm_records):
         result = {}
@@ -387,6 +395,7 @@ class CPRecordListView(CPRecordBaseListView):
     adm_record_class = AdmRecord
 
     cp_report_seri_class = CPReportSerializer
+    cp_report_info_seri_class = CPReportInfoSerializer
     cp_record_seri_class = CPRecordSerializer
     cp_prices_seri_class = CPPricesSerializer
     cp_generation_seri_class = CPGenerationSerializer

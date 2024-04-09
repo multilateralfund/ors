@@ -23,9 +23,10 @@ import { useSnackbar } from 'notistack'
 
 import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
 
-import Field from '@ors/components/manage/Form/Field'
+import SectionReportedSelect from '@ors/components/manage/Blocks/Section/SectionReportedSelect'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Link from '@ors/components/ui/Link/Link'
+import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
 import api, { getResults } from '@ors/helpers/Api/Api'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
@@ -101,6 +102,16 @@ export interface PassedCPCreateTableProps extends CPCreateTableProps {
 
 export interface CPBaseForm {
   country: WidgetCountry | null
+  report_info: {
+    reported_section_a: boolean
+    reported_section_b: boolean
+    reported_section_c: boolean
+    reported_section_d: boolean
+    reported_section_e: boolean
+    reported_section_f: boolean
+    reporting_email: string
+    reporting_entry: string
+  }
   section_a: SectionA['data']
   section_b: SectionB['data']
   section_c: SectionC['data']
@@ -225,6 +236,7 @@ const CPCreate: React.FC = () => {
   const router = useRouter()
   const { enqueueSnackbar } = useSnackbar()
   const { report } = useStore((state) => state.cp_reports)
+  const user = useStore((state) => state.user)
   const all_countries = useStore(
     (state) => state.common.countries_for_listing.data,
   )
@@ -294,6 +306,16 @@ const CPCreate: React.FC = () => {
   const [currentYear] = useState(new Date().getFullYear() - 1)
   const [form, setForm] = useState<CPBaseForm>({
     country: null,
+    report_info: {
+      reported_section_a: false,
+      reported_section_b: false,
+      reported_section_c: false,
+      reported_section_d: false,
+      reported_section_e: false,
+      reported_section_f: false,
+      reporting_email: user.data.email,
+      reporting_entry: user.data.username,
+    },
     section_a: Sections.section_a.getData(),
     section_b: Sections.section_b.getData(),
     section_c: Sections.section_c.getData(),
@@ -322,11 +344,40 @@ const CPCreate: React.FC = () => {
     [variant],
   )
 
+  const fieldProps = {
+    id: 'country',
+    Input: {
+      error: !!errors.country_id,
+      helperText: errors.country_id?.general_error,
+      // label: 'Country',
+    },
+    disabled: existingReports.loading,
+    name: 'country_id',
+    onChange: (_event: any, value: WidgetCountry) => {
+      const country = value as WidgetCountry
+      setForm({ ...form, country })
+      setCurrentCountry(all_countries.filter((c) => c.id === country.id)[0])
+    },
+    options: countries,
+    value: form.country,
+    widget: 'autocomplete',
+  }
+
   const getSubmitFormData = useCallback(() => {
     return {
       ...form,
       country_id: form.country?.id,
       name: form.country?.label ? `${form.country?.label} ${form.year}` : '',
+      report_info: {
+        reported_section_a: form.report_info.reported_section_a,
+        reported_section_b: form.report_info.reported_section_b,
+        reported_section_c: form.report_info.reported_section_c,
+        reported_section_d: form.report_info.reported_section_d,
+        reported_section_e: form.report_info.reported_section_e,
+        reported_section_f: form.report_info.reported_section_f,
+        reporting_email: form.report_info.reporting_email,
+        reporting_entry: form.report_info.reporting_entry,
+      },
       section_a: Sections.section_a.getSubmitFormData(form.section_a),
       section_b: Sections.section_b.getSubmitFormData(form.section_b),
       section_c: Sections.section_c.getSubmitFormData(form.section_c),
@@ -398,6 +449,29 @@ const CPCreate: React.FC = () => {
 
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [activeTab])
+
+  const [sectionsChecked, setSectionsChecked] = useState({
+    reported_section_a: form.report_info.reported_section_a || false,
+    reported_section_b: form.report_info.reported_section_b || false,
+    reported_section_c: form.report_info.reported_section_c || false,
+    reported_section_d: form.report_info.reported_section_d || false,
+    reported_section_e: form.report_info.reported_section_e || false,
+    reported_section_f: form.report_info.reported_section_f || false,
+  })
+  const onSectionCheckChange = (section: string, isChecked: boolean) => {
+    setSectionsChecked((prevState: any) => ({
+      ...prevState,
+      [section]: isChecked,
+    }))
+
+    setForm((prevState: any) => ({
+      ...prevState,
+      report_info: {
+        ...prevState.report_info,
+        [section]: isChecked,
+      },
+    }))
+  }
 
   return (
     <>
@@ -519,29 +593,8 @@ const CPCreate: React.FC = () => {
           <div id="sectionToolbar"></div>
         </div>
         <CPSectionWrapper>
-          <div className="mb-4 grid grid-cols-1 gap-x-4 md:grid-cols-2 lg:grid-cols-3">
-            <Field
-              id="country"
-              name="country_id"
-              FieldProps={{ className: 'mb-0' }}
-              disabled={existingReports.loading}
-              options={countries}
-              value={form.country}
-              widget="autocomplete"
-              Input={{
-                error: !!errors.country_id,
-                helperText: errors.country_id?.general_error,
-                label: 'Country',
-              }}
-              onChange={(_event, value) => {
-                const country = value as WidgetCountry
-                setForm({ ...form, country })
-                setCurrentCountry(
-                  all_countries.filter((c) => c.id == country.id)[0],
-                )
-              }}
-            />
-            {!!existingReports.data?.length && currentCountry && (
+          {!!existingReports.data?.length && currentCountry && (
+            <div className="mb-4 grid grid-cols-1 gap-x-4 md:grid-cols-2 lg:grid-cols-3">
               <div className="flex items-center">
                 <Tooltip
                   placement="top"
@@ -557,8 +610,8 @@ const CPCreate: React.FC = () => {
                   </Typography>
                 </Tooltip>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {!!Object.keys(errors).length && (
             <Alert className="mb-4" severity="error">
@@ -570,6 +623,14 @@ const CPCreate: React.FC = () => {
           )}
           {sections.map((section, index) => {
             if (!includes(renderedSections, index)) return null
+            const sectionName: string = `reported_${section.id}`
+            const isSectionChecked: boolean =
+              section.id === 'report_info' ||
+              // @ts-ignore
+              sectionsChecked[sectionName] ||
+              false
+            const showSectionSelect =
+              variant?.model === 'V' && section.id !== 'report_info'
             const Section = section.component
             return (
               <div
@@ -582,26 +643,42 @@ const CPCreate: React.FC = () => {
                 aria-labelledby={section.id}
                 role="tabpanel"
               >
-                <FootnotesProvider>
-                  <Section
-                    Section={get(Sections, section.id)}
-                    emptyForm={report.emptyForm.data || {}}
-                    errors={errors}
-                    form={form}
-                    report={report.data}
-                    section={section}
-                    setForm={setForm}
-                    variant={variant}
-                    TableProps={{
-                      ...TableProps,
-                      context: { section, variant },
-                      errors: errors[section.id],
-                      isActiveSection: activeTab == index,
-                      report,
-                      section,
-                    }}
+                {showSectionSelect && (
+                  <SectionReportedSelect
+                    isSectionChecked={isSectionChecked}
+                    sectionName={sectionName}
+                    onSectionCheckChange={onSectionCheckChange}
                   />
-                </FootnotesProvider>
+                )}
+                <div className="relative">
+                  <FootnotesProvider>
+                    <Section
+                      Section={get(Sections, section.id)}
+                      emptyForm={report.emptyForm.data || {}}
+                      errors={errors}
+                      fieldProps={fieldProps}
+                      form={form}
+                      isCreate={true}
+                      report={report.data}
+                      section={section}
+                      sectionsChecked={sectionsChecked}
+                      setForm={setForm}
+                      variant={variant}
+                      TableProps={{
+                        ...TableProps,
+                        context: { section, variant },
+                        errors: errors[section.id],
+                        isActiveSection: activeTab == index,
+                        report,
+                        section,
+                      }}
+                      onSectionCheckChange={onSectionCheckChange}
+                    />
+                    {!isSectionChecked && variant?.model === 'V' ? (
+                      <SectionOverlay />
+                    ) : null}
+                  </FootnotesProvider>
+                </div>
               </div>
             )
           })}

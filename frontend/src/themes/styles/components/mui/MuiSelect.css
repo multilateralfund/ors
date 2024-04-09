@@ -1,0 +1,7 @@
+.ReportSelect [class*="mui-"][class*="MuiInputBase-root"][class*="MuiOutlinedInput-root"][class*="MuiSelect-root"] {
+  @apply bg-white rounded-lg border border-gray-400 h-10;
+}
+
+.ReportSelect .MuiButtonBase-root {
+  @apply rounded-none p-2;
+}

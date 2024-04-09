@@ -19,8 +19,10 @@ import {
 
 import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
 
+import SectionReportedSelect from '@ors/components/manage/Blocks/Section/SectionReportedSelect'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
+import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import useMakeClassInstance from '@ors/hooks/useMakeClassInstance'
@@ -195,6 +197,16 @@ function CPEdit() {
     adm_b: report.data?.adm_b,
     adm_c: report.data?.adm_c,
     adm_d: report.data?.adm_d,
+    report_info: {
+      reported_section_a: report.data?.report_info?.reported_section_a || false,
+      reported_section_b: report.data?.report_info?.reported_section_b || false,
+      reported_section_c: report.data?.report_info?.reported_section_c || false,
+      reported_section_d: report.data?.report_info?.reported_section_d || false,
+      reported_section_e: report.data?.report_info?.reported_section_e || false,
+      reported_section_f: report.data?.report_info?.reported_section_f || false,
+      reporting_email: report.data?.report_info?.reporting_email || null,
+      reporting_entry: report.data?.report_info?.reporting_entry || null,
+    },
     section_a: Sections.section_a.getData(),
     section_b: Sections.section_b.getData(),
     section_c: Sections.section_c.getData(),
@@ -248,6 +260,7 @@ function CPEdit() {
           [],
         ),
         adm_d: values(form.adm_d),
+        report_info: form.report_info,
         section_a: Sections.section_a.getSubmitFormData(form.section_a),
         section_b: Sections.section_b.getSubmitFormData(form.section_b),
         section_c: Sections.section_c.getSubmitFormData(form.section_c),
@@ -261,6 +274,29 @@ function CPEdit() {
     )
     /* eslint-disable-next-line */
   }, [form])
+
+  const [sectionsChecked, setSectionsChecked] = useState({
+    reported_section_a: report.data?.report_info?.reported_section_a || false,
+    reported_section_b: report.data?.report_info?.reported_section_b || false,
+    reported_section_c: report.data?.report_info?.reported_section_c || false,
+    reported_section_d: report.data?.report_info?.reported_section_d || false,
+    reported_section_e: report.data?.report_info?.reported_section_e || false,
+    reported_section_f: report.data?.report_info?.reported_section_f || false,
+  })
+  const onSectionCheckChange = (section: string, isChecked: boolean) => {
+    setSectionsChecked((prevState: any) => ({
+      ...prevState,
+      [section]: isChecked,
+    }))
+
+    setForm((prevState: any) => ({
+      ...prevState,
+      report_info: {
+        ...prevState.report_info,
+        [section]: isChecked,
+      },
+    }))
+  }
 
   useEffect(() => {
     const indicator = tabsEl.current?.querySelector('.MuiTabs-indicator')
@@ -332,10 +368,19 @@ function CPEdit() {
           </Tabs>
           <div id="sectionToolbar"></div>
         </div>
+                  <CPSectionWrapper>
         {!!report.data &&
           sections.map((section, index) => {
             if (!includes(renderedSections, index)) return null
-            const Section: React.FC<any> = section.component
+                         const sectionName = `reported_${section.id}`
+              const isSectionChecked: boolean =
+                section.id === 'report_info' ||
+                // @ts-ignore
+                sectionsChecked[sectionName] ||
+                false
+              const showSectionSelect =
+                variant?.model === 'V' && section.id !== 'report_info'
+               const Section: React.FC<any> = section.component
             return (
               <div
                 id={section.panelId}
@@ -347,42 +392,56 @@ function CPEdit() {
                 aria-labelledby={section.id}
                 role="tabpanel"
               >
-                <FootnotesProvider>
-                  <CPSectionWrapper>
+                {showSectionSelect && (
+                  <SectionReportedSelect
+                    isSectionChecked={isSectionChecked}
+                    sectionName={sectionName}
+                    onSectionCheckChange={onSectionCheckChange}
+                  />
+                )}
+                <div className="relative">
+                  <FootnotesProvider>
                     <Section
                       Section={get(Sections, section.id)}
                       emptyForm={report.emptyForm.data || {}}
                       errors={errors}
                       form={form}
+                      isEdit={true}
                       report={report.data}
                       section={section}
+                      sectionsChecked={sectionsChecked}
                       setForm={setForm}
                       variant={variant}
                       TableProps={{
                         ...TableProps,
-                        context: { section, variant },
+                        context: {section, variant},
                         errors: errors[section.id],
                         isActiveSection: activeTab == index,
                         report,
                         section,
                       }}
+                      onSectionCheckChange={onSectionCheckChange}
                     />
-                  </CPSectionWrapper>
-                </FootnotesProvider>
+                    {!isSectionChecked && variant?.model === 'V' ? (
+                      <SectionOverlay/>
+                    ) : null}
+                  </FootnotesProvider>
+                </div>
               </div>
             )
           })}
+                  </CPSectionWrapper>
       </form>
     </>
   )
 }
 
 export default function CPEditWrapper(props: { iso3: string; year: number }) {
-  const { iso3, year } = props
+  const {iso3, year} = props
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const country = countries.filter((country) => country.iso3 === iso3)[0]
 
-  const { blends, fetchBundle, report, setReport, substances } = useStore(
+  const {blends, fetchBundle, report, setReport, substances} = useStore(
     (state) => state.cp_reports,
   )
 
@@ -417,5 +476,5 @@ export default function CPEditWrapper(props: { iso3: string; year: number }) {
     )
   }
 
-  return <CPEdit />
+  return <CPEdit/>
 }

@@ -11,6 +11,7 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
+import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
 import { formatApiUrl } from '@ors/helpers/Api/Api'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
@@ -206,6 +207,8 @@ function CPView(props: { archive?: boolean }) {
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [activeTab, renderedSections])
 
+  console.log('CPView report', report)
+
   return (
     <>
       <Loading
@@ -253,6 +256,10 @@ function CPView(props: { archive?: boolean }) {
 
       {report.emptyForm.loaded &&
         sections.map((section, index) => {
+          const isSectionChecked =
+            section.id === 'report_info' ||
+            // @ts-ignore
+            report.data?.report_info?.[`reported_${section.id}`]
           if (!includes(renderedSections, index)) return null
           const Section = section.component
           return (
@@ -282,6 +289,9 @@ function CPView(props: { archive?: boolean }) {
                       section,
                     }}
                   />
+                  {!isSectionChecked && variant?.model === 'V' ? (
+                    <SectionOverlay />
+                  ) : null}
                 </CPSectionWrapper>
               </FootnotesProvider>
             </div>
