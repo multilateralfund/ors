@@ -178,9 +178,14 @@ function CPEdit() {
     adm_c: report.data?.adm_c,
     adm_d: report.data?.adm_d,
     report_info: {
-      reported_sections: report.data?.report_info?.reported_sections,
-      reporting_email: report.data?.report_info?.reporting_email,
-      reporting_entry: report.data?.report_info?.reporting_entry,
+      reported_section_a: report.data?.report_info?.reported_section_a || false,
+      reported_section_b: report.data?.report_info?.reported_section_b || false,
+      reported_section_c: report.data?.report_info?.reported_section_c || false,
+      reported_section_d: report.data?.report_info?.reported_section_d || false,
+      reported_section_e: report.data?.report_info?.reported_section_e || false,
+      reported_section_f: report.data?.report_info?.reported_section_f || false,
+      reporting_email: report.data?.report_info?.reporting_email || null,
+      reporting_entry: report.data?.report_info?.reporting_entry || null,
     },
     section_a: Sections.section_a.getData(),
     section_b: Sections.section_b.getData(),
@@ -250,25 +255,27 @@ function CPEdit() {
     /* eslint-disable-next-line */
   }, [form])
 
-  const [sectionsChecked, setSectionsChecked] = useState(
-    report.data?.report_info?.reported_sections || {},
-  )
+  const [sectionsChecked, setSectionsChecked] = useState({
+    reported_section_a: report.data?.report_info?.reported_section_a || false,
+    reported_section_b: report.data?.report_info?.reported_section_b || false,
+    reported_section_c: report.data?.report_info?.reported_section_c || false,
+    reported_section_d: report.data?.report_info?.reported_section_d || false,
+    reported_section_e: report.data?.report_info?.reported_section_e || false,
+    reported_section_f: report.data?.report_info?.reported_section_f || false,
+  })
   const onSectionCheckChange = (section: string, isChecked: boolean) => {
     setSectionsChecked((prevState: any) => ({
       ...prevState,
       [section]: isChecked,
     }))
-    console.log('CPEdit onSectionCheckChange form', form)
-    setForm({
-      ...form,
+
+    setForm((prevState: any) => ({
+      ...prevState,
       report_info: {
-        ...form.report_info,
-        reported_sections: {
-          ...form.report_info.reported_sections,
-          [section]: isChecked,
-        },
+        ...prevState.report_info,
+        [section]: isChecked,
       },
-    })
+    }))
   }
 
   useEffect(() => {
@@ -348,8 +355,11 @@ function CPEdit() {
               const sectionName = `reported_${section.id}`
               const isSectionChecked: boolean =
                 section.id === 'report_info' ||
+                // @ts-ignore
                 sectionsChecked[sectionName] ||
                 false
+              const showSectionSelect =
+                variant?.model === 'V' && section.id !== 'report_info'
               const Section: React.FC<any> = section.component
               return (
                 <div
@@ -362,7 +372,7 @@ function CPEdit() {
                   aria-labelledby={section.id}
                   role="tabpanel"
                 >
-                  {section.id !== 'report_info' && (
+                  {showSectionSelect && (
                     <SectionReportedSelect
                       isSectionChecked={isSectionChecked}
                       sectionName={sectionName}

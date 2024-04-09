@@ -50,9 +50,14 @@ type ApiBase = {
   }[]
 } & {
   report_info?: {
-    reported_sections: { [key: string]: boolean }
-    reporting_email: string
-    reporting_entry: string
+    reported_section_a: boolean
+    reported_section_b: boolean
+    reported_section_c: boolean
+    reported_section_d: boolean
+    reported_section_e: boolean
+    reported_section_f: boolean
+    reporting_email: null | string
+    reporting_entry: null | string
   }
   section_c: {
     blend_id: null | number

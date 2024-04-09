@@ -148,7 +148,7 @@ function CPView(props: { archive?: boolean }) {
   const { report } = useStore((state) => state.cp_reports)
   const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
   const [renderedSections, setRenderedSections] = useState<number[]>([])
-  console.log("CPView report", report);
+
   const variant = useMemo(() => {
     if (!report.data) return null
     return filter(variants, (variant) => {
@@ -181,6 +181,8 @@ function CPView(props: { archive?: boolean }) {
 
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [activeTab, renderedSections])
+
+  console.log('CPView report', report)
 
   return (
     <>
@@ -228,7 +230,8 @@ function CPView(props: { archive?: boolean }) {
         sections.map((section, index) => {
           const isSectionChecked =
             section.id === 'report_info' ||
-            report.data?.report_info?.reported_sections[`reported_${section.id}`]
+            // @ts-ignore
+            report.data?.report_info?.[`reported_${section.id}`]
           if (!includes(renderedSections, index)) return null
           const Section = section.component
           return (

@@ -54,14 +54,6 @@ type ToolbarProps = {
   section: SectionMeta
 }
 
-type SectionKeys =
-  | 'reported_section_a'
-  | 'reported_section_b'
-  | 'reported_section_c'
-  | 'reported_section_d'
-  | 'reported_section_e'
-  | 'reported_section_f'
-
 interface WidgetCountry {
   id: number
   label: string
@@ -109,7 +101,12 @@ export interface PassedCPCreateTableProps extends CPCreateTableProps {
 export interface CPBaseForm {
   country: WidgetCountry | null
   report_info: {
-    reported_sections: Record<SectionKeys, boolean>
+    reported_section_a: boolean
+    reported_section_b: boolean
+    reported_section_c: boolean
+    reported_section_d: boolean
+    reported_section_e: boolean
+    reported_section_f: boolean
     reporting_email: string
     reporting_entry: string
   }
@@ -291,14 +288,12 @@ const CPCreate: React.FC = () => {
   const [form, setForm] = useState<CPBaseForm>({
     country: null,
     report_info: {
-      reported_sections: {
-        reported_section_a: false,
-        reported_section_b: false,
-        reported_section_c: false,
-        reported_section_d: false,
-        reported_section_e: false,
-        reported_section_f: false,
-      },
+      reported_section_a: false,
+      reported_section_b: false,
+      reported_section_c: false,
+      reported_section_d: false,
+      reported_section_e: false,
+      reported_section_f: false,
       reporting_email: user.data.email,
       reporting_entry: user.data.username,
     },
@@ -355,7 +350,12 @@ const CPCreate: React.FC = () => {
       country_id: form.country?.id,
       name: form.country?.label ? `${form.country?.label} ${form.year}` : '',
       report_info: {
-        reported_sections: form.report_info.reported_sections,
+        reported_section_a: form.report_info.reported_section_a,
+        reported_section_b: form.report_info.reported_section_b,
+        reported_section_c: form.report_info.reported_section_c,
+        reported_section_d: form.report_info.reported_section_d,
+        reported_section_e: form.report_info.reported_section_e,
+        reported_section_f: form.report_info.reported_section_f,
         reporting_email: form.report_info.reporting_email,
         reporting_entry: form.report_info.reporting_entry,
       },
@@ -431,48 +431,27 @@ const CPCreate: React.FC = () => {
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [activeTab])
 
-  const [sectionsChecked, setSectionsChecked] = useState(
-    form.report_info.reported_sections,
-  )
-
-  // const onSectionCheckChange = (section: string, isChecked: boolean) => {
-  //   setSectionsChecked((prevState) => ({
-  //     ...prevState,
-  //     [section]: isChecked,
-  //   }))
-  //
-  //   setForm((prevForm) => {
-  //     // Initialize reported_sections as an empty object if it doesn't exist
-  //     const updatedReportedSections =
-  //       prevForm.report_info.reported_sections || {}
-  //
-  //     // Update reported_sections with the new section and isChecked value
-  //     return {
-  //       ...prevForm,
-  //       reported_sections: {
-  //         ...updatedReportedSections,
-  //         [section]: isChecked,
-  //       },
-  //     }
-  //   })
-  // }
-
+  const [sectionsChecked, setSectionsChecked] = useState({
+    reported_section_a: form.report_info.reported_section_a || false,
+    reported_section_b: form.report_info.reported_section_b || false,
+    reported_section_c: form.report_info.reported_section_c || false,
+    reported_section_d: form.report_info.reported_section_d || false,
+    reported_section_e: form.report_info.reported_section_e || false,
+    reported_section_f: form.report_info.reported_section_f || false,
+  })
   const onSectionCheckChange = (section: string, isChecked: boolean) => {
-    setSectionsChecked((prevState) => ({
+    setSectionsChecked((prevState: any) => ({
       ...prevState,
       [section]: isChecked,
     }))
-    console.log('CPCreate onSectionCheckChange form', form)
-    setForm({
-      ...form,
+
+    setForm((prevState: any) => ({
+      ...prevState,
       report_info: {
-        ...form.report_info,
-        reported_sections: {
-          ...form.report_info.reported_sections,
-          [section]: isChecked,
-        },
+        ...prevState.report_info,
+        [section]: isChecked,
       },
-    })
+    }))
   }
 
   return (
@@ -628,6 +607,8 @@ const CPCreate: React.FC = () => {
               // @ts-ignore
               sectionsChecked[sectionName] ||
               false
+            const showSectionSelect =
+              variant?.model === 'V' && section.id !== 'report_info'
             const Section = section.component
             return (
               <div
@@ -640,7 +621,7 @@ const CPCreate: React.FC = () => {
                 aria-labelledby={section.id}
                 role="tabpanel"
               >
-                {section.id !== 'report_info' && (
+                {showSectionSelect && (
                   <SectionReportedSelect
                     isSectionChecked={isSectionChecked}
                     sectionName={sectionName}
