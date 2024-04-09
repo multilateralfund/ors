@@ -132,7 +132,9 @@ export default function SectionAView(props: any) {
         gridRef={grid}
         headerDepth={3}
         pinnedBottomRowData={pinnedBottomRowData}
-        rowData={showEmptyRows ? rowData : rowData.filter((row) => row.id !== 0)}
+        rowData={
+          showEmptyRows ? rowData : rowData.filter((row) => row.id !== 0)
+        }
       />
       <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
         <Footnotes />

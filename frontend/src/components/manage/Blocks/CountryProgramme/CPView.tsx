@@ -38,6 +38,7 @@ export type TableProps = AgGridReactProps & {
 
 const TableProps: TableProps = {
   Toolbar: ({
+    archive,
     enterFullScreen,
     exitFullScreen,
     fullScreen,
@@ -84,7 +85,9 @@ const TableProps: TableProps = {
                   className="flex items-center gap-x-2 text-black no-underline"
                   target="_blank"
                   href={
-                    formatApiUrl('api/country-programme/export/') +
+                    formatApiUrl(
+                      `api/country-programme${archive ? '-archive' : ''}/export/`,
+                    ) +
                     '?cp_report_id=' +
                     report.data?.id.toString()
                   }
@@ -99,7 +102,9 @@ const TableProps: TableProps = {
                   className="flex items-center gap-x-2 text-black no-underline"
                   target="_blank"
                   href={
-                    formatApiUrl('api/country-programme/print/') +
+                    formatApiUrl(
+                      `api/country-programme${archive ? '-archive' : ''}/print/`,
+                    ) +
                     '?cp_report_id=' +
                     report.data?.id.toString()
                   }
@@ -270,6 +275,7 @@ function CPView(props: { archive?: boolean }) {
                     variant={variant}
                     TableProps={{
                       ...TableProps,
+                      archive,
                       context: { section, variant },
                       isActiveSection: activeTab == index,
                       report,
