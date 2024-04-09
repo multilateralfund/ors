@@ -63,7 +63,7 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
         read_only=True, source="last_updated_by.username"
     )
     report_info = CPReportInfoSerializer(
-        many=False, required=False, source="cpreportedsections"
+        many=False, required=False, source="cpreportedsections", allow_null=True
     )
 
     class Meta:

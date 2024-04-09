@@ -299,7 +299,7 @@ class CPRecordBaseListView(views.APIView):
             "section_e": self.cp_emission_seri_class(section_e, many=True).data,
             "section_f": section_f,
         }
-        if cp_report.cpreportedsections:
+        if hasattr(cp_report, "cpreportedsections"):
             # This property will not be present for pre-2023
             ret["report_info"] = self.cp_report_info_seri_class(
                 cp_report.cpreportedsections
