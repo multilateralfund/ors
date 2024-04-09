@@ -228,7 +228,7 @@ function CPView(props: { archive?: boolean }) {
         sections.map((section, index) => {
           const isSectionChecked =
             section.id === 'report_info' ||
-            report.data?.reported_sections?.[`reported_${section.id}`]
+            report.data?.report_info?.reported_sections[`reported_${section.id}`]
           if (!includes(renderedSections, index)) return null
           const Section = section.component
           return (

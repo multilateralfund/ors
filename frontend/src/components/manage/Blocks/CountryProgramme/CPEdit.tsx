@@ -178,9 +178,9 @@ function CPEdit() {
     adm_c: report.data?.adm_c,
     adm_d: report.data?.adm_d,
     report_info: {
-      reported_sections: report.data?.reported_sections,
-      reporting_email: report.data?.reporting_email,
-      reporting_entry: report.data?.reporting_entry,
+      reported_sections: report.data?.report_info?.reported_sections,
+      reporting_email: report.data?.report_info?.reporting_email,
+      reporting_entry: report.data?.report_info?.reporting_entry,
     },
     section_a: Sections.section_a.getData(),
     section_b: Sections.section_b.getData(),
@@ -251,14 +251,14 @@ function CPEdit() {
   }, [form])
 
   const [sectionsChecked, setSectionsChecked] = useState(
-    report.data?.reported_sections || {},
+    report.data?.report_info?.reported_sections || {},
   )
   const onSectionCheckChange = (section: string, isChecked: boolean) => {
     setSectionsChecked((prevState: any) => ({
       ...prevState,
       [section]: isChecked,
     }))
-    console.log("CPEdit onSectionCheckChange form", form)
+    console.log('CPEdit onSectionCheckChange form', form)
     setForm({
       ...form,
       report_info: {

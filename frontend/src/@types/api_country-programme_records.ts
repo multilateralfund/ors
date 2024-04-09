@@ -6,9 +6,6 @@ type cp_report = {
   final_version_id?: number
   id: number
   name: string
-  reported_sections?: { [key: string]: boolean };
-  reporting_email?: string
-  reporting_entry?: string
   status: string
   version: number
   year: number
@@ -52,6 +49,11 @@ type ApiBase = {
     }[]
   }[]
 } & {
+  report_info?: {
+    reported_sections: { [key: string]: boolean }
+    reporting_email: string
+    reporting_entry: string
+  }
   section_c: {
     blend_id: null | number
     chemical_name: string

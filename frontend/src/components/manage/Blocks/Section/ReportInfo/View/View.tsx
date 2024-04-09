@@ -30,12 +30,12 @@ const ReportInfoView = (props: any) => {
           />
           <SimpleField
             id="name_reporting_officer"
-            data={report.reporting_entry}
+            data={report.report_info?.reporting_entry || ""}
             label="Name of reporting officer"
           />
           <SimpleField
             id="email_reporting_officer"
-            data={report.reporting_email}
+            data={report.report_info?.reporting_email || ""}
             label="Email of reporting officer"
           />
           <SimpleField id="country" data={report.country} label="Country" />
@@ -56,7 +56,7 @@ const ReportInfoView = (props: any) => {
       </div>
 
       <div className="flex flex-col rounded-lg bg-gray-100 p-4">
-        <ReportStatus sectionsChecked={report.reported_sections} />
+        <ReportStatus sectionsChecked={report.report_info?.reported_sections || {}} />
         <ReportHistory />
       </div>
     </section>
