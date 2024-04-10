@@ -170,8 +170,8 @@ export default class Section<DeserializedData, FormFields> {
   public transformBlend(blend: EmptyFormSubstance, mandatory?: boolean) {
     const transformed: Record<string, any> & EmptyFormSubstance = {
       ...blend,
-      display_name: blend.chemical_name,
-      row_id: `blend_${blend.blend_id}`,
+      display_name: `${blend.name} (${blend.composition})`,
+      row_id: `blend_${blend.id}`,
       ...(isBoolean(mandatory) ? { mandatory } : {}),
     }
     forOwn(this.formFields, (field, fieldKey) => {

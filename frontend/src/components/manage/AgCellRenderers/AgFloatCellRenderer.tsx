@@ -37,11 +37,7 @@ export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
   const formattedValue = formatDecimalValue(value, props)
 
   return (
-    <Tooltip
-      enterDelay={300}
-      placement={'top-start'}
-      title={value}
-    >
+    <Tooltip enterDelay={300} placement={'top-start'} title={value}>
       <Typography className={props.className} component="span" lineHeight={1}>
         {formattedValue}
       </Typography>

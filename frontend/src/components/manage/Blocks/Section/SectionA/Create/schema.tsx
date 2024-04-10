@@ -34,6 +34,7 @@ function useGridOptions(props: {
     () => ({
       columnDefs: [
         {
+          ...sectionColDefById['display_name'],
           cellRenderer: (props: CustomCellRendererProps<RowData>) => {
             if (
               props.data?.rowType === 'control' &&
@@ -97,7 +98,6 @@ function useGridOptions(props: {
           field: 'display_name',
           headerClass: 'ag-text-left',
           headerName: 'Substance',
-          ...sectionColDefById['display_name'],
         },
         ...(usages.length
           ? [
