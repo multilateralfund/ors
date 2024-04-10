@@ -45,7 +45,7 @@ interface SectionProps {
   minYear: any
   section?: number
   setFilters: any
-  user_type?: any
+  user_type?: UserType
 }
 
 type ReportResponse = {
@@ -199,7 +199,7 @@ function GeneralSection(props: SectionProps) {
     <div id="general-section">
       <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
         <div className="flex flex-1 items-center gap-4">
-          {user_type === 'country_user' && (
+          {user_type !== 'country_user' && (
             <Field<Country>
               FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
               getOptionLabel={(option) => (option as Country).name}
@@ -442,7 +442,7 @@ function CountrySection(props: SectionProps) {
     <div id="country-section">
       <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
         <div className="flex flex-1 items-center gap-4">
-          {user_type === 'country_user' && (
+          {user_type !== 'country_user' && (
             <Field
               FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
               getOptionLabel={(option: any) => option?.name}
@@ -724,6 +724,7 @@ function SectionPanel(props: SectionProps) {
     minYear,
     section = 0,
     setFilters,
+    user_type,
     ...rest
   } = props
 
@@ -754,6 +755,7 @@ function SectionPanel(props: SectionProps) {
         maxYear={maxYear}
         minYear={minYear}
         setFilters={setFilters}
+        user_type={user_type}
       />
     </div>
   )
