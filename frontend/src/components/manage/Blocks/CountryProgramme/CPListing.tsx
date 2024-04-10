@@ -19,6 +19,7 @@ import {
 import cx from 'classnames'
 import { filter, isArray, union } from 'lodash'
 
+import CPEmpty from '@ors/components/manage/Blocks/CountryProgramme/CPEmpty'
 import Field from '@ors/components/manage/Form/Field'
 import Listing from '@ors/components/manage/Form/Listing'
 import IconButton from '@ors/components/ui/IconButton/IconButton'
@@ -437,6 +438,10 @@ function CountrySection(props: SectionProps) {
   })
   const { count, loaded, results } = getResults(data)
   const pages = Math.ceil(count / pagination.rowsPerPage)
+
+  if (countries.length === 0) {
+    return <CPEmpty text={`No reports found`} />
+  }
 
   return (
     <div id="country-section">
