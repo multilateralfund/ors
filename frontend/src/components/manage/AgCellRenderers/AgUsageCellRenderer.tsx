@@ -64,7 +64,7 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
     <Tooltip
       enterDelay={300}
       placement={'top-start'}
-      title={value ? value.toLocaleString() : value}
+      title={value}
     >
       <Typography className={props.className} component="span" lineHeight={1}>
         {formattedValue}
