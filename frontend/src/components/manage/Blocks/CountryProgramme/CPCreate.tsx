@@ -314,7 +314,7 @@ const CPCreate: React.FC = () => {
       reported_section_e: false,
       reported_section_f: false,
       reporting_email: user.data.email,
-      reporting_entry: user.data.username,
+      reporting_entry: user.data.full_name,
     },
     section_a: Sections.section_a.getData(),
     section_b: Sections.section_b.getData(),
@@ -355,6 +355,7 @@ const CPCreate: React.FC = () => {
     name: 'country_id',
     onChange: (_event: any, value: WidgetCountry) => {
       const country = value as WidgetCountry
+      console.log(country)
       setForm({ ...form, country })
       setCurrentCountry(all_countries.filter((c) => c.id === country.id)[0])
     },
@@ -449,6 +450,23 @@ const CPCreate: React.FC = () => {
 
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [activeTab])
+
+  useEffect(() => {
+    const user_type = user.data.user_type
+    const country_id = user.data.country_id
+    const user_country = user.data.country
+
+    if (user_type === 'country_user') {
+      setForm({
+        ...form,
+        country: { id: country_id, label: user_country },
+      })
+      setCurrentCountry(
+        all_countries.filter((c) => c.id === country_id)[0],
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const [sectionsChecked, setSectionsChecked] = useState({
     reported_section_a: form.report_info.reported_section_a || false,

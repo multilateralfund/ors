@@ -88,7 +88,14 @@ const ReportInfoCreate = (props: any) => {
     sectionsChecked,
     setForm,
   } = props
-  const user = useStore((state) => state.user)
+  const {
+    country: user_country,
+    email,
+    full_name,
+    user_type,
+    username,
+  } = useStore((state) => state.user.data)
+
   const updateForm = (event: { target: { value: any } }, key: string) =>
     setForm({
       ...form,
@@ -98,10 +105,39 @@ const ReportInfoCreate = (props: any) => {
       },
     })
 
-  const user_fullname = isEdit
-    ? form.report_info.reporting_entry
-    : user.data.full_name
-  const user_email = isEdit ? form.report_info.reporting_email : user.data.email
+  const user_fullname = isEdit ? form.report_info.reporting_entry : full_name
+  const user_email = isEdit ? form.report_info.reporting_email : email
+
+  const CountrySelect: React.FC = () => {
+    if (user_type === 'country_user') {
+      return (
+        <SimpleInput
+          id="country"
+          defaultValue={user_country}
+          disabled={true}
+          label="Country"
+          type="string"
+        />
+      )
+    }
+
+    return (
+      <>
+        <label
+          className="mb-2 block text-lg font-normal text-gray-900"
+          htmlFor={isEdit ? undefined : 'country'}
+        >
+          Country
+        </label>
+        <Field
+          {...fieldProps}
+          FieldProps={{ className: 'mb-0 ReportInfo' }}
+          defaultValue={isEdit ? report.country : null}
+          disabled={isEdit}
+        />
+      </>
+    )
+  }
 
   return (
     <section className="grid items-start gap-4 md:auto-rows-auto md:grid-cols-2">
@@ -111,7 +147,7 @@ const ReportInfoCreate = (props: any) => {
 
       <div className="flex flex-col gap-4 rounded-lg bg-gray-100 p-4">
         <legend className="mb-2 text-2xl font-normal">Summary</legend>
-        <SimpleField id="username" data={user.data.username} label="Username" />
+        <SimpleField id="username" data={username} label="Username" />
         <div className="grid gap-6 md:grid-cols-2">
           <SimpleInput
             id="name_reporting_officer"
@@ -131,18 +167,7 @@ const ReportInfoCreate = (props: any) => {
         <div className="grid gap-6 md:grid-cols-4">
           <div className="h-full w-full items-center md:col-span-3">
             <div className="flex h-full flex-col justify-end">
-              <label
-                className="mb-2 block text-lg font-normal text-gray-900"
-                htmlFor={isEdit ? undefined : 'country'}
-              >
-                Country
-              </label>
-              <Field
-                {...fieldProps}
-                FieldProps={{ className: 'mb-0 ReportInfo' }}
-                defaultValue={isEdit ? report.country : null}
-                disabled={isEdit}
-              />
+              <CountrySelect />
             </div>
           </div>
           <SimpleInput
