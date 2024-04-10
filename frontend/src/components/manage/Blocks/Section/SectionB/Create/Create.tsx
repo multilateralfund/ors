@@ -126,6 +126,8 @@ export default function SectionBCreate(props: {
     (state) => getResults(state.cp_reports.blends.data).results,
   )
 
+  console.log(blends)
+
   const grid = useRef<any>()
   const [initialRowData] = useState(() => getRowData(form.section_b, variant))
 
@@ -155,6 +157,9 @@ export default function SectionBCreate(props: {
     each(
       sortBy(uniqBy([...blends, ...createdBlends], 'id'), 'sort_order'),
       (blend) => {
+        if (blend.name === "CustMix-335") {
+          debugger
+        }
         if (!includes(chemicalsInForm, `blend_${blend.id}`)) {
           data.push(
             Section.transformBlend({

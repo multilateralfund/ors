@@ -83,9 +83,11 @@ function useGridOptions(props: {
                 />
               )
             }
-            return <AgCellRenderer {...props} />
+            return sectionColDefById['display_name'].cellRenderer(props)
           },
-          cellRendererParams: (props: ICellRendererParams<RowData>) => ({
+          cellRendererParams: (props: ICellRendererParams<RowData>) => {
+            console.log(props)
+            return {
             ...sectionColDefById['display_name'].cellRendererParams(props),
             options: !props.data?.mandatory && !props.data?.rowType && (
               <Dropdown.Item
@@ -99,7 +101,7 @@ function useGridOptions(props: {
                 </div>
               </Dropdown.Item>
             ),
-          }),
+          }},
           field: 'display_name',
           headerClass: 'ag-text-left',
           headerName: includes('IV', model) ? '' : 'Substance',
