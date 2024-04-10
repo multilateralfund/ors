@@ -1,5 +1,6 @@
 'use client'
 import { Country } from '@ors/types/store'
+import { UserType, userTypeVisibility } from '@ors/types/user_types'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 
@@ -763,13 +764,6 @@ export default function CPListing() {
   const [activeSection, setActiveSection] = useState(0)
   const { user_type } = useStore((state) => state.user.data)
 
-  const userTypeVisibility = {
-    agency: false,
-    country_user: true,
-    secretariat: true,
-    stakeholder: false,
-  }
-
   const minYear = settings.cp_reports.min_year
   const maxYear = settings.cp_reports.max_year
   const [filters, setFilters] = useState({
@@ -813,8 +807,7 @@ export default function CPListing() {
             </>
           )}
         </div>
-        {/*@ts-ignore*/}
-        {userTypeVisibility[user_type] && (
+        {userTypeVisibility[user_type as UserType] && (
           <Link
             color="secondary"
             href="/country-programme/create"
