@@ -307,12 +307,12 @@ const CPCreate: React.FC = () => {
   const [form, setForm] = useState<CPBaseForm>({
     country: null,
     report_info: {
-      reported_section_a: false,
-      reported_section_b: false,
-      reported_section_c: false,
-      reported_section_d: false,
-      reported_section_e: false,
-      reported_section_f: false,
+      reported_section_a: true,
+      reported_section_b: true,
+      reported_section_c: true,
+      reported_section_d: true,
+      reported_section_e: true,
+      reported_section_f: true,
       reporting_email: user.data.email,
       reporting_entry: user.data.full_name,
     },
@@ -469,12 +469,12 @@ const CPCreate: React.FC = () => {
   }, [])
 
   const [sectionsChecked, setSectionsChecked] = useState({
-    reported_section_a: form.report_info.reported_section_a || false,
-    reported_section_b: form.report_info.reported_section_b || false,
-    reported_section_c: form.report_info.reported_section_c || false,
-    reported_section_d: form.report_info.reported_section_d || false,
-    reported_section_e: form.report_info.reported_section_e || false,
-    reported_section_f: form.report_info.reported_section_f || false,
+    reported_section_a: form.report_info.reported_section_a ?? true,
+    reported_section_b: form.report_info.reported_section_b ?? true,
+    reported_section_c: form.report_info.reported_section_c ?? true,
+    reported_section_d: form.report_info.reported_section_d ?? true,
+    reported_section_e: form.report_info.reported_section_e ?? true,
+    reported_section_f: form.report_info.reported_section_f ?? true,
   })
   const onSectionCheckChange = (section: string, isChecked: boolean) => {
     setSectionsChecked((prevState: any) => ({
