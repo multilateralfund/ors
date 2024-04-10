@@ -38,10 +38,13 @@ export type DeserializedSubstance = {
 
 export type EmptyFormSubstance = {
   blend_id: null | number
-  chemical_name: string
+  chemical_name?: string
   chemical_note: null | string
+  composition?: string
   excluded_usages: number[]
   group: string
+  id?: number
+  name?: string
   sort_order: number
   substance_id: null | number
 }
@@ -170,8 +173,8 @@ export default class Section<DeserializedData, FormFields> {
   public transformBlend(blend: EmptyFormSubstance, mandatory?: boolean) {
     const transformed: Record<string, any> & EmptyFormSubstance = {
       ...blend,
-      display_name: `${blend.name} (${blend.composition})`,
-      row_id: `blend_${blend.id}`,
+      display_name: blend.chemical_name || `${blend.name} (${blend.composition})`,
+      row_id: `blend_${blend.blend_id || blend.id}`,
       ...(isBoolean(mandatory) ? { mandatory } : {}),
     }
     forOwn(this.formFields, (field, fieldKey) => {
