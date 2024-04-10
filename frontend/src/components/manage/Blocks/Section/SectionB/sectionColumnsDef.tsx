@@ -4,6 +4,8 @@ import { includes, startsWith } from 'lodash'
 
 import { colDefById } from '@ors/config/Table/columnsDef'
 
+import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
+
 const mobile = __CLIENT__ ? window.innerWidth < 768 : false
 
 const sectionColDefById: Record<string, ColDef> = {
@@ -13,6 +15,18 @@ const sectionColDefById: Record<string, ColDef> = {
   },
   display_name: {
     ...colDefById['display_name'],
+    cellRenderer: (props: ICellRendererParams) => {
+      const model = props.context?.variant.model
+      if (includes(['V'], model) && props.data?.row_id?.startsWith('blend_')) {
+        const newProps = {
+          ...props,
+          tooltipValue: props.value,
+          value: props?.value?.split('(')[0],
+        }
+        return <AgCellRenderer {...newProps} />
+      }
+      return <AgCellRenderer {...props} />
+    },
     cellRendererParams: (props: ICellRendererParams) => ({
       className: cx({
         'font-bold': includes(
