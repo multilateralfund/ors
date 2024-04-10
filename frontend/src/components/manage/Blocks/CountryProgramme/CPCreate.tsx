@@ -355,9 +355,10 @@ const CPCreate: React.FC = () => {
     name: 'country_id',
     onChange: (_event: any, value: WidgetCountry) => {
       const country = value as WidgetCountry
-      console.log(country)
       setForm({ ...form, country })
-      setCurrentCountry(all_countries.filter((c) => c.id === country.id)[0])
+      setCurrentCountry(
+        country && all_countries.filter((c) => c.id === country.id)[0],
+      )
     },
     options: countries,
     value: form.country,
@@ -453,17 +454,16 @@ const CPCreate: React.FC = () => {
 
   useEffect(() => {
     const user_type = user.data.user_type
-    const country_id = user.data.country_id
-    const user_country = user.data.country
 
     if (user_type === 'country_user') {
+      const country_id = user.data.country_id
+      const user_country = user.data.country
+
       setForm({
         ...form,
         country: { id: country_id, label: user_country },
       })
-      setCurrentCountry(
-        all_countries.filter((c) => c.id === country_id)[0],
-      )
+      setCurrentCountry(all_countries.filter((c) => c.id === country_id)[0])
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
