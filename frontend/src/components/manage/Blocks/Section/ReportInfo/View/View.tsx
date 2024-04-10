@@ -19,7 +19,6 @@ const ReportInfoView = (props: any) => {
     section_e: report.report_info?.reported_section_e || false,
     section_f: report.report_info?.reported_section_f || false,
   }
-  console.log('ReportInfoView', report)
 
   return (
     <section className="grid items-start gap-4 md:auto-rows-auto md:grid-cols-2">

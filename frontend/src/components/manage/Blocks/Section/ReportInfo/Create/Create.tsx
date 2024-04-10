@@ -97,14 +97,11 @@ const ReportInfoCreate = (props: any) => {
         [key]: event.target.value,
       },
     })
-  console.log("ReportInfoCreate user", user.data)
-  const user_fullname = isEdit ? form.report_info.reporting_entry : user.data.full_name
+
+  const user_fullname = isEdit
+    ? form.report_info.reporting_entry
+    : user.data.full_name
   const user_email = isEdit ? form.report_info.reporting_email : user.data.email
-  console.log("user_fullname", user_fullname)
-  console.log("user_email", user_email)
-  console.log("ReportInfoCreate form", form)
-
-
 
   return (
     <section className="grid items-start gap-4 md:auto-rows-auto md:grid-cols-2">
