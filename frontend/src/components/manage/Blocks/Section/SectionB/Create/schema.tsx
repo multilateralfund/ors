@@ -1,4 +1,4 @@
-import { EmptyReportUsageColumn } from '@ors/types/api_empty-form'
+import { EmptyFormUsageColumn } from '@ors/types/api_empty-form'
 
 import { useMemo } from 'react'
 
@@ -29,7 +29,7 @@ function useGridOptions(props: {
   onRemoveSubstance: (props: ICellRendererParams) => void
   openAddChemicalModal: () => void
   openCreateBlendModal: () => void
-  usages: EmptyReportUsageColumn[]
+  usages: EmptyFormUsageColumn[]
 }) {
   const {
     model,
@@ -86,22 +86,22 @@ function useGridOptions(props: {
             return sectionColDefById['display_name'].cellRenderer(props)
           },
           cellRendererParams: (props: ICellRendererParams<RowData>) => {
-            console.log(props)
             return {
-            ...sectionColDefById['display_name'].cellRendererParams(props),
-            options: !props.data?.mandatory && !props.data?.rowType && (
-              <Dropdown.Item
-                onClick={() => {
-                  onRemoveSubstance(props)
-                }}
-              >
-                <div className="flex items-center gap-x-2">
-                  <IoTrash className="fill-error" size={20} />
-                  <span>Delete</span>
-                </div>
-              </Dropdown.Item>
-            ),
-          }},
+              ...sectionColDefById['display_name'].cellRendererParams(props),
+              options: !props.data?.mandatory && !props.data?.rowType && (
+                <Dropdown.Item
+                  onClick={() => {
+                    onRemoveSubstance(props)
+                  }}
+                >
+                  <div className="flex items-center gap-x-2">
+                    <IoTrash className="fill-error" size={20} />
+                    <span>Delete</span>
+                  </div>
+                </Dropdown.Item>
+              ),
+            }
+          },
           field: 'display_name',
           headerClass: 'ag-text-left',
           headerName: includes('IV', model) ? '' : 'Substance',

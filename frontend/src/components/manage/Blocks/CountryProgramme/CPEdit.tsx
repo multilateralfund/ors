@@ -368,11 +368,11 @@ function CPEdit() {
           </Tabs>
           <div id="sectionToolbar"></div>
         </div>
-                  <CPSectionWrapper>
-        {!!report.data &&
-          sections.map((section, index) => {
-            if (!includes(renderedSections, index)) return null
-                         const sectionName = `reported_${section.id}`
+        <CPSectionWrapper>
+          {!!report.data &&
+            sections.map((section, index) => {
+              if (!includes(renderedSections, index)) return null
+              const sectionName = `reported_${section.id}`
               const isSectionChecked: boolean =
                 section.id === 'report_info' ||
                 // @ts-ignore
@@ -380,68 +380,68 @@ function CPEdit() {
                 false
               const showSectionSelect =
                 variant?.model === 'V' && section.id !== 'report_info'
-               const Section: React.FC<any> = section.component
-            return (
-              <div
-                id={section.panelId}
-                key={section.panelId}
-                className={cx('transition', {
-                  'absolute -left-[9999px] -top-[9999px] opacity-0':
-                    activeTab !== index,
-                })}
-                aria-labelledby={section.id}
-                role="tabpanel"
-              >
-                {showSectionSelect && (
-                  <SectionReportedSelect
-                    isSectionChecked={isSectionChecked}
-                    sectionName={sectionName}
-                    onSectionCheckChange={onSectionCheckChange}
-                  />
-                )}
-                <div className="relative">
-                  <FootnotesProvider>
-                    <Section
-                      Section={get(Sections, section.id)}
-                      emptyForm={report.emptyForm.data || {}}
-                      errors={errors}
-                      form={form}
-                      isEdit={true}
-                      report={report.data}
-                      section={section}
-                      sectionsChecked={sectionsChecked}
-                      setForm={setForm}
-                      variant={variant}
-                      TableProps={{
-                        ...TableProps,
-                        context: {section, variant},
-                        errors: errors[section.id],
-                        isActiveSection: activeTab == index,
-                        report,
-                        section,
-                      }}
+              const Section: React.FC<any> = section.component
+              return (
+                <div
+                  id={section.panelId}
+                  key={section.panelId}
+                  className={cx('transition', {
+                    'absolute -left-[9999px] -top-[9999px] opacity-0':
+                      activeTab !== index,
+                  })}
+                  aria-labelledby={section.id}
+                  role="tabpanel"
+                >
+                  {showSectionSelect && (
+                    <SectionReportedSelect
+                      isSectionChecked={isSectionChecked}
+                      sectionName={sectionName}
                       onSectionCheckChange={onSectionCheckChange}
                     />
-                    {!isSectionChecked && variant?.model === 'V' ? (
-                      <SectionOverlay/>
-                    ) : null}
-                  </FootnotesProvider>
+                  )}
+                  <div className="relative">
+                    <FootnotesProvider>
+                      <Section
+                        Section={get(Sections, section.id)}
+                        emptyForm={report.emptyForm.data || {}}
+                        errors={errors}
+                        form={form}
+                        isEdit={true}
+                        report={report.data}
+                        section={section}
+                        sectionsChecked={sectionsChecked}
+                        setForm={setForm}
+                        variant={variant}
+                        TableProps={{
+                          ...TableProps,
+                          context: { section, variant },
+                          errors: errors[section.id],
+                          isActiveSection: activeTab == index,
+                          report,
+                          section,
+                        }}
+                        onSectionCheckChange={onSectionCheckChange}
+                      />
+                      {!isSectionChecked && variant?.model === 'V' ? (
+                        <SectionOverlay />
+                      ) : null}
+                    </FootnotesProvider>
+                  </div>
                 </div>
-              </div>
-            )
-          })}
-                  </CPSectionWrapper>
+              )
+            })}
+        </CPSectionWrapper>
       </form>
     </>
   )
 }
 
 export default function CPEditWrapper(props: { iso3: string; year: number }) {
-  const {iso3, year} = props
+  const { iso3, year } = props
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const country = countries.filter((country) => country.iso3 === iso3)[0]
 
-  const {blends, fetchBundle, report, setReport, substances} = useStore(
+  const { blends, fetchBundle, report, setReport, substances } = useStore(
     (state) => state.cp_reports,
   )
 
@@ -476,5 +476,5 @@ export default function CPEditWrapper(props: { iso3: string; year: number }) {
     )
   }
 
-  return <CPEdit/>
+  return <CPEdit />
 }

@@ -1,5 +1,5 @@
-export type EmptyReportUsageColumn = {
-  children?: EmptyReportUsageColumn[]
+export type EmptyFormUsageColumn = {
+  children?: EmptyFormUsageColumn[]
   columnCategory: string
   dataType: string
   full_name: string
@@ -8,7 +8,7 @@ export type EmptyReportUsageColumn = {
   sort_order: number
 }
 
-export type EmptyReportSubstance = {
+export type EmptyFormSubstance = {
   blend_id: null | number
   chemical_name: string
   chemical_note: null | string
@@ -18,11 +18,11 @@ export type EmptyReportSubstance = {
   substance_id: null | number
 }
 
-export type EmptyReportType = {
+export type EmptyFormType = {
   substance_rows: {
-    [key in 'section_a' | 'section_b' | 'section_c']: EmptyReportSubstance[]
+    [key in 'section_a' | 'section_b' | 'section_c']: EmptyFormSubstance[]
   }
   usage_columns: {
-    [key in 'section_a' | 'section_b']: EmptyReportUsageColumn[]
+    [key in 'section_a' | 'section_b']: EmptyFormUsageColumn[]
   }
 }

@@ -1,7 +1,5 @@
-import {
-  EmptyReportSubstance,
-  EmptyReportType,
-} from '@ors/types/api_empty-form'
+import { EmptyFormSubstance, EmptyFormType } from '@ors/types/api_empty-form'
+import { ApiSubstance } from '@ors/types/api_substances'
 import { ReportVariant } from '@ors/types/variants'
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
@@ -53,7 +51,7 @@ function indexKey(elem: {
 
 function getRowData(
   data: SectionC['data'],
-  substanceRows: EmptyReportSubstance[],
+  substanceRows: EmptyFormSubstance[],
   substancePrices: SubstancePrices,
   model: string,
 ): RowData[] {
@@ -136,7 +134,7 @@ function getRowData(
 export default function SectionCCreate(props: {
   Section: SectionC
   TableProps: PassedCPCreateTableProps
-  emptyForm: EmptyReportType
+  emptyForm: EmptyFormType
   form: CPBaseForm
   onSectionCheckChange: (section: string, isChecked: boolean) => void
   sectionsChecked: Record<string, boolean>
@@ -147,7 +145,8 @@ export default function SectionCCreate(props: {
   const newNode = useRef<RowNode>()
 
   const substances = useStore(
-    (state) => getResults(state.cp_reports.substances.data).results,
+    (state) =>
+      getResults<ApiSubstance>(state.cp_reports.substances.data).results,
   )
 
   const substancePrices = useApi<SubstancePrices>({
@@ -182,14 +181,7 @@ export default function SectionCCreate(props: {
         includes(substance.sections, 'C') &&
         !includes(chemicalsInForm, `substance_${substance.id}`)
       ) {
-        data.push(
-          Section.transformSubstance({
-            ...substance,
-            blend_id: null,
-            chemical_name: substance.name,
-            substance_id: substance.id,
-          }),
-        )
+        data.push(Section.transformApiSubstance(substance))
       }
     })
     return data
