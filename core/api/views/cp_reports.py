@@ -21,6 +21,7 @@ from core.models.adm import AdmRecordArchive
 from core.models.country_programme import CPReport
 from core.models.country_programme_archive import (
     CPEmissionArchive,
+    CPFileArchive,
     CPGenerationArchive,
     CPPricesArchive,
     CPRecordArchive,
@@ -284,6 +285,18 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
                 )
             )
         AdmRecordArchive.objects.bulk_create(adm_records, batch_size=1000)
+
+        # archive cp_files
+        cp_files = []
+        for cp_file in instance.cpfiles.all():
+            cp_files.append(
+                self._get_archive_data(
+                    CPFileArchive,
+                    cp_file,
+                    {"country_programme_report_id": cp_report_ar.id},
+                )
+            )
+        CPFileArchive.objects.bulk_create(cp_files, batch_size=1000)
 
     def check_readonly_fields(self, serializer, current_obj):
         return (

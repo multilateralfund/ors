@@ -166,3 +166,14 @@ class AbstractCPEmission(models.Model):
 
     class Meta:
         abstract = True
+
+
+class AbstractCPFile(models.Model):
+    def upload_path(self, filename):
+        pass
+
+    filename = models.CharField(max_length=100)
+    file = models.FileField(upload_to=upload_path)
+
+    class Meta:
+        abstract = True

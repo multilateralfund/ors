@@ -3,6 +3,7 @@ from django.db import models
 from core.models.base import AbstractWChemical, BaseWTimeFrameManager
 from core.models.base_country_programme import (
     AbstractCPEmission,
+    AbstractCPFile,
     AbstractCPGeneration,
     AbstractCPPrices,
     AbstractCPRecord,
@@ -153,12 +154,19 @@ class CPReportSections(models.Model):
     reported_section_f = models.BooleanField(default=False)
 
 
-class CPFile(models.Model):
+class CPFile(AbstractCPFile):
     def upload_path(self, filename):
-        return f"{self.country_programme_report.country.iso3}/{filename}"
+        country_name = self.country_programme_report.country.name
+        return f"{country_name}/{filename}"
 
     country_programme_report = models.ForeignKey(
         "CPReport", on_delete=models.CASCADE, related_name="cpfiles"
     )
-    filename = models.CharField(max_length=100)
-    file = models.FileField(upload_to=upload_path)
+
+    class Meta:
+        verbose_name = "CP file"
+        verbose_name_plural = "CP files"
+        db_table = "cp_file"
+
+    def __str__(self):
+        return self.country_programme_report.name
