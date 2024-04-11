@@ -19,3 +19,9 @@ export type ApiBlend = {
   sort_order: number
   type: string
 }
+
+export type ApiCreatedBlend = ApiBlend & {
+  created: boolean
+  is_legacy: boolean
+  remarks: null | string
+}
