@@ -151,3 +151,14 @@ class CPReportSections(models.Model):
     reported_section_d = models.BooleanField(default=False)
     reported_section_e = models.BooleanField(default=False)
     reported_section_f = models.BooleanField(default=False)
+
+
+class CPFile(models.Model):
+    def upload_path(self, filename):
+        return f"{self.country_programme_report.country.iso3}/{filename}"
+
+    country_programme_report = models.ForeignKey(
+        "CPReport", on_delete=models.CASCADE, related_name="cpfiles"
+    )
+    filename = models.CharField(max_length=100)
+    file = models.FileField(upload_to=upload_path)
