@@ -18,6 +18,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
       headerName: 'Substance',
       ...sectionColDefById['display_name'],
       editable: false,
+      ...(includes(['II', 'III'], model) ? { initialWidth: 10 } : {}),
     }),
     [],
   )

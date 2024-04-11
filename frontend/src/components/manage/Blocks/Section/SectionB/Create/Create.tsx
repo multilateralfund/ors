@@ -113,14 +113,7 @@ export default function SectionBCreate(props: {
   variant: ReportVariant
 }) {
   const { enqueueSnackbar } = useSnackbar()
-  const {
-    Section,
-    TableProps,
-    emptyForm,
-    form,
-    setForm,
-    variant,
-  } = props
+  const { Section, TableProps, emptyForm, form, setForm, variant } = props
 
   const newNode = useRef<RowNode>()
 

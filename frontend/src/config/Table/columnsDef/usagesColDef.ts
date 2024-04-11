@@ -19,7 +19,7 @@ export default function getUsagesColDef() {
     },
     'Refrigeration Manufacturing': {
       autoHeaderHeight: true,
-      initialWidth: 132,
+      flex: 1.3,
     },
     'Refrigeration Manufacturing AC': {
       initialWidth: 130,
@@ -58,6 +58,10 @@ export default function getUsagesColDef() {
         },
       },
       initialWidth: 120,
+    },
+    'Refrigeration Servicing': {
+      autoHeaderHeight: true,
+      flex: 1,
     },
     total_usages: {
       initialWidth: defaultColDef.minWidth,
