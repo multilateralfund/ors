@@ -7,6 +7,7 @@ import cx from 'classnames'
 import { produce } from 'immer'
 import { filter, includes } from 'lodash'
 
+import CPComments from '@ors/components/manage/Blocks/CountryProgramme/CPComments'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
@@ -252,27 +253,27 @@ function CPView(props: { archive?: boolean }) {
         <div id="sectionToolbar"></div>
       </div>
 
-      {report.emptyForm.loaded &&
-        sections.map((section, index) => {
-          const isSectionChecked =
-            section.id === 'report_info' ||
-            // @ts-ignore
-            report.data?.report_info?.[`reported_${section.id}`]
-          if (!includes(renderedSections, index)) return null
-          const Section = section.component
-          return (
-            <div
-              id={section.panelId}
-              key={section.panelId}
-              className={cx('transition', {
-                'absolute -left-[9999px] -top-[9999px] opacity-0':
-                  activeTab !== index,
-              })}
-              aria-labelledby={section.id}
-              role="tabpanel"
-            >
-              <FootnotesProvider>
-                <CPSectionWrapper>
+      <CPSectionWrapper>
+        {report.emptyForm.loaded &&
+          sections.map((section, index) => {
+            const isSectionChecked =
+              section.id === 'report_info' ||
+              // @ts-ignore
+              report.data?.report_info?.[`reported_${section.id}`]
+            if (!includes(renderedSections, index)) return null
+            const Section = section.component
+            return (
+              <div
+                id={section.panelId}
+                key={section.panelId}
+                className={cx('transition', {
+                  'absolute -left-[9999px] -top-[9999px] opacity-0':
+                    activeTab !== index,
+                })}
+                aria-labelledby={section.id}
+                role="tabpanel"
+              >
+                <FootnotesProvider>
                   <Section
                     emptyForm={report.emptyForm.data || {}}
                     report={report.data}
@@ -290,11 +291,12 @@ function CPView(props: { archive?: boolean }) {
                   {!isSectionChecked && variant?.model === 'V' ? (
                     <SectionOverlay />
                   ) : null}
-                </CPSectionWrapper>
-              </FootnotesProvider>
-            </div>
-          )
-        })}
+                </FootnotesProvider>
+              </div>
+            )
+          })}
+        <CPComments />
+      </CPSectionWrapper>
     </>
   )
 }

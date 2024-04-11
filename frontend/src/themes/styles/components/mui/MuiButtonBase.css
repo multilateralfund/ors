@@ -1,3 +1,7 @@
 .MuiButtonBase-root {
   @apply rounded-lg;
 }
+
+.CPComments .MuiButtonBase-root {
+  @apply p-0;
+}
