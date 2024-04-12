@@ -583,7 +583,7 @@ class CPReportCommentsView(generics.GenericAPIView):
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def create(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         return self._comments_update_or_create(request, *args, **kwargs)
 
     def put(self, request, *args, **kwargs):
