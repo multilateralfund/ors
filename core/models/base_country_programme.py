@@ -25,7 +25,6 @@ class AbstractCPReport(models.Model):
     comment = models.TextField(null=True, blank=True)
     country = models.ForeignKey("Country", on_delete=models.CASCADE)
 
-    # TODO: adauga has_permission ca sa nu-si comentez unul altuia!
     # General per-report comments for Country and Secretariat for 2023-onward
     comment_country = models.TextField(null=True, blank=True)
     comment_secretariat = models.TextField(null=True, blank=True)

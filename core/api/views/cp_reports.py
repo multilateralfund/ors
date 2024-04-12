@@ -1,4 +1,5 @@
 from constance import config
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import Count
 from django.db.models import F
@@ -14,9 +15,13 @@ from rest_framework.response import Response
 from core.api.filters.country_programme import (
     CPReportFilter,
 )
-from core.api.permissions import IsUserAllowedCP
+from core.api.permissions import IsUserAllowedCP, IsUserAllowedCPComment
 from core.api.serializers import CPReportGroupSerializer
-from core.api.serializers.cp_report import CPReportCreateSerializer, CPReportSerializer
+from core.api.serializers.cp_report import (
+    CPReportCreateSerializer,
+    CPReportSerializer,
+    CPReportCommentsSerializer,
+)
 from core.models.adm import AdmRecordArchive
 from core.models.country_programme import CPReport
 from core.models.country_programme_archive import (
@@ -27,6 +32,8 @@ from core.models.country_programme_archive import (
     CPReportArchive,
     CPUsageArchive,
 )
+
+User = get_user_model()
 
 # pylint: disable=R0901
 
@@ -494,3 +501,69 @@ class CPReportGroupByCountryView(CPReportGroupByYearView):
     @staticmethod
     def get_id(obj):
         return obj.country.id
+
+
+class CPReportCommentsView(generics.GenericAPIView):
+    """
+    API endpoint that allows updating country programme comments.
+    """
+
+    permission_classes = [IsUserAllowedCPComment]
+    serializer_class = CPReportCommentsSerializer
+    lookup_field = "id"
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = CPReport.objects.all()
+        if user.user_type == user.UserType.COUNTRY_USER:
+            queryset = queryset.filter(country=user.country)
+        return queryset
+
+    @swagger_auto_schema(
+        operation_description="Update country programme report comments",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=[],
+            properties={
+                "comment_country": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Comment made by country",
+                ),
+                "comment_secretariat": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Comment made by secretariat",
+                ),
+            },
+        ),
+    )
+
+    # TODO: we should not allow create here
+
+    def put(self, request, *args, **kwargs):
+        cp_report = self.get_object()
+        comment_country = request.data.get("comment_country")
+        comment_secretariat = request.data.get("comment_secretariat")
+
+        user_type = request.user.user_type
+        if comment_country:
+            if user_type != User.UserType.COUNTRY_USER:
+                return Response(
+                    {"comment_country": f"Invalid value {comment_country}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            cp_report.comment_country = comment_country
+
+        if comment_secretariat:
+            if user_type != User.UserType.SECRETARIAT_USER:
+                return Response(
+                    {"comment_secretariat": f"Invalid value {comment_secretariat}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            cp_report.comment_secretariat = comment_secretariat
+
+        cp_report.last_updated_by = request.user
+        cp_report.event_description = "Comments updated by user"
+        cp_report.save()
+        serializer = self.get_serializer(cp_report)
+
+        return Response(serializer.data)

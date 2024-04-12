@@ -15,3 +15,13 @@ class IsUserAllowedCP(permissions.BasePermission):
                 if request.method in permissions.SAFE_METHODS:
                     return True
         return False
+
+
+class IsUserAllowedCPComment(IsUserAllowedCP):
+    """
+    Is this user allowed to POST comments on a CPReport.
+
+    Inherits from IsUserAllowedCP as users have the same rights at has_permission-level.
+    """
+
+    pass
