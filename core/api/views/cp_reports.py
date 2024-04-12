@@ -506,6 +506,8 @@ class CPReportGroupByCountryView(CPReportGroupByYearView):
 class CPReportCommentsView(generics.GenericAPIView):
     """
     API endpoint that allows updating country programme comments.
+
+    This is called with either POST or PUT on an already-existing CP Report.
     """
 
     permission_classes = [IsUserAllowedCPComment]
@@ -537,9 +539,7 @@ class CPReportCommentsView(generics.GenericAPIView):
         ),
     )
 
-    # TODO: we should not allow create here
-
-    def put(self, request, *args, **kwargs):
+    def _comments_update_or_create(self, request):
         cp_report = self.get_object()
         comment_country = request.data.get("comment_country")
         comment_secretariat = request.data.get("comment_secretariat")
@@ -567,3 +567,9 @@ class CPReportCommentsView(generics.GenericAPIView):
         serializer = self.get_serializer(cp_report)
 
         return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        self._comments_update_or_create(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        self._comments_update_or_create(request, *args, **kwargs)
