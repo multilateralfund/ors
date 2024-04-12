@@ -1,5 +1,6 @@
 'use client'
 import { Country } from '@ors/types/store'
+import { UserType, userTypeVisibility } from '@ors/types/user_types'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 
@@ -10,19 +11,20 @@ import {
   // InputAdornment,
   ListItem,
   // IconButton as MuiIconButton,
-  Tab,
-  Tabs,
   Tooltip,
   Typography,
 } from '@mui/material'
 import cx from 'classnames'
 import { filter, isArray, union } from 'lodash'
 
+import CPEmpty from '@ors/components/manage/Blocks/CountryProgramme/CPEmpty'
 import Field from '@ors/components/manage/Form/Field'
 import Listing from '@ors/components/manage/Form/Listing'
 import IconButton from '@ors/components/ui/IconButton/IconButton'
 import Link from '@ors/components/ui/Link/Link'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
+import RadioSelect from '@ors/components/ui/RadioSelect/RadioSelect'
+import SimpleSelect from '@ors/components/ui/SimpleSelect/SimpleSelect'
 import { getResults } from '@ors/helpers'
 // import { scrollToElement } from '@ors/helpers/Utils/Utils'
 import useApi from '@ors/hooks/useApi'
@@ -44,6 +46,7 @@ interface SectionProps {
   minYear: any
   section?: number
   setFilters: any
+  user_type?: UserType
 }
 
 type ReportResponse = {
@@ -74,6 +77,9 @@ const debounce = (func: () => void) => {
   if (timer) clearTimeout(timer)
   timer = setTimeout(func, 500)
 }
+
+const SortBy = (props: any) => <SimpleSelect label="Sort by" {...props} />
+const GroupBy = (props: any) => <RadioSelect label="Group by" {...props} />
 
 function Legend() {
   return (
@@ -157,7 +163,8 @@ function GeneralSection(props: SectionProps) {
   const countriesById = new Map<number, any>(
     countries.map((country: any) => [country.id, country]),
   )
-  const { filters, groupBy, maxYear, minYear, setFilters } = props
+
+  const { filters, groupBy, maxYear, minYear, setFilters, user_type } = props
   const [range, setRange] = useState([filters.range[0], filters.range[1]])
   const [pagination, setPagination] = useState({
     page: 1,
@@ -196,38 +203,40 @@ function GeneralSection(props: SectionProps) {
     <div id="general-section">
       <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
         <div className="flex flex-1 items-center gap-4">
-          <Field<Country>
-            FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
-            getOptionLabel={(option) => (option as Country).name}
-            options={countries}
-            popupIcon={<IoFilter className="p-1" size={24} />}
-            value={null}
-            widget="autocomplete"
-            Input={{
-              placeholder: 'Select country...',
-            }}
-            sx={{
-              '& .MuiAutocomplete-popupIndicator': { transform: 'none' },
-              width: '100%',
-            }}
-            onChange={(_: any, value: any) => {
-              if (!!value) {
-                const country = filters.country || []
-                const newValue = union(country, [value.id])
-                setFilters((filters: any) => {
-                  return { ...filters, country: newValue }
-                })
-                setParams({
-                  country_id: newValue.join(','),
-                  offset: 0,
-                })
-                if (document.activeElement) {
-                  // @ts-ignore
-                  document.activeElement.blur()
+          {user_type !== 'country_user' && (
+            <Field<Country>
+              FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
+              getOptionLabel={(option) => (option as Country).name}
+              options={countries}
+              popupIcon={<IoFilter className="p-1" size={24} />}
+              value={null}
+              widget="autocomplete"
+              Input={{
+                placeholder: 'Select country...',
+              }}
+              sx={{
+                '& .MuiAutocomplete-popupIndicator': { transform: 'none' },
+                width: '100%',
+              }}
+              onChange={(_: any, value: any) => {
+                if (!!value) {
+                  const country = filters.country || []
+                  const newValue = union(country, [value.id])
+                  setFilters((filters: any) => {
+                    return { ...filters, country: newValue }
+                  })
+                  setParams({
+                    country_id: newValue.join(','),
+                    offset: 0,
+                  })
+                  if (document.activeElement) {
+                    // @ts-ignore
+                    document.activeElement.blur()
+                  }
                 }
-              }
-            }}
-          />
+              }}
+            />
+          )}
           <Field
             FieldProps={{ className: 'mb-0 px-4' }}
             label="Date"
@@ -402,15 +411,21 @@ function GeneralSection(props: SectionProps) {
 
 function CountrySection(props: SectionProps) {
   // const shouldScroll = useRef(false)
-  const { setFilters } = props
+  const { setFilters, user_type } = props
   const [pagination, setPagination] = useState({
     page: 1,
     rowsPerPage: PER_PAGE_COUNTRY,
   })
-  const [ordering, setOrdering] = useState<'asc' | 'desc'>('asc')
+
+  const orderOptions = [
+    { label: 'Name, A to Z', value: 'asc' },
+    { label: 'Name, Z to A', value: 'desc' },
+  ]
+
   const countries = useStore((state) => {
     return state.common.countries_for_listing.data
   })
+
   const { data, loading, setParams } = useApi({
     // onSuccess: () => {
     //   if (shouldScroll.current) {
@@ -432,55 +447,47 @@ function CountrySection(props: SectionProps) {
   const { count, loaded, results } = getResults(data)
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
+  const handleOrderChange = (option: any) => {
+    setPagination({ ...pagination, page: 1 })
+    setParams({ offset: 0, ordering: option.value })
+  }
+
+  if (countries.length === 0) {
+    return <CPEmpty text={`No reports found`} />
+  }
+
   return (
     <div id="country-section">
       <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
         <div className="flex flex-1 items-center gap-4">
-          <Field
-            FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
-            getOptionLabel={(option: any) => option?.name}
-            options={countries}
-            popupIcon={<IoFilter className="p-1" size={24} />}
-            value={null}
-            widget="autocomplete"
-            Input={{
-              placeholder: 'Select country...',
-            }}
-            sx={{
-              '& .MuiAutocomplete-popupIndicator': { transform: 'none' },
-              width: '100%',
-            }}
-            onChange={(_: any, value: any) => {
-              if (!!value) {
-                setFilters((filters: any) => {
-                  const country = filters.country || []
-                  return { ...filters, country: union(country, [value.id]) }
-                })
-              }
-            }}
-          />
+          {user_type !== 'country_user' && (
+            <Field
+              FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
+              getOptionLabel={(option: any) => option?.name}
+              options={countries}
+              popupIcon={<IoFilter className="p-1" size={24} />}
+              value={null}
+              widget="autocomplete"
+              Input={{
+                placeholder: 'Select country...',
+              }}
+              sx={{
+                '& .MuiAutocomplete-popupIndicator': { transform: 'none' },
+                width: '100%',
+              }}
+              onChange={(_: any, value: any) => {
+                if (!!value) {
+                  setFilters((filters: any) => {
+                    const country = filters.country || []
+                    return { ...filters, country: union(country, [value.id]) }
+                  })
+                }
+              }}
+            />
+          )}
         </div>
         <Legend />
-        <div className="flex items-center gap-2">
-          <Typography className="text-typography-primary" component="span">
-            Ordering
-          </Typography>
-          <IconButton
-            className="bg-transparent"
-            onClick={() => {
-              const newOrder = ordering === 'asc' ? 'desc' : 'asc'
-              setOrdering(newOrder)
-              setPagination({ ...pagination, page: 1 })
-              setParams({ offset: 0, ordering: newOrder })
-            }}
-          >
-            {ordering === 'asc' ? (
-              <IoArrowUp size="1rem" />
-            ) : (
-              <IoArrowDown size="1rem" />
-            )}
-          </IconButton>
-        </div>
+        <SortBy options={orderOptions} onChange={handleOrderChange} />
       </div>
       <Grid className="mb-6" spacing={4} container>
         {results.map((row: any) => (
@@ -716,6 +723,7 @@ function SectionPanel(props: SectionProps) {
     minYear,
     section = 0,
     setFilters,
+    user_type,
     ...rest
   } = props
 
@@ -746,6 +754,7 @@ function SectionPanel(props: SectionProps) {
         maxYear={maxYear}
         minYear={minYear}
         setFilters={setFilters}
+        user_type={user_type}
       />
     </div>
   )
@@ -754,6 +763,7 @@ function SectionPanel(props: SectionProps) {
 export default function CPListing() {
   const settings = useStore((state) => state.common.settings.data)
   const [activeSection, setActiveSection] = useState(0)
+  const { user_type } = useStore((state) => state.user.data)
 
   const minYear = settings.cp_reports.min_year
   const maxYear = settings.cp_reports.max_year
@@ -767,37 +777,26 @@ export default function CPListing() {
     <>
       <div className="mb-4 flex items-center justify-between gap-x-4">
         <div className="flex flex-col gap-x-4">
-          <Typography className="-mb-2 text-sm font-medium uppercase">
-            Group by:
-          </Typography>
-          <Tabs
-            TabIndicatorProps={{ style: { visibility: 'hidden' } }}
-            aria-label="country programme listing"
-            textColor="primary"
-            value={activeSection}
-            onChange={(event: React.SyntheticEvent, newSection: number) => {
-              setActiveSection(newSection)
-              setFilters({ country: [], range: [minYear, maxYear], year: [] })
-            }}
-          >
-            {sections.map((section) => (
-              <Tab
-                key={section.id}
-                aria-controls={section.panelId}
-                label={section.label}
-                disableRipple
-              />
-            ))}
-          </Tabs>
+          {user_type !== 'country_user' && (
+            <GroupBy
+              className="text-xl"
+              initialIndex={activeSection}
+              options={sections}
+              onChange={(_: any, index: number) => setActiveSection(index)}
+            />
+          )}
         </div>
-        <Link
-          color="secondary"
-          href="/country-programme/create"
-          variant="contained"
-          button
-        >
-          New submission
-        </Link>
+        {userTypeVisibility[user_type as UserType] && (
+          <Link
+            className="px-4 py-2 text-lg uppercase"
+            color="secondary"
+            href="/country-programme/create"
+            variant="contained"
+            button
+          >
+            New submission
+          </Link>
+        )}
       </div>
       <div id="cp-listing-sections">
         {sections.map((section, index) => (
@@ -809,6 +808,7 @@ export default function CPListing() {
             minYear={minYear}
             section={index}
             setFilters={setFilters}
+            user_type={user_type}
           />
         ))}
       </div>

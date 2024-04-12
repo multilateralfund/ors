@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-before-interactive-script-outside-document */
+import { ApiBlend } from '@ors/types/api_blends'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { Country } from '@ors/types/store'
 /* eslint-disable @next/next/no-css-tags */
@@ -9,7 +10,6 @@ import React from 'react'
 import cx from 'classnames'
 import { dir } from 'i18next'
 // import { includes } from 'lodash'
-import { Roboto } from 'next/font/google'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { headers as nextHeaders } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -22,15 +22,9 @@ import { getInitialSliceData } from '@ors/helpers/Store/Store'
 import { getCurrentView } from '@ors/helpers/View/View'
 import { StoreProvider } from '@ors/store'
 import ThemeProvider from '@ors/themes/ThemeProvider'
+import { roboto } from '@ors/themes/fonts'
 
 import '@ors/themes/styles/global.css'
-
-const roboto = Roboto({
-  display: 'swap',
-  style: ['normal', 'italic'],
-  subsets: ['latin'],
-  weight: ['100', '300', '400', '500', '700', '900'],
-})
 
 export const metadata: Metadata = {
   description:
@@ -128,7 +122,7 @@ export default async function RootLayout({
       types: getInitialSliceData(types),
     }
     cp_reports = {
-      blends: getInitialSliceData(blends),
+      blends: getInitialSliceData<ApiBlend[]>(blends),
       substances: getInitialSliceData<ApiSubstance[]>(substances),
     }
     businessPlans = {

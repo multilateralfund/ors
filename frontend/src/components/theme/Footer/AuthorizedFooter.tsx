@@ -1,16 +1,9 @@
 import { Box } from '@mui/material'
 import cx from 'classnames'
-import { Roboto_Condensed } from 'next/font/google'
 
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Logo from '@ors/components/theme/Logo/Logo'
-
-const robotoCondensed = Roboto_Condensed({
-  display: 'swap',
-  style: ['normal', 'italic'],
-  subsets: ['latin'],
-  weight: ['100', '300', '400', '500', '700', '900'],
-})
+import { robotoCondensed } from '@ors/themes/fonts'
 
 const EXTERNAL_BASE_URL = 'https://prod.multilateralfund.edw.ro'
 const makeExternalUrl = (path: string) => `${EXTERNAL_BASE_URL}${path}`

@@ -19,7 +19,7 @@ const SectionReportedSelect = ({
   return (
     <div className="ReportSelect w-full bg-gray-200 p-4">
       <Select
-        className="bg-white rounded-lg border border-gray-400 h-10"
+        className="h-10 rounded-lg border border-gray-400 bg-white"
         value={isSectionChecked ? 'report' : 'no_report'}
         MenuProps={{
           PaperProps: {

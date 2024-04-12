@@ -11,21 +11,14 @@ import {
 import cx from 'classnames'
 import { AnimatePresence } from 'framer-motion'
 import { DebouncedFunc, debounce } from 'lodash'
-import { Roboto_Condensed } from 'next/font/google'
 import NextLink from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import { matchPath } from '@ors/helpers/Url/Url'
+import { robotoCondensed } from '@ors/themes/fonts'
 
 import { IoChevronDown, IoChevronUp, IoClose, IoMenu } from 'react-icons/io5'
-
-const robotoCondensed = Roboto_Condensed({
-  display: 'swap',
-  style: ['normal', 'italic'],
-  subsets: ['latin'],
-  weight: ['100', '300', '400', '500', '700', '900'],
-})
 
 const EXTERNAL_BASE_URL = 'https://prod.multilateralfund.edw.ro'
 const makeExternalUrl = (path: string) => `${EXTERNAL_BASE_URL}${path}`
@@ -165,7 +158,7 @@ const DesktopHeaderNavigation = ({
         >
           <a
             className={cx(
-              'flex items-center justify-between gap-x-2 rounded-full px-4 py-2 text-primary no-underline hover:text-mlfs-hlYellow',
+              'flex items-center justify-between gap-x-2 rounded-full px-4 py-2 text-primary no-underline transition-all hover:text-mlfs-hlYellow',
               {
                 'bg-mlfs-hlYellow hover:text-primary': item.current,
                 'hover:bg-primary': !item.current,

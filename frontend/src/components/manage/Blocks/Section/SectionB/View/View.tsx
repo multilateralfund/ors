@@ -1,6 +1,6 @@
 import type { TableProps } from '../../../CountryProgramme/CPView'
 import { CPReport } from '@ors/types/api_country-programme_records'
-import { EmptyReportType } from '@ors/types/api_empty-form'
+import { EmptyFormType } from '@ors/types/api_empty-form'
 import { ReportVariant } from '@ors/types/variants'
 
 import { useMemo, useRef, useState } from 'react'
@@ -79,7 +79,7 @@ function getPinnedRowData(rowData: any) {
 
 export default function SectionBView(props: {
   TableProps: TableProps
-  emptyForm: EmptyReportType
+  emptyForm: EmptyFormType
   report: CPReport
   variant: ReportVariant
 }) {

@@ -1,3 +1,5 @@
+import { UserType, userTypeVisibility } from '@ors/types/user_types'
+
 import React, { useEffect, useMemo, useState } from 'react'
 
 import { Button, Typography } from '@mui/material'
@@ -153,6 +155,10 @@ const ArchiveHeaderActions = () => {
 const ViewHeaderActions = () => {
   const { report, setReport } = useStore((state) => state.cp_reports)
   const { enqueueSnackbar } = useSnackbar()
+  const { user_type } = useStore((state) => state.user.data)
+
+  if (!userTypeVisibility[user_type as UserType]) return null
+
   return (
     <div className="flex items-center">
       {!!report.data && (
@@ -240,6 +246,10 @@ const EditHeaderActions = ({
     (state) => state.cp_reports,
   )
   const { enqueueSnackbar } = useSnackbar()
+  const { user_type } = useStore((state) => state.user.data)
+
+  if (!userTypeVisibility[user_type as UserType]) return null
+
   return (
     <div className="flex items-center">
       {!!report.data && (
