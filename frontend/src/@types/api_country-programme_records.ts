@@ -1,5 +1,7 @@
 type cp_report = {
   comment: null | string
+  comment_country: null | string
+  comment_secretariat: null | string
   country: string
   country_id: number
   created_at?: string

@@ -1,10 +1,14 @@
+import { UserType } from '@ors/types/user_types'
+
 import React, { useState } from 'react'
 
+import { Alert } from '@mui/material'
 import Button from '@mui/material/Button'
 import TextareaAutosize from '@mui/material/TextareaAutosize'
 import Typography from '@mui/material/Typography'
 
 import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
+import api from '@ors/helpers/Api/Api'
 import { useStore } from '@ors/store'
 
 interface TextState {
@@ -12,17 +16,29 @@ interface TextState {
   user: string
 }
 
+interface UserTypeMap {
+  [key: string]: keyof TextState | null
+}
+
+const userTypeMap: UserTypeMap = {
+  agency: null,
+  country_user: 'user',
+  secretariat: 'mlfs',
+  stakeholder: null,
+}
+
 type Label = keyof TextState
 
 const CPComments: React.FC = () => {
   const user = useStore((state) => state.user)
-  const user_type = user.data.user_type
+  const user_type: UserType = user.data.user_type
+  const { report } = useStore((state) => state.cp_reports)
   // GET initial texts from API
   const [initialTexts, setInitialTexts] = useState<TextState>({
-    mlfs: 'MLFS initial comment',
-    user: 'User initial comment',
+    mlfs: report.data?.comment_secretariat || '',
+    user: report.data?.comment_country || '',
   })
-
+  const [error, setError] = useState(null)
   const [texts, setTexts] = useState<TextState>(initialTexts)
 
   const handleTextChange = (label: Label, value: string) => {
@@ -34,24 +50,28 @@ const CPComments: React.FC = () => {
 
   const handleSave = async () => {
     try {
-      // Simulate an API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const data = {
+        comment_country: userTypeMap['country_user'] ? texts['user'] : '',
+        comment_secretariat: userTypeMap['secretariat'] ? texts['mlfs'] : '',
+      }
 
-      // Simulate a successful API response
-      console.log('Saving data:', texts)
+      const report_id = report.data?.id
+      await api(`api/country-programme/report/${report_id}/comments/`, {
+        data: data,
+        method: 'POST',
+      })
 
       // Update initialTexts with the current texts state
       setInitialTexts(texts)
-
-      // Log a success message
-      console.log('Data saved successfully!')
+      setError(null)
     } catch (error) {
-      // Log any errors
-      console.error('Error saving data:', error)
+      console.error('Error:', error)
+      setError(error)
     }
   }
 
   const handleCancel = (label: Label) => {
+    setError(null)
     setTexts((prevTexts) => ({
       ...prevTexts,
       [label]: initialTexts[label],
@@ -73,7 +93,7 @@ const CPComments: React.FC = () => {
         {labels.map((label) => (
           <div
             key={label}
-            className="relative flex min-w-96 flex-grow flex-col rounded-lg bg-gray-100 p-2"
+            className="relative flex min-w-96 flex-1 flex-col rounded-lg bg-gray-100 p-2"
           >
             {user_type !== allowComments[label] && (
               <SectionOverlay className="cursor-not-allowed" opacity={60} />
@@ -85,7 +105,7 @@ const CPComments: React.FC = () => {
               <TextareaAutosize
                 className="w-full resize-none rounded-lg border border-solid border-gray-300 p-2 pb-6 shadow-none"
                 minRows={6}
-                placeholder={label}
+                placeholder="Type your comment here..."
                 value={texts[label]}
                 onChange={(e) => handleTextChange(label, e.target.value)}
               />
@@ -111,6 +131,11 @@ const CPComments: React.FC = () => {
                 </div>
               )}
             </div>
+            {error && user_type === allowComments[label] && (
+              <Alert severity="error">
+                <Typography>Something went wrong. Please try again.</Typography>
+              </Alert>
+            )}
           </div>
         ))}
       </div>
