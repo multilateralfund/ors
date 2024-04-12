@@ -1,8 +1,5 @@
 import { CPReport } from '@ors/types/api_country-programme_records'
-import {
-  EmptyReportType,
-  EmptyReportUsageColumn,
-} from '@ors/types/api_empty-form'
+import { EmptyFormType, EmptyFormUsageColumn } from '@ors/types/api_empty-form'
 import type { CPReportsSlice, Country } from '@ors/types/store'
 import { ReportVariant } from '@ors/types/variants'
 
@@ -63,7 +60,7 @@ export const getVariant = (report: CPReport | null): ReportVariant | null => {
 }
 
 function mapUsage(
-  usage: EmptyReportUsageColumn,
+  usage: EmptyFormUsageColumn,
   variant: ReportVariant | null,
   view = true,
 ): ColDef {
@@ -176,7 +173,7 @@ export const createCPReportsSlice = ({
           options,
           path,
         },
-        parseResponse: (response: EmptyReportType) => {
+        parseResponse: (response: EmptyFormType) => {
           const { usage_columns } = response
 
           return {

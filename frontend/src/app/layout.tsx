@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-before-interactive-script-outside-document */
+import { ApiBlend } from '@ors/types/api_blends'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { Country } from '@ors/types/store'
 /* eslint-disable @next/next/no-css-tags */
@@ -128,7 +129,7 @@ export default async function RootLayout({
       types: getInitialSliceData(types),
     }
     cp_reports = {
-      blends: getInitialSliceData(blends),
+      blends: getInitialSliceData<ApiBlend[]>(blends),
       substances: getInitialSliceData<ApiSubstance[]>(substances),
     }
     businessPlans = {

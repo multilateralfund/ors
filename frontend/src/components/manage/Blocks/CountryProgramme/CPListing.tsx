@@ -11,13 +11,12 @@ import {
   // InputAdornment,
   ListItem,
   // IconButton as MuiIconButton,
-  Tab,
-  Tabs,
   Tooltip,
   Typography,
 } from '@mui/material'
 import cx from 'classnames'
 import { filter, isArray, union } from 'lodash'
+import { Roboto_Condensed } from 'next/font/google'
 
 import CPEmpty from '@ors/components/manage/Blocks/CountryProgramme/CPEmpty'
 import Field from '@ors/components/manage/Form/Field'
@@ -37,6 +36,13 @@ import {
   IoClose,
   IoFilter,
 } from 'react-icons/io5'
+
+const robotoCondensed = Roboto_Condensed({
+  display: 'swap',
+  style: ['normal', 'italic'],
+  subsets: ['latin'],
+  weight: ['100', '300', '400', '500', '700', '900'],
+})
 
 interface SectionProps {
   currentSection?: number
@@ -766,6 +772,68 @@ function SectionPanel(props: SectionProps) {
   )
 }
 
+const RadioOn = () => {
+  return (
+    <div className="rounded-full border border-solid border-primary bg-primary p-1">
+      <div className="h-2 w-2 rounded-full bg-mlfs-hlYellow"></div>
+    </div>
+  )
+}
+
+const RadioOff = () => {
+  return (
+    <div className="rounded-full border border-solid border-primary p-1">
+      <div className="h-2 w-2 rounded-full"></div>
+    </div>
+  )
+}
+
+const GroupByOption = ({
+  isActive,
+  label,
+  onClick,
+}: {
+  isActive: boolean
+  label: string
+  onClick: () => void
+}) => {
+  return (
+    <div
+      className="flex cursor-pointer items-center justify-between gap-x-2"
+      onClick={onClick}
+    >
+      {isActive ? <RadioOn /> : <RadioOff />}
+      <div className={cx('uppercase', { 'font-medium': isActive })}>
+        {label}
+      </div>
+    </div>
+  )
+}
+
+const GroupBy = ({ activeSection, className, setActiveSection }: any) => {
+  return (
+    <div
+      className={cx(
+        'flex items-center gap-x-8 rounded-lg bg-primary px-8 py-4 font-normal',
+        robotoCondensed.className,
+        className,
+      )}
+    >
+      <div className="uppercase text-mlfs-hlYellow">Group by</div>
+      <div className="flex items-center justify-between gap-x-4 rounded-lg bg-white px-4 py-2">
+        {sections.map((section, index) => (
+          <GroupByOption
+            key={section.id}
+            isActive={index == activeSection}
+            label={section.label}
+            onClick={() => setActiveSection(index)}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function CPListing() {
   const settings = useStore((state) => state.common.settings.data)
   const [activeSection, setActiveSection] = useState(0)
@@ -783,46 +851,22 @@ export default function CPListing() {
     <>
       <div className="mb-4 flex items-center justify-between gap-x-4">
         <div className="flex flex-col gap-x-4">
-          {user_type !== 'country_user' && (
-            <>
-              <Typography className="-mb-2 text-sm font-medium uppercase">
-                Group by:
-              </Typography>
-              <Tabs
-                TabIndicatorProps={{ style: { visibility: 'hidden' } }}
-                aria-label="country programme listing"
-                textColor="primary"
-                value={activeSection}
-                onChange={(event: React.SyntheticEvent, newSection: number) => {
-                  setActiveSection(newSection)
-                  setFilters({
-                    country: [],
-                    range: [minYear, maxYear],
-                    year: [],
-                  })
-                }}
-              >
-                {sections.map((section) => (
-                  <Tab
-                    key={section.id}
-                    aria-controls={section.panelId}
-                    label={section.label}
-                    disableRipple
-                  />
-                ))}
-              </Tabs>
-            </>
+         {user_type !== 'country_user' && (  <GroupBy
+            className="text-xl"
+            activeSection={activeSection}
+            setActiveSection={setActiveSection}
+          />
           )}
         </div>
-        {userTypeVisibility[user_type as UserType] && (
-          <Link
-            color="secondary"
-            href="/country-programme/create"
-            variant="contained"
-            button
-          >
-            New submission
-          </Link>
+        {userTypeVisibility[user_type as UserType] && (<Link
+          className="px-4 py-2 text-lg uppercase"
+          color="secondary"
+          href="/country-programme/create"
+          variant="contained"
+          button
+        >
+          New submission
+        </Link>
         )}
       </div>
       <div id="cp-listing-sections">
