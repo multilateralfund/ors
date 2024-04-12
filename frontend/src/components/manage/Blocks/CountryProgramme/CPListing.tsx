@@ -851,22 +851,24 @@ export default function CPListing() {
     <>
       <div className="mb-4 flex items-center justify-between gap-x-4">
         <div className="flex flex-col gap-x-4">
-         {user_type !== 'country_user' && (  <GroupBy
-            className="text-xl"
-            activeSection={activeSection}
-            setActiveSection={setActiveSection}
-          />
+          {user_type !== 'country_user' && (
+            <GroupBy
+              className="text-xl"
+              activeSection={activeSection}
+              setActiveSection={setActiveSection}
+            />
           )}
         </div>
-        {userTypeVisibility[user_type as UserType] && (<Link
-          className="px-4 py-2 text-lg uppercase"
-          color="secondary"
-          href="/country-programme/create"
-          variant="contained"
-          button
-        >
-          New submission
-        </Link>
+        {userTypeVisibility[user_type as UserType] && (
+          <Link
+            className="px-4 py-2 text-lg uppercase"
+            color="secondary"
+            href="/country-programme/create"
+            variant="contained"
+            button
+          >
+            New submission
+          </Link>
         )}
       </div>
       <div id="cp-listing-sections">
