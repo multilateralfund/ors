@@ -164,6 +164,7 @@ export default class Section<DeserializedData, FormFields> {
   public transformApiBlend(blend: ApiBlend, mandatory?: boolean) {
     const transformed: Record<string, any> & ApiBlend = {
       ...blend,
+      blend_id: blend.id,
       display_name: `${blend.name} (${blend.composition})`,
       row_id: `blend_${blend.id}`,
       ...(isBoolean(mandatory) ? { mandatory } : {}),
@@ -183,6 +184,7 @@ export default class Section<DeserializedData, FormFields> {
       display_name: substance.name,
       mandatory: false,
       row_id: `substance_${substance.id}`,
+      substance_id: substance.id,
       ...(isBoolean(mandatory) ? { mandatory } : {}),
     }
     forOwn(this.formFields, (field, fieldKey) => {
