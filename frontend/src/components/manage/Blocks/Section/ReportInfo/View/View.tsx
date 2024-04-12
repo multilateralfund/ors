@@ -12,12 +12,12 @@ const ReportInfoView = (props: any) => {
   const user = useStore((state) => state.user)
 
   const sectionsChecked = {
-    section_a: report.report_info?.reported_section_a || false,
-    section_b: report.report_info?.reported_section_b || false,
-    section_c: report.report_info?.reported_section_c || false,
-    section_d: report.report_info?.reported_section_d || false,
-    section_e: report.report_info?.reported_section_e || false,
-    section_f: report.report_info?.reported_section_f || false,
+    section_a: report.report_info?.reported_section_a ?? true,
+    section_b: report.report_info?.reported_section_b ?? true,
+    section_c: report.report_info?.reported_section_c ?? true,
+    section_d: report.report_info?.reported_section_d ?? true,
+    section_e: report.report_info?.reported_section_e ?? true,
+    section_f: report.report_info?.reported_section_f ?? true,
   }
 
   return (

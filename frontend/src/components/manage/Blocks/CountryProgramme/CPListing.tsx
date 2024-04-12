@@ -1,5 +1,6 @@
 'use client'
 import { Country } from '@ors/types/store'
+import { UserType, userTypeVisibility } from '@ors/types/user_types'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 
@@ -17,6 +18,7 @@ import cx from 'classnames'
 import { filter, isArray, union } from 'lodash'
 import { Roboto_Condensed } from 'next/font/google'
 
+import CPEmpty from '@ors/components/manage/Blocks/CountryProgramme/CPEmpty'
 import Field from '@ors/components/manage/Form/Field'
 import Listing from '@ors/components/manage/Form/Listing'
 import IconButton from '@ors/components/ui/IconButton/IconButton'
@@ -50,6 +52,7 @@ interface SectionProps {
   minYear: any
   section?: number
   setFilters: any
+  user_type?: UserType
 }
 
 type ReportResponse = {
@@ -163,7 +166,8 @@ function GeneralSection(props: SectionProps) {
   const countriesById = new Map<number, any>(
     countries.map((country: any) => [country.id, country]),
   )
-  const { filters, groupBy, maxYear, minYear, setFilters } = props
+
+  const { filters, groupBy, maxYear, minYear, setFilters, user_type } = props
   const [range, setRange] = useState([filters.range[0], filters.range[1]])
   const [pagination, setPagination] = useState({
     page: 1,
@@ -202,38 +206,40 @@ function GeneralSection(props: SectionProps) {
     <div id="general-section">
       <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
         <div className="flex flex-1 items-center gap-4">
-          <Field<Country>
-            FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
-            getOptionLabel={(option) => (option as Country).name}
-            options={countries}
-            popupIcon={<IoFilter className="p-1" size={24} />}
-            value={null}
-            widget="autocomplete"
-            Input={{
-              placeholder: 'Select country...',
-            }}
-            sx={{
-              '& .MuiAutocomplete-popupIndicator': { transform: 'none' },
-              width: '100%',
-            }}
-            onChange={(_: any, value: any) => {
-              if (!!value) {
-                const country = filters.country || []
-                const newValue = union(country, [value.id])
-                setFilters((filters: any) => {
-                  return { ...filters, country: newValue }
-                })
-                setParams({
-                  country_id: newValue.join(','),
-                  offset: 0,
-                })
-                if (document.activeElement) {
-                  // @ts-ignore
-                  document.activeElement.blur()
+          {user_type !== 'country_user' && (
+            <Field<Country>
+              FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
+              getOptionLabel={(option) => (option as Country).name}
+              options={countries}
+              popupIcon={<IoFilter className="p-1" size={24} />}
+              value={null}
+              widget="autocomplete"
+              Input={{
+                placeholder: 'Select country...',
+              }}
+              sx={{
+                '& .MuiAutocomplete-popupIndicator': { transform: 'none' },
+                width: '100%',
+              }}
+              onChange={(_: any, value: any) => {
+                if (!!value) {
+                  const country = filters.country || []
+                  const newValue = union(country, [value.id])
+                  setFilters((filters: any) => {
+                    return { ...filters, country: newValue }
+                  })
+                  setParams({
+                    country_id: newValue.join(','),
+                    offset: 0,
+                  })
+                  if (document.activeElement) {
+                    // @ts-ignore
+                    document.activeElement.blur()
+                  }
                 }
-              }
-            }}
-          />
+              }}
+            />
+          )}
           <Field
             FieldProps={{ className: 'mb-0 px-4' }}
             label="Date"
@@ -408,7 +414,7 @@ function GeneralSection(props: SectionProps) {
 
 function CountrySection(props: SectionProps) {
   // const shouldScroll = useRef(false)
-  const { setFilters } = props
+  const { setFilters, user_type } = props
   const [pagination, setPagination] = useState({
     page: 1,
     rowsPerPage: PER_PAGE_COUNTRY,
@@ -417,6 +423,7 @@ function CountrySection(props: SectionProps) {
   const countries = useStore((state) => {
     return state.common.countries_for_listing.data
   })
+
   const { data, loading, setParams } = useApi({
     // onSuccess: () => {
     //   if (shouldScroll.current) {
@@ -438,33 +445,39 @@ function CountrySection(props: SectionProps) {
   const { count, loaded, results } = getResults(data)
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
+  if (countries.length === 0) {
+    return <CPEmpty text={`No reports found`} />
+  }
+
   return (
     <div id="country-section">
       <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
         <div className="flex flex-1 items-center gap-4">
-          <Field
-            FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
-            getOptionLabel={(option: any) => option?.name}
-            options={countries}
-            popupIcon={<IoFilter className="p-1" size={24} />}
-            value={null}
-            widget="autocomplete"
-            Input={{
-              placeholder: 'Select country...',
-            }}
-            sx={{
-              '& .MuiAutocomplete-popupIndicator': { transform: 'none' },
-              width: '100%',
-            }}
-            onChange={(_: any, value: any) => {
-              if (!!value) {
-                setFilters((filters: any) => {
-                  const country = filters.country || []
-                  return { ...filters, country: union(country, [value.id]) }
-                })
-              }
-            }}
-          />
+          {user_type !== 'country_user' && (
+            <Field
+              FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
+              getOptionLabel={(option: any) => option?.name}
+              options={countries}
+              popupIcon={<IoFilter className="p-1" size={24} />}
+              value={null}
+              widget="autocomplete"
+              Input={{
+                placeholder: 'Select country...',
+              }}
+              sx={{
+                '& .MuiAutocomplete-popupIndicator': { transform: 'none' },
+                width: '100%',
+              }}
+              onChange={(_: any, value: any) => {
+                if (!!value) {
+                  setFilters((filters: any) => {
+                    const country = filters.country || []
+                    return { ...filters, country: union(country, [value.id]) }
+                  })
+                }
+              }}
+            />
+          )}
         </div>
         <Legend />
         <div className="flex items-center gap-2">
@@ -722,6 +735,7 @@ function SectionPanel(props: SectionProps) {
     minYear,
     section = 0,
     setFilters,
+    user_type,
     ...rest
   } = props
 
@@ -752,6 +766,7 @@ function SectionPanel(props: SectionProps) {
         maxYear={maxYear}
         minYear={minYear}
         setFilters={setFilters}
+        user_type={user_type}
       />
     </div>
   )
@@ -822,6 +837,7 @@ const GroupBy = ({ activeSection, className, setActiveSection }: any) => {
 export default function CPListing() {
   const settings = useStore((state) => state.common.settings.data)
   const [activeSection, setActiveSection] = useState(0)
+  const { user_type } = useStore((state) => state.user.data)
 
   const minYear = settings.cp_reports.min_year
   const maxYear = settings.cp_reports.max_year
@@ -835,21 +851,25 @@ export default function CPListing() {
     <>
       <div className="mb-4 flex items-center justify-between gap-x-4">
         <div className="flex flex-col gap-x-4">
-          <GroupBy
-            className="text-xl"
-            activeSection={activeSection}
-            setActiveSection={setActiveSection}
-          />
+          {user_type !== 'country_user' && (
+            <GroupBy
+              className="text-xl"
+              activeSection={activeSection}
+              setActiveSection={setActiveSection}
+            />
+          )}
         </div>
-        <Link
-          className="px-4 py-2 text-lg uppercase"
-          color="secondary"
-          href="/country-programme/create"
-          variant="contained"
-          button
-        >
-          New submission
-        </Link>
+        {userTypeVisibility[user_type as UserType] && (
+          <Link
+            className="px-4 py-2 text-lg uppercase"
+            color="secondary"
+            href="/country-programme/create"
+            variant="contained"
+            button
+          >
+            New submission
+          </Link>
+        )}
       </div>
       <div id="cp-listing-sections">
         {sections.map((section, index) => (
@@ -861,6 +881,7 @@ export default function CPListing() {
             minYear={minYear}
             section={index}
             setFilters={setFilters}
+            user_type={user_type}
           />
         ))}
       </div>

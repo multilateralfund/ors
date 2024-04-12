@@ -198,12 +198,12 @@ function CPEdit() {
     adm_c: report.data?.adm_c,
     adm_d: report.data?.adm_d,
     report_info: {
-      reported_section_a: report.data?.report_info?.reported_section_a || false,
-      reported_section_b: report.data?.report_info?.reported_section_b || false,
-      reported_section_c: report.data?.report_info?.reported_section_c || false,
-      reported_section_d: report.data?.report_info?.reported_section_d || false,
-      reported_section_e: report.data?.report_info?.reported_section_e || false,
-      reported_section_f: report.data?.report_info?.reported_section_f || false,
+      reported_section_a: report.data?.report_info?.reported_section_a ?? true,
+      reported_section_b: report.data?.report_info?.reported_section_b ?? true,
+      reported_section_c: report.data?.report_info?.reported_section_c ?? true,
+      reported_section_d: report.data?.report_info?.reported_section_d ?? true,
+      reported_section_e: report.data?.report_info?.reported_section_e ?? true,
+      reported_section_f: report.data?.report_info?.reported_section_f ?? true,
       reporting_email: report.data?.report_info?.reporting_email || null,
       reporting_entry: report.data?.report_info?.reporting_entry || null,
     },
@@ -276,12 +276,12 @@ function CPEdit() {
   }, [form])
 
   const [sectionsChecked, setSectionsChecked] = useState({
-    reported_section_a: report.data?.report_info?.reported_section_a || false,
-    reported_section_b: report.data?.report_info?.reported_section_b || false,
-    reported_section_c: report.data?.report_info?.reported_section_c || false,
-    reported_section_d: report.data?.report_info?.reported_section_d || false,
-    reported_section_e: report.data?.report_info?.reported_section_e || false,
-    reported_section_f: report.data?.report_info?.reported_section_f || false,
+    reported_section_a: report.data?.report_info?.reported_section_a ?? true,
+    reported_section_b: report.data?.report_info?.reported_section_b ?? true,
+    reported_section_c: report.data?.report_info?.reported_section_c ?? true,
+    reported_section_d: report.data?.report_info?.reported_section_d ?? true,
+    reported_section_e: report.data?.report_info?.reported_section_e ?? true,
+    reported_section_f: report.data?.report_info?.reported_section_f ?? true,
   })
   const onSectionCheckChange = (section: string, isChecked: boolean) => {
     setSectionsChecked((prevState: any) => ({
