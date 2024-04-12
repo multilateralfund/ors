@@ -295,7 +295,7 @@ function CPView(props: { archive?: boolean }) {
               </div>
             )
           })}
-        <CPComments />
+        {variant?.model === 'V' && <CPComments />}
       </CPSectionWrapper>
     </>
   )
