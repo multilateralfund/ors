@@ -23,5 +23,3 @@ class IsUserAllowedCPComment(IsUserAllowedCP):
 
     Inherits from IsUserAllowedCP as users have the same rights at has_permission-level.
     """
-
-    pass
