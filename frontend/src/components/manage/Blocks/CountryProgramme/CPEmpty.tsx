@@ -1,7 +1,7 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material'
 
 interface CPEmptyProps {
-  text: string;
+  text: string
 }
 
 const CPEmpty: React.FC<CPEmptyProps> = ({ text }) => {
@@ -12,11 +12,9 @@ const CPEmpty: React.FC<CPEmptyProps> = ({ text }) => {
       height="100" // Adjust this value as needed
       justifyContent="center"
     >
-      <Typography variant="h6">
-        {text}
-      </Typography>
+      <Typography variant="h6">{text}</Typography>
     </Box>
-  );
+  )
 }
 
-export default CPEmpty;
+export default CPEmpty

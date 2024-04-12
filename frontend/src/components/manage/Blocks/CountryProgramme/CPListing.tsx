@@ -16,7 +16,6 @@ import {
 } from '@mui/material'
 import cx from 'classnames'
 import { filter, isArray, union } from 'lodash'
-import { Roboto_Condensed } from 'next/font/google'
 
 import CPEmpty from '@ors/components/manage/Blocks/CountryProgramme/CPEmpty'
 import Field from '@ors/components/manage/Form/Field'
@@ -24,6 +23,8 @@ import Listing from '@ors/components/manage/Form/Listing'
 import IconButton from '@ors/components/ui/IconButton/IconButton'
 import Link from '@ors/components/ui/Link/Link'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
+import RadioSelect from '@ors/components/ui/RadioSelect/RadioSelect'
+import SimpleSelect from '@ors/components/ui/SimpleSelect/SimpleSelect'
 import { getResults } from '@ors/helpers'
 // import { scrollToElement } from '@ors/helpers/Utils/Utils'
 import useApi from '@ors/hooks/useApi'
@@ -36,13 +37,6 @@ import {
   IoClose,
   IoFilter,
 } from 'react-icons/io5'
-
-const robotoCondensed = Roboto_Condensed({
-  display: 'swap',
-  style: ['normal', 'italic'],
-  subsets: ['latin'],
-  weight: ['100', '300', '400', '500', '700', '900'],
-})
 
 interface SectionProps {
   currentSection?: number
@@ -83,6 +77,9 @@ const debounce = (func: () => void) => {
   if (timer) clearTimeout(timer)
   timer = setTimeout(func, 500)
 }
+
+const SortBy = (props: any) => <SimpleSelect label="Sort by" {...props} />
+const GroupBy = (props: any) => <RadioSelect label="Group by" {...props} />
 
 function Legend() {
   return (
@@ -419,7 +416,12 @@ function CountrySection(props: SectionProps) {
     page: 1,
     rowsPerPage: PER_PAGE_COUNTRY,
   })
-  const [ordering, setOrdering] = useState<'asc' | 'desc'>('asc')
+
+  const orderOptions = [
+    { label: 'Name, A to Z', value: 'asc' },
+    { label: 'Name, Z to A', value: 'desc' },
+  ]
+
   const countries = useStore((state) => {
     return state.common.countries_for_listing.data
   })
@@ -444,6 +446,11 @@ function CountrySection(props: SectionProps) {
   })
   const { count, loaded, results } = getResults(data)
   const pages = Math.ceil(count / pagination.rowsPerPage)
+
+  const handleOrderChange = (option: any) => {
+    setPagination({ ...pagination, page: 1 })
+    setParams({ offset: 0, ordering: option.value })
+  }
 
   if (countries.length === 0) {
     return <CPEmpty text={`No reports found`} />
@@ -480,26 +487,7 @@ function CountrySection(props: SectionProps) {
           )}
         </div>
         <Legend />
-        <div className="flex items-center gap-2">
-          <Typography className="text-typography-primary" component="span">
-            Ordering
-          </Typography>
-          <IconButton
-            className="bg-transparent"
-            onClick={() => {
-              const newOrder = ordering === 'asc' ? 'desc' : 'asc'
-              setOrdering(newOrder)
-              setPagination({ ...pagination, page: 1 })
-              setParams({ offset: 0, ordering: newOrder })
-            }}
-          >
-            {ordering === 'asc' ? (
-              <IoArrowUp size="1rem" />
-            ) : (
-              <IoArrowDown size="1rem" />
-            )}
-          </IconButton>
-        </div>
+        <SortBy options={orderOptions} onChange={handleOrderChange} />
       </div>
       <Grid className="mb-6" spacing={4} container>
         {results.map((row: any) => (
@@ -772,68 +760,6 @@ function SectionPanel(props: SectionProps) {
   )
 }
 
-const RadioOn = () => {
-  return (
-    <div className="rounded-full border border-solid border-primary bg-primary p-1">
-      <div className="h-2 w-2 rounded-full bg-mlfs-hlYellow"></div>
-    </div>
-  )
-}
-
-const RadioOff = () => {
-  return (
-    <div className="rounded-full border border-solid border-primary p-1">
-      <div className="h-2 w-2 rounded-full"></div>
-    </div>
-  )
-}
-
-const GroupByOption = ({
-  isActive,
-  label,
-  onClick,
-}: {
-  isActive: boolean
-  label: string
-  onClick: () => void
-}) => {
-  return (
-    <div
-      className="flex cursor-pointer items-center justify-between gap-x-2"
-      onClick={onClick}
-    >
-      {isActive ? <RadioOn /> : <RadioOff />}
-      <div className={cx('uppercase', { 'font-medium': isActive })}>
-        {label}
-      </div>
-    </div>
-  )
-}
-
-const GroupBy = ({ activeSection, className, setActiveSection }: any) => {
-  return (
-    <div
-      className={cx(
-        'flex items-center gap-x-8 rounded-lg bg-primary px-8 py-4 font-normal',
-        robotoCondensed.className,
-        className,
-      )}
-    >
-      <div className="uppercase text-mlfs-hlYellow">Group by</div>
-      <div className="flex items-center justify-between gap-x-4 rounded-lg bg-white px-4 py-2">
-        {sections.map((section, index) => (
-          <GroupByOption
-            key={section.id}
-            isActive={index == activeSection}
-            label={section.label}
-            onClick={() => setActiveSection(index)}
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
-
 export default function CPListing() {
   const settings = useStore((state) => state.common.settings.data)
   const [activeSection, setActiveSection] = useState(0)
@@ -854,8 +780,9 @@ export default function CPListing() {
           {user_type !== 'country_user' && (
             <GroupBy
               className="text-xl"
-              activeSection={activeSection}
-              setActiveSection={setActiveSection}
+              initialIndex={activeSection}
+              options={sections}
+              onChange={(_: any, index: number) => setActiveSection(index)}
             />
           )}
         </div>
