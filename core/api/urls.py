@@ -125,7 +125,7 @@ urlpatterns = [
     ),
     path(
         "country-programme/report/<int:id>/comments/",
-        CPReportStatusUpdateView.as_view(),
+        CPReportCommentsView.as_view(),
         name="country-programme-report-comments",
     ),
     path(
