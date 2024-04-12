@@ -272,8 +272,6 @@ class CPReportCreateSerializer(serializers.Serializer):
             self._create_adm_records(cp_report, validated_data.get("adm_c", []), "C")
             self._create_adm_records(cp_report, validated_data.get("adm_d", []), "D")
 
-
-        # TODO: Neeed to make sure this happens ONLY for the latest reporting format !!!
         if cp_report_info:
             self._create_report_info(cp_report, cp_report_info)
 
