@@ -84,6 +84,10 @@ const CPComments: React.FC = () => {
     user: 'country_user',
   }
 
+  const emptyComments =
+    Object.values(initialTexts).every((value) => value === '') &&
+    Object.values(texts).every((value) => value === '')
+
   return (
     <form className="mt-4 flex w-full flex-col gap-4">
       <Typography className="flex-1" component="h2" variant="h6">
@@ -96,20 +100,23 @@ const CPComments: React.FC = () => {
             className="relative flex min-w-96 flex-1 flex-col rounded-lg bg-gray-100 p-2"
           >
             {user_type !== allowComments[label] && (
-              <SectionOverlay className="cursor-not-allowed" opacity="opacity-60" />
+              <SectionOverlay
+                className="cursor-not-allowed"
+                opacity="opacity-60"
+              />
             )}
             <label className="py-2 text-2xl font-normal">
               {label.toLocaleUpperCase()}
             </label>
             <div className="CPComments relative">
               <TextareaAutosize
-                className="w-full resize-none rounded-lg border border-solid border-gray-300 p-2 pb-6 shadow-none"
+                className="w-full resize-none rounded-lg border border-solid border-gray-300 p-2 pb-10 shadow-none"
                 minRows={6}
                 placeholder="Type your comment here..."
                 value={texts[label]}
                 onChange={(e) => handleTextChange(label, e.target.value)}
               />
-              {user_type === allowComments[label] && (
+              {user_type === allowComments[label] && !emptyComments && (
                 <div className="absolute bottom-2 right-2 mb-2 flex gap-2 opacity-60">
                   <Button
                     color="primary"
