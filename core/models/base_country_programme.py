@@ -11,9 +11,6 @@ class AbstractCPReport(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True, help_text="Date of creation of the report"
     )
-    last_updated_at = models.DateTimeField(
-        auto_now=True, help_text="Date when the report was last updated"
-    )
     event_description = models.TextField(null=True, blank=True)
     name = models.CharField(max_length=248)
     year = models.IntegerField()

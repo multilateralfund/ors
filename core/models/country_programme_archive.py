@@ -24,6 +24,10 @@ class CPReportArchive(AbstractCPReport):
         related_name="updated_cp_reports_archive",
         help_text="User who last updated the report",
     )
+    last_updated_at = models.DateTimeField(
+        auto_now=True, help_text="Date when the report was last updated"
+    )
+
 
     class Meta:
         verbose_name = "CP report archive"
