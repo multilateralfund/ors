@@ -1,4 +1,5 @@
-import { EmptyReportType } from '@ors/types/api_empty-form'
+import { EmptyFormType } from '@ors/types/api_empty-form'
+import { ApiSubstance } from '@ors/types/api_substances'
 import { ReportVariant } from '@ors/types/variants'
 
 import React, { useMemo, useRef, useState } from 'react'
@@ -108,7 +109,7 @@ function getInitialPinnedBottomRowData(model: string): RowData[] {
 export default function SectionACreate(props: {
   Section: SectionA
   TableProps: PassedCPCreateTableProps
-  emptyForm: EmptyReportType
+  emptyForm: EmptyFormType
   form: CPBaseForm
   onSectionCheckChange: (section: string, isChecked: boolean) => void
   sectionsChecked: Record<string, boolean>
@@ -118,7 +119,8 @@ export default function SectionACreate(props: {
   const { Section, TableProps, emptyForm, form, setForm, variant } = props
   const newNode = useRef<RowNode>()
   const substances = useStore(
-    (state) => getResults(state.cp_reports.substances.data).results,
+    (state) =>
+      getResults<ApiSubstance>(state.cp_reports.substances.data).results,
   )
 
   const grid = useRef<any>()
@@ -137,14 +139,7 @@ export default function SectionACreate(props: {
         includes(substance.sections, 'A') &&
         !includes(substancesInForm, `substance_${substance.id}`)
       ) {
-        data.push(
-          Section?.transformSubstance({
-            ...substance,
-            blend_id: null,
-            chemical_name: substance.name,
-            substance_id: substance.id,
-          }),
-        )
+        data.push(Section?.transformApiSubstance(substance))
       }
     })
     return data

@@ -15,6 +15,7 @@ from core.utils import IMPORT_DB_MAX_YEAR, VALIDATION_MIN_YEAR
 
 # pylint: disable=W0223
 
+
 class CPReportInfoSerializer(serializers.ModelSerializer):
     country_programme_report_id = serializers.PrimaryKeyRelatedField(
         required=False,
@@ -22,12 +23,10 @@ class CPReportInfoSerializer(serializers.ModelSerializer):
         write_only=True,
     )
     reporting_entry = serializers.CharField(
-        required=False,
-        source="country_programme_report.reporting_entry"
+        required=False, source="country_programme_report.reporting_entry"
     )
     reporting_email = serializers.CharField(
-        required=False,
-        source="country_programme_report.reporting_email"
+        required=False, source="country_programme_report.reporting_email"
     )
 
     class Meta:
@@ -65,6 +64,8 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
     report_info = CPReportInfoSerializer(
         many=False, required=False, source="cpreportedsections", allow_null=True
     )
+    comment_country = serializers.CharField(read_only=True)
+    comment_secretariat = serializers.CharField(read_only=True)
 
     class Meta:
         fields = [
@@ -76,6 +77,8 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
             "country",
             "country_id",
             "comment",
+            "comment_country",
+            "comment_secretariat",
             "created_at",
             "created_by",
             "last_updated_by",
@@ -214,9 +217,7 @@ class CPReportCreateSerializer(serializers.Serializer):
 
     def _create_report_info(self, cp_report, report_info_data):
         report_info_data["country_programme_report_id"] = cp_report.id
-        report_info_serializer = CPReportInfoSerializer(
-            data=report_info_data
-        )
+        report_info_serializer = CPReportInfoSerializer(data=report_info_data)
         report_info_serializer.is_valid(raise_exception=True)
         report_info_serializer.save()
 
@@ -233,9 +234,7 @@ class CPReportCreateSerializer(serializers.Serializer):
         reporting_entry = cp_reporting.get(
             "reporting_entry", request_user.get_full_name()
         )
-        reporting_email = cp_reporting.get(
-            "reporting_email", request_user.email
-        )
+        reporting_email = cp_reporting.get("reporting_email", request_user.email)
 
         cp_report_data = {
             "name": validated_data.get("name"),
@@ -272,9 +271,16 @@ class CPReportCreateSerializer(serializers.Serializer):
             self._create_adm_records(cp_report, validated_data.get("adm_c", []), "C")
             self._create_adm_records(cp_report, validated_data.get("adm_d", []), "D")
 
-
-        # TODO: Neeed to make sure this happens ONLY for the latest reporting format !!!
         if cp_report_info:
             self._create_report_info(cp_report, cp_report_info)
 
         return cp_report
+
+
+class CPReportCommentsSerializer(serializers.ModelSerializer):
+    comment_country = serializers.CharField(required=False, allow_blank=True)
+    comment_secretariat = serializers.CharField(required=False, allow_blank=True)
+
+    class Meta:
+        model = CPReport
+        fields = ["comment_country", "comment_secretariat"]

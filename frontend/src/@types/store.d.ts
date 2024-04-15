@@ -1,4 +1,4 @@
-import type { EmptyReportType } from './api_empty-form'
+import type { EmptyFormType } from './api_empty-form'
 import type { Language } from '@ors/types/locales'
 import type { DataType, SliceData } from '@ors/types/primitives'
 import type { PartialDeep } from 'type-fest'
@@ -8,7 +8,7 @@ import { ApiSubstance } from './api_substances'
 
 type Report = SliceData<CPReport | null, Record<string, any> | null> & {
   country?: Country
-  emptyForm: SliceData<EmptyReportType, Record<string, any> | null>
+  emptyForm: SliceData<EmptyFormType, Record<string, any> | null>
   versions: SliceData<CPVersionInfo[]>
 }
 

@@ -561,7 +561,7 @@ class CPReportCommentsView(generics.GenericAPIView):
 
         user_type = request.user.user_type
         if comment_country:
-            if user_type != User.UserType.COUNTRY:
+            if user_type != User.UserType.COUNTRY_USER:
                 return Response(
                     {"comment_country": f"Invalid value {comment_country}"},
                     status=status.HTTP_400_BAD_REQUEST,

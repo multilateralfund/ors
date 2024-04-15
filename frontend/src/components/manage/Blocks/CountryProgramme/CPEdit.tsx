@@ -198,12 +198,12 @@ function CPEdit() {
     adm_c: report.data?.adm_c,
     adm_d: report.data?.adm_d,
     report_info: {
-      reported_section_a: report.data?.report_info?.reported_section_a || false,
-      reported_section_b: report.data?.report_info?.reported_section_b || false,
-      reported_section_c: report.data?.report_info?.reported_section_c || false,
-      reported_section_d: report.data?.report_info?.reported_section_d || false,
-      reported_section_e: report.data?.report_info?.reported_section_e || false,
-      reported_section_f: report.data?.report_info?.reported_section_f || false,
+      reported_section_a: report.data?.report_info?.reported_section_a ?? true,
+      reported_section_b: report.data?.report_info?.reported_section_b ?? true,
+      reported_section_c: report.data?.report_info?.reported_section_c ?? true,
+      reported_section_d: report.data?.report_info?.reported_section_d ?? true,
+      reported_section_e: report.data?.report_info?.reported_section_e ?? true,
+      reported_section_f: report.data?.report_info?.reported_section_f ?? true,
       reporting_email: report.data?.report_info?.reporting_email || null,
       reporting_entry: report.data?.report_info?.reporting_entry || null,
     },
@@ -276,12 +276,12 @@ function CPEdit() {
   }, [form])
 
   const [sectionsChecked, setSectionsChecked] = useState({
-    reported_section_a: report.data?.report_info?.reported_section_a || false,
-    reported_section_b: report.data?.report_info?.reported_section_b || false,
-    reported_section_c: report.data?.report_info?.reported_section_c || false,
-    reported_section_d: report.data?.report_info?.reported_section_d || false,
-    reported_section_e: report.data?.report_info?.reported_section_e || false,
-    reported_section_f: report.data?.report_info?.reported_section_f || false,
+    reported_section_a: report.data?.report_info?.reported_section_a ?? true,
+    reported_section_b: report.data?.report_info?.reported_section_b ?? true,
+    reported_section_c: report.data?.report_info?.reported_section_c ?? true,
+    reported_section_d: report.data?.report_info?.reported_section_d ?? true,
+    reported_section_e: report.data?.report_info?.reported_section_e ?? true,
+    reported_section_f: report.data?.report_info?.reported_section_f ?? true,
   })
   const onSectionCheckChange = (section: string, isChecked: boolean) => {
     setSectionsChecked((prevState: any) => ({
@@ -368,11 +368,11 @@ function CPEdit() {
           </Tabs>
           <div id="sectionToolbar"></div>
         </div>
-                  <CPSectionWrapper>
-        {!!report.data &&
-          sections.map((section, index) => {
-            if (!includes(renderedSections, index)) return null
-                         const sectionName = `reported_${section.id}`
+        <CPSectionWrapper>
+          {!!report.data &&
+            sections.map((section, index) => {
+              if (!includes(renderedSections, index)) return null
+              const sectionName = `reported_${section.id}`
               const isSectionChecked: boolean =
                 section.id === 'report_info' ||
                 // @ts-ignore
@@ -380,68 +380,68 @@ function CPEdit() {
                 false
               const showSectionSelect =
                 variant?.model === 'V' && section.id !== 'report_info'
-               const Section: React.FC<any> = section.component
-            return (
-              <div
-                id={section.panelId}
-                key={section.panelId}
-                className={cx('transition', {
-                  'absolute -left-[9999px] -top-[9999px] opacity-0':
-                    activeTab !== index,
-                })}
-                aria-labelledby={section.id}
-                role="tabpanel"
-              >
-                {showSectionSelect && (
-                  <SectionReportedSelect
-                    isSectionChecked={isSectionChecked}
-                    sectionName={sectionName}
-                    onSectionCheckChange={onSectionCheckChange}
-                  />
-                )}
-                <div className="relative">
-                  <FootnotesProvider>
-                    <Section
-                      Section={get(Sections, section.id)}
-                      emptyForm={report.emptyForm.data || {}}
-                      errors={errors}
-                      form={form}
-                      isEdit={true}
-                      report={report.data}
-                      section={section}
-                      sectionsChecked={sectionsChecked}
-                      setForm={setForm}
-                      variant={variant}
-                      TableProps={{
-                        ...TableProps,
-                        context: {section, variant},
-                        errors: errors[section.id],
-                        isActiveSection: activeTab == index,
-                        report,
-                        section,
-                      }}
+              const Section: React.FC<any> = section.component
+              return (
+                <div
+                  id={section.panelId}
+                  key={section.panelId}
+                  className={cx('transition', {
+                    'absolute -left-[9999px] -top-[9999px] opacity-0':
+                      activeTab !== index,
+                  })}
+                  aria-labelledby={section.id}
+                  role="tabpanel"
+                >
+                  {showSectionSelect && (
+                    <SectionReportedSelect
+                      isSectionChecked={isSectionChecked}
+                      sectionName={sectionName}
                       onSectionCheckChange={onSectionCheckChange}
                     />
-                    {!isSectionChecked && variant?.model === 'V' ? (
-                      <SectionOverlay/>
-                    ) : null}
-                  </FootnotesProvider>
+                  )}
+                  <div className="relative">
+                    <FootnotesProvider>
+                      <Section
+                        Section={get(Sections, section.id)}
+                        emptyForm={report.emptyForm.data || {}}
+                        errors={errors}
+                        form={form}
+                        isEdit={true}
+                        report={report.data}
+                        section={section}
+                        sectionsChecked={sectionsChecked}
+                        setForm={setForm}
+                        variant={variant}
+                        TableProps={{
+                          ...TableProps,
+                          context: { section, variant },
+                          errors: errors[section.id],
+                          isActiveSection: activeTab == index,
+                          report,
+                          section,
+                        }}
+                        onSectionCheckChange={onSectionCheckChange}
+                      />
+                      {!isSectionChecked && variant?.model === 'V' ? (
+                        <SectionOverlay />
+                      ) : null}
+                    </FootnotesProvider>
+                  </div>
                 </div>
-              </div>
-            )
-          })}
-                  </CPSectionWrapper>
+              )
+            })}
+        </CPSectionWrapper>
       </form>
     </>
   )
 }
 
 export default function CPEditWrapper(props: { iso3: string; year: number }) {
-  const {iso3, year} = props
+  const { iso3, year } = props
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const country = countries.filter((country) => country.iso3 === iso3)[0]
 
-  const {blends, fetchBundle, report, setReport, substances} = useStore(
+  const { blends, fetchBundle, report, setReport, substances } = useStore(
     (state) => state.cp_reports,
   )
 
@@ -476,5 +476,5 @@ export default function CPEditWrapper(props: { iso3: string; year: number }) {
     )
   }
 
-  return <CPEdit/>
+  return <CPEdit />
 }

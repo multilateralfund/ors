@@ -19,10 +19,9 @@ export default function Header() {
 
   return (
     <FadeInOut className="header-motion">
-      <Box
+      <nav
         id="header"
-        className="rounded-none border-0 px-0 pb-0 pt-4 shadow-none"
-        component="nav"
+        className="rounded-none border-0 from-white to-gray-900 px-0 pb-0 pt-4 shadow-none"
       >
         <div className="container flex w-full items-center justify-between pb-4">
           <div className="flex w-full flex-auto items-center justify-center gap-x-8 ">
@@ -40,7 +39,7 @@ export default function Header() {
             </AnimatePresence>
           </div>
         </div>
-      </Box>
+      </nav>
     </FadeInOut>
   )
 }

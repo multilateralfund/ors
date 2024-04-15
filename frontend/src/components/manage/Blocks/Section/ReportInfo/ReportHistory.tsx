@@ -39,7 +39,7 @@ const ReportHistory = () => {
         })}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ReportHistory;
+export default ReportHistory

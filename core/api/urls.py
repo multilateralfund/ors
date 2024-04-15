@@ -31,6 +31,7 @@ from core.api.views.cp_reports import (
     CPReportView,
     CPReportGroupByYearView,
     CPReportGroupByCountryView,
+    CPReportCommentsView,
 )
 from core.api.views.cp_records import CPRecordListView
 from core.api.views.cp_records_export import CPRecordPrintView
@@ -123,6 +124,11 @@ urlpatterns = [
         "country-programme/report/<int:id>/status-update/",
         CPReportStatusUpdateView.as_view(),
         name="country-programme-report-status",
+    ),
+    path(
+        "country-programme/report/<int:id>/comments/",
+        CPReportCommentsView.as_view(),
+        name="country-programme-report-comments",
     ),
     path(
         "country-programme/reports-by-year/",

@@ -21,8 +21,13 @@ class AbstractCPReport(models.Model):
     reporting_entry = models.CharField(max_length=248, null=True, blank=True)
     reporting_email = models.CharField(max_length=248, null=True, blank=True)
     submission_date = models.DateField(null=True, blank=True)
+    # Section F comment
     comment = models.TextField(null=True, blank=True)
     country = models.ForeignKey("Country", on_delete=models.CASCADE)
+
+    # General per-report comments for Country and Secretariat for 2023-onward
+    comment_country = models.TextField(null=True, blank=True)
+    comment_secretariat = models.TextField(null=True, blank=True)
 
     class Meta:
         abstract = True

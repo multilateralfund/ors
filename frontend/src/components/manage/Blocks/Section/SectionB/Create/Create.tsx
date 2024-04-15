@@ -1,4 +1,6 @@
-import { EmptyReportType } from '@ors/types/api_empty-form'
+import { ApiBlend, ApiCreatedBlend } from '@ors/types/api_blends'
+import { EmptyFormType } from '@ors/types/api_empty-form'
+import { ApiSubstance } from '@ors/types/api_substances'
 import { ReportVariant } from '@ors/types/variants'
 
 import React, { useMemo, useRef, useState } from 'react'
@@ -97,7 +99,7 @@ function getRowData(data: SectionB['data'], variant: ReportVariant): RowData[] {
 export default function SectionBCreate(props: {
   Section: SectionB
   TableProps: PassedCPCreateTableProps
-  emptyForm: EmptyReportType
+  emptyForm: EmptyFormType
   form: CPBaseForm
   onSectionCheckChange: (section: string, isChecked: boolean) => void
   section: {
@@ -120,10 +122,11 @@ export default function SectionBCreate(props: {
   const [createdBlends, setCreatedBlends] = useState<Array<any>>([])
 
   const substances = useStore(
-    (state) => getResults(state.cp_reports.substances.data).results,
+    (state) =>
+      getResults<ApiSubstance>(state.cp_reports.substances.data).results,
   )
   const blends = useStore(
-    (state) => getResults(state.cp_reports.blends.data).results,
+    (state) => getResults<ApiBlend>(state.cp_reports.blends.data).results,
   )
 
   const grid = useRef<any>()
@@ -142,29 +145,14 @@ export default function SectionBCreate(props: {
         includes(substance.sections, 'B') &&
         !includes(chemicalsInForm, `substance_${substance.id}`)
       ) {
-        data.push(
-          Section.transformSubstance({
-            ...substance,
-            blend_id: null,
-            chemical_name: substance.name,
-            substance_id: substance.id,
-          }),
-        )
+        data.push(Section.transformApiSubstance(substance))
       }
     })
     each(
       sortBy(uniqBy([...blends, ...createdBlends], 'id'), 'sort_order'),
       (blend) => {
         if (!includes(chemicalsInForm, `blend_${blend.id}`)) {
-          data.push(
-            Section.transformBlend({
-              ...blend,
-              blend_id: blend.id,
-              chemical_name:
-                blend?.display_name || `${blend.name} (${blend.composition})`,
-              substance_id: null,
-            }),
-          )
+          data.push(Section.transformApiBlend(blend))
         }
       },
     )
@@ -328,8 +316,8 @@ export default function SectionBCreate(props: {
         <CreateBlend
           substances={substances}
           onClose={() => setCreateBlendModal(false)}
-          onCreateBlend={(blend: any) => {
-            const serializedBlend = Section.transformBlend(blend)
+          onCreateBlend={(blend: ApiCreatedBlend) => {
+            const serializedBlend = Section.transformApiBlend(blend)
 
             const added = find(
               form.section_b,

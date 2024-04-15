@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0082_country_programme_reported_sections"),
+        ("core", "0083_cpreport_comment_country_and_more"),
     ]
 
     operations = [
