@@ -18,7 +18,7 @@ const ReportHistory = () => {
     return (
       <Loading
         className="!fixed bg-action-disabledBackground"
-        active={!report.error && loading}
+        active={loading}
       />
     )
 
