@@ -96,7 +96,7 @@ const CPComments: React.FC = () => {
             className="relative flex min-w-96 flex-1 flex-col rounded-lg bg-gray-100 p-2"
           >
             {user_type !== allowComments[label] && (
-              <SectionOverlay className="cursor-not-allowed" opacity={60} />
+              <SectionOverlay className="cursor-not-allowed" opacity="opacity-60" />
             )}
             <label className="py-2 text-2xl font-normal">
               {label.toLocaleUpperCase()}
