@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useMemo, useState } from 'react'
 
-import { IconButton, Tab, Tabs, Tooltip, Typography } from '@mui/material'
+import { Tab, Tabs, Tooltip, Typography } from '@mui/material'
 import { AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
 import { produce } from 'immer'
@@ -72,6 +72,7 @@ const TableProps: TableProps = {
         >
           <div className="flex items-center justify-end">
             <Dropdown
+              className="normal-case hover:bg-transparent"
               color="primary"
               tooltip="Download"
               label={
@@ -119,35 +120,34 @@ const TableProps: TableProps = {
             </Dropdown>
             {section.allowFullScreen && !fullScreen && (
               <Tooltip placement="top" title="Enter fullscreen">
-                <IconButton
-                  color="primary"
+                <div
+                  className="text-md cursor-pointer"
+                  aria-label="enter fullscreen"
                   onClick={() => {
                     enterFullScreen()
                   }}
                 >
-                  <div className="flex items-center justify-between gap-x-2 text-base">
-                    <span className="font-medium text-primary">Fullscreen</span>
+                  <div className="flex items-center justify-between gap-x-2">
+                    <span className="text-primary">Fullscreen</span>
                     <IoExpand className="text-xl text-secondary" />
                   </div>
-                </IconButton>
+                </div>
               </Tooltip>
             )}
             {fullScreen && (
               <Tooltip placement="top" title="Exit fullscreen">
-                <IconButton
-                  className="exit-fullscreen not-printable p-2 text-primary"
+                <div
+                  className="exit-fullscreen not-printable text-md cursor-pointer p-2 text-primary"
                   aria-label="exit fullscreen"
                   onClick={() => {
                     exitFullScreen()
                   }}
                 >
-                  <div className="flex items-center justify-between gap-x-2 text-base">
-                    <span className="font-medium text-primary">
-                      Exit fullscreen
-                    </span>
+                  <div className="flex items-center justify-between gap-x-2">
+                    <span className="text-primary">Close</span>
                     <IoClose className="text-xl text-secondary" />
                   </div>
-                </IconButton>
+                </div>
               </Tooltip>
             )}
           </div>

@@ -452,6 +452,10 @@ function CountrySection(props: SectionProps) {
     setParams({ offset: 0, ordering: option.value })
   }
 
+  if (countries.length === 1) {
+    return <GeneralSection {...props} />
+  }
+
   if (countries.length === 0) {
     return <CPEmpty text={`No reports found`} />
   }

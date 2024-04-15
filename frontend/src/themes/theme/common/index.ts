@@ -42,6 +42,11 @@ const commonTheme = (
       },
     },
     components: {
+      MuiButtonBase: {
+        defaultProps: {
+          disableRipple: true,
+        },
+      },
       MuiDivider: {
         defaultProps: {
           className: 'bg-red',

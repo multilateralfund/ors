@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { IconButton, Tab, Tabs, Typography } from '@mui/material'
+import { Tab, Tabs, Typography } from '@mui/material'
 import cx from 'classnames'
 import { produce } from 'immer'
 import {
@@ -76,45 +76,34 @@ const TableProps = {
           domNode="sectionToolbar"
         >
           <div className="flex items-center justify-end">
-            {/* {!fullScreen && (
-              <Dropdown color="primary" label={<IoDownloadOutline />} icon>
-                <Dropdown.Item>
-                  <div className="flex items-center gap-x-2">
-                    <AiFillFilePdf className="fill-red-700" size={24} />
-                    <span>PDF</span>
-                  </div>
-                </Dropdown.Item>
-              </Dropdown>
-            )} */}
             {section.allowFullScreen && !fullScreen && (
-              <IconButton
-                color="primary"
+              <div
+                className="text-md cursor-pointer"
+                aria-label="enter fullscreen"
                 onClick={() => {
                   enterFullScreen()
                 }}
               >
-                <div className="flex items-center justify-between gap-x-2 text-base">
-                  <span className="font-medium text-primary">Fullscreen</span>
+                <div className="flex items-center justify-between gap-x-2">
+                  <span className="text-primary">Fullscreen</span>
                   <IoExpand className="text-xl text-secondary" />
                 </div>
-              </IconButton>
+              </div>
             )}
             {fullScreen && (
               <div>
-                <IconButton
-                  className="exit-fullscreen not-printable p-2 text-primary"
+                <div
+                  className="exit-fullscreen not-printable text-md cursor-pointer p-2 text-primary"
                   aria-label="exit fullscreen"
                   onClick={() => {
                     exitFullScreen()
                   }}
                 >
-                  <div className="flex items-center justify-between gap-x-2 text-base">
-                    <span className="font-medium text-primary">
-                      Exit fullscreen
-                    </span>
+                  <div className="flex items-center justify-between gap-x-2">
+                    <span className="text-primary">Close</span>
                     <IoClose className="text-xl text-secondary" />
                   </div>
-                </IconButton>
+                </div>
               </div>
             )}
           </div>

@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 
-import { IconButton, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import cx from 'classnames'
 import { findIndex, groupBy, map } from 'lodash'
 
@@ -77,26 +77,27 @@ export default function AdmBCreate(props: any) {
                     </Dropdown>
                   )}
                   {section.allowFullScreen && !fullScreen && (
-                    <IconButton
-                      color="primary"
+                    <div
+                      className="text-md cursor-pointer"
+                      aria-label="enter fullscreen"
                       onClick={() => {
                         enterFullScreen()
                       }}
                     >
                       <IoExpand />
-                    </IconButton>
+                    </div>
                   )}
                   {fullScreen && (
                     <div>
-                      <IconButton
-                        className="exit-fullscreen not-printable p-2 text-primary"
+                      <div
+                        className="exit-fullscreen text-md not-printable cursor-pointer p-2 text-primary"
                         aria-label="exit fullscreen"
                         onClick={() => {
                           exitFullScreen()
                         }}
                       >
                         <IoClose size={32} />
-                      </IconButton>
+                      </div>
                     </div>
                   )}
                 </div>
