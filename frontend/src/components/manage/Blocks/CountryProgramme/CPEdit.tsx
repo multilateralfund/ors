@@ -192,6 +192,14 @@ function CPEdit() {
     ]),
   }
 
+  const variant = useMemo(() => {
+    if (!report.data) return null
+    return filter(variants, (variant) => {
+      const year = report.data!.year
+      return variant.minYear <= year && variant.maxYear >= year
+    })[0]
+  }, [report.data])
+
   const [errors, setErrors] = useState<Record<string, any>>({})
   const [form, setForm] = useState<Record<string, any>>({
     adm_b: report.data?.adm_b,
@@ -207,7 +215,12 @@ function CPEdit() {
       reporting_email: report.data?.report_info?.reporting_email || null,
       reporting_entry: report.data?.report_info?.reporting_entry || null,
     },
-    section_a: Sections.section_a.getData(),
+    section_a: includes(['V'], variant?.model)
+      ? Sections.section_a
+          .getData()
+          .filter((row) => row.id !== 0)
+          .map((row) => ({ ...row, mandatory: false }))
+      : Sections.section_a.getData(),
     section_b: Sections.section_b.getData(),
     section_c: Sections.section_c.getData(),
     section_d: Sections.section_d.getData(),
@@ -217,13 +230,6 @@ function CPEdit() {
   const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
   const [renderedSections, setRenderedSections] = useState<number[]>([])
 
-  const variant = useMemo(() => {
-    if (!report.data) return null
-    return filter(variants, (variant) => {
-      const year = report.data!.year
-      return variant.minYear <= year && variant.maxYear >= year
-    })[0]
-  }, [report.data])
   const sections = useMemo(
     () => (variant ? getSections(variant, 'edit') : []),
     [variant],
