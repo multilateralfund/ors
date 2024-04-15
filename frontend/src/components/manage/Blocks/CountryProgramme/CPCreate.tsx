@@ -304,6 +304,11 @@ const CPCreate: React.FC = () => {
 
   const [errors, setErrors] = useState<FormErrors>({})
   const [currentYear] = useState(new Date().getFullYear() - 1)
+  const [variant] = useState(() => {
+    return filter(variants, (variant) => {
+      return variant.minYear <= currentYear && variant.maxYear >= currentYear
+    })[0]
+  })
   const [form, setForm] = useState<CPBaseForm>({
     country: null,
     report_info: {
@@ -316,7 +321,7 @@ const CPCreate: React.FC = () => {
       reporting_email: user.data.email,
       reporting_entry: user.data.full_name,
     },
-    section_a: Sections.section_a.getData(),
+    section_a: includes(['V'], variant?.model) ? [] : Sections.section_a.getData(),
     section_b: Sections.section_b.getData(),
     section_c: Sections.section_c.getData(),
     section_d: Sections.section_d.getData(),
@@ -334,11 +339,6 @@ const CPCreate: React.FC = () => {
     path: `/api/country-programme/reports/?year_max=${currentYear}&year_min=${currentYear}&country_id=${form.country?.id}`,
   })
 
-  const [variant] = useState(() => {
-    return filter(variants, (variant) => {
-      return variant.minYear <= currentYear && variant.maxYear >= currentYear
-    })[0]
-  })
   const sections = useMemo(
     () => (variant ? getSections(variant, 'edit') : []),
     [variant],
