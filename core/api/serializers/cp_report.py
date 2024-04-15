@@ -83,6 +83,8 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
             "created_by",
             "last_updated_at",
             "last_updated_by",
+            "reporting_entry",
+            "reporting_email",
             "report_info",
             "event_description",
         ]
