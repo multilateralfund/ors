@@ -1,8 +1,9 @@
+import Loading from '@ors/components/theme/Loading/Loading'
 import { useStore } from '@ors/store'
 
 const ReportHistory = () => {
   const { report } = useStore((state) => state.cp_reports)
-  const reports = report.versions.data
+  const { data: versions, loading } = report.versions
 
   const options: Intl.DateTimeFormatOptions = {
     day: 'numeric',
@@ -13,11 +14,31 @@ const ReportHistory = () => {
     year: 'numeric',
   }
 
+  if (loading)
+    return (
+      <Loading
+        className="!fixed bg-action-disabledBackground"
+        active={!report.error && loading}
+      />
+    )
+
+  if (!versions)
+    return (
+      <div>
+        <p className="mb-3 text-2xl font-normal">History</p>
+        <div className="flex flex-col flex-wrap justify-center gap-1 rounded-lg bg-white px-4 py-3 shadow-lg">
+          <p className="text-md my-1 font-medium text-gray-900">
+            No history available
+          </p>
+        </div>
+      </div>
+    )
+
   return (
     <div>
       <p className="mb-3 text-2xl font-normal">History</p>
       <div className="flex flex-col flex-wrap justify-center gap-1 rounded-lg bg-white px-4 py-3 shadow-lg">
-        {reports.map((report: any, index: number) => {
+        {versions.map((report: any, index: number) => {
           const { event_description, last_updated_at, last_updated_by } = report
           const dateObject = new Date(last_updated_at)
 
@@ -52,7 +73,7 @@ const ReportHistory = () => {
                   </p>
                 </div>
               </div>
-              {index !== reports.length - 1 && (
+              {index !== versions.length - 1 && (
                 <hr className="h-px w-full border-0 bg-gray-200" />
               )}
             </div>
