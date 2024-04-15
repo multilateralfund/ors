@@ -1,4 +1,6 @@
 'use client'
+import type { RadioSelectProps } from '@ors/components/ui/RadioSelect/RadioSelect'
+import type { SimpleSelectProps } from '@ors/components/ui/SimpleSelect/SimpleSelect'
 import { Country } from '@ors/types/store'
 import { UserType, userTypeVisibility } from '@ors/types/user_types'
 
@@ -20,7 +22,6 @@ import { filter, isArray, union } from 'lodash'
 import CPEmpty from '@ors/components/manage/Blocks/CountryProgramme/CPEmpty'
 import Field from '@ors/components/manage/Form/Field'
 import Listing from '@ors/components/manage/Form/Listing'
-import IconButton from '@ors/components/ui/IconButton/IconButton'
 import Link from '@ors/components/ui/Link/Link'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import RadioSelect from '@ors/components/ui/RadioSelect/RadioSelect'
@@ -30,13 +31,7 @@ import { getResults } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
 
-import {
-  IoArrowDown,
-  IoArrowForward,
-  IoArrowUp,
-  IoClose,
-  IoFilter,
-} from 'react-icons/io5'
+import { IoArrowForward, IoClose, IoFilter } from 'react-icons/io5'
 
 interface SectionProps {
   currentSection?: number
@@ -78,23 +73,12 @@ const debounce = (func: () => void) => {
   timer = setTimeout(func, 500)
 }
 
-const SortBy = (props: any) => <SimpleSelect label="Sort by" {...props} />
-const GroupBy = (props: any) => <RadioSelect label="Group by" {...props} />
-
-function Legend() {
-  return (
-    <div className="legend flex gap-x-4">
-      <div className="flex items-center gap-x-2">
-        <span className="inline-block h-4 w-4 rounded-full bg-warning" />
-        <span>Draft</span>
-      </div>
-      <div className="flex items-center gap-x-2">
-        <span className="inline-block h-4 w-4 rounded-full bg-secondary" />
-        <span>Final</span>
-      </div>
-    </div>
-  )
-}
+const SortBy = (props: Omit<SimpleSelectProps, 'label'>) => (
+  <SimpleSelect label="Sort by" {...props} />
+)
+const GroupBy = (props: Omit<RadioSelectProps, 'label'>) => (
+  <RadioSelect label="Group by" {...props} />
+)
 
 function Item({
   item,
@@ -199,6 +183,27 @@ function GeneralSection(props: SectionProps) {
   })
   const { count, loaded, results } = getResults<ReportResponse>(data)
 
+  const orderOptions = [
+    {
+      label: `Name - year, A to Z - ${maxYear} to ${minYear}`,
+      value: 'desc',
+    },
+    {
+      label: `Year - name, ${minYear} to ${maxYear} - A to Z`,
+      value: 'asc',
+    },
+  ]
+
+  const handleOrderChange = () => {
+    const newOrder = ordering === 'desc' ? 'asc' : 'desc'
+    setOrdering(newOrder)
+    setPagination({ ...pagination, page: 1 })
+    setParams({
+      offset: 0,
+      ordering: (newOrder === 'asc' ? '' : '-') + orderField,
+    })
+  }
+
   return (
     <div id="general-section">
       <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
@@ -261,28 +266,12 @@ function GeneralSection(props: SectionProps) {
             }}
           />
         </div>
-        <Legend />
         <div className="flex items-center gap-2">
-          <Typography className="text-typography-primary" component="span">
-            Ordering
-          </Typography>
-          <IconButton
-            onClick={() => {
-              const newOrder = ordering === 'asc' ? 'desc' : 'asc'
-              setOrdering(newOrder)
-              setPagination({ ...pagination, page: 1 })
-              setParams({
-                offset: 0,
-                ordering: (newOrder === 'asc' ? '' : '-') + orderField,
-              })
-            }}
-          >
-            {ordering === 'asc' ? (
-              <IoArrowUp size="1rem" />
-            ) : (
-              <IoArrowDown size="1rem" />
-            )}
-          </IconButton>
+          <SortBy
+            initialIndex={ordering === 'asc' ? 1 : 0}
+            options={orderOptions}
+            onChange={handleOrderChange}
+          />
         </div>
       </div>
       <div className="filters mb-6 flex flex-wrap gap-4">
@@ -486,7 +475,6 @@ function CountrySection(props: SectionProps) {
             />
           )}
         </div>
-        <Legend />
         <SortBy options={orderOptions} onChange={handleOrderChange} />
       </div>
       <Grid className="mb-6" spacing={4} container>
@@ -563,7 +551,6 @@ function YearSection(props: SectionProps) {
     rowsPerPage: PER_PAGE_YEAR,
   })
   const [range, setRange] = useState([filters.range[0], filters.range[1]])
-  const [ordering, setOrdering] = useState<'asc' | 'desc'>('desc')
   const { setActiveTab } = useStore((state) => state.cp_current_tab)
   const { data, loading, setParams } = useApi({
     options: {
@@ -578,6 +565,16 @@ function YearSection(props: SectionProps) {
   })
   const { count, loaded, results } = getResults(data)
   const pages = Math.ceil(count / pagination.rowsPerPage)
+
+  const orderOptions = [
+    { label: `Year, ${maxYear} to ${minYear}`, value: 'desc' },
+    { label: `Year, ${minYear} to ${maxYear}`, value: 'asc' },
+  ]
+
+  const handleOrderChange = (option: any) => {
+    setPagination({ ...pagination, page: 1 })
+    setParams({ offset: 0, ordering: option.value })
+  }
 
   useEffect(() => {
     if (filters.range[0] !== range[0] || filters.range[1] !== range[1]) {
@@ -614,25 +611,8 @@ function YearSection(props: SectionProps) {
             }}
           />
         </div>
-        <Legend />
         <div className="flex items-center gap-2">
-          <Typography className="text-typography-primary" component="span">
-            Ordering
-          </Typography>
-          <IconButton
-            onClick={() => {
-              const newOrder = ordering === 'asc' ? 'desc' : 'asc'
-              setOrdering(newOrder)
-              setPagination({ ...pagination, page: 1 })
-              setParams({ offset: 0, ordering: newOrder })
-            }}
-          >
-            {ordering === 'asc' ? (
-              <IoArrowUp size="1rem" />
-            ) : (
-              <IoArrowDown size="1rem" />
-            )}
-          </IconButton>
+          <SortBy options={orderOptions} onChange={handleOrderChange} />
         </div>
       </div>
       <Grid className="mb-6" spacing={4} container>

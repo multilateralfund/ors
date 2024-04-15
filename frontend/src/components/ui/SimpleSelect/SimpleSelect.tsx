@@ -12,7 +12,7 @@ interface ISimpleSelectOption {
   label: string
 }
 
-interface SimpleSelectProps {
+export interface SimpleSelectProps {
   className?: string
   initialIndex?: number
   label: string
