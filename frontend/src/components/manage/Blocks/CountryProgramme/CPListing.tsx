@@ -206,9 +206,9 @@ function GeneralSection(props: SectionProps) {
 
   return (
     <div id="general-section">
-      <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
-        <div className="flex flex-1 items-center gap-4">
-          {user_type !== 'country_user' && (
+      {user_type !== 'country_user' && (
+        <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
+          <div className="flex flex-1 items-center gap-4">
             <Field<Country>
               FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
               getOptionLabel={(option) => (option as Country).name}
@@ -241,39 +241,39 @@ function GeneralSection(props: SectionProps) {
                 }
               }}
             />
-          )}
-          <Field
-            FieldProps={{ className: 'mb-0 px-4' }}
-            label="Date"
-            max={maxYear}
-            min={minYear}
-            value={range}
-            widget="range"
-            onChange={(event: Event, value: number | number[]) => {
-              if (isArray(value) && value[1] - value[0] >= 1) {
-                setRange(value)
-                debounce(() => {
-                  setFilters((filters: any) => {
-                    return { ...filters, range: value, year: [] }
+            <Field
+              FieldProps={{ className: 'mb-0 px-4' }}
+              label="Date"
+              max={maxYear}
+              min={minYear}
+              value={range}
+              widget="range"
+              onChange={(event: Event, value: number | number[]) => {
+                if (isArray(value) && value[1] - value[0] >= 1) {
+                  setRange(value)
+                  debounce(() => {
+                    setFilters((filters: any) => {
+                      return { ...filters, range: value, year: [] }
+                    })
+                    setParams({
+                      offset: 0,
+                      year_max: value[1],
+                      year_min: value[0],
+                    })
                   })
-                  setParams({
-                    offset: 0,
-                    year_max: value[1],
-                    year_min: value[0],
-                  })
-                })
-              }
-            }}
-          />
+                }
+              }}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <SortBy
+              initialIndex={ordering === 'asc' ? 1 : 0}
+              options={orderOptions}
+              onChange={handleOrderChange}
+            />
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <SortBy
-            initialIndex={ordering === 'asc' ? 1 : 0}
-            options={orderOptions}
-            onChange={handleOrderChange}
-          />
-        </div>
-      </div>
+      )}
       <div className="filters mb-6 flex flex-wrap gap-4">
         {filters.country.map((countryId: number) => (
           <Typography
@@ -447,9 +447,9 @@ function CountrySection(props: SectionProps) {
 
   return (
     <div id="country-section">
-      <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
-        <div className="flex flex-1 items-center gap-4">
-          {user_type !== 'country_user' && (
+      {user_type !== 'country_user' && (
+        <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
+          <div className="flex flex-1 items-center gap-4">
             <Field
               FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
               getOptionLabel={(option: any) => option?.name}
@@ -473,10 +473,10 @@ function CountrySection(props: SectionProps) {
                 }
               }}
             />
-          )}
+          </div>
+          <SortBy options={orderOptions} onChange={handleOrderChange} />
         </div>
-        <SortBy options={orderOptions} onChange={handleOrderChange} />
-      </div>
+      )}
       <Grid className="mb-6" spacing={4} container>
         {results.map((row: any) => (
           <Grid key={row.id} lg={3} sm={6} xs={12} item>
