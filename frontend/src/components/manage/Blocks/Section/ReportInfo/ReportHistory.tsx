@@ -2,7 +2,6 @@ import { useStore } from '@ors/store'
 
 const ReportHistory = () => {
   const { report } = useStore((state) => state.cp_reports)
-  // @ts-ignore
   const reports = report.versions.data
 
   const options: Intl.DateTimeFormatOptions = {
