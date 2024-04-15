@@ -188,7 +188,7 @@ export default function SectionACreate(props: {
   return (
     <>
       {includes(['V'], variant.model) && (
-        <div className="flex justify-end">
+        <div className="mt-2 flex justify-end">
           <Button
             className="rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
             onClick={() => setAddSubstanceModal(true)}
