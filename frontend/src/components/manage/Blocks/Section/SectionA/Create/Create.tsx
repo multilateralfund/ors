@@ -280,7 +280,6 @@ export default function SectionACreate(props: {
                     section_a: [...form.section_a, newSubstance],
                   }))
                 }
-                setAddSubstanceModal(false)
               }}
             />
             <Typography className="text-right">
