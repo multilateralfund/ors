@@ -133,4 +133,4 @@ class CPFileArchive(AbstractCPFile):
 
     def __str__(self):
         cp_report = self.country_programme_report
-        return f"{cp_report.name} (v{cp_report.version})"
+        return f"{cp_report.name} (v{cp_report.version}) {self.filename}"

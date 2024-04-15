@@ -1,9 +1,11 @@
 from constance import config
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import Count
 from django.db.models import F
 from django.db.models import Window
 from django.db.models.functions import RowNumber
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -14,20 +16,25 @@ from rest_framework.response import Response
 from core.api.filters.country_programme import (
     CPReportFilter,
 )
-from core.api.permissions import IsUserAllowedCP
+from core.api.permissions import IsUserAllowedCP, IsUserAllowedCPComment
 from core.api.serializers import CPReportGroupSerializer
-from core.api.serializers.cp_report import CPReportCreateSerializer, CPReportSerializer
+from core.api.serializers.cp_report import (
+    CPReportCreateSerializer,
+    CPReportSerializer,
+    CPReportCommentsSerializer,
+)
 from core.models.adm import AdmRecordArchive
 from core.models.country_programme import CPReport
 from core.models.country_programme_archive import (
     CPEmissionArchive,
-    CPFileArchive,
     CPGenerationArchive,
     CPPricesArchive,
     CPRecordArchive,
     CPReportArchive,
     CPUsageArchive,
 )
+
+User = get_user_model()
 
 # pylint: disable=R0901
 
@@ -286,18 +293,6 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
             )
         AdmRecordArchive.objects.bulk_create(adm_records, batch_size=1000)
 
-        # archive cp_files
-        cp_files = []
-        for cp_file in instance.cpfiles.all():
-            cp_files.append(
-                self._get_archive_data(
-                    CPFileArchive,
-                    cp_file,
-                    {"country_programme_report_id": cp_report_ar.id},
-                )
-            )
-        CPFileArchive.objects.bulk_create(cp_files, batch_size=1000)
-
     def check_readonly_fields(self, serializer, current_obj):
         return (
             serializer.initial_data["country_id"] != current_obj.country_id
@@ -507,3 +502,89 @@ class CPReportGroupByCountryView(CPReportGroupByYearView):
     @staticmethod
     def get_id(obj):
         return obj.country.id
+
+
+class CPReportCommentsView(generics.GenericAPIView):
+    """
+    API endpoint that allows updating country programme comments.
+
+    This is called with either POST or PUT on an already-existing CP Report.
+    """
+
+    permission_classes = [IsUserAllowedCPComment]
+    serializer_class = CPReportCommentsSerializer
+    lookup_field = "id"
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = CPReport.objects.all()
+        if user.user_type == user.UserType.COUNTRY_USER:
+            queryset = queryset.filter(country=user.country)
+        return queryset
+
+    @swagger_auto_schema(
+        operation_description="Update country programme report comments",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=[],
+            properties={
+                "comment_country": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Comment made by country",
+                ),
+                "comment_secretariat": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Comment made by secretariat",
+                ),
+            },
+        ),
+    )
+    def _get_object(self, filter_kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        obj = get_object_or_404(queryset, **filter_kwargs)
+
+        # May raise a permission denied
+        self.check_object_permissions(self.request, obj)
+
+        return obj
+
+    def get(self, request, *args, **kwargs):
+        cp_report = self._get_object(kwargs)
+        serializer = self.get_serializer(cp_report)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def _comments_update_or_create(self, request, *args, **kwargs):
+        cp_report = self.get_object()
+        comment_country = request.data.get("comment_country")
+        comment_secretariat = request.data.get("comment_secretariat")
+
+        user_type = request.user.user_type
+        if comment_country:
+            if user_type != User.UserType.COUNTRY:
+                return Response(
+                    {"comment_country": f"Invalid value {comment_country}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            cp_report.comment_country = comment_country
+
+        if comment_secretariat:
+            if user_type != User.UserType.SECRETARIAT:
+                return Response(
+                    {"comment_secretariat": f"Invalid value {comment_secretariat}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            cp_report.comment_secretariat = comment_secretariat
+
+        cp_report.last_updated_by = request.user
+        cp_report.event_description = "Comments updated by user"
+        cp_report.save()
+        serializer = self.get_serializer(cp_report)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def post(self, request, *args, **kwargs):
+        return self._comments_update_or_create(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        return self._comments_update_or_create(request, *args, **kwargs)

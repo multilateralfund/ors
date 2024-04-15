@@ -3,7 +3,6 @@ from rest_framework import serializers
 
 from core.api.serializers.adm import AdmRecordSerializer
 from core.api.serializers.cp_emission import CPEmissionSerializer
-from core.api.serializers.cp_file import CPFileSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_price import CPPricesSerializer
 from core.api.serializers.cp_record import CPRecordSerializer
@@ -16,7 +15,6 @@ from core.utils import IMPORT_DB_MAX_YEAR, VALIDATION_MIN_YEAR
 
 # pylint: disable=W0223
 
-
 class CPReportInfoSerializer(serializers.ModelSerializer):
     country_programme_report_id = serializers.PrimaryKeyRelatedField(
         required=False,
@@ -24,10 +22,12 @@ class CPReportInfoSerializer(serializers.ModelSerializer):
         write_only=True,
     )
     reporting_entry = serializers.CharField(
-        required=False, source="country_programme_report.reporting_entry"
+        required=False,
+        source="country_programme_report.reporting_entry"
     )
     reporting_email = serializers.CharField(
-        required=False, source="country_programme_report.reporting_email"
+        required=False,
+        source="country_programme_report.reporting_email"
     )
 
     class Meta:
@@ -141,7 +141,6 @@ class CPReportCreateSerializer(serializers.Serializer):
     adm_b = AdmRecordSerializer(many=True, required=False)
     adm_c = AdmRecordSerializer(many=True, required=False)
     adm_d = AdmRecordSerializer(many=True, required=False)
-    files = CPFileSerializer(many=True, required=False)
 
     class Meta:
         fields = [
@@ -160,7 +159,6 @@ class CPReportCreateSerializer(serializers.Serializer):
             "adm_b",
             "adm_c",
             "adm_d",
-            "files",
         ]
 
     def to_representation(self, instance):
@@ -216,16 +214,11 @@ class CPReportCreateSerializer(serializers.Serializer):
 
     def _create_report_info(self, cp_report, report_info_data):
         report_info_data["country_programme_report_id"] = cp_report.id
-        report_info_serializer = CPReportInfoSerializer(data=report_info_data)
+        report_info_serializer = CPReportInfoSerializer(
+            data=report_info_data
+        )
         report_info_serializer.is_valid(raise_exception=True)
         report_info_serializer.save()
-
-    def _create_files(self, cp_report, files_data):
-        for file_data in files_data:
-            file_data["country_programme_report_id"] = cp_report.id
-            file_serializer = CPFileSerializer(data=file_data)
-            file_serializer.is_valid(raise_exception=True)
-            file_serializer.save()
 
     @transaction.atomic
     def create(self, validated_data):
@@ -240,7 +233,9 @@ class CPReportCreateSerializer(serializers.Serializer):
         reporting_entry = cp_reporting.get(
             "reporting_entry", request_user.get_full_name()
         )
-        reporting_email = cp_reporting.get("reporting_email", request_user.email)
+        reporting_email = cp_reporting.get(
+            "reporting_email", request_user.email
+        )
 
         cp_report_data = {
             "name": validated_data.get("name"),
@@ -277,12 +272,9 @@ class CPReportCreateSerializer(serializers.Serializer):
             self._create_adm_records(cp_report, validated_data.get("adm_c", []), "C")
             self._create_adm_records(cp_report, validated_data.get("adm_d", []), "D")
 
+
         # TODO: Neeed to make sure this happens ONLY for the latest reporting format !!!
         if cp_report_info:
             self._create_report_info(cp_report, cp_report_info)
-
-        files_data = validated_data.get("files", [])
-        if files_data:
-            self._create_files(cp_report, files_data)
 
         return cp_report

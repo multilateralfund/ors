@@ -1,7 +1,7 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import generics, filters
+from rest_framework import generics, filters, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
@@ -13,18 +13,21 @@ from core.api.filters.country_programme import (
 from core.api.permissions import IsUserAllowedCP
 from core.api.serializers.adm import AdmRecordArchiveSerializer
 from core.api.serializers.cp_emission import CPEmissionArchiveSerializer
+from core.api.serializers.cp_file import CPFileArchiveSerializer
 from core.api.serializers.cp_generation import CPGenerationArchiveSerializer
 from core.api.serializers.cp_price import CPPricesArchiveSerializer
 from core.api.serializers.cp_record import CPRecordArchiveSerializer
 from core.api.serializers.cp_report import CPReportArchiveSerializer
 from core.api.utils import workbook_pdf_response
 from core.api.utils import workbook_response
+from core.api.views.cp_files import CPFilesBaseView
 from core.api.views.cp_records import CPRecordBaseListView
 from core.api.views.cp_report_empty_form import EmptyFormView
 from core.models import AdmRecordArchive
 from core.models.country_programme import CPReport
 from core.models.country_programme_archive import (
     CPEmissionArchive,
+    CPFileArchive,
     CPGenerationArchive,
     CPPricesArchive,
     CPRecordArchive,
@@ -123,3 +126,17 @@ class CPRecordArchiveExportView(CPRecordsArchiveListView):
 class CPRecordArchivePrintView(CPRecordArchiveExportView):
     def get_response(self, name, wb):
         return workbook_pdf_response(name, wb)
+
+
+class CPFilesArchiveView(CPFilesBaseView):
+    cp_report_class = CPReportArchive
+    cp_file_class = CPFileArchive
+    serializer_class = CPFileArchiveSerializer
+
+    def get(self, request, *args, **kwargs):
+        cp_report_id = request.query_params.get("cp_report_id")
+        queryset = self.filter_queryset(self.get_queryset())
+        cp_files = queryset.filter(country_programme_report_id=cp_report_id)
+        serializer = self.get_serializer(cp_files, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)

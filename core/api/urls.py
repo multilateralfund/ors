@@ -17,11 +17,13 @@ from core.api.views.chemicals import (
     SubstancesListView,
 )
 from core.api.views.cp_archive import (
+    CPFilesArchiveView,
     CPRecordArchiveExportView,
     CPRecordArchivePrintView,
     CPRecordsArchiveListView,
     CPReportVersionsListView,
 )
+from core.api.views.cp_files import CPFilesView
 from core.api.views.cp_prices import CPPricesView
 from core.api.views.cp_records_export import CPEmptyExportView
 from core.api.views.cp_reports import (
@@ -166,6 +168,16 @@ urlpatterns = [
         "country-programme/versions/",
         CPReportVersionsListView.as_view(),
         name="country-programme-versions",
+    ),
+    path(
+        "country-programme/files/",
+        CPFilesView.as_view(),
+        name="country-programme-files",
+    ),
+    path(
+        "country-programme-archive/files/",
+        CPFilesArchiveView.as_view(),
+        name="country-programme-archive-files",
     ),
     path(
         "country-programme-archive/records/",

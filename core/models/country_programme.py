@@ -169,4 +169,5 @@ class CPFile(AbstractCPFile):
         db_table = "cp_file"
 
     def __str__(self):
-        return self.country_programme_report.name
+        cp_report = self.country_programme_report
+        return f"{cp_report.name} {self.filename}"
