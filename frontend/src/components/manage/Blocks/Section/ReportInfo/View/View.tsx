@@ -20,6 +20,8 @@ const ReportInfoView = (props: any) => {
     section_f: report.report_info?.reported_section_f ?? true,
   }
 
+  const files = report.files || []
+
   return (
     <section className="grid items-start gap-4 md:auto-rows-auto md:grid-cols-2">
       <Typography className="md:col-span-2" component="h2" variant="h6">
@@ -52,12 +54,18 @@ const ReportInfoView = (props: any) => {
         <div className="flex flex-col gap-2">
           <p className="m-0 text-2xl font-normal">File attachments</p>
           <div className="flex flex-col gap-3">
-            <p className="m-0 flex items-center gap-2">
-              <IoDocumentTextOutline color="#0086C9" size="20" />
-              <span className="text-lg text-gray-900">
-                Pollution_Control_Strategies_report.doc
-              </span>
-            </p>
+            {files.length === 0 ? (
+              <p className="text-lg font-normal text-gray-500 m-1">
+                No files available
+              </p>
+            ) : (
+              files.map((file: any, index: number) => (
+                <p key={index} className="m-0 flex items-center gap-2">
+                  <IoDocumentTextOutline color="#0086C9" size="20" />
+                  <span className="text-lg text-gray-900">{file}</span>
+                </p>
+              ))
+            )}
           </div>
         </div>
       </div>
