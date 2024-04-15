@@ -17,7 +17,7 @@ import {
   Typography,
 } from '@mui/material'
 import cx from 'classnames'
-import { filter, isArray, union } from 'lodash'
+import { filter, union } from 'lodash'
 
 import CPEmpty from '@ors/components/manage/Blocks/CountryProgramme/CPEmpty'
 import Field from '@ors/components/manage/Form/Field'
@@ -64,7 +64,7 @@ type ReportsResponse = {
 
 const PER_PAGE_GENERAL = 48
 const PER_PAGE_COUNTRY = 48
-const PER_PAGE_YEAR = 500
+const PER_PAGE_YEAR = 100
 
 let timer: any
 
@@ -149,16 +149,19 @@ function GeneralSection(props: SectionProps) {
   )
 
   const { filters, groupBy, maxYear, minYear, setFilters, user_type } = props
+
+  const perPage = groupBy === 'country' ? PER_PAGE_GENERAL : PER_PAGE_YEAR
+
   const [range, setRange] = useState([filters.range[0], filters.range[1]])
   const [pagination, setPagination] = useState({
     page: 1,
-    rowsPerPage: PER_PAGE_GENERAL,
+    rowsPerPage: perPage,
   })
   const [ordering, setOrdering] = useState<'asc' | 'desc'>(
     groupBy === 'country' ? 'desc' : 'asc',
   )
   const orderField =
-    groupBy === 'country' ? 'year,country__name' : 'year,country__name'
+    groupBy === 'country' ? 'year,country__name' : 'country__name,year'
 
   const { data, loading, setParams } = useApi<ReportsResponse>({
     // onSuccess: () => {
@@ -171,7 +174,7 @@ function GeneralSection(props: SectionProps) {
     options: {
       params: {
         country_id: filters.country.join(','),
-        limit: PER_PAGE_GENERAL,
+        limit: perPage,
         offset: 0,
         ordering: (ordering === 'asc' ? '' : '-') + orderField,
         year_max: filters.year.length > 0 ? filters.year[0] : range[1],
@@ -183,24 +186,36 @@ function GeneralSection(props: SectionProps) {
   })
   const { count, loaded, results } = getResults<ReportResponse>(data)
 
-  const orderOptions = [
+  const orderOptionsCountry = [
     {
-      label: `Name - year, A to Z - ${maxYear} to ${minYear}`,
+      label: `Name, A to Z`,
+      value: 'asc',
+    },
+    {
+      label: `Name, Z to A`,
+      value: 'desc',
+    },
+  ]
+  const orderOptionsYear = [
+    {
+      label: `Year, ${maxYear} to ${minYear}`,
       value: 'desc',
     },
     {
-      label: `Year - name, ${minYear} to ${maxYear} - A to Z`,
+      label: `Year, ${minYear} to ${maxYear}`,
       value: 'asc',
     },
   ]
 
-  const handleOrderChange = () => {
-    const newOrder = ordering === 'desc' ? 'asc' : 'desc'
-    setOrdering(newOrder)
+  const orderOptions =
+    groupBy === 'country' ? orderOptionsYear : orderOptionsCountry
+
+  const handleOrderChange = (option: any) => {
+    setOrdering(option.value)
     setPagination({ ...pagination, page: 1 })
     setParams({
       offset: 0,
-      ordering: (newOrder === 'asc' ? '' : '-') + orderField,
+      ordering: option.value === 'asc' ? orderField : `-${orderField}`,
     })
   }
 
@@ -248,8 +263,8 @@ function GeneralSection(props: SectionProps) {
               min={minYear}
               value={range}
               widget="range"
-              onChange={(event: Event, value: number | number[]) => {
-                if (isArray(value) && value[1] - value[0] >= 1) {
+              onChange={(value: number[]) => {
+                if (value[1] - value[0] >= 1) {
                   setRange(value)
                   debounce(() => {
                     setFilters((filters: any) => {
@@ -266,11 +281,7 @@ function GeneralSection(props: SectionProps) {
             />
           </div>
           <div className="flex items-center gap-2">
-            <SortBy
-              initialIndex={ordering === 'asc' ? 1 : 0}
-              options={orderOptions}
-              onChange={handleOrderChange}
-            />
+            <SortBy options={orderOptions} onChange={handleOrderChange} />
           </div>
         </div>
       )}
@@ -550,7 +561,10 @@ function YearSection(props: SectionProps) {
     page: 1,
     rowsPerPage: PER_PAGE_YEAR,
   })
-  const [range, setRange] = useState([filters.range[0], filters.range[1]])
+  const [range, setRange] = useState<number[]>([
+    filters.range[0],
+    filters.range[1],
+  ])
   const { setActiveTab } = useStore((state) => state.cp_current_tab)
   const { data, loading, setParams } = useApi({
     options: {
@@ -599,8 +613,8 @@ function YearSection(props: SectionProps) {
             min={minYear}
             value={range}
             widget="range"
-            onChange={(event: Event, value: number | number[]) => {
-              if (isArray(value) && value[1] - value[0] >= 1) {
+            onChange={(value: number[]) => {
+              if (value[1] - value[0] >= 1) {
                 setRange(value)
                 debounce(() => {
                   setFilters((filters: any) => {

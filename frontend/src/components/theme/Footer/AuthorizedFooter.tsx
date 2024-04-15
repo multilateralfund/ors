@@ -27,7 +27,6 @@ const FooterLinks = () => {
           key={item.label}
           className="block rounded-full border border-solid border-mlfs-hlYellow px-4 uppercase text-mlfs-hlYellow no-underline hover:bg-black"
           href={item.url}
-          target="_blank"
         >
           {item.label}
         </a>

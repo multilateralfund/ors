@@ -1,5 +1,5 @@
 'use client'
-import React, { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import styled from '@emotion/styled'
 import {
@@ -16,7 +16,7 @@ import {
 import cx from 'classnames'
 import dayjs from 'dayjs'
 import { AnimatePresence } from 'framer-motion'
-import { filter, includes, isArray, map } from 'lodash'
+import { filter, includes, map } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
 import Listing from '@ors/components/manage/Form/Listing'
@@ -379,8 +379,8 @@ export default function PSListing() {
                   min={minDateRange}
                   value={dateRange}
                   widget="range"
-                  onChange={(event: Event, value: number | number[]) => {
-                    if (isArray(value) && value[1] - value[0] >= 1) {
+                  onChange={(value: number[]) => {
+                    if (value[1] - value[0] >= 1) {
                       setDateRange(value)
                       debounce(() => {
                         handleParamsChange({
