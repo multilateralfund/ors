@@ -46,7 +46,7 @@ interface IRadioSelectOption {
   label: string
 }
 
-interface RadioSelectProps {
+export interface RadioSelectProps {
   className?: string
   initialIndex?: number
   label: string
