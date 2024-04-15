@@ -81,6 +81,7 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
             "comment_secretariat",
             "created_at",
             "created_by",
+            "last_updated_at",
             "last_updated_by",
             "report_info",
             "event_description",
