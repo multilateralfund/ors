@@ -6,12 +6,19 @@ import { colDefById } from '@ors/config/Table/columnsDef'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 
-const mobile = __CLIENT__ ? window.innerWidth < 768 : false
-
 const sectionColDefById: Record<string, ColDef> = {
   ...colDefById,
-  'Refrigeration Manufacturing Other': {
-    initialWidth: 300,
+  banned_date: {
+    ...colDefById['banned_date'],
+    headerComponentParams: {
+      footnote: {
+        content: 'If imports are banned, indicate date ban commenced',
+        icon: true,
+        index: '***',
+        order: 9999,
+      },
+    },
+    headerName: 'Date ban commenced',
   },
   display_name: {
     ...colDefById['display_name'],
@@ -63,7 +70,7 @@ const sectionColDefById: Record<string, ColDef> = {
           }
         : {}),
     }),
-    initialWidth: mobile ? 160 : 410,
+    initialWidth: 150,
   },
   manufacturing_blends: {
     ...colDefById['manufacturing_blends'],

@@ -663,7 +663,7 @@ const CPCreate: React.FC = () => {
                     onSectionCheckChange={onSectionCheckChange}
                   />
                 )}
-                <div className="relative">
+                <div className="relative flex flex-col gap-4">
                   <FootnotesProvider>
                     <Section
                       Section={get(Sections, section.id)}

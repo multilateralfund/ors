@@ -49,6 +49,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
       {
         id: 'total_usages',
         category: 'usage',
+        cellClass: 'bg-yellow-50 text-right',
         headerName: 'TOTAL',
         orsAggFunc: 'sumTotalUsages',
         ...sectionColDefById['total_usages'],
@@ -106,7 +107,6 @@ function useGridOptions(props: { model: string; usages: object[] }) {
             {
               dataType: 'date',
               field: 'banned_date',
-              headerName: 'If imports are banned, indicate date ban commenced',
               ...sectionColDefById['banned_date'],
             },
           ]

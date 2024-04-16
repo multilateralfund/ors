@@ -135,7 +135,10 @@ export default function SectionACreate(props: {
     const substancesInForm = form.section_a.map((substance) => substance.row_id)
     each(substances, (substance) => {
       if (
-        !includes(['Annex C, Group II', 'Annex C, Group III'], substance.group) &&
+        !includes(
+          ['Annex C, Group II', 'Annex C, Group III'],
+          substance.group,
+        ) &&
         includes(substance.sections, 'A') &&
         !includes(substancesInForm, `substance_${substance.id}`)
       ) {
@@ -197,6 +200,9 @@ export default function SectionACreate(props: {
           </Button>
         </div>
       )}
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnotes />
+      </Alert>
       <Table
         {...TableProps}
         className="mb-4"
@@ -239,9 +245,6 @@ export default function SectionACreate(props: {
           }
         }}
       />
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
       {addSubstanceModal && (
         <Modal
           aria-labelledby="add-substance-modal-title"
