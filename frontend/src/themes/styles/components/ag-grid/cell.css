@@ -17,8 +17,8 @@
   }
 
   .ag-cell-hashed {
-    @apply pattern-diagonal-lines pattern-bg-transparent pattern-slate-200 
-    pattern-opacity-40 pattern-size-1;
+    @apply pattern-diagonal-lines pattern-bg-transparent pattern-slate-200
+    pattern-opacity-80 pattern-size-1;
   }
 
   .ag-cell .MuiTypography-root {
@@ -36,14 +36,22 @@
         .ag-cell-range-right,
         .ag-cell-range-single-cell
       ) {
-      /* border-right: var(--ag-row-border-width) var(--ag-row-border-style)
-        var(--ag-row-border-color); */
-      @apply border-r-transparent;
+      border-right: var(--ag-row-border-width) var(--ag-row-border-style)
+        var(--ag-row-border-color);
+
+      /* @apply border-r-transparent; */
     }
   }
 
   .ag-row .ag-cell {
-    @apply border-r-transparent;
+    border-right: var(--ag-row-border-width) var(--ag-row-border-style)
+        var(--ag-row-border-color);
+
+    /* @apply border-r-transparent; */
+  }
+
+  .ag-row .ag-cell.ag-column-last {
+    border-right: none;
   }
 
   .ag-row-group .ag-cell {
