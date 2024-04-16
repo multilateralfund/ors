@@ -173,8 +173,6 @@ function useGridOptions(props: {
                 cellEditor: 'agDateCellEditor',
                 dataType: 'date',
                 field: 'banned_date',
-                headerName:
-                  'If imports are banned, indicate date ban commenced',
                 ...sectionColDefById['banned_date'],
               },
             ]

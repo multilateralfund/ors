@@ -104,7 +104,7 @@ function useGridOptions(props: {
           },
           field: 'display_name',
           headerClass: 'ag-text-left',
-          headerName: includes('IV', model) ? '' : 'Substance',
+          headerName: includes(['IV'], model) ? '' : 'Substance',
         },
         ...(usages.length
           ? [
@@ -177,7 +177,6 @@ function useGridOptions(props: {
           cellEditor: 'agDateCellEditor',
           dataType: 'date',
           field: 'banned_date',
-          headerName: 'If imports are banned, indicate date ban commenced',
           ...sectionColDefById['banned_date'],
         },
         {

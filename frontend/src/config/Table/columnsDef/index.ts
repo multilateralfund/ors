@@ -20,19 +20,24 @@ const colDefById: Record<string, ColDef> = {
     pinned: mobile ? undefined : 'left',
   },
   imports: {
-    initialWidth: defaultColDef.minWidth,
+    initialWidth: 84,
+    flex: 0,
   },
   exports: {
-    initialWidth: defaultColDef.minWidth,
+    initialWidth: 84,
+    flex: 0,
   },
   manufacturing_blends: {
-    initialWidth: 210,
+    flex: 1,
+    initialWidth: 116,
   },
   production: {
-    initialWidth: 100,
+    initialWidth: 84,
+    flex: 0,
   },
   import_quotas: {
-    initialWidth: 120,
+    initialWidth: 84,
+    flex: 0,
   },
   previous_year_price: {
     initialWidth: 160,

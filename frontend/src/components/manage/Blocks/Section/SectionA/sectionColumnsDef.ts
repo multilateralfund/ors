@@ -8,6 +8,18 @@ import { RowData } from './Create/Create'
 
 const sectionColDefById: Record<string, ColDef> = {
   ...colDefById,
+  banned_date: {
+    ...colDefById['banned_date'],
+    headerComponentParams: {
+      footnote: {
+        content: 'If imports are banned, indicate date ban commenced',
+        icon: true,
+        index: '*',
+        order: 99,
+      },
+    },
+    headerName: 'Date ban commenced',
+  },
   display_name: {
     ...colDefById['display_name'],
     cellRendererParams: (props: ICellRendererParams<RowData>) => {
@@ -37,6 +49,7 @@ const sectionColDefById: Record<string, ColDef> = {
         icon: true,
       },
     },
+    initialWidth: 150,
   },
   export_quotas: {
     initialWidth: 80,

@@ -202,7 +202,11 @@ export default function SectionBCreate(props: {
 
   return (
     <>
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+      <Alert
+        className="my-4"
+        icon={<IoInformationCircleOutline size={24} />}
+        severity="info"
+      >
         <Footnotes />
       </Alert>
       <Table

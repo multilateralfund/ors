@@ -98,7 +98,6 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
       {
         dataType: 'date',
         field: 'banned_date',
-        headerName: 'If imports are banned, indicate date ban commenced',
         ...sectionColDefById['banned_date'],
       },
       {
