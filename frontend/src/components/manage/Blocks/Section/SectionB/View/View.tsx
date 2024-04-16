@@ -135,14 +135,14 @@ export default function SectionBView(props: {
 
   return (
     <>
-      {includes(['IV', 'V'], variant.model) && (
-        <TableDataSelector
-          className="py-4"
-          changeHandler={(_, value) => setTableDataValue(value)}
-          value={tableDataValue}
-        />
-      )}
-      <div className="flex justify-end">
+      <div className="flex justify-between">
+        {includes(['IV', 'V'], variant.model) && (
+          <TableDataSelector
+            className="py-4"
+            changeHandler={(_, value) => setTableDataValue(value)}
+            value={tableDataValue}
+          />
+        )}
         {includes(['V'], variant.model) && (
           <FormControlLabel
             label="Show zero values"
