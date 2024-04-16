@@ -337,7 +337,9 @@ def project(
     project_cluster_kpp,
     meta_project,
 ):
-    generated_code = get_project_sub_code(country_ro, project_cluster_kpp)
+    generated_code = get_project_sub_code(
+        country_ro, project_cluster_kpp, agency, project_type, sector, meeting, None
+    )
     project = ProjectFactory.create(
         meta_project=meta_project,
         title="Karma to Burn",
