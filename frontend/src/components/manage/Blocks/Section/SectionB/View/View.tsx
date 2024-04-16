@@ -5,11 +5,12 @@ import { ReportVariant } from '@ors/types/variants'
 
 import { useMemo, useRef, useState } from 'react'
 
-import { Alert } from '@mui/material'
+import { Alert, Checkbox, FormControlLabel } from '@mui/material'
 import { each, includes, union } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
+import { DeserializedDataB } from '@ors/models/SectionB'
 import { getVariant } from '@ors/slices/createCPReportsSlice'
 
 import TableDataSelector, {
@@ -26,12 +27,28 @@ function getGroupName(substance: any) {
   return substance.group || 'Other'
 }
 
-function getRowData(report: CPReport) {
+export type RowData = DeserializedDataB & {
+  count?: number
+  display_name?: string
+  group?: string
+  id?: number
+  row_id: string
+  rowType: string
+  tooltip?: boolean
+}
+
+function getRowData(report: CPReport, showEmptyRows: boolean): RowData[] {
   const variant = getVariant(report)
   let rowData: Array<any> = []
   const dataByGroup: Record<string, any> = {}
   const groups: Array<string> = []
-  each(report.section_b, (item) => {
+
+  let data = report.section_b
+  if (!showEmptyRows) {
+    data = data.filter((item: any) => item.id !== 0)
+  }
+
+  each(data, (item) => {
     const group = getGroupName(item)
     if (!dataByGroup[group]) {
       dataByGroup[group] = []
@@ -91,7 +108,8 @@ export default function SectionBView(props: {
       usages: emptyForm.usage_columns?.section_b || [],
     })
   const grid = useRef<any>()
-  const [rowData] = useState(() => getRowData(report))
+  const [showEmptyRows, setShowEmptyRows] = useState(true)
+  const [rowData] = useState(() => getRowData(report, showEmptyRows))
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
   const { setValue: setTableDataValue, value: tableDataValue } =
     useTableDataSelector(
@@ -118,19 +136,32 @@ export default function SectionBView(props: {
 
   return (
     <>
-      {includes(['IV', 'V'], variant.model) && (
-        <TableDataSelector
-          className="py-4"
-          changeHandler={(_, value) => setTableDataValue(value)}
-          value={tableDataValue}
-        />
-      )}
+      <div className="flex justify-between">
+        {includes(['IV', 'V'], variant.model) && (
+          <TableDataSelector
+            className="py-4"
+            changeHandler={(_, value) => setTableDataValue(value)}
+            value={tableDataValue}
+          />
+        )}
+        {includes(['V'], variant.model) && (
+          <FormControlLabel
+            label="Show zero values"
+            control={
+              <Checkbox
+                checked={showEmptyRows}
+                onChange={(event) => setShowEmptyRows(event.target.checked)}
+              />
+            }
+          />
+        )}
+      </div>
       <Alert
-        className="mb-4"
-        icon={<IoInformationCircleOutline size={24} />}
-        severity="info"
-      >
-        <Footnotes />
+          className="mb-4"
+          icon={<IoInformationCircleOutline size={24} />}
+          severity="info"
+        >
+          <Footnotes />
       </Alert>
       <Table
         {...TableProps}
@@ -139,7 +170,7 @@ export default function SectionBView(props: {
         gridRef={grid}
         headerDepth={4}
         pinnedBottomRowData={pinnedBottomRowData}
-        rowData={rowData}
+        rowData={showEmptyRows ? rowData : rowData.filter((row) => row.id !== 0)}
       />
     </>
   )

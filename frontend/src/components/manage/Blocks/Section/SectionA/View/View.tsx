@@ -121,7 +121,7 @@ export default function SectionAView(props: any) {
         )}
         {includes(['V'], variant.model) && (
           <FormControlLabel
-            label="Show empty rows"
+            label="Show zero values"
             control={
               <Checkbox
                 checked={showEmptyRows}
