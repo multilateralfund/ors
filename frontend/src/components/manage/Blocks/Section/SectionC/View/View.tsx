@@ -96,6 +96,13 @@ export default function SectionCView(props: {
             }
           />
         )}
+        <Alert
+          className="mb-4"
+          icon={<IoInformationCircleOutline size={24} />}
+          severity="info"
+        >
+          <Footnotes />
+        </Alert>
       </div>
       <Table
         {...TableProps}
@@ -104,9 +111,6 @@ export default function SectionCView(props: {
         gridRef={grid}
         rowData={showEmptyRows ? rowData : rowData.filter((row) => row.id !== 0)}
       />
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
     </>
   )
 }

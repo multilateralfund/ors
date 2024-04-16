@@ -81,6 +81,13 @@ export default function SectionECreate(props: any) {
 
   return (
     <>
+      <Alert
+        className="mt-4"
+        icon={<IoInformationCircleOutline size={24} />}
+        severity="info"
+      >
+        <Footnotes />
+      </Alert>
       <Table
         {...TableProps}
         className="mb-4"
@@ -121,9 +128,6 @@ export default function SectionECreate(props: any) {
           }
         }}
       />
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
     </>
   )
 }

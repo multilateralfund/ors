@@ -54,10 +54,11 @@ const PopoverWindow = ({
 }) => {
   const PAGE_SIZE = 12
 
-  const years = range(min, max + 1)
+  const years = range(min, max + 1).reverse()
   const pagedYears = chunk(years, PAGE_SIZE)
 
   const [curPage, setCurPage] = useState(0)
+  const [hoverYear, setHoverYear] = useState<null | number>(null)
 
   const [selectedRange, setSelectedRange] = useState<number[]>(value || [])
 
@@ -79,7 +80,7 @@ const PopoverWindow = ({
 
     if (!rangeStart) {
       newRange = [year]
-    } else if (!rangeEnd && year > rangeStart) {
+    } else if (!rangeEnd && year >= rangeStart) {
       newRange = [newRange[0], year]
     } else if (rangeStart && rangeEnd) {
       newRange = [year]
@@ -92,6 +93,7 @@ const PopoverWindow = ({
     }
   }
 
+  const [rangeStart, rangeEnd] = selectedRange
   const openRange = selectedRange[0] && !selectedRange[1]
   const btnClassess = 'text-secondary hover:text-primary cursor-pointer'
 
@@ -119,35 +121,36 @@ const PopoverWindow = ({
       <div className="flex items-center justify-around px-16">
         <div
           className={cx('rounded-md bg-gray-100 px-2 py-1 uppercase', {
-            'bg-secondary bg-opacity-10': !selectedRange[0],
+            'bg-secondary bg-opacity-10': !rangeStart,
           })}
         >
-          {selectedRange[0] || 'from'}
+          {rangeStart || 'from'}
         </div>
         <EmDashSvg className="text-secondary" />
         <div
           className={cx('rounded-md bg-gray-100 px-2 py-1 uppercase', {
-            'bg-secondary bg-opacity-10': !selectedRange[1],
+            'bg-secondary bg-opacity-10': !rangeEnd,
           })}
         >
-          {selectedRange[1] || 'to'}
+          {rangeEnd || 'to'}
         </div>
       </div>
       <div className="grid grid-flow-row grid-cols-4 grid-rows-3 gap-0">
         {pagedYears[curPage].map((y) => {
+          const includedInRange =
+            rangeStart && rangeEnd && y >= rangeStart && y <= rangeEnd
+          const highlightTentative =
+            rangeStart && hoverYear && y <= hoverYear && y > rangeStart
           return (
             <div
               key={y}
               className={cx('cursor-pointer px-3 py-3', {
-                'bg-mlfs-hlYellow':
-                  selectedRange[0] &&
-                  selectedRange[1] &&
-                  y >= selectedRange[0] &&
-                  y <= selectedRange[1],
+                'bg-mlfs-hlYellow': includedInRange || highlightTentative,
                 'hover:bg-gray-100': !openRange,
-                'hover:bg-mlfs-hlYellow': openRange && y >= selectedRange[0],
+                'hover:bg-mlfs-hlYellow': openRange && y >= rangeStart,
               })}
               onClick={() => handleClickYear(y)}
+              onMouseEnter={() => setHoverYear(y)}
             >
               {y}
             </div>

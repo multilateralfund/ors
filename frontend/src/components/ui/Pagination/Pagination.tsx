@@ -7,7 +7,8 @@ import cx from 'classnames'
 
 import { robotoCondensed } from '@ors/themes/fonts'
 
-import { IoArrowBack, IoArrowForward } from 'react-icons/io5'
+import BackArrow from './back-arrow.svg'
+import NextArrow from './next-arrow.svg'
 
 type PaginationProps = MuiPaginationProps & {
   loading?: boolean
@@ -44,12 +45,16 @@ export function Pagination({
         return (
           <Button
             className={cx(
-              'mx-2 h-8 w-8 min-w-0 rounded-full p-4 text-lg font-normal',
+              'with-svg-arrow mx-2 h-8 w-8 min-w-0 rounded-full p-4 text-lg font-normal',
               {
                 'bg-mlfs-hlYellow': item.selected,
-                'bg-transparent hover:bg-gray-100': !item.selected,
+                'bg-transparent': !item.selected,
                 'cursor-default': isEllipsis,
                 'opacity-40': disabled,
+                'text-primary hover:bg-gray-100':
+                  item.type !== 'previous' &&
+                  item.type !== 'next' &&
+                  !item.selected,
                 'text-secondary':
                   item.type === 'previous' || item.type === 'next',
                 'w-auto min-w-fit': ['next', 'previous'].includes(item.type),
@@ -59,10 +64,10 @@ export function Pagination({
             onClick={isEllipsis ? () => {} : item.onClick}
             disableRipple
           >
-            {item.type === 'previous' && <IoArrowBack size={18} />}
+            {item.type === 'previous' && <BackArrow className="arrow-prev" />}
             {item.type === 'page' && item.page}
             {isEllipsis && '...'}
-            {item.type === 'next' && <IoArrowForward size={18} />}
+            {item.type === 'next' && <NextArrow className="arrow-next" />}
           </Button>
         )
       }}

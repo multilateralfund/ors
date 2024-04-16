@@ -234,6 +234,13 @@ export default function SectionCCreate(props: {
 
   return (
     <>
+      <Alert
+        className="mt-4"
+        icon={<IoInformationCircleOutline size={24} />}
+        severity="info"
+      >
+        <Footnotes />
+      </Alert>
       <Table
         {...TableProps}
         className="mb-4"
@@ -274,11 +281,6 @@ export default function SectionCCreate(props: {
           }
         }}
       />
-
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
-
       {addChemicalModal && (
         <Modal
           aria-labelledby="add-substance-modal-title"

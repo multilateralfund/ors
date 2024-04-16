@@ -8,6 +8,7 @@ import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
+
 function getRowData(report: any) {
   return (report.section_d || []).map((item: any) => ({
     ...item,
@@ -23,6 +24,13 @@ export default function SectionDView(props: any) {
 
   return (
     <>
+      <Alert
+        className="mb-4"
+        icon={<IoInformationCircleOutline size={24} />}
+        severity="info"
+      >
+        <Footnotes />
+      </Alert>
       <Table
         {...TableProps}
         className="mb-4"
@@ -31,9 +39,6 @@ export default function SectionDView(props: any) {
         gridRef={grid}
         rowData={rowData}
       />
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
     </>
   )
 }

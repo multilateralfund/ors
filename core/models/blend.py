@@ -1,5 +1,6 @@
 import re
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.conf import settings
 from django.db import models
 
 from core.models.substance import Substance
@@ -132,6 +133,10 @@ class Blend(models.Model):
     sort_order_sectionC = models.FloatField(
         null=True, blank=True, help_text="Sort order for section C"
     )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True
+    )
+
     ozone_id = models.IntegerField(null=True, blank=True)
     cp_report_note = models.TextField(null=True, blank=True)
     remarks = models.TextField(null=True, blank=True)

@@ -4,7 +4,7 @@ import type { SimpleSelectProps } from '@ors/components/ui/SimpleSelect/SimpleSe
 import { Country } from '@ors/types/store'
 import { UserType, userTypeVisibility } from '@ors/types/user_types'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   Box,
@@ -17,7 +17,7 @@ import {
   Typography,
 } from '@mui/material'
 import cx from 'classnames'
-import { filter, union } from 'lodash'
+import { filter, omit, union } from 'lodash'
 
 import CPEmpty from '@ors/components/manage/Blocks/CountryProgramme/CPEmpty'
 import Field from '@ors/components/manage/Form/Field'
@@ -80,15 +80,59 @@ const GroupBy = (props: Omit<RadioSelectProps, 'label'>) => (
   <RadioSelect label="Group by" {...props} />
 )
 
-function Item({
+interface ItemLinkProps {
+  country: any
+  item: ReportResponse
+  showAll: boolean
+  showCountry: boolean
+  showYear: boolean
+}
+
+const ItemLink = ({
+  country,
   item,
+  showAll,
   showCountry,
   showYear,
-}: {
+}: ItemLinkProps) => {
+  return (
+    <Link
+      className={cx(
+        'inline-block max-w-full font-semibold hover:text-primary md:truncate',
+        {
+          'text-secondary': item.status === 'final',
+          'text-typography-secondary': !item.status,
+          'text-warning': item.status === 'draft',
+        },
+      )}
+      prefetch={false}
+      underline="hover"
+      href={
+        item.status === 'draft'
+          ? `/country-programme/${country?.iso3}/${item?.year}/edit`
+          : `/country-programme/${country?.iso3}/${item?.year}`
+      }
+    >
+      {showAll && item.name}
+      {!!showCountry && item.country}
+      {!!showYear && item.year}
+    </Link>
+  )
+}
+
+interface ItemProps {
+  ItemRenderer: (props: ItemLinkProps) => React.ReactElement
   item: ReportResponse
   showCountry: boolean
   showYear: boolean
-}) {
+}
+
+function Item({
+  ItemRenderer = ItemLink,
+  item,
+  showCountry,
+  showYear,
+}: ItemProps) {
   const showAll = !showCountry && !showYear
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const country = countries.filter(
@@ -112,33 +156,32 @@ function Item({
           title={showAll ? item.name : showCountry ? item.country : item.year}
         >
           <div className="flex max-w-full items-center">
-            <Link
-              className={cx(
-                'inline-block max-w-full font-semibold hover:text-primary md:truncate',
-                {
-                  'text-secondary': item.status === 'final',
-                  'text-typography-secondary': !item.status,
-                  'text-warning': item.status === 'draft',
-                },
-              )}
-              prefetch={false}
-              underline="hover"
-              href={
-                item.status === 'draft'
-                  ? `/country-programme/${country?.iso3}/${item?.year}/edit`
-                  : `/country-programme/${country?.iso3}/${item?.year}`
-              }
-            >
-              {showAll && item.name}
-              {!!showCountry && item.country}
-              {!!showYear && item.year}
-            </Link>
+            <ItemRenderer
+              country={country}
+              item={item}
+              showAll={showAll}
+              showCountry={showCountry}
+              showYear={showYear}
+            />
           </div>
         </Tooltip>
       </div>
     </ListItem>
   )
 }
+
+const GeneralSectionItemLink = (props: ItemLinkProps) => (
+  <div className="shadow-mlfs flex items-center justify-center rounded-md px-6 py-4">
+    <ItemLink {...props} />
+  </div>
+)
+
+const GeneralSectionItem = (props: ItemProps) => (
+  <Item
+    ItemRenderer={GeneralSectionItemLink}
+    {...omit(props, ['ItemRenderer'])}
+  />
+)
 
 function GeneralSection(props: SectionProps) {
   // const shouldScroll = useRef(false)
@@ -264,19 +307,17 @@ function GeneralSection(props: SectionProps) {
               value={range}
               widget="range"
               onChange={(value: number[]) => {
-                if (value[1] - value[0] >= 1) {
-                  setRange(value)
-                  debounce(() => {
-                    setFilters((filters: any) => {
-                      return { ...filters, range: value, year: [] }
-                    })
-                    setParams({
-                      offset: 0,
-                      year_max: value[1],
-                      year_min: value[0],
-                    })
+                setRange(value)
+                debounce(() => {
+                  setFilters((filters: any) => {
+                    return { ...filters, range: value, year: [] }
                   })
-                }
+                  setParams({
+                    offset: 0,
+                    year_max: value[1],
+                    year_min: value[0],
+                  })
+                })
               }}
             />
           </div>
@@ -389,7 +430,7 @@ function GeneralSection(props: SectionProps) {
       <Listing
         className="mb-6"
         GridProps={{ columnSpacing: 2, rowSpacing: 3 }}
-        Item={Item}
+        Item={GeneralSectionItem}
         loaded={loaded}
         loading={loading}
         paginationPageSize={pagination.rowsPerPage}
@@ -403,6 +444,55 @@ function GeneralSection(props: SectionProps) {
             offset: ((page || 1) - 1) * pagination.rowsPerPage,
           })
         }}
+        enableGrid
+      />
+    </div>
+  )
+}
+
+const SingleCountryItem = (props: ItemProps) => {
+  const item = props.item.year
+    ? { ...props.item, name: props.item.year.toString() }
+    : props.item
+  return (
+    <Item
+      ItemRenderer={GeneralSectionItemLink}
+      item={item}
+      {...omit(props, ['ItemRenderer', 'item'])}
+    />
+  )
+}
+
+const SingleCountrySection = ({
+  country,
+}: { country: Country } & SectionProps) => {
+  const { data, loading } = useApi<ReportsResponse>({
+    options: {
+      params: {
+        country_id: country.id,
+      },
+      withStoreCache: true,
+    },
+    path: 'api/country-programme/reports/',
+  })
+  const { count, loaded, results } = getResults<ReportResponse>(data)
+  return (
+    <div>
+      <div className="mb-4 ml-4">
+        <hr className="mb-4 border border-solid border-primary" />
+        <Typography component="h1" variant="h4">
+          {country.name}
+        </Typography>
+      </div>
+      <Listing
+        className="mb-6"
+        GridProps={{ columnSpacing: 2, rowSpacing: 2 }}
+        Item={SingleCountryItem}
+        ItemProps={{ showCountry: false }}
+        loaded={loaded}
+        loading={loading}
+        rowCount={count}
+        rowData={results}
         enableGrid
       />
     </div>
@@ -453,7 +543,7 @@ function CountrySection(props: SectionProps) {
   }
 
   if (countries.length === 1) {
-    return <GeneralSection {...props} />
+    return <SingleCountrySection country={countries[0]} {...props} />
   }
 
   if (countries.length === 0) {
@@ -542,18 +632,20 @@ function CountrySection(props: SectionProps) {
         ))}
       </Grid>
       {!!pages && pages > 1 && (
-        <Pagination
-          count={pages}
-          page={pagination.page}
-          siblingCount={1}
-          onPaginationChanged={(page) => {
-            setPagination({ ...pagination, page: page || 1 })
-            setParams({
-              limit: pagination.rowsPerPage,
-              offset: ((page || 1) - 1) * pagination.rowsPerPage,
-            })
-          }}
-        />
+        <div className="flex items-center justify-center">
+          <Pagination
+            count={pages}
+            page={pagination.page}
+            siblingCount={1}
+            onPaginationChanged={(page) => {
+              setPagination({ ...pagination, page: page || 1 })
+              setParams({
+                limit: pagination.rowsPerPage,
+                offset: ((page || 1) - 1) * pagination.rowsPerPage,
+              })
+            }}
+          />
+        </div>
       )}
     </div>
   )
@@ -618,14 +710,12 @@ function YearSection(props: SectionProps) {
             value={range}
             widget="range"
             onChange={(value: number[]) => {
-              if (value[1] - value[0] >= 1) {
-                setRange(value)
-                debounce(() => {
-                  setFilters((filters: any) => {
-                    return { ...filters, range: value, year: [] }
-                  })
+              setRange(value)
+              debounce(() => {
+                setFilters((filters: any) => {
+                  return { ...filters, range: value, year: [] }
                 })
-              }
+              })
             }}
           />
         </div>
@@ -679,18 +769,20 @@ function YearSection(props: SectionProps) {
         ))}
       </Grid>
       {!!pages && pages > 1 && (
-        <Pagination
-          count={pages}
-          page={pagination.page}
-          siblingCount={1}
-          onPaginationChanged={(page) => {
-            setPagination({ ...pagination, page: page || 1 })
-            setParams({
-              limit: pagination.rowsPerPage,
-              offset: ((page || 1) - 1) * pagination.rowsPerPage,
-            })
-          }}
-        />
+        <div className="flex items-center justify-center">
+          <Pagination
+            count={pages}
+            page={pagination.page}
+            siblingCount={1}
+            onPaginationChanged={(page) => {
+              setPagination({ ...pagination, page: page || 1 })
+              setParams({
+                limit: pagination.rowsPerPage,
+                offset: ((page || 1) - 1) * pagination.rowsPerPage,
+              })
+            }}
+          />
+        </div>
       )}
     </div>
   )

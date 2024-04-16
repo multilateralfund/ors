@@ -19,6 +19,7 @@ import TableDataSelector, {
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
+
 function getGroupName(substance: any) {
   if (substance.blend_id) {
     return 'Blends (Mixture of Controlled Substances)'
@@ -154,6 +155,13 @@ export default function SectionBView(props: {
             }
           />
         )}
+        <Alert
+          className="mb-4"
+          icon={<IoInformationCircleOutline size={24} />}
+          severity="info"
+        >
+          <Footnotes />
+        </Alert>
       </div>
       <Table
         {...TableProps}
@@ -164,9 +172,6 @@ export default function SectionBView(props: {
         pinnedBottomRowData={pinnedBottomRowData}
         rowData={showEmptyRows ? rowData : rowData.filter((row) => row.id !== 0)}
       />
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
     </>
   )
 }
