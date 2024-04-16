@@ -9,6 +9,17 @@ export default function getUsagesColDef() {
     Foam: {
       initialWidth: 84,
     },
+    'Methyl bromide II': {
+      headerGroupComponentParams: {
+        footnote: {
+          content:
+            'QPS = Quarantine and pre-shipment; Non-QPS = Non-quarantine and pre-shipment.',
+          icon: true,
+          index: '*',
+          order: 0,
+        },
+      },
+    },
     Other: {
       headerComponentParams: {
         footnote: {

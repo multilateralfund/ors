@@ -11,6 +11,7 @@ declare module 'ag-grid-community' {
     dataType?: string
     disabled?: boolean
     error?: ((props: any) => void) | string
+    headerGroupComponentParams?: AgColDef['headerGroupComponentParams']
     id?: number | string
     orsAggFunc?: string
     showRowError?: boolean
