@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   Collapse,
-  IconButton,
   InputLabel,
   Modal,
   Tooltip,
@@ -30,7 +29,6 @@ import useStateWithPrev from '@ors/hooks/useStateWithPrev'
 import {
   IoAddCircleSharp,
   IoInformationCircleOutline,
-  IoRefresh,
   IoTrash,
 } from 'react-icons/io5'
 
@@ -174,18 +172,13 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
             </Alert>
             <Field
               InputLabel={{ label: 'Blend description' }}
+              disabled={true}
               error={!!errors.composition}
               helperText={errors.composition}
-              value={form.composition}
-              onChange={(event: any) => {
-                setForm({
-                  ...prevForm.current,
-                  composition: event.target.value,
-                })
-              }}
+              value={"CustMix-235"}
             />
             <Field
-              InputLabel={{ label: 'Blend other names' }}
+              InputLabel={{ label: 'Alternative name' }}
               error={!!errors.other_names}
               helperText={errors.other_names}
               value={form.other_names}
@@ -199,7 +192,7 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
             <InputLabel className="mb-2 inline-flex items-center gap-2">
               <span>Blend composition</span>
               <Tooltip placement="top" title="Similar blends">
-                <IconButton
+                <Button
                   color="primary"
                   onClick={async () => {
                     try {
@@ -248,8 +241,8 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
                     }
                   }}
                 >
-                  <IoRefresh size="1rem" />
-                </IconButton>
+                  Check similar blends
+                </Button>
               </Tooltip>
             </InputLabel>
             <Table
@@ -369,14 +362,6 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
                   showRowError: true,
                 },
                 {
-                  cellEditor: 'agTextCellEditor',
-                  field: 'component_name',
-                  headerName: 'Component name',
-                  initialWidth: 200,
-                  minWidth: 200,
-                  orsAggFunc: 'sumTotal',
-                },
-                {
                   cellEditor: 'agNumberCellEditor',
                   cellEditorParams: {
                     max: 100,
@@ -387,6 +372,14 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
                   headerName: 'Percentage',
                   initialWidth: 120,
                   minWidth: 120,
+                  orsAggFunc: 'sumTotal',
+                },
+                {
+                  cellEditor: 'agTextCellEditor',
+                  field: 'component_name',
+                  headerName: 'Component name',
+                  initialWidth: 200,
+                  minWidth: 200,
                   orsAggFunc: 'sumTotal',
                 },
               ]}

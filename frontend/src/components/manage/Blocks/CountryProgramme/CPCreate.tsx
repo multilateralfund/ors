@@ -315,7 +315,9 @@ const CPCreate: React.FC = () => {
     section_a: includes(['V'], variant?.model)
       ? []
       : Sections.section_a.getData(),
-    section_b: Sections.section_b.getData(),
+    section_b: includes(['V'], variant?.model)
+      ? []
+      : Sections.section_b.getData(),
     section_c: Sections.section_c.getData(),
     section_d: Sections.section_d.getData(),
     section_e: Sections.section_e.getData(),
