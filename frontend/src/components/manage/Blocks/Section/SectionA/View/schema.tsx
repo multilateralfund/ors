@@ -49,6 +49,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
       {
         id: 'total_usages',
         category: 'usage',
+        cellClass: 'bg-yellow-50 text-right',
         headerName: 'TOTAL',
         orsAggFunc: 'sumTotalUsages',
         ...sectionColDefById['total_usages'],

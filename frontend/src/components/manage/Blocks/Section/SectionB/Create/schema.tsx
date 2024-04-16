@@ -114,6 +114,7 @@ function useGridOptions(props: {
                   {
                     id: 'total_usages',
                     category: 'usage',
+                    cellClass: 'bg-yellow-50 text-right',
                     field: 'total_usages',
                     headerName: 'TOTAL',
                     orsAggFunc: 'sumTotalUsages',
