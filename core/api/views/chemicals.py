@@ -351,9 +351,10 @@ class BlendCreateView(generics.CreateAPIView):
 
         @return: Blend object or None
         """
-        blend = Blend.objects.find_by_name(name=data["other_names"])
-        if blend:
-            return blend
+        if data.get("other_names", None):
+            blend = Blend.objects.find_by_name(name=data["other_names"])
+            if blend:
+                return blend
 
         blend_cmp = [
             (vals["substance_id"], vals["percentage"] / 100)
@@ -368,7 +369,7 @@ class BlendCreateView(generics.CreateAPIView):
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
-            required=["other_names", "components", "composition"],
+            required=["other_names", "components"],
             properties={
                 "other_names": openapi.Schema(
                     type=openapi.TYPE_STRING,
@@ -396,21 +397,12 @@ class BlendCreateView(generics.CreateAPIView):
                         },
                     ),
                 ),
-                "composition": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Plain-text description of the composition of the blend",
-                ),
             },
         ),
     )
     @transaction.atomic
     def post(self, request, *args, **kwargs):
         data = request.data
-
-        # validate data
-        for field in ["other_names", "components", "composition"]:
-            if data.get(field) is None:
-                raise ValidationError({field: "This field is required."})
 
         self.serializer_class(data=data).validate_components(data)
 
@@ -439,13 +431,13 @@ class BlendCreateView(generics.CreateAPIView):
         # create blend
         blend = Blend.objects.create(
             name=name,
-            other_names=data["other_names"],
+            other_names=data.get("other_names", None),
             composition=composition,
-            composition_alt=data["composition"],
             type=Blend.BlendTypes.CUSTOM,
             odp=components_data["odp"],
             gwp=components_data["gwp"] if components_data["gwp"] else None,
             is_contained_in_polyols=False,
+            created_by=request.user,
         )
 
         # create blend components
@@ -462,3 +454,13 @@ class BlendCreateView(generics.CreateAPIView):
         BlendComponents.objects.bulk_create(blend_components)
 
         return self.create_response(blend, True)
+
+
+class BlendNextCustNameView(generics.RetrieveAPIView):
+    """
+    API endpoint that allows the next custom blend name to be viewed.
+    """
+
+    def get(self, request, *args, **kwargs):
+        name = Blend.objects.get_next_cust_mx_name()
+        return Response({"name": name}, status=status.HTTP_200_OK)
