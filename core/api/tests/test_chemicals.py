@@ -474,6 +474,25 @@ class TestCreateBlend:
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
 
+    def test_without_name(self, user, _setup_blend_create):
+        substA, substF, subst_otherF = _setup_blend_create
+        self.client.force_authenticate(user=user)
+
+        data = {
+            "components": [
+                {"substance_id": substA.id, "component_name": "", "percentage": 20},
+                {"substance_id": substF.id, "component_name": "", "percentage": 30},
+                {
+                    "substance_id": subst_otherF.id,
+                    "component_name": "SubstFFF",
+                    "percentage": 50,
+                },
+            ],
+        }
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 200
+        assert response.data["name"] == "CustMix-0"
+
     def test_multiple_other_subs(self, user, _setup_blend_create):
         substA, _, subst_otherF = _setup_blend_create
         self.client.force_authenticate(user=user)
@@ -507,3 +526,35 @@ class TestCreateBlend:
         )
         assert float(response.data["gwp"]) == subst_otherF.gwp * 0.808
         assert Blend.objects.count() == 1
+
+
+class TestNextCustName(BaseTest):
+    url = reverse("blends-next-cust-mix-name")
+
+    def _create_blend(self, index, substances):
+        substA, substF, subst_otherF = substances
+
+        name = f"CustMix-{index}"
+        blend = BlendFactory.create(name=name)
+        blend.components.create(substance=substA, percentage=0.2)
+        blend.components.create(substance=substF, percentage=0.3)
+        blend.components.create(substance=subst_otherF, percentage=0.5)
+
+    def test_next_cust_name(self, user, _setup_blend_create):
+        substances = _setup_blend_create
+
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert response.data["name"] == "CustMix-0"
+
+        self._create_blend(0, substances)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert response.data["name"] == "CustMix-1"
+        self._create_blend(234, substances)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert response.data["name"] == "CustMix-235"

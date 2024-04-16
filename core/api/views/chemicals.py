@@ -431,7 +431,7 @@ class BlendCreateView(generics.CreateAPIView):
         # create blend
         blend = Blend.objects.create(
             name=name,
-            other_names=data["other_names"],
+            other_names=data.get("other_names", None),
             composition=composition,
             type=Blend.BlendTypes.CUSTOM,
             odp=components_data["odp"],
