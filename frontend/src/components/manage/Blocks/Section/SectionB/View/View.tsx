@@ -44,7 +44,7 @@ function getRowData(report: CPReport, showEmptyRows: boolean): RowData[] {
 
   let data = report.section_b
   if (!showEmptyRows) {
-    data = data.filter((item) => item.id !== 0)
+    data = data.filter((item: any) => item.id !== 0)
   }
 
   each(data, (item) => {

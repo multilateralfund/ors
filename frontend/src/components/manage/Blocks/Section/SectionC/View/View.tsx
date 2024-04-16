@@ -29,7 +29,7 @@ function getRowData(report: any, model: string, showEmptyRows: boolean): RowData
 
   let data = report.section_c
   if (!showEmptyRows) {
-    data = data.filter((item) => item.id !== 0)
+    data = data.filter((item: any) => item.id !== 0)
   }
   each(data, (item) => {
     const group = item.group || 'Alternatives'
