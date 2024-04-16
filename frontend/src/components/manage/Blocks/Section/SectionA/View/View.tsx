@@ -131,6 +131,13 @@ export default function SectionAView(props: any) {
           />
         )}
       </div>
+      <Alert
+        className="mb-4"
+        icon={<IoInformationCircleOutline size={24} />}
+        severity="info"
+      >
+        <Footnotes />
+      </Alert>
       <Table
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
@@ -141,9 +148,6 @@ export default function SectionAView(props: any) {
         pinnedBottomRowData={pinnedBottomRowData}
         rowData={rowData}
       />
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
     </>
   )
 }
