@@ -202,6 +202,9 @@ export default function SectionBCreate(props: {
 
   return (
     <>
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnotes />
+      </Alert>
       <Table
         {...TableProps}
         className="mb-4"
@@ -248,9 +251,6 @@ export default function SectionBCreate(props: {
           }
         }}
       />
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
       {addChemicalModal && (
         <Modal
           aria-labelledby="add-substance-modal-title"
