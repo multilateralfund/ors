@@ -10,8 +10,6 @@ import {
   Box,
   Button,
   Grid,
-  // InputAdornment,
-  ListItem,
   // IconButton as MuiIconButton,
   Tooltip,
   Typography,
@@ -81,6 +79,7 @@ const GroupBy = (props: Omit<RadioSelectProps, 'label'>) => (
 )
 
 interface ItemLinkProps {
+  className?: string
   country: any
   item: ReportResponse
   showAll: boolean
@@ -89,6 +88,7 @@ interface ItemLinkProps {
 }
 
 const ItemLink = ({
+  className,
   country,
   item,
   showAll,
@@ -98,7 +98,8 @@ const ItemLink = ({
   return (
     <Link
       className={cx(
-        'inline-block max-w-full font-semibold hover:text-primary md:truncate',
+        'flex w-full items-center text-wrap font-semibold hover:text-primary',
+        className,
         {
           'text-secondary': item.status === 'final',
           'text-typography-secondary': !item.status,
@@ -140,40 +141,27 @@ function Item({
   )[0]
 
   return (
-    <ListItem
-      className="group flex flex-col items-start justify-center"
-      component={Grid}
-      disablePadding
-      item
-      {...(showAll
-        ? { lg: 3, md: 4, sm: 4, xl: 2, xs: 6 }
-        : { lg: 6, md: 4, sm: 6, xl: 4, xs: 4 })}
+    <Tooltip
+      enterDelay={300}
+      placement="top-start"
+      title={showAll ? item.name : showCountry ? item.country : item.year}
     >
-      <div className="flex max-w-full items-center px-4">
-        <Tooltip
-          enterDelay={300}
-          placement="top-start"
-          title={showAll ? item.name : showCountry ? item.country : item.year}
-        >
-          <div className="flex max-w-full items-center">
-            <ItemRenderer
-              country={country}
-              item={item}
-              showAll={showAll}
-              showCountry={showCountry}
-              showYear={showYear}
-            />
-          </div>
-        </Tooltip>
-      </div>
-    </ListItem>
+      <ItemRenderer
+        country={country}
+        item={item}
+        showAll={showAll}
+        showCountry={showCountry}
+        showYear={showYear}
+      />
+    </Tooltip>
   )
 }
 
 const GeneralSectionItemLink = (props: ItemLinkProps) => (
-  <div className="shadow-mlfs flex items-center justify-center rounded-md px-6 py-4">
-    <ItemLink {...props} />
-  </div>
+  <ItemLink
+    className="shadow-mlfs justify-center rounded-md px-6 py-4 text-center text-lg"
+    {...omit(props, ['className'])}
+  />
 )
 
 const GeneralSectionItem = (props: ItemProps) => (
@@ -207,13 +195,6 @@ function GeneralSection(props: SectionProps) {
     groupBy === 'country' ? 'year,country__name' : 'country__name,year'
 
   const { data, loading, setParams } = useApi<ReportsResponse>({
-    // onSuccess: () => {
-    //   if (shouldScroll.current) {
-    //     scrollToElement({ selectors: '#cp-listing-sections' })
-    //   } else {
-    //     shouldScroll.current = true
-    //   }
-    // },
     options: {
       params: {
         country_id: filters.country.join(','),
@@ -429,7 +410,6 @@ function GeneralSection(props: SectionProps) {
       </div>
       <Listing
         className="mb-6"
-        GridProps={{ columnSpacing: 2, rowSpacing: 3 }}
         Item={GeneralSectionItem}
         loaded={loaded}
         loading={loading}
@@ -444,7 +424,6 @@ function GeneralSection(props: SectionProps) {
             offset: ((page || 1) - 1) * pagination.rowsPerPage,
           })
         }}
-        enableGrid
       />
     </div>
   )
@@ -470,6 +449,7 @@ const SingleCountrySection = ({
     options: {
       params: {
         country_id: country.id,
+        ordering: '-year',
       },
       withStoreCache: true,
     },
@@ -478,7 +458,7 @@ const SingleCountrySection = ({
   const { count, loaded, results } = getResults<ReportResponse>(data)
   return (
     <div>
-      <div className="mb-4 ml-4">
+      <div className="mb-8">
         <hr className="mb-4 border border-solid border-primary" />
         <Typography component="h1" variant="h4">
           {country.name}
@@ -486,14 +466,12 @@ const SingleCountrySection = ({
       </div>
       <Listing
         className="mb-6"
-        GridProps={{ columnSpacing: 2, rowSpacing: 2 }}
         Item={SingleCountryItem}
         ItemProps={{ showCountry: false }}
         loaded={loaded}
         loading={loading}
         rowCount={count}
         rowData={results}
-        enableGrid
       />
     </div>
   )
@@ -602,14 +580,14 @@ function CountrySection(props: SectionProps) {
               </Typography>
               <hr className="mx-4 mb-6 border-b-0 border-gray-50/25" />
               <Listing
-                className="mb-3"
+                className="mx-4 mb-3"
                 Item={Item}
                 ItemProps={{ showYear: true }}
+                classNameGrid="grid-cols-3"
                 loaded={loaded}
                 loading={loading}
                 rowCount={row.reports.length}
                 rowData={row.reports}
-                enableGrid
               />
               {row.count > row.reports.length && (
                 <Button
@@ -742,14 +720,14 @@ function YearSection(props: SectionProps) {
                 <IoArrowForward size={20} />
               </Typography>
               <Listing
-                className="mb-3"
+                className="mx-4 mb-3"
                 Item={Item}
                 ItemProps={{ showCountry: true }}
+                classNameGrid="grid-cols-3"
                 loaded={loaded}
                 loading={loading}
                 rowCount={row.reports.length}
                 rowData={row.reports}
-                enableGrid
               />
               {row.count > row.reports.length && (
                 <Button
