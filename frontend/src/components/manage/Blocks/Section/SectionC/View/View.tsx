@@ -4,22 +4,34 @@ import { ReportVariant } from '@ors/types/variants'
 
 import { useRef, useState } from 'react'
 
-import { Alert } from '@mui/material'
+import { Alert, Checkbox, FormControlLabel } from '@mui/material'
 import { each, includes, union } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
-import SectionC from '@ors/models/SectionC'
+import SectionC, { DeserializedDataC } from '@ors/models/SectionC'
 
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-function getRowData(report: any, model: string) {
+export type RowData = DeserializedDataC & {
+  count?: number
+  id?: number
+  rowType?: string
+  tooltip?: boolean
+}
+
+function getRowData(report: any, model: string, showEmptyRows: boolean): RowData[] {
   let rowData: Array<any> = []
   const dataByGroup: Record<string, any> = {}
   const groups: Array<string> = []
-  each(report.section_c, (item) => {
+
+  let data = report.section_c
+  if (!showEmptyRows) {
+    data = data.filter((item) => item.id !== 0)
+  }
+  each(data, (item) => {
     const group = item.group || 'Alternatives'
     if (!dataByGroup[group]) {
       dataByGroup[group] = []
@@ -67,16 +79,30 @@ export default function SectionCView(props: {
     model: variant.model,
   })
   const grid = useRef<any>()
-  const [rowData] = useState(() => getRowData(report, variant.model))
+  const [showEmptyRows, setShowEmptyRows] = useState(true)
+  const [rowData] = useState(() => getRowData(report, variant.model, showEmptyRows))
 
   return (
     <>
+      <div className="flex justify-end">
+        {includes(['V'], variant.model) && (
+          <FormControlLabel
+            label="Show zero values"
+            control={
+              <Checkbox
+                checked={showEmptyRows}
+                onChange={(event) => setShowEmptyRows(event.target.checked)}
+              />
+            }
+          />
+        )}
+      </div>
       <Table
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
         gridRef={grid}
-        rowData={rowData}
+        rowData={showEmptyRows ? rowData : rowData.filter((row) => row.id !== 0)}
       />
       <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
         <Footnotes />
