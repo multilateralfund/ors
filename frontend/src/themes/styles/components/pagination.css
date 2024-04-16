@@ -1,0 +1,17 @@
+.with-svg-arrow {
+  svg {
+    @apply duration-200;
+  }
+
+  &:hover svg {
+    @apply scale-x-125;
+
+    &.arrow-next {
+      @apply origin-left;
+    }
+
+    &.arrow-prev {
+      @apply origin-right;
+    }
+  }
+}

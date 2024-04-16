@@ -7,6 +7,7 @@
 @import './views.css';
 @import './components/image';
 @import './components/widget';
+@import './components/pagination';
 
 /* Material ui components */
 @import './components/mui/_index.css';
