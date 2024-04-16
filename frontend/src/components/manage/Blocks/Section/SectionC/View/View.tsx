@@ -96,14 +96,14 @@ export default function SectionCView(props: {
             }
           />
         )}
-        <Alert
+      </div>
+      <Alert
           className="mb-4"
           icon={<IoInformationCircleOutline size={24} />}
           severity="info"
         >
           <Footnotes />
-        </Alert>
-      </div>
+      </Alert>
       <Table
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
