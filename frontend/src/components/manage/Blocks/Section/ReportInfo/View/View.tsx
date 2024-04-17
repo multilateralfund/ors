@@ -1,11 +1,10 @@
 import Typography from '@mui/material/Typography'
+import { IoDocumentTextOutline } from '@react-icons/all-files/io5/IoDocumentTextOutline'
 
 import ReportHistory from '@ors/components/manage/Blocks/Section/ReportInfo/ReportHistory'
 import ReportStatus from '@ors/components/manage/Blocks/Section/ReportInfo/ReportStatus'
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
 import { useStore } from '@ors/store'
-
-import { IoDocumentTextOutline } from 'react-icons/io5'
 
 const ReportInfoView = (props: any) => {
   const { report, section } = props
@@ -55,7 +54,7 @@ const ReportInfoView = (props: any) => {
           <p className="m-0 text-2xl font-normal">File attachments</p>
           <div className="flex flex-col gap-3">
             {files.length === 0 ? (
-              <p className="text-lg font-normal text-gray-500 m-1">
+              <p className="m-1 text-lg font-normal text-gray-500">
                 No files available
               </p>
             ) : (

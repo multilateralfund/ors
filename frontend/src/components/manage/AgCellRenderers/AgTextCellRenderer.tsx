@@ -2,6 +2,7 @@
 import { useContext, useEffect, useState } from 'react'
 
 import { IconButton, Typography } from '@mui/material'
+import { IoInformationCircleOutline } from '@react-icons/all-files/io5/IoInformationCircleOutline'
 import { CustomCellRendererProps } from 'ag-grid-react'
 import cx from 'classnames'
 import hash from 'object-hash'
@@ -10,8 +11,6 @@ import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSke
 import AgTooltipComponent from '@ors/components/manage/AgComponents/AgTooltipComponent'
 import { FootnotesContext } from '@ors/contexts/Footnote/Footnote'
 import { scrollToElement } from '@ors/helpers/Utils/Utils'
-
-import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export default function AgTextCellRenderer(props: CustomCellRendererProps) {
   const footnotes = useContext(FootnotesContext)

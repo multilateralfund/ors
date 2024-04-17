@@ -1,12 +1,11 @@
 import { useState } from 'react'
 
+import { IoChevronDownCircle } from '@react-icons/all-files/io5/IoChevronDownCircle'
 import cx from 'classnames'
 import { AnimatePresence } from 'framer-motion'
 
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import { robotoCondensed } from '@ors/themes/fonts'
-
-import { IoChevronDownCircle } from 'react-icons/io5'
 
 interface ISimpleSelectOption {
   label: string

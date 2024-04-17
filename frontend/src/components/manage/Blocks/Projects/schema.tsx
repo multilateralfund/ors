@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
 import { Tooltip, Typography } from '@mui/material'
+import { FaEdit } from '@react-icons/all-files/fa/FaEdit'
 import { SuppressKeyboardEventParams } from 'ag-grid-community'
 import cx from 'classnames'
 import { filter, find, get, groupBy, includes, isObject } from 'lodash'
@@ -10,8 +11,6 @@ import Link from '@ors/components/ui/Link/Link'
 import { getContrastText } from '@ors/helpers/Color/Color'
 import { parseNumber } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
-
-import { FaEdit } from 'react-icons/fa'
 
 function suppressUndo(params: SuppressKeyboardEventParams) {
   const event = params.event

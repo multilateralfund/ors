@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
 import { Button, Link, Tooltip } from '@mui/material'
+import { IoTrash } from '@react-icons/all-files/io5/IoTrash'
 import {
   CellClassParams,
   EditableCallbackParams,
@@ -19,8 +20,6 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 
 import { sectionColDefByIdFunc } from '../sectionColumnsDef'
 import { RowData } from './Create'
-
-import { IoTrash } from 'react-icons/io5'
 
 function useGridOptions(props: {
   model: string

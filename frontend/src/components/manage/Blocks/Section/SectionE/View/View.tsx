@@ -1,13 +1,12 @@
 import { useRef, useState } from 'react'
 
 import { Alert } from '@mui/material'
+import { IoInformationCircleOutline } from '@react-icons/all-files/io5/IoInformationCircleOutline'
 
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 
 import useGridOptions from './schema'
-
-import { IoInformationCircleOutline } from 'react-icons/io5'
 
 function getRowData(report: any) {
   return [...report.section_e]

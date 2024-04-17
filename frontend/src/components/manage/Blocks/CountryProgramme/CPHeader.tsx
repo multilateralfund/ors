@@ -3,6 +3,7 @@ import { UserType, userTypeVisibility } from '@ors/types/user_types'
 import React, { useEffect, useMemo, useState } from 'react'
 
 import { Button, Typography } from '@mui/material'
+import { IoChevronDown } from '@react-icons/all-files/io5/IoChevronDown'
 import cx from 'classnames'
 import { Dictionary, capitalize, orderBy } from 'lodash'
 import { useRouter } from 'next/navigation'
@@ -13,8 +14,6 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
 import api from '@ors/helpers/Api/Api'
 import { useStore } from '@ors/store'
-
-import { IoChevronDown } from 'react-icons/io5'
 
 function padDateNr(n: number) {
   return n < 10 ? `0${n}` : `${n}`

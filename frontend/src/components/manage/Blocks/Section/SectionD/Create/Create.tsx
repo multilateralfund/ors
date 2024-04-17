@@ -1,14 +1,13 @@
 import React, { useRef, useState } from 'react'
 
 import { Alert } from '@mui/material'
+import { IoInformationCircleOutline } from '@react-icons/all-files/io5/IoInformationCircleOutline'
 import { findIndex } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 
 import useGridOptions from './schema'
-
-import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export default function SectionDCreate(props: any) {
   const { TableProps, form, setForm } = props

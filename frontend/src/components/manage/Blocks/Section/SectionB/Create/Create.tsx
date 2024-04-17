@@ -15,6 +15,8 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material'
+import { IoAddCircle } from '@react-icons/all-files/io5/IoAddCircle'
+import { IoInformationCircleOutline } from '@react-icons/all-files/io5/IoInformationCircleOutline'
 import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, sortBy, union, uniqBy } from 'lodash'
 import { useSnackbar } from 'notistack'
@@ -33,8 +35,6 @@ import { useStore } from '@ors/store'
 
 import { CreateBlend } from './CreateBlend'
 import useGridOptions from './schema'
-
-import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
 
 export type RowData = DeserializedDataB & {
   count?: number
@@ -276,10 +276,7 @@ export default function SectionBCreate(props: {
             className="rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
             onClick={() => setAddBlendModal(true)}
           >
-            Add blend <IoAddCircle
-            className="ml-1.5"
-            size={18}
-          />
+            Add blend <IoAddCircle className="ml-1.5" size={18} />
           </Button>
         </div>
       )}
@@ -378,9 +375,7 @@ export default function SectionBCreate(props: {
             </ToggleButtonGroup>
             {addBlendModalTab === 'existing_blends' && (
               <>
-                <Typography>
-                  Mandatory / usual blends
-                </Typography>
+                <Typography>Mandatory / usual blends</Typography>
                 <Field
                   getOptionLabel={(option: any) => option.display_name}
                   groupBy={(option: any) => option.group}

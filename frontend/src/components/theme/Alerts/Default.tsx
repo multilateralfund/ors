@@ -1,10 +1,9 @@
 import { forwardRef, useCallback, useMemo } from 'react'
 
 import { IconButton, SnackbarContent } from '@mui/material'
+import { IoClose } from '@react-icons/all-files/io5/IoClose'
 import cx from 'classnames'
 import { CustomContentProps, useSnackbar } from 'notistack'
-
-import { IoClose } from 'react-icons/io5'
 
 const DefaultAlert = forwardRef<HTMLDivElement, CustomContentProps>(
   function DefaultAlert({ id, ...props }, ref) {

@@ -2,6 +2,7 @@
 import { ReactNode, useContext, useEffect, useState } from 'react'
 
 import { IconButton, Typography } from '@mui/material'
+import { IoInformationCircleOutline } from '@react-icons/all-files/io5/IoInformationCircleOutline'
 import { ColDef, IHeaderParams } from 'ag-grid-community'
 import cx from 'classnames'
 import { isString } from 'lodash'
@@ -11,8 +12,6 @@ import { FootnotesContext, Note } from '@ors/contexts/Footnote/Footnote'
 import { scrollToElement } from '@ors/helpers/Utils/Utils'
 
 import AgTooltipComponent from './AgTooltipComponent'
-
-import { IoInformationCircleOutline } from 'react-icons/io5'
 
 function getTooltipTitle(props: any) {
   const { displayName, tooltip } = props

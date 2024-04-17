@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 
 import { Alert } from '@mui/material'
+import { IoInformationCircleOutline } from '@react-icons/all-files/io5/IoInformationCircleOutline'
 import { RowNode } from 'ag-grid-community'
 import { findIndex, last } from 'lodash'
 
@@ -9,8 +10,6 @@ import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 
 import useGridOptions from './schema'
-
-import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export default function SectionECreate(props: any) {
   const { TableProps, form, setForm } = props

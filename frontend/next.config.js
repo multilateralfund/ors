@@ -7,6 +7,34 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    optimizePackageImports: [
+      '@mui/material'
+    ],
+    turbo: {
+      rules: {
+        '*.svg': {
+          as: '*.js',
+          loaders: [{
+            loader: '@svgr/webpack', options: {
+              svgoConfig: {
+                plugins: [
+                  {
+                    name: 'preset-default',
+                    params: {
+                      overrides: {
+                        removeViewBox: false,
+                      },
+                    },
+                  },
+                ],
+              },
+            }
+          }],
+        }
+      }
+    }
+  },
   reactStrictMode: false,
   webpack: (config, { dev, isServer, webpack }) => {
     const globals = {
@@ -72,7 +100,7 @@ const nextConfig = {
                       removeViewBox: false,
                     },
                   },
-                },  
+                },
               ],
             },
           },

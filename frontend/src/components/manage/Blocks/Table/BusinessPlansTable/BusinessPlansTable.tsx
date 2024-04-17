@@ -7,6 +7,11 @@ import {
   IconButton as MuiIconButton,
   Typography,
 } from '@mui/material'
+import { AiFillFileExcel } from '@react-icons/all-files/ai/AiFillFileExcel'
+import { AiFillFilePdf } from '@react-icons/all-files/ai/AiFillFilePdf'
+import { IoClose } from '@react-icons/all-files/io5/IoClose'
+import { IoDownloadOutline } from '@react-icons/all-files/io5/IoDownloadOutline'
+import { IoSearchOutline } from '@react-icons/all-files/io5/IoSearchOutline'
 
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
@@ -17,8 +22,6 @@ import { formatApiUrl, getResults } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
 
-import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
-import { IoClose, IoDownloadOutline, IoSearchOutline } from 'react-icons/io5'
 const PER_PAGE = 20
 
 export default function BusinessPlansTable() {

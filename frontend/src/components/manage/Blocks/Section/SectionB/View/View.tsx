@@ -6,6 +6,7 @@ import { ReportVariant } from '@ors/types/variants'
 import { useMemo, useRef, useState } from 'react'
 
 import { Alert, Checkbox, FormControlLabel } from '@mui/material'
+import { IoInformationCircleOutline } from '@react-icons/all-files/io5/IoInformationCircleOutline'
 import { each, includes, union } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
@@ -17,8 +18,6 @@ import TableDataSelector, {
   useTableDataSelector,
 } from '../../SectionA/TableDataSelector'
 import useGridOptions from './schema'
-
-import { IoInformationCircleOutline } from 'react-icons/io5'
 
 function getGroupName(substance: any) {
   if (substance.blend_id) {
@@ -157,11 +156,11 @@ export default function SectionBView(props: {
         )}
       </div>
       <Alert
-          className="mb-4"
-          icon={<IoInformationCircleOutline size={24} />}
-          severity="info"
-        >
-          <Footnotes />
+        className="mb-4"
+        icon={<IoInformationCircleOutline size={24} />}
+        severity="info"
+      >
+        <Footnotes />
       </Alert>
       <Table
         {...TableProps}
@@ -170,7 +169,9 @@ export default function SectionBView(props: {
         gridRef={grid}
         headerDepth={4}
         pinnedBottomRowData={pinnedBottomRowData}
-        rowData={showEmptyRows ? rowData : rowData.filter((row) => row.id !== 0)}
+        rowData={
+          showEmptyRows ? rowData : rowData.filter((row) => row.id !== 0)
+        }
       />
     </>
   )

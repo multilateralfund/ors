@@ -11,6 +11,9 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
+import { IoAddCircleSharp } from '@react-icons/all-files/io5/IoAddCircleSharp'
+import { IoInformationCircleOutline } from '@react-icons/all-files/io5/IoInformationCircleOutline'
+import { IoTrash } from '@react-icons/all-files/io5/IoTrash'
 import { ColDef, RowNode } from 'ag-grid-community'
 import cx from 'classnames'
 import { find, findIndex, includes, isString } from 'lodash'
@@ -25,12 +28,6 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import api from '@ors/helpers/Api/Api'
 import { applyTransaction } from '@ors/helpers/Utils/Utils'
 import useStateWithPrev from '@ors/hooks/useStateWithPrev'
-
-import {
-  IoAddCircleSharp,
-  IoInformationCircleOutline,
-  IoTrash,
-} from 'react-icons/io5'
 
 function SimilarBlend({ blend, onClick, substances }: any) {
   return (
@@ -175,7 +172,7 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
               disabled={true}
               error={!!errors.composition}
               helperText={errors.composition}
-              value={"CustMix-235"}
+              value={'CustMix-235'}
             />
             <Field
               InputLabel={{ label: 'Alternative name' }}

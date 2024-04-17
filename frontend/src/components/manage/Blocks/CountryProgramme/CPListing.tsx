@@ -14,6 +14,9 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
+import { IoArrowForward } from '@react-icons/all-files/io5/IoArrowForward'
+import { IoClose } from '@react-icons/all-files/io5/IoClose'
+import { IoFilter } from '@react-icons/all-files/io5/IoFilter'
 import cx from 'classnames'
 import { filter, omit, union } from 'lodash'
 
@@ -28,8 +31,6 @@ import { getResults } from '@ors/helpers'
 // import { scrollToElement } from '@ors/helpers/Utils/Utils'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
-
-import { IoArrowForward, IoClose, IoFilter } from 'react-icons/io5'
 
 interface SectionProps {
   currentSection?: number

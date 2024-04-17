@@ -7,6 +7,9 @@ import { ReportVariant } from '@ors/types/variants'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Alert, Button, Tab, Tabs, Tooltip, Typography } from '@mui/material'
+import { IoClose } from '@react-icons/all-files/io5/IoClose'
+import { IoExpand } from '@react-icons/all-files/io5/IoExpand'
+import { IoLink } from '@react-icons/all-files/io5/IoLink'
 import cx from 'classnames'
 import { produce } from 'immer'
 import { filter, get, includes, isEmpty } from 'lodash'
@@ -37,8 +40,6 @@ import { SectionMeta, getSections } from '.'
 import Portal from '../../Utils/Portal'
 import { CPCreateHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
-
-import { IoClose, IoExpand, IoLink } from 'react-icons/io5'
 
 type ToolbarProps = {
   enterFullScreen: () => void

@@ -1,14 +1,14 @@
 'use client'
 import React from 'react'
 
+import { IoMenu } from '@react-icons/all-files/io5/IoMenu'
+import { IoPersonOutline } from '@react-icons/all-files/io5/IoPersonOutline'
 import { useRouter } from 'next/navigation'
 
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import { formatApiUrl } from '@ors/helpers/Api/Api'
 import { useStore } from '@ors/store'
 import version from '~/version.json'
-
-import { IoMenu, IoPersonOutline } from 'react-icons/io5'
 
 export type ProfileDropdownProps = {
   className?: string

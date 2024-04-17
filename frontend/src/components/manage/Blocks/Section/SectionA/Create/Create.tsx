@@ -5,6 +5,8 @@ import { ReportVariant } from '@ors/types/variants'
 import React, { useMemo, useRef, useState } from 'react'
 
 import { Alert, Box, Button, Modal, Typography } from '@mui/material'
+import { IoAddCircle } from '@react-icons/all-files/io5/IoAddCircle'
+import { IoInformationCircleOutline } from '@react-icons/all-files/io5/IoInformationCircleOutline'
 import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, union } from 'lodash'
 
@@ -21,8 +23,6 @@ import SectionA, { DeserializedDataA } from '@ors/models/SectionA'
 import { useStore } from '@ors/store'
 
 import useGridOptions from './schema'
-
-import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
 
 export type RowData = DeserializedDataA & {
   count?: number

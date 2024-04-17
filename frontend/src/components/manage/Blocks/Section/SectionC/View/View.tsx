@@ -5,6 +5,7 @@ import { ReportVariant } from '@ors/types/variants'
 import { useRef, useState } from 'react'
 
 import { Alert, Checkbox, FormControlLabel } from '@mui/material'
+import { IoInformationCircleOutline } from '@react-icons/all-files/io5/IoInformationCircleOutline'
 import { each, includes, union } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
@@ -13,8 +14,6 @@ import SectionC, { DeserializedDataC } from '@ors/models/SectionC'
 
 import useGridOptions from './schema'
 
-import { IoInformationCircleOutline } from 'react-icons/io5'
-
 export type RowData = DeserializedDataC & {
   count?: number
   id?: number
@@ -22,7 +21,11 @@ export type RowData = DeserializedDataC & {
   tooltip?: boolean
 }
 
-function getRowData(report: any, model: string, showEmptyRows: boolean): RowData[] {
+function getRowData(
+  report: any,
+  model: string,
+  showEmptyRows: boolean,
+): RowData[] {
   let rowData: Array<any> = []
   const dataByGroup: Record<string, any> = {}
   const groups: Array<string> = []
@@ -80,7 +83,9 @@ export default function SectionCView(props: {
   })
   const grid = useRef<any>()
   const [showEmptyRows, setShowEmptyRows] = useState(true)
-  const [rowData] = useState(() => getRowData(report, variant.model, showEmptyRows))
+  const [rowData] = useState(() =>
+    getRowData(report, variant.model, showEmptyRows),
+  )
 
   return (
     <>
@@ -98,18 +103,20 @@ export default function SectionCView(props: {
         )}
       </div>
       <Alert
-          className="mb-4"
-          icon={<IoInformationCircleOutline size={24} />}
-          severity="info"
-        >
-          <Footnotes />
+        className="mb-4"
+        icon={<IoInformationCircleOutline size={24} />}
+        severity="info"
+      >
+        <Footnotes />
       </Alert>
       <Table
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
         gridRef={grid}
-        rowData={showEmptyRows ? rowData : rowData.filter((row) => row.id !== 0)}
+        rowData={
+          showEmptyRows ? rowData : rowData.filter((row) => row.id !== 0)
+        }
       />
     </>
   )

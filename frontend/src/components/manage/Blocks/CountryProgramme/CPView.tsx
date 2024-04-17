@@ -2,6 +2,11 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
 import { Tab, Tabs, Tooltip, Typography } from '@mui/material'
+import { AiFillFileExcel } from '@react-icons/all-files/ai/AiFillFileExcel'
+import { AiFillFilePdf } from '@react-icons/all-files/ai/AiFillFilePdf'
+import { IoClose } from '@react-icons/all-files/io5/IoClose'
+import { IoDownloadOutline } from '@react-icons/all-files/io5/IoDownloadOutline'
+import { IoExpand } from '@react-icons/all-files/io5/IoExpand'
 import { AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
 import { produce } from 'immer'
@@ -23,9 +28,6 @@ import { getSections } from '.'
 import Portal from '../../Utils/Portal'
 import { CPArchiveHeader, CPViewHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
-
-import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
-import { IoClose, IoDownloadOutline, IoExpand } from 'react-icons/io5'
 
 export type TableProps = AgGridReactProps & {
   Toolbar?: React.FC<any>

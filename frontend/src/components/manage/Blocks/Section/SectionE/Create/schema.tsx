@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
 import { Button } from '@mui/material'
+import { IoTrash } from '@react-icons/all-files/io5/IoTrash'
 import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
@@ -12,8 +13,6 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 
 import { sectionColDefById, sectionColGroupDefById } from '../sectionColumnsDef'
-
-import { IoTrash } from 'react-icons/io5'
 
 function useGridOptions(props: {
   addFacility: () => void

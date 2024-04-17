@@ -3,10 +3,10 @@ import type { TextWidgetProps } from '@ors/components/manage/Widgets/TextWidget'
 import React from 'react'
 
 import { IconButton, InputAdornment } from '@mui/material'
+import { IoEye } from '@react-icons/all-files/io5/IoEye'
+import { IoEyeOff } from '@react-icons/all-files/io5/IoEyeOff'
 
 import TextWidget from '@ors/components/manage/Widgets/TextWidget'
-
-import { IoEye, IoEyeOff } from 'react-icons/io5'
 
 export type PasswordWidgetProps = TextWidgetProps
 

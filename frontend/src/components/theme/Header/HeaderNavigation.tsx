@@ -8,6 +8,10 @@ import {
   ListItem,
   ListItemButton,
 } from '@mui/material'
+import { IoChevronDown } from '@react-icons/all-files/io5/IoChevronDown'
+import { IoChevronUp } from '@react-icons/all-files/io5/IoChevronUp'
+import { IoClose } from '@react-icons/all-files/io5/IoClose'
+import { IoMenu } from '@react-icons/all-files/io5/IoMenu'
 import cx from 'classnames'
 import { AnimatePresence } from 'framer-motion'
 import { DebouncedFunc, debounce } from 'lodash'
@@ -17,8 +21,6 @@ import { usePathname } from 'next/navigation'
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import { matchPath } from '@ors/helpers/Url/Url'
 import { robotoCondensed } from '@ors/themes/fonts'
-
-import { IoChevronDown, IoChevronUp, IoClose, IoMenu } from 'react-icons/io5'
 
 const EXTERNAL_BASE_URL = 'https://prod.multilateralfund.edw.ro'
 const makeExternalUrl = (path: string) => `${EXTERNAL_BASE_URL}${path}`

@@ -13,6 +13,15 @@ import {
   Skeleton,
   Typography,
 } from '@mui/material'
+import { IoArrowDown } from '@react-icons/all-files/io5/IoArrowDown'
+import { IoArrowUp } from '@react-icons/all-files/io5/IoArrowUp'
+import { IoCaretDown } from '@react-icons/all-files/io5/IoCaretDown'
+import { IoCaretUp } from '@react-icons/all-files/io5/IoCaretUp'
+import { IoClose } from '@react-icons/all-files/io5/IoClose'
+import { IoEllipseOutline } from '@react-icons/all-files/io5/IoEllipseOutline'
+import { IoRemove } from '@react-icons/all-files/io5/IoRemove'
+import { IoReorderTwo } from '@react-icons/all-files/io5/IoReorderTwo'
+import { IoSearchOutline } from '@react-icons/all-files/io5/IoSearchOutline'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 import { AnimatePresence } from 'framer-motion'
@@ -28,18 +37,6 @@ import { KEY_ENTER } from '@ors/constants'
 import { getResults } from '@ors/helpers/Api/Api'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
-
-import {
-  IoArrowDown,
-  IoArrowUp,
-  IoCaretDown,
-  IoCaretUp,
-  IoClose,
-  IoEllipseOutline,
-  IoRemove,
-  IoReorderTwo,
-  IoSearchOutline,
-} from 'react-icons/io5'
 
 const dayOfYear = require('dayjs/plugin/dayOfYear')
 dayjs.extend(dayOfYear)

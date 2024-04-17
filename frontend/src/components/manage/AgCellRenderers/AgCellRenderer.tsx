@@ -1,14 +1,14 @@
 import { useState } from 'react'
 
 import { IconButton, Tooltip } from '@mui/material'
+import { IoInformation } from '@react-icons/all-files/io5/IoInformation'
+import { IoOptions } from '@react-icons/all-files/io5/IoOptions'
 
 import components from '@ors/config/Table/components'
 import renderers from '@ors/config/Table/renderers'
 
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import { getError } from '@ors/helpers/Utils/Utils'
-
-import { IoInformation, IoOptions } from 'react-icons/io5'
 
 function getDefaultCellRenderer() {
   return components[renderers.default]

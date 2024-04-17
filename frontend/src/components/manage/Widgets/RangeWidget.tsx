@@ -2,17 +2,14 @@
 import React, { useCallback, useId, useState } from 'react'
 
 import { Popover, Typography } from '@mui/material'
+import { IoCalendarClearOutline } from '@react-icons/all-files/io5/IoCalendarClearOutline'
+import { IoChevronBackCircleOutline } from '@react-icons/all-files/io5/IoChevronBackCircleOutline'
+import { IoChevronForwardCircleOutline } from '@react-icons/all-files/io5/IoChevronForwardCircleOutline'
 import cx from 'classnames'
 import { chunk, range } from 'lodash'
 
 import IconButton from '@ors/components/ui/IconButton/IconButton'
 import { robotoCondensed } from '@ors/themes/fonts'
-
-import {
-  IoCalendarClearOutline,
-  IoChevronBackCircleOutline,
-  IoChevronForwardCircleOutline,
-} from 'react-icons/io5'
 
 export type RangeWidgetProps = {
   className?: string

@@ -18,6 +18,18 @@ import {
   Slider,
   Typography,
 } from '@mui/material'
+import { IoArrowBack } from '@react-icons/all-files/io5/IoArrowBack'
+import { IoArrowDown } from '@react-icons/all-files/io5/IoArrowDown'
+import { IoArrowForward } from '@react-icons/all-files/io5/IoArrowForward'
+import { IoArrowUp } from '@react-icons/all-files/io5/IoArrowUp'
+import { IoCalendarClearOutline } from '@react-icons/all-files/io5/IoCalendarClearOutline'
+import { IoCaretDown } from '@react-icons/all-files/io5/IoCaretDown'
+import { IoCaretUp } from '@react-icons/all-files/io5/IoCaretUp'
+import { IoClose } from '@react-icons/all-files/io5/IoClose'
+import { IoEllipseOutline } from '@react-icons/all-files/io5/IoEllipseOutline'
+import { IoRemove } from '@react-icons/all-files/io5/IoRemove'
+import { IoReorderTwo } from '@react-icons/all-files/io5/IoReorderTwo'
+import { IoSearchOutline } from '@react-icons/all-files/io5/IoSearchOutline'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 import { AnimatePresence } from 'framer-motion'
@@ -32,21 +44,6 @@ import { KEY_ENTER } from '@ors/constants'
 import { getResults } from '@ors/helpers/Api/Api'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
-
-import {
-  IoArrowBack,
-  IoArrowDown,
-  IoArrowForward,
-  IoArrowUp,
-  IoCalendarClearOutline,
-  IoCaretDown,
-  IoCaretUp,
-  IoClose,
-  IoEllipseOutline,
-  IoRemove,
-  IoReorderTwo,
-  IoSearchOutline,
-} from 'react-icons/io5'
 
 const dayOfYear = require('dayjs/plugin/dayOfYear')
 dayjs.extend(dayOfYear)

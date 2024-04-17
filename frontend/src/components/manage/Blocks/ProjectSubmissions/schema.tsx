@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
 import { Tooltip, Typography } from '@mui/material'
+import { FaEdit } from '@react-icons/all-files/fa/FaEdit'
 import { SuppressKeyboardEventParams } from 'ag-grid-community'
 import cx from 'classnames'
 import { filter, find, get, includes, isObject } from 'lodash'
@@ -9,8 +10,6 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import Link from '@ors/components/ui/Link/Link'
 import { parseNumber } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
-
-import { FaEdit } from 'react-icons/fa'
 
 function suppressUndo(params: SuppressKeyboardEventParams) {
   const event = params.event

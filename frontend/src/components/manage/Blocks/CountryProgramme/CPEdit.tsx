@@ -3,6 +3,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Tab, Tabs, Typography } from '@mui/material'
+import { IoClose } from '@react-icons/all-files/io5/IoClose'
+import { IoExpand } from '@react-icons/all-files/io5/IoExpand'
 import cx from 'classnames'
 import { produce } from 'immer'
 import {
@@ -39,8 +41,6 @@ import { getSections } from '.'
 import Portal from '../../Utils/Portal'
 import { CPEditHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
-
-import { IoClose, IoExpand } from 'react-icons/io5'
 
 function defaults(arr: Array<any>, value: any) {
   if (arr?.length > 0) return arr

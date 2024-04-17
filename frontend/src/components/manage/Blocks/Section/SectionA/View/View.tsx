@@ -3,6 +3,7 @@ import { CPReport } from '@ors/types/api_country-programme_records'
 import { useMemo, useRef, useState } from 'react'
 
 import { Alert, Checkbox, FormControlLabel } from '@mui/material'
+import { IoInformationCircleOutline } from '@react-icons/all-files/io5/IoInformationCircleOutline'
 import { each, includes, union } from 'lodash'
 
 import components from '@ors/config/Table/components'
@@ -13,8 +14,6 @@ import { DeserializedDataA } from '@ors/models/SectionA'
 
 import TableDataSelector, { useTableDataSelector } from '../TableDataSelector'
 import useGridOptions from './schema'
-
-import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export type RowData = DeserializedDataA & {
   count?: number
