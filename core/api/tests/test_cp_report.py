@@ -54,6 +54,11 @@ def setup_cp_report_list():
     return country
 
 
+@pytest.fixture(name="status_update_url")
+def _status_update_url(cp_report_2019):
+    return reverse("country-programme-report-status", kwargs={"id": cp_report_2019.id})
+
+
 class TestCPReportList(BaseTest):
     url = reverse("country-programme-reports")
 
@@ -85,7 +90,9 @@ class TestCPReportList(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 9
 
-    def test_get_cp_report_list_stakeholder(self, stakeholder_user, _setup_cp_report_list):
+    def test_get_cp_report_list_stakeholder(
+        self, stakeholder_user, _setup_cp_report_list
+    ):
         self.client.force_authenticate(user=stakeholder_user)
 
         # get cp reports list
@@ -251,41 +258,39 @@ class TestCPReportListGroupByCountry(BaseTest):
 
 
 class TestCPReportStatusUpdate(BaseTest):
-    def __init__(self, cp_report_2019):
-        super().__init__()
-        self.url = reverse(
-            "country-programme-report-status", kwargs={"id": cp_report_2019.id}
-        )
-
-    def test_without_login(self):
+    def test_without_login(self, status_update_url):
         self.client.force_authenticate(user=None)
-        response = self.client.put(self.url, {"status": "draft"})
+        response = self.client.put(status_update_url, {"status": "draft"})
         assert response.status_code == 403
 
-    def test_without_permission_agency(self, agency_user):
+    def test_without_permission_agency(self, agency_user, status_update_url):
         self.client.force_authenticate(user=agency_user)
-        response = self.client.put(self.url, {"status": "draft"})
+        response = self.client.put(status_update_url, {"status": "draft"})
         assert response.status_code == 403
 
-    def test_without_permission_stakeholder(self, stakeholder_user):
+    def test_without_permission_stakeholder(self, stakeholder_user, status_update_url):
         self.client.force_authenticate(user=stakeholder_user)
-        response = self.client.put(self.url, {"status": "draft"})
+        response = self.client.put(status_update_url, {"status": "draft"})
         assert response.status_code == 403
 
-    def test_invalid_status(self, user):
+    def test_invalid_status(self, user, status_update_url):
         self.client.force_authenticate(user=user)
-        response = self.client.put(self.url, {"status": "invalid"})
+        response = self.client.put(status_update_url, {"status": "invalid"})
         assert response.status_code == 400
         assert "status" in response.data
         assert "Invalid value" in response.data["status"]
 
-    def test_update_status(self, second_user, cp_report_2019):
+    def test_update_status(self, second_user, cp_report_2019, status_update_url):
         self.client.force_authenticate(user=second_user)
-        response = self.client.put(self.url, {"status": "final"})
+        response = self.client.put(status_update_url, {"status": "final"})
         assert response.status_code == 200
         assert response.data["status"] == "final"
-        assert "status updated" in response.data["event_description"].lower()
-        assert response.data["last_updated_by"] == second_user.username
+        assert (
+            "status updated" in response.data["history"][0]["event_description"].lower()
+        )
+        assert (
+            response.data["history"][0]["updated_by_username"] == second_user.username
+        )
         assert response.data["id"] == cp_report_2019.id
 
 
@@ -440,7 +445,9 @@ class TestCPReportCreate(BaseTest):
         )
         assert response.status_code == 403
 
-    def test_without_permission_stakeholder(self, stakeholder_user, _setup_new_cp_report_create):
+    def test_without_permission_stakeholder(
+        self, stakeholder_user, _setup_new_cp_report_create
+    ):
         self.client.force_authenticate(user=stakeholder_user)
         response = self.client.post(
             self.url, _setup_new_cp_report_create, format="json"
@@ -459,8 +466,8 @@ class TestCPReportCreate(BaseTest):
         assert response.data["status"] == CPReport.CPReportStatus.DRAFT
         assert response.data["version"] == 1
         assert response.data["created_by"] == user.username
-        assert response.data["last_updated_by"] == user.username
-        assert "created" in response.data["event_description"].lower()
+        assert response.data["history"][0]["updated_by_username"] == user.username
+        assert "created" in response.data["history"][0]["event_description"].lower()
         assert response.data["comment"] == "S-a nascut un fenomen"
         cp_report_id = response.data["id"]
 
@@ -508,8 +515,8 @@ class TestCPReportCreate(BaseTest):
         assert response.data["country"] == "Romania"
         assert response.data["status"] == CPReport.CPReportStatus.FINAL
         assert response.data["created_by"] == user.username
-        assert response.data["last_updated_by"] == user.username
-        assert "created" in response.data["event_description"].lower()
+        assert response.data["history"][0]["updated_by_username"] == user.username
+        assert "created" in response.data["history"][0]["event_description"].lower()
         cp_report_id = response.data["id"]
 
         # check cp records
@@ -711,9 +718,13 @@ class TestCPReportUpdate(BaseTest):
         assert response.data["status"] == CPReport.CPReportStatus.DRAFT
         assert response.data["version"] == 1
         assert response.data["comment"] == "Alo Delta Force"
-        assert response.data["event_description"] == "Sichi-sichi-sichi boom"
+        assert (
+            response.data["history"][0]["event_description"] == "Sichi-sichi-sichi boom"
+        )
         assert response.data["created_by"] == user.username
-        assert response.data["last_updated_by"] == second_user.username
+        assert (
+            response.data["history"][0]["updated_by_username"] == second_user.username
+        )
         cp_report_id = response.data["id"]
 
         # check cp records
@@ -764,9 +775,11 @@ class TestCPReportUpdate(BaseTest):
         assert response.data["name"] == "O valoare mare, o mare valoare"
         assert response.data["status"] == CPReport.CPReportStatus.FINAL
         assert response.data["version"] == 2
-        assert "Eu îmi fac prezenta" in response.data["event_description"]
+        assert "Eu îmi fac prezenta" in response.data["history"][0]["event_description"]
         assert response.data["created_by"] == user.username
-        assert response.data["last_updated_by"] == second_user.username
+        assert (
+            response.data["history"][0]["updated_by_username"] == second_user.username
+        )
 
         new_id = response.data["id"]
         self.url = reverse("country-programme-reports") + f"{new_id}/"
@@ -781,37 +794,35 @@ class TestCPReportUpdate(BaseTest):
         assert response.data["name"] == "Sunt destept si calculat"
         assert response.data["status"] == CPReport.CPReportStatus.FINAL
         assert response.data["version"] == 3
-        assert "updated" in response.data["event_description"].lower()
+        assert "updated" in response.data["history"][0]["event_description"].lower()
         assert response.data["created_by"] == user.username
-        assert response.data["last_updated_by"] == user.username
+        assert response.data["history"][0]["updated_by_username"] == user.username
 
         # check report archive
         assert CPReportArchive.objects.count() == 2
         # check first archive
         ar = (
             CPReportArchive.objects.filter(name=cp_report_2019.name)
-            .select_related("created_by", "last_updated_by")
+            .select_related("created_by")
             .first()
         )
         assert ar is not None
         assert ar.comment == cp_report_2019.comment
         assert ar.version == 1
         assert ar.created_by.username == user.username
-        assert ar.last_updated_by.username == user.username
-        assert "created" in ar.event_description.lower()
 
         # check second archive
         ar = (
             CPReportArchive.objects.filter(name="O valoare mare, o mare valoare")
-            .select_related("created_by", "last_updated_by")
+            .select_related("created_by")
             .first()
         )
         assert ar is not None
         assert ar.comment == "Sunt din cap până în picioare"
         assert ar.version == 2
         assert ar.created_by.username == user.username
-        assert ar.last_updated_by.username == second_user.username
-        assert ar.event_description == (
+        assert ar.cphistory.first().updated_by.username == second_user.username
+        assert ar.cphistory.first().event_description == (
             "Eu îmi fac prezenta, Tu faci diferenta, Imi lipseste concurenta"
         )
         assert ar.created_at is not None

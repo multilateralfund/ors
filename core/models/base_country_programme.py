@@ -11,7 +11,6 @@ class AbstractCPReport(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True, help_text="Date of creation of the report"
     )
-    event_description = models.TextField(null=True, blank=True)
     name = models.CharField(max_length=248)
     year = models.IntegerField()
     status = models.CharField(
@@ -168,6 +167,16 @@ class AbstractCPEmission(models.Model):
 
     remarks = models.TextField(null=True, blank=True)
     source_file = models.CharField(max_length=248)
+
+    class Meta:
+        abstract = True
+
+
+class AbstractCPHistory(models.Model):
+    created_at = models.DateTimeField(
+        auto_now_add=True, help_text="Date of creation of the event"
+    )
+    event_description = models.TextField(null=True, blank=True)
 
     class Meta:
         abstract = True
