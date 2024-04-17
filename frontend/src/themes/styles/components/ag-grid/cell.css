@@ -17,7 +17,7 @@
   }
 
   .ag-cell-hashed {
-    @apply pattern-diagonal-lines pattern-bg-transparent pattern-slate-200
+    @apply pattern-diagonal-lines pattern-bg-transparent pattern-slate-300
     pattern-opacity-80 pattern-size-1;
   }
 
@@ -36,18 +36,9 @@
         .ag-cell-range-right,
         .ag-cell-range-single-cell
       ) {
-      border-right: var(--ag-row-border-width) var(--ag-row-border-style)
-        var(--ag-row-border-color);
-
-      /* @apply border-r-transparent; */
-    }
-  }
-
-  .ag-row .ag-cell {
     border-right: var(--ag-row-border-width) var(--ag-row-border-style)
-        var(--ag-row-border-color);
-
-    /* @apply border-r-transparent; */
+      var(--ag-row-border-color);
+    }
   }
 
   .ag-row .ag-cell.ag-column-last {

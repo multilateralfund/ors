@@ -37,7 +37,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
           'ag-text-right': !includes(['display_name'], props.colDef.field),
         })
       },
-      headerClass: 'ag-text-center',
+      headerClass: 'ag-text-right',
       minWidth: defaultColDef.minWidth,
       resizable: true,
       wrapText: true,
