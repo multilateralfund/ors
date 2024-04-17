@@ -87,8 +87,6 @@ def cp_report_1996(country_ro, user):
         comment="Am viatza de Barosan chiar daca sunt un pushtan",
         status=CPReport.CPReportStatus.FINAL,
         created_by=user,
-        last_updated_by=user,
-        event_description="Created barosan",
     )
 
 
@@ -100,8 +98,6 @@ def cp_report_2005(country_ro, user):
         comment="Am fost si vom fi o legenda vie",
         status=CPReport.CPReportStatus.FINAL,
         created_by=user,
-        last_updated_by=user,
-        event_description="Created Cap si pajura",
     )
 
 
@@ -112,8 +108,6 @@ def cp_report_2019(country_ro, user):
         year=2019,
         comment="Valoare eu la toti va dau",
         created_by=user,
-        last_updated_by=user,
-        event_description="Created ban pe ban",
     )
 
 
@@ -633,7 +627,6 @@ def setup_old_version_2019(cp_report_2019, substance, blend, time_frames, user):
         status=cp_report_2019.status,
         version=1,
         created_by=user,
-        last_updated_by=user,
     )
 
     return cp_ar
@@ -670,7 +663,6 @@ def setup_old_version_2005(
         status=cp_report_2005.status,
         version=1,
         created_by=user,
-        last_updated_by=user,
     )
 
     adm_b_row = adm_rows[0]

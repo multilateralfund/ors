@@ -11,7 +11,6 @@ class AbstractCPReport(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True, help_text="Date of creation of the report"
     )
-    event_description = models.TextField(null=True, blank=True)
     name = models.CharField(max_length=248)
     year = models.IntegerField()
     status = models.CharField(
@@ -179,6 +178,16 @@ class AbstractCPFile(models.Model):
 
     filename = models.CharField(max_length=100)
     file = models.FileField(upload_to=upload_path)
+
+    class Meta:
+        abstract = True
+
+
+class AbstractCPHistory(models.Model):
+    created_at = models.DateTimeField(
+        auto_now_add=True, help_text="Date of creation of the event"
+    )
+    event_description = models.TextField(blank=True)
 
     class Meta:
         abstract = True

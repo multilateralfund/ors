@@ -4,6 +4,7 @@ from core.models.base_country_programme import (
     AbstractCPEmission,
     AbstractCPFile,
     AbstractCPGeneration,
+    AbstractCPHistory,
     AbstractCPPrices,
     AbstractCPReport,
     AbstractCPRecord,
@@ -18,12 +19,6 @@ class CPReportArchive(AbstractCPReport):
         on_delete=models.PROTECT,
         related_name="created_cp_reports_archive",
         help_text="User who created the report",
-    )
-    last_updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="updated_cp_reports_archive",
-        help_text="User who last updated the report",
     )
 
     class Meta:
@@ -134,3 +129,18 @@ class CPFileArchive(AbstractCPFile):
     def __str__(self):
         cp_report = self.country_programme_report
         return f"{cp_report.name} (v{cp_report.version}) {self.filename}"
+
+
+class CPHistoryArchive(AbstractCPHistory):
+    country_programme_report = models.ForeignKey(
+        CPReportArchive,
+        on_delete=models.CASCADE,
+        related_name="cphistory",
+    )
+
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="updated_cp_reports_archive",
+        help_text="User who updated the report",
+    )

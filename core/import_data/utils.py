@@ -20,7 +20,7 @@ from core.models.adm import AdmColumn, AdmRow
 from core.models.agency import Agency
 from core.models.blend import Blend
 from core.models.country import Country
-from core.models.country_programme import CPRecord, CPReport, CPUsage
+from core.models.country_programme import CPHistory, CPRecord, CPReport, CPUsage
 from core.models.country_programme_archive import CPReportArchive
 from core.models.meeting import Meeting
 from core.models.project import (
@@ -361,14 +361,17 @@ def get_cp_report(
         "country_id": country_id,
         "status": CPReport.CPReportStatus.FINAL,
         "created_by": import_user,
-        "last_updated_by": import_user,
-        "event_description": "Imported by the system",
     }
     if other_args:
         data.update(other_args)
 
     cp, _ = CPReport.objects.update_or_create(
         name=cp_name, year=year, country_id=country_id, defaults=data
+    )
+    CPHistory.objects.create(
+        country_programme_report=cp,
+        updated_by=import_user,
+        event_description="Imported by the system",
     )
 
     return cp
