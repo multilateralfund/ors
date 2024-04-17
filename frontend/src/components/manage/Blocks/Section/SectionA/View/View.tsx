@@ -3,6 +3,7 @@ import { CPReport } from '@ors/types/api_country-programme_records'
 import { useMemo, useRef, useState } from 'react'
 
 import { Alert, Checkbox, FormControlLabel } from '@mui/material'
+import cx from 'classnames'
 import { each, includes, union } from 'lodash'
 
 import components from '@ors/config/Table/components'
@@ -111,7 +112,15 @@ export default function SectionAView(props: any) {
 
   return (
     <>
-      <div className="flex justify-between">
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnotes />
+      </Alert>
+      <div
+        className={cx('flex', {
+          'justify-between': includes(['IV', 'V'], variant.model),
+          'justify-end': !includes(['IV', 'V'], variant.model),
+        })}
+      >
         {includes(['IV', 'V'], variant.model) && (
           <TableDataSelector
             className="py-4"
@@ -119,25 +128,16 @@ export default function SectionAView(props: any) {
             value={tableDataValue}
           />
         )}
-        {includes(['V'], variant.model) && (
-          <FormControlLabel
-            label="Show zero values"
-            control={
-              <Checkbox
-                checked={showEmptyRows}
-                onChange={(event) => setShowEmptyRows(event.target.checked)}
-              />
-            }
-          />
-        )}
+        <FormControlLabel
+          label="Show zero values"
+          control={
+            <Checkbox
+              checked={showEmptyRows}
+              onChange={(event) => setShowEmptyRows(event.target.checked)}
+            />
+          }
+        />
       </div>
-      <Alert
-        className="mb-4"
-        icon={<IoInformationCircleOutline size={24} />}
-        severity="info"
-      >
-        <Footnotes />
-      </Alert>
       <Table
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
