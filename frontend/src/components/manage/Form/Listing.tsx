@@ -1,23 +1,17 @@
-import {
-  Fragment,
-  forwardRef,
-  useImperativeHandle,
-  useMemo,
-  useState,
-} from 'react'
+import { forwardRef, useImperativeHandle, useMemo, useState } from 'react'
 
-import { Divider, List, ListItem, Grid as MuiGrid } from '@mui/material'
+import { Divider, List, ListItem } from '@mui/material'
+import cx from 'classnames'
 import { times } from 'lodash'
 
 import Loading from '@ors/components/theme/Loading/Loading'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 
 type ListingProps = {
-  GridProps?: Record<string, any>
   Item: React.FC<any>
   ItemProps?: Record<string, any>
   className?: any
-  enableGrid?: boolean
+  classNameGrid?: string
   enableLoader?: boolean
   enablePagination?: boolean
   loaded?: boolean
@@ -31,11 +25,10 @@ type ListingProps = {
 
 const Listing = forwardRef(function Listing(props: ListingProps, ref) {
   const {
-    GridProps = {},
     Item,
     ItemProps = {},
     className,
-    enableGrid,
+    classNameGrid = 'grid-cols-2 md:grid-cols-4 lg:grid-cols-6',
     enableLoader = true,
     enablePagination = true,
     loaded,
@@ -76,8 +69,6 @@ const Listing = forwardRef(function Listing(props: ListingProps, ref) {
     [pagination, setPagination],
   )
 
-  const Grid = enableGrid ? MuiGrid : Fragment
-
   return (
     <>
       <List className={className || 'mb-6'} disablePadding>
@@ -97,35 +88,33 @@ const Listing = forwardRef(function Listing(props: ListingProps, ref) {
           </>
         )}
         {Item && (
-          <Grid
-            {...(enableGrid
-              ? { container: true, spacing: 2, ...GridProps }
-              : {})}
-          >
+          <div className={cx('auto-fit-100 grid gap-8', classNameGrid)}>
             {results?.map((item, index) => {
               return (
                 <Item key={item.id} index={index} item={item} {...ItemProps} />
               )
             })}
-          </Grid>
+          </div>
         )}
       </List>
       {enablePagination && !!pages && pages > 1 && (
-        <Pagination
-          className="mb-8 inline-block flex-nowrap rounded-sm"
-          count={pages}
-          disabled={loading}
-          page={pagination.page}
-          rowsPerPage={pagination.rowsPerPage}
-          siblingCount={1}
-          onPaginationChanged={(page) => {
-            if (page === pagination.page) return
-            setPagination({ ...pagination, page: page || 1 })
-            if (onPaginationChanged) {
-              onPaginationChanged(page || 1, pagination.rowsPerPage)
-            }
-          }}
-        />
+        <div className="flex items-center justify-center">
+          <Pagination
+            className="mb-8 inline-block flex-nowrap rounded-sm"
+            count={pages}
+            disabled={loading}
+            page={pagination.page}
+            rowsPerPage={pagination.rowsPerPage}
+            siblingCount={1}
+            onPaginationChanged={(page) => {
+              if (page === pagination.page) return
+              setPagination({ ...pagination, page: page || 1 })
+              if (onPaginationChanged) {
+                onPaginationChanged(page || 1, pagination.rowsPerPage)
+              }
+            }}
+          />
+        </div>
       )}
     </>
   )

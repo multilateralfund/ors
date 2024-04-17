@@ -12,19 +12,8 @@ import api from '@ors/helpers/Api/Api'
 import { useStore } from '@ors/store'
 
 interface TextState {
+  country: string
   mlfs: string
-  user: string
-}
-
-interface UserTypeMap {
-  [key: string]: keyof TextState | null
-}
-
-const userTypeMap: UserTypeMap = {
-  agency: null,
-  country_user: 'user',
-  secretariat: 'mlfs',
-  stakeholder: null,
 }
 
 type Label = keyof TextState
@@ -35,8 +24,8 @@ const CPComments: React.FC = () => {
   const { report } = useStore((state) => state.cp_reports)
   // GET initial texts from API
   const [initialTexts, setInitialTexts] = useState<TextState>({
+    country: report.data?.comment_country || '',
     mlfs: report.data?.comment_secretariat || '',
-    user: report.data?.comment_country || '',
   })
   const [error, setError] = useState(null)
   const [texts, setTexts] = useState<TextState>(initialTexts)
@@ -48,12 +37,17 @@ const CPComments: React.FC = () => {
     }))
   }
 
-  const handleSave = async () => {
+  const handleSave = async (userType: Label) => {
     try {
-      const data = {
-        comment_country: userTypeMap['country_user'] ? texts['user'] : '',
-        comment_secretariat: userTypeMap['secretariat'] ? texts['mlfs'] : '',
+      const comments = {
+        comment_country: texts['country'] || '',
+        comment_secretariat: texts['mlfs'] || '',
       }
+
+      const data =
+        userType === 'country'
+          ? { comment_country: comments.comment_country }
+          : { comment_secretariat: comments.comment_secretariat }
 
       const report_id = report.data?.id
       await api(`api/country-programme/report/${report_id}/comments/`, {
@@ -78,10 +72,21 @@ const CPComments: React.FC = () => {
     }))
   }
 
-  const labels: Label[] = ['user', 'mlfs']
-  const allowComments = {
-    mlfs: 'secretariat',
-    user: 'country_user',
+  const orderedUsers: Label[] = ['country', 'mlfs']
+
+  const commentsMeta = {
+    country: {
+      label: 'Country',
+      user_type: 'country_user',
+    },
+    mlfs: {
+      label: 'MLFS',
+      user_type: 'secretariat',
+    },
+  }
+
+  const emptyComments = (userType: Label) => {
+    return texts[userType] === '' && initialTexts[userType] === ''
   }
 
   return (
@@ -90,48 +95,52 @@ const CPComments: React.FC = () => {
         Comments
       </Typography>
       <div className="flex w-full flex-1 flex-wrap gap-4">
-        {labels.map((label) => (
+        {orderedUsers.map((user) => (
           <div
-            key={label}
+            key={user}
             className="relative flex min-w-96 flex-1 flex-col rounded-lg bg-gray-100 p-2"
           >
-            {user_type !== allowComments[label] && (
-              <SectionOverlay className="cursor-not-allowed" opacity="opacity-60" />
+            {user_type !== commentsMeta[user].user_type && (
+              <SectionOverlay
+                className="cursor-not-allowed"
+                opacity="opacity-60"
+              />
             )}
             <label className="py-2 text-2xl font-normal">
-              {label.toLocaleUpperCase()}
+              {commentsMeta[user].label}
             </label>
             <div className="CPComments relative">
               <TextareaAutosize
-                className="w-full resize-none rounded-lg border border-solid border-gray-300 p-2 pb-6 shadow-none"
+                className="w-full resize-none rounded-lg border border-solid border-gray-300 p-2 pb-10 shadow-none"
                 minRows={6}
                 placeholder="Type your comment here..."
-                value={texts[label]}
-                onChange={(e) => handleTextChange(label, e.target.value)}
+                value={texts[user]}
+                onChange={(e) => handleTextChange(user, e.target.value)}
               />
-              {user_type === allowComments[label] && (
-                <div className="absolute bottom-2 right-2 mb-2 flex gap-2 opacity-60">
-                  <Button
-                    color="primary"
-                    disabled={texts[label] === initialTexts[label]}
-                    size="small"
-                    variant="contained"
-                    onClick={handleSave}
-                  >
-                    Save
-                  </Button>
-                  <Button
-                    disabled={texts[label] === initialTexts[label]}
-                    size="small"
-                    variant="outlined"
-                    onClick={() => handleCancel(label)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              )}
+              {user_type === commentsMeta[user].user_type &&
+                !emptyComments(user) && (
+                  <div className="absolute bottom-2 right-2 mb-2 flex gap-2 opacity-60">
+                    <Button
+                      color="primary"
+                      disabled={texts[user] === initialTexts[user]}
+                      size="small"
+                      variant="contained"
+                      onClick={() => handleSave(user)}
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      disabled={texts[user] === initialTexts[user]}
+                      size="small"
+                      variant="outlined"
+                      onClick={() => handleCancel(user)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                )}
             </div>
-            {error && user_type === allowComments[label] && (
+            {error && user_type === commentsMeta[user].user_type && (
               <Alert severity="error">
                 <Typography>Something went wrong. Please try again.</Typography>
               </Alert>

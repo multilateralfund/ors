@@ -124,18 +124,21 @@ export default function SectionACreate(props: {
   )
 
   const grid = useRef<any>()
-  const [initialRowData] = useState(() => getRowData(form.section_a))
   const [pinnedBottomRowData] = useState<RowData[]>(
     getInitialPinnedBottomRowData(variant.model),
   )
   const [addSubstanceModal, setAddSubstanceModal] = useState(false)
+  const rowData = getRowData(form.section_a)
 
   const substancesOptions = useMemo(() => {
     const data: Array<any> = []
     const substancesInForm = form.section_a.map((substance) => substance.row_id)
     each(substances, (substance) => {
       if (
-        includes(['Annex C, Group I'], substance.group) &&
+        !includes(
+          ['Annex C, Group II', 'Annex C, Group III'],
+          substance.group,
+        ) &&
         includes(substance.sections, 'A') &&
         !includes(substancesInForm, `substance_${substance.id}`)
       ) {
@@ -188,7 +191,7 @@ export default function SectionACreate(props: {
   return (
     <>
       {includes(['V'], variant.model) && (
-        <div className="flex justify-end">
+        <div className="mt-4 flex justify-end">
           <Button
             className="rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
             onClick={() => setAddSubstanceModal(true)}
@@ -197,6 +200,9 @@ export default function SectionACreate(props: {
           </Button>
         </div>
       )}
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnotes />
+      </Alert>
       <Table
         {...TableProps}
         className="mb-4"
@@ -204,7 +210,7 @@ export default function SectionACreate(props: {
         gridRef={grid}
         headerDepth={3}
         pinnedBottomRowData={pinnedBottomRowData}
-        rowData={initialRowData}
+        rowData={rowData}
         defaultColDef={{
           ...TableProps.defaultColDef,
           ...gridOptions.defaultColDef,
@@ -239,9 +245,6 @@ export default function SectionACreate(props: {
           }
         }}
       />
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
       {addSubstanceModal && (
         <Modal
           aria-labelledby="add-substance-modal-title"
@@ -275,26 +278,11 @@ export default function SectionACreate(props: {
                   (substance) => substance.row_id === newSubstance.row_id,
                 )
                 if (!added) {
-                  const groupNode = grid.current.api.getRowNode(
-                    newSubstance.group,
-                  )
                   setForm((form: any) => ({
                     ...form,
                     section_a: [...form.section_a, newSubstance],
                   }))
-                  applyTransaction(grid.current.api, {
-                    add: [newSubstance],
-                    addIndex: groupNode.rowIndex + groupNode.data.count + 1,
-                    update: [
-                      { ...groupNode.data, count: groupNode.data.count + 1 },
-                    ],
-                  })
-                  const substanceNode = grid.current.api.getRowNode(
-                    newSubstance.row_id,
-                  )
-                  newNode.current = substanceNode
                 }
-                setAddSubstanceModal(false)
               }}
             />
             <Typography className="text-right">

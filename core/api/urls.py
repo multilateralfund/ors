@@ -12,6 +12,7 @@ from core.api.views.business_plan import BPRecordViewSet
 from core.api.views.business_plan import BusinessPlanViewSet
 from core.api.views.chemicals import (
     BlendCreateView,
+    BlendNextCustNameView,
     BlendsListView,
     SimilarBlendsListView,
     SubstancesListView,
@@ -110,6 +111,11 @@ urlpatterns = [
     path("blends/", BlendsListView.as_view(), name="blends-list"),
     path("blends/similar/", SimilarBlendsListView.as_view(), name="blends-similar"),
     path("blends/create/", BlendCreateView.as_view(), name="blends-create"),
+    path(
+        "blends/next-cust-mix-name/",
+        BlendNextCustNameView.as_view(),
+        name="blends-next-cust-mix-name",
+    ),
     path(
         "country-programme/reports/",
         CPReportView.as_view(),

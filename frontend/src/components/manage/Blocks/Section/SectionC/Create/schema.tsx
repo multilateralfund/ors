@@ -72,14 +72,18 @@ function useGridOptions(props: {
           headerName: includes(['IV'], model) ? 'Description' : 'Substance',
           ...sectionColDefById['display_name'],
         },
-        {
-          cellEditor: 'agNumberCellEditor',
-          dataType: 'number',
-          field: 'previous_year_price',
-          headerName: 'Previous year price',
-          orsAggFunc: 'sumTotal',
-          ...sectionColDefById['previous_year_price'],
-        },
+        ...(!includes(['II', 'III'], model)
+          ? [
+              {
+                cellEditor: 'agNumberCellEditor',
+                dataType: 'number',
+                field: 'previous_year_price',
+                headerName: 'Previous year price',
+                orsAggFunc: 'sumTotal',
+                ...sectionColDefById['previous_year_price'],
+              },
+            ]
+          : []),
         {
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',

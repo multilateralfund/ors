@@ -188,7 +188,6 @@ const DesktopHeaderNavigation = ({
                           { 'bg-mlfs-hlYellow': menuItem.current },
                         )}
                         href={menuItem.url}
-                        {...(menuItem.external ? { target: '_blank' } : {})}
                       >
                         {menuItem.label}
                       </Component>
@@ -259,7 +258,6 @@ const MobileHeaderNavigation = ({
                 className={styling}
                 component={'a'}
                 href={item.url}
-                {...(item.external ? { target: '_blank' } : {})}
               >
                 {item.label}
               </ListItem>
@@ -300,9 +298,6 @@ const MobileHeaderNavigation = ({
                               )}
                               component={Component}
                               href={menuItem.url}
-                              {...(menuItem.external
-                                ? { target: '_blank' }
-                                : {})}
                             >
                               {menuItem.label}
                             </ListItem>

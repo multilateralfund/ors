@@ -27,13 +27,17 @@ function useGridOptions(props: { model: string }) {
         headerName: includes(['IV'], model) ? 'Description' : 'Substance',
         ...sectionColDefById['display_name'],
       },
-      {
-        dataType: 'number',
-        field: 'previous_year_price',
-        headerName: 'Previous year price',
-        orsAggFunc: 'sumTotal',
-        ...sectionColDefById['previous_year_price'],
-      },
+      ...(!includes(['II', 'III'], model)
+        ? [
+            {
+              dataType: 'number',
+              field: 'previous_year_price',
+              headerName: 'Previous year price',
+              orsAggFunc: 'sumTotal',
+              ...sectionColDefById['previous_year_price'],
+            },
+          ]
+        : []),
       {
         dataType: 'number',
         field: 'current_year_price',

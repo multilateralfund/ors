@@ -4,20 +4,18 @@ import type { SimpleSelectProps } from '@ors/components/ui/SimpleSelect/SimpleSe
 import { Country } from '@ors/types/store'
 import { UserType, userTypeVisibility } from '@ors/types/user_types'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   Box,
   Button,
   Grid,
-  // InputAdornment,
-  ListItem,
   // IconButton as MuiIconButton,
   Tooltip,
   Typography,
 } from '@mui/material'
 import cx from 'classnames'
-import { filter, isArray, union } from 'lodash'
+import { filter, omit, union } from 'lodash'
 
 import CPEmpty from '@ors/components/manage/Blocks/CountryProgramme/CPEmpty'
 import Field from '@ors/components/manage/Form/Field'
@@ -64,7 +62,7 @@ type ReportsResponse = {
 
 const PER_PAGE_GENERAL = 48
 const PER_PAGE_COUNTRY = 48
-const PER_PAGE_YEAR = 500
+const PER_PAGE_YEAR = 100
 
 let timer: any
 
@@ -80,15 +78,62 @@ const GroupBy = (props: Omit<RadioSelectProps, 'label'>) => (
   <RadioSelect label="Group by" {...props} />
 )
 
-function Item({
+interface ItemLinkProps {
+  className?: string
+  country: any
+  item: ReportResponse
+  showAll: boolean
+  showCountry: boolean
+  showYear: boolean
+}
+
+const ItemLink = ({
+  className,
+  country,
   item,
+  showAll,
   showCountry,
   showYear,
-}: {
+}: ItemLinkProps) => {
+  return (
+    <Link
+      className={cx(
+        'flex w-full items-center text-wrap font-semibold hover:text-primary',
+        className,
+        {
+          'text-secondary': item.status === 'final',
+          'text-typography-secondary': !item.status,
+          'text-warning': item.status === 'draft',
+        },
+      )}
+      prefetch={false}
+      underline="hover"
+      href={
+        item.status === 'draft'
+          ? `/country-programme/${country?.iso3}/${item?.year}/edit`
+          : `/country-programme/${country?.iso3}/${item?.year}`
+      }
+    >
+      {showAll && item.name}
+      {!!showCountry && item.country}
+      {!!showYear && item.year}
+    </Link>
+  )
+}
+
+interface ItemProps {
+  ItemRenderer: (props: ItemLinkProps) => React.ReactElement
   item: ReportResponse
   showCountry: boolean
   showYear: boolean
-}) {
+}
+
+function Item({
+  ItemRenderer = ItemLink,
+  item,
+  showCountry,
+  showYear,
+}: ItemProps) {
   const showAll = !showCountry && !showYear
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const country = countries.filter(
@@ -96,49 +141,35 @@ function Item({
   )[0]
 
   return (
-    <ListItem
-      className="group flex flex-col items-start justify-center"
-      component={Grid}
-      disablePadding
-      item
-      {...(showAll
-        ? { lg: 3, md: 4, sm: 4, xl: 2, xs: 6 }
-        : { lg: 6, md: 4, sm: 6, xl: 4, xs: 4 })}
+    <Tooltip
+      enterDelay={300}
+      placement="top-start"
+      title={showAll ? item.name : showCountry ? item.country : item.year}
     >
-      <div className="flex max-w-full items-center px-4">
-        <Tooltip
-          enterDelay={300}
-          placement="top-start"
-          title={showAll ? item.name : showCountry ? item.country : item.year}
-        >
-          <div className="flex max-w-full items-center">
-            <Link
-              className={cx(
-                'inline-block max-w-full font-semibold hover:text-primary md:truncate',
-                {
-                  'text-secondary': item.status === 'final',
-                  'text-typography-secondary': !item.status,
-                  'text-warning': item.status === 'draft',
-                },
-              )}
-              prefetch={false}
-              underline="hover"
-              href={
-                item.status === 'draft'
-                  ? `/country-programme/${country?.iso3}/${item?.year}/edit`
-                  : `/country-programme/${country?.iso3}/${item?.year}`
-              }
-            >
-              {showAll && item.name}
-              {!!showCountry && item.country}
-              {!!showYear && item.year}
-            </Link>
-          </div>
-        </Tooltip>
-      </div>
-    </ListItem>
+      <ItemRenderer
+        country={country}
+        item={item}
+        showAll={showAll}
+        showCountry={showCountry}
+        showYear={showYear}
+      />
+    </Tooltip>
   )
 }
+
+const GeneralSectionItemLink = (props: ItemLinkProps) => (
+  <ItemLink
+    className="shadow-mlfs justify-center rounded-md px-6 py-4 text-center text-lg"
+    {...omit(props, ['className'])}
+  />
+)
+
+const GeneralSectionItem = (props: ItemProps) => (
+  <Item
+    ItemRenderer={GeneralSectionItemLink}
+    {...omit(props, ['ItemRenderer'])}
+  />
+)
 
 function GeneralSection(props: SectionProps) {
   // const shouldScroll = useRef(false)
@@ -149,29 +180,25 @@ function GeneralSection(props: SectionProps) {
   )
 
   const { filters, groupBy, maxYear, minYear, setFilters, user_type } = props
+
+  const perPage = groupBy === 'country' ? PER_PAGE_GENERAL : PER_PAGE_YEAR
+
   const [range, setRange] = useState([filters.range[0], filters.range[1]])
   const [pagination, setPagination] = useState({
     page: 1,
-    rowsPerPage: PER_PAGE_GENERAL,
+    rowsPerPage: perPage,
   })
   const [ordering, setOrdering] = useState<'asc' | 'desc'>(
     groupBy === 'country' ? 'desc' : 'asc',
   )
   const orderField =
-    groupBy === 'country' ? 'year,country__name' : 'year,country__name'
+    groupBy === 'country' ? 'year,country__name' : 'country__name,year'
 
   const { data, loading, setParams } = useApi<ReportsResponse>({
-    // onSuccess: () => {
-    //   if (shouldScroll.current) {
-    //     scrollToElement({ selectors: '#cp-listing-sections' })
-    //   } else {
-    //     shouldScroll.current = true
-    //   }
-    // },
     options: {
       params: {
         country_id: filters.country.join(','),
-        limit: PER_PAGE_GENERAL,
+        limit: perPage,
         offset: 0,
         ordering: (ordering === 'asc' ? '' : '-') + orderField,
         year_max: filters.year.length > 0 ? filters.year[0] : range[1],
@@ -183,32 +210,44 @@ function GeneralSection(props: SectionProps) {
   })
   const { count, loaded, results } = getResults<ReportResponse>(data)
 
-  const orderOptions = [
+  const orderOptionsCountry = [
     {
-      label: `Name - year, A to Z - ${maxYear} to ${minYear}`,
+      label: `Name, A to Z`,
+      value: 'asc',
+    },
+    {
+      label: `Name, Z to A`,
+      value: 'desc',
+    },
+  ]
+  const orderOptionsYear = [
+    {
+      label: `Year, ${maxYear} to ${minYear}`,
       value: 'desc',
     },
     {
-      label: `Year - name, ${minYear} to ${maxYear} - A to Z`,
+      label: `Year, ${minYear} to ${maxYear}`,
       value: 'asc',
     },
   ]
 
-  const handleOrderChange = () => {
-    const newOrder = ordering === 'desc' ? 'asc' : 'desc'
-    setOrdering(newOrder)
+  const orderOptions =
+    groupBy === 'country' ? orderOptionsYear : orderOptionsCountry
+
+  const handleOrderChange = (option: any) => {
+    setOrdering(option.value)
     setPagination({ ...pagination, page: 1 })
     setParams({
       offset: 0,
-      ordering: (newOrder === 'asc' ? '' : '-') + orderField,
+      ordering: option.value === 'asc' ? orderField : `-${orderField}`,
     })
   }
 
   return (
     <div id="general-section">
-      <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
-        <div className="flex flex-1 items-center gap-4">
-          {user_type !== 'country_user' && (
+      {user_type !== 'country_user' && (
+        <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
+          <div className="flex flex-1 items-center gap-4">
             <Field<Country>
               FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
               getOptionLabel={(option) => (option as Country).name}
@@ -241,16 +280,14 @@ function GeneralSection(props: SectionProps) {
                 }
               }}
             />
-          )}
-          <Field
-            FieldProps={{ className: 'mb-0 px-4' }}
-            label="Date"
-            max={maxYear}
-            min={minYear}
-            value={range}
-            widget="range"
-            onChange={(event: Event, value: number | number[]) => {
-              if (isArray(value) && value[1] - value[0] >= 1) {
+            <Field
+              FieldProps={{ className: 'mb-0 px-4' }}
+              label="Date"
+              max={maxYear}
+              min={minYear}
+              value={range}
+              widget="range"
+              onChange={(value: number[]) => {
                 setRange(value)
                 debounce(() => {
                   setFilters((filters: any) => {
@@ -262,18 +299,14 @@ function GeneralSection(props: SectionProps) {
                     year_min: value[0],
                   })
                 })
-              }
-            }}
-          />
+              }}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <SortBy options={orderOptions} onChange={handleOrderChange} />
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <SortBy
-            initialIndex={ordering === 'asc' ? 1 : 0}
-            options={orderOptions}
-            onChange={handleOrderChange}
-          />
-        </div>
-      </div>
+      )}
       <div className="filters mb-6 flex flex-wrap gap-4">
         {filters.country.map((countryId: number) => (
           <Typography
@@ -377,8 +410,7 @@ function GeneralSection(props: SectionProps) {
       </div>
       <Listing
         className="mb-6"
-        GridProps={{ columnSpacing: 2, rowSpacing: 3 }}
-        Item={Item}
+        Item={GeneralSectionItem}
         loaded={loaded}
         loading={loading}
         paginationPageSize={pagination.rowsPerPage}
@@ -392,7 +424,54 @@ function GeneralSection(props: SectionProps) {
             offset: ((page || 1) - 1) * pagination.rowsPerPage,
           })
         }}
-        enableGrid
+      />
+    </div>
+  )
+}
+
+const SingleCountryItem = (props: ItemProps) => {
+  const item = props.item.year
+    ? { ...props.item, name: props.item.year.toString() }
+    : props.item
+  return (
+    <Item
+      ItemRenderer={GeneralSectionItemLink}
+      item={item}
+      {...omit(props, ['ItemRenderer', 'item'])}
+    />
+  )
+}
+
+const SingleCountrySection = ({
+  country,
+}: { country: Country } & SectionProps) => {
+  const { data, loading } = useApi<ReportsResponse>({
+    options: {
+      params: {
+        country_id: country.id,
+        ordering: '-year',
+      },
+      withStoreCache: true,
+    },
+    path: 'api/country-programme/reports/',
+  })
+  const { count, loaded, results } = getResults<ReportResponse>(data)
+  return (
+    <div>
+      <div className="mb-8">
+        <hr className="mb-4 border border-solid border-primary" />
+        <Typography component="h1" variant="h4">
+          {country.name}
+        </Typography>
+      </div>
+      <Listing
+        className="mb-6"
+        Item={SingleCountryItem}
+        ItemProps={{ showCountry: false }}
+        loaded={loaded}
+        loading={loading}
+        rowCount={count}
+        rowData={results}
       />
     </div>
   )
@@ -441,15 +520,19 @@ function CountrySection(props: SectionProps) {
     setParams({ offset: 0, ordering: option.value })
   }
 
+  if (countries.length === 1) {
+    return <SingleCountrySection country={countries[0]} {...props} />
+  }
+
   if (countries.length === 0) {
     return <CPEmpty text={`No reports found`} />
   }
 
   return (
     <div id="country-section">
-      <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
-        <div className="flex flex-1 items-center gap-4">
-          {user_type !== 'country_user' && (
+      {user_type !== 'country_user' && (
+        <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
+          <div className="flex flex-1 items-center gap-4">
             <Field
               FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
               getOptionLabel={(option: any) => option?.name}
@@ -473,10 +556,10 @@ function CountrySection(props: SectionProps) {
                 }
               }}
             />
-          )}
+          </div>
+          <SortBy options={orderOptions} onChange={handleOrderChange} />
         </div>
-        <SortBy options={orderOptions} onChange={handleOrderChange} />
-      </div>
+      )}
       <Grid className="mb-6" spacing={4} container>
         {results.map((row: any) => (
           <Grid key={row.id} lg={3} sm={6} xs={12} item>
@@ -497,14 +580,14 @@ function CountrySection(props: SectionProps) {
               </Typography>
               <hr className="mx-4 mb-6 border-b-0 border-gray-50/25" />
               <Listing
-                className="mb-3"
+                className="mx-4 mb-3"
                 Item={Item}
                 ItemProps={{ showYear: true }}
+                classNameGrid="grid-cols-3"
                 loaded={loaded}
                 loading={loading}
                 rowCount={row.reports.length}
                 rowData={row.reports}
-                enableGrid
               />
               {row.count > row.reports.length && (
                 <Button
@@ -527,18 +610,20 @@ function CountrySection(props: SectionProps) {
         ))}
       </Grid>
       {!!pages && pages > 1 && (
-        <Pagination
-          count={pages}
-          page={pagination.page}
-          siblingCount={1}
-          onPaginationChanged={(page) => {
-            setPagination({ ...pagination, page: page || 1 })
-            setParams({
-              limit: pagination.rowsPerPage,
-              offset: ((page || 1) - 1) * pagination.rowsPerPage,
-            })
-          }}
-        />
+        <div className="flex items-center justify-center">
+          <Pagination
+            count={pages}
+            page={pagination.page}
+            siblingCount={1}
+            onPaginationChanged={(page) => {
+              setPagination({ ...pagination, page: page || 1 })
+              setParams({
+                limit: pagination.rowsPerPage,
+                offset: ((page || 1) - 1) * pagination.rowsPerPage,
+              })
+            }}
+          />
+        </div>
       )}
     </div>
   )
@@ -550,7 +635,10 @@ function YearSection(props: SectionProps) {
     page: 1,
     rowsPerPage: PER_PAGE_YEAR,
   })
-  const [range, setRange] = useState([filters.range[0], filters.range[1]])
+  const [range, setRange] = useState<number[]>([
+    filters.range[0],
+    filters.range[1],
+  ])
   const { setActiveTab } = useStore((state) => state.cp_current_tab)
   const { data, loading, setParams } = useApi({
     options: {
@@ -599,15 +687,13 @@ function YearSection(props: SectionProps) {
             min={minYear}
             value={range}
             widget="range"
-            onChange={(event: Event, value: number | number[]) => {
-              if (isArray(value) && value[1] - value[0] >= 1) {
-                setRange(value)
-                debounce(() => {
-                  setFilters((filters: any) => {
-                    return { ...filters, range: value, year: [] }
-                  })
+            onChange={(value: number[]) => {
+              setRange(value)
+              debounce(() => {
+                setFilters((filters: any) => {
+                  return { ...filters, range: value, year: [] }
                 })
-              }
+              })
             }}
           />
         </div>
@@ -634,14 +720,14 @@ function YearSection(props: SectionProps) {
                 <IoArrowForward size={20} />
               </Typography>
               <Listing
-                className="mb-3"
+                className="mx-4 mb-3"
                 Item={Item}
                 ItemProps={{ showCountry: true }}
+                classNameGrid="grid-cols-3"
                 loaded={loaded}
                 loading={loading}
                 rowCount={row.reports.length}
                 rowData={row.reports}
-                enableGrid
               />
               {row.count > row.reports.length && (
                 <Button
@@ -661,18 +747,20 @@ function YearSection(props: SectionProps) {
         ))}
       </Grid>
       {!!pages && pages > 1 && (
-        <Pagination
-          count={pages}
-          page={pagination.page}
-          siblingCount={1}
-          onPaginationChanged={(page) => {
-            setPagination({ ...pagination, page: page || 1 })
-            setParams({
-              limit: pagination.rowsPerPage,
-              offset: ((page || 1) - 1) * pagination.rowsPerPage,
-            })
-          }}
-        />
+        <div className="flex items-center justify-center">
+          <Pagination
+            count={pages}
+            page={pagination.page}
+            siblingCount={1}
+            onPaginationChanged={(page) => {
+              setPagination({ ...pagination, page: page || 1 })
+              setParams({
+                limit: pagination.rowsPerPage,
+                offset: ((page || 1) - 1) * pagination.rowsPerPage,
+              })
+            }}
+          />
+        </div>
       )}
     </div>
   )

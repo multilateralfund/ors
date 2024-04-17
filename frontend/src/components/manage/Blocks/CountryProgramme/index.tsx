@@ -250,6 +250,7 @@ export function getSections(
         allowFullScreen: true,
         component: components[mode].section_e || DefaultComponent,
         label: 'Section E',
+        note: 'NOTE:  Columns shaded in grey are voluntary',
         panelId: 'section-E-panel',
         title:
           'SECTION E. ANNEX F, GROUP II - DATA ON HFC-23 EMISSIONS (METRIC TONNES)',

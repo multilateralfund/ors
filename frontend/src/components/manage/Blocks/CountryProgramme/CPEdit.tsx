@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { IconButton, Tab, Tabs, Typography } from '@mui/material'
+import { Tab, Tabs, Typography } from '@mui/material'
 import cx from 'classnames'
 import { produce } from 'immer'
 import {
@@ -76,45 +76,34 @@ const TableProps = {
           domNode="sectionToolbar"
         >
           <div className="flex items-center justify-end">
-            {/* {!fullScreen && (
-              <Dropdown color="primary" label={<IoDownloadOutline />} icon>
-                <Dropdown.Item>
-                  <div className="flex items-center gap-x-2">
-                    <AiFillFilePdf className="fill-red-700" size={24} />
-                    <span>PDF</span>
-                  </div>
-                </Dropdown.Item>
-              </Dropdown>
-            )} */}
             {section.allowFullScreen && !fullScreen && (
-              <IconButton
-                color="primary"
+              <div
+                className="text-md cursor-pointer"
+                aria-label="enter fullscreen"
                 onClick={() => {
                   enterFullScreen()
                 }}
               >
-                <div className="flex items-center justify-between gap-x-2 text-base">
-                  <span className="font-medium text-primary">Fullscreen</span>
+                <div className="flex items-center justify-between gap-x-2">
+                  <span className="text-primary">Fullscreen</span>
                   <IoExpand className="text-xl text-secondary" />
                 </div>
-              </IconButton>
+              </div>
             )}
             {fullScreen && (
               <div>
-                <IconButton
-                  className="exit-fullscreen not-printable p-2 text-primary"
+                <div
+                  className="exit-fullscreen not-printable text-md cursor-pointer p-2 text-primary"
                   aria-label="exit fullscreen"
                   onClick={() => {
                     exitFullScreen()
                   }}
                 >
-                  <div className="flex items-center justify-between gap-x-2 text-base">
-                    <span className="font-medium text-primary">
-                      Exit fullscreen
-                    </span>
+                  <div className="flex items-center justify-between gap-x-2">
+                    <span className="text-primary">Close</span>
                     <IoClose className="text-xl text-secondary" />
                   </div>
-                </IconButton>
+                </div>
               </div>
             )}
           </div>
@@ -192,6 +181,14 @@ function CPEdit() {
     ]),
   }
 
+  const variant = useMemo(() => {
+    if (!report.data) return null
+    return filter(variants, (variant) => {
+      const year = report.data!.year
+      return variant.minYear <= year && variant.maxYear >= year
+    })[0]
+  }, [report.data])
+
   const [errors, setErrors] = useState<Record<string, any>>({})
   const [form, setForm] = useState<Record<string, any>>({
     adm_b: report.data?.adm_b,
@@ -207,7 +204,12 @@ function CPEdit() {
       reporting_email: report.data?.report_info?.reporting_email || null,
       reporting_entry: report.data?.report_info?.reporting_entry || null,
     },
-    section_a: Sections.section_a.getData(),
+    section_a: includes(['V'], variant?.model)
+      ? Sections.section_a
+          .getData()
+          .filter((row) => row.id !== 0)
+          .map((row) => ({ ...row, mandatory: false }))
+      : Sections.section_a.getData(),
     section_b: Sections.section_b.getData(),
     section_c: Sections.section_c.getData(),
     section_d: Sections.section_d.getData(),
@@ -217,13 +219,6 @@ function CPEdit() {
   const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
   const [renderedSections, setRenderedSections] = useState<number[]>([])
 
-  const variant = useMemo(() => {
-    if (!report.data) return null
-    return filter(variants, (variant) => {
-      const year = report.data!.year
-      return variant.minYear <= year && variant.maxYear >= year
-    })[0]
-  }, [report.data])
   const sections = useMemo(
     () => (variant ? getSections(variant, 'edit') : []),
     [variant],
@@ -399,7 +394,7 @@ function CPEdit() {
                       onSectionCheckChange={onSectionCheckChange}
                     />
                   )}
-                  <div className="relative">
+                  <div className="relative flex flex-col gap-4">
                     <FootnotesProvider>
                       <Section
                         Section={get(Sections, section.id)}

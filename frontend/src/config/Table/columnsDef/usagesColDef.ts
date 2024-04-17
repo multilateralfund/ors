@@ -1,7 +1,25 @@
-import defaultColDef from './defaultColDef'
-
 export default function getUsagesColDef() {
   return {
+    Aerosol: {
+      initialWidth: 84,
+    },
+    'Fire fighting': {
+      initialWidth: 86,
+    },
+    Foam: {
+      initialWidth: 84,
+    },
+    'Methyl bromide II': {
+      headerGroupComponentParams: {
+        footnote: {
+          content:
+            'QPS = Quarantine and pre-shipment; Non-QPS = Non-quarantine and pre-shipment.',
+          icon: true,
+          index: '*',
+          order: 0,
+        },
+      },
+    },
     Other: {
       headerComponentParams: {
         footnote: {
@@ -12,17 +30,22 @@ export default function getUsagesColDef() {
           order: 3,
         },
       },
-      initialWidth: 100,
+      initialWidth: 84,
     },
     'Process agent': {
       initialWidth: 132,
     },
+    Refrigeration: {
+      initialWidth: 400,
+    },
     'Refrigeration Manufacturing': {
       autoHeaderHeight: true,
       flex: 1.3,
+      initialWidth: 320,
     },
     'Refrigeration Manufacturing AC': {
-      initialWidth: 130,
+      flex: 1,
+      initialWidth: 90,
     },
     'Refrigeration Manufacturing AC IV': {
       headerName: 'AC',
@@ -30,6 +53,7 @@ export default function getUsagesColDef() {
     },
     'Refrigeration Manufacturing Other': {
       autoHeaderHeight: true,
+      flex: 2,
       headerComponentParams: {
         footnote: {
           id: '5',
@@ -39,13 +63,13 @@ export default function getUsagesColDef() {
           order: 5,
         },
       },
-      initialWidth: 300,
+      initialWidth: 120,
     },
     'Refrigeration Manufacturing Other IV': {
       headerComponentParams: {},
     },
     'Refrigeration Manufacturing Refrigeration': {
-      initialWidth: 120,
+      initialWidth: 100,
     },
     'Refrigeration Manufacturing Total IV': {
       headerComponentParams: {
@@ -62,9 +86,11 @@ export default function getUsagesColDef() {
     'Refrigeration Servicing': {
       autoHeaderHeight: true,
       flex: 1,
+      initialWidth: 84,
     },
     total_usages: {
-      initialWidth: defaultColDef.minWidth,
+      flex: 0,
+      initialWidth: 84,
     },
   }
 }

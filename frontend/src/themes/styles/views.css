@@ -22,4 +22,8 @@
   :root[data-layout='authorized_document'] main {
     @apply grid;
   }
+
+  .shadow-mlfs {
+    box-shadow: 0 4px 12px 0 hsl(0deg 0% 0% / 15%);
+  }
 }

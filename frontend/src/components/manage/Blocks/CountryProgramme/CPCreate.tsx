@@ -6,15 +6,7 @@ import { ReportVariant } from '@ors/types/variants'
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import {
-  Alert,
-  Button,
-  IconButton,
-  Tab,
-  Tabs,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import { Alert, Button, Tab, Tabs, Tooltip, Typography } from '@mui/material'
 import cx from 'classnames'
 import { produce } from 'immer'
 import { filter, get, includes, isEmpty } from 'lodash'
@@ -179,34 +171,33 @@ const TableProps: CPCreateTableProps = {
         >
           <div className="flex items-center justify-end">
             {section.allowFullScreen && !fullScreen && (
-              <IconButton
-                color="primary"
+              <div
+                className="text-md cursor-pointer"
+                aria-label="enter fullscreen"
                 onClick={() => {
                   enterFullScreen()
                 }}
               >
-                <div className="flex items-center justify-between gap-x-2 text-base">
-                  <span className="font-medium text-primary">Fullscreen</span>
+                <div className="flex items-center justify-between gap-x-2">
+                  <span className="text-primary">Fullscreen</span>
                   <IoExpand className="text-xl text-secondary" />
                 </div>
-              </IconButton>
+              </div>
             )}
             {fullScreen && (
               <div>
-                <IconButton
-                  className="exit-fullscreen not-printable p-2 text-primary"
+                <div
+                  className="exit-fullscreen not-printable text-md cursor-pointer p-2 text-primary"
                   aria-label="exit fullscreen"
                   onClick={() => {
                     exitFullScreen()
                   }}
                 >
-                  <div className="flex items-center justify-between gap-x-2 text-base">
-                    <span className="font-medium text-primary">
-                      Exit fullscreen
-                    </span>
+                  <div className="flex items-center justify-between gap-x-2">
+                    <span className="text-primary">Close</span>
                     <IoClose className="text-xl text-secondary" />
                   </div>
-                </IconButton>
+                </div>
               </div>
             )}
           </div>
@@ -304,6 +295,11 @@ const CPCreate: React.FC = () => {
 
   const [errors, setErrors] = useState<FormErrors>({})
   const [currentYear] = useState(new Date().getFullYear() - 1)
+  const [variant] = useState(() => {
+    return filter(variants, (variant) => {
+      return variant.minYear <= currentYear && variant.maxYear >= currentYear
+    })[0]
+  })
   const [form, setForm] = useState<CPBaseForm>({
     country: null,
     report_info: {
@@ -316,8 +312,12 @@ const CPCreate: React.FC = () => {
       reporting_email: user.data.email,
       reporting_entry: user.data.full_name,
     },
-    section_a: Sections.section_a.getData(),
-    section_b: Sections.section_b.getData(),
+    section_a: includes(['V'], variant?.model)
+      ? []
+      : Sections.section_a.getData(),
+    section_b: includes(['V'], variant?.model)
+      ? []
+      : Sections.section_b.getData(),
     section_c: Sections.section_c.getData(),
     section_d: Sections.section_d.getData(),
     section_e: Sections.section_e.getData(),
@@ -334,11 +334,6 @@ const CPCreate: React.FC = () => {
     path: `/api/country-programme/reports/?year_max=${currentYear}&year_min=${currentYear}&country_id=${form.country?.id}`,
   })
 
-  const [variant] = useState(() => {
-    return filter(variants, (variant) => {
-      return variant.minYear <= currentYear && variant.maxYear >= currentYear
-    })[0]
-  })
   const sections = useMemo(
     () => (variant ? getSections(variant, 'edit') : []),
     [variant],
@@ -506,7 +501,7 @@ const CPCreate: React.FC = () => {
           <div className="flex items-center">
             <div className="container flex w-full justify-between gap-x-4">
               <Link
-                className="bg-gray-600 px-4 py-2 shadow-none"
+                className="btn-close bg-gray-600 px-4 py-2 shadow-none"
                 color="secondary"
                 href="/country-programme"
                 size="large"
@@ -668,7 +663,7 @@ const CPCreate: React.FC = () => {
                     onSectionCheckChange={onSectionCheckChange}
                   />
                 )}
-                <div className="relative">
+                <div className="relative flex flex-col gap-4">
                   <FootnotesProvider>
                     <Section
                       Section={get(Sections, section.id)}

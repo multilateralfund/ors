@@ -104,7 +104,7 @@ function useGridOptions(props: {
           },
           field: 'display_name',
           headerClass: 'ag-text-left',
-          headerName: includes('IV', model) ? '' : 'Substance',
+          headerName: includes(['IV'], model) ? '' : 'Substance',
         },
         ...(usages.length
           ? [
@@ -114,6 +114,7 @@ function useGridOptions(props: {
                   {
                     id: 'total_usages',
                     category: 'usage',
+                    cellClass: 'bg-yellow-50 text-right',
                     field: 'total_usages',
                     headerName: 'TOTAL',
                     orsAggFunc: 'sumTotalUsages',
@@ -177,7 +178,6 @@ function useGridOptions(props: {
           cellEditor: 'agDateCellEditor',
           dataType: 'date',
           field: 'banned_date',
-          headerName: 'If imports are banned, indicate date ban commenced',
           ...sectionColDefById['banned_date'],
         },
         {

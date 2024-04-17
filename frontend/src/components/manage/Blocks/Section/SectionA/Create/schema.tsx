@@ -17,7 +17,7 @@ import { NON_EDITABLE_ROWS } from '@ors/config/Table/columnsDef/settings'
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 
-import { sectionColDefById } from '../sectionColumnsDef'
+import { sectionColDefByIdFunc } from '../sectionColumnsDef'
 import { RowData } from './Create'
 
 import { IoTrash } from 'react-icons/io5'
@@ -29,6 +29,8 @@ function useGridOptions(props: {
   usages: any
 }) {
   const { model, onRemoveSubstance, openAddSubstanceModal, usages } = props
+
+  const sectionColDefById = sectionColDefByIdFunc(model)
 
   const gridOptions: GridOptions = useMemo(
     () => ({
@@ -107,6 +109,7 @@ function useGridOptions(props: {
                   {
                     id: 'total_usages',
                     category: 'usage',
+                    cellClass: 'bg-yellow-50 text-right',
                     field: 'total_usages',
                     headerName: 'TOTAL',
                     orsAggFunc: 'sumTotalUsages',
@@ -173,8 +176,6 @@ function useGridOptions(props: {
                 cellEditor: 'agDateCellEditor',
                 dataType: 'date',
                 field: 'banned_date',
-                headerName:
-                  'If imports are banned, indicate date ban commenced',
                 ...sectionColDefById['banned_date'],
               },
             ]
@@ -222,7 +223,7 @@ function useGridOptions(props: {
           }
           return true
         },
-        headerClass: 'ag-text-center',
+        headerClass: 'ag-text-right',
         minWidth: defaultColDef.minWidth,
         resizable: true,
         wrapText: true,

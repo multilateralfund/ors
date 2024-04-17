@@ -27,11 +27,17 @@ export type RowData = DeserializedDataA & {
   tooltip?: boolean
 }
 
-function getRowData(report: CPReport): RowData[] {
+function getRowData(report: CPReport, showEmptyRows: boolean): RowData[] {
   let rowData: RowData[] = []
   const dataByGroup: Record<string, any[]> = {}
   const groups: Array<string> = []
-  each(report.section_a, (item) => {
+
+  let data = report.section_a
+  if (!showEmptyRows) {
+    data = data.filter((item) => item.id !== 0)
+  }
+
+  each(data, (item) => {
     const group = item.group || 'Other'
     if (!dataByGroup[group]) {
       dataByGroup[group] = []
@@ -77,12 +83,13 @@ export default function SectionAView(props: any) {
     })
   const grid = useRef<any>()
   const [showEmptyRows, setShowEmptyRows] = useState(true)
-  const [rowData] = useState(() => getRowData(report))
-  const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
   const { setValue: setTableDataValue, value: tableDataValue } =
     useTableDataSelector(
       includes(['IV', 'V'], variant.model) ? 'sector' : 'all',
     )
+
+  const rowData = getRowData(report, showEmptyRows)
+  const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
   const gridOptions = useMemo(() => {
     switch (tableDataValue) {
@@ -114,7 +121,7 @@ export default function SectionAView(props: any) {
         )}
         {includes(['V'], variant.model) && (
           <FormControlLabel
-            label="Show empty rows"
+            label="Show zero values"
             control={
               <Checkbox
                 checked={showEmptyRows}
@@ -124,6 +131,13 @@ export default function SectionAView(props: any) {
           />
         )}
       </div>
+      <Alert
+        className="mb-4"
+        icon={<IoInformationCircleOutline size={24} />}
+        severity="info"
+      >
+        <Footnotes />
+      </Alert>
       <Table
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
@@ -132,13 +146,8 @@ export default function SectionAView(props: any) {
         gridRef={grid}
         headerDepth={3}
         pinnedBottomRowData={pinnedBottomRowData}
-        rowData={
-          showEmptyRows ? rowData : rowData.filter((row) => row.id !== 0)
-        }
+        rowData={rowData}
       />
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
     </>
   )
 }

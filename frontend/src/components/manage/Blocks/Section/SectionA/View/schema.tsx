@@ -6,10 +6,12 @@ import { includes } from 'lodash'
 
 import { defaultColDef } from '@ors/config/Table/columnsDef'
 
-import { sectionColDefById } from '../sectionColumnsDef'
+import { sectionColDefByIdFunc } from '../sectionColumnsDef'
 
 function useGridOptions(props: { model: string; usages: object[] }) {
   const { model, usages } = props
+
+  const sectionColDefById = sectionColDefByIdFunc(model)
 
   const substanceColumn = useMemo(
     () => ({
@@ -35,7 +37,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
           'ag-text-right': !includes(['display_name'], props.colDef.field),
         })
       },
-      headerClass: 'ag-text-center',
+      headerClass: 'ag-text-right',
       minWidth: defaultColDef.minWidth,
       resizable: true,
       wrapText: true,
@@ -49,6 +51,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
       {
         id: 'total_usages',
         category: 'usage',
+        cellClass: 'bg-yellow-50 text-right',
         headerName: 'TOTAL',
         orsAggFunc: 'sumTotalUsages',
         ...sectionColDefById['total_usages'],
@@ -106,7 +109,6 @@ function useGridOptions(props: { model: string; usages: object[] }) {
             {
               dataType: 'date',
               field: 'banned_date',
-              headerName: 'If imports are banned, indicate date ban commenced',
               ...sectionColDefById['banned_date'],
             },
           ]

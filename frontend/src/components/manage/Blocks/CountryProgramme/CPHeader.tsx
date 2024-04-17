@@ -44,7 +44,7 @@ const HeaderVersionsDropdown = () => {
 
   return (
     <Dropdown
-      className="p-0"
+      className="p-0 hover:bg-transparent hover:text-primary"
       MenuProps={{
         slotProps: {
           paper: {
@@ -163,15 +163,6 @@ const ViewHeaderActions = () => {
     <div className="flex items-center">
       {!!report.data && (
         <div className="container flex w-full justify-between gap-x-4">
-          {/* <Link
-            className="bg-gray-600 px-4 py-2 shadow-none"
-            href="/country-programme"
-            size="large"
-            variant="contained"
-            button
-          >
-            Close
-          </Link> */}
           <div className="flex justify-between gap-x-4">
             <Link
               className="px-4 py-2 shadow-none"
@@ -255,7 +246,7 @@ const EditHeaderActions = ({
       {!!report.data && (
         <div className="container flex w-full justify-between gap-x-4">
           <Link
-            className="bg-gray-600 px-4 py-2 shadow-none"
+            className="btn-close bg-gray-600 px-4 py-2 shadow-none"
             color="secondary"
             href={`/country-programme/${report.country?.iso3}/${report.data.year}`}
             size="large"

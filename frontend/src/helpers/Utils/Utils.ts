@@ -185,7 +185,7 @@ interface formatDecimalValueProps {
 export const formatDecimalValue = (
   value: number,
   {
-    maximumFractionDigits = 3,
+    maximumFractionDigits = 2,
     minimumFractionDigits = maximumFractionDigits || 2,
   }: formatDecimalValueProps,
 ) => {

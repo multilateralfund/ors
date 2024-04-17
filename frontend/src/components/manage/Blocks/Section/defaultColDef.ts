@@ -1,15 +1,15 @@
 export const colDefByUsageId: Record<number, any> = {
   1: {
     // Aerosol
-    initialWidth: 130,
+    initialWidth: 84,
   },
   2: {
     // Foam
-    initialWidth: 130,
+    initialWidth: 84,
   },
   3: {
     // Fire fighting
-    initialWidth: 130,
+    initialWidth: 86,
   },
   4: {
     // Refrigeration Group
