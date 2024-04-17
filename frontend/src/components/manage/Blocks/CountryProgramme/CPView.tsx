@@ -208,6 +208,8 @@ function CPView(props: { archive?: boolean }) {
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [activeTab, renderedSections])
 
+  console.log("CPView report: ", report)
+
   return (
     <>
       <Loading

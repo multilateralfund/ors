@@ -9,6 +9,7 @@ import { ApiSubstance } from './api_substances'
 type Report = SliceData<CPReport | null, Record<string, any> | null> & {
   country?: Country
   emptyForm: SliceData<EmptyFormType, Record<string, any> | null>
+  files?: SliceData<File[]>
   versions: SliceData<CPVersionInfo[]>
 }
 
@@ -31,9 +32,11 @@ export interface CPReportsSlice {
   cacheInvalidate: string[]
   cacheInvalidateReport: (country_id: number, year: number) => void
   fetchArchivedBundle: (report_id: number, view: boolean) => void
+  fetchArchivedFiles: (country_id: number) => void
   fetchArchivedReport: (report_id: number) => Promise<void>
   fetchBundle: (country_id: number, year: number, view: boolean) => void
   fetchEmptyForm: (report: CPReport | null, view: boolean) => void
+  fetchFiles: (country_id: number, year: number) => void
   fetchReport: (country_id: number, year: number) => Promise<void>
   fetchVersions: (country_id: number, year: number) => void
   report: Report
@@ -100,10 +103,10 @@ export interface CommonSlice {
 }
 
 export interface CPHistoryItem {
-  created_at: string;
-  event_description: string;
-  id: number;
-  updated_by_username: string;
+  created_at: string
+  event_description: string
+  id: number
+  updated_by_username: string
 }
 
 // Store state
@@ -144,7 +147,7 @@ export type CPVersionInfo = {
   country_id: number
   created_at: string
   final_version_id: number
-  history: CPHistoryItem[];
+  history: CPHistoryItem[]
   id: number
   name: string
   status: string
@@ -165,4 +168,9 @@ export type Settings = {
   project_substance_types: [string, string][]
   submission_amount_statuses: [string, string][]
   year_section_mapping: { max_year: number; sections: string[] }[]
+}
+
+export type File = {
+  file: Blob
+  filename: string
 }
