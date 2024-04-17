@@ -99,6 +99,13 @@ export interface CommonSlice {
   settings: SliceData<Settings>
 }
 
+export interface CPHistoryItem {
+  created_at: string;
+  event_description: string;
+  id: number;
+  updated_by_username: string;
+}
+
 // Store state
 export type StoreState = {
   businessPlans: BusinessPlanSlice
@@ -137,6 +144,7 @@ export type CPVersionInfo = {
   country_id: number
   created_at: string
   final_version_id: number
+  history: CPHistoryItem[];
   id: number
   name: string
   status: string
