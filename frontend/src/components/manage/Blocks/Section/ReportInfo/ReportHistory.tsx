@@ -5,9 +5,6 @@ const ReportHistory = () => {
   const { report } = useStore((state) => state.cp_reports)
   const { data: versions, loading } = report.versions
 
-  console.log('report', report)
-  console.log('versions', versions)
-
   const options: Intl.DateTimeFormatOptions = {
     day: 'numeric',
     hour: 'numeric',
