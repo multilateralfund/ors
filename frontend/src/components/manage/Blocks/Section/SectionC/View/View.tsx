@@ -22,7 +22,11 @@ export type RowData = DeserializedDataC & {
   tooltip?: boolean
 }
 
-function getRowData(report: any, model: string, showEmptyRows: boolean): RowData[] {
+function getRowData(
+  report: any,
+  model: string,
+  showEmptyRows: boolean,
+): RowData[] {
   let rowData: Array<any> = []
   const dataByGroup: Record<string, any> = {}
   const groups: Array<string> = []
@@ -80,36 +84,30 @@ export default function SectionCView(props: {
   })
   const grid = useRef<any>()
   const [showEmptyRows, setShowEmptyRows] = useState(true)
-  const [rowData] = useState(() => getRowData(report, variant.model, showEmptyRows))
+  const rowData = getRowData(report, variant.model, showEmptyRows)
 
   return (
     <>
-      <div className="flex justify-end">
-        {includes(['V'], variant.model) && (
-          <FormControlLabel
-            label="Show zero values"
-            control={
-              <Checkbox
-                checked={showEmptyRows}
-                onChange={(event) => setShowEmptyRows(event.target.checked)}
-              />
-            }
-          />
-        )}
-      </div>
-      <Alert
-          className="mb-4"
-          icon={<IoInformationCircleOutline size={24} />}
-          severity="info"
-        >
-          <Footnotes />
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnotes />
       </Alert>
+      <div className="flex justify-end">
+        <FormControlLabel
+          label="Show zero values"
+          control={
+            <Checkbox
+              checked={showEmptyRows}
+              onChange={(event) => setShowEmptyRows(event.target.checked)}
+            />
+          }
+        />
+      </div>
       <Table
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
         gridRef={grid}
-        rowData={showEmptyRows ? rowData : rowData.filter((row) => row.id !== 0)}
+        rowData={rowData}
       />
     </>
   )

@@ -6,6 +6,7 @@ import { ReportVariant } from '@ors/types/variants'
 import { useMemo, useRef, useState } from 'react'
 
 import { Alert, Checkbox, FormControlLabel } from '@mui/material'
+import cx from 'classnames'
 import { each, includes, union } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
@@ -109,12 +110,12 @@ export default function SectionBView(props: {
     })
   const grid = useRef<any>()
   const [showEmptyRows, setShowEmptyRows] = useState(true)
-  const [rowData] = useState(() => getRowData(report, showEmptyRows))
-  const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
   const { setValue: setTableDataValue, value: tableDataValue } =
     useTableDataSelector(
       includes(['IV', 'V'], variant.model) ? 'sector' : 'all',
     )
+  const rowData = getRowData(report, showEmptyRows)
+  const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
   const gridOptions = useMemo(() => {
     switch (tableDataValue) {
@@ -136,7 +137,15 @@ export default function SectionBView(props: {
 
   return (
     <>
-      <div className="flex justify-between">
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnotes />
+      </Alert>
+      <div
+        className={cx('flex', {
+          'justify-between': includes(['IV', 'V'], variant.model),
+          'justify-end': !includes(['IV', 'V'], variant.model),
+        })}
+      >
         {includes(['IV', 'V'], variant.model) && (
           <TableDataSelector
             className="py-4"
@@ -144,25 +153,16 @@ export default function SectionBView(props: {
             value={tableDataValue}
           />
         )}
-        {includes(['V'], variant.model) && (
-          <FormControlLabel
-            label="Show zero values"
-            control={
-              <Checkbox
-                checked={showEmptyRows}
-                onChange={(event) => setShowEmptyRows(event.target.checked)}
-              />
-            }
-          />
-        )}
+        <FormControlLabel
+          label="Show zero values"
+          control={
+            <Checkbox
+              checked={showEmptyRows}
+              onChange={(event) => setShowEmptyRows(event.target.checked)}
+            />
+          }
+        />
       </div>
-      <Alert
-          className="mb-4"
-          icon={<IoInformationCircleOutline size={24} />}
-          severity="info"
-        >
-          <Footnotes />
-      </Alert>
       <Table
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
@@ -170,7 +170,7 @@ export default function SectionBView(props: {
         gridRef={grid}
         headerDepth={4}
         pinnedBottomRowData={pinnedBottomRowData}
-        rowData={showEmptyRows ? rowData : rowData.filter((row) => row.id !== 0)}
+        rowData={rowData}
       />
     </>
   )
