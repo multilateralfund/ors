@@ -22,6 +22,7 @@ class CPHistoryBaseSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "country_programme_report_id",
+            "created_at",
             "updated_by_id",
             "updated_by_username",
             "event_description",

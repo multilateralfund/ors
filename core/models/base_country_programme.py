@@ -176,7 +176,7 @@ class AbstractCPHistory(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True, help_text="Date of creation of the event"
     )
-    event_description = models.TextField(null=True, blank=True)
+    event_description = models.TextField(blank=True)
 
     class Meta:
         abstract = True

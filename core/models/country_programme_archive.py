@@ -122,5 +122,5 @@ class CPHistoryArchive(AbstractCPHistory):
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="updated_cp_reports_archive",
-        help_text="User who last updated the report",
+        help_text="User who updated the report",
     )
