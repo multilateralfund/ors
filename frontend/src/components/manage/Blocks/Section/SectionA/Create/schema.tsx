@@ -223,7 +223,7 @@ function useGridOptions(props: {
           }
           return true
         },
-        headerClass: 'ag-text-center',
+        headerClass: 'ag-text-right',
         minWidth: defaultColDef.minWidth,
         resizable: true,
         wrapText: true,
