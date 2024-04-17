@@ -4,6 +4,7 @@ from core.models.base import AbstractWChemical, BaseWTimeFrameManager
 from core.models.base_country_programme import (
     AbstractCPEmission,
     AbstractCPGeneration,
+    AbstractCPHistory,
     AbstractCPPrices,
     AbstractCPRecord,
     AbstractCPReport,
@@ -18,12 +19,6 @@ class CPReport(AbstractCPReport):
         on_delete=models.PROTECT,
         related_name="created_cp_reports",
         help_text="User who created the report",
-    )
-    last_updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="updated_cp_reports",
-        help_text="User who last updated the report",
     )
 
     class Meta:
@@ -151,3 +146,18 @@ class CPReportSections(models.Model):
     reported_section_d = models.BooleanField(default=False)
     reported_section_e = models.BooleanField(default=False)
     reported_section_f = models.BooleanField(default=False)
+
+
+class CPHistory(AbstractCPHistory):
+    country_programme_report = models.ForeignKey(
+        "CPReport",
+        on_delete=models.CASCADE,
+        related_name="cphistory",
+    )
+
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="updated_cp_reports",
+        help_text="User who updated the report",
+    )

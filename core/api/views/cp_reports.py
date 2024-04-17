@@ -24,10 +24,11 @@ from core.api.serializers.cp_report import (
     CPReportCommentsSerializer,
 )
 from core.models.adm import AdmRecordArchive
-from core.models.country_programme import CPReport
+from core.models.country_programme import CPHistory, CPReport
 from core.models.country_programme_archive import (
     CPEmissionArchive,
     CPGenerationArchive,
+    CPHistoryArchive,
     CPPricesArchive,
     CPRecordArchive,
     CPReportArchive,
@@ -293,6 +294,18 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
             )
         AdmRecordArchive.objects.bulk_create(adm_records, batch_size=1000)
 
+        # archive cp history
+        cp_history_list = []
+        for cp_history in instance.cphistory.all():
+            cp_history_list.append(
+                self._get_archive_data(
+                    CPHistoryArchive,
+                    cp_history,
+                    {"country_programme_report_id": cp_report_ar.id},
+                )
+            )
+        CPHistoryArchive.objects.bulk_create(cp_history_list, batch_size=1000)
+
     def check_readonly_fields(self, serializer, current_obj):
         return (
             serializer.initial_data["country_id"] != current_obj.country_id
@@ -304,11 +317,14 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
         current_obj = self.get_object()
 
         # set event description
-        if not request.data.get("event_description"):
-            request.data["event_description"] = "Updated by user"
+        event_description = request.data.get("event_description", "Updated by user")
 
         serializer = CPReportCreateSerializer(
-            data=request.data, context={"user": request.user}
+            data=request.data,
+            context={
+                "user": request.user,
+                "event_description": event_description,
+            },
         )
         if not serializer.is_valid() or self.check_readonly_fields(
             serializer, current_obj
@@ -380,9 +396,12 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
             )
 
         cp_report.status = cp_status
-        cp_report.last_updated_by = request.user
-        cp_report.event_description = "Status updated by user"
         cp_report.save()
+        CPHistory.objects.create(
+            country_programme_report=cp_report,
+            updated_by=request.user,
+            event_description="Status updated by user",
+        )
         serializer = self.get_serializer(cp_report)
 
         return Response(serializer.data)
@@ -576,9 +595,12 @@ class CPReportCommentsView(generics.GenericAPIView):
                 )
             cp_report.comment_secretariat = comment_secretariat
 
-        cp_report.last_updated_by = request.user
-        cp_report.event_description = "Comments updated by user"
         cp_report.save()
+        CPHistory.objects.create(
+            country_programme_report=cp_report,
+            updated_by=request.user,
+            event_description="Comments updated by user",
+        )
         serializer = self.get_serializer(cp_report)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)

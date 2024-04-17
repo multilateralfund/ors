@@ -24,7 +24,6 @@ def setup_version_list(cp_report_2019, cp_report_2005, user):
                 status=cp_report.status,
                 version=i + 1,
                 created_by=user,
-                last_updated_by=user,
             )
 
 
