@@ -13,7 +13,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
     headerComponentParams: {
       footnote: {
         content: 'If imports are banned, indicate date ban commenced',
-        icon: true,
+        icon: false,
         index: '*',
         order: 99,
       },
@@ -57,31 +57,51 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
   },
   exports: {
     headerComponentParams: {
-      footnote: {
-        id: '2',
-        content: 'Where applicable.',
-        icon: true,
-      },
+      ...(includes(['II', 'III'], model)
+        ? {
+            footnote: {
+              id: '2',
+              content: 'Where applicable.',
+              icon: true,
+            },
+          }
+        : {}),
     },
   },
   production: {
+    ...(includes(['II'], model) ? { flex: 1.2 } : {}),
     headerComponentParams: {
-      footnote: {
-        id: '2',
-        content: 'Where applicable.',
-        icon: true,
-      },
+      ...(includes(['II', 'III'], model)
+        ? {
+            footnote: {
+              id: '2',
+              content: 'Where applicable.',
+              icon: true,
+            },
+          }
+        : {}),
     },
   },
   remarks: {
     ...colDefById['remarks'],
     headerComponentParams: {
-      footnote: {
-        content: 'e.g., stockpiling if use is different from consumption',
-        icon: true,
-        index: includes(['II'], model) ? '**' : '*',
-        order: 99,
-      },
+      ...(includes(['II', 'III'], model)
+        ? {
+            footnote: {
+              content: 'e.g., stockpiling if use is different from consumption',
+              icon: false,
+              index: '**',
+              order: 99,
+            },
+          }
+        : {
+            footnote: {
+              id: 3,
+              content:
+                'Provide explanation if total sector use and consumption (import-export+production) is different (e.g, stockpiling).',
+              icon: true,
+            },
+          }),
     },
   },
 })

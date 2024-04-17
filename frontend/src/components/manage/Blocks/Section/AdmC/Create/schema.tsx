@@ -34,6 +34,7 @@ function useGridOptions(props: { adm_columns: any }) {
       id: column.id,
       category: 'adm',
       dataType: column.type,
+      flex: 1,
       headerName: column.display_name,
       initialWidth: defaultColDef.minWidth,
       ...(colDefByDataType[column.type] || {}),
@@ -65,6 +66,7 @@ function useGridOptions(props: { adm_columns: any }) {
             }),
           }),
           field: 'text',
+          flex: 2,
           headerClass: 'ag-text-left',
           headerGroupComponent: 'agColumnHeaderGroup',
           headerName: 'Description',
@@ -74,6 +76,7 @@ function useGridOptions(props: { adm_columns: any }) {
         {
           cellEditor: 'agTextCellEditor',
           field: 'remarks',
+          flex: 1,
           headerName: 'Remarks',
           ...colDefById['remarks'],
         },

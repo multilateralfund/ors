@@ -1,3 +1,5 @@
+import { defaultColGroupDef } from '@ors/config/Table/columnsDef'
+
 export default function getUsagesColDef() {
   return {
     Aerosol: {
@@ -11,10 +13,23 @@ export default function getUsagesColDef() {
     },
     'Methyl bromide II': {
       headerGroupComponentParams: {
+        ...defaultColGroupDef.headerGroupComponentParams,
         footnote: {
           content:
             'QPS = Quarantine and pre-shipment; Non-QPS = Non-quarantine and pre-shipment.',
-          icon: true,
+          icon: false,
+          index: '*',
+          order: 0,
+        },
+      },
+    },
+    'Methyl bromide III': {
+      headerGroupComponentParams: {
+        ...defaultColGroupDef.headerGroupComponentParams,
+        footnote: {
+          content:
+            'QPS = Quarantine and pre-shipment; Non-QPS = Non-quarantine and pre-shipment.',
+          icon: false,
           index: '*',
           order: 0,
         },

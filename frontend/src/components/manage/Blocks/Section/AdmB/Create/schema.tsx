@@ -19,6 +19,7 @@ function useGridOptions(props: { adm_columns: any }) {
       id: column.id,
       category: 'adm',
       dataType: column.type,
+      flex: 0.5,
       headerName: column.display_name,
       initialWidth: defaultColDef.minWidth,
       ...(colDefByDataType[column.type] || {}),
@@ -47,10 +48,12 @@ function useGridOptions(props: { adm_columns: any }) {
             {
               cellClass: 'bg-mui-box-background',
               field: 'index',
+              flex: 0.5,
               headerName: '',
               initialWidth: defaultColDef.minWidth,
             },
             {
+              ...colDefById['type_of_action'],
               cellClass: 'bg-mui-box-background',
               cellRendererParams: (props: any) => ({
                 className: cx({
@@ -62,8 +65,8 @@ function useGridOptions(props: { adm_columns: any }) {
                 }),
               }),
               field: 'text',
+              flex: 3,
               headerName: '',
-              ...colDefById['type_of_action'],
             },
           ],
           headerClass: 'ag-text-center',
@@ -75,6 +78,7 @@ function useGridOptions(props: { adm_columns: any }) {
         {
           cellEditor: 'agTextCellEditor',
           field: 'remarks',
+          flex: 1,
           headerName: 'Remarks',
           ...colDefById['remarks'],
         },

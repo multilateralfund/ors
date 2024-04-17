@@ -13,7 +13,7 @@ const sectionColDefById: Record<string, ColDef> = {
     headerComponentParams: {
       footnote: {
         content: 'If imports are banned, indicate date ban commenced',
-        icon: true,
+        icon: false,
         index: '***',
         order: 9999,
       },
@@ -77,7 +77,7 @@ const sectionColDefById: Record<string, ColDef> = {
     headerComponentParams: {
       footnote: {
         content: 'Tentative/best estimates.',
-        icon: true,
+        icon: false,
         index: '*',
         order: 888,
       },

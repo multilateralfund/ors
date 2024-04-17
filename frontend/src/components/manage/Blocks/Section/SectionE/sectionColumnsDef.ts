@@ -32,11 +32,15 @@ const sectionColDefById: Record<string, ColDef> = {
       },
     },
   },
+  facility: {
+    flex: 1,
+  },
   feedstock_gc: {
     ...colDefById['feedstock_gc'],
     cellClass: () => {
       return VOLUNTARY_CLASS
     },
+    flex: 1.2,
   },
   feedstock_wpc: {
     ...colDefById['feedstock_wpc'],
@@ -58,6 +62,7 @@ const sectionColDefById: Record<string, ColDef> = {
     cellClass: () => {
       return VOLUNTARY_CLASS
     },
+    flex: 1.2,
     headerComponentParams: {
       footnote: {
         id: '1',
