@@ -27,7 +27,7 @@ const defaultColDef: ColDef = {
 const defaultColDefEdit: ColDef = {
   cellRendererParams: () => {
     return {
-      maximumFractionDigits: 3,
+      maximumFractionDigits: 2,
     }
   },
   editable: (props: EditableCallbackParams) => {
