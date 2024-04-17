@@ -221,7 +221,9 @@ export const createCPReportsSlice = ({
       })
     },
     fetchVersions: async (country_id, year) => {
+      const { cacheInvalidate } = get().cp_reports
       const options = {
+        invalidateCache: cacheInvalidate.includes(hash({ country_id, year })),
         removeCacheTimeout: 60,
         withStoreCache: true,
       }
