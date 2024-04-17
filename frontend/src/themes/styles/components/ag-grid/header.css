@@ -27,8 +27,11 @@
 
   .ag-header-cell.ag-text-right .ag-header-cell-label,
   .ag-header-group-cell.ag-text-right,
-  .ag-header-cell.ag-text-right .ag-header-cell-comp-wrapper {
+  .ag-header-cell.ag-text-right .ag-header-cell-comp-wrapper,
+  .ag-header-cell.ag-text-right {
     text-align: right;
+
+    @apply w-full flex justify-end text-right;
   }
 
   &.with-separators
@@ -42,7 +45,7 @@
     .ag-header-cell:not(.ag-header-span-height.ag-header-span-total),
   .ag-header-row:not(:first-child)
     .ag-header-group-cell.ag-header-group-cell-with-group {
-    @apply border-b border-gray-200;
+    @apply border-b border-gray-300;
   }
 
   .ag-header-group-cell-with-group {
@@ -58,7 +61,7 @@
   .ag-ltr {
     .ag-header-cell,
     .ag-header-group-cell {
-      /* border-right: var(--ag-cell-horizontal-border); */
+       /* border-right: var(--ag-cell-horizontal-border); */
       @apply border-r-transparent;
     }
   }
