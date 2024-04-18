@@ -25,14 +25,14 @@ export type RowData = DeserializedDataC & {
 function getRowData(
   report: any,
   model: string,
-  showEmptyRows: boolean,
+  showOnlyReported: boolean,
 ): RowData[] {
   let rowData: Array<any> = []
   const dataByGroup: Record<string, any> = {}
   const groups: Array<string> = []
 
   let data = report.section_c
-  if (!showEmptyRows) {
+  if (showOnlyReported) {
     data = data.filter((item: any) => item.id !== 0)
   }
   each(data, (item) => {
@@ -83,8 +83,8 @@ export default function SectionCView(props: {
     model: variant.model,
   })
   const grid = useRef<any>()
-  const [showEmptyRows, setShowEmptyRows] = useState(true)
-  const rowData = getRowData(report, variant.model, showEmptyRows)
+  const [showOnlyReported, setShowOnlyReported] = useState(false)
+  const rowData = getRowData(report, variant.model, showOnlyReported)
 
   return (
     <>
@@ -93,11 +93,11 @@ export default function SectionCView(props: {
       </Alert>
       <div className="flex justify-end">
         <FormControlLabel
-          label="Show zero values"
+          label="Show only reported substances"
           control={
             <Checkbox
-              checked={showEmptyRows}
-              onChange={(event) => setShowEmptyRows(event.target.checked)}
+              checked={showOnlyReported}
+              onChange={(event) => setShowOnlyReported(event.target.checked)}
             />
           }
         />

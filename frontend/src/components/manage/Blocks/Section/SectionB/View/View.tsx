@@ -38,14 +38,14 @@ export type RowData = DeserializedDataB & {
   tooltip?: boolean
 }
 
-function getRowData(report: CPReport, showEmptyRows: boolean): RowData[] {
+function getRowData(report: CPReport, showOnlyReported: boolean): RowData[] {
   const variant = getVariant(report)
   let rowData: Array<any> = []
   const dataByGroup: Record<string, any> = {}
   const groups: Array<string> = []
 
   let data = report.section_b
-  if (!showEmptyRows) {
+  if (showOnlyReported) {
     data = data.filter((item: any) => item.id !== 0)
   }
 
@@ -109,12 +109,12 @@ export default function SectionBView(props: {
       usages: emptyForm.usage_columns?.section_b || [],
     })
   const grid = useRef<any>()
-  const [showEmptyRows, setShowEmptyRows] = useState(true)
+  const [showOnlyReported, setShowOnlyReported] = useState(false)
   const { setValue: setTableDataValue, value: tableDataValue } =
     useTableDataSelector(
       includes(['IV', 'V'], variant.model) ? 'sector' : 'all',
     )
-  const rowData = getRowData(report, showEmptyRows)
+  const rowData = getRowData(report, showOnlyReported)
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
   const gridOptions = useMemo(() => {
@@ -153,11 +153,11 @@ export default function SectionBView(props: {
           />
         )}
         <FormControlLabel
-          label="Show zero values"
+          label="Show only reported substances"
           control={
             <Checkbox
-              checked={showEmptyRows}
-              onChange={(event) => setShowEmptyRows(event.target.checked)}
+              checked={showOnlyReported}
+              onChange={(event) => setShowOnlyReported(event.target.checked)}
             />
           }
         />
