@@ -205,7 +205,6 @@ export default function SectionACreate(props: {
       )}
       <Table
         {...TableProps}
-        // className="mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={3}
