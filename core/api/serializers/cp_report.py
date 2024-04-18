@@ -235,7 +235,9 @@ class CPReportCreateSerializer(serializers.Serializer):
 
     def _create_history(self, cp_report, history_data, request_user):
         history_data["country_programme_report_id"] = cp_report.id
-        history_data["report_version"] = cp_report.version
+        history_data["report_version"] = cp_report.version + int(
+            cp_report.status == CPReport.CPReportStatus.FINAL
+        )
         history_data["updated_by_id"] = request_user.id
         history_data["updated_by_username"] = request_user.username
 
@@ -264,6 +266,7 @@ class CPReportCreateSerializer(serializers.Serializer):
             "year": validated_data.get("year"),
             "status": validated_data.get("status", CPReport.CPReportStatus.FINAL),
             "country_id": validated_data.get("country_id"),
+            "version": self.context.get("report_version", 1),
         }
 
         cp_report_serializer = CPReportSerializer(data=cp_report_data)

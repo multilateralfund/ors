@@ -321,6 +321,7 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
             context={
                 "user": request.user,
                 "event_description": event_description,
+                "report_version": current_obj.version,
             },
         )
         if not serializer.is_valid() or self.check_readonly_fields(
