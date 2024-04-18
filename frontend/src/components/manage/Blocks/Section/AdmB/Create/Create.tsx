@@ -36,7 +36,6 @@ export default function AdmBCreate(props: any) {
     <>
       <Table
         {...TableProps}
-        className="mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={2}
@@ -50,58 +49,52 @@ export default function AdmBCreate(props: any) {
         }: any) => {
           return (
             <div
-              className={cx('mb-4 flex', {
+              className={cx('mb-4 flex gap-4', {
                 'flex-col': !fullScreen,
                 'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
                   fullScreen,
                 'px-4': fullScreen && !print,
               })}
             >
-              <Typography className="mb-2" component="h2" variant="h6">
-                {section.title}
-              </Typography>
-              <div className="flex items-center justify-end">
-                <div>
-                  {!fullScreen && (
-                    <Dropdown
-                      color="primary"
-                      label={<IoDownloadOutline />}
-                      icon
-                    >
-                      <Dropdown.Item onClick={onPrint}>
-                        <div className="flex items-center gap-x-2">
-                          <AiFillFilePdf className="fill-red-700" size={24} />
-                          <span>PDF</span>
-                        </div>
-                      </Dropdown.Item>
-                    </Dropdown>
-                  )}
-                  {section.allowFullScreen && !fullScreen && (
+              <div className="flex gap-2 items-center justify-end">
+                {!fullScreen && (
+                  <Dropdown color="primary" label={<IoDownloadOutline />} icon>
+                    <Dropdown.Item onClick={onPrint}>
+                      <div className="flex items-center gap-x-2">
+                        <AiFillFilePdf className="fill-red-700" size={24} />
+                        <span>PDF</span>
+                      </div>
+                    </Dropdown.Item>
+                  </Dropdown>
+                )}
+                {section.allowFullScreen && !fullScreen && (
+                  <div
+                    className="text-md cursor-pointer"
+                    aria-label="enter fullscreen"
+                    onClick={() => {
+                      enterFullScreen()
+                    }}
+                  >
+                    <IoExpand size={20} />
+                  </div>
+                )}
+                {fullScreen && (
+                  <div>
                     <div
-                      className="text-md cursor-pointer"
-                      aria-label="enter fullscreen"
+                      className="exit-fullscreen text-md not-printable cursor-pointer p-2 text-primary"
+                      aria-label="exit fullscreen"
                       onClick={() => {
-                        enterFullScreen()
+                        exitFullScreen()
                       }}
                     >
-                      <IoExpand />
+                      <IoClose size={32} />
                     </div>
-                  )}
-                  {fullScreen && (
-                    <div>
-                      <div
-                        className="exit-fullscreen text-md not-printable cursor-pointer p-2 text-primary"
-                        aria-label="exit fullscreen"
-                        onClick={() => {
-                          exitFullScreen()
-                        }}
-                      >
-                        <IoClose size={32} />
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
+              <Typography component="h2" variant="h6">
+                {section.title}
+              </Typography>
             </div>
           )
         }}

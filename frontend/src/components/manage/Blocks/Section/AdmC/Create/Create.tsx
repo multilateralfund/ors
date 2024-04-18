@@ -1,11 +1,13 @@
-import { useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 
-import { Typography } from '@mui/material'
+import {Alert, Typography} from '@mui/material'
 import { findIndex, groupBy, map } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
 
 import useGridOptions from './schema'
+
+import {IoInformationCircleOutline} from "react-icons/io5";
 
 export default function AdmBCreate(props: any) {
   const { TableProps, emptyForm, form, setForm } = props
@@ -29,9 +31,14 @@ export default function AdmBCreate(props: any) {
 
   return (
     <>
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Typography id="footnote-1" className="italic transition-all">
+          <span className="font-bold">1. </span>
+        1. If Yes, since when (Date) / If No, planned date.
+        </Typography>
+      </Alert>
       <Table
         {...TableProps}
-        className="mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={2}
@@ -56,9 +63,6 @@ export default function AdmBCreate(props: any) {
         }}
         onRowDataUpdated={() => {}}
       />
-      <Typography id="footnote-1" className="italic" variant="body2">
-        1. If Yes, since when (Date) / If No, planned date.
-      </Typography>
     </>
   )
 }
