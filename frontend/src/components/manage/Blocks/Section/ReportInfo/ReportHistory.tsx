@@ -1,3 +1,5 @@
+import React from 'react'
+
 import cx from 'classnames'
 
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -57,9 +59,9 @@ const ReportHistory = () => {
             const isCurrentVersion = version.version === report.data?.version
 
             return (
-              <>
+              <React.Fragment key={`${versionIndex}-${historyIndex}`}>
                 <div
-                  key={`${versionIndex}-${historyIndex}`}
+                  key={`item_${versionIndex}-${historyIndex}`}
                   className={cx(
                     'px-4 py-3',
                     isCurrentVersion ? '' : 'opacity-40',
@@ -91,9 +93,12 @@ const ReportHistory = () => {
                   </div>
                 </div>
                 {displayHR && (
-                  <hr className="my-0 h-px w-[95%] border-0 bg-gray-200" />
+                  <hr
+                    key={`hr_${versionIndex}-${historyIndex}`}
+                    className="my-0 h-px w-[95%] border-0 bg-gray-200"
+                  />
                 )}
-              </>
+              </React.Fragment>
             )
           })
         })}
