@@ -90,64 +90,60 @@ const CPComments: React.FC = () => {
   }
 
   return (
-    <form className="mt-6 flex w-full flex-col gap-4">
-      <Typography className="flex-1" component="h2" variant="h6">
-        Comments
-      </Typography>
-      <div className="flex w-full flex-1 flex-wrap gap-4">
-        {orderedUsers.map((user) => (
-          <div
-            key={user}
-            className="relative flex min-w-96 flex-1 flex-col rounded-lg bg-gray-100 p-2"
-          >
-            {user_type !== commentsMeta[user].user_type && (
-              <SectionOverlay
-                className="cursor-not-allowed"
-                opacity="opacity-60"
-              />
-            )}
-            <label className="py-2 text-2xl font-normal">
-              {commentsMeta[user].label}
-            </label>
-            <div className="CPComments relative">
-              <TextareaAutosize
-                className="w-full resize-none rounded-lg border border-solid border-gray-300 p-2 pb-10 shadow-none"
-                minRows={6}
-                placeholder="Type your comment here..."
-                value={texts[user]}
-                onChange={(e) => handleTextChange(user, e.target.value)}
-              />
-              {user_type === commentsMeta[user].user_type &&
-                !emptyComments(user) && (
-                  <div className="absolute bottom-2 right-2 mb-2 flex gap-2 opacity-60">
-                    <Button
-                      color="primary"
-                      disabled={texts[user] === initialTexts[user]}
-                      size="small"
-                      variant="contained"
-                      onClick={() => handleSave(user)}
-                    >
-                      Save
-                    </Button>
-                    <Button
-                      disabled={texts[user] === initialTexts[user]}
-                      size="small"
-                      variant="outlined"
-                      onClick={() => handleCancel(user)}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                )}
-            </div>
-            {error && user_type === commentsMeta[user].user_type && (
-              <Alert severity="error">
-                <Typography>Something went wrong. Please try again.</Typography>
-              </Alert>
-            )}
+    <form className="-mx-6 -mb-6 mt-6 flex w-auto flex-wrap gap-6 bg-gray-100 rounded-b-lg px-6 pb-6">
+      {orderedUsers.map((user) => (
+        <div
+          key={user}
+          className="relative flex min-w-96 flex-1 flex-col rounded-lg bg-gray-100 rounded-b-lg"
+        >
+          {user_type !== commentsMeta[user].user_type && (
+            <SectionOverlay
+              className="cursor-not-allowed"
+              opacity="opacity-40"
+            />
+          )}
+          <label className="py-4 text-2xl font-medium">
+            Comment {commentsMeta[user].label}
+          </label>
+          <div className="CPComments relative">
+            <TextareaAutosize
+              className="w-full resize-none rounded-lg border border-transparent p-2 pb-10 shadow-none bg-white"
+              minRows={10}
+              placeholder="Type your comment here..."
+              value={texts[user]}
+              onChange={(e) => handleTextChange(user, e.target.value)}
+            />
+            {user_type === commentsMeta[user].user_type &&
+              !emptyComments(user) && (
+                <div className="absolute bottom-2 right-2 mb-2 flex gap-2">
+                  <Button
+                    color="secondary"
+                    disabled={texts[user] === initialTexts[user]}
+                    size="small"
+                    variant="contained"
+                    onClick={() => handleSave(user)}
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    className="bg-gray-600 hover:bg-gray-900"
+                    disabled={texts[user] === initialTexts[user]}
+                    size="small"
+                    variant="contained"
+                    onClick={() => handleCancel(user)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
           </div>
-        ))}
-      </div>
+          {error && user_type === commentsMeta[user].user_type && (
+            <Alert severity="error">
+              <Typography>Something went wrong. Please try again.</Typography>
+            </Alert>
+          )}
+        </div>
+      ))}
     </form>
   )
 }

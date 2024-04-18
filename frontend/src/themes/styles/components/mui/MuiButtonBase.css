@@ -7,5 +7,5 @@
 }
 
 .CPComments .MuiButtonBase-root {
-  @apply p-0;
+  @apply p-0.5;
 }
