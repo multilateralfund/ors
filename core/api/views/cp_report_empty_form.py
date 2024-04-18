@@ -247,6 +247,7 @@ class EmptyFormView(views.APIView):
     def get_04_empty_form(cls, year):
         return {
             "usage_columns": cls.get_usage_columns(year),
+            "substance_rows": cls.get_substance_rows(year),
         }
 
     @classmethod

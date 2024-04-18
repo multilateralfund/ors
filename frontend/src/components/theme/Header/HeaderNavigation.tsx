@@ -130,6 +130,12 @@ const DesktopHeaderNavigation = ({
     setShowMenu(() => ({ [label]: true }))
   }
 
+  const handleToggleMenu = (label: string) => {
+    hideInProgress[label]?.cancel?.()
+    const prev = showMenu[label]
+    setShowMenu(() => ({ [label]: !prev }))
+  }
+
   const handleHideAllMenus = () => {
     Object.keys(showMenu).forEach((key) => {
       const eta = debounce(
@@ -156,20 +162,25 @@ const DesktopHeaderNavigation = ({
           key={item.label}
           className="relative flex cursor-pointer text-primary"
         >
-          <a
+          <div
             className={cx(
-              'flex items-center justify-between gap-x-2 rounded-full px-4 py-2 text-primary no-underline transition-all hover:text-mlfs-hlYellow',
+              'flex items-center justify-between gap-x-2 rounded-full px-4 py-2 text-primary transition-all hover:text-mlfs-hlYellow',
               {
                 'bg-mlfs-hlYellow hover:text-primary': item.current,
                 'hover:bg-primary': !item.current,
               },
             )}
-            href={item.url}
             onMouseEnter={() => handleShowMenu(item.label)}
           >
-            {item.label}
-            {item.menu && <IoChevronDown />}
-          </a>
+            <a className="text-inherit no-underline" href={item.url}>
+              {item.label}
+            </a>
+            {item.menu && (
+              <div onClick={() => handleToggleMenu(item.label)}>
+                <IoChevronDown />
+              </div>
+            )}
+          </div>
           <AnimatePresence>
             {showMenu[item.label] && (
               <FadeInOut className="absolute left-0 z-10">

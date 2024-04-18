@@ -71,6 +71,18 @@ const TableProps = {
         >
           {section.title}
         </Typography>
+        {section.note && (
+          <Typography
+            className={cx(
+              'border border-solid border-black px-2 py-4 font-bold',
+              {
+                'mb-4 md:mb-0': fullScreen,
+              },
+            )}
+          >
+            {section.note}
+          </Typography>
+        )}
         <Portal
           active={isActiveSection && !fullScreen}
           domNode="sectionToolbar"

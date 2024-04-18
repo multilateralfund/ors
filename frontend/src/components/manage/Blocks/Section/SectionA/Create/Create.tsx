@@ -190,9 +190,11 @@ export default function SectionACreate(props: {
 
   return (
     <>
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
+      {!includes(['I'], variant.model) && (
+        <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+          <Footnotes />
+        </Alert>
+      )}
       {includes(['V'], variant.model) && (
         <div className="flex justify-end">
           <Button
