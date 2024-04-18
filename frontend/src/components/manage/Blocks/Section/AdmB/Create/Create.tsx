@@ -50,7 +50,7 @@ export default function AdmBCreate(props: any) {
         }: any) => {
           return (
             <div
-              className={cx('mb-2 flex', {
+              className={cx('mb-4 flex', {
                 'flex-col': !fullScreen,
                 'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
                   fullScreen,

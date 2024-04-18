@@ -136,7 +136,7 @@ const TableProps: CPCreateTableProps = {
     return (
       <div
         className={cx(
-          'mb-2 flex md:flex-row md:items-center md:justify-between md:py-2',
+          'mb-4 flex md:flex-row md:items-center md:justify-between md:py-2',
           {
             'flex-col': !fullScreen,
             'flex-col-reverse': fullScreen,
@@ -663,7 +663,7 @@ const CPCreate: React.FC = () => {
                     onSectionCheckChange={onSectionCheckChange}
                   />
                 )}
-                <div className="relative flex flex-col gap-4">
+                <div className="relative flex flex-col gap-6">
                   <FootnotesProvider>
                     <Section
                       Section={get(Sections, section.id)}

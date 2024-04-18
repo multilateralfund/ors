@@ -90,7 +90,7 @@ const CPComments: React.FC = () => {
   }
 
   return (
-    <form className="mt-4 flex w-full flex-col gap-4">
+    <form className="mt-6 flex w-full flex-col gap-4">
       <Typography className="flex-1" component="h2" variant="h6">
         Comments
       </Typography>

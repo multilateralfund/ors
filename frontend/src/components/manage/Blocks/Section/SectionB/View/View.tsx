@@ -148,7 +148,6 @@ export default function SectionBView(props: {
       >
         {includes(['IV', 'V'], variant.model) && (
           <TableDataSelector
-            className="py-4"
             changeHandler={(_, value) => setTableDataValue(value)}
             value={tableDataValue}
           />

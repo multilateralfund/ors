@@ -29,7 +29,6 @@ export default function SectionEView(props: any) {
   return (
     <>
       <Alert
-        className="mb-4"
         icon={<IoInformationCircleOutline size={24} />}
         severity="info"
       >

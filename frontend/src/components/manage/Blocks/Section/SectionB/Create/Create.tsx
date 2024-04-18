@@ -271,7 +271,7 @@ export default function SectionBCreate(props: {
   return (
     <>
       {includes(['V'], variant.model) && (
-        <div className="mt-4 flex justify-end">
+        <div className="flex justify-end">
           <Button
             className="rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
             onClick={() => setAddBlendModal(true)}
@@ -349,7 +349,6 @@ export default function SectionBCreate(props: {
             </Typography>
             <Divider />
             <ToggleButtonGroup
-              className="py-4"
               color="primary"
               value={addBlendModalTab}
               onChange={(_, value) => setAddBlendModalTab(value)}

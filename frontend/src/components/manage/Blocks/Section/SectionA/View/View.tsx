@@ -123,7 +123,6 @@ export default function SectionAView(props: any) {
       >
         {includes(['IV', 'V'], variant.model) && (
           <TableDataSelector
-            className="py-4"
             changeHandler={(_, value) => setTableDataValue(value)}
             value={tableDataValue}
           />

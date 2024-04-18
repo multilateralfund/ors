@@ -17,7 +17,7 @@ const SectionReportedSelect = ({
   }
 
   return (
-    <div className="ReportSelect w-full bg-gray-200 p-4">
+    <div className="ReportSelect bg-gray-200 p-6 -mx-6 -mt-6 w-auto rounded-tr-lg">
       <Select
         className="h-10 rounded-lg border border-gray-400 bg-white"
         value={isSectionChecked ? 'report' : 'no_report'}

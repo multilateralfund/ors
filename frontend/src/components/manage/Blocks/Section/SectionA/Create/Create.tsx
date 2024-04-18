@@ -191,7 +191,7 @@ export default function SectionACreate(props: {
   return (
     <>
       {includes(['V'], variant.model) && (
-        <div className="mt-4 flex justify-end">
+        <div className="flex justify-end">
           <Button
             className="rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
             onClick={() => setAddSubstanceModal(true)}
@@ -205,7 +205,7 @@ export default function SectionACreate(props: {
       </Alert>
       <Table
         {...TableProps}
-        className="mb-4"
+        // className="mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={3}
