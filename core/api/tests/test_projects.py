@@ -129,6 +129,16 @@ class TestProjectsUpdate:
         assert project.title == "Into the Spell"
         assert project.submission_category == "investment project"
         assert project.coop_agencies.count() == 1
+        assert project.generated_code == get_project_sub_code(
+            project.country,
+            project.cluster,
+            new_agency,
+            project.project_type,
+            project.sector,
+            project.approval_meeting,
+            None,
+            project.serial_number,
+        )
 
     def test_project_patch_ods_odp(
         self, user, project_url, project, project_ods_odp_subst
@@ -222,7 +232,14 @@ def setup_project_list(
     for i in range(4):
         for project_data in projects_data:
             project_data["generated_code"] = get_project_sub_code(
-                project_data["country"], project_data["cluster"], i + 1
+                project_data["country"],
+                project_data["cluster"],
+                project_data["agency"],
+                project_data["project_type"],
+                project_data["sector"],
+                project_data["approval_meeting"],
+                project_data["approval_meeting"],
+                i + 1,
             )
             ProjectFactory.create(
                 title=f"Project {i}",
@@ -234,7 +251,16 @@ def setup_project_list(
     # project_without cluster
     proj_data = projects_data[0].copy()
     proj_data.pop("cluster")
-    proj_data["generated_code"] = get_project_sub_code(proj_data["country"], None, 25)
+    proj_data["generated_code"] = get_project_sub_code(
+        proj_data["country"],
+        None,
+        project_data["agency"],
+        project_data["project_type"],
+        project_data["sector"],
+        project_data["approval_meeting"],
+        project_data["approval_meeting"],
+        25,
+    )
     ProjectFactory.create(
         title=f"Project {25}",
         date_received="2020-01-30",
@@ -246,7 +272,14 @@ def setup_project_list(
     proj_data["sector"] = None
     proj_data["subsector"] = None
     proj_data["generated_code"] = get_project_sub_code(
-        proj_data["country"], proj_data["cluster"], 26
+        proj_data["country"],
+        proj_data["cluster"],
+        project_data["agency"],
+        project_data["project_type"],
+        project_data["sector"],
+        project_data["approval_meeting"],
+        project_data["approval_meeting"],
+        26,
     )
     ProjectFactory.create(
         title=f"Project {26}",
@@ -580,7 +613,14 @@ class TestCreateProjects(BaseTest):
         assert response.data["national_agency"] == "National Agency"
         assert response.data["submission_category"] == "bilateral cooperation"
         assert response.data["code"] == get_project_sub_code(
-            country_ro, project_cluster_kip, 1
+            country_ro,
+            project_cluster_kip,
+            agency,
+            project_type,
+            subsector.sector,
+            meeting,
+            None,
+            1,
         )
 
         ods_odp = response.data["ods_odp"]

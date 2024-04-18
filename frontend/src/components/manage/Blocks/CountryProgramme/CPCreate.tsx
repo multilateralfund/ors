@@ -136,7 +136,7 @@ const TableProps: CPCreateTableProps = {
     return (
       <div
         className={cx(
-          'mb-2 flex md:flex-row md:items-center md:justify-between md:py-2',
+          'mb-4 flex md:flex-row md:items-center md:justify-between',
           {
             'flex-col': !fullScreen,
             'flex-col-reverse': fullScreen,
@@ -144,7 +144,7 @@ const TableProps: CPCreateTableProps = {
           },
         )}
       >
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-2">
           <Typography
             className={cx({ 'mb-4 md:mb-0': fullScreen })}
             component="h2"
@@ -649,7 +649,7 @@ const CPCreate: React.FC = () => {
               <div
                 id={section.panelId}
                 key={section.panelId}
-                className={cx('transition', {
+                className={cx('transition flex flex-col gap-6', {
                   'absolute -left-[9999px] -top-[9999px] opacity-0':
                     activeTab !== index,
                 })}
@@ -663,7 +663,7 @@ const CPCreate: React.FC = () => {
                     onSectionCheckChange={onSectionCheckChange}
                   />
                 )}
-                <div className="relative flex flex-col gap-4">
+                <div className="relative flex flex-col gap-6">
                   <FootnotesProvider>
                     <Section
                       Section={get(Sections, section.id)}

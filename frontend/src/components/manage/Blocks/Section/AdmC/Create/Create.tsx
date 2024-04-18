@@ -1,6 +1,5 @@
-import { useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 
-import { Typography } from '@mui/material'
 import { findIndex, groupBy, map } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
@@ -31,7 +30,6 @@ export default function AdmBCreate(props: any) {
     <>
       <Table
         {...TableProps}
-        className="mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={2}
@@ -56,9 +54,6 @@ export default function AdmBCreate(props: any) {
         }}
         onRowDataUpdated={() => {}}
       />
-      <Typography id="footnote-1" className="italic" variant="body2">
-        1. If Yes, since when (Date) / If No, planned date.
-      </Typography>
     </>
   )
 }

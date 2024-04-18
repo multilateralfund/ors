@@ -215,7 +215,7 @@ class ProjectClusterAdmin(admin.ModelAdmin):
     search_fields = ["name", "code"]
 
     def get_list_display(self, request):
-        exclude = ["project"]
+        exclude = ["project", "bprecord"]
         return get_final_display_list(ProjectCluster, exclude)
 
 

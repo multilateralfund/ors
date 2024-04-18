@@ -31,12 +31,43 @@ def get_meta_project_code(country, cluster, serial_number=None):
     return f"{country_code}/{cluster_code}/{serial_number}"
 
 
-def get_project_sub_code(country, cluster, serial_number=None):
+def get_project_sub_code(
+    country,
+    cluster,
+    agency,
+    project_type,
+    sector,
+    meeting_appr,
+    meeting_transf=None,
+    serial_number=None,
+):
     """
-    Get a new project sub code for a country and a cluster
+    Get a new project sub code
+
+    @param country: Country
+    @param cluster: Cluster
+    @param agency: Agency
+    @param project_type: ProjectType
+    @param sector: Sector
+    @param meeting_appr: Meeting
+    @param meeting_transf: Meeting
+    @param serial_number: int
+
+    @return: str
+
     """
-    country_code = country.iso3 or country.abbr if country else "-"
-    cluster_code = cluster.code if cluster else "-"
     if not serial_number:
         serial_number = Project.objects.get_next_serial_number(country.id)
-    return f"{country_code}/{cluster_code}/{serial_number}"
+
+    country_code = country.iso3 or country.abbr if country else "-"
+    cluster_code = cluster.code if cluster else "-"
+    agency_code = agency.code or agency.name if agency else "-"
+    project_type_code = project_type.code if project_type else "-"
+    sector_code = sector.code if sector else "-"
+    meeting_appr_code = meeting_appr.number if meeting_appr else "-"
+    meeting_transf_code = f".{meeting_transf.number}" if meeting_transf else ""
+    meetings_code = f"{meeting_appr_code}{meeting_transf_code}"
+    return (
+        f"{country_code}/{cluster_code}/{serial_number}/{agency_code}/{project_type_code}/"
+        f"{sector_code}/{meetings_code}"
+    )

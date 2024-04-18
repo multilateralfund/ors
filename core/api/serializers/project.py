@@ -604,7 +604,14 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         project = Project.objects.create(**validated_data)
         # set subcode
         project.generated_code = get_project_sub_code(
-            project.country, project.cluster, project.serial_number
+            project.country,
+            project.cluster,
+            project.agency,
+            project.project_type,
+            project.sector,
+            project.approval_meeting,
+            project.meeting_transf,
+            project.serial_number,
         )
         project.save()
 
@@ -639,5 +646,18 @@ class ProjectDetailsSerializer(ProjectListSerializer):
             instance.coop_agencies.clear()
             for coop_agency in coop_agencies_id:
                 instance.coop_agencies.add(coop_agency)
+
+        # set new subcode
+        instance.generated_code = get_project_sub_code(
+            instance.country,
+            instance.cluster,
+            instance.agency,
+            instance.project_type,
+            instance.sector,
+            instance.approval_meeting,
+            instance.meeting_transf,
+            instance.serial_number,
+        )
+        instance.save()
 
         return instance

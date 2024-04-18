@@ -107,7 +107,7 @@ SUBSECTOR_SECTOR_MAPPING = {
     },
     "Agency programme": {
         "subsector_name": None,
-        "sector_code": "TAS",  # deleted sectorctor => set sector = None
+        "sector_code": "AAA",  # here should be TAS = deleted sectorctor => set sector = None
     },
     "Ozone unit support": {
         "subsector_name": None,
@@ -361,6 +361,4 @@ CP_FORMAT_FILE_DATA_MAPPING = {
     },
 }
 
-ADM_DE_MAPPING = {
-    "N/A RMP already completed": "N/A RMP/NPP/TPMP already completed"
-}
+ADM_DE_MAPPING = {"N/A RMP already completed": "N/A RMP/NPP/TPMP already completed"}
