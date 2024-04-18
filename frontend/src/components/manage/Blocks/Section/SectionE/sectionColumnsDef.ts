@@ -11,18 +11,21 @@ const sectionColDefById: Record<string, ColDef> = {
     cellClass: () => {
       return VOLUNTARY_CLASS
     },
+    headerClass: VOLUNTARY_CLASS,
   },
   destruction: {
     ...colDefById['destruction'],
     cellClass: () => {
       return VOLUNTARY_CLASS
     },
+    headerClass: VOLUNTARY_CLASS,
   },
   destruction_wpc: {
     ...colDefById['destruction_wpc'],
     cellClass: () => {
       return VOLUNTARY_CLASS
     },
+    headerClass: VOLUNTARY_CLASS,
     headerComponentParams: {
       footnote: {
         id: '4',
@@ -41,12 +44,14 @@ const sectionColDefById: Record<string, ColDef> = {
       return VOLUNTARY_CLASS
     },
     flex: 1.2,
+    headerClass: VOLUNTARY_CLASS,
   },
   feedstock_wpc: {
     ...colDefById['feedstock_wpc'],
     cellClass: () => {
       return VOLUNTARY_CLASS
     },
+    headerClass: VOLUNTARY_CLASS,
     headerComponentParams: {
       footnote: {
         id: '3',
@@ -63,6 +68,7 @@ const sectionColDefById: Record<string, ColDef> = {
       return VOLUNTARY_CLASS
     },
     flex: 1.2,
+    headerClass: VOLUNTARY_CLASS,
     headerComponentParams: {
       footnote: {
         id: '1',
@@ -77,6 +83,7 @@ const sectionColDefById: Record<string, ColDef> = {
 }
 const sectionColGroupDefById: Record<string, Omit<ColGroupDef, 'children'>> = {
   amount_generated_and_captured: {
+    headerClass: VOLUNTARY_CLASS,
     headerGroupComponentParams: {
       ...defaultColGroupDef.headerGroupComponentParams,
       footnote: {

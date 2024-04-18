@@ -41,7 +41,7 @@ function useGridOptions(props: { model: string }) {
       {
         dataType: 'number',
         field: 'current_year_price',
-        headerName: 'Current year prices',
+        headerName: 'Current prices',
         orsAggFunc: 'sumTotal',
         ...sectionColDefById['current_year_price'],
       },
