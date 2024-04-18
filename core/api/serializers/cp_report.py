@@ -4,10 +4,7 @@ from rest_framework import serializers
 from core.api.serializers.adm import AdmRecordSerializer
 from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
-from core.api.serializers.cp_history import (
-    CPHistoryArchiveSerializer,
-    CPHistorySerializer,
-)
+from core.api.serializers.cp_history import CPHistorySerializer
 from core.api.serializers.cp_price import CPPricesSerializer
 from core.api.serializers.cp_record import CPRecordSerializer
 from core.api.validations.cp_reports_validations import validate_cp_report
@@ -99,11 +96,7 @@ class CPReportSerializer(CPReportBaseSerializer):
 
 class CPReportArchiveSerializer(CPReportBaseSerializer):
     final_version_id = serializers.SerializerMethodField()
-    history = CPHistoryArchiveSerializer(
-        many=True,
-        required=False,
-        source="cphistory",
-    )
+    history = serializers.SerializerMethodField()
 
     class Meta(CPReportBaseSerializer.Meta):
         model = CPReportArchive
@@ -115,6 +108,15 @@ class CPReportArchiveSerializer(CPReportBaseSerializer):
             year=obj.year,
         ).first()
         return cp_report_final.id if cp_report_final else None
+
+    def get_history(self, obj):
+        cp_report_final = CPReport.objects.filter(
+            country_id=obj.country_id,
+            year=obj.year,
+        ).first()
+
+        cp_history_serializer = CPHistorySerializer(cp_report_final.cphistory.all(), many=True)
+        return cp_history_serializer.data
 
 
 class CPReportGroupSerializer(serializers.Serializer):

@@ -4,7 +4,6 @@ from core.models.base import AbstractWChemical, BaseWTimeFrameManager
 from core.models.base_country_programme import (
     AbstractCPEmission,
     AbstractCPGeneration,
-    AbstractCPHistory,
     AbstractCPPrices,
     AbstractCPRecord,
     AbstractCPReport,
@@ -148,16 +147,19 @@ class CPReportSections(models.Model):
     reported_section_f = models.BooleanField(default=False)
 
 
-class CPHistory(AbstractCPHistory):
+class CPHistory(models.Model):
+    created_at = models.DateTimeField(
+        auto_now_add=True, help_text="Date of creation of the event"
+    )
     country_programme_report = models.ForeignKey(
         "CPReport",
         on_delete=models.CASCADE,
         related_name="cphistory",
     )
-
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="updated_cp_reports",
         help_text="User who updated the report",
     )
+    event_description = models.TextField(blank=True)

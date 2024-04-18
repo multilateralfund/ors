@@ -797,6 +797,10 @@ class TestCPReportUpdate(BaseTest):
         assert "updated" in response.data["history"][0]["event_description"].lower()
         assert response.data["created_by"] == user.username
         assert response.data["history"][0]["updated_by_username"] == user.username
+        assert "Eu îmi fac prezenta" in response.data["history"][1]["event_description"]
+        assert (
+            response.data["history"][1]["updated_by_username"] == second_user.username
+        )
 
         # check report archive
         assert CPReportArchive.objects.count() == 2
@@ -821,10 +825,6 @@ class TestCPReportUpdate(BaseTest):
         assert ar.comment == "Sunt din cap până în picioare"
         assert ar.version == 2
         assert ar.created_by.username == user.username
-        assert ar.cphistory.first().updated_by.username == second_user.username
-        assert ar.cphistory.first().event_description == (
-            "Eu îmi fac prezenta, Tu faci diferenta, Imi lipseste concurenta"
-        )
         assert ar.created_at is not None
 
         # check record usage archive

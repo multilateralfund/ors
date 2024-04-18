@@ -28,7 +28,6 @@ from core.models.country_programme import CPHistory, CPReport
 from core.models.country_programme_archive import (
     CPEmissionArchive,
     CPGenerationArchive,
-    CPHistoryArchive,
     CPPricesArchive,
     CPRecordArchive,
     CPReportArchive,
@@ -304,18 +303,6 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
             )
             cp_reported_sections.save()
 
-        # archive cp history
-        cp_history_list = []
-        for cp_history in instance.cphistory.all():
-            cp_history_list.append(
-                self._get_archive_data(
-                    CPHistoryArchive,
-                    cp_history,
-                    {"country_programme_report_id": cp_report_ar.id},
-                )
-            )
-        CPHistoryArchive.objects.bulk_create(cp_history_list, batch_size=1000)
-
     def check_readonly_fields(self, serializer, current_obj):
         return (
             serializer.initial_data["country_id"] != current_obj.country_id
@@ -361,6 +348,13 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
 
         if new_instance.status == CPReport.CPReportStatus.FINAL:
             self._archive_cp_report(current_obj)
+
+        # inherit all history
+        CPHistory.objects.filter(
+            country_programme_report=current_obj
+        ).update(
+            country_programme_report=new_instance
+        )
 
         current_obj.delete()
 
