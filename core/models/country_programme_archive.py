@@ -124,3 +124,21 @@ class CPHistoryArchive(AbstractCPHistory):
         related_name="updated_cp_reports_archive",
         help_text="User who updated the report",
     )
+
+
+class CPReportSectionsArchive(models.Model):
+    """
+    These only start with version V (2023-onwards).
+    """
+    country_programme_report = models.OneToOneField(
+        "CPReportArchive",
+        on_delete=models.CASCADE,
+        related_name="cpreportedsections",
+    )
+
+    reported_section_a = models.BooleanField(default=False)
+    reported_section_b = models.BooleanField(default=False)
+    reported_section_c = models.BooleanField(default=False)
+    reported_section_d = models.BooleanField(default=False)
+    reported_section_e = models.BooleanField(default=False)
+    reported_section_f = models.BooleanField(default=False)
