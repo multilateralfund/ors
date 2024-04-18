@@ -129,6 +129,16 @@ class TestProjectsUpdate:
         assert project.title == "Into the Spell"
         assert project.submission_category == "investment project"
         assert project.coop_agencies.count() == 1
+        assert project.generated_code == get_project_sub_code(
+            project.country,
+            project.cluster,
+            new_agency,
+            project.project_type,
+            project.sector,
+            project.approval_meeting,
+            None,
+            project.serial_number,
+        )
 
     def test_project_patch_ods_odp(
         self, user, project_url, project, project_ods_odp_subst
@@ -607,7 +617,7 @@ class TestCreateProjects(BaseTest):
             project_cluster_kip,
             agency,
             project_type,
-            subsector,
+            subsector.sector,
             meeting,
             None,
             1,

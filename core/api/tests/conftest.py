@@ -71,7 +71,7 @@ def stakeholder_user():
 
 @pytest.fixture
 def country_ro():
-    return CountryFactory.create(name="Romania")
+    return CountryFactory.create(name="Romania", iso3="ROM")
 
 
 @pytest.fixture

@@ -65,7 +65,7 @@ def get_project_sub_code(
     project_type_code = project_type.code if project_type else "-"
     sector_code = sector.code if sector else "-"
     meeting_appr_code = meeting_appr.number if meeting_appr else "-"
-    meeting_transf_code = "." + meeting_transf.number if meeting_transf else ""
+    meeting_transf_code = f".{meeting_transf.number}" if meeting_transf else ""
     meetings_code = f"{meeting_appr_code}{meeting_transf_code}"
     return (
         f"{country_code}/{cluster_code}/{serial_number}/{agency_code}/{project_type_code}/"
