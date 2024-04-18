@@ -23,7 +23,7 @@ const ReportInfoView = (props: any) => {
   const files = report.files || []
 
   return (
-    <section className="grid items-start gap-4 md:auto-rows-auto md:grid-cols-2">
+    <section className="grid items-start gap-6 md:auto-rows-auto md:grid-cols-2">
       <Typography className="md:col-span-2" component="h2" variant="h6">
         {section.title}
       </Typography>

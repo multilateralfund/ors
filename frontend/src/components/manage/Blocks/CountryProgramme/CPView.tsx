@@ -52,7 +52,7 @@ const TableProps: TableProps = {
   }: any) => {
     return (
       <div
-        className={cx('mb-2 flex', {
+        className={cx('mb-4 flex', {
           'flex-col': !fullScreen,
           'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
             fullScreen,
@@ -220,6 +220,8 @@ function CPView(props: { archive?: boolean }) {
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [activeTab, renderedSections])
 
+  const showComments = variant?.model === 'V' && activeTab !== 0;
+
   return (
     <>
       <Loading
@@ -278,7 +280,7 @@ function CPView(props: { archive?: boolean }) {
               <div
                 id={section.panelId}
                 key={section.panelId}
-                className={cx('transition', {
+                className={cx('transition flex flex-col gap-6', {
                   'absolute -left-[9999px] -top-[9999px] opacity-0':
                     activeTab !== index,
                 })}
@@ -307,7 +309,7 @@ function CPView(props: { archive?: boolean }) {
               </div>
             )
           })}
-        {variant?.model === 'V' && <CPComments />}
+        {showComments && <CPComments />}
       </CPSectionWrapper>
     </>
   )
