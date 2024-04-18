@@ -152,7 +152,7 @@ class ProjectCluster(models.Model):
 
 class ProjectManager(models.Manager):
     def get_next_serial_number(self, country_id):
-        return self.filter(country_id=country_id).count() + 1
+        return self.select_for_update().filter(country_id=country_id).count() + 1
 
 
 class Project(models.Model):

@@ -3,10 +3,13 @@
     "*.css": "tailwindcss"
   },
   "eslint.workingDirectories": [
-    { "directory": "./frontend", "changeProcessCWD": true }
+    {
+      "directory": "./frontend",
+      "changeProcessCWD": true
+    }
   ],
   "[python]": {
-    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,
   },
 }
