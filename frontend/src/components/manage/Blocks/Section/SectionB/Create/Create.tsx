@@ -165,11 +165,12 @@ export default function SectionBCreate(props: {
     'existing_blends' | 'new_blend'
   >('existing_blends')
 
+  const chemicalsInForm = useMemo(() => {
+    return form.section_b.map((chemical: any) => chemical.row_id)
+  }, [form.section_b])
+
   const oldChemicalOptions = useMemo(() => {
     const data: Array<any> = []
-    const chemicalsInForm = form.section_b.map(
-      (chemical: any) => chemical.row_id,
-    )
     each(substances, (substance) => {
       if (
         includes(substance.sections, 'B') &&
@@ -187,13 +188,10 @@ export default function SectionBCreate(props: {
       },
     )
     return data
-  }, [substances, blends, form.section_b, createdBlends, Section])
+  }, [substances, blends, createdBlends, chemicalsInForm, Section])
 
   const mandatoryChemicals = useMemo(() => {
     const data: Array<any> = []
-    const chemicalsInForm = form.section_b.map(
-      (chemical: any) => chemical.row_id,
-    )
 
     each(
       emptyForm.substance_rows.section_b.filter((row) => row.substance_id),
@@ -222,7 +220,28 @@ export default function SectionBCreate(props: {
     )
 
     return data
-  }, [Section, emptyForm.substance_rows.section_b, form.section_b])
+  }, [Section, chemicalsInForm, emptyForm.substance_rows.section_b])
+
+  const optionalBlends = useMemo(() => {
+    const data: Array<any> = []
+    const emptyFormBlendIds = emptyForm.substance_rows.section_b
+      .filter((row) => row.blend_id)
+      .map((blend) => blend.blend_id)
+
+    each(
+      sortBy(uniqBy([...blends, ...createdBlends], 'id'), 'sort_order'),
+      (blend) => {
+        if (
+          !includes(emptyFormBlendIds, blend.id) &&
+          !includes(chemicalsInForm, `blend_${blend.id}`)
+        ) {
+          data.push(Section.transformApiBlend(blend))
+        }
+      },
+    )
+
+    return data
+  }, [Section, blends, chemicalsInForm, createdBlends, emptyForm.substance_rows.section_b])
 
   const gridOptions = useGridOptions({
     model: variant.model,
@@ -324,12 +343,13 @@ export default function SectionBCreate(props: {
       {includes(['V'], variant.model) && newChemicalModal && (
         <NewChemicalModal
           groupBy={(option: any) => option.group}
+          mandatoryChemicals={mandatoryChemicals}
           open={newChemicalModal}
           optionLabel={(option: any) => option.display_name}
-          options={mandatoryChemicals}
+          optionalBlends={optionalBlends}
           substances={substances}
           value={newChemicalModalTab}
-          onChangeSubstance={(event: any, newChemical: any) => {
+          onChangeChemical={(event: any, newChemical: any) => {
             if (document.activeElement) {
               // @ts-ignore
               document.activeElement.blur()

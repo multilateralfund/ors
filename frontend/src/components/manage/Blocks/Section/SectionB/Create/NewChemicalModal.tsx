@@ -17,14 +17,15 @@ import Field from '@ors/components/manage/Form/Field'
 
 export function NewChemicalModal(props: {
   groupBy: (option: any) => any
-  onChangeSubstance: (event: any, newChemical: any) => void
+  mandatoryChemicals: Array<any>
+  onChangeChemical: (event: any, newChemical: any) => void
   onChangeTab: (_: any, value: any) => void
   onCloseBlendModal: () => void
   onCloseModal: () => void
   onCreateBlend: (blend: ApiCreatedBlend) => void
   open: boolean
   optionLabel: (option: any) => any
-  options: Array<any>
+  optionalBlends: Array<any>
   substances: Array<any>
   value: 'existing_blends' | 'new_blend'
 }) {
@@ -78,13 +79,13 @@ export function NewChemicalModal(props: {
             <Field
               getOptionLabel={props.optionLabel}
               groupBy={props.groupBy}
-              options={props.options}
+              options={props.mandatoryChemicals}
               value={null}
               widget="autocomplete"
               Input={{
                 autoComplete: 'off',
               }}
-              onChange={props.onChangeSubstance}
+              onChange={props.onChangeChemical}
             />
             <Typography>
               Other blends (Mixture of controlled substances)
@@ -92,13 +93,13 @@ export function NewChemicalModal(props: {
             <Field
               getOptionLabel={props.optionLabel}
               groupBy={props.groupBy}
-              options={[]}
+              options={props.optionalBlends}
               value={null}
               widget="autocomplete"
               Input={{
                 autoComplete: 'off',
               }}
-              onChange={props.onChangeSubstance}
+              onChange={props.onChangeChemical}
             />
             <Typography className="text-right">
               <Button onClick={props.onCloseModal}>Close</Button>
