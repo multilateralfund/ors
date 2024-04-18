@@ -200,9 +200,11 @@ export default function SectionACreate(props: {
           </Button>
         </div>
       )}
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
+      {!includes(['I'], variant.model) && (
+        <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+          <Footnotes />
+        </Alert>
+      )}
       <Table
         {...TableProps}
         className="mb-4"

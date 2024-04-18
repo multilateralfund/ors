@@ -130,7 +130,7 @@ function useGridOptions(props: {
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',
           field: 'generated_emissions',
-          headerName: 'Amount of generated emission',
+          headerName: 'Amount of generated emissions',
           orsAggFunc: 'sumTotal',
           ...sectionColDefById['generated_emissions'],
         },

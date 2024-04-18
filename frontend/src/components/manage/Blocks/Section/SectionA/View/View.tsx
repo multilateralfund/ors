@@ -112,9 +112,11 @@ export default function SectionAView(props: any) {
 
   return (
     <>
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
+      {!includes(['I'], variant.model) && (
+        <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+          <Footnotes />
+        </Alert>
+      )}
       <div
         className={cx('flex', {
           'justify-between': includes(['IV', 'V'], variant.model),
