@@ -35,7 +35,7 @@ export function NewChemicalModal(props: {
       open={props.open}
       onClose={props.onCloseModal}
     >
-      <Box className="xs:max-w-xs w-full max-w-md absolute-center sm:max-w-2xl">
+      <Box className="xs:max-w-xs max-h-[768px] w-full max-w-md overflow-y-auto absolute-center sm:max-w-2xl">
         <Typography
           id="add-blend-modal-title"
           className="mb-2"
