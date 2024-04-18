@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 
-import { Typography } from '@mui/material'
+import {Alert, Typography} from '@mui/material'
 import cx from 'classnames'
 import { findIndex, groupBy, map } from 'lodash'
 
@@ -10,7 +10,7 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import useGridOptions from './schema'
 
 import { AiFillFilePdf } from 'react-icons/ai'
-import { IoClose, IoDownloadOutline, IoExpand } from 'react-icons/io5'
+import {IoClose, IoDownloadOutline, IoExpand, IoInformationCircleOutline} from 'react-icons/io5'
 
 export default function AdmBCreate(props: any) {
   const { TableProps, emptyForm, form, section, setForm } = props
@@ -34,6 +34,12 @@ export default function AdmBCreate(props: any) {
 
   return (
     <>
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Typography id="footnote-1" className="italic transition-all">
+          <span className="font-bold">1. </span>
+          If Yes, since when (Date) / If No, planned date.
+        </Typography>
+      </Alert>
       <Table
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
