@@ -296,12 +296,13 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
         AdmRecordArchive.objects.bulk_create(adm_records, batch_size=1000)
 
         # archive cp reported sections
-        cp_reported_sections = self._get_archive_data(
-            CPReportSectionsArchive,
-            instance.cpreportedsections,
-            {"country_programme_report_id":  cp_report_ar.id}
-        )
-        cp_reported_sections.save()
+        if hasattr(instance, "cpreportedsections"):
+            cp_reported_sections = self._get_archive_data(
+                CPReportSectionsArchive,
+                instance.cpreportedsections,
+                {"country_programme_report_id":  cp_report_ar.id}
+            )
+            cp_reported_sections.save()
 
         # archive cp history
         cp_history_list = []
