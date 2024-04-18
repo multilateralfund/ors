@@ -68,7 +68,7 @@ export default function getUsagesColDef() {
     },
     'Refrigeration Manufacturing Other': {
       autoHeaderHeight: true,
-      flex: 2,
+      flex: 1,
       headerComponentParams: {
         footnote: {
           id: '5',
