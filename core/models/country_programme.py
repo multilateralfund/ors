@@ -163,3 +163,4 @@ class CPHistory(models.Model):
         help_text="User who updated the report",
     )
     event_description = models.TextField(blank=True)
+    report_version = models.FloatField(default=1)

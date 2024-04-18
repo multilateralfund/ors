@@ -31,4 +31,5 @@ class CPHistorySerializer(serializers.ModelSerializer):
             "updated_by_id",
             "updated_by_username",
             "event_description",
+            "report_version",
         ]
