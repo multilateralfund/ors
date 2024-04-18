@@ -346,9 +346,7 @@ export default function SectionBCreate(props: {
             }
           }}
           onChangeTab={(_, value) => setNewChemicalModalTab(value)}
-          onCloseBlendModal={() => {
-            setNewChemicalModalTab('existing_blends')
-          }}
+          onCloseBlendModal={() => {}} // Not used
           onCloseModal={() => setNewChemicalModal(false)}
           onCreateBlend={(blend: ApiCreatedBlend) => {
             const serializedBlend = Section.transformApiBlend(blend)

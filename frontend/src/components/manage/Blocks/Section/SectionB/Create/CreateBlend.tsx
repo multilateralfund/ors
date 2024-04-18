@@ -443,7 +443,7 @@ export function CreateBlend({
       </div>
       <div className="modal-action mt-8">
         <Typography className="flex justify-end gap-x-2">
-          <Button onClick={() => onClose()}>Close</Button>
+          {!noModal && <Button onClick={() => onClose()}>Close</Button>}
           <Button
             variant="contained"
             onClick={async () => {
