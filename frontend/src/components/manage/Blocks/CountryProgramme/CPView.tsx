@@ -208,6 +208,8 @@ function CPView(props: { archive?: boolean }) {
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [activeTab, renderedSections])
 
+  const showComments = variant?.model === 'V' && activeTab !== 0;
+
   return (
     <>
       <Loading
@@ -295,7 +297,7 @@ function CPView(props: { archive?: boolean }) {
               </div>
             )
           })}
-        {variant?.model === 'V' && <CPComments />}
+        {showComments && <CPComments />}
       </CPSectionWrapper>
     </>
   )
