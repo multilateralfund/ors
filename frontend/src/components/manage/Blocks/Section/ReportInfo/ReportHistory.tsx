@@ -36,9 +36,6 @@ const ReportHistory = () => {
       </div>
     )
 
-  console.log('versions', versions)
-  console.log('report', report)
-
   return (
     <div>
       <p className="mb-3 text-2xl font-normal">History</p>
@@ -94,7 +91,7 @@ const ReportHistory = () => {
                   </div>
                 </div>
                 {displayHR && (
-                  <hr className="h-px w-[95%] border-0 bg-gray-200 my-0" />
+                  <hr className="my-0 h-px w-[95%] border-0 bg-gray-200" />
                 )}
               </>
             )
