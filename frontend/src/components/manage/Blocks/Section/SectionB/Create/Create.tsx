@@ -270,29 +270,24 @@ export default function SectionBCreate(props: {
 
   return (
     <>
+      <Alert
+        icon={<IoInformationCircleOutline size={24} />}
+        severity="info"
+      >
+        <Footnotes />
+      </Alert>
       {includes(['V'], variant.model) && (
         <div className="flex justify-end">
           <Button
             className="rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
             onClick={() => setAddBlendModal(true)}
           >
-            Add blend <IoAddCircle
-            className="ml-1.5"
-            size={18}
-          />
+            Add blend <IoAddCircle className="ml-1.5" size={18} />
           </Button>
         </div>
       )}
-      <Alert
-        className="my-4"
-        icon={<IoInformationCircleOutline size={24} />}
-        severity="info"
-      >
-        <Footnotes />
-      </Alert>
       <Table
         {...TableProps}
-        className="mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={3}
@@ -377,9 +372,7 @@ export default function SectionBCreate(props: {
             </ToggleButtonGroup>
             {addBlendModalTab === 'existing_blends' && (
               <>
-                <Typography>
-                  Mandatory / usual blends
-                </Typography>
+                <Typography>Mandatory / usual blends</Typography>
                 <Field
                   getOptionLabel={(option: any) => option.display_name}
                   groupBy={(option: any) => option.group}
