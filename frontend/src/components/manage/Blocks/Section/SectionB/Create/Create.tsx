@@ -163,12 +163,17 @@ export default function SectionBCreate(props: {
   const rowData = getRowData(form.section_b, variant)
   const pinnedRowData = getInitialPinnedBottomRowData(variant.model)
 
-  const [addBlendModal, setAddBlendModal] = useState(false)
-  const [addBlendModalTab, setAddBlendModalTab] = useState('existing_blends')
+  // Old add chemical and create blend modals (<2023)
   const [addChemicalModal, setAddChemicalModal] = useState(false)
   const [createBlendModal, setCreateBlendModal] = useState(false)
 
-  const chemicalsOptions = useMemo(() => {
+  // New modal with both add chemical and create blend tabs (>=2023)
+  const [newChemicalModal, setNewChemicalModal] = useState(false)
+  const [newChemicalModalTab, setNewChemicalModalTab] = useState<
+    'existing_blends' | 'new_blend'
+  >('existing_blends')
+
+  const oldChemicalOptions = useMemo(() => {
     const data: Array<any> = []
     const chemicalsInForm = form.section_b.map(
       (chemical: any) => chemical.row_id,
@@ -270,17 +275,14 @@ export default function SectionBCreate(props: {
 
   return (
     <>
-      <Alert
-        icon={<IoInformationCircleOutline size={24} />}
-        severity="info"
-      >
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
         <Footnotes />
       </Alert>
       {includes(['V'], variant.model) && (
         <div className="flex justify-end">
           <Button
             className="rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
-            onClick={() => setAddBlendModal(true)}
+            onClick={() => setNewChemicalModal(true)}
           >
             Add blend <IoAddCircle className="ml-1.5" size={18} />
           </Button>
@@ -327,11 +329,11 @@ export default function SectionBCreate(props: {
           }
         }}
       />
-      {includes(['V'], variant.model) && addBlendModal && (
+      {includes(['V'], variant.model) && newChemicalModal && (
         <Modal
           aria-labelledby="add-blend-modal-title"
-          open={addBlendModal}
-          onClose={() => setAddBlendModal(false)}
+          open={newChemicalModal}
+          onClose={() => setNewChemicalModal(false)}
         >
           <Box className="xs:max-w-xs w-full max-w-md absolute-center sm:max-w-sm">
             <Typography
@@ -345,8 +347,8 @@ export default function SectionBCreate(props: {
             <Divider />
             <ToggleButtonGroup
               color="primary"
-              value={addBlendModalTab}
-              onChange={(_, value) => setAddBlendModalTab(value)}
+              value={newChemicalModalTab}
+              onChange={(_, value) => setNewChemicalModalTab(value)}
               exclusive
             >
               <ToggleButton
@@ -370,7 +372,7 @@ export default function SectionBCreate(props: {
                 New blend
               </ToggleButton>
             </ToggleButtonGroup>
-            {addBlendModalTab === 'existing_blends' && (
+            {newChemicalModalTab === 'existing_blends' && (
               <>
                 <Typography>Mandatory / usual blends</Typography>
                 <Field
@@ -397,7 +399,7 @@ export default function SectionBCreate(props: {
                         section_b: [...form.section_b, newChemical],
                       }))
                     }
-                    setAddBlendModal(false)
+                    setNewChemicalModal(false)
                   }}
                 />
                 <Typography>
@@ -427,19 +429,21 @@ export default function SectionBCreate(props: {
                         section_b: [...form.section_b, newChemical],
                       }))
                     }
-                    setAddBlendModal(false)
+                    setNewChemicalModal(false)
                   }}
                 />
                 <Typography className="text-right">
-                  <Button onClick={() => setAddBlendModal(false)}>Close</Button>
+                  <Button onClick={() => setNewChemicalModal(false)}>
+                    Close
+                  </Button>
                 </Typography>
               </>
             )}
-            {addBlendModalTab === 'new_blend' && (
+            {newChemicalModalTab === 'new_blend' && (
               <CreateBlend
                 substances={substances}
                 onClose={() => {
-                  setAddBlendModalTab('existing_blends')
+                  setNewChemicalModalTab('existing_blends')
                 }}
                 onCreateBlend={(blend: ApiCreatedBlend) => {
                   const serializedBlend = Section.transformApiBlend(blend)
@@ -508,7 +512,7 @@ export default function SectionBCreate(props: {
               Input={{ autoComplete: 'off' }}
               getOptionLabel={(option: any) => option.display_name}
               groupBy={(option: any) => option.group}
-              options={chemicalsOptions}
+              options={oldChemicalOptions}
               value={null}
               widget="autocomplete"
               onChange={(event: any, newChemical: any) => {
