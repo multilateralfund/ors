@@ -1,3 +1,5 @@
+import type { RowData } from './types'
+
 import { useMemo } from 'react'
 
 import { Button } from '@mui/material'
@@ -18,7 +20,6 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 
 import { sectionColDefById } from '../sectionColumnsDef'
-import { RowData } from './Create'
 
 import { IoTrash } from 'react-icons/io5'
 

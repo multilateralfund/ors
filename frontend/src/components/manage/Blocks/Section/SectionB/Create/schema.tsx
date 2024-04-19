@@ -1,3 +1,4 @@
+import type { RowData } from './types'
 import { EmptyFormUsageColumn } from '@ors/types/api_empty-form'
 
 import { useMemo } from 'react'
@@ -20,7 +21,6 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 
 import { sectionColDefById } from '../sectionColumnsDef'
-import { RowData } from './Create'
 
 import { IoTrash } from 'react-icons/io5'
 

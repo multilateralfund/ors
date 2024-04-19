@@ -21,7 +21,7 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
-import api from '@ors/helpers/Api/Api'
+import api from '@ors/helpers/Api/_api'
 import { applyTransaction } from '@ors/helpers/Utils/Utils'
 import useStateWithPrev from '@ors/hooks/useStateWithPrev'
 
@@ -93,7 +93,7 @@ export function CreateBlend({
         })
       } catch (e) {
         setErrors({
-          components: "Couldn't fetch the next custom mix name."
+          components: "Couldn't fetch the next custom mix name.",
         })
       }
     }

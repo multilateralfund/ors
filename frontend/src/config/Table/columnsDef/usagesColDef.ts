@@ -1,4 +1,4 @@
-import { defaultColGroupDef } from '@ors/config/Table/columnsDef'
+import defaultColGroupDef from '@ors/config/Table/columnsDef/defaultColGroupDef'
 
 export default function getUsagesColDef() {
   return {

@@ -1,4 +1,4 @@
-import {CPHistoryItem} from "@ors/types/store";
+import type { CPHistoryItem } from '@ors/types/store'
 
 type cp_report = {
   comment: null | string
@@ -103,7 +103,7 @@ type ApiBase = {
   }
   section_f: {
     remarks: null | string
-  },
+  }
 }
 
 // The server response contains the cp_report property which is destructured into the root by the client.

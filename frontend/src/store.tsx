@@ -1,36 +1,22 @@
 'use client'
-import type { InitialStoreState, StoreState } from '@ors/types/store'
+import type {
+  InitialStoreState,
+  StoreProviderProps,
+  StoreState,
+} from '@ors/types/store'
 
-import {
-  MutableRefObject,
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 
 import { merge } from 'lodash'
-import { StoreApi, useStore as useZustandStore } from 'zustand'
+import { useStore as useZustandStore } from 'zustand'
 import { useShallow } from 'zustand/react/shallow'
 import { createStore as createZustandStore } from 'zustand/vanilla'
 
 import createSlices from '@ors/slices'
 
-type StoreProviderProps = {
-  children: React.ReactNode
-  initialState: InitialStoreState
-}
-
-export type CreateSliceProps = {
-  initialState: InitialStoreState
-  get: StoreApi<StoreState>['getState']
-  set: StoreApi<StoreState>['setState']
-}
+import { setStore, store } from './_store'
 
 export type Store = ReturnType<typeof createStore>
-
-export let store: MutableRefObject<StoreApi<StoreState>>
 
 export const initialStore = createZustandStore<InitialStoreState>(() => ({}))
 
@@ -47,7 +33,7 @@ export function StoreProvider({ children, initialState }: StoreProviderProps) {
   // Set initial store state
   initialStore.setState(initialState)
   // Hydrate store with initial state
-  store = useRef(createStore(initialStore.getState()))
+  setStore(useRef(createStore(initialStore.getState())))
   // Re-hydrate store with new initial state
   const unsubscribeRehydrate = initialStore.subscribe((state, prevState) => {
     if (JSON.stringify(state) !== JSON.stringify(prevState)) {

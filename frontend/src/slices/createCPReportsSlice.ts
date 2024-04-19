@@ -1,6 +1,10 @@
 import { CPReport } from '@ors/types/api_country-programme_records'
 import { EmptyFormType, EmptyFormUsageColumn } from '@ors/types/api_empty-form'
-import type { CPReportsSlice, Country } from '@ors/types/store'
+import type {
+  CPReportsSlice,
+  Country,
+  CreateSliceProps,
+} from '@ors/types/store'
 import { ReportVariant } from '@ors/types/variants'
 
 import { ColDef } from 'ag-grid-community'
@@ -17,7 +21,6 @@ import {
   getSlice,
   setSlice,
 } from '@ors/helpers/Store/Store'
-import { CreateSliceProps } from '@ors/store'
 
 export const variants: ReportVariant[] = [
   {

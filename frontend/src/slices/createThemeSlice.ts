@@ -1,10 +1,10 @@
+import type { CreateSliceProps } from '@ors/types/store'
 import type { ThemeSlice } from '@ors/types/store'
 
 import { produce } from 'immer'
 import Cookies from 'js-cookie'
 
 import config from '@ors/registry'
-import { CreateSliceProps } from '@ors/store'
 
 export const createThemeSlice = ({
   initialState,

@@ -1,8 +1,6 @@
 'use client'
 
-import type { TableProps } from '@ors/components/manage/Form/Table'
 import { Country } from '@ors/types/store'
-import { ReportVariant } from '@ors/types/variants'
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -20,7 +18,8 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import Link from '@ors/components/ui/Link/Link'
 import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
-import api, { getResults } from '@ors/helpers/Api/Api'
+import api from '@ors/helpers/Api/_api'
+import { getResults } from '@ors/helpers/Api/Api'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import useApi from '@ors/hooks/useApi'
 import useMakeClassInstance from '@ors/hooks/useMakeClassInstance'
@@ -33,85 +32,18 @@ import SectionF from '@ors/models/SectionF'
 import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
-import { SectionMeta, getSections } from '.'
+import { getSections } from '.'
 import Portal from '../../Utils/Portal'
 import { CPCreateHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
+import {
+  CPBaseForm,
+  CPCreateTableProps,
+  FormErrors,
+  WidgetCountry,
+} from './typesCPCreate'
 
 import { IoClose, IoExpand, IoLink } from 'react-icons/io5'
-
-type ToolbarProps = {
-  enterFullScreen: () => void
-  exitFullScreen: () => void
-  fullScreen: boolean
-  isActiveSection: boolean
-  section: SectionMeta
-}
-
-interface WidgetCountry {
-  id: number
-  label: string
-}
-
-type FormError = Record<string, string>
-type FormErrors = Record<string, FormError>
-
-interface CPCreateTableProps extends TableProps {
-  Toolbar: React.FC<ToolbarProps>
-  enableCellChangeFlash: boolean
-  enableFullScreen: boolean
-  enablePagination: boolean
-  // getRowId: (props: any) => string
-  rowsVisible: number
-  suppressCellFocus: boolean
-  suppressColumnVirtualisation: boolean
-  suppressLoadingOverlay: boolean
-  suppressRowHoverHighlight: boolean
-  withSeparators: boolean
-}
-
-export interface PassedCPCreateTableProps extends CPCreateTableProps {
-  context: {
-    section:
-      | SectionA['data']
-      | SectionB['data']
-      | SectionC['data']
-      | SectionD['data']
-      | SectionE['data']
-      | SectionF['data']
-    variant: ReportVariant
-  }
-  errors: FormErrors
-  report: Report
-  section:
-    | SectionA['data']
-    | SectionB['data']
-    | SectionC['data']
-    | SectionD['data']
-    | SectionE['data']
-    | SectionF['data']
-}
-
-export interface CPBaseForm {
-  country: WidgetCountry | null
-  report_info: {
-    reported_section_a: boolean
-    reported_section_b: boolean
-    reported_section_c: boolean
-    reported_section_d: boolean
-    reported_section_e: boolean
-    reported_section_f: boolean
-    reporting_email: string
-    reporting_entry: string
-  }
-  section_a: SectionA['data']
-  section_b: SectionB['data']
-  section_c: SectionC['data']
-  section_d: SectionD['data']
-  section_e: SectionE['data']
-  section_f: SectionF['data']
-  year: number
-}
 
 const TableProps: CPCreateTableProps = {
   Toolbar: ({
@@ -649,7 +581,7 @@ const CPCreate: React.FC = () => {
               <div
                 id={section.panelId}
                 key={section.panelId}
-                className={cx('transition flex flex-col gap-6', {
+                className={cx('flex flex-col gap-6 transition', {
                   'absolute -left-[9999px] -top-[9999px] opacity-0':
                     activeTab !== index,
                 })}

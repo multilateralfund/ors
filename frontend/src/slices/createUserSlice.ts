@@ -1,14 +1,14 @@
+import type { CreateSliceProps } from '@ors/types/store'
 import type { UserSlice } from '@ors/types/store'
 
 import Cookies from 'js-cookie'
 
-import api from '@ors/helpers/Api/Api'
+import api from '@ors/helpers/Api/_api'
 import {
   fetchSliceData,
   getInitialSliceData,
   setSlice,
 } from '@ors/helpers/Store/Store'
-import { CreateSliceProps } from '@ors/store'
 
 function removeCookies() {
   Cookies.remove('csrftoken')

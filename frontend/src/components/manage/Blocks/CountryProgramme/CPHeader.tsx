@@ -11,7 +11,7 @@ import { useSnackbar } from 'notistack'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
-import api from '@ors/helpers/Api/Api'
+import api from '@ors/helpers/Api/_api'
 import { useStore } from '@ors/store'
 
 import { IoChevronDown } from 'react-icons/io5'

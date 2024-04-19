@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 
 import { CPArchiveViewWrapper } from '@ors/components/manage/Blocks/CountryProgramme/CPView'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-import api from '@ors/helpers/Api/Api'
+import api from '@ors/helpers/Api/_api'
 
 export const metadata: Metadata = {
   title: 'Country programme',

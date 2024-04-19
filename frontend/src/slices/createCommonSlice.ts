@@ -1,7 +1,7 @@
+import type { CreateSliceProps } from '@ors/types/store'
 import type { CommonSlice } from '@ors/types/store'
 
 import { defaultSliceData } from '@ors/helpers/Store/Store'
-import { CreateSliceProps } from '@ors/store'
 
 export const createCommonSlice = ({
   initialState,

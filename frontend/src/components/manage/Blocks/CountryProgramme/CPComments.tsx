@@ -8,7 +8,7 @@ import TextareaAutosize from '@mui/material/TextareaAutosize'
 import Typography from '@mui/material/Typography'
 
 import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
-import api from '@ors/helpers/Api/Api'
+import api from '@ors/helpers/Api/_api'
 import { useStore } from '@ors/store'
 
 interface TextState {
@@ -90,11 +90,11 @@ const CPComments: React.FC = () => {
   }
 
   return (
-    <form className="-mx-6 -mb-6 mt-6 flex w-auto flex-wrap gap-6 bg-gray-100 rounded-b-lg px-6 pb-6">
+    <form className="-mx-6 -mb-6 mt-6 flex w-auto flex-wrap gap-6 rounded-b-lg bg-gray-100 px-6 pb-6">
       {orderedUsers.map((user) => (
         <div
           key={user}
-          className="relative flex min-w-96 flex-1 flex-col rounded-lg bg-gray-100 rounded-b-lg"
+          className="relative flex min-w-96 flex-1 flex-col rounded-lg rounded-b-lg bg-gray-100"
         >
           {user_type !== commentsMeta[user].user_type && (
             <SectionOverlay
@@ -107,7 +107,7 @@ const CPComments: React.FC = () => {
           </label>
           <div className="CPComments relative">
             <TextareaAutosize
-              className="w-full resize-none rounded-lg border border-transparent p-2 pb-10 shadow-none bg-white"
+              className="w-full resize-none rounded-lg border border-transparent bg-white p-2 pb-10 shadow-none"
               minRows={10}
               placeholder="Type your comment here..."
               value={texts[user]}

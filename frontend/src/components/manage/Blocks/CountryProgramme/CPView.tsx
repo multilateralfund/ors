@@ -2,7 +2,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
 import { Tab, Tabs, Tooltip, Typography } from '@mui/material'
-import { AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
 import { produce } from 'immer'
 import { filter, includes } from 'lodash'
@@ -14,7 +13,7 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
 import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
-import { formatApiUrl } from '@ors/helpers/Api/Api'
+import { formatApiUrl } from '@ors/helpers/Api/utils'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
@@ -23,22 +22,12 @@ import { getSections } from '.'
 import Portal from '../../Utils/Portal'
 import { CPArchiveHeader, CPViewHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
+import { ITableProps } from './typesCPView'
 
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 import { IoClose, IoDownloadOutline, IoExpand } from 'react-icons/io5'
 
-export type TableProps = AgGridReactProps & {
-  Toolbar?: React.FC<any>
-  enableFullScreen?: boolean
-  errors?: any
-  fadeInOut?: boolean
-  headerDepth?: number
-  paginationPageSizeSelector?: Array<number>
-  rowsVisible?: number
-  withFluidEmptyColumn?: boolean
-}
-
-const TableProps: TableProps = {
+const TableProps: ITableProps = {
   Toolbar: ({
     archive,
     enterFullScreen,

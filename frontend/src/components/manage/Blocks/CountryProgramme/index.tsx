@@ -23,6 +23,8 @@ import SectionEView from '@ors/components/manage/Blocks/Section/SectionE/View/Vi
 import SectionFCreate from '@ors/components/manage/Blocks/Section/SectionF/Create'
 import SectionFView from '@ors/components/manage/Blocks/Section/SectionF/View'
 
+import { DefaultComponentType, SectionMeta } from './types'
+
 const constants: ConstantsType = {
   I: undefined,
   II: {
@@ -58,10 +60,10 @@ const constants: ConstantsType = {
   },
 }
 
-type ComponentsCreate = {
-  adm_b?: typeof DefaultComponent
-  adm_c?: typeof DefaultComponent
-  adm_d?: typeof DefaultComponent
+export type ComponentsCreate = {
+  adm_b?: DefaultComponentType
+  adm_c?: DefaultComponentType
+  adm_d?: DefaultComponentType
   report_info: typeof ReportInfoCreate
   section_a: typeof SectionACreate
   section_b: typeof SectionBCreate
@@ -138,16 +140,6 @@ const components: {
 }
 
 const DefaultComponent = () => <div>Not implemented</div>
-
-export type SectionMeta = {
-  allowFullScreen?: boolean
-  component: React.FC<any>
-  id: keyof ComponentsCreate
-  label: string
-  note?: string
-  panelId: string
-  title: string
-}
 
 export function getSections(
   variant: {

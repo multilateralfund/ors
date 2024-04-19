@@ -1,4 +1,4 @@
-import type { TableProps } from '../../../CountryProgramme/CPView'
+import type { ITableProps } from '../../../CountryProgramme/typesCPView'
 import { CPReport } from '@ors/types/api_country-programme_records'
 import { EmptyFormType } from '@ors/types/api_empty-form'
 import { ReportVariant } from '@ors/types/variants'
@@ -97,7 +97,7 @@ function getPinnedRowData(rowData: any) {
 }
 
 export default function SectionBView(props: {
-  TableProps: TableProps
+  TableProps: ITableProps
   emptyForm: EmptyFormType
   report: CPReport
   variant: ReportVariant

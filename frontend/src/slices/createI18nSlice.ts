@@ -1,3 +1,4 @@
+import type { CreateSliceProps } from '@ors/types/store'
 import type { I18nSlice } from '@ors/types/store'
 
 import { dir } from 'i18next'
@@ -5,7 +6,6 @@ import { produce } from 'immer'
 import Cookies from 'js-cookie'
 
 import config from '@ors/registry'
-import { CreateSliceProps } from '@ors/store'
 
 export const createI18nSlice = ({
   initialState,

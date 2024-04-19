@@ -1,10 +1,21 @@
+import type { CPReport } from './api_country-programme_records'
 import type { EmptyFormType } from './api_empty-form'
+import type { ApiSubstance } from './api_substances'
 import type { Language } from '@ors/types/locales'
 import type { DataType, SliceData } from '@ors/types/primitives'
 import type { PartialDeep } from 'type-fest'
 
-import { CPReport } from './api_country-programme_records'
-import { ApiSubstance } from './api_substances'
+import { StoreApi } from 'zustand'
+type StoreProviderProps = {
+  children: React.ReactNode
+  initialState: InitialStoreState
+}
+
+export type CreateSliceProps = {
+  initialState: InitialStoreState
+  get: StoreApi<StoreState>['getState']
+  set: StoreApi<StoreState>['setState']
+}
 
 type Report = SliceData<CPReport | null, Record<string, any> | null> & {
   country?: Country

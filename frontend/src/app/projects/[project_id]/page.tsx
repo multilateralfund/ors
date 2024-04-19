@@ -4,7 +4,7 @@ import { Metadata } from 'next'
 
 import PView from '@ors/components/manage/Blocks/Projects/PView'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-import api from '@ors/helpers/Api/Api'
+import api from '@ors/helpers/Api/_api'
 
 type ProjectProps = {
   params: {

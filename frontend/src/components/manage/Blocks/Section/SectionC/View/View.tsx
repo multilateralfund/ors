@@ -1,4 +1,4 @@
-import type { TableProps } from '@ors/components/manage/Blocks/CountryProgramme/CPView'
+import type { ITableProps } from '../../../CountryProgramme/typesCPView'
 import { CPReport } from '@ors/types/api_country-programme_records'
 import { ReportVariant } from '@ors/types/variants'
 
@@ -67,7 +67,7 @@ function getRowData(
 }
 
 export default function SectionCView(props: {
-  TableProps: TableProps & {
+  TableProps: ITableProps & {
     context: {
       section: SectionC['data']
       variant: ReportVariant

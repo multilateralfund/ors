@@ -1,4 +1,4 @@
-import type { Api } from '@ors/helpers/Api/Api'
+import type { IApi } from '@ors/helpers/Api/types'
 import { DataType, ErrorType } from '@ors/types/primitives'
 
 import { Dispatch, SetStateAction, useEffect, useId, useState } from 'react'
@@ -9,7 +9,7 @@ import { isFunction } from 'lodash'
 import { fetcher } from '@ors/helpers/Api/Api'
 import { debounce } from '@ors/helpers/Utils/Utils'
 
-export type ApiSettings = Api & {
+export type ApiSettings = IApi & {
   onError?: any
   onPending?: any
   onSuccess?: any
