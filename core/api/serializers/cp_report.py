@@ -126,7 +126,6 @@ class CPReportCreateSerializer(serializers.Serializer):
     status = serializers.ChoiceField(
         choices=CPReport.CPReportStatus.choices, required=False
     )
-    history = CPHistorySerializer(many=True, required=False)
     report_info = CPReportInfoSerializer(many=False, required=False, allow_null=True)
     section_a = CPRecordSerializer(many=True, required=False)
     section_b = CPRecordSerializer(many=True, required=False)
@@ -144,7 +143,6 @@ class CPReportCreateSerializer(serializers.Serializer):
         fields = [
             "name",
             "year",
-            "history",
             "status",
             "country_id",
             "report_info",
