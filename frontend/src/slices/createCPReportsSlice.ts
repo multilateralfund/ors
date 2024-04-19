@@ -65,7 +65,6 @@ function mapUsage(
   view = true,
 ): ColDef {
   const children = usage.children || []
-  console.log(usage)
   return {
     id: usage.id,
     category: usage.columnCategory,

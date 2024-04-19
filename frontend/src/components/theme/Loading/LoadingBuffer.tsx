@@ -85,7 +85,6 @@ export default function LoadingBuffer(props: LoadingBufferProps) {
             style={CircularProgress?.style}
             value={progress}
             variant="determinate"
-            disableShrink
           />
           <Typography
             className="progress absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center"
