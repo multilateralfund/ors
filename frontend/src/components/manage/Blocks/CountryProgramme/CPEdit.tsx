@@ -57,7 +57,7 @@ const TableProps = {
   }: any) => {
     return (
       <div
-        className={cx('mb-2 flex', {
+        className={cx('mb-4 flex', {
           'flex-col': !fullScreen,
           'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
             fullScreen,
@@ -71,6 +71,18 @@ const TableProps = {
         >
           {section.title}
         </Typography>
+        {section.note && (
+          <Typography
+            className={cx(
+              'border border-solid border-black px-2 py-4 font-bold',
+              {
+                'mb-4 md:mb-0': fullScreen,
+              },
+            )}
+          >
+            {section.note}
+          </Typography>
+        )}
         <Portal
           active={isActiveSection && !fullScreen}
           domNode="sectionToolbar"
@@ -210,7 +222,12 @@ function CPEdit() {
           .filter((row) => row.id !== 0)
           .map((row) => ({ ...row, mandatory: false }))
       : Sections.section_a.getData(),
-    section_b: Sections.section_b.getData(),
+    section_b: includes(['V'], variant?.model)
+      ? Sections.section_b
+        .getData()
+        .filter((row) => row.id !== 0)
+        .map((row) => ({ ...row, mandatory: false }))
+      : Sections.section_b.getData(),
     section_c: Sections.section_c.getData(),
     section_d: Sections.section_d.getData(),
     section_e: Sections.section_e.getData(),
@@ -380,7 +397,7 @@ function CPEdit() {
                 <div
                   id={section.panelId}
                   key={section.panelId}
-                  className={cx('transition', {
+                  className={cx('transition flex flex-col gap-6', {
                     'absolute -left-[9999px] -top-[9999px] opacity-0':
                       activeTab !== index,
                   })}
@@ -394,7 +411,7 @@ function CPEdit() {
                       onSectionCheckChange={onSectionCheckChange}
                     />
                   )}
-                  <div className="relative flex flex-col gap-4">
+                  <div className="relative flex flex-col gap-6">
                     <FootnotesProvider>
                       <Section
                         Section={get(Sections, section.id)}

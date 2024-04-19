@@ -125,6 +125,9 @@ dependencies:
   tw-colors:
     specifier: ^3.3.1
     version: 3.3.1(tailwindcss@3.4.1)
+  type-fest:
+    specifier: ^4.15.0
+    version: 4.15.0
   typescript:
     specifier: 5.3.3
     version: 5.3.3
@@ -241,9 +244,6 @@ devDependencies:
   tailwindcss-bg-patterns:
     specifier: ^0.3.0
     version: 0.3.0(tailwindcss@3.4.1)
-  type-fest:
-    specifier: ^4.9.0
-    version: 4.10.2
 
 packages:
 
@@ -8576,10 +8576,10 @@ packages:
     engines: {node: '>=14.16'}
     dev: true
 
-  /type-fest@4.10.2:
-    resolution: {integrity: sha512-anpAG63wSpdEbLwOqH8L84urkL6PiVIov3EMmgIhhThevh9aiMQov+6Btx0wldNcvm4wV+e2/Rt1QdDwKHFbHw==}
+  /type-fest@4.15.0:
+    resolution: {integrity: sha512-tB9lu0pQpX5KJq54g+oHOLumOx+pMep4RaM6liXh2PKmVRFF+/vAtUP0ZaJ0kOySfVNjF6doBWPHhBhISKdlIA==}
     engines: {node: '>=16'}
-    dev: true
+    dev: false
 
   /typed-array-buffer@1.0.1:
     resolution: {integrity: sha512-RSqu1UEuSlrBhHTWC8O9FnPjOduNs4M7rJ4pRKoEjtx1zUNOPN2sSXHLDX+Y2WPbHIxbvg4JFo2DNAEfPIKWoQ==}

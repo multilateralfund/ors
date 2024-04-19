@@ -12,7 +12,8 @@ import {
   CPBaseForm,
   PassedCPCreateTableProps,
 } from '@ors/components/manage/Blocks/CountryProgramme/CPCreate'
-import Field from '@ors/components/manage/Form/Field'
+import { NewAddSubstanceDropdowns } from '@ors/components/manage/Blocks/Section/SectionA/Create/NewAddSubstanceDropdowns'
+import { OldAddSubstanceDropdowns } from '@ors/components/manage/Blocks/Section/SectionA/Create/OldAddSubstanceDropdowns'
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { getResults } from '@ors/helpers/Api/Api'
@@ -130,9 +131,13 @@ export default function SectionACreate(props: {
   const [addSubstanceModal, setAddSubstanceModal] = useState(false)
   const rowData = getRowData(form.section_a)
 
-  const substancesOptions = useMemo(() => {
+  const substancesInForm = useMemo(() => {
+    return form.section_a.map((substance) => substance.row_id)
+  }, [form.section_a])
+
+  // Substances for old dropdown (before 2023)
+  const oldSubstancesOptions = useMemo(() => {
     const data: Array<any> = []
-    const substancesInForm = form.section_a.map((substance) => substance.row_id)
     each(substances, (substance) => {
       if (
         !includes(
@@ -146,7 +151,49 @@ export default function SectionACreate(props: {
       }
     })
     return data
-  }, [substances, form.section_a, Section])
+  }, [substances, substancesInForm, Section])
+
+  // Substances for new model (2023 onwards)
+  const mandatorySubstances = useMemo(() => {
+    const data: Array<any> = []
+
+    each(emptyForm.substance_rows.section_a, (substance) => {
+      if (!includes(substancesInForm, `substance_${substance.substance_id}`)) {
+        const transformedSubstance = Section.transformSubstance(
+          substance,
+          false,
+        )
+        data.push({
+          ...transformedSubstance,
+          id: transformedSubstance.display_name,
+        })
+      }
+    })
+
+    return data
+  }, [Section, emptyForm.substance_rows.section_a, substancesInForm])
+
+  const optionalSubstances = useMemo(() => {
+    const data: Array<any> = []
+
+    each(substances, (substance) => {
+      if (
+        includes(substance.sections, 'A') &&
+        includes(['Annex C, Group I'], substance.group) &&
+        !includes(substancesInForm, `substance_${substance.id}`) &&
+        !includes(
+          mandatorySubstances.map(
+            (mandatorySubstance) => mandatorySubstance.substance_id,
+          ),
+          substance.id,
+        )
+      ) {
+        data.push(Section?.transformApiSubstance(substance))
+      }
+    })
+
+    return data
+  }, [Section, mandatorySubstances, substances, substancesInForm])
 
   const gridOptions = useGridOptions({
     model: variant.model,
@@ -188,10 +235,32 @@ export default function SectionACreate(props: {
     return usages
   }
 
+  function dropdownOnChange(_: any, newSubstance: any) {
+    if (document.activeElement) {
+      // @ts-ignore
+      document.activeElement.blur()
+    }
+    const added = find(
+      form.section_a,
+      (substance) => substance.row_id === newSubstance.row_id,
+    )
+    if (!added) {
+      setForm((form: any) => ({
+        ...form,
+        section_a: [...form.section_a, newSubstance],
+      }))
+    }
+  }
+
   return (
     <>
+      {!includes(['I'], variant.model) && (
+        <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+          <Footnotes />
+        </Alert>
+      )}
       {includes(['V'], variant.model) && (
-        <div className="mt-4 flex justify-end">
+        <div className="flex justify-end">
           <Button
             className="rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
             onClick={() => setAddSubstanceModal(true)}
@@ -200,12 +269,8 @@ export default function SectionACreate(props: {
           </Button>
         </div>
       )}
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
       <Table
         {...TableProps}
-        className="mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={3}
@@ -253,38 +318,18 @@ export default function SectionACreate(props: {
           keepMounted
         >
           <Box className="xs:max-w-xs w-full max-w-md absolute-center sm:max-w-sm">
-            <Typography
-              id="add-substance-modal-title"
-              className="mb-4 text-typography-secondary"
-              component="h2"
-              variant="h6"
-            >
-              Select substance
-            </Typography>
-            <Field
-              Input={{ autoComplete: 'off' }}
-              getOptionLabel={(option: any) => option.display_name}
-              groupBy={(option: any) => option.group}
-              options={substancesOptions}
-              value={null}
-              widget="autocomplete"
-              onChange={(_event, newSubstance: any) => {
-                if (document.activeElement) {
-                  // @ts-ignore
-                  document.activeElement.blur()
-                }
-                const added = find(
-                  form.section_a,
-                  (substance) => substance.row_id === newSubstance.row_id,
-                )
-                if (!added) {
-                  setForm((form: any) => ({
-                    ...form,
-                    section_a: [...form.section_a, newSubstance],
-                  }))
-                }
-              }}
-            />
+            {includes(['V'], variant.model) ? (
+              <NewAddSubstanceDropdowns
+                mandatoryOptions={mandatorySubstances}
+                optionalOptions={optionalSubstances}
+                onChange={dropdownOnChange}
+              />
+            ) : (
+              <OldAddSubstanceDropdowns
+                options={oldSubstancesOptions}
+                onChange={dropdownOnChange}
+              />
+            )}
             <Typography className="text-right">
               <Button onClick={() => setAddSubstanceModal(false)}>Close</Button>
             </Typography>

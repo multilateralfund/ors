@@ -28,13 +28,13 @@ export type RowData = DeserializedDataA & {
   tooltip?: boolean
 }
 
-function getRowData(report: CPReport, showEmptyRows: boolean): RowData[] {
+function getRowData(report: CPReport, showOnlyReported: boolean): RowData[] {
   let rowData: RowData[] = []
   const dataByGroup: Record<string, any[]> = {}
   const groups: Array<string> = []
 
   let data = report.section_a
-  if (!showEmptyRows) {
+  if (showOnlyReported) {
     data = data.filter((item) => item.id !== 0)
   }
 
@@ -83,13 +83,13 @@ export default function SectionAView(props: any) {
       usages: emptyForm.usage_columns?.section_a || [],
     })
   const grid = useRef<any>()
-  const [showEmptyRows, setShowEmptyRows] = useState(true)
+  const [showOnlyReported, setShowOnlyReported] = useState(false)
   const { setValue: setTableDataValue, value: tableDataValue } =
     useTableDataSelector(
       includes(['IV', 'V'], variant.model) ? 'sector' : 'all',
     )
 
-  const rowData = getRowData(report, showEmptyRows)
+  const rowData = getRowData(report, showOnlyReported)
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
   const gridOptions = useMemo(() => {
@@ -112,9 +112,11 @@ export default function SectionAView(props: any) {
 
   return (
     <>
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
+      {!includes(['I'], variant.model) && (
+        <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+          <Footnotes />
+        </Alert>
+      )}
       <div
         className={cx('flex', {
           'justify-between': includes(['IV', 'V'], variant.model),
@@ -123,17 +125,16 @@ export default function SectionAView(props: any) {
       >
         {includes(['IV', 'V'], variant.model) && (
           <TableDataSelector
-            className="py-4"
             changeHandler={(_, value) => setTableDataValue(value)}
             value={tableDataValue}
           />
         )}
         <FormControlLabel
-          label="Show zero values"
+          label="Show only reported substances"
           control={
             <Checkbox
-              checked={showEmptyRows}
-              onChange={(event) => setShowEmptyRows(event.target.checked)}
+              checked={showOnlyReported}
+              onChange={(event) => setShowOnlyReported(event.target.checked)}
             />
           }
         />

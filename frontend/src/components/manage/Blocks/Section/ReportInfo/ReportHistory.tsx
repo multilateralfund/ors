@@ -1,3 +1,7 @@
+import React from 'react'
+
+import cx from 'classnames'
+
 import Loading from '@ors/components/theme/Loading/Loading'
 import { useStore } from '@ors/store'
 
@@ -37,7 +41,7 @@ const ReportHistory = () => {
   return (
     <div>
       <p className="mb-3 text-2xl font-normal">History</p>
-      <div className="flex flex-col flex-wrap justify-center gap-1 rounded-lg bg-white px-4 py-3 shadow-lg">
+      <div className="flex flex-col flex-wrap justify-center rounded-lg bg-white shadow-lg">
         {versions.map((version, versionIndex: number) => {
           return version.history.map((historyItem, historyIndex: number) => {
             const { created_at, event_description, updated_by_username } =
@@ -52,37 +56,49 @@ const ReportHistory = () => {
             const displayHR =
               versionIndex !== versions.length - 1 ||
               historyIndex !== version.history.length - 1
+            const isCurrentVersion = version.version === report.data?.version
 
             return (
-              <div key={`${versionIndex}-${historyIndex}`}>
-                <div className="flex grow items-center justify-between gap-3 text-pretty">
-                  <div className="flex items-center gap-2">
-                    <p
-                      id={`report_date`}
-                      className="my-1 min-w-24 text-right text-sm font-normal text-gray-500"
-                    >
-                      {formattedDateTime}
-                    </p>
-                    <p
-                      id={`report_summary`}
-                      className="text-md my-1 font-medium text-gray-900"
-                    >
-                      {event_description} ({`Version ${versionNo}`})
-                    </p>
-                  </div>
-                  <div>
-                    <p
-                      id={`report_user`}
-                      className="my-1 w-fit rounded bg-gray-100 px-1 text-sm font-normal text-gray-500"
-                    >
-                      {updated_by_username}
-                    </p>
+              <React.Fragment key={`${versionIndex}-${historyIndex}`}>
+                <div
+                  key={`item_${versionIndex}-${historyIndex}`}
+                  className={cx(
+                    'px-4 py-3',
+                    isCurrentVersion ? '' : 'opacity-40',
+                  )}
+                >
+                  <div className="flex grow items-center justify-between gap-3 text-pretty">
+                    <div className="flex items-center gap-2">
+                      <p
+                        id={`report_date`}
+                        className="my-1 min-w-24 text-right text-sm font-normal text-gray-500"
+                      >
+                        {formattedDateTime}
+                      </p>
+                      <p
+                        id={`report_summary`}
+                        className="text-md my-1 font-medium text-gray-900"
+                      >
+                        {event_description} ({`Version ${versionNo}`})
+                      </p>
+                    </div>
+                    <div>
+                      <p
+                        id={`report_user`}
+                        className="my-1 w-fit rounded bg-gray-100 px-1 text-sm font-normal text-gray-500"
+                      >
+                        {updated_by_username}
+                      </p>
+                    </div>
                   </div>
                 </div>
                 {displayHR && (
-                  <hr className="h-px w-full border-0 bg-gray-200" />
+                  <hr
+                    key={`hr_${versionIndex}-${historyIndex}`}
+                    className="my-0 h-px w-[95%] border-0 bg-gray-200"
+                  />
                 )}
-              </div>
+              </React.Fragment>
             )
           })
         })}

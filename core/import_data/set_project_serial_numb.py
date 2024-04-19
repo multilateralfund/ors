@@ -27,7 +27,14 @@ def set_serial_number():
         )
         for i, project in enumerate(projects):
             project.generated_code = get_project_sub_code(
-                country, project.cluster, i + 1
+                country,
+                project.cluster,
+                project.agency,
+                project.project_type,
+                project.sector,
+                project.approval_meeting,
+                project.meeting_transf,
+                i + 1,
             )
             project.serial_number = i + 1
             project.save()

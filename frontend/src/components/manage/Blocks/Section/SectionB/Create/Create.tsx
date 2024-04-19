@@ -5,16 +5,7 @@ import { ReportVariant } from '@ors/types/variants'
 
 import React, { useMemo, useRef, useState } from 'react'
 
-import {
-  Alert,
-  Box,
-  Button,
-  Divider,
-  Modal,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-} from '@mui/material'
+import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, sortBy, union, uniqBy } from 'lodash'
 import { useSnackbar } from 'notistack'
@@ -23,6 +14,7 @@ import {
   CPBaseForm,
   PassedCPCreateTableProps,
 } from '@ors/components/manage/Blocks/CountryProgramme/CPCreate'
+import { NewChemicalModal } from '@ors/components/manage/Blocks/Section/SectionB/Create/NewChemicalModal'
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
@@ -163,16 +155,22 @@ export default function SectionBCreate(props: {
   const rowData = getRowData(form.section_b, variant)
   const pinnedRowData = getInitialPinnedBottomRowData(variant.model)
 
-  const [addBlendModal, setAddBlendModal] = useState(false)
-  const [addBlendModalTab, setAddBlendModalTab] = useState('existing_blends')
+  // Old add chemical and create blend modals (<2023)
   const [addChemicalModal, setAddChemicalModal] = useState(false)
   const [createBlendModal, setCreateBlendModal] = useState(false)
 
-  const chemicalsOptions = useMemo(() => {
+  // New modal with both add chemical and create blend tabs (>=2023)
+  const [newChemicalModal, setNewChemicalModal] = useState(false)
+  const [newChemicalModalTab, setNewChemicalModalTab] = useState<
+    'existing_blends' | 'new_blend'
+  >('existing_blends')
+
+  const chemicalsInForm = useMemo(() => {
+    return form.section_b.map((chemical: any) => chemical.row_id)
+  }, [form.section_b])
+
+  const oldChemicalOptions = useMemo(() => {
     const data: Array<any> = []
-    const chemicalsInForm = form.section_b.map(
-      (chemical: any) => chemical.row_id,
-    )
     each(substances, (substance) => {
       if (
         includes(substance.sections, 'B') &&
@@ -190,13 +188,10 @@ export default function SectionBCreate(props: {
       },
     )
     return data
-  }, [substances, blends, form.section_b, createdBlends, Section])
+  }, [substances, blends, createdBlends, chemicalsInForm, Section])
 
   const mandatoryChemicals = useMemo(() => {
     const data: Array<any> = []
-    const chemicalsInForm = form.section_b.map(
-      (chemical: any) => chemical.row_id,
-    )
 
     each(
       emptyForm.substance_rows.section_b.filter((row) => row.substance_id),
@@ -225,7 +220,28 @@ export default function SectionBCreate(props: {
     )
 
     return data
-  }, [Section, emptyForm.substance_rows.section_b, form.section_b])
+  }, [Section, chemicalsInForm, emptyForm.substance_rows.section_b])
+
+  const optionalBlends = useMemo(() => {
+    const data: Array<any> = []
+    const emptyFormBlendIds = emptyForm.substance_rows.section_b
+      .filter((row) => row.blend_id)
+      .map((blend) => blend.blend_id)
+
+    each(
+      sortBy(uniqBy([...blends, ...createdBlends], 'id'), 'sort_order'),
+      (blend) => {
+        if (
+          !includes(emptyFormBlendIds, blend.id) &&
+          !includes(chemicalsInForm, `blend_${blend.id}`)
+        ) {
+          data.push(Section.transformApiBlend(blend))
+        }
+      },
+    )
+
+    return data
+  }, [Section, blends, chemicalsInForm, createdBlends, emptyForm.substance_rows.section_b])
 
   const gridOptions = useGridOptions({
     model: variant.model,
@@ -270,29 +286,21 @@ export default function SectionBCreate(props: {
 
   return (
     <>
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnotes />
+      </Alert>
       {includes(['V'], variant.model) && (
-        <div className="mt-4 flex justify-end">
+        <div className="flex justify-end">
           <Button
             className="rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
-            onClick={() => setAddBlendModal(true)}
+            onClick={() => setNewChemicalModal(true)}
           >
-            Add blend <IoAddCircle
-            className="ml-1.5"
-            size={18}
-          />
+            Add blend <IoAddCircle className="ml-1.5" size={18} />
           </Button>
         </div>
       )}
-      <Alert
-        className="my-4"
-        icon={<IoInformationCircleOutline size={24} />}
-        severity="info"
-      >
-        <Footnotes />
-      </Alert>
       <Table
         {...TableProps}
-        className="mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={3}
@@ -332,169 +340,75 @@ export default function SectionBCreate(props: {
           }
         }}
       />
-      {includes(['V'], variant.model) && addBlendModal && (
-        <Modal
-          aria-labelledby="add-blend-modal-title"
-          open={addBlendModal}
-          onClose={() => setAddBlendModal(false)}
-        >
-          <Box className="xs:max-w-xs w-full max-w-md absolute-center sm:max-w-sm">
-            <Typography
-              id="add-blend-modal-title"
-              className="mb-4"
-              component="h2"
-              variant="h6"
-            >
-              Add blend
-            </Typography>
-            <Divider />
-            <ToggleButtonGroup
-              className="py-4"
-              color="primary"
-              value={addBlendModalTab}
-              onChange={(_, value) => setAddBlendModalTab(value)}
-              exclusive
-            >
-              <ToggleButton
-                className="rounded-none border-primary py-2 text-base tracking-wide first:rounded-l-lg last:rounded-r-lg"
-                value="existing_blends"
-                classes={{
-                  selected: 'bg-primary text-mlfs-hlYellow',
-                  standard: 'bg-white text-primary',
-                }}
-              >
-                Existing blend(s)
-              </ToggleButton>
-              <ToggleButton
-                className="rounded-none border-primary py-2 text-base tracking-wide first:rounded-l-lg last:rounded-r-lg"
-                value="new_blend"
-                classes={{
-                  selected: 'bg-primary text-mlfs-hlYellow',
-                  standard: 'bg-white text-primary',
-                }}
-              >
-                New blend
-              </ToggleButton>
-            </ToggleButtonGroup>
-            {addBlendModalTab === 'existing_blends' && (
-              <>
-                <Typography>
-                  Mandatory / usual blends
-                </Typography>
-                <Field
-                  getOptionLabel={(option: any) => option.display_name}
-                  groupBy={(option: any) => option.group}
-                  options={mandatoryChemicals}
-                  value={null}
-                  widget="autocomplete"
-                  Input={{
-                    autoComplete: 'off',
-                  }}
-                  onChange={(event: any, newChemical: any) => {
-                    if (document.activeElement) {
-                      // @ts-ignore
-                      document.activeElement.blur()
-                    }
-                    const added = find(
-                      form.section_b,
-                      (chemical) => chemical.row_id === newChemical.row_id,
-                    )
-                    if (!added) {
-                      setForm((form: any) => ({
-                        ...form,
-                        section_b: [...form.section_b, newChemical],
-                      }))
-                    }
-                    setAddBlendModal(false)
-                  }}
-                />
-                <Typography>
-                  Other blends (Mixture of controlled substances)
-                </Typography>
-                <Field
-                  getOptionLabel={(option: any) => option.display_name}
-                  groupBy={(option: any) => option.group}
-                  options={[]}
-                  value={null}
-                  widget="autocomplete"
-                  Input={{
-                    autoComplete: 'off',
-                  }}
-                  onChange={(event: any, newChemical: any) => {
-                    if (document.activeElement) {
-                      // @ts-ignore
-                      document.activeElement.blur()
-                    }
-                    const added = find(
-                      form.section_b,
-                      (chemical) => chemical.row_id === newChemical.row_id,
-                    )
-                    if (!added) {
-                      setForm((form: any) => ({
-                        ...form,
-                        section_b: [...form.section_b, newChemical],
-                      }))
-                    }
-                    setAddBlendModal(false)
-                  }}
-                />
-                <Typography className="text-right">
-                  <Button onClick={() => setAddBlendModal(false)}>Close</Button>
-                </Typography>
-              </>
-            )}
-            {addBlendModalTab === 'new_blend' && (
-              <CreateBlend
-                substances={substances}
-                onClose={() => {
-                  setAddBlendModalTab('existing_blends')
-                }}
-                onCreateBlend={(blend: ApiCreatedBlend) => {
-                  const serializedBlend = Section.transformApiBlend(blend)
+      {includes(['V'], variant.model) && newChemicalModal && (
+        <NewChemicalModal
+          groupBy={(option: any) => option.group}
+          mandatoryChemicals={mandatoryChemicals}
+          open={newChemicalModal}
+          optionLabel={(option: any) => option.display_name}
+          optionalBlends={optionalBlends}
+          substances={substances}
+          value={newChemicalModalTab}
+          onChangeChemical={(event: any, newChemical: any) => {
+            if (document.activeElement) {
+              // @ts-ignore
+              document.activeElement.blur()
+            }
+            const added = find(
+              form.section_b,
+              (chemical) => chemical.row_id === newChemical.row_id,
+            )
+            if (!added) {
+              setForm((form: any) => ({
+                ...form,
+                section_b: [...form.section_b, newChemical],
+              }))
+            }
+          }}
+          onChangeTab={(_, value) => setNewChemicalModalTab(value)}
+          onCloseBlendModal={() => {}} // Not used
+          onCloseModal={() => setNewChemicalModal(false)}
+          onCreateBlend={(blend: ApiCreatedBlend) => {
+            const serializedBlend = Section.transformApiBlend(blend)
 
-                  const added = find(
-                    form.section_b,
-                    (chemical) => chemical.row_id === serializedBlend.row_id,
-                  )
+            const added = find(
+              form.section_b,
+              (chemical) => chemical.row_id === serializedBlend.row_id,
+            )
 
-                  if (added) {
-                    const blendNode = grid.current.api.getRowNode(
-                      serializedBlend.row_id,
-                    )
-                    enqueueSnackbar(
-                      `Blend ${serializedBlend.name} already exists in the form.`,
-                      { variant: 'info' },
-                    )
-                    scrollToElement({
-                      callback: () => {
-                        grid.current.api.flashCells({
-                          rowNodes: [blendNode],
-                        })
-                      },
-                      selectors: `.ag-row[row-id=${serializedBlend.row_id}]`,
-                    })
-                  } else {
-                    setForm((form: any) => ({
-                      ...form,
-                      section_b: [...form.section_b, serializedBlend],
-                    }))
-                    setCreatedBlends((prev) => [...prev, blend])
-                    enqueueSnackbar(
-                      <>
-                        Blend{' '}
-                        <span className="font-medium">
-                          {serializedBlend.name}
-                        </span>{' '}
-                        created succesfuly.
-                      </>,
-                      { variant: 'info' },
-                    )
-                  }
-                }}
-              />
-            )}
-          </Box>
-        </Modal>
+            if (added) {
+              const blendNode = grid.current.api.getRowNode(
+                serializedBlend.row_id,
+              )
+              enqueueSnackbar(
+                `Blend ${serializedBlend.name} already exists in the form.`,
+                { variant: 'info' },
+              )
+              scrollToElement({
+                callback: () => {
+                  grid.current.api.flashCells({
+                    rowNodes: [blendNode],
+                  })
+                },
+                selectors: `.ag-row[row-id=${serializedBlend.row_id}]`,
+              })
+            } else {
+              setForm((form: any) => ({
+                ...form,
+                section_b: [...form.section_b, serializedBlend],
+              }))
+              setCreatedBlends((prev) => [...prev, blend])
+              enqueueSnackbar(
+                <>
+                  Blend{' '}
+                  <span className="font-medium">{serializedBlend.name}</span>{' '}
+                  created succesfuly.
+                </>,
+                { variant: 'info' },
+              )
+            }
+          }}
+        />
       )}
       {!includes(['V'], variant.model) && addChemicalModal && (
         <Modal
@@ -516,7 +430,7 @@ export default function SectionBCreate(props: {
               Input={{ autoComplete: 'off' }}
               getOptionLabel={(option: any) => option.display_name}
               groupBy={(option: any) => option.group}
-              options={chemicalsOptions}
+              options={oldChemicalOptions}
               value={null}
               widget="autocomplete"
               onChange={(event: any, newChemical: any) => {

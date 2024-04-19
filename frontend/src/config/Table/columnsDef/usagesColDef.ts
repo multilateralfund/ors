@@ -66,9 +66,15 @@ export default function getUsagesColDef() {
       headerName: 'AC',
       initialWidth: 80,
     },
+    'Refrigeration Manufacturing AC V': {
+      flex: 1.2,
+    },
     'Refrigeration Manufacturing Other': {
       autoHeaderHeight: true,
       flex: 1,
+    },
+    'Refrigeration Manufacturing Other V': {
+      flex: 2,
       headerComponentParams: {
         footnote: {
           id: '5',
@@ -80,11 +86,11 @@ export default function getUsagesColDef() {
       },
       initialWidth: 120,
     },
-    'Refrigeration Manufacturing Other IV': {
-      headerComponentParams: {},
-    },
     'Refrigeration Manufacturing Refrigeration': {
       initialWidth: 100,
+    },
+    'Refrigeration Manufacturing Refrigeration V': {
+      flex: 1.2,
     },
     'Refrigeration Manufacturing Total IV': {
       headerComponentParams: {

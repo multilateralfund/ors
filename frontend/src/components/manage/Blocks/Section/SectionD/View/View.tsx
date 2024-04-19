@@ -25,7 +25,6 @@ export default function SectionDView(props: any) {
   return (
     <>
       <Alert
-        className="mb-4"
         icon={<IoInformationCircleOutline size={24} />}
         severity="info"
       >
@@ -33,7 +32,6 @@ export default function SectionDView(props: any) {
       </Alert>
       <Table
         {...TableProps}
-        className="mb-4"
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
         gridRef={grid}

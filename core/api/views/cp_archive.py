@@ -16,7 +16,7 @@ from core.api.serializers.cp_emission import CPEmissionArchiveSerializer
 from core.api.serializers.cp_generation import CPGenerationArchiveSerializer
 from core.api.serializers.cp_price import CPPricesArchiveSerializer
 from core.api.serializers.cp_record import CPRecordArchiveSerializer
-from core.api.serializers.cp_report import CPReportArchiveSerializer
+from core.api.serializers.cp_report import CPReportArchiveSerializer, CPReportInfoSerializer
 from core.api.utils import workbook_pdf_response
 from core.api.utils import workbook_response
 from core.api.views.cp_records import CPRecordBaseListView
@@ -80,6 +80,7 @@ class CPRecordsArchiveListView(CPRecordBaseListView):
     adm_record_class = AdmRecordArchive
 
     cp_report_seri_class = CPReportArchiveSerializer
+    cp_report_info_seri_class = CPReportInfoSerializer
     cp_record_seri_class = CPRecordArchiveSerializer
     cp_prices_seri_class = CPPricesArchiveSerializer
     cp_generation_seri_class = CPGenerationArchiveSerializer
