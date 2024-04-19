@@ -19,6 +19,9 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
       },
     },
     headerName: 'Date ban commenced',
+    ...(includes(['IV', 'V'], model)
+      ? { initialWidth: 100, minWidth: 100 }
+      : {}),
   },
   display_name: {
     ...colDefById['display_name'],
@@ -51,11 +54,14 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
       },
     },
     initialWidth: 150,
+    ...(includes(['I'], model) ? { minWidth: 300 } : {}),
+    ...(includes(['III'], model) ? { minWidth: 300 } : {}),
   },
   export_quotas: {
     initialWidth: 80,
   },
   exports: {
+    ...(includes(['I'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
     headerComponentParams: {
       ...(includes(['II', 'III'], model)
         ? {
@@ -68,8 +74,13 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
         : {}),
     },
   },
+  imports: {
+    ...(includes(['I'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
+  },
   production: {
-    ...(includes(['II'], model) ? { flex: 1.2 } : {}),
+    ...(includes(['III'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
+    ...(includes(['II'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
+    ...(includes(['I'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
     headerComponentParams: {
       ...(includes(['II', 'III'], model)
         ? {
@@ -84,6 +95,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
   },
   remarks: {
     ...colDefById['remarks'],
+    ...(includes(['II'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
     headerComponentParams: {
       ...(includes(['II', 'III'], model)
         ? {

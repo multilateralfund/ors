@@ -5,11 +5,29 @@ export default function getUsagesColDef() {
     Aerosol: {
       initialWidth: 84,
     },
+    'Aerosol I': {
+      flex: 0.5,
+    },
     'Fire fighting': {
       initialWidth: 86,
     },
+    'Fire fighting I': {
+      flex: 0.7,
+    },
     Foam: {
       initialWidth: 84,
+    },
+    'Foam I': {
+      flex: 0.5,
+    },
+    'Fumigation I': {
+      flex: 0.5,
+    },
+    Manufacturing: {
+      flex: 0.5,
+      initialWidth: 80,
+      maxWidth: 80,
+      minWidth: 80,
     },
     'Methyl bromide II': {
       headerGroupComponentParams: {
@@ -50,8 +68,14 @@ export default function getUsagesColDef() {
     'Process agent': {
       initialWidth: 132,
     },
+    'Process agent I': {
+      flex: 0.8,
+    },
     Refrigeration: {
       initialWidth: 400,
+    },
+    'Refrigeration I': {
+      flex: 0.7,
     },
     'Refrigeration Manufacturing': {
       autoHeaderHeight: true,
@@ -62,12 +86,19 @@ export default function getUsagesColDef() {
       flex: 1,
       initialWidth: 90,
     },
+    'Refrigeration Manufacturing AC I': {
+      flex: 0.95,
+    },
     'Refrigeration Manufacturing AC IV': {
       headerName: 'AC',
       initialWidth: 80,
     },
+
     'Refrigeration Manufacturing AC V': {
       flex: 1.2,
+    },
+    'Refrigeration Manufacturing I': {
+      flex: 0.8,
     },
     'Refrigeration Manufacturing Other': {
       autoHeaderHeight: true,
@@ -108,6 +139,15 @@ export default function getUsagesColDef() {
       autoHeaderHeight: true,
       flex: 1,
       initialWidth: 84,
+    },
+    'Refrigeration Servicing I': {
+      flex: 0.5,
+    },
+    'Solvent application I': {
+      flex: 0.5,
+    },
+    'Tobacco fluffing I': {
+      flex: 0.8,
     },
     total_usages: {
       flex: 0,

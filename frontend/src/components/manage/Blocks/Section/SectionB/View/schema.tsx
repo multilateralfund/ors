@@ -124,7 +124,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
   const gridOptionsAll: GridOptions = useMemo(() => {
     return {
       columnDefs: [
-        substanceColumn({ initialWidth: 350 }),
+        substanceColumn({ initialWidth: 430 }),
         ...(usages.length
           ? [
               {
@@ -150,7 +150,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
   const gridOptionsBySubstanceTrade: GridOptions = useMemo(() => {
     return {
       columnDefs: [
-        substanceColumn({ initialWidth: 350 }),
+        substanceColumn({ initialWidth: 430 }),
         ...bySubstanceTrade(true),
       ],
       defaultColDef: defaultSectionColDef,
@@ -159,7 +159,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
 
   const gridOptionsBySector: GridOptions = useMemo(() => {
     return {
-      columnDefs: [substanceColumn({ initialWidth: 350 }), ...bySector],
+      columnDefs: [substanceColumn({ initialWidth: 430 }), ...bySector],
       defaultColDef: defaultSectionColDef,
     }
   }, [bySector, substanceColumn, defaultSectionColDef])

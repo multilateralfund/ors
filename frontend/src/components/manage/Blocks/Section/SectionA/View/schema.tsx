@@ -171,10 +171,16 @@ function useGridOptions(props: { model: string; usages: object[] }) {
 
   const gridOptionsBySector: GridOptions = useMemo(() => {
     return {
-      columnDefs: [substanceColumn, ...bySector],
+      columnDefs: [
+        {
+          ...substanceColumn,
+          ...(includes(['IV', 'V'], model) ? { minWidth: 300 } : {}),
+        },
+        ...bySector,
+      ],
       defaultColDef: defaultSectionColDef,
     }
-  }, [bySector, substanceColumn, defaultSectionColDef])
+  }, [model, bySector, substanceColumn, defaultSectionColDef])
 
   return { gridOptionsAll, gridOptionsBySector, gridOptionsBySubstanceTrade }
 }

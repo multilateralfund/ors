@@ -220,7 +220,7 @@ function CPView(props: { archive?: boolean }) {
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [activeTab, renderedSections])
 
-  const showComments = variant?.model === 'V' && activeTab !== 0;
+  const showComments = variant?.model === 'V' && activeTab !== 0
 
   return (
     <>
@@ -280,7 +280,7 @@ function CPView(props: { archive?: boolean }) {
               <div
                 id={section.panelId}
                 key={section.panelId}
-                className={cx('transition flex flex-col gap-6', {
+                className={cx('flex flex-col gap-6 transition', {
                   'absolute -left-[9999px] -top-[9999px] opacity-0':
                     activeTab !== index,
                 })}
