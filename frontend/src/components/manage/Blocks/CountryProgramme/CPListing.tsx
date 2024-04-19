@@ -10,6 +10,8 @@ import {
   Box,
   Button,
   Grid,
+  ToggleButton,
+  ToggleButtonGroup,
   // IconButton as MuiIconButton,
   Tooltip,
   Typography,
@@ -248,59 +250,59 @@ function GeneralSection(props: SectionProps) {
       {user_type !== 'country_user' && (
         <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
           <div className="flex flex-1 items-center gap-4">
-            <Field<Country>
-              FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
-              getOptionLabel={(option) => (option as Country).name}
-              options={countries}
-              popupIcon={<IoFilter className="p-1" size={24} />}
-              value={null}
-              widget="autocomplete"
-              Input={{
-                placeholder: 'Select country...',
-              }}
-              sx={{
-                '& .MuiAutocomplete-popupIndicator': { transform: 'none' },
-                width: '100%',
-              }}
-              onChange={(_: any, value: any) => {
-                if (!!value) {
-                  const country = filters.country || []
-                  const newValue = union(country, [value.id])
-                  setFilters((filters: any) => {
-                    return { ...filters, country: newValue }
-                  })
-                  setParams({
-                    country_id: newValue.join(','),
-                    offset: 0,
-                  })
-                  if (document.activeElement) {
-                    // @ts-ignore
-                    document.activeElement.blur()
-                  }
-                }
-              }}
-            />
-            <Field
-              FieldProps={{ className: 'mb-0 px-4' }}
-              label="Date"
-              max={maxYear}
-              min={minYear}
-              value={range}
-              widget="range"
-              onChange={(value: number[]) => {
-                setRange(value)
-                debounce(() => {
-                  setFilters((filters: any) => {
-                    return { ...filters, range: value, year: [] }
-                  })
-                  setParams({
-                    offset: 0,
-                    year_max: value[1],
-                    year_min: value[0],
-                  })
-                })
-              }}
-            />
+            {/*<Field<Country>*/}
+            {/*  FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}*/}
+            {/*  getOptionLabel={(option) => (option as Country).name}*/}
+            {/*  options={countries}*/}
+            {/*  popupIcon={<IoFilter className="p-1" size={24} />}*/}
+            {/*  value={null}*/}
+            {/*  widget="autocomplete"*/}
+            {/*  Input={{*/}
+            {/*    placeholder: 'Select country...',*/}
+            {/*  }}*/}
+            {/*  sx={{*/}
+            {/*    '& .MuiAutocomplete-popupIndicator': { transform: 'none' },*/}
+            {/*    width: '100%',*/}
+            {/*  }}*/}
+            {/*  onChange={(_: any, value: any) => {*/}
+            {/*    if (!!value) {*/}
+            {/*      const country = filters.country || []*/}
+            {/*      const newValue = union(country, [value.id])*/}
+            {/*      setFilters((filters: any) => {*/}
+            {/*        return { ...filters, country: newValue }*/}
+            {/*      })*/}
+            {/*      setParams({*/}
+            {/*        country_id: newValue.join(','),*/}
+            {/*        offset: 0,*/}
+            {/*      })*/}
+            {/*      if (document.activeElement) {*/}
+            {/*        // @ts-ignore*/}
+            {/*        document.activeElement.blur()*/}
+            {/*      }*/}
+            {/*    }*/}
+            {/*  }}*/}
+            {/*/>*/}
+            {/*<Field*/}
+            {/*  FieldProps={{ className: 'mb-0 px-4' }}*/}
+            {/*  label="Date"*/}
+            {/*  max={maxYear}*/}
+            {/*  min={minYear}*/}
+            {/*  value={range}*/}
+            {/*  widget="range"*/}
+            {/*  onChange={(value: number[]) => {*/}
+            {/*    setRange(value)*/}
+            {/*    debounce(() => {*/}
+            {/*      setFilters((filters: any) => {*/}
+            {/*        return { ...filters, range: value, year: [] }*/}
+            {/*      })*/}
+            {/*      setParams({*/}
+            {/*        offset: 0,*/}
+            {/*        year_max: value[1],*/}
+            {/*        year_min: value[0],*/}
+            {/*      })*/}
+            {/*    })*/}
+            {/*  }}*/}
+            {/*/>*/}
           </div>
           <div className="flex items-center gap-2">
             <SortBy options={orderOptions} onChange={handleOrderChange} />
@@ -533,29 +535,29 @@ function CountrySection(props: SectionProps) {
       {user_type !== 'country_user' && (
         <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
           <div className="flex flex-1 items-center gap-4">
-            <Field
-              FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
-              getOptionLabel={(option: any) => option?.name}
-              options={countries}
-              popupIcon={<IoFilter className="p-1" size={24} />}
-              value={null}
-              widget="autocomplete"
-              Input={{
-                placeholder: 'Select country...',
-              }}
-              sx={{
-                '& .MuiAutocomplete-popupIndicator': { transform: 'none' },
-                width: '100%',
-              }}
-              onChange={(_: any, value: any) => {
-                if (!!value) {
-                  setFilters((filters: any) => {
-                    const country = filters.country || []
-                    return { ...filters, country: union(country, [value.id]) }
-                  })
-                }
-              }}
-            />
+            {/*<Field*/}
+            {/*  FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}*/}
+            {/*  getOptionLabel={(option: any) => option?.name}*/}
+            {/*  options={countries}*/}
+            {/*  popupIcon={<IoFilter className="p-1" size={24} />}*/}
+            {/*  value={null}*/}
+            {/*  widget="autocomplete"*/}
+            {/*  Input={{*/}
+            {/*    placeholder: 'Select country...',*/}
+            {/*  }}*/}
+            {/*  sx={{*/}
+            {/*    '& .MuiAutocomplete-popupIndicator': { transform: 'none' },*/}
+            {/*    width: '100%',*/}
+            {/*  }}*/}
+            {/*  onChange={(_: any, value: any) => {*/}
+            {/*    if (!!value) {*/}
+            {/*      setFilters((filters: any) => {*/}
+            {/*        const country = filters.country || []*/}
+            {/*        return { ...filters, country: union(country, [value.id]) }*/}
+            {/*      })*/}
+            {/*    }*/}
+            {/*  }}*/}
+            {/*/>*/}
           </div>
           <SortBy options={orderOptions} onChange={handleOrderChange} />
         </div>
@@ -828,6 +830,125 @@ function SectionPanel(props: SectionProps) {
   )
 }
 
+function CPFilters(props: SectionProps) {
+  const { filters, maxYear, minYear, setFilters, user_type } = props
+  const { data, loading, setParams } = useApi<ReportsResponse>({
+    options: {
+      params: {
+        country_id: filters.country.join(','),
+        limit: perPage,
+        offset: 0,
+        ordering: (ordering === 'asc' ? '' : '-') + orderField,
+        year_max: filters.year.length > 0 ? filters.year[0] : range[1],
+        year_min: filters.year.length > 0 ? filters.year[0] : range[0],
+      },
+      withStoreCache: true,
+    },
+    path: 'api/country-programme/reports/',
+  })
+  const countries = useStore((state) => state.common.countries_for_listing.data)
+  console.log('filters', filters)
+
+  const TableDataSelectorOrder = ['all', 'final', 'drafts']
+  type TableDataSelectorValuesType = 'all' | 'drafts' | 'final'
+
+  const TableDataSelectorLabels: Record<string, string> = {
+    all: 'View All',
+    drafts: 'Drafts',
+    final: 'Final',
+  }
+
+  interface TableDataSelectorProps {
+    changeHandler: (
+      event: React.MouseEvent<HTMLElement>,
+      value: TableDataSelectorValuesType,
+    ) => void
+    className?: string
+    value: TableDataSelectorValuesType
+  }
+
+  return (
+    <div id="filters" className="flex flex-col gap-4 rounded-lg shadow-lg">
+      <Typography className="mb-4 text-2xl font-normal">Filters</Typography>
+
+      <ToggleButtonGroup
+        aria-label="Platform"
+        color="primary"
+        value={value}
+        onChange={changeHandler}
+        exclusive
+      >
+        {TableDataSelectorOrder.map((key) => (
+          <ToggleButton
+            key={key}
+            className="rounded-none border-primary py-2 text-base tracking-wide first:rounded-l-lg last:rounded-r-lg"
+            value={key}
+            classes={{
+              selected: 'bg-primary text-mlfs-hlYellow',
+              standard: 'bg-white text-primary',
+            }}
+          >
+            {TableDataSelectorLabels[key]}
+          </ToggleButton>
+        ))}
+      </ToggleButtonGroup>
+      <Field<Country>
+        FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
+        getOptionLabel={(option) => (option as Country).name}
+        options={countries}
+        popupIcon={<IoFilter className="p-1" size={24} />}
+        value={null}
+        widget="autocomplete"
+        Input={{
+          placeholder: 'Select country...',
+        }}
+        sx={{
+          '& .MuiAutocomplete-popupIndicator': { transform: 'none' },
+          width: '100%',
+        }}
+        onChange={(_: any, value: any) => {
+          if (!!value) {
+            const country = filters.country || []
+            const newValue = union(country, [value.id])
+            setFilters((filters: any) => {
+              return { ...filters, country: newValue }
+            })
+            setParams({
+              country_id: newValue.join(','),
+              offset: 0,
+            })
+            if (document.activeElement) {
+              // @ts-ignore
+              document.activeElement.blur()
+            }
+          }
+        }}
+      />
+      <Field
+        FieldProps={{ className: 'mb-0 px-4' }}
+        label="Date"
+        max={maxYear}
+        min={minYear}
+        value={range}
+        widget="range"
+        onChange={(value: number[]) => {
+          setRange(value)
+          debounce(() => {
+            setFilters((filters: any) => {
+              return { ...filters, range: value, year: [] }
+            })
+            setParams({
+              offset: 0,
+              year_max: value[1],
+              year_min: value[0],
+            })
+          })
+        }}
+      />
+    </div>
+  )
+}
+
 export default function CPListing() {
   const settings = useStore((state) => state.common.settings.data)
   const [activeSection, setActiveSection] = useState(0)
@@ -867,18 +988,27 @@ export default function CPListing() {
         )}
       </div>
       <div id="cp-listing-sections">
-        {sections.map((section, index) => (
-          <SectionPanel
-            key={section.id}
-            currentSection={activeSection}
-            filters={filters}
-            maxYear={maxYear}
-            minYear={minYear}
-            section={index}
-            setFilters={setFilters}
-            user_type={user_type}
-          />
-        ))}
+        <div>
+          {sections.map((section, index) => (
+            <SectionPanel
+              key={section.id}
+              currentSection={activeSection}
+              filters={filters}
+              maxYear={maxYear}
+              minYear={minYear}
+              section={index}
+              setFilters={setFilters}
+              user_type={user_type}
+            />
+          ))}
+        </div>
+        <CPFilters
+          filters={filters}
+          maxYear={maxYear}
+          minYear={minYear}
+          setFilters={setFilters}
+          user_type={user_type}
+        />
       </div>
     </>
   )
