@@ -18,4 +18,8 @@ class Migration(migrations.Migration):
             name="report_version",
             field=models.FloatField(default=1),
         ),
+        migrations.AlterModelOptions(
+            name="cphistory",
+            options={"ordering": ["-created_at"]},
+        ),
     ]

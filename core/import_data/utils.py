@@ -370,6 +370,7 @@ def get_cp_report(
     )
     CPHistory.objects.create(
         country_programme_report=cp,
+        report_version=cp.version,
         updated_by=import_user,
         event_description="Imported by the system",
     )

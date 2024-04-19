@@ -115,7 +115,9 @@ class CPReportArchiveSerializer(CPReportBaseSerializer):
             year=obj.year,
         ).first()
 
-        cp_history_serializer = CPHistorySerializer(cp_report_final.cphistory.all(), many=True)
+        cp_history_serializer = CPHistorySerializer(
+            cp_report_final.cphistory.all(), many=True
+        )
         return cp_history_serializer.data
 
 
@@ -233,13 +235,13 @@ class CPReportCreateSerializer(serializers.Serializer):
         report_info_serializer.is_valid(raise_exception=True)
         report_info_serializer.save()
 
-    def _create_history(self, cp_report, history_data, request_user):
+    def _create_history(self, cp_report, request_user):
+        history_data = {}
         history_data["country_programme_report_id"] = cp_report.id
-        history_data["report_version"] = cp_report.version + int(
-            cp_report.status == CPReport.CPReportStatus.FINAL
-        )
+        history_data["report_version"] = 1
         history_data["updated_by_id"] = request_user.id
         history_data["updated_by_username"] = request_user.username
+        history_data["event_description"] = "Created by user"
 
         cp_history_serializer = CPHistorySerializer(data=history_data)
         cp_history_serializer.is_valid(raise_exception=True)
@@ -248,7 +250,6 @@ class CPReportCreateSerializer(serializers.Serializer):
     @transaction.atomic
     def create(self, validated_data):
         request_user = self.context["user"]
-        event_description = self.context.get("event_description", "Created by user")
 
         cp_report_info = validated_data.get("report_info", {})
         if cp_report_info is None:
@@ -266,7 +267,6 @@ class CPReportCreateSerializer(serializers.Serializer):
             "year": validated_data.get("year"),
             "status": validated_data.get("status", CPReport.CPReportStatus.FINAL),
             "country_id": validated_data.get("country_id"),
-            "version": self.context.get("report_version", 1),
         }
 
         cp_report_serializer = CPReportSerializer(data=cp_report_data)
@@ -279,12 +279,8 @@ class CPReportCreateSerializer(serializers.Serializer):
         cp_report.reporting_entry = reporting_entry
         cp_report.reporting_email = reporting_email
         cp_report.save()
-
-        self._create_history(
-            cp_report,
-            {"event_description": event_description},
-            request_user,
-        )
+        if not self.context.get("from_update"):
+            self._create_history(cp_report, request_user)
         self._create_cp_records(cp_report, validated_data.get("section_a", []), "A")
         self._create_prices(cp_report, validated_data.get("section_c", []))
 

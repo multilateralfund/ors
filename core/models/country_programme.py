@@ -164,3 +164,6 @@ class CPHistory(models.Model):
     )
     event_description = models.TextField(blank=True)
     report_version = models.FloatField(default=1)
+
+    class Meta:
+        ordering = ["-created_at"]
