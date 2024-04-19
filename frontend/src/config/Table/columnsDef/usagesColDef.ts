@@ -8,6 +8,9 @@ export default function getUsagesColDef() {
     'Aerosol I': {
       flex: 0.5,
     },
+    'Aerosol IV': {
+      flex: 0.5,
+    },
     'Aerosol V': {
       flex: 0.5,
     },
@@ -17,6 +20,9 @@ export default function getUsagesColDef() {
     'Fire fighting I': {
       flex: 0.7,
     },
+    'Fire fighting IV': {
+      flex: 0.5,
+    },
     'Fire fighting V': {
       flex: 0.5,
     },
@@ -24,6 +30,9 @@ export default function getUsagesColDef() {
       initialWidth: 84,
     },
     'Foam I': {
+      flex: 0.5,
+    },
+    'Foam IV': {
       flex: 0.5,
     },
     'Foam V': {
@@ -73,6 +82,12 @@ export default function getUsagesColDef() {
         },
       },
       initialWidth: 84,
+    },
+    'Other IV': {
+      flex: 0.5,
+    },
+    'Other V': {
+      flex: 0.5,
     },
     'Process agent': {
       initialWidth: 132,
