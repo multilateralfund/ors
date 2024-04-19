@@ -1,3 +1,5 @@
+import { CPHistoryItem, CPVersionInfo } from '@ors/types/store'
+
 import React from 'react'
 
 import cx from 'classnames'
@@ -26,7 +28,9 @@ const ReportHistory = () => {
       />
     )
 
-  if (!versions)
+  const latestVersion: CPVersionInfo = versions[0]
+
+  if (!latestVersion.history || latestVersion.history.length === 0)
     return (
       <div>
         <p className="mb-3 text-2xl font-normal">History</p>
@@ -42,29 +46,29 @@ const ReportHistory = () => {
     <div>
       <p className="mb-3 text-2xl font-normal">History</p>
       <div className="flex flex-col flex-wrap justify-center rounded-lg bg-white shadow-lg">
-        {versions.map((version, versionIndex: number) => {
-          return version.history.map((historyItem, historyIndex: number) => {
-            const { created_at, event_description, updated_by_username } =
-              historyItem
+        {latestVersion.history.map(
+          (historyItem: CPHistoryItem, index: number) => {
+            const {
+              created_at,
+              event_description,
+              report_version,
+              updated_by_username,
+            } = historyItem
 
             const dateObject = new Date(created_at)
             const formattedDateTime = dateObject.toLocaleDateString(
               undefined,
               options,
             )
-            const versionNo = version.version
-            const displayHR =
-              versionIndex !== versions.length - 1 ||
-              historyIndex !== version.history.length - 1
-            const isCurrentVersion = version.version === report.data?.version
+            const displayHR = index !== latestVersion.history.length - 1
+            const isCurrentVersion = report_version === report.data?.version
 
             return (
-              <React.Fragment key={`${versionIndex}-${historyIndex}`}>
+              <React.Fragment key={`${index}`}>
                 <div
-                  key={`item_${versionIndex}-${historyIndex}`}
                   className={cx(
                     'px-4 py-3',
-                    isCurrentVersion ? '' : 'opacity-40',
+                    isCurrentVersion ? '' : 'opacity-50',
                   )}
                 >
                   <div className="flex grow items-center justify-between gap-3 text-pretty">
@@ -79,7 +83,7 @@ const ReportHistory = () => {
                         id={`report_summary`}
                         className="text-md my-1 font-medium text-gray-900"
                       >
-                        {event_description} ({`Version ${versionNo}`})
+                        {event_description} ({`Version ${report_version}`})
                       </p>
                     </div>
                     <div>
@@ -93,18 +97,15 @@ const ReportHistory = () => {
                   </div>
                 </div>
                 {displayHR && (
-                  <hr
-                    key={`hr_${versionIndex}-${historyIndex}`}
-                    className="my-0 h-px w-[95%] border-0 bg-gray-200"
-                  />
+                  <hr className="my-0 h-px w-[95%] border-0 bg-gray-200" />
                 )}
               </React.Fragment>
             )
-          })
-        })}
+          },
+        )}
       </div>
     </div>
   )
 }
 
-export default ReportHistory
+export default React.memo(ReportHistory)
