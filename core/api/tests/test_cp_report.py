@@ -285,12 +285,6 @@ class TestCPReportStatusUpdate(BaseTest):
         response = self.client.put(status_update_url, {"status": "final"})
         assert response.status_code == 200
         assert response.data["status"] == "final"
-        assert (
-            "status updated" in response.data["history"][0]["event_description"].lower()
-        )
-        assert (
-            response.data["history"][0]["updated_by_username"] == second_user.username
-        )
         assert response.data["id"] == cp_report_2019.id
 
 
@@ -466,9 +460,6 @@ class TestCPReportCreate(BaseTest):
         assert response.data["status"] == CPReport.CPReportStatus.DRAFT
         assert response.data["version"] == 1
         assert response.data["created_by"] == user.username
-        assert response.data["history"][0]["updated_by_username"] == user.username
-        assert "created" in response.data["history"][0]["event_description"].lower()
-        assert response.data["history"][0]["report_version"] == 1
         assert response.data["comment"] == "S-a nascut un fenomen"
         cp_report_id = response.data["id"]
 
@@ -516,8 +507,6 @@ class TestCPReportCreate(BaseTest):
         assert response.data["country"] == "Romania"
         assert response.data["status"] == CPReport.CPReportStatus.FINAL
         assert response.data["created_by"] == user.username
-        assert response.data["history"][0]["updated_by_username"] == user.username
-        assert "created" in response.data["history"][0]["event_description"].lower()
         cp_report_id = response.data["id"]
 
         # check cp records
@@ -718,11 +707,7 @@ class TestCPReportUpdate(BaseTest):
         assert response.data["status"] == CPReport.CPReportStatus.DRAFT
         assert response.data["version"] == 1
         assert response.data["comment"] == "Alo Delta Force"
-        assert "updated" in response.data["history"][0]["event_description"].lower()
         assert response.data["created_by"] == user.username
-        assert (
-            response.data["history"][0]["updated_by_username"] == second_user.username
-        )
         cp_report_id = response.data["id"]
 
         # check cp records
@@ -770,11 +755,7 @@ class TestCPReportUpdate(BaseTest):
         assert response.data["name"] == "O valoare mare, o mare valoare"
         assert response.data["status"] == CPReport.CPReportStatus.FINAL
         assert response.data["version"] == 2
-        assert "updated" in response.data["history"][0]["event_description"].lower()
         assert response.data["created_by"] == user.username
-        assert (
-            response.data["history"][0]["updated_by_username"] == second_user.username
-        )
 
         new_id = response.data["id"]
         self.url = reverse("country-programme-reports") + f"{new_id}/"
@@ -789,14 +770,6 @@ class TestCPReportUpdate(BaseTest):
         assert response.data["status"] == CPReport.CPReportStatus.FINAL
         assert response.data["version"] == 3
         assert response.data["created_by"] == user.username
-        assert "updated" in response.data["history"][1]["event_description"].lower()
-        assert (
-            response.data["history"][1]["updated_by_username"] == second_user.username
-        )
-        assert response.data["history"][1]["report_version"] == 2
-        assert "updated" in response.data["history"][0]["event_description"].lower()
-        assert response.data["history"][0]["updated_by_username"] == user.username
-        assert response.data["history"][0]["report_version"] == 3
 
         # check report archive
         assert CPReportArchive.objects.count() == 2

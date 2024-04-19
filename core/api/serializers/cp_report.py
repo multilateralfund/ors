@@ -79,24 +79,16 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
             "created_at",
             "created_by",
             "report_info",
-            "history",
         ]
 
 
 class CPReportSerializer(CPReportBaseSerializer):
-    history = CPHistorySerializer(
-        many=True,
-        required=False,
-        source="cphistory",
-    )
-
     class Meta(CPReportBaseSerializer.Meta):
         model = CPReport
 
 
 class CPReportArchiveSerializer(CPReportBaseSerializer):
     final_version_id = serializers.SerializerMethodField()
-    history = serializers.SerializerMethodField()
 
     class Meta(CPReportBaseSerializer.Meta):
         model = CPReportArchive
@@ -108,17 +100,6 @@ class CPReportArchiveSerializer(CPReportBaseSerializer):
             year=obj.year,
         ).first()
         return cp_report_final.id if cp_report_final else None
-
-    def get_history(self, obj):
-        cp_report_final = CPReport.objects.filter(
-            country_id=obj.country_id,
-            year=obj.year,
-        ).first()
-
-        cp_history_serializer = CPHistorySerializer(
-            cp_report_final.cphistory.all(), many=True
-        )
-        return cp_history_serializer.data
 
 
 class CPReportGroupSerializer(serializers.Serializer):
