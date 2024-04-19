@@ -277,20 +277,7 @@ class CPRecordBaseListView(views.APIView):
             "section_a": self.cp_record_seri_class(section_a, many=True).data,
         }
 
-    def _get_new_cp_records(self, cp_report):
-        section_a = self._get_displayed_records(cp_report, "A")
-        section_b = self._get_displayed_records(cp_report, "B")
-        section_c = self._get_cp_prices(cp_report)
-        section_d = self._get_items_filtered_by_report(
-            self.cp_generation_class, cp_report.id
-        )
-        section_e = self._get_items_filtered_by_report(
-            self.cp_emission_class, cp_report.id
-        )
-        section_f = {
-            "remarks": cp_report.comment,
-        }
-
+    def _get_cp_history(self, cp_report):
         history = []
         cp_report_final = (
             CPReport.objects.filter(
@@ -305,6 +292,22 @@ class CPRecordBaseListView(views.APIView):
                 cp_report_final.cphistory.all(), many=True
             ).data
 
+        return history
+
+    def _get_new_cp_records(self, cp_report):
+        section_a = self._get_displayed_records(cp_report, "A")
+        section_b = self._get_displayed_records(cp_report, "B")
+        section_c = self._get_cp_prices(cp_report)
+        section_d = self._get_items_filtered_by_report(
+            self.cp_generation_class, cp_report.id
+        )
+        section_e = self._get_items_filtered_by_report(
+            self.cp_emission_class, cp_report.id
+        )
+        section_f = {
+            "remarks": cp_report.comment,
+        }
+
         ret = {
             "cp_report": self.cp_report_seri_class(cp_report).data,
             "section_a": self.cp_record_seri_class(section_a, many=True).data,
@@ -313,7 +316,7 @@ class CPRecordBaseListView(views.APIView):
             "section_d": self.cp_generation_seri_class(section_d, many=True).data,
             "section_e": self.cp_emission_seri_class(section_e, many=True).data,
             "section_f": section_f,
-            "history": history,
+            "history": self._get_cp_history(cp_report),
         }
         if hasattr(cp_report, "cpreportedsections"):
             # This property will not be present for pre-2023
