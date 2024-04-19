@@ -31,7 +31,7 @@ import { getResults } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
 
-import { IoArrowForward, IoClose, IoFilter } from 'react-icons/io5'
+import { IoArrowForward, IoChevronDownCircle, IoClose } from 'react-icons/io5'
 
 interface SectionProps {
   currentSection?: number
@@ -680,28 +680,8 @@ function YearSection(props: SectionProps) {
 
   return (
     <div id="year-section">
-      <div className="mb-4 flex min-h-[40px] items-center justify-between gap-4">
-        <div className="flex flex-1 items-center gap-4">
-          <Field
-            FieldProps={{ className: 'mb-0 px-4' }}
-            label="Date"
-            max={maxYear}
-            min={minYear}
-            value={range}
-            widget="range"
-            onChange={(value: number[]) => {
-              setRange(value)
-              debounce(() => {
-                setFilters((filters: any) => {
-                  return { ...filters, range: value, year: [] }
-                })
-              })
-            }}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <SortBy options={orderOptions} onChange={handleOrderChange} />
-        </div>
+      <div className="mb-4 flex min-h-[40px] items-center justify-end gap-4">
+        <SortBy options={orderOptions} onChange={handleOrderChange} />
       </div>
       <Grid className="mb-6" spacing={4} container>
         {results.map((row: any) => (
@@ -878,8 +858,8 @@ function CPFilters(props: SectionProps) {
   }
 
   return (
-    <div id="filters" className="flex flex-col gap-4 rounded-lg shadow-lg">
-      <Typography className="mb-4 text-2xl font-normal">Filters</Typography>
+    <Box id="filters" className="flex h-fit flex-col gap-6 rounded-lg p-8">
+      <Typography className="text-3xl font-light">Filters</Typography>
 
       <ToggleButtonGroup
         aria-label="Platform"
@@ -891,7 +871,7 @@ function CPFilters(props: SectionProps) {
         {TableDataSelectorOrder.map((key) => (
           <ToggleButton
             key={key}
-            className="rounded-none border-primary py-2 text-base tracking-wide first:rounded-l-lg last:rounded-r-lg"
+            className="min-w-28 rounded-none border-primary py-2 text-base tracking-wide first:rounded-l-lg last:rounded-r-lg"
             value={key}
             classes={{
               selected: 'bg-primary text-mlfs-hlYellow',
@@ -903,18 +883,14 @@ function CPFilters(props: SectionProps) {
         ))}
       </ToggleButtonGroup>
       <Field<Country>
-        FieldProps={{ className: 'mb-0 w-full max-w-[200px]' }}
+        FieldProps={{ className: 'mb-0 w-full CPListing' }}
         getOptionLabel={(option) => (option as Country).name}
         options={countries}
-        popupIcon={<IoFilter className="p-1" size={24} />}
+        popupIcon={<IoChevronDownCircle color="black" size={24} />}
         value={null}
         widget="autocomplete"
         Input={{
           placeholder: 'Select country...',
-        }}
-        sx={{
-          '& .MuiAutocomplete-popupIndicator': { transform: 'none' },
-          width: '100%',
         }}
         onChange={(_: any, value: any) => {
           if (!!value) {
@@ -955,7 +931,7 @@ function CPFilters(props: SectionProps) {
           })
         }}
       />
-    </div>
+    </Box>
   )
 }
 
@@ -997,8 +973,8 @@ export default function CPListing() {
           </Link>
         )}
       </div>
-      <div id="cp-listing-sections">
-        <div>
+      <div id="cp-listing-sections" className="flex gap-4">
+        <div className="flex-1">
           {sections.map((section, index) => (
             <SectionPanel
               key={section.id}
