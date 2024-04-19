@@ -145,7 +145,6 @@ export type CPVersionInfo = {
   country_id: number
   created_at: string
   final_version_id: number
-  history: CPHistoryItem[]
   id: number
   name: string
   status: string

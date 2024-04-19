@@ -1,15 +1,14 @@
-import { CPHistoryItem, CPVersionInfo } from '@ors/types/store'
+import { CPHistoryItem } from '@ors/types/store'
 
 import React from 'react'
 
 import cx from 'classnames'
 
-import Loading from '@ors/components/theme/Loading/Loading'
 import { useStore } from '@ors/store'
 
 const ReportHistory = () => {
   const { report } = useStore((state) => state.cp_reports)
-  const { data: versions, loading } = report.versions
+  const history = report.data?.history
 
   const options: Intl.DateTimeFormatOptions = {
     day: 'numeric',
@@ -20,89 +19,65 @@ const ReportHistory = () => {
     year: 'numeric',
   }
 
-  if (loading)
-    return (
-      <Loading
-        className="!fixed bg-action-disabledBackground"
-        active={loading}
-      />
-    )
-
-  const latestVersion: CPVersionInfo = versions[0]
-
-  if (!latestVersion.history || latestVersion.history.length === 0)
-    return (
-      <div>
-        <p className="mb-3 text-2xl font-normal">History</p>
-        <div className="flex flex-col flex-wrap justify-center gap-1 rounded-lg bg-white px-4 py-3 shadow-lg">
-          <p className="text-md my-1 font-medium text-gray-900">
-            No history available
-          </p>
-        </div>
-      </div>
-    )
-
   return (
     <div>
       <p className="mb-3 text-2xl font-normal">History</p>
       <div className="flex flex-col flex-wrap justify-center rounded-lg bg-white shadow-lg">
-        {latestVersion.history.map(
-          (historyItem: CPHistoryItem, index: number) => {
-            const {
-              created_at,
-              event_description,
-              report_version,
-              updated_by_username,
-            } = historyItem
+        {history?.map((historyItem: CPHistoryItem, index: number) => {
+          const {
+            created_at,
+            event_description,
+            report_version,
+            updated_by_username,
+          } = historyItem
 
-            const dateObject = new Date(created_at)
-            const formattedDateTime = dateObject.toLocaleDateString(
-              undefined,
-              options,
-            )
-            const displayHR = index !== latestVersion.history.length - 1
-            const isCurrentVersion = report_version === report.data?.version
+          const dateObject = new Date(created_at)
+          const formattedDateTime = dateObject.toLocaleDateString(
+            undefined,
+            options,
+          )
+          const displayHR = index !== history.length - 1
+          const isCurrentVersion = report_version === report.data?.version
 
-            return (
-              <React.Fragment key={`${index}`}>
-                <div
-                  className={cx(
-                    'px-4 py-3',
-                    isCurrentVersion ? '' : 'opacity-50',
-                  )}
-                >
-                  <div className="flex grow items-center justify-between gap-3 text-pretty">
-                    <div className="flex items-center gap-2">
-                      <p
-                        id={`report_date`}
-                        className="my-1 min-w-24 text-right text-sm font-normal text-gray-500"
-                      >
-                        {formattedDateTime}
-                      </p>
-                      <p
-                        id={`report_summary`}
-                        className="text-md my-1 font-medium text-gray-900"
-                      >
-                        {event_description} ({`Version ${report_version}`})
-                      </p>
-                    </div>
-                    <div>
-                      <p
-                        id={`report_user`}
-                        className="my-1 w-fit rounded bg-gray-100 px-1 text-sm font-normal text-gray-500"
-                      >
-                        {updated_by_username}
-                      </p>
-                    </div>
+          return (
+            <React.Fragment key={`${index}`}>
+              <div
+                className={cx(
+                  'px-4 py-3',
+                  isCurrentVersion ? '' : 'opacity-50',
+                )}
+              >
+                <div className="flex grow items-center justify-between gap-3 text-pretty">
+                  <div className="flex items-center gap-2">
+                    <p
+                      id={`report_date`}
+                      className="my-1 min-w-24 text-right text-sm font-normal text-gray-500"
+                    >
+                      {formattedDateTime}
+                    </p>
+                    <p
+                      id={`report_summary`}
+                      className="text-md my-1 font-medium text-gray-900"
+                    >
+                      {event_description} ({`Version ${report_version}`})
+                    </p>
+                  </div>
+                  <div>
+                    <p
+                      id={`report_user`}
+                      className="my-1 w-fit rounded bg-gray-100 px-1 text-sm font-normal text-gray-500"
+                    >
+                      {updated_by_username}
+                    </p>
                   </div>
                 </div>
-                {displayHR && (
-                  <hr className="my-0 h-px w-[95%] border-0 bg-gray-200" />
-                )}
-              </React.Fragment>
-            )
-          },
-        )}
+              </div>
+              {displayHR && (
+                <hr className="my-0 h-px w-[95%] border-0 bg-gray-200" />
+              )}
+            </React.Fragment>
+          )
+        })}
       </div>
     </div>
   )
