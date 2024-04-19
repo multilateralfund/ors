@@ -831,7 +831,15 @@ function SectionPanel(props: SectionProps) {
 }
 
 function CPFilters(props: SectionProps) {
-  const { filters, maxYear, minYear, setFilters, user_type } = props
+  const { filters, maxYear, minYear, setFilters, user_type, groupBy } = props
+  const perPage = groupBy === 'country' ? PER_PAGE_GENERAL : PER_PAGE_YEAR
+  const [range, setRange] = useState([filters.range[0], filters.range[1]])
+
+  const [ordering, setOrdering] = useState<'asc' | 'desc'>(
+    groupBy === 'country' ? 'desc' : 'asc',
+  )
+  const orderField =
+    groupBy === 'country' ? 'year,country__name' : 'country__name,year'
   const { data, loading, setParams } = useApi<ReportsResponse>({
     options: {
       params: {
@@ -847,6 +855,7 @@ function CPFilters(props: SectionProps) {
     path: 'api/country-programme/reports/',
   })
   const countries = useStore((state) => state.common.countries_for_listing.data)
+
   console.log('filters', filters)
 
   const TableDataSelectorOrder = ['all', 'final', 'drafts']
@@ -858,13 +867,14 @@ function CPFilters(props: SectionProps) {
     final: 'Final',
   }
 
-  interface TableDataSelectorProps {
-    changeHandler: (
-      event: React.MouseEvent<HTMLElement>,
-      value: TableDataSelectorValuesType,
-    ) => void
-    className?: string
-    value: TableDataSelectorValuesType
+  const [value, setValue] = useState<TableDataSelectorValuesType>('all')
+
+  const changeHandler = (
+    _: React.MouseEvent<HTMLElement>,
+    newValue: TableDataSelectorValuesType,
+  ) => {
+    setValue(newValue)
+    // You can perform any other actions based on the new value here
   }
 
   return (
