@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   Alert,
@@ -82,6 +82,25 @@ export function CreateBlend({
     other_names: '',
   })
   const [errors, setErrors] = useState<Record<string, any>>({})
+
+  useEffect(() => {
+    async function getNextCustomMixName() {
+      try {
+        const data = await api('api/blends/next-cust-mix-name/')
+        setForm({
+          ...prevForm.current,
+          composition: data.name,
+        })
+      } catch (e) {
+        setErrors({
+          components: "Couldn't fetch the next custom mix name."
+        })
+      }
+    }
+
+    getNextCustomMixName()
+  }, [prevForm, setForm])
+
   const [similarBlends, setSimilarBlends] = useState<Record<
     string,
     Array<any>
@@ -174,7 +193,7 @@ export function CreateBlend({
           disabled={true}
           error={!!errors.composition}
           helperText={errors.composition}
-          value={'CustMix-235'}
+          value={form.composition}
         />
         <Field
           InputLabel={{ label: 'Alternative name' }}
@@ -245,6 +264,7 @@ export function CreateBlend({
           enablePagination={false}
           errors={errors?.components}
           gridRef={grid}
+          pinnedBottomRowData={[{ rowType: 'total', substance: 'TOTAL' }]}
           rowData={null}
           suppressCellFocus={false}
           suppressLoadingOverlay={true}
@@ -316,7 +336,7 @@ export function CreateBlend({
               headerClass: 'ag-text-left',
               headerComponent: (props: { api: GridApi<any> }) => {
                 return (
-                  <span className="flex w-full justify-between items-center">
+                  <span className="flex w-full items-center justify-between">
                     <div>Substance</div>
                     <Button
                       className="rounded-lg border-[1.1px] border-solid border-primary px-2 py-1 text-xs"
@@ -377,9 +397,6 @@ export function CreateBlend({
           getRowId={(props: any) => {
             return props.data.row_id
           }}
-          pinnedBottomRowData={[
-            { rowType: 'total', substance: 'TOTAL' },
-          ]}
           onCellValueChanged={(event) => {
             const newComponents = form.components
             const index = findIndex(
@@ -437,7 +454,9 @@ export function CreateBlend({
         )}
         <Collapse in={isString(errors.components) && !!errors.components}>
           {isString(errors.components) && (
-            <Alert icon={<IoAlertCircle />} severity="error">{errors.components}</Alert>
+            <Alert icon={<IoAlertCircle />} severity="error">
+              {errors.components}
+            </Alert>
           )}
         </Collapse>
       </div>
