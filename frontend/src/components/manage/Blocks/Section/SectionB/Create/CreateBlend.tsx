@@ -1,5 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
-import React from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 
 import {
   Alert,
@@ -28,7 +27,8 @@ import useStateWithPrev from '@ors/hooks/useStateWithPrev'
 
 import {
   IoAddCircleSharp,
-  IoInformationCircleOutline,
+  IoAlertCircle,
+  IoInformationCircle,
   IoTrash,
 } from 'react-icons/io5'
 
@@ -160,7 +160,7 @@ export function CreateBlend({
         </Typography>
         <Alert
           className="mb-4"
-          icon={<IoInformationCircleOutline size={24} />}
+          icon={<IoInformationCircle size={24} />}
           severity="info"
         >
           <Typography>
@@ -239,7 +239,6 @@ export function CreateBlend({
           </Tooltip>
         </InputLabel>
         <Table
-          className="mb-4"
           defaultColDef={defaultColDef}
           domLayout="autoHeight"
           enableCellChangeFlash={true}
@@ -438,7 +437,7 @@ export function CreateBlend({
         )}
         <Collapse in={isString(errors.components) && !!errors.components}>
           {isString(errors.components) && (
-            <Alert severity="error">{errors.components}</Alert>
+            <Alert icon={<IoAlertCircle />} severity="error">{errors.components}</Alert>
           )}
         </Collapse>
       </div>
