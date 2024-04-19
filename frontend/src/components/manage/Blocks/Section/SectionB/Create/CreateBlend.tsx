@@ -11,7 +11,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { ColDef, RowNode } from 'ag-grid-community'
+import { ColDef, GridApi, RowNode } from 'ag-grid-community'
 import cx from 'classnames'
 import { find, findIndex, includes, isString } from 'lodash'
 import { useSnackbar } from 'notistack'
@@ -261,38 +261,6 @@ export function CreateBlend({
                 options,
               },
               cellRenderer: (props: any) => {
-                if (props.data.rowType === 'control') {
-                  return (
-                    <Button
-                      className="w-full"
-                      variant="contained"
-                      onClick={() => {
-                        const row_id = `${newNodeIndex.current}`
-                        const newComponent = {
-                          component_name: '',
-                          percentage: 0,
-                          row_id,
-                          substance: null,
-                          substance_id: null,
-                        }
-                        setForm({
-                          ...prevForm.current,
-                          components: [...form.components, newComponent],
-                        })
-                        applyTransaction(props.api, {
-                          add: [newComponent],
-                        })
-                        const componentNode = grid.current.api.getRowNode(
-                          newComponent.row_id,
-                        )
-                        newNode.current = componentNode
-                        newNodeIndex.current = newNodeIndex.current + 1
-                      }}
-                    >
-                      + Add component
-                    </Button>
-                  )
-                }
                 return (
                   <AgCellRenderer
                     {...props}
@@ -347,6 +315,40 @@ export function CreateBlend({
               field: 'substance',
               flex: 1,
               headerClass: 'ag-text-left',
+              headerComponent: (props: { api: GridApi<any> }) => {
+                return (
+                  <span className="flex w-full justify-between items-center">
+                    <div>Substance</div>
+                    <Button
+                      className="rounded-lg border-[1.1px] border-solid border-primary px-2 py-1 text-xs"
+                      onClick={() => {
+                        const row_id = `${newNodeIndex.current}`
+                        const newComponent = {
+                          component_name: '',
+                          percentage: 0,
+                          row_id,
+                          substance: null,
+                          substance_id: null,
+                        }
+                        setForm({
+                          ...prevForm.current,
+                          components: [...form.components, newComponent],
+                        })
+                        applyTransaction(props.api, {
+                          add: [newComponent],
+                        })
+                        const componentNode = grid.current.api.getRowNode(
+                          newComponent.row_id,
+                        )
+                        newNode.current = componentNode
+                        newNodeIndex.current = newNodeIndex.current + 1
+                      }}
+                    >
+                      Add new
+                    </Button>
+                  </span>
+                )
+              },
               headerName: 'Substance',
               minWidth: 200,
               showRowError: true,
@@ -378,7 +380,6 @@ export function CreateBlend({
           }}
           pinnedBottomRowData={[
             { rowType: 'total', substance: 'TOTAL' },
-            { rowType: 'control' },
           ]}
           onCellValueChanged={(event) => {
             const newComponents = form.components
