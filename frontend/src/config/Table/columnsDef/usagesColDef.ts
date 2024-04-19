@@ -8,16 +8,25 @@ export default function getUsagesColDef() {
     'Aerosol I': {
       flex: 0.5,
     },
+    'Aerosol V': {
+      flex: 0.5,
+    },
     'Fire fighting': {
       initialWidth: 86,
     },
     'Fire fighting I': {
       flex: 0.7,
     },
+    'Fire fighting V': {
+      flex: 0.5,
+    },
     Foam: {
       initialWidth: 84,
     },
     'Foam I': {
+      flex: 0.5,
+    },
+    'Foam V': {
       flex: 0.5,
     },
     'Fumigation I': {
@@ -105,7 +114,6 @@ export default function getUsagesColDef() {
       flex: 1,
     },
     'Refrigeration Manufacturing Other V': {
-      flex: 2,
       headerComponentParams: {
         footnote: {
           id: '5',
@@ -115,7 +123,9 @@ export default function getUsagesColDef() {
           order: 5,
         },
       },
-      initialWidth: 120,
+      initialWidth: 150,
+      maxWidth: 150,
+      minWidth: 150,
     },
     'Refrigeration Manufacturing Refrigeration': {
       initialWidth: 100,

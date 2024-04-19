@@ -251,7 +251,7 @@ export const createCPReportsSlice = ({
     setReportCountry: (report) => {
       const countries = getSlice<Country[]>('common.countries_for_listing.data')
       const country = countries.filter(
-        (country) => country.id === report.country_id,
+        (country) => country.id === report?.country_id,
       )[0]
       setSlice('cp_reports.report.country', country)
     },
