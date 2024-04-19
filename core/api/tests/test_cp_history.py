@@ -81,3 +81,28 @@ class TestCPHistory:
         assert history[0].updated_by.username == second_user.username
         assert "comments updated" in history[0].event_description.lower()
         assert history[0].report_version == 2
+
+        # check history in API response
+        url = reverse("country-programme-record-list")
+        response = self.client.get(url, {"cp_report_id": new_id})
+        assert response.status_code == 200
+
+        # check same 4 history items in get records
+        history = response.data["history"]
+        assert len(history) == 4
+
+        assert history[3]["updated_by_username"] == user.username
+        assert "created by user" in history[3]["event_description"].lower()
+        assert history[3]["report_version"] == 1
+
+        assert history[2]["updated_by_username"] == user.username
+        assert "comments updated" in history[2]["event_description"].lower()
+        assert history[2]["report_version"] == 1
+
+        assert history[1]["updated_by_username"] == second_user.username
+        assert "updated by user" in history[1]["event_description"].lower()
+        assert history[1]["report_version"] == 2
+
+        assert history[0]["updated_by_username"] == second_user.username
+        assert "comments updated" in history[0]["event_description"].lower()
+        assert history[0]["report_version"] == 2
