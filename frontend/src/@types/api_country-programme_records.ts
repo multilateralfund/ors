@@ -1,3 +1,5 @@
+import {CPHistoryItem} from "@ors/types/store";
+
 type cp_report = {
   comment: null | string
   comment_country: null | string
@@ -51,6 +53,7 @@ type ApiBase = {
     }[]
   }[]
 } & {
+  history: CPHistoryItem[]
   report_info?: {
     reported_section_a: boolean
     reported_section_b: boolean
@@ -100,7 +103,7 @@ type ApiBase = {
   }
   section_f: {
     remarks: null | string
-  }
+  },
 }
 
 // The server response contains the cp_report property which is destructured into the root by the client.

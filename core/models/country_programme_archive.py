@@ -3,7 +3,6 @@ from django.db import models
 from core.models.base_country_programme import (
     AbstractCPEmission,
     AbstractCPGeneration,
-    AbstractCPHistory,
     AbstractCPPrices,
     AbstractCPReport,
     AbstractCPRecord,
@@ -109,21 +108,6 @@ class CPEmissionArchive(AbstractCPEmission):
     def __str__(self):
         cp_report = self.country_programme_report
         return f"{cp_report.name} (v{cp_report.version})"
-
-
-class CPHistoryArchive(AbstractCPHistory):
-    country_programme_report = models.ForeignKey(
-        CPReportArchive,
-        on_delete=models.CASCADE,
-        related_name="cphistory",
-    )
-
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="updated_cp_reports_archive",
-        help_text="User who updated the report",
-    )
 
 
 class CPReportSectionsArchive(models.Model):

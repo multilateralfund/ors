@@ -11,6 +11,7 @@ from core.api.serializers.adm import (
 from core.api.permissions import IsUserAllowedCP
 from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
+from core.api.serializers.cp_history import CPHistorySerializer
 from core.api.serializers.cp_price import CPPricesSerializer
 from core.api.serializers.cp_record import CPRecordSerializer
 from core.api.serializers.cp_report import CPReportSerializer, CPReportInfoSerializer
@@ -276,6 +277,23 @@ class CPRecordBaseListView(views.APIView):
             "section_a": self.cp_record_seri_class(section_a, many=True).data,
         }
 
+    def _get_cp_history(self, cp_report):
+        history = []
+        cp_report_final = (
+            CPReport.objects.filter(
+                country=cp_report.country,
+                year=cp_report.year,
+            ).first()
+            if self.cp_report_class != CPReport
+            else cp_report
+        )
+        if cp_report_final:
+            history = CPHistorySerializer(
+                cp_report_final.cphistory.all(), many=True
+            ).data
+
+        return history
+
     def _get_new_cp_records(self, cp_report):
         section_a = self._get_displayed_records(cp_report, "A")
         section_b = self._get_displayed_records(cp_report, "B")
@@ -298,6 +316,7 @@ class CPRecordBaseListView(views.APIView):
             "section_d": self.cp_generation_seri_class(section_d, many=True).data,
             "section_e": self.cp_emission_seri_class(section_e, many=True).data,
             "section_f": section_f,
+            "history": self._get_cp_history(cp_report),
         }
         if hasattr(cp_report, "cpreportedsections"):
             # This property will not be present for pre-2023

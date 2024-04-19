@@ -28,7 +28,6 @@ from core.models.country_programme import CPHistory, CPReport
 from core.models.country_programme_archive import (
     CPEmissionArchive,
     CPGenerationArchive,
-    CPHistoryArchive,
     CPPricesArchive,
     CPRecordArchive,
     CPReportArchive,
@@ -300,21 +299,9 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
             cp_reported_sections = self._get_archive_data(
                 CPReportSectionsArchive,
                 instance.cpreportedsections,
-                {"country_programme_report_id":  cp_report_ar.id}
+                {"country_programme_report_id": cp_report_ar.id},
             )
             cp_reported_sections.save()
-
-        # archive cp history
-        cp_history_list = []
-        for cp_history in instance.cphistory.all():
-            cp_history_list.append(
-                self._get_archive_data(
-                    CPHistoryArchive,
-                    cp_history,
-                    {"country_programme_report_id": cp_report_ar.id},
-                )
-            )
-        CPHistoryArchive.objects.bulk_create(cp_history_list, batch_size=1000)
 
     def check_readonly_fields(self, serializer, current_obj):
         return (
@@ -326,14 +313,11 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
     def put(self, request, *args, **kwargs):
         current_obj = self.get_object()
 
-        # set event description
-        event_description = request.data.get("event_description", "Updated by user")
-
         serializer = CPReportCreateSerializer(
             data=request.data,
             context={
                 "user": request.user,
-                "event_description": event_description,
+                "from_update": True,
             },
         )
         if not serializer.is_valid() or self.check_readonly_fields(
@@ -361,6 +345,18 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
 
         if new_instance.status == CPReport.CPReportStatus.FINAL:
             self._archive_cp_report(current_obj)
+
+        # inherit all history
+        CPHistory.objects.filter(country_programme_report=current_obj).update(
+            country_programme_report=new_instance
+        )
+        # create new history for update event
+        CPHistory.objects.create(
+            country_programme_report=new_instance,
+            report_version=new_instance.version,
+            updated_by=request.user,
+            event_description="Updated by user",
+        )
 
         current_obj.delete()
 
@@ -409,6 +405,7 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
         cp_report.save()
         CPHistory.objects.create(
             country_programme_report=cp_report,
+            report_version=cp_report.version,
             updated_by=request.user,
             event_description="Status updated by user",
         )
@@ -608,6 +605,7 @@ class CPReportCommentsView(generics.GenericAPIView):
         cp_report.save()
         CPHistory.objects.create(
             country_programme_report=cp_report,
+            report_version=cp_report.version,
             updated_by=request.user,
             event_description="Comments updated by user",
         )
