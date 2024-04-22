@@ -393,6 +393,7 @@ def setup_old_cp_report_create(country_ro, _setup_section_a_c, adm_rows, adm_col
     report_data = {
         "country_id": country_ro.id,
         "name": "Romania2000",
+        "status": CPReport.CPReportStatus.FINAL,
         "year": 2000,
         "section_a": section_a,
         "adm_b": [
@@ -745,8 +746,9 @@ class TestCPReportUpdate(BaseTest):
         cp_report_2019.status = CPReport.CPReportStatus.FINAL
         cp_report_2019.save()
 
-        # update cp report
+        # update cp report (keep final status => new version)
         data = _setup_new_cp_report_create
+        data["status"] = CPReport.CPReportStatus.FINAL
         data["name"] = "O valoare mare, o mare valoare"
         data["section_f"]["remarks"] = "Sunt din cap până în picioare"
 
@@ -761,18 +763,65 @@ class TestCPReportUpdate(BaseTest):
         self.url = reverse("country-programme-reports") + f"{new_id}/"
         self.client.force_authenticate(user=user)
 
-        # update again
+        # update again (update status too => new version)
+        data["status"] = CPReport.CPReportStatus.DRAFT
         data["name"] = "Sunt destept si calculat"
         data["section_f"]["remarks"] = "La dusmani le-am pus capac."
         response = self.client.put(self.url, data, format="json")
         assert response.status_code == 200
         assert response.data["name"] == "Sunt destept si calculat"
+        assert response.data["status"] == CPReport.CPReportStatus.DRAFT
+        assert response.data["version"] == 3
+        assert response.data["created_by"] == user.username
+
+        new_id = response.data["id"]
+        self.url = reverse("country-programme-reports") + f"{new_id}/"
+
+        # update as draft (no new version)
+        data["name"] = "Am relatii peste tot"
+        data["section_f"]["remarks"] = "Sunt sef de clan mafiot"
+        response = self.client.put(self.url, data, format="json")
+        print(response.data)
+        assert response.status_code == 200
+        assert response.data["name"] == "Am relatii peste tot"
+        assert response.data["status"] == CPReport.CPReportStatus.DRAFT
+        assert response.data["version"] == 3
+        assert response.data["created_by"] == user.username
+
+        new_id = response.data["id"]
+        self.url = reverse("country-programme-reports") + f"{new_id}/"
+
+        # update to final (no new version)
+        data["name"] = "De la Frankfurt la Paris"
+        data["section_f"]["remarks"] = "Eu multi fraieri am invins"
+        data["status"] = CPReport.CPReportStatus.FINAL
+        response = self.client.put(self.url, data, format="json")
+        assert response.status_code == 200
+        assert response.data["name"] == "De la Frankfurt la Paris"
         assert response.data["status"] == CPReport.CPReportStatus.FINAL
         assert response.data["version"] == 3
         assert response.data["created_by"] == user.username
 
+        new_id = response.data["id"]
+        self.url = reverse("country-programme-reports") + f"{new_id}/"
+
+        # update again as final (no new version)
+        data["name"] = "Nimeni nu ma poate egala"
+        data["section_f"]["remarks"] = "Ca tot ce fac eu fac cu cap"
+        response = self.client.put(self.url, data, format="json")
+        assert response.status_code == 200
+        assert response.data["name"] == "Nimeni nu ma poate egala"
+        assert response.data["status"] == CPReport.CPReportStatus.FINAL
+        assert response.data["version"] == 4
+        assert response.data["created_by"] == user.username
+
         # check report archive
-        assert CPReportArchive.objects.count() == 2
+        assert CPReportArchive.objects.count() == 3
+
+        # check ther are not arhive for draft updates
+        for name in ["Sunt destept si calculat", "Am relatii peste tot"]:
+            assert not CPReportArchive.objects.filter(name=name).exists()
+
         # check first archive
         ar = (
             CPReportArchive.objects.filter(name=cp_report_2019.name)

@@ -13,7 +13,7 @@ def setup_new_cp_report_create(country_ro):
         "country_id": country_ro.id,
         "name": "Romania2023",
         "year": 2023,
-        "status": CPReport.CPReportStatus.FINAL,
+        "status": CPReport.CPReportStatus.DRAFT,
         "section_a": [],
         "section_b": [],
         "section_c": [],
@@ -27,6 +27,15 @@ class TestCPHistory:
     client = APIClient()
 
     def test_create_history(self, user, second_user, _setup_new_cp_report_create):
+        VALIDATION_LIST = [
+            ("created by user", 5, 1, user.username),
+            ("comments updated", 4, 1, user.username),
+            ("updated by user", 3, 1, second_user.username),
+            ("status changed", 2, 1, second_user.username),
+            ("comments updated", 1, 1, second_user.username),
+            ("updated by user", 0, 2, second_user.username),
+        ]
+
         # create new cp report
         self.client.force_authenticate(user=user)
         url = reverse("country-programme-reports")
@@ -43,11 +52,12 @@ class TestCPHistory:
         )
         assert response.status_code == 201
 
-        # update cp report
+        # update cp report ( 2 history record = update status + update report)
         self.client.force_authenticate(user=second_user)
         url = reverse("country-programme-reports") + f"{cp_report_id}/"
         data = _setup_new_cp_report_create
         data["name"] = "Test update"
+        data["status"] = CPReport.CPReportStatus.FINAL
 
         response = self.client.put(url, data, format="json")
         assert response.status_code == 200
@@ -62,47 +72,33 @@ class TestCPHistory:
         )
         assert response.status_code == 201
 
-        # check 4 history objects created
+        # update again as final
+        data["name"] = "Test update2"
+        url = reverse("country-programme-reports") + f"{new_id}/"
+
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 200
+        new_id = response.data["id"]
+
+        # check 6 history objects created
         history = CPHistory.objects.filter(country_programme_report_id=new_id)
-        assert history.count() == 4
+        assert history.count() == len(VALIDATION_LIST)
 
-        assert history[3].updated_by.username == user.username
-        assert "created by user" in history[3].event_description.lower()
-        assert history[3].report_version == 1
-
-        assert history[2].updated_by.username == user.username
-        assert "comments updated" in history[2].event_description.lower()
-        assert history[2].report_version == 1
-
-        assert history[1].updated_by.username == second_user.username
-        assert "updated by user" in history[1].event_description.lower()
-        assert history[1].report_version == 2
-
-        assert history[0].updated_by.username == second_user.username
-        assert "comments updated" in history[0].event_description.lower()
-        assert history[0].report_version == 2
+        for valid_string, i, version, req_user in VALIDATION_LIST:
+            assert history[i].updated_by.username == req_user
+            assert valid_string in history[i].event_description.lower()
+            assert history[i].report_version == version
 
         # check history in API response
         url = reverse("country-programme-record-list")
         response = self.client.get(url, {"cp_report_id": new_id})
         assert response.status_code == 200
 
-        # check same 4 history items in get records
+        # check same history items in get records
         history = response.data["history"]
-        assert len(history) == 4
+        assert len(history) == len(VALIDATION_LIST)
 
-        assert history[3]["updated_by_username"] == user.username
-        assert "created by user" in history[3]["event_description"].lower()
-        assert history[3]["report_version"] == 1
-
-        assert history[2]["updated_by_username"] == user.username
-        assert "comments updated" in history[2]["event_description"].lower()
-        assert history[2]["report_version"] == 1
-
-        assert history[1]["updated_by_username"] == second_user.username
-        assert "updated by user" in history[1]["event_description"].lower()
-        assert history[1]["report_version"] == 2
-
-        assert history[0]["updated_by_username"] == second_user.username
-        assert "comments updated" in history[0]["event_description"].lower()
-        assert history[0]["report_version"] == 2
+        for valid_string, i, version, req_user in VALIDATION_LIST:
+            assert history[i]["updated_by_username"] == req_user
+            assert valid_string in history[i]["event_description"].lower()
+            assert history[i]["report_version"] == version
