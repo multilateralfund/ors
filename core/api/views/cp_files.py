@@ -1,3 +1,5 @@
+import os
+
 from django.core.exceptions import PermissionDenied
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -18,6 +20,24 @@ class CPFilesView(generics.GenericAPIView):
     serializer_class = CPFileSerializer
     filterset_class = CPFileFilter
 
+    ACCEPTED_EXTENSIONS = [
+        ".pdf",
+        ".doc",
+        ".docx",
+        ".xls",
+        ".xlsx",
+        ".csv",
+        ".ppt",
+        ".pptx",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".zip",
+        ".rar",
+        ".7z",
+    ]
+
     def _check_country_user(self):
         user = self.request.user
         country_id = self.request.query_params.get("country_id")
@@ -31,7 +51,7 @@ class CPFilesView(generics.GenericAPIView):
         self._check_country_user()
 
         queryset = self.filter_queryset(self.get_queryset())
-        serializer = self.get_serializer(cp_files, many=True)
+        serializer = self.get_serializer(queryset, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -40,16 +60,21 @@ class CPFilesView(generics.GenericAPIView):
         year = request.query_params.get("year")
         self._check_country_user()
 
-        files_data = request.data.get("files", [])
-        for file_data in files_data:
-            file_data["country_id"] = country_id
-            file_data["year"] = year
+        file = request.FILES.get("file")
+        if not file:
+            return Response("File not provided", status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = self.get_serializer(data=files_data, many=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        extension = os.path.splitext(file.name)[-1]
+        if extension not in self.ACCEPTED_EXTENSIONS:
+            return Response("File is not valid", status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        CPFile.objects.create(
+            country_id=country_id,
+            year=year,
+            filename=file.name,
+            file=file,
+        )
+        return Response({}, status=status.HTTP_201_CREATED)
 
     def post(self, request, *args, **kwargs):
         return self._files_create(request, *args, **kwargs)
