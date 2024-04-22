@@ -524,6 +524,8 @@ class CPReportGroupByCountryView(CPReportGroupByYearView):
     group_pk = "country__id"
     order_by = "-year"
 
+    filterset_class = CPReportFilter
+
     @staticmethod
     def get_group(obj):
         return obj.country.name
