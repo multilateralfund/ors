@@ -2,16 +2,17 @@ import { UserType, userTypeVisibility } from '@ors/types/user_types'
 
 import React, { useEffect, useMemo, useState } from 'react'
 
-import { Button, Typography } from '@mui/material'
+import { Button } from '@mui/material'
 import cx from 'classnames'
 import { Dictionary, capitalize, orderBy } from 'lodash'
+import NextLink from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
-import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
 import api from '@ors/helpers/Api/_api'
+import useClickOutside from '@ors/hooks/useClickOutside'
 import { useStore } from '@ors/store'
 
 import { IoChevronDown } from 'react-icons/io5'
@@ -26,13 +27,23 @@ const formattedDateFromTimestamp = (timestring: string) => {
 }
 
 const HeaderVersionsDropdown = () => {
+  const [showVersionsMenu, setShowVersionsMenu] = useState(false)
   const { report } = useStore((state) => state.cp_reports)
+
+  const toggleShowVersionsMenu = () => setShowVersionsMenu((prev) => !prev)
+
+  const ref = useClickOutside<HTMLDivElement>(() => {
+    setShowVersionsMenu(false)
+  })
+
   const versions =
     report.data && report.country
       ? orderBy(report.versions.data, 'version', 'desc').map(
           (version, idx) => ({
             id: version.id,
             formattedDate: formattedDateFromTimestamp(version.created_at),
+            isDraft: version.status === 'draft',
+            isFinal: version.status === 'final',
             label: `Version ${version.version}`,
             url:
               idx == 0
@@ -42,48 +53,51 @@ const HeaderVersionsDropdown = () => {
         )
       : []
 
+  const tagLatest = (
+    <span className="mx-2 rounded-md bg-gray-400 p-1 text-xs text-white">
+      LATEST
+    </span>
+  )
+  const tagDraft = (
+    <span className="mx-2 rounded-md bg-warning p-1 text-xs text-white">
+      Draft
+    </span>
+  )
+
   return (
-    <Dropdown
-      className="p-0 hover:bg-transparent hover:text-primary"
-      MenuProps={{
-        slotProps: {
-          paper: {
-            className:
-              'max-h-[200px] overflow-y-auto bg-gray-A100 rounded-none border-primary',
-          },
-        },
-      }}
-      label={
-        <div className="flex items-center justify-between gap-x-2">
-          <Typography component="h1" variant="h2">
-            {report?.data?.name}
-          </Typography>
-          <IoChevronDown className="text-5xl font-bold" />
-        </div>
-      }
-    >
-      {versions.map((info, idx) => (
-        <Dropdown.Item
-          key={info.id}
-          className="flex items-center gap-x-2 rounded-none text-black no-underline"
-          component={Link}
-          // @ts-ignore
-          href={info.url}
-        >
-          <div className="flex w-56 items-center justify-between">
-            <div>{info.label}</div>
-            <div className="flex items-center">
-              {idx == 0 && (
-                <span className="mx-2 rounded-md bg-gray-400 p-1 text-xs text-white">
-                  LATEST
-                </span>
-              )}
-              {info.formattedDate}
+    <div className="relative">
+      <div
+        className="flex cursor-pointer items-center justify-between gap-x-2"
+        ref={ref}
+        onClick={toggleShowVersionsMenu}
+      >
+        <h1 className="m-0 text-5xl leading-normal">{report?.data?.name}</h1>
+        <IoChevronDown className="text-5xl font-bold text-gray-700" />
+      </div>
+      <div
+        className={cx(
+          'absolute left-0 z-10 max-h-[200px] overflow-y-auto rounded-none border border-solid border-primary bg-gray-A100 opacity-0 transition-all',
+          { collapse: !showVersionsMenu, 'opacity-100': showVersionsMenu },
+        )}
+      >
+        {versions.map((info, idx) => (
+          <NextLink
+            key={info.id}
+            className="flex items-center gap-x-2 rounded-none px-2 py-2 text-black no-underline hover:bg-primary hover:text-white"
+            href={info.url}
+          >
+            <div className="flex w-56 items-center justify-between hover:text-white">
+              <div>{info.label}</div>
+              <div className="flex items-center">
+                {idx == 0 && (info.isFinal ? tagLatest : tagDraft)}
+                {idx == 1 && versions[0].isDraft && tagLatest}
+                {info.formattedDate}
+              </div>
             </div>
-          </div>
-        </Dropdown.Item>
-      ))}
-    </Dropdown>
+          </NextLink>
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -153,7 +167,9 @@ const ArchiveHeaderActions = () => {
 }
 
 const ViewHeaderActions = () => {
-  const { report, setReport } = useStore((state) => state.cp_reports)
+  const { cacheInvalidateReport, fetchVersions, report, setReport } = useStore(
+    (state) => state.cp_reports,
+  )
   const { enqueueSnackbar } = useSnackbar()
   const { user_type } = useStore((state) => state.user.data)
 
@@ -203,6 +219,8 @@ const ViewHeaderActions = () => {
                         ...response,
                       },
                     })
+                    cacheInvalidateReport(response.country_id, response.year)
+                    fetchVersions(response.country_id, response.year)
                     window.scrollTo({ behavior: 'smooth', top: 0 })
                   } catch (error) {
                     const errors = await error.json()
@@ -241,6 +259,8 @@ const EditHeaderActions = ({
 
   const isDraft = report.data?.status === 'draft'
   const isFinal = report.data?.status === 'final'
+
+  const showDraftFromFinalButton = isFinal && report.variant?.model === 'V'
 
   if (!userTypeVisibility[user_type as UserType]) return null
 
@@ -310,7 +330,7 @@ const EditHeaderActions = ({
               Update draft
             </Button>
           )}
-          {isFinal && (
+          {showDraftFromFinalButton && (
             <Button
               className="px-4 py-2 shadow-none"
               color="secondary"
@@ -464,9 +484,9 @@ const CPCreateHeader = ({
   return (
     <div className="my-12 flex min-h-[40px] items-center justify-between gap-x-8">
       <div className="flex items-center gap-x-2">
-        <Typography component="h1" variant="h3">
+        <h1 className="m-0 text-4xl leading-normal">
           New submission - {currentYear}
-        </Typography>
+        </h1>
       </div>
       {actions}
     </div>

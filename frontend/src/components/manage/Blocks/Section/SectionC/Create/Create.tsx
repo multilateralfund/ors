@@ -151,7 +151,7 @@ export default function SectionCCreate(props: {
         substancePrices.data || [],
         variant.model,
       ),
-    [form, emptyForm, substancePrices.data],
+    [variant.model, form, emptyForm, substancePrices.data],
   )
   const [pinnedBottomRowData] = useState([{ rowType: 'control' }])
 

@@ -6,6 +6,8 @@ import type { DataType, SliceData } from '@ors/types/primitives'
 import type { PartialDeep } from 'type-fest'
 
 import { StoreApi } from 'zustand'
+
+import { ReportVariant } from './variants'
 type StoreProviderProps = {
   children: React.ReactNode
   initialState: InitialStoreState
@@ -20,6 +22,7 @@ export type CreateSliceProps = {
 type Report = SliceData<CPReport | null, Record<string, any> | null> & {
   country?: Country
   emptyForm: SliceData<EmptyFormType, Record<string, any> | null>
+  variant?: ReportVariant
   versions: SliceData<CPVersionInfo[]>
 }
 
@@ -50,6 +53,7 @@ export interface CPReportsSlice {
   report: Report
   setReport: (report: Partial<Report>) => void
   setReportCountry: (report: CPReport) => void
+  setReportVariant: (report: CPReport) => void
   substances: SliceData<ApiSubstance[]>
 }
 
