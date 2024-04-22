@@ -19,7 +19,7 @@ import { NON_EDITABLE_ROWS } from '@ors/config/Table/columnsDef/settings'
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 
-import { sectionColDefById } from '../sectionColumnsDef'
+import { sectionColDefByIdFunc } from '../sectionColumnsDef'
 
 import { IoTrash } from 'react-icons/io5'
 
@@ -29,6 +29,7 @@ function useGridOptions(props: {
   openAddChemicalModal: () => void
 }) {
   const { model, onRemoveSubstance, openAddChemicalModal } = props
+  const sectionColDefById = sectionColDefByIdFunc(model)
 
   const gridOptions: GridOptions = useMemo(
     () => ({

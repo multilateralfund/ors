@@ -110,7 +110,7 @@ function useGridOptions(props: {
                   {
                     id: 'total_usages',
                     category: 'usage',
-                    cellClass: 'bg-yellow-50 text-right',
+                    cellClass: 'bg-yellow-50 text-center',
                     field: 'total_usages',
                     headerName: 'TOTAL',
                     orsAggFunc: 'sumTotalUsages',
@@ -210,7 +210,7 @@ function useGridOptions(props: {
               props.colDef.id,
             ),
             'ag-flex-cell': props.data?.rowType === 'control',
-            'ag-text-right': !includes(['display_name'], props.colDef.field),
+            'ag-text-center': !includes(['display_name'], props.colDef.field),
           })
         },
         editable: (props: EditableCallbackParams<RowData>) => {
@@ -224,7 +224,7 @@ function useGridOptions(props: {
           }
           return true
         },
-        headerClass: 'ag-text-right',
+        headerClass: 'ag-text-center',
         minWidth: defaultColDef.minWidth,
         resizable: true,
         wrapText: true,

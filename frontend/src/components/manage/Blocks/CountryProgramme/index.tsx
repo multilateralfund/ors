@@ -36,6 +36,8 @@ const constants: ConstantsType = {
     },
     section_c: {
       label: 'Adm C prices',
+      title:
+        'AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US $/kg)',
     },
   },
   III: {
@@ -44,6 +46,8 @@ const constants: ConstantsType = {
     },
     section_c: {
       label: 'Adm C prices',
+      title:
+        'AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US $/kg)',
     },
   },
   IV: {
@@ -216,6 +220,7 @@ export function getSections(
         label: constants[model]?.section_c?.label || 'Section C',
         panelId: 'section-C-panel',
         title:
+          constants[model]?.section_c?.title ||
           'SECTION C. AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US $/kg)',
       },
       {

@@ -13,7 +13,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
   const { model, usages } = props
 
   const substanceColumn = useCallback(
-    (extra: ColDef) => ({
+    (extra?: ColDef) => ({
       ...sectionColDefById['display_name'],
       field: 'display_name',
       headerClass: 'ag-text-left',
@@ -28,7 +28,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
       autoHeight: true,
       cellClass: (props: CellClassParams) => {
         return cx({
-          'ag-text-right': !includes(['display_name'], props.colDef.field),
+          'ag-text-center': !includes(['display_name'], props.colDef.field),
         })
       },
       headerClass: 'ag-text-center',
@@ -45,7 +45,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
       {
         id: 'total_usages',
         category: 'usage',
-        cellClass: 'bg-yellow-50 text-right',
+        cellClass: 'bg-yellow-50 text-center',
         headerName: 'TOTAL',
         orsAggFunc: 'sumTotalUsages',
         ...sectionColDefById['total_usages'],
@@ -126,11 +126,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
   const gridOptionsAll: GridOptions = useMemo(() => {
     return {
       columnDefs: [
-        substanceColumn(
-          includes(['V'], model)
-            ? { initialWidth: 150 }
-            : { initialWidth: 430 },
-        ),
+        substanceColumn(),
         ...(usages.length
           ? [
               {
@@ -146,7 +142,6 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
       defaultColDef: defaultSectionColDef,
     }
   }, [
-    model,
     bySector,
     substanceColumn,
     bySubstanceTrade,
@@ -156,31 +151,17 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
 
   const gridOptionsBySubstanceTrade: GridOptions = useMemo(() => {
     return {
-      columnDefs: [
-        substanceColumn(
-          includes(['V'], model)
-            ? { initialWidth: 150 }
-            : { initialWidth: 430 },
-        ),
-        ...bySubstanceTrade(true),
-      ],
+      columnDefs: [substanceColumn(), ...bySubstanceTrade(true)],
       defaultColDef: defaultSectionColDef,
     }
-  }, [model, bySubstanceTrade, substanceColumn, defaultSectionColDef])
+  }, [bySubstanceTrade, substanceColumn, defaultSectionColDef])
 
   const gridOptionsBySector: GridOptions = useMemo(() => {
     return {
-      columnDefs: [
-        substanceColumn(
-          includes(['V'], model)
-            ? { initialWidth: 150 }
-            : { initialWidth: 430 },
-        ),
-        ...bySector,
-      ],
+      columnDefs: [substanceColumn(), ...bySector],
       defaultColDef: defaultSectionColDef,
     }
-  }, [model, bySector, substanceColumn, defaultSectionColDef])
+  }, [bySector, substanceColumn, defaultSectionColDef])
 
   return { gridOptionsAll, gridOptionsBySector, gridOptionsBySubstanceTrade }
 }

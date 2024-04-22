@@ -88,9 +88,11 @@ export default function SectionCView(props: {
 
   return (
     <>
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
+      {includes(['II', 'III'], variant.model) ? null : (
+        <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+          <Footnotes />
+        </Alert>
+      )}
       <div className="flex justify-end">
         <FormControlLabel
           label="Show only reported substances"

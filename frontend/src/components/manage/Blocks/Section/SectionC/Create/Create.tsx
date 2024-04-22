@@ -220,9 +220,11 @@ export default function SectionCCreate(props: {
 
   return (
     <>
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
+      {includes(['II', 'III'], variant.model) ? null : (
+        <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+          <Footnotes />
+        </Alert>
+      )}
       <Table
         {...TableProps}
         columnDefs={gridOptions.columnDefs}

@@ -6,10 +6,11 @@ import { includes } from 'lodash'
 
 import { defaultColDef } from '@ors/config/Table/columnsDef'
 
-import { sectionColDefById } from '../sectionColumnsDef'
+import { sectionColDefByIdFunc } from '../sectionColumnsDef'
 
 function useGridOptions(props: { model: string }) {
   const { model } = props
+  const sectionColDefById = sectionColDefByIdFunc(model)
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
       {

@@ -7,7 +7,7 @@ import Table from '@ors/components/manage/Form/Table'
 import useGridOptions from './schema'
 
 export default function AdmBCreate(props: any) {
-  const { TableProps, emptyForm, form, setForm } = props
+  const { TableProps, emptyForm, form, setForm, variant } = props
   const { columns = [], rows = [] } = emptyForm.adm_c || {}
   const grid = useRef<any>()
   const [initialRowData] = useState(() => {
@@ -24,6 +24,7 @@ export default function AdmBCreate(props: any) {
 
   const gridOptions = useGridOptions({
     adm_columns: columns,
+    model: variant.model,
   })
 
   return (

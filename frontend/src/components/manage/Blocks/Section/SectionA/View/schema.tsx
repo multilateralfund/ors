@@ -20,7 +20,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
       headerName: 'Substance',
       ...sectionColDefById['display_name'],
       editable: false,
-      ...(includes(['II', 'III'], model) ? { initialWidth: 10 } : {}),
+      ...(includes(['I', 'II', 'III'], model) ? { initialWidth: 10 } : {}),
     }),
     [model, sectionColDefById],
   )
@@ -34,10 +34,10 @@ function useGridOptions(props: { model: string; usages: object[] }) {
             props.data.excluded_usages || [],
             props.colDef.id,
           ),
-          'ag-text-right': !includes(['display_name'], props.colDef.field),
+          'ag-text-center': !includes(['display_name'], props.colDef.field),
         })
       },
-      headerClass: 'ag-text-right',
+      headerClass: 'ag-text-center',
       minWidth: defaultColDef.minWidth,
       resizable: true,
       wrapText: true,
@@ -51,7 +51,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
       {
         id: 'total_usages',
         category: 'usage',
-        cellClass: 'bg-yellow-50 text-right',
+        cellClass: 'bg-yellow-50 text-center',
         headerName: 'TOTAL',
         orsAggFunc: 'sumTotalUsages',
         ...sectionColDefById['total_usages'],
@@ -98,7 +98,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
               },
             ]
           : []),
-        ...(includes(['II', 'III'], model)
+        ...(includes(['I', 'II', 'III'], model)
           ? [
               {
                 ...sectionColDefById['export_quotas'],
@@ -174,13 +174,12 @@ function useGridOptions(props: { model: string; usages: object[] }) {
       columnDefs: [
         {
           ...substanceColumn,
-          ...(includes(['IV', 'V'], model) ? { minWidth: 300 } : {}),
         },
         ...bySector,
       ],
       defaultColDef: defaultSectionColDef,
     }
-  }, [model, bySector, substanceColumn, defaultSectionColDef])
+  }, [bySector, substanceColumn, defaultSectionColDef])
 
   return { gridOptionsAll, gridOptionsBySector, gridOptionsBySubstanceTrade }
 }
