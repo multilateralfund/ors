@@ -3,7 +3,6 @@ from django.db import models
 from core.models.base_country_programme import (
     AbstractCPEmission,
     AbstractCPGeneration,
-    AbstractCPHistory,
     AbstractCPPrices,
     AbstractCPReport,
     AbstractCPRecord,
@@ -111,16 +110,19 @@ class CPEmissionArchive(AbstractCPEmission):
         return f"{cp_report.name} (v{cp_report.version})"
 
 
-class CPHistoryArchive(AbstractCPHistory):
-    country_programme_report = models.ForeignKey(
-        CPReportArchive,
+class CPReportSectionsArchive(models.Model):
+    """
+    These only start with version V (2023-onwards).
+    """
+    country_programme_report = models.OneToOneField(
+        "CPReportArchive",
         on_delete=models.CASCADE,
-        related_name="cphistory",
+        related_name="cpreportedsections",
     )
 
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="updated_cp_reports_archive",
-        help_text="User who updated the report",
-    )
+    reported_section_a = models.BooleanField(default=False)
+    reported_section_b = models.BooleanField(default=False)
+    reported_section_c = models.BooleanField(default=False)
+    reported_section_d = models.BooleanField(default=False)
+    reported_section_e = models.BooleanField(default=False)
+    reported_section_f = models.BooleanField(default=False)

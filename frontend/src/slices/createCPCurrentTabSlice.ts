@@ -1,8 +1,7 @@
+import type { CreateSliceProps } from '@ors/types/store'
 import type { CPCurrentTabSlice } from '@ors/types/store'
 
 import { produce } from 'immer'
-
-import { CreateSliceProps } from '@ors/store'
 
 export const createCPCurrentTabSlice = ({
   set,

@@ -13,6 +13,13 @@
     font-weight: bold;
   } */
 
+  .ag-header-cell,
+  .ag-header-group-cell {
+    span {
+      font-size: 0.813rem;
+    }
+  }
+
   .ag-header-cell.ag-text-left .ag-header-cell-label,
   .ag-header-group-cell.ag-text-left,
   .ag-header-cell.ag-text-left .ag-header-cell-comp-wrapper {
@@ -23,6 +30,7 @@
   .ag-header-group-cell.ag-text-center,
   .ag-header-cell.ag-text-center .ag-header-cell-comp-wrapper {
     text-align: center;
+    justify-content: center;
   }
 
   .ag-header-cell.ag-text-right .ag-header-cell-label,

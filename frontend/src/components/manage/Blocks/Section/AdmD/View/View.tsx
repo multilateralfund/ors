@@ -35,7 +35,7 @@ export default function AdmD(props: any) {
                       control={
                         <Checkbox
                           checked={
-                            report.adm_d[row.id].value_choice_id === choice.id
+                            report.adm_d[row.id]?.value_choice_id === choice.id
                           }
                           disableRipple
                         />

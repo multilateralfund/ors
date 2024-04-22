@@ -27,12 +27,14 @@ class CPReportArchiveFilter(filters.FilterSet):
     """
     Filter for cp report archive
     """
+
     country_id = filters.ModelMultipleChoiceFilter(
-        field_name="country_id", queryset=Country.objects.all(), widget=CSVWidget,
-        required=True
+        field_name="country_id",
+        queryset=Country.objects.all(),
+        widget=CSVWidget,
+        required=True,
     )
     year = filters.NumberFilter(field_name="year", required=True)
-
 
     class Meta:
         model = CPReportArchive

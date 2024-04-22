@@ -4,7 +4,7 @@ import { includes } from 'lodash'
 
 import { colDefById } from '@ors/config/Table/columnsDef'
 
-import { RowData } from './Create/Create'
+import { RowData } from './Create/types'
 
 const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
   ...colDefById,
@@ -13,12 +13,15 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
     headerComponentParams: {
       footnote: {
         content: 'If imports are banned, indicate date ban commenced',
-        icon: true,
+        icon: false,
         index: '*',
         order: 99,
       },
     },
     headerName: 'Date ban commenced',
+    ...(includes(['IV', 'V'], model)
+      ? { initialWidth: 100, minWidth: 100 }
+      : {}),
   },
   display_name: {
     ...colDefById['display_name'],
@@ -51,37 +54,66 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
       },
     },
     initialWidth: 150,
+    ...(includes(['I'], model) ? { minWidth: 300 } : {}),
+    ...(includes(['III'], model) ? { minWidth: 300 } : {}),
   },
   export_quotas: {
     initialWidth: 80,
   },
   exports: {
+    ...(includes(['I'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
     headerComponentParams: {
-      footnote: {
-        id: '2',
-        content: 'Where applicable.',
-        icon: true,
-      },
+      ...(includes(['II', 'III'], model)
+        ? {
+            footnote: {
+              id: '2',
+              content: 'Where applicable.',
+              icon: true,
+            },
+          }
+        : {}),
     },
   },
+  imports: {
+    ...(includes(['I'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
+  },
   production: {
+    ...(includes(['III'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
+    ...(includes(['II'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
+    ...(includes(['I'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
     headerComponentParams: {
-      footnote: {
-        id: '2',
-        content: 'Where applicable.',
-        icon: true,
-      },
+      ...(includes(['II', 'III'], model)
+        ? {
+            footnote: {
+              id: '2',
+              content: 'Where applicable.',
+              icon: true,
+            },
+          }
+        : {}),
     },
   },
   remarks: {
     ...colDefById['remarks'],
+    ...(includes(['II'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
     headerComponentParams: {
-      footnote: {
-        content: 'e.g., stockpiling if use is different from consumption',
-        icon: true,
-        index: includes(['II'], model) ? '**' : '*',
-        order: 99,
-      },
+      ...(includes(['II', 'III'], model)
+        ? {
+            footnote: {
+              content: 'e.g., stockpiling if use is different from consumption',
+              icon: false,
+              index: '**',
+              order: 99,
+            },
+          }
+        : {
+            footnote: {
+              id: 3,
+              content:
+                'Provide explanation if total sector use and consumption (import-export+production) is different (e.g, stockpiling).',
+              icon: true,
+            },
+          }),
     },
   },
 })

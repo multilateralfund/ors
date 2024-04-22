@@ -9,6 +9,7 @@ interface ReportStatusProps {
   isCreate?: boolean
   isEdit?: boolean
   onSectionCheckChange?: (section: string, isChecked: boolean) => void
+  report: any
   sectionsChecked: Record<string, boolean>
 }
 
@@ -16,6 +17,7 @@ const ReportStatus: FC<ReportStatusProps> = ({
   isCreate,
   isEdit,
   onSectionCheckChange,
+  report,
   sectionsChecked,
 }) => {
   const handleSectionCheckChange = (section: string, isChecked: boolean) => {
@@ -35,8 +37,10 @@ const ReportStatus: FC<ReportStatusProps> = ({
         <legend className="mb-3 text-2xl font-normal">Status</legend>
         <FormGroup className="rounded-lg bg-white px-4 py-1 shadow-lg" row>
           <FormControlLabel
-            control={<Checkbox size="small" defaultChecked />}
             label="Final"
+            control={
+              <Checkbox checked={report?.status === 'final'} size="small" />
+            }
             disabled
           />
         </FormGroup>

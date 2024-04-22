@@ -11,8 +11,7 @@ import {
 import { ICellEditorParams } from 'ag-grid-community'
 import { isNaN, isNumber } from 'lodash'
 
-import TextWidget from '@ors/components/manage/Widgets/TextWidget'
-import { KEY_BACKSPACE, KEY_ENTER, KEY_F2, KEY_TAB } from '@ors/constants'
+import { KEY_BACKSPACE, KEY_F2 } from '@ors/constants'
 import { parseNumber } from '@ors/helpers/Utils/Utils'
 
 function getInput(element: HTMLInputElement) {
@@ -78,64 +77,6 @@ export const CellNumberWidget = memo(
         // eslint-disable-next-line
       }, [])
 
-      const isArrowKey = (event: any) => {
-        return (
-          ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(
-            event.key,
-          ) > -1
-        )
-      }
-
-      const isBackspace = (event: any) => {
-        return event.key === KEY_BACKSPACE
-      }
-
-      const isSelectAll = (event: any) => {
-        return (event.ctrlKey || event.metaKey) && event.key === 'a'
-      }
-
-      const isCharNumeric = (charStr: string) => {
-        return !!/\d/.test(charStr)
-      }
-
-      const isCharTheFirstDecimal = (charStr: string, value: string) => {
-        return !!/\./.test(charStr) && !/\./.test(value)
-      }
-
-      const isNegativeNumber = (charStr: string, value: string) => {
-        return !!/\-/.test(charStr) && !value
-      }
-
-      const isNumericKey = (event: any) => {
-        const value = event.target.value
-        const charStr = event.key
-        return (
-          isCharNumeric(charStr) ||
-          isCharTheFirstDecimal(charStr, value) ||
-          isNegativeNumber(charStr, value)
-        )
-      }
-
-      const finishedEditingPressed = (event: any) => {
-        const key = event.key
-        return key === KEY_ENTER || key === KEY_TAB
-      }
-
-      const onKeyDown = (event: any) => {
-        if (isArrowKey(event) || isBackspace(event) || isSelectAll(event)) {
-          event.stopPropagation()
-          return
-        }
-
-        if (!finishedEditingPressed(event) && !isNumericKey(event)) {
-          if (event.preventDefault) event.preventDefault()
-        }
-
-        if (finishedEditingPressed(event)) {
-          props.stopEditing()
-        }
-      }
-
       /* Component Editor Lifecycle methods */
       useImperativeHandle(ref, () => {
         return {
@@ -165,29 +106,12 @@ export const CellNumberWidget = memo(
       })
 
       return (
-        <TextWidget
+        <input
+          className="width-full h-full grow border-0 outline-none"
           ref={refInput}
           type="number"
           value={value}
-          InputProps={{
-            inputProps: {
-              lang: 'en',
-              ...(props.min ? { min: props.min } : {}),
-              ...(props.max ? { max: props.max } : {}),
-              step: 1,
-            },
-          }}
-          sx={{
-            '& .MuiInputBase-root': {
-              borderRadius: 0,
-              height: '100%',
-              width: '100%',
-            },
-            '& fieldset': { border: 'none' },
-            borderRadius: 0,
-          }}
           onChange={(event: any) => setValue(event.target.value)}
-          onKeyDown={(event: any) => onKeyDown(event)}
         />
       )
     },

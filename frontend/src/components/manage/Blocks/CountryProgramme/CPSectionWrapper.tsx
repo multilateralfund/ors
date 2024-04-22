@@ -14,7 +14,7 @@ export default function CPSectionWrapper({
   return (
     <div
       className={cx(
-        'relative rounded-b-lg rounded-r-lg border border-solid border-primary bg-white p-4',
+        'relative rounded-b-lg rounded-r-lg border border-solid border-primary bg-white p-6',
         className,
       )}
     >

@@ -2,7 +2,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
 import { Tab, Tabs, Tooltip, Typography } from '@mui/material'
-import { AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
 import { produce } from 'immer'
 import { filter, includes } from 'lodash'
@@ -14,7 +13,7 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
 import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
-import { formatApiUrl } from '@ors/helpers/Api/Api'
+import { formatApiUrl } from '@ors/helpers/Api/utils'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
@@ -23,22 +22,12 @@ import { getSections } from '.'
 import Portal from '../../Utils/Portal'
 import { CPArchiveHeader, CPViewHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
+import { ITableProps } from './typesCPView'
 
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 import { IoClose, IoDownloadOutline, IoExpand } from 'react-icons/io5'
 
-export type TableProps = AgGridReactProps & {
-  Toolbar?: React.FC<any>
-  enableFullScreen?: boolean
-  errors?: any
-  fadeInOut?: boolean
-  headerDepth?: number
-  paginationPageSizeSelector?: Array<number>
-  rowsVisible?: number
-  withFluidEmptyColumn?: boolean
-}
-
-const TableProps: TableProps = {
+const TableProps: ITableProps = {
   Toolbar: ({
     archive,
     enterFullScreen,
@@ -52,7 +41,7 @@ const TableProps: TableProps = {
   }: any) => {
     return (
       <div
-        className={cx('mb-2 flex', {
+        className={cx('mb-4 flex', {
           'flex-col': !fullScreen,
           'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
             fullScreen,
@@ -66,6 +55,18 @@ const TableProps: TableProps = {
         >
           {section.title}
         </Typography>
+        {section.note && (
+          <Typography
+            className={cx(
+              'border border-solid border-black px-2 py-4 font-bold',
+              {
+                'mb-4 md:mb-0': fullScreen,
+              },
+            )}
+          >
+            {section.note}
+          </Typography>
+        )}
         <Portal
           active={isActiveSection && !fullScreen}
           domNode="sectionToolbar"
@@ -208,7 +209,7 @@ function CPView(props: { archive?: boolean }) {
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [activeTab, renderedSections])
 
-  console.log("CPView report: ", report)
+  const showComments = variant?.model === 'V' && activeTab !== 0
 
   return (
     <>
@@ -268,7 +269,7 @@ function CPView(props: { archive?: boolean }) {
               <div
                 id={section.panelId}
                 key={section.panelId}
-                className={cx('transition', {
+                className={cx('flex flex-col gap-6 transition', {
                   'absolute -left-[9999px] -top-[9999px] opacity-0':
                     activeTab !== index,
                 })}
@@ -297,7 +298,7 @@ function CPView(props: { archive?: boolean }) {
               </div>
             )
           })}
-        {variant?.model === 'V' && <CPComments />}
+        {showComments && <CPComments />}
       </CPSectionWrapper>
     </>
   )

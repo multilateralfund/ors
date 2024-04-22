@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { CellClassParams, GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
@@ -20,9 +20,9 @@ function useGridOptions(props: { model: string; usages: object[] }) {
       headerName: 'Substance',
       ...sectionColDefById['display_name'],
       editable: false,
-      ...(includes(['II', 'III'], model) ? { initialWidth: 10 } : {}),
+      ...(includes(['I', 'II', 'III'], model) ? { initialWidth: 10 } : {}),
     }),
-    [],
+    [model, sectionColDefById],
   )
 
   const defaultSectionColDef = useMemo(
@@ -34,10 +34,10 @@ function useGridOptions(props: { model: string; usages: object[] }) {
             props.data.excluded_usages || [],
             props.colDef.id,
           ),
-          'ag-text-right': !includes(['display_name'], props.colDef.field),
+          'ag-text-center': !includes(['display_name'], props.colDef.field),
         })
       },
-      headerClass: 'ag-text-right',
+      headerClass: 'ag-text-center',
       minWidth: defaultColDef.minWidth,
       resizable: true,
       wrapText: true,
@@ -51,80 +51,90 @@ function useGridOptions(props: { model: string; usages: object[] }) {
       {
         id: 'total_usages',
         category: 'usage',
-        cellClass: 'bg-yellow-50 text-right',
+        cellClass: 'bg-yellow-50 text-center',
         headerName: 'TOTAL',
         orsAggFunc: 'sumTotalUsages',
         ...sectionColDefById['total_usages'],
       },
     ]
-  }, [usages])
+  }, [usages, sectionColDefById])
 
-  const bySubstanceTrade = useMemo(() => {
-    return [
-      {
-        dataType: 'number',
-        field: 'imports',
-        headerName: 'Import',
-        orsAggFunc: 'sumTotal',
-        ...sectionColDefById['imports'],
-      },
-      {
-        dataType: 'number',
-        field: 'exports',
-        headerName: 'Export',
-        orsAggFunc: 'sumTotal',
-        ...sectionColDefById['exports'],
-      },
-      {
-        dataType: 'number',
-        field: 'production',
-        headerName: 'Production',
-        orsAggFunc: 'sumTotal',
-        ...sectionColDefById['production'],
-      },
-      ...(includes(['II', 'III', 'IV', 'V'], model)
-        ? [
-            {
-              dataType: 'number',
-              field: 'import_quotas',
-              headerName: 'Import Quotas',
-              orsAggFunc: 'sumTotal',
-              ...sectionColDefById['import_quotas'],
-            },
-          ]
-        : []),
-      ...(includes(['II', 'III'], model)
-        ? [
-            {
-              dataType: 'number',
-              field: 'export_quotas',
-              headerName: 'Export Quotas',
-              orsAggFunc: 'sumTotal',
-              ...sectionColDefById['export_quotas'],
-            },
-          ]
-        : []),
-      ...(includes(['IV', 'V'], model)
-        ? [
-            {
-              dataType: 'date',
-              field: 'banned_date',
-              ...sectionColDefById['banned_date'],
-            },
-          ]
-        : []),
-      ...(includes(['II', 'III', 'IV', 'V'], model)
-        ? [
-            {
-              cellClass: 'ag-text-left',
-              field: 'remarks',
-              headerName: 'Remarks',
-              ...sectionColDefById['remarks'],
-            },
-          ]
-        : []),
-    ]
-  }, [model])
+  const bySubstanceTrade = useCallback(
+    (standalone = false) => {
+      return [
+        {
+          ...sectionColDefById['imports'],
+          dataType: 'number',
+          field: 'imports',
+          headerName: 'Import',
+          orsAggFunc: 'sumTotal',
+          ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+        },
+        {
+          ...sectionColDefById['exports'],
+          dataType: 'number',
+          field: 'exports',
+          headerName: 'Export',
+          orsAggFunc: 'sumTotal',
+          ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+        },
+        {
+          ...sectionColDefById['production'],
+          dataType: 'number',
+          field: 'production',
+          headerName: 'Production',
+          orsAggFunc: 'sumTotal',
+          ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+        },
+        ...(includes(['II', 'III', 'IV', 'V'], model)
+          ? [
+              {
+                ...sectionColDefById['import_quotas'],
+                dataType: 'number',
+                field: 'import_quotas',
+                headerName: 'Import Quotas',
+                orsAggFunc: 'sumTotal',
+                ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+              },
+            ]
+          : []),
+        ...(includes(['I', 'II', 'III'], model)
+          ? [
+              {
+                ...sectionColDefById['export_quotas'],
+                dataType: 'number',
+                field: 'export_quotas',
+                headerName: 'Export Quotas',
+                orsAggFunc: 'sumTotal',
+                ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+              },
+            ]
+          : []),
+        ...(includes(['IV', 'V'], model)
+          ? [
+              {
+                ...sectionColDefById['banned_date'],
+                dataType: 'date',
+                field: 'banned_date',
+                ...(standalone ? { flex: 1 } : { flex: 1 }),
+              },
+            ]
+          : []),
+        ...(includes(['II', 'III', 'IV', 'V'], model)
+          ? [
+              {
+                ...sectionColDefById['remarks'],
+                cellClass: 'ag-text-left',
+                field: 'remarks',
+                headerName: 'Remarks',
+                ...(standalone ? { flex: 1 } : { flex: 1 }),
+              },
+            ]
+          : []),
+      ]
+    },
+    [model, sectionColDefById],
+  )
 
   const gridOptionsAll: GridOptions = useMemo(() => {
     return {
@@ -140,7 +150,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
               },
             ]
           : []),
-        ...bySubstanceTrade,
+        ...bySubstanceTrade(),
       ],
       defaultColDef: defaultSectionColDef,
     }
@@ -154,14 +164,19 @@ function useGridOptions(props: { model: string; usages: object[] }) {
 
   const gridOptionsBySubstanceTrade: GridOptions = useMemo(() => {
     return {
-      columnDefs: [substanceColumn, ...bySubstanceTrade],
+      columnDefs: [substanceColumn, ...bySubstanceTrade(true)],
       defaultColDef: defaultSectionColDef,
     }
   }, [bySubstanceTrade, substanceColumn, defaultSectionColDef])
 
   const gridOptionsBySector: GridOptions = useMemo(() => {
     return {
-      columnDefs: [substanceColumn, ...bySector],
+      columnDefs: [
+        {
+          ...substanceColumn,
+        },
+        ...bySector,
+      ],
       defaultColDef: defaultSectionColDef,
     }
   }, [bySector, substanceColumn, defaultSectionColDef])

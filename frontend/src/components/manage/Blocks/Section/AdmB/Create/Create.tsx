@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 
-import { Typography } from '@mui/material'
+import { Alert, Typography } from '@mui/material'
 import cx from 'classnames'
 import { findIndex, groupBy, map } from 'lodash'
 
@@ -10,10 +10,15 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import useGridOptions from './schema'
 
 import { AiFillFilePdf } from 'react-icons/ai'
-import { IoClose, IoDownloadOutline, IoExpand } from 'react-icons/io5'
+import {
+  IoClose,
+  IoDownloadOutline,
+  IoExpand,
+  IoInformationCircleOutline,
+} from 'react-icons/io5'
 
 export default function AdmBCreate(props: any) {
-  const { TableProps, emptyForm, form, section, setForm } = props
+  const { TableProps, emptyForm, form, section, setForm, variant } = props
   const { columns = [], rows = [] } = emptyForm.adm_b || {}
   const grid = useRef<any>()
   const [initialRowData] = useState(() => {
@@ -30,13 +35,19 @@ export default function AdmBCreate(props: any) {
 
   const gridOptions = useGridOptions({
     adm_columns: columns,
+    model: variant.model,
   })
 
   return (
     <>
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Typography id="footnote-1" className="italic transition-all">
+          <span className="font-bold">1. </span>
+          If Yes, since when (Date) / If No, planned date.
+        </Typography>
+      </Alert>
       <Table
         {...TableProps}
-        className="mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={2}
@@ -50,58 +61,52 @@ export default function AdmBCreate(props: any) {
         }: any) => {
           return (
             <div
-              className={cx('mb-2 flex', {
+              className={cx('mb-4 flex gap-4', {
                 'flex-col': !fullScreen,
                 'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
                   fullScreen,
                 'px-4': fullScreen && !print,
               })}
             >
-              <Typography className="mb-2" component="h2" variant="h6">
-                {section.title}
-              </Typography>
-              <div className="flex items-center justify-end">
-                <div>
-                  {!fullScreen && (
-                    <Dropdown
-                      color="primary"
-                      label={<IoDownloadOutline />}
-                      icon
-                    >
-                      <Dropdown.Item onClick={onPrint}>
-                        <div className="flex items-center gap-x-2">
-                          <AiFillFilePdf className="fill-red-700" size={24} />
-                          <span>PDF</span>
-                        </div>
-                      </Dropdown.Item>
-                    </Dropdown>
-                  )}
-                  {section.allowFullScreen && !fullScreen && (
+              <div className="flex items-center justify-end gap-2">
+                {!fullScreen && (
+                  <Dropdown color="primary" label={<IoDownloadOutline />} icon>
+                    <Dropdown.Item onClick={onPrint}>
+                      <div className="flex items-center gap-x-2">
+                        <AiFillFilePdf className="fill-red-700" size={24} />
+                        <span>PDF</span>
+                      </div>
+                    </Dropdown.Item>
+                  </Dropdown>
+                )}
+                {section.allowFullScreen && !fullScreen && (
+                  <div
+                    className="text-md cursor-pointer"
+                    aria-label="enter fullscreen"
+                    onClick={() => {
+                      enterFullScreen()
+                    }}
+                  >
+                    <IoExpand size={20} />
+                  </div>
+                )}
+                {fullScreen && (
+                  <div>
                     <div
-                      className="text-md cursor-pointer"
-                      aria-label="enter fullscreen"
+                      className="exit-fullscreen text-md not-printable cursor-pointer p-2 text-primary"
+                      aria-label="exit fullscreen"
                       onClick={() => {
-                        enterFullScreen()
+                        exitFullScreen()
                       }}
                     >
-                      <IoExpand />
+                      <IoClose size={32} />
                     </div>
-                  )}
-                  {fullScreen && (
-                    <div>
-                      <div
-                        className="exit-fullscreen text-md not-printable cursor-pointer p-2 text-primary"
-                        aria-label="exit fullscreen"
-                        onClick={() => {
-                          exitFullScreen()
-                        }}
-                      >
-                        <IoClose size={32} />
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
+              <Typography component="h2" variant="h6">
+                {section.title}
+              </Typography>
             </div>
           )
         }}

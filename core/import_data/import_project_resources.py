@@ -117,6 +117,27 @@ NEW_SECTORS = [
         "SEC": "CA",
         "SORT_SECTOR": 26,
     },
+    {
+        "SECTOR": "Survey",
+        "SEC": "SUR",
+        "SORT_SECTOR": 27,
+    },
+    {
+        "SECTOR": "Enabling Activities",
+        "SEC": "ENA",
+        "SORT_SECTOR": 28,
+    },
+    {
+        "SECTOR": "Tobacco Fluffing",
+        "SEC": "TOB",
+        "SORT_SECTOR": 29,
+    },
+    {
+        # only if IND is the Category, otherwise it will not be selectable
+        "SECTOR": "Technical Assistance",
+        "SEC": "TAS",
+        "SORT_SECTOR": 30,
+    },
 ]
 
 OUTDATED_SECTORS = [

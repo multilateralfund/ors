@@ -17,7 +17,7 @@ import Script from 'next/script'
 
 import View from '@ors/components/theme/Views/View'
 // import config from '@ors/config/base'
-import api from '@ors/helpers/Api/Api'
+import api from '@ors/helpers/Api/_api'
 import { getInitialSliceData } from '@ors/helpers/Store/Store'
 import { getCurrentView } from '@ors/helpers/View/View'
 import { StoreProvider } from '@ors/store'

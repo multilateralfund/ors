@@ -1,5 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
-import React from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   Alert,
@@ -11,7 +10,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { ColDef, RowNode } from 'ag-grid-community'
+import { ColDef, GridApi, RowNode } from 'ag-grid-community'
 import cx from 'classnames'
 import { find, findIndex, includes, isString } from 'lodash'
 import { useSnackbar } from 'notistack'
@@ -22,13 +21,14 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
-import api from '@ors/helpers/Api/Api'
+import api from '@ors/helpers/Api/_api'
 import { applyTransaction } from '@ors/helpers/Utils/Utils'
 import useStateWithPrev from '@ors/hooks/useStateWithPrev'
 
 import {
   IoAddCircleSharp,
-  IoInformationCircleOutline,
+  IoAlertCircle,
+  IoInformationCircle,
   IoTrash,
 } from 'react-icons/io5'
 
@@ -64,7 +64,12 @@ function SimilarBlend({ blend, onClick, substances }: any) {
   )
 }
 
-export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
+export function CreateBlend({
+  noModal = false,
+  onClose,
+  onCreateBlend,
+  substances,
+}: any) {
   const { enqueueSnackbar } = useSnackbar()
 
   const grid = useRef<any>()
@@ -77,6 +82,25 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
     other_names: '',
   })
   const [errors, setErrors] = useState<Record<string, any>>({})
+
+  useEffect(() => {
+    async function getNextCustomMixName() {
+      try {
+        const data = await api('api/blends/next-cust-mix-name/')
+        setForm({
+          ...prevForm.current,
+          composition: data.name,
+        })
+      } catch (e) {
+        setErrors({
+          components: "Couldn't fetch the next custom mix name.",
+        })
+      }
+    }
+
+    getNextCustomMixName()
+  }, [prevForm, setForm])
+
   const [similarBlends, setSimilarBlends] = useState<Record<
     string,
     Array<any>
@@ -142,6 +166,347 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
     grid.current.api.setRowData(components)
   }
 
+  const modalContent = (
+    <>
+      <div className="modal-content">
+        {!noModal && (
+          <Typography
+            id="create-blend-modal-title"
+            className="mb-4 text-typography-secondary"
+            component="h2"
+            variant="h6"
+          >
+            Create new blend
+          </Typography>
+        )}
+        <Alert
+          className="mb-4"
+          icon={<IoInformationCircle size={24} />}
+          severity="info"
+        >
+          <Typography>
+            If a non-standard blend not listed in the table is used, please
+            indicate the percentage of each constituent controlled substance of
+            the blend being reported in the remarks column.
+          </Typography>
+        </Alert>
+        <Field
+          InputLabel={{ label: 'Blend description' }}
+          disabled={true}
+          error={!!errors.composition}
+          helperText={errors.composition}
+          value={form.composition}
+        />
+        <Field
+          InputLabel={{ label: 'Alternative name' }}
+          error={!!errors.other_names}
+          helperText={errors.other_names}
+          value={form.other_names}
+          onChange={(event: any) => {
+            setForm({
+              ...prevForm.current,
+              other_names: event.target.value,
+            })
+          }}
+        />
+        <InputLabel className="mb-2 inline-flex items-center gap-2">
+          <span>Blend composition</span>
+          <Tooltip placement="top" title="Similar blends">
+            <Button
+              color="primary"
+              onClick={async () => {
+                try {
+                  const defaultSimilarBlends = await api('api/blends/similar', {
+                    data: {
+                      components: form.components,
+                    },
+                    method: 'post',
+                  })
+                  const sameSimilarBlends = await api('api/blends/similar', {
+                    data: {
+                      components: form.components,
+                      same_substances: true,
+                    },
+                    method: 'post',
+                  })
+                  const hasSimilarBlends =
+                    defaultSimilarBlends.length > 0 ||
+                    sameSimilarBlends.length > 0
+                  setSimilarBlends({
+                    default: defaultSimilarBlends,
+                    same: sameSimilarBlends,
+                  })
+                  enqueueSnackbar(
+                    hasSimilarBlends
+                      ? "Found similar blends. Please check the list below 'Blend composition'!"
+                      : 'There are no similar blends!',
+                    {
+                      variant: 'info',
+                    },
+                  )
+                } catch (error) {
+                  setSimilarBlends(null)
+                  const message = await error.json()
+                  if (message.components) {
+                    enqueueSnackbar(message.components, {
+                      variant: 'error',
+                    })
+                  }
+                }
+              }}
+            >
+              Show similar blends
+            </Button>
+          </Tooltip>
+        </InputLabel>
+        <Table
+          defaultColDef={defaultColDef}
+          domLayout="autoHeight"
+          enableCellChangeFlash={true}
+          enablePagination={false}
+          errors={errors?.components}
+          gridRef={grid}
+          pinnedBottomRowData={[{ rowType: 'total', substance: 'TOTAL' }]}
+          rowData={null}
+          suppressCellFocus={false}
+          suppressLoadingOverlay={true}
+          suppressNoRowsOverlay={true}
+          withSeparators={true}
+          columnDefs={[
+            {
+              cellEditor: 'agSelectCellEditor',
+              cellEditorParams: {
+                Input: { placeholder: 'Select substance...' },
+                getOptionLabel: (option: any) => option.name,
+                groupBy: (option: any) => option.group,
+                options,
+              },
+              cellRenderer: (props: any) => {
+                return (
+                  <AgCellRenderer
+                    {...props}
+                    value={
+                      !props.data.rowType ? props.value?.name : props.value
+                    }
+                  />
+                )
+              },
+              cellRendererParams: (props: any) => ({
+                options: !props.data.mandatory && !props.data.rowType && (
+                  <>
+                    <Dropdown.Item
+                      onClick={() => {
+                        props.api.startEditingCell({
+                          colKey: props.column.colId,
+                          rowIndex: props.node.rowIndex,
+                        })
+                      }}
+                    >
+                      <div className="flex items-center gap-x-2">
+                        <IoAddCircleSharp className="fill-primary" size={20} />
+                        <span>Add substance</span>
+                      </div>
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={() => {
+                        const newComponents = form.components
+                        const index = findIndex(
+                          newComponents,
+                          (component: any) =>
+                            component.row_id === props.data.row_id,
+                        )
+                        newComponents.splice(index, 1)
+                        setForm({
+                          ...prevForm.current,
+                          components: newComponents,
+                        })
+                        applyTransaction(props.api, {
+                          remove: [props.data],
+                        })
+                      }}
+                    >
+                      <div className="flex items-center gap-x-2">
+                        <IoTrash className="fill-error" size={20} />
+                        <span>Delete</span>
+                      </div>
+                    </Dropdown.Item>
+                  </>
+                ),
+              }),
+              field: 'substance',
+              flex: 1,
+              headerClass: 'ag-text-left',
+              headerComponent: (props: { api: GridApi<any> }) => {
+                return (
+                  <span className="flex w-full items-center justify-between">
+                    <div>Substance</div>
+                    <Button
+                      className="rounded-lg border-[1.1px] border-solid border-primary px-2 py-1 text-xs"
+                      onClick={() => {
+                        const row_id = `${newNodeIndex.current}`
+                        const newComponent = {
+                          component_name: '',
+                          percentage: 0,
+                          row_id,
+                          substance: null,
+                          substance_id: null,
+                        }
+                        setForm({
+                          ...prevForm.current,
+                          components: [...form.components, newComponent],
+                        })
+                        applyTransaction(props.api, {
+                          add: [newComponent],
+                        })
+                        const componentNode = grid.current.api.getRowNode(
+                          newComponent.row_id,
+                        )
+                        newNode.current = componentNode
+                        newNodeIndex.current = newNodeIndex.current + 1
+                      }}
+                    >
+                      Add new
+                    </Button>
+                  </span>
+                )
+              },
+              headerName: 'Substance',
+              minWidth: 200,
+              showRowError: true,
+            },
+            {
+              cellEditor: 'agNumberCellEditor',
+              cellEditorParams: {
+                max: 100,
+                min: 0,
+              },
+              dataType: 'number',
+              field: 'percentage',
+              headerName: 'Percentage',
+              initialWidth: 120,
+              minWidth: 120,
+              orsAggFunc: 'sumTotal',
+            },
+            {
+              cellEditor: 'agTextCellEditor',
+              field: 'component_name',
+              headerName: 'Component name',
+              initialWidth: 200,
+              minWidth: 200,
+              orsAggFunc: 'sumTotal',
+            },
+          ]}
+          getRowId={(props: any) => {
+            return props.data.row_id
+          }}
+          onCellValueChanged={(event) => {
+            const newComponents = form.components
+            const index = findIndex(
+              newComponents,
+              (component: any) => component.row_id === event.data.row_id,
+            )
+            newComponents.splice(index, 1, event.data)
+            setForm({
+              ...prevForm.current,
+              components: newComponents.map((component: any) => ({
+                ...component,
+                substance_id: component.substance?.id || null,
+              })),
+            })
+          }}
+          onRowDataUpdated={() => {
+            if (newNode.current) {
+              grid.current.api.flashCells({
+                rowNodes: [newNode.current],
+              })
+              newNode.current = undefined
+            }
+          }}
+        />
+        {(!!similarBlends?.default?.length ||
+          !!similarBlends?.same?.length) && (
+          <div className="similar-blends grid grid-cols-2 gap-4">
+            <div>
+              <Typography className="mb-2 font-semibold">
+                Blends same composition
+              </Typography>
+              {similarBlends.same.map((blend: any) => (
+                <SimilarBlend
+                  key={blend.id}
+                  blend={blend}
+                  substances={substances}
+                  onClick={() => selectSimilarBlend(blend)}
+                />
+              ))}
+            </div>
+            <div>
+              <Typography className="mb-2 font-semibold">
+                Blends similar composition
+              </Typography>
+              {similarBlends.default.map((blend: any) => (
+                <SimilarBlend
+                  key={blend.id}
+                  blend={blend}
+                  substances={substances}
+                  onClick={() => selectSimilarBlend(blend)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+        <Collapse in={isString(errors.components) && !!errors.components}>
+          {isString(errors.components) && (
+            <Alert icon={<IoAlertCircle />} severity="error">
+              {errors.components}
+            </Alert>
+          )}
+        </Collapse>
+      </div>
+      <div className="modal-action mt-8">
+        <Typography className="flex justify-end gap-x-2">
+          {!noModal && <Button onClick={() => onClose()}>Close</Button>}
+          <Button
+            variant="contained"
+            onClick={async () => {
+              try {
+                const blend = await api('api/blends/create/', {
+                  data: form,
+                  method: 'POST',
+                })
+                onCreateBlend(blend)
+                onClose()
+              } catch (error) {
+                if (error.status === 400) {
+                  setErrors({
+                    ...(await error.json()),
+                  })
+                  enqueueSnackbar(
+                    <>Please make sure all the inputs are correct.</>,
+                    { variant: 'error' },
+                  )
+                } else {
+                  setErrors({})
+                  enqueueSnackbar(
+                    <>Unexpected error, we are working on it.</>,
+                    {
+                      variant: 'error',
+                    },
+                  )
+                }
+              }
+            }}
+          >
+            Submit
+          </Button>
+        </Typography>
+      </div>
+    </>
+  )
+
+  if (noModal) {
+    return modalContent
+  }
+
   return (
     <Modal
       aria-labelledby="create-blend-modal-title"
@@ -150,345 +515,7 @@ export function CreateBlend({ onClose, onCreateBlend, substances }: any) {
     >
       <div className="h-full max-h-[768px] w-full max-w-[768px] p-4 absolute-center">
         <Box className="flex h-full flex-col justify-between overflow-y-auto">
-          <div className="modal-content">
-            <Typography
-              id="create-blend-modal-title"
-              className="mb-4 text-typography-secondary"
-              component="h2"
-              variant="h6"
-            >
-              Create new blend
-            </Typography>
-            <Alert
-              className="mb-4"
-              icon={<IoInformationCircleOutline size={24} />}
-              severity="info"
-            >
-              <Typography>
-                If a non-standard blend not listed in the table is used, please
-                indicate the percentage of each constituent controlled substance
-                of the blend being reported in the remarks column.
-              </Typography>
-            </Alert>
-            <Field
-              InputLabel={{ label: 'Blend description' }}
-              disabled={true}
-              error={!!errors.composition}
-              helperText={errors.composition}
-              value={"CustMix-235"}
-            />
-            <Field
-              InputLabel={{ label: 'Alternative name' }}
-              error={!!errors.other_names}
-              helperText={errors.other_names}
-              value={form.other_names}
-              onChange={(event: any) => {
-                setForm({
-                  ...prevForm.current,
-                  other_names: event.target.value,
-                })
-              }}
-            />
-            <InputLabel className="mb-2 inline-flex items-center gap-2">
-              <span>Blend composition</span>
-              <Tooltip placement="top" title="Similar blends">
-                <Button
-                  color="primary"
-                  onClick={async () => {
-                    try {
-                      const defaultSimilarBlends = await api(
-                        'api/blends/similar',
-                        {
-                          data: {
-                            components: form.components,
-                          },
-                          method: 'post',
-                        },
-                      )
-                      const sameSimilarBlends = await api(
-                        'api/blends/similar',
-                        {
-                          data: {
-                            components: form.components,
-                            same_substances: true,
-                          },
-                          method: 'post',
-                        },
-                      )
-                      const hasSimilarBlends =
-                        defaultSimilarBlends.length > 0 ||
-                        sameSimilarBlends.length > 0
-                      setSimilarBlends({
-                        default: defaultSimilarBlends,
-                        same: sameSimilarBlends,
-                      })
-                      enqueueSnackbar(
-                        hasSimilarBlends
-                          ? "Found similar blends. Please check the list below 'Blend composition'!"
-                          : 'There are no similar blends!',
-                        {
-                          variant: 'info',
-                        },
-                      )
-                    } catch (error) {
-                      setSimilarBlends(null)
-                      const message = await error.json()
-                      if (message.components) {
-                        enqueueSnackbar(message.components, {
-                          variant: 'error',
-                        })
-                      }
-                    }
-                  }}
-                >
-                  Check similar blends
-                </Button>
-              </Tooltip>
-            </InputLabel>
-            <Table
-              className="mb-4"
-              defaultColDef={defaultColDef}
-              domLayout="autoHeight"
-              enableCellChangeFlash={true}
-              enablePagination={false}
-              errors={errors?.components}
-              gridRef={grid}
-              rowData={null}
-              suppressCellFocus={false}
-              suppressLoadingOverlay={true}
-              suppressNoRowsOverlay={true}
-              withSeparators={true}
-              columnDefs={[
-                {
-                  cellEditor: 'agSelectCellEditor',
-                  cellEditorParams: {
-                    Input: { placeholder: 'Select substance...' },
-                    getOptionLabel: (option: any) => option.name,
-                    groupBy: (option: any) => option.group,
-                    options,
-                  },
-                  cellRenderer: (props: any) => {
-                    if (props.data.rowType === 'control') {
-                      return (
-                        <Button
-                          className="w-full"
-                          variant="contained"
-                          onClick={() => {
-                            const row_id = `${newNodeIndex.current}`
-                            const newComponent = {
-                              component_name: '',
-                              percentage: 0,
-                              row_id,
-                              substance: null,
-                              substance_id: null,
-                            }
-                            setForm({
-                              ...prevForm.current,
-                              components: [...form.components, newComponent],
-                            })
-                            applyTransaction(props.api, {
-                              add: [newComponent],
-                            })
-                            const componentNode = grid.current.api.getRowNode(
-                              newComponent.row_id,
-                            )
-                            newNode.current = componentNode
-                            newNodeIndex.current = newNodeIndex.current + 1
-                          }}
-                        >
-                          + Add component
-                        </Button>
-                      )
-                    }
-                    return (
-                      <AgCellRenderer
-                        {...props}
-                        value={
-                          !props.data.rowType ? props.value?.name : props.value
-                        }
-                      />
-                    )
-                  },
-                  cellRendererParams: (props: any) => ({
-                    options: !props.data.mandatory && !props.data.rowType && (
-                      <>
-                        <Dropdown.Item
-                          onClick={() => {
-                            props.api.startEditingCell({
-                              colKey: props.column.colId,
-                              rowIndex: props.node.rowIndex,
-                            })
-                          }}
-                        >
-                          <div className="flex items-center gap-x-2">
-                            <IoAddCircleSharp
-                              className="fill-primary"
-                              size={20}
-                            />
-                            <span>Add substance</span>
-                          </div>
-                        </Dropdown.Item>
-                        <Dropdown.Item
-                          onClick={() => {
-                            const newComponents = form.components
-                            const index = findIndex(
-                              newComponents,
-                              (component: any) =>
-                                component.row_id === props.data.row_id,
-                            )
-                            newComponents.splice(index, 1)
-                            setForm({
-                              ...prevForm.current,
-                              components: newComponents,
-                            })
-                            applyTransaction(props.api, {
-                              remove: [props.data],
-                            })
-                          }}
-                        >
-                          <div className="flex items-center gap-x-2">
-                            <IoTrash className="fill-error" size={20} />
-                            <span>Delete</span>
-                          </div>
-                        </Dropdown.Item>
-                      </>
-                    ),
-                  }),
-                  field: 'substance',
-                  flex: 1,
-                  headerClass: 'ag-text-left',
-                  headerName: 'Substance',
-                  minWidth: 200,
-                  showRowError: true,
-                },
-                {
-                  cellEditor: 'agNumberCellEditor',
-                  cellEditorParams: {
-                    max: 100,
-                    min: 0,
-                  },
-                  dataType: 'number',
-                  field: 'percentage',
-                  headerName: 'Percentage',
-                  initialWidth: 120,
-                  minWidth: 120,
-                  orsAggFunc: 'sumTotal',
-                },
-                {
-                  cellEditor: 'agTextCellEditor',
-                  field: 'component_name',
-                  headerName: 'Component name',
-                  initialWidth: 200,
-                  minWidth: 200,
-                  orsAggFunc: 'sumTotal',
-                },
-              ]}
-              getRowId={(props: any) => {
-                return props.data.row_id
-              }}
-              pinnedBottomRowData={[
-                { rowType: 'total', substance: 'TOTAL' },
-                { rowType: 'control' },
-              ]}
-              onCellValueChanged={(event) => {
-                const newComponents = form.components
-                const index = findIndex(
-                  newComponents,
-                  (component: any) => component.row_id === event.data.row_id,
-                )
-                newComponents.splice(index, 1, event.data)
-                setForm({
-                  ...prevForm.current,
-                  components: newComponents.map((component: any) => ({
-                    ...component,
-                    substance_id: component.substance?.id || null,
-                  })),
-                })
-              }}
-              onRowDataUpdated={() => {
-                if (newNode.current) {
-                  grid.current.api.flashCells({
-                    rowNodes: [newNode.current],
-                  })
-                  newNode.current = undefined
-                }
-              }}
-            />
-            {(!!similarBlends?.default?.length ||
-              !!similarBlends?.same?.length) && (
-              <div className="similar-blends grid grid-cols-2 gap-4">
-                <div>
-                  <Typography className="mb-2 font-semibold">
-                    Blends same composition
-                  </Typography>
-                  {similarBlends.same.map((blend: any) => (
-                    <SimilarBlend
-                      key={blend.id}
-                      blend={blend}
-                      substances={substances}
-                      onClick={() => selectSimilarBlend(blend)}
-                    />
-                  ))}
-                </div>
-                <div>
-                  <Typography className="mb-2 font-semibold">
-                    Blends similar composition
-                  </Typography>
-                  {similarBlends.default.map((blend: any) => (
-                    <SimilarBlend
-                      key={blend.id}
-                      blend={blend}
-                      substances={substances}
-                      onClick={() => selectSimilarBlend(blend)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-            <Collapse in={isString(errors.components) && !!errors.components}>
-              {isString(errors.components) && (
-                <Alert severity="error">{errors.components}</Alert>
-              )}
-            </Collapse>
-          </div>
-          <div className="modal-action mt-8">
-            <Typography className="flex justify-end gap-x-2">
-              <Button onClick={() => onClose()}>Close</Button>
-              <Button
-                variant="contained"
-                onClick={async () => {
-                  try {
-                    const blend = await api('api/blends/create/', {
-                      data: form,
-                      method: 'POST',
-                    })
-                    onCreateBlend(blend)
-                    onClose()
-                  } catch (error) {
-                    if (error.status === 400) {
-                      setErrors({
-                        ...(await error.json()),
-                      })
-                      enqueueSnackbar(
-                        <>Please make sure all the inputs are correct.</>,
-                        { variant: 'error' },
-                      )
-                    } else {
-                      setErrors({})
-                      enqueueSnackbar(
-                        <>Unexpected error, we are working on it.</>,
-                        {
-                          variant: 'error',
-                        },
-                      )
-                    }
-                  }
-                }}
-              >
-                Submit
-              </Button>
-            </Typography>
-          </div>
+          {modalContent}
         </Box>
       </div>
     </Modal>

@@ -1,3 +1,5 @@
+import type { RowData } from './types'
+
 import { useMemo } from 'react'
 
 import { Button, Link, Tooltip } from '@mui/material'
@@ -18,7 +20,6 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 
 import { sectionColDefByIdFunc } from '../sectionColumnsDef'
-import { RowData } from './Create'
 
 import { IoTrash } from 'react-icons/io5'
 
@@ -109,7 +110,7 @@ function useGridOptions(props: {
                   {
                     id: 'total_usages',
                     category: 'usage',
-                    cellClass: 'bg-yellow-50 text-right',
+                    cellClass: 'bg-yellow-50 text-center',
                     field: 'total_usages',
                     headerName: 'TOTAL',
                     orsAggFunc: 'sumTotalUsages',
@@ -209,7 +210,7 @@ function useGridOptions(props: {
               props.colDef.id,
             ),
             'ag-flex-cell': props.data?.rowType === 'control',
-            'ag-text-right': !includes(['display_name'], props.colDef.field),
+            'ag-text-center': !includes(['display_name'], props.colDef.field),
           })
         },
         editable: (props: EditableCallbackParams<RowData>) => {
@@ -223,7 +224,7 @@ function useGridOptions(props: {
           }
           return true
         },
-        headerClass: 'ag-text-right',
+        headerClass: 'ag-text-center',
         minWidth: defaultColDef.minWidth,
         resizable: true,
         wrapText: true,

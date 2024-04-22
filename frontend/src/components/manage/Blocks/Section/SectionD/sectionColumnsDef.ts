@@ -8,6 +8,8 @@ const sectionColDefById: Record<string, ColDef> = {
   ...colDefById,
   all_uses: {
     ...colDefById['all_uses'],
+    cellClass: 'ag-text-center',
+    headerClass: 'ag-text-center',
     headerComponentParams: {
       footnote: {
         id: '1',
@@ -21,6 +23,8 @@ const sectionColDefById: Record<string, ColDef> = {
   },
   destruction: {
     ...colDefById['destruction'],
+    cellClass: 'ag-text-center',
+    headerClass: 'ag-text-center',
     headerComponentParams: {
       footnote: {
         id: '2',
@@ -50,6 +54,8 @@ const sectionColDefById: Record<string, ColDef> = {
   },
   feedstock: {
     ...colDefById['feedstock'],
+    cellClass: 'ag-text-center',
+    headerClass: 'ag-text-center',
     headerComponentParams: {
       footnote: {
         id: '2',

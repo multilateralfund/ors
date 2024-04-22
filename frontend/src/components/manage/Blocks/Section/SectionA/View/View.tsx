@@ -3,6 +3,7 @@ import { CPReport } from '@ors/types/api_country-programme_records'
 import { useMemo, useRef, useState } from 'react'
 
 import { Alert, Checkbox, FormControlLabel } from '@mui/material'
+import cx from 'classnames'
 import { each, includes, union } from 'lodash'
 
 import components from '@ors/config/Table/components'
@@ -27,13 +28,13 @@ export type RowData = DeserializedDataA & {
   tooltip?: boolean
 }
 
-function getRowData(report: CPReport, showEmptyRows: boolean): RowData[] {
+function getRowData(report: CPReport, showOnlyReported: boolean): RowData[] {
   let rowData: RowData[] = []
   const dataByGroup: Record<string, any[]> = {}
   const groups: Array<string> = []
 
   let data = report.section_a
-  if (!showEmptyRows) {
+  if (showOnlyReported) {
     data = data.filter((item) => item.id !== 0)
   }
 
@@ -82,13 +83,13 @@ export default function SectionAView(props: any) {
       usages: emptyForm.usage_columns?.section_a || [],
     })
   const grid = useRef<any>()
-  const [showEmptyRows, setShowEmptyRows] = useState(true)
+  const [showOnlyReported, setShowOnlyReported] = useState(false)
   const { setValue: setTableDataValue, value: tableDataValue } =
     useTableDataSelector(
       includes(['IV', 'V'], variant.model) ? 'sector' : 'all',
     )
 
-  const rowData = getRowData(report, showEmptyRows)
+  const rowData = getRowData(report, showOnlyReported)
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
   const gridOptions = useMemo(() => {
@@ -111,33 +112,33 @@ export default function SectionAView(props: any) {
 
   return (
     <>
-      <div className="flex justify-between">
+      {!includes(['I'], variant.model) && (
+        <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+          <Footnotes />
+        </Alert>
+      )}
+      <div
+        className={cx('flex', {
+          'justify-between': includes(['IV', 'V'], variant.model),
+          'justify-end': !includes(['IV', 'V'], variant.model),
+        })}
+      >
         {includes(['IV', 'V'], variant.model) && (
           <TableDataSelector
-            className="py-4"
             changeHandler={(_, value) => setTableDataValue(value)}
             value={tableDataValue}
           />
         )}
-        {includes(['V'], variant.model) && (
-          <FormControlLabel
-            label="Show zero values"
-            control={
-              <Checkbox
-                checked={showEmptyRows}
-                onChange={(event) => setShowEmptyRows(event.target.checked)}
-              />
-            }
-          />
-        )}
+        <FormControlLabel
+          label="Show only reported substances"
+          control={
+            <Checkbox
+              checked={showOnlyReported}
+              onChange={(event) => setShowOnlyReported(event.target.checked)}
+            />
+          }
+        />
       </div>
-      <Alert
-        className="mb-4"
-        icon={<IoInformationCircleOutline size={24} />}
-        severity="info"
-      >
-        <Footnotes />
-      </Alert>
       <Table
         {...TableProps}
         columnDefs={gridOptions.columnDefs}

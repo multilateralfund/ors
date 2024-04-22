@@ -10,7 +10,7 @@ import {
   defaultColDef,
 } from '@ors/config/Table/columnsDef'
 
-function useGridOptions(props: { adm_columns: any }) {
+function useGridOptions(props: { adm_columns: any; model: string }) {
   const { adm_columns } = props
 
   const mapAdmColumn = useCallback((column: any) => {
@@ -19,6 +19,7 @@ function useGridOptions(props: { adm_columns: any }) {
       category: 'adm',
       dataType: column.type,
       field: 'values',
+      flex: 0.5,
       headerName: column.display_name,
       initialWidth: defaultColDef.minWidth,
       ...(colDefByDataType[column.type] || {}),
@@ -30,6 +31,8 @@ function useGridOptions(props: { adm_columns: any }) {
           }
         : {}),
       ...(colDefById[column.full_name] || {}),
+      cellClass: 'ag-text-center',
+      headerClass: 'ag-text-center',
     }
   }, [])
 
@@ -41,10 +44,12 @@ function useGridOptions(props: { adm_columns: any }) {
             {
               cellClass: 'bg-mui-box-background',
               field: 'index',
+              flex: 0.5,
               headerName: '',
               initialWidth: defaultColDef.minWidth,
             },
             {
+              ...colDefById['type_of_action'],
               cellClass: 'bg-mui-box-background',
               cellRendererParams: (props: any) => ({
                 className: cx({
@@ -56,8 +61,8 @@ function useGridOptions(props: { adm_columns: any }) {
                 }),
               }),
               field: 'text',
+              flex: 3,
               headerName: '',
-              ...colDefById['type_of_action'],
             },
           ],
           headerClass: 'ag-text-center',
@@ -68,8 +73,11 @@ function useGridOptions(props: { adm_columns: any }) {
         ...(adm_columns.length > 0 ? adm_columns.map(mapAdmColumn) : []),
         {
           field: 'remarks',
+          flex: 1,
           headerName: 'Remarks',
           ...colDefById['remarks'],
+          cellClass: 'ag-text-center',
+          headerClass: 'ag-text-center',
         },
       ],
       defaultColDef: {

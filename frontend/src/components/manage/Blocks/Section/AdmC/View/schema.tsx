@@ -10,7 +10,7 @@ import {
   defaultColDef,
 } from '@ors/config/Table/columnsDef'
 
-function useGridOptions(props: { adm_columns: any }) {
+function useGridOptions(props: { adm_columns: any; model: string }) {
   const { adm_columns } = props
 
   const mapAdmColumn = useCallback((column: any) => {
@@ -18,6 +18,7 @@ function useGridOptions(props: { adm_columns: any }) {
       id: column.id,
       category: 'adm',
       dataType: column.type,
+      flex: 1,
       headerName: column.display_name,
       initialWidth: defaultColDef.minWidth,
       ...(colDefByDataType[column.type] || {}),
@@ -29,6 +30,8 @@ function useGridOptions(props: { adm_columns: any }) {
           }
         : {}),
       ...(colDefById[column.full_name] || {}),
+      cellClass: 'ag-text-center',
+      headerClass: 'ag-text-center',
     }
   }, [])
 
@@ -46,6 +49,7 @@ function useGridOptions(props: { adm_columns: any }) {
             }),
           }),
           field: 'text',
+          flex: 2,
           headerClass: 'ag-text-left',
           headerGroupComponent: 'agColumnHeaderGroup',
           headerName: 'Description',
@@ -54,8 +58,11 @@ function useGridOptions(props: { adm_columns: any }) {
         ...(adm_columns.length > 0 ? adm_columns.map(mapAdmColumn) : []),
         {
           field: 'remarks',
+          flex: 1,
           headerName: 'Remarks',
           ...colDefById['remarks'],
+          cellClass: 'ag-text-center',
+          headerClass: 'ag-text-center',
         },
       ],
       defaultColDef: {

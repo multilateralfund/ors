@@ -1,6 +1,5 @@
+import type { CreateSliceProps } from '@ors/types/store'
 import { SettingsSlice } from '@ors/types/store'
-
-import { CreateSliceProps } from '@ors/store'
 
 export const createSettingsSlice = ({
   initialState,

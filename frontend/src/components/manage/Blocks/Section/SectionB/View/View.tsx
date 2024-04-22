@@ -1,4 +1,4 @@
-import type { TableProps } from '../../../CountryProgramme/CPView'
+import type { ITableProps } from '../../../CountryProgramme/typesCPView'
 import { CPReport } from '@ors/types/api_country-programme_records'
 import { EmptyFormType } from '@ors/types/api_empty-form'
 import { ReportVariant } from '@ors/types/variants'
@@ -6,6 +6,7 @@ import { ReportVariant } from '@ors/types/variants'
 import { useMemo, useRef, useState } from 'react'
 
 import { Alert, Checkbox, FormControlLabel } from '@mui/material'
+import cx from 'classnames'
 import { each, includes, union } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
@@ -37,14 +38,14 @@ export type RowData = DeserializedDataB & {
   tooltip?: boolean
 }
 
-function getRowData(report: CPReport, showEmptyRows: boolean): RowData[] {
+function getRowData(report: CPReport, showOnlyReported: boolean): RowData[] {
   const variant = getVariant(report)
   let rowData: Array<any> = []
   const dataByGroup: Record<string, any> = {}
   const groups: Array<string> = []
 
   let data = report.section_b
-  if (!showEmptyRows) {
+  if (showOnlyReported) {
     data = data.filter((item: any) => item.id !== 0)
   }
 
@@ -96,7 +97,7 @@ function getPinnedRowData(rowData: any) {
 }
 
 export default function SectionBView(props: {
-  TableProps: TableProps
+  TableProps: ITableProps
   emptyForm: EmptyFormType
   report: CPReport
   variant: ReportVariant
@@ -108,13 +109,13 @@ export default function SectionBView(props: {
       usages: emptyForm.usage_columns?.section_b || [],
     })
   const grid = useRef<any>()
-  const [showEmptyRows, setShowEmptyRows] = useState(true)
-  const [rowData] = useState(() => getRowData(report, showEmptyRows))
-  const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
+  const [showOnlyReported, setShowOnlyReported] = useState(false)
   const { setValue: setTableDataValue, value: tableDataValue } =
     useTableDataSelector(
       includes(['IV', 'V'], variant.model) ? 'sector' : 'all',
     )
+  const rowData = getRowData(report, showOnlyReported)
+  const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
   const gridOptions = useMemo(() => {
     switch (tableDataValue) {
@@ -136,33 +137,31 @@ export default function SectionBView(props: {
 
   return (
     <>
-      <div className="flex justify-between">
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnotes />
+      </Alert>
+      <div
+        className={cx('flex', {
+          'justify-between': includes(['IV', 'V'], variant.model),
+          'justify-end': !includes(['IV', 'V'], variant.model),
+        })}
+      >
         {includes(['IV', 'V'], variant.model) && (
           <TableDataSelector
-            className="py-4"
             changeHandler={(_, value) => setTableDataValue(value)}
             value={tableDataValue}
           />
         )}
-        {includes(['V'], variant.model) && (
-          <FormControlLabel
-            label="Show zero values"
-            control={
-              <Checkbox
-                checked={showEmptyRows}
-                onChange={(event) => setShowEmptyRows(event.target.checked)}
-              />
-            }
-          />
-        )}
+        <FormControlLabel
+          label="Show only reported substances"
+          control={
+            <Checkbox
+              checked={showOnlyReported}
+              onChange={(event) => setShowOnlyReported(event.target.checked)}
+            />
+          }
+        />
       </div>
-      <Alert
-          className="mb-4"
-          icon={<IoInformationCircleOutline size={24} />}
-          severity="info"
-        >
-          <Footnotes />
-      </Alert>
       <Table
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
@@ -170,7 +169,7 @@ export default function SectionBView(props: {
         gridRef={grid}
         headerDepth={4}
         pinnedBottomRowData={pinnedBottomRowData}
-        rowData={showEmptyRows ? rowData : rowData.filter((row) => row.id !== 0)}
+        rowData={rowData}
       />
     </>
   )

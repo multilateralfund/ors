@@ -19,7 +19,6 @@ export default function SectionDCreate(props: any) {
   return (
     <>
       <Alert
-        className="mt-4"
         icon={<IoInformationCircleOutline size={24} />}
         severity="info"
       >
@@ -27,7 +26,6 @@ export default function SectionDCreate(props: any) {
       </Alert>
       <Table
         {...TableProps}
-        className="mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         rowData={initialRowData}

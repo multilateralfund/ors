@@ -1,3 +1,5 @@
+import type { CreateSliceProps } from '@ors/types/store'
+
 import { createBusinessPlanSlice } from '@ors/slices/createBusinessPlanSlice'
 import { createCPCurrentTabSlice } from '@ors/slices/createCPCurrentTabSlice'
 import { createCPReportsSlice } from '@ors/slices/createCPReportsSlice'
@@ -9,7 +11,6 @@ import { createProjectSlice } from '@ors/slices/createProjectSlice'
 import { createSettingsSlice } from '@ors/slices/createSettingsSlice'
 import { createThemeSlice } from '@ors/slices/createThemeSlice'
 import { createUserSlice } from '@ors/slices/createUserSlice'
-import { CreateSliceProps } from '@ors/store'
 
 export default function createSlices(props: CreateSliceProps) {
   return {

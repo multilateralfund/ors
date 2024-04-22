@@ -11,7 +11,7 @@ import { useSnackbar } from 'notistack'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
-import api from '@ors/helpers/Api/Api'
+import api from '@ors/helpers/Api/_api'
 import { useStore } from '@ors/store'
 
 import { IoChevronDown } from 'react-icons/io5'
@@ -239,6 +239,9 @@ const EditHeaderActions = ({
   const { enqueueSnackbar } = useSnackbar()
   const { user_type } = useStore((state) => state.user.data)
 
+  const isDraft = report.data?.status === 'draft'
+  const isFinal = report.data?.status === 'final'
+
   if (!userTypeVisibility[user_type as UserType]) return null
 
   return (
@@ -255,7 +258,7 @@ const EditHeaderActions = ({
           >
             Close
           </Link>
-          {report.data.status === 'draft' && (
+          {isDraft && (
             <Button
               className="px-4 py-2 shadow-none"
               color="primary"
@@ -307,6 +310,59 @@ const EditHeaderActions = ({
               Update draft
             </Button>
           )}
+          {isFinal && (
+            <Button
+              className="px-4 py-2 shadow-none"
+              color="secondary"
+              size="large"
+              variant="contained"
+              onClick={async () => {
+                try {
+                  const response = await api(
+                    `api/country-programme/reports/${report.data?.id}/`,
+                    {
+                      data: {
+                        ...report.data,
+                        ...getSubmitFormData(),
+                        status: 'draft',
+                      },
+                      method: 'PUT',
+                    },
+                  )
+                  setErrors({})
+                  enqueueSnackbar(
+                    <>
+                      Updated submission for {response.country} {response.year}.
+                    </>,
+                    { variant: 'success' },
+                  )
+                  cacheInvalidateReport(response.country_id, response.year)
+                  router.push(
+                    `/country-programme/${report.country?.iso3}/${response.year}`,
+                  )
+                } catch (error) {
+                  if (error.status === 400) {
+                    setErrors({ ...(await error.json()) })
+                    enqueueSnackbar(
+                      <>Please make sure all the inputs are correct.</>,
+                      { variant: 'error' },
+                    )
+                  } else {
+                    const errors = await error.json()
+                    setErrors({})
+                    {
+                      errors.detail &&
+                        enqueueSnackbar(errors.detail, {
+                          variant: 'error',
+                        })
+                    }
+                  }
+                }
+              }}
+            >
+              Save draft
+            </Button>
+          )}
           <Button
             className="px-4 py-2 shadow-none"
             color="secondary"
@@ -356,9 +412,7 @@ const EditHeaderActions = ({
               }
             }}
           >
-            {report.data.status === 'draft'
-              ? 'Submit final version'
-              : 'Submit new version'}
+            {isDraft ? 'Submit final version' : 'Submit new version'}
           </Button>
         </div>
       )}
@@ -369,9 +423,11 @@ const EditHeaderActions = ({
 const CPHeader = ({
   actions = <ViewHeaderActions />,
   tag = <ViewHeaderTag />,
+  titlePrefix,
 }: {
   actions?: React.JSX.Element
   tag?: React.JSX.Element
+  titlePrefix?: React.JSX.Element
 }) => {
   const { report } = useStore((state) => state.cp_reports)
   const [memo, setMemo] = useState(0)
@@ -388,6 +444,7 @@ const CPHeader = ({
         </div>
         <div className="mb-4 flex min-h-[40px] items-center justify-between gap-x-8">
           <div className="flex items-center gap-x-2">
+            {titlePrefix}
             <HeaderVersionsDropdown />
             {tag}
           </div>
@@ -425,6 +482,7 @@ const CPEditHeader = (props: EditHeaderActionsProps) => {
     <CPHeader
       actions={<EditHeaderActions {...props} />}
       tag={<EditHeaderTag />}
+      titlePrefix={<span className="text-4xl">Editing: </span>}
     />
   )
 }

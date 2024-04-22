@@ -4,7 +4,7 @@ import { Metadata } from 'next'
 
 import PSView from '@ors/components/manage/Blocks/ProjectSubmissions/PSView'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-import api from '@ors/helpers/Api/Api'
+import api from '@ors/helpers/Api/_api'
 
 type ProjectSubmissionProps = {
   params: {

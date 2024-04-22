@@ -8,37 +8,23 @@ import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, union } from 'lodash'
 
-import {
-  CPBaseForm,
-  PassedCPCreateTableProps,
-} from '@ors/components/manage/Blocks/CountryProgramme/CPCreate'
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import useApi from '@ors/hooks/useApi'
-import SectionC, { DeserializedDataC } from '@ors/models/SectionC'
+import SectionC from '@ors/models/SectionC'
 import { useStore } from '@ors/store'
 
+import {
+  CPBaseForm,
+  PassedCPCreateTableProps,
+} from '../../../CountryProgramme/typesCPCreate'
 import useGridOptions from './schema'
+import { RowData, SubstancePrice, SubstancePrices } from './types'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
-
-export type RowData = DeserializedDataC & {
-  count?: number
-  rowType?: string
-  tooltip?: boolean
-}
-
-export type SubstancePrice = {
-  blend_id: null | number
-  current_year_price: string
-  previous_year_price: string
-  remarks: string
-  substance_id: null | number
-}
-export type SubstancePrices = SubstancePrice[]
 
 function indexKey(elem: {
   blend_id?: null | number
@@ -234,16 +220,13 @@ export default function SectionCCreate(props: {
 
   return (
     <>
-      <Alert
-        className="mt-4"
-        icon={<IoInformationCircleOutline size={24} />}
-        severity="info"
-      >
-        <Footnotes />
-      </Alert>
+      {includes(['II', 'III'], variant.model) ? null : (
+        <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+          <Footnotes />
+        </Alert>
+      )}
       <Table
         {...TableProps}
-        className="mb-4"
         columnDefs={gridOptions.columnDefs}
         gridRef={grid}
         headerDepth={3}

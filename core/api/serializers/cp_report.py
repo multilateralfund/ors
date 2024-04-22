@@ -4,10 +4,7 @@ from rest_framework import serializers
 from core.api.serializers.adm import AdmRecordSerializer
 from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
-from core.api.serializers.cp_history import (
-    CPHistoryArchiveSerializer,
-    CPHistorySerializer,
-)
+from core.api.serializers.cp_history import CPHistorySerializer
 from core.api.serializers.cp_price import CPPricesSerializer
 from core.api.serializers.cp_record import CPRecordSerializer
 from core.api.validations.cp_reports_validations import validate_cp_report
@@ -82,28 +79,16 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
             "created_at",
             "created_by",
             "report_info",
-            "history",
         ]
 
 
 class CPReportSerializer(CPReportBaseSerializer):
-    history = CPHistorySerializer(
-        many=True,
-        required=False,
-        source="cphistory",
-    )
-
     class Meta(CPReportBaseSerializer.Meta):
         model = CPReport
 
 
 class CPReportArchiveSerializer(CPReportBaseSerializer):
     final_version_id = serializers.SerializerMethodField()
-    history = CPHistoryArchiveSerializer(
-        many=True,
-        required=False,
-        source="cphistory",
-    )
 
     class Meta(CPReportBaseSerializer.Meta):
         model = CPReportArchive
@@ -141,7 +126,6 @@ class CPReportCreateSerializer(serializers.Serializer):
     status = serializers.ChoiceField(
         choices=CPReport.CPReportStatus.choices, required=False
     )
-    history = CPHistorySerializer(many=True, required=False)
     report_info = CPReportInfoSerializer(many=False, required=False, allow_null=True)
     section_a = CPRecordSerializer(many=True, required=False)
     section_b = CPRecordSerializer(many=True, required=False)
@@ -159,7 +143,6 @@ class CPReportCreateSerializer(serializers.Serializer):
         fields = [
             "name",
             "year",
-            "history",
             "status",
             "country_id",
             "report_info",
@@ -231,10 +214,13 @@ class CPReportCreateSerializer(serializers.Serializer):
         report_info_serializer.is_valid(raise_exception=True)
         report_info_serializer.save()
 
-    def _create_history(self, cp_report, history_data, request_user):
+    def _create_history(self, cp_report, request_user):
+        history_data = {}
         history_data["country_programme_report_id"] = cp_report.id
+        history_data["report_version"] = 1
         history_data["updated_by_id"] = request_user.id
         history_data["updated_by_username"] = request_user.username
+        history_data["event_description"] = "Created by user"
 
         cp_history_serializer = CPHistorySerializer(data=history_data)
         cp_history_serializer.is_valid(raise_exception=True)
@@ -243,7 +229,6 @@ class CPReportCreateSerializer(serializers.Serializer):
     @transaction.atomic
     def create(self, validated_data):
         request_user = self.context["user"]
-        event_description = self.context.get("event_description", "Created by user")
 
         cp_report_info = validated_data.get("report_info", {})
         if cp_report_info is None:
@@ -273,12 +258,8 @@ class CPReportCreateSerializer(serializers.Serializer):
         cp_report.reporting_entry = reporting_entry
         cp_report.reporting_email = reporting_email
         cp_report.save()
-
-        self._create_history(
-            cp_report,
-            {"event_description": event_description},
-            request_user,
-        )
+        if not self.context.get("from_update"):
+            self._create_history(cp_report, request_user)
         self._create_cp_records(cp_report, validated_data.get("section_a", []), "A")
         self._create_prices(cp_report, validated_data.get("section_c", []))
 

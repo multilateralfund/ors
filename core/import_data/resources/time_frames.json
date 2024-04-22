@@ -36,6 +36,10 @@
         "max_year": null
     },
     {
+        "min_year": 2005,
+        "max_year": null
+    },
+    {
         "min_year": 2012,
         "max_year": 2018
     },

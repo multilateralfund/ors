@@ -1,4 +1,4 @@
-import type { TableProps } from '@ors/components/manage/Blocks/CountryProgramme/CPView'
+import type { ITableProps } from '../../../CountryProgramme/typesCPView'
 import { CPReport } from '@ors/types/api_country-programme_records'
 import { ReportVariant } from '@ors/types/variants'
 
@@ -22,13 +22,17 @@ export type RowData = DeserializedDataC & {
   tooltip?: boolean
 }
 
-function getRowData(report: any, model: string, showEmptyRows: boolean): RowData[] {
+function getRowData(
+  report: any,
+  model: string,
+  showOnlyReported: boolean,
+): RowData[] {
   let rowData: Array<any> = []
   const dataByGroup: Record<string, any> = {}
   const groups: Array<string> = []
 
   let data = report.section_c
-  if (!showEmptyRows) {
+  if (showOnlyReported) {
     data = data.filter((item: any) => item.id !== 0)
   }
   each(data, (item) => {
@@ -63,7 +67,7 @@ function getRowData(report: any, model: string, showEmptyRows: boolean): RowData
 }
 
 export default function SectionCView(props: {
-  TableProps: TableProps & {
+  TableProps: ITableProps & {
     context: {
       section: SectionC['data']
       variant: ReportVariant
@@ -79,37 +83,33 @@ export default function SectionCView(props: {
     model: variant.model,
   })
   const grid = useRef<any>()
-  const [showEmptyRows, setShowEmptyRows] = useState(true)
-  const [rowData] = useState(() => getRowData(report, variant.model, showEmptyRows))
+  const [showOnlyReported, setShowOnlyReported] = useState(false)
+  const rowData = getRowData(report, variant.model, showOnlyReported)
 
   return (
     <>
-      <div className="flex justify-end">
-        {includes(['V'], variant.model) && (
-          <FormControlLabel
-            label="Show zero values"
-            control={
-              <Checkbox
-                checked={showEmptyRows}
-                onChange={(event) => setShowEmptyRows(event.target.checked)}
-              />
-            }
-          />
-        )}
-      </div>
-      <Alert
-          className="mb-4"
-          icon={<IoInformationCircleOutline size={24} />}
-          severity="info"
-        >
+      {includes(['II', 'III'], variant.model) ? null : (
+        <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
           <Footnotes />
-      </Alert>
+        </Alert>
+      )}
+      <div className="flex justify-end">
+        <FormControlLabel
+          label="Show only reported substances"
+          control={
+            <Checkbox
+              checked={showOnlyReported}
+              onChange={(event) => setShowOnlyReported(event.target.checked)}
+            />
+          }
+        />
+      </div>
       <Table
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
         gridRef={grid}
-        rowData={showEmptyRows ? rowData : rowData.filter((row) => row.id !== 0)}
+        rowData={rowData}
       />
     </>
   )
