@@ -154,11 +154,13 @@ export default function SectionBCreate(props: {
     return form.section_b.map((chemical: any) => chemical.row_id)
   }, [form.section_b])
 
+  // Options for formats <2023 (section B is only in >=2019 formats)
   const oldChemicalOptions = useMemo(() => {
     const data: Array<any> = []
     each(substances, (substance) => {
       if (
         includes(substance.sections, 'B') &&
+        !includes(['Annex F'], substance.group) &&
         !includes(chemicalsInForm, `substance_${substance.id}`)
       ) {
         data.push(Section.transformApiSubstance(substance))
@@ -175,6 +177,7 @@ export default function SectionBCreate(props: {
     return data
   }, [substances, blends, createdBlends, chemicalsInForm, Section])
 
+  // Options for formats >=2023
   const mandatoryChemicals = useMemo(() => {
     const data: Array<any> = []
 
