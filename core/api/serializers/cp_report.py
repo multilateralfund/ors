@@ -61,9 +61,6 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
     created_by = serializers.StringRelatedField(
         read_only=True, source="created_by.username"
     )
-    report_info = CPReportInfoSerializer(
-        many=False, required=False, source="cpreportedsections", allow_null=True
-    )
     comment_country = serializers.CharField(read_only=True)
     comment_secretariat = serializers.CharField(read_only=True)
 
@@ -81,12 +78,18 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
             "comment_secretariat",
             "created_at",
             "created_by",
-            "report_info",
-            "history",
         ]
 
 
+class CPReportNoRelatedSerializer(CPReportBaseSerializer):
+    class Meta(CPReportBaseSerializer.Meta):
+        model = CPReport
+
+
 class CPReportSerializer(CPReportBaseSerializer):
+    report_info = CPReportInfoSerializer(
+        many=False, required=False, source="cpreportedsections", allow_null=True
+    )
     history = CPHistorySerializer(
         many=True,
         required=False,
@@ -95,6 +98,10 @@ class CPReportSerializer(CPReportBaseSerializer):
 
     class Meta(CPReportBaseSerializer.Meta):
         model = CPReport
+        fields = CPReportBaseSerializer.Meta.fields + [
+            "report_info",
+            "history",
+        ]
 
 
 class CPReportArchiveSerializer(CPReportBaseSerializer):
@@ -121,7 +128,7 @@ class CPReportGroupSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     count = serializers.IntegerField()
     group = serializers.CharField()
-    reports = CPReportSerializer(many=True, read_only=True)
+    reports = CPReportNoRelatedSerializer(many=True, read_only=True)
 
     class Meta:
         fields = [

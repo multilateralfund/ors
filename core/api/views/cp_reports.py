@@ -479,8 +479,21 @@ class CPReportGroupByYearView(generics.ListAPIView):
         )
         page = self.paginate_queryset(page_queryset)
 
+        show_all_per_group = request.query_params.get("show_all_per_group", False)
+        # Filter results base on the group and, if specified,
+        # by the MAX number of reports to display.
+        filter_params = {
+            f"{self.group_by}__in": (page or page_queryset),
+        }
+        if not show_all_per_group:
+            filter_params |= {
+                "row_number__lte": config.CP_NR_REPORTS,
+            }
+
         queryset = (
-            queryset.annotate(
+            queryset
+            .select_related("country", "created_by")
+            .annotate(
                 row_number=Window(
                     expression=RowNumber(),
                     partition_by=[F(self.group_by)],
@@ -488,12 +501,7 @@ class CPReportGroupByYearView(generics.ListAPIView):
                 ),
             )
             .filter(
-                **{
-                    # Filter results base on the group and the MAX number of
-                    # reports to display.
-                    f"{self.group_by}__in": (page or page_queryset),
-                    "row_number__lte": config.CP_NR_REPORTS,
-                }
+                **filter_params
             )
             .order_by(self.order_field, self.order_by)
         )
