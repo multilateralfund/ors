@@ -40,7 +40,7 @@ class TestCPRecordList(BaseTest):
         assert response.data["section_a"][0]["row_id"] == f"substance_{substance.id}"
         assert response.data["section_a"][3]["group"] == "group B B"
 
-        assert len(response.data["section_b"]) == 7
+        assert len(response.data["section_b"]) == 8
         assert response.data["section_b"][0]["id"] == 0  # no records for this substance
         assert (
             response.data["section_b"][1]["id"] != 0
@@ -49,13 +49,15 @@ class TestCPRecordList(BaseTest):
         assert response.data["section_b"][2]["row_id"] == f"blend_{blend.id}"
         assert len(response.data["section_b"][2]["record_usages"]) == 3
         assert response.data["section_b"][3]["id"] == 0
+        assert response.data["section_b"][-3]["id"] != 0
+        assert response.data["section_b"][-3]["chemical_name"] == "AddedByUser"
         assert response.data["section_b"][-2]["id"] == 0
         assert "substance" in response.data["section_b"][-2]["row_id"]
         assert response.data["section_b"][-1]["id"] != 0
         assert "substance" in response.data["section_b"][-1]["row_id"]
 
         section_c = response.data["section_c"]
-        assert len(section_c) == 11
+        assert len(section_c) == 12
         assert section_c[0]["chemical_name"] == substance.name
         assert section_c[0]["group"] == "HCFCs"
         assert section_c[0]["computed_prev_year_price"] is None
@@ -109,17 +111,14 @@ class TestCPRecordList(BaseTest):
         assert response.data["section_a"][0]["chemical_name"] == substance.name
         assert response.data["section_a"][0]["row_id"] == f"substance_{substance.id}"
 
-
-    def get_by_country_and_year(
-        self, user, cp_report_2019, _setup_new_cp_report
-    ):
+    def get_by_country_and_year(self, user, cp_report_2019, _setup_new_cp_report):
         self.client.force_authenticate(user=user)
 
         # get cp records list
-        response = self.client.get(self.url, {
-            "country_id": cp_report_2019.country_id, 
-            "year": cp_report_2019.year
-        })
+        response = self.client.get(
+            self.url,
+            {"country_id": cp_report_2019.country_id, "year": cp_report_2019.year},
+        )
         assert response.status_code == 200
         assert response.data["cp_report"]["id"] == cp_report_2019.id
         assert len(response.data["section_a"]) == 4
