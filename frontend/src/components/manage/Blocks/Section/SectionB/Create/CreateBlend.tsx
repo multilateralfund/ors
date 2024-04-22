@@ -169,14 +169,16 @@ export function CreateBlend({
   const modalContent = (
     <>
       <div className="modal-content">
-        <Typography
-          id="create-blend-modal-title"
-          className="mb-4 text-typography-secondary"
-          component="h2"
-          variant="h6"
-        >
-          Create new blend
-        </Typography>
+        {!noModal && (
+          <Typography
+            id="create-blend-modal-title"
+            className="mb-4 text-typography-secondary"
+            component="h2"
+            variant="h6"
+          >
+            Create new blend
+          </Typography>
+        )}
         <Alert
           className="mb-4"
           icon={<IoInformationCircle size={24} />}
