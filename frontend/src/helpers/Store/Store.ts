@@ -3,8 +3,10 @@ import type { DataType, ErrorType, SliceData } from '@ors/types/primitives'
 import { produce } from 'immer'
 import { PropertyPath, get, set } from 'lodash'
 
-import api, { Api } from '@ors/helpers/Api/Api'
-import { store } from '@ors/store'
+import { store } from '@ors/_store'
+
+import api from '../Api/_api'
+import { IApi } from '../Api/types'
 
 export const defaultSliceData: SliceData = {
   data: null,
@@ -39,7 +41,7 @@ export function getInitialSliceData<D = DataType, E = ErrorType>(
 }
 
 export async function fetchSliceData(props: {
-  apiSettings: Partial<Api>
+  apiSettings: Partial<IApi>
   parseResponse?: (response: any) => any
   slice: PropertyPath
 }) {

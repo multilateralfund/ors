@@ -11,7 +11,7 @@ const mobile = __CLIENT__ ? window.innerWidth < 768 : false
 const colDefById: Record<string, ColDef> = {
   display_name: {
     initialWidth: mobile ? 160 : 300,
-    minWidth: 160,
+    minWidth: 165,
     pinned: mobile ? undefined : 'left',
   },
   facility: {

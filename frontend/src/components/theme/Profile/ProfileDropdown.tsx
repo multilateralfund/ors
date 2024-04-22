@@ -4,7 +4,7 @@ import React from 'react'
 import { useRouter } from 'next/navigation'
 
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
-import { formatApiUrl } from '@ors/helpers/Api/Api'
+import { formatApiUrl } from '@ors/helpers/Api/utils'
 import { useStore } from '@ors/store'
 import version from '~/version.json'
 

@@ -5,7 +5,7 @@ import { Alert, Button, Collapse, Paper, Typography } from '@mui/material'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 import Field from '@ors/components/manage/Form/Field'
-import api from '@ors/helpers/Api/Api'
+import api from '@ors/helpers/Api/_api'
 
 const emptyErrors = {
   new_password1: '',

@@ -1,9 +1,9 @@
+import type { CreateSliceProps } from '@ors/types/store'
 import type { HeaderSlice } from '@ors/types/store'
 
 import { produce } from 'immer'
 import resolveConfig from 'tailwindcss/resolveConfig'
 
-import { CreateSliceProps } from '@ors/store'
 import tailwindConfigModule from '~/tailwind.config'
 
 const tailwindConfig = resolveConfig(tailwindConfigModule)

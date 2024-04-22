@@ -1,8 +1,7 @@
+import type { CreateSliceProps } from '@ors/types/store'
 import type { CacheSlice } from '@ors/types/store'
 
 import { produce } from 'immer'
-
-import { CreateSliceProps } from '@ors/store'
 
 export const createCacheSlice = ({
   get,

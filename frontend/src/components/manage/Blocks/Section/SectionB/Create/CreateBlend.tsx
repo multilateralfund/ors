@@ -1,5 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
-import React from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   Alert,
@@ -11,7 +10,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { ColDef, RowNode } from 'ag-grid-community'
+import { ColDef, GridApi, RowNode } from 'ag-grid-community'
 import cx from 'classnames'
 import { find, findIndex, includes, isString } from 'lodash'
 import { useSnackbar } from 'notistack'
@@ -22,13 +21,14 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
-import api from '@ors/helpers/Api/Api'
+import api from '@ors/helpers/Api/_api'
 import { applyTransaction } from '@ors/helpers/Utils/Utils'
 import useStateWithPrev from '@ors/hooks/useStateWithPrev'
 
 import {
   IoAddCircleSharp,
-  IoInformationCircleOutline,
+  IoAlertCircle,
+  IoInformationCircle,
   IoTrash,
 } from 'react-icons/io5'
 
@@ -82,6 +82,25 @@ export function CreateBlend({
     other_names: '',
   })
   const [errors, setErrors] = useState<Record<string, any>>({})
+
+  useEffect(() => {
+    async function getNextCustomMixName() {
+      try {
+        const data = await api('api/blends/next-cust-mix-name/')
+        setForm({
+          ...prevForm.current,
+          composition: data.name,
+        })
+      } catch (e) {
+        setErrors({
+          components: "Couldn't fetch the next custom mix name.",
+        })
+      }
+    }
+
+    getNextCustomMixName()
+  }, [prevForm, setForm])
+
   const [similarBlends, setSimilarBlends] = useState<Record<
     string,
     Array<any>
@@ -150,17 +169,19 @@ export function CreateBlend({
   const modalContent = (
     <>
       <div className="modal-content">
-        <Typography
-          id="create-blend-modal-title"
-          className="mb-4 text-typography-secondary"
-          component="h2"
-          variant="h6"
-        >
-          Create new blend
-        </Typography>
+        {!noModal && (
+          <Typography
+            id="create-blend-modal-title"
+            className="mb-4 text-typography-secondary"
+            component="h2"
+            variant="h6"
+          >
+            Create new blend
+          </Typography>
+        )}
         <Alert
           className="mb-4"
-          icon={<IoInformationCircleOutline size={24} />}
+          icon={<IoInformationCircle size={24} />}
           severity="info"
         >
           <Typography>
@@ -174,7 +195,7 @@ export function CreateBlend({
           disabled={true}
           error={!!errors.composition}
           helperText={errors.composition}
-          value={'CustMix-235'}
+          value={form.composition}
         />
         <Field
           InputLabel={{ label: 'Alternative name' }}
@@ -239,13 +260,13 @@ export function CreateBlend({
           </Tooltip>
         </InputLabel>
         <Table
-          className="mb-4"
           defaultColDef={defaultColDef}
           domLayout="autoHeight"
           enableCellChangeFlash={true}
           enablePagination={false}
           errors={errors?.components}
           gridRef={grid}
+          pinnedBottomRowData={[{ rowType: 'total', substance: 'TOTAL' }]}
           rowData={null}
           suppressCellFocus={false}
           suppressLoadingOverlay={true}
@@ -261,38 +282,6 @@ export function CreateBlend({
                 options,
               },
               cellRenderer: (props: any) => {
-                if (props.data.rowType === 'control') {
-                  return (
-                    <Button
-                      className="w-full"
-                      variant="contained"
-                      onClick={() => {
-                        const row_id = `${newNodeIndex.current}`
-                        const newComponent = {
-                          component_name: '',
-                          percentage: 0,
-                          row_id,
-                          substance: null,
-                          substance_id: null,
-                        }
-                        setForm({
-                          ...prevForm.current,
-                          components: [...form.components, newComponent],
-                        })
-                        applyTransaction(props.api, {
-                          add: [newComponent],
-                        })
-                        const componentNode = grid.current.api.getRowNode(
-                          newComponent.row_id,
-                        )
-                        newNode.current = componentNode
-                        newNodeIndex.current = newNodeIndex.current + 1
-                      }}
-                    >
-                      + Add component
-                    </Button>
-                  )
-                }
                 return (
                   <AgCellRenderer
                     {...props}
@@ -347,6 +336,40 @@ export function CreateBlend({
               field: 'substance',
               flex: 1,
               headerClass: 'ag-text-left',
+              headerComponent: (props: { api: GridApi<any> }) => {
+                return (
+                  <span className="flex w-full items-center justify-between">
+                    <div>Substance</div>
+                    <Button
+                      className="rounded-lg border-[1.1px] border-solid border-primary px-2 py-1 text-xs"
+                      onClick={() => {
+                        const row_id = `${newNodeIndex.current}`
+                        const newComponent = {
+                          component_name: '',
+                          percentage: 0,
+                          row_id,
+                          substance: null,
+                          substance_id: null,
+                        }
+                        setForm({
+                          ...prevForm.current,
+                          components: [...form.components, newComponent],
+                        })
+                        applyTransaction(props.api, {
+                          add: [newComponent],
+                        })
+                        const componentNode = grid.current.api.getRowNode(
+                          newComponent.row_id,
+                        )
+                        newNode.current = componentNode
+                        newNodeIndex.current = newNodeIndex.current + 1
+                      }}
+                    >
+                      Add new
+                    </Button>
+                  </span>
+                )
+              },
               headerName: 'Substance',
               minWidth: 200,
               showRowError: true,
@@ -376,10 +399,6 @@ export function CreateBlend({
           getRowId={(props: any) => {
             return props.data.row_id
           }}
-          pinnedBottomRowData={[
-            { rowType: 'total', substance: 'TOTAL' },
-            { rowType: 'control' },
-          ]}
           onCellValueChanged={(event) => {
             const newComponents = form.components
             const index = findIndex(
@@ -437,7 +456,9 @@ export function CreateBlend({
         )}
         <Collapse in={isString(errors.components) && !!errors.components}>
           {isString(errors.components) && (
-            <Alert severity="error">{errors.components}</Alert>
+            <Alert icon={<IoAlertCircle />} severity="error">
+              {errors.components}
+            </Alert>
           )}
         </Collapse>
       </div>

@@ -11,7 +11,7 @@ import {
 } from '@ors/config/Table/columnsDef'
 import { NON_EDITABLE_ROWS } from '@ors/config/Table/columnsDef/settings'
 
-function useGridOptions(props: { adm_columns: any }) {
+function useGridOptions(props: { adm_columns: any; model: string }) {
   const { adm_columns } = props
 
   const mapAdmColumn = useCallback((column: any) => {
@@ -37,6 +37,8 @@ function useGridOptions(props: { adm_columns: any }) {
             field: `adm_${column.id}`,
           }),
       ...(colDefById[column.full_name] || {}),
+      cellClass: 'ag-text-center',
+      headerClass: 'ag-text-center',
     }
   }, [])
 
@@ -76,9 +78,11 @@ function useGridOptions(props: { adm_columns: any }) {
         },
         ...(adm_columns.length > 0 ? adm_columns.map(mapAdmColumn) : []),
         {
+          cellClass: 'ag-text-center',
           cellEditor: 'agTextCellEditor',
           field: 'remarks',
           flex: 1,
+          headerClass: 'ag-text-center',
           headerName: 'Remarks',
           ...colDefById['remarks'],
         },

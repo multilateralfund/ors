@@ -26,7 +26,7 @@ function getCellEditor(type: string) {
   }
 }
 
-function useGridOptions(props: { adm_columns: any }) {
+function useGridOptions(props: { adm_columns: any; model: string }) {
   const { adm_columns } = props
 
   const mapAdmColumn = useCallback((column: any) => {
@@ -49,6 +49,8 @@ function useGridOptions(props: { adm_columns: any }) {
             field: `adm_${column.id}`,
           }),
       ...(colDefById[column.full_name] || {}),
+      cellClass: 'ag-text-center',
+      headerClass: 'ag-text-center',
     }
   }, [])
 
@@ -79,6 +81,8 @@ function useGridOptions(props: { adm_columns: any }) {
           flex: 1,
           headerName: 'Remarks',
           ...colDefById['remarks'],
+          cellClass: 'ag-text-center',
+          headerClass: 'ag-text-center',
         },
       ],
       defaultColDef: {

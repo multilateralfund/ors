@@ -4,7 +4,7 @@ import { includes } from 'lodash'
 
 import { colDefById } from '@ors/config/Table/columnsDef'
 
-import { RowData } from './Create/Create'
+import { RowData } from './Create/types'
 
 const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
   ...colDefById,

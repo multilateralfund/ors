@@ -1,6 +1,10 @@
 import { CPReport } from '@ors/types/api_country-programme_records'
 import { EmptyFormType, EmptyFormUsageColumn } from '@ors/types/api_empty-form'
-import type { CPReportsSlice, Country } from '@ors/types/store'
+import type {
+  CPReportsSlice,
+  Country,
+  CreateSliceProps,
+} from '@ors/types/store'
 import { ReportVariant } from '@ors/types/variants'
 
 import { ColDef } from 'ag-grid-community'
@@ -17,7 +21,6 @@ import {
   getSlice,
   setSlice,
 } from '@ors/helpers/Store/Store'
-import { CreateSliceProps } from '@ors/store'
 
 export const variants: ReportVariant[] = [
   {
@@ -65,7 +68,6 @@ function mapUsage(
   view = true,
 ): ColDef {
   const children = usage.children || []
-  console.log(usage)
   return {
     id: usage.id,
     category: usage.columnCategory,
@@ -121,11 +123,13 @@ export const createCPReportsSlice = ({
         fetchEmptyForm,
         fetchVersions,
         setReportCountry,
+        setReportVariant,
       } = get().cp_reports
       // const {setSectionsCHecked} = get().cp_sections;
       await fetchArchivedReport(report_id)
       const report = getSlice<CPReport>('cp_reports.report.data')
       setReportCountry(report)
+      setReportVariant(report)
       // setSectionsCHecked(report.)
       fetchEmptyForm(report, view)
       if (view) {
@@ -152,11 +156,17 @@ export const createCPReportsSlice = ({
       })
     },
     fetchBundle: async (country_id, year, view = true) => {
-      const { fetchEmptyForm, fetchReport, fetchVersions, setReportCountry } =
-        get().cp_reports
+      const {
+        fetchEmptyForm,
+        fetchReport,
+        fetchVersions,
+        setReportCountry,
+        setReportVariant,
+      } = get().cp_reports
       await fetchReport(country_id, year)
       const report = getSlice<CPReport>('cp_reports.report.data')
       setReportCountry(report)
+      setReportVariant(report)
       fetchEmptyForm(report, view)
       fetchVersions(country_id, year)
     },
@@ -252,9 +262,15 @@ export const createCPReportsSlice = ({
     setReportCountry: (report) => {
       const countries = getSlice<Country[]>('common.countries_for_listing.data')
       const country = countries.filter(
-        (country) => country.id === report.country_id,
+        (country) => country.id === report?.country_id,
       )[0]
       setSlice('cp_reports.report.country', country)
+    },
+    setReportVariant: (report) => {
+      const variant = getVariant(report)
+      if (variant) {
+        setSlice('cp_reports.report.variant', variant)
+      }
     },
     substances: {
       ...defaultSliceData,

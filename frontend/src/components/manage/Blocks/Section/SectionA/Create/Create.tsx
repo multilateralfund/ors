@@ -8,31 +8,23 @@ import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, union } from 'lodash'
 
-import {
-  CPBaseForm,
-  PassedCPCreateTableProps,
-} from '@ors/components/manage/Blocks/CountryProgramme/CPCreate'
 import { NewAddSubstanceDropdowns } from '@ors/components/manage/Blocks/Section/SectionA/Create/NewAddSubstanceDropdowns'
 import { OldAddSubstanceDropdowns } from '@ors/components/manage/Blocks/Section/SectionA/Create/OldAddSubstanceDropdowns'
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
-import SectionA, { DeserializedDataA } from '@ors/models/SectionA'
+import SectionA from '@ors/models/SectionA'
 import { useStore } from '@ors/store'
 
+import {
+  CPBaseForm,
+  PassedCPCreateTableProps,
+} from '../../../CountryProgramme/typesCPCreate'
 import useGridOptions from './schema'
+import { RowData } from './types'
 
 import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
-
-export type RowData = DeserializedDataA & {
-  count?: number
-  display_name?: string
-  group?: string
-  row_id: string
-  rowType: string
-  tooltip?: boolean
-}
 
 function getRowData(data: SectionA['data']): RowData[] {
   let rowData: RowData[] = []
@@ -140,10 +132,7 @@ export default function SectionACreate(props: {
     const data: Array<any> = []
     each(substances, (substance) => {
       if (
-        !includes(
-          ['Annex C, Group II', 'Annex C, Group III'],
-          substance.group,
-        ) &&
+        includes(['Annex C, Group I'], substance.group) &&
         includes(substance.sections, 'A') &&
         !includes(substancesInForm, `substance_${substance.id}`)
       ) {

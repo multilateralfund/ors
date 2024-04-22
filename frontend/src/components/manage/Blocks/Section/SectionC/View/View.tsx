@@ -1,4 +1,4 @@
-import type { TableProps } from '@ors/components/manage/Blocks/CountryProgramme/CPView'
+import type { ITableProps } from '../../../CountryProgramme/typesCPView'
 import { CPReport } from '@ors/types/api_country-programme_records'
 import { ReportVariant } from '@ors/types/variants'
 
@@ -67,7 +67,7 @@ function getRowData(
 }
 
 export default function SectionCView(props: {
-  TableProps: TableProps & {
+  TableProps: ITableProps & {
     context: {
       section: SectionC['data']
       variant: ReportVariant
@@ -88,9 +88,11 @@ export default function SectionCView(props: {
 
   return (
     <>
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
+      {includes(['II', 'III'], variant.model) ? null : (
+        <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+          <Footnotes />
+        </Alert>
+      )}
       <div className="flex justify-end">
         <FormControlLabel
           label="Show only reported substances"

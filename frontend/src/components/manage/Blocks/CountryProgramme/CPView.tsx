@@ -2,10 +2,9 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
 import { Tab, Tabs, Tooltip, Typography } from '@mui/material'
-import { AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
 import { produce } from 'immer'
-import { filter, includes } from 'lodash'
+import { includes } from 'lodash'
 
 import CPComments from '@ors/components/manage/Blocks/CountryProgramme/CPComments'
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -14,31 +13,20 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
 import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
-import { formatApiUrl } from '@ors/helpers/Api/Api'
+import { formatApiUrl } from '@ors/helpers/Api/utils'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
-import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
 import { getSections } from '.'
 import Portal from '../../Utils/Portal'
 import { CPArchiveHeader, CPViewHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
+import { ITableProps } from './typesCPView'
 
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 import { IoClose, IoDownloadOutline, IoExpand } from 'react-icons/io5'
 
-export type TableProps = AgGridReactProps & {
-  Toolbar?: React.FC<any>
-  enableFullScreen?: boolean
-  errors?: any
-  fadeInOut?: boolean
-  headerDepth?: number
-  paginationPageSizeSelector?: Array<number>
-  rowsVisible?: number
-  withFluidEmptyColumn?: boolean
-}
-
-const TableProps: TableProps = {
+const TableProps: ITableProps = {
   Toolbar: ({
     archive,
     enterFullScreen,
@@ -187,13 +175,8 @@ function CPView(props: { archive?: boolean }) {
   const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
   const [renderedSections, setRenderedSections] = useState<number[]>([])
 
-  const variant = useMemo(() => {
-    if (!report.data) return null
-    return filter(variants, (variant) => {
-      const year = report.data!.year
-      return variant.minYear <= year && variant.maxYear >= year
-    })[0]
-  }, [report.data])
+  const variant = useMemo(() => report.variant, [report])
+
   const sections = useMemo(
     () => (variant ? getSections(variant, 'view') : []),
     [variant],

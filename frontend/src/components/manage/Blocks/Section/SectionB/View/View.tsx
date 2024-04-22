@@ -1,4 +1,4 @@
-import type { TableProps } from '../../../CountryProgramme/CPView'
+import type { ITableProps } from '../../../CountryProgramme/typesCPView'
 import { CPReport } from '@ors/types/api_country-programme_records'
 import { EmptyFormType } from '@ors/types/api_empty-form'
 import { ReportVariant } from '@ors/types/variants'
@@ -12,7 +12,6 @@ import { each, includes, union } from 'lodash'
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { DeserializedDataB } from '@ors/models/SectionB'
-import { getVariant } from '@ors/slices/createCPReportsSlice'
 
 import TableDataSelector, {
   useTableDataSelector,
@@ -38,8 +37,11 @@ export type RowData = DeserializedDataB & {
   tooltip?: boolean
 }
 
-function getRowData(report: CPReport, showOnlyReported: boolean): RowData[] {
-  const variant = getVariant(report)
+function getRowData(
+  report: CPReport,
+  variant: ReportVariant,
+  showOnlyReported: boolean,
+): RowData[] {
   let rowData: Array<any> = []
   const dataByGroup: Record<string, any> = {}
   const groups: Array<string> = []
@@ -97,7 +99,7 @@ function getPinnedRowData(rowData: any) {
 }
 
 export default function SectionBView(props: {
-  TableProps: TableProps
+  TableProps: ITableProps
   emptyForm: EmptyFormType
   report: CPReport
   variant: ReportVariant
@@ -114,7 +116,7 @@ export default function SectionBView(props: {
     useTableDataSelector(
       includes(['IV', 'V'], variant.model) ? 'sector' : 'all',
     )
-  const rowData = getRowData(report, showOnlyReported)
+  const rowData = getRowData(report, variant, showOnlyReported)
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
   const gridOptions = useMemo(() => {

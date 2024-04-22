@@ -17,6 +17,7 @@ function useGridOptions() {
         ...sectionColDefById['display_name'],
       },
       {
+        cellDataType: 'number',
         cellEditor: 'agNumberCellEditor',
         dataType: 'number',
         editable: true,
@@ -25,6 +26,7 @@ function useGridOptions() {
         ...sectionColDefById['all_uses'],
       },
       {
+        cellDataType: 'number',
         cellEditor: 'agNumberCellEditor',
         dataType: 'number',
         editable: true,
@@ -33,6 +35,7 @@ function useGridOptions() {
         ...sectionColDefById['feedstock'],
       },
       {
+        cellDataType: 'number',
         cellEditor: 'agNumberCellEditor',
         dataType: 'number',
         editable: true,

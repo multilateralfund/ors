@@ -85,6 +85,8 @@ const sectionColDefById: Record<string, ColDef> = {
   },
   remarks: {
     ...colDefById['remarks'],
+    cellClass: 'ag-text-center',
+    headerClass: 'ag-text-center',
     headerComponentParams: {
       footnote: {
         id: '4',

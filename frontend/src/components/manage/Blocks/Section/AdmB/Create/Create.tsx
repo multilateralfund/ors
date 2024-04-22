@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react'
 
-import {Alert, Typography} from '@mui/material'
+import { Alert, Typography } from '@mui/material'
 import cx from 'classnames'
 import { findIndex, groupBy, map } from 'lodash'
 
@@ -10,10 +10,15 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import useGridOptions from './schema'
 
 import { AiFillFilePdf } from 'react-icons/ai'
-import {IoClose, IoDownloadOutline, IoExpand, IoInformationCircleOutline} from 'react-icons/io5'
+import {
+  IoClose,
+  IoDownloadOutline,
+  IoExpand,
+  IoInformationCircleOutline,
+} from 'react-icons/io5'
 
 export default function AdmBCreate(props: any) {
-  const { TableProps, emptyForm, form, section, setForm } = props
+  const { TableProps, emptyForm, form, section, setForm, variant } = props
   const { columns = [], rows = [] } = emptyForm.adm_b || {}
   const grid = useRef<any>()
   const [initialRowData] = useState(() => {
@@ -30,6 +35,7 @@ export default function AdmBCreate(props: any) {
 
   const gridOptions = useGridOptions({
     adm_columns: columns,
+    model: variant.model,
   })
 
   return (
@@ -62,7 +68,7 @@ export default function AdmBCreate(props: any) {
                 'px-4': fullScreen && !print,
               })}
             >
-              <div className="flex gap-2 items-center justify-end">
+              <div className="flex items-center justify-end gap-2">
                 {!fullScreen && (
                   <Dropdown color="primary" label={<IoDownloadOutline />} icon>
                     <Dropdown.Item onClick={onPrint}>

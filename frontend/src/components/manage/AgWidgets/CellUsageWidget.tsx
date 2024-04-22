@@ -109,27 +109,27 @@ export const CellUsageWidget = memo(
         return (event.ctrlKey || event.metaKey) && event.key === 'a'
       }
 
-      const isCharNumeric = (charStr: string) => {
-        return !!/\d/.test(charStr)
-      }
+      // const isCharNumeric = (charStr: string) => {
+      //   return !!/\d/.test(charStr)
+      // }
 
-      const isCharTheFirstDecimal = (charStr: string, value: string) => {
-        return !!/\./.test(charStr) && !/\./.test(value)
-      }
+      // const isCharTheFirstDecimal = (charStr: string, value: string) => {
+      //   return !!/\./.test(charStr) && !/\./.test(value)
+      // }
 
-      const isNegativeNumber = (charStr: string, value: string) => {
-        return !!/\-/.test(charStr) && !value
-      }
+      // const isNegativeNumber = (charStr: string, value: string) => {
+      //   return !!/\-/.test(charStr) && !value
+      // }
 
-      const isNumericKey = (event: any) => {
-        const value = event.target.value
-        const charStr = event.key
-        return (
-          isCharNumeric(charStr) ||
-          isCharTheFirstDecimal(charStr, value) ||
-          isNegativeNumber(charStr, value)
-        )
-      }
+      // const isNumericKey = (event: any) => {
+      //   const value = event.target.value
+      //   const charStr = event.key
+      //   return (
+      //     isCharNumeric(charStr) ||
+      //     isCharTheFirstDecimal(charStr, value) ||
+      //     isNegativeNumber(charStr, value)
+      //   )
+      // }
 
       const finishedEditingPressed = (event: any) => {
         const key = event.key
@@ -140,10 +140,6 @@ export const CellUsageWidget = memo(
         if (isArrowKey(event) || isBackspace(event) || isSelectAll(event)) {
           event.stopPropagation()
           return
-        }
-
-        if (!finishedEditingPressed(event) && !isNumericKey(event)) {
-          if (event.preventDefault) event.preventDefault()
         }
 
         if (finishedEditingPressed(event)) {

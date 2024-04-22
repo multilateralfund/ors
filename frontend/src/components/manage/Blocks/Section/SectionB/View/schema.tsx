@@ -13,7 +13,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
   const { model, usages } = props
 
   const substanceColumn = useCallback(
-    (extra: ColDef) => ({
+    (extra?: ColDef) => ({
       ...sectionColDefById['display_name'],
       field: 'display_name',
       headerClass: 'ag-text-left',
@@ -28,7 +28,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
       autoHeight: true,
       cellClass: (props: CellClassParams) => {
         return cx({
-          'ag-text-right': !includes(['display_name'], props.colDef.field),
+          'ag-text-center': !includes(['display_name'], props.colDef.field),
         })
       },
       headerClass: 'ag-text-center',
@@ -45,7 +45,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
       {
         id: 'total_usages',
         category: 'usage',
-        cellClass: 'bg-yellow-50 text-right',
+        cellClass: 'bg-yellow-50 text-center',
         headerName: 'TOTAL',
         orsAggFunc: 'sumTotalUsages',
         ...sectionColDefById['total_usages'],
@@ -78,7 +78,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
           field: 'production',
           headerName: 'Production',
           orsAggFunc: 'sumTotal',
-          ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+          ...(standalone ? { flex: 1 } : { initialWidth: 100, maxWidth: 100 }),
         },
         ...(includes(['V'], model)
           ? [
@@ -88,7 +88,9 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
                 field: 'manufacturing_blends',
                 headerName: 'Manufacturing of Blends',
                 orsAggFunc: 'sumTotal',
-                ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+                ...(standalone
+                  ? { flex: 1 }
+                  : { initialWidth: 110, minWidth: 110 }),
               },
             ]
           : []),
@@ -108,13 +110,13 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
           ...sectionColDefById['banned_date'],
           dataType: 'date',
           field: 'banned_date',
-          ...(standalone ? { flex: 1 } : { flex: 1.2 }),
+          ...(standalone ? { flex: 1 } : { initialWidth: 110, maxWidth: 110 }),
         },
         {
           ...sectionColDefById['remarks'],
           field: 'remarks',
           headerName: 'Remarks',
-          ...(standalone ? { flex: 1 } : { flex: 1.2 }),
+          ...(standalone ? { flex: 1 } : { initialWidth: 80, maxWidth: 80 }),
         },
       ]
     },
@@ -124,7 +126,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
   const gridOptionsAll: GridOptions = useMemo(() => {
     return {
       columnDefs: [
-        substanceColumn({ initialWidth: 430 }),
+        substanceColumn(),
         ...(usages.length
           ? [
               {
@@ -149,17 +151,14 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
 
   const gridOptionsBySubstanceTrade: GridOptions = useMemo(() => {
     return {
-      columnDefs: [
-        substanceColumn({ initialWidth: 430 }),
-        ...bySubstanceTrade(true),
-      ],
+      columnDefs: [substanceColumn(), ...bySubstanceTrade(true)],
       defaultColDef: defaultSectionColDef,
     }
   }, [bySubstanceTrade, substanceColumn, defaultSectionColDef])
 
   const gridOptionsBySector: GridOptions = useMemo(() => {
     return {
-      columnDefs: [substanceColumn({ initialWidth: 430 }), ...bySector],
+      columnDefs: [substanceColumn(), ...bySector],
       defaultColDef: defaultSectionColDef,
     }
   }, [bySector, substanceColumn, defaultSectionColDef])

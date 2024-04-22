@@ -748,7 +748,7 @@ function YearSection(props: SectionProps) {
   )
 }
 
-export const sections = [
+const sections = [
   {
     id: 'section-country',
     component: CountrySection,

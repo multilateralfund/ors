@@ -1,14 +1,28 @@
+import type { CPReport } from './api_country-programme_records'
 import type { EmptyFormType } from './api_empty-form'
+import type { ApiSubstance } from './api_substances'
 import type { Language } from '@ors/types/locales'
 import type { DataType, SliceData } from '@ors/types/primitives'
 import type { PartialDeep } from 'type-fest'
 
-import { CPReport } from './api_country-programme_records'
-import { ApiSubstance } from './api_substances'
+import { StoreApi } from 'zustand'
+
+import { ReportVariant } from './variants'
+type StoreProviderProps = {
+  children: React.ReactNode
+  initialState: InitialStoreState
+}
+
+export type CreateSliceProps = {
+  initialState: InitialStoreState
+  get: StoreApi<StoreState>['getState']
+  set: StoreApi<StoreState>['setState']
+}
 
 type Report = SliceData<CPReport | null, Record<string, any> | null> & {
   country?: Country
   emptyForm: SliceData<EmptyFormType, Record<string, any> | null>
+  variant?: ReportVariant
   versions: SliceData<CPVersionInfo[]>
 }
 
@@ -39,6 +53,7 @@ export interface CPReportsSlice {
   report: Report
   setReport: (report: Partial<Report>) => void
   setReportCountry: (report: CPReport) => void
+  setReportVariant: (report: CPReport) => void
   substances: SliceData<ApiSubstance[]>
 }
 
@@ -100,10 +115,11 @@ export interface CommonSlice {
 }
 
 export interface CPHistoryItem {
-  created_at: string;
-  event_description: string;
-  id: number;
-  updated_by_username: string;
+  created_at: string
+  event_description: string
+  id: number
+  report_version: number
+  updated_by_username: string
 }
 
 // Store state
@@ -144,7 +160,6 @@ export type CPVersionInfo = {
   country_id: number
   created_at: string
   final_version_id: number
-  history: CPHistoryItem[];
   id: number
   name: string
   status: string

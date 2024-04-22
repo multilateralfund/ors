@@ -1,4 +1,4 @@
-import { defaultColGroupDef } from '@ors/config/Table/columnsDef'
+import defaultColGroupDef from '@ors/config/Table/columnsDef/defaultColGroupDef'
 
 export default function getUsagesColDef() {
   return {
@@ -8,16 +8,34 @@ export default function getUsagesColDef() {
     'Aerosol I': {
       flex: 0.5,
     },
+    'Aerosol IV': {
+      flex: 0.5,
+    },
+    'Aerosol V': {
+      flex: 0.5,
+    },
     'Fire fighting': {
       initialWidth: 86,
     },
     'Fire fighting I': {
       flex: 0.7,
     },
+    'Fire fighting IV': {
+      flex: 0.5,
+    },
+    'Fire fighting V': {
+      flex: 0.5,
+    },
     Foam: {
       initialWidth: 84,
     },
     'Foam I': {
+      flex: 0.5,
+    },
+    'Foam IV': {
+      flex: 0.5,
+    },
+    'Foam V': {
       flex: 0.5,
     },
     'Fumigation I': {
@@ -65,6 +83,12 @@ export default function getUsagesColDef() {
       },
       initialWidth: 84,
     },
+    'Other IV': {
+      flex: 0.5,
+    },
+    'Other V': {
+      flex: 0.5,
+    },
     'Process agent': {
       initialWidth: 132,
     },
@@ -105,7 +129,6 @@ export default function getUsagesColDef() {
       flex: 1,
     },
     'Refrigeration Manufacturing Other V': {
-      flex: 2,
       headerComponentParams: {
         footnote: {
           id: '5',
@@ -115,7 +138,9 @@ export default function getUsagesColDef() {
           order: 5,
         },
       },
-      initialWidth: 120,
+      initialWidth: 150,
+      maxWidth: 150,
+      minWidth: 150,
     },
     'Refrigeration Manufacturing Refrigeration': {
       initialWidth: 100,

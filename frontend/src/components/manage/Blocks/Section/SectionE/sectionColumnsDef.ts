@@ -2,7 +2,7 @@ import { ColDef, ColGroupDef } from 'ag-grid-community'
 
 import { colDefById, defaultColGroupDef } from '@ors/config/Table/columnsDef'
 
-const VOLUNTARY_CLASS = 'bg-gray-200 theme-dark:bg-gray-900/40'
+const VOLUNTARY_CLASS = 'bg-gray-200 theme-dark:bg-gray-900/40 ag-text-center'
 
 const sectionColDefById: Record<string, ColDef> = {
   ...colDefById,
@@ -61,6 +61,15 @@ const sectionColDefById: Record<string, ColDef> = {
         order: 3,
       },
     },
+  },
+  generated_emissions: {
+    cellClass: 'ag-text-center',
+    headerClass: 'ag-text-center',
+  },
+  remarks: {
+    ...colDefById['remarks'],
+    cellClass: 'ag-text-center',
+    headerClass: 'ag-text-center',
   },
   total_amount_generated: {
     ...colDefById['total_amount_generated'],

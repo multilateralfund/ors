@@ -10,39 +10,24 @@ import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, sortBy, union, uniqBy } from 'lodash'
 import { useSnackbar } from 'notistack'
 
-import {
-  CPBaseForm,
-  PassedCPCreateTableProps,
-} from '@ors/components/manage/Blocks/CountryProgramme/CPCreate'
 import { NewChemicalModal } from '@ors/components/manage/Blocks/Section/SectionB/Create/NewChemicalModal'
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
-import SectionB, { DeserializedDataB } from '@ors/models/SectionB'
+import SectionB from '@ors/models/SectionB'
 import { useStore } from '@ors/store'
 
+import {
+  CPBaseForm,
+  PassedCPCreateTableProps,
+} from '../../../CountryProgramme/typesCPCreate'
 import { CreateBlend } from './CreateBlend'
 import useGridOptions from './schema'
+import { PinnedBottomRowData, RowData } from './types'
 
 import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
-
-export type RowData = DeserializedDataB & {
-  count?: number
-  display_name?: string
-  group?: string
-  row_id: string
-  rowType: string
-  tooltip?: boolean
-}
-
-export type PinnedBottomRowData = {
-  display_name?: string
-  row_id?: string
-  rowType: string
-  tooltip?: boolean
-}
 
 function getRowData(data: SectionB['data'], variant: ReportVariant): RowData[] {
   let rowData: RowData[] = []
@@ -169,11 +154,13 @@ export default function SectionBCreate(props: {
     return form.section_b.map((chemical: any) => chemical.row_id)
   }, [form.section_b])
 
+  // Options for formats <2023 (section B is only in >=2019 formats)
   const oldChemicalOptions = useMemo(() => {
     const data: Array<any> = []
     each(substances, (substance) => {
       if (
         includes(substance.sections, 'B') &&
+        !includes(['Annex F'], substance.group) &&
         !includes(chemicalsInForm, `substance_${substance.id}`)
       ) {
         data.push(Section.transformApiSubstance(substance))
@@ -190,6 +177,7 @@ export default function SectionBCreate(props: {
     return data
   }, [substances, blends, createdBlends, chemicalsInForm, Section])
 
+  // Options for formats >=2023
   const mandatoryChemicals = useMemo(() => {
     const data: Array<any> = []
 
@@ -241,7 +229,13 @@ export default function SectionBCreate(props: {
     )
 
     return data
-  }, [Section, blends, chemicalsInForm, createdBlends, emptyForm.substance_rows.section_b])
+  }, [
+    Section,
+    blends,
+    chemicalsInForm,
+    createdBlends,
+    emptyForm.substance_rows.section_b,
+  ])
 
   const gridOptions = useGridOptions({
     model: variant.model,

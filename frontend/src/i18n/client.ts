@@ -14,7 +14,8 @@ import i18next from 'i18next'
 import ICU from 'i18next-icu'
 import resourcesToBackend from 'i18next-resources-to-backend'
 
-import { store, useStore } from '@ors/store'
+import { store } from '@ors/_store'
+import { useStore } from '@ors/store'
 
 import { getLocale, getOptions, languages } from './settings'
 

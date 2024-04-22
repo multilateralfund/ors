@@ -1,0 +1,104 @@
+import pytest
+from django.urls import reverse
+from rest_framework.test import APIClient
+
+from core.models.country_programme import CPHistory, CPReport
+
+pytestmark = pytest.mark.django_db
+
+
+@pytest.fixture(name="_setup_new_cp_report_create")
+def setup_new_cp_report_create(country_ro):
+    return {
+        "country_id": country_ro.id,
+        "name": "Romania2023",
+        "year": 2023,
+        "status": CPReport.CPReportStatus.DRAFT,
+        "section_a": [],
+        "section_b": [],
+        "section_c": [],
+        "section_d": [],
+        "section_e": [],
+        "section_f": {},
+    }
+
+
+class TestCPHistory:
+    client = APIClient()
+
+    def test_create_history(self, user, second_user, _setup_new_cp_report_create):
+        VALIDATION_LIST = [
+            ("created by user", 5, 1, user.username),
+            ("comments updated", 4, 1, user.username),
+            ("updated by user", 3, 1, second_user.username),
+            ("status changed", 2, 1, second_user.username),
+            ("comments updated", 1, 1, second_user.username),
+            ("updated by user", 0, 2, second_user.username),
+        ]
+
+        # create new cp report
+        self.client.force_authenticate(user=user)
+        url = reverse("country-programme-reports")
+        response = self.client.post(url, _setup_new_cp_report_create, format="json")
+        assert response.status_code == 201
+        cp_report_id = response.data["id"]
+
+        # add comment
+        url = reverse("country-programme-report-comments", kwargs={"id": cp_report_id})
+        response = self.client.post(
+            url,
+            {"comment_secretariat": "Test comment"},
+            format="json",
+        )
+        assert response.status_code == 201
+
+        # update cp report ( 2 history record = update status + update report)
+        self.client.force_authenticate(user=second_user)
+        url = reverse("country-programme-reports") + f"{cp_report_id}/"
+        data = _setup_new_cp_report_create
+        data["name"] = "Test update"
+        data["status"] = CPReport.CPReportStatus.FINAL
+
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 200
+        new_id = response.data["id"]
+
+        # add other comment
+        url = reverse("country-programme-report-comments", kwargs={"id": new_id})
+        response = self.client.post(
+            url,
+            {"comment_secretariat": "Test comment 2"},
+            format="json",
+        )
+        assert response.status_code == 201
+
+        # update again as final
+        data["name"] = "Test update2"
+        url = reverse("country-programme-reports") + f"{new_id}/"
+
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 200
+        new_id = response.data["id"]
+
+        # check 6 history objects created
+        history = CPHistory.objects.filter(country_programme_report_id=new_id)
+        assert history.count() == len(VALIDATION_LIST)
+
+        for valid_string, i, version, req_user in VALIDATION_LIST:
+            assert history[i].updated_by.username == req_user
+            assert valid_string in history[i].event_description.lower()
+            assert history[i].report_version == version
+
+        # check history in API response
+        url = reverse("country-programme-record-list")
+        response = self.client.get(url, {"cp_report_id": new_id})
+        assert response.status_code == 200
+
+        # check same history items in get records
+        history = response.data["history"]
+        assert len(history) == len(VALIDATION_LIST)
+
+        for valid_string, i, version, req_user in VALIDATION_LIST:
+            assert history[i]["updated_by_username"] == req_user
+            assert valid_string in history[i]["event_description"].lower()
+            assert history[i]["report_version"] == version

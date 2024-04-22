@@ -55,7 +55,7 @@ const ReportInfoView = (props: any) => {
           <p className="m-0 text-2xl font-normal">File attachments</p>
           <div className="flex flex-col gap-3">
             {files.length === 0 ? (
-              <p className="text-lg font-normal text-gray-500 m-1">
+              <p className="m-1 text-lg font-normal text-gray-500">
                 No files available
               </p>
             ) : (
@@ -71,7 +71,7 @@ const ReportInfoView = (props: any) => {
       </div>
 
       <div className="flex flex-col rounded-lg bg-gray-100 p-4">
-        <ReportStatus sectionsChecked={sectionsChecked} />
+        <ReportStatus report={report} sectionsChecked={sectionsChecked} />
         <ReportHistory />
       </div>
     </section>
