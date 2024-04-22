@@ -132,10 +132,7 @@ export default function SectionACreate(props: {
     const data: Array<any> = []
     each(substances, (substance) => {
       if (
-        !includes(
-          ['Annex C, Group II', 'Annex C, Group III'],
-          substance.group,
-        ) &&
+        includes(['Annex C, Group I'], substance.group) &&
         includes(substance.sections, 'A') &&
         !includes(substancesInForm, `substance_${substance.id}`)
       ) {
