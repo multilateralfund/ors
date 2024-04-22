@@ -172,17 +172,6 @@ class AbstractCPEmission(models.Model):
         abstract = True
 
 
-class AbstractCPFile(models.Model):
-    def upload_path(self, filename):
-        pass
-
-    filename = models.CharField(max_length=100)
-    file = models.FileField(upload_to=upload_path)
-
-    class Meta:
-        abstract = True
-
-
 class AbstractCPHistory(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True, help_text="Date of creation of the event"

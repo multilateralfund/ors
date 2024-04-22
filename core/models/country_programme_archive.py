@@ -2,7 +2,6 @@ from django.conf import settings
 from django.db import models
 from core.models.base_country_programme import (
     AbstractCPEmission,
-    AbstractCPFile,
     AbstractCPGeneration,
     AbstractCPHistory,
     AbstractCPPrices,
@@ -110,25 +109,6 @@ class CPEmissionArchive(AbstractCPEmission):
     def __str__(self):
         cp_report = self.country_programme_report
         return f"{cp_report.name} (v{cp_report.version})"
-
-
-class CPFileArchive(AbstractCPFile):
-    def upload_path(self, filename):
-        country_name = self.country_programme_report.country.name
-        return f"{country_name}/{filename}"
-
-    country_programme_report = models.ForeignKey(
-        CPReportArchive, on_delete=models.CASCADE, related_name="cpfiles"
-    )
-
-    class Meta:
-        verbose_name = "CP file archive"
-        verbose_name_plural = "CP files archive"
-        db_table = "cp_file_archive"
-
-    def __str__(self):
-        cp_report = self.country_programme_report
-        return f"{cp_report.name} (v{cp_report.version}) {self.filename}"
 
 
 class CPHistoryArchive(AbstractCPHistory):

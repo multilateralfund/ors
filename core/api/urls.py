@@ -18,7 +18,6 @@ from core.api.views.chemicals import (
     SubstancesListView,
 )
 from core.api.views.cp_archive import (
-    CPFilesArchiveView,
     CPRecordArchiveExportView,
     CPRecordArchivePrintView,
     CPRecordsArchiveListView,
@@ -185,11 +184,6 @@ urlpatterns = [
         "country-programme/files/",
         CPFilesView.as_view(),
         name="country-programme-files",
-    ),
-    path(
-        "country-programme-archive/files/",
-        CPFilesArchiveView.as_view(),
-        name="country-programme-archive-files",
     ),
     path(
         "country-programme-archive/records/",

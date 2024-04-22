@@ -39,7 +39,6 @@ class CPReportAdmin(admin.ModelAdmin):
             "cpgenerations",
             "cpemissions",
             "cphistory",
-            "cpfiles",
         ]
         return get_final_display_list(CPReport, exclude)
 

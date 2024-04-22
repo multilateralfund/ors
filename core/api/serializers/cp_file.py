@@ -1,40 +1,20 @@
 from rest_framework import serializers
-from core.models.country_programme import CPFile, CPReport
-from core.models.country_programme_archive import CPFileArchive, CPReportArchive
+from core.models.country import Country
+from core.models.country_programme import CPFile
 
 
-class CPFileBaseSerializer(serializers.ModelSerializer):
-    country_programme_report_version = serializers.FloatField(
-        source="country_programme_report.version"
+class CPFileSerializer(serializers.ModelSerializer):
+    country_id = serializers.PrimaryKeyRelatedField(
+        required=True,
+        queryset=Country.objects.all().values_list("id", flat=True),
     )
 
     class Meta:
+        model = CPFile
         fields = [
             "id",
-            "country_programme_report_id",
-            "country_programme_report_version",
+            "country_id",
+            "year",
             "filename",
             "file",
         ]
-
-
-class CPFileSerializer(CPFileBaseSerializer):
-    country_programme_report_id = serializers.PrimaryKeyRelatedField(
-        required=False,
-        queryset=CPReport.objects.all().values_list("id", flat=True),
-        write_only=True,
-    )
-
-    class Meta(CPFileBaseSerializer.Meta):
-        model = CPFile
-
-
-class CPFileArchiveSerializer(CPFileBaseSerializer):
-    country_programme_report_id = serializers.PrimaryKeyRelatedField(
-        required=False,
-        queryset=CPReportArchive.objects.all().values_list("id", flat=True),
-        write_only=True,
-    )
-
-    class Meta(CPFileBaseSerializer.Meta):
-        model = CPFileArchive
