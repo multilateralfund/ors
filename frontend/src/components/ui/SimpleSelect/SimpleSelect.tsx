@@ -1,9 +1,7 @@
 import { useState } from 'react'
 
 import cx from 'classnames'
-import { AnimatePresence } from 'framer-motion'
 
-import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import { robotoCondensed } from '@ors/themes/fonts'
 
 import { IoChevronDownCircle } from 'react-icons/io5'
@@ -55,31 +53,33 @@ const SimpleSelect = ({
           <div>{options[selectedIndex].label}</div>
           <IoChevronDownCircle className="text-xl" />
         </div>
-        <AnimatePresence>
-          {showMenu && (
-            <FadeInOut>
-              <div className="absolute right-0 z-10 mt-1 flex flex-col rounded-lg bg-white font-light shadow-xl">
-                {options.map((option, index) => {
-                  return (
-                    <div
-                      key={option.label}
-                      className={cx(
-                        'cursor-pointer text-nowrap border border-l-0 border-r-0 border-t-0 border-solid border-b-primary px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0',
-                        {
-                          'bg-mlfs-hlYellowTint': index == selectedIndex,
-                          'hover:bg-gray-200': index != selectedIndex,
-                        },
-                      )}
-                      onClick={handleClickOption(index)}
-                    >
-                      {option.label}
-                    </div>
-                  )
-                })}
-              </div>
-            </FadeInOut>
+        <div
+          className={cx(
+            'absolute right-0 z-10 mt-1 flex origin-top flex-col rounded-lg bg-white font-light opacity-0 shadow-xl transition-all',
+            {
+              'collapse scale-y-0': !showMenu,
+              'scale-y-100 opacity-100': showMenu,
+            },
           )}
-        </AnimatePresence>
+        >
+          {options.map((option, index) => {
+            return (
+              <div
+                key={option.label}
+                className={cx(
+                  'cursor-pointer text-nowrap border border-l-0 border-r-0 border-t-0 border-solid border-b-primary px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0',
+                  {
+                    'bg-mlfs-hlYellowTint': index == selectedIndex,
+                    'hover:bg-gray-200': index != selectedIndex,
+                  },
+                )}
+                onClick={handleClickOption(index)}
+              >
+                {option.label}
+              </div>
+            )
+          })}
+        </div>
       </div>
     </div>
   )
