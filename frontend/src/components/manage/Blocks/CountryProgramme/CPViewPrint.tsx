@@ -2,13 +2,11 @@
 import { useEffect, useMemo } from 'react'
 
 import { Typography } from '@mui/material'
-import { filter } from 'lodash'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
-import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
 import { getSections } from '.'
@@ -42,13 +40,7 @@ export default function CPViewPrint(props: { iso3: string; year: number }) {
   const { fetchBundle, report, setReport } = useStore(
     (state) => state.cp_reports,
   )
-  const variant = useMemo(() => {
-    if (!report.data) return null
-    return filter(variants, (variant) => {
-      const year = report.data!.year
-      return variant.minYear <= year && variant.maxYear >= year
-    })[0]
-  }, [report.data])
+  const variant = useMemo(() => report.variant, [report])
   const sections = useMemo(
     () => (variant ? getSections(variant, 'view') : []),
     [variant],

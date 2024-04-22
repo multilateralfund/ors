@@ -12,7 +12,6 @@ import { each, includes, union } from 'lodash'
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { DeserializedDataB } from '@ors/models/SectionB'
-import { getVariant } from '@ors/slices/createCPReportsSlice'
 
 import TableDataSelector, {
   useTableDataSelector,
@@ -38,8 +37,11 @@ export type RowData = DeserializedDataB & {
   tooltip?: boolean
 }
 
-function getRowData(report: CPReport, showOnlyReported: boolean): RowData[] {
-  const variant = getVariant(report)
+function getRowData(
+  report: CPReport,
+  variant: ReportVariant,
+  showOnlyReported: boolean,
+): RowData[] {
   let rowData: Array<any> = []
   const dataByGroup: Record<string, any> = {}
   const groups: Array<string> = []
@@ -114,7 +116,7 @@ export default function SectionBView(props: {
     useTableDataSelector(
       includes(['IV', 'V'], variant.model) ? 'sector' : 'all',
     )
-  const rowData = getRowData(report, showOnlyReported)
+  const rowData = getRowData(report, variant, showOnlyReported)
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
   const gridOptions = useMemo(() => {

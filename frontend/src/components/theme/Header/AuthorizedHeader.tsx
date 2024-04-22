@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 
-import { Box } from '@mui/material'
 import { AnimatePresence } from 'framer-motion'
 import { isFunction } from 'lodash'
 
