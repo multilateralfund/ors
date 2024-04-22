@@ -19,7 +19,13 @@ class AdmColumnAdmin(admin.ModelAdmin):
     list_filter = ["section"]
 
     def get_list_display(self, request):
-        exclude = ["admrecord", "admrecordarchive", "children", "admemptyimmutablecell"]
+        exclude = [
+            "admrecord",
+            "admrecordarchive",
+            "children",
+            "admemptyimmutablecell",
+            "immutable_cells",
+        ]
         return get_final_display_list(AdmColumn, exclude)
 
 

@@ -445,7 +445,8 @@ def setup_new_cp_report(cp_report_2019, blend, substance, time_frames, groupA):
     )  # inf
 
     blend2inform = BlendFactory.create(name="blend2inform")  # 211
-    blend3noform = BlendFactory.create(name="blend2noform")  # inf
+    blend3noform = BlendFactory.create(name="blend2noform", sort_order=234)  # inf, 234
+    blend4noform = BlendFactory.create(name="AddedByUser", sort_order=None)  # inf, inf
 
     for i, subst in enumerate([substance, substAinform, substBinform]):
         for sect in ["A", "C"]:
@@ -487,7 +488,7 @@ def setup_new_cp_report(cp_report_2019, blend, substance, time_frames, groupA):
         CPRecordFactory.create(
             country_programme_report=cp_report_2019, section="B", substance=subst
         )
-    for ble in [blend3noform, blend]:
+    for ble in [blend3noform, blend4noform, blend]:
         cp_rec = CPRecordFactory.create(
             country_programme_report=cp_report_2019, section="B", blend=ble
         )
@@ -498,7 +499,7 @@ def setup_new_cp_report(cp_report_2019, blend, substance, time_frames, groupA):
 
     # section C (prices)
     for cp_report in [cp_report_2019, prev_report]:
-        for ble in [blend, blend3noform]:
+        for ble in [blend, blend3noform, blend4noform]:
             CPPricesFactory.create(
                 country_programme_report=cp_report,
                 blend=ble,

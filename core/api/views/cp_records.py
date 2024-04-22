@@ -168,7 +168,7 @@ class CPRecordBaseListView(views.APIView):
                     else (
                         "zzzaaa",
                         getattr(x, "sort_order", float("inf")),
-                        x.blend.sort_order,
+                        x.blend.sort_order or float("inf"),
                         x.blend.name,
                     )
                 )
@@ -235,7 +235,7 @@ class CPRecordBaseListView(views.APIView):
                 else (
                     "zzzAAA",
                     getattr(x, "sort_order", float("inf")),
-                    x.blend.sort_order,
+                    x.blend.sort_order or float("inf"),
                     x.blend.name,
                 )
             )
