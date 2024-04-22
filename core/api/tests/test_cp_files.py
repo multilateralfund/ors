@@ -50,13 +50,7 @@ class TestCPFiles:
         assert response.status_code == 201
 
         # check upload (GET)
-        response = self.client.get(
-            self.url,
-            {
-                "country_id": country_id,
-                "year": year,
-            },
-        )
+        response = self.client.get(self.url, params)
         assert response.status_code == 200
         assert response.data[0]["country_id"] == country_id
         assert response.data[0]["year"] == year
@@ -65,23 +59,13 @@ class TestCPFiles:
         file_id = response.data[0]["id"]
 
         # delete file (DELETE)
-        params = {
-            "country_id": country_id,
-            "year": year,
-        }
         data = {
             "file_ids": [file_id],
         }
-        response = self.client.delete(self.url, params=params, json=data)
+        response = self.client.delete(self.url, params=params, data=data)
         assert response.status_code == 204
 
         # check delete (GET)
-        response = self.client.get(
-            self.url,
-            {
-                "country_id": country_id,
-                "year": year,
-            },
-        )
+        response = self.client.get(self.url, params)
         assert response.status_code == 200
         assert response.data == []

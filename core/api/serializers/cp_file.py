@@ -15,6 +15,7 @@ class CPFileSerializer(serializers.ModelSerializer):
             "id",
             "country_id",
             "year",
+            "uploaded_at",
             "filename",
             "file",
         ]

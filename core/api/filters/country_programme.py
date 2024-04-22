@@ -2,7 +2,7 @@ from django_filters import rest_framework as filters
 from django_filters.widgets import CSVWidget
 
 from core.models import Country
-from core.models.country_programme import CPPrices, CPReport
+from core.models.country_programme import CPFile, CPPrices, CPReport
 from core.models.country_programme_archive import CPReportArchive
 
 
@@ -55,4 +55,21 @@ class CPPricesFilter(filters.FilterSet):
 
     class Meta:
         model = CPPrices
+        fields = ["country_id", "year"]
+
+
+class CPFileFilter(filters.FilterSet):
+    """
+    Filter for CP Files
+    """
+
+    country_id = filters.ModelChoiceFilter(
+        required=True,
+        queryset=Country.objects.all(),
+        field_name="country_id",
+    )
+    year = filters.NumberFilter(required=True, field_name="year")
+
+    class Meta:
+        model = CPFile
         fields = ["country_id", "year"]

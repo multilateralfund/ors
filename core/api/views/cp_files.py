@@ -2,6 +2,7 @@ from django.core.exceptions import PermissionDenied
 from rest_framework import generics, status
 from rest_framework.response import Response
 
+from core.api.filters.country_programme import CPFileFilter
 from core.api.permissions import IsUserAllowedCP
 from core.api.serializers.cp_file import CPFileSerializer
 from core.models.country_programme import CPFile
@@ -13,27 +14,23 @@ class CPFilesView(generics.GenericAPIView):
     """
 
     permission_classes = [IsUserAllowedCP]
+    queryset = CPFile.objects.select_related("country")
     serializer_class = CPFileSerializer
+    filterset_class = CPFileFilter
 
-    def get_queryset(self):
+    def _check_country_user(self):
         user = self.request.user
-        queryset = CPFile.objects.select_related("country")
-        if user.user_type == user.UserType.COUNTRY_USER:
-            queryset = queryset.filter(country=user.country)
-        return queryset
-
-    def get(self, request, *args, **kwargs):
-        user = self.request.user
-        country_id = request.query_params.get("country_id")
-        year = request.query_params.get("year")
+        country_id = self.request.query_params.get("country_id")
         if (
             user.user_type == user.UserType.COUNTRY_USER
             and user.country_id != country_id
         ):
             raise PermissionDenied("Country user not allowed")
 
+    def get(self, request, *args, **kwargs):
+        self._check_country_user()
+
         queryset = self.filter_queryset(self.get_queryset())
-        cp_files = queryset.filter(country_id=country_id, year=year)
         serializer = self.get_serializer(cp_files, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -41,6 +38,7 @@ class CPFilesView(generics.GenericAPIView):
     def _files_create(self, request, *args, **kwargs):
         country_id = request.query_params.get("country_id")
         year = request.query_params.get("year")
+        self._check_country_user()
 
         files_data = request.data.get("files", [])
         for file_data in files_data:
@@ -60,8 +58,7 @@ class CPFilesView(generics.GenericAPIView):
         return self._files_create(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
-        country_id = request.query_params.get("country_id")
-        year = request.query_params.get("year")
+        self._check_country_user()
 
         file_ids = request.data.get("file_ids", [])
         queryset = self.filter_queryset(self.get_queryset())
