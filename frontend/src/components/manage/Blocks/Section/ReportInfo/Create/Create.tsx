@@ -185,6 +185,7 @@ const ReportInfoCreate = (props: any) => {
         <ReportStatus
           isCreate={isCreate}
           isEdit={isEdit}
+          report={report}
           sectionsChecked={sectionsChecked}
           onSectionCheckChange={onSectionCheckChange}
         />
