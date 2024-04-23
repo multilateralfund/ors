@@ -228,7 +228,12 @@ function CPEdit() {
         .filter((row) => row.id !== 0)
         .map((row) => ({ ...row, mandatory: false }))
       : Sections.section_b.getData(),
-    section_c: Sections.section_c.getData(),
+    section_c: includes(['V'], variant?.model)
+      ? Sections.section_c
+        .getData()
+        .filter((row) => row.id !== 0)
+        .map((row) => ({ ...row, mandatory: false }))
+      : Sections.section_c.getData(),
     section_d: Sections.section_d.getData(),
     section_e: Sections.section_e.getData(),
     section_f: Sections.section_f.getData(),
