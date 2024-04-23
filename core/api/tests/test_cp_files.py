@@ -31,10 +31,8 @@ class TestCPFiles:
 
     def test_file_upload_wrong_extension(self, user, country_ro, wrong_test_file):
         self.client.force_authenticate(user=user)
-        country_id = country_ro.id
-        year = 2023
         base_url = reverse("country-programme-files")
-        params = f"?country_id={country_ro.id}&year={year}"
+        params = f"?country_id={country_ro.id}&year=2023"
         url = base_url + params
 
         # upload file with wrong extension
@@ -45,10 +43,8 @@ class TestCPFiles:
 
     def test_file_upload_duplicate(self, user, country_ro, test_file):
         self.client.force_authenticate(user=user)
-        country_id = country_ro.id
-        year = 2023
         base_url = reverse("country-programme-files")
-        params = f"?country_id={country_ro.id}&year={year}"
+        params = f"?country_id={country_ro.id}&year=2023"
         url = base_url + params
 
         # upload file
@@ -66,7 +62,7 @@ class TestCPFiles:
         country_id = country_ro.id
         year = 2023
         base_url = reverse("country-programme-files")
-        params = f"?country_id={country_ro.id}&year={year}"
+        params = f"?country_id={country_id}&year={year}"
         url = base_url + params
 
         # upload file (POST)
