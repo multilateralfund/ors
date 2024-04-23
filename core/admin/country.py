@@ -24,5 +24,6 @@ class CountryAdmin(admin.ModelAdmin):
             "cpreportarchive",
             "country",
             "user",
+            "cpfiles",
         ]
         return get_final_display_list(Country, exclude)

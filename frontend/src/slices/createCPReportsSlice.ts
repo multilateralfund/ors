@@ -119,6 +119,7 @@ export const createCPReportsSlice = ({
     },
     fetchArchivedBundle: async (report_id, view = true) => {
       const {
+        fetchArchivedFiles,
         fetchArchivedReport,
         fetchEmptyForm,
         fetchVersions,
@@ -134,7 +135,23 @@ export const createCPReportsSlice = ({
       fetchEmptyForm(report, view)
       if (view) {
         fetchVersions(report.country_id, report.year)
+        fetchArchivedFiles(report.country_id)
       }
+    },
+    fetchArchivedFiles: async (report_id) => {
+      const options = {
+        removeCacheTimeout: 60,
+        withStoreCache: true,
+      }
+      const filesPath = `api/country-programme-archive/files/?cp_report_id=${report_id}`
+
+      return await fetchSliceData({
+        apiSettings: {
+          options,
+          path: filesPath,
+        },
+        slice: 'cp_reports.report.files',
+      })
     },
     fetchArchivedReport: async (report_id) => {
       const options = {
@@ -158,6 +175,7 @@ export const createCPReportsSlice = ({
     fetchBundle: async (country_id, year, view = true) => {
       const {
         fetchEmptyForm,
+        fetchFiles,
         fetchReport,
         fetchVersions,
         setReportCountry,
@@ -169,6 +187,7 @@ export const createCPReportsSlice = ({
       setReportVariant(report)
       fetchEmptyForm(report, view)
       fetchVersions(country_id, year)
+      fetchFiles(country_id, year)
     },
     fetchEmptyForm: async (report = null, view = true) => {
       const variant = getVariant(report)
@@ -208,6 +227,23 @@ export const createCPReportsSlice = ({
           }
         },
         slice: 'cp_reports.report.emptyForm',
+      })
+    },
+    fetchFiles: async (country_id, year) => {
+      const { cacheInvalidate } = get().cp_reports
+      const options = {
+        invalidateCache: cacheInvalidate.includes(hash({ country_id, year })),
+        removeCacheTimeout: 60,
+        withStoreCache: true,
+      }
+      const filesPath = `api/country-programme/files/?country_id=${country_id}&year=${year}`
+
+      return await fetchSliceData({
+        apiSettings: {
+          options,
+          path: filesPath,
+        },
+        slice: 'cp_reports.report.files',
       })
     },
     fetchReport: async (country_id, year) => {
