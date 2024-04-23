@@ -420,8 +420,6 @@ const CPCreate: React.FC = () => {
     }))
   }
 
-  console.log("CPCreate report", report)
-
   return (
     <>
       <Loading
@@ -465,7 +463,61 @@ const CPCreate: React.FC = () => {
                 onClick={async () => {
                   try {
                     await api('api/country-programme/reports/', {
-                      data: getSubmitFormData(),
+                      data: {
+                        ...getSubmitFormData(),
+                        status: 'draft',
+                      },
+                      method: 'POST',
+                    })
+                    setErrors({})
+                    Sections.section_a.clearLocalStorage()
+                    Sections.section_b.clearLocalStorage()
+                    Sections.section_c.clearLocalStorage()
+                    Sections.section_d.clearLocalStorage()
+                    Sections.section_e.clearLocalStorage()
+                    Sections.section_f.clearLocalStorage()
+                    enqueueSnackbar(
+                      <>
+                        Added new submission for {form.country!.label}{' '}
+                        {form.year}.
+                      </>,
+                      { variant: 'success' },
+                    )
+                    router.push(
+                      `/country-programme/${currentCountry!.iso3}/${form.year}`,
+                    )
+                  } catch (error) {
+                    if (error.status === 400) {
+                      const errors = await error.json()
+                      setErrors({ ...errors })
+                      enqueueSnackbar(
+                        errors.general_error ||
+                          'Please make sure all the inputs are correct.',
+                        { variant: 'error' },
+                      )
+                    } else {
+                      setErrors({})
+                    }
+                  }
+                }}
+              >
+                Save draft
+              </Button>
+              <Button
+                className="px-4 py-2 shadow-none"
+                color="secondary"
+                size="large"
+                variant="contained"
+                disabled={
+                  !!existingReports.data?.length || existingReports.loading
+                }
+                onClick={async () => {
+                  try {
+                    await api('api/country-programme/reports/', {
+                      data: {
+                        ...getSubmitFormData(),
+                        status: 'final',
+                      },
                       method: 'POST',
                     })
                     setErrors({})
