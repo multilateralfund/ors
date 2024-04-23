@@ -383,7 +383,10 @@ const SortBy = (props: Omit<SimpleSelectProps, 'label'>) => (
 
 const CountryItem = (props: any) => {
   const { group, loaded, loading, reports } = props
-
+  const countries = useStore((state) => state.common.countries_for_listing.data)
+  const countriesById = new Map<number, any>(
+    countries.map((country: any) => [country.id, country]),
+  )
   const [showAllReports, setShowAllReports] = useState(false)
 
   const options: Intl.DateTimeFormatOptions = {
@@ -413,26 +416,36 @@ const CountryItem = (props: any) => {
 
           const statusDot = report.status === 'final' ? '#4191CD' : '#EE8E34'
 
+          const country = countriesById.get(report.country_id)
+
           return (
-            <div
+            <Link
               key={index}
               className="flex items-baseline justify-between gap-4 text-pretty border-0 border-b border-solid border-blue-600 pb-2 pr-4 sm:min-w-60"
+              underline="none"
+              href={
+                report.status === 'draft'
+                  ? `/country-programme/${country?.iso3}/${report.year}/edit`
+                  : `/country-programme/${country?.iso3}/${report.year}`
+              }
             >
-              <Typography color="secondary" variant="h4">
-                {report.year}
-              </Typography>
-              <div className="flex items-baseline gap-1">
-                <Typography>
-                  <IoEllipse color={statusDot} size={12} />
+              <>
+                <Typography color="secondary" variant="h4">
+                  {report.year}
                 </Typography>
-                <Typography className="font-medium">
-                  VERSION {report.version}
-                </Typography>
-                <Typography className="ml-4 text-gray-500">
-                  {formattedDateTime}
-                </Typography>
-              </div>
-            </div>
+                <div className="flex items-baseline gap-1">
+                  <Typography>
+                    <IoEllipse color={statusDot} size={12} />
+                  </Typography>
+                  <Typography className="font-medium">
+                    VERSION {report.version}
+                  </Typography>
+                  <Typography className="ml-4 text-gray-500">
+                    {formattedDateTime}
+                  </Typography>
+                </div>
+              </>
+            </Link>
           )
         })}
       </div>
