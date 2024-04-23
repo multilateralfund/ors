@@ -499,13 +499,16 @@ const CountrySection = React.forwardRef(function CountrySection(
     // },
     options: {
       params: {
+        country_id: filters.country?.join(','),
         limit: PER_PAGE_COUNTRY,
         offset: 0,
         ordering: 'asc',
         show_all_per_group: true,
         status: filters.status,
+        year_max: filters.range[1],
+        year_min: filters.range[0],
       },
-      withStoreCache: true,
+      withStoreCache: false,
     },
     path: 'api/country-programme/reports-by-country/',
   })
@@ -522,6 +525,7 @@ const CountrySection = React.forwardRef(function CountrySection(
     }
     return [...results]
   }, [results, loaded, pagination.rowsPerPage])
+
 
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
@@ -764,15 +768,18 @@ const LogSection = React.forwardRef(function LogSection(
     // },
     options: {
       params: {
+        country_id: filters.country?.join(','),
         limit: PER_PAGE_COUNTRY,
         offset: 0,
         ordering: 'asc',
         show_all_per_group: true,
         status: filters.status,
+        year_max: filters.range[1],
+        year_min: filters.range[0],
       },
-      withStoreCache: true,
+      withStoreCache: false,
     },
-    path: 'api/country-programme/reports-by-country/',
+    path: 'api/country-programme/reports-by-year/',
   })
   const { count, loaded, results } = getResults(data)
 
@@ -1015,11 +1022,11 @@ const CountrySelect = (props: {
           setFilters((filters: any) => {
             return { ...filters, country: newValue }
           })
-          setParams?.({
+          setParams({
             country_id: newValue.join(','),
             offset: 0,
           })
-          setPagination?.((pagination: any) => {
+          setPagination((pagination: any) => {
             return {
               ...pagination,
               page: 1,
@@ -1143,8 +1150,6 @@ export default function CPListing() {
 
   const [activeTab, setActiveTab] = useState(0)
 
-  const tabsEl = React.useRef<HTMLDivElement>(null)
-
   const minYear = settings.cp_reports.min_year
   const maxYear = settings.cp_reports.max_year
   const [filters, setFilters] = useState<FiltersType>({
@@ -1191,7 +1196,6 @@ export default function CPListing() {
             <Tabs
               className="scrollable"
               aria-label="view country programme report"
-              ref={tabsEl}
               scrollButtons="auto"
               value={activeTab}
               variant="scrollable"
@@ -1214,16 +1218,16 @@ export default function CPListing() {
                     'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
                 }}
               />
-              {/*<Tab*/}
-              {/*  id="submissions-log"*/}
-              {/*  className="rounded-b-none px-3 py-2"*/}
-              {/*  aria-controls="submissions-log"*/}
-              {/*  label="Submissions Log"*/}
-              {/*  classes={{*/}
-              {/*    selected:*/}
-              {/*      'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',*/}
-              {/*  }}*/}
-              {/*/>*/}
+              <Tab
+                id="submissions-log"
+                className="rounded-b-none px-3 py-2"
+                aria-controls="submissions-log"
+                label="Submissions Log"
+                classes={{
+                  selected:
+                    'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
+                }}
+              />
             </Tabs>
           </div>
           {activeTab === 0 && (
@@ -1237,17 +1241,17 @@ export default function CPListing() {
               user_type={user_type}
             />
           )}
-          {/*{activeTab === 1 && (*/}
-          {/*  <LogSection*/}
-          {/*    filters={filters}*/}
-          {/*    maxYear={maxYear}*/}
-          {/*    minYear={minYear}*/}
-          {/*    ref={logRef}*/}
-          {/*    setFilters={setFilters}*/}
-          {/*    setRange={setRange}*/}
-          {/*    user_type={user_type}*/}
-          {/*  />*/}
-          {/*)}*/}
+          {activeTab === 1 && (
+            <LogSection
+              filters={filters}
+              maxYear={maxYear}
+              minYear={minYear}
+              ref={logRef}
+              setFilters={setFilters}
+              setRange={setRange}
+              user_type={user_type}
+            />
+          )}
         </div>
         <CPFilters
           filters={filters}
