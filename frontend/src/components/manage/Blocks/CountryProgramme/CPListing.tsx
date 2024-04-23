@@ -550,7 +550,7 @@ const CountrySection = React.forwardRef(function CountrySection(
         active={loading}
       />
       {user_type !== 'country_user' && (
-        <div className="mt-4 flex min-h-[40px] items-center justify-end gap-4">
+        <div className="mt-4 sm:-mt-12 md:mt-4 lg:-mt-12 flex min-h-[40px] items-center justify-end gap-4">
           <SortBy options={orderOptions} onChange={handleOrderChange} />
         </div>
       )}
