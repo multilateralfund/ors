@@ -500,7 +500,7 @@ const CountrySection = React.forwardRef(function CountrySection(
         show_all_per_group: true,
         status: filters.status,
       },
-      withStoreCache: false,
+      withStoreCache: true,
     },
     path: 'api/country-programme/reports-by-country/',
   })
@@ -538,8 +538,10 @@ const CountrySection = React.forwardRef(function CountrySection(
   )
 
   useEffect(() => {
-    // wait for ref to be set
+    if (!ref) return
   }, [ref])
+
+  console.log('ref', ref)
 
   return (
     <div id="country-section" className="relative">
@@ -849,6 +851,7 @@ function CPFilters(props: any) {
 export default function CPListing() {
   const settings = useStore((state) => state.common.settings.data)
   const { user_type } = useStore((state) => state.user.data)
+  const [, setIsRefReady] = useState(false)
   const countryRef = useRef<any>(null)
   // const logsRef = useRef<any>(null)
 
@@ -865,6 +868,12 @@ export default function CPListing() {
     year: [],
   })
   const [range, setRange] = useState([filters.range[0], filters.range[1]])
+
+  useEffect(() => {
+    if (countryRef.current !== null) {
+      setIsRefReady(true)
+    }
+  }, [countryRef.current])
 
   return (
     <>
