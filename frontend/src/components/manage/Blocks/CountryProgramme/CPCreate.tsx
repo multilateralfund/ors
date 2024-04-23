@@ -420,8 +420,6 @@ const CPCreate: React.FC = () => {
     }))
   }
 
-  console.log("CPCreate report", report)
-
   return (
     <>
       <Loading

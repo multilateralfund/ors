@@ -53,7 +53,6 @@ const FileInput: React.FC = () => {
                 onChange={handleFileChange}
                 hidden
                 multiple
-                // onChange={handleUpload}
               />
               Browse files
             </IconButton>
@@ -104,8 +103,6 @@ const ReportInfoCreate = (props: any) => {
         [key]: event.target.value,
       },
     })
-
-  console.log('report_info report', report)
 
   const user_fullname = isEdit ? form.report_info.reporting_entry : full_name
   const user_email = isEdit ? form.report_info.reporting_email : email
