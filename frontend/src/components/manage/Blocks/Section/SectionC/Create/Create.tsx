@@ -24,7 +24,7 @@ import {
 import useGridOptions from './schema'
 import { RowData, SubstancePrice, SubstancePrices } from './types'
 
-import { IoInformationCircleOutline } from 'react-icons/io5'
+import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
 
 function indexKey(elem: {
   blend_id?: null | number
@@ -151,9 +151,11 @@ export default function SectionCCreate(props: {
         substancePrices.data || [],
         variant.model,
       ),
-    [form, emptyForm, substancePrices.data],
+    [form, emptyForm, substancePrices.data, variant.model],
   )
-  const [pinnedBottomRowData] = useState([{ rowType: 'control' }])
+  const [pinnedBottomRowData] = useState(
+    includes(['V'], variant.model) ? [] : [{ rowType: 'control' }],
+  )
 
   const [addChemicalModal, setAddChemicalModal] = useState(false)
 
@@ -224,6 +226,16 @@ export default function SectionCCreate(props: {
         <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
           <Footnotes />
         </Alert>
+      )}
+      {includes(['V'], variant.model) && (
+        <div className="flex justify-end">
+          <Button
+            className="rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
+            onClick={() => setAddChemicalModal(true)}
+          >
+            Add chemical <IoAddCircle className="ml-1.5" size={18} />
+          </Button>
+        </div>
       )}
       <Table
         {...TableProps}
@@ -343,7 +355,10 @@ export default function SectionCCreate(props: {
                   )
                   newNode.current = substanceNode
                 }
-                setAddChemicalModal(false)
+
+                if (!includes(['V'], variant.model)) {
+                  setAddChemicalModal(false)
+                }
               }}
             />
             <Typography className="text-right">
