@@ -30,6 +30,8 @@ class CPHistorySerializer(serializers.ModelSerializer):
             "created_at",
             "updated_by_id",
             "updated_by_username",
+            "reporting_officer_name",
+            "reporting_officer_email",
             "event_description",
             "report_version",
         ]

@@ -233,7 +233,8 @@ class CPReportCreateSerializer(serializers.Serializer):
         history_data["country_programme_report_id"] = cp_report.id
         history_data["report_version"] = 1
         history_data["updated_by_id"] = request_user.id
-        history_data["updated_by_username"] = request_user.username
+        history_data["reporting_officer_name"] = cp_report.reporting_entry
+        history_data["reporting_officer_email"] = cp_report.reporting_email
         history_data["event_description"] = "Created by user"
 
         cp_history_serializer = CPHistorySerializer(data=history_data)
@@ -248,7 +249,6 @@ class CPReportCreateSerializer(serializers.Serializer):
         if cp_report_info is None:
             cp_report_info = {}
 
-        # TODO: we need to find a better way!
         cp_reporting = cp_report_info.get("country_programme_report", {})
         reporting_entry = cp_reporting.get(
             "reporting_entry", request_user.get_full_name()
