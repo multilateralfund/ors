@@ -20,6 +20,7 @@ from core.api.permissions import IsUserAllowedCP, IsUserAllowedCPComment
 from core.api.serializers import CPReportGroupSerializer
 from core.api.serializers.cp_report import (
     CPReportCreateSerializer,
+    CPReportNoRelatedSerializer,
     CPReportSerializer,
     CPReportCommentsSerializer,
 )
@@ -67,6 +68,8 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
     def get_serializer_class(self):
         if self.request.method == "POST":
             return CPReportCreateSerializer
+        if hasattr(self, "action") and self.action == "list":
+            return CPReportNoRelatedSerializer
         return CPReportSerializer
 
     def create(self, request, *args, **kwargs):
