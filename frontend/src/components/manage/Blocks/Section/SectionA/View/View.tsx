@@ -140,6 +140,7 @@ export default function SectionAView(props: any) {
         />
       </div>
       <Table
+        key={tableDataValue}
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
         components={components}

@@ -53,9 +53,6 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
         icon: true,
       },
     },
-    initialWidth: 150,
-    ...(includes(['I'], model) ? { minWidth: 300 } : {}),
-    ...(includes(['III'], model) ? { minWidth: 300 } : {}),
   },
   export_quotas: {
     initialWidth: 80,

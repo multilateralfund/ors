@@ -83,6 +83,15 @@ export default function getUsagesColDef() {
       },
       initialWidth: 84,
     },
+    'Other I': {
+      headerComponentParams: {},
+    },
+    'Other II': {
+      headerComponentParams: {},
+    },
+    'Other III': {
+      headerComponentParams: {},
+    },
     'Other IV': {
       flex: 0.5,
     },
@@ -117,12 +126,11 @@ export default function getUsagesColDef() {
       headerName: 'AC',
       initialWidth: 80,
     },
-
     'Refrigeration Manufacturing AC V': {
       flex: 1.2,
     },
     'Refrigeration Manufacturing I': {
-      flex: 0.8,
+      initialWidth: 80,
     },
     'Refrigeration Manufacturing Other': {
       autoHeaderHeight: true,
@@ -166,7 +174,7 @@ export default function getUsagesColDef() {
       initialWidth: 84,
     },
     'Refrigeration Servicing I': {
-      flex: 0.5,
+      initialWidth: 80,
     },
     'Solvent application I': {
       flex: 0.5,

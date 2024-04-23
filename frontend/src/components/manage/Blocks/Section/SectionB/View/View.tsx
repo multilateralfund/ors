@@ -165,6 +165,7 @@ export default function SectionBView(props: {
         />
       </div>
       <Table
+        key={tableDataValue}
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
