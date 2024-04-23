@@ -68,9 +68,7 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
     def get_serializer_class(self):
         if self.request.method == "POST":
             return CPReportCreateSerializer
-        if hasattr(self, "action") and self.action == "list":
-            return CPReportNoRelatedSerializer
-        return CPReportSerializer
+        return CPReportNoRelatedSerializer
 
     def create(self, request, *args, **kwargs):
         # check if the cp_record already exists
