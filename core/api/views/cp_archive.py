@@ -16,7 +16,10 @@ from core.api.serializers.cp_emission import CPEmissionArchiveSerializer
 from core.api.serializers.cp_generation import CPGenerationArchiveSerializer
 from core.api.serializers.cp_price import CPPricesArchiveSerializer
 from core.api.serializers.cp_record import CPRecordArchiveSerializer
-from core.api.serializers.cp_report import CPReportArchiveSerializer, CPReportInfoSerializer
+from core.api.serializers.cp_report import (
+    CPReportArchiveSerializer,
+    CPReportInfoSerializer,
+)
 from core.api.utils import workbook_pdf_response
 from core.api.utils import workbook_response
 from core.api.views.cp_records import CPRecordBaseListView

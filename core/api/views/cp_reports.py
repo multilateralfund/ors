@@ -366,6 +366,8 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
                     country_programme_report=new_instance,
                     report_version=new_instance.version,
                     updated_by=request.user,
+                    reporting_officer_name=new_instance.reporting_entry,
+                    reporting_officer_email=new_instance.reporting_email,
                     event_description=event_desc,
                 )
             )
@@ -421,6 +423,8 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
             country_programme_report=cp_report,
             report_version=cp_report.version,
             updated_by=request.user,
+            reporting_officer_name=cp_report.reporting_entry,
+            reporting_officer_email=cp_report.reporting_email,
             event_description=f"Status updated from {initial_value} to {cp_status}",
         )
         serializer = self.get_serializer(cp_report)
@@ -502,8 +506,7 @@ class CPReportGroupByYearView(generics.ListAPIView):
             }
 
         queryset = (
-            queryset
-            .select_related("country", "created_by")
+            queryset.select_related("country", "created_by")
             .annotate(
                 row_number=Window(
                     expression=RowNumber(),
@@ -511,9 +514,7 @@ class CPReportGroupByYearView(generics.ListAPIView):
                     order_by=self.order_by,
                 ),
             )
-            .filter(
-                **filter_params
-            )
+            .filter(**filter_params)
             .order_by(self.order_field, self.order_by)
         )
 
@@ -631,6 +632,8 @@ class CPReportCommentsView(generics.GenericAPIView):
             country_programme_report=cp_report,
             report_version=cp_report.version,
             updated_by=request.user,
+            reporting_officer_name=cp_report.reporting_entry,
+            reporting_officer_email=cp_report.reporting_email,
             event_description="Comments updated by user",
         )
         serializer = self.get_serializer(cp_report)
