@@ -3,7 +3,7 @@ import logging
 
 from django.db import transaction
 
-from core.import_data.utils import IMPORT_RESOURCES_DIR, delete_old_data
+from core.import_data.utils import IMPORT_RESOURCES_DIR
 from core.models.adm import AdmColumn
 from core.models.time_frame import TimeFrame
 

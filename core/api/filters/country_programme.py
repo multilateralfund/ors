@@ -16,13 +16,13 @@ class CPReportFilter(filters.FilterSet):
     )
     name = filters.CharFilter(field_name="name", lookup_expr="icontains")
     year = filters.RangeFilter(field_name="year")
-    status = filters.CharFilter(method='filter_status')
+    status = filters.CharFilter(method="filter_status")
 
     class Meta:
         model = CPReport
         fields = ["country_id", "name", "year", "status"]
 
-    def filter_status(self, queryset, name, value):
+    def filter_status(self, queryset, _name, value):
         if value == "all":
             return queryset
         return queryset.filter(status=value)
