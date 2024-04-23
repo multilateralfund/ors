@@ -529,8 +529,6 @@ const CountrySection = React.forwardRef(function CountrySection(
     [pagination, setPagination, setParams],
   )
 
-  console.log('CountrySection ref', ref)
-
   return (
     // @ts-ignore
     <div id="country-section" className="relative" ref={ref}>
@@ -725,6 +723,7 @@ const LogItem = (props: any) => {
     </div>
   )
 }
+//eslint-disable-next-line
 const LogSection = React.forwardRef(function LogSection(
   props: SectionProps,
   ref,
@@ -789,8 +788,6 @@ const LogSection = React.forwardRef(function LogSection(
     },
     [pagination, setPagination, setParams],
   )
-
-  console.log('LogSection ref', ref)
 
   return (
     // @ts-ignore
@@ -1147,14 +1144,12 @@ export default function CPListing() {
 
   useEffect(() => {
     if (countryRef.current !== null) {
-      console.log('CPListing country ref useEffect', activeTab)
       setCountryRef(true)
     }
   }, [countryRef.current, activeTab])
 
   useEffect(() => {
     if (logRef.current !== null) {
-      console.log('CPListing log ref useEffect', activeTab)
       setLogRef(true)
     }
   }, [logRef.current, activeTab])
@@ -1206,16 +1201,16 @@ export default function CPListing() {
                     'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
                 }}
               />
-              <Tab
-                id="submissions-log"
-                className="rounded-b-none px-3 py-2"
-                aria-controls="submissions-log"
-                label="Submissions Log"
-                classes={{
-                  selected:
-                    'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
-                }}
-              />
+              {/*<Tab*/}
+              {/*  id="submissions-log"*/}
+              {/*  className="rounded-b-none px-3 py-2"*/}
+              {/*  aria-controls="submissions-log"*/}
+              {/*  label="Submissions Log"*/}
+              {/*  classes={{*/}
+              {/*    selected:*/}
+              {/*      'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',*/}
+              {/*  }}*/}
+              {/*/>*/}
             </Tabs>
           </div>
           {activeTab === 0 && (
@@ -1229,17 +1224,17 @@ export default function CPListing() {
               user_type={user_type}
             />
           )}
-          {activeTab === 1 && (
-            <LogSection
-              filters={filters}
-              maxYear={maxYear}
-              minYear={minYear}
-              ref={logRef}
-              setFilters={setFilters}
-              setRange={setRange}
-              user_type={user_type}
-            />
-          )}
+          {/*{activeTab === 1 && (*/}
+          {/*  <LogSection*/}
+          {/*    filters={filters}*/}
+          {/*    maxYear={maxYear}*/}
+          {/*    minYear={minYear}*/}
+          {/*    ref={logRef}*/}
+          {/*    setFilters={setFilters}*/}
+          {/*    setRange={setRange}*/}
+          {/*    user_type={user_type}*/}
+          {/*  />*/}
+          {/*)}*/}
         </div>
         <CPFilters
           filters={filters}
