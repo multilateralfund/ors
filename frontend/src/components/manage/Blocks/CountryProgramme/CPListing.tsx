@@ -18,14 +18,11 @@ import {
   Tabs,
   ToggleButton,
   ToggleButtonGroup,
-  Tooltip,
   Typography,
 } from '@mui/material'
-import cx from 'classnames'
-import { filter, omit, times, union } from 'lodash'
+import { filter, times, union } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
-import Listing from '@ors/components/manage/Form/Listing'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Link from '@ors/components/ui/Link/Link'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
@@ -74,9 +71,7 @@ type FiltersType = {
   year: number[]
 }
 
-const PER_PAGE_GENERAL = 48
 const PER_PAGE_COUNTRY = 12
-const PER_PAGE_YEAR = 24
 const REPORTS_PER_COUNTRY = 6
 
 let timer: any
@@ -89,102 +84,99 @@ const debounce = (func: () => void) => {
 const SortBy = (props: Omit<SimpleSelectProps, 'label'>) => (
   <SimpleSelect label="Sort by" {...props} />
 )
-// const GroupBy = (props: Omit<RadioSelectProps, 'label'>) => (
-//   <RadioSelect label="Group by" {...props} />
+
+// interface ItemLinkProps {
+//   className?: string
+//   country: any
+//   item: ReportResponse
+//   showAll: boolean
+//   showCountry: boolean
+//   showYear: boolean
+// }
+//
+// const ItemLink = ({
+//   className,
+//   country,
+//   item,
+//   showAll,
+//   showCountry,
+//   showYear,
+// }: ItemLinkProps) => {
+//   return (
+//     <Link
+//       className={cx(
+//         'flex w-full items-center text-wrap font-semibold hover:text-primary',
+//         className,
+//         {
+//           'text-secondary': item.status === 'final',
+//           'text-typography-secondary': !item.status,
+//           'text-warning': item.status === 'draft',
+//         },
+//       )}
+//       prefetch={false}
+//       underline="hover"
+//       href={
+//         item.status === 'draft'
+//           ? `/country-programme/${country?.iso3}/${item?.year}/edit`
+//           : `/country-programme/${country?.iso3}/${item?.year}`
+//       }
+//     >
+//       {showAll && item.name}
+//       {!!showCountry && item.country}
+//       {!!showYear && item.year}
+//     </Link>
+//   )
+// }
+//
+// interface ItemProps {
+//   ItemRenderer: (props: ItemLinkProps) => React.ReactElement
+//   item: ReportResponse
+//   showCountry: boolean
+//   showYear: boolean
+// }
+//
+// function Item({
+//   ItemRenderer = ItemLink,
+//   item,
+//   showCountry,
+//   showYear,
+// }: ItemProps) {
+//   const showAll = !showCountry && !showYear
+//   const countries = useStore((state) => state.common.countries_for_listing.data)
+//   const country = countries.filter(
+//     (country) => country.id === item.country_id,
+//   )[0]
+//
+//   return (
+//     <Tooltip
+//       enterDelay={300}
+//       placement="top-start"
+//       title={showAll ? item.name : showCountry ? item.country : item.year}
+//     >
+//       <ItemRenderer
+//         country={country}
+//         item={item}
+//         showAll={showAll}
+//         showCountry={showCountry}
+//         showYear={showYear}
+//       />
+//     </Tooltip>
+//   )
+// }
+//
+// const GeneralSectionItemLink = (props: ItemLinkProps) => (
+//   <ItemLink
+//     className="shadow-mlfs justify-center rounded-md px-6 py-4 text-center text-lg"
+//     {...omit(props, ['className'])}
+//   />
 // )
-
-interface ItemLinkProps {
-  className?: string
-  country: any
-  item: ReportResponse
-  showAll: boolean
-  showCountry: boolean
-  showYear: boolean
-}
-
-const ItemLink = ({
-  className,
-  country,
-  item,
-  showAll,
-  showCountry,
-  showYear,
-}: ItemLinkProps) => {
-  return (
-    <Link
-      className={cx(
-        'flex w-full items-center text-wrap font-semibold hover:text-primary',
-        className,
-        {
-          'text-secondary': item.status === 'final',
-          'text-typography-secondary': !item.status,
-          'text-warning': item.status === 'draft',
-        },
-      )}
-      prefetch={false}
-      underline="hover"
-      href={
-        item.status === 'draft'
-          ? `/country-programme/${country?.iso3}/${item?.year}/edit`
-          : `/country-programme/${country?.iso3}/${item?.year}`
-      }
-    >
-      {showAll && item.name}
-      {!!showCountry && item.country}
-      {!!showYear && item.year}
-    </Link>
-  )
-}
-
-interface ItemProps {
-  ItemRenderer: (props: ItemLinkProps) => React.ReactElement
-  item: ReportResponse
-  showCountry: boolean
-  showYear: boolean
-}
-
-function Item({
-  ItemRenderer = ItemLink,
-  item,
-  showCountry,
-  showYear,
-}: ItemProps) {
-  const showAll = !showCountry && !showYear
-  const countries = useStore((state) => state.common.countries_for_listing.data)
-  const country = countries.filter(
-    (country) => country.id === item.country_id,
-  )[0]
-
-  return (
-    <Tooltip
-      enterDelay={300}
-      placement="top-start"
-      title={showAll ? item.name : showCountry ? item.country : item.year}
-    >
-      <ItemRenderer
-        country={country}
-        item={item}
-        showAll={showAll}
-        showCountry={showCountry}
-        showYear={showYear}
-      />
-    </Tooltip>
-  )
-}
-
-const GeneralSectionItemLink = (props: ItemLinkProps) => (
-  <ItemLink
-    className="shadow-mlfs justify-center rounded-md px-6 py-4 text-center text-lg"
-    {...omit(props, ['className'])}
-  />
-)
-
-const GeneralSectionItem = (props: ItemProps) => (
-  <Item
-    ItemRenderer={GeneralSectionItemLink}
-    {...omit(props, ['ItemRenderer'])}
-  />
-)
+//
+// const GeneralSectionItem = (props: ItemProps) => (
+//   <Item
+//     ItemRenderer={GeneralSectionItemLink}
+//     {...omit(props, ['ItemRenderer'])}
+//   />
+// )
 
 // function GeneralSection(props: SectionProps) {
 //   // const shouldScroll = useRef(false)
@@ -484,7 +476,7 @@ const CountrySection = React.forwardRef(function CountrySection(
     countries.map((country: any) => [country.id, country]),
   )
 
-  const { data, loading, setParams } = useApi({
+  const { data, loading, setParams } = useApi<ReportsResponse>({
     // onSuccess: () => {
     //   if (shouldScroll.current) {
     //     scrollToElement({ selectors: '#cp-listing-sections' })
@@ -537,24 +529,21 @@ const CountrySection = React.forwardRef(function CountrySection(
     [pagination, setPagination, setParams],
   )
 
-  useEffect(() => {
-    if (!ref) return
-  }, [ref])
-
-  console.log('ref', ref)
+  console.log('CountrySection ref', ref)
 
   return (
-    <div id="country-section" className="relative">
+    // @ts-ignore
+    <div id="country-section" className="relative" ref={ref}>
       <Loading
         className="bg-mui-box-background/70 !duration-300"
         active={loading}
       />
       {user_type !== 'country_user' && (
-        <div className="my-4 flex min-h-[40px] items-center justify-end gap-4">
+        <div className="mt-4 flex min-h-[40px] items-center justify-end gap-4">
           <SortBy options={orderOptions} onChange={handleOrderChange} />
         </div>
       )}
-      <div className="mb-6 flex gap-4">
+      <div className="my-6 flex gap-4">
         {filters.country.map((countryId: number) => (
           <Typography
             key={countryId}
@@ -665,10 +654,270 @@ const CountrySection = React.forwardRef(function CountrySection(
   )
 })
 
+const LogItem = (props: any) => {
+  const { group, loaded, loading, reports } = props
+
+  const [showAllReports, setShowAllReports] = useState(false)
+
+  const options: Intl.DateTimeFormatOptions = {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }
+  const toggleReportsVisibility = () => {
+    setShowAllReports(!showAllReports)
+  }
+
+  return (
+    <div
+      className={`transition-opacity flex w-full flex-col gap-8 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
+    >
+      <Typography variant="h3">{group}</Typography>
+      <div className="grid w-full grid-flow-row auto-rows-max gap-8 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+        {reports.map((report: any, index: number) => {
+          if (!showAllReports && index >= REPORTS_PER_COUNTRY) {
+            return null // Hide reports beyond the limit if showAllReports is false
+          }
+          const dateObject = new Date(report.created_at)
+          const formattedDateTime = dateObject.toLocaleDateString(
+            undefined,
+            options,
+          )
+
+          const statusDot = report.status === 'final' ? '#4191CD' : '#EE8E34'
+
+          return (
+            <div
+              key={index}
+              className="flex items-baseline justify-between gap-4 text-pretty border-0 border-b border-solid border-blue-600 pb-2 pr-4 sm:min-w-60"
+            >
+              <Typography color="secondary" variant="h4">
+                {report.year}
+              </Typography>
+              <div className="flex items-baseline gap-1">
+                <Typography>
+                  <IoEllipse color={statusDot} size={12} />
+                </Typography>
+                <Typography className="font-medium">
+                  VERSION {report.version}
+                </Typography>
+                <Typography className="ml-4 text-gray-500">
+                  {formattedDateTime}
+                </Typography>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {reports.length > REPORTS_PER_COUNTRY && (
+        <div
+          className="w-fit cursor-pointer font-medium"
+          onClick={toggleReportsVisibility}
+        >
+          {!showAllReports ? (
+            <span key="load-more-button">View More</span>
+          ) : (
+            <span key="load-less-button">Show Less</span>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+const LogSection = React.forwardRef(function LogSection(
+  props: SectionProps,
+  ref,
+) {
+  const { filters, maxYear, minYear, setFilters, setRange } = props
+  const [pagination, setPagination] = useState({
+    page: 1,
+    rowsPerPage: PER_PAGE_COUNTRY,
+  })
+
+  const countries = useStore((state) => {
+    return state.common.countries_for_listing.data
+  })
+  const countriesById = new Map<number, any>(
+    countries.map((country: any) => [country.id, country]),
+  )
+
+  const { data, loading, setParams } = useApi<ReportsResponse>({
+    // onSuccess: () => {
+    //   if (shouldScroll.current) {
+    //     scrollToElement({ selectors: '#cp-listing-sections' })
+    //   } else {
+    //     shouldScroll.current = true
+    //   }
+    // },
+    options: {
+      params: {
+        limit: PER_PAGE_COUNTRY,
+        offset: 0,
+        ordering: 'asc',
+        show_all_per_group: true,
+        status: filters.status,
+      },
+      withStoreCache: true,
+    },
+    path: 'api/country-programme/reports-by-country/',
+  })
+  const { count, loaded, results } = getResults(data)
+
+  const memoResults = useMemo(() => {
+    if (!loaded) {
+      return times(pagination.rowsPerPage, (num) => {
+        return {
+          id: num + 1,
+          isSkeleton: true,
+        }
+      })
+    }
+    return [...results]
+  }, [results, loaded, pagination.rowsPerPage])
+
+  const pages = Math.ceil(count / pagination.rowsPerPage)
+
+  useImperativeHandle(
+    ref,
+    () => {
+      return {
+        pagination,
+        setPagination,
+        setParams,
+      }
+    },
+    [pagination, setPagination, setParams],
+  )
+
+  console.log('LogSection ref', ref)
+
+  return (
+    // @ts-ignore
+    <div id="country-section" className="relative" ref={ref}>
+      <Loading
+        className="bg-mui-box-background/70 !duration-300"
+        active={loading}
+      />
+      <div className="my-6 flex gap-4">
+        {filters.country.map((countryId: number) => (
+          <Typography
+            key={countryId}
+            className="inline-flex items-center gap-2 rounded bg-gray-200 px-4 font-normal theme-dark:bg-gray-700/20"
+            component="p"
+            variant="h6"
+          >
+            {countriesById.get(countryId)?.name}
+            <IoClose
+              className="cursor-pointer"
+              size={20}
+              onClick={() => {
+                const values = filters.country || []
+                const newValue = filter(values, (value) => value !== countryId)
+                setFilters((filters: any) => {
+                  return {
+                    ...filters,
+                    country: newValue,
+                  }
+                })
+                setPagination((pagination) => ({ ...pagination, page: 1 }))
+                setParams({
+                  country_id: newValue.join(','),
+                  offset: 0,
+                })
+              }}
+            />
+          </Typography>
+        ))}
+        {(filters.range[0] > minYear || filters.range[1] < maxYear) && (
+          <Typography
+            className="inline-flex items-center gap-2 bg-gray-200 px-4 font-normal theme-dark:bg-gray-700/20"
+            component="p"
+            variant="h6"
+          >
+            {filters.range[0]} - {filters.range[1]}
+            <IoClose
+              className="cursor-pointer"
+              size={20}
+              onClick={() => {
+                setFilters((filters: any) => {
+                  setRange([minYear, maxYear])
+                  return {
+                    ...filters,
+                    range: [minYear, maxYear],
+                    year: [],
+                  }
+                })
+                setPagination((pagination) => ({ ...pagination, page: 1 }))
+                setParams({
+                  offset: 0,
+                  year_max: maxYear,
+                  year_min: minYear,
+                })
+              }}
+            />
+          </Typography>
+        )}
+      </div>
+      <div
+        className={`transition-opacity mb-6 flex w-full max-w-screen-xl flex-col gap-12 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
+      >
+        {memoResults.map((countryData: any) => {
+          if (countryData.isSkeleton)
+            return (
+              <div key={countryData.id} className="flex flex-col gap-8">
+                <Skeleton height={40} variant="text" width="100%" />
+                <div className="grid w-full grid-flow-row auto-rows-max gap-8 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                  {times(REPORTS_PER_COUNTRY, (index) => (
+                    <div
+                      key={index}
+                      className="flex items-baseline justify-between gap-4 text-pretty border-0 border-b border-solid border-blue-600 pb-2 pr-4 sm:min-w-60"
+                    >
+                      <Skeleton height={40} variant="text" width="100%" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          return (
+            <LogItem
+              key={countryData.id}
+              group={countryData.group}
+              loaded={loaded}
+              loading={loading}
+              reports={countryData.reports}
+            />
+          )
+        })}
+      </div>
+      {!!pages && pages > 1 && (
+        <div className="flex items-center justify-center">
+          <Pagination
+            count={pages}
+            page={pagination.page}
+            siblingCount={1}
+            onPaginationChanged={(page) => {
+              setPagination({ ...pagination, page: page || 1 })
+              setParams({
+                limit: pagination.rowsPerPage,
+                offset: ((page || 1) - 1) * pagination.rowsPerPage,
+              })
+            }}
+          />
+        </div>
+      )}
+    </div>
+  )
+})
+
 const StatusFilter = (props: any) => {
-  const { filters, setCountryFunctions, setFilters } = props
+  const { filters, setCountryFunctions, setFilters, setLogFunctions } = props
   const { setCountryPagination, setCountryParams } = setCountryFunctions
+  const { setLogPagination, setLogParams } = setLogFunctions
   const statusFilterOrder = ['all', 'final', 'draft']
+
+  const setParams = setCountryParams || setLogParams
+  const setPagination = setCountryPagination || setLogPagination
 
   const statusLabels: Record<string, string> = {
     all: 'View All',
@@ -688,11 +937,11 @@ const StatusFilter = (props: any) => {
         status: newValue,
       }
     })
-    setCountryParams({
+    setParams?.({
       offset: 0,
       status: newValue,
     })
-    setCountryPagination((pagination: any) => {
+    setPagination?.((pagination: any) => {
       return {
         ...pagination,
         page: 1,
@@ -728,9 +977,13 @@ const CountrySelect = (props: {
   filters: any
   setCountryFunctions: any
   setFilters: any
+  setLogFunctions: any
 }) => {
-  const { filters, setCountryFunctions, setFilters } = props
-  const { setCountryParams } = setCountryFunctions
+  const { filters, setCountryFunctions, setFilters, setLogFunctions } = props
+  const { setCountryPagination, setCountryParams } = setCountryFunctions
+  const { setLogPagination, setLogParams } = setLogFunctions
+  const setParams = setCountryParams || setLogParams
+  const setPagination = setCountryPagination || setLogPagination
   // take into account 'user_type'
   const countries = useStore((state) => state.common.countries_for_listing.data)
 
@@ -752,9 +1005,15 @@ const CountrySelect = (props: {
           setFilters((filters: any) => {
             return { ...filters, country: newValue }
           })
-          setCountryParams({
+          setParams?.({
             country_id: newValue.join(','),
             offset: 0,
+          })
+          setPagination?.((pagination: any) => {
+            return {
+              ...pagination,
+              page: 1,
+            }
           })
           if (document.activeElement) {
             // @ts-ignore
@@ -772,11 +1031,23 @@ const YearSelect = (props: {
   range: [number, number]
   setCountryFunctions: any
   setFilters: any
+  setLogFunctions: any
   setRange: any
 }) => {
-  const { maxYear, minYear, range, setCountryFunctions, setFilters, setRange } =
-    props
+  const {
+    maxYear,
+    minYear,
+    range,
+    setCountryFunctions,
+    setFilters,
+    setLogFunctions,
+    setRange,
+  } = props
   const { setCountryPagination, setCountryParams } = setCountryFunctions
+  const { setLogPagination, setLogParams } = setLogFunctions
+
+  const setParams = setCountryParams || setLogParams
+  const setPagination = setCountryPagination || setLogPagination
 
   return (
     <Field
@@ -792,12 +1063,12 @@ const YearSelect = (props: {
           setFilters((filters: any) => {
             return { ...filters, range: value }
           })
-          setCountryParams({
+          setParams?.({
             offset: 0,
             year_max: value[1],
             year_min: value[0],
           })
-          setCountryPagination((pagination: any) => {
+          setPagination?.((pagination: any) => {
             return {
               ...pagination,
               page: 1,
@@ -817,6 +1088,7 @@ function CPFilters(props: any) {
     range,
     setCountryFunctions,
     setFilters,
+    setLogFunctions,
     setRange,
   } = props
 
@@ -830,11 +1102,13 @@ function CPFilters(props: any) {
         filters={filters}
         setCountryFunctions={setCountryFunctions}
         setFilters={setFilters}
+        setLogFunctions={setLogFunctions}
       />
       <CountrySelect
         filters={filters}
         setCountryFunctions={setCountryFunctions}
         setFilters={setFilters}
+        setLogFunctions={setLogFunctions}
       />
       <YearSelect
         maxYear={maxYear}
@@ -842,6 +1116,7 @@ function CPFilters(props: any) {
         range={range}
         setCountryFunctions={setCountryFunctions}
         setFilters={setFilters}
+        setLogFunctions={setLogFunctions}
         setRange={setRange}
       />
     </Box>
@@ -851,9 +1126,10 @@ function CPFilters(props: any) {
 export default function CPListing() {
   const settings = useStore((state) => state.common.settings.data)
   const { user_type } = useStore((state) => state.user.data)
-  const [, setIsRefReady] = useState(false)
+  const [, setCountryRef] = useState(false)
+  const [, setLogRef] = useState(false)
   const countryRef = useRef<any>(null)
-  // const logsRef = useRef<any>(null)
+  const logRef = useRef<any>(null)
 
   const [activeTab, setActiveTab] = useState(0)
 
@@ -871,9 +1147,17 @@ export default function CPListing() {
 
   useEffect(() => {
     if (countryRef.current !== null) {
-      setIsRefReady(true)
+      console.log('CPListing country ref useEffect', activeTab)
+      setCountryRef(true)
     }
-  }, [countryRef.current])
+  }, [countryRef.current, activeTab])
+
+  useEffect(() => {
+    if (logRef.current !== null) {
+      console.log('CPListing log ref useEffect', activeTab)
+      setLogRef(true)
+    }
+  }, [logRef.current, activeTab])
 
   return (
     <>
@@ -945,6 +1229,17 @@ export default function CPListing() {
               user_type={user_type}
             />
           )}
+          {activeTab === 1 && (
+            <LogSection
+              filters={filters}
+              maxYear={maxYear}
+              minYear={minYear}
+              ref={logRef}
+              setFilters={setFilters}
+              setRange={setRange}
+              user_type={user_type}
+            />
+          )}
         </div>
         <CPFilters
           filters={filters}
@@ -957,6 +1252,10 @@ export default function CPListing() {
           setCountryFunctions={{
             setCountryPagination: countryRef.current?.setPagination,
             setCountryParams: countryRef.current?.setParams,
+          }}
+          setLogFunctions={{
+            setLogPagination: logRef.current?.setPagination,
+            setLogParams: logRef.current?.setParams,
           }}
         />
       </div>
