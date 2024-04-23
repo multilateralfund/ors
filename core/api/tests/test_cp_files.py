@@ -14,15 +14,54 @@ def _test_file(tmp_path):
     return p
 
 
+@pytest.fixture(name="wrong_test_file")
+def _wrong_test_file(tmp_path):
+    p = tmp_path / "adrian.txt"
+    p.write_text("Asa sunt zilele mele")
+    return p
+
+
 class TestCPFiles:
     client = APIClient()
 
-    def test_files_upload_anon(self):
+    def test_file_upload_anon(self):
         url = reverse("country-programme-files")
         response = self.client.post(url, {})
         assert response.status_code == 403
 
-    def test_files_upload(self, user, country_ro, test_file):
+    def test_file_upload_wrong_extension(self, user, country_ro, wrong_test_file):
+        self.client.force_authenticate(user=user)
+        country_id = country_ro.id
+        year = 2023
+        base_url = reverse("country-programme-files")
+        params = f"?country_id={country_ro.id}&year={year}"
+        url = base_url + params
+
+        # upload file with wrong extension
+        data = {"file": wrong_test_file.open()}
+        response = self.client.post(url, data, format="multipart")
+        assert response.status_code == 400
+        assert response.data == "File extension is not valid"
+
+    def test_file_upload_duplicate(self, user, country_ro, test_file):
+        self.client.force_authenticate(user=user)
+        country_id = country_ro.id
+        year = 2023
+        base_url = reverse("country-programme-files")
+        params = f"?country_id={country_ro.id}&year={year}"
+        url = base_url + params
+
+        # upload file
+        data = {"file": test_file.open()}
+        response = self.client.post(url, data, format="multipart")
+        assert response.status_code == 201
+
+        # upload same file again
+        response = self.client.post(url, data, format="multipart")
+        assert response.status_code == 400
+        assert response.data == "File with this name already exists"
+
+    def test_file_upload(self, user, country_ro, test_file):
         self.client.force_authenticate(user=user)
         country_id = country_ro.id
         year = 2023

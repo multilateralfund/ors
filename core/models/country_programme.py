@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 from django.db import models
 from core.models.base import AbstractWChemical, BaseWTimeFrameManager
 from core.models.base_country_programme import (
@@ -9,6 +10,8 @@ from core.models.base_country_programme import (
     AbstractCPReport,
     AbstractCPUsage,
 )
+
+PROTECTED_STORAGE = FileSystemStorage(location=settings.PROTECTED_MEDIA_ROOT)
 
 
 class CPReport(AbstractCPReport):
@@ -149,7 +152,7 @@ class CPReportSections(models.Model):
 
 class CPFile(models.Model):
     def upload_path(self, filename):
-        return f"{self.country.name}/{self.year}/{filename}"
+        return f"cp_files/{self.country.name}/{self.year}/{filename}"
 
     uploaded_at = models.DateTimeField(
         auto_now_add=True, help_text="Date of file upload"
@@ -159,10 +162,16 @@ class CPFile(models.Model):
     )
     year = models.IntegerField()
     filename = models.CharField(max_length=100)
-    file = models.FileField(upload_to=upload_path)
+    file = models.FileField(storage=PROTECTED_STORAGE, upload_to=upload_path)
 
     class Meta:
         ordering = ["-uploaded_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["country", "year", "filename"],
+                name="unique_country_year_filename",
+            )
+        ]
 
 
 class CPHistory(models.Model):

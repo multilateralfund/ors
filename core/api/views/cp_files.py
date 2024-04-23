@@ -45,7 +45,7 @@ class CPFilesView(generics.GenericAPIView):
             user.user_type == user.UserType.COUNTRY_USER
             and user.country_id != country_id
         ):
-            raise PermissionDenied("Country user not allowed")
+            raise PermissionDenied("User represents other country")
 
     def get(self, request, *args, **kwargs):
         self._check_country_user()
@@ -66,7 +66,17 @@ class CPFilesView(generics.GenericAPIView):
 
         extension = os.path.splitext(file.name)[-1]
         if extension not in self.ACCEPTED_EXTENSIONS:
-            return Response("File is not valid", status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                "File extension is not valid", status=status.HTTP_400_BAD_REQUEST
+            )
+
+        existing_file = CPFile.objects.filter(
+            country_id=country_id, year=year, filename=file.name
+        ).first()
+        if existing_file:
+            return Response(
+                "File with this name already exists", status=status.HTTP_400_BAD_REQUEST
+            )
 
         CPFile.objects.create(
             country_id=country_id,
@@ -77,9 +87,6 @@ class CPFilesView(generics.GenericAPIView):
         return Response({}, status=status.HTTP_201_CREATED)
 
     def post(self, request, *args, **kwargs):
-        return self._files_create(request, *args, **kwargs)
-
-    def put(self, request, *args, **kwargs):
         return self._files_create(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
