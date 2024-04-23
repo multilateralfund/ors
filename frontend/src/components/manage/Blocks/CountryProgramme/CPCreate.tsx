@@ -379,7 +379,7 @@ const CPCreate: React.FC = () => {
     }
 
     indicator.addEventListener('transitionend', handleTransitionEnd)
-  }, [activeTab])
+  }, [renderedSections.length, activeTab])
 
   useEffect(() => {
     const user_type = user.data.user_type

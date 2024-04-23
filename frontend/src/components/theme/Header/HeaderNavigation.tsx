@@ -9,12 +9,10 @@ import {
   ListItemButton,
 } from '@mui/material'
 import cx from 'classnames'
-import { AnimatePresence } from 'framer-motion'
 import { DebouncedFunc, debounce } from 'lodash'
 import NextLink from 'next/link'
 import { usePathname } from 'next/navigation'
 
-import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import { matchPath } from '@ors/helpers/Url/Url'
 import { robotoCondensed } from '@ors/themes/fonts'
 
@@ -151,63 +149,66 @@ const DesktopHeaderNavigation = ({
     <div
       id="header-navigation"
       className={cx(
-        'gap-x-4 text-nowrap rounded-full bg-white px-5 py-3 text-xl font-normal uppercase',
+        'relative gap-x-4 text-nowrap rounded-full bg-white px-5 py-3 text-xl font-normal uppercase',
         robotoCondensed.className,
         className,
       )}
       onMouseLeave={handleHideAllMenus}
     >
       {items.map((item) => (
-        <div
-          key={item.label}
-          className="relative flex cursor-pointer text-primary"
-        >
+        <div key={item.label} className="relative">
+          <div className="flex cursor-pointer text-primary">
+            <div
+              className={cx(
+                'flex items-center justify-between gap-x-2 rounded-full px-4 py-2 text-primary transition-all hover:text-mlfs-hlYellow',
+                {
+                  'bg-mlfs-hlYellow hover:text-primary': item.current,
+                  'hover:bg-primary': !item.current,
+                },
+              )}
+              onMouseEnter={() => handleShowMenu(item.label)}
+            >
+              <a className="text-inherit no-underline" href={item.url}>
+                {item.label}
+              </a>
+              {item.menu && (
+                <div onClick={() => handleToggleMenu(item.label)}>
+                  <IoChevronDown />
+                </div>
+              )}
+            </div>
+          </div>
           <div
             className={cx(
-              'flex items-center justify-between gap-x-2 rounded-full px-4 py-2 text-primary transition-all hover:text-mlfs-hlYellow',
+              'absolute left-0 z-10 mt-4 origin-top opacity-0 transition-all',
               {
-                'bg-mlfs-hlYellow hover:text-primary': item.current,
-                'hover:bg-primary': !item.current,
+                'collapse scale-y-0': !showMenu[item.label],
+                'scale-y-100 opacity-100': showMenu[item.label],
               },
             )}
-            onMouseEnter={() => handleShowMenu(item.label)}
           >
-            <a className="text-inherit no-underline" href={item.url}>
-              {item.label}
-            </a>
-            {item.menu && (
-              <div onClick={() => handleToggleMenu(item.label)}>
-                <IoChevronDown />
-              </div>
-            )}
+            <div
+              className="z-10 flex flex-col rounded-lg bg-white shadow-xl"
+              onMouseLeave={handleHideAllMenus}
+              onMouseOver={() => handleShowMenu(item.label)}
+            >
+              {item.menu?.map((menuItem) => {
+                const Component = menuItem?.internal ? NextLink : 'a'
+                return (
+                  <Component
+                    key={menuItem.label}
+                    className={cx(
+                      'text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0 hover:bg-mlfs-hlYellow',
+                      { 'bg-mlfs-hlYellow': menuItem.current },
+                    )}
+                    href={menuItem.url}
+                  >
+                    {menuItem.label}
+                  </Component>
+                )
+              })}
+            </div>
           </div>
-          <AnimatePresence>
-            {showMenu[item.label] && (
-              <FadeInOut className="absolute left-0 z-10">
-                <div
-                  className="absolute top-16 z-10 flex flex-col rounded-lg bg-white shadow-xl"
-                  onMouseLeave={handleHideAllMenus}
-                  onMouseOver={() => handleShowMenu(item.label)}
-                >
-                  {item.menu?.map((menuItem) => {
-                    const Component = menuItem?.internal ? NextLink : 'a'
-                    return (
-                      <Component
-                        key={menuItem.label}
-                        className={cx(
-                          'text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0 hover:bg-mlfs-hlYellow',
-                          { 'bg-mlfs-hlYellow': menuItem.current },
-                        )}
-                        href={menuItem.url}
-                      >
-                        {menuItem.label}
-                      </Component>
-                    )
-                  })}
-                </div>
-              </FadeInOut>
-            )}
-          </AnimatePresence>
         </div>
       ))}
     </div>

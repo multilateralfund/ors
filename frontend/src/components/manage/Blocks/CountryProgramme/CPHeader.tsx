@@ -2,16 +2,17 @@ import { UserType, userTypeVisibility } from '@ors/types/user_types'
 
 import React, { useEffect, useMemo, useState } from 'react'
 
-import { Button, Typography } from '@mui/material'
+import { Button } from '@mui/material'
 import cx from 'classnames'
 import { Dictionary, capitalize, orderBy } from 'lodash'
+import NextLink from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
-import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
 import api from '@ors/helpers/Api/_api'
+import useClickOutside from '@ors/hooks/useClickOutside'
 import { useStore } from '@ors/store'
 
 import { IoChevronDown } from 'react-icons/io5'
@@ -26,13 +27,23 @@ const formattedDateFromTimestamp = (timestring: string) => {
 }
 
 const HeaderVersionsDropdown = () => {
+  const [showVersionsMenu, setShowVersionsMenu] = useState(false)
   const { report } = useStore((state) => state.cp_reports)
+
+  const toggleShowVersionsMenu = () => setShowVersionsMenu((prev) => !prev)
+
+  const ref = useClickOutside<HTMLDivElement>(() => {
+    setShowVersionsMenu(false)
+  })
+
   const versions =
     report.data && report.country
       ? orderBy(report.versions.data, 'version', 'desc').map(
           (version, idx) => ({
             id: version.id,
             formattedDate: formattedDateFromTimestamp(version.created_at),
+            isDraft: version.status === 'draft',
+            isFinal: version.status === 'final',
             label: `Version ${version.version}`,
             url:
               idx == 0
@@ -42,48 +53,54 @@ const HeaderVersionsDropdown = () => {
         )
       : []
 
+  const tagLatest = (
+    <span className="mx-2 rounded-md bg-gray-400 p-1 text-xs text-white">
+      LATEST
+    </span>
+  )
+  const tagDraft = (
+    <span className="mx-2 rounded-md bg-warning p-1 text-xs text-white">
+      Draft
+    </span>
+  )
+
   return (
-    <Dropdown
-      className="p-0 hover:bg-transparent hover:text-primary"
-      MenuProps={{
-        slotProps: {
-          paper: {
-            className:
-              'max-h-[200px] overflow-y-auto bg-gray-A100 rounded-none border-primary',
+    <div className="relative">
+      <div
+        className="flex cursor-pointer items-center justify-between gap-x-2"
+        ref={ref}
+        onClick={toggleShowVersionsMenu}
+      >
+        <h1 className="m-0 text-5xl leading-normal">{report?.data?.name}</h1>
+        <IoChevronDown className="text-5xl font-bold text-gray-700" />
+      </div>
+      <div
+        className={cx(
+          'absolute left-0 z-10 max-h-[200px] origin-top overflow-y-auto rounded-none border border-solid border-primary bg-gray-A100 opacity-0 transition-all',
+          {
+            'collapse scale-y-0': !showVersionsMenu,
+            'scale-y-100 opacity-100': showVersionsMenu,
           },
-        },
-      }}
-      label={
-        <div className="flex items-center justify-between gap-x-2">
-          <Typography component="h1" variant="h2">
-            {report?.data?.name}
-          </Typography>
-          <IoChevronDown className="text-5xl font-bold" />
-        </div>
-      }
-    >
-      {versions.map((info, idx) => (
-        <Dropdown.Item
-          key={info.id}
-          className="flex items-center gap-x-2 rounded-none text-black no-underline"
-          component={Link}
-          // @ts-ignore
-          href={info.url}
-        >
-          <div className="flex w-56 items-center justify-between">
-            <div>{info.label}</div>
-            <div className="flex items-center">
-              {idx == 0 && (
-                <span className="mx-2 rounded-md bg-gray-400 p-1 text-xs text-white">
-                  LATEST
-                </span>
-              )}
-              {info.formattedDate}
+        )}
+      >
+        {versions.map((info, idx) => (
+          <NextLink
+            key={info.id}
+            className="flex items-center gap-x-2 rounded-none px-2 py-2 text-black no-underline hover:bg-primary hover:text-white"
+            href={info.url}
+          >
+            <div className="flex w-56 items-center justify-between hover:text-white">
+              <div>{info.label}</div>
+              <div className="flex items-center">
+                {idx == 0 && (info.isFinal ? tagLatest : tagDraft)}
+                {idx == 1 && versions[0].isDraft && tagLatest}
+                {info.formattedDate}
+              </div>
             </div>
-          </div>
-        </Dropdown.Item>
-      ))}
-    </Dropdown>
+          </NextLink>
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -153,7 +170,9 @@ const ArchiveHeaderActions = () => {
 }
 
 const ViewHeaderActions = () => {
-  const { report, setReport } = useStore((state) => state.cp_reports)
+  const { cacheInvalidateReport, fetchVersions, report, setReport } = useStore(
+    (state) => state.cp_reports,
+  )
   const { enqueueSnackbar } = useSnackbar()
   const { user_type } = useStore((state) => state.user.data)
 
@@ -203,6 +222,8 @@ const ViewHeaderActions = () => {
                         ...response,
                       },
                     })
+                    cacheInvalidateReport(response.country_id, response.year)
+                    fetchVersions(response.country_id, response.year)
                     window.scrollTo({ behavior: 'smooth', top: 0 })
                   } catch (error) {
                     const errors = await error.json()
@@ -239,6 +260,11 @@ const EditHeaderActions = ({
   const { enqueueSnackbar } = useSnackbar()
   const { user_type } = useStore((state) => state.user.data)
 
+  const isDraft = report.data?.status === 'draft'
+  const isFinal = report.data?.status === 'final'
+
+  const showDraftFromFinalButton = isFinal && report.variant?.model === 'V'
+
   if (!userTypeVisibility[user_type as UserType]) return null
 
   return (
@@ -255,7 +281,7 @@ const EditHeaderActions = ({
           >
             Close
           </Link>
-          {report.data.status === 'draft' && (
+          {isDraft && (
             <Button
               className="px-4 py-2 shadow-none"
               color="primary"
@@ -307,6 +333,59 @@ const EditHeaderActions = ({
               Update draft
             </Button>
           )}
+          {showDraftFromFinalButton && (
+            <Button
+              className="px-4 py-2 shadow-none"
+              color="secondary"
+              size="large"
+              variant="contained"
+              onClick={async () => {
+                try {
+                  const response = await api(
+                    `api/country-programme/reports/${report.data?.id}/`,
+                    {
+                      data: {
+                        ...report.data,
+                        ...getSubmitFormData(),
+                        status: 'draft',
+                      },
+                      method: 'PUT',
+                    },
+                  )
+                  setErrors({})
+                  enqueueSnackbar(
+                    <>
+                      Updated submission for {response.country} {response.year}.
+                    </>,
+                    { variant: 'success' },
+                  )
+                  cacheInvalidateReport(response.country_id, response.year)
+                  router.push(
+                    `/country-programme/${report.country?.iso3}/${response.year}`,
+                  )
+                } catch (error) {
+                  if (error.status === 400) {
+                    setErrors({ ...(await error.json()) })
+                    enqueueSnackbar(
+                      <>Please make sure all the inputs are correct.</>,
+                      { variant: 'error' },
+                    )
+                  } else {
+                    const errors = await error.json()
+                    setErrors({})
+                    {
+                      errors.detail &&
+                        enqueueSnackbar(errors.detail, {
+                          variant: 'error',
+                        })
+                    }
+                  }
+                }
+              }}
+            >
+              Save draft
+            </Button>
+          )}
           <Button
             className="px-4 py-2 shadow-none"
             color="secondary"
@@ -356,9 +435,7 @@ const EditHeaderActions = ({
               }
             }}
           >
-            {report.data.status === 'draft'
-              ? 'Submit final version'
-              : 'Submit new version'}
+            {isDraft ? 'Submit final version' : 'Submit new version'}
           </Button>
         </div>
       )}
@@ -369,9 +446,11 @@ const EditHeaderActions = ({
 const CPHeader = ({
   actions = <ViewHeaderActions />,
   tag = <ViewHeaderTag />,
+  titlePrefix,
 }: {
   actions?: React.JSX.Element
   tag?: React.JSX.Element
+  titlePrefix?: React.JSX.Element
 }) => {
   const { report } = useStore((state) => state.cp_reports)
   const [memo, setMemo] = useState(0)
@@ -388,6 +467,7 @@ const CPHeader = ({
         </div>
         <div className="mb-4 flex min-h-[40px] items-center justify-between gap-x-8">
           <div className="flex items-center gap-x-2">
+            {titlePrefix}
             <HeaderVersionsDropdown />
             {tag}
           </div>
@@ -407,9 +487,9 @@ const CPCreateHeader = ({
   return (
     <div className="my-12 flex min-h-[40px] items-center justify-between gap-x-8">
       <div className="flex items-center gap-x-2">
-        <Typography component="h1" variant="h3">
+        <h1 className="m-0 text-4xl leading-normal">
           New submission - {currentYear}
-        </Typography>
+        </h1>
       </div>
       {actions}
     </div>
@@ -425,6 +505,7 @@ const CPEditHeader = (props: EditHeaderActionsProps) => {
     <CPHeader
       actions={<EditHeaderActions {...props} />}
       tag={<EditHeaderTag />}
+      titlePrefix={<span className="text-4xl">Editing: </span>}
     />
   )
 }

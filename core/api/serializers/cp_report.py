@@ -244,7 +244,7 @@ class CPReportCreateSerializer(serializers.Serializer):
         cp_report_data = {
             "name": validated_data.get("name"),
             "year": validated_data.get("year"),
-            "status": validated_data.get("status", CPReport.CPReportStatus.FINAL),
+            "status": validated_data.get("status", CPReport.CPReportStatus.DRAFT),
             "country_id": validated_data.get("country_id"),
         }
 

@@ -6,7 +6,6 @@ import { Tab, Tabs, Typography } from '@mui/material'
 import cx from 'classnames'
 import { produce } from 'immer'
 import {
-  filter,
   findIndex,
   get,
   includes,
@@ -32,7 +31,6 @@ import SectionC from '@ors/models/SectionC'
 import SectionD from '@ors/models/SectionD'
 import SectionE from '@ors/models/SectionE'
 import SectionF from '@ors/models/SectionF'
-import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
 import { getSections } from '.'
@@ -193,13 +191,7 @@ function CPEdit() {
     ]),
   }
 
-  const variant = useMemo(() => {
-    if (!report.data) return null
-    return filter(variants, (variant) => {
-      const year = report.data!.year
-      return variant.minYear <= year && variant.maxYear >= year
-    })[0]
-  }, [report.data])
+  const variant = useMemo(() => report.variant, [report])
 
   const [errors, setErrors] = useState<Record<string, any>>({})
   const [form, setForm] = useState<Record<string, any>>({
@@ -224,9 +216,9 @@ function CPEdit() {
       : Sections.section_a.getData(),
     section_b: includes(['V'], variant?.model)
       ? Sections.section_b
-        .getData()
-        .filter((row) => row.id !== 0)
-        .map((row) => ({ ...row, mandatory: false }))
+          .getData()
+          .filter((row) => row.id !== 0)
+          .map((row) => ({ ...row, mandatory: false }))
       : Sections.section_b.getData(),
     section_c: includes(['V'], variant?.model)
       ? Sections.section_c
@@ -334,7 +326,7 @@ function CPEdit() {
     }
 
     indicator.addEventListener('transitionend', handleTransitionEnd)
-  }, [activeTab])
+  }, [renderedSections.length, activeTab])
 
   return (
     <>
@@ -402,7 +394,7 @@ function CPEdit() {
                 <div
                   id={section.panelId}
                   key={section.panelId}
-                  className={cx('transition flex flex-col gap-6', {
+                  className={cx('flex flex-col gap-6 transition', {
                     'absolute -left-[9999px] -top-[9999px] opacity-0':
                       activeTab !== index,
                   })}

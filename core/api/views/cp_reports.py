@@ -330,33 +330,43 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
         # update version number
         new_instance = serializer.instance
 
-        # make sure that the final status can be set only once
-        if current_obj.status == CPReport.CPReportStatus.FINAL:
-            new_instance.status = CPReport.CPReportStatus.FINAL
-
         # increment version number if the status is FINAL
         new_instance.version = current_obj.version + int(
-            new_instance.status == CPReport.CPReportStatus.FINAL
+            current_obj.status == CPReport.CPReportStatus.FINAL
         )
 
         # set created_by to the current object created_by
         new_instance.created_by = current_obj.created_by
         new_instance.save()
 
-        if new_instance.status == CPReport.CPReportStatus.FINAL:
+        # arhive versions only for FINAL reports
+        if current_obj.status == CPReport.CPReportStatus.FINAL:
             self._archive_cp_report(current_obj)
 
         # inherit all history
         CPHistory.objects.filter(country_programme_report=current_obj).update(
             country_programme_report=new_instance
         )
+        event_descrs = ["Updated by user"]
+
+        # check if the status was changes
+        if current_obj.status != new_instance.status:
+            event_descrs.append(
+                f"Status changed from {current_obj.status} to {new_instance.status}"
+            )
+
         # create new history for update event
-        CPHistory.objects.create(
-            country_programme_report=new_instance,
-            report_version=new_instance.version,
-            updated_by=request.user,
-            event_description="Updated by user",
-        )
+        history = []
+        for event_desc in event_descrs:
+            history.append(
+                CPHistory(
+                    country_programme_report=new_instance,
+                    report_version=new_instance.version,
+                    updated_by=request.user,
+                    event_description=event_desc,
+                )
+            )
+        CPHistory.objects.bulk_create(history)
 
         current_obj.delete()
 
@@ -401,13 +411,14 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        initial_value = cp_report.status
         cp_report.status = cp_status
         cp_report.save()
         CPHistory.objects.create(
             country_programme_report=cp_report,
             report_version=cp_report.version,
             updated_by=request.user,
-            event_description="Status updated by user",
+            event_description=f"Status updated from {initial_value} to {cp_status}",
         )
         serializer = self.get_serializer(cp_report)
 
