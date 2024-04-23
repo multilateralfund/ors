@@ -36,13 +36,17 @@ def parse_columns_file(file_path):
             "time_frame": time_frame,
             **column_data,
         }
-        column = AdmColumn.objects.create(**column_data)
+        column = AdmColumn.objects.update_or_create(
+            name=column_data["name"],
+            section=column_data["section"],
+            time_frame=time_frame,
+            defaults=column_data,
+        )[0]
         if not parent_name:
             column_parents[column.name] = column
 
 
 def import_adm_columns():
     file_path = IMPORT_RESOURCES_DIR / "adm_columns.json"
-    delete_old_data(AdmColumn, file_path)
     parse_columns_file(file_path)
     logger.info("✔ adm columns imported")
