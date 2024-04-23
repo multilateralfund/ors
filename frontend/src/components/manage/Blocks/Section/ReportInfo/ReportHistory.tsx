@@ -33,8 +33,6 @@ const ReportHistory = () => {
             updated_by_username,
           } = historyItem
 
-          const reportingEmail = reporting_officer_email || updated_by_username
-
           const dateObject = new Date(created_at)
           const formattedDateTime = dateObject.toLocaleDateString(
             undefined,
@@ -72,11 +70,14 @@ const ReportHistory = () => {
                       className="my-1 w-fit rounded bg-gray-100 px-1 text-sm font-normal text-gray-500"
                     >
                       <span>{reporting_officer_name || ''}</span>
-                      {reporting_officer_name && reportingEmail && (
+                      {reporting_officer_name && reporting_officer_email && (
                         <span> - </span>
                       )}
                       <span>
-                        {reportingEmail}
+                        {reporting_officer_email || ''}
+                      </span>
+                      <span>
+                        {' '}({updated_by_username})
                       </span>
                     </p>
                   </div>
