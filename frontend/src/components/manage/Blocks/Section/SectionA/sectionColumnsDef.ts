@@ -44,15 +44,19 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
           : {}),
       }
     },
-    headerComponentParams: {
-      footnote: {
-        id: '1',
-        content: includes(['II'], model)
-          ? 'Where the data involves a blend of two or more substances, the quantities of individual components of controlled substances must be indicated separately, e.g.: For R502 consisting of 51.2% CFC-115 and 48.8% HCFC-22, indicate the total quantity of each controlled substance (i.e.., CFC-115 and HCFC-22) in the appropriate row.'
-          : 'Where the data involves a blend of two or more substances, the quantities of individual components of controlled substances must be indicated separately.',
-        icon: true,
-      },
-    },
+    ...(includes(['I'], model)
+      ? {}
+      : {
+          headerComponentParams: {
+            footnote: {
+              id: '1',
+              content: includes(['II'], model)
+                ? 'Where the data involves a blend of two or more substances, the quantities of individual components of controlled substances must be indicated separately, e.g.: For R502 consisting of 51.2% CFC-115 and 48.8% HCFC-22, indicate the total quantity of each controlled substance (i.e.., CFC-115 and HCFC-22) in the appropriate row.'
+                : 'Where the data involves a blend of two or more substances, the quantities of individual components of controlled substances must be indicated separately.',
+              icon: true,
+            },
+          },
+        }),
   },
   export_quotas: {
     initialWidth: 80,
