@@ -176,6 +176,8 @@ const ViewHeaderActions = () => {
   const { enqueueSnackbar } = useSnackbar()
   const { user_type } = useStore((state) => state.user.data)
 
+  const isDraft = report.data?.status === 'draft'
+
   if (!userTypeVisibility[user_type as UserType]) return null
 
   return (
@@ -191,7 +193,7 @@ const ViewHeaderActions = () => {
               variant="contained"
               button
             >
-              Edit report
+              {isDraft ? 'Edit report' : 'Add new version'}
             </Link>
             {report.data.status === 'draft' && (
               <Button
