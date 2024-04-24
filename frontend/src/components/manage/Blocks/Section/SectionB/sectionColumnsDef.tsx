@@ -70,7 +70,6 @@ const sectionColDefById: Record<string, ColDef> = {
           }
         : {}),
     }),
-    initialWidth: 150,
   },
   manufacturing_blends: {
     ...colDefById['manufacturing_blends'],

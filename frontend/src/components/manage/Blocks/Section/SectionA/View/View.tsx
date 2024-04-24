@@ -112,11 +112,9 @@ export default function SectionAView(props: any) {
 
   return (
     <>
-      {!includes(['I'], variant.model) && (
-        <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-          <Footnotes />
-        </Alert>
-      )}
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnotes />
+      </Alert>
       <div
         className={cx('flex', {
           'justify-between': includes(['IV', 'V'], variant.model),
@@ -140,6 +138,7 @@ export default function SectionAView(props: any) {
         />
       </div>
       <Table
+        key={tableDataValue}
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
         components={components}

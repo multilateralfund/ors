@@ -3,13 +3,13 @@ import Typography from '@mui/material/Typography'
 import ReportHistory from '@ors/components/manage/Blocks/Section/ReportInfo/ReportHistory'
 import ReportStatus from '@ors/components/manage/Blocks/Section/ReportInfo/ReportStatus'
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
-import { useStore } from '@ors/store'
 
 import { IoDocumentTextOutline } from 'react-icons/io5'
 
 const ReportInfoView = (props: any) => {
   const { report, section } = props
-  const user = useStore((state) => state.user)
+
+  const username = report.created_by
 
   const sectionsChecked = {
     section_a: report.report_info?.reported_section_a ?? true,
@@ -34,7 +34,7 @@ const ReportInfoView = (props: any) => {
           <SimpleField
             id="username"
             className="col-span-2 lg:col-span-1"
-            data={user.data.username}
+            data={username}
             label="Username"
           />
           <SimpleField

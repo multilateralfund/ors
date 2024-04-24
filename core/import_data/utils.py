@@ -372,6 +372,8 @@ def get_cp_report(
         country_programme_report=cp,
         report_version=cp.version,
         updated_by=import_user,
+        reporting_officer_name=cp.reporting_entry,
+        reporting_officer_email=cp.reporting_email,
         event_description="Imported by the system",
     )
 

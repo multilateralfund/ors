@@ -194,7 +194,6 @@ function useGridOptions(props: {
                   footnote: {
                     ...sectionColDefById['remarks'].headerComponentParams
                       .footnote,
-                    id: '3',
                   },
                 },
               },

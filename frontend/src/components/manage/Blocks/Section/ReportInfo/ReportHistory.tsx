@@ -28,6 +28,8 @@ const ReportHistory = () => {
             created_at,
             event_description,
             report_version,
+            reporting_officer_email,
+            reporting_officer_name,
             updated_by_username,
           } = historyItem
 
@@ -64,10 +66,19 @@ const ReportHistory = () => {
                   </div>
                   <div>
                     <p
-                      id={`report_user`}
+                      id="reporting_officer"
                       className="my-1 w-fit rounded bg-gray-100 px-1 text-sm font-normal text-gray-500"
                     >
-                      {updated_by_username}
+                      <span>{reporting_officer_name || ''}</span>
+                      {reporting_officer_name && reporting_officer_email && (
+                        <span> - </span>
+                      )}
+                      <span>
+                        {reporting_officer_email || ''}
+                      </span>
+                      <span>
+                        {' '}({updated_by_username})
+                      </span>
                     </p>
                   </div>
                 </div>

@@ -189,6 +189,8 @@ class CPHistory(models.Model):
         related_name="updated_cp_reports",
         help_text="User who updated the report",
     )
+    reporting_officer_name = models.CharField(max_length=248, blank=True, null=True)
+    reporting_officer_email = models.EmailField(max_length=248, blank=True, null=True)
     event_description = models.TextField(blank=True)
     report_version = models.FloatField(default=1)
 
