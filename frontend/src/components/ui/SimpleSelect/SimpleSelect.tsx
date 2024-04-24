@@ -39,7 +39,7 @@ const SimpleSelect = ({
   return (
     <div
       className={cx(
-        'flex items-center justify-between gap-x-2 text-lg uppercase',
+        'flex items-center justify-between gap-x-2 text-lg uppercase min-w-52',
         robotoCondensed.className,
         className,
       )}

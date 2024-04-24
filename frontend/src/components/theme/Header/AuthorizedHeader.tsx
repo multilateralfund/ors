@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import { AnimatePresence } from 'framer-motion'
 import { isFunction } from 'lodash'
 
@@ -15,7 +17,11 @@ import HeaderNavigation from './HeaderNavigation'
 
 export default function Header() {
   const { HeaderTitle } = useStore((state) => state.header)
-  const isCP = window.location.pathname === "/country-programme"
+  const [isCP, setIsCP] = useState(false)
+
+  useEffect(() => {
+    setIsCP(window.location.pathname === '/country-programme')
+  }, [])
 
   return (
     <FadeInOut className="header-motion">

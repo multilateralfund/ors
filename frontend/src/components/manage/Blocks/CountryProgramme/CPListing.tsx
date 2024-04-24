@@ -490,7 +490,7 @@ const LogSection = function LogSection(props: SectionProps & { logApi: any }) {
         )}
       </div>
       <div
-        className={`transition-opacity mb-6 flex w-full max-w-screen-xl flex-col gap-12 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
+        className={`transition-opacity mb-10 flex w-full max-w-screen-xl flex-col gap-12 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
       >
         {memoResults.map((countryData: any) => {
           if (countryData.isSkeleton)
@@ -561,6 +561,7 @@ const StatusFilter = (props: any) => {
     <ToggleButtonGroup
       aria-label="Platform"
       color="primary"
+      fullWidth={true}
       value={filters.status}
       onChange={changeHandler}
       exclusive
@@ -709,7 +710,7 @@ export default function CPListing() {
   const [filters, setFilters] = useState<FiltersType>({
     country: [],
     range: [minYear, maxYear],
-    status: 'final',
+    status: 'all',
   })
   const countryApi = useCountrySectionApi(filters)
   const logApi = useLogSectionApi(filters)
