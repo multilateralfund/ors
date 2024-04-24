@@ -2,8 +2,6 @@ import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from core.models.country_programme import CPReport
-
 pytestmark = pytest.mark.django_db
 
 
