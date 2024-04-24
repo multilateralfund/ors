@@ -101,7 +101,7 @@ const CountryItem = (props: any) => {
       className={`transition-opacity flex w-full flex-col gap-4 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
     >
       <Typography variant="h5">{group}</Typography>
-      <div className="grid w-full grid-flow-row auto-rows-max gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="grid w-full grid-flow-row auto-rows-max gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
         {reports.map((report: any, index: number) => {
           if (!showAllReports && index >= REPORTS_PER_COUNTRY) {
             return null // Hide reports beyond the limit if showAllReports is false
@@ -700,7 +700,7 @@ export default function CPListing() {
   const settings = useStore((state) => state.common.settings.data)
   const { user_type } = useStore((state) => state.user.data)
 
-  const [activeTab, setActiveTab] = useState(1)
+  const [activeTab, setActiveTab] = useState(0)
 
   const tabsEl = React.useRef<HTMLDivElement>(null)
 
