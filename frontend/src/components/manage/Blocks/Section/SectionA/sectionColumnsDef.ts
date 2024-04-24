@@ -50,7 +50,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
         content: includes(['II'], model)
           ? 'Where the data involves a blend of two or more substances, the quantities of individual components of controlled substances must be indicated separately, e.g.: For R502 consisting of 51.2% CFC-115 and 48.8% HCFC-22, indicate the total quantity of each controlled substance (i.e.., CFC-115 and HCFC-22) in the appropriate row.'
           : 'Where the data involves a blend of two or more substances, the quantities of individual components of controlled substances must be indicated separately.',
-        icon: true,
+        icon: false,
       },
     },
   },
@@ -65,7 +65,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
             footnote: {
               id: '2',
               content: 'Where applicable.',
-              icon: true,
+              icon: false,
             },
           }
         : {}),
@@ -84,7 +84,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
             footnote: {
               id: '2',
               content: 'Where applicable.',
-              icon: true,
+              icon: false,
             },
           }
         : {}),
@@ -108,7 +108,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
               id: 3,
               content:
                 'Provide explanation if total sector use and consumption (import-export+production) is different (e.g, stockpiling).',
-              icon: true,
+              icon: false,
             },
           }),
     },

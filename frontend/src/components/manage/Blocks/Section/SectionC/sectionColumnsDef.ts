@@ -30,7 +30,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
             footnote: {
               id: '1',
               content: 'Indicate whether the prices are FOB or retail prices.',
-              icon: true,
+              icon: false,
             },
           }),
     },
