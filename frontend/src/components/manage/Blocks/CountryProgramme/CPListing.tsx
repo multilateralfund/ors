@@ -754,7 +754,7 @@ export default function CPListing() {
         className="relative flex flex-col-reverse gap-4 md:flex-row"
       >
         <div className="flex-1">
-          <div className="flex items-center justify-between border-0 border-b border-solid border-primary">
+          <div className="flex flex-wrap-reverse gap-2 md:flex-nowrap items-center justify-between border-0 border-b border-solid border-primary">
             <Tabs
               className="scrollable w-96"
               aria-label="view country programme report"
@@ -792,7 +792,7 @@ export default function CPListing() {
                 }}
               />
             </Tabs>
-            <div id="portalSortBy"></div>
+            <div id="portalSortBy" className="flex-1 flex justify-end"></div>
           </div>
           {activeTab === 0 && (
             <CountrySection
