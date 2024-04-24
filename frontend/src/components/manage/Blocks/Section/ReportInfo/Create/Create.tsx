@@ -16,8 +16,7 @@ const FileInput: React.FC = () => {
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      const filesArray = Array.from(event.target.files)
-      setSelectedFiles(filesArray)
+      setSelectedFiles(Array.from(event.target.files))
     }
   }
 
