@@ -76,7 +76,7 @@ const debounce = (func: () => void) => {
 }
 
 const SortBy = (props: Omit<SimpleSelectProps, 'label'>) => (
-  <SimpleSelect label="Sort by" {...props} />
+  <SimpleSelect className="min-w-52" label="Sort by" {...props} />
 )
 
 const CountryItem = (props: any) => {
