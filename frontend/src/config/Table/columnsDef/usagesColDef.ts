@@ -83,15 +83,6 @@ export default function getUsagesColDef() {
       },
       initialWidth: 84,
     },
-    'Other I': {
-      headerComponentParams: {},
-    },
-    'Other II': {
-      headerComponentParams: {},
-    },
-    'Other III': {
-      headerComponentParams: {},
-    },
     'Other IV': {
       flex: 0.5,
     },

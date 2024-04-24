@@ -3,13 +3,7 @@ import type { SimpleSelectProps } from '@ors/components/ui/SimpleSelect/SimpleSe
 import { Country } from '@ors/types/store'
 import { UserType, userTypeVisibility } from '@ors/types/user_types'
 
-import React, {
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import React, { useMemo, useState } from 'react'
 
 import {
   Box,
@@ -31,6 +25,8 @@ import { getResults } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
 
+import Portal from '../../Utils/Portal'
+
 import { IoChevronDownCircle, IoClose, IoEllipse } from 'react-icons/io5'
 
 interface SectionProps {
@@ -40,7 +36,6 @@ interface SectionProps {
   minYear: any
   section?: number
   setFilters: any
-  setRange?: any
   user_type?: UserType
 }
 
@@ -68,7 +63,6 @@ type FiltersType = {
   country: Country[]
   range: [number, number]
   status: StatusFilterTypes
-  year: number[]
 }
 
 const PER_PAGE_COUNTRY = 12
@@ -466,12 +460,10 @@ const CountryItem = (props: any) => {
   )
 }
 
-// @ts-ignore
-const CountrySection = React.forwardRef(function CountrySection(
-  props: SectionProps,
-  ref,
+const CountrySection = function CountrySection(
+  props: SectionProps & { countryApi: any },
 ) {
-  const { filters, maxYear, minYear, setFilters, setRange, user_type } = props
+  const { countryApi, filters, maxYear, minYear, setFilters, user_type } = props
   const [pagination, setPagination] = useState({
     page: 1,
     rowsPerPage: PER_PAGE_COUNTRY,
@@ -489,27 +481,7 @@ const CountrySection = React.forwardRef(function CountrySection(
     countries.map((country: any) => [country.id, country]),
   )
 
-  const { data, loading, setParams } = useApi<ReportsResponse>({
-    // onSuccess: () => {
-    //   if (shouldScroll.current) {
-    //     scrollToElement({ selectors: '#cp-listing-sections' })
-    //   } else {
-    //     shouldScroll.current = true
-    //   }
-    // },
-    options: {
-      params: {
-        limit: PER_PAGE_COUNTRY,
-        offset: 0,
-        ordering: 'asc',
-        show_all_per_group: true,
-        status: filters.status,
-      },
-      withStoreCache: true,
-    },
-    path: 'api/country-programme/reports-by-country/',
-  })
-  const { count, loaded, results } = getResults(data)
+  const { count, loaded, loading, results, setParams } = countryApi
 
   const memoResults = useMemo(() => {
     if (!loaded) {
@@ -530,30 +502,16 @@ const CountrySection = React.forwardRef(function CountrySection(
     setParams({ offset: 0, ordering: option.value })
   }
 
-  useImperativeHandle(
-    ref,
-    () => {
-      return {
-        pagination,
-        setPagination,
-        setParams,
-      }
-    },
-    [pagination, setPagination, setParams],
-  )
-
   return (
     // @ts-ignore
-    <div id="country-section" className="relative" ref={ref}>
+    <div id="country-section" className="relative">
       <Loading
         className="bg-mui-box-background/70 !duration-300"
         active={loading}
       />
-      {user_type !== 'country_user' && (
-        <div className="mt-4 sm:-mt-12 md:mt-4 lg:-mt-12 flex min-h-[40px] items-center justify-end gap-4">
-          <SortBy options={orderOptions} onChange={handleOrderChange} />
-        </div>
-      )}
+      <Portal active={user_type !== 'country_user'} domNode="portalSortBy">
+        <SortBy options={orderOptions} onChange={handleOrderChange} />
+      </Portal>
       <div className="my-6 flex gap-4">
         {filters.country.map((countryId: number) => (
           <Typography
@@ -569,11 +527,8 @@ const CountrySection = React.forwardRef(function CountrySection(
               onClick={() => {
                 const values = filters.country || []
                 const newValue = filter(values, (value) => value !== countryId)
-                setFilters((filters: any) => {
-                  return {
-                    ...filters,
-                    country: newValue,
-                  }
+                setFilters({
+                  country: newValue,
                 })
                 setPagination((pagination) => ({ ...pagination, page: 1 }))
                 setParams({
@@ -595,13 +550,9 @@ const CountrySection = React.forwardRef(function CountrySection(
               className="cursor-pointer"
               size={20}
               onClick={() => {
-                setFilters((filters: any) => {
-                  setRange([minYear, maxYear])
-                  return {
-                    ...filters,
-                    range: [minYear, maxYear],
-                    year: [],
-                  }
+                setFilters({
+                  range: [minYear, maxYear],
+                  year: [],
                 })
                 setPagination((pagination) => ({ ...pagination, page: 1 }))
                 setParams({
@@ -663,7 +614,7 @@ const CountrySection = React.forwardRef(function CountrySection(
       )}
     </div>
   )
-})
+}
 
 const LogItem = (props: any) => {
   const { group, loaded, loading, reports } = props
@@ -737,11 +688,8 @@ const LogItem = (props: any) => {
   )
 }
 //eslint-disable-next-line
-const LogSection = React.forwardRef(function LogSection(
-  props: SectionProps,
-  ref,
-) {
-  const { filters, maxYear, minYear, setFilters, setRange } = props
+const LogSection = function LogSection(props: SectionProps & { logApi: any }) {
+  const { filters, logApi, maxYear, minYear, setFilters } = props
   const [pagination, setPagination] = useState({
     page: 1,
     rowsPerPage: PER_PAGE_COUNTRY,
@@ -754,27 +702,7 @@ const LogSection = React.forwardRef(function LogSection(
     countries.map((country: any) => [country.id, country]),
   )
 
-  const { data, loading, setParams } = useApi<ReportsResponse>({
-    // onSuccess: () => {
-    //   if (shouldScroll.current) {
-    //     scrollToElement({ selectors: '#cp-listing-sections' })
-    //   } else {
-    //     shouldScroll.current = true
-    //   }
-    // },
-    options: {
-      params: {
-        limit: PER_PAGE_COUNTRY,
-        offset: 0,
-        ordering: 'asc',
-        show_all_per_group: true,
-        status: filters.status,
-      },
-      withStoreCache: true,
-    },
-    path: 'api/country-programme/reports-by-country/',
-  })
-  const { count, loaded, results } = getResults(data)
+  const { count, loaded, loading, results, setParams } = logApi
 
   const memoResults = useMemo(() => {
     if (!loaded) {
@@ -790,21 +718,9 @@ const LogSection = React.forwardRef(function LogSection(
 
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
-  useImperativeHandle(
-    ref,
-    () => {
-      return {
-        pagination,
-        setPagination,
-        setParams,
-      }
-    },
-    [pagination, setPagination, setParams],
-  )
-
   return (
     // @ts-ignore
-    <div id="country-section" className="relative" ref={ref}>
+    <div id="country-section" className="relative">
       <Loading
         className="bg-mui-box-background/70 !duration-300"
         active={loading}
@@ -824,11 +740,8 @@ const LogSection = React.forwardRef(function LogSection(
               onClick={() => {
                 const values = filters.country || []
                 const newValue = filter(values, (value) => value !== countryId)
-                setFilters((filters: any) => {
-                  return {
-                    ...filters,
-                    country: newValue,
-                  }
+                setFilters({
+                  country: newValue,
                 })
                 setPagination((pagination) => ({ ...pagination, page: 1 }))
                 setParams({
@@ -850,13 +763,9 @@ const LogSection = React.forwardRef(function LogSection(
               className="cursor-pointer"
               size={20}
               onClick={() => {
-                setFilters((filters: any) => {
-                  setRange([minYear, maxYear])
-                  return {
-                    ...filters,
-                    range: [minYear, maxYear],
-                    year: [],
-                  }
+                setFilters({
+                  range: [minYear, maxYear],
+                  year: [],
                 })
                 setPagination((pagination) => ({ ...pagination, page: 1 }))
                 setParams({
@@ -918,51 +827,30 @@ const LogSection = React.forwardRef(function LogSection(
       )}
     </div>
   )
-})
+}
 
 const StatusFilter = (props: any) => {
-  const { filters, setCountryFunctions, setFilters, setLogFunctions } = props
-  const { setCountryPagination, setCountryParams } = setCountryFunctions
-  const { setLogPagination, setLogParams } = setLogFunctions
+  const { filters, setFilters } = props
   const statusFilterOrder = ['all', 'final', 'draft']
-
-  const setParams = setCountryParams || setLogParams
-  const setPagination = setCountryPagination || setLogPagination
 
   const statusLabels: Record<string, string> = {
     all: 'View All',
     draft: 'Drafts',
     final: 'Final',
   }
-  const [status, setStatus] = useState<StatusFilterTypes>(filters.status)
-
   const changeHandler = (
     _: React.MouseEvent<HTMLElement>,
     newValue: StatusFilterTypes,
   ) => {
-    setStatus(newValue)
-    setFilters((filters: any) => {
-      return {
-        ...filters,
-        status: newValue,
-      }
-    })
-    setParams?.({
-      offset: 0,
+    setFilters({
       status: newValue,
-    })
-    setPagination?.((pagination: any) => {
-      return {
-        ...pagination,
-        page: 1,
-      }
     })
   }
   return (
     <ToggleButtonGroup
       aria-label="Platform"
       color="primary"
-      value={status}
+      value={filters.status}
       onChange={changeHandler}
       exclusive
     >
@@ -983,17 +871,8 @@ const StatusFilter = (props: any) => {
   )
 }
 
-const CountrySelect = (props: {
-  filters: any
-  setCountryFunctions: any
-  setFilters: any
-  setLogFunctions: any
-}) => {
-  const { filters, setCountryFunctions, setFilters, setLogFunctions } = props
-  const { setCountryPagination, setCountryParams } = setCountryFunctions
-  const { setLogPagination, setLogParams } = setLogFunctions
-  const setParams = setCountryParams || setLogParams
-  const setPagination = setCountryPagination || setLogPagination
+const CountrySelect = (props: { filters: any; setFilters: any }) => {
+  const { filters, setFilters } = props
   // take into account 'user_type'
   const countries = useStore((state) => state.common.countries_for_listing.data)
 
@@ -1012,19 +891,7 @@ const CountrySelect = (props: {
         if (!!value) {
           const country = filters.country || []
           const newValue = union(country, [value.id])
-          setFilters((filters: any) => {
-            return { ...filters, country: newValue }
-          })
-          setParams?.({
-            country_id: newValue.join(','),
-            offset: 0,
-          })
-          setPagination?.((pagination: any) => {
-            return {
-              ...pagination,
-              page: 1,
-            }
-          })
+          setFilters({ country: newValue })
           if (document.activeElement) {
             // @ts-ignore
             document.activeElement.blur()
@@ -1038,26 +905,10 @@ const CountrySelect = (props: {
 const YearSelect = (props: {
   maxYear: number
   minYear: number
+  onChange: any
   range: [number, number]
-  setCountryFunctions: any
-  setFilters: any
-  setLogFunctions: any
-  setRange: any
 }) => {
-  const {
-    maxYear,
-    minYear,
-    range,
-    setCountryFunctions,
-    setFilters,
-    setLogFunctions,
-    setRange,
-  } = props
-  const { setCountryPagination, setCountryParams } = setCountryFunctions
-  const { setLogPagination, setLogParams } = setLogFunctions
-
-  const setParams = setCountryParams || setLogParams
-  const setPagination = setCountryPagination || setLogPagination
+  const { maxYear, minYear, onChange, range } = props
 
   return (
     <Field
@@ -1067,40 +918,13 @@ const YearSelect = (props: {
       min={minYear}
       value={range}
       widget="range"
-      onChange={(value: number[]) => {
-        setRange(value)
-        debounce(() => {
-          setFilters((filters: any) => {
-            return { ...filters, range: value }
-          })
-          setParams?.({
-            offset: 0,
-            year_max: value[1],
-            year_min: value[0],
-          })
-          setPagination?.((pagination: any) => {
-            return {
-              ...pagination,
-              page: 1,
-            }
-          })
-        })
-      }}
+      onChange={onChange}
     />
   )
 }
 
 function CPFilters(props: any) {
-  const {
-    filters,
-    maxYear,
-    minYear,
-    range,
-    setCountryFunctions,
-    setFilters,
-    setLogFunctions,
-    setRange,
-  } = props
+  const { filters, maxYear, minYear, setFilters } = props
 
   return (
     <Box
@@ -1108,38 +932,62 @@ function CPFilters(props: any) {
       className="sticky top-2 flex h-fit flex-col gap-6 rounded-lg p-8"
     >
       <Typography className="text-3xl font-light">Filters</Typography>
-      <StatusFilter
-        filters={filters}
-        setCountryFunctions={setCountryFunctions}
-        setFilters={setFilters}
-        setLogFunctions={setLogFunctions}
-      />
-      <CountrySelect
-        filters={filters}
-        setCountryFunctions={setCountryFunctions}
-        setFilters={setFilters}
-        setLogFunctions={setLogFunctions}
-      />
+      <StatusFilter filters={filters} setFilters={setFilters} />
+      <CountrySelect filters={filters} setFilters={setFilters} />
       <YearSelect
         maxYear={maxYear}
         minYear={minYear}
-        range={range}
-        setCountryFunctions={setCountryFunctions}
-        setFilters={setFilters}
-        setLogFunctions={setLogFunctions}
-        setRange={setRange}
+        range={filters.range}
+        onChange={(value: number[]) => {
+          debounce(() => {
+            setFilters({ range: value })
+          })
+        }}
       />
     </Box>
   )
 }
 
+function useCountrySectionApi(filters: FiltersType) {
+  const { data, loading, setParams } = useApi<ReportsResponse>({
+    options: {
+      params: {
+        limit: PER_PAGE_COUNTRY,
+        offset: 0,
+        ordering: 'asc',
+        show_all_per_group: true,
+        status: filters.status,
+      },
+      withStoreCache: true,
+    },
+    path: 'api/country-programme/reports-by-country/',
+  })
+  const { count, loaded, results } = getResults(data)
+
+  return { count, data, loaded, loading, results, setParams }
+}
+
+function useLogSectionApi(filters: FiltersType) {
+  const { data, loading, setParams } = useApi<ReportsResponse>({
+    options: {
+      params: {
+        limit: PER_PAGE_COUNTRY,
+        offset: 0,
+        ordering: 'asc',
+        show_all_per_group: true,
+        status: filters.status,
+      },
+      withStoreCache: true,
+    },
+    path: 'api/country-programme/reports-by-country/',
+  })
+  const { count, loaded, results } = getResults(data)
+  return { count, data, loaded, loading, results, setParams }
+}
+
 export default function CPListing() {
   const settings = useStore((state) => state.common.settings.data)
   const { user_type } = useStore((state) => state.user.data)
-  const [, setCountryRef] = useState(false)
-  const [, setLogRef] = useState(false)
-  const countryRef = useRef<any>(null)
-  const logRef = useRef<any>(null)
 
   const [activeTab, setActiveTab] = useState(0)
 
@@ -1151,21 +999,28 @@ export default function CPListing() {
     country: [],
     range: [minYear, maxYear],
     status: 'final',
-    year: [],
   })
-  const [range, setRange] = useState([filters.range[0], filters.range[1]])
+  const countryApi = useCountrySectionApi(filters)
+  const logApi = useLogSectionApi(filters)
 
-  useEffect(() => {
-    if (countryRef.current !== null) {
-      setCountryRef(true)
-    }
-  }, [countryRef.current, activeTab])
+  const handleFiltersChange = (newFilters: FiltersType) => {
+    const newFilterState = { ...filters, ...newFilters }
+    setFilters(newFilterState)
 
-  useEffect(() => {
-    if (logRef.current !== null) {
-      setLogRef(true)
+    const newParams = {
+      country_id: newFilterState?.country?.join(','),
+      status: newFilterState.status,
+      ...(newFilterState.range.length == 2
+        ? {
+            year_max: newFilterState.range[1],
+            year_min: newFilterState.range[0],
+          }
+        : {}),
     }
-  }, [logRef.current, activeTab])
+
+    countryApi.setParams(newParams)
+    logApi.setParams(newParams)
+  }
 
   return (
     <>
@@ -1189,7 +1044,7 @@ export default function CPListing() {
         <div className="flex-1">
           <div className="flex items-center justify-between border-0 border-b border-solid border-primary">
             <Tabs
-              className="scrollable"
+              className="scrollable w-96"
               aria-label="view country programme report"
               ref={tabsEl}
               scrollButtons="auto"
@@ -1214,57 +1069,46 @@ export default function CPListing() {
                     'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
                 }}
               />
-              {/*<Tab*/}
-              {/*  id="submissions-log"*/}
-              {/*  className="rounded-b-none px-3 py-2"*/}
-              {/*  aria-controls="submissions-log"*/}
-              {/*  label="Submissions Log"*/}
-              {/*  classes={{*/}
-              {/*    selected:*/}
-              {/*      'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',*/}
-              {/*  }}*/}
-              {/*/>*/}
+              <Tab
+                id="submissions-log"
+                className="rounded-b-none px-3 py-2"
+                aria-controls="submissions-log"
+                label="Submissions Log"
+                classes={{
+                  selected:
+                    'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
+                }}
+              />
             </Tabs>
+            <div id="portalSortBy"></div>
           </div>
           {activeTab === 0 && (
             <CountrySection
+              countryApi={countryApi}
               filters={filters}
               maxYear={maxYear}
               minYear={minYear}
-              ref={countryRef}
-              setFilters={setFilters}
-              setRange={setRange}
+              setFilters={handleFiltersChange}
               user_type={user_type}
             />
           )}
-          {/*{activeTab === 1 && (*/}
-          {/*  <LogSection*/}
-          {/*    filters={filters}*/}
-          {/*    maxYear={maxYear}*/}
-          {/*    minYear={minYear}*/}
-          {/*    ref={logRef}*/}
-          {/*    setFilters={setFilters}*/}
-          {/*    setRange={setRange}*/}
-          {/*    user_type={user_type}*/}
-          {/*  />*/}
-          {/*)}*/}
+          {activeTab === 1 && (
+            <LogSection
+              filters={filters}
+              logApi={logApi}
+              maxYear={maxYear}
+              minYear={minYear}
+              setFilters={handleFiltersChange}
+              user_type={user_type}
+            />
+          )}
         </div>
         <CPFilters
           filters={filters}
           maxYear={maxYear}
           minYear={minYear}
-          range={range}
-          setFilters={setFilters}
-          setRange={setRange}
+          setFilters={handleFiltersChange}
           user_type={user_type}
-          setCountryFunctions={{
-            setCountryPagination: countryRef.current?.setPagination,
-            setCountryParams: countryRef.current?.setParams,
-          }}
-          setLogFunctions={{
-            setLogPagination: logRef.current?.setPagination,
-            setLogParams: logRef.current?.setParams,
-          }}
         />
       </div>
     </>
