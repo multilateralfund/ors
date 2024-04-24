@@ -234,6 +234,7 @@ const CPCreate: React.FC = () => {
   })
   const [form, setForm] = useState<CPBaseForm>({
     country: null,
+    files: [],
     report_info: {
       reported_section_a: true,
       reported_section_b: true,
@@ -298,6 +299,7 @@ const CPCreate: React.FC = () => {
     return {
       ...form,
       country_id: form.country?.id,
+      files: form.files,
       name: form.country?.label ? `${form.country?.label} ${form.year}` : '',
       report_info: {
         reported_section_a: form.report_info.reported_section_a,

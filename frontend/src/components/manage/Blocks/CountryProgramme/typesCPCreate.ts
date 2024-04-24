@@ -63,6 +63,7 @@ export interface PassedCPCreateTableProps extends CPCreateTableProps {
 
 export interface CPBaseForm {
   country: WidgetCountry | null
+  files: File[]
   report_info: {
     reported_section_a: boolean
     reported_section_b: boolean
