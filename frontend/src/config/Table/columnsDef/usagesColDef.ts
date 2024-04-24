@@ -160,7 +160,6 @@ export default function getUsagesColDef() {
       initialWidth: 120,
     },
     'Refrigeration Servicing': {
-      autoHeaderHeight: true,
       flex: 1,
       initialWidth: 84,
     },
