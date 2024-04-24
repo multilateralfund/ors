@@ -47,10 +47,6 @@ class CPReportInfoSerializer(serializers.ModelSerializer):
 
 class CPReportBaseSerializer(serializers.ModelSerializer):
     country = serializers.StringRelatedField()
-    country_id = serializers.PrimaryKeyRelatedField(
-        required=True,
-        queryset=Country.objects.all().values_list("id", flat=True),
-    )
     status = serializers.ChoiceField(
         choices=CPReport.CPReportStatus.choices, required=False
     )
@@ -91,6 +87,10 @@ class CPReportSerializer(CPReportBaseSerializer):
         many=True,
         required=False,
         source="cphistory",
+    )
+    country_id = serializers.PrimaryKeyRelatedField(
+        required=True,
+        queryset=Country.objects.all().values_list("id", flat=True),
     )
 
     class Meta(CPReportBaseSerializer.Meta):
