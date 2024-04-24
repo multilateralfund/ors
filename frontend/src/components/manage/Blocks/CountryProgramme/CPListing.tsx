@@ -101,7 +101,7 @@ const CountryItem = (props: any) => {
       className={`transition-opacity flex w-full flex-col gap-4 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
     >
       <Typography variant="h5">{group}</Typography>
-      <div className="grid w-full grid-flow-row auto-rows-max gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="grid w-full grid-flow-row auto-rows-max grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
         {reports.map((report: any, index: number) => {
           if (!showAllReports && index >= REPORTS_PER_COUNTRY) {
             return null // Hide reports beyond the limit if showAllReports is false
@@ -624,12 +624,12 @@ const YearSelect = (props: {
 
   return (
     <Field
-      FieldProps={{ className: 'mb-0 px-4' }}
-      label="Date"
+      FieldProps={{ className: 'mb-0' }}
+      label="Select a range of years"
       max={maxYear}
       min={minYear}
       value={range}
-      widget="range"
+      widget="yearRange"
       onChange={onChange}
     />
   )
@@ -754,7 +754,7 @@ export default function CPListing() {
         className="relative flex flex-col-reverse gap-4 md:flex-row"
       >
         <div className="flex-1">
-          <div className="flex flex-wrap-reverse gap-2 md:flex-nowrap items-center justify-between border-0 border-b border-solid border-primary">
+          <div className="flex flex-wrap-reverse items-center justify-between gap-2 border-0 border-b border-solid border-primary md:flex-nowrap">
             <Tabs
               className="scrollable w-96"
               aria-label="view country programme report"
@@ -792,7 +792,7 @@ export default function CPListing() {
                 }}
               />
             </Tabs>
-            <div id="portalSortBy" className="flex-1 flex justify-end"></div>
+            <div id="portalSortBy" className="flex flex-1 justify-end"></div>
           </div>
           {activeTab === 0 && (
             <CountrySection
