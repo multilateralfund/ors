@@ -98,10 +98,10 @@ const CountryItem = (props: any) => {
 
   return (
     <div
-      className={`transition-opacity flex w-full flex-col gap-8 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
+      className={`transition-opacity flex w-full flex-col gap-4 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
     >
-      <Typography variant="h3">{group}</Typography>
-      <div className="grid w-full grid-flow-row auto-rows-max gap-8 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+      <Typography variant="h5">{group}</Typography>
+      <div className="grid w-full grid-flow-row auto-rows-max gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
         {reports.map((report: any, index: number) => {
           if (!showAllReports && index >= REPORTS_PER_COUNTRY) {
             return null // Hide reports beyond the limit if showAllReports is false
@@ -119,7 +119,7 @@ const CountryItem = (props: any) => {
           return (
             <Link
               key={index}
-              className="flex items-baseline justify-between gap-4 text-pretty border-0 border-b border-solid border-blue-600 pb-2 pr-4 sm:min-w-60"
+              className="flex items-baseline justify-between gap-4 text-pretty border-0 border-b border-solid border-blue-600 pb-2 sm:min-w-60"
               underline="none"
               href={
                 report.status === 'draft'
@@ -128,7 +128,7 @@ const CountryItem = (props: any) => {
               }
             >
               <>
-                <Typography color="secondary" variant="h4">
+                <Typography className="text-lg font-semibold" color="secondary">
                   {report.year}
                 </Typography>
                 <div className="flex items-baseline gap-1">
@@ -269,14 +269,14 @@ const CountrySection = function CountrySection(
         )}
       </div>
       <div
-        className={`transition-opacity mb-6 flex w-full max-w-screen-xl flex-col gap-12 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
+        className={`transition-opacity mb-10 flex w-full max-w-screen-xl flex-col gap-8 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
       >
         {memoResults.map((countryData: any) => {
           if (countryData.isSkeleton)
             return (
-              <div key={countryData.id} className="flex flex-col gap-8">
+              <div key={countryData.id} className="flex flex-col gap-6">
                 <Skeleton height={40} variant="text" width="100%" />
-                <div className="grid w-full grid-flow-row auto-rows-max gap-8 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                <div className="grid w-full grid-flow-row auto-rows-max gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
                   {times(REPORTS_PER_COUNTRY, (index) => (
                     <div
                       key={index}

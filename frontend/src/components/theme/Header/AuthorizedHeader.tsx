@@ -15,8 +15,7 @@ import HeaderNavigation from './HeaderNavigation'
 
 export default function Header() {
   const { HeaderTitle } = useStore((state) => state.header)
-  const currentPath =
-    typeof window !== 'undefined' ? window.location.pathname : ''
+  const isCP = window.location.pathname === "/country-programme"
 
   return (
     <FadeInOut className="header-motion">
@@ -35,7 +34,7 @@ export default function Header() {
         <div className="container relative">
           <div
             id="header-title"
-            className={`${currentPath === '/country-programme' ? 'mx-auto max-w-screen-xl' : ''}`}
+            className={`${isCP ? 'mx-auto max-w-screen-xl' : ''}`}
           >
             <AnimatePresence>
               {isFunction(HeaderTitle) && <HeaderTitle />}
