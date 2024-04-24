@@ -58,8 +58,19 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
     created_by = serializers.StringRelatedField(
         read_only=True, source="created_by.username"
     )
-    comment_country = serializers.CharField(read_only=True)
-    comment_secretariat = serializers.CharField(read_only=True)
+    comment_country_section_a = serializers.CharField(read_only=True)
+    comment_country_section_b = serializers.CharField(read_only=True)
+    comment_country_section_c = serializers.CharField(read_only=True)
+    comment_country_section_d = serializers.CharField(read_only=True)
+    comment_country_section_e = serializers.CharField(read_only=True)
+    comment_country_section_f = serializers.CharField(read_only=True)
+
+    comment_secretariat_section_a = serializers.CharField(read_only=True)
+    comment_secretariat_section_b = serializers.CharField(read_only=True)
+    comment_secretariat_section_c = serializers.CharField(read_only=True)
+    comment_secretariat_section_d = serializers.CharField(read_only=True)
+    comment_secretariat_section_e = serializers.CharField(read_only=True)
+    comment_secretariat_section_f = serializers.CharField(read_only=True)
 
     class Meta:
         fields = [
@@ -71,8 +82,18 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
             "country",
             "country_id",
             "comment",
-            "comment_country",
-            "comment_secretariat",
+            "comment_country_section_a",
+            "comment_country_section_b",
+            "comment_country_section_c",
+            "comment_country_section_d",
+            "comment_country_section_e",
+            "comment_country_section_f",
+            "comment_secretariat_section_a",
+            "comment_secretariat_section_b",
+            "comment_secretariat_section_c",
+            "comment_secretariat_section_d",
+            "comment_secretariat_section_e",
+            "comment_secretariat_section_f",
             "created_at",
             "created_by",
         ]
@@ -294,9 +315,45 @@ class CPReportCreateSerializer(serializers.Serializer):
 
 
 class CPReportCommentsSerializer(serializers.ModelSerializer):
-    comment_country = serializers.CharField(required=False, allow_blank=True)
-    comment_secretariat = serializers.CharField(required=False, allow_blank=True)
+    comment_country_section_a = serializers.CharField(required=False, allow_blank=True)
+    comment_country_section_b = serializers.CharField(required=False, allow_blank=True)
+    comment_country_section_c = serializers.CharField(required=False, allow_blank=True)
+    comment_country_section_d = serializers.CharField(required=False, allow_blank=True)
+    comment_country_section_e = serializers.CharField(required=False, allow_blank=True)
+    comment_country_section_f = serializers.CharField(required=False, allow_blank=True)
+
+    comment_secretariat_section_a = serializers.CharField(
+        required=False, allow_blank=True
+    )
+    comment_secretariat_section_b = serializers.CharField(
+        required=False, allow_blank=True
+    )
+    comment_secretariat_section_c = serializers.CharField(
+        required=False, allow_blank=True
+    )
+    comment_secretariat_section_d = serializers.CharField(
+        required=False, allow_blank=True
+    )
+    comment_secretariat_section_e = serializers.CharField(
+        required=False, allow_blank=True
+    )
+    comment_secretariat_section_f = serializers.CharField(
+        required=False, allow_blank=True
+    )
 
     class Meta:
         model = CPReport
-        fields = ["comment_country", "comment_secretariat"]
+        fields = [
+            "comment_country_section_a",
+            "comment_country_section_b",
+            "comment_country_section_c",
+            "comment_country_section_d",
+            "comment_country_section_e",
+            "comment_country_section_f",
+            "comment_secretariat_section_a",
+            "comment_secretariat_section_b",
+            "comment_secretariat_section_c",
+            "comment_secretariat_section_d",
+            "comment_secretariat_section_e",
+            "comment_secretariat_section_f",
+        ]

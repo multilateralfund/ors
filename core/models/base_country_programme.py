@@ -24,9 +24,20 @@ class AbstractCPReport(models.Model):
     comment = models.TextField(null=True, blank=True)
     country = models.ForeignKey("Country", on_delete=models.CASCADE)
 
-    # General per-report comments for Country and Secretariat for 2023-onward
-    comment_country = models.TextField(null=True, blank=True)
-    comment_secretariat = models.TextField(null=True, blank=True)
+    # General per-report-section comments for Country and Secretariat for 2023-onward
+    comment_country_section_a = models.TextField(null=True, blank=True)
+    comment_country_section_b = models.TextField(null=True, blank=True)
+    comment_country_section_c = models.TextField(null=True, blank=True)
+    comment_country_section_d = models.TextField(null=True, blank=True)
+    comment_country_section_e = models.TextField(null=True, blank=True)
+    comment_country_section_f = models.TextField(null=True, blank=True)
+
+    comment_secretariat_section_a = models.TextField(null=True, blank=True)
+    comment_secretariat_section_b = models.TextField(null=True, blank=True)
+    comment_secretariat_section_c = models.TextField(null=True, blank=True)
+    comment_secretariat_section_d = models.TextField(null=True, blank=True)
+    comment_secretariat_section_e = models.TextField(null=True, blank=True)
+    comment_secretariat_section_f = models.TextField(null=True, blank=True)
 
     class Meta:
         abstract = True

@@ -24,6 +24,7 @@ from core.api.serializers.cp_report import (
     CPReportSerializer,
     CPReportCommentsSerializer,
 )
+from core.api.utils import REPORT_COMMENTS_SECTIONS
 from core.models.adm import AdmRecordArchive
 from core.models.country_programme import CPHistory, CPReport
 from core.models.country_programme_archive import (
@@ -571,23 +572,6 @@ class CPReportCommentsView(generics.GenericAPIView):
             queryset = queryset.filter(country=user.country)
         return queryset
 
-    @swagger_auto_schema(
-        operation_description="Update country programme report comments",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            required=[],
-            properties={
-                "comment_country": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Comment made by country",
-                ),
-                "comment_secretariat": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Comment made by secretariat",
-                ),
-            },
-        ),
-    )
     def _get_object(self, filter_kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         obj = get_object_or_404(queryset, **filter_kwargs)
@@ -603,19 +587,47 @@ class CPReportCommentsView(generics.GenericAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        operation_description="Update country programme report comments",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=[],
+            properties={
+                "section": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Comment section",
+                ),
+                "comment_country": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Comment made by country",
+                ),
+                "comment_secretariat": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Comment made by secretariat",
+                ),
+            },
+        ),
+    )
     def _comments_update_or_create(self, request, *args, **kwargs):
-        cp_report = self.get_object()
+        cp_report = self._get_object(kwargs)
+        section = request.data.get("section")
         comment_country = request.data.get("comment_country")
         comment_secretariat = request.data.get("comment_secretariat")
-
         user_type = request.user.user_type
+
+        if section not in REPORT_COMMENTS_SECTIONS:
+            return Response(
+                "No valid comment section provided",
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         if comment_country:
             if user_type != User.UserType.COUNTRY_USER:
                 return Response(
                     {"comment_country": f"Invalid value {comment_country}"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            cp_report.comment_country = comment_country
+            setattr(cp_report, f"comment_country_{section}", comment_country)
 
         if comment_secretariat:
             if user_type != User.UserType.SECRETARIAT:
@@ -623,7 +635,7 @@ class CPReportCommentsView(generics.GenericAPIView):
                     {"comment_secretariat": f"Invalid value {comment_secretariat}"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            cp_report.comment_secretariat = comment_secretariat
+            setattr(cp_report, f"comment_secretariat_{section}", comment_secretariat)
 
         cp_report.save()
         CPHistory.objects.create(
@@ -632,7 +644,7 @@ class CPReportCommentsView(generics.GenericAPIView):
             updated_by=request.user,
             reporting_officer_name=cp_report.reporting_entry,
             reporting_officer_email=cp_report.reporting_email,
-            event_description="Comments updated by user",
+            event_description=f"Comments updated by user ({REPORT_COMMENTS_SECTIONS[section]})",
         )
         serializer = self.get_serializer(cp_report)
 
