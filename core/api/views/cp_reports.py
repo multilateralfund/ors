@@ -314,8 +314,10 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
     def put(self, request, *args, **kwargs):
         current_obj = self.get_object()
 
+        serializer_data = request.data
+        serializer_data["status"] = current_obj.status
         serializer = CPReportCreateSerializer(
-            data=request.data,
+            data=serializer_data,
             context={
                 "user": request.user,
                 "from_update": True,
@@ -338,6 +340,7 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
 
         # set created_by to the current object created_by
         new_instance.created_by = current_obj.created_by
+        new_instance.version_created_by = request.user
         new_instance.save()
 
         # arhive versions only for FINAL reports
