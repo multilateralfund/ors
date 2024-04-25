@@ -63,7 +63,7 @@ class CPFilesView(generics.GenericAPIView):
         cp_files = []
         files = request.FILES
         if not files:
-            return Response("Files not provided", status=status.HTTP_400_BAD_REQUEST)
+            return Response({"files": "Files not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
         existing_files = CPFile.objects.filter(
             country_id=country_id, year=year, filename__in=list(files.keys())
@@ -71,7 +71,7 @@ class CPFilesView(generics.GenericAPIView):
         if existing_files:
             existing_filenames = existing_files.values_list("filename", flat=True)
             return Response(
-                f"Some files already exist: {', '.join(existing_filenames)}",
+                {"files": f"Some files already exist: {', '.join(existing_filenames)}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -79,7 +79,7 @@ class CPFilesView(generics.GenericAPIView):
             extension = os.path.splitext(filename)[-1]
             if extension not in self.ACCEPTED_EXTENSIONS:
                 return Response(
-                    f"File extension {extension} is not valid",
+                    {"files": f"File extension {extension} is not valid"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
