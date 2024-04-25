@@ -60,30 +60,39 @@ class CPFilesView(generics.GenericAPIView):
         year = request.query_params.get("year")
         self._check_country_user()
 
-        file = request.FILES.get("file")
-        if not file:
-            return Response("File not provided", status=status.HTTP_400_BAD_REQUEST)
+        cp_files = []
+        files = request.FILES
+        if not files:
+            return Response({"files": "Files not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-        extension = os.path.splitext(file.name)[-1]
-        if extension not in self.ACCEPTED_EXTENSIONS:
-            return Response(
-                "File extension is not valid", status=status.HTTP_400_BAD_REQUEST
-            )
-
-        existing_file = CPFile.objects.filter(
-            country_id=country_id, year=year, filename=file.name
-        ).first()
-        if existing_file:
-            return Response(
-                "File with this name already exists", status=status.HTTP_400_BAD_REQUEST
-            )
-
-        CPFile.objects.create(
-            country_id=country_id,
-            year=year,
-            filename=file.name,
-            file=file,
+        existing_files = CPFile.objects.filter(
+            country_id=country_id, year=year, filename__in=list(files.keys())
         )
+        if existing_files:
+            existing_filenames = existing_files.values_list("filename", flat=True)
+            return Response(
+                {"files": f"Some files already exist: {', '.join(existing_filenames)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        for filename, file in files.items():
+            extension = os.path.splitext(filename)[-1]
+            if extension not in self.ACCEPTED_EXTENSIONS:
+                return Response(
+                    {"files": f"File extension {extension} is not valid"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            cp_files.append(
+                CPFile(
+                    country_id=country_id,
+                    year=year,
+                    filename=filename,
+                    file=file,
+                )
+            )
+
+        CPFile.objects.bulk_create(cp_files)
         return Response({}, status=status.HTTP_201_CREATED)
 
     def post(self, request, *args, **kwargs):
@@ -92,7 +101,7 @@ class CPFilesView(generics.GenericAPIView):
     def delete(self, request, *args, **kwargs):
         self._check_country_user()
 
-        file_ids = request.data.get("file_ids", [])
+        file_ids = request.data.getlist("file_ids")
         queryset = self.filter_queryset(self.get_queryset())
         queryset.filter(id__in=file_ids).delete()
 

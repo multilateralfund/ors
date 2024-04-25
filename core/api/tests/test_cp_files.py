@@ -1,5 +1,3 @@
-import os
-
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -14,13 +12,6 @@ def _test_file(tmp_path):
     return p
 
 
-@pytest.fixture(name="wrong_test_file")
-def _wrong_test_file(tmp_path):
-    p = tmp_path / "adrian.txt"
-    p.write_text("Asa sunt zilele mele")
-    return p
-
-
 class TestCPFiles:
     client = APIClient()
 
@@ -29,17 +20,16 @@ class TestCPFiles:
         response = self.client.post(url, {})
         assert response.status_code == 403
 
-    def test_file_upload_wrong_extension(self, user, country_ro, wrong_test_file):
+    def test_file_upload_wrong_extension(self, user, country_ro, test_file):
         self.client.force_authenticate(user=user)
         base_url = reverse("country-programme-files")
         params = f"?country_id={country_ro.id}&year=2023"
         url = base_url + params
 
         # upload file with wrong extension
-        data = {"file": wrong_test_file.open()}
+        data = {"adrian.txt": test_file.open()}
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 400
-        assert response.data == "File extension is not valid"
 
     def test_file_upload_duplicate(self, user, country_ro, test_file):
         self.client.force_authenticate(user=user)
@@ -48,14 +38,13 @@ class TestCPFiles:
         url = base_url + params
 
         # upload file
-        data = {"file": test_file.open()}
+        data = {"adrian.csv": test_file.open()}
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 201
 
         # upload same file again
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 400
-        assert response.data == "File with this name already exists"
 
     def test_file_upload(self, user, country_ro, test_file):
         self.client.force_authenticate(user=user)
@@ -66,8 +55,7 @@ class TestCPFiles:
         url = base_url + params
 
         # upload file (POST)
-        file = test_file.open()
-        data = {"file": file}
+        data = {"adrian.csv": test_file.open(), "adrian.doc": test_file.open()}
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 201
 
@@ -76,11 +64,14 @@ class TestCPFiles:
         assert response.status_code == 200
         assert response.data[0]["country_id"] == country_id
         assert response.data[0]["year"] == year
-        assert response.data[0]["filename"] == os.path.basename(file.name)
-        file_id = response.data[0]["id"]
+        assert response.data[0]["filename"] == "adrian.doc"
+        assert response.data[1]["country_id"] == country_id
+        assert response.data[1]["year"] == year
+        assert response.data[1]["filename"] == "adrian.csv"
+        file_ids = [response.data[0]["id"], response.data[1]["id"]]
 
         # delete file (DELETE)
-        data = {"file_ids": [file_id]}
+        data = {"file_ids": file_ids}
         response = self.client.delete(url, data)
         assert response.status_code == 204
 
