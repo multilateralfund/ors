@@ -309,7 +309,7 @@ export default function CPViewWrapper(props: { iso3: string; year: number }) {
 
   const dataReady =
     report.data &&
-    report.files &&
+    report.files?.data &&
     report.emptyForm.data &&
     report.data.country_id === country.id &&
     report.data.year == year

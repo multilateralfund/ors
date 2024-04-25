@@ -1,8 +1,9 @@
-import React, { ChangeEvent, useState } from 'react'
+import React, { ChangeEvent } from 'react'
 
 import { TextField } from '@mui/material'
 import Typography from '@mui/material/Typography'
 
+import { CPBaseForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
 import ReportHistory from '@ors/components/manage/Blocks/Section/ReportInfo/ReportHistory'
 import ReportStatus from '@ors/components/manage/Blocks/Section/ReportInfo/ReportStatus'
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
@@ -11,12 +12,19 @@ import Field from '@ors/components/manage/Form/Field'
 import IconButton from '@ors/components/ui/IconButton/IconButton'
 import { useStore } from '@ors/store'
 
-const FileInput: React.FC = () => {
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+function FileInput(props: {
+  form: CPBaseForm
+  setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
+}) {
+  const { form, setForm } = props
+
+  const selectedFiles = form.files
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      setSelectedFiles(Array.from(event.target.files))
+      setForm((oldForm) => {
+        return { ...oldForm, files: Array.from(event.target.files || []) }
+      })
     }
   }
 
@@ -176,7 +184,7 @@ const ReportInfoCreate = (props: any) => {
             type="number"
           />
         </div>
-        <FileInput />
+        <FileInput form={form} setForm={setForm} />
       </div>
 
       <div className="flex flex-col rounded-lg bg-gray-100 p-4">
