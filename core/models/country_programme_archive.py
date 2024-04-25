@@ -18,6 +18,14 @@ class CPReportArchive(AbstractCPReport):
         related_name="created_cp_reports_archive",
         help_text="User who created the report",
     )
+    version_created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        default=None,
+        related_name="created_cp_reports_archive_version",
+        help_text="User who created this archived report version",
+    )
 
     class Meta:
         verbose_name = "CP report archive"
