@@ -39,7 +39,7 @@
   .ag-header-cell.ag-text-right {
     text-align: right;
 
-    @apply w-full flex justify-end text-right;
+    @apply flex w-full justify-end text-right;
   }
 
   &.with-separators
@@ -66,10 +66,18 @@
     @apply border-none;
   }
 
+  /* Headers on ~ same level */
+  div.ag-header-row.ag-header-row-column
+    > div.ag-header-span-total
+    > div.ag-header-cell-comp-wrapper
+    > span {
+    margin-top: 2.9em;
+  }
+
   .ag-ltr {
     .ag-header-cell,
     .ag-header-group-cell {
-       /* border-right: var(--ag-cell-horizontal-border); */
+      /* border-right: var(--ag-cell-horizontal-border); */
       @apply border-r-transparent;
     }
   }

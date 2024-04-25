@@ -21,10 +21,10 @@ export default function getUsagesColDef() {
       flex: 0.7,
     },
     'Fire fighting IV': {
-      flex: 0.5,
+      flex: 0.55,
     },
     'Fire fighting V': {
-      flex: 0.5,
+      flex: 0.55,
     },
     Foam: {
       initialWidth: 84,
@@ -77,7 +77,7 @@ export default function getUsagesColDef() {
           id: '3',
           content:
             'Uses in other sectors that do not fall specifically within the listed sectors in the table.',
-          icon: true,
+          icon: false,
           order: 3,
         },
       },
@@ -133,7 +133,7 @@ export default function getUsagesColDef() {
           id: '5',
           content:
             'Only if break-down of consumption in refrigeration and air-conditioning manufacturing is not available, information in "Other unidentified manufacturing" may be provided.',
-          icon: true,
+          icon: false,
           order: 5,
         },
       },
@@ -153,14 +153,13 @@ export default function getUsagesColDef() {
           id: '5',
           content:
             'If break-down of consumption in manufacturing is not available, information in total can be provided.',
-          icon: true,
+          icon: false,
           order: 5,
         },
       },
       initialWidth: 120,
     },
     'Refrigeration Servicing': {
-      autoHeaderHeight: true,
       flex: 1,
       initialWidth: 84,
     },
