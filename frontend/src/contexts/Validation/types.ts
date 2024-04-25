@@ -5,6 +5,7 @@ export interface IUsage {
 }
 
 export interface IRow {
+  banned_date: null | string
   blend_id: null | number
   exports: number
   group: string
@@ -18,11 +19,13 @@ export interface IRow {
 
 export interface IGlobalValidator {}
 
+export type RowValidatorFunc = (row: IRow, usages: UsageMapping) => boolean
+
 export interface IRowValidator {
   highlight_cells: Record<string, (row: IRow) => boolean>
   id: string
   message: string
-  validator: (row: IRow, usages: UsageMapping) => boolean
+  validator: RowValidatorFunc
 }
 
 export interface IValidator {

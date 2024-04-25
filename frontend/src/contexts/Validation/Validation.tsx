@@ -91,19 +91,23 @@ export const ValidationProvider = (props: {
     path: '/api/usages/',
   })
 
-  const usages = usagesApi.data ? usageMapping(usagesApi.data) : {}
-
   const validationSchemaKeys = Object.keys(
     validationSchema,
   ) as ValidationSchemaKeys[]
 
-  const errors = validationSchemaKeys.reduce(
-    (acc, section_id) => {
-      acc[section_id] = validateSection(form[section_id] as IRow[], usages)
-      return acc
-    },
-    {} as Record<ValidationSchemaKeys, ValidateSectionResult>,
-  )
+  const errors =
+    usagesApi.loaded && usagesApi.data
+      ? validationSchemaKeys.reduce(
+          (acc, section_id) => {
+            acc[section_id] = validateSection(
+              form[section_id] as IRow[],
+              usageMapping(usagesApi.data as ApiUsage[]),
+            )
+            return acc
+          },
+          {} as Record<ValidationSchemaKeys, ValidateSectionResult>,
+        )
+      : ({} as Record<ValidationSchemaKeys, ValidateSectionResult>)
 
   return (
     <ValidationContext.Provider
