@@ -8,7 +8,6 @@ import type { Metadata } from 'next'
 import React from 'react'
 
 import cx from 'classnames'
-import { dir } from 'i18next'
 // import { includes } from 'lodash'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { headers as nextHeaders } from 'next/headers'
@@ -42,9 +41,6 @@ export default async function RootLayout({
   let user, internalError
   let cp_reports, projects, common, businessPlans
   const pathname = headers.get('x-next-pathname')
-  // const lang = (headers.get('x-next-lang') ||
-  //   config.i18n.defaultLanguage) as Language
-  const lang = 'en'
   const host = headers.get('x-next-host')
   const protocol = headers.get('x-next-protocol')
   // const theme = cookies.get(config.cookies.theme) || { value: null }
@@ -137,13 +133,12 @@ export default async function RootLayout({
 
   return (
     <html
-      lang={lang}
+      lang="en"
       {...(theme.value ? { 'data-theme': theme.value } : {})}
       className={roboto.className}
       data-layout={currentView?.layout}
       data-printing="no"
       data-ssr="yes"
-      dir={dir(lang)}
     >
       <body id="next-app">
         <div
@@ -158,9 +153,6 @@ export default async function RootLayout({
               businessPlans,
               common,
               cp_reports,
-              i18n: {
-                lang,
-              },
               internalError,
               projects,
               settings: {

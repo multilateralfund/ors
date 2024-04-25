@@ -7,7 +7,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: false,
+  reactStrictMode: true,
   webpack: (config, { dev, isServer, webpack }) => {
     const globals = {
       __CLIENT__: !isServer,
@@ -72,7 +72,7 @@ const nextConfig = {
                       removeViewBox: false,
                     },
                   },
-                },  
+                },
               ],
             },
           },
