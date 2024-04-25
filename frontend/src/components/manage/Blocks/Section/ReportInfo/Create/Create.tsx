@@ -4,6 +4,7 @@ import { TextField } from '@mui/material'
 import Typography from '@mui/material/Typography'
 
 import { CPBaseForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
+import { FilesViewer } from '@ors/components/manage/Blocks/Section/ReportInfo/FilesViewer'
 import ReportHistory from '@ors/components/manage/Blocks/Section/ReportInfo/ReportHistory'
 import ReportStatus from '@ors/components/manage/Blocks/Section/ReportInfo/ReportStatus'
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
@@ -101,6 +102,9 @@ const ReportInfoCreate = (props: any) => {
     user_type,
     username,
   } = useStore((state) => state.user.data)
+  const alreadyUploadedFiles = useStore(
+    (state: any) => state.cp_reports.report.files.data,
+  )
 
   const updateForm = (event: { target: { value: any } }, key: string) =>
     setForm({
@@ -185,6 +189,10 @@ const ReportInfoCreate = (props: any) => {
           />
         </div>
         <FileInput form={form} setForm={setForm} />
+        <FilesViewer
+          files={alreadyUploadedFiles}
+          heading={'Already uploaded files'}
+        />
       </div>
 
       <div className="flex flex-col rounded-lg bg-gray-100 p-4">
