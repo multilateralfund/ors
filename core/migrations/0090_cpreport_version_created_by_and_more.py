@@ -5,7 +5,15 @@ from django.conf import settings
 import django.core.files.storage
 from django.db import migrations, models
 import django.db.models.deletion
-import pathlib
+from django.db.models import F
+
+
+def migrate_addresses(apps, schema_editor):
+    CPReport = apps.get_model("core", "CPReport")
+    CPReportArchive = apps.get_model("core", "CPReportArchive")
+
+    CPReport.objects.update(version_created_by=F("created_by"))
+    CPReportArchive.objects.update(version_created_by=F("created_by"))
 
 
 class Migration(migrations.Migration):
@@ -39,4 +47,5 @@ class Migration(migrations.Migration):
                 to=settings.AUTH_USER_MODEL,
             ),
         ),
+        migrations.RunPython(migrate_addresses, migrations.RunPython.noop),
     ]

@@ -77,6 +77,7 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
             "comment_secretariat",
             "created_at",
             "created_by",
+            "version_created_by",
             "reporting_entry",
             "reporting_email",
         ]
