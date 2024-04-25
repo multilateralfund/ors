@@ -1,14 +1,19 @@
+import { ApiUsage } from '@ors/types/api_usages'
+
 export interface IUsage {
   quantity: number
 }
 
 export interface IRow {
+  blend_id: null | number
   exports: number
+  group: string
   imports: number
   production: number
   record_usages: IUsage[]
   remarks?: string
   row_id: string
+  substance_id: null | number
 }
 
 export interface IGlobalValidator {}
@@ -17,7 +22,7 @@ export interface IRowValidator {
   highlight_cells: Record<string, (row: IRow) => boolean>
   id: string
   message: string
-  validator: (row: IRow) => boolean
+  validator: (row: IRow, usages: UsageMapping) => boolean
 }
 
 export interface IValidator {
@@ -55,3 +60,5 @@ export type ValidateSectionResult = {
   hasErrors: boolean
   rows: Record<string, Omit<IRowValidationResult, 'row_id'>[]>
 }
+
+export type UsageMapping = Record<string, ApiUsage>
