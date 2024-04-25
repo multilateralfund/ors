@@ -95,7 +95,7 @@ class TestCPFiles:
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 201
 
-        my_file = CPFile.objects.get(name="adrian.csv")
+        my_file = CPFile.objects.get(filename="adrian.csv")
 
         # download file
         url = reverse("country-programme-files") + f"{my_file.id}" + "/download/"
