@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 
 import { IconButton, Tooltip } from '@mui/material'
 
@@ -6,9 +6,11 @@ import components from '@ors/config/Table/components'
 import renderers from '@ors/config/Table/renderers'
 
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
+import { ValidationContext } from '@ors/contexts/Validation/Validation'
+import { ValidationSchemaKeys } from '@ors/contexts/Validation/types'
 import { getError } from '@ors/helpers/Utils/Utils'
 
-import { IoInformation, IoOptions } from 'react-icons/io5'
+import { IoInformation, IoInformationCircle, IoOptions } from 'react-icons/io5'
 
 function getDefaultCellRenderer() {
   return components[renderers.default]
@@ -31,6 +33,20 @@ export default function AgCellRenderer(props: any) {
 
   const error = getError(props)
 
+  const validation =
+    useContext(ValidationContext)?.errors[
+      props.context.section.id as ValidationSchemaKeys
+    ]
+
+  const rowErrors = validation?.rows[props.data.row_id] || []
+
+  const showErrorInfo =
+    props.column.colId === 'display_name' && rowErrors.length > 0
+  const cellHighlight =
+    rowErrors.length > 0 &&
+    rowErrors.filter((err) => err.highlight_cells.includes(props.column.colId))
+      .length > 0
+
   const options = props.options || null
 
   const CellRenderer =
@@ -50,6 +66,14 @@ export default function AgCellRenderer(props: any) {
           >
             {options}
           </Dropdown>
+        </div>
+      )}
+      {(showErrorInfo || cellHighlight) && (
+        <div className="absolute right-1 top-1.5 inline-block leading-tight text-red-950">
+          <IoInformationCircle
+            size={24}
+            title={rowErrors.map((e) => e.message).join(', ')}
+          />
         </div>
       )}
       <CellRenderer {...props} />

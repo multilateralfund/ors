@@ -53,7 +53,7 @@ const sectionColDefById: Record<string, ColDef> = {
               id: '1',
               content:
                 'When reporting blends/mixtures, reporting of controlled substances should not be duplicated. For the CP report, countries should report use of individual controlled substances and quantities of blends/mixtures used, separately, while ensuring that the amounts of controlled substances are not reported more than once.',
-              icon: true,
+              icon: false,
               order: 1,
             },
           }
@@ -91,7 +91,7 @@ const sectionColDefById: Record<string, ColDef> = {
         id: '4',
         content:
           'Provide explanation if total sector use and consumption (import-export+production) is different (e.g, stockpiling).',
-        icon: true,
+        icon: false,
         order: 4,
       },
     },

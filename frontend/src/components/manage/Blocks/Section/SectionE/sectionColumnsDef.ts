@@ -30,7 +30,7 @@ const sectionColDefById: Record<string, ColDef> = {
       footnote: {
         id: '4',
         content: 'Amount destroyed in the facility.',
-        icon: true,
+        icon: false,
         order: 4,
       },
     },
@@ -57,7 +57,7 @@ const sectionColDefById: Record<string, ColDef> = {
         id: '3',
         content:
           'Amount converted to other substances in the facility. The sum of these amounts is not to be reported under Section D.',
-        icon: true,
+        icon: false,
         order: 3,
       },
     },
@@ -83,7 +83,7 @@ const sectionColDefById: Record<string, ColDef> = {
         id: '1',
         content:
           '"Total amount generated" refers to the total amount whether captured or not. The sum of these amounts is not to be reported under Section D.',
-        icon: true,
+        icon: false,
         order: 1,
       },
       info: true,
@@ -99,7 +99,7 @@ const sectionColGroupDefById: Record<string, Omit<ColGroupDef, 'children'>> = {
         id: '2',
         content:
           'The sums of these amounts are to be reported under Section D.',
-        icon: true,
+        icon: false,
         order: 2,
       },
     },

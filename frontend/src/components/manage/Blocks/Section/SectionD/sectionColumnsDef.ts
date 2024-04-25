@@ -15,7 +15,7 @@ const sectionColDefById: Record<string, ColDef> = {
         id: '1',
         content:
           'HFC-23 generation that is captured, whether for destruction, feedstock or any other use, shall be reported in this form',
-        icon: true,
+        icon: false,
         order: 1,
       },
     },
@@ -30,7 +30,7 @@ const sectionColDefById: Record<string, ColDef> = {
         id: '2',
         content:
           'Amounts of HFC-23 captured for destruction or feedstock use will not be counted as production as per Article 1 of the Montreal Protocol.',
-        icon: true,
+        icon: false,
         order: 2,
       },
     },
@@ -61,7 +61,7 @@ const sectionColDefById: Record<string, ColDef> = {
         id: '2',
         content:
           'Amounts of HFC-23 captured for destruction or feedstock use will not be counted as production as per Article 1 of the Montreal Protocol.',
-        icon: true,
+        icon: false,
         order: 2,
       },
     },
