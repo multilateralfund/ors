@@ -314,9 +314,8 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
     def put(self, request, *args, **kwargs):
         current_obj = self.get_object()
 
-        serializer_data = request.data
         serializer = CPReportCreateSerializer(
-            data=serializer_data,
+            data=request.data,
             context={
                 "user": request.user,
                 "from_update": True,
