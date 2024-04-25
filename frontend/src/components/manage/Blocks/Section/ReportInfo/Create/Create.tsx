@@ -103,7 +103,7 @@ const ReportInfoCreate = (props: any) => {
     username,
   } = useStore((state) => state.user.data)
   const alreadyUploadedFiles = useStore(
-    (state: any) => state.cp_reports.report.files.data,
+    (state: any) => state?.cp_reports?.report?.files?.data,
   )
 
   const updateForm = (event: { target: { value: any } }, key: string) =>

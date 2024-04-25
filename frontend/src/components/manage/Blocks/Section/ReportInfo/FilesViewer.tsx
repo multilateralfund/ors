@@ -2,7 +2,11 @@ import { ApiFile } from '@ors/types/api_files'
 
 import { IoDocumentTextOutline } from 'react-icons/io5'
 
-export function FilesViewer(props: { files: ApiFile[]; heading: string }) {
+export function FilesViewer(props: { files?: ApiFile[]; heading: string }) {
+  if (!props.files) {
+    return null
+  }
+
   return (
     <div className="flex flex-col gap-2">
       <p className="m-0 text-2xl font-normal">{props.heading}</p>
