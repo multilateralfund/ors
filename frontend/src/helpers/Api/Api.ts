@@ -2,6 +2,8 @@ import type { IApi, ResultsType } from './types'
 import { DataType } from '@ors/types/primitives'
 
 import api from './_api'
+import Cookies from 'js-cookie'
+import { formatApiUrl } from '@ors/helpers'
 
 export function getResults<D = DataType>(
   data?: { results: D[] } | D[] | ResultsType<D> | null,
@@ -63,5 +65,25 @@ export async function fetcher({
   } catch (error) {
     onError(error)
     return error
+  }
+}
+
+export async function uploadFiles(path: string, files: File[]) {
+  const formData = new FormData()
+  files.forEach((file) => {
+    formData.append(file.name, file)
+  })
+
+  const csrftoken = Cookies.get('csrftoken')
+  const fileUploadResponse = await fetch(formatApiUrl(path), {
+    body: formData,
+    credentials: 'include',
+    headers: {
+      ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
+    },
+    method: 'POST',
+  })
+  if (!fileUploadResponse.ok) {
+    throw fileUploadResponse
   }
 }

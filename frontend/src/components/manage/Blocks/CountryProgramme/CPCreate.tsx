@@ -21,7 +21,6 @@ import {
 } from '@mui/material'
 import cx from 'classnames'
 import { produce } from 'immer'
-import Cookies from 'js-cookie'
 import { filter, get, includes, isEmpty } from 'lodash'
 import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
@@ -41,7 +40,7 @@ import {
   IGlobalValidationResult,
   ValidationSchemaKeys,
 } from '@ors/contexts/Validation/types'
-import { formatApiUrl } from '@ors/helpers'
+import { uploadFiles } from '@ors/helpers'
 import api from '@ors/helpers/Api/_api'
 import { getResults } from '@ors/helpers/Api/Api'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
@@ -527,35 +526,17 @@ const CPCreate: React.FC = () => {
     }))
   }
 
-  function getFormSubmitter(reportStatus: "draft" | "final") {
+  function getFormSubmitter(reportStatus: 'draft' | 'final') {
     return async () => {
       try {
         const allData = getSubmitFormData()
 
         const { files, ...reportData } = allData
 
-        const formData = new FormData()
-        files.forEach((file) => {
-          formData.append(file.name, file)
-        })
-
-        const csrftoken = Cookies.get('csrftoken')
-        const fileUploadResponse = await fetch(
-          formatApiUrl(
-            `api/country-programme/files/?country_id=${currentCountry?.id}&year=${form.year}`,
-          ),
-          {
-            body: formData,
-            credentials: 'include',
-            headers: {
-              ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
-            },
-            method: 'POST',
-          },
+        await uploadFiles(
+          `api/country-programme/files/?country_id=${currentCountry?.id}&year=${form.year}`,
+          files,
         )
-        if (!fileUploadResponse.ok) {
-          throw fileUploadResponse
-        }
 
         await api('api/country-programme/reports/', {
           data: {
