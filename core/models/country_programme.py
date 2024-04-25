@@ -3,6 +3,7 @@ from django.core.files.storage import FileSystemStorage
 from django.db import models
 from core.models.base import AbstractWChemical, BaseWTimeFrameManager
 from core.models.base_country_programme import (
+    AbstractCPComment,
     AbstractCPEmission,
     AbstractCPGeneration,
     AbstractCPPrices,
@@ -196,3 +197,11 @@ class CPHistory(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+
+class CPComment(AbstractCPComment):
+    country_programme_report = models.ForeignKey(
+        "CPReport",
+        on_delete=models.CASCADE,
+        related_name="cpcomments",
+    )

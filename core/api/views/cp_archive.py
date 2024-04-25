@@ -12,6 +12,7 @@ from core.api.filters.country_programme import (
 )
 from core.api.permissions import IsUserAllowedCP
 from core.api.serializers.adm import AdmRecordArchiveSerializer
+from core.api.serializers.cp_comment import CPCommentArchiveSerializer
 from core.api.serializers.cp_emission import CPEmissionArchiveSerializer
 from core.api.serializers.cp_generation import CPGenerationArchiveSerializer
 from core.api.serializers.cp_price import CPPricesArchiveSerializer
@@ -88,6 +89,7 @@ class CPRecordsArchiveListView(CPRecordBaseListView):
     cp_prices_seri_class = CPPricesArchiveSerializer
     cp_generation_seri_class = CPGenerationArchiveSerializer
     cp_emission_seri_class = CPEmissionArchiveSerializer
+    cp_comment_seri_class = CPCommentArchiveSerializer
     adm_record_seri_class = AdmRecordArchiveSerializer
 
 

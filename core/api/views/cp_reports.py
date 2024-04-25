@@ -18,16 +18,16 @@ from core.api.filters.country_programme import (
 )
 from core.api.permissions import IsUserAllowedCP, IsUserAllowedCPComment
 from core.api.serializers import CPReportGroupSerializer
+from core.api.serializers.cp_comment import CPCommentSerializer
 from core.api.serializers.cp_report import (
     CPReportCreateSerializer,
     CPReportNoRelatedSerializer,
     CPReportSerializer,
-    CPReportCommentsSerializer,
 )
-from core.api.utils import REPORT_COMMENTS_SECTIONS
 from core.models.adm import AdmRecordArchive
-from core.models.country_programme import CPHistory, CPReport
+from core.models.country_programme import CPComment, CPHistory, CPReport
 from core.models.country_programme_archive import (
+    CPCommentArchive,
     CPEmissionArchive,
     CPGenerationArchive,
     CPPricesArchive,
@@ -305,6 +305,18 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
             )
             cp_reported_sections.save()
 
+        # archive cp comments
+        cp_comments = []
+        for cp_comment in instance.cpcomments.all():
+            cp_comments.append(
+                self._get_archive_data(
+                    CPCommentArchive,
+                    cp_comment,
+                    {"country_programme_report_id": cp_report_ar.id},
+                )
+            )
+        CPCommentArchive.objects.bulk_create(cp_comments, batch_size=1000)
+
     def check_readonly_fields(self, serializer, current_obj):
         return (
             serializer.initial_data["country_id"] != current_obj.country_id
@@ -562,7 +574,7 @@ class CPReportCommentsView(generics.GenericAPIView):
     """
 
     permission_classes = [IsUserAllowedCPComment]
-    serializer_class = CPReportCommentsSerializer
+    serializer_class = CPCommentSerializer
     lookup_field = "id"
 
     def get_queryset(self):
@@ -581,12 +593,6 @@ class CPReportCommentsView(generics.GenericAPIView):
 
         return obj
 
-    def get(self, request, *args, **kwargs):
-        cp_report = self._get_object(kwargs)
-        serializer = self.get_serializer(cp_report)
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
     @swagger_auto_schema(
         operation_description="Update country programme report comments",
         request_body=openapi.Schema(
@@ -597,13 +603,13 @@ class CPReportCommentsView(generics.GenericAPIView):
                     type=openapi.TYPE_STRING,
                     description="Comment section",
                 ),
-                "comment_country": openapi.Schema(
+                "comment_type": openapi.Schema(
                     type=openapi.TYPE_STRING,
-                    description="Comment made by country",
+                    description="comment_country or comment_secretariat",
                 ),
-                "comment_secretariat": openapi.Schema(
+                "comment": openapi.Schema(
                     type=openapi.TYPE_STRING,
-                    description="Comment made by secretariat",
+                    description="Comment text",
                 ),
             },
         ),
@@ -611,42 +617,46 @@ class CPReportCommentsView(generics.GenericAPIView):
     def _comments_update_or_create(self, request, *args, **kwargs):
         cp_report = self._get_object(kwargs)
         section = request.data.get("section")
-        comment_country = request.data.get("comment_country")
-        comment_secretariat = request.data.get("comment_secretariat")
+        comment_type = request.data.get("comment_type")
+        comment = request.data.get("comment", "")
         user_type = request.user.user_type
 
-        if section not in REPORT_COMMENTS_SECTIONS:
+        if section not in CPComment.CPCommentSection:
             return Response(
-                "No valid comment section provided",
+                {"comment": "No valid comment section provided"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if comment_country:
+        if comment_type == CPComment.CPCommentType.COMMENT_COUNTRY:
             if user_type != User.UserType.COUNTRY_USER:
                 return Response(
-                    {"comment_country": f"Invalid value {comment_country}"},
+                    {"comment": f"Invalid value {comment}"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            setattr(cp_report, f"comment_country_{section}", comment_country)
 
-        if comment_secretariat:
+        if comment_type == CPComment.CPCommentType.COMMENT_SECRETARIAT:
             if user_type != User.UserType.SECRETARIAT:
                 return Response(
-                    {"comment_secretariat": f"Invalid value {comment_secretariat}"},
+                    {"comment": f"Invalid value {comment}"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            setattr(cp_report, f"comment_secretariat_{section}", comment_secretariat)
 
-        cp_report.save()
+        cp_comment, _ = CPComment.objects.update_or_create(
+            country_programme_report=cp_report,
+            section=section,
+            comment_type=comment_type,
+            defaults={"comment": comment},
+        )
+
         CPHistory.objects.create(
             country_programme_report=cp_report,
             report_version=cp_report.version,
             updated_by=request.user,
             reporting_officer_name=cp_report.reporting_entry,
             reporting_officer_email=cp_report.reporting_email,
-            event_description=f"Comments updated by user ({REPORT_COMMENTS_SECTIONS[section]})",
+            event_description=f"Comments updated by user ({CPComment.CPCommentSection(section)})",
         )
-        serializer = self.get_serializer(cp_report)
+        serializer = self.get_serializer(cp_comment)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

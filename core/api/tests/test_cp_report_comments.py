@@ -7,6 +7,10 @@ pytestmark = pytest.mark.django_db
 
 class TestCPReportComments:
     client = APIClient()
+    SECTION_A = "section_a"
+    SECTION_B = "section_b"
+    COMMENT_COUNTRY = "comment_country"
+    COMMENT_SECRETARIAT = "comment_secretariat"
 
     def test_without_permission_secretariat(self, user, cp_report_2019):
         url = reverse(
@@ -15,7 +19,11 @@ class TestCPReportComments:
 
         # try to create country comment
         self.client.force_authenticate(user=user)
-        data = {"section": "section_a", "comment_country": "Test create country"}
+        data = {
+            "section": self.SECTION_A,
+            "comment_type": self.COMMENT_COUNTRY,
+            "comment": "Test create country",
+        }
         response = self.client.post(url, data, format="json")
         assert response.status_code == 400
 
@@ -27,8 +35,9 @@ class TestCPReportComments:
         # try to create secretariat comment
         self.client.force_authenticate(user=country_user)
         data = {
-            "section": "section_a",
-            "comment_secretariat": "Test create secretariat",
+            "section": self.SECTION_A,
+            "comment_type": self.COMMENT_SECRETARIAT,
+            "comment": "Test create secretariat",
         }
         response = self.client.post(url, data, format="json")
         assert response.status_code == 400
@@ -40,43 +49,50 @@ class TestCPReportComments:
 
         self.client.force_authenticate(user=country_user)
         # create section A country comment
-        data = {"section": "section_a", "comment_country": "Test create country"}
+        data = {
+            "section": self.SECTION_A,
+            "comment_type": self.COMMENT_COUNTRY,
+            "comment": "Test create country",
+        }
         response = self.client.post(url, data, format="json")
         assert response.status_code == 201
-        assert response.data["comment_country_section_a"] == "Test create country"
+        assert response.data["section"] == self.SECTION_A
+        assert response.data["comment_type"] == self.COMMENT_COUNTRY
+        assert response.data["comment"] == "Test create country"
 
         self.client.force_authenticate(user=user)
         # create section B secretariat comment
         data = {
-            "section": "section_b",
-            "comment_secretariat": "Test create secretariat",
+            "section": self.SECTION_B,
+            "comment_type": self.COMMENT_SECRETARIAT,
+            "comment": "Test create secretariat",
         }
         response = self.client.post(url, data, format="json")
         assert response.status_code == 201
-        assert (
-            response.data["comment_secretariat_section_b"] == "Test create secretariat"
-        )
+        assert response.data["section"] == self.SECTION_B
+        assert response.data["comment_type"] == self.COMMENT_SECRETARIAT
+        assert response.data["comment"] == "Test create secretariat"
 
         # update section B secretariat comment
         data = {
-            "section": "section_b",
-            "comment_secretariat": "Test update secretariat",
+            "section": self.SECTION_B,
+            "comment_type": self.COMMENT_SECRETARIAT,
+            "comment": "Test update secretariat",
         }
         response = self.client.post(url, data, format="json")
         assert response.status_code == 201
-        assert (
-            response.data["comment_secretariat_section_b"] == "Test update secretariat"
-        )
+        assert response.data["section"] == self.SECTION_B
+        assert response.data["comment_type"] == self.COMMENT_SECRETARIAT
+        assert response.data["comment"] == "Test update secretariat"
 
         # check same comments in get records
         url = reverse("country-programme-record-list")
         response = self.client.get(url, {"cp_report_id": cp_report_2019.id})
+        assert response.data["comments"][0]["section"] == self.SECTION_A
+        assert response.data["comments"][0]["comment_type"] == self.COMMENT_COUNTRY
+        assert response.data["comments"][0]["comment"] == "Test create country"
+
         assert response.status_code == 200
-        assert (
-            response.data["cp_report"]["comment_country_section_a"]
-            == "Test create country"
-        )
-        assert (
-            response.data["cp_report"]["comment_secretariat_section_b"]
-            == "Test update secretariat"
-        )
+        assert response.data["comments"][1]["section"] == self.SECTION_B
+        assert response.data["comments"][1]["comment_type"] == self.COMMENT_SECRETARIAT
+        assert response.data["comments"][1]["comment"] == "Test update secretariat"

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from core.models.base_country_programme import (
+    AbstractCPComment,
     AbstractCPEmission,
     AbstractCPGeneration,
     AbstractCPPrices,
@@ -114,6 +115,7 @@ class CPReportSectionsArchive(models.Model):
     """
     These only start with version V (2023-onwards).
     """
+
     country_programme_report = models.OneToOneField(
         "CPReportArchive",
         on_delete=models.CASCADE,
@@ -126,3 +128,11 @@ class CPReportSectionsArchive(models.Model):
     reported_section_d = models.BooleanField(default=False)
     reported_section_e = models.BooleanField(default=False)
     reported_section_f = models.BooleanField(default=False)
+
+
+class CPCommentArchive(AbstractCPComment):
+    country_programme_report = models.ForeignKey(
+        "CPReportArchive",
+        on_delete=models.CASCADE,
+        related_name="cpcomments",
+    )

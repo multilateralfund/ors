@@ -8,15 +8,6 @@ from django.db.models import OuterRef
 from django.http import FileResponse
 from django_filters import rest_framework as filters
 
-REPORT_COMMENTS_SECTIONS = {
-    "section_a": "Section A",
-    "section_b": "Section B",
-    "section_c": "Section C",
-    "section_d": "Section D",
-    "section_e": "Section E",
-    "section_f": "Section F",
-}
-
 SECTION_ANNEX_MAPPING = {
     "A": ["A", "B", "C", "D", "E"],
     "B": ["F"],
