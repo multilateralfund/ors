@@ -2,6 +2,8 @@ import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 
+from core.models import CPFile
+
 pytestmark = pytest.mark.django_db
 
 
@@ -79,3 +81,22 @@ class TestCPFiles:
         response = self.client.get(url)
         assert response.status_code == 200
         assert response.data == []
+
+    def test_file_download(self, user, country_ro, test_file):
+        self.client.force_authenticate(user=user)
+        country_id = country_ro.id
+        year = 2023
+        base_url = reverse("country-programme-files")
+        params = f"?country_id={country_id}&year={year}"
+        url = base_url + params
+
+        # upload file (POST)
+        data = {"adrian.csv": test_file.open()}
+        response = self.client.post(url, data, format="multipart")
+        assert response.status_code == 201
+
+        my_file = CPFile.objects.get(name="adrian.csv")
+
+        # download file
+        url = reverse("country-programme-files") + f"{my_file.id}" + "/download/"
+        response = self.client.get(url)

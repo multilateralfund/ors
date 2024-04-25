@@ -1,7 +1,10 @@
 import os
+import urllib
 
 from django.core.exceptions import PermissionDenied
+from django.http import HttpResponse
 from rest_framework import generics, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from core.api.filters.country_programme import CPFileFilter
@@ -63,7 +66,9 @@ class CPFilesView(generics.GenericAPIView):
         cp_files = []
         files = request.FILES
         if not files:
-            return Response({"files": "Files not provided"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"files": "Files not provided"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         existing_files = CPFile.objects.filter(
             country_id=country_id, year=year, filename__in=list(files.keys())
@@ -106,3 +111,15 @@ class CPFilesView(generics.GenericAPIView):
         queryset.filter(id__in=file_ids).delete()
 
         return Response({}, status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=["get"])
+    def download(self, request, pk=None):
+        obj = self.get_object()
+        response = HttpResponse(
+            obj.file.read(), content_type="application/octet-stream"
+        )
+        file_name = urllib.parse.quote(obj.name)
+        response["Content-Disposition"] = (
+            f"attachment; filename*=UTF-8''{file_name}; filename=\"{file_name}\""
+        )
+        return response
