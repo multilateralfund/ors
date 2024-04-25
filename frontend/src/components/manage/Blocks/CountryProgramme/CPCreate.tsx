@@ -533,10 +533,12 @@ const CPCreate: React.FC = () => {
 
         const { files, ...reportData } = allData
 
-        await uploadFiles(
-          `api/country-programme/files/?country_id=${currentCountry?.id}&year=${form.year}`,
-          files,
-        )
+        if (files && files.length > 0) {
+          await uploadFiles(
+            `api/country-programme/files/?country_id=${currentCountry?.id}&year=${form.year}`,
+            files
+          )
+        }
 
         await api('api/country-programme/reports/', {
           data: {
@@ -570,6 +572,9 @@ const CPCreate: React.FC = () => {
             { variant: 'error' },
           )
         } else {
+          enqueueSnackbar(<>An error occurred. Please try again.</>, {
+            variant: 'error',
+          })
           setErrors({})
         }
       }

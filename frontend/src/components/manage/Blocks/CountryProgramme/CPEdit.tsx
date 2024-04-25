@@ -223,9 +223,9 @@ function CPEdit() {
       : Sections.section_b.getData(),
     section_c: includes(['V'], variant?.model)
       ? Sections.section_c
-        .getData()
-        .filter((row) => row.id !== 0)
-        .map((row) => ({ ...row, mandatory: false }))
+          .getData()
+          .filter((row) => row.id !== 0)
+          .map((row) => ({ ...row, mandatory: false }))
       : Sections.section_c.getData(),
     section_d: Sections.section_d.getData(),
     section_e: Sections.section_e.getData(),
@@ -280,7 +280,10 @@ function CPEdit() {
         section_f: Sections.section_f.getSubmitFormData(form.section_f),
       },
       (value, key) => {
-        return findIndex(sections, (section) => key === section.id) > -1
+        return (
+          key === 'files' ||
+          findIndex(sections, (section) => key === section.id) > -1
+        )
       },
     )
     /* eslint-disable-next-line */
