@@ -536,8 +536,7 @@ const CPCreate: React.FC = () => {
 
         const formData = new FormData()
         files.forEach((file) => {
-          // TODO: multiple files
-          formData.append('file', file)
+          formData.append(file.name, file)
         })
 
         const csrftoken = Cookies.get('csrftoken')
