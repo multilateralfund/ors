@@ -82,10 +82,34 @@ class TestCPFiles:
         assert response.status_code == 200
         assert response.data == []
 
+    def test_file_list(self, user, country_ro, test_file):
+        self.client.force_authenticate(user=user)
+        country_id = country_ro.id
+        year = 2023
+
+        base_url = reverse("country-programme-files")
+        params = f"?country_id={country_id}&year={year}"
+        url = base_url + params
+
+        # upload file
+        data = {"adrian.csv": test_file.open()}
+        response = self.client.post(url, data, format="multipart")
+        assert response.status_code == 201
+
+        # get file info
+        url = (
+            reverse("country-programme-files") + f"?country_id={country_id}&year={year}"
+        )
+
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert response.data != []
+
     def test_file_download(self, user, country_ro, test_file):
         self.client.force_authenticate(user=user)
         country_id = country_ro.id
         year = 2023
+
         base_url = reverse("country-programme-files")
         params = f"?country_id={country_id}&year={year}"
         url = base_url + params
@@ -95,11 +119,10 @@ class TestCPFiles:
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 201
 
-        my_file = CPFile.objects.get(filename="adrian.csv")
-
         # download file
-        url = reverse("country-programme-files") + f"{my_file.id}" + "/download/"
+        my_file = CPFile.objects.get(filename="adrian.csv")
+        url = reverse("country-programme-files-download", args=(my_file.id,))
         response = self.client.get(url)
 
-        assert response.status == 200
+        assert response.status_code == 200
         assert response.content == my_file.file.read()

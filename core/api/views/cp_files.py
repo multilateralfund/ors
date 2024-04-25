@@ -3,8 +3,7 @@ import urllib
 
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
-from rest_framework import generics, status
-from rest_framework.decorators import action
+from rest_framework import generics, mixins, status
 from rest_framework.response import Response
 
 from core.api.filters.country_programme import CPFileFilter
@@ -13,7 +12,12 @@ from core.api.serializers.cp_file import CPFileSerializer
 from core.models.country_programme import CPFile
 
 
-class CPFilesView(generics.GenericAPIView):
+class CPFilesView(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    generics.GenericAPIView,
+):
     """
     API endpoint that allows uploading country programme files.
     """
@@ -112,13 +116,18 @@ class CPFilesView(generics.GenericAPIView):
 
         return Response({}, status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=["get"])
-    def download(self, request, **kwargs):
+
+class CPFilesDownloadView(generics.RetrieveAPIView):
+    permission_classes = [IsUserAllowedCP]
+    queryset = CPFile.objects.all()
+    lookup_field = "id"
+
+    def get(self, request, *args, **kwargs):
         obj = self.get_object()
         response = HttpResponse(
             obj.file.read(), content_type="application/octet-stream"
         )
-        file_name = urllib.parse.quote(obj.name)
+        file_name = urllib.parse.quote(obj.filename)
         response["Content-Disposition"] = (
             f"attachment; filename*=UTF-8''{file_name}; filename=\"{file_name}\""
         )
