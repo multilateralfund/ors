@@ -96,8 +96,6 @@ const PopoverWindow = ({
   const openRange = selectedRange[0] && !selectedRange[1]
   const btnClasses = 'text-secondary hover:text-primary cursor-pointer'
 
-  console.log('selectedRange', selectedRange)
-
   return (
     <div className="flex flex-col gap-y-4 text-lg uppercase">
       <div className="flex items-center justify-between gap-x-4">
@@ -183,8 +181,6 @@ export default function YearRangeWidget({
   }
 
   const open = Boolean(dateRangeEl)
-
-  console.log(popoverWidth)
 
   return (
     <div className={cx('range flex items-center gap-2', className)}>

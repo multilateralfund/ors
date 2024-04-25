@@ -212,9 +212,11 @@ const CountrySection = function CountrySection(
         className="bg-mui-box-background/70 !duration-300"
         active={loading}
       />
-      <Portal active={user_type !== 'country_user'} domNode="portalSortBy">
-        <SortBy options={orderOptions} onChange={handleOrderChange} />
-      </Portal>
+      {user_type !== 'country_user' && (
+        <Portal domNode="portalSortBy">
+          <SortBy options={orderOptions} onChange={handleOrderChange} />
+        </Portal>
+      )}
       <div className="my-6 flex gap-4">
         {filters.country.map((countryId: number) => (
           <Typography
@@ -320,7 +322,7 @@ const CountrySection = function CountrySection(
 }
 
 const LogItem = (props: any) => {
-  const { loaded, loading, reports } = props
+  const { loaded, loading, report } = props
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const countriesById = new Map<number, any>(
     countries.map((country: any) => [country.id, country]),
@@ -346,55 +348,49 @@ const LogItem = (props: any) => {
       </>
     )
   }
+  const dateObject = new Date(report.created_at)
+
+  const statusDot = report.status === 'final' ? '#4191CD' : '#EE8E34'
+  const country = countriesById.get(report.country_id)
 
   return (
     <div
       className={`transition-opacity flex w-full flex-col gap-8 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
     >
       <div className="flex w-full flex-col gap-4">
-        {reports.map((report: any, index: number) => {
-          const dateObject = new Date(report.created_at)
-
-          const statusDot = report.status === 'final' ? '#4191CD' : '#EE8E34'
-          const country = countriesById.get(report.country_id)
-
-          return (
-            <Link
-              key={index}
-              className="flex flex-col gap-2 text-pretty border-0 border-b border-solid border-blue-600 pb-4 sm:min-w-60"
-              underline="none"
-              href={
-                report.status === 'draft'
-                  ? `/country-programme/${country?.iso3}/${report.year}/edit`
-                  : `/country-programme/${country?.iso3}/${report.year}`
-              }
-            >
-              <Typography variant="h5">{report.country}</Typography>
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center justify-between gap-2">
-                  <Typography
-                    className="mr-2 text-lg font-semibold"
-                    color="secondary"
-                  >
-                    {report.year}
-                  </Typography>
-                  <div className="flex items-baseline gap-2">
-                    <Typography>
-                      <IoEllipse color={statusDot} size={12} />
-                    </Typography>
-                    <Typography className="text-nowrap font-medium">
-                      VERSION {report.version}
-                    </Typography>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 rounded-md bg-white p-0.5">
-                  <Typography>Submitted by ({report.created_by}) on</Typography>
-                  <FormattedDateTime dateObject={dateObject} />
-                </div>
+        <Link
+          className="flex flex-col gap-2 text-pretty border-0 border-b border-solid border-blue-600 pb-4 sm:min-w-60"
+          underline="none"
+          href={
+            report.status === 'draft'
+              ? `/country-programme/${country?.iso3}/${report.year}/edit`
+              : `/country-programme/${country?.iso3}/${report.year}`
+          }
+        >
+          <Typography variant="h5">{report.country}</Typography>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-2">
+              <Typography
+                className="mr-2 text-lg font-semibold"
+                color="secondary"
+              >
+                {report.year}
+              </Typography>
+              <div className="flex items-baseline gap-2">
+                <Typography>
+                  <IoEllipse color={statusDot} size={12} />
+                </Typography>
+                <Typography className="text-nowrap font-medium">
+                  VERSION {report.version}
+                </Typography>
               </div>
-            </Link>
-          )
-        })}
+            </div>
+            <div className="flex items-center gap-3 rounded-md bg-white p-0.5">
+              <Typography>Submitted by ({report.created_by}) on</Typography>
+              <FormattedDateTime dateObject={dateObject} />
+            </div>
+          </div>
+        </Link>
       </div>
     </div>
   )
@@ -490,12 +486,12 @@ const LogSection = function LogSection(props: SectionProps & { logApi: any }) {
         )}
       </div>
       <div
-        className={`transition-opacity mb-10 flex w-full max-w-screen-xl flex-col gap-12 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
+        className={`transition-opacity mb-10 flex w-full max-w-screen-xl flex-col gap-4 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
       >
-        {memoResults.map((countryData: any) => {
-          if (countryData.isSkeleton)
+        {memoResults.map((report: any) => {
+          if (report.isSkeleton)
             return (
-              <div key={countryData.id} className="flex flex-col gap-8">
+              <div key={report.id} className="flex flex-col gap-8">
                 <Skeleton height={40} variant="text" width="100%" />
                 <div className="grid w-full grid-flow-row auto-rows-max gap-8 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
                   {times(REPORTS_PER_COUNTRY, (index) => (
@@ -512,10 +508,10 @@ const LogSection = function LogSection(props: SectionProps & { logApi: any }) {
 
           return (
             <LogItem
-              key={countryData.id}
+              key={report.id}
               loaded={loaded}
               loading={loading}
-              reports={countryData.reports}
+              report={report}
             />
           )
         })}
@@ -585,32 +581,40 @@ const StatusFilter = (props: any) => {
 
 const CountrySelect = (props: { filters: any; setFilters: any }) => {
   const { filters, setFilters } = props
-  // take into account 'user_type'
+  const { country: user_country, user_type } = useStore(
+    (state) => state.user.data,
+  )
   const countries = useStore((state) => state.common.countries_for_listing.data)
+  const country = countries.find((c) => c.name === user_country)
 
   return (
-    <Field<Country>
-      FieldProps={{ className: 'mb-0 w-full CPListing' }}
-      getOptionLabel={(option) => (option as Country).name}
-      options={countries}
-      popupIcon={<IoChevronDownCircle color="black" size={24} />}
-      value={null}
-      widget="autocomplete"
-      Input={{
-        placeholder: 'Select country...',
-      }}
-      onChange={(_: any, value: any) => {
-        if (!!value) {
-          const country = filters.country || []
-          const newValue = union(country, [value.id])
-          setFilters({ country: newValue })
-          if (document.activeElement) {
-            // @ts-ignore
-            document.activeElement.blur()
+    <div className="relative">
+      <Field<Country>
+        FieldProps={{ className: 'mb-0 w-full CPListing' }}
+        getOptionLabel={(option) => (option as Country).name}
+        options={countries}
+        popupIcon={<IoChevronDownCircle color="black" size={24} />}
+        value={user_type === 'country_user' ? country : null}
+        widget="autocomplete"
+        Input={{
+          placeholder: 'Select country...',
+        }}
+        onChange={(_: any, value: any) => {
+          if (!!value) {
+            const country = filters.country || []
+            const newValue = union(country, [value.id])
+            setFilters({ country: newValue })
+            if (document.activeElement) {
+              // @ts-ignore
+              document.activeElement.blur()
+            }
           }
-        }
-      }}
-    />
+        }}
+      />
+      {user_type === 'country_user' && (
+        <div className="absolute inset-0 top-0 z-10 -mt-1 bg-white bg-opacity-60"></div>
+      )}
+    </div>
   )
 }
 
@@ -685,13 +689,12 @@ function useLogSectionApi(filters: FiltersType) {
       params: {
         limit: PER_PAGE_COUNTRY,
         offset: 0,
-        ordering: 'asc',
-        show_all_per_group: true,
+        ordering: '-year',
         status: filters.status,
       },
       withStoreCache: true,
     },
-    path: 'api/country-programme/reports-by-country/',
+    path: 'api/country-programme/reports/',
   })
   const { count, loaded, results } = getResults(data)
   return { count, data, loaded, loading, results, setParams }
@@ -820,7 +823,6 @@ export default function CPListing() {
           maxYear={maxYear}
           minYear={minYear}
           setFilters={handleFiltersChange}
-          user_type={user_type}
         />
       </div>
     </>

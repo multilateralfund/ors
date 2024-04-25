@@ -21,7 +21,7 @@ export default function Header() {
 
   useEffect(() => {
     setIsCP(window.location.pathname === '/country-programme')
-  }, [])
+  }, [window.location.pathname])
 
   return (
     <FadeInOut className="header-motion">
