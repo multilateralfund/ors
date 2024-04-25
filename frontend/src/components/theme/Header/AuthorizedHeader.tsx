@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 
 import { AnimatePresence } from 'framer-motion'
 import { isFunction } from 'lodash'
+import { usePathname } from 'next/navigation'
 
 // import CollapseInOut from '@ors/components/manage/Transitions/CollapseInOut'
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
@@ -18,10 +19,11 @@ import HeaderNavigation from './HeaderNavigation'
 export default function Header() {
   const { HeaderTitle } = useStore((state) => state.header)
   const [isCP, setIsCP] = useState(false)
+  const pathname = usePathname()
 
   useEffect(() => {
-    setIsCP(window.location.pathname === '/country-programme')
-  }, [window.location.pathname])
+    setIsCP(pathname === '/country-programme')
+  }, [pathname, setIsCP])
 
   return (
     <FadeInOut className="header-motion">
