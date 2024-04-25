@@ -23,6 +23,7 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
 import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
+import { ValidationProvider } from '@ors/contexts/Validation/Validation'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import useMakeClassInstance from '@ors/hooks/useMakeClassInstance'
 import SectionA from '@ors/models/SectionA'
@@ -37,6 +38,7 @@ import { getSections } from '.'
 import Portal from '../../Utils/Portal'
 import { CPEditHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
+import { CPBaseForm } from './typesCPCreate'
 
 import { IoClose, IoExpand } from 'react-icons/io5'
 
@@ -222,9 +224,9 @@ function CPEdit() {
       : Sections.section_b.getData(),
     section_c: includes(['V'], variant?.model)
       ? Sections.section_c
-        .getData()
-        .filter((row) => row.id !== 0)
-        .map((row) => ({ ...row, mandatory: false }))
+          .getData()
+          .filter((row) => row.id !== 0)
+          .map((row) => ({ ...row, mandatory: false }))
       : Sections.section_c.getData(),
     section_d: Sections.section_d.getData(),
     section_e: Sections.section_e.getData(),
@@ -329,7 +331,7 @@ function CPEdit() {
   }, [renderedSections.length, activeTab])
 
   return (
-    <>
+    <ValidationProvider form={form as CPBaseForm}>
       <Loading
         className="!fixed bg-action-disabledBackground"
         active={
@@ -441,7 +443,7 @@ function CPEdit() {
             })}
         </CPSectionWrapper>
       </form>
-    </>
+    </ValidationProvider>
   )
 }
 

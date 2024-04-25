@@ -5,11 +5,8 @@ import { darkScrollbar } from '@mui/material'
 
 import getCommonTheme from '../common'
 
-const darkTheme = (
-  tailwindTheme: ThemeConfig,
-  direction: 'ltr' | 'rtl',
-): ThemeOptions => {
-  const commonTheme = getCommonTheme(tailwindTheme, direction)
+const darkTheme = (tailwindTheme: ThemeConfig): ThemeOptions => {
+  const commonTheme = getCommonTheme(tailwindTheme)
 
   return {
     ...commonTheme,

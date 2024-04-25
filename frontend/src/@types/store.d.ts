@@ -1,7 +1,6 @@
 import type { CPReport } from './api_country-programme_records'
 import type { EmptyFormType } from './api_empty-form'
 import type { ApiSubstance } from './api_substances'
-import type { Language } from '@ors/types/locales'
 import type { DataType, SliceData } from '@ors/types/primitives'
 import type { PartialDeep } from 'type-fest'
 
@@ -75,12 +74,6 @@ export interface HeaderSlice {
   setNavigationBackground: (value: string) => void
 }
 
-export interface I18nSlice {
-  dir: 'ltr' | 'rtl'
-  lang: Language
-  setLang: (lang: Language) => void
-}
-
 export interface ProjectsSlice {
   clusters: SliceData
   meetings: SliceData
@@ -136,7 +129,6 @@ export type StoreState = {
   cp_current_tab: CPCurrentTabSlice
   cp_reports: CPReportsSlice
   header: HeaderSlice
-  i18n: I18nSlice
   internalError: any
   projects: ProjectsSlice
   settings: SettingsSlice

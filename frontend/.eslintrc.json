@@ -68,7 +68,6 @@
           "config",
           "internal",
           ["parent", "sibling", "index"],
-          "i18n",
           "side-effect",
           "files",
           "object",
@@ -79,7 +78,6 @@
             "server": ["server-only"],
             "react": ["react", "react-*"],
             "config": ["@ors/config", "@ors/config/**"],
-            "i18n": ["@ors/i18n", "@ors/i18n/client", "@ors/i18n/settings"],
             "files": [
               "react-icons/**",
               "*.css",
