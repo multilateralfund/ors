@@ -84,7 +84,6 @@ const SectionErrorIndicator = ({
           setShowTooltip(true)
         }}
         onMouseLeave={() => {
-          console.log('MOUSE LEAVE!')
           setAnchorEl(null)
           setShowTooltip(false)
         }}
@@ -522,8 +521,6 @@ const CPCreate: React.FC = () => {
       },
     }))
   }
-
-  console.log('FORM:', form)
 
   return (
     <ValidationProvider form={form}>

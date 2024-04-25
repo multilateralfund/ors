@@ -77,8 +77,6 @@ export const ValidationProvider = (props: {
     validationSchema,
   ) as ValidationSchemaKeys[]
 
-  console.log('running validation...')
-
   const errors = validationSchemaKeys.reduce(
     (acc, section_id) => {
       acc[section_id] = validateSection(form[section_id] as IRow[])
