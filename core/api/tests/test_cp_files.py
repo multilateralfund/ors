@@ -100,3 +100,6 @@ class TestCPFiles:
         # download file
         url = reverse("country-programme-files") + f"{my_file.id}" + "/download/"
         response = self.client.get(url)
+
+        assert response.status == 200
+        assert response.content == my_file.file.read()

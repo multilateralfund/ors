@@ -113,7 +113,7 @@ class CPFilesView(generics.GenericAPIView):
         return Response({}, status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["get"])
-    def download(self, request, pk=None):
+    def download(self, request, **kwargs):
         obj = self.get_object()
         response = HttpResponse(
             obj.file.read(), content_type="application/octet-stream"
