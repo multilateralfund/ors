@@ -60,6 +60,9 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
     comment_country = serializers.CharField(read_only=True)
     comment_secretariat = serializers.CharField(read_only=True)
 
+    reporting_entry = serializers.CharField(read_only=True)
+    reporting_email = serializers.CharField(read_only=True)
+
     class Meta:
         fields = [
             "id",
@@ -74,6 +77,8 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
             "comment_secretariat",
             "created_at",
             "created_by",
+            "reporting_entry",
+            "reporting_email",
         ]
 
 
