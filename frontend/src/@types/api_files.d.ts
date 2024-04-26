@@ -1,6 +1,6 @@
 export type ApiFile = {
   country_id: number
-  file: string
+  download_url: string
   filename: string
   id: number
   uploaded_at: string
