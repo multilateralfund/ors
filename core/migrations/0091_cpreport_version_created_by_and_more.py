@@ -4,6 +4,7 @@ from django.conf import settings
 import django.core.files.storage
 from django.db import migrations, models
 import django.db.models.deletion
+from django.db.models import F
 
 
 def migrate_addresses(apps, schema_editor):
