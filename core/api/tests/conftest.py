@@ -256,7 +256,12 @@ def substance(excluded_usage, groupA, time_frames):
 
 @pytest.fixture
 def blend(excluded_usage, time_frames):
-    blend = BlendFactory.create(name="blend", sort_order=1)
+    blend = BlendFactory.create(
+        name="blend",
+        sort_order=1,
+        odp=0.02,
+        gwp=0.05,
+    )
     ExcludedUsageBlendFactory.create(
         blend=blend,
         usage=excluded_usage,
@@ -480,7 +485,10 @@ def setup_new_cp_report(cp_report_2019, blend, substance, time_frames, groupA):
     # section A
     for subst in [substance, substAnoform]:
         CPRecordFactory.create(
-            country_programme_report=cp_report_2019, section="A", substance=subst
+            country_programme_report=cp_report_2019,
+            section="A",
+            substance=subst,
+            imports=None,
         )
 
     # section B
@@ -526,7 +534,10 @@ def setup_new_cp_report(cp_report_2019, blend, substance, time_frames, groupA):
 def setup_old_cp_report(cp_report_2005, substance, blend, groupA, time_frames):
     # section A
     cp_rec = CPRecordFactory.create(
-        country_programme_report=cp_report_2005, section="A", substance=substance
+        country_programme_report=cp_report_2005,
+        section="A",
+        substance=substance,
+        imports=None,
     )
     # add 3 usages for one record
     for _ in range(3):
