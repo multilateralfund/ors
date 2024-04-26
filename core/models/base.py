@@ -28,7 +28,6 @@ class AbstractWChemical(models.Model):
         blank=True,
     )
 
-
     def get_chemical_display_name(self):
         # pylint: disable=E1101
         if self.blend:
@@ -55,6 +54,30 @@ class AbstractWChemical(models.Model):
     def get_excluded_usages_list(self):
         chemical = self.substance if self.substance else self.blend
         return list({usage.usage_id for usage in chemical.excluded_usages.all()})
+
+    def get_chemical_gwp(self):
+        # pylint: disable=E1101
+        chemical = self.substance if self.substance else self.blend
+        return chemical.gwp if chemical.gwp else 0
+
+    def get_chemical_odp(self):
+        # pylint: disable=E1101
+        chemical = self.substance if self.substance else self.blend
+        return chemical.odp if chemical.odp else 0
+
+    def mt_convert_to_odp(self, value):
+        if value is None:
+            return 0
+
+        odp_value = self.get_chemical_odp()
+        return value * odp_value
+
+    def mt_convert_to_gwp(self, value):
+        if value is None:
+            return 0
+
+        gwp_value = self.get_chemical_gwp()
+        return value * gwp_value
 
     class Meta:
         abstract = True

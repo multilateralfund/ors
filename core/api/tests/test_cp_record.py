@@ -1,3 +1,4 @@
+from math import isclose
 import pytest
 from django.urls import reverse
 
@@ -35,9 +36,14 @@ class TestCPRecordList(BaseTest):
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 200
         assert len(response.data["section_a"]) == 4
-        assert len(response.data["section_a"][0]["excluded_usages"]) == 1
-        assert response.data["section_a"][0]["chemical_name"] == substance.name
-        assert response.data["section_a"][0]["row_id"] == f"substance_{substance.id}"
+        record = response.data["section_a"][0]
+        assert len(record["excluded_usages"]) == 1
+        assert record["chemical_name"] == substance.name
+        assert record["imports_gwp"] == 0
+        assert record["imports_odp"] == 0
+        assert isclose(record["exports_gwp"], float(record["exports"]) * substance.gwp)
+        assert isclose(record["exports_odp"], float(record["exports"]) * substance.odp)
+        assert record["row_id"] == f"substance_{substance.id}"
         assert response.data["section_a"][3]["group"] == "group B B"
 
         assert len(response.data["section_b"]) == 8
@@ -48,6 +54,14 @@ class TestCPRecordList(BaseTest):
         assert response.data["section_b"][2]["chemical_name"] == blend.name
         assert response.data["section_b"][2]["row_id"] == f"blend_{blend.id}"
         assert len(response.data["section_b"][2]["record_usages"]) == 3
+        record_us = response.data["section_b"][2]["record_usages"][0]
+        assert record_us["quantity"] != 0
+        assert isclose(
+            record_us["quantity_gwp"], float(record_us["quantity"]) * blend.gwp
+        )
+        assert isclose(
+            record_us["quantity_odp"], float(record_us["quantity"]) * blend.odp
+        )
         assert response.data["section_b"][3]["id"] == 0
         assert response.data["section_b"][-3]["id"] != 0
         assert response.data["section_b"][-3]["chemical_name"] == "AddedByUser"

@@ -351,9 +351,10 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
 
         # set created_by to the current object created_by
         new_instance.created_by = current_obj.created_by
+        new_instance.version_created_by = request.user
         new_instance.save()
 
-        # arhive versions only for FINAL reports
+        # archive versions only for FINAL reports
         if current_obj.status == CPReport.CPReportStatus.FINAL:
             self._archive_cp_report(current_obj)
 
@@ -363,7 +364,7 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
         )
         event_descrs = ["Updated by user"]
 
-        # check if the status was changes
+        # check if the status was changed
         if current_obj.status != new_instance.status:
             event_descrs.append(
                 f"Status changed from {current_obj.status} to {new_instance.status}"

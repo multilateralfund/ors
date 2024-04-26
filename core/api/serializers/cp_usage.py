@@ -12,6 +12,8 @@ class CPUsageSerializer(serializers.ModelSerializer):
         queryset=Usage.objects.all().values_list("id", flat=True),
     )
     quantity = serializers.DecimalField(max_digits=25, decimal_places=15)
+    quantity_gwp = serializers.SerializerMethodField()
+    quantity_odp = serializers.SerializerMethodField()
 
     class Meta:
         model = CPUsage
@@ -19,7 +21,15 @@ class CPUsageSerializer(serializers.ModelSerializer):
             "usage",
             "usage_id",
             "quantity",
+            "quantity_gwp",
+            "quantity_odp",
         ]
+
+    def get_quantity_gwp(self, obj):
+        return obj.country_programme_record.mt_convert_to_gwp(obj.quantity)
+
+    def get_quantity_odp(self, obj):
+        return obj.country_programme_record.mt_convert_to_odp(obj.quantity)
 
     def to_internal_value(self, data):
         try:
