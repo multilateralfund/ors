@@ -21,7 +21,7 @@ export default function CellValidationAlert({
     <div>
       <div
         className="cursor-pointer"
-        onClick={() => validation.setOpenDrawer(true)}
+        onClick={() => validation.setOpenDrawer((prev) => !prev)}
         onMouseEnter={(event) => {
           setAnchorEl(event?.currentTarget)
           setShowTooltip(true)

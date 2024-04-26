@@ -1,13 +1,18 @@
-import type { IRow, UsageMapping } from './types'
+import type { IRow, RowValidatorFuncResult, UsageMapping } from './types'
 
-export function validateTotals(row: IRow) {
-  return (
+export function validateTotals(row: IRow): RowValidatorFuncResult {
+  const isValid =
     row.imports - row.exports + row.production ==
     row.record_usages.reduce((acc, usage) => acc + usage.quantity, 0)
-  )
+  if (!isValid) {
+    return { row: row.display_name }
+  }
 }
 
-export function validateAnnexEQPS(row: IRow, usages: UsageMapping) {
+export function validateAnnexEQPS(
+  row: IRow,
+  usages: UsageMapping,
+): RowValidatorFuncResult {
   const usageQPS = usages['Methyl bromide QPS'].id
   const usageNonQPS = usages['Methyl bromide Non-QPS'].id
   const isAnnexESubstance =
@@ -18,10 +23,17 @@ export function validateAnnexEQPS(row: IRow, usages: UsageMapping) {
   const valueNonQPS = anyRow[`usage_${usageNonQPS}`] || 0
   const valueImport = row.imports
 
-  return isAnnexESubstance ? !!(valueQPS + valueNonQPS == valueImport) : true
+  const isValid = isAnnexESubstance && valueQPS + valueNonQPS == valueImport
+
+  if (!isValid) {
+    return { row: row.display_name }
+  }
 }
 
-export function validateAnnexENonQPS(row: IRow, usages: UsageMapping) {
+export function validateAnnexENonQPS(
+  row: IRow,
+  usages: UsageMapping,
+): RowValidatorFuncResult {
   const usageNonQPS = usages['Methyl bromide Non-QPS'].id
   const isAnnexESubstance =
     row.group.startsWith('Annex E') && (row.substance_id || row.blend_id)
@@ -29,12 +41,15 @@ export function validateAnnexENonQPS(row: IRow, usages: UsageMapping) {
   const anyRow = row as unknown as Record<string, number>
   const valueNonQPS = anyRow[`usage_${usageNonQPS}`] || 0
 
-  return isAnnexESubstance && valueNonQPS
-    ? !!(row.banned_date && row.remarks)
-    : true
+  const isValid =
+    isAnnexESubstance && valueNonQPS && row.banned_date && row.remarks
+
+  if (!isValid) {
+    return { row: row.display_name }
+  }
 }
 
-export function validateBannedImports(row: IRow) {
+export function validateBannedImports(row: IRow): RowValidatorFuncResult {
   const bannedByGroup =
     row.group.startsWith('Annex E') ||
     row.group.startsWith('Annex A, Group I') ||
@@ -44,5 +59,10 @@ export function validateBannedImports(row: IRow) {
     row.group.startsWith('Annex B, Group III')
 
   const isBanned = bannedByGroup && (row.substance_id || row.blend_id)
-  return isBanned ? !!row.banned_date : true
+
+  const isValid = isBanned && row.banned_date
+
+  if (!isValid) {
+    return { row: row.display_name }
+  }
 }

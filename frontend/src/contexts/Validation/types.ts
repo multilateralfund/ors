@@ -7,6 +7,7 @@ export interface IUsage {
 export interface IRow {
   banned_date: null | string
   blend_id: null | number
+  display_name: string
   exports: number
   group: string
   imports: number
@@ -19,7 +20,16 @@ export interface IRow {
 
 export interface IGlobalValidator {}
 
-export type RowValidatorFunc = (row: IRow, usages: UsageMapping) => boolean
+export interface IInvalidRowResult {
+  row: string
+}
+
+export type RowValidatorFuncResult = IInvalidRowResult | null | undefined
+
+export type RowValidatorFunc = (
+  row: IRow,
+  usages: UsageMapping,
+) => RowValidatorFuncResult
 
 export interface IRowValidator {
   highlight_cells: Record<string, (row: IRow) => boolean>
@@ -33,12 +43,13 @@ export interface IValidator {
   rows?: IRowValidator[]
 }
 
-export interface IRowValidationResult {
+export interface IRowValidationResult extends IInvalidRowResult {
   highlight_cells: string[]
   id: string
   message: string
   row_id: string
 }
+
 export interface IGlobalValidationResult {
   highlight?: string[]
   id: string
