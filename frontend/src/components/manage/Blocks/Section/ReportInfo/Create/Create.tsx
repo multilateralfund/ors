@@ -208,10 +208,13 @@ const ReportInfoCreate = (props: any) => {
           />
         </div>
         <FileInput form={form} setForm={setForm} />
-        <FilesViewer
-          files={alreadyUploadedFiles}
-          heading={'Already uploaded files'}
-        />
+        {isEdit && (
+          <FilesViewer
+            files={alreadyUploadedFiles}
+            heading={'Already uploaded files'}
+            isEdit={isEdit}
+          />
+        )}
       </div>
 
       <div className="flex flex-col rounded-lg bg-gray-100 p-4">

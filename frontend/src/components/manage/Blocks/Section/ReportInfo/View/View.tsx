@@ -50,7 +50,11 @@ const ReportInfoView = (props: any) => {
           <SimpleField id="year" data={report.year} label="Year" />
         </div>
 
-        <FilesViewer files={files} heading={'File attachments'} />
+        <FilesViewer
+          files={files}
+          heading={'File attachments'}
+          isEdit={false}
+        />
       </div>
 
       <div className="flex flex-col rounded-lg bg-gray-100 p-4">
