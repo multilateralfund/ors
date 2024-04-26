@@ -40,6 +40,7 @@ import {
   IGlobalValidationResult,
   ValidationSchemaKeys,
 } from '@ors/contexts/Validation/types'
+import { uploadFiles } from '@ors/helpers'
 import api from '@ors/helpers/Api/_api'
 import { getResults } from '@ors/helpers/Api/Api'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
@@ -336,6 +337,7 @@ const CPCreate: React.FC = () => {
   })
   const [form, setForm] = useState<CPBaseForm>({
     country: null,
+    files: [],
     report_info: {
       reported_section_a: true,
       reported_section_b: true,
@@ -400,6 +402,7 @@ const CPCreate: React.FC = () => {
     return {
       ...form,
       country_id: form.country?.id,
+      files: form.files,
       name: form.country?.label ? `${form.country?.label} ${form.year}` : '',
       report_info: {
         reported_section_a: form.report_info.reported_section_a,
@@ -522,6 +525,61 @@ const CPCreate: React.FC = () => {
     }))
   }
 
+  function getFormSubmitter(reportStatus: 'draft' | 'final') {
+    return async () => {
+      try {
+        const allData = getSubmitFormData()
+
+        const { files, ...reportData } = allData
+
+        if (files && files.length > 0) {
+          await uploadFiles(
+            `api/country-programme/files/?country_id=${currentCountry?.id}&year=${form.year}`,
+            files
+          )
+        }
+
+        await api('api/country-programme/reports/', {
+          data: {
+            ...reportData,
+            status: reportStatus,
+          },
+          method: 'POST',
+        })
+        setErrors({})
+        Sections.section_a.clearLocalStorage()
+        Sections.section_b.clearLocalStorage()
+        Sections.section_c.clearLocalStorage()
+        Sections.section_d.clearLocalStorage()
+        Sections.section_e.clearLocalStorage()
+        Sections.section_f.clearLocalStorage()
+        enqueueSnackbar(
+          <>
+            Added new submission for {form.country!.label} {form.year}.
+          </>,
+          { variant: 'success' },
+        )
+        router.push(`/country-programme/${currentCountry!.iso3}/${form.year}`)
+      } catch (error) {
+        if (error.status === 400) {
+          const errors = await error.json()
+          setErrors({ ...errors })
+          enqueueSnackbar(
+            errors.general_error ||
+              errors.files ||
+              'Please make sure all the inputs are correct.',
+            { variant: 'error' },
+          )
+        } else {
+          enqueueSnackbar(<>An error occurred. Please try again.</>, {
+            variant: 'error',
+          })
+          setErrors({})
+        }
+      }
+    }
+  }
+
   return (
     <ValidationProvider form={form}>
       <Loading
@@ -562,46 +620,7 @@ const CPCreate: React.FC = () => {
                 disabled={
                   !!existingReports.data?.length || existingReports.loading
                 }
-                onClick={async () => {
-                  try {
-                    await api('api/country-programme/reports/', {
-                      data: {
-                        ...getSubmitFormData(),
-                        status: 'draft',
-                      },
-                      method: 'POST',
-                    })
-                    setErrors({})
-                    Sections.section_a.clearLocalStorage()
-                    Sections.section_b.clearLocalStorage()
-                    Sections.section_c.clearLocalStorage()
-                    Sections.section_d.clearLocalStorage()
-                    Sections.section_e.clearLocalStorage()
-                    Sections.section_f.clearLocalStorage()
-                    enqueueSnackbar(
-                      <>
-                        Added new submission for {form.country!.label}{' '}
-                        {form.year}.
-                      </>,
-                      { variant: 'success' },
-                    )
-                    router.push(
-                      `/country-programme/${currentCountry!.iso3}/${form.year}`,
-                    )
-                  } catch (error) {
-                    if (error.status === 400) {
-                      const errors = await error.json()
-                      setErrors({ ...errors })
-                      enqueueSnackbar(
-                        errors.general_error ||
-                          'Please make sure all the inputs are correct.',
-                        { variant: 'error' },
-                      )
-                    } else {
-                      setErrors({})
-                    }
-                  }
-                }}
+                onClick={getFormSubmitter('draft')}
               >
                 Save draft
               </Button>
@@ -613,46 +632,7 @@ const CPCreate: React.FC = () => {
                 disabled={
                   !!existingReports.data?.length || existingReports.loading
                 }
-                onClick={async () => {
-                  try {
-                    await api('api/country-programme/reports/', {
-                      data: {
-                        ...getSubmitFormData(),
-                        status: 'final',
-                      },
-                      method: 'POST',
-                    })
-                    setErrors({})
-                    Sections.section_a.clearLocalStorage()
-                    Sections.section_b.clearLocalStorage()
-                    Sections.section_c.clearLocalStorage()
-                    Sections.section_d.clearLocalStorage()
-                    Sections.section_e.clearLocalStorage()
-                    Sections.section_f.clearLocalStorage()
-                    enqueueSnackbar(
-                      <>
-                        Added new submission for {form.country!.label}{' '}
-                        {form.year}.
-                      </>,
-                      { variant: 'success' },
-                    )
-                    router.push(
-                      `/country-programme/${currentCountry!.iso3}/${form.year}`,
-                    )
-                  } catch (error) {
-                    if (error.status === 400) {
-                      const errors = await error.json()
-                      setErrors({ ...errors })
-                      enqueueSnackbar(
-                        errors.general_error ||
-                          'Please make sure all the inputs are correct.',
-                        { variant: 'error' },
-                      )
-                    } else {
-                      setErrors({})
-                    }
-                  }
-                }}
+                onClick={getFormSubmitter('final')}
               >
                 Submit
               </Button>

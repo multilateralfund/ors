@@ -110,7 +110,7 @@ class CPFilesView(
     def delete(self, request, *args, **kwargs):
         self._check_country_user()
 
-        file_ids = request.data.getlist("file_ids")
+        file_ids = request.data.get("file_ids")
         queryset = self.filter_queryset(self.get_queryset())
         queryset.filter(id__in=file_ids).delete()
 

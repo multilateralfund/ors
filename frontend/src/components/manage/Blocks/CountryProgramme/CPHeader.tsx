@@ -11,6 +11,7 @@ import { useSnackbar } from 'notistack'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Link from '@ors/components/ui/Link/Link'
+import { uploadFiles } from '@ors/helpers'
 import api from '@ors/helpers/Api/_api'
 import useClickOutside from '@ors/hooks/useClickOutside'
 import { useStore } from '@ors/store'
@@ -269,6 +270,63 @@ const EditHeaderActions = ({
 
   if (!userTypeVisibility[user_type as UserType]) return null
 
+  function getReportSubmitter(status?: 'draft' | 'final') {
+    return async () => {
+      try {
+        const allData = getSubmitFormData()
+        const { files, ...reportData } = allData
+
+        if (files && files.length > 0) {
+          await uploadFiles(
+            `api/country-programme/files/?country_id=${report.country?.id}&year=${report.data?.year}`,
+            files
+          )
+        }
+
+        const response = await api(
+          `api/country-programme/reports/${report.data?.id}/`,
+          {
+            data: {
+              ...report.data,
+              ...reportData,
+              ...(status ? { status } : {}),
+            },
+            method: 'PUT',
+          },
+        )
+        setErrors({})
+        enqueueSnackbar(
+          <>
+            Updated submission for {response.country} {response.year}.
+          </>,
+          { variant: 'success' },
+        )
+        cacheInvalidateReport(response.country_id, response.year)
+        router.push(
+          `/country-programme/${report.country?.iso3}/${response.year}`,
+        )
+      } catch (error) {
+        if (error.status === 400) {
+          const errors = await error.json()
+          setErrors({ ...errors })
+          enqueueSnackbar(<>Please make sure all the inputs are correct.</>, {
+            variant: 'error',
+          })
+          if (errors.files) {
+            enqueueSnackbar(errors.files, {
+              variant: 'error',
+            })
+          }
+        } else {
+          enqueueSnackbar(<>An error occurred. Please try again.</>, {
+            variant: 'error',
+          })
+          setErrors({})
+        }
+      }
+    }
+  }
+
   return (
     <div className="flex items-center">
       {!!report.data && (
@@ -289,48 +347,7 @@ const EditHeaderActions = ({
               color="primary"
               size="large"
               variant="contained"
-              onClick={async () => {
-                try {
-                  const response = await api(
-                    `api/country-programme/reports/${report.data?.id}/`,
-                    {
-                      data: {
-                        ...report.data,
-                        ...getSubmitFormData(),
-                      },
-                      method: 'PUT',
-                    },
-                  )
-                  setErrors({})
-                  enqueueSnackbar(
-                    <>
-                      Updated submission for {response.country} {response.year}.
-                    </>,
-                    { variant: 'success' },
-                  )
-                  cacheInvalidateReport(response.country_id, response.year)
-                  router.push(
-                    `/country-programme/${report.country?.iso3}/${response.year}`,
-                  )
-                } catch (error) {
-                  if (error.status === 400) {
-                    setErrors({ ...(await error.json()) })
-                    enqueueSnackbar(
-                      <>Please make sure all the inputs are correct.</>,
-                      { variant: 'error' },
-                    )
-                  } else {
-                    const errors = await error.json()
-                    setErrors({})
-                    {
-                      errors.detail &&
-                        enqueueSnackbar(errors.detail, {
-                          variant: 'error',
-                        })
-                    }
-                  }
-                }
-              }}
+              onClick={getReportSubmitter()}
             >
               Update draft
             </Button>
@@ -341,49 +358,7 @@ const EditHeaderActions = ({
               color="secondary"
               size="large"
               variant="contained"
-              onClick={async () => {
-                try {
-                  const response = await api(
-                    `api/country-programme/reports/${report.data?.id}/`,
-                    {
-                      data: {
-                        ...report.data,
-                        ...getSubmitFormData(),
-                        status: 'draft',
-                      },
-                      method: 'PUT',
-                    },
-                  )
-                  setErrors({})
-                  enqueueSnackbar(
-                    <>
-                      Updated submission for {response.country} {response.year}.
-                    </>,
-                    { variant: 'success' },
-                  )
-                  cacheInvalidateReport(response.country_id, response.year)
-                  router.push(
-                    `/country-programme/${report.country?.iso3}/${response.year}`,
-                  )
-                } catch (error) {
-                  if (error.status === 400) {
-                    setErrors({ ...(await error.json()) })
-                    enqueueSnackbar(
-                      <>Please make sure all the inputs are correct.</>,
-                      { variant: 'error' },
-                    )
-                  } else {
-                    const errors = await error.json()
-                    setErrors({})
-                    {
-                      errors.detail &&
-                        enqueueSnackbar(errors.detail, {
-                          variant: 'error',
-                        })
-                    }
-                  }
-                }
-              }}
+              onClick={getReportSubmitter('draft')}
             >
               Save draft
             </Button>
@@ -393,49 +368,7 @@ const EditHeaderActions = ({
             color="secondary"
             size="large"
             variant="contained"
-            onClick={async () => {
-              try {
-                const response = await api(
-                  `api/country-programme/reports/${report.data?.id}/`,
-                  {
-                    data: {
-                      ...report.data,
-                      ...getSubmitFormData(),
-                      status: 'final',
-                    },
-                    method: 'PUT',
-                  },
-                )
-                setErrors({})
-                enqueueSnackbar(
-                  <>
-                    Updated submission for {response.country} {response.year}.
-                  </>,
-                  { variant: 'success' },
-                )
-                cacheInvalidateReport(response.country_id, response.year)
-                router.push(
-                  `/country-programme/${report.country?.iso3}/${response.year}`,
-                )
-              } catch (error) {
-                if (error.status === 400) {
-                  setErrors({ ...(await error.json()) })
-                  enqueueSnackbar(
-                    <>Please make sure all the inputs are correct.</>,
-                    { variant: 'error' },
-                  )
-                } else {
-                  const errors = await error.json()
-                  setErrors({})
-                  {
-                    errors.detail &&
-                      enqueueSnackbar(errors.detail, {
-                        variant: 'error',
-                      })
-                  }
-                }
-              }
-            }}
+            onClick={getReportSubmitter('final')}
           >
             {isDraft ? 'Submit final version' : 'Submit new version'}
           </Button>

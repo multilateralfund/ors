@@ -74,7 +74,7 @@ class TestCPFiles:
 
         # delete file (DELETE)
         data = {"file_ids": file_ids}
-        response = self.client.delete(url, data)
+        response = self.client.delete(url, data, format="json")
         assert response.status_code == 204
 
         # check delete (GET)

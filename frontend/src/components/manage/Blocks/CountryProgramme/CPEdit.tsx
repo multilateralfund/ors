@@ -200,6 +200,7 @@ function CPEdit() {
     adm_b: report.data?.adm_b,
     adm_c: report.data?.adm_c,
     adm_d: report.data?.adm_d,
+    files: [],
     report_info: {
       reported_section_a: report.data?.report_info?.reported_section_a ?? true,
       reported_section_b: report.data?.report_info?.reported_section_b ?? true,
@@ -271,6 +272,7 @@ function CPEdit() {
           [],
         ),
         adm_d: values(form.adm_d),
+        files: form.files,
         report_info: form.report_info,
         section_a: Sections.section_a.getSubmitFormData(form.section_a),
         section_b: Sections.section_b.getSubmitFormData(form.section_b),
@@ -280,7 +282,10 @@ function CPEdit() {
         section_f: Sections.section_f.getSubmitFormData(form.section_f),
       },
       (value, key) => {
-        return findIndex(sections, (section) => key === section.id) > -1
+        return (
+          key === 'files' ||
+          findIndex(sections, (section) => key === section.id) > -1
+        )
       },
     )
     /* eslint-disable-next-line */

@@ -1,8 +1,10 @@
-import React, { ChangeEvent, useState } from 'react'
+import React, { ChangeEvent } from 'react'
 
 import { TextField } from '@mui/material'
 import Typography from '@mui/material/Typography'
 
+import { CPBaseForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
+import { FilesViewer } from '@ors/components/manage/Blocks/Section/ReportInfo/FilesViewer'
 import ReportHistory from '@ors/components/manage/Blocks/Section/ReportInfo/ReportHistory'
 import ReportStatus from '@ors/components/manage/Blocks/Section/ReportInfo/ReportStatus'
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
@@ -11,13 +13,21 @@ import Field from '@ors/components/manage/Form/Field'
 import IconButton from '@ors/components/ui/IconButton/IconButton'
 import { useStore } from '@ors/store'
 
-const FileInput: React.FC = () => {
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+import { IoTrash } from 'react-icons/io5'
+
+function FileInput(props: {
+  form: CPBaseForm
+  setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
+}) {
+  const { form, setForm } = props
+
+  const selectedFiles = form.files
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      const filesArray = Array.from(event.target.files)
-      setSelectedFiles(filesArray)
+      setForm((oldForm) => {
+        return { ...oldForm, files: Array.from(event.target.files || []) }
+      })
     }
   }
 
@@ -36,27 +46,43 @@ const FileInput: React.FC = () => {
             'flex bg-white rounded-lg border border-solid border-gray-400 pl-2 h-[40px]',
           disableUnderline: true,
           endAdornment: (
-            <IconButton
-              className="flex h-full items-center justify-center text-nowrap rounded-l-none border-y-0 border-r-0 border-gray-400 text-lg font-normal"
-              aria-label="upload files"
-              component="label"
-            >
-              <input
-                id="file_attachments"
-                name="file_attachments"
-                type="file"
-                accept="image/*, application/pdf, application/msword,
+            <>
+              {selectedFiles.length > 0 && (
+                <IconButton
+                  className="h-full rounded-none border-y-0 border-r-0"
+                  onClick={() =>
+                    setForm((oldForm) => {
+                      return { ...oldForm, files: [] }
+                    })
+                  }
+                >
+                  <IoTrash
+                    className="transition-colors ease-in-out hover:text-red-500"
+                    size={16}
+                  />
+                </IconButton>
+              )}
+              <IconButton
+                className="flex h-full items-center justify-center text-nowrap rounded-l-none border-y-0 border-r-0 border-gray-400 text-lg font-normal"
+                aria-label="upload files"
+                component="label"
+              >
+                <input
+                  id="file_attachments"
+                  name="file_attachments"
+                  type="file"
+                  accept="image/*, application/pdf, application/msword,
                 application/vnd.openxmlformats-officedocument.wordprocessingml.document,
                 application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
                 application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation,
                 .zip, .rar"
-                onChange={handleFileChange}
-                hidden
-                multiple
-                // onChange={handleUpload}
-              />
-              Browse files
-            </IconButton>
+                  onChange={handleFileChange}
+                  hidden
+                  multiple
+                />
+                Browse files
+              </IconButton>
+            </>
           ),
           readOnly: true,
         }}
@@ -95,6 +121,9 @@ const ReportInfoCreate = (props: any) => {
     user_type,
     username,
   } = useStore((state) => state.user.data)
+  const alreadyUploadedFiles = useStore(
+    (state: any) => state?.cp_reports?.report?.files?.data,
+  )
 
   const updateForm = (event: { target: { value: any } }, key: string) =>
     setForm({
@@ -178,7 +207,14 @@ const ReportInfoCreate = (props: any) => {
             type="number"
           />
         </div>
-        <FileInput />
+        <FileInput form={form} setForm={setForm} />
+        {isEdit && (
+          <FilesViewer
+            files={alreadyUploadedFiles}
+            heading={'Already uploaded files'}
+            isEdit={isEdit}
+          />
+        )}
       </div>
 
       <div className="flex flex-col rounded-lg bg-gray-100 p-4">

@@ -1,13 +1,14 @@
 import Typography from '@mui/material/Typography'
 
+import { FilesViewer } from '@ors/components/manage/Blocks/Section/ReportInfo/FilesViewer'
 import ReportHistory from '@ors/components/manage/Blocks/Section/ReportInfo/ReportHistory'
 import ReportStatus from '@ors/components/manage/Blocks/Section/ReportInfo/ReportStatus'
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
-
-import { IoDocumentTextOutline } from 'react-icons/io5'
+import { useStore } from '@ors/store'
 
 const ReportInfoView = (props: any) => {
   const { report, section } = props
+  const files = useStore((state: any) => state.cp_reports.report.files.data)
 
   const username = report.created_by
 
@@ -19,8 +20,6 @@ const ReportInfoView = (props: any) => {
     section_e: report.report_info?.reported_section_e ?? true,
     section_f: report.report_info?.reported_section_f ?? true,
   }
-
-  const files = report.files || []
 
   return (
     <section className="grid items-start gap-6 md:auto-rows-auto md:grid-cols-2">
@@ -51,23 +50,11 @@ const ReportInfoView = (props: any) => {
           <SimpleField id="year" data={report.year} label="Year" />
         </div>
 
-        <div className="flex flex-col gap-2">
-          <p className="m-0 text-2xl font-normal">File attachments</p>
-          <div className="flex flex-col gap-3">
-            {files.length === 0 ? (
-              <p className="m-1 text-lg font-normal text-gray-500">
-                No files available
-              </p>
-            ) : (
-              files.map((file: any, index: number) => (
-                <p key={index} className="m-0 flex items-center gap-2">
-                  <IoDocumentTextOutline color="#0086C9" size="20" />
-                  <span className="text-lg text-gray-900">{file}</span>
-                </p>
-              ))
-            )}
-          </div>
-        </div>
+        <FilesViewer
+          files={files}
+          heading={'File attachments'}
+          isEdit={false}
+        />
       </div>
 
       <div className="flex flex-col rounded-lg bg-gray-100 p-4">
