@@ -275,6 +275,11 @@ const CountrySection = function CountrySection(
       <div
         className={`transition-opacity mb-10 flex w-full max-w-screen-xl flex-col gap-8 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
       >
+        {memoResults.length === 0 && (
+          <Typography className="px-3" variant="h5">
+            No reports found.
+          </Typography>
+        )}
         {memoResults.map((countryData: any) => {
           if (countryData.isSkeleton)
             return (
@@ -389,7 +394,10 @@ const LogItem = (props: any) => {
               </div>
             </div>
             <div className="flex items-center gap-3 rounded-md bg-white p-0.5">
-              <Typography>Submitted by {report.reporting_entry} ({report.version_created_by}) on</Typography>
+              <Typography>
+                Submitted by {report.reporting_entry} (
+                {report.version_created_by}) on
+              </Typography>
               <FormattedDateTime dateObject={dateObject} />
             </div>
           </div>
@@ -491,6 +499,11 @@ const LogSection = function LogSection(props: SectionProps & { logApi: any }) {
       <div
         className={`transition-opacity mb-10 flex w-full max-w-screen-xl flex-col gap-4 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
       >
+        {memoResults.length === 0 && (
+          <Typography className="px-3" variant="h5">
+            No reports found.
+          </Typography>
+        )}
         {memoResults.map((report: any) => {
           if (report.isSkeleton)
             return (
