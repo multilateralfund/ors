@@ -76,7 +76,8 @@ function getPinnedRowData(rowData: any) {
 }
 
 export default function SectionAView(props: any) {
-  const { TableProps, emptyForm, report, variant } = props
+  const { Comments, TableProps, emptyForm, report, showComments, variant } =
+    props
   const { gridOptionsAll, gridOptionsBySector, gridOptionsBySubstanceTrade } =
     useGridOptions({
       model: variant.model,
@@ -148,6 +149,7 @@ export default function SectionAView(props: any) {
         pinnedBottomRowData={pinnedBottomRowData}
         rowData={rowData}
       />
+      {showComments && <Comments section="section_a" />}
     </>
   )
 }

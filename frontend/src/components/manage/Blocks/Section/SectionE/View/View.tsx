@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 
 import { Alert } from '@mui/material'
 
@@ -20,7 +20,7 @@ function getPinnedRowData(rowData: any) {
 }
 
 export default function SectionEView(props: any) {
-  const { TableProps, report } = props
+  const { Comments, TableProps, report, showComments } = props
   const gridOptions = useGridOptions()
   const grid = useRef<any>()
   const [rowData] = useState(() => getRowData(report))
@@ -28,10 +28,7 @@ export default function SectionEView(props: any) {
 
   return (
     <>
-      <Alert
-        icon={<IoInformationCircleOutline size={24} />}
-        severity="info"
-      >
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
         <Footnotes />
       </Alert>
       <Table
@@ -43,6 +40,7 @@ export default function SectionEView(props: any) {
         pinnedBottomRowData={pinnedBottomRowData}
         rowData={rowData}
       />
+      {showComments && <Comments section="section_e" />}
     </>
   )
 }

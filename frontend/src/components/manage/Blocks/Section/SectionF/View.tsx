@@ -3,7 +3,7 @@ import { Box, Typography } from '@mui/material'
 import Field from '@ors/components/manage/Form/Field'
 
 export default function SectionFView(props: any) {
-  const { report, section } = props
+  const { Comments, report, section, showComments } = props
 
   return (
     <>
@@ -18,6 +18,7 @@ export default function SectionFView(props: any) {
           value={report.section_f.remarks}
         />
       </Box>
+      {showComments && <Comments section="section_f" />}
     </>
   )
 }

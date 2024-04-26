@@ -3,7 +3,7 @@ import { CPReport } from '@ors/types/api_country-programme_records'
 import { EmptyFormType } from '@ors/types/api_empty-form'
 import { ReportVariant } from '@ors/types/variants'
 
-import { useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 
 import { Alert, Checkbox, FormControlLabel } from '@mui/material'
 import cx from 'classnames'
@@ -99,12 +99,15 @@ function getPinnedRowData(rowData: any) {
 }
 
 export default function SectionBView(props: {
+  Comments: React.FC<{ section: string }>
   TableProps: ITableProps
   emptyForm: EmptyFormType
   report: CPReport
+  showComments: boolean
   variant: ReportVariant
 }) {
-  const { TableProps, emptyForm, report, variant } = props
+  const { Comments, TableProps, emptyForm, report, showComments, variant } =
+    props
   const { gridOptionsAll, gridOptionsBySector, gridOptionsBySubstanceTrade } =
     useGridOptions({
       model: variant.model,
@@ -174,6 +177,7 @@ export default function SectionBView(props: {
         pinnedBottomRowData={pinnedBottomRowData}
         rowData={rowData}
       />
+      {showComments && <Comments section="section_b" />}
     </>
   )
 }

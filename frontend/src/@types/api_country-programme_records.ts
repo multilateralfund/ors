@@ -1,9 +1,7 @@
-import type { CPHistoryItem } from '@ors/types/store'
+import {CommentData, CPHistoryItem} from '@ors/types/store'
 
 type cp_report = {
   comment: null | string
-  comment_country: null | string
-  comment_secretariat: null | string
   country: string
   country_id: number
   created_at?: string
@@ -53,6 +51,7 @@ type ApiBase = {
     }[]
   }[]
 } & {
+  comments: CommentData[]
   history: CPHistoryItem[]
   report_info?: {
     reported_section_a: boolean

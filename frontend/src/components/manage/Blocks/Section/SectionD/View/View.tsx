@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 
 import { Alert } from '@mui/material'
 
@@ -17,17 +17,14 @@ function getRowData(report: any) {
 }
 
 export default function SectionDView(props: any) {
-  const { TableProps, report } = props
+  const { Comments, TableProps, report, showComments } = props
   const gridOptions = useGridOptions()
   const grid = useRef<any>()
   const [rowData] = useState(() => getRowData(report))
 
   return (
     <>
-      <Alert
-        icon={<IoInformationCircleOutline size={24} />}
-        severity="info"
-      >
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
         <Footnotes />
       </Alert>
       <Table
@@ -37,6 +34,7 @@ export default function SectionDView(props: any) {
         gridRef={grid}
         rowData={rowData}
       />
+      {showComments && <Comments section="section_d" />}
     </>
   )
 }

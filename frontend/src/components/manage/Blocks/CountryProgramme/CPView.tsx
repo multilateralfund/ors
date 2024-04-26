@@ -203,7 +203,7 @@ function CPView(props: { archive?: boolean }) {
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [activeTab, renderedSections])
 
-  const showComments = variant?.model === 'V' && activeTab !== 0
+  const showComments = variant?.model === 'V'
 
   return (
     <>
@@ -272,9 +272,11 @@ function CPView(props: { archive?: boolean }) {
               >
                 <FootnotesProvider>
                   <Section
+                    Comments={CPComments}
                     emptyForm={report.emptyForm.data || {}}
                     report={report.data}
                     section={section}
+                    showComments={showComments}
                     variant={variant}
                     TableProps={{
                       ...TableProps,
@@ -292,7 +294,6 @@ function CPView(props: { archive?: boolean }) {
               </div>
             )
           })}
-        {showComments && <CPComments />}
       </CPSectionWrapper>
     </>
   )
