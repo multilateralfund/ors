@@ -654,7 +654,9 @@ class CPReportCommentsView(generics.GenericAPIView):
             updated_by=request.user,
             reporting_officer_name=cp_report.reporting_entry,
             reporting_officer_email=cp_report.reporting_email,
-            event_description=f"Comments updated by user ({CPComment.CPCommentSection(section)})",
+            event_description=(
+                f"Comments updated by user ({CPComment.CPCommentSection(section).label})"
+            ),
         )
         serializer = self.get_serializer(cp_comment)
 
