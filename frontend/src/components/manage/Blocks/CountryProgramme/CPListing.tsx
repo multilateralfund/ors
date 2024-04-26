@@ -386,7 +386,7 @@ const LogItem = (props: any) => {
               </div>
             </div>
             <div className="flex items-center gap-3 rounded-md bg-white p-0.5">
-              <Typography>Submitted by ({report.created_by}) on</Typography>
+              <Typography>Submitted by {report.reporting_entry} ({report.version_created_by}) on</Typography>
               <FormattedDateTime dateObject={dateObject} />
             </div>
           </div>
