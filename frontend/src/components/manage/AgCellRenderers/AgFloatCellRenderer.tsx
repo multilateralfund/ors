@@ -42,7 +42,7 @@ export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
   const formattedValue = formatDecimalValue(value, props)
 
   const titleContent =
-    valueGWP && valueODP
+    valueGWP != null && valueODP != null
       ? `MT: ${value}; GWP: ${valueGWP}; ODP: ${valueODP}`
       : value
 
