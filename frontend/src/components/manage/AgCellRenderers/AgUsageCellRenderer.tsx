@@ -15,6 +15,9 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
   }
 
   let value: any = null
+  let valueGWP: null | number = null
+  let valueODP: null | number = null
+
   const aggFunc = get(aggFuncs, props.colDef?.orsAggFunc || '')
   const usageId = props.colDef?.id
   const recordUsages = props.data.record_usages || []
@@ -48,6 +51,8 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
   } else {
     const usage = find(recordUsages, (item) => item.usage_id === usageId)
     value = parseNumber(usage?.quantity)
+    valueGWP = usage?.quantity_gwp
+    valueODP = usage?.quantity_odp
   }
 
   if (isUndefined(value)) {
@@ -60,8 +65,13 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
 
   const formattedValue = formatDecimalValue(value, props)
 
+  const titleContent =
+    valueGWP && valueODP
+      ? `MT: ${value}; GWP: ${valueGWP}; ODP: ${valueODP}`
+      : value
+
   return (
-    <Tooltip enterDelay={300} placement={'top-start'} title={value}>
+    <Tooltip enterDelay={300} placement={'top-start'} title={titleContent}>
       <Typography className={props.className} component="span" lineHeight={1}>
         {formattedValue}
       </Typography>

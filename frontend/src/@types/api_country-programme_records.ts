@@ -24,15 +24,27 @@ type ApiBase = {
     display_name: string
     excluded_usages: number[]
     export_quotas: null | string
+    export_quotas_gwp: number
+    export_quotas_odp: number
     exports: null | string
+    exports_gwp: number
+    exports_odp: number
     group: 'Annex A, Group I'
     id: 0
     import_quotas: null | string
+    import_quotas_gwp: number
+    import_quotas_odp: number
     imports: null | string
+    imports_gwp: number
+    imports_odp: number
     manufacturing_blends: null | string
     production: null | string
+    production_gwp: number
+    production_odp: number
     record_usages: {
       quantity: string
+      quantity_gwp: string
+      quantity_odp: string
       usage: string
       usage_id: number
     }[]

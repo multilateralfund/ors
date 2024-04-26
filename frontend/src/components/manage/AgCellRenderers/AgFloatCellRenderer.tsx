@@ -15,6 +15,9 @@ export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
   }
 
   let value = null
+  let valueGWP: null | number = null
+  let valueODP: null | number = null
+
   const aggFunc = get(aggFuncs, (props.colDef?.orsAggFunc || '') as string)
 
   if (includes(['control', 'group', 'hashed', 'control'], props.data.rowType)) {
@@ -24,6 +27,8 @@ export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
     value = aggFunc({ ...props })
   } else {
     value = parseNumber(props.value)
+    valueGWP = props.colDef ? props.data[`${props.colDef.field}_gwp`] : null
+    valueODP = props.colDef ? props.data[`${props.colDef.field}_odp`] : null
   }
 
   if (isUndefined(value)) {
@@ -36,8 +41,13 @@ export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
 
   const formattedValue = formatDecimalValue(value, props)
 
+  const titleContent =
+    valueGWP && valueODP
+      ? `MT: ${value}; GWP: ${valueGWP}; ODP: ${valueODP}`
+      : value
+
   return (
-    <Tooltip enterDelay={300} placement={'top-start'} title={value}>
+    <Tooltip enterDelay={300} placement={'top-start'} title={titleContent}>
       <Typography className={props.className} component="span" lineHeight={1}>
         {formattedValue}
       </Typography>
