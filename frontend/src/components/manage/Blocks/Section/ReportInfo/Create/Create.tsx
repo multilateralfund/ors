@@ -13,6 +13,8 @@ import Field from '@ors/components/manage/Form/Field'
 import IconButton from '@ors/components/ui/IconButton/IconButton'
 import { useStore } from '@ors/store'
 
+import { IoTrash } from 'react-icons/io5'
+
 function FileInput(props: {
   form: CPBaseForm
   setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
@@ -44,26 +46,43 @@ function FileInput(props: {
             'flex bg-white rounded-lg border border-solid border-gray-400 pl-2 h-[40px]',
           disableUnderline: true,
           endAdornment: (
-            <IconButton
-              className="flex h-full items-center justify-center text-nowrap rounded-l-none border-y-0 border-r-0 border-gray-400 text-lg font-normal"
-              aria-label="upload files"
-              component="label"
-            >
-              <input
-                id="file_attachments"
-                name="file_attachments"
-                type="file"
-                accept="image/*, application/pdf, application/msword,
+            <>
+              {selectedFiles.length > 0 && (
+                <IconButton
+                  className="h-full rounded-none border-y-0 border-r-0"
+                  onClick={() =>
+                    setForm((oldForm) => {
+                      return { ...oldForm, files: [] }
+                    })
+                  }
+                >
+                  <IoTrash
+                    className="transition-colors ease-in-out hover:text-red-500"
+                    size={16}
+                  />
+                </IconButton>
+              )}
+              <IconButton
+                className="flex h-full items-center justify-center text-nowrap rounded-l-none border-y-0 border-r-0 border-gray-400 text-lg font-normal"
+                aria-label="upload files"
+                component="label"
+              >
+                <input
+                  id="file_attachments"
+                  name="file_attachments"
+                  type="file"
+                  accept="image/*, application/pdf, application/msword,
                 application/vnd.openxmlformats-officedocument.wordprocessingml.document,
                 application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
                 application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation,
                 .zip, .rar"
-                onChange={handleFileChange}
-                hidden
-                multiple
-              />
-              Browse files
-            </IconButton>
+                  onChange={handleFileChange}
+                  hidden
+                  multiple
+                />
+                Browse files
+              </IconButton>
+            </>
           ),
           readOnly: true,
         }}
