@@ -9,6 +9,7 @@ from core.api.serializers.adm import (
     AdmRecordSerializer,
 )
 from core.api.permissions import IsUserAllowedCP
+from core.api.serializers.cp_comment import CPCommentSerializer
 from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_history import CPHistorySerializer
@@ -54,6 +55,7 @@ class CPRecordBaseListView(views.APIView):
     cp_prices_seri_class = None
     cp_generation_seri_class = None
     cp_emission_seri_class = None
+    cp_comment_seri_class = None
     adm_record_seri_class = None
 
     def _get_cp_record(self, cp_report_id, section):
@@ -317,6 +319,9 @@ class CPRecordBaseListView(views.APIView):
             "section_e": self.cp_emission_seri_class(section_e, many=True).data,
             "section_f": section_f,
             "history": self._get_cp_history(cp_report),
+            "comments": self.cp_comment_seri_class(
+                cp_report.cpcomments.all(), many=True
+            ).data,
         }
         if hasattr(cp_report, "cpreportedsections"):
             # This property will not be present for pre-2023
@@ -419,4 +424,5 @@ class CPRecordListView(CPRecordBaseListView):
     cp_prices_seri_class = CPPricesSerializer
     cp_generation_seri_class = CPGenerationSerializer
     cp_emission_seri_class = CPEmissionSerializer
+    cp_comment_seri_class = CPCommentSerializer
     adm_record_seri_class = AdmRecordSerializer
