@@ -1,5 +1,5 @@
 'use client'
-import { I18nSlice, ThemeSlice } from '@ors/types/store'
+import { ThemeSlice } from '@ors/types/store'
 
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
 
@@ -145,7 +145,6 @@ function Table(props: TableProps) {
   const headerIntersectionObserver = useRef<IntersectionObserver | null>(null)
 
   const theme: ThemeSlice = useStore((state) => state.theme)
-  const i18n: I18nSlice = useStore((state) => state.i18n)
 
   const [pagination, setPagination] = useState<Pagination>({
     page: 0,
@@ -392,7 +391,6 @@ function Table(props: TableProps) {
             defaultColDef={defaultColDef}
             defaultColGroupDef={props?.defaultColGroupDef || globalColGroupDef}
             enableCellTextSelection={true}
-            enableRtl={i18n.dir === 'rtl'}
             ensureDomOrder={true}
             pagination={false}
             pinnedBottomRowData={initialPinnedBottomRowData}
@@ -591,7 +589,6 @@ function Table(props: TableProps) {
               'components',
               'defaultColDef',
               'defaultColGroupDef',
-              'enableRtl',
               'pinnedBottomRowData',
               'rowBuffer',
               'rowClassRules',

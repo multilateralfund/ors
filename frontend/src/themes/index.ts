@@ -13,19 +13,13 @@ export const tailwindTheme = tailwindConfig.theme
 
 import themes from './theme'
 
-export const createTheme = (
-  mode: 'dark' | 'light' = 'light',
-  direction: 'ltr' | 'rtl',
-) => {
+export const createTheme = (mode: 'dark' | 'light' = 'light') => {
   return responsiveFontSizes(
     MuiCreateTheme(
-      themes[mode](
-        {
-          ...tailwindTheme,
-          originalColors: tailwindConfig.originalColors[mode],
-        },
-        direction,
-      ),
+      themes[mode]({
+        ...tailwindTheme,
+        originalColors: tailwindConfig.originalColors[mode],
+      }),
     ),
   )
 }

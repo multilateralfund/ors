@@ -20,10 +20,7 @@ type TypographyType =
 
 const contrastThreshold = 4.5
 
-const commonTheme = (
-  tailwindTheme: ThemeConfig,
-  direction: 'ltr' | 'rtl',
-): ThemeOptions => {
+const commonTheme = (tailwindTheme: ThemeConfig): ThemeOptions => {
   function getTypography(size: TypographyType) {
     return {
       fontSize: tailwindTheme.fontSize[size][0],
@@ -75,7 +72,6 @@ const commonTheme = (
         },
       },
     },
-    direction,
     palette: {
       action: {
         active: tailwindTheme.originalColors.action.active,

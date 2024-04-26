@@ -24,10 +24,6 @@ class AbstractCPReport(models.Model):
     comment = models.TextField(null=True, blank=True)
     country = models.ForeignKey("Country", on_delete=models.CASCADE)
 
-    # General per-report comments for Country and Secretariat for 2023-onward
-    comment_country = models.TextField(null=True, blank=True)
-    comment_secretariat = models.TextField(null=True, blank=True)
-
     class Meta:
         abstract = True
 
@@ -167,6 +163,28 @@ class AbstractCPEmission(models.Model):
 
     remarks = models.TextField(null=True, blank=True)
     source_file = models.CharField(max_length=248)
+
+    class Meta:
+        abstract = True
+
+
+# General per-report-section comments for Country and Secretariat for 2023-onward
+class AbstractCPComment(models.Model):
+    class CPCommentSection(models.TextChoices):
+        SECTION_A = "section_a", "Section A"
+        SECTION_B = "section_b", "Section B"
+        SECTION_C = "section_c", "Section C"
+        SECTION_D = "section_d", "Section D"
+        SECTION_E = "section_e", "Section E"
+        SECTION_F = "section_f", "Section F"
+
+    class CPCommentType(models.TextChoices):
+        COMMENT_COUNTRY = "comment_country", "Comment Country"
+        COMMENT_SECRETARIAT = "comment_secretariat", "Comment Secretariat"
+
+    section = models.CharField(max_length=50, choices=CPCommentSection.choices)
+    comment_type = models.CharField(max_length=50, choices=CPCommentType.choices)
+    comment = models.TextField(blank=True)
 
     class Meta:
         abstract = True

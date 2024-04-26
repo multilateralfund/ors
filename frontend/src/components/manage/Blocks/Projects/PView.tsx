@@ -659,14 +659,10 @@ export default function PView({ data }: ProjectProps) {
             <Typography className="mb-4 text-typography-faded" variant="h5">
               Project decision
             </Typography>
-            <Button className="ltr:mr-4 rtl:ml-4" variant="contained">
+            <Button className="mr-4" variant="contained">
               Initiate approval
             </Button>
-            <Button
-              className="ltr:mr-4 rtl:ml-4"
-              color="secondary"
-              variant="contained"
-            >
+            <Button className="mr-4" color="secondary" variant="contained">
               Reject
             </Button>
             <Divider />

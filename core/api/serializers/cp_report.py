@@ -58,8 +58,6 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
     created_by = serializers.StringRelatedField(
         read_only=True, source="created_by.username"
     )
-    comment_country = serializers.CharField(read_only=True)
-    comment_secretariat = serializers.CharField(read_only=True)
 
     class Meta:
         fields = [
@@ -71,8 +69,6 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
             "country",
             "country_id",
             "comment",
-            "comment_country",
-            "comment_secretariat",
             "created_at",
             "created_by",
         ]
@@ -291,12 +287,3 @@ class CPReportCreateSerializer(serializers.Serializer):
             self._create_report_info(cp_report, cp_report_info)
 
         return cp_report
-
-
-class CPReportCommentsSerializer(serializers.ModelSerializer):
-    comment_country = serializers.CharField(required=False, allow_blank=True)
-    comment_secretariat = serializers.CharField(required=False, allow_blank=True)
-
-    class Meta:
-        model = CPReport
-        fields = ["comment_country", "comment_secretariat"]

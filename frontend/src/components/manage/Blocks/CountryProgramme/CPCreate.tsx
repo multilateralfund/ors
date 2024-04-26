@@ -85,7 +85,6 @@ const SectionErrorIndicator = ({
           setShowTooltip(true)
         }}
         onMouseLeave={() => {
-          console.log('MOUSE LEAVE!')
           setAnchorEl(null)
           setShowTooltip(false)
         }}

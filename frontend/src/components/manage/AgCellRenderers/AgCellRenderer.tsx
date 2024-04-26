@@ -35,7 +35,7 @@ export default function AgCellRenderer(props: any) {
 
   const validation =
     useContext(ValidationContext)?.errors[
-      props.context.section.id as ValidationSchemaKeys
+      props.context?.section.id as ValidationSchemaKeys
     ]
 
   const rowErrors = validation?.rows[props.data.row_id] || []

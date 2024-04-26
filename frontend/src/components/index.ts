@@ -29,4 +29,3 @@
 // export { default as Dropdown } from './ui/Dropdown'
 // export { default as Image } from './ui/Image'
 // export { default as Link } from './ui/Link'
-// export { default as Trans } from './ui/Trans/Trans'

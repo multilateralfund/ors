@@ -47,7 +47,11 @@ class TestCPHistory:
         url = reverse("country-programme-report-comments", kwargs={"id": cp_report_id})
         response = self.client.post(
             url,
-            {"comment_secretariat": "Test comment"},
+            {
+                "section": "section_a",
+                "comment_type": "comment_secretariat",
+                "comment": "Test comment",
+            },
             format="json",
         )
         assert response.status_code == 201
@@ -67,7 +71,11 @@ class TestCPHistory:
         url = reverse("country-programme-report-comments", kwargs={"id": new_id})
         response = self.client.post(
             url,
-            {"comment_secretariat": "Test comment 2"},
+            {
+                "section": "section_a",
+                "comment_type": "comment_secretariat",
+                "comment": "Test comment 2",
+            },
             format="json",
         )
         assert response.status_code == 201

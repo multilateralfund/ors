@@ -2,7 +2,7 @@ import { EmptyFormType } from '@ors/types/api_empty-form'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { ReportVariant } from '@ors/types/variants'
 
-import React, { useContext, useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 
 import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
@@ -12,7 +12,6 @@ import { NewAddSubstanceDropdowns } from '@ors/components/manage/Blocks/Section/
 import { OldAddSubstanceDropdowns } from '@ors/components/manage/Blocks/Section/SectionA/Create/OldAddSubstanceDropdowns'
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
-import { ValidationContext } from '@ors/contexts/Validation/Validation'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import SectionA from '@ors/models/SectionA'
@@ -241,10 +240,6 @@ export default function SectionACreate(props: {
       }))
     }
   }
-
-  const validation = useContext(ValidationContext)
-
-  console.log(validation.errors)
 
   return (
     <>
