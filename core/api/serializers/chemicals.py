@@ -34,6 +34,7 @@ class SubstanceSerializer(ChemicalsBaseSerializer):
             "sections",
             "formula",
             "odp",
+            "gwp",
             "is_contained_in_polyols",
             "excluded_usages",
             "sort_order",
@@ -77,7 +78,7 @@ class BlendSerializer(ChemicalsBaseSerializer):
             "sections",
             "chemical_note",
             "is_legacy",
-            "remarks"
+            "remarks",
         ]
 
     def get_composition(self, obj):
