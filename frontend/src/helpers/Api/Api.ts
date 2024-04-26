@@ -1,9 +1,11 @@
 import type { IApi, ResultsType } from './types'
 import { DataType } from '@ors/types/primitives'
 
-import api from './_api'
 import Cookies from 'js-cookie'
+
 import { formatApiUrl } from '@ors/helpers'
+
+import api from './_api'
 
 export function getResults<D = DataType>(
   data?: { results: D[] } | D[] | ResultsType<D> | null,
