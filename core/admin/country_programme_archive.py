@@ -26,6 +26,6 @@ class CPReportArchiveAdmin(admin.ModelAdmin):
             "cpemissionarchive",
             "cprecords",
             "adm_records",
-            "cphistory",
+            "cpcomments",
         ]
         return get_final_display_list(CPReportArchive, exclude)
