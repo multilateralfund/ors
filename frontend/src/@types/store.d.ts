@@ -110,6 +110,12 @@ export interface CommonSlice {
   settings: SliceData<Settings>
 }
 
+export interface CommentData {
+  comment: string
+  comment_type: string
+  section: string
+}
+
 export interface CPHistoryItem {
   created_at: string
   event_description: string

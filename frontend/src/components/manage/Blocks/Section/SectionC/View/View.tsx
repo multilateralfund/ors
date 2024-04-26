@@ -2,7 +2,7 @@ import type { ITableProps } from '../../../CountryProgramme/typesCPView'
 import { CPReport } from '@ors/types/api_country-programme_records'
 import { ReportVariant } from '@ors/types/variants'
 
-import { useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 
 import { Alert, Checkbox, FormControlLabel } from '@mui/material'
 import { each, includes, union } from 'lodash'
@@ -67,6 +67,7 @@ function getRowData(
 }
 
 export default function SectionCView(props: {
+  Comments: React.FC<{ section: string }>
   TableProps: ITableProps & {
     context: {
       section: SectionC['data']
@@ -76,9 +77,10 @@ export default function SectionCView(props: {
     section: SectionC['data']
   }
   report: CPReport
+  showComments: boolean
   variant: ReportVariant
 }) {
-  const { TableProps, report, variant } = props
+  const { Comments, TableProps, report, showComments, variant } = props
   const gridOptions = useGridOptions({
     model: variant.model,
   })
@@ -111,6 +113,7 @@ export default function SectionCView(props: {
         gridRef={grid}
         rowData={rowData}
       />
+      {showComments && <Comments section="section_c" />}
     </>
   )
 }
