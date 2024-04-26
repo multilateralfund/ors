@@ -58,10 +58,12 @@ export type ValidationSchema = {
   [key in ValidationSchemaKeys]?: IValidator
 }
 
+export type ValidateSectionResultValue = Omit<IRowValidationResult, 'row_id'>
+
 export type ValidateSectionResult = {
   global: IGlobalValidationResult[]
   hasErrors: boolean
-  rows: Record<string, Omit<IRowValidationResult, 'row_id'>[]>
+  rows: Record<string, ValidateSectionResultValue[]>
 }
 
 export type UsageMapping = Record<string, ApiUsage>

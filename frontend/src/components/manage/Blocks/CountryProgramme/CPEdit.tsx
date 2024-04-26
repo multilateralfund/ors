@@ -2,19 +2,10 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { Tab, Tabs, Typography } from '@mui/material'
+import { Tabs, Typography } from '@mui/material'
 import cx from 'classnames'
 import { produce } from 'immer'
-import {
-  findIndex,
-  get,
-  includes,
-  isEmpty,
-  map,
-  pickBy,
-  reduce,
-  values,
-} from 'lodash'
+import { findIndex, get, includes, map, pickBy, reduce, values } from 'lodash'
 
 import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
 
@@ -22,6 +13,7 @@ import SectionReportedSelect from '@ors/components/manage/Blocks/Section/Section
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
 import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
+import SectionTab from '@ors/components/ui/SectionTab/SectionTab'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
 import { ValidationProvider } from '@ors/contexts/Validation/Validation'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
@@ -367,18 +359,12 @@ function CPEdit() {
             }}
             allowScrollButtonsMobile
           >
-            {sections.map((section) => (
-              <Tab
+            {sections.map((section, tabIndex) => (
+              <SectionTab
                 key={section.id}
-                className={cx('rounded-b-none px-3 py-2', {
-                  'MuiTab-error': !isEmpty(errors?.[section.id]),
-                })}
-                aria-controls={section.panelId}
-                label={section.label}
-                classes={{
-                  selected:
-                    'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
-                }}
+                errors={errors}
+                isActive={activeTab === tabIndex}
+                section={section}
               />
             ))}
           </Tabs>

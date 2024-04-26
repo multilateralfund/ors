@@ -2,26 +2,12 @@
 
 import { Country } from '@ors/types/store'
 
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import {
-  Alert,
-  Button,
-  Popover,
-  Tab,
-  Tabs,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import { Alert, Button, Tabs, Tooltip, Typography } from '@mui/material'
 import cx from 'classnames'
 import { produce } from 'immer'
-import { filter, get, includes, isEmpty } from 'lodash'
+import { filter, get, includes } from 'lodash'
 import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
@@ -31,15 +17,9 @@ import SectionReportedSelect from '@ors/components/manage/Blocks/Section/Section
 import Loading from '@ors/components/theme/Loading/Loading'
 import Link from '@ors/components/ui/Link/Link'
 import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
+import SectionTab from '@ors/components/ui/SectionTab/SectionTab'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
-import {
-  ValidationContext,
-  ValidationProvider,
-} from '@ors/contexts/Validation/Validation'
-import {
-  IGlobalValidationResult,
-  ValidationSchemaKeys,
-} from '@ors/contexts/Validation/types'
+import { ValidationProvider } from '@ors/contexts/Validation/Validation'
 import { uploadFiles } from '@ors/helpers'
 import api from '@ors/helpers/Api/_api'
 import { getResults } from '@ors/helpers/Api/Api'
@@ -66,87 +46,7 @@ import {
   WidgetCountry,
 } from './typesCPCreate'
 
-import { IoClose, IoExpand, IoInformationCircle, IoLink } from 'react-icons/io5'
-
-const SectionErrorIndicator = ({
-  errors,
-}: {
-  errors: IGlobalValidationResult[]
-}) => {
-  const [showTooltip, setShowTooltip] = useState(false)
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
-
-  return (
-    <div>
-      <div
-        className="cursor-help text-red-950 hover:text-white"
-        onMouseEnter={(event) => {
-          setAnchorEl(event?.currentTarget)
-          setShowTooltip(true)
-        }}
-        onMouseLeave={() => {
-          setAnchorEl(null)
-          setShowTooltip(false)
-        }}
-      >
-        <IoInformationCircle />
-      </div>
-      <Popover
-        anchorEl={anchorEl}
-        open={showTooltip}
-        anchorOrigin={{
-          horizontal: 'left',
-          vertical: 'bottom',
-        }}
-        slotProps={{
-          paper: {
-            className: 'border-none shadow-lg',
-          },
-        }}
-        sx={{
-          pointerEvents: 'none',
-        }}
-        transformOrigin={{
-          horizontal: 'left',
-          vertical: 'top',
-        }}
-        disableRestoreFocus
-      >
-        <div className="bg-red-950 px-4 py-2 text-white">
-          {errors.map((err, idx) => (
-            <div key={idx}>{err.message}</div>
-          ))}
-        </div>
-      </Popover>
-    </div>
-  )
-}
-
-const SectionTab = ({ errors, section, ...props }: any) => {
-  const validation = useContext(ValidationContext)
-  const sectionErrors = validation.errors[section.id as ValidationSchemaKeys]
-
-  return (
-    <Tab
-      className={cx('rounded-b-none px-3 py-2', {
-        'MuiTab-error': !isEmpty(errors?.[section.id]),
-      })}
-      aria-controls={section.panelId}
-      classes={{
-        selected: 'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
-      }}
-      label={
-        <div className="relative flex items-center justify-between gap-x-2">
-          <div>{section.label}</div>
-          {sectionErrors?.hasErrors && (
-            <SectionErrorIndicator errors={sectionErrors.global} />
-          )}
-        </div>
-      }
-      {...props}
-    />
-  )
-}
+import { IoClose, IoExpand, IoLink } from 'react-icons/io5'
 
 const TableProps: CPCreateTableProps = {
   Toolbar: ({
@@ -535,7 +435,7 @@ const CPCreate: React.FC = () => {
         if (files && files.length > 0) {
           await uploadFiles(
             `api/country-programme/files/?country_id=${currentCountry?.id}&year=${form.year}`,
-            files
+            files,
           )
         }
 
@@ -658,8 +558,13 @@ const CPCreate: React.FC = () => {
             }}
             allowScrollButtonsMobile
           >
-            {sections.map((section) => (
-              <SectionTab key={section.id} errors={errors} section={section} />
+            {sections.map((section, tabIndex) => (
+              <SectionTab
+                key={section.id}
+                errors={errors}
+                isActive={activeTab === tabIndex}
+                section={section}
+              />
             ))}
           </Tabs>
           <div id="sectionToolbar"></div>

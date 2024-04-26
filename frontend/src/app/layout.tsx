@@ -21,7 +21,7 @@ import { getInitialSliceData } from '@ors/helpers/Store/Store'
 import { getCurrentView } from '@ors/helpers/View/View'
 import { StoreProvider } from '@ors/store'
 import ThemeProvider from '@ors/themes/ThemeProvider'
-import { roboto } from '@ors/themes/fonts'
+import { robotoCondensed } from '@ors/themes/fonts'
 
 import '@ors/themes/styles/global.css'
 
@@ -135,7 +135,7 @@ export default async function RootLayout({
     <html
       lang="en"
       {...(theme.value ? { 'data-theme': theme.value } : {})}
-      className={roboto.className}
+      className={robotoCondensed.className}
       data-layout={currentView?.layout}
       data-printing="no"
       data-ssr="yes"
