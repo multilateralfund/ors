@@ -47,10 +47,6 @@ class CPReportInfoSerializer(serializers.ModelSerializer):
 
 class CPReportBaseSerializer(serializers.ModelSerializer):
     country = serializers.StringRelatedField()
-    country_id = serializers.PrimaryKeyRelatedField(
-        required=True,
-        queryset=Country.objects.all().values_list("id", flat=True),
-    )
     status = serializers.ChoiceField(
         choices=CPReport.CPReportStatus.choices, required=False
     )
@@ -58,6 +54,12 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
     created_by = serializers.StringRelatedField(
         read_only=True, source="created_by.username"
     )
+    version_created_by = serializers.StringRelatedField(
+        read_only=True, source="version_created_by.username"
+    )
+
+    reporting_entry = serializers.CharField(read_only=True)
+    reporting_email = serializers.CharField(read_only=True)
 
     class Meta:
         fields = [
@@ -71,6 +73,9 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
             "comment",
             "created_at",
             "created_by",
+            "version_created_by",
+            "reporting_entry",
+            "reporting_email",
         ]
 
 
@@ -87,6 +92,10 @@ class CPReportSerializer(CPReportBaseSerializer):
         many=True,
         required=False,
         source="cphistory",
+    )
+    country_id = serializers.PrimaryKeyRelatedField(
+        required=True,
+        queryset=Country.objects.all().values_list("id", flat=True),
     )
 
     class Meta(CPReportBaseSerializer.Meta):
@@ -263,6 +272,7 @@ class CPReportCreateSerializer(serializers.Serializer):
 
         # add user
         cp_report_serializer.validated_data["created_by"] = request_user
+        cp_report_serializer.validated_data["version_created_by"] = request_user
 
         cp_report = cp_report_serializer.save()
         cp_report.reporting_entry = reporting_entry

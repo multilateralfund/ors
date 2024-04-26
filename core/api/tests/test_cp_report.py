@@ -461,6 +461,7 @@ class TestCPReportCreate(BaseTest):
         assert response.data["status"] == CPReport.CPReportStatus.DRAFT
         assert response.data["version"] == 1
         assert response.data["created_by"] == user.username
+        assert response.data["version_created_by"] == user.username
         assert response.data["comment"] == "S-a nascut un fenomen"
         cp_report_id = response.data["id"]
 
@@ -745,7 +746,6 @@ class TestCPReportUpdate(BaseTest):
         # change status to final
         cp_report_2019.status = CPReport.CPReportStatus.FINAL
         cp_report_2019.save()
-
         # update cp report (keep final status => new version)
         data = _setup_new_cp_report_create
         data["status"] = CPReport.CPReportStatus.FINAL
@@ -758,6 +758,7 @@ class TestCPReportUpdate(BaseTest):
         assert response.data["status"] == CPReport.CPReportStatus.FINAL
         assert response.data["version"] == 2
         assert response.data["created_by"] == user.username
+        assert response.data["version_created_by"] == second_user.username
 
         new_id = response.data["id"]
         self.url = reverse("country-programme-reports") + f"{new_id}/"
@@ -773,6 +774,7 @@ class TestCPReportUpdate(BaseTest):
         assert response.data["status"] == CPReport.CPReportStatus.DRAFT
         assert response.data["version"] == 3
         assert response.data["created_by"] == user.username
+        assert response.data["version_created_by"] == user.username
 
         new_id = response.data["id"]
         self.url = reverse("country-programme-reports") + f"{new_id}/"
@@ -781,12 +783,12 @@ class TestCPReportUpdate(BaseTest):
         data["name"] = "Am relatii peste tot"
         data["section_f"]["remarks"] = "Sunt sef de clan mafiot"
         response = self.client.put(self.url, data, format="json")
-        print(response.data)
         assert response.status_code == 200
         assert response.data["name"] == "Am relatii peste tot"
         assert response.data["status"] == CPReport.CPReportStatus.DRAFT
         assert response.data["version"] == 3
         assert response.data["created_by"] == user.username
+        assert response.data["version_created_by"] == user.username
 
         new_id = response.data["id"]
         self.url = reverse("country-programme-reports") + f"{new_id}/"
@@ -814,6 +816,7 @@ class TestCPReportUpdate(BaseTest):
         assert response.data["status"] == CPReport.CPReportStatus.FINAL
         assert response.data["version"] == 4
         assert response.data["created_by"] == user.username
+        assert response.data["version_created_by"] == user.username
 
         # check report archive
         assert CPReportArchive.objects.count() == 3
@@ -836,13 +839,14 @@ class TestCPReportUpdate(BaseTest):
         # check second archive
         ar = (
             CPReportArchive.objects.filter(name="O valoare mare, o mare valoare")
-            .select_related("created_by")
+            .select_related("created_by", "version_created_by")
             .first()
         )
         assert ar is not None
         assert ar.comment == "Sunt din cap până în picioare"
         assert ar.version == 2
         assert ar.created_by.username == user.username
+        assert ar.version_created_by.username == second_user.username
         assert ar.created_at is not None
 
         # check record usage archive

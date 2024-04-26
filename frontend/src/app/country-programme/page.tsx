@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default async function CountryProgramme() {
   return (
-    <PageWrapper>
+    <PageWrapper className="max-w-screen-xl">
       <HeaderTitle>
         <Typography
           className="text-typography-primary"

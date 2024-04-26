@@ -56,7 +56,7 @@ def user():
 
 @pytest.fixture
 def second_user():
-    return UserFactory(username="Plebii", email="restul@cantaretilor.ro")
+    return UserFactory(username="Plebeii", email="restul@cantaretilor.ro")
 
 
 @pytest.fixture
