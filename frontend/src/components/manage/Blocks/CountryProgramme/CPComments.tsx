@@ -26,13 +26,20 @@ const CPComments: React.FC = (props: any) => {
   const { cacheInvalidateReport, report, setReport } = useStore(
     (state) => state.cp_reports,
   )
-  // GET initial texts from API
   const [initialTexts, setInitialTexts] = useState<TextState>({
     country: '',
     mlfs: '',
   })
   const [error, setError] = useState(null)
   const [texts, setTexts] = useState<TextState>(initialTexts)
+  const [latestVersion, setLatestVersion] = useState(false)
+
+  useEffect(() => {
+    if (report.data) {
+      const isLatestVersion = !report.data.final_version_id
+      setLatestVersion(isLatestVersion)
+    }
+  }, [report])
 
   useEffect(() => {
     if (report?.data?.comments) {
@@ -135,9 +142,10 @@ const CPComments: React.FC = (props: any) => {
   }
 
   return (
-    <form className="-mx-6 -mb-6 mt-6 flex justify-around w-auto flex-wrap gap-6 rounded-b-lg bg-gray-100 px-6 pb-6">
+    <form className="-mx-6 -mb-6 mt-6 flex w-auto flex-wrap justify-around gap-6 rounded-b-lg bg-gray-100 px-6 pb-6">
       {orderedUsers.map((user) => {
-        const canEditComment = user_type === commentsMeta[user].user_type
+        const canEditComment =
+          user_type === commentsMeta[user].user_type && latestVersion
         const disabledBtn = texts[user] === initialTexts[user]
         return (
           <div
@@ -173,7 +181,7 @@ const CPComments: React.FC = (props: any) => {
                     Save
                   </Button>
                   <Button
-                    color={disabledBtn ? "secondary" : undefined}
+                    color={disabledBtn ? 'secondary' : undefined}
                     disabled={disabledBtn}
                     size="small"
                     variant="contained"
