@@ -135,18 +135,19 @@ const CPComments: React.FC = (props: any) => {
   }
 
   return (
-    <form className="-mx-6 -mb-6 mt-6 flex w-auto flex-wrap gap-6 rounded-b-lg bg-gray-100 px-6 pb-6">
+    <form className="-mx-6 -mb-6 mt-6 flex justify-around w-auto flex-wrap gap-6 rounded-b-lg bg-gray-100 px-6 pb-6">
       {orderedUsers.map((user) => {
         const canEditComment = user_type === commentsMeta[user].user_type
+        const disabledBtn = texts[user] === initialTexts[user]
         return (
           <div
             key={user}
-            className="relative flex min-w-96 flex-1 flex-col rounded-lg rounded-b-lg bg-gray-100"
+            className="relative flex min-w-[500px] flex-col rounded-lg rounded-b-lg bg-gray-100"
           >
             {!canEditComment && (
               <SectionOverlay
                 className="cursor-not-allowed"
-                opacity="opacity-40"
+                opacity="opacity-30"
               />
             )}
             <label className="py-4 text-2xl font-medium">
@@ -155,7 +156,7 @@ const CPComments: React.FC = (props: any) => {
             <div className="CPComments relative">
               <TextareaAutosize
                 className="w-full resize-none rounded-lg border border-transparent bg-white p-2 pb-10 shadow-none"
-                minRows={10}
+                minRows={8}
                 placeholder={canEditComment ? 'Type your comment here...' : ''}
                 value={texts[user]}
                 onChange={(e) => handleTextChange(user, e.target.value)}
@@ -164,7 +165,7 @@ const CPComments: React.FC = (props: any) => {
                 <div className="absolute bottom-2 right-2 mb-2 flex gap-2">
                   <Button
                     color="secondary"
-                    disabled={texts[user] === initialTexts[user]}
+                    disabled={disabledBtn}
                     size="small"
                     variant="contained"
                     onClick={() => handleSave(user)}
@@ -172,8 +173,8 @@ const CPComments: React.FC = (props: any) => {
                     Save
                   </Button>
                   <Button
-                    className="bg-gray-600 hover:bg-gray-900"
-                    disabled={texts[user] === initialTexts[user]}
+                    color={disabledBtn ? "secondary" : undefined}
+                    disabled={disabledBtn}
                     size="small"
                     variant="contained"
                     onClick={() => handleCancel(user)}
