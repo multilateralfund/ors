@@ -117,8 +117,9 @@ export const ValidationContext = createContext(
 export const ValidationProvider = (props: {
   children: React.ReactNode
   form: CPBaseForm
+  model?: string
 }) => {
-  const { children, form } = props
+  const { children, form, model } = props
 
   const [openDrawer, setOpenDrawer] = useState(false)
 
@@ -127,8 +128,10 @@ export const ValidationProvider = (props: {
     path: '/api/usages/',
   })
 
+  const enableValidation = ['V'].includes(model || '')
+
   const errors =
-    usagesApi.loaded && usagesApi.data
+    enableValidation && usagesApi.loaded && usagesApi.data
       ? applyValidationSchema(form, usagesApi.data)
       : ({} as Record<ValidationSchemaKeys, ValidateSectionResult>)
 

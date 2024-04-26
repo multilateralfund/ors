@@ -29,12 +29,21 @@ import { PinnedBottomRowData, RowData } from './types'
 
 import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
 
+function getGroupName(substance: any, model: string) {
+  if (substance.group.startsWith('Blends')) {
+    return includes(['IV', 'V'], model)
+      ? 'Blends'
+      : 'Blends (Mixture of Controlled Substances)'
+  }
+  return substance.group || 'Other'
+}
+
 function getRowData(data: SectionB['data'], variant: ReportVariant): RowData[] {
   let rowData: RowData[] = []
   const dataByGroup: Record<string, any[]> = {}
   const groups: Array<string> = []
   each(data, (item) => {
-    const group = item.group || 'Other'
+    const group = getGroupName(item, variant.model)
     if (!dataByGroup[group]) {
       dataByGroup[group] = []
     }

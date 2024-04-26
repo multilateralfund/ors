@@ -481,7 +481,7 @@ const CPCreate: React.FC = () => {
   }
 
   return (
-    <ValidationProvider form={form}>
+    <ValidationProvider form={form} model={variant.model}>
       <Loading
         className="!fixed bg-action-disabledBackground"
         active={

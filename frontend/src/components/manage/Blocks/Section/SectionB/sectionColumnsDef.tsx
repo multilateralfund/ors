@@ -34,42 +34,46 @@ const sectionColDefById: Record<string, ColDef> = {
       }
       return <AgCellRenderer {...props} />
     },
-    cellRendererParams: (props: ICellRendererParams) => ({
-      className: cx({
-        'font-bold': includes(
-          ['group', 'total', 'subtotal'],
-          props.data.rowType,
-        ),
-      }),
-      footnote: !!props.data.chemical_note && {
-        content: props.data.chemical_note,
-        index: '**',
-        order: 999,
-      },
-      ...(props.data.rowType === 'group' &&
-      startsWith(props.data.display_name, 'Blends')
-        ? {
-            footnote: {
-              id: '1',
-              content:
-                'When reporting blends/mixtures, reporting of controlled substances should not be duplicated. For the CP report, countries should report use of individual controlled substances and quantities of blends/mixtures used, separately, while ensuring that the amounts of controlled substances are not reported more than once.',
-              icon: false,
-              order: 1,
-            },
-          }
-        : {}),
-      ...(props.data.row_id === 'other-new_substance'
-        ? {
-            footnote: {
-              id: '2',
-              content:
-                'If a non-standard blend not listed in the above table is used, please indicate the percentage of each constituent controlled substance of the blend being reported in the remarks column.',
-              icon: true,
-              order: 2,
-            },
-          }
-        : {}),
-    }),
+    cellRendererParams: (props: ICellRendererParams) => {
+      const model = props.context?.variant.model
+      return {
+        className: cx({
+          'font-bold': includes(
+            ['group', 'total', 'subtotal'],
+            props.data.rowType,
+          ),
+        }),
+        footnote: !!props.data.chemical_note && {
+          content: props.data.chemical_note,
+          index: '**',
+          order: 999,
+        },
+        ...(props.data.rowType === 'group' &&
+        startsWith(props.data.display_name, 'Blends')
+          ? {
+              footnote: {
+                id: '1',
+                content: includes(['IV', 'V'], model)
+                  ? 'Mixture of Controlled Substances - When reporting blends/mixtures, reporting of controlled substances should not be duplicated. For the CP report, countries should report use of individual controlled substances and quantities of blends/mixtures used, separately, while ensuring that the amounts of controlled substances are not reported more than once.'
+                  : 'When reporting blends/mixtures, reporting of controlled substances should not be duplicated. For the CP report, countries should report use of individual controlled substances and quantities of blends/mixtures used, separately, while ensuring that the amounts of controlled substances are not reported more than once.',
+                icon: false,
+                order: 1,
+              },
+            }
+          : {}),
+        ...(props.data.row_id === 'other-new_substance'
+          ? {
+              footnote: {
+                id: '2',
+                content:
+                  'If a non-standard blend not listed in the above table is used, please indicate the percentage of each constituent controlled substance of the blend being reported in the remarks column.',
+                icon: true,
+                order: 2,
+              },
+            }
+          : {}),
+      }
+    },
   },
   manufacturing_blends: {
     ...colDefById['manufacturing_blends'],

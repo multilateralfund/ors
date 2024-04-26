@@ -20,9 +20,11 @@ import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-function getGroupName(substance: any) {
+function getGroupName(substance: any, model: string) {
   if (substance.blend_id) {
-    return 'Blends (Mixture of Controlled Substances)'
+    return includes(['IV', 'V'], model)
+      ? 'Blends'
+      : 'Blends (Mixture of Controlled Substances)'
   }
   return substance.group || 'Other'
 }
@@ -52,7 +54,7 @@ function getRowData(
   }
 
   each(data, (item) => {
-    const group = getGroupName(item)
+    const group = getGroupName(item, variant.model)
     if (!dataByGroup[group]) {
       dataByGroup[group] = []
     }

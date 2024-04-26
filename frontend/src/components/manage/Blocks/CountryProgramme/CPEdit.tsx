@@ -328,7 +328,7 @@ function CPEdit() {
   }, [renderedSections.length, activeTab])
 
   return (
-    <ValidationProvider form={form as CPBaseForm}>
+    <ValidationProvider form={form as CPBaseForm} model={variant?.model}>
       <Loading
         className="!fixed bg-action-disabledBackground"
         active={
