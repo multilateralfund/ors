@@ -80,12 +80,14 @@ const SortBy = (props: Omit<SimpleSelectProps, 'label'>) => (
 )
 
 const CountryItem = (props: any) => {
-  const { group, loaded, loading, reports } = props
+  const { group, loaded, loading, reports, user_type } = props
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const countriesById = new Map<number, any>(
     countries.map((country: any) => [country.id, country]),
   )
-  const [showAllReports, setShowAllReports] = useState(false)
+  const [showAllReports, setShowAllReports] = useState(
+    user_type === 'country_user',
+  )
 
   const options: Intl.DateTimeFormatOptions = {
     day: '2-digit',
@@ -101,7 +103,7 @@ const CountryItem = (props: any) => {
       className={`transition-opacity flex w-full flex-col gap-4 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
     >
       <Typography variant="h5">{group}</Typography>
-      <div className="grid w-full grid-flow-row auto-rows-max grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="grid w-full grid-flow-row auto-rows-max grid-cols-1 gap-6 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
         {reports.map((report: any, index: number) => {
           if (!showAllReports && index >= REPORTS_PER_COUNTRY) {
             return null // Hide reports beyond the limit if showAllReports is false
@@ -148,7 +150,7 @@ const CountryItem = (props: any) => {
         })}
       </div>
 
-      {reports.length > REPORTS_PER_COUNTRY && (
+      {reports.length > REPORTS_PER_COUNTRY && user_type !== 'country_user' && (
         <div
           className="w-fit cursor-pointer font-medium"
           onClick={toggleReportsVisibility}
@@ -297,6 +299,7 @@ const CountrySection = function CountrySection(
               loaded={loaded}
               loading={loading}
               reports={countryData.reports}
+              user_type={user_type}
             />
           )
         })}
@@ -625,17 +628,23 @@ const YearSelect = (props: {
   range: [number, number]
 }) => {
   const { maxYear, minYear, onChange, range } = props
+  const { user_type } = useStore((state) => state.user.data)
 
   return (
-    <Field
-      FieldProps={{ className: 'mb-0' }}
-      label="Select a range of years"
-      max={maxYear}
-      min={minYear}
-      value={range}
-      widget="yearRange"
-      onChange={onChange}
-    />
+    <div className="relative">
+      <Field
+        FieldProps={{ className: 'mb-0' }}
+        label="Select a range of years"
+        max={maxYear}
+        min={minYear}
+        value={range}
+        widget="yearRange"
+        onChange={onChange}
+      />
+      {user_type === 'country_user' && (
+        <div className="absolute inset-0 top-0 z-10 -mt-1 bg-white bg-opacity-60"></div>
+      )}
+    </div>
   )
 }
 
@@ -784,16 +793,18 @@ export default function CPListing() {
                     'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
                 }}
               />
-              <Tab
-                id="submissions-log"
-                className="rounded-b-none px-3 py-2"
-                aria-controls="submissions-log"
-                label="Submissions Log"
-                classes={{
-                  selected:
-                    'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
-                }}
-              />
+              {user_type !== 'country_user' && (
+                <Tab
+                  id="submissions-log"
+                  className="rounded-b-none px-3 py-2"
+                  aria-controls="submissions-log"
+                  label="Submissions Log"
+                  classes={{
+                    selected:
+                      'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
+                  }}
+                />
+              )}
             </Tabs>
             <div id="portalSortBy" className="flex flex-1 justify-end"></div>
           </div>
@@ -807,7 +818,7 @@ export default function CPListing() {
               user_type={user_type}
             />
           )}
-          {activeTab === 1 && (
+          {activeTab === 1 && user_type !== 'country_user' && (
             <LogSection
               filters={filters}
               logApi={logApi}
