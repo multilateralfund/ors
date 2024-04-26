@@ -2,6 +2,8 @@ import { ApiFile } from '@ors/types/api_files'
 
 import React from 'react'
 
+import { useSnackbar } from 'notistack'
+
 import { api, formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
@@ -12,6 +14,7 @@ export function FilesViewer(props: {
   heading: string
   isEdit: boolean
 }) {
+  const { enqueueSnackbar } = useSnackbar()
   const { cacheInvalidateReport, fetchFiles } = useStore(
     (state) => state.cp_reports,
   )
@@ -59,7 +62,17 @@ export function FilesViewer(props: {
                       )
                       cacheInvalidateReport(file.country_id, file.year)
                       fetchFiles(file.country_id, file.year)
-                    } catch (e) {}
+                    } catch (e) {
+                      enqueueSnackbar(
+                        <>
+                          There was an error regarding the files. Please try
+                          again.
+                        </>,
+                        {
+                          variant: 'error',
+                        },
+                      )
+                    }
                   }}
                 />
               )}
