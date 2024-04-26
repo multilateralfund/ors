@@ -122,14 +122,10 @@ class EmptyFormView(views.APIView):
                     group_name = "Alternatives"
             if row.section == "C" and row.blend:
                 group_name = "HFCs"
-            chemical_name = (
-                row.get_chemical_display_name()
-                if row.section != "C"
-                else row.get_chemical_name()
-            )
 
             row_data = {
-                "chemical_name": chemical_name,
+                "chemical_name": row.get_chemical_name(),
+                "chemical_display_name": row.get_chemical_display_name(),
                 "substance_id": row.substance_id,
                 "blend_id": row.blend_id,
                 "group": group_name,
