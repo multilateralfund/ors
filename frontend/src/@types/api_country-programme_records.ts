@@ -1,4 +1,4 @@
-import {CommentData, CPHistoryItem} from '@ors/types/store'
+import { CPHistoryItem, CommentData } from '@ors/types/store'
 
 type cp_report = {
   comment: null | string
