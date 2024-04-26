@@ -23,7 +23,7 @@ from core.api.views.cp_archive import (
     CPRecordsArchiveListView,
     CPReportVersionsListView,
 )
-from core.api.views.cp_files import CPFilesView
+from core.api.views.cp_files import CPFilesDownloadView, CPFilesView
 from core.api.views.cp_prices import CPPricesView
 from core.api.views.cp_records_export import CPEmptyExportView
 from core.api.views.cp_reports import (
@@ -184,6 +184,11 @@ urlpatterns = [
         "country-programme/files/",
         CPFilesView.as_view(),
         name="country-programme-files",
+    ),
+    path(
+        "country-programme/files/<int:id>/download/",
+        CPFilesDownloadView.as_view(),
+        name="country-programme-files-download",
     ),
     path(
         "country-programme-archive/records/",
