@@ -173,25 +173,25 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
             the blend being reported in the remarks column.
           </Typography>
         </Alert>
-        <Field
-          InputLabel={{ label: 'Blend description' }}
-          disabled={true}
-          error={!!errors.composition}
-          helperText={errors.composition}
-          value={form.composition}
-        />
-        <Field
-          InputLabel={{ label: 'Alternative name' }}
+        <div className="grid grid-cols-2 gap-x-4"><Field
+          InputLabel={{ label: 'Blend name' }}
           error={!!errors.other_names}
           helperText={errors.other_names}
           value={form.other_names}
           onChange={(event: any) => {
             setForm({
               ...prevForm.current,
-              other_names: event.target.value,
+              other_names: event.target.value
             })
           }}
         />
+          <Field
+            InputLabel={{ label: 'Blend ID' }}
+            disabled={true}
+            error={!!errors.composition}
+            helperText={errors.composition}
+            value={form.composition}
+          /></div>
         <InputLabel className="mb-2 inline-flex items-center gap-2">
           <span>Blend composition</span>
         </InputLabel>
@@ -359,6 +359,16 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
             }
           }}
         />
+        <Collapse in={isString(errors.components) && !!errors.components}>
+          {isString(errors.components) && (
+            <Alert
+              icon={<IoAlertCircle />}
+              severity="error"
+            >
+              {errors.components}
+            </Alert>
+          )}
+        </Collapse>
         {(!!similarBlends?.default?.length ||
           !!similarBlends?.same?.length) && (
           <div className="similar-blends grid grid-cols-2 gap-4">
@@ -390,13 +400,6 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
             </div>
           </div>
         )}
-        <Collapse in={isString(errors.components) && !!errors.components}>
-          {isString(errors.components) && (
-            <Alert icon={<IoAlertCircle />} severity="error">
-              {errors.components}
-            </Alert>
-          )}
-        </Collapse>
         <Button
           className="mt-2 rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
           onClick={async () => {
