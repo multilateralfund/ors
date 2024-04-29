@@ -196,24 +196,12 @@ export default function SectionCCreate(props: {
       )
       if (index > -1) {
         const groupNode = grid.current.api.getRowNode(removedSubstance.group)
-        const removeGroup = groupNode.data.count === 1
         newData.splice(index, 1)
         setForm((form: any) => ({ ...form, section_c: newData }))
-        if (removeGroup) {
-          applyTransaction(grid.current.api, {
-            remove: [
-              groupNode.data,
-              props.data,
-              grid.current.api.getRowNode(`subtotal[${removedSubstance.group}]`)
-                ?.data,
-            ],
-          })
-        } else {
-          applyTransaction(grid.current.api, {
-            remove: [props.data],
-            update: [{ ...groupNode.data, count: groupNode.data.count - 1 }],
-          })
-        }
+        applyTransaction(grid.current.api, {
+          remove: [props.data],
+          update: [{ ...groupNode.data, count: groupNode.data.count - 1 }],
+        })
       }
     },
     openAddChemicalModal: () => setAddChemicalModal(true),
