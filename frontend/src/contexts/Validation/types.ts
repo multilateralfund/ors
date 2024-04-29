@@ -1,4 +1,5 @@
-import { ApiUsage } from '@ors/types/api_usages'
+import type { CPBaseForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
+import type { ApiUsage } from '@ors/types/api_usages'
 
 export interface IUsage {
   quantity: number
@@ -78,3 +79,14 @@ export type ValidateSectionResult = {
 }
 
 export type UsageMapping = Record<string, ApiUsage>
+
+export interface IValidationContext {
+  errors: Record<ValidationSchemaKeys, ValidateSectionResult>
+  setOpenDrawer: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+export interface IValidationProvider {
+  children: React.ReactNode
+  form: CPBaseForm
+  model?: string
+}

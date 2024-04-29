@@ -4,7 +4,7 @@ import Tab from '@mui/material/Tab/Tab'
 import cx from 'classnames'
 import { isEmpty } from 'lodash'
 
-import { ValidationContext } from '@ors/contexts/Validation/Validation'
+import ValidationContext from '@ors/contexts/Validation/ValidationContext'
 import { ValidationSchemaKeys } from '@ors/contexts/Validation/types'
 
 import SectionErrorIndicator from './SectionErrorIndicator'

@@ -1,7 +1,14 @@
 'use client'
 import { ThemeSlice } from '@ors/types/store'
 
-import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
+import React, {
+  useContext,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import styled from '@emotion/styled'
 import { TablePagination, Typography } from '@mui/material'
@@ -30,6 +37,11 @@ import {
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import DefaultFadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import { KEY_BACKSPACE } from '@ors/constants'
+import ValidationContext from '@ors/contexts/Validation/ValidationContext'
+import {
+  ValidateSectionResultValue,
+  ValidationSchemaKeys,
+} from '@ors/contexts/Validation/types'
 import { debounce, getError } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
 
@@ -152,6 +164,10 @@ function Table(props: TableProps) {
   })
   const [fullScreen, setFullScreen] = useState(false)
 
+  const validation = useContext(ValidationContext)
+  const validationErrors =
+    validation.errors[props.context.section.id as ValidationSchemaKeys].rows
+
   // defaultColDef sets props common to all Columns
   const [defaultColDef] = useState<ColDef>(() => ({
     ...globalColDef,
@@ -168,6 +184,14 @@ function Table(props: TableProps) {
     },
     cellClassRules: {
       'ag-error': (props) => !!getError(props),
+      'border-solid border border-red-950': (props) => {
+        const errors: ValidateSectionResultValue[] = props.data.validationErrors
+        if (errors) {
+          const colId = props.column.getColId()
+          return errors.flatMap((err) => err.highlight_cells).includes(colId)
+        }
+        return false
+      },
     },
     cellRenderer: (props: any) => {
       return <AgCellRenderer {...props} />
@@ -222,6 +246,17 @@ function Table(props: TableProps) {
       const data = { ...rowNode.data }
       const error =
         hasErrors && isObject(errors) ? get(errors, data.row_id) : null
+
+      const rowValidationErrors = validationErrors[data.row_id]
+
+      if (rowValidationErrors) {
+        data.validationErrors = rowValidationErrors
+        rowNodes.push({ ...rowNode, data })
+      } else if (data.validationErrors) {
+        delete data.validationErrors
+        rowNodes.push({ ...rowNode, data })
+      }
+
       if (!hasErrors && data.error) {
         delete data.error
         rowNodes.push({ ...rowNode, data })
@@ -327,7 +362,7 @@ function Table(props: TableProps) {
     if (!grid.current.api) return
     handleErrors()
     /* eslint-disable-next-line */
-  }, [errors])
+  }, [errors, validationErrors])
 
   useEffect(() => {
     return () => {

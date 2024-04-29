@@ -2,7 +2,7 @@ import { useContext } from 'react'
 
 import cx from 'classnames'
 
-import { ValidationContext } from '@ors/contexts/Validation/Validation'
+import ValidationContext from '@ors/contexts/Validation/ValidationContext'
 import { ValidationSchemaKeys } from '@ors/contexts/Validation/types'
 
 import CellValidationAlert from './CellValidationAlert'
@@ -14,15 +14,15 @@ export default function CellValidationWidget(props: any) {
     ]
 
   const rowErrors = validation?.rows[props.data.row_id] || []
+  const cellErrors = rowErrors.filter((err) =>
+    err.highlight_cells.includes(props.column.colId),
+  )
 
   const showErrorInfo =
     props.column.colId === 'display_name' && rowErrors.length > 0
-  const cellHighlight =
-    rowErrors.length > 0 &&
-    rowErrors.filter((err) => err.highlight_cells.includes(props.column.colId))
-      .length > 0
 
-  const display = showErrorInfo || cellHighlight
+  const errors = showErrorInfo ? rowErrors : cellErrors
+  const display = errors.length > 0
 
   return (
     <div
@@ -31,7 +31,7 @@ export default function CellValidationWidget(props: any) {
         { 'collapse opacity-0': !display, 'opacity-100': display },
       )}
     >
-      <CellValidationAlert errors={rowErrors} />
+      <CellValidationAlert errors={errors} />
     </div>
   )
 }

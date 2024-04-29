@@ -23,10 +23,12 @@ export function validateAnnexEQPS(
   const valueNonQPS = anyRow[`usage_${usageNonQPS}`] || 0
   const valueImport = row.imports
 
-  const isValid = isAnnexESubstance && valueQPS + valueNonQPS == valueImport
+  if (isAnnexESubstance) {
+    const isValid = valueQPS + valueNonQPS == valueImport
 
-  if (!isValid) {
-    return { row: row.display_name }
+    if (!isValid) {
+      return { row: row.display_name }
+    }
   }
 }
 
@@ -41,11 +43,12 @@ export function validateAnnexENonQPS(
   const anyRow = row as unknown as Record<string, number>
   const valueNonQPS = anyRow[`usage_${usageNonQPS}`] || 0
 
-  const isValid =
-    isAnnexESubstance && valueNonQPS && row.banned_date && row.remarks
+  if (isAnnexESubstance && valueNonQPS) {
+    const isValid = row.banned_date && row.remarks
 
-  if (!isValid) {
-    return { row: row.display_name }
+    if (!isValid) {
+      return { row: row.display_name }
+    }
   }
 }
 
@@ -60,9 +63,9 @@ export function validateBannedImports(row: IRow): RowValidatorFuncResult {
 
   const isBanned = bannedByGroup && (row.substance_id || row.blend_id)
 
-  const isValid = isBanned && row.banned_date
-
-  if (!isValid) {
-    return { row: row.display_name }
+  if (isBanned) {
+    if (!row.banned_date) {
+      return { row: row.display_name }
+    }
   }
 }

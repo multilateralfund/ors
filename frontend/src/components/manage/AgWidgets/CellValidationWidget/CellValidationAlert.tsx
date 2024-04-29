@@ -2,7 +2,7 @@ import { useContext, useState } from 'react'
 
 import Popover from '@mui/material/Popover/Popover'
 
-import { ValidationContext } from '@ors/contexts/Validation/Validation'
+import ValidationContext from '@ors/contexts/Validation/ValidationContext'
 import { ValidateSectionResultValue } from '@ors/contexts/Validation/types'
 
 import { IoAlertCircle } from 'react-icons/io5'
@@ -56,7 +56,9 @@ export default function CellValidationAlert({
       >
         <div className="bg-red-950 px-4 py-2 text-white">
           {errors.map((err, idx) => (
-            <div key={idx}>{err.message}</div>
+            <div key={idx}>
+              {'\u2022'} {err.message}
+            </div>
           ))}
         </div>
       </Popover>

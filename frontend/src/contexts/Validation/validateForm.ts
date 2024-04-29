@@ -7,11 +7,7 @@ import type {
 } from './types'
 import { ApiUsage } from '@ors/types/api_usages'
 
-import { createContext, useState } from 'react'
-
 import { CPBaseForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
-import ValidationDrawer from '@ors/components/ui/ValidationDrawer/ValidationDrawer'
-import useApi from '@ors/hooks/useApi'
 
 import validationSchema from './validationSchema'
 
@@ -83,7 +79,10 @@ function validateSection(
   }
 }
 
-function applyValidationSchema(form: CPBaseForm, usageApiData: ApiUsage[]) {
+export default function validateForm(
+  form: CPBaseForm,
+  usageApiData: ApiUsage[],
+) {
   const validationSchemaKeys = Object.keys(
     validationSchema,
   ) as ValidationSchemaKeys[]
@@ -98,55 +97,5 @@ function applyValidationSchema(form: CPBaseForm, usageApiData: ApiUsage[]) {
       return acc
     },
     {} as Record<ValidationSchemaKeys, ValidateSectionResult>,
-  )
-}
-
-export interface ValidationContextProps {
-  errors: Record<ValidationSchemaKeys, ValidateSectionResult>
-  setOpenDrawer: React.Dispatch<React.SetStateAction<boolean>>
-}
-
-export const ValidationContext = createContext(
-  null as unknown as ValidationContextProps,
-)
-
-export const ValidationProvider = (props: {
-  children: React.ReactNode
-  form: CPBaseForm
-  model?: string
-}) => {
-  const { children, form, model } = props
-
-  const [openDrawer, setOpenDrawer] = useState(false)
-
-  const usagesApi = useApi<ApiUsage[]>({
-    options: {},
-    path: '/api/usages/',
-  })
-
-  const enableValidation = ['V'].includes(model || '')
-
-  const errors =
-    enableValidation && usagesApi.loaded && usagesApi.data
-      ? applyValidationSchema(form, usagesApi.data)
-      : ({} as Record<ValidationSchemaKeys, ValidateSectionResult>)
-
-  const toggleDrawer = (newOpen: boolean) => () => {
-    setOpenDrawer(newOpen)
-  }
-  return (
-    <ValidationContext.Provider
-      value={{
-        errors: errors,
-        setOpenDrawer,
-      }}
-    >
-      <ValidationDrawer
-        errors={errors}
-        isOpen={openDrawer}
-        onClose={toggleDrawer(false)}
-      />
-      {children}
-    </ValidationContext.Provider>
   )
 }
