@@ -28,14 +28,12 @@ function useGridOptions(props: {
   model: string
   onRemoveSubstance: (props: ICellRendererParams) => void
   openAddChemicalModal: () => void
-  openCreateBlendModal: () => void
   usages: EmptyFormUsageColumn[]
 }) {
   const {
     model,
     onRemoveSubstance,
     openAddChemicalModal,
-    openCreateBlendModal,
     usages,
   } = props
 
@@ -52,17 +50,7 @@ function useGridOptions(props: {
                   variant="contained"
                   onClick={openAddChemicalModal}
                 >
-                  + Add chemical
-                </Button>
-              )
-            } else if (props.data.row_id === 'control-add_blend') {
-              return (
-                <Button
-                  className="w-full leading-3"
-                  variant="contained"
-                  onClick={openCreateBlendModal}
-                >
-                  Create blend
+                  Add blend
                 </Button>
               )
             } else if (props.data.row_id === 'other-new_substance') {

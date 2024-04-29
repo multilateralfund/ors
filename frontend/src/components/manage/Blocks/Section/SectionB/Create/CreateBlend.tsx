@@ -2,11 +2,9 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   Alert,
-  Box,
   Button,
   Collapse,
   InputLabel,
-  Modal,
   Tooltip,
   Typography,
 } from '@mui/material'
@@ -64,12 +62,7 @@ function SimilarBlend({ blend, onClick, substances }: any) {
   )
 }
 
-export function CreateBlend({
-  noModal = false,
-  onClose,
-  onCreateBlend,
-  substances,
-}: any) {
+export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
   const { enqueueSnackbar } = useSnackbar()
 
   const grid = useRef<any>()
@@ -166,19 +159,9 @@ export function CreateBlend({
     grid.current.api.setRowData(components)
   }
 
-  const modalContent = (
+  return (
     <>
       <div className="modal-content">
-        {!noModal && (
-          <Typography
-            id="create-blend-modal-title"
-            className="mb-4 text-typography-secondary"
-            component="h2"
-            variant="h6"
-          >
-            Create new blend
-          </Typography>
-        )}
         <Alert
           className="mb-4"
           icon={<IoInformationCircle size={24} />}
@@ -463,9 +446,10 @@ export function CreateBlend({
         </Collapse>
       </div>
       <div className="modal-action mt-8">
-        <Typography className="flex justify-end gap-x-2">
-          {!noModal && <Button onClick={() => onClose()}>Close</Button>}
+        <Typography className="flex gap-x-2">
           <Button
+            className="text-base"
+            color="secondary"
             variant="contained"
             onClick={async () => {
               try {
@@ -474,7 +458,6 @@ export function CreateBlend({
                   method: 'POST',
                 })
                 onCreateBlend(blend)
-                onClose()
               } catch (error) {
                 if (error.status === 400) {
                   setErrors({
@@ -496,28 +479,16 @@ export function CreateBlend({
               }
             }}
           >
-            Submit
+            Submit new blend
+          </Button>
+          <Button
+            className="rounded-lg border-[1.5px] border-solid border-transparent bg-[#f2f2f2] p-2.5 text-base text-[#4d4d4d] hover:border-primary"
+            onClick={closeModal}
+          >
+            Cancel
           </Button>
         </Typography>
       </div>
     </>
-  )
-
-  if (noModal) {
-    return modalContent
-  }
-
-  return (
-    <Modal
-      aria-labelledby="create-blend-modal-title"
-      open={true}
-      onClose={onClose}
-    >
-      <div className="h-full max-h-[768px] w-full max-w-[768px] p-4 absolute-center">
-        <Box className="flex h-full flex-col justify-between overflow-y-auto">
-          {modalContent}
-        </Box>
-      </div>
-    </Modal>
   )
 }
