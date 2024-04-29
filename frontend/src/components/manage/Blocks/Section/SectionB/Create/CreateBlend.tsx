@@ -2,11 +2,9 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   Alert,
-  Box,
   Button,
   Collapse,
   InputLabel,
-  Modal,
   Tooltip,
   Typography,
 } from '@mui/material'
@@ -59,17 +57,17 @@ function SimilarBlend({ blend, onClick, substances }: any) {
         </>
       }
     >
-      <Button onClick={onClick}>{blend.name}</Button>
+      <Button
+        className="rounded border border-solid border-primary p-1 text-sm"
+        onClick={onClick}
+      >
+        {blend.name}
+      </Button>
     </Tooltip>
   )
 }
 
-export function CreateBlend({
-  noModal = false,
-  onClose,
-  onCreateBlend,
-  substances,
-}: any) {
+export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
   const { enqueueSnackbar } = useSnackbar()
 
   const grid = useRef<any>()
@@ -166,19 +164,9 @@ export function CreateBlend({
     grid.current.api.setRowData(components)
   }
 
-  const modalContent = (
+  return (
     <>
       <div className="modal-content">
-        {!noModal && (
-          <Typography
-            id="create-blend-modal-title"
-            className="mb-4 text-typography-secondary"
-            component="h2"
-            variant="h6"
-          >
-            Create new blend
-          </Typography>
-        )}
         <Alert
           className="mb-4"
           icon={<IoInformationCircle size={24} />}
@@ -190,74 +178,29 @@ export function CreateBlend({
             the blend being reported in the remarks column.
           </Typography>
         </Alert>
-        <Field
-          InputLabel={{ label: 'Blend description' }}
-          disabled={true}
-          error={!!errors.composition}
-          helperText={errors.composition}
-          value={form.composition}
-        />
-        <Field
-          InputLabel={{ label: 'Alternative name' }}
-          error={!!errors.other_names}
-          helperText={errors.other_names}
-          value={form.other_names}
-          onChange={(event: any) => {
-            setForm({
-              ...prevForm.current,
-              other_names: event.target.value,
-            })
-          }}
-        />
+        <div className="grid grid-cols-2 gap-x-4">
+          <Field
+            InputLabel={{ label: 'Blend name' }}
+            error={!!errors.other_names}
+            helperText={errors.other_names}
+            value={form.other_names}
+            onChange={(event: any) => {
+              setForm({
+                ...prevForm.current,
+                other_names: event.target.value,
+              })
+            }}
+          />
+          <Field
+            InputLabel={{ label: 'Blend ID' }}
+            disabled={true}
+            error={!!errors.composition}
+            helperText={errors.composition}
+            value={form.composition}
+          />
+        </div>
         <InputLabel className="mb-2 inline-flex items-center gap-2">
           <span>Blend composition</span>
-          <Tooltip placement="top" title="Similar blends">
-            <Button
-              color="primary"
-              onClick={async () => {
-                try {
-                  const defaultSimilarBlends = await api('api/blends/similar', {
-                    data: {
-                      components: form.components,
-                    },
-                    method: 'post',
-                  })
-                  const sameSimilarBlends = await api('api/blends/similar', {
-                    data: {
-                      components: form.components,
-                      same_substances: true,
-                    },
-                    method: 'post',
-                  })
-                  const hasSimilarBlends =
-                    defaultSimilarBlends.length > 0 ||
-                    sameSimilarBlends.length > 0
-                  setSimilarBlends({
-                    default: defaultSimilarBlends,
-                    same: sameSimilarBlends,
-                  })
-                  enqueueSnackbar(
-                    hasSimilarBlends
-                      ? "Found similar blends. Please check the list below 'Blend composition'!"
-                      : 'There are no similar blends!',
-                    {
-                      variant: 'info',
-                    },
-                  )
-                } catch (error) {
-                  setSimilarBlends(null)
-                  const message = await error.json()
-                  if (message.components) {
-                    enqueueSnackbar(message.components, {
-                      variant: 'error',
-                    })
-                  }
-                }
-              }}
-            >
-              Show similar blends
-            </Button>
-          </Tooltip>
         </InputLabel>
         <Table
           defaultColDef={defaultColDef}
@@ -293,7 +236,7 @@ export function CreateBlend({
               },
               cellRendererParams: (props: any) => ({
                 options: !props.data.mandatory && !props.data.rowType && (
-                  <>
+                  <div>
                     <Dropdown.Item
                       onClick={() => {
                         props.api.startEditingCell({
@@ -330,7 +273,7 @@ export function CreateBlend({
                         <span>Delete</span>
                       </div>
                     </Dropdown.Item>
-                  </>
+                  </div>
                 ),
               }),
               field: 'substance',
@@ -423,37 +366,6 @@ export function CreateBlend({
             }
           }}
         />
-        {(!!similarBlends?.default?.length ||
-          !!similarBlends?.same?.length) && (
-          <div className="similar-blends grid grid-cols-2 gap-4">
-            <div>
-              <Typography className="mb-2 font-semibold">
-                Blends same composition
-              </Typography>
-              {similarBlends.same.map((blend: any) => (
-                <SimilarBlend
-                  key={blend.id}
-                  blend={blend}
-                  substances={substances}
-                  onClick={() => selectSimilarBlend(blend)}
-                />
-              ))}
-            </div>
-            <div>
-              <Typography className="mb-2 font-semibold">
-                Blends similar composition
-              </Typography>
-              {similarBlends.default.map((blend: any) => (
-                <SimilarBlend
-                  key={blend.id}
-                  blend={blend}
-                  substances={substances}
-                  onClick={() => selectSimilarBlend(blend)}
-                />
-              ))}
-            </div>
-          </div>
-        )}
         <Collapse in={isString(errors.components) && !!errors.components}>
           {isString(errors.components) && (
             <Alert icon={<IoAlertCircle />} severity="error">
@@ -461,11 +373,101 @@ export function CreateBlend({
             </Alert>
           )}
         </Collapse>
+        {(!!similarBlends?.default?.length ||
+          !!similarBlends?.same?.length) && (
+          <table className="mt-2 w-full text-base">
+            <thead>
+              <tr>
+                <th className="flex">
+                  {similarBlends.default.length + similarBlends.same.length}{' '}
+                  blend(s) found in the system. Click on a blend name to use it
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="flex justify-between">
+                  <span>Same composition</span>
+                  <div className="flex gap-x-2">
+                    {similarBlends.same.map((blend: any) => (
+                      <SimilarBlend
+                        key={blend.id}
+                        blend={blend}
+                        substances={substances}
+                        onClick={() => selectSimilarBlend(blend)}
+                      />
+                    ))}
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td className="flex justify-between">
+                  <span>Similar composition</span>
+                  <div className="flex gap-x-2">
+                    {similarBlends.default.map((blend: any) => (
+                      <SimilarBlend
+                        key={blend.id}
+                        blend={blend}
+                        substances={substances}
+                        onClick={() => selectSimilarBlend(blend)}
+                      />
+                    ))}
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        )}
+        <Button
+          className="mt-2 rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
+          onClick={async () => {
+            try {
+              const defaultSimilarBlends = await api('api/blends/similar', {
+                data: {
+                  components: form.components,
+                },
+                method: 'post',
+              })
+              const sameSimilarBlends = await api('api/blends/similar', {
+                data: {
+                  components: form.components,
+                  same_substances: true,
+                },
+                method: 'post',
+              })
+              const hasSimilarBlends =
+                defaultSimilarBlends.length > 0 || sameSimilarBlends.length > 0
+              setSimilarBlends({
+                default: defaultSimilarBlends,
+                same: sameSimilarBlends,
+              })
+              enqueueSnackbar(
+                hasSimilarBlends
+                  ? "Found similar blends. Please check the list below 'Blend composition'!"
+                  : 'There are no similar blends!',
+                {
+                  variant: 'info',
+                },
+              )
+            } catch (error) {
+              setSimilarBlends(null)
+              const message = await error.json()
+              if (message.components) {
+                enqueueSnackbar(message.components, {
+                  variant: 'error',
+                })
+              }
+            }
+          }}
+        >
+          Show similar blends
+        </Button>
       </div>
       <div className="modal-action mt-8">
-        <Typography className="flex justify-end gap-x-2">
-          {!noModal && <Button onClick={() => onClose()}>Close</Button>}
+        <Typography className="flex gap-x-2">
           <Button
+            className="text-base"
+            color="secondary"
             variant="contained"
             onClick={async () => {
               try {
@@ -474,7 +476,6 @@ export function CreateBlend({
                   method: 'POST',
                 })
                 onCreateBlend(blend)
-                onClose()
               } catch (error) {
                 if (error.status === 400) {
                   setErrors({
@@ -498,26 +499,14 @@ export function CreateBlend({
           >
             Submit
           </Button>
+          <Button
+            className="rounded-lg border-[1.5px] border-solid border-transparent bg-[#f2f2f2] p-2.5 text-base text-[#4d4d4d] hover:border-primary"
+            onClick={closeModal}
+          >
+            Cancel
+          </Button>
         </Typography>
       </div>
     </>
-  )
-
-  if (noModal) {
-    return modalContent
-  }
-
-  return (
-    <Modal
-      aria-labelledby="create-blend-modal-title"
-      open={true}
-      onClose={onClose}
-    >
-      <div className="h-full max-h-[768px] w-full max-w-[768px] p-4 absolute-center">
-        <Box className="flex h-full flex-col justify-between overflow-y-auto">
-          {modalContent}
-        </Box>
-      </div>
-    </Modal>
   )
 }
