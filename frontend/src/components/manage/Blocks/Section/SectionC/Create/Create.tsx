@@ -159,6 +159,7 @@ export default function SectionCCreate(props: {
 
   const [addChemicalModal, setAddChemicalModal] = useState(false)
 
+  // For formats <2023
   const allChemicalOptions = useMemo(() => {
     const data: Array<any> = []
     const chemicalsInForm = form.section_c.map(
@@ -174,6 +175,15 @@ export default function SectionCCreate(props: {
     })
     return data
   }, [substances, form.section_c, Section])
+
+  // Needed in formats >=2023
+  const mandatorySubstances = useMemo(() => {
+    return allChemicalOptions.filter((substance) => substance.group !== 'Other')
+  }, [allChemicalOptions])
+
+  const optionalSubstances = useMemo(() => {
+    return allChemicalOptions.filter((substance) => substance.group === 'Other')
+  }, [allChemicalOptions])
 
   const gridOptions = useGridOptions({
     model: variant.model,
@@ -230,9 +240,7 @@ export default function SectionCCreate(props: {
       (chemical) => chemical.row_id === newChemical.row_id,
     )
     if (!added) {
-      const groupNode = grid.current.api.getRowNode(
-        newChemical.group,
-      )
+      const groupNode = grid.current.api.getRowNode(newChemical.group)
       const createGroup = !groupNode
       const { group } = newChemical
 
@@ -272,9 +280,7 @@ export default function SectionCCreate(props: {
           ],
         })
       }
-      const substanceNode = grid.current.api.getRowNode(
-        newChemical.row_id,
-      )
+      const substanceNode = grid.current.api.getRowNode(newChemical.row_id)
       newNode.current = substanceNode
     }
 
@@ -354,15 +360,40 @@ export default function SectionCCreate(props: {
             >
               Select chemical
             </Typography>
-            <Field
-              Input={{ autoComplete: 'off' }}
-              getOptionLabel={(option: any) => option.display_name}
-              groupBy={(option: any) => option.group}
-              options={allChemicalOptions}
-              value={null}
-              widget="autocomplete"
-              onChange={onAddChemical}
-            />
+            {includes(['V'], variant.model) ? (
+              <>
+                <Typography>Mandatory / usual substances</Typography>
+                <Field
+                  Input={{ autoComplete: 'off' }}
+                  getOptionLabel={(option: any) => option.display_name}
+                  groupBy={(option: any) => option.group}
+                  options={mandatorySubstances}
+                  value={null}
+                  widget="autocomplete"
+                  onChange={onAddChemical}
+                />
+                <Typography>Optional substances</Typography>
+                <Field
+                  Input={{ autoComplete: 'off' }}
+                  getOptionLabel={(option: any) => option.display_name}
+                  groupBy={(option: any) => option.group}
+                  options={optionalSubstances}
+                  value={null}
+                  widget="autocomplete"
+                  onChange={onAddChemical}
+                />
+              </>
+            ) : (
+              <Field
+                Input={{ autoComplete: 'off' }}
+                getOptionLabel={(option: any) => option.display_name}
+                groupBy={(option: any) => option.group}
+                options={allChemicalOptions}
+                value={null}
+                widget="autocomplete"
+                onChange={onAddChemical}
+              />
+            )}
             <Typography className="text-right">
               <Button onClick={() => setAddChemicalModal(false)}>Close</Button>
             </Typography>
