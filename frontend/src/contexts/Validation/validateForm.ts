@@ -22,20 +22,24 @@ function validateSectionRows(
   rows: IRow[],
   section_id: ValidationSchemaKeys,
   usages: UsageMapping,
+  form: CPBaseForm,
 ) {
   return rows
     .flatMap((row) =>
       validationSchema[section_id]?.rows?.map((rowValidator) => {
         const { highlight_cells, validator, ...validatorProps } = rowValidator
-        const invalidResult = validator(row, usages)
+        const invalidResult = validator(row, { form, usages })
         if (invalidResult) {
           return {
             ...validatorProps,
-            highlight_cells: Object.keys(highlight_cells).filter((key) =>
-              highlight_cells[key](row),
-            ),
-            row_id: row.row_id,
             ...invalidResult,
+            highlight_cells: [
+              ...(invalidResult.highlight_cells || []),
+              ...Object.keys(highlight_cells).filter((key) =>
+                highlight_cells[key](row),
+              ),
+            ],
+            row_id: row.row_id,
           }
         }
       }),
@@ -52,6 +56,7 @@ function validateSection(
     form[section_id] as IRow[],
     section_id,
     usages,
+    form,
   ).reduce(
     (acc: Record<string, Omit<IRowValidationResult, 'row_id'>[]>, val) => {
       const { row_id, ...rest } = val

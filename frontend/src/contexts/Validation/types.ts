@@ -8,10 +8,14 @@ export interface IUsage {
 export interface IRow {
   banned_date: null | string
   blend_id: null | number
+  chemical_note?: string
   display_name: string
   exports: number
+  facility?: string
   group: string
+  import_quotas: number
   imports: number
+  manufacturing_blends?: string
   production: number
   record_usages: IUsage[]
   remarks?: string
@@ -22,14 +26,20 @@ export interface IRow {
 export interface IGlobalValidator {}
 
 export interface IInvalidRowResult {
+  highlight_cells?: string[]
   row: string
 }
 
 export type RowValidatorFuncResult = IInvalidRowResult | null | undefined
 
+export type RowValidatorFuncContext = {
+  form: CPBaseForm
+  usages: UsageMapping
+}
+
 export type RowValidatorFunc = (
   row: IRow,
-  usages: UsageMapping,
+  context: RowValidatorFuncContext,
 ) => RowValidatorFuncResult
 
 export interface IRowValidator {

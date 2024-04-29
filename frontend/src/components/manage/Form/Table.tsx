@@ -39,6 +39,7 @@ import DefaultFadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import { KEY_BACKSPACE } from '@ors/constants'
 import ValidationContext from '@ors/contexts/Validation/ValidationContext'
 import {
+  ValidateSectionResult,
   ValidateSectionResultValue,
   ValidationSchemaKeys,
 } from '@ors/contexts/Validation/types'
@@ -166,7 +167,8 @@ function Table(props: TableProps) {
 
   const validation = useContext(ValidationContext)
   const validationErrors =
-    validation.errors[props.context.section.id as ValidationSchemaKeys].rows
+    validation.errors[props.context?.section.id as ValidationSchemaKeys]
+      ?.rows || ({} as Record<ValidationSchemaKeys, ValidateSectionResult>)
 
   // defaultColDef sets props common to all Columns
   const [defaultColDef] = useState<ColDef>(() => ({
@@ -191,6 +193,11 @@ function Table(props: TableProps) {
           return errors.flatMap((err) => err.highlight_cells).includes(colId)
         }
         return false
+      },
+      'text-red-950': (props) => {
+        const errors: ValidateSectionResultValue[] = props.data.validationErrors
+        const colId = props.column.getColId()
+        return errors && colId === 'display_name'
       },
     },
     cellRenderer: (props: any) => {
