@@ -159,7 +159,7 @@ export default function SectionCCreate(props: {
 
   const [addChemicalModal, setAddChemicalModal] = useState(false)
 
-  const chemicalsOptions = useMemo(() => {
+  const allChemicalOptions = useMemo(() => {
     const data: Array<any> = []
     const chemicalsInForm = form.section_c.map(
       (chemical: any) => chemical.row_id,
@@ -219,6 +219,69 @@ export default function SectionCCreate(props: {
     })
     // eslint-disable-next-line
   }, [form.country])
+
+  const onAddChemical = (event: any, newChemical: any) => {
+    if (document.activeElement) {
+      // @ts-ignore
+      document.activeElement.blur()
+    }
+    const added = find(
+      form.section_c,
+      (chemical) => chemical.row_id === newChemical.row_id,
+    )
+    if (!added) {
+      const groupNode = grid.current.api.getRowNode(
+        newChemical.group,
+      )
+      const createGroup = !groupNode
+      const { group } = newChemical
+
+      setForm((form: any) => ({
+        ...form,
+        section_c: [...form.section_c, newChemical],
+      }))
+      if (createGroup) {
+        applyTransaction(grid.current.api, {
+          add: [
+            {
+              count: 1,
+              display_name: group,
+              group,
+              row_id: group,
+              rowType: 'group',
+            },
+            newChemical,
+            {
+              display_name: 'Sub-total',
+              group,
+              row_id: `subtotal[${group}]`,
+              rowType: 'subtotal',
+            },
+          ],
+          addIndex: grid.current.api.getLastDisplayedRow() + 1,
+        })
+      } else {
+        applyTransaction(grid.current.api, {
+          add: [newChemical],
+          addIndex: groupNode.rowIndex + groupNode.data.count + 1,
+          update: [
+            {
+              ...groupNode.data,
+              count: groupNode.data.count + 1,
+            },
+          ],
+        })
+      }
+      const substanceNode = grid.current.api.getRowNode(
+        newChemical.row_id,
+      )
+      newNode.current = substanceNode
+    }
+
+    if (!includes(['V'], variant.model)) {
+      setAddChemicalModal(false)
+    }
+  }
 
   return (
     <>
@@ -295,71 +358,10 @@ export default function SectionCCreate(props: {
               Input={{ autoComplete: 'off' }}
               getOptionLabel={(option: any) => option.display_name}
               groupBy={(option: any) => option.group}
-              options={chemicalsOptions}
+              options={allChemicalOptions}
               value={null}
               widget="autocomplete"
-              onChange={(event: any, newChemical: any) => {
-                if (document.activeElement) {
-                  // @ts-ignore
-                  document.activeElement.blur()
-                }
-                const added = find(
-                  form.section_c,
-                  (chemical) => chemical.row_id === newChemical.row_id,
-                )
-                if (!added) {
-                  const groupNode = grid.current.api.getRowNode(
-                    newChemical.group,
-                  )
-                  const createGroup = !groupNode
-                  const { group } = newChemical
-
-                  setForm((form: any) => ({
-                    ...form,
-                    section_c: [...form.section_c, newChemical],
-                  }))
-                  if (createGroup) {
-                    applyTransaction(grid.current.api, {
-                      add: [
-                        {
-                          count: 1,
-                          display_name: group,
-                          group,
-                          row_id: group,
-                          rowType: 'group',
-                        },
-                        newChemical,
-                        {
-                          display_name: 'Sub-total',
-                          group,
-                          row_id: `subtotal[${group}]`,
-                          rowType: 'subtotal',
-                        },
-                      ],
-                      addIndex: grid.current.api.getLastDisplayedRow() + 1,
-                    })
-                  } else {
-                    applyTransaction(grid.current.api, {
-                      add: [newChemical],
-                      addIndex: groupNode.rowIndex + groupNode.data.count + 1,
-                      update: [
-                        {
-                          ...groupNode.data,
-                          count: groupNode.data.count + 1,
-                        },
-                      ],
-                    })
-                  }
-                  const substanceNode = grid.current.api.getRowNode(
-                    newChemical.row_id,
-                  )
-                  newNode.current = substanceNode
-                }
-
-                if (!includes(['V'], variant.model)) {
-                  setAddChemicalModal(false)
-                }
-              }}
+              onChange={onAddChemical}
             />
             <Typography className="text-right">
               <Button onClick={() => setAddChemicalModal(false)}>Close</Button>
