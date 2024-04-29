@@ -57,7 +57,12 @@ function SimilarBlend({ blend, onClick, substances }: any) {
         </>
       }
     >
-      <Button onClick={onClick}>{blend.name}</Button>
+      <Button
+        className="rounded border border-solid border-primary p-1 text-sm"
+        onClick={onClick}
+      >
+        {blend.name}
+      </Button>
     </Tooltip>
   )
 }
@@ -173,25 +178,27 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
             the blend being reported in the remarks column.
           </Typography>
         </Alert>
-        <div className="grid grid-cols-2 gap-x-4"><Field
-          InputLabel={{ label: 'Blend name' }}
-          error={!!errors.other_names}
-          helperText={errors.other_names}
-          value={form.other_names}
-          onChange={(event: any) => {
-            setForm({
-              ...prevForm.current,
-              other_names: event.target.value
-            })
-          }}
-        />
+        <div className="grid grid-cols-2 gap-x-4">
+          <Field
+            InputLabel={{ label: 'Blend name' }}
+            error={!!errors.other_names}
+            helperText={errors.other_names}
+            value={form.other_names}
+            onChange={(event: any) => {
+              setForm({
+                ...prevForm.current,
+                other_names: event.target.value,
+              })
+            }}
+          />
           <Field
             InputLabel={{ label: 'Blend ID' }}
             disabled={true}
             error={!!errors.composition}
             helperText={errors.composition}
             value={form.composition}
-          /></div>
+          />
+        </div>
         <InputLabel className="mb-2 inline-flex items-center gap-2">
           <span>Blend composition</span>
         </InputLabel>
@@ -229,7 +236,7 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
               },
               cellRendererParams: (props: any) => ({
                 options: !props.data.mandatory && !props.data.rowType && (
-                  <>
+                  <div>
                     <Dropdown.Item
                       onClick={() => {
                         props.api.startEditingCell({
@@ -266,7 +273,7 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
                         <span>Delete</span>
                       </div>
                     </Dropdown.Item>
-                  </>
+                  </div>
                 ),
               }),
               field: 'substance',
@@ -361,44 +368,55 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
         />
         <Collapse in={isString(errors.components) && !!errors.components}>
           {isString(errors.components) && (
-            <Alert
-              icon={<IoAlertCircle />}
-              severity="error"
-            >
+            <Alert icon={<IoAlertCircle />} severity="error">
               {errors.components}
             </Alert>
           )}
         </Collapse>
         {(!!similarBlends?.default?.length ||
           !!similarBlends?.same?.length) && (
-          <div className="similar-blends grid grid-cols-2 gap-4">
-            <div>
-              <Typography className="mb-2 font-semibold">
-                Blends same composition
-              </Typography>
-              {similarBlends.same.map((blend: any) => (
-                <SimilarBlend
-                  key={blend.id}
-                  blend={blend}
-                  substances={substances}
-                  onClick={() => selectSimilarBlend(blend)}
-                />
-              ))}
-            </div>
-            <div>
-              <Typography className="mb-2 font-semibold">
-                Blends similar composition
-              </Typography>
-              {similarBlends.default.map((blend: any) => (
-                <SimilarBlend
-                  key={blend.id}
-                  blend={blend}
-                  substances={substances}
-                  onClick={() => selectSimilarBlend(blend)}
-                />
-              ))}
-            </div>
-          </div>
+          <table className="mt-2 w-full text-base">
+            <thead>
+              <tr>
+                <th className="flex">
+                  {similarBlends.default.length + similarBlends.same.length}{' '}
+                  blend(s) found in the system. Click on a blend name to use it
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="flex justify-between">
+                  <span>Same composition</span>
+                  <div className="flex gap-x-2">
+                    {similarBlends.same.map((blend: any) => (
+                      <SimilarBlend
+                        key={blend.id}
+                        blend={blend}
+                        substances={substances}
+                        onClick={() => selectSimilarBlend(blend)}
+                      />
+                    ))}
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td className="flex justify-between">
+                  <span>Similar composition</span>
+                  <div className="flex gap-x-2">
+                    {similarBlends.default.map((blend: any) => (
+                      <SimilarBlend
+                        key={blend.id}
+                        blend={blend}
+                        substances={substances}
+                        onClick={() => selectSimilarBlend(blend)}
+                      />
+                    ))}
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         )}
         <Button
           className="mt-2 rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
@@ -479,7 +497,7 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
               }
             }}
           >
-            Submit new blend
+            Submit
           </Button>
           <Button
             className="rounded-lg border-[1.5px] border-solid border-transparent bg-[#f2f2f2] p-2.5 text-base text-[#4d4d4d] hover:border-primary"
