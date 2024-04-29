@@ -194,53 +194,6 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
         />
         <InputLabel className="mb-2 inline-flex items-center gap-2">
           <span>Blend composition</span>
-          <Tooltip placement="top" title="Similar blends">
-            <Button
-              color="primary"
-              onClick={async () => {
-                try {
-                  const defaultSimilarBlends = await api('api/blends/similar', {
-                    data: {
-                      components: form.components,
-                    },
-                    method: 'post',
-                  })
-                  const sameSimilarBlends = await api('api/blends/similar', {
-                    data: {
-                      components: form.components,
-                      same_substances: true,
-                    },
-                    method: 'post',
-                  })
-                  const hasSimilarBlends =
-                    defaultSimilarBlends.length > 0 ||
-                    sameSimilarBlends.length > 0
-                  setSimilarBlends({
-                    default: defaultSimilarBlends,
-                    same: sameSimilarBlends,
-                  })
-                  enqueueSnackbar(
-                    hasSimilarBlends
-                      ? "Found similar blends. Please check the list below 'Blend composition'!"
-                      : 'There are no similar blends!',
-                    {
-                      variant: 'info',
-                    },
-                  )
-                } catch (error) {
-                  setSimilarBlends(null)
-                  const message = await error.json()
-                  if (message.components) {
-                    enqueueSnackbar(message.components, {
-                      variant: 'error',
-                    })
-                  }
-                }
-              }}
-            >
-              Show similar blends
-            </Button>
-          </Tooltip>
         </InputLabel>
         <Table
           defaultColDef={defaultColDef}
@@ -444,6 +397,50 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
             </Alert>
           )}
         </Collapse>
+        <Button
+          className="mt-2 rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
+          onClick={async () => {
+            try {
+              const defaultSimilarBlends = await api('api/blends/similar', {
+                data: {
+                  components: form.components,
+                },
+                method: 'post',
+              })
+              const sameSimilarBlends = await api('api/blends/similar', {
+                data: {
+                  components: form.components,
+                  same_substances: true,
+                },
+                method: 'post',
+              })
+              const hasSimilarBlends =
+                defaultSimilarBlends.length > 0 || sameSimilarBlends.length > 0
+              setSimilarBlends({
+                default: defaultSimilarBlends,
+                same: sameSimilarBlends,
+              })
+              enqueueSnackbar(
+                hasSimilarBlends
+                  ? "Found similar blends. Please check the list below 'Blend composition'!"
+                  : 'There are no similar blends!',
+                {
+                  variant: 'info',
+                },
+              )
+            } catch (error) {
+              setSimilarBlends(null)
+              const message = await error.json()
+              if (message.components) {
+                enqueueSnackbar(message.components, {
+                  variant: 'error',
+                })
+              }
+            }
+          }}
+        >
+          Show similar blends
+        </Button>
       </div>
       <div className="modal-action mt-8">
         <Typography className="flex gap-x-2">
