@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   app:
     build:
@@ -20,6 +18,14 @@ services:
 
   postgres:
     container_name: "mlf.postgres"
+
+  celery:
+    build:
+      context: .
+      dockerfile: docker/dev.docker
+    container_name: "mlf.celery"
+    volumes:
+      - ./:/app
 
 volumes:
   pg-data:

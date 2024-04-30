@@ -1,4 +1,6 @@
-version: "3.9"
+x-environment:
+  CELERY_BROKER_URL: "amqp://rabbitmq:5672"
+  CELERY_RESULT_BACKEND: "redis://redis:6379"
 
 services:
   postgres:
@@ -43,6 +45,22 @@ services:
       - nextjs
     ports:
       - "3000:80"
+
+  rabbitmq:
+    image: rabbitmq:alpine
+
+  redis:
+    image: redis:alpine
+
+  celery:
+    build: .
+    command: celery -A multilateralfund worker --beat -l info
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
 
 volumes:
   pg-data:

@@ -11,6 +11,7 @@ from core.api.validations.cp_reports_validations import validate_cp_report
 from core.models.country import Country
 from core.models.country_programme import CPReport, CPReportSections
 from core.models.country_programme_archive import CPReportArchive
+from core.tasks import send_mail_report_submit
 from core.utils import IMPORT_DB_MAX_YEAR, VALIDATION_MIN_YEAR
 
 
@@ -278,8 +279,7 @@ class CPReportCreateSerializer(serializers.Serializer):
         cp_report.reporting_entry = reporting_entry
         cp_report.reporting_email = reporting_email
         cp_report.save()
-        if not self.context.get("from_update"):
-            self._create_history(cp_report, request_user)
+
         self._create_cp_records(cp_report, validated_data.get("section_a", []), "A")
         self._create_prices(cp_report, validated_data.get("section_c", []))
 
@@ -295,5 +295,9 @@ class CPReportCreateSerializer(serializers.Serializer):
 
         if cp_report_info:
             self._create_report_info(cp_report, cp_report_info)
+
+        if not self.context.get("from_update"):
+            self._create_history(cp_report, request_user)
+            send_mail_report_submit.delay(cp_report.id)  # send mail to MLFS
 
         return cp_report
