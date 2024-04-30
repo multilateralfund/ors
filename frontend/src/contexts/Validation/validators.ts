@@ -4,7 +4,7 @@ import type {
   RowValidatorFuncResult,
 } from './types'
 
-export function validateTotals(row: IRow): RowValidatorFuncResult {
+export function validateUsageTotals(row: IRow): RowValidatorFuncResult {
   const isValid =
     row.imports - row.exports + row.production ==
     row.record_usages.reduce((acc, usage) => acc + usage.quantity, 0)
@@ -89,7 +89,7 @@ export function validateOtherUnidentifiedManufacturing(
   const valueAC = anyRow[`usage_${usageAC}`] || 0
   const valueOther = anyRow[`usage_${usageOther}`] || 0
 
-  if (valueRefrigeration && (valueAC || valueOther)) {
+  if (valueOther && (valueAC || valueRefrigeration)) {
     return { highlight_cells: [`usage_${usageOther}`], row: row.display_name }
   }
 }
@@ -110,19 +110,79 @@ export function validateUncommonSubstance(row: IRow): RowValidatorFuncResult {
   }
 }
 
+function sumRowColumns(row: Record<string, any>, columns: string[]) {
+  return columns.reduce((acc: number, val: string) => {
+    return acc + parseFloat(row[val]) || 0
+  }, 0)
+}
+
+function sumNumbers(numbers: number[]): number {
+  return numbers.reduce((t, i) => t + i, 0)
+}
+
 export function validateFacilityName(
   row: IRow,
   { form }: RowValidatorFuncContext,
 ): RowValidatorFuncResult {
   const sectionDColumns = ['all_uses', 'destruction', 'feedstock']
   const sectionDHasData =
-    form.section_d.filter((dRow) =>
-      sectionDColumns.reduce((acc: number, val: string) => {
-        acc += parseFloat(dRow[val]) || 0
-        return acc
-      }, 0),
-    ).length > 0
+    form.section_d.filter((dRow) => sumRowColumns(dRow, sectionDColumns))
+      .length > 0
   if (sectionDHasData && !row.facility) {
     return { row: 'Facility name' }
+  }
+}
+
+export function validatePrices(row: IRow): RowValidatorFuncResult {
+  if ((row.current_year_price || row.previous_year_price) && !row.remarks) {
+    return { highlight_cells: ['remarks'], row: row.display_name }
+  }
+}
+
+export function validateSectionDTotals(
+  row: IRow,
+  { form }: RowValidatorFuncContext,
+): RowValidatorFuncResult {
+  const lTotal = sumRowColumns(row, ['all_uses', 'destruction', 'feedstock'])
+  const eTotal = sumNumbers(
+    form.section_e.flatMap((row) =>
+      sumRowColumns(row, ['all_uses', 'destruction', 'feedstock_gc']),
+    ),
+  )
+
+  if (lTotal != eTotal) {
+    const eA = sumNumbers(
+      form.section_e.flatMap((row) => row.all_uses) as number[],
+    )
+    const eD = sumNumbers(
+      form.section_e.flatMap((row) => row.destruction) as number[],
+    )
+    const eF = sumNumbers(
+      form.section_e.flatMap((row) => row.feedstock_gc) as number[],
+    )
+
+    const highlight_cells = []
+    if (row.all_uses != eA) {
+      highlight_cells.push('all_uses')
+    }
+    if (row.destruction != eD) {
+      highlight_cells.push('destruction')
+    }
+    if (row.feedstock != eF) {
+      highlight_cells.push('feedstock')
+    }
+
+    return { highlight_cells, row: row.display_name }
+  }
+}
+
+export function validateSectionBOther(
+  row: IRow,
+  { usages }: RowValidatorFuncContext,
+): RowValidatorFuncResult {
+  const usageOther = usages['Other'].id
+  const valueOther = (row as any)[`usage_${usageOther}`] || 0
+  if (valueOther && !row.remarks) {
+    return { highlight_cells: ['remarks'], row: row.display_name }
   }
 }

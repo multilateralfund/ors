@@ -6,16 +6,21 @@ export interface IUsage {
 }
 
 export interface IRow {
+  all_uses?: number | string
   banned_date: null | string
   blend_id: null | number
   chemical_note?: string
+  current_year_price: number
+  destruction?: number | string
   display_name: string
   exports: number
   facility?: string
+  feedstock?: number | string
   group: string
   import_quotas: number
   imports: number
   manufacturing_blends?: string
+  previous_year_price: number
   production: number
   record_usages: IUsage[]
   remarks?: string

@@ -70,6 +70,7 @@ function useGridOptions(props: {
           ...sectionColDefById['facility'],
         },
         {
+          cellDataType: 'number',
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',
           field: 'total',
@@ -80,6 +81,7 @@ function useGridOptions(props: {
         {
           children: [
             {
+              cellDataType: 'number',
               cellEditor: 'agNumberCellEditor',
               dataType: 'number',
               field: 'all_uses',
@@ -88,6 +90,7 @@ function useGridOptions(props: {
               ...sectionColDefById['all_uses'],
             },
             {
+              cellDataType: 'number',
               cellEditor: 'agNumberCellEditor',
               dataType: 'number',
               field: 'feedstock_gc',
@@ -96,6 +99,7 @@ function useGridOptions(props: {
               ...sectionColDefById['feedstock_gc'],
             },
             {
+              cellDataType: 'number',
               cellEditor: 'agNumberCellEditor',
               dataType: 'number',
               field: 'destruction',
@@ -111,6 +115,7 @@ function useGridOptions(props: {
           ...sectionColGroupDefById['amount_generated_and_captured'],
         },
         {
+          cellDataType: 'number',
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',
           field: 'feedstock_wpc',
@@ -119,6 +124,7 @@ function useGridOptions(props: {
           ...sectionColDefById['feedstock_wpc'],
         },
         {
+          cellDataType: 'number',
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',
           field: 'destruction_wpc',
@@ -127,6 +133,7 @@ function useGridOptions(props: {
           ...sectionColDefById['destruction_wpc'],
         },
         {
+          cellDataType: 'number',
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',
           field: 'generated_emissions',

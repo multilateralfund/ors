@@ -5,8 +5,11 @@ import {
   validateBannedImports,
   validateFacilityName,
   validateOtherUnidentifiedManufacturing,
-  validateTotals,
+  validatePrices,
+  validateSectionBOther,
+  validateSectionDTotals,
   validateUncommonSubstance,
+  validateUsageTotals,
 } from './validators'
 import { validateAnnexEQPS } from './validators'
 
@@ -18,7 +21,7 @@ const validationSchema: ValidationSchema = {
         highlight_cells: { remarks: (row) => !row.remarks },
         message:
           'Total "Use by Sector" should be equal to Import-Export+Production. Otherwise, explanation is required for all substances in the "Remarks" column',
-        validator: validateTotals,
+        validator: validateUsageTotals,
       },
       {
         id: 'validate-annex-e-qps',
@@ -58,7 +61,7 @@ const validationSchema: ValidationSchema = {
         highlight_cells: { remarks: (row) => !row.remarks },
         message:
           'Total "Use by Sector" should be equal to Import-Export+Production. Otherwise, explanation is required for all substances in the "Remarks" column',
-        validator: validateTotals,
+        validator: validateUsageTotals,
       },
       {
         id: 'validate-other-unidentified-manufacturing',
@@ -68,11 +71,39 @@ const validationSchema: ValidationSchema = {
         validator: validateOtherUnidentifiedManufacturing,
       },
       {
+        id: 'validate-section-b-other',
+        highlight_cells: {},
+        message:
+          'For "Other" – Only apply for uses in other sectors that do not fall specifically within the listed sectors in the table.',
+        validator: validateSectionBOther,
+      },
+      {
         id: 'validate-uncommon-substance',
         highlight_cells: {},
         message:
           'When reporting HFC-41, HFC-134, HFC-143 or HFC-152 - These substances are not commonly used; please check the substance is used while reporting.',
         validator: validateUncommonSubstance,
+      },
+    ],
+  },
+  section_c: {
+    rows: [
+      {
+        id: 'validate-prices',
+        highlight_cells: {},
+        message: 'Indicate whether the prices are FOB or retail prices.',
+        validator: validatePrices,
+      },
+    ],
+  },
+  section_d: {
+    rows: [
+      {
+        id: 'validate-section-d-totals',
+        highlight_cells: {},
+        message:
+          'Total for columns under "Amount generated and captured" in Section E should be reported in Section D under the respective column.',
+        validator: validateSectionDTotals,
       },
     ],
   },
