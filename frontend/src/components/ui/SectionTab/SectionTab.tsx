@@ -13,7 +13,7 @@ import { ISectionTab } from './types'
 export default function SectionTab(props: ISectionTab) {
   const { errors, isActive, section, ...rest } = props
   const validation = useContext(ValidationContext)
-  const sectionErrors = validation.errors[section.id as ValidationSchemaKeys]
+  const sectionErrors = validation?.errors[section.id as ValidationSchemaKeys]
 
   return (
     <Tab

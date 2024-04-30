@@ -167,7 +167,7 @@ function Table(props: TableProps) {
 
   const validation = useContext(ValidationContext)
   const validationErrors =
-    validation.errors[props.context?.section.id as ValidationSchemaKeys]
+    validation?.errors[props.context?.section.id as ValidationSchemaKeys]
       ?.rows || ({} as Record<ValidationSchemaKeys, ValidateSectionResult>)
 
   // defaultColDef sets props common to all Columns
