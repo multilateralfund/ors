@@ -1,4 +1,5 @@
-import { ApiUsage } from '@ors/types/api_usages'
+import type { CPBaseForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
+import type { ApiUsage } from '@ors/types/api_usages'
 
 export interface IUsage {
   quantity: number
@@ -7,9 +8,14 @@ export interface IUsage {
 export interface IRow {
   banned_date: null | string
   blend_id: null | number
+  chemical_note?: string
+  display_name: string
   exports: number
+  facility?: string
   group: string
+  import_quotas: number
   imports: number
+  manufacturing_blends?: string
   production: number
   record_usages: IUsage[]
   remarks?: string
@@ -19,7 +25,22 @@ export interface IRow {
 
 export interface IGlobalValidator {}
 
-export type RowValidatorFunc = (row: IRow, usages: UsageMapping) => boolean
+export interface IInvalidRowResult {
+  highlight_cells?: string[]
+  row: string
+}
+
+export type RowValidatorFuncResult = IInvalidRowResult | null | undefined
+
+export type RowValidatorFuncContext = {
+  form: CPBaseForm
+  usages: UsageMapping
+}
+
+export type RowValidatorFunc = (
+  row: IRow,
+  context: RowValidatorFuncContext,
+) => RowValidatorFuncResult
 
 export interface IRowValidator {
   highlight_cells: Record<string, (row: IRow) => boolean>
@@ -33,12 +54,13 @@ export interface IValidator {
   rows?: IRowValidator[]
 }
 
-export interface IRowValidationResult {
+export interface IRowValidationResult extends IInvalidRowResult {
   highlight_cells: string[]
   id: string
   message: string
   row_id: string
 }
+
 export interface IGlobalValidationResult {
   highlight?: string[]
   id: string
@@ -67,3 +89,14 @@ export type ValidateSectionResult = {
 }
 
 export type UsageMapping = Record<string, ApiUsage>
+
+export interface IValidationContext {
+  errors: Record<ValidationSchemaKeys, ValidateSectionResult>
+  setOpenDrawer: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+export interface IValidationProvider {
+  children: React.ReactNode
+  form: CPBaseForm
+  model?: string
+}
