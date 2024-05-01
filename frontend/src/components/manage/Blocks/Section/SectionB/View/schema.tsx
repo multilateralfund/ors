@@ -28,6 +28,12 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
       autoHeight: true,
       cellClass: (props: CellClassParams) => {
         return cx({
+          'ag-cell-hashed theme-dark:bg-gray-900/40':
+            includes(props.data?.excluded_usages || [], props.colDef.id) ||
+            (props.column.getColId() === 'manufacturing_blends' &&
+              includes(['V'], model) &&
+              props.data?.substance_id &&
+              !parseFloat(props.value)),
           'ag-text-center': !includes(['display_name'], props.colDef.field),
         })
       },

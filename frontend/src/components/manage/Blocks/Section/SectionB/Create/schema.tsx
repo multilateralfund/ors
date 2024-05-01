@@ -30,12 +30,7 @@ function useGridOptions(props: {
   openAddChemicalModal: () => void
   usages: EmptyFormUsageColumn[]
 }) {
-  const {
-    model,
-    onRemoveSubstance,
-    openAddChemicalModal,
-    usages,
-  } = props
+  const { model, onRemoveSubstance, openAddChemicalModal, usages } = props
 
   const gridOptions: GridOptions = useMemo(
     () => ({
@@ -180,10 +175,11 @@ function useGridOptions(props: {
         autoHeight: true,
         cellClass: (props: CellClassParams<RowData>) => {
           return cx({
-            'ag-cell-hashed theme-dark:bg-gray-900/40': includes(
-              props.data?.excluded_usages || [],
-              props.colDef.id,
-            ),
+            'ag-cell-hashed theme-dark:bg-gray-900/40':
+              includes(props.data?.excluded_usages || [], props.colDef.id) ||
+              (props.column.getColId() === 'manufacturing_blends' &&
+                includes(['V'], model) &&
+                props.data?.substance_id),
             'ag-flex-cell': props.data?.rowType === 'control',
             'ag-text-center': !includes(['display_name'], props.colDef.field),
           })
@@ -193,7 +189,10 @@ function useGridOptions(props: {
             includes(NON_EDITABLE_ROWS, props.data?.rowType) ||
             includes(['display_name'], props.colDef.field) ||
             includes(['total_usages'], props.colDef.id) ||
-            includes(props.data?.excluded_usages || [], props.colDef.id)
+            includes(props.data?.excluded_usages || [], props.colDef.id) ||
+            (props.column.getColId() === 'manufacturing_blends' &&
+              includes(['V'], model) &&
+              props.data?.substance_id)
           ) {
             return false
           }
