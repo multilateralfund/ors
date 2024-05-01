@@ -33,6 +33,10 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
             (props.column.getColId() === 'manufacturing_blends' &&
               includes(['V'], model) &&
               props.data?.substance_id &&
+              !parseFloat(props.value)) ||
+            (props.column.getColId() === 'production' &&
+              includes(['V'], model) &&
+              props.data?.blend_id &&
               !parseFloat(props.value)),
           'ag-text-center': !includes(['display_name'], props.colDef.field),
         })

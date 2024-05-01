@@ -179,7 +179,10 @@ function useGridOptions(props: {
               includes(props.data?.excluded_usages || [], props.colDef.id) ||
               (props.column.getColId() === 'manufacturing_blends' &&
                 includes(['V'], model) &&
-                props.data?.substance_id),
+                props.data?.substance_id) ||
+              (props.column.getColId() === 'production' &&
+                includes(['V'], model) &&
+                props.data?.blend_id),
             'ag-flex-cell': props.data?.rowType === 'control',
             'ag-text-center': !includes(['display_name'], props.colDef.field),
           })
@@ -192,7 +195,10 @@ function useGridOptions(props: {
             includes(props.data?.excluded_usages || [], props.colDef.id) ||
             (props.column.getColId() === 'manufacturing_blends' &&
               includes(['V'], model) &&
-              props.data?.substance_id)
+              props.data?.substance_id) ||
+            (props.column.getColId() === 'production' &&
+              includes(['V'], model) &&
+              props.data?.blend_id)
           ) {
             return false
           }

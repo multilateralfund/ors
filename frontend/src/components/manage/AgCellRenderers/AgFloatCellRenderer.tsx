@@ -35,6 +35,14 @@ export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
   ) {
     return null
   }
+  if (
+    props.column?.getColId() === 'production' &&
+    includes(['V'], props.context.variant.model) &&
+    props.data?.blend_id &&
+    !parseFloat(props.value)
+  ) {
+    return null
+  }
   if (aggFunc && includes(['subtotal', 'total'], props.data.rowType)) {
     value = fixFloat(aggFunc({ ...props }))
   } else {
