@@ -1,6 +1,6 @@
-import { filter, find, includes, isNull, sum } from 'lodash'
+import { filter, find, includes, isNull } from 'lodash'
 
-import { parseNumber } from '@ors/helpers/Utils/Utils'
+import { parseNumber, sumFloats } from '@ors/helpers/Utils/Utils'
 
 const aggFuncs = {
   sumTotal: (props: any) => {
@@ -21,7 +21,7 @@ const aggFuncs = {
         values.push(value)
       }
     })
-    return values.length > 0 ? sum(values) : 0
+    return values.length > 0 ? sumFloats(values) : 0
   },
   sumTotalUsages: (props: any) => {
     let value: null | number = null
@@ -41,11 +41,13 @@ const aggFuncs = {
 
       if (usageId === 'total_usages') {
         value = parseNumber(
-          sum(recordUsages.map((usage: any) => parseFloat(usage.quantity))),
+          sumFloats(
+            recordUsages.map((usage: any) => parseFloat(usage.quantity)),
+          ),
         )
       } else if (usageId === 'total_refrigeration') {
         value = parseNumber(
-          sum(
+          sumFloats(
             filter(recordUsages, (usage) =>
               includes([6, 7], usage.usage_id),
             ).map((usage: any) => parseFloat(usage.quantity)),
@@ -64,7 +66,7 @@ const aggFuncs = {
         values.push(value)
       }
     })
-    return values.length > 0 ? sum(values) : 0
+    return values.length > 0 ? sumFloats(values) : 0
   },
 }
 

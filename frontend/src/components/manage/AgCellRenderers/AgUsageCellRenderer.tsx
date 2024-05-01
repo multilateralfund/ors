@@ -1,13 +1,16 @@
 'use client'
-import { Tooltip } from '@mui/material'
-import { Typography } from '@mui/material'
+import { Tooltip, Typography } from '@mui/material'
 import { CustomCellRendererProps } from 'ag-grid-react'
-import { each, find, get, includes, isNull, isUndefined, sum } from 'lodash'
+import { each, find, get, includes, isNull, isUndefined } from 'lodash'
 
 import aggFuncs from '@ors/config/Table/aggFuncs'
 
 import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSkeletonCellRenderer'
-import { formatDecimalValue, parseNumber } from '@ors/helpers/Utils/Utils'
+import {
+  formatDecimalValue,
+  parseNumber,
+  sumFloats,
+} from '@ors/helpers/Utils/Utils'
 
 export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
   if (props.data.rowType === 'skeleton') {
@@ -38,7 +41,7 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
         value.push(quantity)
       }
     })
-    value = value.length > 0 ? sum(value) : 0
+    value = value.length > 0 ? sumFloats(value) : 0
   } else if (usageId === 'total_refrigeration') {
     value = []
     each(recordUsages, (usage: any) => {
@@ -47,7 +50,7 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
         value.push(quantity)
       }
     })
-    value = value.length > 0 ? sum(value) : undefined
+    value = value.length > 0 ? sumFloats(value) : undefined
   } else {
     const usage = find(recordUsages, (item) => item.usage_id === usageId)
     value = parseNumber(usage?.quantity)

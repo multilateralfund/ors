@@ -7,7 +7,11 @@ import { get, includes, isNull, isUndefined } from 'lodash'
 import aggFuncs from '@ors/config/Table/aggFuncs'
 
 import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSkeletonCellRenderer'
-import { formatDecimalValue, parseNumber } from '@ors/helpers/Utils/Utils'
+import {
+  fixFloat,
+  formatDecimalValue,
+  parseNumber,
+} from '@ors/helpers/Utils/Utils'
 
 export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
   if (props.data.rowType === 'skeleton') {
@@ -24,7 +28,7 @@ export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
     return null
   }
   if (aggFunc && includes(['subtotal', 'total'], props.data.rowType)) {
-    value = aggFunc({ ...props })
+    value = fixFloat(aggFunc({ ...props }))
   } else {
     value = parseNumber(props.value)
     valueGWP = props.colDef ? props.data[`${props.colDef.field}_gwp`] : null

@@ -203,3 +203,17 @@ export const formatDecimalValue = (
 
   return formatted
 }
+
+export function fixFloat(f: number): number {
+  return parseFloat(f.toFixed(10))
+}
+
+export function sumFloats(fs: number[]): number {
+  let result = 0
+
+  for (let i = 0; i < fs.length; i++) {
+    result += fs[i]
+  }
+
+  return fixFloat(result)
+}
