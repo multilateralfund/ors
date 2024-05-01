@@ -112,21 +112,42 @@ export function validateUncommonSubstance(row: IRow): RowValidatorFuncResult {
 }
 
 function sumRowColumns(row: Record<string, any>, columns: string[]) {
-  return columns.reduce((acc: number, val: string) => {
-    return acc + parseFloat(row[val]) || 0
-  }, 0)
+  let result = 0
+
+  for (let i = 0; i < columns.length; i++) {
+    result += parseFloat(row[columns[i]]) || 0
+  }
+  return result
 }
 
 function sumNumbers(numbers: number[]): number {
-  return numbers.reduce((t, i) => t + i, 0)
+  let result = 0
+
+  for (let i = 0; i < numbers.length; i++) {
+    result += numbers[i]
+  }
+
+  return result
 }
 
 function sumMaybeNumbers(numbers: (number | string)[]): number {
-  return numbers.reduce((t: number, i) => t + (parseFloat(i as string) || 0), 0)
+  let result = 0
+
+  for (let i = 0; i < numbers.length; i++) {
+    result += parseFloat(numbers[i] as string) || 0
+  }
+
+  return result
 }
 
 function sumUsages(usages: IUsage[]) {
-  return sumMaybeNumbers(usages.map((usage) => usage.quantity))
+  const quantites = new Array(usages.length)
+
+  for (let i = 0; i < usages.length; i++) {
+    quantites[i] = usages[i].quantity
+  }
+
+  return sumMaybeNumbers(quantites)
 }
 
 export function validateFacilityName(
