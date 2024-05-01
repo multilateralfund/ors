@@ -3,10 +3,13 @@ import type { ValidationSchema } from './types'
 import {
   validateAnnexENonQPS,
   validateBannedImports,
+  validateBlendComponents,
   validateFacilityName,
+  validateHFC23,
   validateOtherUnidentifiedManufacturing,
   validatePrices,
   validateSectionBOther,
+  validateSectionDFilled,
   validateSectionDTotals,
   validateUncommonSubstance,
   validateUsageTotals,
@@ -84,6 +87,20 @@ const validationSchema: ValidationSchema = {
           'When reporting HFC-41, HFC-134, HFC-143 or HFC-152 - These substances are not commonly used; please check the substance is used while reporting.',
         validator: validateUncommonSubstance,
       },
+      {
+        id: 'validate-blend-components',
+        highlight_cells: {},
+        message:
+          'Where new blends/mixtures containing controlled substances are imported, details relating to the composition of these blends should be provided.',
+        validator: validateBlendComponents,
+      },
+      {
+        id: 'validate-hfc23',
+        highlight_cells: {},
+        message:
+          'For HFC-23 (use) - Data should be provided only for use and supply (i.e., import, production and export).',
+        validator: validateHFC23,
+      },
     ],
   },
   section_c: {
@@ -104,6 +121,13 @@ const validationSchema: ValidationSchema = {
         message:
           'Total for columns under "Amount generated and captured" in Section E should be reported in Section D under the respective column.',
         validator: validateSectionDTotals,
+      },
+      {
+        id: 'validate-section-d-filled',
+        highlight_cells: {},
+        message:
+          'This form should be filled only if the country generated HFC-23 from any facility that produced (manufactured) HCFC (Annex C - Group I) or HFC (Annex F) substances.',
+        validator: validateSectionDFilled,
       },
     ],
   },

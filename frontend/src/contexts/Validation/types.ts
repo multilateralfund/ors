@@ -9,7 +9,9 @@ export interface IRow {
   all_uses?: number | string
   banned_date: null | string
   blend_id: null | number
+  chemical_name?: string
   chemical_note?: string
+  composition?: string
   current_year_price: number
   destruction?: number | string
   display_name: string

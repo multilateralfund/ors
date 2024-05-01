@@ -1,5 +1,6 @@
 import type {
   IRow,
+  IUsage,
   RowValidatorFuncContext,
   RowValidatorFuncResult,
 } from './types'
@@ -120,6 +121,14 @@ function sumNumbers(numbers: number[]): number {
   return numbers.reduce((t, i) => t + i, 0)
 }
 
+function sumMaybeNumbers(numbers: (number | string)[]): number {
+  return numbers.reduce((t: number, i) => t + (parseFloat(i as string) || 0), 0)
+}
+
+function sumUsages(usages: IUsage[]) {
+  return sumMaybeNumbers(usages.map((usage) => usage.quantity))
+}
+
 export function validateFacilityName(
   row: IRow,
   { form }: RowValidatorFuncContext,
@@ -150,7 +159,7 @@ export function validateSectionDTotals(
     ),
   )
 
-  if (lTotal != eTotal) {
+  if (eTotal && lTotal != eTotal) {
     const eA = sumNumbers(
       form.section_e.flatMap((row) => row.all_uses) as number[],
     )
@@ -175,6 +184,32 @@ export function validateSectionDTotals(
     return { highlight_cells, row: row.display_name }
   }
 }
+export function validateSectionDFilled(
+  row: IRow,
+  { form }: RowValidatorFuncContext,
+): RowValidatorFuncResult {
+  const lTotal = sumRowColumns(row, ['all_uses', 'destruction', 'feedstock'])
+
+  if (lTotal) {
+    const substances =
+      [form.section_a, form.section_b].flatMap((rows) =>
+        rows.filter((row) => {
+          const hasUsages =
+            sumUsages((row.record_usages as unknown as IUsage[]) || []) > 0
+          return (
+            (hasUsages && row.group?.startsWith('Annex C, Group I')) ||
+            row.group?.startsWith('Annex F')
+          )
+        }),
+      ).length > 0
+    if (!substances) {
+      const highlight_cells = ['all_uses', 'destruction', 'feedstock'].filter(
+        (name) => parseFloat((row as any)[name]),
+      )
+      return { highlight_cells, row: row.display_name }
+    }
+  }
+}
 
 export function validateSectionBOther(
   row: IRow,
@@ -184,5 +219,58 @@ export function validateSectionBOther(
   const valueOther = (row as any)[`usage_${usageOther}`] || 0
   if (valueOther && !row.remarks) {
     return { highlight_cells: ['remarks'], row: row.display_name }
+  }
+}
+
+export function validateBlendComponents(
+  row: IRow,
+  { form }: RowValidatorFuncContext,
+): RowValidatorFuncResult {
+  const isBlend = !!row.blend_id
+
+  const components = row.composition?.split(';').map((comp) =>
+    comp
+      .substring(0, comp.lastIndexOf(comp.includes('=') ? '=' : '-')) // CustMix has format like "CFC-11-50%", while other blends have format like "HCFC-22=60%"
+      .trim(),
+  )
+
+  const substances = [form.section_a, form.section_b].flatMap((rows) =>
+    rows
+      .filter(
+        (row) =>
+          sumUsages((row.record_usages as unknown as IUsage[]) || []) > 0,
+      )
+      .map((row) => row.chemical_name),
+  )
+  const allComponentsReported =
+    components?.filter((comp) => substances.includes(comp)).length ==
+    components?.length
+
+  if (isBlend && !allComponentsReported) {
+    return { row: row.display_name }
+  }
+}
+
+export function validateHFC23(row: IRow): RowValidatorFuncResult {
+  if (row.chemical_name === 'HFC-23') {
+    const hasUsages = sumUsages(row.record_usages) > 0
+    const hasExtra =
+      sumMaybeNumbers([row.manufacturing_blends || 0, row.import_quotas]) > 0
+
+    if (hasUsages || hasExtra) {
+      const highlight_cells = [
+        hasExtra
+          ? ['manufacturing_blends', 'import_quotas'].filter(
+              (name) => (row as any)[name],
+            )
+          : [],
+        hasUsages
+          ? Object.keys(row).filter(
+              (key) => key.startsWith('usage_') && (row as any)[key],
+            )
+          : [],
+      ].flat()
+      return { highlight_cells, row: row.display_name }
+    }
   }
 }
