@@ -22,6 +22,12 @@ export type YearRangeWidgetProps = {
   value?: number[]
 }
 
+function inRange(start: number, end: number, number: number) {
+  const range = [start, end]
+  range.sort()
+  return number >= range[0] && number <= range[1]
+}
+
 const EmDashSvg = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     fill="none"
@@ -74,20 +80,16 @@ const PopoverWindow = ({
   }, [curPage, setCurPage])
 
   const handleClickYear = (year: number) => {
-    let newRange = [...selectedRange]
-    const [rangeStart, rangeEnd] = newRange
+    const newRange = [year]
 
-    if (!rangeStart) {
-      newRange = [year]
-    } else if (!rangeEnd && year >= rangeStart) {
-      newRange = [newRange[0], year]
-    } else if (rangeStart && rangeEnd) {
-      newRange = [year]
+    if (selectedRange.length === 1) {
+      newRange.splice(0, 0, ...selectedRange)
+      newRange.sort()
     }
 
     setSelectedRange(newRange)
 
-    if (onChange && newRange[0] && newRange[1]) {
+    if (onChange && newRange.length == 2) {
       onChange(newRange)
     }
   }
@@ -132,20 +134,25 @@ const PopoverWindow = ({
           {rangeEnd || 'to'}
         </div>
       </div>
-      <div className="grid w-full grid-flow-row grid-cols-4 grid-rows-3 justify-items-center">
+      <div className="grid w-full grid-flow-row grid-cols-4 grid-rows-3 justify-items-center gap-1">
         {pagedYears[curPage].map((y) => {
           const includedInRange =
             rangeStart && rangeEnd && y >= rangeStart && y <= rangeEnd
           const highlightTentative =
-            rangeStart && hoverYear && y <= hoverYear && y >= rangeStart
+            rangeStart &&
+            !rangeEnd &&
+            hoverYear &&
+            inRange(rangeStart, hoverYear, y)
 
           return (
             <div
               key={y}
               className={cx('w-full cursor-pointer rounded-md px-4 py-3', {
                 'bg-mlfs-hlYellow': includedInRange || highlightTentative,
-                'hover:bg-gray-100': !openRange,
+                'hover:bg-gray-100': !openRange && !includedInRange,
                 'hover:bg-mlfs-hlYellow': openRange && y >= rangeStart,
+                'hover:outline hover:outline-mlfs-hlYellowTint':
+                  !openRange && includedInRange,
               })}
               onClick={() => handleClickYear(y)}
               onMouseEnter={() => setHoverYear(y)}
