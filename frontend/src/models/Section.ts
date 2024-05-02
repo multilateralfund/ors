@@ -162,7 +162,7 @@ export default class Section<DeserializedData, FormFields> {
   }
 
   public transformApiBlend(blend: ApiBlend, mandatory?: boolean) {
-    const transformed: Record<string, any> & ApiBlend = {
+    const transformed: ApiBlend & Record<string, any> = {
       ...blend,
       blend_id: blend.id,
       display_name: `${blend.name} (${blend.composition})`,
@@ -179,7 +179,7 @@ export default class Section<DeserializedData, FormFields> {
   }
 
   public transformApiSubstance(substance: ApiSubstance, mandatory?: boolean) {
-    const transformed: Record<string, any> & ApiSubstance = {
+    const transformed: ApiSubstance & Record<string, any> = {
       ...substance,
       display_name: substance.name,
       mandatory: false,
@@ -197,7 +197,7 @@ export default class Section<DeserializedData, FormFields> {
   }
 
   public transformBlend(blend: EmptyFormSubstance, mandatory?: boolean) {
-    const transformed: Record<string, any> & EmptyFormSubstance = {
+    const transformed: EmptyFormSubstance & Record<string, any> = {
       ...blend,
       display_name: blend.chemical_name,
       row_id: `blend_${blend.blend_id}`,
@@ -216,7 +216,7 @@ export default class Section<DeserializedData, FormFields> {
     substance: EmptyFormSubstance,
     mandatory?: boolean,
   ) {
-    const transformed: Record<string, any> & EmptyFormSubstance = {
+    const transformed: EmptyFormSubstance & Record<string, any> = {
       ...substance,
       display_name: substance.chemical_name,
       mandatory: false,

@@ -25,11 +25,11 @@ function getInput(element: HTMLInputElement) {
 export const CellAutocompleteWidget = memo(
   forwardRef(
     (
-      props: AutocompleteWidgetProps &
-        ICellEditorParams & {
-          agFormatValue?: (value: any) => any
-          getOptions?: (params: ICellEditorParams) => any
-        },
+      props: {
+        agFormatValue?: (value: any) => any
+        getOptions?: (params: ICellEditorParams) => any
+      } & AutocompleteWidgetProps &
+        ICellEditorParams,
       ref,
     ) => {
       const [value, setValue] = useState(props.value)

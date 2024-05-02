@@ -29,7 +29,7 @@ function getGroupName(substance: any, model: string) {
   return substance.group || 'Other'
 }
 
-export type RowData = DeserializedDataB & {
+export type RowData = {
   count?: number
   display_name?: string
   group?: string
@@ -37,7 +37,7 @@ export type RowData = DeserializedDataB & {
   row_id: string
   rowType: string
   tooltip?: boolean
-}
+} & DeserializedDataB
 
 function getRowData(
   report: CPReport,

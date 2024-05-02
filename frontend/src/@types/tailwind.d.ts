@@ -29,7 +29,7 @@ export type ColorRecordType = Record<
   string
 >
 
-export type Colors = DefaultColors & {
+export type Colors = {
   action: {
     active: ColorRecordType
     disabled: ColorRecordType
@@ -49,13 +49,13 @@ export type Colors = DefaultColors & {
   primary: ColorRecordType
   secondary: ColorRecordType
   success: ColorRecordType
-  typography: ColorRecordType & {
+  typography: {
     disabled: ColorRecordType
     primary: ColorRecordType
     secondary: ColorRecordType
-  }
+  } & ColorRecordType
   warning: ColorRecordType
-}
+} & DefaultColors
 
 export interface ThemeConfig extends DefaultTheme {
   colors: Colors

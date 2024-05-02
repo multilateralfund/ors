@@ -10,11 +10,11 @@ import { robotoCondensed } from '@ors/themes/fonts'
 import BackArrow from './back-arrow.svg'
 import NextArrow from './next-arrow.svg'
 
-type PaginationProps = MuiPaginationProps & {
+type PaginationProps = {
   loading?: boolean
   onPaginationChanged?: (page?: number, rowsPerPage?: number) => void
   rowsPerPage?: number
-}
+} & MuiPaginationProps
 
 export function Pagination({
   className,

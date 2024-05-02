@@ -1,10 +1,10 @@
 import { DeserializedDataC } from '@ors/models/SectionC'
 
-export type RowData = DeserializedDataC & {
+export type RowData = {
   count?: number
   rowType?: string
   tooltip?: boolean
-}
+} & DeserializedDataC
 
 export type SubstancePrice = {
   blend_id: null | number

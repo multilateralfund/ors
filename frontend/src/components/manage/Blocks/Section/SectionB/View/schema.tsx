@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
 import { CellClassParams, GridOptions } from 'ag-grid-community'
-import { ColDef } from 'ag-grid-community/dist/lib/main'
+import { ColDef } from 'ag-grid-community/dist/types/main'
 import cx from 'classnames'
 import { includes } from 'lodash'
 

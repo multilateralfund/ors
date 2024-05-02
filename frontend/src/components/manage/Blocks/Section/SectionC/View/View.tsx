@@ -15,12 +15,12 @@ import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-export type RowData = DeserializedDataC & {
+export type RowData = {
   count?: number
   id?: number
   rowType?: string
   tooltip?: boolean
-}
+} & DeserializedDataC
 
 function getRowData(
   report: any,
@@ -68,14 +68,14 @@ function getRowData(
 
 export default function SectionCView(props: {
   Comments: React.FC<{ section: string }>
-  TableProps: ITableProps & {
+  TableProps: {
     context: {
       section: SectionC['data']
       variant: ReportVariant
     }
     report: CPReport
     section: SectionC['data']
-  }
+  } & ITableProps
   report: CPReport
   showComments: boolean
   variant: ReportVariant

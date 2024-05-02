@@ -11,10 +11,10 @@ import { defaultWidget, widgetsMapping } from './Widgets'
 import baseConfig, { BaseConfig } from './base'
 
 export interface Config extends BaseConfig {
-  settings: BaseConfig['settings'] & {
+  settings: {
     defaultView: { layout: string; path: string }
     views: Array<{ layout: string; path: string }>
-  }
+  } & BaseConfig['settings']
   table: {
     aggFuncs: Record<string, (props: any) => any>
     components: Record<string, React.FC<any>>

@@ -52,7 +52,7 @@ type Pagination = {
   rowsPerPageOptions?: Array<number>
 }
 
-export type TableProps = AgGridReactProps & {
+export type TableProps = {
   Toolbar?: React.FC<any>
   enableFullScreen?: boolean
   errors?: any
@@ -61,7 +61,7 @@ export type TableProps = AgGridReactProps & {
   paginationPageSizeSelector?: Array<number>
   rowsVisible?: number
   withFluidEmptyColumn?: boolean
-}
+} & AgGridReactProps
 
 function cloneStyle(original: Element, clone: Element) {
   clone.setAttribute('style', original.getAttribute('style') || '')

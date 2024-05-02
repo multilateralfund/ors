@@ -20,8 +20,8 @@ export type ApiBlend = {
   type: string
 }
 
-export type ApiCreatedBlend = ApiBlend & {
+export type ApiCreatedBlend = {
   created: boolean
   is_legacy: boolean
   remarks: null | string
-}
+} & ApiBlend

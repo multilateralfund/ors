@@ -108,7 +108,7 @@ function IconButton({
   active,
   className,
   ...rest
-}: ButtonProps & { active?: boolean }) {
+}: { active?: boolean } & ButtonProps) {
   const isActive = isUndefined(active) || !!active
 
   return (

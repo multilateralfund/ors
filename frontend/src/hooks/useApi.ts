@@ -9,13 +9,13 @@ import { isFunction } from 'lodash'
 import { fetcher } from '@ors/helpers/Api/Api'
 import { debounce } from '@ors/helpers/Utils/Utils'
 
-export type ApiSettings = IApi & {
+export type ApiSettings = {
   onError?: any
   onPending?: any
   onSuccess?: any
   onSuccessNoCatch?: any
   parseParams?: any
-}
+} & IApi
 
 export default function useApi<DT = DataType>(
   props: ApiSettings,

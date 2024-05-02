@@ -20,9 +20,9 @@ export default function ThemeProvider({
   options,
 }: {
   children: React.ReactNode
-  options: Partial<OptionsOfCreateCache> & {
+  options: {
     enableCssLayer?: boolean
-  }
+  } & Partial<OptionsOfCreateCache>
 }) {
   const theme: ThemeSlice = useStore((state) => state.theme)
 

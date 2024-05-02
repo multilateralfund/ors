@@ -11,7 +11,7 @@ function Label({
   className,
   label,
   ...rest
-}: InputLabelProps & { label?: React.ReactNode }) {
+}: { label?: React.ReactNode } & InputLabelProps) {
   return (
     !!label && (
       <MuiInputLabel className={cx('mb-2', className)} htmlFor={id} {...rest}>
@@ -20,9 +20,9 @@ function Label({
     )
   )
 }
-export type TextareaWidgetProps = TextareaAutosizeProps & {
-  InputLabel?: InputLabelProps & { label?: React.ReactNode }
-}
+export type TextareaWidgetProps = {
+  InputLabel?: { label?: React.ReactNode } & InputLabelProps
+} & TextareaAutosizeProps
 
 const TextareaWidget = forwardRef(
   (

@@ -8,9 +8,9 @@ import { Button, Link as MuiLink } from '@mui/material'
 import cx from 'classnames'
 import NextLink, { LinkProps as NextLinkProps } from 'next/link'
 
-export type LinkProps = MuiLinkProps &
-  NextLinkProps & { button?: false; href: string }
-export type ButtonProps = MuiButtonProps & { button: true; href: string }
+export type LinkProps = { button?: false; href: string } & MuiLinkProps &
+  NextLinkProps
+export type ButtonProps = { button: true; href: string } & MuiButtonProps
 
 function Link({
   button,

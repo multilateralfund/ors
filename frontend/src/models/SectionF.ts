@@ -6,7 +6,7 @@ export type SectionFFormFields = {
   remarks?: string
 }
 
-export type DeserializedDataF = SectionFFormFields & { [key: string]: any }
+export type DeserializedDataF = { [key: string]: any } & SectionFFormFields
 
 export default class SectionF {
   private data: DeserializedDataF = {

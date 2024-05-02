@@ -10,7 +10,7 @@ export default function Image({
   onLoad,
   useSkeleton,
   ...rest
-}: ImageProps & { Skeleton?: SkeletonProps; useSkeleton?: boolean }) {
+}: { Skeleton?: SkeletonProps; useSkeleton?: boolean } & ImageProps) {
   const skeletonId = id && `${id}-skeleton`
   const imageId = id && `${id}-image`
 

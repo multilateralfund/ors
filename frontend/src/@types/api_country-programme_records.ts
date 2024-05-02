@@ -13,6 +13,18 @@ type cp_report = {
   year: number
 }
 type ApiBase = {
+  [key in 'adm_b' | 'adm_c' | 'adm_d']?: {
+    row_id: number
+    row_text: string
+    values: {
+      column_id: number
+      id: number
+      row_id: number
+      value_choice_id: null | number
+      value_text: string
+    }[]
+  }[]
+} & {
   [key in 'section_a' | 'section_b']: {
     banned_date: null | string
     blend_id: null | number
@@ -49,18 +61,6 @@ type ApiBase = {
     remarks: null | string
     row_id: string
     substance_id: number
-  }[]
-} & {
-  [key in 'adm_b' | 'adm_c' | 'adm_d']?: {
-    row_id: number
-    row_text: string
-    values: {
-      column_id: number
-      id: number
-      row_id: number
-      value_choice_id: null | number
-      value_text: string
-    }[]
   }[]
 } & {
   comments: CommentData[]
@@ -118,5 +118,5 @@ type ApiBase = {
 }
 
 // The server response contains the cp_report property which is destructured into the root by the client.
-export type ApiCPReport = ApiBase & { cp_report: cp_report }
+export type ApiCPReport = { cp_report: cp_report } & ApiBase
 export type CPReport = ApiBase & cp_report

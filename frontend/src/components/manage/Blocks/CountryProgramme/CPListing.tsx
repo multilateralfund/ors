@@ -167,7 +167,7 @@ const CountryItem = (props: any) => {
 }
 
 const CountrySection = function CountrySection(
-  props: SectionProps & { countryApi: any },
+  props: { countryApi: any } & SectionProps,
 ) {
   const { countryApi, filters, maxYear, minYear, setFilters, user_type } = props
   const [pagination, setPagination] = useState({

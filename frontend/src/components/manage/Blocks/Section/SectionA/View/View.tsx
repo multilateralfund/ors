@@ -17,7 +17,7 @@ import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-export type RowData = DeserializedDataA & {
+export type RowData = {
   count?: number
   display_name?: string
   field?: string
@@ -26,7 +26,7 @@ export type RowData = DeserializedDataA & {
   row_id: string
   rowType: string
   tooltip?: boolean
-}
+} & DeserializedDataA
 
 function getRowData(report: CPReport, showOnlyReported: boolean): RowData[] {
   let rowData: RowData[] = []

@@ -18,13 +18,13 @@ export type CreateSliceProps = {
   set: StoreApi<StoreState>['setState']
 }
 
-type Report = SliceData<CPReport | null, Record<string, any> | null> & {
+type Report = {
   country?: Country
   emptyForm: SliceData<EmptyFormType, Record<string, any> | null>
   files?: SliceData<File[]>
   variant?: ReportVariant
   versions: SliceData<CPVersionInfo[]>
-}
+} & SliceData<CPReport | null, Record<string, any> | null>
 
 export interface SettingsSlice {
   host: null | string
@@ -143,9 +143,9 @@ export type StoreState = {
 }
 
 // Initial store state
-export type InitialStoreState = PartialDeep<StoreState> & {
+export type InitialStoreState = {
   connection?: null | string
-}
+} & PartialDeep<StoreState>
 
 export type Country = {
   abbr: string

@@ -10,7 +10,7 @@ function Label({
   className,
   label,
   ...rest
-}: InputLabelProps & { label?: React.ReactNode }) {
+}: { label?: React.ReactNode } & InputLabelProps) {
   return (
     !!label && (
       <MuiInputLabel className={cx('mb-2', className)} htmlFor={id} {...rest}>
@@ -19,9 +19,9 @@ function Label({
     )
   )
 }
-export type TextWidgetProps = TextFieldProps & {
-  InputLabel?: InputLabelProps & { label?: React.ReactNode }
-}
+export type TextWidgetProps = {
+  InputLabel?: { label?: React.ReactNode } & InputLabelProps
+} & TextFieldProps
 
 const TextWidget = forwardRef(function TextWidget(
   { InputLabel, className, ...rest }: TextWidgetProps,

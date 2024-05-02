@@ -26,7 +26,7 @@ export interface IAgHeaderParams extends IHeaderParams {
   className?: string
   colDef: ColDef
   details: ReactNode
-  footnote?: Note & { icon?: boolean }
+  footnote?: { icon?: boolean } & Note
   tooltip: boolean | string
 }
 
