@@ -93,20 +93,48 @@ function getInitialRowData({ rowData, rowsVisible, withSkeleton }: any) {
 
 function setupFixedHeaderObserver(agHeader: HTMLDivElement) {
   const agHeaderParent = agHeader.parentElement as HTMLDivElement
+  const agHeaderParentInitialPadding = agHeaderParent.style.paddingTop
+  const agHeaderScroll = agHeaderParent.querySelector(
+    '.ag-body-horizontal-scroll',
+  ) as HTMLDivElement
   const agHeaderIntialWidth = agHeader.style.width
+
+  const rectScroll = agHeaderScroll.getBoundingClientRect()
+  const rectHeader = agHeader.getBoundingClientRect()
 
   const observer = new IntersectionObserver(
     ([entry]) => {
-      if (entry.intersectionRatio && entry.intersectionRect.top == 0) {
-        agHeader.classList.add('fixed', 'top-0', 'z-10')
+      if (entry.intersectionRatio && entry.intersectionRect.top < 10) {
+        agHeaderScroll.style.top = '0'
+        agHeaderScroll.style.setProperty('position', 'fixed', 'important')
+        agHeaderScroll.style.setProperty('z-index', '10', 'important')
+        agHeaderScroll.style.setProperty('background', 'white')
+        agHeaderScroll.style.width = `${entry.boundingClientRect.width}px`
+
         agHeader.style.width = `${entry.boundingClientRect.width}px`
+        // setting style directly instead of class, seems to be much more responsive
+        agHeader.style.top = `${rectScroll.height}px`
+        agHeader.style.position = 'fixed'
+        agHeader.style.zIndex = '10'
+
+        agHeaderParent.style.paddingTop = `${rectHeader.height + rectScroll.height}px`
       } else {
-        agHeader.classList.remove('fixed', 'top-0', 'z-10')
         agHeader.style.width = agHeaderIntialWidth
+        agHeader.style.top = ''
+        agHeader.style.position = ''
+        agHeader.style.zIndex = ''
+
+        agHeaderScroll.style.removeProperty('top')
+        agHeaderScroll.style.removeProperty('position')
+        agHeaderScroll.style.removeProperty('zIndex')
+        agHeaderScroll.style.removeProperty('background')
+        agHeaderScroll.style.removeProperty('width')
+
+        agHeaderParent.style.paddingTop = agHeaderParentInitialPadding
       }
     },
     {
-      threshold: range(0.0, 1.0, 0.01),
+      threshold: range(1, 101).map((v) => v / 100), // [..., 0.09, 0.1] instead of [..., 0.09, 0.09999999...]
     },
   )
   observer.observe(agHeaderParent)
