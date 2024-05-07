@@ -411,7 +411,7 @@ export default function SectionBCreate(props: {
             <Divider className="mb-2" />
             {includes(['V'], variant.model) ? (
               <>
-                <Typography>Mandatory / usual blends</Typography>
+                <Typography>Mandatory / usual substances and blends</Typography>
                 <Field
                   getOptionLabel={(option: any) => option.display_name}
                   groupBy={(option: any) => option.group}
