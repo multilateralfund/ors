@@ -471,7 +471,7 @@ export default function SectionBCreate(props: {
                   className="rounded-lg border-[1.5px] border-solid border-transparent bg-[#f2f2f2] p-2.5 text-base text-[#4d4d4d] hover:border-primary"
                   onClick={closeModal}
                 >
-                  Cancel
+                  Close
                 </Button>
               </>
             )}
