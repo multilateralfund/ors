@@ -1,4 +1,5 @@
 x-environment:
+  &default-env-vars
   CELERY_BROKER_URL: "amqp://rabbitmq:5672"
   CELERY_RESULT_BACKEND: "redis://redis:6379"
 
@@ -55,6 +56,7 @@ services:
   celery:
     build: .
     command: celery -A multilateralfund worker --beat -l info
+    environment: *default-env-vars
     env_file:
       - .env
     depends_on:
