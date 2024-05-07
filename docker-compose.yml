@@ -54,7 +54,9 @@ services:
     image: redis:alpine
 
   celery:
-    build: .
+    build:
+      context: .
+      dockerfile: docker/app.docker
     command: celery -A multilateralfund worker --beat -l info
     environment: *default-env-vars
     env_file:
