@@ -346,11 +346,11 @@ export default function SectionCCreate(props: {
               component="h2"
               variant="h6"
             >
-              Select chemical
+              Add substance/blend
             </Typography>
             {includes(['V'], variant.model) ? (
               <>
-                <Typography>Mandatory / usual substances</Typography>
+                <Typography>Mandatory / usual substances and blends</Typography>
                 <Field
                   Input={{ autoComplete: 'off' }}
                   getOptionLabel={(option: any) => option.display_name}
