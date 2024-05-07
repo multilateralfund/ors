@@ -1,8 +1,3 @@
-x-environment:
-  &default-env-vars
-  CELERY_BROKER_URL: "amqp://rabbitmq:5672"
-  CELERY_RESULT_BACKEND: "redis://redis:6379"
-
 services:
   postgres:
     image: postgres:15
@@ -54,11 +49,11 @@ services:
     image: redis:alpine
 
   celery:
-    build:
-      context: .
-      dockerfile: docker/app.docker
+    image: ghcr.io/multilateralfund/multilateralfund-app:${DOCKER_TAG:-latest}
     command: celery -A multilateralfund worker --beat -l info
-    environment: *default-env-vars
+    environment:
+      - CELERY_BROKER_URL=amqp://rabbitmq:5672
+      - CELERY_RESULT_BACKEND=redis://redis:6379
     env_file:
       - .env
     depends_on:
