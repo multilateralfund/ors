@@ -64,7 +64,9 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
 
         if self.request.method == "PUT":
             return cp_reports.select_for_update()
-        return cp_reports.select_related("country").order_by("name")
+        return cp_reports.select_related(
+            "country", "created_by", "version_created_by"
+        ).order_by("name")
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -518,7 +520,7 @@ class CPReportGroupByYearView(generics.ListAPIView):
             }
 
         queryset = (
-            queryset.select_related("country", "created_by")
+            queryset.select_related("country", "created_by", "version_created_by")
             .annotate(
                 row_number=Window(
                     expression=RowNumber(),
