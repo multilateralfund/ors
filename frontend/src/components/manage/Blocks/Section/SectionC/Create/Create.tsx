@@ -290,7 +290,7 @@ export default function SectionCCreate(props: {
             className="rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
             onClick={() => setAddChemicalModal(true)}
           >
-            Add chemical <IoAddCircle className="ml-1.5" size={18} />
+            Add substance/blend <IoAddCircle className="ml-1.5" size={18} />
           </Button>
         </div>
       )}
