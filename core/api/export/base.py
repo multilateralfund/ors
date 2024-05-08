@@ -98,7 +98,10 @@ class BaseWriter:
             self.sheet.row_dimensions[row].height = ROW_HEIGHT
 
     def _compute_header_positions(self, items, column=1, row=3):
-        """Compute the positions of the headers depending on their hierarchy."""
+        """
+        Compute the positions of the headers depending on their hierarchy.
+        And transform headers list in a dictionary where the key is the header id.
+        """
         for item in items:
             # Keep track of the start column, as the header might span over many
             # columns if it has more than one child; for those cases, the cells need

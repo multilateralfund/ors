@@ -25,7 +25,7 @@ from core.api.views.cp_archive import (
 )
 from core.api.views.cp_files import CPFilesDownloadView, CPFilesView
 from core.api.views.cp_prices import CPPricesView
-from core.api.views.cp_records_export import CPEmptyExportView
+from core.api.views.cp_records_export import CPEmptyExportView, CPHFCExportView
 from core.api.views.cp_reports import (
     CPReportStatusUpdateView,
     CPReportView,
@@ -159,6 +159,11 @@ urlpatterns = [
         "country-programme/export/",
         CPRecordExportView.as_view(),
         name="country-programme-export",
+    ),
+    path(
+        "country-programme/hfc/export/",
+        CPHFCExportView.as_view(),
+        name="country-programme-hfc-export",
     ),
     path(
         "country-programme/export-empty/",
