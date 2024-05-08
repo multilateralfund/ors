@@ -298,6 +298,7 @@ class CPReportCreateSerializer(serializers.Serializer):
 
         if not self.context.get("from_update"):
             self._create_history(cp_report, request_user)
-            send_mail_report_submit.delay(cp_report.id)  # send mail to MLFS
+            if cp_report.status == CPReport.CPReportStatus.FINAL:
+                send_mail_report_submit.delay(cp_report.id)  # send mail to MLFS
 
         return cp_report

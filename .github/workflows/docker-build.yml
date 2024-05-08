@@ -20,6 +20,8 @@ jobs:
             image: ghcr.io/multilateralfund/multilateralfund-nextjs
           - dockerfile: ./docker/nginx.docker
             image: ghcr.io/multilateralfund/multilateralfund-nginx
+          - dockerfile: ./docker/celery.docker
+            image: ghcr.io/multilateralfund/multilateralfund-celery
 
     permissions:
       contents: read

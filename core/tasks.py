@@ -52,7 +52,7 @@ def send_mail_report_submit(cp_report_id):
             f"New report added for {cp_report.country}",
             (
                 f"Hello!\n\n"
-                f"Report version {cp_report.version} ({cp_report.status}) "
+                f"Report version {cp_report.version} "
                 f"was created for {cp_report.country} {cp_report.year}.\n"
                 f"Link: {link}"
             ),

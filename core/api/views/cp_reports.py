@@ -388,7 +388,9 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
 
         current_obj.delete()
 
-        send_mail_report_submit.delay(new_instance.id)  # send mail to MLFS
+        if new_instance.status == CPReport.CPReportStatus.FINAL:
+            send_mail_report_submit.delay(new_instance.id)  # send mail to MLFS
+
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 

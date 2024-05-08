@@ -49,13 +49,16 @@ services:
     image: redis:alpine
 
   celery:
-    image: ghcr.io/multilateralfund/multilateralfund-app:${DOCKER_TAG:-latest}
+    image: ghcr.io/multilateralfund/multilateralfund-celery:${DOCKER_TAG:-latest}
     command: celery -A multilateralfund worker --beat -l info
     environment:
       - CELERY_BROKER_URL=amqp://rabbitmq:5672
       - CELERY_RESULT_BACKEND=redis://redis:6379
+      - DJANGO_DEBUG=false
     env_file:
       - .env
+    volumes:
+      - app_data:/app/.fs
     depends_on:
       - postgres
       - redis
