@@ -199,13 +199,20 @@ const ReportInfoCreate = (props: any) => {
               <CountrySelect />
             </div>
           </div>
-          <SimpleInput
-            id="report_year"
-            defaultValue={isEdit ? report.year : form.year}
-            disabled={true}
-            label="Reporting for year"
-            type="number"
-          />
+          <div>
+            <label
+              className="mb-2 block text-lg font-normal text-gray-900"
+              htmlFor={isEdit ? undefined : 'year'}
+            >
+              Reporting for year
+            </label>
+            <Field
+              id={isEdit ? undefined : 'year'}
+              FieldProps={{ className: 'mb-0 ReportInfo' }}
+              defaultValue={isEdit ? report.year : null}
+              disabled={isEdit}
+            />
+          </div>
         </div>
         <FileInput form={form} setForm={setForm} />
         {isEdit && (
