@@ -44,6 +44,7 @@ import {
   CPCreateTableProps,
   FormErrors,
   WidgetCountry,
+  WidgetYear,
 } from './typesCPCreate'
 
 import { IoClose, IoExpand, IoLink } from 'react-icons/io5'
@@ -284,7 +285,7 @@ const CPCreate: React.FC = () => {
     [variant],
   )
 
-  const fieldProps = {
+  const countryFieldProps = {
     id: 'country',
     Input: {
       error: !!errors.country_id,
@@ -302,6 +303,32 @@ const CPCreate: React.FC = () => {
     },
     options: countries,
     value: form.country,
+    widget: 'autocomplete',
+  }
+
+  const yearOptions = useMemo(() => {
+    const lastYear = new Date().getFullYear() - 1
+    return Array.from(
+      { length: lastYear - 2023 + 1 },
+      (_, i) => lastYear - i,
+    ).map((year) => ({
+      id: year,
+      label: `${year}`,
+    }))
+  }, [])
+  const yearFieldProps = {
+    id: 'year',
+    Input: {
+      error: !!errors.year,
+      helperText: errors.year?.general_error,
+    },
+    disabled: existingReports.loading,
+    name: 'year',
+    onChange: (_event: any, value: WidgetYear) => {
+      setForm((oldForm) => ({ ...oldForm, year: value.id }))
+    },
+    options: yearOptions,
+    value: { id: form.year, label: `${form.year}` },
     widget: 'autocomplete',
   }
 
@@ -638,9 +665,9 @@ const CPCreate: React.FC = () => {
                   <FootnotesProvider>
                     <Section
                       Section={get(Sections, section.id)}
+                      countryFieldProps={countryFieldProps}
                       emptyForm={report.emptyForm.data || {}}
                       errors={errors}
-                      fieldProps={fieldProps}
                       form={form}
                       isCreate={true}
                       report={report.data}
@@ -648,6 +675,7 @@ const CPCreate: React.FC = () => {
                       sectionsChecked={sectionsChecked}
                       setForm={setForm}
                       variant={variant}
+                      yearFieldProps={yearFieldProps}
                       TableProps={{
                         ...TableProps,
                         context: { section, variant },

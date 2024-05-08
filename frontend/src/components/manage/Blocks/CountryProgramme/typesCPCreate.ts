@@ -23,6 +23,12 @@ export interface WidgetCountry {
   id: number
   label: string
 }
+
+export interface WidgetYear {
+  id: number
+  label: string
+}
+
 type FormError = Record<string, string>
 export type FormErrors = Record<string, FormError>
 export interface CPCreateTableProps extends TableProps {
