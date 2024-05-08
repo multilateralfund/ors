@@ -4,6 +4,7 @@ import { Alert } from '@mui/material'
 
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
+import Footnote from '@ors/components/ui/Footnote/Footnote'
 
 import useGridOptions from './schema'
 
@@ -29,6 +30,9 @@ export default function SectionEView(props: any) {
   return (
     <>
       <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnote id="" index="">
+          Facility name must be provided if data in Section D is provided
+        </Footnote>
         <Footnotes />
       </Alert>
       <Table
