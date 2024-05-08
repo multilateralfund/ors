@@ -79,7 +79,86 @@ const SortBy = (props: Omit<SimpleSelectProps, 'label'>) => (
   <SimpleSelect className="min-w-52" label="Sort by" {...props} />
 )
 
-const CountryItem = (props: any) => {
+const CountryYearFilterPills = (props: any) => {
+  type paginationType = {
+    page: number
+    rowsPerPage: number
+  }
+
+  const { filters, maxYear, minYear, setFilters, setPagination, setParams } =
+    props
+
+  const countries = useStore((state) => {
+    return state.common.countries_for_listing.data
+  })
+  const countriesById = new Map<number, any>(
+    countries.map((country: any) => [country.id, country]),
+  )
+
+  return (
+    <div className="my-6 flex gap-4">
+      {filters.country.map((countryId: number) => (
+        <Typography
+          key={countryId}
+          className="inline-flex items-center gap-2 rounded bg-gray-200 px-4 font-normal theme-dark:bg-gray-700/20"
+          component="p"
+          variant="h6"
+        >
+          {countriesById.get(countryId)?.name}
+          <IoClose
+            className="cursor-pointer"
+            size={20}
+            onClick={() => {
+              const values = filters.country || []
+              const newValue = filter(values, (value) => value !== countryId)
+              setFilters({
+                country: newValue,
+              })
+              setPagination((pagination: paginationType) => ({
+                ...pagination,
+                page: 1,
+              }))
+              setParams({
+                country_id: newValue.join(','),
+                offset: 0,
+              })
+            }}
+          />
+        </Typography>
+      ))}
+      {(filters.range[0] > minYear || filters.range[1] < maxYear) && (
+        <Typography
+          className="inline-flex items-center gap-2 bg-gray-200 px-4 font-normal theme-dark:bg-gray-700/20"
+          component="p"
+          variant="h6"
+        >
+          {filters.range[0]} - {filters.range[1]}
+          <IoClose
+            className="cursor-pointer"
+            size={20}
+            onClick={() => {
+              setFilters({
+                range: [minYear, maxYear],
+                year: [],
+              })
+              setPagination((pagination: paginationType) => ({
+                ...pagination,
+                page: 1,
+              }))
+              setParams({
+                offset: 0,
+                year_max: maxYear,
+                year_min: minYear,
+              })
+            }}
+          />
+        </Typography>
+      )}
+    </div>
+  )
+}
+
+const SubmissionItem = (props: any) => {
   const { group, loaded, loading, reports, user_type } = props
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const countriesById = new Map<number, any>(
@@ -166,7 +245,7 @@ const CountryItem = (props: any) => {
   )
 }
 
-const CountrySection = function CountrySection(
+const SubmissionSection = function SubmissionSection(
   props: { countryApi: any } & SectionProps,
 ) {
   const { countryApi, filters, maxYear, minYear, setFilters, user_type } = props
@@ -179,13 +258,6 @@ const CountrySection = function CountrySection(
     { label: 'Name, A to Z', value: 'asc' },
     { label: 'Name, Z to A', value: 'desc' },
   ]
-
-  const countries = useStore((state) => {
-    return state.common.countries_for_listing.data
-  })
-  const countriesById = new Map<number, any>(
-    countries.map((country: any) => [country.id, country]),
-  )
 
   const { count, loaded, loading, results, setParams } = countryApi
 
@@ -219,59 +291,14 @@ const CountrySection = function CountrySection(
           <SortBy options={orderOptions} onChange={handleOrderChange} />
         </Portal>
       )}
-      <div className="my-6 flex gap-4">
-        {filters.country.map((countryId: number) => (
-          <Typography
-            key={countryId}
-            className="inline-flex items-center gap-2 rounded bg-gray-200 px-4 font-normal theme-dark:bg-gray-700/20"
-            component="p"
-            variant="h6"
-          >
-            {countriesById.get(countryId)?.name}
-            <IoClose
-              className="cursor-pointer"
-              size={20}
-              onClick={() => {
-                const values = filters.country || []
-                const newValue = filter(values, (value) => value !== countryId)
-                setFilters({
-                  country: newValue,
-                })
-                setPagination((pagination) => ({ ...pagination, page: 1 }))
-                setParams({
-                  country_id: newValue.join(','),
-                  offset: 0,
-                })
-              }}
-            />
-          </Typography>
-        ))}
-        {(filters.range[0] > minYear || filters.range[1] < maxYear) && (
-          <Typography
-            className="inline-flex items-center gap-2 bg-gray-200 px-4 font-normal theme-dark:bg-gray-700/20"
-            component="p"
-            variant="h6"
-          >
-            {filters.range[0]} - {filters.range[1]}
-            <IoClose
-              className="cursor-pointer"
-              size={20}
-              onClick={() => {
-                setFilters({
-                  range: [minYear, maxYear],
-                  year: [],
-                })
-                setPagination((pagination) => ({ ...pagination, page: 1 }))
-                setParams({
-                  offset: 0,
-                  year_max: maxYear,
-                  year_min: minYear,
-                })
-              }}
-            />
-          </Typography>
-        )}
-      </div>
+      <CountryYearFilterPills
+        filters={filters}
+        maxYear={maxYear}
+        minYear={minYear}
+        setFilters={setFilters}
+        setPagination={setPagination}
+        setParams={setParams}
+      />
       <div
         className={`transition-opacity mb-10 flex w-full max-w-screen-xl flex-col gap-8 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
       >
@@ -298,7 +325,7 @@ const CountrySection = function CountrySection(
               </div>
             )
           return (
-            <CountryItem
+            <SubmissionItem
               key={countryData.id}
               group={countryData.group}
               loaded={loaded}
@@ -414,13 +441,6 @@ const LogSection = function LogSection(props: SectionProps & { logApi: any }) {
     rowsPerPage: PER_PAGE_COUNTRY,
   })
 
-  const countries = useStore((state) => {
-    return state.common.countries_for_listing.data
-  })
-  const countriesById = new Map<number, any>(
-    countries.map((country: any) => [country.id, country]),
-  )
-
   const { count, loaded, loading, results, setParams } = logApi
 
   const memoResults = useMemo(() => {
@@ -435,6 +455,9 @@ const LogSection = function LogSection(props: SectionProps & { logApi: any }) {
     return [...results]
   }, [results, loaded, pagination.rowsPerPage])
 
+  // Year, Country, Status, Version, Last Modified, Created by, Actions (view, create new version)
+  console.log(memoResults)
+
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
   return (
@@ -443,59 +466,14 @@ const LogSection = function LogSection(props: SectionProps & { logApi: any }) {
         className="bg-mui-box-background/70 !duration-300"
         active={loading}
       />
-      <div className="my-6 flex gap-4">
-        {filters.country.map((countryId: number) => (
-          <Typography
-            key={countryId}
-            className="inline-flex items-center gap-2 rounded bg-gray-200 px-4 font-normal theme-dark:bg-gray-700/20"
-            component="p"
-            variant="h6"
-          >
-            {countriesById.get(countryId)?.name}
-            <IoClose
-              className="cursor-pointer"
-              size={20}
-              onClick={() => {
-                const values = filters.country || []
-                const newValue = filter(values, (value) => value !== countryId)
-                setFilters({
-                  country: newValue,
-                })
-                setPagination((pagination) => ({ ...pagination, page: 1 }))
-                setParams({
-                  country_id: newValue.join(','),
-                  offset: 0,
-                })
-              }}
-            />
-          </Typography>
-        ))}
-        {(filters.range[0] > minYear || filters.range[1] < maxYear) && (
-          <Typography
-            className="inline-flex items-center gap-2 bg-gray-200 px-4 font-normal theme-dark:bg-gray-700/20"
-            component="p"
-            variant="h6"
-          >
-            {filters.range[0]} - {filters.range[1]}
-            <IoClose
-              className="cursor-pointer"
-              size={20}
-              onClick={() => {
-                setFilters({
-                  range: [minYear, maxYear],
-                  year: [],
-                })
-                setPagination((pagination) => ({ ...pagination, page: 1 }))
-                setParams({
-                  offset: 0,
-                  year_max: maxYear,
-                  year_min: minYear,
-                })
-              }}
-            />
-          </Typography>
-        )}
-      </div>
+      <CountryYearFilterPills
+        filters={filters}
+        maxYear={maxYear}
+        minYear={minYear}
+        setFilters={setFilters}
+        setPagination={setPagination}
+        setParams={setParams}
+      />
       <div
         className={`transition-opacity mb-10 flex w-full max-w-screen-xl flex-col gap-4 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
       >
@@ -686,7 +664,7 @@ function CPFilters(props: any) {
   )
 }
 
-function useCountrySectionApi(filters: FiltersType) {
+function useSubmissionSectionApi(filters: FiltersType) {
   const { data, loading, setParams } = useApi<ReportsResponse>({
     options: {
       params: {
@@ -726,7 +704,7 @@ export default function CPListing() {
   const settings = useStore((state) => state.common.settings.data)
   const { user_type } = useStore((state) => state.user.data)
 
-  const [activeTab, setActiveTab] = useState(0)
+  const [activeTab, setActiveTab] = useState(1)
 
   const tabsEl = React.useRef<HTMLDivElement>(null)
 
@@ -737,7 +715,7 @@ export default function CPListing() {
     range: [minYear, maxYear],
     status: 'all',
   })
-  const countryApi = useCountrySectionApi(filters)
+  const countryApi = useSubmissionSectionApi(filters)
   const logApi = useLogSectionApi(filters)
 
   const handleFiltersChange = (newFilters: FiltersType) => {
@@ -822,7 +800,7 @@ export default function CPListing() {
             <div id="portalSortBy" className="flex flex-1 justify-end"></div>
           </div>
           {activeTab === 0 && (
-            <CountrySection
+            <SubmissionSection
               countryApi={countryApi}
               filters={filters}
               maxYear={maxYear}
