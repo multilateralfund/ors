@@ -54,7 +54,7 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
         filters.OrderingFilter,
     ]
     lookup_field = "id"
-    ordering_fields = ["year", "country__name"]
+    ordering_fields = ["created_at", "year", "country__name"]
 
     def get_queryset(self):
         user = self.request.user
