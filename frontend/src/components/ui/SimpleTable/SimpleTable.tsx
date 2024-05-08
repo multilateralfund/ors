@@ -1,5 +1,6 @@
 import * as React from 'react'
 
+import { Skeleton } from '@mui/material'
 import Box from '@mui/material/Box'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Paper from '@mui/material/Paper'
@@ -13,8 +14,6 @@ import TableRow from '@mui/material/TableRow'
 import TableSortLabel from '@mui/material/TableSortLabel'
 
 import { useStore } from '@ors/store'
-
-// const ROWS_PER_PAGE = 50
 
 interface Data {
   country: string
@@ -106,7 +105,7 @@ function stableSort<T>(
 }
 
 interface HeadCell {
-  align?: "center" | "inherit" | "justify" | "left" | "right";
+  align?: 'center' | 'inherit' | 'justify' | 'left' | 'right'
   disablePadding?: boolean
   id: keyof Data
   label: string
@@ -202,12 +201,29 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   )
 }
 
+const LoadingSkeleton = ({ rows }: { rows?: number }) => (
+  <>
+    {[...Array(rows ?? 50)].map((_, index) => (
+      <TableRow key={index}>
+        {headCells.map((headCell) => (
+          <TableCell key={headCell.id}>
+            <Skeleton />
+          </TableCell>
+        ))}
+        <TableCell>
+          <Skeleton />
+        </TableCell>
+      </TableRow>
+    ))}
+  </>
+)
+
 export default function SimpleTable(props: any) {
-  const { data } = props
+  const { data, setPagination, setParams } = props
 
   const [order, setOrder] = React.useState<Order>('desc')
   const [orderBy, setOrderBy] = React.useState<keyof Data>('year')
-
+  const [loading, setLoading] = React.useState(false) // Add loading state
   const [dense, setDense] = React.useState(false)
   const rows = data.map((item: any) => {
     return createData(
@@ -227,6 +243,15 @@ export default function SimpleTable(props: any) {
     property: keyof Data,
   ) => {
     const isAsc = orderBy === property && order === 'asc'
+    setLoading(true)
+    setPagination((pagination: any) => ({
+      ...pagination,
+      page: 1,
+    }))
+    setParams({
+      offset: 0,
+      ordering: isAsc ? `-${property}` : property,
+    })
     setOrder(isAsc ? 'desc' : 'asc')
     setOrderBy(property)
   }
@@ -255,6 +280,10 @@ export default function SimpleTable(props: any) {
     countries.map((country: any) => [country.id, country]),
   )
 
+  React.useEffect(() => {
+    setLoading(false)
+  }, [data])
+
   return (
     <Box sx={{ width: '100%' }}>
       <Paper sx={{ mb: 2, width: '100%' }}>
@@ -271,41 +300,45 @@ export default function SimpleTable(props: any) {
               onRequestSort={handleRequestSort}
             />
             <TableBody>
-              {visibleRows.map((row, index) => {
-                const labelId = `cell-${index}`
+              {loading ? (
+                <LoadingSkeleton rows={visibleRows.length} />
+              ) : (
+                visibleRows.map((row, index) => {
+                  const labelId = `cell-${index}`
 
-                return (
-                  <TableRow
-                    key={row.id}
-                    role="checkbox"
-                    sx={{ cursor: 'pointer' }}
-                    tabIndex={-1}
-                    onClick={(event) =>
-                      handleClick(
-                        event,
-                        row.year as number,
-                        countriesById.get(row.country_id as number)?.iso3,
-                      )
-                    }
-                    hover
-                  >
-                    <TableCell
-                      id={labelId}
-                      align="right"
-                      component="th"
-                      scope="row"
+                  return (
+                    <TableRow
+                      key={row.id}
+                      role="checkbox"
+                      sx={{ cursor: 'pointer' }}
+                      tabIndex={-1}
+                      onClick={(event) =>
+                        handleClick(
+                          event,
+                          row.year as number,
+                          countriesById.get(row.country_id as number)?.iso3,
+                        )
+                      }
+                      hover
                     >
-                      {row.year}
-                    </TableCell>
-                    <TableCell align="center">{row.country}</TableCell>
-                    <TableCell align="right">{row.status}</TableCell>
-                    <TableCell align="right">{row.version}</TableCell>
-                    <TableCell align="right">{row.last_modified}</TableCell>
-                    <TableCell align="left">{row.created_by}</TableCell>
-                    <TableCell align="center">View / Create</TableCell>
-                  </TableRow>
-                )
-              })}
+                      <TableCell
+                        id={labelId}
+                        align="right"
+                        component="th"
+                        scope="row"
+                      >
+                        {row.year}
+                      </TableCell>
+                      <TableCell align="center">{row.country}</TableCell>
+                      <TableCell align="right">{row.status}</TableCell>
+                      <TableCell align="right">{row.version}</TableCell>
+                      <TableCell align="right">{row.last_modified}</TableCell>
+                      <TableCell align="left">{row.created_by}</TableCell>
+                      <TableCell align="center">View / Create</TableCell>
+                    </TableRow>
+                  )
+                })
+              )}
             </TableBody>
           </Table>
         </TableContainer>

@@ -476,7 +476,7 @@ const LogSection = function LogSection(props: { logApi: any } & SectionProps) {
       <div
         className={`transition-opacity mb-10 flex w-full max-w-screen-xl flex-col gap-4 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
       >
-        <SimpleTable data={memoResults} />
+        <SimpleTable data={memoResults} setPagination={setPagination} setParams={setParams} />
       </div>
       {/* Pagination */}
       {!!pages && pages > 1 && (
