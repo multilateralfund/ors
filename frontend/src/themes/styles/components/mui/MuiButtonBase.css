@@ -1,4 +1,4 @@
-.MuiButtonBase-root:not(.MuiIconButton-root) {
+  .MuiButtonBase-root:not(.MuiIconButton-root, .MuiTableSortLabel-root, .PrivateSwitchBase-root) {
   @apply rounded-lg shadow-none uppercase hover:bg-primary hover:text-mlfs-hlYellow transition-all;
 
   &.btn-close {
