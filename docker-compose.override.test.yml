@@ -16,6 +16,14 @@ services:
       context: .
       dockerfile: docker/nginx.docker
 
+  rabbitmq:
+    profiles:
+      - donotstart
+
+  redis:
+    profiles:
+      - donotstart
+
   celery:
     profiles:
       - donotstart
