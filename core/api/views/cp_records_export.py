@@ -4,17 +4,27 @@ import itertools
 import openpyxl
 
 from django.db.models import Prefetch
+from django.db import models
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import views
 from rest_framework.exceptions import ValidationError
 
 
+from core.api.export.cp_data_extraction_all import (
+    CPConsumptionODPWriter,
+    CPDetailsExtractionWriter,
+    CPHFCConsumptionMTCO2Writer,
+    CPPricesExtractionWriter,
+    HFC23EmissionWriter,
+    HFC23GenerationWriter,
+)
 from core.api.export.cp_report_hfc_hcfc import CPReportHFCWriter, CPReportHCFCWriter
 from core.api.export.cp_report_new import CPReportNewExporter
 from core.api.export.cp_report_old import CPReportOldExporter
 from core.api.serializers import BlendSerializer
 from core.api.serializers import SubstanceSerializer
-from core.api.utils import workbook_pdf_response
+from core.api.utils import SUBSTANCE_GROUP_ID_TO_CATEGORY, workbook_pdf_response
 from core.api.utils import workbook_response
 from core.api.views.cp_records import CPRecordListView
 from core.api.views.cp_report_empty_form import EmptyFormView
@@ -22,6 +32,9 @@ from core.models import Blend
 from core.models import ExcludedUsage
 from core.models import Substance
 from core.models.country_programme import (
+    CPEmission,
+    CPGeneration,
+    CPPrices,
     CPRecord,
     CPReportFormatColumn,
     CPReportFormatRow,
@@ -136,7 +149,7 @@ class CPEmptyExportView(CPRecordExportView):
         }
 
 
-class CPHFCHCFCExportBaseView(CPRecordListView):
+class CPHFCHCFCExportBaseView(views.APIView):
     """
     Base class for HCFC and HFC export views
     you need to implement get_usages and get methods
@@ -160,23 +173,7 @@ class CPHFCHCFCExportBaseView(CPRecordListView):
         return min_year, max_year
 
     def get_data(self, year, section):
-        return (
-            CPRecord.objects.select_related(
-                "substance",
-                "blend",
-                "country_programme_report__country",
-            )
-            .prefetch_related(
-                "record_usages",
-                "blend__components",
-            )
-            .filter(country_programme_report__year=year, section=section)
-            .order_by(
-                "country_programme_report__country__name",
-                "substance__name",
-                "blend__name",
-            )
-        ).all()
+        return CPRecord.objects.get_for_year(year).filter(section=section).all()
 
     def get_response(self, name, wb):
         return workbook_response(name, wb)
@@ -216,6 +213,7 @@ class CPHCFCExportView(CPHFCHCFCExportBaseView):
                     "id": str(us_format.usage_id),
                     "headerName": us_format.usage.full_name,
                     "columnCategory": "usage",
+                    "convert_to_odp": True,
                 }
             )
 
@@ -276,3 +274,207 @@ class CPHFCExportView(CPHFCHCFCExportBaseView):
         del wb[wb.sheetnames[0]]
 
         return self.get_response("CP Data Extraction-HFC", wb)
+
+
+class CPDataExtractionAllExport(views.APIView):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "year",
+                openapi.IN_QUERY,
+                description="The year to generate the report for",
+                type=openapi.TYPE_INTEGER,
+            ),
+        ],
+    )
+    def get(self, *args, **kwargs):
+        year = self.request.query_params.get("year")
+
+        if not year:
+            # set current year for min year and max year
+            year = datetime.now().year
+
+        wb = openpyxl.Workbook()
+        # ODS Price
+        exporter = CPPricesExtractionWriter(wb, year)
+        data = self.get_prices(year)
+        exporter.write(data)
+
+        # CP Details
+        exporter = CPDetailsExtractionWriter(wb, year)
+        data = self.get_subtances_records(year)
+        exporter.write(data)
+
+        # CPConsumption(ODP)
+        exporter = CPConsumptionODPWriter(wb, year)
+        data = self._get_cp_consumption_data(year)
+        exporter.write(data)
+
+        # HFC-Consumption(MTvsCO2)
+        exporter = CPHFCConsumptionMTCO2Writer(wb, year)
+        data = self._get_hfc_consumption_data(year)
+        exporter.write(data)
+
+        # HFC-23Generation
+        exporter = HFC23GenerationWriter(wb, year)
+        data = self._get_generations(year)
+        exporter.write(data)
+
+        # HFC23Emission
+        exporter = HFC23EmissionWriter(wb, year)
+        data = self._get_emissions(year)
+        exporter.write(data)
+
+        # delete default sheet
+        del wb[wb.sheetnames[0]]
+
+        return workbook_response("CP Data Extraction-All", wb)
+
+    def get_prices(self, year):
+        return (
+            CPPrices.objects.select_related(
+                "blend",
+                "substance",
+                "country_programme_report__country",
+            )
+            .prefetch_related("blend__components")
+            .filter(country_programme_report__year=year)
+            .filter(
+                models.Q(current_year_price__isnull=False)
+                | models.Q(previous_year_price__isnull=False)
+            )
+            .order_by(
+                "country_programme_report__country__name",
+                "substance__sort_order",
+                "blend__sort_order",
+            )
+            .all()
+        )
+
+    def get_subtances_records(self, year):
+        return (
+            CPRecord.objects.get_for_year(year)
+            .select_related("substance__group")
+            .filter(substance__isnull=False)
+            .all()
+        )
+
+    def _get_cp_consumption_data(self, year):
+        """
+        Get CP consumption data for the given year
+
+        @param year: int
+        @return: dict
+        structure:
+        {
+            "country_name": {
+                "substance_category": consumption_value,
+                ...
+            },
+            ...
+        }
+        """
+        records = (
+            CPRecord.objects.get_for_year(year)
+            .filter(section="A", substance__isnull=False)
+            .all()
+        )
+        country_records = {}
+        for record in records:
+            country_name = record.country_programme_report.country.name
+            if country_name not in country_records:
+                country_records[country_name] = {}
+
+            group = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(record.substance.group.group_id)
+            if not group:
+                continue
+            if group not in country_records[country_name]:
+                country_records[country_name][group] = 0
+
+            # convert consumption value to ODP
+            consumption_value = record.get_consumption_value() * record.substance.odp
+            country_records[country_name][group] += consumption_value
+
+            # set a custom group for HCFC-141b in Imported Pre-blended Polyol
+            if record.substance.name == "HCFC-141b in Imported Pre-blended Polyol":
+                group = "HCFC-141b Preblended Polyol"
+                if group not in country_records[country_name]:
+                    country_records[country_name][group] = 0
+                country_records[country_name][group] += consumption_value
+
+        return country_records
+
+    def _get_hfc_consumption_data(self, year):
+        """
+        Get HFC consumption data for the given year
+
+        @param year: int
+        @return: dict
+        structure:
+        {
+            {
+            "country_name": {
+                "group": {
+                    "consumption_mt": value,
+                    "consumption_co2": value,
+                    "servicing": value,
+                    "usages_total": value,
+                },
+                ...
+            },
+            ...
+        }
+        """
+        records = (
+            CPRecord.objects.get_for_year(year)
+            .filter(section="B", substance__isnull=False, substance__group__annex="F")
+            .all()
+        )
+        country_records = {}
+        for record in records:
+            country_name = record.country_programme_report.country.name
+            if country_name not in country_records:
+                country_records[country_name] = {}
+
+            group = "I"  # ask Laura about this
+            if group not in country_records[country_name]:
+                country_records[country_name][group] = {
+                    "country_lvc": record.country_programme_report.country.is_lvc,
+                    "substance_name": SUBSTANCE_GROUP_ID_TO_CATEGORY.get(
+                        record.substance.group.group_id
+                    ),
+                    "consumption_mt": 0,
+                    "consumption_co2": 0,
+                    "servicing": 0,
+                    "usages_total": 0,
+                }
+
+            # convert consumption value to ODP
+            consumption_value = record.get_consumption_value()
+            country_records[country_name][group]["consumption_mt"] += consumption_value
+
+            # convert consumption value to CO2 equivalent
+            country_records[country_name][group]["consumption_co2"] += (
+                consumption_value * record.substance.gwp
+            )
+
+            for rec_us in record.record_usages.all():
+                if "servicing" in rec_us.usage.full_name.lower():
+                    country_records[country_name][group]["servicing"] += rec_us.quantity
+                country_records[country_name][group]["usages_total"] += rec_us.quantity
+
+        return country_records
+
+    def _get_generations(self, year):
+        return (
+            CPGeneration.objects.filter(country_programme_report__year=year)
+            .select_related("country_programme_report__country")
+            .all()
+        )
+
+    def _get_emissions(self, year):
+        return (
+            CPEmission.objects.filter(country_programme_report__year=year)
+            .select_related("country_programme_report__country")
+            .all()
+        )

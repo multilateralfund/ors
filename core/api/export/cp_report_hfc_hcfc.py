@@ -1,5 +1,4 @@
-from openpyxl.utils import get_column_letter
-from core.api.export.base import BaseWriter, CPDataHFCHCFCWriterBase
+from core.api.export.base import CPDataHFCHCFCWriterBase
 
 
 class CPReportHCFCWriter(CPDataHFCHCFCWriterBase):
@@ -28,18 +27,22 @@ class CPReportHCFCWriter(CPDataHFCHCFCWriterBase):
                 "id": "total",
                 "headerName": "Total",
                 "is_sum_function": True,
+                "convert_to_odp": True,
             },
             {
                 "id": "imports",
                 "headerName": "Import",
+                "convert_to_odp": True,
             },
             {
                 "id": "exports",
                 "headerName": "Export",
+                "convert_to_odp": True,
             },
             {
                 "id": "production",
                 "headerName": "Production",
+                "convert_to_odp": True,
             },
             {
                 "id": "remarks",
@@ -52,10 +55,7 @@ class CPReportHCFCWriter(CPDataHFCHCFCWriterBase):
     def get_value_for_header(self, header_id, header, record, by_usage_id):
         # delete quantity type from header_id
         value = None
-
-        quantity_type = header.get("quantity_type")
-        if quantity_type:
-            header_id = header_id.replace(quantity_type, "").strip()
+        odp_value = record.get_chemical_odp()
 
         # set value for custom columns
         if header_id == "country_name":
@@ -68,6 +68,11 @@ class CPReportHCFCWriter(CPDataHFCHCFCWriterBase):
             value = record.country_programme_report.year
         else:
             value = getattr(record, header_id, None)
+
+        # convert value to odp equivalent if needed
+        if header.get("convert_to_odp"):
+            value = value or 0
+            value *= odp_value
 
         return value
 
