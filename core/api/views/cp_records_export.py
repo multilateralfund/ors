@@ -9,12 +9,11 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import ValidationError
 
 
-from core.api.export.cp_report_hfc import CPReportHFCWriter
+from core.api.export.cp_report_hfc_hcfc import CPReportHFCWriter, CPReportHCFCWriter
 from core.api.export.cp_report_new import CPReportNewExporter
 from core.api.export.cp_report_old import CPReportOldExporter
 from core.api.serializers import BlendSerializer
 from core.api.serializers import SubstanceSerializer
-from core.api.serializers.usage import UsageSerializer
 from core.api.utils import workbook_pdf_response
 from core.api.utils import workbook_response
 from core.api.views.cp_records import CPRecordListView
@@ -137,31 +136,50 @@ class CPEmptyExportView(CPRecordExportView):
         }
 
 
-class CPHFCExportView(CPRecordExportView):
-    def get_usages(self, year):
-        cp_report_formats = (
-            CPReportFormatColumn.objects.get_for_year(year)
-            .filter(section="B")
-            .select_related("usage")
-            .order_by("sort_order")
-        )
-        usages = {
-            "(MT)": [],
-            "(CO2)": [],
-        }
-        for q_type in ["(MT)", "(CO2)"]:
-            for us_format in cp_report_formats:
-                usages[q_type].append(
-                    {
-                        "id": f"{us_format.usage_id} {q_type}",
-                        "usage_id": us_format.usage_id,
-                        "headerName": f"{us_format.usage.full_name} {q_type}",
-                        "columnCategory": "usage",
-                        "quantity_type": q_type,
-                    }
-                )
+class CPHFCHCFCExportBaseView(CPRecordListView):
+    """
+    Base class for HCFC and HFC export views
+    you need to implement get_usages and get methods
+    - get usages method should return a list of usages for the given year
+    - get method should return a response with the data for the given year
+    """
 
-        return usages["(MT)"], usages["(CO2)"]
+    def get_usages(self, year):
+        raise NotImplementedError
+
+    def _get_year_params(self):
+        min_year = self.request.query_params.get("min_year")
+        max_year = self.request.query_params.get("max_year")
+
+        if not min_year and not max_year:
+            # set current year for min year and max year
+            current_year = datetime.now().year
+            min_year = current_year
+            max_year = current_year
+
+        return min_year, max_year
+
+    def get_data(self, year, section):
+        return (
+            CPRecord.objects.select_related(
+                "substance",
+                "blend",
+                "country_programme_report__country",
+            )
+            .prefetch_related(
+                "record_usages",
+                "blend__components",
+            )
+            .filter(country_programme_report__year=year, section=section)
+            .order_by(
+                "country_programme_report__country__name",
+                "substance__name",
+                "blend__name",
+            )
+        ).all()
+
+    def get_response(self, name, wb):
+        return workbook_response(name, wb)
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -180,42 +198,81 @@ class CPHFCExportView(CPRecordExportView):
         ],
     )
     def get(self, *args, **kwargs):
-        min_year = self.request.query_params.get("min_year")
-        max_year = self.request.query_params.get("max_year")
+        raise NotImplementedError
+
+
+class CPHCFCExportView(CPHFCHCFCExportBaseView):
+    def get_usages(self, year):
+        cp_report_formats = (
+            CPReportFormatColumn.objects.get_for_year(year)
+            .filter(section="A")
+            .select_related("usage")
+            .order_by("sort_order")
+        )
+        usages = []
+        for us_format in cp_report_formats:
+            usages.append(
+                {
+                    "id": str(us_format.usage_id),
+                    "headerName": us_format.usage.full_name,
+                    "columnCategory": "usage",
+                }
+            )
+
+        return usages
+
+    def get(self, *args, **kwargs):
+        min_year, max_year = self._get_year_params()
         wb = openpyxl.Workbook()
 
-        if not min_year and not max_year:
-            # set current year for min year and max year
-            current_year = datetime.now().year
-            min_year = current_year
-            max_year = current_year
+        for year in range(int(min_year), int(max_year) + 1):
+            usages = self.get_usages(year)
+            exporter = CPReportHCFCWriter(wb, usages, year)
+            statistics = self.get_data(year, "A")
+            exporter.write(statistics)
+
+        # delete default sheet
+        del wb[wb.sheetnames[0]]
+
+        return self.get_response("CP Data Extraction-HCFC", wb)
+
+
+class CPHFCExportView(CPHFCHCFCExportBaseView):
+    def get_usages(self, year):
+        cp_report_formats = (
+            CPReportFormatColumn.objects.get_for_year(year)
+            .filter(section="B")
+            .select_related("usage")
+            .order_by("sort_order")
+        )
+        usages = {
+            "(MT)": [],
+            "(CO2)": [],
+        }
+        for q_type in ["(MT)", "(CO2)"]:
+            for us_format in cp_report_formats:
+                usages[q_type].append(
+                    {
+                        "id": f"{us_format.usage_id} {q_type}",
+                        "headerName": f"{us_format.usage.full_name} {q_type}",
+                        "columnCategory": "usage",
+                        "quantity_type": q_type,
+                    }
+                )
+
+        return usages["(MT)"], usages["(CO2)"]
+
+    def get(self, *args, **kwargs):
+        min_year, max_year = self._get_year_params()
+        wb = openpyxl.Workbook()
 
         for year in range(int(min_year), int(max_year) + 1):
             usages_mt, usages_co2 = self.get_usages(year)
             exporter = CPReportHFCWriter(wb, usages_mt, usages_co2, year)
-            statistics = self.get_data(year)
+            statistics = self.get_data(year, "B")
             exporter.write(statistics)
 
         # delete default sheet
         del wb[wb.sheetnames[0]]
 
         return self.get_response("CP Data Extraction-HFC", wb)
-
-    def get_data(self, year):
-        return (
-            CPRecord.objects.select_related(
-                "substance",
-                "blend",
-                "country_programme_report__country",
-            )
-            .prefetch_related(
-                "record_usages",
-                "blend__components",
-            )
-            .filter(country_programme_report__year=year)
-            .order_by(
-                "country_programme_report__country__name",
-                "substance__name",
-                "blend__name",
-            )
-        ).all()
