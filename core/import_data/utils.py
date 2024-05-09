@@ -349,11 +349,10 @@ def get_cp_report(
 
     @return country_program = CPReport object
     """
-    if not country_id:
-        country = get_country_by_name(country_name, index_row, use_offset=use_offset)
-        country_id = country.id
+    country = get_country_by_name(country_name, index_row, use_offset=use_offset)
+    country_id = country.id
 
-    cp_name = f"{country_name} {year}"
+    cp_name = f"{country.name} {year}"
     import_user = get_import_user()
     data = {
         "name": cp_name,
