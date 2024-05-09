@@ -145,7 +145,7 @@ const CPComments: React.FC = (props: any) => {
     <form className="-mx-6 -mb-6 mt-6 flex w-auto flex-wrap justify-around gap-6 rounded-b-lg bg-gray-100 px-6 pb-6">
       {orderedUsers.map((user) => {
         const canEditComment =
-          user_type === commentsMeta[user].user_type && latestVersion && viewOnly === "false"
+          user_type === commentsMeta[user].user_type && latestVersion && viewOnly === false
         const disabledBtn = texts[user] === initialTexts[user]
         return (
           <div

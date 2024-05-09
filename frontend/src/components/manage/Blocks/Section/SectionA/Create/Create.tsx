@@ -327,7 +327,7 @@ export default function SectionACreate(props: {
           </Box>
         </Modal>
       )}
-      {showComments && <Comments section="section_a" viewOnly="true" />}
+      {showComments && <Comments section="section_a" viewOnly={true} />}
     </>
   )
 }
