@@ -98,7 +98,10 @@ class BaseWriter:
             self.sheet.row_dimensions[row].height = ROW_HEIGHT
 
     def _compute_header_positions(self, items, column=1, row=3):
-        """Compute the positions of the headers depending on their hierarchy."""
+        """
+        Compute the positions of the headers depending on their hierarchy.
+        And transform headers list in a dictionary where the key is the header id.
+        """
         for item in items:
             # Keep track of the start column, as the header might span over many
             # columns if it has more than one child; for those cases, the cells need
@@ -281,6 +284,54 @@ class WriteOnlyBase:
                 start_color="EEEEEE", end_color="EEEEEE", fill_type="solid"
             )
         return cell
+
+
+class CPDataHFCHCFCWriterBase(BaseWriter):
+    """
+    Base class for writing CP data for HCFC and HFC sections.
+    You need to implement get_value_for_header method
+    You may need to implement __init__ method
+    - get_value_for_header method should return the value for the given header
+    - __init__ method should call super().__init__ and set the headers
+    """
+
+    def write_data(self, data):
+        row_idx = self.header_row_end_idx + 1
+        for record in data:
+            self._write_record_row(row_idx, record)
+            row_idx += 1
+
+    def get_value_for_header(self, header_id, header, record, by_usage_id):
+        raise NotImplementedError
+
+    def _write_record_row(self, row_idx, record):
+        by_usage_id = {
+            str(item.usage_id): item.quantity for item in record.record_usages.all()
+        }
+        first_column_sum = None
+        for header_id, header in self.headers.items():
+            # delete quantity type from header_id
+            quantity_type = header.get("quantity_type")
+            if quantity_type:
+                header_id = header_id.replace(quantity_type, "").strip()
+
+            value = self.get_value_for_header(header_id, header, record, by_usage_id)
+
+            # set first column sum
+            if header.get("columnCategory") == "usage" and not first_column_sum:
+                first_column_sum = get_column_letter(header["column"])
+
+            # set value for sum columns
+            if header.get("is_sum_function"):
+                col_letter = get_column_letter(header["column"] - 1)
+                value = f"=SUM({first_column_sum}{row_idx}:{col_letter}{row_idx})"
+                first_column_sum = None
+
+            self._write_record_cell(
+                row_idx,
+                header["column"],
+                value,
+            )
 
 
 def configure_sheet_print(sheet, orientation):

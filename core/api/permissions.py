@@ -23,3 +23,14 @@ class IsUserAllowedCPComment(IsUserAllowedCP):
 
     Inherits from IsUserAllowedCP as users have the same rights at has_permission-level.
     """
+
+
+class IsUserSecretariatOrAdmin(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        if user.is_authenticated:
+            if user.is_superuser:
+                return True
+            if user.user_type == user.UserType.SECRETARIAT:
+                return True
+        return False

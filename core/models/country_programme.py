@@ -41,10 +41,33 @@ class CPReport(AbstractCPReport):
         return self.name
 
 
+class CPRecordManager(models.Manager):
+    def get_for_year(self, year):
+        return (
+            self.select_related(
+                "substance",
+                "blend",
+                "country_programme_report__country",
+            )
+            .prefetch_related(
+                "record_usages",
+                "blend__components",
+            )
+            .filter(country_programme_report__year=year)
+            .order_by(
+                "country_programme_report__country__name",
+                "substance__sort_order",
+                "blend__sort_order",
+            )
+        )
+
+
 class CPRecord(AbstractCPRecord):
     country_programme_report = models.ForeignKey(
         "CPReport", on_delete=models.CASCADE, related_name="cprecords"
     )
+
+    objects = CPRecordManager()
 
     class Meta:
         verbose_name = "CP record"
@@ -59,6 +82,16 @@ class CPRecord(AbstractCPRecord):
             + " - "
             + (self.blend.name if self.blend else self.substance.name)
         )
+
+    def get_consumption_value(self):
+        """
+        Get the consumption value for the record
+        If Import, Export and Production are not provided,
+            it should be the TOTAL of Use by Sector
+        """
+        if any([self.imports, self.exports, self.production]):
+            return (self.imports or 0) - (self.exports or 0) + (self.production or 0)
+        return sum(usage.quantity for usage in self.record_usages.all())
 
 
 class CPUsage(AbstractCPUsage):
