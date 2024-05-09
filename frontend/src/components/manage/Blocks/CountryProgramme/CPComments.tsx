@@ -20,7 +20,7 @@ interface TextState {
 type Label = keyof TextState
 
 const CPComments: React.FC = (props: any) => {
-  const { section } = props
+  const { section, viewOnly } = props
   const user = useStore((state) => state.user)
   const user_type: UserType = user.data.user_type
   const { cacheInvalidateReport, report, setReport } = useStore(
@@ -145,7 +145,7 @@ const CPComments: React.FC = (props: any) => {
     <form className="-mx-6 -mb-6 mt-6 flex w-auto flex-wrap justify-around gap-6 rounded-b-lg bg-gray-100 px-6 pb-6">
       {orderedUsers.map((user) => {
         const canEditComment =
-          user_type === commentsMeta[user].user_type && latestVersion
+          user_type === commentsMeta[user].user_type && latestVersion && viewOnly === "false"
         const disabledBtn = texts[user] === initialTexts[user]
         return (
           <div
@@ -164,7 +164,7 @@ const CPComments: React.FC = (props: any) => {
             <div className="CPComments relative">
               <TextareaAutosize
                 className="w-full resize-none rounded-lg border border-transparent bg-white p-2 pb-10 shadow-none"
-                minRows={8}
+                minRows={3}
                 placeholder={canEditComment ? 'Type your comment here...' : ''}
                 value={texts[user]}
                 onChange={(e) => handleTextChange(user, e.target.value)}

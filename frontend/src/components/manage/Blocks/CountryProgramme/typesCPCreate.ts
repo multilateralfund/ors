@@ -55,6 +55,7 @@ export interface PassedCPCreateTableProps extends CPCreateTableProps {
       | SectionE['data']
       | SectionF['data']
     variant: ReportVariant
+    showComments: boolean
   }
   errors: FormErrors
   report: Report
