@@ -46,9 +46,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   '&:last-child td, &:last-child th': {
     border: 0,
   },
-  '&:not(:last-child) td, &:not(:last-child) th': {
-    // borderBottom: `1px solid ${theme.palette.divider}`,
-  },
   '&:nth-of-type(odd)': {
     backgroundColor: theme.palette.action.hover,
   },
@@ -103,48 +100,7 @@ function createData(
   }
 }
 
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1
-  }
-  return 0
-}
-
 type Order = 'asc' | 'desc'
-
-function getComparator<Key extends keyof any>(
-  order: Order,
-  orderBy: Key,
-): (
-  a: { [key in Key]: number | string },
-  b: { [key in Key]: number | string },
-) => number {
-  return order === 'desc'
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy)
-}
-
-// Since 2020 all major browsers ensure sort stability with Array.prototype.sort().
-// stableSort() brings sort stability to non-modern browsers (notably IE11). If you
-// only support modern browsers you can replace stableSort(exampleArray, exampleComparator)
-// with exampleArray.slice().sort(exampleComparator)
-function stableSort<T>(
-  array: readonly T[],
-  comparator: (a: T, b: T) => number,
-) {
-  const stabilizedThis = array.map((el, index) => [el, index] as [T, number])
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0])
-    if (order !== 0) {
-      return order
-    }
-    return a[1] - b[1]
-  })
-  return stabilizedThis.map((el) => el[0])
-}
 
 interface HeadCell {
   align?: 'center' | 'inherit' | 'justify' | 'left' | 'right'
@@ -304,10 +260,6 @@ export default function SimpleTable(props: any) {
     setDense(event.target.checked)
   }
 
-  const visibleRows = React.useMemo(
-    () => stableSort(rows, getComparator(order, orderBy)),
-    [order, orderBy, rows],
-  )
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const countriesById = new Map<number, any>(
     countries.map((country: any) => [country.id, country]),
@@ -334,9 +286,9 @@ export default function SimpleTable(props: any) {
             />
             <TableBody>
               {loading ? (
-                <LoadingSkeleton rows={visibleRows.length} />
+                <LoadingSkeleton rows={rows.length} />
               ) : (
-                visibleRows.map((row, index) => {
+                rows.map((row: Data, index: number) => {
                   const labelId = `cell-${index}`
                   const statusDot =
                     row.status === 'final' ? '#4191CD' : '#EE8E34'
