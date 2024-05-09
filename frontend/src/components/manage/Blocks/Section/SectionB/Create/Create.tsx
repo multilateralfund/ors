@@ -144,7 +144,9 @@ export default function SectionBCreate(props: {
   )
 
   const grid = useRef<any>()
-  const rowData = getRowData(form.section_b, variant)
+  const rowData = getRowData(form.section_b, variant).toSorted(
+    (a, b) => a.group?.localeCompare(b.group || 'zzz') || 0,
+  )
   const pinnedRowData = getInitialPinnedBottomRowData(variant.model)
 
   const [addChemicalModal, setAddChemicalModal] = useState(false)

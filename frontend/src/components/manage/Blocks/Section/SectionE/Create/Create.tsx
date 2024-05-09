@@ -6,6 +6,7 @@ import { findIndex, last } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
+import Footnote from '@ors/components/ui/Footnote/Footnote'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 
 import useGridOptions from './schema'
@@ -81,10 +82,10 @@ export default function SectionECreate(props: any) {
 
   return (
     <>
-      <Alert
-        icon={<IoInformationCircleOutline size={24} />}
-        severity="info"
-      >
+      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Footnote id="" index="">
+          Facility name must be provided if data in Section D is provided
+        </Footnote>
         <Footnotes />
       </Alert>
       <Table

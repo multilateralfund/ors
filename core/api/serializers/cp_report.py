@@ -57,6 +57,9 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
     version_created_by = serializers.StringRelatedField(
         read_only=True, source="version_created_by.username"
     )
+    version_created_by_role = serializers.StringRelatedField(
+        read_only=True, source="version_created_by.user_type"
+    )
 
     reporting_entry = serializers.CharField(read_only=True)
     reporting_email = serializers.CharField(read_only=True)
@@ -74,6 +77,7 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
             "created_at",
             "created_by",
             "version_created_by",
+            "version_created_by_role",
             "reporting_entry",
             "reporting_email",
         ]

@@ -44,6 +44,7 @@ import {
   CPCreateTableProps,
   FormErrors,
   WidgetCountry,
+  WidgetYear,
 } from './typesCPCreate'
 
 import { IoClose, IoExpand, IoLink } from 'react-icons/io5'
@@ -229,39 +230,46 @@ const CPCreate: React.FC = () => {
   }
 
   const [errors, setErrors] = useState<FormErrors>({})
-  const [currentYear] = useState(new Date().getFullYear() - 1)
-  const [variant] = useState(() => {
-    return filter(variants, (variant) => {
-      return variant.minYear <= currentYear && variant.maxYear >= currentYear
+  const [form, setForm] = useState<CPBaseForm>(() => {
+    // Default year is last year
+    const lastYear = new Date().getFullYear() - 1
+    const lastYearVariant = filter(variants, (variant) => {
+      return variant.minYear <= lastYear && variant.maxYear >= lastYear
     })[0]
+
+    return {
+      country: null,
+      files: [],
+      report_info: {
+        reported_section_a: true,
+        reported_section_b: true,
+        reported_section_c: true,
+        reported_section_d: true,
+        reported_section_e: true,
+        reported_section_f: true,
+        reporting_email: user.data.email,
+        reporting_entry: user.data.full_name,
+      },
+      section_a: includes(['V'], lastYearVariant?.model)
+        ? []
+        : Sections.section_a.getData(),
+      section_b: includes(['V'], lastYearVariant?.model)
+        ? []
+        : Sections.section_b.getData(),
+      section_c: includes(['V'], lastYearVariant?.model)
+        ? []
+        : Sections.section_c.getData(),
+      section_d: Sections.section_d.getData(),
+      section_e: Sections.section_e.getData(),
+      section_f: Sections.section_f.getData(),
+      year: lastYear,
+    }
   })
-  const [form, setForm] = useState<CPBaseForm>({
-    country: null,
-    files: [],
-    report_info: {
-      reported_section_a: true,
-      reported_section_b: true,
-      reported_section_c: true,
-      reported_section_d: true,
-      reported_section_e: true,
-      reported_section_f: true,
-      reporting_email: user.data.email,
-      reporting_entry: user.data.full_name,
-    },
-    section_a: includes(['V'], variant?.model)
-      ? []
-      : Sections.section_a.getData(),
-    section_b: includes(['V'], variant?.model)
-      ? []
-      : Sections.section_b.getData(),
-    section_c: includes(['V'], variant?.model)
-      ? []
-      : Sections.section_c.getData(),
-    section_d: Sections.section_d.getData(),
-    section_e: Sections.section_e.getData(),
-    section_f: Sections.section_f.getData(),
-    year: currentYear,
-  })
+  const variant = useMemo(() => {
+    return filter(variants, (variant) => {
+      return variant.minYear <= form.year && variant.maxYear >= form.year
+    })[0]
+  }, [form.year])
   const [activeTab, setActiveTab] = useState(0)
   const [renderedSections, setRenderedSections] = useState<number[]>([])
 
@@ -269,7 +277,7 @@ const CPCreate: React.FC = () => {
     options: {
       triggerIf: !!form.country?.id,
     },
-    path: `/api/country-programme/reports/?year_max=${currentYear}&year_min=${currentYear}&country_id=${form.country?.id}`,
+    path: `/api/country-programme/reports/?year_max=${form.year}&year_min=${form.year}&country_id=${form.country?.id}`,
   })
 
   const sections = useMemo(
@@ -277,7 +285,7 @@ const CPCreate: React.FC = () => {
     [variant],
   )
 
-  const fieldProps = {
+  const countryFieldProps = {
     id: 'country',
     Input: {
       error: !!errors.country_id,
@@ -295,6 +303,32 @@ const CPCreate: React.FC = () => {
     },
     options: countries,
     value: form.country,
+    widget: 'autocomplete',
+  }
+
+  const yearOptions = useMemo(() => {
+    const lastYear = new Date().getFullYear() - 1
+    return Array.from(
+      { length: lastYear - 2023 + 1 },
+      (_, i) => lastYear - i,
+    ).map((year) => ({
+      id: year,
+      label: `${year}`,
+    }))
+  }, [])
+  const yearFieldProps = {
+    id: 'year',
+    Input: {
+      error: !!errors.year,
+      helperText: errors.year?.general_error,
+    },
+    disabled: existingReports.loading,
+    name: 'year',
+    onChange: (_event: any, value: WidgetYear) => {
+      setForm((oldForm) => ({ ...oldForm, year: value.id }))
+    },
+    options: yearOptions,
+    value: { id: form.year, label: `${form.year}` },
     widget: 'autocomplete',
   }
 
@@ -330,7 +364,7 @@ const CPCreate: React.FC = () => {
         ...existingReports.apiSettings.options,
         triggerIf: !!form.country?.id,
       },
-      path: `/api/country-programme/reports/?year_max=${currentYear}&year_min=${currentYear}&country_id=${form.country?.id}`,
+      path: `/api/country-programme/reports/?year_max=${form.year}&year_min=${form.year}&country_id=${form.country?.id}`,
     })
     // eslint-disable-next-line
   }, [form.country])
@@ -490,7 +524,7 @@ const CPCreate: React.FC = () => {
         }
       />
       <CPCreateHeader
-        currentYear={currentYear}
+        currentYear={form.year}
         actions={
           <div className="flex items-center">
             <div className="container flex w-full justify-between gap-x-4">
@@ -631,9 +665,9 @@ const CPCreate: React.FC = () => {
                   <FootnotesProvider>
                     <Section
                       Section={get(Sections, section.id)}
+                      countryFieldProps={countryFieldProps}
                       emptyForm={report.emptyForm.data || {}}
                       errors={errors}
-                      fieldProps={fieldProps}
                       form={form}
                       isCreate={true}
                       report={report.data}
@@ -641,6 +675,7 @@ const CPCreate: React.FC = () => {
                       sectionsChecked={sectionsChecked}
                       setForm={setForm}
                       variant={variant}
+                      yearFieldProps={yearFieldProps}
                       TableProps={{
                         ...TableProps,
                         context: { section, variant },

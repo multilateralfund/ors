@@ -104,7 +104,7 @@ function FileInput(props: {
 
 const ReportInfoCreate = (props: any) => {
   const {
-    fieldProps,
+    countryFieldProps,
     form,
     isCreate,
     isEdit,
@@ -113,6 +113,7 @@ const ReportInfoCreate = (props: any) => {
     section,
     sectionsChecked,
     setForm,
+    yearFieldProps,
   } = props
   const {
     country: user_country,
@@ -159,7 +160,7 @@ const ReportInfoCreate = (props: any) => {
           Country
         </label>
         <Field
-          {...fieldProps}
+          {...countryFieldProps}
           FieldProps={{ className: 'mb-0 ReportInfo' }}
           defaultValue={isEdit ? report.country : null}
           disabled={isEdit}
@@ -199,13 +200,20 @@ const ReportInfoCreate = (props: any) => {
               <CountrySelect />
             </div>
           </div>
-          <SimpleInput
-            id="report_year"
-            defaultValue={isEdit ? report.year : form.year}
-            disabled={true}
-            label="Reporting for year"
-            type="number"
-          />
+          <div>
+            <label
+              className="mb-2 block text-lg font-normal text-gray-900"
+              htmlFor={isEdit ? undefined : 'year'}
+            >
+              Reporting for year
+            </label>
+            <Field
+              {...yearFieldProps}
+              FieldProps={{ className: 'mb-0 ReportInfo' }}
+              disableClearable={true}
+              disabled={isEdit}
+            />
+          </div>
         </div>
         <FileInput form={form} setForm={setForm} />
         {isEdit && (
