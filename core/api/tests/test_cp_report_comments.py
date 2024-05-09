@@ -1,8 +1,15 @@
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
+from unittest.mock import patch
 
 pytestmark = pytest.mark.django_db
+
+
+@pytest.fixture
+def mock_send_mail_comment():
+    with patch("core.tasks.send_mail_comment_submit.delay") as send_mail:
+        yield send_mail
 
 
 class TestCPReportComments:
@@ -42,7 +49,9 @@ class TestCPReportComments:
         response = self.client.post(url, data, format="json")
         assert response.status_code == 400
 
-    def test_create_comments(self, user, country_user, cp_report_2019):
+    def test_create_comments(
+        self, user, country_user, cp_report_2019, mock_send_mail_comment
+    ):
         url = reverse(
             "country-programme-report-comments", kwargs={"id": cp_report_2019.id}
         )
@@ -96,3 +105,7 @@ class TestCPReportComments:
         assert response.data["comments"][1]["section"] == self.SECTION_B
         assert response.data["comments"][1]["comment_type"] == self.COMMENT_SECRETARIAT
         assert response.data["comments"][1]["comment"] == "Test update secretariat"
+
+        # check 3 emails sent (3 comments)
+        mock_send_mail_comment.assert_called()
+        assert mock_send_mail_comment.call_count == 3
