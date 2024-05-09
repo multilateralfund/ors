@@ -78,6 +78,7 @@ class CPReportHCFCWriter(CPDataHFCHCFCWriterBase):
 
 
 class CPReportHFCWriter(CPDataHFCHCFCWriterBase):
+    header_row_start_idx = 1
 
     def __init__(self, wb, usages_mt, usages_co2, year):
         usages_headers = []

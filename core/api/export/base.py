@@ -295,9 +295,9 @@ class CPDataHFCHCFCWriterBase(BaseWriter):
     - __init__ method should call super().__init__ and set the headers
     """
 
-    def write_data(self, records):
+    def write_data(self, data):
         row_idx = self.header_row_end_idx + 1
-        for record in records:
+        for record in data:
             self._write_record_row(row_idx, record)
             row_idx += 1
 

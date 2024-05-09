@@ -178,7 +178,7 @@ urlpatterns = [
     path(
         "country-programme/data-extraction-all/export/",
         CPDataExtractionAllExport.as_view(),
-        name="country-programme-hcfc-export",
+        name="country-programme-extraction-all-export",
     ),
     path(
         "country-programme/export-empty/",

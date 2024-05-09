@@ -234,7 +234,9 @@ def excluded_usage():
 
 @pytest.fixture
 def groupA():
-    return GroupFactory.create(name="group A", annex="A", name_alt="group A A")
+    return GroupFactory.create(
+        name="group A", annex="A", name_alt="group A A", group_id="AI"
+    )
 
 
 @pytest.fixture
@@ -428,11 +430,15 @@ def setup_new_cp_report(cp_report_2019, blend, substance, time_frames, groupA):
     # create cp format rows
     substAinform = SubstanceFactory.create(name="HCFC-substance2", group=groupA)  # 200
     substAnoform = SubstanceFactory.create(name="HCFC-substance3", group=groupA)  # inf
-    current_group = GroupFactory.create(name="group B", annex="B", name_alt="group B B")
+    current_group = GroupFactory.create(
+        name="group B", annex="B", name_alt="group B B", group_id="BI"
+    )
     substBinform = SubstanceFactory.create(
         name="HCFC-substance4", group=current_group
     )  # 300
-    current_group = GroupFactory.create(name="group F", annex="F", name_alt="group F F")
+    current_group = GroupFactory.create(
+        name="group F", annex="F", name_alt="group F F", group_id="F"
+    )
     substF1inform = SubstanceFactory.create(
         name="HFC-substance5", group=current_group
     )  # 100
@@ -440,7 +446,7 @@ def setup_new_cp_report(cp_report_2019, blend, substance, time_frames, groupA):
         name="HFC-substance6", group=current_group
     )  # 200
     current_group = GroupFactory.create(
-        name="Other", annex="unknown", name_alt="group Other"
+        name="Other", annex="unknown", name_alt="group Other", group_id="uncontrolled"
     )
     substO1inform = SubstanceFactory.create(
         name="substance5", group=current_group

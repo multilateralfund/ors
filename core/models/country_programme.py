@@ -91,7 +91,7 @@ class CPRecord(AbstractCPRecord):
         """
         if any([self.imports, self.exports, self.production]):
             return (self.imports or 0) - (self.exports or 0) + (self.production or 0)
-        return sum([usage.quantity for usage in self.record_usages.all()])
+        return sum(usage.quantity for usage in self.record_usages.all())
 
 
 class CPUsage(AbstractCPUsage):

@@ -22,6 +22,7 @@ from core.api.export.cp_data_extraction_all import (
 from core.api.export.cp_report_hfc_hcfc import CPReportHFCWriter, CPReportHCFCWriter
 from core.api.export.cp_report_new import CPReportNewExporter
 from core.api.export.cp_report_old import CPReportOldExporter
+from core.api.permissions import IsUserSecretariatOrAdmin
 from core.api.serializers import BlendSerializer
 from core.api.serializers import SubstanceSerializer
 from core.api.utils import SUBSTANCE_GROUP_ID_TO_CATEGORY, workbook_pdf_response
@@ -157,6 +158,8 @@ class CPHFCHCFCExportBaseView(views.APIView):
     - get method should return a response with the data for the given year
     """
 
+    permission_classes = [IsUserSecretariatOrAdmin]
+
     def get_usages(self, year):
         raise NotImplementedError
 
@@ -173,7 +176,7 @@ class CPHFCHCFCExportBaseView(views.APIView):
         return min_year, max_year
 
     def get_data(self, year, section):
-        return CPRecord.objects.get_for_year(year).filter(section=section).all()
+        return CPRecord.objects.get_for_year(year).filter(section=section)
 
     def get_response(self, name, wb):
         return workbook_response(name, wb)
@@ -218,6 +221,9 @@ class CPHCFCExportView(CPHFCHCFCExportBaseView):
             )
 
         return usages
+
+    def get_data(self, year, section):
+        return super().get_data(year, section).filter(substance__name__icontains="HCFC")
 
     def get(self, *args, **kwargs):
         min_year, max_year = self._get_year_params()
@@ -277,6 +283,8 @@ class CPHFCExportView(CPHFCHCFCExportBaseView):
 
 
 class CPDataExtractionAllExport(views.APIView):
+    permission_classes = [IsUserSecretariatOrAdmin]
+
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(
@@ -316,12 +324,12 @@ class CPDataExtractionAllExport(views.APIView):
         exporter.write(data)
 
         # HFC-23Generation
-        exporter = HFC23GenerationWriter(wb, year)
+        exporter = HFC23GenerationWriter(wb)
         data = self._get_generations(year)
         exporter.write(data)
 
         # HFC23Emission
-        exporter = HFC23EmissionWriter(wb, year)
+        exporter = HFC23EmissionWriter(wb)
         data = self._get_emissions(year)
         exporter.write(data)
 
@@ -450,12 +458,12 @@ class CPDataExtractionAllExport(views.APIView):
                 }
 
             # convert consumption value to ODP
-            consumption_value = record.get_consumption_value()
+            consumption_value = record.get_consumption_value() or 0
             country_records[country_name][group]["consumption_mt"] += consumption_value
 
             # convert consumption value to CO2 equivalent
             country_records[country_name][group]["consumption_co2"] += (
-                consumption_value * record.substance.gwp
+                consumption_value * record.get_chemical_gwp()
             )
 
             for rec_us in record.record_usages.all():

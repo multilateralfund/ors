@@ -34,9 +34,9 @@ class CPPricesExtractionWriter(BaseWriter):
         sheet = wb.create_sheet("ODSPrice")
         super().__init__(sheet, headers)
 
-    def write_data(self, prices):
+    def write_data(self, data):
         row_idx = self.header_row_end_idx + 1
-        for price in prices:
+        for price in data:
             self._write_price_row(row_idx, price)
             row_idx += 1
 
@@ -93,9 +93,9 @@ class CPDetailsExtractionWriter(BaseWriter):
         sheet = wb.create_sheet("CP-Details")
         super().__init__(sheet, headers)
 
-    def write_data(self, records):
+    def write_data(self, data):
         row_idx = self.header_row_end_idx + 1
-        for record in records:
+        for record in data:
             self._write_record_row(row_idx, record)
             row_idx += 1
 
@@ -279,7 +279,7 @@ class CPHFCConsumptionMTCO2Writer(BaseWriter):
 class HFC23GenerationWriter(BaseWriter):
     header_row_start_idx = 1
 
-    def __init__(self, wb, year):
+    def __init__(self, wb):
         headers = [
             {
                 "id": "country_name",
@@ -313,9 +313,9 @@ class HFC23GenerationWriter(BaseWriter):
         sheet = wb.create_sheet("HFC-23Generation")
         super().__init__(sheet, headers)
 
-    def write_data(self, records):
+    def write_data(self, data):
         row_idx = self.header_row_end_idx + 1
-        for record in records:
+        for record in data:
             self._write_record_row(row_idx, record)
             row_idx += 1
 
@@ -338,7 +338,7 @@ class HFC23GenerationWriter(BaseWriter):
 class HFC23EmissionWriter(BaseWriter):
     header_row_start_idx = 1
 
-    def __init__(self, wb, year):
+    def __init__(self, wb):
         headers = [
             {
                 "id": "country_name",
@@ -395,9 +395,9 @@ class HFC23EmissionWriter(BaseWriter):
         sheet = wb.create_sheet("HFC-23Emission")
         super().__init__(sheet, headers)
 
-    def write_data(self, records):
+    def write_data(self, data):
         row_idx = self.header_row_end_idx + 1
-        for record in records:
+        for record in data:
             self._write_record_row(row_idx, record)
             row_idx += 1
 
