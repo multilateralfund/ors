@@ -1,0 +1,11 @@
+.SimpleTable .MuiButtonBase-root.MuiTableSortLabel-root .MuiTableSortLabel-icon {
+    @apply text-black;
+}
+
+.SimpleTable .MuiButtonBase-root.MuiTableSortLabel-root:hover {
+    @apply hover:text-mlfs-hlYellow;
+}
+
+.SimpleTable .MuiButtonBase-root.MuiTableSortLabel-root:hover .MuiTableSortLabel-icon {
+    @apply text-mlfs-hlYellow;
+}

@@ -66,7 +66,8 @@ type FiltersType = {
   status: StatusFilterTypes
 }
 
-const SUBMISSION_ROW_PER_PAGE = 50
+const SUBMISSIONS_PER_PAGE = 20
+const LOGS_PER_PAGE = 50
 const REPORTS_PER_COUNTRY = 6
 
 let timer: any
@@ -252,7 +253,7 @@ const SubmissionSection = function SubmissionSection(
   const { countryApi, filters, maxYear, minYear, setFilters, user_type } = props
   const [pagination, setPagination] = useState({
     page: 1,
-    rowsPerPage: SUBMISSION_ROW_PER_PAGE,
+    rowsPerPage: SUBMISSIONS_PER_PAGE,
   })
 
   const orderOptions = [
@@ -357,89 +358,11 @@ const SubmissionSection = function SubmissionSection(
   )
 }
 
-// const LogItem = (props: any) => {
-//   const { loaded, loading, report } = props
-//   const countries = useStore((state) => state.common.countries_for_listing.data)
-//   const countriesById = new Map<number, any>(
-//     countries.map((country: any) => [country.id, country]),
-//   )
-//
-//   const FormattedDateTime = ({ dateObject }: { dateObject: any }) => {
-//     const dateTime = new Date(dateObject)
-//     const date = dateTime.toLocaleDateString(undefined, {
-//       day: 'numeric',
-//       month: 'numeric',
-//       year: 'numeric',
-//     })
-//     const time = dateTime.toLocaleTimeString(undefined, {
-//       hour: 'numeric',
-//       hour12: false,
-//       minute: 'numeric',
-//     })
-//
-//     return (
-//       <>
-//         <Typography>{date}</Typography>
-//         <Typography>{time}</Typography>
-//       </>
-//     )
-//   }
-//   const dateObject = new Date(report.created_at)
-//
-//   const statusDot = report.status === 'final' ? '#4191CD' : '#EE8E34'
-//   const country = countriesById.get(report.country_id)
-//
-//   return (
-//     <div
-//       className={`transition-opacity flex w-full flex-col gap-8 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
-//     >
-//       <div className="flex w-full flex-col gap-4">
-//         <Link
-//           className="flex flex-col gap-2 text-pretty border-0 border-b border-solid border-blue-600 pb-4 sm:min-w-60"
-//           underline="none"
-//           href={
-//             report.status === 'draft'
-//               ? `/country-programme/${country?.iso3}/${report.year}/edit`
-//               : `/country-programme/${country?.iso3}/${report.year}`
-//           }
-//         >
-//           <Typography variant="h5">{report.country}</Typography>
-//           <div className="flex items-center justify-between gap-2">
-//             <div className="flex items-center justify-between gap-2">
-//               <Typography
-//                 className="mr-2 text-lg font-semibold"
-//                 color="secondary"
-//               >
-//                 {report.year}
-//               </Typography>
-//               <div className="flex items-baseline gap-2">
-//                 <Typography>
-//                   <IoEllipse color={statusDot} size={12} />
-//                 </Typography>
-//                 <Typography className="text-nowrap font-medium">
-//                   VERSION {report.version}
-//                 </Typography>
-//               </div>
-//             </div>
-//             <div className="flex items-center gap-3 rounded-md bg-white p-0.5">
-//               <Typography>
-//                 Submitted by {report.reporting_entry} (
-//                 {report.version_created_by}) on
-//               </Typography>
-//               <FormattedDateTime dateObject={dateObject} />
-//             </div>
-//           </div>
-//         </Link>
-//       </div>
-//     </div>
-//   )
-// }
-
 const LogSection = function LogSection(props: { logApi: any } & SectionProps) {
   const { filters, logApi, maxYear, minYear, setFilters } = props
   const [pagination, setPagination] = useState({
     page: 1,
-    rowsPerPage: SUBMISSION_ROW_PER_PAGE,
+    rowsPerPage: LOGS_PER_PAGE,
   })
 
   const { count, loaded, loading, results, setParams } = logApi
@@ -637,7 +560,7 @@ function useSubmissionSectionApi(filters: FiltersType) {
   const { data, loading, setParams } = useApi<ReportsResponse>({
     options: {
       params: {
-        limit: SUBMISSION_ROW_PER_PAGE,
+        limit: SUBMISSIONS_PER_PAGE,
         offset: 0,
         ordering: 'asc',
         show_all_per_group: true,
@@ -656,7 +579,7 @@ function useLogSectionApi(filters: FiltersType) {
   const { data, loading, setParams } = useApi<ReportsResponse>({
     options: {
       params: {
-        limit: SUBMISSION_ROW_PER_PAGE,
+        limit: LOGS_PER_PAGE,
         offset: 0,
         ordering: '-year',
         status: filters.status,

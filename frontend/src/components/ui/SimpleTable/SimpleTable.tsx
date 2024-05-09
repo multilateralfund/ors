@@ -1,28 +1,68 @@
 import * as React from 'react'
 
-import { Skeleton } from '@mui/material'
-import Box from '@mui/material/Box'
-import FormControlLabel from '@mui/material/FormControlLabel'
-import Paper from '@mui/material/Paper'
-import Switch from '@mui/material/Switch'
-import Table from '@mui/material/Table'
-import TableBody from '@mui/material/TableBody'
-import TableCell from '@mui/material/TableCell'
-import TableContainer from '@mui/material/TableContainer'
-import TableHead from '@mui/material/TableHead'
-import TableRow from '@mui/material/TableRow'
-import TableSortLabel from '@mui/material/TableSortLabel'
+import {
+  Box,
+  FormControlLabel,
+  Paper,
+  Skeleton,
+  Switch,
+  Table,
+  TableBody,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableSortLabel,
+  Typography,
+} from '@mui/material'
+import TableCell, { tableCellClasses } from '@mui/material/TableCell'
+import { styled } from '@mui/material/styles'
 
+import Link from '@ors/components/ui/Link/Link'
 import { useStore } from '@ors/store'
+
+import { FiEdit, FiEye } from 'react-icons/fi'
+import { IoEllipse } from 'react-icons/io5'
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  [`&.${tableCellClasses.body}`]: {
+    fontSize: 13,
+  },
+  [`&.${tableCellClasses.head}`]: {
+    '&:first-child': {
+      borderTopLeftRadius: '0.25rem',
+    },
+    '&:last-child': {
+      borderTopRightRadius: '0.25rem',
+    },
+    backgroundColor: theme.palette.secondary.light,
+    borderCollapse: 'collapse',
+    color: theme.palette.common.white,
+    fontSize: 13,
+  },
+}))
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  // hide last border
+  '&:last-child td, &:last-child th': {
+    border: 0,
+  },
+  '&:not(:last-child) td, &:not(:last-child) th': {
+    // borderBottom: `1px solid ${theme.palette.divider}`,
+  },
+  '&:nth-of-type(odd)': {
+    backgroundColor: theme.palette.action.hover,
+  },
+}))
 
 interface Data {
   country: string
   country_id: number
-  created_by: string
+  created_at: string
   id: number
-  last_modified: string
   status: string
   version: number
+  version_created_by: string
+  version_created_by_role: string
   year: number
 }
 
@@ -32,14 +72,15 @@ function createData(
   country: string,
   status: string,
   version: number,
-  created_at: string,
-  created_by: string,
+  created_date: string,
+  version_created_by: string,
+  version_created_by_role: string,
   country_id: number,
 ): Data {
-  const dateTime = new Date(created_at)
+  const dateTime = new Date(created_date)
   const date = dateTime.toLocaleDateString(undefined, {
     day: 'numeric',
-    month: 'numeric',
+    month: 'long',
     year: 'numeric',
   })
   const time = dateTime.toLocaleTimeString(undefined, {
@@ -47,16 +88,17 @@ function createData(
     hour12: false,
     minute: 'numeric',
   })
-  const last_modified = `${date} ${time}`
+  const created_at = `${date} ${time} by ${version_created_by}`
 
   return {
     id,
     country,
     country_id,
-    created_by,
-    last_modified,
+    created_at,
     status,
     version,
+    version_created_by,
+    version_created_by_role,
     year,
   }
 }
@@ -126,22 +168,23 @@ const headCells: readonly HeadCell[] = [
   },
   {
     id: 'status',
-    align: 'right',
+    align: 'center',
     label: 'Status',
   },
   {
     id: 'version',
-    align: 'right',
+    align: 'center',
+    disablePadding: true,
     label: 'Version',
   },
   {
-    id: 'last_modified',
+    id: 'created_at',
     align: 'right',
     label: 'Last Modified',
     sortable: true,
   },
   {
-    id: 'created_by',
+    id: 'version_created_by_role',
     align: 'left',
     label: 'Created by',
   },
@@ -165,10 +208,10 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     }
 
   return (
-    <TableHead>
+    <TableHead className="select-none">
       <TableRow>
         {headCells.map((headCell) => (
-          <TableCell
+          <StyledTableCell
             key={headCell.id}
             align={headCell.align || 'center'}
             padding={headCell.disablePadding ? 'none' : 'normal'}
@@ -193,9 +236,9 @@ function EnhancedTableHead(props: EnhancedTableProps) {
               // If the column is not sortable, just render the label
               headCell.label
             )}
-          </TableCell>
+          </StyledTableCell>
         ))}
-        <TableCell align="right">Action</TableCell>
+        <StyledTableCell align="center">Action</StyledTableCell>
       </TableRow>
     </TableHead>
   )
@@ -233,7 +276,8 @@ export default function SimpleTable(props: any) {
       item.status,
       item.version,
       item.created_at,
-      item.created_by,
+      item.version_created_by,
+      item.version_created_by_role,
       item.country_id,
     )
   })
@@ -256,17 +300,6 @@ export default function SimpleTable(props: any) {
     setOrderBy(property)
   }
 
-  const handleClick = (
-    event: React.MouseEvent<unknown>,
-    year: number,
-    iso3: string,
-  ) => {
-    event.preventDefault()
-
-    // router.push(`/country-programme/${iso3}/${year}`)
-    window.location.href = `/country-programme/${iso3}/${year}`
-  }
-
   const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
     setDense(event.target.checked)
   }
@@ -285,7 +318,7 @@ export default function SimpleTable(props: any) {
   }, [data])
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box className="SimpleTable" sx={{ width: '100%' }}>
       <Paper sx={{ mb: 2, width: '100%' }}>
         <TableContainer>
           <Table
@@ -305,37 +338,52 @@ export default function SimpleTable(props: any) {
               ) : (
                 visibleRows.map((row, index) => {
                   const labelId = `cell-${index}`
+                  const statusDot =
+                    row.status === 'final' ? '#4191CD' : '#EE8E34'
+                  const country = countriesById.get(row.country_id as number)
 
                   return (
-                    <TableRow
-                      key={row.id}
-                      role="checkbox"
-                      sx={{ cursor: 'pointer' }}
-                      tabIndex={-1}
-                      onClick={(event) =>
-                        handleClick(
-                          event,
-                          row.year as number,
-                          countriesById.get(row.country_id as number)?.iso3,
-                        )
-                      }
-                      hover
-                    >
-                      <TableCell
-                        id={labelId}
-                        align="right"
-                        component="th"
-                        scope="row"
-                      >
+                    <StyledTableRow key={row.id} tabIndex={-1}>
+                      <StyledTableCell id={labelId} align="right" scope="row">
                         {row.year}
-                      </TableCell>
-                      <TableCell align="center">{row.country}</TableCell>
-                      <TableCell align="right">{row.status}</TableCell>
-                      <TableCell align="right">{row.version}</TableCell>
-                      <TableCell align="right">{row.last_modified}</TableCell>
-                      <TableCell align="left">{row.created_by}</TableCell>
-                      <TableCell align="center">View / Create</TableCell>
-                    </TableRow>
+                      </StyledTableCell>
+                      <StyledTableCell align="center">
+                        {row.country}
+                      </StyledTableCell>
+                      <StyledTableCell align="center">
+                        <Typography className="flex justify-center">
+                          <IoEllipse color={statusDot} size={12} />
+                        </Typography>
+                      </StyledTableCell>
+                      <StyledTableCell align="center">
+                        {row.version}
+                      </StyledTableCell>
+                      <StyledTableCell align="right">
+                        {row.created_at}
+                      </StyledTableCell>
+                      <StyledTableCell className="capitalize" align="left">
+                        {row.version_created_by_role}
+                      </StyledTableCell>
+                      <StyledTableCell align="center">
+                        <Typography className="flex items-center justify-center">
+                          <Link
+                            className="text-pretty border-0 p-2 hover:text-secondary"
+                            href={`/country-programme/${country?.iso3}/${row.year}`}
+                            underline="none"
+                          >
+                            <FiEye size={16} />
+                          </Link>
+                          <span>/</span>
+                          <Link
+                            className="text-pretty border-0 p-2 hover:text-secondary"
+                            href={`/country-programme/${country?.iso3}/${row.year}/edit`}
+                            underline="none"
+                          >
+                            <FiEdit size={16} />
+                          </Link>
+                        </Typography>
+                      </StyledTableCell>
+                    </StyledTableRow>
                   )
                 })
               )}
