@@ -33,7 +33,8 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
             props.data?.rowType,
           ),
         }),
-        ...(props.data?.row_id === 'other-new_substance'
+        ...(props.data?.row_id === 'other-new_substance' &&
+        !includes(['V'], model)
           ? {
               footnote: {
                 id: includes(['II', 'III'], model) ? '3' : '2',
@@ -105,7 +106,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
           }
         : {
             footnote: {
-              id: 3,
+              id: includes(['V'], model) ? 2 : 3,
               content:
                 'Provide explanation if total sector use and consumption (import-export+production) is different (e.g, stockpiling).',
               icon: false,

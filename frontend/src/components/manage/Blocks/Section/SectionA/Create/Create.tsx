@@ -26,7 +26,7 @@ import { RowData } from './types'
 
 import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
 
-function getRowData(data: SectionA['data']): RowData[] {
+function getRowData(data: SectionA['data'], model: ReportVariant['model']): RowData[] {
   let rowData: RowData[] = []
   const dataByGroup: Record<string, any[]> = {}
   const groups: Array<string> = []
@@ -53,7 +53,7 @@ function getRowData(data: SectionA['data']): RowData[] {
         },
       ],
       dataByGroup[group],
-      group === 'Annex C, Group I'
+      group === 'Annex C, Group I' && !includes(['V'], model)
         ? [
             {
               display_name: 'Other',
@@ -121,7 +121,7 @@ export default function SectionACreate(props: {
     getInitialPinnedBottomRowData(variant.model),
   )
   const [addSubstanceModal, setAddSubstanceModal] = useState(false)
-  const rowData = getRowData(form.section_a).toSorted(
+  const rowData = getRowData(form.section_a, variant.model).toSorted(
     (a, b) => a.group?.localeCompare(b.group || 'zzz') || 0,
   )
 
