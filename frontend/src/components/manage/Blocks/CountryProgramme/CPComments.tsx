@@ -141,8 +141,10 @@ const CPComments: React.FC = (props: any) => {
     return texts[userType] === '' && initialTexts[userType] === ''
   }
 
+  const Container = viewOnly ? 'div' : 'form'
+
   return (
-    <form className="-mx-6 -mb-6 mt-6 flex w-auto flex-wrap justify-around gap-6 rounded-b-lg bg-gray-100 px-6 pb-6">
+    <Container className="-mx-6 -mb-6 mt-6 flex w-auto flex-wrap justify-around gap-6 rounded-b-lg bg-gray-100 px-6 pb-6">
       {orderedUsers.map((user) => {
         const canEditComment =
           user_type === commentsMeta[user].user_type && latestVersion && viewOnly === false
@@ -200,7 +202,7 @@ const CPComments: React.FC = (props: any) => {
           </div>
         )
       })}
-    </form>
+    </Container>
   )
 }
 
