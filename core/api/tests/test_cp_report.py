@@ -39,8 +39,8 @@ pytestmark = pytest.mark.django_db
 # pylint: disable=C8008, W0221, R0915, C0302
 
 
-@pytest.fixture
-def mock_send_mail_report():
+@pytest.fixture(name="mock_send_mail_report")
+def _mock_send_mail_report():
     with patch("core.tasks.send_mail_report_submit.delay") as send_mail:
         yield send_mail
 
@@ -509,7 +509,9 @@ class TestCPReportCreate(BaseTest):
         # check email not sent (DRAFT)
         mock_send_mail_report.assert_not_called()
 
-    def test_create_old_cp_report(self, user, _setup_old_cp_report_create):
+    def test_create_old_cp_report(
+        self, user, _setup_old_cp_report_create, mock_send_mail_report
+    ):
         self.client.force_authenticate(user=user)
 
         response = self.client.post(
@@ -548,6 +550,9 @@ class TestCPReportCreate(BaseTest):
         assert d_record.column is None
         assert d_record.value_choice_id == d_record.row.choices.first().id
         assert d_record.value_text == "La orele de vrajeala"
+
+        # check email sent (FINAL)
+        mock_send_mail_report.assert_called_once()
 
     def test_existing_cp_report(
         self, user, _setup_new_cp_report_create, cp_report_2019
@@ -913,6 +918,7 @@ class TestCPReportUpdate(BaseTest):
         _setup_old_cp_report_create,
         cp_report_2005,
         substance,
+        mock_send_mail_report,
     ):
         self.url = reverse("country-programme-reports") + f"{cp_report_2005.id}/"
         self.client.force_authenticate(user=user)
@@ -997,6 +1003,10 @@ class TestCPReportUpdate(BaseTest):
             country_programme_report=old_cp,
         )
         assert adm_record.value_text == "Am fost locu-ntai la scoala"
+
+        # check 2 emails sent (2 FINAL reports)
+        mock_send_mail_report.assert_called()
+        assert mock_send_mail_report.call_count == 2
 
     def test_update_cp_report_invalid_country(
         self, user, _setup_new_cp_report_create, cp_report_2019

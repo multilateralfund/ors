@@ -6,8 +6,8 @@ from unittest.mock import patch
 pytestmark = pytest.mark.django_db
 
 
-@pytest.fixture
-def mock_send_mail_comment():
+@pytest.fixture(name="mock_send_mail_comment")
+def _mock_send_mail_comment():
     with patch("core.tasks.send_mail_comment_submit.delay") as send_mail:
         yield send_mail
 
