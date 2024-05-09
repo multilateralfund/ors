@@ -596,7 +596,7 @@ export default function CPListing() {
   const settings = useStore((state) => state.common.settings.data)
   const { user_type } = useStore((state) => state.user.data)
 
-  const [activeTab, setActiveTab] = useState(1)
+  const [activeTab, setActiveTab] = useState(0)
 
   const tabsEl = React.useRef<HTMLDivElement>(null)
 
