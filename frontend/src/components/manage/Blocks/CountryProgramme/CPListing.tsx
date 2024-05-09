@@ -66,6 +66,11 @@ type FiltersType = {
   status: StatusFilterTypes
 }
 
+type paginationType = {
+  page: number
+  rowsPerPage: number
+}
+
 const SUBMISSIONS_PER_PAGE = 20
 const LOGS_PER_PAGE = 50
 const REPORTS_PER_COUNTRY = 6
@@ -82,11 +87,6 @@ const SortBy = (props: Omit<SimpleSelectProps, 'label'>) => (
 )
 
 const CountryYearFilterPills = (props: any) => {
-  type paginationType = {
-    page: number
-    rowsPerPage: number
-  }
-
   const { filters, maxYear, minYear, setFilters, setPagination, setParams } =
     props
 
