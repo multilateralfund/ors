@@ -74,7 +74,7 @@ function getRowData(data: SectionB['data'], variant: ReportVariant): RowData[] {
           ]
         : [],
       dataByGroup[group],
-      group.startsWith('Blends')
+      group.startsWith('Blends') && !includes(['V'], variant?.model)
         ? [
             {
               display_name: 'Other',

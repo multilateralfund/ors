@@ -61,7 +61,8 @@ const sectionColDefById: Record<string, ColDef> = {
               },
             }
           : {}),
-        ...(props.data.row_id === 'other-new_substance'
+        ...(props.data.row_id === 'other-new_substance' &&
+        !includes(['V'], model)
           ? {
               footnote: {
                 id: '2',
@@ -90,14 +91,17 @@ const sectionColDefById: Record<string, ColDef> = {
     ...colDefById['remarks'],
     cellClass: 'ag-text-center',
     headerClass: 'ag-text-center',
-    headerComponentParams: {
-      footnote: {
-        id: '4',
-        content:
-          'Provide explanation if total sector use and consumption (import-export+production) is different (e.g, stockpiling).',
-        icon: false,
-        order: 4,
-      },
+    headerComponentParams: (props: any) => {
+      const model = props.context?.variant.model
+      return {
+        footnote: {
+          id: includes(['V'], model) ? '4' : '5',
+          content:
+            'Provide explanation if total sector use and consumption (import-export+production) is different (e.g, stockpiling).',
+          icon: false,
+          order: 5,
+        },
+      }
     },
   },
 }
