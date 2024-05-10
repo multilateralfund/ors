@@ -159,12 +159,13 @@ export default function SectionCCreate(props: {
 
   const [addChemicalModal, setAddChemicalModal] = useState(false)
 
+  const chemicalsInForm = useMemo(() => {
+    return form.section_c.map((chemical: any) => chemical.row_id)
+  }, [form.section_c])
+
   // For formats <2023
   const allChemicalOptions = useMemo(() => {
     const data: Array<any> = []
-    const chemicalsInForm = form.section_c.map(
-      (chemical: any) => chemical.row_id,
-    )
     each(substances, (substance) => {
       if (
         includes(substance.sections, 'C') &&
@@ -174,12 +175,40 @@ export default function SectionCCreate(props: {
       }
     })
     return data
-  }, [substances, form.section_c, Section])
+  }, [substances, chemicalsInForm, Section])
 
   // Needed in formats >=2023
   const mandatorySubstances = useMemo(() => {
-    return allChemicalOptions.filter((substance) => substance.group !== 'Other')
-  }, [allChemicalOptions])
+    const data: Array<any> = []
+
+    each(
+      emptyForm.substance_rows.section_c.filter((row) => row.substance_id),
+      (substance) => {
+        if (!includes(chemicalsInForm, `substance_${substance.substance_id}`)) {
+          const transformedSubstance = Section.transformSubstance(
+            substance,
+            false,
+          )
+          data.push({
+            ...transformedSubstance,
+            id: transformedSubstance.display_name,
+          })
+        }
+      },
+    )
+
+    each(
+      emptyForm.substance_rows.section_c.filter((row) => row.blend_id),
+      (blend) => {
+        if (!includes(chemicalsInForm, `blend_${blend.blend_id}`)) {
+          const transformedBlend = Section.transformBlend(blend, false)
+          data.push({ ...transformedBlend, id: transformedBlend.display_name })
+        }
+      },
+    )
+
+    return data.toSorted((a, b) => -a.group.localeCompare(b.group))
+  }, [Section, chemicalsInForm, emptyForm.substance_rows.section_c])
 
   const optionalSubstances = useMemo(() => {
     return allChemicalOptions.filter((substance) => substance.group === 'Other')
