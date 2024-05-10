@@ -36,6 +36,7 @@ from core.models.country_programme_archive import (
     CPUsageArchive,
     CPReportSectionsArchive,
 )
+from core.tasks import send_mail_comment_submit, send_mail_report_update
 
 User = get_user_model()
 
@@ -389,6 +390,9 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
 
         current_obj.delete()
 
+        if config.SEND_MAIL and new_instance.status == CPReport.CPReportStatus.FINAL:
+            send_mail_report_update.delay(new_instance.id)  # send mail to MLFS
+
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
@@ -662,6 +666,10 @@ class CPReportCommentsView(generics.GenericAPIView):
             ),
         )
         serializer = self.get_serializer(cp_comment)
+
+        if config.SEND_MAIL:
+            # send mail to country or MLFS
+            send_mail_comment_submit.delay(cp_comment.id)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

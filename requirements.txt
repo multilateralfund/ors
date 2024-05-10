@@ -27,3 +27,6 @@ psycopg2-binary==2.9.6
 sqlparse==0.4.3
 tomli==2.0.1
 xlrd==2.0.1
+celery==5.4.0
+redis==5.0.4
+rabbitmq-server==0.0.1
