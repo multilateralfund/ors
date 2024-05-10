@@ -2,6 +2,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 from core.api.serializers.adm import AdmRecordSerializer
+from core.api.serializers.cp_comment import CPCommentSerializer
 from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_history import CPHistorySerializer
@@ -101,13 +102,18 @@ class CPReportSerializer(CPReportBaseSerializer):
         required=True,
         queryset=Country.objects.all().values_list("id", flat=True),
     )
+    comments = serializers.SerializerMethodField()
 
     class Meta(CPReportBaseSerializer.Meta):
         model = CPReport
         fields = CPReportBaseSerializer.Meta.fields + [
+            "comments",
             "report_info",
             "history",
         ]
+
+    def get_comments(self, obj):
+        return CPCommentSerializer(obj.cpcomments.all(), many=True).data
 
 
 class CPReportArchiveSerializer(CPReportBaseSerializer):
