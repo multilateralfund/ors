@@ -26,6 +26,7 @@ from core.api.views.cp_archive import (
 from core.api.views.cp_files import CPFilesDownloadView, CPFilesView
 from core.api.views.cp_prices import CPPricesView
 from core.api.views.cp_records_export import (
+    CPCalculatedAmountExportView,
     CPDataExtractionAllExport,
     CPEmptyExportView,
     CPHCFCExportView,
@@ -179,6 +180,11 @@ urlpatterns = [
         "country-programme/data-extraction-all/export/",
         CPDataExtractionAllExport.as_view(),
         name="country-programme-extraction-all-export",
+    ),
+    path(
+        "country-programme/calculated-amount/export/",
+        CPCalculatedAmountExportView.as_view(),
+        name="country-programme-calculated-amount-export",
     ),
     path(
         "country-programme/export-empty/",

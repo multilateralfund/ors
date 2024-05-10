@@ -11,6 +11,7 @@ from rest_framework import views
 from rest_framework.exceptions import ValidationError
 
 
+from core.api.export.cp_calculated_amount import CPCalculatedAmountWriter
 from core.api.export.cp_data_extraction_all import (
     CPConsumptionODPWriter,
     CPDetailsExtractionWriter,
@@ -148,6 +149,71 @@ class CPEmptyExportView(CPRecordExportView):
             },
             **by_section,
         }
+
+
+class CPCalculatedAmountExportView(CPRecordListView):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "cp_report_id",
+                openapi.IN_QUERY,
+                description="Country programme report id",
+                type=openapi.TYPE_INTEGER,
+            ),
+        ],
+    )
+    def get(self, *args, **kwargs):
+        cp_report = self._get_cp_report()
+
+        wb = openpyxl.Workbook()
+        exporter = CPCalculatedAmountWriter(wb, cp_report.year)
+        data = self.get_data(cp_report)
+        exporter.write(data)
+
+        # delete default sheet
+        del wb[wb.sheetnames[0]]
+
+        return workbook_response(f"CalculatedAmount {cp_report.name}", wb)
+
+    def get_data(self, cp_report):
+        records = (
+            CPRecord.objects.filter(
+                country_programme_report_id=cp_report.id, substance_id__isnull=False
+            )
+            .select_related("substance__group")
+            .prefetch_related("record_usages")
+            .all()
+        )
+        data = {}
+        for record in records:
+            substance_category = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(
+                record.substance.group.group_id
+            )
+            if substance_category in ["Other", "Legacy"]:
+                continue
+            if substance_category not in data:
+                data[substance_category] = {
+                    "sectorial_total": 0,
+                    "consumption": 0,
+                }
+            sectorial_total = record.get_sectorial_total()
+            consumption = record.get_consumption_value(use_sectorial_total=False)
+
+            # convert data
+            if substance_category == "HFC":
+                # convert consumption value to CO2 equivalent
+                consumption *= record.substance.gwp or 0
+                sectorial_total *= record.substance.gwp or 0
+            else:
+                # convert consumption value to ODP
+                consumption *= record.substance.odp or 0
+                sectorial_total *= record.substance.odp or 0
+
+            data[substance_category]["sectorial_total"] += sectorial_total
+            data[substance_category]["consumption"] += consumption
+
+        # convert data to list
+        return [{"substance_name": key, **value} for key, value in data.items()]
 
 
 class CPHFCHCFCExportBaseView(views.APIView):
