@@ -11,3 +11,5 @@ WORKDIR /app
 RUN pip install --upgrade pip
 COPY $REQFILE .
 RUN pip install --no-cache-dir -r $REQFILE
+
+COPY . /app
