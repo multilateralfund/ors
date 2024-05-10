@@ -294,15 +294,9 @@ class BlendCreateView(generics.CreateAPIView):
 
             # check if component already exists in components dict
             if subst_id in existing_subst:
-                # if component already exists and is not "other" return error
                 comp_errors[row_id] = {
                     "substance": "Substance already exists in the blend."
                 }
-                continue
-
-            if "other" in subst.name.lower() and not component_name:
-                # components of "other" substances must have a specific name
-                comp_errors[row_id] = {"component_name": "Please add a component name"}
                 continue
 
             # add component to the component list
@@ -316,8 +310,7 @@ class BlendCreateView(generics.CreateAPIView):
             )
 
             # add substance to the existing substances list if it is not "other"
-            if "other" not in subst.name.lower():
-                existing_subst.add(subst_id)
+            existing_subst.add(subst_id)
 
             # set odp and gwp
             odp += subst.odp * prcnt_decimal

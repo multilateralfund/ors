@@ -349,7 +349,7 @@ class TestCreateBlend:
                 {"substance_id": substF.id, "component_name": "", "percentage": 30},
                 {
                     "substance_id": subst_otherF.id,
-                    "component_name": "SubstFFF",
+                    "component_name": "",
                     "percentage": 50,
                 },
             ],
@@ -380,7 +380,7 @@ class TestCreateBlend:
         assert float(response.data["gwp"]) == substF.gwp * 0.3 + subst_otherF.gwp * 0.5
         assert (
             response.data["composition"]
-            == "SubstFFF-50.00%; SubstanceF-30.00%; SubstanceA-20.00%"
+            == "Other Substances-50.00%; SubstanceF-30.00%; SubstanceA-20.00%"
         )
         assert response.data["created"]
 
@@ -454,14 +454,6 @@ class TestCreateBlend:
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
 
-        # invalid component name for other substances
-        data["components"] = [
-            {"substance_id": substA.id, "component_name": "", "percentage": 50},
-            {"substance_id": subst_otherF.id, "component_name": "", "percentage": 50},
-        ]
-        response = self.client.post(self.url, data, format="json")
-        assert response.status_code == 400
-
         # check that no blend was created
         assert (Blend.objects.count()) == initial_count
 
@@ -514,18 +506,7 @@ class TestCreateBlend:
             ],
         }
         response = self.client.post(self.url, data, format="json")
-        assert response.status_code == 200
-        assert response.data["name"] == "CustMix-0"
-        assert response.data["other_names"] == data["other_names"]
-        assert (
-            response.data["composition"]
-            == "SubstFFF-50.30%; SubstFFF2-30.50%; SubstanceA-19.20%"
-        )
-        assert (
-            float(response.data["odp"]) == substA.odp * 0.192 + subst_otherF.odp * 0.808
-        )
-        assert float(response.data["gwp"]) == subst_otherF.gwp * 0.808
-        assert Blend.objects.count() == 1
+        assert response.status_code == 400
 
 
 class TestNextCustName(BaseTest):
