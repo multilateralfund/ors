@@ -52,5 +52,13 @@ class SettingsView(views.APIView):
                     max_year=Max("year"), min_year=Min("year")
                 ),
             },
+            "send_mail": config.SEND_MAIL,
         }
         return Response(settings)
+
+    def post(self, request, *args, **kwargs):
+        send_mail = request.data.get("send_mail")
+        if isinstance(send_mail, bool):
+            config.SEND_MAIL = send_mail
+
+        return Response({})

@@ -1,4 +1,5 @@
 import pytest
+from constance import config
 from django.urls import reverse
 from rest_framework.test import APIClient
 from unittest.mock import patch
@@ -109,3 +110,22 @@ class TestCPReportComments:
         # check 3 emails sent (3 comments)
         mock_send_mail_comment.assert_called()
         assert mock_send_mail_comment.call_count == 3
+
+    def test_config_mail_not_sent(self, user, cp_report_2019, mock_send_mail_comment):
+        config.SEND_MAIL = False  # change config
+        url = reverse(
+            "country-programme-report-comments", kwargs={"id": cp_report_2019.id}
+        )
+
+        self.client.force_authenticate(user=user)
+        # create section A comment
+        data = {
+            "section": self.SECTION_A,
+            "comment_type": self.COMMENT_SECRETARIAT,
+            "comment": "Test config - mail not sent",
+        }
+        response = self.client.post(url, data, format="json")
+        assert response.status_code == 201
+
+        # check email not sent
+        mock_send_mail_comment.assert_not_called()

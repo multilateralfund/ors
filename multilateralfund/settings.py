@@ -210,6 +210,7 @@ CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 
 CONSTANCE_CONFIG = {
     "CP_NR_REPORTS": (9, "Number of reports to display in the country programme page"),
+    "SEND_MAIL": (True, "Send email notifications to users?", bool),
 }
 
 # Logging

@@ -1,3 +1,4 @@
+from constance import config
 from django.db import transaction
 from rest_framework import serializers
 
@@ -11,7 +12,7 @@ from core.api.validations.cp_reports_validations import validate_cp_report
 from core.models.country import Country
 from core.models.country_programme import CPReport, CPReportSections
 from core.models.country_programme_archive import CPReportArchive
-from core.tasks import send_mail_report_submit
+from core.tasks import send_mail_report_create
 from core.utils import IMPORT_DB_MAX_YEAR, VALIDATION_MIN_YEAR
 
 
@@ -298,7 +299,7 @@ class CPReportCreateSerializer(serializers.Serializer):
 
         if not self.context.get("from_update"):
             self._create_history(cp_report, request_user)
-            if cp_report.status == CPReport.CPReportStatus.FINAL:
-                send_mail_report_submit.delay(cp_report.id)  # send mail to MLFS
+            if config.SEND_MAIL and cp_report.status == CPReport.CPReportStatus.FINAL:
+                send_mail_report_create.delay(cp_report.id)  # send mail to MLFS
 
         return cp_report
