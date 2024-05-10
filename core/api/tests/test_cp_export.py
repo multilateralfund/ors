@@ -276,3 +276,19 @@ class TestCPExtractionALLExport(BaseTest):
         # country, year, facility, total, all_uses, feedstock_gc, destruction
         # feedstock_wpc, destruction_wpc, generated_emissions, remarks, notes
         assert wb["HFC-23Emission"].max_column == 12
+
+
+class TestCPCalculatedAmountExport(BaseTest):
+    url = reverse("country-programme-calculated-amount-export")
+
+    def test_get_cp_export(self, user, cp_report_2019, _setup_new_cp_report):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
+        assert response.status_code == 200
+        assert response.filename == f"CalculatedAmount {cp_report_2019.name}.xlsx"
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        assert wb.sheetnames == ["Calculated Amount"]
+        assert wb["Calculated Amount"].max_row == 3
+        assert wb["Calculated Amount"].max_column == 3

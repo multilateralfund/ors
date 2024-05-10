@@ -83,15 +83,27 @@ class CPRecord(AbstractCPRecord):
             + (self.blend.name if self.blend else self.substance.name)
         )
 
-    def get_consumption_value(self):
+    def get_sectorial_total(self):
         """
-        Get the consumption value for the record
-        If Import, Export and Production are not provided,
-            it should be the TOTAL of Use by Sector
+        Get the sectorial total value for the record
+        (sum of all the usages for the record)
+
+        """
+        return sum(usage.quantity for usage in self.record_usages.all())
+
+    def get_consumption_value(self, use_sectorial_total=True):
+        """
+        Get the consumption value for the record (imports - exports + production)
+
+        @param use_sectorial_total: if True, the sectorial total value will be used
+            only if there are no imports, exports or production values
+
         """
         if any([self.imports, self.exports, self.production]):
             return (self.imports or 0) - (self.exports or 0) + (self.production or 0)
-        return sum(usage.quantity for usage in self.record_usages.all())
+        if use_sectorial_total:
+            return self.get_sectorial_total()
+        return 0
 
 
 class CPUsage(AbstractCPUsage):
