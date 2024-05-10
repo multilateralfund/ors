@@ -9,7 +9,7 @@ from core.api.serializers.adm import (
     AdmRecordSerializer,
 )
 from core.api.permissions import IsUserAllowedCP
-from core.api.serializers.cp_comment import CPCommentSerializer
+from core.api.serializers.cp_comment import CPCommentSerializer, CPCommentArchiveSerializer
 from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_history import CPHistorySerializer
@@ -26,6 +26,7 @@ from core.models.country_programme import (
     CPReport,
     CPReportFormatRow,
 )
+from core.models.country_programme_archive import CPReportArchive
 from core.utils import IMPORT_DB_MAX_YEAR, IMPORT_DB_OLDEST_MAX_YEAR
 
 # pylint: disable=E1102
@@ -296,6 +297,22 @@ class CPRecordBaseListView(views.APIView):
 
         return history
 
+    def _get_serialized_cp_comments(self, cp_report):
+        """
+        Returns current version's comments if current CPReport is final;
+        if it's draft, it returns the comments from the latest FINAL version.
+        """
+        if cp_report.status == CPReport.CPReportStatus.DRAFT:
+            final_report = CPReportArchive.objects.filter(
+                country=cp_report.country,
+                year=cp_report.year,
+                status=CPReport.CPReportStatus.FINAL,
+            ).first()
+
+            return CPCommentArchiveSerializer(final_report.cpcomments.all(), many=True).data if final_report else []
+
+        return self.cp_comment_seri_class(cp_report.cpcomments.all(), many=True).data
+
     def _get_new_cp_records(self, cp_report):
         section_a = self._get_displayed_records(cp_report, "A")
         section_b = self._get_displayed_records(cp_report, "B")
@@ -319,9 +336,7 @@ class CPRecordBaseListView(views.APIView):
             "section_e": self.cp_emission_seri_class(section_e, many=True).data,
             "section_f": section_f,
             "history": self._get_cp_history(cp_report),
-            "comments": self.cp_comment_seri_class(
-                cp_report.cpcomments.all(), many=True
-            ).data,
+            "comments": self._get_serialized_cp_comments(cp_report),
         }
         if hasattr(cp_report, "cpreportedsections"):
             # This property will not be present for pre-2023
