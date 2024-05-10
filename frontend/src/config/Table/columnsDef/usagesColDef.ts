@@ -1,5 +1,8 @@
-import defaultColGroupDef from '@ors/config/Table/columnsDef/defaultColGroupDef'
 import { includes } from 'lodash'
+
+import defaultColGroupDef from '@ors/config/Table/columnsDef/defaultColGroupDef'
+
+import { IAgHeaderParams } from '@ors/components/manage/AgComponents/AgHeaderComponent'
 
 export default function getUsagesColDef() {
   return {
@@ -73,7 +76,7 @@ export default function getUsagesColDef() {
       },
     },
     Other: {
-      headerComponentParams: (props: any) => {
+      headerComponentParams: (props: IAgHeaderParams) => {
         const model = props.context?.variant.model
         return {
           footnote: {
@@ -132,7 +135,7 @@ export default function getUsagesColDef() {
       flex: 1,
     },
     'Refrigeration Manufacturing Other V': {
-      headerComponentParams: (props: any) => {
+      headerComponentParams: (props: IAgHeaderParams) => {
         const model = props.context?.variant.model
         return {
           footnote: {

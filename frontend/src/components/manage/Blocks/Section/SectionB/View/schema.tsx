@@ -46,7 +46,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
       resizable: true,
       wrapText: true,
     }),
-    [],
+    [model],
   )
 
   const bySector = useMemo(() => {

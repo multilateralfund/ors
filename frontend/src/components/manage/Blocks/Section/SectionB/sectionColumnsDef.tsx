@@ -5,6 +5,7 @@ import { includes, startsWith } from 'lodash'
 import { colDefById } from '@ors/config/Table/columnsDef'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
+import { IAgHeaderParams } from '@ors/components/manage/AgComponents/AgHeaderComponent'
 
 const sectionColDefById: Record<string, ColDef> = {
   ...colDefById,
@@ -91,7 +92,7 @@ const sectionColDefById: Record<string, ColDef> = {
     ...colDefById['remarks'],
     cellClass: 'ag-text-center',
     headerClass: 'ag-text-center',
-    headerComponentParams: (props: any) => {
+    headerComponentParams: (props: IAgHeaderParams) => {
       const model = props.context?.variant.model
       return {
         footnote: {
