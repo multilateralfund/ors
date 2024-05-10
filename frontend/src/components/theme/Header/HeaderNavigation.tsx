@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 
 import {
   Collapse,
@@ -23,12 +23,28 @@ const makeExternalUrl = (path: string) => `${EXTERNAL_BASE_URL}${path}`
 
 const makeInternalNavItem = (
   pathname: string,
-  props: { label: string; url: string },
+  props: {
+    label: string
+    menu?: { label: string; url: string }[]
+    url: string
+  },
 ) => {
+  const current = !!props.menu?.some((menuItem) =>
+    matchPath(`${menuItem.url}/*`, pathname || ''),
+  )
+  const internal = true
+
+  const processedMenu = props.menu?.map((menuItem) => ({
+    ...menuItem,
+    current: !!matchPath(`${menuItem.url}/*`, pathname || ''),
+    internal,
+  }))
+
   return {
-    current: !!matchPath(`${props.url}/*`, pathname || ''),
-    internal: true,
+    current,
+    internal,
     ...props,
+    menu: processedMenu,
   }
 }
 
@@ -36,14 +52,20 @@ const useInternalNavSections = () => {
   const pathname = usePathname()
   const nI = makeInternalNavItem.bind(null, pathname)
   return [
-    nI({ label: 'Country programmes', url: '/country-programme' }),
-    nI({ label: 'Business plans', url: '/business-plans' }),
-    nI({
-      label: 'Project submissions',
-      url: '/project-submissions',
-    }),
-    nI({ label: 'Projects', url: '/projects' }),
-  ]
+    {
+      label: 'Country programmes',
+      menu: [
+        { label: 'View reports', url: '/country-programme/reports' },
+        { label: 'Add new report', url: '/country-programme/create' },
+        { label: 'Export data', url: '/country-programme/export-data' },
+        { label: 'Settings', url: '/country-programme/settings' },
+      ],
+      url: '/country-programme/reports',
+    },
+    { label: 'Business plans', url: '/business-plans' },
+    { label: 'Project submissions', url: '/project-submissions' },
+    { label: 'Projects', url: '/projects' },
+  ].map((item) => nI(item))
 }
 
 interface navItem {
@@ -156,7 +178,7 @@ const DesktopHeaderNavigation = ({
       onMouseLeave={handleHideAllMenus}
     >
       {items.map((item) => (
-        <div key={item.label} className="relative">
+        <div key={item.label} className="relative" data-label={item.label}>
           <div className="flex cursor-pointer text-primary">
             <div
               className={cx(
@@ -195,16 +217,42 @@ const DesktopHeaderNavigation = ({
               {item.menu?.map((menuItem) => {
                 const Component = menuItem?.internal ? NextLink : 'a'
                 return (
-                  <Component
-                    key={menuItem.label}
-                    className={cx(
-                      'text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0 hover:bg-mlfs-hlYellow',
-                      { 'bg-mlfs-hlYellow': menuItem.current },
-                    )}
-                    href={menuItem.url}
-                  >
-                    {menuItem.label}
-                  </Component>
+                  <React.Fragment key={menuItem.label}>
+                    <Component
+                      className={cx(
+                        'flex flex-nowrap items-center gap-1 text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0',
+                        {
+                          'bg-mlfs-hlYellow':
+                            menuItem.current && !menuItem.menu,
+                        },
+                        { 'hover:bg-mlfs-hlYellow': !menuItem.menu },
+                        {
+                          'pointer-events-none cursor-default hover:bg-transparent':
+                            menuItem.menu,
+                        },
+                      )}
+                      href={menuItem.url}
+                    >
+                      {menuItem.label}
+                      {menuItem.menu && <IoChevronDown />}
+                    </Component>
+                    {menuItem.menu &&
+                      menuItem.menu.length > 0 &&
+                      menuItem.menu.map((subMenuItem) => {
+                        return (
+                          <NextLink
+                            key={subMenuItem.label}
+                            className={cx(
+                              'text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 pl-8 text-lg text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0 hover:bg-mlfs-hlYellow',
+                              { 'bg-mlfs-hlYellow': subMenuItem.current },
+                            )}
+                            href={subMenuItem.url}
+                          >
+                            {subMenuItem.label}
+                          </NextLink>
+                        )
+                      })}
+                  </React.Fragment>
                 )
               })}
             </div>
@@ -222,9 +270,25 @@ const MobileHeaderNavigation = ({
   className: string
   items: ReturnType<typeof useMenuItems>
 }) => {
-  const initiallyExpanded = items
-    .filter((item) => item.current)
-    .reduce((acc, item) => ({ ...acc, [item.label]: true }), {})
+  const initiallyExpanded: Record<string, boolean> = items.reduce(
+    (acc, item) => {
+      if (item.menu && item.menu.some((subItem) => subItem.current)) {
+        acc[item.label] = true
+      }
+      if (item.menu) {
+        item.menu.forEach((subItem) => {
+          if (
+            subItem.menu &&
+            subItem.menu.some((subSubItem) => subSubItem.current)
+          ) {
+            acc[subItem.label] = true
+          }
+        })
+      }
+      return acc
+    },
+    {} as Record<string, boolean>,
+  )
 
   const [open, setOpen] = useState(false)
   const [openMenus, setOpenMenus] =
@@ -264,7 +328,7 @@ const MobileHeaderNavigation = ({
           {items.map((item) => {
             const styling =
               'block border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-primary px-6 py-4 text-xl uppercase text-primary no-underline transition-all hover:bg-mlfs-hlYellowTint'
-            const regularLink = !item.menu ? (
+            const regularMenuLink = !item.menu ? (
               <ListItem
                 key={item.label}
                 className={styling}
@@ -276,7 +340,7 @@ const MobileHeaderNavigation = ({
             ) : null
 
             return (
-              regularLink || (
+              regularMenuLink || (
                 <div key={item.label}>
                   <ListItemButton
                     className={cx(
@@ -300,19 +364,66 @@ const MobileHeaderNavigation = ({
                     <List component="div">
                       {item.menu &&
                         item.menu.map((menuItem) => {
-                          const Component = menuItem?.internal ? NextLink : 'a'
-                          return (
+                          const regularSubMenuLink = !menuItem.menu ? (
                             <ListItem
                               key={menuItem.label}
-                              className={cx(
-                                'block py-4 pl-10 text-xl uppercase text-primary no-underline transition-all hover:bg-mlfs-hlYellowTint',
-                                { 'bg-mlfs-hlYellowTint': menuItem.current },
-                              )}
-                              component={Component}
+                              className={cx(styling, 'pl-10')}
+                              component={'a'}
                               href={menuItem.url}
                             >
                               {menuItem.label}
                             </ListItem>
+                          ) : null
+
+                          return (
+                            regularSubMenuLink || (
+                              <div key={menuItem.label}>
+                                <ListItemButton
+                                  className={cx(
+                                    'flex items-center justify-between rounded-none',
+                                    styling,
+                                  )}
+                                  onClick={() => toggleOpenMenu(menuItem.label)}
+                                >
+                                  {menuItem.label}
+                                  {openMenus[menuItem.label] ? (
+                                    <IoChevronUp />
+                                  ) : (
+                                    <IoChevronDown />
+                                  )}
+                                </ListItemButton>
+                                <Collapse
+                                  in={openMenus[menuItem.label]}
+                                  timeout="auto"
+                                  unmountOnExit
+                                >
+                                  <List component="div">
+                                    {menuItem.menu &&
+                                      menuItem.menu.map((subMenuItem) => {
+                                        const Component = subMenuItem?.internal
+                                          ? NextLink
+                                          : 'a'
+                                        return (
+                                          <ListItem
+                                            key={subMenuItem.label}
+                                            className={cx(
+                                              'block py-4 pl-12 text-xl uppercase text-primary no-underline transition-all hover:bg-mlfs-hlYellowTint',
+                                              {
+                                                'bg-mlfs-hlYellowTint':
+                                                  subMenuItem.current,
+                                              },
+                                            )}
+                                            component={Component}
+                                            href={subMenuItem.url}
+                                          >
+                                            {subMenuItem.label}
+                                          </ListItem>
+                                        )
+                                      })}
+                                  </List>
+                                </Collapse>
+                              </div>
+                            )
                           )
                         })}
                     </List>

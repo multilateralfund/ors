@@ -22,7 +22,7 @@ export default function Header() {
   const pathname = usePathname()
 
   useEffect(() => {
-    setIsCP(pathname === '/country-programme')
+    setIsCP(pathname === '/country-programme/reports')
   }, [pathname, setIsCP])
 
   return (
