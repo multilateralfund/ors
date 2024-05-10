@@ -5,7 +5,7 @@ import { Box, Typography } from '@mui/material'
 import Field from '@ors/components/manage/Form/Field'
 
 export default function SectionFCreate(props: any) {
-  const { form, section, setForm } = props
+  const { Comments, form, section, setForm, showComments } = props
 
   return (
     <>
@@ -22,6 +22,7 @@ export default function SectionFCreate(props: any) {
           }}
         />
       </Box>
+      {showComments && <Comments section="section_f" viewOnly={true} />}
     </>
   )
 }

@@ -118,6 +118,7 @@ function getRowData(
 }
 
 export default function SectionCCreate(props: {
+  Comments: React.FC<{ section: string, viewOnly: boolean }>
   Section: SectionC
   TableProps: PassedCPCreateTableProps
   emptyForm: EmptyFormType
@@ -125,9 +126,10 @@ export default function SectionCCreate(props: {
   onSectionCheckChange: (section: string, isChecked: boolean) => void
   sectionsChecked: Record<string, boolean>
   setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
+  showComments: boolean
   variant: ReportVariant
 }) {
-  const { Section, TableProps, emptyForm, form, setForm, variant } = props
+  const { Comments, Section, TableProps, emptyForm, form, setForm, showComments, variant } = props
   const newNode = useRef<RowNode>()
 
   const substances = useStore(
@@ -388,6 +390,7 @@ export default function SectionCCreate(props: {
           </Box>
         </Modal>
       )}
+      {showComments && <Comments section="section_c" viewOnly={true} />}
     </>
   )
 }

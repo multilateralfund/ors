@@ -18,7 +18,7 @@ export default function SectionFView(props: any) {
           value={report.section_f.remarks}
         />
       </Box>
-      {showComments && <Comments section="section_f" />}
+      {showComments && <Comments section="section_f" viewOnly={false} />}
     </>
   )
 }

@@ -100,7 +100,7 @@ function getInitialPinnedBottomRowData(model: string): RowData[] {
 }
 
 export default function SectionACreate(props: {
-  Comments: any
+  Comments: React.FC<{ section: string, viewOnly: boolean }>
   Section: SectionA
   TableProps: PassedCPCreateTableProps
   emptyForm: EmptyFormType
