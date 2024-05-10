@@ -172,6 +172,20 @@ export const createCPReportsSlice = ({
         slice: 'cp_reports.report',
       })
     },
+    fetchBlends: async () => {
+      const options = {
+        removeCacheTimeout: 60,
+        withStoreCache: true,
+      }
+      const blendsPath = `api/blends/?with_usages=true`
+      return await fetchSliceData({
+        apiSettings: {
+          options,
+          path: blendsPath,
+        },
+        slice: 'cp_reports.blends',
+      })
+    },
     fetchBundle: async (country_id, year, view = true) => {
       const {
         fetchEmptyForm,

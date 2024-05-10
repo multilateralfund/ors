@@ -1,3 +1,4 @@
+import { ApiBlend } from '@ors/types/api_blends'
 import { EmptyFormSubstance, EmptyFormType } from '@ors/types/api_empty-form'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { ReportVariant } from '@ors/types/variants'
@@ -6,7 +7,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { RowNode } from 'ag-grid-community'
-import { each, find, findIndex, includes, union } from 'lodash'
+import { each, find, findIndex, includes, sortBy, union } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
@@ -134,6 +135,9 @@ export default function SectionCCreate(props: {
     (state) =>
       getResults<ApiSubstance>(state.cp_reports.substances.data).results,
   )
+  const blends = useStore(
+    (state) => getResults<ApiBlend>(state.cp_reports.blends.data).results,
+  )
 
   const substancePrices = useApi<SubstancePrices>({
     options: {
@@ -211,8 +215,29 @@ export default function SectionCCreate(props: {
   }, [Section, chemicalsInForm, emptyForm.substance_rows.section_c])
 
   const optionalSubstances = useMemo(() => {
-    return allChemicalOptions.filter((substance) => substance.group === 'Other')
-  }, [allChemicalOptions])
+    const data: Array<any> = []
+    const mandatorySubstancesIds = mandatorySubstances.map((c) => c.row_id)
+
+    each(substances, (substance) => {
+      if (
+        !includes(chemicalsInForm, `substance_${substance.id}`) &&
+        !includes(mandatorySubstancesIds, `substance_${substance.id}`)
+      ) {
+        data.push(Section.transformApiSubstance(substance))
+      }
+    })
+
+    each(sortBy([...blends], 'sort_order'), (blend) => {
+      if (
+        !includes(chemicalsInForm, `blend_${blend.id}`) &&
+        !includes(mandatorySubstancesIds, `blend_${blend.id}`)
+      ) {
+        data.push(Section.transformApiBlend(blend))
+      }
+    })
+
+    return data
+  }, [Section, blends, chemicalsInForm, mandatorySubstances, substances])
 
   const gridOptions = useGridOptions({
     model: variant.model,
