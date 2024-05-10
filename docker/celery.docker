@@ -6,7 +6,6 @@ ENV PYTHONUNBUFFERED 1
 ENV PIP_NO_CACHE_DIR=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
-RUN mkdir /.fs /app
 WORKDIR /app
 
 RUN pip install --upgrade pip

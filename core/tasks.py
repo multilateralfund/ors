@@ -25,19 +25,18 @@ def send_mail_comment_submit(cp_comment_id):
             user_type=User.UserType.COUNTRY_USER, country=cp_report.country
         )
 
-    for recipient in recipients:
-        send_mail(
-            "MLF Knowledge Management System: New comment added for CP report",
-            (
-                f"This is an automated message informing you that a new "
-                f"comment was added for the CP report of country: {cp_report.country} "
-                f"and year: {cp_report.year} ({comment_section})\n"
-                f"The CP report is available at {link}"
-            ),
-            None,  # use DEFAULT_FROM_EMAIL
-            [recipient.email],
-            fail_silently=False,
-        )
+    send_mail(
+        "MLF Knowledge Management System: New comment added for CP report",
+        (
+            f"This is an automated message informing you that a new "
+            f"comment was added for the CP report of country: {cp_report.country} "
+            f"and year: {cp_report.year} ({comment_section})\n"
+            f"The CP report is available at {link}"
+        ),
+        None,  # use DEFAULT_FROM_EMAIL
+        recipients.values_list("email", flat=True),
+        fail_silently=False,
+    )
 
 
 @app.task()
@@ -46,19 +45,18 @@ def send_mail_report_create(cp_report_id):
     link = f"{settings.FRONTEND_HOST[0]}/country-programme/{cp_report.country.iso3}/{cp_report.year}"
     recipients = User.objects.filter(user_type=User.UserType.SECRETARIAT)
 
-    for recipient in recipients:
-        send_mail(
-            "MLF Knowledge Management System: CP report added",
-            (
-                f"This is an automated message informing you that a new "
-                f"CP report has been added for country: "
-                f"{cp_report.country} and year: {cp_report.year}\n"
-                f"The CP report is available at {link}"
-            ),
-            None,  # use DEFAULT_FROM_EMAIL
-            [recipient.email],
-            fail_silently=False,
-        )
+    send_mail(
+        "MLF Knowledge Management System: CP report added",
+        (
+            f"This is an automated message informing you that a new "
+            f"CP report has been added for country: "
+            f"{cp_report.country} and year: {cp_report.year}\n"
+            f"The CP report is available at {link}"
+        ),
+        None,  # use DEFAULT_FROM_EMAIL
+        recipients.values_list("email", flat=True),
+        fail_silently=False,
+    )
 
 
 @app.task()
@@ -67,16 +65,15 @@ def send_mail_report_update(cp_report_id):
     link = f"{settings.FRONTEND_HOST[0]}/country-programme/{cp_report.country.iso3}/{cp_report.year}"
     recipients = User.objects.filter(user_type=User.UserType.SECRETARIAT)
 
-    for recipient in recipients:
-        send_mail(
-            "MLF Knowledge Management System: New version of CP report added",
-            (
-                f"This is an automated message informing you that a new "
-                f"version ({cp_report.version}) has been added for the CP report "
-                f"for country: {cp_report.country} and year: {cp_report.year}\n"
-                f"The CP report is available at {link}"
-            ),
-            None,  # use DEFAULT_FROM_EMAIL
-            [recipient.email],
-            fail_silently=False,
-        )
+    send_mail(
+        "MLF Knowledge Management System: New version of CP report added",
+        (
+            f"This is an automated message informing you that a new "
+            f"version ({cp_report.version}) has been added for the CP report "
+            f"for country: {cp_report.country} and year: {cp_report.year}\n"
+            f"The CP report is available at {link}"
+        ),
+        None,  # use DEFAULT_FROM_EMAIL
+        recipients.values_list("email", flat=True),
+        fail_silently=False,
+    )
