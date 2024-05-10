@@ -71,9 +71,9 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
   const TitleContent =
     valueGWP != null && valueODP != null ? (
       <div className="flex flex-col gap-1">
-        <span>Metric tons: {value}</span>
+        <span>Metric tonnes: {value}</span>
         <span>GWP: {valueGWP}</span>
-        <span>ODP tones: {valueODP}</span>
+        <span>ODP tonnes: {valueODP}</span>
       </div>
     ) : (
       <span>{value}</span>
