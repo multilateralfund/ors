@@ -270,9 +270,25 @@ const MobileHeaderNavigation = ({
   className: string
   items: ReturnType<typeof useMenuItems>
 }) => {
-  const initiallyExpanded = items
-    .filter((item) => item.current)
-    .reduce((acc, item) => ({ ...acc, [item.label]: true }), {})
+  const initiallyExpanded: Record<string, boolean> = items.reduce(
+    (acc, item) => {
+      if (item.menu && item.menu.some((subItem) => subItem.current)) {
+        acc[item.label] = true
+      }
+      if (item.menu) {
+        item.menu.forEach((subItem) => {
+          if (
+            subItem.menu &&
+            subItem.menu.some((subSubItem) => subSubItem.current)
+          ) {
+            acc[subItem.label] = true
+          }
+        })
+      }
+      return acc
+    },
+    {} as Record<string, boolean>,
+  )
 
   const [open, setOpen] = useState(false)
   const [openMenus, setOpenMenus] =
@@ -351,7 +367,7 @@ const MobileHeaderNavigation = ({
                           const regularSubMenuLink = !menuItem.menu ? (
                             <ListItem
                               key={menuItem.label}
-                              className={styling}
+                              className={cx(styling, 'pl-10')}
                               component={'a'}
                               href={menuItem.url}
                             >
@@ -391,7 +407,7 @@ const MobileHeaderNavigation = ({
                                           <ListItem
                                             key={subMenuItem.label}
                                             className={cx(
-                                              'block py-4 pl-10 text-xl uppercase text-primary no-underline transition-all hover:bg-mlfs-hlYellowTint',
+                                              'block py-4 pl-12 text-xl uppercase text-primary no-underline transition-all hover:bg-mlfs-hlYellowTint',
                                               {
                                                 'bg-mlfs-hlYellowTint':
                                                   subMenuItem.current,
