@@ -8,10 +8,10 @@ import HeaderTitle from "@ors/components/theme/Header/HeaderTitle";
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export const metadata: Metadata = {
-  title: 'Export data',
+  title: 'Settings',
 }
 
-export default async function CPExportData() {
+export default async function CPSettings() {
   return (
     <PageWrapper>
       <HeaderTitle>
@@ -20,7 +20,7 @@ export default async function CPExportData() {
           component="h1"
           variant="h3"
         >
-          Export data
+          Settings
         </Typography>
       </HeaderTitle>
     </PageWrapper>
