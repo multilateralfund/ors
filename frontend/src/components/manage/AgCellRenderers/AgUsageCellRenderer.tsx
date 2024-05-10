@@ -68,13 +68,19 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
 
   const formattedValue = formatDecimalValue(value, props)
 
-  const titleContent =
-    valueGWP != null && valueODP != null
-      ? `MT: ${value}; GWP: ${valueGWP}; ODP: ${valueODP}`
-      : value
+  const TitleContent =
+    valueGWP != null && valueODP != null ? (
+      <div className="flex flex-col gap-1">
+        <span>Metric tons: {value}</span>
+        <span>GWP: {valueGWP}</span>
+        <span>ODP tones: {valueODP}</span>
+      </div>
+    ) : (
+      <span>{value}</span>
+    )
 
   return (
-    <Tooltip enterDelay={300} placement={'top-start'} title={titleContent}>
+    <Tooltip enterDelay={300} placement={'top-start'} title={TitleContent}>
       <Typography className={props.className} component="span" lineHeight={1}>
         {formattedValue}
       </Typography>
