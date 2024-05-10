@@ -210,7 +210,8 @@ const ReportInfoCreate = (props: any) => {
             <Field
               {...yearFieldProps}
               FieldProps={{ className: 'mb-0 ReportInfo' }}
-              disableClearable={true}
+              defaultValue={isEdit ? report.year : null}
+              {...(isCreate ? { disableClearable: true } : {})}
               disabled={isEdit}
             />
           </div>

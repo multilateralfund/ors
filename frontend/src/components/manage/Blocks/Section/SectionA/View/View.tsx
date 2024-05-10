@@ -1,4 +1,5 @@
 import { CPReport } from '@ors/types/api_country-programme_records'
+import { ReportVariant } from '@ors/types/variants'
 
 import { useMemo, useRef, useState } from 'react'
 
@@ -28,7 +29,11 @@ export type RowData = {
   tooltip?: boolean
 } & DeserializedDataA
 
-function getRowData(report: CPReport, showOnlyReported: boolean): RowData[] {
+function getRowData(
+  report: CPReport,
+  showOnlyReported: boolean,
+  model: ReportVariant['model'],
+): RowData[] {
   let rowData: RowData[] = []
   const dataByGroup: Record<string, any[]> = {}
   const groups: Array<string> = []
@@ -53,7 +58,7 @@ function getRowData(report: CPReport, showOnlyReported: boolean): RowData[] {
       rowData,
       [{ display_name: group, group, rowType: 'group' }],
       dataByGroup[group],
-      group === 'Annex C, Group I'
+      group === 'Annex C, Group I' && !includes(['V'], model)
         ? [
             {
               display_name: 'Other',
@@ -90,7 +95,7 @@ export default function SectionAView(props: any) {
       includes(['IV', 'V'], variant.model) ? 'sector' : 'all',
     )
 
-  const rowData = getRowData(report, showOnlyReported)
+  const rowData = getRowData(report, showOnlyReported, variant.model)
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
   const gridOptions = useMemo(() => {

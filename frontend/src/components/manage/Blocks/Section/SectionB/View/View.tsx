@@ -78,7 +78,7 @@ function getRowData(
           ]
         : [],
       dataByGroup[group],
-      group.startsWith('Blends')
+      group.startsWith('Blends') && !includes(['V'], variant?.model)
         ? [
             {
               display_name: 'Other',

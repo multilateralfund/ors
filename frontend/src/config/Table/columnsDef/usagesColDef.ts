@@ -1,4 +1,8 @@
+import { includes } from 'lodash'
+
 import defaultColGroupDef from '@ors/config/Table/columnsDef/defaultColGroupDef'
+
+import { IAgHeaderParams } from '@ors/components/manage/AgComponents/AgHeaderComponent'
 
 export default function getUsagesColDef() {
   return {
@@ -72,14 +76,17 @@ export default function getUsagesColDef() {
       },
     },
     Other: {
-      headerComponentParams: {
-        footnote: {
-          id: '3',
-          content:
-            'Uses in other sectors that do not fall specifically within the listed sectors in the table.',
-          icon: false,
-          order: 3,
-        },
+      headerComponentParams: (props: IAgHeaderParams) => {
+        const model = props.context?.variant.model
+        return {
+          footnote: {
+            id: includes(['V'], model) ? '2' : '3',
+            content:
+              'Uses in other sectors that do not fall specifically within the listed sectors in the table.',
+            icon: false,
+            order: 3,
+          },
+        }
       },
       initialWidth: 84,
     },
@@ -128,14 +135,17 @@ export default function getUsagesColDef() {
       flex: 1,
     },
     'Refrigeration Manufacturing Other V': {
-      headerComponentParams: {
-        footnote: {
-          id: '5',
-          content:
-            'Only if break-down of consumption in refrigeration and air-conditioning manufacturing is not available, information in "Other unidentified manufacturing" may be provided.',
-          icon: false,
-          order: 5,
-        },
+      headerComponentParams: (props: IAgHeaderParams) => {
+        const model = props.context?.variant.model
+        return {
+          footnote: {
+            id: includes(['V'], model) ? '3' : '4',
+            content:
+              'Only if break-down of consumption in refrigeration and air-conditioning manufacturing is not available, information in "Other unidentified manufacturing" may be provided.',
+            icon: false,
+            order: 4,
+          },
+        }
       },
       initialWidth: 150,
       maxWidth: 150,
@@ -150,11 +160,11 @@ export default function getUsagesColDef() {
     'Refrigeration Manufacturing Total IV': {
       headerComponentParams: {
         footnote: {
-          id: '5',
+          id: '4',
           content:
             'If break-down of consumption in manufacturing is not available, information in total can be provided.',
           icon: false,
-          order: 5,
+          order: 4,
         },
       },
       initialWidth: 120,
