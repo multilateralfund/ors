@@ -9,7 +9,10 @@ from core.api.serializers.adm import (
     AdmRecordSerializer,
 )
 from core.api.permissions import IsUserAllowedCP
-from core.api.serializers.cp_comment import CPCommentSerializer, CPCommentArchiveSerializer
+from core.api.serializers.cp_comment import (
+    CPCommentSerializer,
+    CPCommentArchiveSerializer,
+)
 from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_history import CPHistorySerializer
@@ -303,13 +306,23 @@ class CPRecordBaseListView(views.APIView):
         if it's draft, it returns the comments from the latest FINAL version.
         """
         if cp_report.status == CPReport.CPReportStatus.DRAFT:
-            final_report = CPReportArchive.objects.filter(
-                country=cp_report.country,
-                year=cp_report.year,
-                status=CPReport.CPReportStatus.FINAL,
-            ).first()
+            final_report = (
+                CPReportArchive.objects.filter(
+                    country=cp_report.country,
+                    year=cp_report.year,
+                    status=CPReport.CPReportStatus.FINAL,
+                )
+                .order_by("-version")
+                .first()
+            )
 
-            return CPCommentArchiveSerializer(final_report.cpcomments.all(), many=True).data if final_report else []
+            return (
+                CPCommentArchiveSerializer(
+                    final_report.cpcomments.all(), many=True
+                ).data
+                if final_report
+                else []
+            )
 
         return self.cp_comment_seri_class(cp_report.cpcomments.all(), many=True).data
 
