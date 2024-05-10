@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 }
 
 export default function Dashboard() {
-  redirect('/country-programme')
+  redirect('/country-programme/reports')
 }
