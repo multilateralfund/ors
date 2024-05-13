@@ -40,7 +40,7 @@ export default function SectionDView(props: any) {
         gridRef={grid}
         rowData={rowData}
       />
-      {showComments && <Comments section="section_d" />}
+      {showComments && <Comments section="section_d" viewOnly={false} />}
     </>
   )
 }

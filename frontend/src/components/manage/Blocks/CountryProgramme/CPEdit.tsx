@@ -9,6 +9,7 @@ import { findIndex, get, includes, map, pickBy, reduce, values } from 'lodash'
 
 import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
 
+import CPComments from '@ors/components/manage/Blocks/CountryProgramme/CPComments'
 import SectionReportedSelect from '@ors/components/manage/Blocks/Section/SectionReportedSelect'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
@@ -327,6 +328,8 @@ function CPEdit() {
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [renderedSections.length, activeTab])
 
+  const showComments = variant?.model === 'V'
+
   return (
     <ValidationProvider form={form as CPBaseForm} model={variant?.model}>
       <Loading
@@ -404,6 +407,7 @@ function CPEdit() {
                   <div className="relative flex flex-col gap-6">
                     <FootnotesProvider>
                       <Section
+                        Comments={CPComments}
                         Section={get(Sections, section.id)}
                         emptyForm={report.emptyForm.data || {}}
                         errors={errors}
@@ -413,6 +417,7 @@ function CPEdit() {
                         section={section}
                         sectionsChecked={sectionsChecked}
                         setForm={setForm}
+                        showComments={showComments}
                         variant={variant}
                         TableProps={{
                           ...TableProps,

@@ -111,6 +111,7 @@ function getInitialPinnedBottomRowData(model: string): PinnedBottomRowData[] {
 }
 
 export default function SectionBCreate(props: {
+  Comments: React.FC<{ section: string, viewOnly: boolean }>
   Section: SectionB
   TableProps: PassedCPCreateTableProps
   emptyForm: EmptyFormType
@@ -126,10 +127,11 @@ export default function SectionBCreate(props: {
   }
   sectionsChecked: Record<string, boolean>
   setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
+  showComments: boolean
   variant: ReportVariant
 }) {
   const { enqueueSnackbar } = useSnackbar()
-  const { Section, TableProps, emptyForm, form, setForm, variant } = props
+  const { Comments, Section, TableProps, emptyForm, form, setForm, showComments, variant } = props
 
   const newNode = useRef<RowNode>()
 
@@ -465,6 +467,7 @@ export default function SectionBCreate(props: {
           </Box>
         </Modal>
       )}
+      {showComments && <Comments section="section_b" viewOnly={true} />}
     </>
   )
 }
