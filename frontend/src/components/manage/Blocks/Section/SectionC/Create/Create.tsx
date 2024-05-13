@@ -1,3 +1,4 @@
+import { ApiBlend } from '@ors/types/api_blends'
 import { EmptyFormSubstance, EmptyFormType } from '@ors/types/api_empty-form'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { ReportVariant } from '@ors/types/variants'
@@ -6,7 +7,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { RowNode } from 'ag-grid-community'
-import { each, find, findIndex, includes, union } from 'lodash'
+import { each, find, findIndex, includes, sortBy, union } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
@@ -118,6 +119,7 @@ function getRowData(
 }
 
 export default function SectionCCreate(props: {
+  Comments: React.FC<{ section: string, viewOnly: boolean }>
   Section: SectionC
   TableProps: PassedCPCreateTableProps
   emptyForm: EmptyFormType
@@ -125,14 +127,18 @@ export default function SectionCCreate(props: {
   onSectionCheckChange: (section: string, isChecked: boolean) => void
   sectionsChecked: Record<string, boolean>
   setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
+  showComments: boolean
   variant: ReportVariant
 }) {
-  const { Section, TableProps, emptyForm, form, setForm, variant } = props
+  const { Comments, Section, TableProps, emptyForm, form, setForm, showComments, variant } = props
   const newNode = useRef<RowNode>()
 
   const substances = useStore(
     (state) =>
       getResults<ApiSubstance>(state.cp_reports.substances.data).results,
+  )
+  const blends = useStore(
+    (state) => getResults<ApiBlend>(state.cp_reports.blends.data).results,
   )
 
   const substancePrices = useApi<SubstancePrices>({
@@ -159,12 +165,13 @@ export default function SectionCCreate(props: {
 
   const [addChemicalModal, setAddChemicalModal] = useState(false)
 
+  const chemicalsInForm = useMemo(() => {
+    return form.section_c.map((chemical: any) => chemical.row_id)
+  }, [form.section_c])
+
   // For formats <2023
   const allChemicalOptions = useMemo(() => {
     const data: Array<any> = []
-    const chemicalsInForm = form.section_c.map(
-      (chemical: any) => chemical.row_id,
-    )
     each(substances, (substance) => {
       if (
         includes(substance.sections, 'C') &&
@@ -174,16 +181,65 @@ export default function SectionCCreate(props: {
       }
     })
     return data
-  }, [substances, form.section_c, Section])
+  }, [substances, chemicalsInForm, Section])
 
   // Needed in formats >=2023
   const mandatorySubstances = useMemo(() => {
-    return allChemicalOptions.filter((substance) => substance.group !== 'Other')
-  }, [allChemicalOptions])
+    const data: Array<any> = []
+
+    each(
+      emptyForm.substance_rows.section_c.filter((row) => row.substance_id),
+      (substance) => {
+        if (!includes(chemicalsInForm, `substance_${substance.substance_id}`)) {
+          const transformedSubstance = Section.transformSubstance(
+            substance,
+            false,
+          )
+          data.push({
+            ...transformedSubstance,
+            id: transformedSubstance.display_name,
+          })
+        }
+      },
+    )
+
+    each(
+      emptyForm.substance_rows.section_c.filter((row) => row.blend_id),
+      (blend) => {
+        if (!includes(chemicalsInForm, `blend_${blend.blend_id}`)) {
+          const transformedBlend = Section.transformBlend(blend, false)
+          data.push({ ...transformedBlend, id: transformedBlend.display_name })
+        }
+      },
+    )
+
+    return data.toSorted((a, b) => -a.group.localeCompare(b.group))
+  }, [Section, chemicalsInForm, emptyForm.substance_rows.section_c])
 
   const optionalSubstances = useMemo(() => {
-    return allChemicalOptions.filter((substance) => substance.group === 'Other')
-  }, [allChemicalOptions])
+    const data: Array<any> = []
+    const mandatorySubstancesIds = mandatorySubstances.map((c) => c.row_id)
+
+    each(substances, (substance) => {
+      if (
+        !includes(chemicalsInForm, `substance_${substance.id}`) &&
+        !includes(mandatorySubstancesIds, `substance_${substance.id}`)
+      ) {
+        data.push(Section.transformApiSubstance(substance))
+      }
+    })
+
+    each(sortBy([...blends], 'sort_order'), (blend) => {
+      if (
+        !includes(chemicalsInForm, `blend_${blend.id}`) &&
+        !includes(mandatorySubstancesIds, `blend_${blend.id}`)
+      ) {
+        data.push(Section.transformApiBlend(blend))
+      }
+    })
+
+    return data
+  }, [Section, blends, chemicalsInForm, mandatorySubstances, substances])
 
   const gridOptions = useGridOptions({
     model: variant.model,
@@ -388,6 +444,7 @@ export default function SectionCCreate(props: {
           </Box>
         </Modal>
       )}
+      {showComments && <Comments section="section_c" viewOnly={true} />}
     </>
   )
 }

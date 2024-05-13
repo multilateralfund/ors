@@ -14,7 +14,7 @@ import useGridOptions from './schema'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export default function SectionECreate(props: any) {
-  const { TableProps, form, setForm } = props
+  const { Comments, TableProps, form, setForm, showComments } = props
   const newNode = useRef<RowNode>()
   const grid = useRef<any>()
   const newFacilityIndex = useRef(last<any>(form.section_e)?.id + 1 || 1)
@@ -127,6 +127,7 @@ export default function SectionECreate(props: any) {
           }
         }}
       />
+      {showComments && <Comments section="section_e" viewOnly={true} />}
     </>
   )
 }

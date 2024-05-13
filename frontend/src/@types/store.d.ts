@@ -1,6 +1,7 @@
 import type { CPReport } from './api_country-programme_records'
 import type { EmptyFormType } from './api_empty-form'
 import type { ApiSubstance } from './api_substances'
+import { ApiBlend } from '@ors/types/api_blends'
 import type { DataType, SliceData } from '@ors/types/primitives'
 import type { PartialDeep } from 'type-fest'
 
@@ -47,6 +48,7 @@ export interface CPReportsSlice {
   fetchArchivedBundle: (report_id: number, view: boolean) => void
   fetchArchivedFiles: (country_id: number) => void
   fetchArchivedReport: (report_id: number) => Promise<void>
+  fetchBlends: () => Promise<void>
   fetchBundle: (country_id: number, year: number, view: boolean) => void
   fetchEmptyForm: (report: CPReport | null, view: boolean) => void
   fetchFiles: (country_id: number, year: number) => void

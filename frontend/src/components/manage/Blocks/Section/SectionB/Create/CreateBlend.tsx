@@ -22,6 +22,7 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import api from '@ors/helpers/Api/_api'
 import { applyTransaction } from '@ors/helpers/Utils/Utils'
 import useStateWithPrev from '@ors/hooks/useStateWithPrev'
+import { useStore } from '@ors/store'
 
 import {
   IoAddCircleSharp,
@@ -69,6 +70,7 @@ function SimilarBlend({ blend, onClick, substances }: any) {
 
 export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
   const { enqueueSnackbar } = useSnackbar()
+  const fetchBlends = useStore((state) => state.cp_reports.fetchBlends)
 
   const grid = useRef<any>()
   const newNode = useRef<RowNode>()
@@ -475,6 +477,7 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
                   data: form,
                   method: 'POST',
                 })
+                await fetchBlends()
                 onCreateBlend(blend)
               } catch (error) {
                 if (error.status === 400) {

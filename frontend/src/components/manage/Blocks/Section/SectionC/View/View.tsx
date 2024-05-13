@@ -67,7 +67,7 @@ function getRowData(
 }
 
 export default function SectionCView(props: {
-  Comments: React.FC<{ section: string }>
+  Comments: React.FC<{ section: string, viewOnly: boolean }>
   TableProps: {
     context: {
       section: SectionC['data']
@@ -113,7 +113,7 @@ export default function SectionCView(props: {
         gridRef={grid}
         rowData={rowData}
       />
-      {showComments && <Comments section="section_c" />}
+      {showComments && <Comments section="section_c" viewOnly={false} />}
     </>
   )
 }

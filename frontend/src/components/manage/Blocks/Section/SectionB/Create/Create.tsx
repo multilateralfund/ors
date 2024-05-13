@@ -111,6 +111,7 @@ function getInitialPinnedBottomRowData(model: string): PinnedBottomRowData[] {
 }
 
 export default function SectionBCreate(props: {
+  Comments: React.FC<{ section: string, viewOnly: boolean }>
   Section: SectionB
   TableProps: PassedCPCreateTableProps
   emptyForm: EmptyFormType
@@ -126,14 +127,13 @@ export default function SectionBCreate(props: {
   }
   sectionsChecked: Record<string, boolean>
   setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
+  showComments: boolean
   variant: ReportVariant
 }) {
   const { enqueueSnackbar } = useSnackbar()
-  const { Section, TableProps, emptyForm, form, setForm, variant } = props
+  const { Comments, Section, TableProps, emptyForm, form, setForm, showComments, variant } = props
 
   const newNode = useRef<RowNode>()
-
-  const [createdBlends, setCreatedBlends] = useState<Array<any>>([])
 
   const substances = useStore(
     (state) =>
@@ -168,16 +168,13 @@ export default function SectionBCreate(props: {
         data.push(Section.transformApiSubstance(substance))
       }
     })
-    each(
-      sortBy(uniqBy([...blends, ...createdBlends], 'id'), 'sort_order'),
-      (blend) => {
-        if (!includes(chemicalsInForm, `blend_${blend.id}`)) {
-          data.push(Section.transformApiBlend(blend))
-        }
-      },
-    )
+    each(sortBy(uniqBy([...blends], 'id'), 'sort_order'), (blend) => {
+      if (!includes(chemicalsInForm, `blend_${blend.id}`)) {
+        data.push(Section.transformApiBlend(blend))
+      }
+    })
     return data
-  }, [substances, blends, createdBlends, chemicalsInForm, Section])
+  }, [substances, blends, chemicalsInForm, Section])
 
   // Options for formats >=2023
   const mandatoryChemicals = useMemo(() => {
@@ -218,26 +215,17 @@ export default function SectionBCreate(props: {
       .filter((row) => row.blend_id)
       .map((blend) => blend.blend_id)
 
-    each(
-      sortBy(uniqBy([...blends, ...createdBlends], 'id'), 'sort_order'),
-      (blend) => {
-        if (
-          !includes(emptyFormBlendIds, blend.id) &&
-          !includes(chemicalsInForm, `blend_${blend.id}`)
-        ) {
-          data.push(Section.transformApiBlend(blend))
-        }
-      },
-    )
+    each(sortBy(uniqBy([...blends], 'id'), 'sort_order'), (blend) => {
+      if (
+        !includes(emptyFormBlendIds, blend.id) &&
+        !includes(chemicalsInForm, `blend_${blend.id}`)
+      ) {
+        data.push(Section.transformApiBlend(blend))
+      }
+    })
 
     return data
-  }, [
-    Section,
-    blends,
-    chemicalsInForm,
-    createdBlends,
-    emptyForm.substance_rows.section_b,
-  ])
+  }, [Section, blends, chemicalsInForm, emptyForm.substance_rows.section_b])
 
   const gridOptions = useGridOptions({
     model: variant.model,
@@ -323,7 +311,6 @@ export default function SectionBCreate(props: {
         ...form,
         section_b: [...form.section_b, serializedBlend],
       }))
-      setCreatedBlends((prev) => [...prev, blend])
       enqueueSnackbar(
         <>
           Blend <span className="font-medium">{serializedBlend.name}</span>{' '}
@@ -480,6 +467,7 @@ export default function SectionBCreate(props: {
           </Box>
         </Modal>
       )}
+      {showComments && <Comments section="section_b" viewOnly={true} />}
     </>
   )
 }
