@@ -1,7 +1,7 @@
 import type { CreateSliceProps } from '@ors/types/store'
 import type { CommonSlice } from '@ors/types/store'
 
-import { defaultSliceData } from '@ors/helpers/Store/Store'
+import { defaultSliceData, setSlice } from '@ors/helpers/Store/Store'
 
 export const createCommonSlice = ({
   initialState,
@@ -22,6 +22,9 @@ export const createCommonSlice = ({
     countries_for_listing: {
       ...defaultSliceData,
       ...(initialState?.common?.countries_for_listing || {}),
+    },
+    setSettings: (settings) => {
+      setSlice('common.settings', settings)
     },
     settings: {
       ...defaultSliceData,

@@ -109,6 +109,7 @@ export interface CommonSlice {
   countries: SliceData<Country[]>
   countries_for_create: SliceData<Country[]>
   countries_for_listing: SliceData<Country[]>
+  setSettings: (newSettings: Partial<Settings>) => void
   settings: SliceData<Settings>
 }
 
@@ -184,6 +185,7 @@ export type Settings = {
   project_ods_odp_types: [string, string][]
   project_submission_categories: [string, string][]
   project_substance_types: [string, string][]
+  send_mail: boolean
   submission_amount_statuses: [string, string][]
   year_section_mapping: { max_year: number; sections: string[] }[]
 }
