@@ -1,6 +1,7 @@
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
+from unittest.mock import patch
 
 from core.models.country_programme import CPHistory, CPReport
 
@@ -23,10 +24,36 @@ def setup_new_cp_report_create(country_ro):
     }
 
 
+@pytest.fixture(name="mock_send_mail_report_create")
+def _mock_send_mail_report_create():
+    with patch("core.tasks.send_mail_report_create.delay") as send_mail:
+        yield send_mail
+
+
+@pytest.fixture(name="mock_send_mail_report_update")
+def _mock_send_mail_report_update():
+    with patch("core.tasks.send_mail_report_update.delay") as send_mail:
+        yield send_mail
+
+
+@pytest.fixture(name="mock_send_mail_comment")
+def _mock_send_mail_comment():
+    with patch("core.tasks.send_mail_comment_submit.delay") as send_mail:
+        yield send_mail
+
+
 class TestCPHistory:
     client = APIClient()
 
-    def test_create_history(self, user, second_user, _setup_new_cp_report_create):
+    def test_create_history(
+        self,
+        user,
+        second_user,
+        _setup_new_cp_report_create,
+        mock_send_mail_report_create,
+        mock_send_mail_report_update,
+        mock_send_mail_comment,
+    ):
         VALIDATION_LIST = [
             ("created by user", 5, 1, user.username),
             ("comments updated", 4, 1, user.username),
