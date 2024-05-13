@@ -45,6 +45,7 @@ def _mock_send_mail_comment():
 class TestCPHistory:
     client = APIClient()
 
+    # pylint: disable-next=W0613
     def test_create_history(
         self,
         user,
