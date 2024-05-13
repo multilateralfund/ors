@@ -95,11 +95,8 @@ class CPReportSerializer(CPReportBaseSerializer):
     report_info = CPReportInfoSerializer(
         many=False, required=False, source="cpreportedsections", allow_null=True
     )
-    history = CPHistorySerializer(
-        many=True,
-        required=False,
-        source="cphistory",
-    )
+    history = serializers.SerializerMethodField()
+
     country_id = serializers.PrimaryKeyRelatedField(
         required=True,
         queryset=Country.objects.all().values_list("id", flat=True),
@@ -116,6 +113,11 @@ class CPReportSerializer(CPReportBaseSerializer):
 
     def get_comments(self, obj):
         return CPCommentSerializer(obj.cpcomments.all(), many=True).data
+
+    def get_history(self, obj):
+        return CPHistorySerializer(
+            obj.cphistory.all().select_related("country_programme_report", "updated_by")
+        ).data
 
 
 class CPReportArchiveSerializer(CPReportBaseSerializer):
