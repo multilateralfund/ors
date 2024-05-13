@@ -45,8 +45,6 @@ function useGridOptions(props: { adm_columns: any }) {
                   'font-bold':
                     props.data.level < 2 &&
                     includes(['title', 'subtitle'], props.data.type),
-                  italic:
-                    props.data.level < 2 && props.data.type === 'subtitle',
                 }),
               }),
               field: 'text',

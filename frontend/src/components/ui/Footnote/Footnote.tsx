@@ -22,7 +22,7 @@ export default function Footnote(props: FootnoteProps) {
   return (
     <Typography
       id={`${footnotesId}footnote-${id}`}
-      className="italic transition-all"
+      className="transition-all"
       {...rest}
     >
       {(index || id) && (
