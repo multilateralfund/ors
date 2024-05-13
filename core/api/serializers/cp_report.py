@@ -191,7 +191,6 @@ class CPReportCreateSerializer(serializers.Serializer):
     def to_representation(self, instance):
         return CPReportSerializer(instance).data
 
-    # waiting for the decision on the validation rules
     def validate(self, attrs):
         if attrs.get("year") >= VALIDATION_MIN_YEAR:
             validate_cp_report(attrs)
