@@ -42,10 +42,10 @@ def _mock_send_mail_comment():
         yield send_mail
 
 
+# pylint: disable=W0613
 class TestCPHistory:
     client = APIClient()
 
-    # pylint: disable-next=W0613
     def test_create_history(
         self,
         user,
