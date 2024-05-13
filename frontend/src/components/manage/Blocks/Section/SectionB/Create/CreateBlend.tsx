@@ -278,6 +278,7 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
                     </Dropdown.Item>
                   </div>
                 ),
+                optionsInDropdown: true,
               }),
               field: 'substance',
               flex: 1,
