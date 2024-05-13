@@ -395,7 +395,7 @@ export default function SectionBCreate(props: {
               component="h2"
               variant="h4"
             >
-              {includes(['V'], variant.model) ? 'Add chemical' : 'Add blend'}
+              {includes(['V'], variant.model) ? 'Add substance/blend' : 'Add blend'}
             </Typography>
             <Divider className="mb-2" />
             {includes(['V'], variant.model) ? (
