@@ -294,9 +294,10 @@ class CPRecordBaseListView(views.APIView):
             else cp_report
         )
         if cp_report_final:
-            history = CPHistorySerializer(
-                cp_report_final.cphistory.all(), many=True
-            ).data
+            history_qs = cp_report_final.cphistory.all().select_related(
+                "country_programme_report", "updated_by"
+            )
+            history = CPHistorySerializer(history_qs, many=True).data
 
         return history
 
