@@ -16,7 +16,7 @@ export default async function CPSettingsWrapper() {
   return (
     <PageWrapper className="mx-auto max-w-screen-xl">
       <HeaderTitle>
-        <div className="mx-auto max-w-screen-xl">
+        <div className="container mx-auto max-w-screen-xl">
           <Typography
             className="text-typography-primary"
             component="h1"
