@@ -34,6 +34,7 @@ export default function AgCellRenderer(props: any) {
   const error = getError(props)
 
   const options = props.options || null
+  const optionsInDropdown = props.optionsInDropdown || false
 
   const CellRenderer =
     getCellRendererByCategory(category) ||
@@ -43,7 +44,7 @@ export default function AgCellRenderer(props: any) {
   return (
     <div>
       <CellValidationWidget {...props} />
-      {!!options && (
+      {!!options && optionsInDropdown && (
         <div className="ag-cell-options inline-block">
           <Dropdown
             className="py-0 pl-0"
@@ -54,6 +55,9 @@ export default function AgCellRenderer(props: any) {
             {options}
           </Dropdown>
         </div>
+      )}
+      {!!options && !optionsInDropdown && (
+        <div className="ag-cell-options inline-block pr-2">{options}</div>
       )}
       <CellRenderer {...props} />
       {!!error && (
