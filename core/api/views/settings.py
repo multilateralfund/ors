@@ -1,7 +1,7 @@
 from constance import config
 from django.db.models import Max
 from django.db.models import Min
-from rest_framework import views
+from rest_framework import status, views
 from rest_framework.response import Response
 
 from core.models import CPReport
@@ -52,5 +52,17 @@ class SettingsView(views.APIView):
                     max_year=Max("year"), min_year=Min("year")
                 ),
             },
+            "send_mail": config.SEND_MAIL,
         }
         return Response(settings)
+
+    def post(self, request, *args, **kwargs):
+        send_mail = request.data.get("send_mail")
+        if not isinstance(send_mail, bool):
+            return Response(
+                {"send_mail": send_mail}, status=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
+
+        config.SEND_MAIL = send_mail
+
+        return Response({"send_mail": config.SEND_MAIL}, status=status.HTTP_200_OK)

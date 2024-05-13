@@ -210,6 +210,7 @@ CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 
 CONSTANCE_CONFIG = {
     "CP_NR_REPORTS": (9, "Number of reports to display in the country programme page"),
+    "SEND_MAIL": (True, "Send email notifications to users?", bool),
 }
 
 # Logging
@@ -291,6 +292,9 @@ REST_AUTH = {
 }
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
+
+CELERY_BROKER_URL = "amqp://rabbitmq:5672"
+CELERY_RESULT_BACKEND = "redis://redis:6379"
 
 if DEBUG:
     SECRET_KEY = "secret"

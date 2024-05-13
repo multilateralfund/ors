@@ -1,30 +1,11 @@
 import type { Metadata } from 'next'
 
-import React from 'react'
-
-import { Typography } from '@mui/material'
-
-import CPListing from '@ors/components/manage/Blocks/CountryProgramme/CPListing'
-import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
-import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
+import { redirect } from 'next/navigation'
 
 export const metadata: Metadata = {
-  title: 'Country programme',
+  title: 'Country Programme',
 }
 
-export default async function CountryProgramme() {
-  return (
-    <PageWrapper className="max-w-screen-xl">
-      <HeaderTitle>
-        <Typography
-          className="text-typography-primary"
-          component="h1"
-          variant="h3"
-        >
-          Country programmes
-        </Typography>
-      </HeaderTitle>
-      <CPListing />
-    </PageWrapper>
-  )
+export default function CountryProgramme() {
+  redirect('/country-programme/reports')
 }

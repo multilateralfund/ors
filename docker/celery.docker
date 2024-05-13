@@ -1,0 +1,15 @@
+FROM python:3.11-slim
+
+ARG REQFILE=requirements.txt
+
+ENV PYTHONUNBUFFERED 1
+ENV PIP_NO_CACHE_DIR=1
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /app
+
+RUN pip install --upgrade pip
+COPY $REQFILE .
+RUN pip install --no-cache-dir -r $REQFILE
+
+COPY . /app

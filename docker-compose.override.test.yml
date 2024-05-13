@@ -15,3 +15,7 @@ services:
     build:
       context: .
       dockerfile: docker/nginx.docker
+
+  celery:
+    profiles:
+      - donotstart

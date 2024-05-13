@@ -1,7 +1,9 @@
+from constance import config
 from django.db import transaction
 from rest_framework import serializers
 
 from core.api.serializers.adm import AdmRecordSerializer
+from core.api.serializers.cp_comment import CPCommentSerializer
 from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_history import CPHistorySerializer
@@ -11,6 +13,7 @@ from core.api.validations.cp_reports_validations import validate_cp_report
 from core.models.country import Country
 from core.models.country_programme import CPReport, CPReportSections
 from core.models.country_programme_archive import CPReportArchive
+from core.tasks import send_mail_report_create
 from core.utils import IMPORT_DB_MAX_YEAR, VALIDATION_MIN_YEAR
 
 
@@ -101,13 +104,18 @@ class CPReportSerializer(CPReportBaseSerializer):
         required=True,
         queryset=Country.objects.all().values_list("id", flat=True),
     )
+    comments = serializers.SerializerMethodField()
 
     class Meta(CPReportBaseSerializer.Meta):
         model = CPReport
         fields = CPReportBaseSerializer.Meta.fields + [
+            "comments",
             "report_info",
             "history",
         ]
+
+    def get_comments(self, obj):
+        return CPCommentSerializer(obj.cpcomments.all(), many=True).data
 
 
 class CPReportArchiveSerializer(CPReportBaseSerializer):
@@ -282,8 +290,7 @@ class CPReportCreateSerializer(serializers.Serializer):
         cp_report.reporting_entry = reporting_entry
         cp_report.reporting_email = reporting_email
         cp_report.save()
-        if not self.context.get("from_update"):
-            self._create_history(cp_report, request_user)
+
         self._create_cp_records(cp_report, validated_data.get("section_a", []), "A")
         self._create_prices(cp_report, validated_data.get("section_c", []))
 
@@ -299,5 +306,10 @@ class CPReportCreateSerializer(serializers.Serializer):
 
         if cp_report_info:
             self._create_report_info(cp_report, cp_report_info)
+
+        if not self.context.get("from_update"):
+            self._create_history(cp_report, request_user)
+            if config.SEND_MAIL and cp_report.status == CPReport.CPReportStatus.FINAL:
+                send_mail_report_create.delay(cp_report.id)  # send mail to MLFS
 
         return cp_report

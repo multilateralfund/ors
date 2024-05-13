@@ -2,6 +2,7 @@ from decimal import Decimal
 
 import pytest
 from django.urls import reverse
+from unittest.mock import patch
 
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
@@ -36,6 +37,18 @@ from core.models.country_programme_archive import (
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008, W0221, R0915, C0302
+
+
+@pytest.fixture(name="mock_send_mail_report_create")
+def _mock_send_mail_report_create():
+    with patch("core.tasks.send_mail_report_create.delay") as send_mail:
+        yield send_mail
+
+
+@pytest.fixture(name="mock_send_mail_report_update")
+def _mock_send_mail_report_update():
+    with patch("core.tasks.send_mail_report_update.delay") as send_mail:
+        yield send_mail
 
 
 @pytest.fixture(name="_setup_cp_report_list")
@@ -449,7 +462,9 @@ class TestCPReportCreate(BaseTest):
         )
         assert response.status_code == 403
 
-    def test_create_new_cp_report(self, user, _setup_new_cp_report_create):
+    def test_create_new_cp_report(
+        self, user, _setup_new_cp_report_create, mock_send_mail_report_create
+    ):
         self.client.force_authenticate(user=user)
         response = self.client.post(
             self.url, _setup_new_cp_report_create, format="json"
@@ -497,7 +512,12 @@ class TestCPReportCreate(BaseTest):
         assert emissions.count() == 1
         assert float(emissions[0].total) == 12.4
 
-    def test_create_old_cp_report(self, user, _setup_old_cp_report_create):
+        # check email not sent (DRAFT)
+        mock_send_mail_report_create.assert_not_called()
+
+    def test_create_old_cp_report(
+        self, user, _setup_old_cp_report_create, mock_send_mail_report_create
+    ):
         self.client.force_authenticate(user=user)
 
         response = self.client.post(
@@ -536,6 +556,9 @@ class TestCPReportCreate(BaseTest):
         assert d_record.column is None
         assert d_record.value_choice_id == d_record.row.choices.first().id
         assert d_record.value_text == "La orele de vrajeala"
+
+        # check email sent (FINAL)
+        mock_send_mail_report_create.assert_called_once()
 
     def test_existing_cp_report(
         self, user, _setup_new_cp_report_create, cp_report_2019
@@ -689,7 +712,12 @@ class TestCPReportUpdate(BaseTest):
         assert response.status_code == 403
 
     def test_update_cp_report_draft(
-        self, second_user, _setup_new_cp_report_create, cp_report_2019, user
+        self,
+        second_user,
+        _setup_new_cp_report_create,
+        cp_report_2019,
+        user,
+        mock_send_mail_report_update,
     ):
         self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
 
@@ -737,8 +765,16 @@ class TestCPReportUpdate(BaseTest):
         # check no archive is created
         assert CPReportArchive.objects.count() == 0
 
+        # check email not sent (DRAFT)
+        mock_send_mail_report_update.assert_not_called()
+
     def test_update_cp_report_final(
-        self, second_user, _setup_new_cp_report_create, cp_report_2019, user
+        self,
+        second_user,
+        _setup_new_cp_report_create,
+        cp_report_2019,
+        user,
+        mock_send_mail_report_update,
     ):
         self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
         self.client.force_authenticate(user=second_user)
@@ -878,12 +914,17 @@ class TestCPReportUpdate(BaseTest):
             == 1
         )
 
+        # check 3 emails sent (3 FINAL reports)
+        mock_send_mail_report_update.assert_called()
+        assert mock_send_mail_report_update.call_count == 3
+
     def test_update_cp_report_old(
         self,
         user,
         _setup_old_cp_report_create,
         cp_report_2005,
         substance,
+        mock_send_mail_report_update,
     ):
         self.url = reverse("country-programme-reports") + f"{cp_report_2005.id}/"
         self.client.force_authenticate(user=user)
@@ -968,6 +1009,10 @@ class TestCPReportUpdate(BaseTest):
             country_programme_report=old_cp,
         )
         assert adm_record.value_text == "Am fost locu-ntai la scoala"
+
+        # check 2 emails sent (2 FINAL reports)
+        mock_send_mail_report_update.assert_called()
+        assert mock_send_mail_report_update.call_count == 2
 
     def test_update_cp_report_invalid_country(
         self, user, _setup_new_cp_report_create, cp_report_2019

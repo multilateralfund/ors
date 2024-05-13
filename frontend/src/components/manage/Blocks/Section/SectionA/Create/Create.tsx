@@ -100,6 +100,7 @@ function getInitialPinnedBottomRowData(model: string): RowData[] {
 }
 
 export default function SectionACreate(props: {
+  Comments: React.FC<{ section: string, viewOnly: boolean }>
   Section: SectionA
   TableProps: PassedCPCreateTableProps
   emptyForm: EmptyFormType
@@ -107,9 +108,10 @@ export default function SectionACreate(props: {
   onSectionCheckChange: (section: string, isChecked: boolean) => void
   sectionsChecked: Record<string, boolean>
   setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
+  showComments: boolean
   variant: ReportVariant
 }) {
-  const { Section, TableProps, emptyForm, form, setForm, variant } = props
+  const { Comments, Section, TableProps, emptyForm, form, setForm, showComments, variant } = props
   const newNode = useRef<RowNode>()
   const substances = useStore(
     (state) =>
@@ -325,6 +327,7 @@ export default function SectionACreate(props: {
           </Box>
         </Modal>
       )}
+      {showComments && <Comments section="section_a" viewOnly={true} />}
     </>
   )
 }

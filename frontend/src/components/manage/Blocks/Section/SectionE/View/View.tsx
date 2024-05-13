@@ -44,7 +44,7 @@ export default function SectionEView(props: any) {
         pinnedBottomRowData={pinnedBottomRowData}
         rowData={rowData}
       />
-      {showComments && <Comments section="section_e" />}
+      {showComments && <Comments section="section_e" viewOnly={false} />}
     </>
   )
 }

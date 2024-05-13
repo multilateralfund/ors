@@ -101,7 +101,7 @@ function getPinnedRowData(rowData: any) {
 }
 
 export default function SectionBView(props: {
-  Comments: React.FC<{ section: string }>
+  Comments: React.FC<{ section: string, viewOnly: boolean }>
   TableProps: ITableProps
   emptyForm: EmptyFormType
   report: CPReport
@@ -179,7 +179,7 @@ export default function SectionBView(props: {
         pinnedBottomRowData={pinnedBottomRowData}
         rowData={rowData}
       />
-      {showComments && <Comments section="section_b" />}
+      {showComments && <Comments section="section_b" viewOnly={false} />}
     </>
   )
 }
