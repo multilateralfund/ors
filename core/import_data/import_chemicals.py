@@ -95,6 +95,9 @@ def import_data(cls, file_path, exclude=None, uncontrolled_group_id=None):
             if instance["is_deactivated"]:
                 continue
             instance.pop("is_deactivated")
+            # skip r134a entry
+            if instance["blend_id"] == "r134a":
+                continue
             # set blend name
             instance["name"] = instance.pop("blend_id")
         elif cls == Substance:
