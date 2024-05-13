@@ -17,7 +17,6 @@ import { defaultColDef } from '@ors/config/Table/columnsDef'
 import { NON_EDITABLE_ROWS } from '@ors/config/Table/columnsDef/settings'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
-import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 
 import { sectionColDefByIdFunc } from '../sectionColumnsDef'
 
@@ -86,16 +85,13 @@ function useGridOptions(props: {
           cellRendererParams: (props: ICellRendererParams<RowData>) => ({
             ...sectionColDefById['display_name'].cellRendererParams(props),
             options: !props.data?.mandatory && !props.data?.rowType && (
-              <Dropdown.Item
+              <IoTrash
+                className="cursor-pointer fill-error"
+                size={16}
                 onClick={() => {
                   onRemoveSubstance(props)
                 }}
-              >
-                <div className="flex items-center gap-x-2">
-                  <IoTrash className="fill-error" size={20} />
-                  <span>Delete</span>
-                </div>
-              </Dropdown.Item>
+              />
             ),
           }),
           field: 'display_name',

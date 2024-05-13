@@ -57,7 +57,7 @@ export default function AgCellRenderer(props: any) {
         </div>
       )}
       {!!options && !optionsInDropdown && (
-        <div className="ag-cell-options inline-block">{options}</div>
+        <div className="ag-cell-options inline-block pr-2">{options}</div>
       )}
       <CellRenderer {...props} />
       {!!error && (
