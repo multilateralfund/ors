@@ -30,6 +30,7 @@ export const CellDateWidget = memo(
       } & ICellEditorParams,
       ref,
     ) => {
+      const [open, setOpen] = useState(true)
       const [value, setValue] = useState(props.value)
       const refInput = useRef<HTMLInputElement>(null)
 
@@ -86,6 +87,7 @@ export const CellDateWidget = memo(
       return (
         <DatePicker
           format="YYYY-MM-DD"
+          open={open}
           ref={refInput}
           value={dayjs(value)}
           slotProps={{
@@ -105,6 +107,7 @@ export const CellDateWidget = memo(
           }}
           onChange={(value) => {
             setValue(value)
+            setOpen(false)
           }}
           autoFocus
         />
