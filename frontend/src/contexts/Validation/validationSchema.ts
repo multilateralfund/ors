@@ -33,7 +33,7 @@ const validationSchema: ValidationSchema = {
           remarks: (row) => !row.remarks,
         },
         message:
-          'The sum of these 2 fields ("QPS" + "Non-QPS") should be equal to "import". Otherwise, they should fill in the Remarks field.',
+          'The sum of “QPS” and “Non-QPS” should also be reported under the “Import/Export/Production” columns. Otherwise, explanations should be provided in the Remarks field',
         validator: validateAnnexEQPS,
       },
       {
@@ -43,7 +43,7 @@ const validationSchema: ValidationSchema = {
           remarks: (row) => !row.remarks,
         },
         message:
-          'If Non-QPS is filled in, users must put a date and fill in the Remarks field',
+          'If Non-QPS is provided; explanations should be provided in the Remarks field (i.e, for critical uses approved by the Parties with decision number).',
         validator: validateAnnexENonQPS,
       },
       {
@@ -51,8 +51,7 @@ const validationSchema: ValidationSchema = {
         highlight_cells: {
           banned_date: (row) => !row.banned_date,
         },
-        message:
-          'In the case where imports of a specific controlled substance are banned, the date of the ban should be provided',
+        message: 'The date of the ban on Non-QPS should be provided.',
         validator: validateBannedImports,
       },
     ],
