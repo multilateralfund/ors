@@ -217,3 +217,8 @@ export function sumFloats(fs: number[]): number {
 
   return fixFloat(result)
 }
+
+export function getUnitAwareValue(obj: any, propName: string, unit: string) {
+  const value = unit === 'mt' ? obj?.[propName] : obj?.[`${propName}_${unit}`]
+  return parseNumber(value)
+}

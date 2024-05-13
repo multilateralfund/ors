@@ -1,6 +1,10 @@
 import { filter, find, includes, isNull } from 'lodash'
 
-import { parseNumber, sumFloats } from '@ors/helpers/Utils/Utils'
+import {
+  getUnitAwareValue,
+  parseNumber,
+  sumFloats,
+} from '@ors/helpers/Utils/Utils'
 
 const aggFuncs = {
   sumTotal: (props: any) => {
@@ -16,7 +20,11 @@ const aggFuncs = {
       ) {
         return
       }
-      value = parseNumber(node.data[props.colDef.field])
+      value = getUnitAwareValue(
+        node.data,
+        props.colDef.field,
+        props.context.unit,
+      )
       if (!isNull(value)) {
         values.push(value)
       }
@@ -42,7 +50,10 @@ const aggFuncs = {
       if (usageId === 'total_usages') {
         value = parseNumber(
           sumFloats(
-            recordUsages.map((usage: any) => parseFloat(usage.quantity)),
+            recordUsages.map(
+              (usage: any) =>
+                getUnitAwareValue(usage, 'quantity', props.context.unit) ?? 0,
+            ),
           ),
         )
       } else if (usageId === 'total_refrigeration') {
@@ -50,7 +61,10 @@ const aggFuncs = {
           sumFloats(
             filter(recordUsages, (usage) =>
               includes([6, 7], usage.usage_id),
-            ).map((usage: any) => parseFloat(usage.quantity)),
+            ).map(
+              (usage: any) =>
+                getUnitAwareValue(usage, 'quantity', props.context.unit) ?? 0,
+            ),
           ),
         )
       } else {
@@ -60,7 +74,7 @@ const aggFuncs = {
             item.usage_id === usageId &&
             !includes(node.data.excluded_usages, usageId),
         )
-        value = parseNumber(usage?.quantity)
+        value = getUnitAwareValue(usage, 'quantity', props.context.unit)
       }
       if (!isNull(value)) {
         values.push(value)

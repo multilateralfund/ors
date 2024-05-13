@@ -7,6 +7,7 @@ import { produce } from 'immer'
 import { includes } from 'lodash'
 
 import CPComments from '@ors/components/manage/Blocks/CountryProgramme/CPComments'
+import UnitSelectionWidget from '@ors/components/manage/Widgets/UnitSelectionWidget'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
@@ -34,10 +35,13 @@ const TableProps: ITableProps = {
     fullScreen,
     isActiveSection,
     onPrint,
+    onUnitSelectionChange,
     print,
     report,
     section,
   }: any) => {
+    // [refs #24639] remove (METRIC TONNES) as we use <UnitSelectionWidget />
+    const sectionTitle = section.title.split('(METRIC TONNES)')[0].trim()
     return (
       <div
         className={cx('mb-4 flex', {
@@ -48,11 +52,17 @@ const TableProps: ITableProps = {
         })}
       >
         <Typography
-          className={cx({ 'mb-4 md:mb-0': fullScreen })}
+          className={cx('flex items-center', { 'mb-4 md:mb-0': fullScreen })}
           component="h2"
           variant="h6"
         >
-          {section.title}
+          {sectionTitle}
+          {['section_a', 'section_b'].includes(section.id) ? (
+            <UnitSelectionWidget
+              className="ml-2 border-y-0 border-l border-r-0 border-solid border-primary pl-2"
+              onChange={onUnitSelectionChange}
+            />
+          ) : null}
         </Typography>
         {section.note && (
           <Typography

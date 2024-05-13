@@ -126,7 +126,7 @@ function setupFixedHeaderObserver(agHeader: HTMLDivElement) {
 
         agHeaderScroll.style.removeProperty('top')
         agHeaderScroll.style.removeProperty('position')
-        agHeaderScroll.style.removeProperty('zIndex')
+        agHeaderScroll.style.removeProperty('z-index')
         agHeaderScroll.style.removeProperty('background')
         agHeaderScroll.style.removeProperty('width')
 
@@ -185,6 +185,8 @@ function Table(props: TableProps) {
   const scrollMutationObserver = useRef<any>(null)
   const headerIntersectionObserver = useRef<IntersectionObserver | null>(null)
 
+  const gridContext = { unit: 'mt', ...props.context }
+
   const theme: ThemeSlice = useStore((state) => state.theme)
 
   const [pagination, setPagination] = useState<Pagination>({
@@ -195,8 +197,8 @@ function Table(props: TableProps) {
 
   const validation = useContext(ValidationContext)
   const validationErrors =
-    validation?.errors[props.context?.section.id as ValidationSchemaKeys]
-      ?.rows || ({} as Record<ValidationSchemaKeys, ValidateSectionResult>)
+    validation?.errors[gridContext?.section.id as ValidationSchemaKeys]?.rows ||
+    ({} as Record<ValidationSchemaKeys, ValidateSectionResult>)
 
   // defaultColDef sets props common to all Columns
   const [defaultColDef] = useState<ColDef>(() => ({
@@ -371,6 +373,15 @@ function Table(props: TableProps) {
     grid.current.api.setGridOption('domLayout', domLayout)
   }
 
+  function handleUnitSelectionChange(option: any) {
+    if (!grid.current.api) return
+    gridContext.unit = option.value
+    grid.current.api.refreshCells({
+      force: true,
+      suppressFlash: true,
+    })
+  }
+
   useEffect(() => {
     if (!grid.current?.api) return
     grid.current.api.setGridOption('rowData', props.rowData)
@@ -436,6 +447,7 @@ function Table(props: TableProps) {
               enterFullScreen={enterFullScreen}
               exitFullScreen={exitFullScreen}
               fullScreen={fullScreen}
+              onUnitSelectionChange={handleUnitSelectionChange}
             />
           </div>
         )}
@@ -457,7 +469,7 @@ function Table(props: TableProps) {
             alwaysShowHorizontalScroll={true}
             animateRows={false}
             components={components}
-            context={props.context}
+            context={gridContext}
             defaultColDef={defaultColDef}
             defaultColGroupDef={props?.defaultColGroupDef || globalColGroupDef}
             enableCellTextSelection={true}

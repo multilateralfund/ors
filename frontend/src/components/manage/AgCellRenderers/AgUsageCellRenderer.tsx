@@ -6,8 +6,9 @@ import { each, find, get, includes, isNull, isUndefined } from 'lodash'
 import aggFuncs from '@ors/config/Table/aggFuncs'
 
 import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSkeletonCellRenderer'
+import { getDecimalCellValue } from '@ors/components/manage/Utils/DecimalCellValue'
 import {
-  formatDecimalValue,
+  getUnitAwareValue,
   parseNumber,
   sumFloats,
 } from '@ors/helpers/Utils/Utils'
@@ -36,7 +37,7 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
   } else if (usageId === 'total_usages') {
     value = []
     each(recordUsages, (usage: any) => {
-      const quantity = parseNumber(usage.quantity)
+      const quantity = getUnitAwareValue(usage, 'quantity', props.context.unit)
       if (!isNull(quantity)) {
         value.push(quantity)
       }
@@ -45,7 +46,7 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
   } else if (usageId === 'total_refrigeration') {
     value = []
     each(recordUsages, (usage: any) => {
-      const quantity = parseNumber(usage.quantity)
+      const quantity = getUnitAwareValue(usage, 'quantity', props.context.unit)
       if (!isNull(quantity) && includes([6, 7], usage.usage_id)) {
         value.push(quantity)
       }
@@ -66,18 +67,12 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
     value = 0
   }
 
-  const formattedValue = formatDecimalValue(value, props)
-
-  const TitleContent =
-    valueGWP != null && valueODP != null ? (
-      <div className="flex flex-col gap-1">
-        <span>Metric tonnes: {value}</span>
-        <span>GWP: {valueGWP}</span>
-        <span>ODP tonnes: {valueODP}</span>
-      </div>
-    ) : (
-      <span>{value}</span>
-    )
+  const { TitleContent, formattedValue } = getDecimalCellValue(
+    value,
+    valueODP,
+    valueGWP,
+    props,
+  )
 
   return (
     <Tooltip enterDelay={300} placement={'top-start'} title={TitleContent}>

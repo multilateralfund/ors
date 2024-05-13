@@ -7,11 +7,8 @@ import { get, includes, isNull, isUndefined } from 'lodash'
 import aggFuncs from '@ors/config/Table/aggFuncs'
 
 import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSkeletonCellRenderer'
-import {
-  fixFloat,
-  formatDecimalValue,
-  parseNumber,
-} from '@ors/helpers/Utils/Utils'
+import { getDecimalCellValue } from '@ors/components/manage/Utils/DecimalCellValue'
+import { fixFloat, parseNumber } from '@ors/helpers/Utils/Utils'
 
 export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
   if (props.data.rowType === 'skeleton') {
@@ -59,18 +56,12 @@ export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
     value = 0
   }
 
-  const formattedValue = formatDecimalValue(value, props)
-
-  const TitleContent =
-    valueGWP != null && valueODP != null ? (
-      <div className="flex flex-col gap-1">
-        <span>Metric tonnes: {value}</span>
-        <span>GWP: {valueGWP}</span>
-        <span>ODP tonnes: {valueODP}</span>
-      </div>
-    ) : (
-      <span>{value}</span>
-    )
+  const { TitleContent, formattedValue } = getDecimalCellValue(
+    value,
+    valueODP,
+    valueGWP,
+    props,
+  )
 
   return (
     <Tooltip enterDelay={300} placement={'top-start'} title={TitleContent}>
