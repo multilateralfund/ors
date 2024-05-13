@@ -91,14 +91,14 @@ const CPSettings: React.FC = () => {
               }
               label={
                 <Typography className="text-lg">
-                  Send email notifications to users
+                  Send email notifications to users:
                 </Typography>
               }
             />
           </FormGroup>
           {error && (
             <FormHelperText>
-              Something went wrong. Please try again
+              Something went wrong. Please try again.
             </FormHelperText>
           )}
         </FormControl>
