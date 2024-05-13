@@ -90,6 +90,16 @@
         "max_year": 2018
     },
     {
+        "name": "Remarks",
+        "display_name": "Remarks",
+        "parent_name": null,
+        "sort_order": 4,
+        "type": "text",
+        "section": "B",
+        "min_year": 2000,
+        "max_year": 2018
+    },
+    {
         "name": "ALL OTHER ODS float",
         "display_name": "ALL OTHER ODS",
         "parent_name": null,
@@ -118,6 +128,16 @@
         "type": "float",
         "section": "C",
         "min_year": 2012,
+        "max_year": 2018
+    },
+    {
+        "name": "Remarks",
+        "display_name": "Remarks",
+        "parent_name": null,
+        "sort_order": 4,
+        "type": "text",
+        "section": "C",
+        "min_year": 2000,
         "max_year": 2018
     }
 ]
