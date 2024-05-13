@@ -185,7 +185,7 @@ function Table(props: TableProps) {
   const scrollMutationObserver = useRef<any>(null)
   const headerIntersectionObserver = useRef<IntersectionObserver | null>(null)
 
-  const gridContext = { unit: 'mt', ...props.context }
+  const gridContext = props.context
 
   const theme: ThemeSlice = useStore((state) => state.theme)
 
@@ -373,15 +373,6 @@ function Table(props: TableProps) {
     grid.current.api.setGridOption('domLayout', domLayout)
   }
 
-  function handleUnitSelectionChange(option: any) {
-    if (!grid.current.api) return
-    gridContext.unit = option.value
-    grid.current.api.refreshCells({
-      force: true,
-      suppressFlash: true,
-    })
-  }
-
   useEffect(() => {
     if (!grid.current?.api) return
     grid.current.api.setGridOption('rowData', props.rowData)
@@ -447,7 +438,8 @@ function Table(props: TableProps) {
               enterFullScreen={enterFullScreen}
               exitFullScreen={exitFullScreen}
               fullScreen={fullScreen}
-              onUnitSelectionChange={handleUnitSelectionChange}
+              gridContext={gridContext}
+              onUnitSelectionChange={props.handleUnitSelectionChange}
             />
           </div>
         )}

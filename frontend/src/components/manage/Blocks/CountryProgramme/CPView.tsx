@@ -33,6 +33,7 @@ const TableProps: ITableProps = {
     enterFullScreen,
     exitFullScreen,
     fullScreen,
+    gridContext,
     isActiveSection,
     onPrint,
     onUnitSelectionChange,
@@ -41,7 +42,9 @@ const TableProps: ITableProps = {
     section,
   }: any) => {
     // [refs #24639] remove (METRIC TONNES) as we use <UnitSelectionWidget />
-    const sectionTitle = section.title.split('(METRIC TONNES)')[0].trim()
+    const sectionTitle = section.title
+      .split(/\((\w+\s)?METRIC TONNES\)/)[0]
+      .trim()
     return (
       <div
         className={cx('mb-4 flex', {
@@ -60,6 +63,7 @@ const TableProps: ITableProps = {
           {['section_a', 'section_b'].includes(section.id) ? (
             <UnitSelectionWidget
               className="ml-2 border-y-0 border-l border-r-0 border-solid border-primary pl-2"
+              gridContext={gridContext}
               onChange={onUnitSelectionChange}
             />
           ) : null}
@@ -185,6 +189,12 @@ function CPView(props: { archive?: boolean }) {
   const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
   const [renderedSections, setRenderedSections] = useState<number[]>([])
 
+  const [unit, setUnit] = useState('mt')
+
+  function handleUnitSelectionChange(option: any) {
+    setUnit(option.value)
+  }
+
   const variant = useMemo(() => report.variant, [report])
 
   const sections = useMemo(
@@ -291,7 +301,8 @@ function CPView(props: { archive?: boolean }) {
                     TableProps={{
                       ...TableProps,
                       archive,
-                      context: { section, variant },
+                      context: { section, unit, variant },
+                      handleUnitSelectionChange,
                       isActiveSection: activeTab == index,
                       report,
                       section,

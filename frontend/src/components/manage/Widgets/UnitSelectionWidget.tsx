@@ -19,20 +19,23 @@ interface IOption {
 
 interface UnitSelectionWidgetProps {
   className?: string
-  initialIndex?: number
+  gridContext?: any
   onChange: (option: IOption, index: number) => void
 }
 
 function UnitSelectionWidget(props: UnitSelectionWidgetProps) {
-  const { className, initialIndex = 0, onChange } = props
+  const { className, gridContext, onChange } = props
 
-  const [selectedIndex, setSelectedIndex] = useState(initialIndex)
+  let selectedIndex = gridContext
+    ? OPTIONS.map((o) => o.value).indexOf(gridContext.unit)
+    : 0
+  selectedIndex = selectedIndex == -1 ? 0 : selectedIndex
+
   const [showMenu, setShowMenu] = useState(false)
 
   const toggleShowMenu = () => setShowMenu((prev) => !prev)
 
   const handleClickOption = (index: number) => () => {
-    setSelectedIndex(index)
     setShowMenu(false)
     onChange(OPTIONS[index], index)
   }
