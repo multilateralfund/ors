@@ -89,7 +89,7 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
         const data = await api('api/blends/next-cust-mix-name/')
         setForm({
           ...prevForm.current,
-          composition: data.name,
+          other_names: data.name,
         })
       } catch (e) {
         setErrors({
@@ -184,6 +184,7 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
         <div className="grid grid-cols-2 gap-x-4">
           <Field
             InputLabel={{ label: 'Blend name' }}
+            disabled={true}
             error={!!errors.other_names}
             helperText={errors.other_names}
             value={form.other_names}
@@ -195,7 +196,7 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
             }}
           />
           <Field
-            InputLabel={{ label: 'Blend ID' }}
+            InputLabel={{ label: 'Blend composition' }}
             disabled={true}
             error={!!errors.composition}
             helperText={errors.composition}
@@ -330,14 +331,6 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
               headerName: 'Percentage',
               initialWidth: 120,
               minWidth: 120,
-              orsAggFunc: 'sumTotal',
-            },
-            {
-              cellEditor: 'agTextCellEditor',
-              field: 'component_name',
-              headerName: 'Component name',
-              initialWidth: 200,
-              minWidth: 200,
               orsAggFunc: 'sumTotal',
             },
           ]}
