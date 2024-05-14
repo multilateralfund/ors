@@ -1,4 +1,4 @@
-import { UserType, userTypeVisibility } from '@ors/types/user_types'
+import { UserType, userCanSubmitReport } from '@ors/types/user_types'
 
 import React, { useEffect, useMemo, useState } from 'react'
 
@@ -179,7 +179,7 @@ const ViewHeaderActions = () => {
 
   const isDraft = report.data?.status === 'draft'
 
-  if (!userTypeVisibility[user_type as UserType]) return null
+  if (!userCanSubmitReport[user_type as UserType]) return null
 
   return (
     <div className="flex items-center">
@@ -268,7 +268,7 @@ const EditHeaderActions = ({
 
   const showDraftFromFinalButton = isFinal && report.variant?.model === 'V'
 
-  if (!userTypeVisibility[user_type as UserType]) return null
+  if (!userCanSubmitReport[user_type as UserType]) return null
 
   function getReportSubmitter(status?: 'draft' | 'final') {
     return async () => {
