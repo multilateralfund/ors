@@ -1,7 +1,11 @@
 'use client'
 import type { SimpleSelectProps } from '@ors/components/ui/SimpleSelect/SimpleSelect'
 import { Country } from '@ors/types/store'
-import { UserType, userTypeVisibility } from '@ors/types/user_types'
+import {
+  UserType,
+  userCanExportData,
+  userCanSubmitReport,
+} from '@ors/types/user_types'
 
 import React, { useMemo, useState } from 'react'
 
@@ -634,7 +638,7 @@ export default function CPListing() {
   return (
     <>
       <div className="mb-4 flex items-center justify-end gap-x-4">
-        {userTypeVisibility[user_type as UserType] && (
+        {userCanSubmitReport[user_type as UserType] && (
           <Link
             className="px-4 py-2 text-lg uppercase"
             color="secondary"
@@ -643,6 +647,17 @@ export default function CPListing() {
             button
           >
             New submission
+          </Link>
+        )}
+        {userCanExportData[user_type as UserType] && (
+          <Link
+            className="px-4 py-2 text-lg uppercase"
+            color="secondary"
+            href="/country-programme/export-data"
+            variant="contained"
+            button
+          >
+            Export
           </Link>
         )}
       </div>

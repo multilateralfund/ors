@@ -1,3 +1,9 @@
+import {
+  UserType,
+  userCanExportData,
+  userCanSubmitReport,
+} from '@ors/types/user_types'
+
 import React, { useState } from 'react'
 
 import {
@@ -14,6 +20,7 @@ import NextLink from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import { matchPath } from '@ors/helpers/Url/Url'
+import { useStore } from '@ors/store'
 import { robotoCondensed } from '@ors/themes/fonts'
 
 import { IoChevronDown, IoChevronUp, IoClose, IoMenu } from 'react-icons/io5'
@@ -49,6 +56,7 @@ const makeInternalNavItem = (
 }
 
 const useInternalNavSections = () => {
+  const { user_type } = useStore((state) => state.user.data)
   const pathname = usePathname()
   const nI = makeInternalNavItem.bind(null, pathname)
   return [
@@ -56,15 +64,22 @@ const useInternalNavSections = () => {
       label: 'Country programmes',
       menu: [
         { label: 'View reports', url: '/country-programme/reports' },
-        { label: 'Add new report', url: '/country-programme/create' },
-        { label: 'Export data', url: '/country-programme/export-data' },
-        { label: 'Settings', url: '/country-programme/settings' },
-      ],
+        userCanSubmitReport[user_type as UserType]
+          ? { label: 'Add new report', url: '/country-programme/create' }
+          : null,
+        userCanExportData[user_type as UserType]
+          ? { label: 'Export data', url: '/country-programme/export-data' }
+          : null,
+        userCanExportData[user_type as UserType]
+          ? { label: 'Settings', url: '/country-programme/settings' }
+          : null,
+      ].filter(Boolean),
       url: '/country-programme/reports',
     },
     { label: 'Business plans', url: '/business-plans' },
     { label: 'Project submissions', url: '/project-submissions' },
     { label: 'Projects', url: '/projects' },
+    // @ts-ignore
   ].map((item) => nI(item))
 }
 
