@@ -82,7 +82,7 @@ function createData(
   const dateTime = new Date(created_date)
   const date = dateTime.toLocaleDateString(undefined, {
     day: 'numeric',
-    month: 'long',
+    month: 'short',
     year: 'numeric',
   })
   const time = dateTime.toLocaleTimeString(undefined, {

@@ -15,6 +15,7 @@
   @apply text-secondary;
 }
 
-.SimpleTable .MuiTableCell-sizeMedium {
+.SimpleTable .MuiTableCell-sizeMedium:not(.MuiTableCell-paddingNone) {
   @apply px-3;
 }
+
