@@ -66,9 +66,6 @@ const CPExport = () => {
   const [minYear, setMinYear] = React.useState<null | number>(null)
   const [maxYear, setMaxYear] = React.useState<null | number>(null)
 
-  const calculatedMinYear = settings.cp_reports.min_year
-  const calculatedMaxYear = settings.cp_reports.max_year
-
   const downloadUrl = updateDownloadUrl(exportOption, year, minYear, maxYear)
 
   const handleExportOptionChange = (event: SelectChangeEvent<string>) => {
@@ -95,13 +92,13 @@ const CPExport = () => {
     yearOptions.push({ id: i, label: i.toString(), value: i })
   }
 
-  const minYearOptions = yearOptions.filter(
-    (year) => year.value < (maxYear || calculatedMaxYear),
-  )
-
-  const maxYearOptions = yearOptions.filter(
-    (year) => year.value > (minYear || calculatedMinYear),
-  )
+  // const minYearOptions = yearOptions.filter(
+  //   (year) => year.value <= (maxYear || calculatedMaxYear),
+  // )
+  //
+  // const maxYearOptions = yearOptions.filter(
+  //   (year) => year.value >= (minYear || calculatedMinYear),
+  // )
 
   return (
     <div className="CPExport flex flex-col gap-8 md:gap-4">
@@ -111,7 +108,7 @@ const CPExport = () => {
         </Typography>
       </Alert>
 
-      <div className="flex flex-col flex-wrap gap-8 md:gap-4 md:flex-row md:items-end md:justify-start">
+      <div className="flex flex-col flex-wrap gap-8 md:flex-row md:items-end md:justify-start md:gap-4">
         {/* Export options */}
         <FormControl className="w-full md:w-1/3 md:min-w-52">
           <label htmlFor="export-option">Select an export option</label>
@@ -136,7 +133,7 @@ const CPExport = () => {
 
         {/* Year Select */}
         {exportOption && exportOption.includes('all') && (
-          <div className="flex w-full md:w-1/3 md:min-w-52 flex-col">
+          <div className="flex w-full flex-col md:w-1/3 md:min-w-52">
             <label htmlFor="year">
               Year&nbsp;
               <span className="text-sm text-gray-500">
@@ -168,7 +165,7 @@ const CPExport = () => {
         {exportOption &&
           (exportOption.includes('HCFC') || exportOption.includes('HFC')) && (
             <>
-              <div className="flex w-full md:w-1/4 md:min-w-28 flex-col">
+              <div className="flex w-full flex-col md:w-1/4 md:min-w-28">
                 <label htmlFor="min-year">
                   Min Year&nbsp;
                   <span className="text-sm text-gray-500">
@@ -179,7 +176,7 @@ const CPExport = () => {
                 <Field
                   id="min-year"
                   FieldProps={{ className: 'mb-0' }}
-                  options={minYearOptions}
+                  options={yearOptions}
                   widget="autocomplete"
                   Input={{
                     placeholder: 'Select min year...',
@@ -197,11 +194,18 @@ const CPExport = () => {
                       : null
                   }
                   onChange={(_, option: any) => {
-                    setMinYear(option?.value || null)
+                    if (option === null) {
+                      setMinYear(null)
+                      return
+                    }
+                    if (option?.value && maxYear && option.value > maxYear) {
+                      setMaxYear(option.value)
+                    }
+                    setMinYear(option.value)
                   }}
                 />
               </div>
-              <div className="flex w-full md:w-1/4 md:min-w-28 flex-col">
+              <div className="flex w-full flex-col md:w-1/4 md:min-w-28">
                 <label htmlFor="max-year">
                   Max Year&nbsp;
                   <span className="text-sm text-gray-500">
@@ -211,7 +215,7 @@ const CPExport = () => {
                 <Field
                   id="max-year"
                   FieldProps={{ className: 'mb-0' }}
-                  options={maxYearOptions}
+                  options={yearOptions}
                   widget="autocomplete"
                   Input={{
                     placeholder: 'Select max year...',
@@ -229,7 +233,14 @@ const CPExport = () => {
                       : null
                   }
                   onChange={(_, option: any) => {
-                    setMaxYear(option?.value || null)
+                    if (option === null) {
+                      setMaxYear(null)
+                      return
+                    }
+                    if (option?.value && minYear && option.value < minYear) {
+                      setMinYear(option.value)
+                    }
+                    setMaxYear(option.value)
                   }}
                 />
               </div>
@@ -237,7 +248,10 @@ const CPExport = () => {
           )}
 
         {downloadUrl && (
-          <a className="md:min-w-20 md:self-end" href={formatApiUrl(downloadUrl)}>
+          <a
+            className="md:min-w-20 md:self-end"
+            href={formatApiUrl(downloadUrl)}
+          >
             <Button className="w-full" variant="contained">
               Export
             </Button>
