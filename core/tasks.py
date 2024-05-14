@@ -30,7 +30,7 @@ def send_mail_comment_submit(cp_comment_id):
         (
             f"This is an automated message informing you that a new "
             f"comment was added for the CP report of country: {cp_report.country} "
-            f"and year: {cp_report.year} ({comment_section})\n"
+            f"and year: {cp_report.year} ({comment_section}).\n\n"
             f"The CP report is available at {link}"
         ),
         None,  # use DEFAULT_FROM_EMAIL
@@ -50,7 +50,7 @@ def send_mail_report_create(cp_report_id):
         (
             f"This is an automated message informing you that a new "
             f"CP report has been added for country: "
-            f"{cp_report.country} and year: {cp_report.year}\n"
+            f"{cp_report.country} and year: {cp_report.year}.\n\n"
             f"The CP report is available at {link}"
         ),
         None,  # use DEFAULT_FROM_EMAIL
@@ -70,7 +70,7 @@ def send_mail_report_update(cp_report_id):
         (
             f"This is an automated message informing you that a new "
             f"version ({cp_report.version}) has been added for the CP report "
-            f"for country: {cp_report.country} and year: {cp_report.year}\n"
+            f"for country: {cp_report.country} and year: {cp_report.year}.\n\n"
             f"The CP report is available at {link}"
         ),
         None,  # use DEFAULT_FROM_EMAIL
