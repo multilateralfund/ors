@@ -1,6 +1,6 @@
 import { ColDef, ICellRendererParams } from 'ag-grid-community'
 import cx from 'classnames'
-import { includes } from 'lodash'
+import { includes, startsWith } from 'lodash'
 
 import { colDefById } from '@ors/config/Table/columnsDef'
 
@@ -40,6 +40,19 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
                 id: includes(['II', 'III'], model) ? '3' : '2',
                 content: 'Indicate relevant controlled substances.',
                 icon: true,
+              },
+            }
+          : {}),
+        ...(props.data?.rowType === 'group' &&
+        startsWith(props.data.display_name, 'Annex C')
+          ? {
+              footnote: {
+                id: '8',
+                content:
+                  'When report on Blends, where the data involves a blend of two or more substances, the quantities of individual components of controlled substances must be indicated separately.',
+                icon: false,
+                index: '**',
+                order: 999,
               },
             }
           : {}),
