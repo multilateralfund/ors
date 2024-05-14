@@ -74,6 +74,11 @@
     margin-top: 2.9em;
   }
 
+  .ag-header-cell-resize::after {
+    top: 0;
+    height: 100%;
+  }
+
   .ag-ltr {
     .ag-header-cell,
     .ag-header-group-cell {
