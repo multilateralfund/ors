@@ -8,7 +8,7 @@ function getDecimalCellValue(
 ) {
   let valueToFormat
 
-  switch (props.context.unit) {
+  switch (props.context?.unit) {
     case 'gwp':
       valueToFormat = valueGWP ?? value
       break
