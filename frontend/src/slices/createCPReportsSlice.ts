@@ -12,7 +12,7 @@ import { produce } from 'immer'
 import { filter, map, omit } from 'lodash'
 import hash from 'object-hash'
 
-import { colDefById, defaultColDef } from '@ors/config/Table/columnsDef'
+import { colDefById } from '@ors/config/Table/columnsDef'
 
 import {
   defaultSliceData,
@@ -73,7 +73,7 @@ function mapUsage(
     category: usage.columnCategory,
     dataType: 'number',
     headerName: usage.headerName,
-    initialWidth: defaultColDef.minWidth,
+    // initialWidth: defaultColDef.minWidth,
     ...(colDefById[usage.full_name] || {}),
     ...(variant?.model
       ? colDefById[`${usage.full_name} ${variant.model}`] || {}

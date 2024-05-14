@@ -116,6 +116,10 @@ const TableProps = {
       </div>
     )
   },
+  autoSizePadding: 0,
+  autoSizeStrategy: {
+    type: 'fitGridWidth',
+  },
   defaultColDef: defaultColDefEdit,
   domLayout: 'autoHeight',
   enableCellChangeFlash: true,

@@ -34,9 +34,9 @@ function useGridOptions(props: { adm_columns: any; model: string }) {
       id: column.id,
       category: 'adm',
       dataType: column.type,
-      flex: 1,
+      // flex: 1,
       headerName: column.display_name,
-      initialWidth: defaultColDef.minWidth,
+      // initialWidth: defaultColDef.minWidth,
       ...(colDefByDataType[column.type] || {}),
       ...(column.children.length
         ? {

@@ -21,7 +21,7 @@ function useGridOptions(props: { adm_columns: any; model: string }) {
       dataType: column.type,
       flex: 0.5,
       headerName: column.display_name,
-      initialWidth: defaultColDef.minWidth,
+      // initialWidth: defaultColDef.minWidth,
       ...(colDefByDataType[column.type] || {}),
       ...(column.children.length
         ? {

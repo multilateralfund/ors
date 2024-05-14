@@ -67,7 +67,7 @@ function getRowData(
 }
 
 export default function SectionCView(props: {
-  Comments: React.FC<{ section: string, viewOnly: boolean }>
+  Comments: React.FC<{ section: string; viewOnly: boolean }>
   TableProps: {
     context: {
       section: SectionC['data']
@@ -91,7 +91,11 @@ export default function SectionCView(props: {
   return (
     <>
       {includes(['II', 'III'], variant.model) ? null : (
-        <Alert className="bg-mlfs-bannerColor" icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Alert
+          className="bg-mlfs-bannerColor"
+          icon={<IoInformationCircleOutline size={24} />}
+          severity="info"
+        >
           <Footnotes />
         </Alert>
       )}

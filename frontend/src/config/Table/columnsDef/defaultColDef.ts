@@ -21,7 +21,7 @@ const defaultColDef: ColDef = {
   headerComponentParams: {
     className: 'font-bold',
   },
-  minWidth: 80,
+  // minWidth: 80,
 }
 
 const defaultColDefEdit: ColDef = {

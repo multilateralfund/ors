@@ -2,8 +2,6 @@ import { useState } from 'react'
 
 import { GridOptions } from 'ag-grid-community'
 
-import { defaultColDef } from '@ors/config/Table/columnsDef'
-
 import { sectionColDefById, sectionDefaultColDef } from '../sectionColumnsDef'
 
 function useGridOptions() {
@@ -49,7 +47,7 @@ function useGridOptions() {
       autoHeight: true,
       cellClass: 'ag-text-right',
       headerClass: 'ag-text-center',
-      minWidth: defaultColDef.minWidth,
+      // minWidth: defaultColDef.minWidth,
       resizable: true,
       wrapText: true,
     },

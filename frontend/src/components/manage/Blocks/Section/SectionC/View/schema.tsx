@@ -4,8 +4,6 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-import { defaultColDef } from '@ors/config/Table/columnsDef'
-
 import { sectionColDefByIdFunc } from '../sectionColumnsDef'
 
 function useGridOptions(props: { model: string }) {
@@ -54,7 +52,7 @@ function useGridOptions(props: { model: string }) {
     ],
     defaultColDef: {
       autoHeight: true,
-      minWidth: defaultColDef.minWidth,
+      // minWidth: defaultColDef.minWidth,
       resizable: true,
       wrapText: true,
     },

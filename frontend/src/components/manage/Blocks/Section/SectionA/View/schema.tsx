@@ -4,8 +4,6 @@ import { CellClassParams, GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-import { defaultColDef } from '@ors/config/Table/columnsDef'
-
 import { sectionColDefByIdFunc } from '../sectionColumnsDef'
 
 function useGridOptions(props: { model: string; usages: object[] }) {
@@ -20,9 +18,9 @@ function useGridOptions(props: { model: string; usages: object[] }) {
       headerName: 'Substance',
       ...sectionColDefById['display_name'],
       editable: false,
-      ...(includes(['I', 'II', 'III'], model) ? { initialWidth: 165 } : {}),
+      // ...(includes(['I', 'II', 'III'], model) ? { initialWidth: 165 } : {}),
     }),
-    [model, sectionColDefById],
+    [sectionColDefById],
   )
 
   const defaultSectionColDef = useMemo(
@@ -38,7 +36,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
         })
       },
       headerClass: 'ag-text-center',
-      minWidth: defaultColDef.minWidth,
+      // minWidth: defaultColDef.minWidth,
       resizable: true,
       wrapText: true,
     }),
@@ -60,6 +58,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
   }, [usages, sectionColDefById])
 
   const bySubstanceTrade = useCallback(
+    // eslint-disable-next-line
     (standalone = false) => {
       return [
         {
@@ -68,7 +67,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
           field: 'imports',
           headerName: 'Import',
           orsAggFunc: 'sumTotal',
-          ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+          // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
         },
         {
           ...sectionColDefById['exports'],
@@ -76,7 +75,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
           field: 'exports',
           headerName: 'Export',
           orsAggFunc: 'sumTotal',
-          ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+          // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
         },
         {
           ...sectionColDefById['production'],
@@ -84,7 +83,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
           field: 'production',
           headerName: 'Production',
           orsAggFunc: 'sumTotal',
-          ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+          // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
         },
         ...(includes(['II', 'III', 'IV', 'V'], model)
           ? [
@@ -94,7 +93,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
                 field: 'import_quotas',
                 headerName: 'Import Quotas',
                 orsAggFunc: 'sumTotal',
-                ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+                // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
               },
             ]
           : []),
@@ -106,7 +105,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
                 field: 'export_quotas',
                 headerName: 'Export Quotas',
                 orsAggFunc: 'sumTotal',
-                ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+                // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
               },
             ]
           : []),
@@ -116,7 +115,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
                 ...sectionColDefById['banned_date'],
                 dataType: 'date',
                 field: 'banned_date',
-                ...(standalone ? { flex: 1 } : { flex: 1 }),
+                // ...(standalone ? { flex: 1 } : { flex: 1 }),
               },
             ]
           : []),
@@ -127,7 +126,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
                 cellClass: 'ag-text-left',
                 field: 'remarks',
                 headerName: 'Remarks',
-                ...(standalone ? { flex: 1 } : { flex: 1 }),
+                // ...(standalone ? { flex: 1 } : { flex: 1 }),
               },
             ]
           : []),
