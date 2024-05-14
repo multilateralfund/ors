@@ -104,16 +104,16 @@ const CPExport = () => {
   )
 
   return (
-    <div className="CPExport flex flex-col gap-4">
+    <div className="CPExport flex flex-col gap-8 md:gap-4">
       <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
         <Typography variant="h6">
           Choose from the available types of extractions from the list below.
         </Typography>
       </Alert>
 
-      <div className="flex flex-col flex-wrap items-end justify-start gap-4 md:flex-row">
+      <div className="flex flex-col flex-wrap gap-8 md:gap-4 md:flex-row md:items-end md:justify-start">
         {/* Export options */}
-        <FormControl className="w-1/3 min-w-52">
+        <FormControl className="w-full md:w-1/3 md:min-w-52">
           <label htmlFor="export-option">Select an export option</label>
           <Select
             id="export-option"
@@ -136,8 +136,13 @@ const CPExport = () => {
 
         {/* Year Select */}
         {exportOption && exportOption.includes('all') && (
-          <div className="flex w-1/3 min-w-28 flex-col">
-            <label htmlFor="year">Year</label>
+          <div className="flex w-full md:w-1/3 md:min-w-52 flex-col">
+            <label htmlFor="year">
+              Year&nbsp;
+              <span className="text-sm text-gray-500">
+                (This field is optional)
+              </span>
+            </label>
             <Field
               id="year"
               FieldProps={{ className: 'mb-0' }}
@@ -163,8 +168,13 @@ const CPExport = () => {
         {exportOption &&
           (exportOption.includes('HCFC') || exportOption.includes('HFC')) && (
             <>
-              <div className="flex w-1/4 min-w-28 flex-col">
-                <label htmlFor="min-year">Min Year</label>
+              <div className="flex w-full md:w-1/4 md:min-w-28 flex-col">
+                <label htmlFor="min-year">
+                  Min Year&nbsp;
+                  <span className="text-sm text-gray-500">
+                    (This field is optional)
+                  </span>
+                </label>
 
                 <Field
                   id="min-year"
@@ -191,8 +201,13 @@ const CPExport = () => {
                   }}
                 />
               </div>
-              <div className="flex w-1/4 min-w-28 flex-col">
-                <label htmlFor="max-year">Max Year</label>
+              <div className="flex w-full md:w-1/4 md:min-w-28 flex-col">
+                <label htmlFor="max-year">
+                  Max Year&nbsp;
+                  <span className="text-sm text-gray-500">
+                    (This field is optional)
+                  </span>
+                </label>
                 <Field
                   id="max-year"
                   FieldProps={{ className: 'mb-0' }}
@@ -222,7 +237,7 @@ const CPExport = () => {
           )}
 
         {downloadUrl && (
-          <a className="min-w-20 self-end" href={formatApiUrl(downloadUrl)}>
+          <a className="md:min-w-20 md:self-end" href={formatApiUrl(downloadUrl)}>
             <Button className="w-full" variant="contained">
               Export
             </Button>

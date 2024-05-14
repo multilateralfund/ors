@@ -9,3 +9,10 @@
 .CPComments .MuiButtonBase-root {
   @apply p-0.5;
 }
+
+.CPExport .MuiButtonBase-root {
+  @apply p-1.5;
+
+  font-size: 14px;
+}
+
