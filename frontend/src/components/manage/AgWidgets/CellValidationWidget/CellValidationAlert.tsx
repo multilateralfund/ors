@@ -31,7 +31,11 @@ export default function CellValidationAlert({
           setShowTooltip(false)
         }}
       >
-        <IoAlertCircle size={24} />
+        <IoAlertCircle
+          className="rounded-full bg-[#002A3C]"
+          color="#EBFF00"
+          size={24}
+        />
       </div>
       <Popover
         anchorEl={anchorEl}
@@ -54,7 +58,7 @@ export default function CellValidationAlert({
         }}
         disableRestoreFocus
       >
-        <div className="bg-red-950 px-4 py-2 text-white">
+        <div className="bg-mlfs-bannerColor px-4 py-2">
           {errors.map((err, idx) => (
             <div key={idx}>
               {'\u2022'} {err.message}

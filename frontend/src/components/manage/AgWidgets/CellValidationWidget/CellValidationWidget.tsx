@@ -27,7 +27,7 @@ export default function CellValidationWidget(props: any) {
   return (
     <div
       className={cx(
-        'absolute right-1 top-1.5 inline-block leading-tight text-red-950 ease-in-out transition-all',
+        'absolute right-1 top-1.5 inline-block leading-tight ease-in-out transition-all',
         { 'collapse opacity-0': !display, 'opacity-100': display },
       )}
     >
