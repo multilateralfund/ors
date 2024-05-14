@@ -26,7 +26,7 @@ interface UnitSelectionWidgetProps {
 function UnitSelectionWidget(props: UnitSelectionWidgetProps) {
   const { className, gridContext, onChange } = props
 
-  let selectedIndex = gridContext
+  let selectedIndex = gridContext.unit
     ? OPTIONS.map((o) => o.value).indexOf(gridContext.unit)
     : 0
   selectedIndex = selectedIndex == -1 ? 0 : selectedIndex

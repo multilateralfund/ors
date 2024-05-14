@@ -233,11 +233,15 @@ class CPHFCHCFCExportBaseView(views.APIView):
         min_year = self.request.query_params.get("min_year")
         max_year = self.request.query_params.get("max_year")
 
+        current_year = datetime.now().year
         if not min_year and not max_year:
             # set current year for min year and max year
-            current_year = datetime.now().year
             min_year = current_year
             max_year = current_year
+        if not max_year:
+            max_year = current_year
+        if not min_year:
+            min_year = 1995
 
         return min_year, max_year
 

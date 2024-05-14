@@ -1,11 +1,21 @@
 .SimpleTable .MuiButtonBase-root.MuiTableSortLabel-root .MuiTableSortLabel-icon {
-    @apply text-black;
+  @apply text-black;
 }
 
 .SimpleTable .MuiButtonBase-root.MuiTableSortLabel-root:hover {
-    @apply hover:text-mlfs-hlYellow;
+  @apply hover:text-secondary;
 }
 
 .SimpleTable .MuiButtonBase-root.MuiTableSortLabel-root:hover .MuiTableSortLabel-icon {
-    @apply text-mlfs-hlYellow;
+  @apply text-secondary;
 }
+
+.SimpleTable .MuiButtonBase-root.MuiTableSortLabel-root.Mui-active,
+.SimpleTable .MuiButtonBase-root.MuiTableSortLabel-root.Mui-active .MuiTableSortLabel-icon {
+  @apply text-secondary;
+}
+
+.SimpleTable .MuiTableCell-sizeMedium:not(.MuiTableCell-paddingNone) {
+  @apply px-3;
+}
+

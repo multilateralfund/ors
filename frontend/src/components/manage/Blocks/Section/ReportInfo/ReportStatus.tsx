@@ -55,7 +55,7 @@ const ReportStatus: FC<ReportStatusProps> = ({
         {Object.keys(sectionsChecked).length > 0 && (
           <>
             <legend className="mb-3 text-2xl font-normal">
-              Sections reported
+              Select sections to be reported
             </legend>
             <FormGroup className="rounded-lg bg-white px-4 py-1 shadow-lg" row>
               {Object.entries(sectionsChecked).map(([section, checked]) => (

@@ -3,7 +3,6 @@ import * as React from 'react'
 import {
   Box,
   FormControlLabel,
-  Paper,
   Skeleton,
   Switch,
   Table,
@@ -23,33 +22,39 @@ import { useStore } from '@ors/store'
 import { FiEdit, FiEye } from 'react-icons/fi'
 import { IoEllipse } from 'react-icons/io5'
 
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  [`&.${tableCellClasses.body}`]: {
-    fontSize: 13,
-  },
-  [`&.${tableCellClasses.head}`]: {
-    '&:first-child': {
-      borderTopLeftRadius: '0.25rem',
-    },
-    '&:last-child': {
-      borderTopRightRadius: '0.25rem',
-    },
-    backgroundColor: theme.palette.secondary.light,
-    borderCollapse: 'collapse',
-    color: theme.palette.common.white,
-    fontSize: 13,
-  },
-}))
+const StyledTableCell = styled(TableCell)(() => {
+  // const borderColor = theme.palette.secondary.light
 
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  // hide last border
-  '&:last-child td, &:last-child th': {
-    border: 0,
-  },
-  '&:nth-of-type(odd)': {
-    backgroundColor: theme.palette.action.hover,
-  },
-}))
+  return {
+    [`&.${tableCellClasses.body}`]: {
+      // borderBottom: `1px solid ${borderColor}`,
+      fontSize: 12,
+    },
+    [`&.${tableCellClasses.head}`]: {
+      '&:first-child': {
+        borderTopLeftRadius: '0.25rem',
+      },
+      '&:last-child': {
+        borderTopRightRadius: '0.25rem',
+      },
+      borderCollapse: 'collapse',
+      fontSize: 12,
+    },
+  }
+})
+
+const StyledTableRow = styled(TableRow)(({ theme }) => {
+  const borderColor = theme.palette.secondary.light
+
+  return {
+    '& td': {
+      borderBottom: `1px solid ${borderColor}`, // Add border to all cells in the row
+    },
+    '&:last-child td': {
+      borderBottom: 0,
+    },
+  }
+})
 
 interface Data {
   country: string
@@ -77,7 +82,7 @@ function createData(
   const dateTime = new Date(created_date)
   const date = dateTime.toLocaleDateString(undefined, {
     day: 'numeric',
-    month: 'long',
+    month: 'short',
     year: 'numeric',
   })
   const time = dateTime.toLocaleTimeString(undefined, {
@@ -164,7 +169,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     }
 
   return (
-    <TableHead className="select-none">
+    <TableHead className="select-none uppercase">
       <TableRow>
         {headCells.map((headCell) => (
           <StyledTableCell
@@ -221,7 +226,7 @@ export default function SimpleTable(props: any) {
   const { data, setPagination, setParams } = props
 
   const [order, setOrder] = React.useState<Order>('desc')
-  const [orderBy, setOrderBy] = React.useState<keyof Data>('year')
+  const [orderBy, setOrderBy] = React.useState<keyof Data>('created_at')
   const [loading, setLoading] = React.useState(false) // Add loading state
   const [dense, setDense] = React.useState(false)
   const rows = data.map((item: any) => {
@@ -270,80 +275,78 @@ export default function SimpleTable(props: any) {
   }, [data])
 
   return (
-    <Box className="SimpleTable" sx={{ width: '100%' }}>
-      <Paper sx={{ mb: 2, width: '100%' }}>
-        <TableContainer>
-          <Table
-            aria-labelledby="tableTitle"
-            size={dense ? 'small' : 'medium'}
-            sx={{ minWidth: 750 }}
-          >
-            <EnhancedTableHead
-              order={order}
-              orderBy={orderBy}
-              rowCount={rows.length}
-              onRequestSort={handleRequestSort}
-            />
-            <TableBody>
-              {loading ? (
-                <LoadingSkeleton rows={rows.length} />
-              ) : (
-                rows.map((row: Data, index: number) => {
-                  const labelId = `cell-${index}`
-                  const statusDot =
-                    row.status === 'final' ? '#4191CD' : '#EE8E34'
-                  const country = countriesById.get(row.country_id as number)
+    <Box className="SimpleTable py-0" sx={{ width: '100%' }}>
+      <TableContainer>
+        <Table
+          aria-labelledby="tableTitle"
+          size={dense ? 'small' : 'medium'}
+          sx={{ minWidth: 600 }}
+        >
+          <EnhancedTableHead
+            order={order}
+            orderBy={orderBy}
+            rowCount={rows.length}
+            onRequestSort={handleRequestSort}
+          />
+          <TableBody>
+            {loading ? (
+              <LoadingSkeleton rows={rows.length} />
+            ) : (
+              rows.map((row: Data, index: number) => {
+                const labelId = `cell-${index}`
+                const statusDot = row.status === 'final' ? '#4191CD' : '#EE8E34'
+                const country = countriesById.get(row.country_id as number)
 
-                  return (
-                    <StyledTableRow key={row.id} tabIndex={-1}>
-                      <StyledTableCell id={labelId} align="right" scope="row">
-                        {row.year}
-                      </StyledTableCell>
-                      <StyledTableCell align="center">
-                        {row.country}
-                      </StyledTableCell>
-                      <StyledTableCell align="center">
-                        <Typography className="flex justify-center">
-                          <IoEllipse color={statusDot} size={12} />
-                        </Typography>
-                      </StyledTableCell>
-                      <StyledTableCell align="center">
-                        {row.version}
-                      </StyledTableCell>
-                      <StyledTableCell align="right">
-                        {row.created_at}
-                      </StyledTableCell>
-                      <StyledTableCell className="capitalize" align="left">
-                        {row.version_created_by_role}
-                      </StyledTableCell>
-                      <StyledTableCell align="center">
-                        <Typography className="flex items-center justify-center">
-                          <Link
-                            className="text-pretty border-0 p-2 hover:text-secondary"
-                            href={`/country-programme/${country?.iso3}/${row.year}`}
-                            underline="none"
-                          >
-                            <FiEye size={16} />
-                          </Link>
-                          <span>/</span>
-                          <Link
-                            className="text-pretty border-0 p-2 hover:text-secondary"
-                            href={`/country-programme/${country?.iso3}/${row.year}/edit`}
-                            underline="none"
-                          >
-                            <FiEdit size={16} />
-                          </Link>
-                        </Typography>
-                      </StyledTableCell>
-                    </StyledTableRow>
-                  )
-                })
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+                return (
+                  <StyledTableRow key={row.id} tabIndex={-1}>
+                    <StyledTableCell id={labelId} align="right" scope="row">
+                      {row.year}
+                    </StyledTableCell>
+                    <StyledTableCell align="center">
+                      {row.country}
+                    </StyledTableCell>
+                    <StyledTableCell align="center">
+                      <Typography className="flex justify-center">
+                        <IoEllipse color={statusDot} size={12} />
+                      </Typography>
+                    </StyledTableCell>
+                    <StyledTableCell align="center">
+                      {row.version}
+                    </StyledTableCell>
+                    <StyledTableCell align="right">
+                      {row.created_at}
+                    </StyledTableCell>
+                    <StyledTableCell className="capitalize" align="left">
+                      {row.version_created_by_role}
+                    </StyledTableCell>
+                    <StyledTableCell align="center">
+                      <Typography className="flex items-center justify-center">
+                        <Link
+                          className="text-pretty border-0 p-2 hover:text-secondary"
+                          href={`/country-programme/${country?.iso3}/${row.year}`}
+                          underline="none"
+                        >
+                          <FiEye size={16} />
+                        </Link>
+                        <span>/</span>
+                        <Link
+                          className="text-pretty border-0 p-2 hover:text-secondary"
+                          href={`/country-programme/${country?.iso3}/${row.year}/edit`}
+                          underline="none"
+                        >
+                          <FiEdit size={16} />
+                        </Link>
+                      </Typography>
+                    </StyledTableCell>
+                  </StyledTableRow>
+                )
+              })
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
       <FormControlLabel
+        className="m-0 p-4"
         control={<Switch checked={dense} onChange={handleChangeDense} />}
         label="Dense padding"
       />
