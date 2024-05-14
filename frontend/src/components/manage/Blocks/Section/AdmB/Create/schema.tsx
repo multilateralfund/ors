@@ -75,15 +75,6 @@ function useGridOptions(props: { adm_columns: any; model: string }) {
           marryChildren: true,
         },
         ...(adm_columns.length > 0 ? adm_columns.map(mapAdmColumn) : []),
-        {
-          cellClass: 'ag-text-center',
-          cellEditor: 'agTextCellEditor',
-          field: 'remarks',
-          flex: 1,
-          headerClass: 'ag-text-center',
-          headerName: 'Remarks',
-          ...colDefById['remarks'],
-        },
       ],
       defaultColDef: {
         autoHeight: true,
