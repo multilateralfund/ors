@@ -55,14 +55,6 @@ function useGridOptions(props: { adm_columns: any; model: string }) {
           ...colDefById['adm_c_description'],
         },
         ...(adm_columns.length > 0 ? adm_columns.map(mapAdmColumn) : []),
-        {
-          field: 'remarks',
-          flex: 1,
-          headerName: 'Remarks',
-          ...colDefById['remarks'],
-          cellClass: 'ag-text-center',
-          headerClass: 'ag-text-center',
-        },
       ],
       defaultColDef: {
         autoHeight: true,
