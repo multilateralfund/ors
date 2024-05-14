@@ -37,7 +37,7 @@ export function validateAnnexEQPS(
   }
 }
 
-export function validateAnnexENonQPS(
+export function validateAnnexENonQPSRemarks(
   row: IRow,
   { usages }: RowValidatorFuncContext,
 ): RowValidatorFuncResult {
@@ -49,7 +49,7 @@ export function validateAnnexENonQPS(
   const valueNonQPS = anyRow[`usage_${usageNonQPS}`] || 0
 
   if (isAnnexESubstance && valueNonQPS) {
-    const isValid = row.banned_date && row.remarks
+    const isValid = row.remarks
 
     if (!isValid) {
       return { row: row.display_name }
@@ -57,9 +57,45 @@ export function validateAnnexENonQPS(
   }
 }
 
-export function validateBannedImports(row: IRow): RowValidatorFuncResult {
+export function validateAnnexENonQPSDate(
+  row: IRow,
+  { usages }: RowValidatorFuncContext,
+): RowValidatorFuncResult {
+  const usageNonQPS = usages['Methyl bromide Non-QPS'].id
+  const isAnnexESubstance =
+    row.group.startsWith('Annex E') && (row.substance_id || row.blend_id)
+
+  const anyRow = row as unknown as Record<string, number>
+  const valueNonQPS = anyRow[`usage_${usageNonQPS}`] || 0
+
+  if (isAnnexESubstance && valueNonQPS) {
+    const isValid = row.banned_date
+
+    if (!isValid) {
+      return { row: row.display_name }
+    }
+  }
+}
+
+export function validateBannedImportsRemarks(row: IRow): RowValidatorFuncResult {
   const bannedByGroup =
-    row.group.startsWith('Annex E') ||
+    row.group.startsWith('Annex A, Group I') ||
+    row.group.startsWith('Annex A, Group II') ||
+    row.group.startsWith('Annex B, Group I') ||
+    row.group.startsWith('Annex B, Group II') ||
+    row.group.startsWith('Annex B, Group III')
+
+  const isBanned = bannedByGroup && (row.substance_id || row.blend_id)
+
+  if (isBanned) {
+    if (!row.remarks) {
+      return { row: row.display_name }
+    }
+  }
+}
+
+export function validateBannedImportsDate(row: IRow): RowValidatorFuncResult {
+  const bannedByGroup =
     row.group.startsWith('Annex A, Group I') ||
     row.group.startsWith('Annex A, Group II') ||
     row.group.startsWith('Annex B, Group I') ||

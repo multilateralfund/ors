@@ -1,8 +1,10 @@
 import type { ValidationSchema } from './types'
 
 import {
-  validateAnnexENonQPS,
-  validateBannedImports,
+  validateAnnexENonQPSDate,
+  validateAnnexENonQPSRemarks,
+  validateBannedImportsDate,
+  validateBannedImportsRemarks,
   validateBlendComponents,
   validateFacilityName,
   validateHFC23,
@@ -37,22 +39,38 @@ const validationSchema: ValidationSchema = {
         validator: validateAnnexEQPS,
       },
       {
-        id: 'validate-annex-e-non-qps',
+        id: 'validate-annex-e-non-qps-remarks',
         highlight_cells: {
-          banned_date: (row) => !row.banned_date,
           remarks: (row) => !row.remarks,
         },
         message:
           'If Non-QPS is provided; explanations should be provided in the Remarks field (i.e, for critical uses approved by the Parties with decision number).',
-        validator: validateAnnexENonQPS,
+        validator: validateAnnexENonQPSRemarks,
       },
       {
-        id: 'validate-banned-imports',
+        id: 'validate-annex-e-non-qps-date',
         highlight_cells: {
           banned_date: (row) => !row.banned_date,
         },
         message: 'The date of the ban on Non-QPS should be provided.',
-        validator: validateBannedImports,
+        validator: validateAnnexENonQPSDate,
+      },
+      {
+        id: 'validate-banned-imports-remarks',
+        highlight_cells: {
+          remarks: (row) => !row.remarks,
+        },
+        message:
+          'This substance has already been banned, if data is provided, explanations should be provided in the “Remarks” field (i.e, recovery/recycling, stockpiles or some special use exemption, etc).',
+        validator: validateBannedImportsRemarks,
+      },
+      {
+        id: 'validate-banned-imports-date',
+        highlight_cells: {
+          banned_date: (row) => !row.banned_date,
+        },
+        message: 'The date of the ban should be provided.',
+        validator: validateBannedImportsDate,
       },
     ],
   },
