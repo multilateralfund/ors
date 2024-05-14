@@ -136,6 +136,7 @@ def get_import_user():
             first_name="Import",
             last_name="User",
             email="import@systemuser.com",
+            user_type=user_model.UserType.SECRETARIAT,
         )
         import_user.save()
         return import_user
