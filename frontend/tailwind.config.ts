@@ -33,6 +33,7 @@ const mlfs = {
   hlYellow: 'hsla(65, 100%, 50%, 1)',
   hlYellowTint: 'hsla(65, 100%, 75%, 1)',
   deepTealShade: 'hsla(199, 100%, 8%, 1);',
+  bannerColor: '#E6F4FB',
 }
 
 const originalColors = {

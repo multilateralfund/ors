@@ -171,7 +171,7 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
     <>
       <div className="modal-content">
         <Alert
-          className="mb-4"
+          className="mb-4 bg-mlfs-bannerColor"
           icon={<IoInformationCircle size={24} />}
           severity="info"
         >

@@ -19,7 +19,7 @@ export default function SectionDCreate(props: any) {
 
   return (
     <>
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+      <Alert className="bg-mlfs-bannerColor" icon={<IoInformationCircleOutline size={24} />} severity="info">
         <Footnote id="" index="">
           Data in Section D should be provided (if applicable) even if breakdown
           in Section E by enterprises are not reported as reporting under

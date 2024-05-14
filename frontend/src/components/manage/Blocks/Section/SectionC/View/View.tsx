@@ -91,7 +91,7 @@ export default function SectionCView(props: {
   return (
     <>
       {includes(['II', 'III'], variant.model) ? null : (
-        <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Alert className="bg-mlfs-bannerColor" icon={<IoInformationCircleOutline size={24} />} severity="info">
           <Footnotes />
         </Alert>
       )}
