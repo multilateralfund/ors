@@ -41,7 +41,12 @@ class TestCPReportValidation(BaseTest):
 
         response = self.client.post(self.url, report_data, format="json")
         assert response.status_code == 400
-        assert "Negative use data" in response.data["non_field_errors"][0]
+        assert (
+            "Negative use data"
+            in response.data["section_a"][f"substance_{substance.id}"]["record_usages"][
+                f"usage_{usage.id}"
+            ]["quantity"]
+        )
 
     def test_section_b_validation(self, user, country_ro, usage, blend):
         self.client.force_authenticate(user=user)
@@ -59,4 +64,9 @@ class TestCPReportValidation(BaseTest):
 
         response = self.client.post(self.url, report_data, format="json")
         assert response.status_code == 400
-        assert "Negative use data" in response.data["non_field_errors"][0]
+        assert (
+            "Negative use data"
+            in response.data["section_b"][f"blend_{blend.id}"]["record_usages"][
+                f"usage_{usage.id}"
+            ]["quantity"]
+        )
