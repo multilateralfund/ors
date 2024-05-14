@@ -56,7 +56,7 @@ const CPExport = () => {
     const queryParams = exportOption.includes('all')
       ? yearParam
       : minYear && maxYear
-        ? `${minYearParam}&${maxYearParam}`
+        ? `?${minYearParam}&${maxYearParam}`
         : `?${minYearParam}` || `?${maxYearParam}` || ''
 
     return apiUrl + queryParams
