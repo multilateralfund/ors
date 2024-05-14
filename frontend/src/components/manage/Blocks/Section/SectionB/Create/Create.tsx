@@ -388,7 +388,7 @@ export default function SectionBCreate(props: {
           open={addChemicalModal}
           onClose={closeModal}
         >
-          <Box className="xs:max-w-xs max-h-[768px] w-full max-w-md overflow-y-auto absolute-center sm:max-w-2xl">
+          <Box className="xs:max-w-xs max-h-[968px] w-full max-w-md overflow-y-auto absolute-center sm:max-w-2xl">
             <Typography
               id="add-chemical-modal-title"
               className="mb-2"

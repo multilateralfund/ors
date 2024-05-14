@@ -18,18 +18,12 @@ import { NON_EDITABLE_ROWS } from '@ors/config/Table/columnsDef/settings'
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
-import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import api from '@ors/helpers/Api/_api'
 import { applyTransaction } from '@ors/helpers/Utils/Utils'
 import useStateWithPrev from '@ors/hooks/useStateWithPrev'
 import { useStore } from '@ors/store'
 
-import {
-  IoAddCircleSharp,
-  IoAlertCircle,
-  IoInformationCircle,
-  IoTrash,
-} from 'react-icons/io5'
+import { IoAlertCircle, IoInformationCircle, IoTrash } from 'react-icons/io5'
 
 function SimilarBlend({ blend, onClick, substances }: any) {
   return (
@@ -171,7 +165,7 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
     <>
       <div className="modal-content">
         <Alert
-          className="mb-4 bg-mlfs-bannerColor"
+          className="bg-mlfs-bannerColor mb-4"
           icon={<IoInformationCircle size={24} />}
           severity="info"
         >
@@ -239,46 +233,27 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
               },
               cellRendererParams: (props: any) => ({
                 options: !props.data.mandatory && !props.data.rowType && (
-                  <div>
-                    <Dropdown.Item
-                      onClick={() => {
-                        props.api.startEditingCell({
-                          colKey: props.column.colId,
-                          rowIndex: props.node.rowIndex,
-                        })
-                      }}
-                    >
-                      <div className="flex items-center gap-x-2">
-                        <IoAddCircleSharp className="fill-primary" size={20} />
-                        <span>Add substance</span>
-                      </div>
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={() => {
-                        const newComponents = form.components
-                        const index = findIndex(
-                          newComponents,
-                          (component: any) =>
-                            component.row_id === props.data.row_id,
-                        )
-                        newComponents.splice(index, 1)
-                        setForm({
-                          ...prevForm.current,
-                          components: newComponents,
-                        })
-                        applyTransaction(props.api, {
-                          remove: [props.data],
-                        })
-                      }}
-                    >
-                      <div className="flex items-center gap-x-2">
-                        <IoTrash className="fill-error" size={20} />
-                        <span>Delete</span>
-                      </div>
-                    </Dropdown.Item>
-                  </div>
+                  <IoTrash
+                    className="cursor-pointer fill-error"
+                    size={20}
+                    onClick={() => {
+                      const newComponents = form.components
+                      const index = findIndex(
+                        newComponents,
+                        (component: any) =>
+                          component.row_id === props.data.row_id,
+                      )
+                      newComponents.splice(index, 1)
+                      setForm({
+                        ...prevForm.current,
+                        components: newComponents,
+                      })
+                      applyTransaction(props.api, {
+                        remove: [props.data],
+                      })
+                    }}
+                  />
                 ),
-                optionsInDropdown: true,
               }),
               field: 'substance',
               flex: 1,
