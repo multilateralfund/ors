@@ -648,8 +648,8 @@ function Table(props: TableProps) {
               }
             }}
             onRowDataUpdated={(props) => {
-              props.api.autoSizeAllColumns()
-              props.api.sizeColumnsToFit()
+              // props.api.autoSizeAllColumns()
+              // props.api.sizeColumnsToFit()
               onRowDataUpdated(props)
             }}
             {...omit(props, [
