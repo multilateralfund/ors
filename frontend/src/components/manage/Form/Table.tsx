@@ -531,7 +531,6 @@ function Table(props: TableProps) {
               }
             }}
             onGridReady={(props) => {
-              props.api.sizeColumnsToFit()
               onGridReady(props)
               if (!fullScreen) {
                 updateTableHeight()
@@ -649,6 +648,8 @@ function Table(props: TableProps) {
               }
             }}
             onRowDataUpdated={(props) => {
+              props.api.autoSizeAllColumns()
+              props.api.sizeColumnsToFit()
               onRowDataUpdated(props)
             }}
             {...omit(props, [

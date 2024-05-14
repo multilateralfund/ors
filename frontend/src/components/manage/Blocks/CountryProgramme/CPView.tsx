@@ -181,10 +181,6 @@ const TableProps: ITableProps = {
       </div>
     )
   },
-  autoSizePadding: 0,
-  autoSizeStrategy: {
-    type: 'fitGridWidth',
-  },
   domLayout: 'autoHeight',
   enableCellChangeFlash: true,
   enableFullScreen: true,

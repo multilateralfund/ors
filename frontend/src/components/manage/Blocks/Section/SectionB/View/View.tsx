@@ -101,7 +101,7 @@ function getPinnedRowData(rowData: any) {
 }
 
 export default function SectionBView(props: {
-  Comments: React.FC<{ section: string, viewOnly: boolean }>
+  Comments: React.FC<{ section: string; viewOnly: boolean }>
   TableProps: ITableProps
   emptyForm: EmptyFormType
   report: CPReport
@@ -144,7 +144,11 @@ export default function SectionBView(props: {
 
   return (
     <>
-      <Alert className="bg-mlfs-bannerColor" icon={<IoInformationCircleOutline size={24} />} severity="info">
+      <Alert
+        className="bg-mlfs-bannerColor"
+        icon={<IoInformationCircleOutline size={24} />}
+        severity="info"
+      >
         <Footnotes />
       </Alert>
       <div
