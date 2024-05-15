@@ -12,6 +12,15 @@ function useGridOptions(props: { model: string; usages: Record<string, any>[] })
   const { model, usages } = props
   const usagesDiff = usages.map(function(item) {
     const itemDiff = { ...item }
+    const children: Record<string, any>[] = itemDiff?.children
+    if (!!children) {
+      const childrenDiff = children.map(function(child) {
+        const childDiff = { ...child }
+        childDiff.category='usage_diff'
+        return childDiff
+      })
+      itemDiff.children = childrenDiff
+    }
     itemDiff.category = 'usage_diff'
     return itemDiff
   })
@@ -50,8 +59,6 @@ function useGridOptions(props: { model: string; usages: Record<string, any>[] })
     [],
   )
 
-  console.log("Bisector")
-  console.log(usagesDiff)
   const bySector = useMemo(() => {
     return [
       ...usagesDiff,

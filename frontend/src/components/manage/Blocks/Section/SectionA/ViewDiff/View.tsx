@@ -86,7 +86,6 @@ export default function SectionAViewDiff(props: any) {
       model: variant.model,
       usages: emptyForm.usage_columns?.section_a || [],
     })
-  console.log(gridOptionsAll)
   const grid = useRef<any>()
 
   const rowData = getRowData(report, false, variant.model)
