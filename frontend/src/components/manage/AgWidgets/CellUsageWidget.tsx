@@ -12,8 +12,6 @@ import {
 import { ICellEditorParams } from 'ag-grid-community'
 import { findIndex, isNumber } from 'lodash'
 
-import TextWidget from '@ors/components/manage/Widgets/TextWidget'
-import { KEY_BACKSPACE, KEY_ENTER, KEY_F2, KEY_TAB } from '@ors/constants'
 import { applyTransaction, parseNumber } from '@ors/helpers/Utils/Utils'
 
 function getInput(element: HTMLInputElement) {
@@ -47,24 +45,17 @@ export const CellUsageWidget = memo(
       }, [usageId, props.data.record_usages])
 
       const createInitialState = () => {
-        let startValue
+        let startValue = props.value || ''
         let highlightAllOnFocus = true
-        const eventKey = props.eventKey
 
-        if (eventKey === KEY_BACKSPACE) {
-          // if backspace or delete pressed, we clear the cell
-          startValue = ''
-        } else if (eventKey && eventKey.length === 1) {
+        const eventKey = props.eventKey
+        if (eventKey && eventKey.length === 1) {
           // if a letter was pressed, we start with the letter
           startValue = eventKey
           highlightAllOnFocus = false
-        } else {
-          // otherwise we start with the current value
-          startValue = parseNumber(usage?.quantity) || ''
-          if (eventKey === KEY_F2) {
-            highlightAllOnFocus = false
-          }
         }
+
+        console.log('startValue', startValue)
 
         return {
           highlightAllOnFocus,
@@ -79,6 +70,22 @@ export const CellUsageWidget = memo(
       )
       const refInput = useRef<HTMLInputElement>(null)
 
+      // enforce valid, positive numbers
+      function handleValue(evt: any) {
+        setValue((oldValue: any) => {
+          let newValue = evt.target.value
+          if (newValue === '') {
+            newValue = ''
+          } else {
+            newValue = parseNumber(newValue) || oldValue
+          }
+          if (newValue < 0) {
+            newValue = oldValue
+          }
+          return newValue
+        })
+      }
+
       // focus on the input
       useEffect(() => {
         // get ref from React component
@@ -92,60 +99,6 @@ export const CellUsageWidget = memo(
         }
         // eslint-disable-next-line
       }, [])
-
-      const isArrowKey = (event: any) => {
-        return (
-          ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(
-            event.key,
-          ) > -1
-        )
-      }
-
-      const isBackspace = (event: any) => {
-        return event.key === KEY_BACKSPACE
-      }
-
-      const isSelectAll = (event: any) => {
-        return (event.ctrlKey || event.metaKey) && event.key === 'a'
-      }
-
-      // const isCharNumeric = (charStr: string) => {
-      //   return !!/\d/.test(charStr)
-      // }
-
-      // const isCharTheFirstDecimal = (charStr: string, value: string) => {
-      //   return !!/\./.test(charStr) && !/\./.test(value)
-      // }
-
-      // const isNegativeNumber = (charStr: string, value: string) => {
-      //   return !!/\-/.test(charStr) && !value
-      // }
-
-      // const isNumericKey = (event: any) => {
-      //   const value = event.target.value
-      //   const charStr = event.key
-      //   return (
-      //     isCharNumeric(charStr) ||
-      //     isCharTheFirstDecimal(charStr, value) ||
-      //     isNegativeNumber(charStr, value)
-      //   )
-      // }
-
-      const finishedEditingPressed = (event: any) => {
-        const key = event.key
-        return key === KEY_ENTER || key === KEY_TAB
-      }
-
-      const onKeyDown = (event: any) => {
-        if (isArrowKey(event) || isBackspace(event) || isSelectAll(event)) {
-          event.stopPropagation()
-          return
-        }
-
-        if (finishedEditingPressed(event)) {
-          props.stopEditing()
-        }
-      }
 
       /* Component Editor Lifecycle methods */
       useImperativeHandle(ref, () => {
@@ -189,12 +142,16 @@ export const CellUsageWidget = memo(
               ],
             })
 
+            console.log(finalValue)
             return finalValue
           },
 
           // Gets called once before editing starts, to give editor a chance to
           // If you return true, then the result of the edit will be ignored.
           isCancelAfterEnd() {
+            if (value === '') {
+              return false
+            }
             const finalValue = parseNumber(value)
             return !isNumber(finalValue) || isNaN(finalValue)
           },
@@ -208,29 +165,12 @@ export const CellUsageWidget = memo(
       })
 
       return (
-        <TextWidget
+        <input
+          className="w-full border-0 outline-none"
           ref={refInput}
           type="number"
           value={value}
-          InputProps={{
-            inputProps: {
-              lang: 'en',
-              ...(props.min ? { min: props.min } : {}),
-              ...(props.max ? { max: props.max } : {}),
-              step: 1,
-            },
-          }}
-          sx={{
-            '& .MuiInputBase-root': {
-              borderRadius: 0,
-              height: '100%',
-              width: '100%',
-            },
-            '& fieldset': { border: 'none' },
-            borderRadius: 0,
-          }}
-          onChange={(event: any) => setValue(event.target.value)}
-          onKeyDown={(event: any) => onKeyDown(event)}
+          onChange={handleValue}
         />
       )
     },
