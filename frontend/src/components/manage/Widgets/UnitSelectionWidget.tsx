@@ -6,14 +6,38 @@ import useClickOutside from '@ors/hooks/useClickOutside'
 
 import { IoChevronDown } from 'react-icons/io5'
 
-const OPTIONS = [
+const OPTIONS: IOption[] = [
   { label: 'Metric tonnes', value: 'mt' },
-  { label: 'GWP', value: 'gwp' },
+  {
+    label: (
+      <>
+        CO<sub>2</sub> equivalent
+      </>
+    ),
+    value: 'gwp',
+  },
   { label: 'ODP tonnes', value: 'odp' },
 ]
 
+const OPTIONS_A: IOption[] = [
+  { label: 'Metric tonnes', value: 'mt' },
+  { label: 'ODP tonnes', value: 'odp' },
+]
+
+const OPTIONS_B: IOption[] = [
+  { label: 'Metric tonnes', value: 'mt' },
+  {
+    label: (
+      <>
+        CO<sub>2</sub> equivalent
+      </>
+    ),
+    value: 'gwp',
+  },
+]
+
 interface IOption {
-  label: string
+  label: JSX.Element | string
   value: string
 }
 
@@ -26,8 +50,19 @@ interface UnitSelectionWidgetProps {
 function UnitSelectionWidget(props: UnitSelectionWidgetProps) {
   const { className, gridContext, onChange } = props
 
+  let options = OPTIONS
+
+  switch (gridContext.section?.id) {
+    case 'section_a':
+      options = OPTIONS_A
+      break
+    case 'section_b':
+      options = OPTIONS_B
+      break
+  }
+
   let selectedIndex = gridContext.unit
-    ? OPTIONS.map((o) => o.value).indexOf(gridContext.unit)
+    ? options.map((o) => o.value).indexOf(gridContext.unit)
     : 0
   selectedIndex = selectedIndex == -1 ? 0 : selectedIndex
 
@@ -37,7 +72,7 @@ function UnitSelectionWidget(props: UnitSelectionWidgetProps) {
 
   const handleClickOption = (index: number) => () => {
     setShowMenu(false)
-    onChange(OPTIONS[index], index)
+    onChange(options[index], index)
   }
 
   const ref = useClickOutside<HTMLDivElement>(() => {
@@ -51,7 +86,7 @@ function UnitSelectionWidget(props: UnitSelectionWidgetProps) {
         ref={ref}
         onClick={toggleShowMenu}
       >
-        <div className="">{OPTIONS[selectedIndex].label}</div>
+        <div className="">{options[selectedIndex].label}</div>
         <IoChevronDown className="" />
       </div>
       <div
@@ -63,7 +98,7 @@ function UnitSelectionWidget(props: UnitSelectionWidgetProps) {
           },
         )}
       >
-        {OPTIONS.map((option, idx) => (
+        {options.map((option, idx) => (
           <div
             key={idx}
             className="flex cursor-pointer items-center gap-x-2 rounded-none px-2 py-2 text-black no-underline hover:bg-primary hover:text-white"
