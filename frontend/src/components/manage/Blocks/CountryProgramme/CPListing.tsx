@@ -637,7 +637,7 @@ export default function CPListing() {
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-end gap-x-4">
+      <div className="mb-6 flex items-center justify-end gap-x-6 lg:mb-4 lg:gap-x-4">
         {userCanSubmitReport[user_type as UserType] && (
           <Link
             className="px-4 py-2 text-lg uppercase"
@@ -663,10 +663,10 @@ export default function CPListing() {
       </div>
       <div
         id="cp-listing-sections"
-        className="relative flex flex-col-reverse gap-4 md:flex-row"
+        className="relative flex flex-col-reverse gap-6 lg:flex-row lg:gap-4"
       >
         <div className="flex-1">
-          <div className="flex flex-wrap-reverse items-center justify-between gap-2 border-0 border-b border-solid border-primary md:flex-nowrap">
+          <div className="flex flex-wrap-reverse items-center justify-between gap-2 border-0 border-b border-solid border-primary lg:flex-nowrap">
             <Tabs
               className="scrollable w-96"
               aria-label="view country programme report"

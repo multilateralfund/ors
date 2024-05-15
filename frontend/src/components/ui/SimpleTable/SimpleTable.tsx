@@ -22,13 +22,13 @@ import { useStore } from '@ors/store'
 import { FiEdit, FiEye } from 'react-icons/fi'
 import { IoEllipse } from 'react-icons/io5'
 
-const StyledTableCell = styled(TableCell)(() => {
+const StyledTableCell = styled(TableCell)(({theme}) => {
   // const borderColor = theme.palette.secondary.light
 
   return {
     [`&.${tableCellClasses.body}`]: {
       // borderBottom: `1px solid ${borderColor}`,
-      fontSize: 12,
+      fontSize: theme.typography.fontSize,
     },
     [`&.${tableCellClasses.head}`]: {
       '&:first-child': {
@@ -38,7 +38,7 @@ const StyledTableCell = styled(TableCell)(() => {
         borderTopRightRadius: '0.25rem',
       },
       borderCollapse: 'collapse',
-      fontSize: 12,
+      fontSize: theme.typography.fontSize,
     },
   }
 })
@@ -275,12 +275,12 @@ export default function SimpleTable(props: any) {
   }, [data])
 
   return (
-    <Box className="SimpleTable py-0" sx={{ width: '100%' }}>
+    <Box className="SimpleTable py-0 px-0 lg:px-4" sx={{ width: '100%' }}>
       <TableContainer>
         <Table
           aria-labelledby="tableTitle"
           size={dense ? 'small' : 'medium'}
-          sx={{ minWidth: 600 }}
+          // sx={{ minWidth: 600 }}
         >
           <EnhancedTableHead
             order={order}
