@@ -28,6 +28,12 @@ import { IoChevronDown, IoChevronUp, IoClose, IoMenu } from 'react-icons/io5'
 const EXTERNAL_BASE_URL = 'https://prod.multilateralfund.edw.ro'
 const makeExternalUrl = (path: string) => `${EXTERNAL_BASE_URL}${path}`
 
+interface MenuItem {
+  current?: boolean
+  label: string
+  menu?: MenuItem[]
+}
+
 const makeInternalNavItem = (
   pathname: string,
   props: {
@@ -36,9 +42,12 @@ const makeInternalNavItem = (
     url: string
   },
 ) => {
-  const current = !!props.menu?.some((menuItem) =>
-    matchPath(`${menuItem.url}/*`, pathname || ''),
-  )
+  const current = props.menu
+    ? props.menu.some((menuItem) =>
+        matchPath(`${menuItem.url}/*`, pathname || ''),
+      )
+    : matchPath(`${props.url}/*`, pathname || '') !== null
+
   const internal = true
 
   const processedMenu = props.menu?.map((menuItem) => ({
@@ -155,10 +164,42 @@ const DesktopHeaderNavigation = ({
   className: string
   items: ReturnType<typeof useMenuItems>
 }) => {
+  const recursivelyExpandItems = (
+    items: MenuItem[],
+    acc: Record<string, boolean>,
+  ) => {
+    items.forEach((item) => {
+      if (item.current) {
+        acc[item.label] = true
+      }
+      if (item.menu) {
+        recursivelyExpandItems(item.menu, acc)
+      }
+    })
+  }
+
+  const initiallyExpanded: Record<string, boolean> = {}
+  recursivelyExpandItems(items, initiallyExpanded)
+
   const [showMenu, setShowMenu] = useState<Record<string, boolean>>({})
   const [hideInProgress, setHideInProgress] = useState<
     Record<string, DebouncedFunc<any> | null>
   >({})
+  const [openMenus, setOpenMenus] =
+    useState<Record<string, boolean>>(initiallyExpanded)
+  const toggleCollapseOpen = (label: string) => {
+    setOpenMenus((prev) => {
+      const newState = { [label]: !prev[label] }
+
+      Object.keys(prev).forEach((key) => {
+        if (key !== label) {
+          newState[key] = false
+        }
+      })
+
+      return newState
+    })
+  }
 
   const handleShowMenu = (label: string) => {
     hideInProgress[label]?.cancel?.()
@@ -231,43 +272,70 @@ const DesktopHeaderNavigation = ({
             >
               {item.menu?.map((menuItem) => {
                 const Component = menuItem?.internal ? NextLink : 'a'
+                const regularSubMenuLink = !menuItem.menu ? (
+                  <Component
+                    key={menuItem.label}
+                    className={cx(
+                      'flex flex-nowrap items-center gap-1 text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0 hover:bg-mlfs-hlYellow',
+                      {
+                        'bg-mlfs-hlYellow': menuItem.current,
+                      },
+                    )}
+                    href={menuItem.url}
+                    onClick={() => toggleCollapseOpen(menuItem.label)}
+                  >
+                    {menuItem.label}
+                  </Component>
+                ) : null
                 return (
-                  <React.Fragment key={menuItem.label}>
-                    <Component
-                      className={cx(
-                        'flex flex-nowrap items-center gap-1 text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0',
-                        {
-                          'bg-mlfs-hlYellow':
-                            menuItem.current && !menuItem.menu,
-                        },
-                        { 'hover:bg-mlfs-hlYellow': !menuItem.menu },
-                        {
-                          'pointer-events-none cursor-default hover:bg-transparent':
-                            menuItem.menu,
-                        },
-                      )}
-                      href={menuItem.url}
-                    >
-                      {menuItem.label}
-                      {menuItem.menu && <IoChevronDown />}
-                    </Component>
-                    {menuItem.menu &&
-                      menuItem.menu.length > 0 &&
-                      menuItem.menu.map((subMenuItem) => {
-                        return (
-                          <NextLink
-                            key={subMenuItem.label}
-                            className={cx(
-                              'text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 pl-8 text-lg text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0 hover:bg-mlfs-hlYellow',
-                              { 'bg-mlfs-hlYellow': subMenuItem.current },
-                            )}
-                            href={subMenuItem.url}
-                          >
-                            {subMenuItem.label}
-                          </NextLink>
-                        )
-                      })}
-                  </React.Fragment>
+                  regularSubMenuLink || (
+                    <List key={menuItem.label} className="py-0" component="div">
+                      <ListItemButton
+                        className={cx(
+                          'flex flex-nowrap items-center gap-1 text-nowrap rounded-b-none border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg hover:bg-mlfs-hlYellow',
+                          {
+                            'bg-mlfs-hlYellow':
+                              menuItem.current && !menuItem.menu,
+                          },
+                        )}
+                        onClick={() => toggleCollapseOpen(menuItem.label)}
+                      >
+                        {menuItem.label}
+                        {openMenus[menuItem.label] ? (
+                          <IoChevronUp />
+                        ) : (
+                          <IoChevronDown />
+                        )}
+                      </ListItemButton>
+                      <Collapse
+                        in={openMenus[menuItem.label]}
+                        timeout="auto"
+                        unmountOnExit
+                      >
+                        <List className="py-0" component="div">
+                          {menuItem.menu &&
+                            menuItem.menu.map((subMenuItem) => {
+                              const Component = subMenuItem?.internal
+                                ? NextLink
+                                : 'a'
+                              return (
+                                <ListItem
+                                  key={subMenuItem.label}
+                                  className={cx(
+                                    'last:rounded-0 text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 pl-8 text-lg text-primary no-underline transition-all hover:bg-mlfs-hlYellow',
+                                    { 'bg-mlfs-hlYellow': subMenuItem.current },
+                                  )}
+                                  component={Component}
+                                  href={subMenuItem.url}
+                                >
+                                  {subMenuItem.label}
+                                </ListItem>
+                              )
+                            })}
+                        </List>
+                      </Collapse>
+                    </List>
+                  )
                 )
               })}
             </div>
