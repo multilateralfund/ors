@@ -171,7 +171,7 @@ const ArchiveHeaderActions = () => {
 }
 
 const ViewHeaderActions = () => {
-  const { cacheInvalidateReport, fetchVersions, report, setReport } = useStore(
+  const { cacheInvalidateReport, fetchBundle, report } = useStore(
     (state) => state.cp_reports,
   )
   const { enqueueSnackbar } = useSnackbar()
@@ -219,15 +219,9 @@ const ViewHeaderActions = () => {
                       </>,
                       { variant: 'success' },
                     )
-                    setReport({
-                      data: {
-                        ...report.data,
-                        ...response,
-                      },
-                    })
+
                     cacheInvalidateReport(response.country_id, response.year)
-                    fetchVersions(response.country_id, response.year)
-                    window.scrollTo({ behavior: 'smooth', top: 0 })
+                    await fetchBundle(response.country_id, response.year)
                   } catch (error) {
                     const errors = await error.json()
                     errors.detail &&
