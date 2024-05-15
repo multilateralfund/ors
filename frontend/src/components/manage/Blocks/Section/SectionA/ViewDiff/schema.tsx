@@ -64,7 +64,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
       return [
         {
           ...sectionColDefById['imports'],
-          dataType: 'number',
+          dataType: 'number_diff',
           field: 'imports',
           headerName: 'Import',
           orsAggFunc: 'sumTotal',
@@ -72,7 +72,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
         },
         {
           ...sectionColDefById['exports'],
-          dataType: 'number',
+          dataType: 'number_diff',
           field: 'exports',
           headerName: 'Export',
           orsAggFunc: 'sumTotal',
@@ -80,7 +80,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
         },
         {
           ...sectionColDefById['production'],
-          dataType: 'number',
+          dataType: 'number_diff',
           field: 'production',
           headerName: 'Production',
           orsAggFunc: 'sumTotal',
@@ -90,7 +90,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
           ? [
               {
                 ...sectionColDefById['import_quotas'],
-                dataType: 'number',
+                dataType: 'number_diff',
                 field: 'import_quotas',
                 headerName: 'Import Quotas',
                 orsAggFunc: 'sumTotal',
@@ -102,7 +102,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
           ? [
               {
                 ...sectionColDefById['export_quotas'],
-                dataType: 'number',
+                dataType: 'number_diff',
                 field: 'export_quotas',
                 headerName: 'Export Quotas',
                 orsAggFunc: 'sumTotal',

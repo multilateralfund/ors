@@ -111,7 +111,7 @@ export default function AgUsageDiffCellRenderer(props: CustomCellRendererProps) 
   return (
     <Tooltip enterDelay={300} placement={'top-start'} title={TitleContent}>
       <Typography className={props.className} component="span" lineHeight={2}>
-        {formattedValue} {formattedValueOld}
+        {formattedValue}<br/>({formattedValueOld})
       </Typography>
     </Tooltip>
   )

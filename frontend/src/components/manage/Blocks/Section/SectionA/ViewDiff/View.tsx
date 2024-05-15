@@ -88,9 +88,8 @@ export default function SectionAViewDiff(props: any) {
     })
   const grid = useRef<any>()
 
-  console.log(report)
-
   const rowData = getRowData(report, false, variant.model)
+  /* TODO: should probably remove bottom row */
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
   return (

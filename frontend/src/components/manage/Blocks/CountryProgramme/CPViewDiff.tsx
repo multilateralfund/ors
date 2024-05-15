@@ -281,6 +281,8 @@ export default function CPDiffViewWrapper(props: { iso3: string; year: number })
     fetchDiffBundle(country.id, year)
   }, [country, year, fetchDiffBundle])
 
+  console.log(reportDiff.data)
+
   if (!dataReady)
     return (
       <Loading

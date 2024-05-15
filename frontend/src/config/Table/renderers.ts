@@ -14,6 +14,7 @@ const renderers: {
     date: 'agDateCellRenderer',
     float: 'agFloatCellRenderer',
     number: 'agFloatCellRenderer',
+    number_diff: 'agFloatDiffCellRenderer',
     text: 'agTextCellRenderer',
   },
 }

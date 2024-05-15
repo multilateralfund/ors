@@ -106,11 +106,18 @@ class CPRecordArchiveSerializer(CPRecordBaseSerializer):
 class CPRecordDiffSerializer(CPRecordBaseSerializer):
     record_usages = CPUsageDiffSerializer(many=True)
 
+    imports_old = serializers.SerializerMethodField()
+    import_quotas_old = serializers.SerializerMethodField()
+    exports_old = serializers.SerializerMethodField()
+    export_quotas_old = serializers.SerializerMethodField()
+    production_old = serializers.SerializerMethodField()
+
     imports_gwp_old = serializers.SerializerMethodField()
     import_quotas_gwp_old = serializers.SerializerMethodField()
     exports_gwp_old = serializers.SerializerMethodField()
     export_quotas_gwp_old = serializers.SerializerMethodField()
     production_gwp_old = serializers.SerializerMethodField()
+
     imports_odp_old = serializers.SerializerMethodField()
     import_quotas_odp_old = serializers.SerializerMethodField()
     exports_odp_old = serializers.SerializerMethodField()
@@ -120,6 +127,11 @@ class CPRecordDiffSerializer(CPRecordBaseSerializer):
     class Meta(CPRecordBaseSerializer.Meta):
         model = CPRecord
         fields = CPRecordBaseSerializer.Meta.fields + [
+            "imports_old",
+            "import_quotas_old",
+            "exports_old",
+            "export_quotas_old",
+            "production_old",
             "imports_gwp_old",
             "import_quotas_gwp_old",
             "exports_gwp_old",
@@ -131,6 +143,21 @@ class CPRecordDiffSerializer(CPRecordBaseSerializer):
             "export_quotas_odp_old",
             "production_odp_old",
         ]
+
+    def get_imports_old(self, obj):
+        return obj.imports
+
+    def get_import_quotas_old(self, obj):
+        return obj.import_quotas
+
+    def get_exports_old(self, obj):
+        return obj.exports
+
+    def get_export_quotas_old(self, obj):
+        return obj.export_quotas
+
+    def get_production_old(self, obj):
+        return obj.production
 
     def get_imports_gwp_old(self, obj):
         return obj.mt_convert_to_gwp(obj.imports)
