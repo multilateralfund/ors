@@ -8,8 +8,13 @@ import { defaultColDef } from '@ors/config/Table/columnsDef'
 
 import { sectionColDefByIdFunc } from '../sectionColumnsDef'
 
-function useGridOptions(props: { model: string; usages: object[] }) {
+function useGridOptions(props: { model: string; usages: Record<string, any>[] }) {
   const { model, usages } = props
+  const usagesDiff = usages.map(function(item) {
+    const itemDiff = { ...item }
+    itemDiff.category = 'usage_diff'
+    return itemDiff
+  })
 
   const sectionColDefById = sectionColDefByIdFunc(model)
 
@@ -45,9 +50,11 @@ function useGridOptions(props: { model: string; usages: object[] }) {
     [],
   )
 
+  console.log("Bisector")
+  console.log(usagesDiff)
   const bySector = useMemo(() => {
     return [
-      ...usages,
+      ...usagesDiff,
       {
         id: 'total_usages',
         category: 'usage_diff',
