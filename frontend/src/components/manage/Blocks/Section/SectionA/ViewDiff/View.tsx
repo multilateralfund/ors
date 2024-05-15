@@ -67,7 +67,6 @@ function getRowData(
             },
           ]
         : [],
-      [{ display_name: 'Sub-total', group, rowType: 'subtotal' }],
     )
   })
   return rowData
