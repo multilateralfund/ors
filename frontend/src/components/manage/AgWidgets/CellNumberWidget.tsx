@@ -20,6 +20,7 @@ function getInput(element: HTMLInputElement) {
   return element.querySelector('input')
 }
 
+
 export const CellNumberWidget = memo(
   forwardRef(
     (

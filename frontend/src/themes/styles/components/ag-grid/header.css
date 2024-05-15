@@ -20,6 +20,11 @@
     }
   }
 
+  .ag-header-cell {
+    padding-left: calc(var(--x-ag-header-cell-horizontal-padding) - 1px);
+    padding-right: calc(var(--x-ag-header-cell-horizontal-padding) - 1px);
+  }
+
   .ag-header-cell.ag-text-left .ag-header-cell-label,
   .ag-header-group-cell.ag-text-left,
   .ag-header-cell.ag-text-left .ag-header-cell-comp-wrapper {

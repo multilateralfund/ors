@@ -55,8 +55,6 @@ export const CellUsageWidget = memo(
           highlightAllOnFocus = false
         }
 
-        console.log('startValue', startValue)
-
         return {
           highlightAllOnFocus,
           value: startValue,
@@ -142,7 +140,6 @@ export const CellUsageWidget = memo(
               ],
             })
 
-            console.log(finalValue)
             return finalValue
           },
 
