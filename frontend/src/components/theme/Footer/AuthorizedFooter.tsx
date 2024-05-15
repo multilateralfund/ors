@@ -1,14 +1,18 @@
 import { Box } from '@mui/material'
 import cx from 'classnames'
+import { useRouter } from 'next/navigation'
 
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Logo from '@ors/components/theme/Logo/Logo'
+import { useStore } from '@ors/store'
 import { robotoCondensed } from '@ors/themes/fonts'
 
 const EXTERNAL_BASE_URL = 'https://prod.multilateralfund.edw.ro'
 const makeExternalUrl = (path: string) => `${EXTERNAL_BASE_URL}${path}`
 
 const FooterLinks = () => {
+  const user = useStore((state) => state.user)
+  const router = useRouter()
   const items = [
     { label: 'Careers', url: makeExternalUrl('/') },
     { label: 'Contact us', url: makeExternalUrl('/') },
@@ -31,6 +35,22 @@ const FooterLinks = () => {
           {item.label}
         </a>
       ))}
+      <button
+        className={cx(
+          'text-nowrap rounded-full border border-solid border-mlfs-hlYellow bg-transparent px-4 text-xl font-normal uppercase text-mlfs-hlYellow no-underline transition-all hover:bg-black py-0 cursor-pointer',
+          robotoCondensed.className,
+        )}
+        onClick={async () => {
+          try {
+            await user.logout()
+            router.replace('/login')
+          } catch (error) {
+            console.error('Error logging out:', error)
+          }
+        }}
+      >
+        Logout
+      </button>
     </div>
   )
 }

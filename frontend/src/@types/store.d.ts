@@ -101,7 +101,7 @@ export interface UserSlice
   extends SliceData<DataType, Record<string, any> | null | undefined> {
   getUser: () => void
   login: (username: string, password: string) => void
-  logout: () => void
+  logout: () => Promise<void>
 }
 
 export interface CommonSlice {
