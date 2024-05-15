@@ -59,13 +59,14 @@ const ReportDiffButton = () => {
 
   return (
     <Link
+      className="px-5"
       color="secondary"
       href={`/country-programme/${iso3}/${year}/diff`}
       size="large"
       variant="contained"
       button
     >
-      See difference
+      See differences
     </Link>
   )
 }
@@ -246,7 +247,7 @@ const ViewHeaderActions = () => {
   return (
     <div className="flex items-center">
       {!!report.data && (
-        <div className="container flex w-full justify-between gap-x-4">
+        <div className="container flex w-full justify-between gap-x-4 px-0">
           <div className="flex justify-between gap-x-4">
             <Link
               className="px-4 py-2 shadow-none"
@@ -462,11 +463,13 @@ const CPHeader = ({
         <div className="mb-2 font-[500] uppercase">
           Country programme report
         </div>
-        <div className="mb-4 flex min-h-[40px] items-center justify-between gap-x-8">
-          <div className="flex items-center gap-x-2">
-            {titlePrefix}
-            <HeaderVersionsDropdown />
-            {tag}
+        <div className="mb-4 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-2">
+          <div className="flex items-center gap-x-2 flex-wrap">
+            <div className="flex items-center gap-x-2">
+              {titlePrefix}
+              <HeaderVersionsDropdown />
+              {tag}
+            </div>
             <ReportDiffButton />
           </div>
           {actions}
