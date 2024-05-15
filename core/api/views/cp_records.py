@@ -17,7 +17,7 @@ from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_history import CPHistorySerializer
 from core.api.serializers.cp_price import CPPricesSerializer
-from core.api.serializers.cp_record import CPRecordSerializer
+from core.api.serializers.cp_record import CPRecordSerializer, CPRecordDiffSerializer
 from core.api.serializers.cp_report import CPReportSerializer, CPReportInfoSerializer
 from core.api.views.utils import get_cp_report_from_request
 from core.models.adm import AdmRecord
@@ -130,6 +130,7 @@ class CPRecordBaseListView(views.APIView):
                 if section in ["A", "B"]:
                     cp_record_data["section"] = section
                 existing_items_dict[chemical_key] = item_cls(**cp_record_data)
+
             existing_items_dict[chemical_key].sort_order = row.sort_order
 
         return list(existing_items_dict.values())
@@ -455,3 +456,6 @@ class CPRecordListView(CPRecordBaseListView):
     cp_emission_seri_class = CPEmissionSerializer
     cp_comment_seri_class = CPCommentSerializer
     adm_record_seri_class = AdmRecordSerializer
+
+class CPRecordListDiffView(CPRecordListView):
+    cp_record_seri_class = CPRecordDiffSerializer

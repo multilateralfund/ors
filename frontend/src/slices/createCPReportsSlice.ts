@@ -281,6 +281,45 @@ export const createCPReportsSlice = ({
         slice: 'cp_reports.report',
       })
     },
+    fetchDiffBundle: async (country_id, year) => {
+      const {
+        fetchEmptyForm,
+        fetchReport,
+        fetchReportDiff,
+        fetchFiles,
+        setReportCountry,
+        setReportVariant,
+      } = get().cp_reports
+      await fetchReport(country_id, year)
+      const report = getSlice<CPReport>('cp_reports.report.data')
+      setReportCountry(report)
+      setReportVariant(report)
+      fetchEmptyForm(report, true)
+      fetchReportDiff(country_id, year)
+      fetchFiles(country_id, year)
+    },
+    fetchReportDiff: async (country_id, year) => {
+      const { cacheInvalidate } = get().cp_reports
+      const options = {
+        invalidateCache: cacheInvalidate.includes(hash({ country_id, year })),
+        removeCacheTimeout: 60,
+        withStoreCache: true,
+      }
+      const path = `api/country-programme/records/diff/?country_id=${country_id}&year=${year}`
+
+      return await fetchSliceData({
+        apiSettings: {
+          options,
+          path,
+        },
+        parseResponse: (response) => ({
+          ...(response.cp_report || {}),
+          ...omit(response, 'cp_report'),
+        }),
+        //cp_reports e un slice; reportDiff e membru
+        slice: 'cp_reports.reportDiff',
+      })
+    },
     fetchVersions: async (country_id, year) => {
       const { cacheInvalidate } = get().cp_reports
       const options = {
@@ -308,6 +347,10 @@ export const createCPReportsSlice = ({
     },
     setReport: (report) => {
       setSlice('cp_reports.report', report)
+    },
+    reportDiff: {...defaultSliceData},
+    setReportDiff: (reportDiff) => {
+      setSlice('cp_reports.reportDiff', reportDiff)
     },
     setReportCountry: (report) => {
       const countries = getSlice<Country[]>('common.countries_for_listing.data')

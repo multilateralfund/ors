@@ -4,6 +4,7 @@ import AgDateCellRenderer from '@ors/components/manage/AgCellRenderers/AgDateCel
 import AgFloatCellRenderer from '@ors/components/manage/AgCellRenderers/AgFloatCellRenderer'
 import AgTextCellRenderer from '@ors/components/manage/AgCellRenderers/AgTextCellRenderer'
 import AgUsageCellRenderer from '@ors/components/manage/AgCellRenderers/AgUsageCellRenderer'
+import AgUsageDiffCellRenderer from '@ors/components/manage/AgCellRenderers/AgUsageDiffCellRenderer'
 import AgHeaderComponent from '@ors/components/manage/AgComponents/AgHeaderComponent'
 import AgHeaderGroupComponent from '@ors/components/manage/AgComponents/AgHeaderGroupComponent'
 import CellAdmDateWidget from '@ors/components/manage/AgWidgets/CellAdmDateWidget'
@@ -32,6 +33,7 @@ const components: Record<string, React.FC<any>> = {
   agTextCellRenderer: AgTextCellRenderer,
   agUsageCellEditor: CellUsageWidget,
   agUsageCellRenderer: AgUsageCellRenderer,
+  agUsageDiffCellRenderer: AgUsageDiffCellRenderer,
 }
 
 export default components

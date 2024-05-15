@@ -6,6 +6,7 @@ const renderers: {
   category: {
     adm: 'agAdmCellRenderer',
     usage: 'agUsageCellRenderer',
+    usage_diff: 'agUsageDiffCellRenderer',
   },
   default: 'agTextCellRenderer',
   type: {

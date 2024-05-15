@@ -12,6 +12,7 @@ import ReportInfoCreate from '@ors/components/manage/Blocks/Section/ReportInfo/C
 import ReportInfoView from '@ors/components/manage/Blocks/Section/ReportInfo/View/View'
 import SectionACreate from '@ors/components/manage/Blocks/Section/SectionA/Create/Create'
 import SectionAView from '@ors/components/manage/Blocks/Section/SectionA/View/View'
+import SectionAViewDiff from '@ors/components/manage/Blocks/Section/SectionA/ViewDiff/View'
 import SectionBCreate from '@ors/components/manage/Blocks/Section/SectionB/Create/Create'
 import SectionBView from '@ors/components/manage/Blocks/Section/SectionB/View/View'
 import SectionCCreate from '@ors/components/manage/Blocks/Section/SectionC/Create/Create'
@@ -103,8 +104,22 @@ type ComponentsEdit = {
   section_f: typeof SectionFCreate
 }
 
+type ComponentsDiff = {
+  adm_b?: DefaultComponentType
+  adm_c?: DefaultComponentType
+  adm_d?: DefaultComponentType
+  report_info?: DefaultComponentType
+  section_a: typeof SectionAViewDiff
+  section_b?: DefaultComponentType
+  section_c?: DefaultComponentType
+  section_d?: DefaultComponentType
+  section_e?: DefaultComponentType
+  section_f?: DefaultComponentType
+}
+
 const components: {
   create: ComponentsCreate
+  diff: ComponentsDiff
   edit: ComponentsEdit
   view: ComponentsView
 } = {
@@ -116,6 +131,9 @@ const components: {
     section_d: SectionDCreate,
     section_e: SectionECreate,
     section_f: SectionFCreate,
+  },
+  diff: {
+    section_a: SectionAViewDiff,
   },
   edit: {
     adm_b: AdmBCreate,

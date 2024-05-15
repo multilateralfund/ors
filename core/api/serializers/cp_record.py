@@ -2,7 +2,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 from core.api.serializers.base import BaseCPWChemicalSerializer
-from core.api.serializers.cp_usage import CPUsageSerializer
+from core.api.serializers.cp_usage import CPUsageSerializer, CPUsageDiffSerializer
 from core.models.country_programme import (
     CPRecord,
     CPUsage,
@@ -101,3 +101,63 @@ class CPRecordSerializer(CPRecordBaseSerializer):
 class CPRecordArchiveSerializer(CPRecordBaseSerializer):
     class Meta(CPRecordBaseSerializer.Meta):
         model = CPRecordArchive
+
+
+class CPRecordDiffSerializer(CPRecordBaseSerializer):
+    record_usages = CPUsageDiffSerializer(many=True)
+
+    imports_gwp_old = serializers.SerializerMethodField()
+    import_quotas_gwp_old = serializers.SerializerMethodField()
+    exports_gwp_old = serializers.SerializerMethodField()
+    export_quotas_gwp_old = serializers.SerializerMethodField()
+    production_gwp_old = serializers.SerializerMethodField()
+    imports_odp_old = serializers.SerializerMethodField()
+    import_quotas_odp_old = serializers.SerializerMethodField()
+    exports_odp_old = serializers.SerializerMethodField()
+    export_quotas_odp_old = serializers.SerializerMethodField()
+    production_odp_old = serializers.SerializerMethodField()
+
+    class Meta(CPRecordBaseSerializer.Meta):
+        model = CPRecord
+        fields = CPRecordBaseSerializer.Meta.fields + [
+            "imports_gwp_old",
+            "import_quotas_gwp_old",
+            "exports_gwp_old",
+            "export_quotas_gwp_old",
+            "production_gwp_old",
+            "imports_odp_old",
+            "import_quotas_odp_old",
+            "exports_odp_old",
+            "export_quotas_odp_old",
+            "production_odp_old",
+        ]
+
+    def get_imports_gwp_old(self, obj):
+        return obj.mt_convert_to_gwp(obj.imports)
+
+    def get_import_quotas_gwp_old(self, obj):
+        return obj.mt_convert_to_gwp(obj.import_quotas)
+
+    def get_exports_gwp_old(self, obj):
+        return obj.mt_convert_to_gwp(obj.exports)
+
+    def get_export_quotas_gwp_old(self, obj):
+        return obj.mt_convert_to_gwp(obj.export_quotas)
+
+    def get_production_gwp_old(self, obj):
+        return obj.mt_convert_to_gwp(obj.production)
+
+    def get_imports_odp_old(self, obj):
+        return obj.mt_convert_to_odp(obj.imports)
+
+    def get_import_quotas_odp_old(self, obj):
+        return obj.mt_convert_to_odp(obj.import_quotas)
+
+    def get_exports_odp_old(self, obj):
+        return obj.mt_convert_to_odp(obj.exports)
+
+    def get_export_quotas_odp_old(self, obj):
+        return obj.mt_convert_to_odp(obj.export_quotas)
+
+    def get_production_odp_old(self, obj):
+        return obj.mt_convert_to_odp(obj.production)

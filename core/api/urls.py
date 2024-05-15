@@ -39,7 +39,7 @@ from core.api.views.cp_reports import (
     CPReportGroupByCountryView,
     CPReportCommentsView,
 )
-from core.api.views.cp_records import CPRecordListView
+from core.api.views.cp_records import CPRecordListView, CPRecordListDiffView
 from core.api.views.cp_records_export import CPRecordPrintView
 from core.api.views.cp_records_export import CPRecordExportView
 from core.api.views.cp_report_empty_form import EmptyFormView
@@ -154,6 +154,11 @@ urlpatterns = [
     path(
         "country-programme/records/",
         CPRecordListView.as_view(),
+        name="country-programme-record-list",
+    ),
+    path(
+        "country-programme/records/diff/",
+        CPRecordListDiffView.as_view(),
         name="country-programme-record-list",
     ),
     path(

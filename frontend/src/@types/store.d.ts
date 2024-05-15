@@ -1,4 +1,4 @@
-import type { CPReport } from './api_country-programme_records'
+import type { CPReport, CPReportDiff } from './api_country-programme_records'
 import type { EmptyFormType } from './api_empty-form'
 import type { ApiSubstance } from './api_substances'
 import { ApiBlend } from '@ors/types/api_blends'
@@ -27,6 +27,8 @@ type Report = {
   versions: SliceData<CPVersionInfo[]>
 } & SliceData<CPReport | null, Record<string, any> | null>
 
+type ReportDiff = SliceData<CPReportDiff | null, Record<string, any> | null>
+
 export interface SettingsSlice {
   host: null | string
   protocol: null | string
@@ -54,8 +56,12 @@ export interface CPReportsSlice {
   fetchFiles: (country_id: number, year: number) => void
   fetchReport: (country_id: number, year: number) => Promise<void>
   fetchVersions: (country_id: number, year: number) => void
+  fetchDiffBundle: (country_id: number, year: number) => void
+  fetchReportDiff: (country_id: number, year: number) => Promise<void>
   report: Report
+  reportDiff: ReportDiff
   setReport: (report: Partial<Report>) => void
+  setReportDiff: (reportDiff: Partial<CPReport>) => void
   setReportCountry: (report: CPReport) => void
   setReportVariant: (report: CPReport) => void
   substances: SliceData<ApiSubstance[]>
