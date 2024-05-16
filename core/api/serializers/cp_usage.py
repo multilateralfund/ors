@@ -46,25 +46,3 @@ class CPUsageSerializer(serializers.ModelSerializer):
             raise ValidationError(raport_error) from e
 
         return intenal_value
-
-class CPUsageDiffSerializer(CPUsageSerializer):
-    quantity_old = serializers.SerializerMethodField()
-    quantity_gwp_old = serializers.SerializerMethodField()
-    quantity_odp_old = serializers.SerializerMethodField()
-
-    class Meta(CPUsageSerializer.Meta):
-        fields = CPUsageSerializer.Meta.fields + [
-            "quantity_old",
-            "quantity_gwp_old",
-            "quantity_odp_old",
-        ]
-
-    def get_quantity_old(self, obj):
-        return obj.quantity
-
-    def get_quantity_gwp_old(self, obj):
-        return obj.country_programme_record.mt_convert_to_gwp(obj.quantity)
-
-    def get_quantity_odp_old(self, obj):
-        return obj.country_programme_record.mt_convert_to_odp(obj.quantity)
-

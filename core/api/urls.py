@@ -159,7 +159,7 @@ urlpatterns = [
     path(
         "country-programme/records/diff/",
         CPRecordListDiffView.as_view(),
-        name="country-programme-record-list",
+        name="country-programme-record-diff",
     ),
     path(
         "country-programme/prices/",

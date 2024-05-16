@@ -17,8 +17,14 @@ from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_history import CPHistorySerializer
 from core.api.serializers.cp_price import CPPricesSerializer
-from core.api.serializers.cp_record import CPRecordSerializer, CPRecordDiffSerializer
+from core.api.serializers.cp_record import CPRecordSerializer
 from core.api.serializers.cp_report import CPReportSerializer, CPReportInfoSerializer
+from core.api.serializers.cp_record_diff import (
+    CPEmissionDiffSerializer,
+    CPGenerationDiffSerializer,
+    CPPricesDiffSerializer,
+    CPRecordDiffSerializer,
+)
 from core.api.views.utils import get_cp_report_from_request
 from core.models.adm import AdmRecord
 from core.models.country_programme import (
@@ -457,5 +463,103 @@ class CPRecordListView(CPRecordBaseListView):
     cp_comment_seri_class = CPCommentSerializer
     adm_record_seri_class = AdmRecordSerializer
 
+
 class CPRecordListDiffView(CPRecordListView):
     cp_record_seri_class = CPRecordDiffSerializer
+    cp_prices_seri_class = CPPricesDiffSerializer
+    cp_generation_seri_class = CPGenerationDiffSerializer
+    cp_emission_seri_class = CPEmissionDiffSerializer
+
+    def get_diff(self, cp_report, cp_report_ar):
+        section_a = self._get_displayed_records(cp_report, "A")
+        context_a = {
+            "substances_old": {
+                str(record.substance_id): record
+                for record in self._get_displayed_records(cp_report_ar, "A")
+                if record.substance_id
+            },
+            "blends_old": {
+                str(record.blend_id): record
+                for record in self._get_displayed_records(cp_report_ar, "A")
+                if record.blend_id
+            },
+        }
+
+        section_b = self._get_displayed_records(cp_report, "B")
+        context_b = {
+            "substances_old": {
+                str(record.substance_id): record
+                for record in self._get_displayed_records(cp_report_ar, "B")
+                if record.substance_id
+            },
+            "blends_old": {
+                str(record.blend_id): record
+                for record in self._get_displayed_records(cp_report_ar, "B")
+                if record.blend_id
+            },
+        }
+
+        section_c = self._get_cp_prices(cp_report)
+        context_c = {
+            "substances_old": {
+                str(cp_price.substance_id): cp_price
+                for cp_price in self._get_cp_prices(cp_report_ar)
+                if cp_price.substance_id
+            },
+            "blends_old": {
+                str(cp_price.blend_id): cp_price
+                for cp_price in self._get_cp_prices(cp_report_ar)
+                if cp_price.blend_id
+            },
+        }
+
+        section_d = self._get_items_filtered_by_report(
+            self.cp_generation_class, cp_report.id
+        )
+        context_d = {
+            "cp_generation_ar": self._get_items_filtered_by_report(
+                self.cp_generation_class, cp_report_ar.id
+            )
+        }
+
+        section_e = self._get_items_filtered_by_report(
+            self.cp_emission_class, cp_report.id
+        )
+        context_e = {
+            str(cp_emission.facility): cp_emission
+            for cp_emission in self._get_items_filtered_by_report(
+                self.cp_emission_class, cp_report_ar.id
+            )
+        }
+
+        section_f = {
+            "remarks": cp_report.comment,
+            "remarks_old": cp_report_ar.comment,
+        }
+
+        ret = {
+            "section_a": self.cp_record_seri_class(
+                section_a, many=True, context=context_a
+            ).data,
+            "section_b": self.cp_record_seri_class(
+                section_b, many=True, context=context_b
+            ).data,
+            "section_c": self.cp_prices_seri_class(
+                section_c, many=True, context=context_c
+            ).data,
+            "section_d": self.cp_generation_seri_class(
+                section_d, many=True, context=context_d
+            ).data,
+            "section_e": self.cp_emission_seri_class(
+                section_e, many=True, context=context_e
+            ).data,
+            "section_f": section_f,
+        }
+
+        return ret
+
+    def get(self, *args, **kwargs):
+        cp_report = self._get_cp_report()
+        cp_report_ar = self._get_cp_report()  # for testing
+
+        return Response(self.get_diff(cp_report, cp_report_ar))
