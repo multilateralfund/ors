@@ -184,36 +184,74 @@ class CPCalculatedAmountExportView(CPRecordListView):
             .prefetch_related("record_usages")
             .all()
         )
-        data = {}
+        # set all consumprtion to 0
+        data = {
+            group: {"sectorial_total": 0, "consumption": 0, "substances": ""}
+            for group in SUBSTANCE_GROUP_ID_TO_CATEGORY.values()
+            if group not in ["Other", "Legacy"]
+        }
+
+        # calculate the consumption and sectorial total
         for record in records:
+            # set the substance category
             substance_category = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(
                 record.substance.group.group_id
             )
             if substance_category in ["Other", "Legacy"]:
                 continue
-            if substance_category not in data:
-                data[substance_category] = {
-                    "sectorial_total": 0,
-                    "consumption": 0,
-                }
-            sectorial_total = record.get_sectorial_total()
+            
+            # get the sectorial total
+            if "methyl bromide" not in record.substance.name.lower():
+                sectorial_total = record.get_sectorial_total()
+            else:
+                '''
+                The exported data for “Methyl Bromide” should be the 
+                “Methyl Bromide - Non-QPS” in the Use by sector.  
+                We only need the data for Non-QPS and not the total of “QPS+Non-QPS”.
+                '''
+                sectorial_total = sum(
+                    usage.quantity 
+                    for usage in record.record_usages.all() 
+                    if "Non-QPS" not in usage.usage.full_name
+                )
             consumption = record.get_consumption_value(use_sectorial_total=False)
 
             # convert data
             if substance_category == "HFC":
                 # convert consumption value to CO2 equivalent
+                substance = f"{record.substance.name} (gwp:{record.substance.gwp or 0}), consump:{consumption or 0})"
                 consumption *= record.substance.gwp or 0
                 sectorial_total *= record.substance.gwp or 0
             else:
                 # convert consumption value to ODP
+                substance = f"{record.substance.name} (odp:{record.substance.odp or 0}, consump:{consumption or 0})"
                 consumption *= record.substance.odp or 0
                 sectorial_total *= record.substance.odp or 0
 
             data[substance_category]["sectorial_total"] += sectorial_total
             data[substance_category]["consumption"] += consumption
+            data[substance_category]["substances"] += f"{substance};\n"
 
-        # convert data to list
-        return [{"substance_name": key, **value} for key, value in data.items()]
+        # set the correct decimals number (for odp 2 decimals, for CO2 0 decimals)
+        response_data = []
+        for group, values in data.items():
+            if group == "HFC":
+                values["consumption"] = round(values["consumption"], 0)
+                values["sectorial_total"] = round(values["sectorial_total"], 0)
+                values["unit"] = "CO2-eq"
+            else:
+                values["consumption"] = round(values["consumption"], 2)
+                values["sectorial_total"] = round(values["sectorial_total"], 2)
+                values["unit"] = "ODP tonnes"
+    
+            substance_name = group if group != "MBR" else "MB Non-QPS only"
+            response_data.append(
+                {
+                    "substance_name": substance_name,
+                    **values,
+                }
+            )
+        return response_data
 
 
 class CPHFCHCFCExportBaseView(views.APIView):
