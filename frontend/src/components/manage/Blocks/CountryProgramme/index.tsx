@@ -184,7 +184,7 @@ export function getSections(
     ]) ||
       []),
     ...((includes(['II', 'III'], model) && ['adm_b', 'adm_c', 'adm_d']) || []),
-    ...((model === 'V' && ['report_info']) || []),
+    ...((model === 'V' && mode !== 'diff' && ['report_info']) || []),
   ]
 
   return filter(
