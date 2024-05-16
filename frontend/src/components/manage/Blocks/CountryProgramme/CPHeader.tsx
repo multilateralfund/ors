@@ -16,6 +16,8 @@ import api from '@ors/helpers/Api/_api'
 import useClickOutside from '@ors/hooks/useClickOutside'
 import { useStore } from '@ors/store'
 
+import ConfirmSubmission from './ConfirmSubmission'
+
 import { IoChevronDown } from 'react-icons/io5'
 
 function padDateNr(n: number) {
@@ -257,6 +259,17 @@ const EditHeaderActions = ({
   const { enqueueSnackbar } = useSnackbar()
   const { user_type } = useStore((state) => state.user.data)
 
+  const [showConfirm, setShowConfirm] = useState(false)
+
+  function handleShowConfirmation() {
+    setShowConfirm(true)
+  }
+
+  function handleSubmissionConfirmation() {
+    setShowConfirm(false)
+    getReportSubmitter('final')()
+  }
+
   const isDraft = report.data?.status === 'draft'
   const isFinal = report.data?.status === 'final'
 
@@ -362,12 +375,19 @@ const EditHeaderActions = ({
             color="secondary"
             size="large"
             variant="contained"
-            onClick={getReportSubmitter('final')}
+            onClick={handleShowConfirmation}
           >
             {isDraft ? 'Submit final version' : 'Submit new version'}
           </Button>
         </div>
       )}
+      {showConfirm ? (
+        <ConfirmSubmission
+          mode={'edit'}
+          onCancel={() => setShowConfirm(false)}
+          onSubmit={handleSubmissionConfirmation}
+        />
+      ) : null}
     </div>
   )
 }

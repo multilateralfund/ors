@@ -99,6 +99,7 @@ export type UsageMapping = Record<string, ApiUsage>
 
 export interface IValidationContext {
   errors: Record<ValidationSchemaKeys, ValidateSectionResult>
+  hasErrors: boolean
   setOpenDrawer: React.Dispatch<React.SetStateAction<boolean>>
 }
 
