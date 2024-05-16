@@ -85,12 +85,14 @@ interface IConfirmSubmission {
   mode: 'create' | 'edit'
   onCancel: () => void
   onSubmit: () => void
+  validation?: IValidationContext
 }
 
 function ConfirmSubmission(props: IConfirmSubmission) {
   const { mode, onCancel, onSubmit } = props
 
-  const validation = useContext(ValidationContext)
+  const contextValidation = useContext(ValidationContext)
+  const validation = props.validation ?? contextValidation
 
   let msg: any = ''
 
@@ -109,7 +111,7 @@ function ConfirmSubmission(props: IConfirmSubmission) {
         className="fixed left-0 top-0 z-10 flex h-full w-full backdrop-blur-xl"
         onClick={onCancel}
       ></div>
-      <div className="max-h-2/3 fixed left-0 top-1/2 z-20 flex w-1/2 -translate-y-1/2 translate-x-1/2 flex-col justify-between overflow-scroll rounded-xl bg-white p-8 shadow-2xl">
+      <div className="max-h-2/3 fixed left-0 top-1/2 z-absolute flex w-1/2 -translate-y-1/2 translate-x-1/2 flex-col justify-between overflow-scroll rounded-xl bg-white p-8 shadow-2xl">
         <div className="flex items-center justify-between text-secondary">
           <h4 className="m-0 text-xl">Confirm submission</h4>
           <IoCloseCircle

@@ -1,5 +1,7 @@
+import type { IValidationContext } from '@ors/contexts/Validation/types'
 import { UserType, userCanSubmitReport } from '@ors/types/user_types'
 
+import { useContext } from 'react'
 import React, { useEffect, useMemo, useState } from 'react'
 
 import { Button } from '@mui/material'
@@ -11,6 +13,7 @@ import { useSnackbar } from 'notistack'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Link from '@ors/components/ui/Link/Link'
+import ValidationContext from '@ors/contexts/Validation/ValidationContext'
 import { uploadFiles } from '@ors/helpers'
 import api from '@ors/helpers/Api/_api'
 import useClickOutside from '@ors/hooks/useClickOutside'
@@ -179,7 +182,47 @@ const ViewHeaderActions = () => {
   const { enqueueSnackbar } = useSnackbar()
   const { user_type } = useStore((state) => state.user.data)
 
+  const [showConfirm, setShowConfirm] = useState(false)
+
   const isDraft = report.data?.status === 'draft'
+
+  function handleShowConfirmation() {
+    setShowConfirm(true)
+  }
+
+  function handleSubmissionConfirmation() {
+    setShowConfirm(false)
+    handleSubmitFinal()
+  }
+
+  async function handleSubmitFinal() {
+    try {
+      const response = await api(
+        `/api/country-programme/report/${report.data?.id}/status-update/`,
+        {
+          data: {
+            status: 'final',
+          },
+          method: 'PUT',
+        },
+      )
+      enqueueSnackbar(
+        <>
+          Submit submission for {response.country} {response.year}.
+        </>,
+        { variant: 'success' },
+      )
+
+      cacheInvalidateReport(response.country_id, response.year)
+      await fetchBundle(response.country_id, response.year)
+    } catch (error) {
+      const errors = await error.json()
+      errors.detail &&
+        enqueueSnackbar(errors.detail, {
+          variant: 'error',
+        })
+    }
+  }
 
   if (!userCanSubmitReport[user_type as UserType]) return null
 
@@ -203,35 +246,7 @@ const ViewHeaderActions = () => {
                 color="primary"
                 size="small"
                 variant="contained"
-                onClick={async () => {
-                  try {
-                    const response = await api(
-                      `/api/country-programme/report/${report.data?.id}/status-update/`,
-                      {
-                        data: {
-                          status: 'final',
-                        },
-                        method: 'PUT',
-                      },
-                    )
-                    enqueueSnackbar(
-                      <>
-                        Submit submission for {response.country} {response.year}
-                        .
-                      </>,
-                      { variant: 'success' },
-                    )
-
-                    cacheInvalidateReport(response.country_id, response.year)
-                    await fetchBundle(response.country_id, response.year)
-                  } catch (error) {
-                    const errors = await error.json()
-                    errors.detail &&
-                      enqueueSnackbar(errors.detail, {
-                        variant: 'error',
-                      })
-                  }
-                }}
+                onClick={handleShowConfirmation}
               >
                 Submit final version
               </Button>
@@ -239,6 +254,13 @@ const ViewHeaderActions = () => {
           </div>
         </div>
       )}
+      {showConfirm ? (
+        <ConfirmSubmission
+          mode={'edit'}
+          onCancel={() => setShowConfirm(false)}
+          onSubmit={handleSubmissionConfirmation}
+        />
+      ) : null}
     </div>
   )
 }
@@ -246,11 +268,13 @@ const ViewHeaderActions = () => {
 interface EditHeaderActionsProps {
   getSubmitFormData: () => Dictionary<any>
   setErrors: React.Dispatch<React.SetStateAction<Record<string, any>>>
+  validation: IValidationContext
 }
 
 const EditHeaderActions = ({
   getSubmitFormData,
   setErrors,
+  validation,
 }: EditHeaderActionsProps) => {
   const router = useRouter()
   const { cacheInvalidateReport, report } = useStore(
@@ -384,6 +408,7 @@ const EditHeaderActions = ({
       {showConfirm ? (
         <ConfirmSubmission
           mode={'edit'}
+          validation={validation}
           onCancel={() => setShowConfirm(false)}
           onSubmit={handleSubmissionConfirmation}
         />
@@ -449,10 +474,11 @@ const CPViewHeader = () => {
   return <CPHeader actions={<ViewHeaderActions />} tag={<ViewHeaderTag />} />
 }
 
-const CPEditHeader = (props: EditHeaderActionsProps) => {
+const CPEditHeader = (props: Omit<EditHeaderActionsProps, 'validation'>) => {
+  const validation = useContext(ValidationContext)
   return (
     <CPHeader
-      actions={<EditHeaderActions {...props} />}
+      actions={<EditHeaderActions validation={validation} {...props} />}
       tag={<EditHeaderTag />}
       titlePrefix={<span className="text-4xl">Editing: </span>}
     />
