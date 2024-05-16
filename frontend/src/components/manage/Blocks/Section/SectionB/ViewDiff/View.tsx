@@ -1,6 +1,4 @@
-import type { ITableProps } from '../../../CountryProgramme/typesCPView'
 import { CPReportDiff } from '@ors/types/api_country-programme_records'
-import { EmptyFormType } from '@ors/types/api_empty-form'
 import { ReportVariant } from '@ors/types/variants'
 
 import React, { useRef, useState } from 'react'
@@ -97,23 +95,16 @@ function getPinnedRowData(rowData: any) {
     : []
 }
 
-export default function SectionBView(props: {
-  Comments: React.FC<{ section: string, viewOnly: boolean }>
-  TableProps: ITableProps
-  emptyForm: EmptyFormType
-  reportDiff: CPReportDiff
-  showComments: boolean
-  variant: ReportVariant
-}) {
-  const { TableProps, emptyForm, reportDiff, variant } =
-    props
+export default function SectionBView(props: any) {
+  const { TableProps, emptyForm, report, variant } = props
+  console.log(report)
   const { gridOptionsAll } =
     useGridOptions({
       model: variant.model,
       usages: emptyForm.usage_columns?.section_b || [],
     })
   const grid = useRef<any>()
-  const rowData = getRowData(reportDiff, variant, false)
+  const rowData = getRowData(report, variant, false)
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
   return (

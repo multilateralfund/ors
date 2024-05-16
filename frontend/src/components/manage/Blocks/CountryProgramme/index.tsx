@@ -111,7 +111,7 @@ type ComponentsDiff = {
   adm_d?: DefaultComponentType
   report_info?: DefaultComponentType
   section_a: typeof SectionAViewDiff
-  section_b?:typeof SectionBViewDiff
+  section_b:typeof SectionBViewDiff
   section_c?: DefaultComponentType
   section_d?: DefaultComponentType
   section_e?: DefaultComponentType

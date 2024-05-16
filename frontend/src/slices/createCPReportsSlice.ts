@@ -316,7 +316,6 @@ export const createCPReportsSlice = ({
           ...(response.cp_report || {}),
           ...omit(response, 'cp_report'),
         }),
-        //cp_reports e un slice; reportDiff e membru
         slice: 'cp_reports.reportDiff',
       })
     },

@@ -242,8 +242,6 @@ const ViewHeaderActions = () => {
 
   if (!userTypeVisibility[user_type as UserType]) return null
 
-  console.log(report.data)
-
   return (
     <div className="flex items-center">
       {!!report.data && (
