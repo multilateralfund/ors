@@ -184,7 +184,7 @@ const ViewHeaderActions = () => {
   return (
     <div className="flex items-center">
       {!!report.data && (
-        <div className="container flex w-full justify-between gap-x-4">
+        <div className="container flex w-full justify-between gap-x-4 px-0">
           <div className="flex justify-between gap-x-4">
             <Link
               className="px-4 py-2 shadow-none"
@@ -273,7 +273,7 @@ const EditHeaderActions = ({
         if (files && files.length > 0) {
           await uploadFiles(
             `api/country-programme/files/?country_id=${report.country?.id}&year=${report.data?.year}`,
-            files
+            files,
           )
         }
 
@@ -324,7 +324,7 @@ const EditHeaderActions = ({
   return (
     <div className="flex items-center">
       {!!report.data && (
-        <div className="container flex w-full justify-between gap-x-4">
+        <div className="container flex w-full justify-between gap-x-4 px-0">
           <Link
             className="btn-close bg-gray-600 px-4 py-2 shadow-none"
             color="secondary"
@@ -394,13 +394,13 @@ const CPHeader = ({
         <div className="mb-2 font-[500] uppercase">
           Country programme report
         </div>
-        <div className="mb-4 flex min-h-[40px] items-center justify-between gap-x-8">
+        <div className="mb-4 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-6">
           <div className="flex items-center gap-x-2">
             {titlePrefix}
             <HeaderVersionsDropdown />
             {tag}
           </div>
-          {actions}
+          <div className="ml-auto">{actions}</div>
         </div>
       </HeaderTitle>
     )
@@ -414,13 +414,13 @@ const CPCreateHeader = ({
   currentYear: number
 }) => {
   return (
-    <div className="my-12 flex min-h-[40px] items-center justify-between gap-x-8">
+    <div className="my-12 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-6">
       <div className="flex items-center gap-x-2">
         <h1 className="m-0 text-4xl leading-normal">
           New submission - {currentYear}
         </h1>
       </div>
-      {actions}
+      <div className="ml-auto">{actions}</div>
     </div>
   )
 }

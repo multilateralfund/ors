@@ -5,7 +5,7 @@ import { ReportVariant } from '@ors/types/variants'
 
 import React, { useMemo, useRef, useState } from 'react'
 
-import { Alert, Box, Button, Divider, Modal, Typography } from '@mui/material'
+import { Alert, Box, Button, Dialog, Divider, Typography } from '@mui/material'
 import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, sortBy, union, uniqBy } from 'lodash'
 import { useSnackbar } from 'notistack'
@@ -111,7 +111,7 @@ function getInitialPinnedBottomRowData(model: string): PinnedBottomRowData[] {
 }
 
 export default function SectionBCreate(props: {
-  Comments: React.FC<{ section: string, viewOnly: boolean }>
+  Comments: React.FC<{ section: string; viewOnly: boolean }>
   Section: SectionB
   TableProps: PassedCPCreateTableProps
   emptyForm: EmptyFormType
@@ -131,7 +131,16 @@ export default function SectionBCreate(props: {
   variant: ReportVariant
 }) {
   const { enqueueSnackbar } = useSnackbar()
-  const { Comments, Section, TableProps, emptyForm, form, setForm, showComments, variant } = props
+  const {
+    Comments,
+    Section,
+    TableProps,
+    emptyForm,
+    form,
+    setForm,
+    showComments,
+    variant,
+  } = props
 
   const newNode = useRef<RowNode>()
 
@@ -328,7 +337,11 @@ export default function SectionBCreate(props: {
 
   return (
     <>
-      <Alert className="bg-mlfs-bannerColor" icon={<IoInformationCircleOutline size={24} />} severity="info">
+      <Alert
+        className="bg-mlfs-bannerColor"
+        icon={<IoInformationCircleOutline size={24} />}
+        severity="info"
+      >
         <Footnotes />
       </Alert>
       {includes(['V'], variant.model) && (
@@ -383,19 +396,21 @@ export default function SectionBCreate(props: {
         }}
       />
       {addChemicalModal && (
-        <Modal
+        <Dialog
           aria-labelledby="add-chemical-modal-title"
           open={addChemicalModal}
           onClose={closeModal}
         >
-          <Box className="xs:max-w-xs max-h-[968px] w-full max-w-md overflow-y-auto absolute-center sm:max-w-2xl">
+          <Box className="w-full max-w-md sm:max-w-2xl">
             <Typography
               id="add-chemical-modal-title"
               className="mb-2"
               component="h2"
               variant="h4"
             >
-              {includes(['V'], variant.model) ? 'Add substance/blend' : 'Add blend'}
+              {includes(['V'], variant.model)
+                ? 'Add substance/blend'
+                : 'Add blend'}
             </Typography>
             <Divider className="mb-2" />
             {includes(['V'], variant.model) ? (
@@ -465,7 +480,7 @@ export default function SectionBCreate(props: {
               </>
             )}
           </Box>
-        </Modal>
+        </Dialog>
       )}
       {showComments && <Comments section="section_b" viewOnly={true} />}
     </>

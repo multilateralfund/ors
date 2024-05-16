@@ -527,7 +527,7 @@ const CPCreate: React.FC = () => {
         currentYear={form.year}
         actions={
           <div className="flex items-center">
-            <div className="container flex w-full justify-between gap-x-4">
+            <div className="container flex w-full justify-between gap-x-4 px-0">
               <Link
                 className="btn-close bg-gray-600 px-4 py-2 shadow-none"
                 color="secondary"
