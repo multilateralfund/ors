@@ -19,6 +19,9 @@ function getDecimalCellValue(
       valueToFormat = value
   }
 
+  if (valueToFormat === undefined) {
+    valueToFormat = 0
+  }
   const formattedValue = formatDecimalValue(valueToFormat, props)
 
   const TitleContent =
