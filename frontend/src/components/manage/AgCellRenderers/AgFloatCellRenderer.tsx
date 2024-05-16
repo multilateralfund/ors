@@ -66,7 +66,7 @@ export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
   return (
     <Tooltip enterDelay={300} placement={'top-start'} title={TitleContent}>
       <Typography className={props.className} component="span" lineHeight={1}>
-        {formattedValue} (120.0)
+        {formattedValue}
       </Typography>
     </Tooltip>
   )
