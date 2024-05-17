@@ -252,6 +252,7 @@ class TestCPExtractionALLExport(BaseTest):
             "HFC-Consumption(MTvsCO2Equi)",
             "HFC-23Generation",
             "HFC-23Emission",
+            "MbrConsumption"
         ]
         # check number of rows
         assert wb["ODSPrice"].max_row == 8
@@ -260,6 +261,7 @@ class TestCPExtractionALLExport(BaseTest):
         assert wb["HFC-Consumption(MTvsCO2Equi)"].max_row == 2
         assert wb["HFC-23Generation"].max_row == 2
         assert wb["HFC-23Emission"].max_row == 3
+        assert wb["MbrConsumption"].max_row == 1
 
         # check number of columns
         # country, substance,  previous_year_price, 2019, remarks, notes
@@ -276,6 +278,8 @@ class TestCPExtractionALLExport(BaseTest):
         # country, year, facility, total, all_uses, feedstock_gc, destruction
         # feedstock_wpc, destruction_wpc, generated_emissions, remarks, notes
         assert wb["HFC-23Emission"].max_column == 12
+        # country, qps, non-qps, total
+        assert wb["MbrConsumption"].max_column == 4
 
 
 class TestCPCalculatedAmountExport(BaseTest):
