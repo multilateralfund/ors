@@ -28,7 +28,7 @@ const CloseDiffButton = (props: any) => {
 
   return (
     <Link
-      className="btn-close bg-gray-600 px-4 py-2 shadow-none"
+      className="btn-close bg-gray-600 px-4 py-2 shadow-none ml-auto"
       color="secondary"
       href={`/country-programme/${report.country?.iso3}/${report.data.year}`}
       size="large"
