@@ -201,6 +201,7 @@ class CPCalculatedAmountExportView(CPRecordListView):
                 continue
 
             # get the sectorial total
+            sectorial_total = record.get_sectorial_total()
             consumption = record.get_consumption_value(use_sectorial_total=False)
 
             # convert data

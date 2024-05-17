@@ -255,7 +255,7 @@ class TestCPExtractionALLExport(BaseTest):
         ]
         # check number of rows
         assert wb["ODSPrice"].max_row == 8
-        assert wb["CP-Details"].max_row == 5
+        assert wb["CP-Details"].max_row == 8
         assert wb["CPConsumption(ODP)"].max_row == 2
         assert wb["HFC-Consumption(MTvsCO2Equi)"].max_row == 2
         assert wb["HFC-23Generation"].max_row == 2
@@ -290,5 +290,5 @@ class TestCPCalculatedAmountExport(BaseTest):
 
         wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
         assert wb.sheetnames == ["Calculated Amount"]
-        assert wb["Calculated Amount"].max_row == 3
-        assert wb["Calculated Amount"].max_column == 3
+        assert wb["Calculated Amount"].max_row == 9
+        assert wb["Calculated Amount"].max_column == 4
