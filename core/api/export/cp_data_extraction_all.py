@@ -247,13 +247,11 @@ class CPHFCConsumptionMTCO2Writer(BaseWriter):
         structure:
         {
             "country_name": {
-                "group": {
-                    "consumption_mt": value,
-                    "consumption_co2": value,
-                    "servicing": value,
-                    "usages_total": value,
-                },
-                ...
+                "substance_group": value,
+                "consumption_mt": value,
+                "consumption_co2": value,
+                "servicing": value,
+                "usages_total": value,
             },
             ...
         }
@@ -262,16 +260,12 @@ class CPHFCConsumptionMTCO2Writer(BaseWriter):
         for country, country_data in data.items():
             if not country_data:
                 continue
-            for group, values in country_data.items():
-                self._write_row(row_idx, country, group, values)
-                row_idx += 1
+            self._write_row(row_idx, country, country_data)
 
-    def _write_row(self, row_idx, country, group, values):
+    def _write_row(self, row_idx, country, values):
         for header_id, header in self.headers.items():
             if header_id == "country_name":
                 value = country
-            elif header_id == "substance_group":
-                value = group
             elif header_id == "country_lvc":
                 value = "LVC" if values["country_lvc"] else "Non-LVC"
             else:
