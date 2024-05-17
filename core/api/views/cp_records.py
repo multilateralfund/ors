@@ -495,7 +495,7 @@ class CPRecordListDiffView(CPRecordListView):
 
     def copy_fields(self, record, record_old, fields):
         for field in fields:
-            record[f"{field}_old"] = record_old[field]
+            record[f"{field}_old"] = record_old[field] if record_old else None
 
     def rename_fields(self, record, fields):
         for field in fields:
@@ -512,12 +512,12 @@ class CPRecordListDiffView(CPRecordListView):
 
         for record in data:
             record_old = records_old.pop(record["row_id"], None)
-            if not record_old:
-                continue
             self.copy_fields(record, record_old, fields)
+            # Also copy nested usage fields
+            old_record_usages = record_old.get("record_usages", []) if record_old else []
             usages_old = {
                 str(usage["usage_id"]): usage
-                for usage in record_old.get("record_usages", [])
+                for usage in old_record_usages
             }
             for usage in record.get("record_usages", []):
                 usage_old = usages_old.pop(str(usage["usage_id"]), None)
