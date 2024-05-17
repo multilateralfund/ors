@@ -36,6 +36,30 @@ class TestCPExportXLSX(BaseTest):
         ]
         assert wb["Section A"]["A1"].value == "Country: Romania Year: 2019"
 
+    def test_get_cp_export_new_converted(
+        self, user, cp_report_2019, _setup_new_cp_report
+    ):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(
+            self.url, {"cp_report_id": cp_report_2019.id, "convert_data": 1}
+        )
+        assert response.status_code == 200
+        assert response.filename == cp_report_2019.name + ".xlsx"
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        assert wb.sheetnames == [
+            "Section A",
+            "Section B",
+            "Section C",
+            "Section D",
+            "Section E",
+            "Section F",
+        ]
+        assert wb["Section A"]["A1"].value == "Country: Romania Year: 2019"
+        assert "ODP" in wb["Section A"]["A2"].value
+        assert "CO2" in wb["Section B"]["A2"].value
+
     def test_get_cp_export_old(self, user, cp_report_2005, _setup_old_cp_report):
         self.client.force_authenticate(user=user)
 

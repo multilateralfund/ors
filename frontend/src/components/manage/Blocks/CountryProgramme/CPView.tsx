@@ -45,6 +45,7 @@ const TableProps: ITableProps = {
     const sectionTitle = section.title
       .split(/\((\w+\s)?METRIC TONNES\)/)[0]
       .trim()
+    const convertData = (gridContext?.unit || 'mt') === 'mt' ? 0 : 1
     return (
       <div
         className={cx('mb-4 flex', {
@@ -113,13 +114,9 @@ const TableProps: ITableProps = {
                 <Link
                   className="flex items-center gap-x-2 text-black no-underline"
                   target="_blank"
-                  href={
-                    formatApiUrl(
-                      `api/country-programme${archive ? '-archive' : ''}/export/`,
-                    ) +
-                    '?cp_report_id=' +
-                    report.data?.id.toString()
-                  }
+                  href={`${formatApiUrl(
+                    `api/country-programme${archive ? '-archive' : ''}/export/`,
+                  )}?cp_report_id=${report.data?.id.toString()}&convert_data=${convertData}`}
                   download
                 >
                   <AiFillFileExcel className="fill-green-700" size={24} />
@@ -130,13 +127,9 @@ const TableProps: ITableProps = {
                 <Link
                   className="flex items-center gap-x-2 text-black no-underline"
                   target="_blank"
-                  href={
-                    formatApiUrl(
-                      `api/country-programme${archive ? '-archive' : ''}/print/`,
-                    ) +
-                    '?cp_report_id=' +
-                    report.data?.id.toString()
-                  }
+                  href={`${formatApiUrl(
+                    `api/country-programme${archive ? '-archive' : ''}/print/`,
+                  )}?cp_report_id=${report.data?.id.toString()}&convert_data=${convertData}`}
                   download
                 >
                   <AiFillFilePdf className="fill-red-700" size={24} />
