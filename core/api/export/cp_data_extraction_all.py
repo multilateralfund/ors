@@ -46,6 +46,14 @@ class CPPricesExtractionWriter(BaseWriter):
                 value = price.country_programme_report.country.name
             elif header_id == "chemical_name":
                 value = price.get_chemical_display_name()
+            elif "price" in header_id:
+                # try to convert the value to float else keep it as it is
+                value = getattr(price, header_id, None)
+                try:
+                    value = float(value)
+                except (TypeError, ValueError):
+                    pass
+
             else:
                 value = getattr(price, header_id, None)
 
@@ -106,11 +114,11 @@ class CPDetailsExtractionWriter(BaseWriter):
             elif header_id == "substance_name":
                 value = record.get_chemical_display_name()
             elif header_id == "substance_group":
-                value = record.substance.group.group_id
+                value = record.substance.group.group_id if record.substance else "F"
             elif header_id == "substance_odp":
-                value = record.substance.odp
+                value = record.get_chemical_odp()
             elif header_id == "substance_gwp":
-                value = record.substance.gwp
+                value = record.get_chemical_gwp()
             elif header_id == "record_value":
                 value = record.get_consumption_value()
             else:

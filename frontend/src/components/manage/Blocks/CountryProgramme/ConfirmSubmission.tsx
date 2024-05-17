@@ -1,4 +1,5 @@
 import type {
+  IGlobalValidationResult,
   IValidationContext,
   ValidateSectionResultValue,
   ValidationSchemaKeys,
@@ -13,20 +14,19 @@ import { extractErrors } from '@ors/contexts/Validation/utils'
 
 import { IoCloseCircle } from 'react-icons/io5'
 
-function ErrorItem(props: { item: ValidateSectionResultValue }) {
+function ErrorItem(props: { item: any }) {
   const item = props.item
+  const message = item.row ? `${item.row} - ${item.message}` : item.message
   return (
     <div className="flex items-center gap-x-4 px-4 py-2">
       <div className="text-5xl leading-tight">{'\u2022'}</div>
-      <div>
-        {item.row} - {item.message}
-      </div>
+      <div>{message}</div>
     </div>
   )
 }
 
 function SectionErrors(props: {
-  errors: ValidateSectionResultValue[]
+  errors: IGlobalValidationResult[] | ValidateSectionResultValue[]
   sectionId: ValidationSchemaKeys
 }) {
   const rowErrors = props.errors
