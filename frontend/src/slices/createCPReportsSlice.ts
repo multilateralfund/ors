@@ -58,6 +58,8 @@ export const getVariant = (report: CPReport | null): ReportVariant | null => {
       (variant) =>
         variant.minYear <= report.year && variant.maxYear >= report.year,
     )[0]
+  } else {
+    found = variants[variants.length - 1]
   }
   return found || null
 }

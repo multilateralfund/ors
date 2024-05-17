@@ -19,6 +19,7 @@ from core.api.export.cp_data_extraction_all import (
     CPPricesExtractionWriter,
     HFC23EmissionWriter,
     HFC23GenerationWriter,
+    MbrConsumptionWriter,
 )
 from core.api.export.cp_report_hfc_hcfc import CPReportHFCWriter, CPReportHCFCWriter
 from core.api.export.cp_report_new import CPReportNewExporter
@@ -65,13 +66,16 @@ class CPRecordExportView(CPRecordListView):
         ],
     )
     def get(self, *args, **kwargs):
+        convert_data = str(self.request.query_params.get("convert_data", None))
         cp_report = self._get_cp_report()
         if cp_report.year > IMPORT_DB_MAX_YEAR:
             exporter = CPReportNewExporter(cp_report)
         else:
             exporter = CPReportOldExporter(cp_report)
 
-        wb = exporter.get_xlsx(self.get_data(cp_report), self.get_usages(cp_report))
+        wb = exporter.get_xlsx(
+            self.get_data(cp_report), self.get_usages(cp_report), convert_data == "1"
+        )
         return self.get_response(cp_report.name, wb)
 
     def get_response(self, name, wb):
@@ -436,10 +440,42 @@ class CPDataExtractionAllExport(views.APIView):
         data = self._get_emissions(year)
         exporter.write(data)
 
+        # MbrConsumption
+        exporter = MbrConsumptionWriter(wb)
+        data = self.get_mbr_consumption_data(year)
+        exporter.write(data)
+
         # delete default sheet
         del wb[wb.sheetnames[0]]
 
         return workbook_response("CP Data Extraction-All", wb)
+
+    def get_mbr_consumption_data(self, year):
+        return (
+            CPRecord.objects.get_for_year(year)
+            .filter(substance__name__iexact="Methyl Bromide")
+            .annotate(
+                country_name=models.F("country_programme_report__country__name"),
+                methyl_bromide_qps=models.Sum(
+                    "record_usages__quantity",
+                    filter=models.Q(record_usages__usage__name__iexact="QPS"),
+                    default=0,
+                ),
+                methyl_bromide_non_qps=models.Sum(
+                    "record_usages__quantity",
+                    filter=models.Q(record_usages__usage__name__iexact="Non-QPS"),
+                    default=0,
+                ),
+                total=models.F("methyl_bromide_qps")
+                + models.F("methyl_bromide_non_qps"),
+            )
+        ).values(
+            "country_name",
+            "methyl_bromide_qps",
+            "methyl_bromide_non_qps",
+            "total",
+        )
+
 
     def get_prices(self, year):
         return (
@@ -518,15 +554,12 @@ class CPDataExtractionAllExport(views.APIView):
         @return: dict
         structure:
         {
-            {
             "country_name": {
-                "group": {
-                    "consumption_mt": value,
-                    "consumption_co2": value,
-                    "servicing": value,
-                    "usages_total": value,
-                },
-                ...
+                "substance_group": value,
+                "consumption_mt": value,
+                "consumption_co2": value,
+                "servicing": value,
+                "usages_total": value,
             },
             ...
         }
@@ -536,19 +569,14 @@ class CPDataExtractionAllExport(views.APIView):
         for record in records:
             country_name = record.country_programme_report.country.name
             if country_name not in country_records:
-                country_records[country_name] = {}
-
-            group = "I"  # ask Laura about this
-            if group not in country_records[country_name]:
-                country_records[country_name][group] = {
+                country_records[country_name] = {
                     "country_lvc": record.country_programme_report.country.is_lvc,
                     "substance_name": (
-                        SUBSTANCE_GROUP_ID_TO_CATEGORY.get(
-                            record.substance.group.group_id
-                        )
+                        SUBSTANCE_GROUP_ID_TO_CATEGORY.get(record.substance.group.group_id)
                         if record.substance
                         else "HFC"
                     ),
+                    "substance_group": record.country_programme_report.country.consumption_group,
                     "consumption_mt": 0,
                     "consumption_co2": 0,
                     "servicing": 0,
@@ -557,17 +585,17 @@ class CPDataExtractionAllExport(views.APIView):
 
             # get consumption data
             consumption_value = record.get_consumption_value() or 0
-            country_records[country_name][group]["consumption_mt"] += consumption_value
+            country_records[country_name]["consumption_mt"] += consumption_value
 
             # convert consumption value to CO2 equivalent
-            country_records[country_name][group]["consumption_co2"] += (
+            country_records[country_name]["consumption_co2"] += (
                 consumption_value * record.get_chemical_gwp()
             )
 
             for rec_us in record.record_usages.all():
                 if "servicing" in rec_us.usage.full_name.lower():
-                    country_records[country_name][group]["servicing"] += rec_us.quantity
-                country_records[country_name][group]["usages_total"] += rec_us.quantity
+                    country_records[country_name]["servicing"] += rec_us.quantity
+                country_records[country_name]["usages_total"] += rec_us.quantity
 
         return country_records
 

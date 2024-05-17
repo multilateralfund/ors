@@ -136,17 +136,14 @@ export default function getUsagesColDef() {
       // flex: 1,
     },
     'Refrigeration Manufacturing Other V': {
-      headerComponentParams: (props: IAgHeaderParams) => {
-        const model = props.context?.variant.model
-        return {
-          footnote: {
-            id: includes(['V'], model) ? '3' : '4',
-            content:
-              'Only if break-down of consumption in refrigeration and air-conditioning manufacturing is not available, information in "Other unidentified manufacturing" may be provided.',
-            icon: false,
-            order: 4,
-          },
-        }
+      headerComponentParams: {
+        footnote: {
+          id: 4,
+          content:
+            'Only if break-down of consumption in refrigeration and air-conditioning manufacturing is not available, information in "Other unidentified manufacturing" may be provided.',
+          icon: false,
+          order: 4,
+        },
       },
       // initialWidth: 150,
       // maxWidth: 150,

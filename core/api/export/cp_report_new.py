@@ -6,6 +6,8 @@ from core.api.export.base import COLUMN_WIDTH
 from core.api.export.base import ROW_HEIGHT
 from core.api.export.section_export import SectionWriter
 
+# pylint: disable=R0913
+
 
 class CPReportNewExporter(CPReportBase):
     sections = (
@@ -17,95 +19,105 @@ class CPReportNewExporter(CPReportBase):
         "section_f",
     )
 
-    def export_section_a(self, sheet, data, usages):
+    def export_section_a(self, sheet, data, usages, convert_to="mt"):
+        conversion = "METRIC TONNES" if convert_to == "mt" else "ODP TONNES"
         self._export_usage_section(
             sheet,
             data,
             usages,
             (
                 "SECTION A. ANNEX A, ANNEX B, ANNEX C - GROUP I AND "
-                "ANNEX E - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)"
+                f"ANNEX E - DATA ON CONTROLLED SUBSTANCES ({conversion})"
             ),
             manufacturing_blends=False,
+            convert_to=convert_to,
         )
 
-    def export_section_b(self, sheet, data, usages):
+    def export_section_b(self, sheet, data, usages, convert_to="mt"):
+        convertion = "METRIC TONNES" if convert_to == "mt" else "CO2 EQUIVALENT"
         self._export_usage_section(
             sheet,
             data,
             usages,
-            "SECTION B. ANNEX F - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)",
+            f"SECTION B. ANNEX F - DATA ON CONTROLLED SUBSTANCES ({convertion})",
+            convert_to=convert_to,
         )
 
     def _export_usage_section(
-        self, sheet, data, usages, title, manufacturing_blends=True
+        self, sheet, data, usages, title, manufacturing_blends=True, convert_to="mt"
     ):
-        SectionWriter(
-            sheet,
-            [
-                {
-                    "id": "sheet-title",
-                    "headerName": title,
-                    "children": [
-                        {
-                            "id": "display_name",
-                            "headerName": "Substance",
-                            "is_numeric": False,
-                            "column_width": COLUMN_WIDTH * 2,
-                        },
-                        {
-                            "id": "use-by-sector",
-                            "headerName": "Use by Sector",
-                            "children": [
-                                *usages,
-                                {
-                                    "id": "total",
-                                    "headerName": "TOTAL",
-                                    "is_sum_function": True,
-                                },
-                            ],
-                        },
-                        {
-                            "id": "imports",
-                            "headerName": "Import",
-                        },
-                        {
-                            "id": "exports",
-                            "headerName": "Export",
-                        },
-                        {
-                            "id": "production",
-                            "headerName": "Production",
-                        },
-                        *(
-                            [
-                                {
-                                    "id": "manufacturing_blends",
-                                    "headerName": "Manufacturing of Blends",
-                                }
-                            ]
-                            if manufacturing_blends
-                            else []
-                        ),
-                        {
-                            "id": "import_quotas",
-                            "headerName": "Import Quotas",
-                        },
-                        {
-                            "id": "banned_date",
-                            "headerName": "Date ban commenced",
-                            "is_numeric": False,
-                        },
-                        {
-                            "id": "remarks",
-                            "headerName": "Remarks",
-                            "is_numeric": False,
-                            "column_width": COLUMN_WIDTH * 2,
-                        },
-                    ],
-                }
-            ],
-        ).write(data)
+        headers = [
+            {
+                "id": "sheet-title",
+                "headerName": title,
+                "children": [
+                    {
+                        "id": "display_name",
+                        "headerName": "Substance",
+                        "is_numeric": False,
+                        "column_width": COLUMN_WIDTH * 2,
+                    },
+                    {
+                        "id": "use-by-sector",
+                        "headerName": "Use by Sector",
+                        "children": [
+                            *usages,
+                            {
+                                "id": "total",
+                                "headerName": "TOTAL",
+                                "is_sum_function": True,
+                            },
+                        ],
+                    },
+                    {
+                        "id": "imports",
+                        "headerName": "Import",
+                        "convertable": True,
+                    },
+                    {
+                        "id": "exports",
+                        "headerName": "Export",
+                        "convertable": True,
+                    },
+                    {
+                        "id": "production",
+                        "headerName": "Production",
+                        "convertable": True,
+                    },
+                    *(
+                        [
+                            {
+                                "id": "manufacturing_blends",
+                                "headerName": "Manufacturing of Blends",
+                            }
+                        ]
+                        if manufacturing_blends
+                        else []
+                    ),
+                    {
+                        "id": "import_quotas",
+                        "headerName": "Import Quotas",
+                        "convertable": True,
+                    },
+                    {
+                        "id": "banned_date",
+                        "headerName": "Date ban commenced",
+                        "is_numeric": False,
+                    },
+                    {
+                        "id": "remarks",
+                        "headerName": "Remarks",
+                        "is_numeric": False,
+                        "column_width": COLUMN_WIDTH * 2,
+                    },
+                ],
+            }
+        ]
+        if convert_to != "mt":
+            for header in headers[0]["children"]:
+                if header.get("convertable"):
+                    header["headerName"] += f"_{convert_to}"
+        SectionWriter(sheet, headers, convert_to).write(data)
 
     def export_section_c(self, sheet, data, *args):
         SectionWriter(
