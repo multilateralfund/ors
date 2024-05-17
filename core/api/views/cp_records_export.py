@@ -219,18 +219,18 @@ class CPCalculatedAmountExportView(CPRecordListView):
             # convert data
             if substance_category == "HFC":
                 # convert consumption value to CO2 equivalent
-                substance = f"{record.substance.name} (gwp:{record.substance.gwp or 0}), consump:{consumption or 0})"
+                # substance = f"{record.substance.name} (gwp:{record.substance.gwp or 0}), consump:{consumption or 0})"
                 consumption *= record.substance.gwp or 0
                 sectorial_total *= record.substance.gwp or 0
             else:
                 # convert consumption value to ODP
-                substance = f"{record.substance.name} (odp:{record.substance.odp or 0}, consump:{consumption or 0})"
+                # substance = f"{record.substance.name} (odp:{record.substance.odp or 0}, consump:{consumption or 0})"
                 consumption *= record.substance.odp or 0
                 sectorial_total *= record.substance.odp or 0
 
             data[substance_category]["sectorial_total"] += sectorial_total
             data[substance_category]["consumption"] += consumption
-            data[substance_category]["substances"] += f"{substance};\n"
+            # data[substance_category]["substances"] += f"{substance};\n"
 
         # set the correct decimals number (for odp 2 decimals, for CO2 0 decimals)
         response_data = []
