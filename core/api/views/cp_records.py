@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.db import connection
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import views
@@ -110,7 +111,12 @@ class CPRecordBaseListView(views.APIView):
         displayed_rows = (
             CPReportFormatRow.objects.get_for_year(cp_report.year)
             .filter(section=section)
-            .select_related("substance", "blend")
+            .select_related("substance__group", "blend")
+            .prefetch_related(
+                "substance__excluded_usages",
+                "blend__excluded_usages",
+                "blend__components",
+            )
             .all()
         )
 
@@ -122,14 +128,15 @@ class CPRecordBaseListView(views.APIView):
             )
             if chemical_key not in existing_items_dict:
                 cp_record_data = {
-                    "country_programme_report_id": cp_report.id,
-                    "substance_id": chemical.id if row.substance else None,
-                    "blend_id": chemical.id if row.blend else None,
+                    "country_programme_report": cp_report,
+                    "substance": chemical if row.substance else None,
+                    "blend": chemical if row.blend else None,
                     "id": 0,
                 }
                 if section in ["A", "B"]:
                     cp_record_data["section"] = section
-                existing_items_dict[chemical_key] = item_cls(**cp_record_data)
+                obj = item_cls(**cp_record_data)
+                existing_items_dict[chemical_key] = obj
             existing_items_dict[chemical_key].sort_order = row.sort_order
 
         return list(existing_items_dict.values())
@@ -217,7 +224,6 @@ class CPRecordBaseListView(views.APIView):
     def _get_cp_prices(self, cp_report):
         exist_records = (
             self.cp_prices_class.objects.select_related("substance__group", "blend")
-            .prefetch_related("blend__components")
             .filter(country_programme_report=cp_report.id)
             .all()
         )

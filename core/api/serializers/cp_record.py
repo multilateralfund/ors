@@ -11,7 +11,7 @@ from core.models.country_programme_archive import CPRecordArchive
 
 
 class CPRecordBaseSerializer(BaseCPWChemicalSerializer):
-    record_usages = CPUsageSerializer(many=True)
+    record_usages = serializers.SerializerMethodField()
     section = serializers.CharField(required=False, write_only=True)
     excluded_usages = serializers.SerializerMethodField()
     imports_gwp = serializers.SerializerMethodField()
@@ -49,6 +49,11 @@ class CPRecordBaseSerializer(BaseCPWChemicalSerializer):
             "export_quotas_odp",
             "production_odp",
         ]
+
+    def get_record_usages(self, obj):
+        if obj.id == 0:
+            return []
+        return CPUsageSerializer(obj.record_usages.all(), many=True).data
 
     def get_excluded_usages(self, obj):
         chemical = obj.substance if obj.substance else obj.blend
