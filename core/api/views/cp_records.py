@@ -525,8 +525,6 @@ class CPRecordListDiffView(CPRecordListView):
             }
             for usage in record.get("record_usages", []):
                 usage_old = usages_old.pop(str(usage["usage_id"]), None)
-                if not usage_old:
-                    continue
                 self.copy_fields(usage, usage_old, usage_fields)
 
         for record in records_old.values():
