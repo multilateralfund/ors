@@ -16,7 +16,7 @@ import { useStore } from '@ors/store'
 
 import { getSections } from '.'
 import Portal from '../../Utils/Portal'
-import { CPArchiveHeader } from './CPHeader'
+import { CPDiffHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
 import { ITableProps } from './typesCPView'
 
@@ -132,7 +132,6 @@ function CPDiffView() {
   const { report, reportDiff } = useStore((state) => state.cp_reports)
   const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
   const [renderedSections, setRenderedSections] = useState<number[]>([])
-
   const [unit, setUnit] = useState('mt')
 
   function handleUnitSelectionChange(option: any) {
@@ -179,7 +178,7 @@ function CPDiffView() {
         }
       />
       {!!reportDiff.error && <Error error={reportDiff.error} />}
-      <CPArchiveHeader />
+      <CPDiffHeader />
       <div className="flex items-center justify-between">
         <Tabs
           className="scrollable"

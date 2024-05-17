@@ -6,11 +6,10 @@ import { Button } from '@mui/material'
 import cx from 'classnames'
 import { Dictionary, capitalize, orderBy } from 'lodash'
 import NextLink from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
-import Loading from '@ors/components/theme/Loading/Loading'
 import Link from '@ors/components/ui/Link/Link'
 import { uploadFiles } from '@ors/helpers'
 import api from '@ors/helpers/Api/_api'
@@ -19,49 +18,31 @@ import { useStore } from '@ors/store'
 
 import { IoChevronDown } from 'react-icons/io5'
 
-const CloseDiffButton = () => {
-  const pathname = usePathname()
-  const router = useRouter()
-
-  if (!pathname.includes('diff')) return null
+const CloseDiffButton = (props: any) => {
+  const { report } = props
 
   return (
-    <Button
+    <Link
+      className="btn-close bg-gray-600 px-4 py-2 shadow-none"
       color="secondary"
-      // href="/country-programme"
+      href={`/country-programme/${report.country?.iso3}/${report.data.year}`}
       size="large"
       variant="contained"
-      onClick={() => {
-        router.back()
-      }}
+      button
     >
-      Go back
-    </Button>
+      Close
+    </Link>
   )
 }
 
-const ReportDiffButton = () => {
-  const { report } = useStore((state) => state.cp_reports)
-  const pathname = usePathname()
-  const countries = useStore((state) => {
-    return state.common.countries_for_listing.data
-  })
-
-  if (!report) return <Loading />
-  if (pathname.includes('diff')) return null
-
-  const countriesById = new Map<number, any>(
-    countries.map((country: any) => [country.id, country]),
-  )
-
-  const { country_id, year } = report.data || {}
-  const iso3 = countriesById.get(country_id || 0)?.iso3
+const ReportDiffButton = (props: any) => {
+  const { report } = props
 
   return (
     <Link
       className="px-5"
       color="secondary"
-      href={`/country-programme/${iso3}/${year}/diff`}
+      href={`/country-programme/${report.country?.iso3}/${report.data.year}/diff`}
       size="large"
       variant="contained"
       button
@@ -89,8 +70,6 @@ const HeaderVersionsDropdown = () => {
   const ref = useClickOutside<HTMLDivElement>(() => {
     setShowVersionsMenu(false)
   })
-  const pathname = usePathname()
-  const onDiffPage = pathname.includes('diff')
 
   const versions =
     report.data && report.country
@@ -123,45 +102,39 @@ const HeaderVersionsDropdown = () => {
   return (
     <div className="relative">
       <div
-        className={cx('flex items-center justify-between gap-x-2', {
-          'cursor-pointer': !onDiffPage,
-        })}
+        className="flex cursor-pointer items-center justify-between gap-x-2"
         ref={ref}
         onClick={toggleShowVersionsMenu}
       >
         <h1 className="m-0 text-5xl leading-normal">{report?.data?.name}</h1>
-        {!onDiffPage && (
-          <IoChevronDown className="text-5xl font-bold text-gray-700" />
-        )}
+        <IoChevronDown className="text-5xl font-bold text-gray-700" />
       </div>
-      {!onDiffPage && (
-        <div
-          className={cx(
-            'absolute left-0 z-10 max-h-[200px] origin-top overflow-y-auto rounded-none border border-solid border-primary bg-gray-A100 opacity-0 transition-all',
-            {
-              'collapse scale-y-0': !showVersionsMenu,
-              'scale-y-100 opacity-100': showVersionsMenu,
-            },
-          )}
-        >
-          {versions.map((info, idx) => (
-            <NextLink
-              key={info.id}
-              className="flex items-center gap-x-2 rounded-none px-2 py-2 text-black no-underline hover:bg-primary hover:text-white"
-              href={info.url}
-            >
-              <div className="flex w-56 items-center justify-between hover:text-white">
-                <div>{info.label}</div>
-                <div className="flex items-center">
-                  {idx == 0 && (info.isFinal ? tagLatest : tagDraft)}
-                  {idx == 1 && versions[0].isDraft && tagLatest}
-                  {info.formattedDate}
-                </div>
+      <div
+        className={cx(
+          'absolute left-0 z-10 max-h-[200px] origin-top overflow-y-auto rounded-none border border-solid border-primary bg-gray-A100 opacity-0 transition-all',
+          {
+            'collapse scale-y-0': !showVersionsMenu,
+            'scale-y-100 opacity-100': showVersionsMenu,
+          },
+        )}
+      >
+        {versions.map((info, idx) => (
+          <NextLink
+            key={info.id}
+            className="flex items-center gap-x-2 rounded-none px-2 py-2 text-black no-underline hover:bg-primary hover:text-white"
+            href={info.url}
+          >
+            <div className="flex w-56 items-center justify-between hover:text-white">
+              <div>{info.label}</div>
+              <div className="flex items-center">
+                {idx == 0 && (info.isFinal ? tagLatest : tagDraft)}
+                {idx == 1 && versions[0].isDraft && tagLatest}
+                {info.formattedDate}
               </div>
-            </NextLink>
-          ))}
-        </div>
-      )}
+            </div>
+          </NextLink>
+        ))}
+      </div>
     </div>
   )
 }
@@ -462,21 +435,21 @@ const CPHeader = ({
           Country programme report
         </div>
         <div className="mb-4 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-2">
-          <div className="flex items-center gap-x-2 flex-wrap">
+          <div className="flex flex-wrap items-center gap-x-2">
             <div className="flex items-center gap-x-2">
               {titlePrefix}
               <HeaderVersionsDropdown />
               {tag}
             </div>
-            <ReportDiffButton />
+            <ReportDiffButton report={report} />
           </div>
           {actions}
-          <CloseDiffButton />
         </div>
       </HeaderTitle>
     )
   )
 }
+
 const CPCreateHeader = ({
   actions,
   currentYear,
@@ -516,4 +489,79 @@ const CPArchiveHeader = () => {
   )
 }
 
-export { CPArchiveHeader, CPCreateHeader, CPEditHeader, CPViewHeader }
+const CPDiffHeader = () => {
+  const { report } = useStore((state) => state.cp_reports)
+  const { versions } = report
+  const [memo, setMemo] = useState(0)
+
+  const currentVersion = useMemo(
+    () => ({
+      date: formattedDateFromTimestamp(versions.data?.[0].created_at),
+      status: versions.data?.[0].status,
+      version: versions.data?.[0].version,
+    }),
+    [versions.data],
+  )
+
+  const previousVersion = useMemo(
+    () => ({
+      date: formattedDateFromTimestamp(versions.data?.[1].created_at),
+      status: versions.data?.[1].status,
+      version: versions.data?.[1].version,
+    }),
+    [versions.data],
+  )
+
+  const VersionTag = ({ date, status, version }: any) => {
+    return (
+      <span
+        className={cx('self-baseline rounded p-1', {
+          'bg-mlfs-hlYellow': status === 'final',
+          'bg-warning': status === 'draft',
+        })}
+      >
+        Version {version} - {date}
+      </span>
+    )
+  }
+
+  useEffect(() => {
+    setMemo((prev) => prev + 1)
+  }, [report.data?.status, report.versions.data])
+
+  return (
+    !!report.data && (
+      <HeaderTitle memo={memo}>
+        <div className="mb-2 font-[500] uppercase">
+          Country programme report
+        </div>
+        <div className="mb-4 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-4">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-4">
+            <div className="flex flex-wrap items-center gap-x-4">
+              <h1 className="m-0 text-5xl font-normal leading-normal">
+                Comparing:
+              </h1>
+              <h1 className="m-0 text-5xl leading-normal">
+                {report.data?.name}
+              </h1>
+            </div>
+            <div className="self-baseline font-medium uppercase leading-none">
+              <VersionTag {...currentVersion} />
+              <span className="mx-2">VS.</span>
+              <VersionTag {...previousVersion} />
+            </div>
+          </div>
+          <CloseDiffButton report={report} />
+        </div>
+      </HeaderTitle>
+    )
+  )
+}
+
+export {
+  CPArchiveHeader,
+  CPCreateHeader,
+  CPDiffHeader,
+  CPEditHeader,
+  CPViewHeader,
+}
