@@ -1,11 +1,12 @@
 import type {
+  IGlobalValidationResult,
   ValidateSectionResult,
   ValidateSectionResultValue,
   ValidationSchemaKeys,
 } from '@ors/contexts/Validation/types'
 
 export function extractSectionErrors(vResult: ValidateSectionResult) {
-  const result = []
+  const result = vResult.global || []
   if (vResult.hasErrors) {
     const rowData = Object.values(
       vResult.rows,
@@ -23,7 +24,7 @@ export function extractErrors(
   errors: Record<ValidationSchemaKeys, ValidateSectionResult>,
 ) {
   const result: {
-    errors: ValidateSectionResultValue[]
+    errors: IGlobalValidationResult[] | ValidateSectionResultValue[]
     section_id: ValidationSchemaKeys
   }[] = []
   const eKeys = Object.keys(errors) as ValidationSchemaKeys[]
