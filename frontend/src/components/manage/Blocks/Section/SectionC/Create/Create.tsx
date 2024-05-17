@@ -213,7 +213,21 @@ export default function SectionCCreate(props: {
       },
     )
 
-    return data.toSorted((a, b) => -a.group.localeCompare(b.group))
+    return data.toSorted((a, b) => {
+      if (a.group === b.group) {
+        return a.sort_order - b.sort_order
+      }
+
+      if (a.group === "HCFCs") {
+        return -1
+      }
+
+      if (a.group === "HFCs") {
+        return 0
+      }
+
+      return 1
+    })
   }, [Section, chemicalsInForm, emptyForm.substance_rows.section_c])
 
   const optionalSubstances = useMemo(() => {
