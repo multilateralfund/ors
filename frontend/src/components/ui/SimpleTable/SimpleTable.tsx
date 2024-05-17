@@ -9,6 +9,7 @@ import {
   TableHead,
   TableRow,
   TableSortLabel,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import TableCell, { tableCellClasses } from '@mui/material/TableCell'
@@ -20,7 +21,7 @@ import { useStore } from '@ors/store'
 import { FiEdit, FiEye } from 'react-icons/fi'
 import { IoEllipse } from 'react-icons/io5'
 
-const StyledTableCell = styled(TableCell)(({theme}) => {
+const StyledTableCell = styled(TableCell)(({ theme }) => {
   // const borderColor = theme.palette.secondary.light
 
   return {
@@ -268,11 +269,11 @@ export default function SimpleTable(props: any) {
   }, [data])
 
   return (
-    <Box className="SimpleTable py-2 px-0 lg:px-4" sx={{ width: '100%' }}>
+    <Box className="SimpleTable px-0 py-2 lg:px-4" sx={{ width: '100%' }}>
       <TableContainer>
         <Table
           aria-labelledby="tableTitle"
-          size='small'
+          size="small"
           // sx={{ minWidth: 600 }}
         >
           <EnhancedTableHead
@@ -288,6 +289,7 @@ export default function SimpleTable(props: any) {
               rows.map((row: Data, index: number) => {
                 const labelId = `cell-${index}`
                 const statusDot = row.status === 'final' ? '#4191CD' : '#EE8E34'
+                const status = row.status === 'final' ? 'Final' : 'Draft'
                 const country = countriesById.get(row.country_id as number)
 
                 return (
@@ -299,9 +301,11 @@ export default function SimpleTable(props: any) {
                       {row.country}
                     </StyledTableCell>
                     <StyledTableCell align="center">
-                      <Typography className="flex justify-center">
-                        <IoEllipse color={statusDot} size={12} />
-                      </Typography>
+                      <Tooltip title={status}>
+                        <Typography className="flex justify-center">
+                          <IoEllipse color={statusDot} size={12} />
+                        </Typography>
+                      </Tooltip>
                     </StyledTableCell>
                     <StyledTableCell align="center">
                       {row.version}
