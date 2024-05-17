@@ -533,21 +533,19 @@ class CPDataExtractionAllExport(views.APIView):
         for record in records:
             country_name = record.country_programme_report.country.name
             if country_name not in country_records:
-                country_records[country_name] = {}
-
-            country_records[country_name] = {
-                "country_lvc": record.country_programme_report.country.is_lvc,
-                "substance_name": (
-                    SUBSTANCE_GROUP_ID_TO_CATEGORY.get(record.substance.group.group_id)
-                    if record.substance
-                    else "HFC"
-                ),
-                "substance_group": record.country_programme_report.country.consumption_group,
-                "consumption_mt": 0,
-                "consumption_co2": 0,
-                "servicing": 0,
-                "usages_total": 0,
-            }
+                country_records[country_name] = {
+                    "country_lvc": record.country_programme_report.country.is_lvc,
+                    "substance_name": (
+                        SUBSTANCE_GROUP_ID_TO_CATEGORY.get(record.substance.group.group_id)
+                        if record.substance
+                        else "HFC"
+                    ),
+                    "substance_group": record.country_programme_report.country.consumption_group,
+                    "consumption_mt": 0,
+                    "consumption_co2": 0,
+                    "servicing": 0,
+                    "usages_total": 0,
+                }
 
             # get consumption data
             consumption_value = record.get_consumption_value() or 0
