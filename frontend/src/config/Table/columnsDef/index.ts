@@ -6,17 +6,17 @@ import defaultColDef, { defaultColDefEdit } from './defaultColDef'
 import defaultColGroupDef from './defaultColGroupDef'
 import getUsagesColDef from './usagesColDef'
 
-const mobile = __CLIENT__ ? window.innerWidth < 768 : false
+// const mobile = __CLIENT__ ? window.innerWidth < 768 : false
 
 const colDefById: Record<string, ColDef> = {
   display_name: {
     // initialWidth: 165,
-    pinned: mobile ? undefined : 'left',
+    // pinned: mobile ? undefined : 'left',
   },
   facility: {
     // initialWidth: mobile ? 160 : 300,
     // minWidth: 160,
-    pinned: mobile ? undefined : 'left',
+    // pinned: mobile ? undefined : 'left',
   },
   imports: {
     // initialWidth: 84,

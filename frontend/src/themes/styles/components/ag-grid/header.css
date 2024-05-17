@@ -13,12 +13,25 @@
     font-weight: bold;
   } */
 
-  .ag-header-cell,
-  .ag-header-group-cell {
-    span {
-      font-size: 0.813rem;
+
+  @media(width <= 1680px) {
+    .ag-header-cell,
+    .ag-header-group-cell {
+      span {
+        @apply text-xs;
+      }
     }
   }
+
+  @media(width >= 1680px) {
+    .ag-header-cell,
+    .ag-header-group-cell {
+      span {
+        @apply text-sm;
+      }
+    }
+  }
+
 
   .ag-header-cell {
     padding-left: calc(var(--x-ag-header-cell-horizontal-padding) - 1px);
