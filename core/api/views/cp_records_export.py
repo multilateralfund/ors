@@ -301,6 +301,9 @@ class CPHCFCExportView(CPHFCHCFCExportBaseView):
         cp_report_formats = (
             CPReportFormatColumn.objects.get_for_year(year)
             .filter(section="A")
+            .exclude(
+                header_name__in=["Refrigeration", "Methyl bromide", "QPS", "Non-QPS"]
+            )
             .select_related("usage")
             .order_by("sort_order")
         )
@@ -309,7 +312,11 @@ class CPHCFCExportView(CPHFCHCFCExportBaseView):
             usages.append(
                 {
                     "id": str(us_format.usage_id),
-                    "headerName": us_format.usage.full_name,
+                    "headerName": (
+                        us_format.usage.full_name
+                        if "solvent" not in us_format.usage.full_name.lower()
+                        else "Solvent"
+                    ),
                     "columnCategory": "usage",
                     "convert_to_odp": True,
                 }
