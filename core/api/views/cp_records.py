@@ -329,7 +329,7 @@ class CPRecordBaseListView(views.APIView):
 
         return self.cp_comment_seri_class(cp_report.cpcomments.all(), many=True).data
 
-    def _get_new_cp_records(self, cp_report):
+    def _get_new_cp_records(self, cp_report, data_only=False):
         section_a = self._get_displayed_records(cp_report, "A")
         section_b = self._get_displayed_records(cp_report, "B")
         section_c = self._get_cp_prices(cp_report)
@@ -344,16 +344,18 @@ class CPRecordBaseListView(views.APIView):
         }
 
         ret = {
-            "cp_report": self.cp_report_seri_class(cp_report).data,
             "section_a": self.cp_record_seri_class(section_a, many=True).data,
             "section_b": self.cp_record_seri_class(section_b, many=True).data,
             "section_c": self.cp_prices_seri_class(section_c, many=True).data,
             "section_d": self.cp_generation_seri_class(section_d, many=True).data,
             "section_e": self.cp_emission_seri_class(section_e, many=True).data,
             "section_f": section_f,
-            "history": self._get_cp_history(cp_report),
-            "comments": self._get_serialized_cp_comments(cp_report),
         }
+        if data_only is False:
+            ret["cp_report"] = self.cp_report_seri_class(cp_report).data
+            ret["history"] = self._get_cp_history(cp_report)
+            ret["comments"] = self._get_serialized_cp_comments(cp_report)
+
         if hasattr(cp_report, "cpreportedsections"):
             # This property will not be present for pre-2023
             ret["report_info"] = self.cp_report_info_seri_class(
@@ -501,6 +503,11 @@ class CPRecordListDiffView(CPRecordListView):
 
     def diff_records(self, data, data_old, fields):
         usage_fields = ["quantity", "quantity_gwp", "quantity_odp"]
+
+        # We only want reported things in the diff
+        data = [item for item in data if item.get("id") != 0]
+        data_old = [item for item in data_old if item.get("id") != 0]
+
         records_old = {record["row_id"]: record for record in data_old}
 
         for record in data:
@@ -528,10 +535,20 @@ class CPRecordListDiffView(CPRecordListView):
 
     def get(self, *args, **kwargs):
         cp_report = self._get_cp_report()
-        cp_report_ar_id = self.request.query_params.get("cp_report_ar_id")
-        cp_report_ar = get_object_or_404(CPReportArchive, id=cp_report_ar_id)
-        data = self._get_new_cp_records(cp_report)
-        data_old = self._get_new_cp_records(cp_report_ar)
+        version = self.request.query_params.get("version")
+        if version:
+            cp_report = get_object_or_404(
+                CPReportArchive, version=version, country=cp_report.country, year=cp_report.year
+            )
+        # We are diff-ing with the previous version by default
+        ar_version = cp_report.version - 1
+        cp_report_ar = get_object_or_404(
+            CPReportArchive, version=ar_version, country=cp_report.country, year=cp_report.year
+        )
+        print("---------------------")
+        print(cp_report, cp_report_ar)
+        data = self._get_new_cp_records(cp_report, data_only=True)
+        data_old = self._get_new_cp_records(cp_report_ar, data_only=True)
 
         return Response(
             {
