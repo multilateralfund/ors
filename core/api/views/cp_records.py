@@ -498,8 +498,13 @@ class CPRecordListDiffView(CPRecordListView):
             record[f"{field}_old"] = record_old[field] if record_old else None
 
     def rename_fields(self, record, fields):
+        """
+        This is used for "old" records/usages that have now been deleted.
+        """
         for field in fields:
-            record[f"{field}_old"] = record.pop(field, None)
+            old_value = record.pop(field, None)
+            record[field] = None
+            record[f"{field}_old"] = old_value
 
     def diff_records(self, data, data_old, fields):
         usage_fields = ["quantity", "quantity_gwp", "quantity_odp"]
