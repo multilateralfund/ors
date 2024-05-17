@@ -5,7 +5,16 @@ import { ReportVariant } from '@ors/types/variants'
 
 import React, { useMemo, useRef, useState } from 'react'
 
-import { Alert, Box, Button, Dialog, Divider, Typography } from '@mui/material'
+import {
+  Alert,
+  Box,
+  Button,
+  Dialog,
+  Divider,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from '@mui/material'
 import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, sortBy, union, uniqBy } from 'lodash'
 import { useSnackbar } from 'notistack'
@@ -159,7 +168,9 @@ export default function SectionBCreate(props: {
   const pinnedRowData = getInitialPinnedBottomRowData(variant.model)
 
   const [addChemicalModal, setAddChemicalModal] = useState(false)
-  const [newBlend, setNewBlend] = useState(false)
+  const [modalTab, setModalTab] = useState<'existing_blends' | 'new_blend'>(
+    'existing_blends',
+  )
 
   const chemicalsInForm = useMemo(() => {
     return form.section_b.map((chemical: any) => chemical.row_id)
@@ -332,7 +343,6 @@ export default function SectionBCreate(props: {
 
   const closeModal = () => {
     setAddChemicalModal(false)
-    setNewBlend(false)
   }
 
   return (
@@ -408,40 +418,72 @@ export default function SectionBCreate(props: {
               component="h2"
               variant="h4"
             >
-              {includes(['V'], variant.model)
+              {includes(['V'], variant.model) && modalTab === 'existing_blends'
                 ? 'Add substance/blend'
                 : 'Add blend'}
             </Typography>
             <Divider className="mb-2" />
+            <ToggleButtonGroup
+              className="my-4"
+              color="primary"
+              value={modalTab}
+              onChange={(_, value) => setModalTab(value)}
+              exclusive
+            >
+              <ToggleButton
+                className="rounded-none border-primary py-2 text-base tracking-wide first:rounded-l-lg last:rounded-r-lg"
+                value="existing_blends"
+                classes={{
+                  selected: 'bg-primary text-mlfs-hlYellow',
+                  standard: 'bg-white text-primary',
+                }}
+              >
+                Existing blend(s)
+              </ToggleButton>
+              <ToggleButton
+                className="rounded-none border-primary py-2 text-base tracking-wide first:rounded-l-lg last:rounded-r-lg"
+                value="new_blend"
+                classes={{
+                  selected: 'bg-primary text-mlfs-hlYellow',
+                  standard: 'bg-white text-primary',
+                }}
+              >
+                New blend
+              </ToggleButton>
+            </ToggleButtonGroup>
             {includes(['V'], variant.model) ? (
-              <>
-                <Typography>Mandatory / usual substances and blends</Typography>
-                <Field
-                  getOptionLabel={(option: any) => option.display_name}
-                  groupBy={(option: any) => option.group}
-                  options={mandatoryChemicals}
-                  value={null}
-                  widget="autocomplete"
-                  Input={{
-                    autoComplete: 'off',
-                  }}
-                  onChange={onAddChemical}
-                />
-                <Typography>
-                  Other blends (Mixture of controlled substances)
-                </Typography>
-                <Field
-                  getOptionLabel={(option: any) => option.display_name}
-                  groupBy={(option: any) => option.group}
-                  options={optionalBlends}
-                  value={null}
-                  widget="autocomplete"
-                  Input={{
-                    autoComplete: 'off',
-                  }}
-                  onChange={onAddChemical}
-                />
-              </>
+              modalTab === 'existing_blends' && (
+                <>
+                  <Typography>
+                    Mandatory / usual substances and blends
+                  </Typography>
+                  <Field
+                    getOptionLabel={(option: any) => option.display_name}
+                    groupBy={(option: any) => option.group}
+                    options={mandatoryChemicals}
+                    value={null}
+                    widget="autocomplete"
+                    Input={{
+                      autoComplete: 'off',
+                    }}
+                    onChange={onAddChemical}
+                  />
+                  <Typography>
+                    Other blends (Mixture of controlled substances)
+                  </Typography>
+                  <Field
+                    getOptionLabel={(option: any) => option.display_name}
+                    groupBy={(option: any) => option.group}
+                    options={optionalBlends}
+                    value={null}
+                    widget="autocomplete"
+                    Input={{
+                      autoComplete: 'off',
+                    }}
+                    onChange={onAddChemical}
+                  />
+                </>
+              )
             ) : (
               <Field
                 Input={{ autoComplete: 'off' }}
@@ -453,22 +495,14 @@ export default function SectionBCreate(props: {
                 onChange={onAddChemical}
               />
             )}
-            {!newBlend && (
-              <Button
-                className="rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
-                onClick={() => setNewBlend(true)}
-              >
-                New blend
-              </Button>
-            )}
-            {newBlend && (
+            {modalTab === 'new_blend' && (
               <CreateBlend
                 closeModal={closeModal}
                 substances={substances}
                 onCreateBlend={onCreateBlend}
               />
             )}
-            {!newBlend && (
+            {modalTab === 'existing_blends' && (
               <>
                 <Divider className="my-4" />
                 <Button
