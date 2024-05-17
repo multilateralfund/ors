@@ -2,9 +2,7 @@ import * as React from 'react'
 
 import {
   Box,
-  FormControlLabel,
   Skeleton,
-  Switch,
   Table,
   TableBody,
   TableContainer,
@@ -227,8 +225,7 @@ export default function SimpleTable(props: any) {
 
   const [order, setOrder] = React.useState<Order>('desc')
   const [orderBy, setOrderBy] = React.useState<keyof Data>('created_at')
-  const [loading, setLoading] = React.useState(false) // Add loading state
-  const [dense, setDense] = React.useState(false)
+  const [loading, setLoading] = React.useState(false)
   const rows = data.map((item: any) => {
     return createData(
       item.id,
@@ -261,10 +258,6 @@ export default function SimpleTable(props: any) {
     setOrderBy(property)
   }
 
-  const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDense(event.target.checked)
-  }
-
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const countriesById = new Map<number, any>(
     countries.map((country: any) => [country.id, country]),
@@ -275,11 +268,11 @@ export default function SimpleTable(props: any) {
   }, [data])
 
   return (
-    <Box className="SimpleTable py-0 px-0 lg:px-4" sx={{ width: '100%' }}>
+    <Box className="SimpleTable py-2 px-0 lg:px-4" sx={{ width: '100%' }}>
       <TableContainer>
         <Table
           aria-labelledby="tableTitle"
-          size={dense ? 'small' : 'medium'}
+          size='small'
           // sx={{ minWidth: 600 }}
         >
           <EnhancedTableHead
@@ -345,11 +338,6 @@ export default function SimpleTable(props: any) {
           </TableBody>
         </Table>
       </TableContainer>
-      <FormControlLabel
-        className="m-0 p-4"
-        control={<Switch checked={dense} onChange={handleChangeDense} />}
-        label="Dense padding"
-      />
     </Box>
   )
 }
