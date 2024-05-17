@@ -536,7 +536,8 @@ class CPRecordListDiffView(CPRecordListView):
     def get(self, *args, **kwargs):
         cp_report = self._get_cp_report()
         version = self.request.query_params.get("version")
-        if version:
+        version = float(version) if version else None
+        if version and version < cp_report.version:
             cp_report = get_object_or_404(
                 CPReportArchive, version=version, country=cp_report.country, year=cp_report.year
             )
