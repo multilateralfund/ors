@@ -1,7 +1,11 @@
 'use client'
 import type { SimpleSelectProps } from '@ors/components/ui/SimpleSelect/SimpleSelect'
 import { Country } from '@ors/types/store'
-import { UserType, userTypeVisibility } from '@ors/types/user_types'
+import {
+  UserType,
+  userCanExportData,
+  userCanSubmitReport,
+} from '@ors/types/user_types'
 
 import React, { useMemo, useState } from 'react'
 
@@ -12,8 +16,10 @@ import {
   Tabs,
   ToggleButton,
   ToggleButtonGroup,
+  Tooltip,
   Typography,
 } from '@mui/material'
+import cx from 'classnames'
 import { filter, times, union } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
@@ -85,6 +91,21 @@ const debounce = (func: () => void) => {
 const SortBy = (props: Omit<SimpleSelectProps, 'label'>) => (
   <SimpleSelect className="min-w-52" label="Sort by" {...props} />
 )
+
+const StatusLegend = ({ className }: { className?: string }) => {
+  return (
+    <div className={cx('flex gap-2', className)}>
+      <div className="flex items-center gap-2">
+        <IoEllipse color="#4191CD" size={12} />
+        <Typography>Final</Typography>
+      </div>
+      <div className="flex items-center gap-2">
+        <IoEllipse color="#EE8E34" size={12} />
+        <Typography>Draft</Typography>
+      </div>
+    </div>
+  )
+}
 
 const CountryYearFilterPills = (props: any) => {
   const { filters, maxYear, minYear, setFilters, setPagination, setParams } =
@@ -196,6 +217,7 @@ const SubmissionItem = (props: any) => {
           )
 
           const statusDot = report.status === 'final' ? '#4191CD' : '#EE8E34'
+          const status = report.status === 'final' ? 'Final' : 'Draft'
 
           const country = countriesById.get(report.country_id)
 
@@ -215,9 +237,11 @@ const SubmissionItem = (props: any) => {
                   {report.year}
                 </Typography>
                 <div className="flex items-baseline gap-2">
-                  <Typography>
-                    <IoEllipse color={statusDot} size={12} />
-                  </Typography>
+                  <Tooltip title={status}>
+                    <div>
+                      <IoEllipse color={statusDot} size={12} />
+                    </div>
+                  </Tooltip>
                   <Typography className="font-medium">
                     VERSION {report.version}
                   </Typography>
@@ -541,7 +565,9 @@ function CPFilters(props: any) {
       id="filters"
       className="sticky top-2 flex h-fit flex-col gap-6 rounded-lg p-8"
     >
-      <Typography className="text-3xl font-light">Filters</Typography>
+      <Typography className="flex items-center justify-between text-3xl font-light">
+        <span>Filters</span> <StatusLegend className="mb-0" />
+      </Typography>
       <StatusFilter filters={filters} setFilters={setFilters} />
       <CountrySelect filters={filters} setFilters={setFilters} />
       <YearSelect
@@ -633,8 +659,8 @@ export default function CPListing() {
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-end gap-x-4">
-        {userTypeVisibility[user_type as UserType] && (
+      <div className="mb-6 flex items-center justify-end gap-x-6 lg:mb-4 lg:gap-x-4">
+        {userCanSubmitReport[user_type as UserType] && (
           <Link
             className="px-4 py-2 text-lg uppercase"
             color="secondary"
@@ -645,13 +671,24 @@ export default function CPListing() {
             New submission
           </Link>
         )}
+        {userCanExportData[user_type as UserType] && (
+          <Link
+            className="px-4 py-2 text-lg uppercase"
+            color="secondary"
+            href="/country-programme/export-data"
+            variant="contained"
+            button
+          >
+            Export
+          </Link>
+        )}
       </div>
       <div
         id="cp-listing-sections"
-        className="relative flex flex-col-reverse gap-4 md:flex-row"
+        className="relative flex flex-col-reverse gap-6 lg:flex-row lg:gap-4"
       >
         <div className="flex-1">
-          <div className="flex flex-wrap-reverse items-center justify-between gap-2 border-0 border-b border-solid border-primary md:flex-nowrap">
+          <div className="flex flex-wrap-reverse items-center justify-between gap-2 border-0 border-b border-solid border-primary lg:flex-nowrap">
             <Tabs
               className="scrollable w-96"
               aria-label="view country programme report"

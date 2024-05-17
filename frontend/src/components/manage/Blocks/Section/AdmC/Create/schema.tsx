@@ -34,9 +34,9 @@ function useGridOptions(props: { adm_columns: any; model: string }) {
       id: column.id,
       category: 'adm',
       dataType: column.type,
-      flex: 1,
+      // flex: 1,
       headerName: column.display_name,
-      initialWidth: defaultColDef.minWidth,
+      // initialWidth: defaultColDef.minWidth,
       ...(colDefByDataType[column.type] || {}),
       ...(column.children.length
         ? {
@@ -74,15 +74,6 @@ function useGridOptions(props: { adm_columns: any; model: string }) {
           ...colDefById['adm_c_description'],
         },
         ...(adm_columns.length > 0 ? adm_columns.map(mapAdmColumn) : []),
-        {
-          cellEditor: 'agTextCellEditor',
-          field: 'remarks',
-          flex: 1,
-          headerName: 'Remarks',
-          ...colDefById['remarks'],
-          cellClass: 'ag-text-center',
-          headerClass: 'ag-text-center',
-        },
       ],
       defaultColDef: {
         autoHeight: true,

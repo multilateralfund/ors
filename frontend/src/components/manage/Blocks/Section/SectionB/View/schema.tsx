@@ -5,8 +5,6 @@ import { ColDef } from 'ag-grid-community/dist/types/main'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-import { defaultColDef } from '@ors/config/Table/columnsDef'
-
 import { sectionColDefById } from '../sectionColumnsDef'
 
 function useGridOptions(props: { model: string; usages: Array<any> }) {
@@ -42,7 +40,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
         })
       },
       headerClass: 'ag-text-center',
-      minWidth: defaultColDef.minWidth,
+      // minWidth: defaultColDef.minWidth,
       resizable: true,
       wrapText: true,
     }),
@@ -64,6 +62,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
   }, [usages])
 
   const bySubstanceTrade = useCallback(
+    // eslint-disable-next-line
     (standalone = false) => {
       return [
         {
@@ -72,7 +71,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
           field: 'imports',
           headerName: 'Import',
           orsAggFunc: 'sumTotal',
-          ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+          // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
         },
         {
           ...sectionColDefById['exports'],
@@ -80,7 +79,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
           field: 'exports',
           headerName: 'Export',
           orsAggFunc: 'sumTotal',
-          ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+          // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
         },
         {
           ...sectionColDefById['production'],
@@ -88,7 +87,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
           field: 'production',
           headerName: 'Production',
           orsAggFunc: 'sumTotal',
-          ...(standalone ? { flex: 1 } : { initialWidth: 100, maxWidth: 100 }),
+          // ...(standalone ? { flex: 1 } : { initialWidth: 100, maxWidth: 100 }),
         },
         ...(includes(['V'], model)
           ? [
@@ -98,9 +97,9 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
                 field: 'manufacturing_blends',
                 headerName: 'Manufacturing of Blends',
                 orsAggFunc: 'sumTotal',
-                ...(standalone
-                  ? { flex: 1 }
-                  : { initialWidth: 110, minWidth: 110 }),
+                // ...(standalone
+                //   ? { flex: 1 }
+                //   : { initialWidth: 110, minWidth: 110 }),
               },
             ]
           : []),
@@ -112,7 +111,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
                 field: 'import_quotas',
                 headerName: 'Import Quotas',
                 orsAggFunc: 'sumTotal',
-                ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+                // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
               },
             ]
           : []),
@@ -120,13 +119,13 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
           ...sectionColDefById['banned_date'],
           dataType: 'date',
           field: 'banned_date',
-          ...(standalone ? { flex: 1 } : { initialWidth: 110, maxWidth: 110 }),
+          // ...(standalone ? { flex: 1 } : { initialWidth: 110, maxWidth: 110 }),
         },
         {
           ...sectionColDefById['remarks'],
           field: 'remarks',
           headerName: 'Remarks',
-          ...(standalone ? { flex: 1 } : { initialWidth: 80, maxWidth: 80 }),
+          // ...(standalone ? { flex: 1 } : { initialWidth: 80, maxWidth: 80 }),
         },
       ]
     },

@@ -29,7 +29,7 @@ export default function SectionEView(props: any) {
 
   return (
     <>
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+      <Alert className="bg-mlfs-bannerColor" icon={<IoInformationCircleOutline size={24} />} severity="info">
         <Footnote id="" index="">
           Facility name must be provided if data in Section D is provided
         </Footnote>

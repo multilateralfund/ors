@@ -37,7 +37,7 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
   } else if (usageId === 'total_usages') {
     value = []
     each(recordUsages, (usage: any) => {
-      const quantity = getUnitAwareValue(usage, 'quantity', props.context.unit)
+      const quantity = getUnitAwareValue(usage, 'quantity', props.context?.unit)
       if (!isNull(quantity)) {
         value.push(quantity)
       }
@@ -46,7 +46,7 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
   } else if (usageId === 'total_refrigeration') {
     value = []
     each(recordUsages, (usage: any) => {
-      const quantity = getUnitAwareValue(usage, 'quantity', props.context.unit)
+      const quantity = getUnitAwareValue(usage, 'quantity', props.context?.unit)
       if (!isNull(quantity) && includes([6, 7], usage.usage_id)) {
         value.push(quantity)
       }

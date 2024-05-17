@@ -40,7 +40,7 @@ export default function AdmBCreate(props: any) {
 
   return (
     <>
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+      <Alert className="bg-mlfs-bannerColor" icon={<IoInformationCircleOutline size={24} />} severity="info">
         <Typography id="footnote-1" className="transition-all">
           <span className="font-bold">1. </span>
           If Yes, since when (Date) / If No, planned date.

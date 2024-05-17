@@ -25,7 +25,10 @@ const sectionColDefById: Record<string, ColDef> = {
     ...colDefById['display_name'],
     cellRenderer: (props: ICellRendererParams) => {
       const model = props.context?.variant.model
-      if (includes(['V'], model) && props.data?.row_id?.startsWith('blend_')) {
+      if (
+        includes(['IV', 'V'], model) &&
+        props.data?.row_id?.startsWith('blend_')
+      ) {
         const newProps = {
           ...props,
           tooltipValue: props.value,

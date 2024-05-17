@@ -60,7 +60,7 @@ const PopoverWindow = ({
   const PAGE_SIZE = 12
 
   const years = range(min, max + 1).reverse()
-  const pagedYears = chunk(years, PAGE_SIZE)
+  const pagedYears = chunk(years, PAGE_SIZE).map((chunk) => chunk.reverse())
 
   const [curPage, setCurPage] = useState(0)
   const [hoverYear, setHoverYear] = useState<null | number>(null)
@@ -103,18 +103,18 @@ const PopoverWindow = ({
       <div className="flex items-center justify-between gap-x-4">
         <IoChevronBackCircleOutline
           className={cx(btnClasses, {
-            'cursor-no-drop opacity-40': curPage == 0,
+            'cursor-no-drop opacity-40': curPage === pagedYears.length - 1,
           })}
           size={24}
-          onClick={handlePrevPage}
+          onClick={handleNextPage} // Navigate to older years
         />
         <div className="pointer-events-none select-none">Select a range</div>
         <IoChevronForwardCircleOutline
           className={cx(btnClasses, {
-            'cursor-no-drop opacity-40 ': curPage == pagedYears.length - 1,
+            'cursor-no-drop opacity-40': curPage === 0,
           })}
           size={24}
-          onClick={handleNextPage}
+          onClick={handlePrevPage} // Navigate to newer years
         />
       </div>
       <div className="flex items-center justify-center gap-3">

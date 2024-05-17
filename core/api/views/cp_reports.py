@@ -59,7 +59,7 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        cp_reports = CPReport.objects.all()
+        cp_reports = CPReport.objects.filter(country__is_a2=False)
         if user.user_type == user.UserType.COUNTRY_USER:
             cp_reports = cp_reports.filter(country=user.country)
 
@@ -473,7 +473,7 @@ class CPReportGroupByYearView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = CPReport.objects.all()
+        queryset = CPReport.objects.filter(country__is_a2=False)
         if user.user_type == user.UserType.COUNTRY_USER:
             queryset = queryset.filter(country=user.country)
         return queryset

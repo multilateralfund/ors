@@ -85,6 +85,18 @@ const TableProps: ITableProps = {
           domNode="sectionToolbar"
         >
           <div className="flex items-center justify-end">
+            <Link
+              className="flex items-center justify-between gap-x-2 text-nowrap rounded-md border border-solid border-primary px-2 py-1 text-base text-black no-underline hover:bg-primary hover:text-mlfs-hlYellow"
+              target="_blank"
+              href={`${formatApiUrl(
+                '/api/country-programme/calculated-amount/export/',
+              )}?cp_report_id=${report.data?.id.toString()}`}
+              download
+            >
+              <Tooltip placement="top" title="Download calculated amounts">
+                <span>Calculated amounts</span>
+              </Tooltip>
+            </Link>
             <Dropdown
               className="normal-case hover:bg-transparent"
               color="primary"

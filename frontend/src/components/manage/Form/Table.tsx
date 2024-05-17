@@ -216,18 +216,13 @@ function Table(props: TableProps) {
     },
     cellClassRules: {
       'ag-error': (props) => !!getError(props),
-      'border-solid border border-red-950': (props) => {
+      'border-solid border border-mlfs-hlYellow': (props) => {
         const errors: ValidateSectionResultValue[] = props.data.validationErrors
         if (errors) {
           const colId = props.column.getColId()
           return errors.flatMap((err) => err.highlight_cells).includes(colId)
         }
         return false
-      },
-      'text-red-950': (props) => {
-        const errors: ValidateSectionResultValue[] = props.data.validationErrors
-        const colId = props.column.getColId()
-        return errors && colId === 'display_name'
       },
     },
     cellRenderer: (props: any) => {
@@ -653,6 +648,8 @@ function Table(props: TableProps) {
               }
             }}
             onRowDataUpdated={(props) => {
+              // props.api.autoSizeAllColumns()
+              // props.api.sizeColumnsToFit()
               onRowDataUpdated(props)
             }}
             {...omit(props, [

@@ -13,7 +13,6 @@ import { CustomCellRendererProps } from 'ag-grid-react'
 import cx from 'classnames'
 import { includes, omit } from 'lodash'
 
-import { defaultColDef } from '@ors/config/Table/columnsDef'
 import { NON_EDITABLE_ROWS } from '@ors/config/Table/columnsDef/settings'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
@@ -220,7 +219,7 @@ function useGridOptions(props: {
           return true
         },
         headerClass: 'ag-text-center',
-        minWidth: defaultColDef.minWidth,
+        // minWidth: defaultColDef.minWidth,
         resizable: true,
         wrapText: true,
       },

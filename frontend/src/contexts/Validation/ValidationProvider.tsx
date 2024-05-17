@@ -13,6 +13,22 @@ import useApi from '@ors/hooks/useApi'
 import ValidationContext from './ValidationContext'
 import validateForm from './validateForm'
 
+function hasErrors(
+  errors: Record<ValidationSchemaKeys, ValidateSectionResult>,
+) {
+  let result = false
+
+  const errorValues = Object.values(errors)
+  for (let i = 0; i < errorValues.length; i++) {
+    if (errorValues[i].hasErrors) {
+      result = true
+      break
+    }
+  }
+
+  return result
+}
+
 const ValidationProvider = (props: IValidationProvider) => {
   const { children, form, model } = props
 
@@ -33,10 +49,14 @@ const ValidationProvider = (props: IValidationProvider) => {
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpenDrawer(newOpen)
   }
+
+  console.log(errors)
+
   return (
     <ValidationContext.Provider
       value={{
         errors: errors,
+        hasErrors: hasErrors(errors),
         setOpenDrawer,
       }}
     >

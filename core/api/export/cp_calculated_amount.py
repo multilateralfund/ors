@@ -11,13 +11,23 @@ class CPCalculatedAmountWriter(BaseWriter):
                 "headerName": "Substances",
             },
             {
+                "id": "unit",
+                "headerName": "Unit",
+            },
+            {
                 "id": "sectorial_total",
-                "headerName": f"{year} - Calculated Total Sectorial",
+                "headerName": f"{year} - Calculated Total Sectoral",
+                "type": "number",
             },
             {
                 "id": "consumption",
                 "headerName": f"{year} - Calculated Consumption = Import-Export+Production",
+                "type": "number",
             },
+            # {
+            #     "id": "substances",
+            #     "headerName": "Substances List",
+            # },
         ]
         sheet = wb.create_sheet("Calculated Amount")
         super().__init__(sheet, headers)

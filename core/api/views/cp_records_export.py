@@ -184,36 +184,62 @@ class CPCalculatedAmountExportView(CPRecordListView):
             .prefetch_related("record_usages")
             .all()
         )
-        data = {}
+        # set all consumprtion to 0
+        data = {
+            group: {"sectorial_total": 0, "consumption": 0, "substances": ""}
+            for group in SUBSTANCE_GROUP_ID_TO_CATEGORY.values()
+            if group not in ["Other", "Legacy"]
+        }
+
+        # calculate the consumption and sectorial total
         for record in records:
+            # set the substance category
             substance_category = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(
                 record.substance.group.group_id
             )
             if substance_category in ["Other", "Legacy"]:
                 continue
-            if substance_category not in data:
-                data[substance_category] = {
-                    "sectorial_total": 0,
-                    "consumption": 0,
-                }
+
+            # get the sectorial total
             sectorial_total = record.get_sectorial_total()
             consumption = record.get_consumption_value(use_sectorial_total=False)
 
             # convert data
             if substance_category == "HFC":
                 # convert consumption value to CO2 equivalent
+                # substance = f"{record.substance.name} (gwp:{record.substance.gwp or 0}), consump:{consumption or 0})"
                 consumption *= record.substance.gwp or 0
                 sectorial_total *= record.substance.gwp or 0
             else:
                 # convert consumption value to ODP
+                # substance = f"{record.substance.name} (odp:{record.substance.odp or 0}, consump:{consumption or 0})"
                 consumption *= record.substance.odp or 0
                 sectorial_total *= record.substance.odp or 0
 
             data[substance_category]["sectorial_total"] += sectorial_total
             data[substance_category]["consumption"] += consumption
+            # data[substance_category]["substances"] += f"{substance};\n"
 
-        # convert data to list
-        return [{"substance_name": key, **value} for key, value in data.items()]
+        # set the correct decimals number (for odp 2 decimals, for CO2 0 decimals)
+        response_data = []
+        for group, values in data.items():
+            if group == "HFC":
+                values["consumption"] = round(values["consumption"], 0)
+                values["sectorial_total"] = round(values["sectorial_total"], 0)
+                values["unit"] = "CO2-eq"
+            else:
+                values["consumption"] = round(values["consumption"], 2)
+                values["sectorial_total"] = round(values["sectorial_total"], 2)
+                values["unit"] = "ODP tonnes"
+
+            substance_name = group if group != "MBR" else "MB Non-QPS only"
+            response_data.append(
+                {
+                    "substance_name": substance_name,
+                    **values,
+                }
+            )
+        return response_data
 
 
 class CPHFCHCFCExportBaseView(views.APIView):
@@ -233,11 +259,15 @@ class CPHFCHCFCExportBaseView(views.APIView):
         min_year = self.request.query_params.get("min_year")
         max_year = self.request.query_params.get("max_year")
 
+        current_year = datetime.now().year
         if not min_year and not max_year:
             # set current year for min year and max year
-            current_year = datetime.now().year
             min_year = current_year
             max_year = current_year
+        if not max_year:
+            max_year = current_year
+        if not min_year:
+            min_year = 1995
 
         return min_year, max_year
 
@@ -272,6 +302,9 @@ class CPHCFCExportView(CPHFCHCFCExportBaseView):
         cp_report_formats = (
             CPReportFormatColumn.objects.get_for_year(year)
             .filter(section="A")
+            .exclude(
+                header_name__in=["Refrigeration", "Methyl bromide", "QPS", "Non-QPS"]
+            )
             .select_related("usage")
             .order_by("sort_order")
         )
@@ -280,7 +313,11 @@ class CPHCFCExportView(CPHFCHCFCExportBaseView):
             usages.append(
                 {
                     "id": str(us_format.usage_id),
-                    "headerName": us_format.usage.full_name,
+                    "headerName": (
+                        us_format.usage.full_name
+                        if "solvent" not in us_format.usage.full_name.lower()
+                        else "Solvent"
+                    ),
                     "columnCategory": "usage",
                     "convert_to_odp": True,
                 }
@@ -376,7 +413,7 @@ class CPDataExtractionAllExport(views.APIView):
 
         # CP Details
         exporter = CPDetailsExtractionWriter(wb, year)
-        data = self.get_subtances_records(year)
+        data = CPRecord.objects.get_for_year(year)
         exporter.write(data)
 
         # CPConsumption(ODP)
@@ -425,14 +462,6 @@ class CPDataExtractionAllExport(views.APIView):
             .all()
         )
 
-    def get_subtances_records(self, year):
-        return (
-            CPRecord.objects.get_for_year(year)
-            .select_related("substance__group")
-            .filter(substance__isnull=False)
-            .all()
-        )
-
     def _get_cp_consumption_data(self, year):
         """
         Get CP consumption data for the given year
@@ -459,15 +488,8 @@ class CPDataExtractionAllExport(views.APIView):
             if country_name not in country_records:
                 country_records[country_name] = {}
 
-            group = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(record.substance.group.group_id)
-            if not group:
-                continue
-            if group not in country_records[country_name]:
-                country_records[country_name][group] = 0
-
             # convert consumption value to ODP
             consumption_value = record.get_consumption_value() * record.substance.odp
-            country_records[country_name][group] += consumption_value
 
             # set a custom group for HCFC-141b in Imported Pre-blended Polyol
             if record.substance.name == "HCFC-141b in Imported Pre-blended Polyol":
@@ -475,6 +497,16 @@ class CPDataExtractionAllExport(views.APIView):
                 if group not in country_records[country_name]:
                     country_records[country_name][group] = 0
                 country_records[country_name][group] += consumption_value
+                continue
+
+            # set the group
+            group = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(record.substance.group.group_id)
+            if not group:
+                continue
+            if group not in country_records[country_name]:
+                country_records[country_name][group] = 0
+
+            country_records[country_name][group] += consumption_value
 
         return country_records
 
@@ -499,11 +531,7 @@ class CPDataExtractionAllExport(views.APIView):
             ...
         }
         """
-        records = (
-            CPRecord.objects.get_for_year(year)
-            .filter(section="B", substance__isnull=False, substance__group__annex="F")
-            .all()
-        )
+        records = CPRecord.objects.get_for_year(year).filter(section="B").all()
         country_records = {}
         for record in records:
             country_name = record.country_programme_report.country.name
@@ -514,8 +542,12 @@ class CPDataExtractionAllExport(views.APIView):
             if group not in country_records[country_name]:
                 country_records[country_name][group] = {
                     "country_lvc": record.country_programme_report.country.is_lvc,
-                    "substance_name": SUBSTANCE_GROUP_ID_TO_CATEGORY.get(
-                        record.substance.group.group_id
+                    "substance_name": (
+                        SUBSTANCE_GROUP_ID_TO_CATEGORY.get(
+                            record.substance.group.group_id
+                        )
+                        if record.substance
+                        else "HFC"
                     ),
                     "consumption_mt": 0,
                     "consumption_co2": 0,
@@ -523,7 +555,7 @@ class CPDataExtractionAllExport(views.APIView):
                     "usages_total": 0,
                 }
 
-            # convert consumption value to ODP
+            # get consumption data
             consumption_value = record.get_consumption_value() or 0
             country_records[country_name][group]["consumption_mt"] += consumption_value
 

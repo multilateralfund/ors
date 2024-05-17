@@ -1,6 +1,6 @@
 import { ColDef, ICellRendererParams } from 'ag-grid-community'
 import cx from 'classnames'
-import { includes } from 'lodash'
+import { includes, startsWith } from 'lodash'
 
 import { colDefById } from '@ors/config/Table/columnsDef'
 
@@ -19,9 +19,9 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
       },
     },
     headerName: 'Date ban commenced',
-    ...(includes(['IV', 'V'], model)
-      ? { initialWidth: 100, minWidth: 100 }
-      : {}),
+    // ...(includes(['IV', 'V'], model)
+    //   ? { initialWidth: 100, minWidth: 100 }
+    //   : {}),
   },
   display_name: {
     ...colDefById['display_name'],
@@ -43,6 +43,19 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
               },
             }
           : {}),
+        ...(props.data?.rowType === 'group' &&
+        startsWith(props.data.display_name, 'Annex C')
+          ? {
+              footnote: {
+                id: '8',
+                content:
+                  'When report on Blends, where the data involves a blend of two or more substances, the quantities of individual components of controlled substances must be indicated separately.',
+                icon: false,
+                index: '**',
+                order: 999,
+              },
+            }
+          : {}),
       }
     },
     headerComponentParams: {
@@ -56,10 +69,10 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
     },
   },
   export_quotas: {
-    initialWidth: 80,
+    // initialWidth: 80,
   },
   exports: {
-    ...(includes(['I'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
+    // ...(includes(['I'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
     headerComponentParams: {
       ...(includes(['II', 'III'], model)
         ? {
@@ -73,12 +86,12 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
     },
   },
   imports: {
-    ...(includes(['I'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
+    // ...(includes(['I'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
   },
   production: {
-    ...(includes(['III'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
-    ...(includes(['II'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
-    ...(includes(['I'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
+    // ...(includes(['III'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
+    // ...(includes(['II'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
+    // ...(includes(['I'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
     headerComponentParams: {
       ...(includes(['II', 'III'], model)
         ? {
@@ -93,7 +106,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
   },
   remarks: {
     ...colDefById['remarks'],
-    ...(includes(['II'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
+    // ...(includes(['II'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
     headerComponentParams: {
       ...(includes(['II', 'III'], model)
         ? {

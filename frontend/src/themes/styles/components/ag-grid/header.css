@@ -20,6 +20,11 @@
     }
   }
 
+  .ag-header-cell {
+    padding-left: calc(var(--x-ag-header-cell-horizontal-padding) - 1px);
+    padding-right: calc(var(--x-ag-header-cell-horizontal-padding) - 1px);
+  }
+
   .ag-header-cell.ag-text-left .ag-header-cell-label,
   .ag-header-group-cell.ag-text-left,
   .ag-header-cell.ag-text-left .ag-header-cell-comp-wrapper {
@@ -72,6 +77,11 @@
     > div.ag-header-cell-comp-wrapper
     > span {
     margin-top: 2.9em;
+  }
+
+  .ag-header-cell-resize::after {
+    top: 0;
+    height: 100%;
   }
 
   .ag-ltr {

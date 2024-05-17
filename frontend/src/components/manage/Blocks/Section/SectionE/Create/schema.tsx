@@ -1,18 +1,48 @@
-import { useMemo } from 'react'
+import { useContext, useMemo } from 'react'
 
 import { Button } from '@mui/material'
 import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-import { defaultColDef } from '@ors/config/Table/columnsDef'
 import { NON_EDITABLE_ROWS } from '@ors/config/Table/columnsDef/settings'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
+import CellValidationAlert from '@ors/components/manage/AgWidgets/CellValidationWidget/CellValidationAlert'
+import ValidationContext from '@ors/contexts/Validation/ValidationContext'
+import { ValidationSchemaKeys } from '@ors/contexts/Validation/types'
 
 import { sectionColDefById, sectionColGroupDefById } from '../sectionColumnsDef'
 
 import { IoTrash } from 'react-icons/io5'
+
+function FacilityCellRenderer({ addFacility, ...props }: any) {
+  const validation =
+    useContext(ValidationContext)?.errors[
+      props.context?.section.id as ValidationSchemaKeys
+    ]
+
+  const errors = validation.global.filter((err) =>
+    (err?.highlight || []).includes('+ Add facility'),
+  )
+  if (props.data.rowType === 'control') {
+    return (
+      <Button
+        className="relative w-full leading-3"
+        variant="contained"
+        onClick={addFacility}
+      >
+        + Add facility
+        {errors.length ? (
+          <div className="absolute right-0">
+            <CellValidationAlert errors={errors} />
+          </div>
+        ) : null}
+      </Button>
+    )
+  }
+  return <AgCellRenderer {...props} />
+}
 
 function useGridOptions(props: {
   addFacility: () => void
@@ -29,20 +59,9 @@ function useGridOptions(props: {
             })
           },
           cellEditor: 'agTextCellEditor',
-          cellRenderer: (props: any) => {
-            if (props.data.rowType === 'control') {
-              return (
-                <Button
-                  className="w-full leading-3"
-                  variant="contained"
-                  onClick={addFacility}
-                >
-                  + Add facility
-                </Button>
-              )
-            }
-            return <AgCellRenderer {...props} />
-          },
+          cellRenderer: (props: any) => (
+            <FacilityCellRenderer {...props} addFacility={addFacility} />
+          ),
           cellRendererParams: (props: any) => ({
             className: cx({
               'font-bold': includes(
@@ -149,7 +168,7 @@ function useGridOptions(props: {
         cellClass: 'ag-text-right',
         editable: (props) => !includes(NON_EDITABLE_ROWS, props.data.rowType),
         headerClass: 'ag-text-center',
-        minWidth: defaultColDef.minWidth,
+        // minWidth: defaultColDef.minWidth,
         resizable: true,
         wrapText: true,
       },

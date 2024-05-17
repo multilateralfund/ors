@@ -1,5 +1,7 @@
-import { UserType, userTypeVisibility } from '@ors/types/user_types'
+import type { IValidationContext } from '@ors/contexts/Validation/types'
+import { UserType, userCanSubmitReport } from '@ors/types/user_types'
 
+import { useContext } from 'react'
 import React, { useEffect, useMemo, useState } from 'react'
 
 import { Button } from '@mui/material'
@@ -11,10 +13,13 @@ import { useSnackbar } from 'notistack'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Link from '@ors/components/ui/Link/Link'
+import ValidationContext from '@ors/contexts/Validation/ValidationContext'
 import { uploadFiles } from '@ors/helpers'
 import api from '@ors/helpers/Api/_api'
 import useClickOutside from '@ors/hooks/useClickOutside'
 import { useStore } from '@ors/store'
+
+import ConfirmSubmission from './ConfirmSubmission'
 
 import { IoChevronDown } from 'react-icons/io5'
 
@@ -201,19 +206,59 @@ const ArchiveHeaderTag = () => {
 }
 
 const ArchiveHeaderActions = () => {
-  return null
+  return <div className="flex items-center"></div>
 }
 
 const ViewHeaderActions = () => {
-  const { cacheInvalidateReport, fetchVersions, report, setReport } = useStore(
+  const { cacheInvalidateReport, fetchBundle, report } = useStore(
     (state) => state.cp_reports,
   )
   const { enqueueSnackbar } = useSnackbar()
   const { user_type } = useStore((state) => state.user.data)
 
+  const [showConfirm, setShowConfirm] = useState(false)
+
   const isDraft = report.data?.status === 'draft'
 
-  if (!userTypeVisibility[user_type as UserType]) return null
+  function handleShowConfirmation() {
+    setShowConfirm(true)
+  }
+
+  function handleSubmissionConfirmation() {
+    setShowConfirm(false)
+    handleSubmitFinal()
+  }
+
+  async function handleSubmitFinal() {
+    try {
+      const response = await api(
+        `/api/country-programme/report/${report.data?.id}/status-update/`,
+        {
+          data: {
+            status: 'final',
+          },
+          method: 'PUT',
+        },
+      )
+      enqueueSnackbar(
+        <>
+          Submit submission for {response.country} {response.year}.
+        </>,
+        { variant: 'success' },
+      )
+
+      cacheInvalidateReport(response.country_id, response.year)
+      await fetchBundle(response.country_id, response.year)
+    } catch (error) {
+      const errors = await error.json()
+      errors.detail &&
+        enqueueSnackbar(errors.detail, {
+          variant: 'error',
+        })
+    }
+  }
+
+  if (!userCanSubmitReport[user_type as UserType]) return null
 
   return (
     <div className="flex items-center">
@@ -235,41 +280,7 @@ const ViewHeaderActions = () => {
                 color="primary"
                 size="small"
                 variant="contained"
-                onClick={async () => {
-                  try {
-                    const response = await api(
-                      `/api/country-programme/report/${report.data?.id}/status-update/`,
-                      {
-                        data: {
-                          status: 'final',
-                        },
-                        method: 'PUT',
-                      },
-                    )
-                    enqueueSnackbar(
-                      <>
-                        Submit submission for {response.country} {response.year}
-                        .
-                      </>,
-                      { variant: 'success' },
-                    )
-                    setReport({
-                      data: {
-                        ...report.data,
-                        ...response,
-                      },
-                    })
-                    cacheInvalidateReport(response.country_id, response.year)
-                    fetchVersions(response.country_id, response.year)
-                    window.scrollTo({ behavior: 'smooth', top: 0 })
-                  } catch (error) {
-                    const errors = await error.json()
-                    errors.detail &&
-                      enqueueSnackbar(errors.detail, {
-                        variant: 'error',
-                      })
-                  }
-                }}
+                onClick={handleShowConfirmation}
               >
                 Submit final version
               </Button>
@@ -277,6 +288,13 @@ const ViewHeaderActions = () => {
           </div>
         </div>
       )}
+      {showConfirm ? (
+        <ConfirmSubmission
+          mode={'edit'}
+          onCancel={() => setShowConfirm(false)}
+          onSubmit={handleSubmissionConfirmation}
+        />
+      ) : null}
     </div>
   )
 }
@@ -284,11 +302,13 @@ const ViewHeaderActions = () => {
 interface EditHeaderActionsProps {
   getSubmitFormData: () => Dictionary<any>
   setErrors: React.Dispatch<React.SetStateAction<Record<string, any>>>
+  validation: IValidationContext
 }
 
 const EditHeaderActions = ({
   getSubmitFormData,
   setErrors,
+  validation,
 }: EditHeaderActionsProps) => {
   const router = useRouter()
   const { cacheInvalidateReport, report } = useStore(
@@ -297,12 +317,23 @@ const EditHeaderActions = ({
   const { enqueueSnackbar } = useSnackbar()
   const { user_type } = useStore((state) => state.user.data)
 
+  const [showConfirm, setShowConfirm] = useState(false)
+
+  function handleShowConfirmation() {
+    setShowConfirm(true)
+  }
+
+  function handleSubmissionConfirmation() {
+    setShowConfirm(false)
+    getReportSubmitter('final')()
+  }
+
   const isDraft = report.data?.status === 'draft'
   const isFinal = report.data?.status === 'final'
 
   const showDraftFromFinalButton = isFinal && report.variant?.model === 'V'
 
-  if (!userTypeVisibility[user_type as UserType]) return null
+  if (!userCanSubmitReport[user_type as UserType]) return null
 
   function getReportSubmitter(status?: 'draft' | 'final') {
     return async () => {
@@ -364,7 +395,7 @@ const EditHeaderActions = ({
   return (
     <div className="flex items-center">
       {!!report.data && (
-        <div className="container flex w-full justify-between gap-x-4">
+        <div className="container flex w-full justify-between gap-x-4 px-0">
           <Link
             className="btn-close bg-gray-600 px-4 py-2 shadow-none"
             color="secondary"
@@ -402,12 +433,20 @@ const EditHeaderActions = ({
             color="secondary"
             size="large"
             variant="contained"
-            onClick={getReportSubmitter('final')}
+            onClick={handleShowConfirmation}
           >
             {isDraft ? 'Submit final version' : 'Submit new version'}
           </Button>
         </div>
       )}
+      {showConfirm ? (
+        <ConfirmSubmission
+          mode={'edit'}
+          validation={validation}
+          onCancel={() => setShowConfirm(false)}
+          onSubmit={handleSubmissionConfirmation}
+        />
+      ) : null}
     </div>
   )
 }
@@ -443,7 +482,7 @@ const CPHeader = ({
             </div>
             <ReportDiffButton report={report} />
           </div>
-          {actions}
+          <div className="ml-auto">{actions}</div>
         </div>
       </HeaderTitle>
     )
@@ -458,13 +497,13 @@ const CPCreateHeader = ({
   currentYear: number
 }) => {
   return (
-    <div className="my-12 flex min-h-[40px] items-center justify-between gap-x-8">
+    <div className="my-12 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-6">
       <div className="flex items-center gap-x-2">
         <h1 className="m-0 text-4xl leading-normal">
           New submission - {currentYear}
         </h1>
       </div>
-      {actions}
+      <div className="ml-auto">{actions}</div>
     </div>
   )
 }
@@ -473,10 +512,11 @@ const CPViewHeader = () => {
   return <CPHeader actions={<ViewHeaderActions />} tag={<ViewHeaderTag />} />
 }
 
-const CPEditHeader = (props: EditHeaderActionsProps) => {
+const CPEditHeader = (props: Omit<EditHeaderActionsProps, 'validation'>) => {
+  const validation = useContext(ValidationContext)
   return (
     <CPHeader
-      actions={<EditHeaderActions {...props} />}
+      actions={<EditHeaderActions validation={validation} {...props} />}
       tag={<EditHeaderTag />}
       titlePrefix={<span className="text-4xl">Editing: </span>}
     />

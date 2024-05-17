@@ -1,15 +1,17 @@
 import type { ValidationSchema } from './types'
 
 import {
-  validateAnnexENonQPS,
-  validateBannedImports,
-  validateBlendComponents,
+  validateAnnexENonQPSDate,
+  validateAnnexENonQPSRemarks,
+  validateBannedImportsDate,
+  validateBannedImportsRemarks,
+  // validateBlendComponents,
   validateFacilityName,
   validateHFC23,
   validateOtherUnidentifiedManufacturing,
   validatePrices,
   validateSectionBOther,
-  validateSectionDFilled,
+  // validateSectionDFilled,
   validateSectionDTotals,
   validateUncommonSubstance,
   validateUsageTotals,
@@ -37,22 +39,38 @@ const validationSchema: ValidationSchema = {
         validator: validateAnnexEQPS,
       },
       {
-        id: 'validate-annex-e-non-qps',
+        id: 'validate-annex-e-non-qps-remarks',
         highlight_cells: {
-          banned_date: (row) => !row.banned_date,
           remarks: (row) => !row.remarks,
         },
         message:
           'If Non-QPS is provided; explanations should be provided in the Remarks field (i.e, for critical uses approved by the Parties with decision number).',
-        validator: validateAnnexENonQPS,
+        validator: validateAnnexENonQPSRemarks,
       },
       {
-        id: 'validate-banned-imports',
+        id: 'validate-annex-e-non-qps-date',
         highlight_cells: {
           banned_date: (row) => !row.banned_date,
         },
         message: 'The date of the ban on Non-QPS should be provided.',
-        validator: validateBannedImports,
+        validator: validateAnnexENonQPSDate,
+      },
+      {
+        id: 'validate-banned-imports-remarks',
+        highlight_cells: {
+          remarks: (row) => !row.remarks,
+        },
+        message:
+          'This substance has already been banned, if data is provided, explanations should be provided in the “Remarks” field (i.e, recovery/recycling, stockpiles or some special use exemption, etc).',
+        validator: validateBannedImportsRemarks,
+      },
+      {
+        id: 'validate-banned-imports-date',
+        highlight_cells: {
+          banned_date: (row) => !row.banned_date,
+        },
+        message: 'The date of the ban should be provided.',
+        validator: validateBannedImportsDate,
       },
     ],
   },
@@ -76,7 +94,7 @@ const validationSchema: ValidationSchema = {
         id: 'validate-section-b-other',
         highlight_cells: {},
         message:
-          'For "Other" – Only apply for uses in other sectors that do not fall specifically within the listed sectors in the table.',
+          'For "Other" – Only apply for uses in other sectors that do not fall specifically within the listed sectors in the table. The sector should be provided in the "Remarks" column',
         validator: validateSectionBOther,
       },
       {
@@ -86,13 +104,13 @@ const validationSchema: ValidationSchema = {
           'When reporting HFC-41, HFC-134, HFC-143 or HFC-152 - These substances are not commonly used; please check the substance is used while reporting.',
         validator: validateUncommonSubstance,
       },
-      {
-        id: 'validate-blend-components',
-        highlight_cells: {},
-        message:
-          'Where new blends/mixtures containing controlled substances are imported, details relating to the composition of these blends should be provided.',
-        validator: validateBlendComponents,
-      },
+      // {
+      //   id: 'validate-blend-components',
+      //   highlight_cells: {},
+      //   message:
+      //     'Where new blends/mixtures containing controlled substances are imported, details relating to the composition of these blends should be provided.',
+      //   validator: validateBlendComponents,
+      // },
       {
         id: 'validate-hfc23',
         highlight_cells: {},
@@ -121,20 +139,20 @@ const validationSchema: ValidationSchema = {
           'Total for columns under "Amount generated and captured" in Section E should be reported in Section D under the respective column.',
         validator: validateSectionDTotals,
       },
-      {
-        id: 'validate-section-d-filled',
-        highlight_cells: {},
-        message:
-          'This form should be filled only if the country generated HFC-23 from any facility that produced (manufactured) HCFC (Annex C - Group I) or HFC (Annex F) substances.',
-        validator: validateSectionDFilled,
-      },
+      // {
+      //   id: 'validate-section-d-filled',
+      //   highlight_cells: {},
+      //   message:
+      //     'This form should be filled only if the country generated HFC-23 from any facility that produced (manufactured) HCFC (Annex C - Group I) or HFC (Annex F) substances.',
+      //   validator: validateSectionDFilled,
+      // },
     ],
   },
   section_e: {
-    rows: [
+    global: [
       {
         id: 'validate-facility-name',
-        highlight_cells: { facility: () => true },
+        highlight: ['+ Add facility'],
         message:
           'Facility name must be provided if data in Section D is provided.',
         validator: validateFacilityName,

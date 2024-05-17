@@ -61,7 +61,7 @@ export default function AgHeaderComponent(props: IAgHeaderParams) {
       value={getTooltipTitle(props)}
     >
       <Typography
-        className={cx(props.className, { 'cursor-pointer': !!footnote })}
+        className={cx(props.className, { 'cursor-pointer font-bold': !!footnote })}
         component="span"
         onClick={() => {
           if (!footnote) return

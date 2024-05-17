@@ -11,9 +11,10 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
   },
   display_name: {
     ...colDefById['display_name'],
-    initialWidth: Math.floor(
-      (colDefById['display_name']?.initialWidth || 130) * 1.5,
-    ),
+    ...(includes(['II', 'III'], model) ? { minWidth: 300 } : {}),
+    // initialWidth: Math.floor(
+    //   (colDefById['display_name']?.initialWidth || 130) * 1.5,
+    // ),
   },
   previous_year_price: {
     cellClass: 'ag-text-center',

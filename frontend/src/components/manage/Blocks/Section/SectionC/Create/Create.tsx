@@ -119,7 +119,7 @@ function getRowData(
 }
 
 export default function SectionCCreate(props: {
-  Comments: React.FC<{ section: string, viewOnly: boolean }>
+  Comments: React.FC<{ section: string; viewOnly: boolean }>
   Section: SectionC
   TableProps: PassedCPCreateTableProps
   emptyForm: EmptyFormType
@@ -130,7 +130,16 @@ export default function SectionCCreate(props: {
   showComments: boolean
   variant: ReportVariant
 }) {
-  const { Comments, Section, TableProps, emptyForm, form, setForm, showComments, variant } = props
+  const {
+    Comments,
+    Section,
+    TableProps,
+    emptyForm,
+    form,
+    setForm,
+    showComments,
+    variant,
+  } = props
   const newNode = useRef<RowNode>()
 
   const substances = useStore(
@@ -213,7 +222,21 @@ export default function SectionCCreate(props: {
       },
     )
 
-    return data.toSorted((a, b) => -a.group.localeCompare(b.group))
+    return data.toSorted((a, b) => {
+      if (a.group === b.group) {
+        return a.sort_order - b.sort_order
+      }
+
+      if (a.group === 'HCFCs') {
+        return -1
+      }
+
+      if (a.group === 'HFCs') {
+        return 0
+      }
+
+      return 1
+    })
   }, [Section, chemicalsInForm, emptyForm.substance_rows.section_c])
 
   const optionalSubstances = useMemo(() => {
@@ -222,6 +245,18 @@ export default function SectionCCreate(props: {
 
     each(substances, (substance) => {
       if (
+        !includes(
+          [
+            'Annex A, Group I',
+            'Annex A, Group II',
+            'Annex B, Group I',
+            'Annex B, Group II',
+            'Annex B, Group III',
+            'Annex C, Group II',
+            'Annex C, Group III',
+          ],
+          substance.group,
+        ) &&
         !includes(chemicalsInForm, `substance_${substance.id}`) &&
         !includes(mandatorySubstancesIds, `substance_${substance.id}`)
       ) {
@@ -336,7 +371,11 @@ export default function SectionCCreate(props: {
   return (
     <>
       {includes(['II', 'III'], variant.model) ? null : (
-        <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
+        <Alert
+          className="bg-mlfs-bannerColor"
+          icon={<IoInformationCircleOutline size={24} />}
+          severity="info"
+        >
           <Footnotes />
         </Alert>
       )}

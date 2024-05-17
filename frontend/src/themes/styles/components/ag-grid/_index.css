@@ -19,11 +19,6 @@
   @apply transition;
 }
 
-.ag-table .ag-header-cell,
-.ag-table .ag-cell {
-  @apply break-words;
-}
-
 .ag-table .ag-floating-bottom .ag-cell {
   word-break: keep-all;
   overflow-wrap: normal;

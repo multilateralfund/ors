@@ -20,7 +20,7 @@ export default function SectionErrorIndicator({
   return (
     <div>
       <div
-        className={cx('cursor-help text-red-950 hover:text-white', className)}
+        className={cx('cursor-help', className)}
         onMouseEnter={(event) => {
           setAnchorEl(event?.currentTarget)
           setShowTooltip(true)
@@ -30,7 +30,7 @@ export default function SectionErrorIndicator({
           setShowTooltip(false)
         }}
       >
-        <IoAlertCircle />
+        <IoAlertCircle className="rounded-full bg-[#002A3C]" color="#EBFF00" />
       </div>
       <Popover
         anchorEl={anchorEl}
@@ -53,10 +53,17 @@ export default function SectionErrorIndicator({
         }}
         disableRestoreFocus
       >
-        <div className="bg-red-950 px-4 py-2 text-white">
-          {errors.map((err, idx) => (
-            <div key={idx}>{err.message}</div>
-          ))}
+        <div className="bg-mlfs-bannerColor">
+          <div className="border-0 border-b border-solid border-gray-300 px-2 py-2">
+            This section contains incomplete or invalid data.
+          </div>
+          {errors.map((err, idx) => {
+            return (
+              <div key={idx} className="px-2 py-2">
+                {'\u2022'} {err.message}
+              </div>
+            )
+          })}
         </div>
       </Popover>
     </div>
