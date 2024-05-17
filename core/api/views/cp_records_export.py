@@ -501,22 +501,25 @@ class CPDataExtractionAllExport(views.APIView):
             if country_name not in country_records:
                 country_records[country_name] = {}
 
-            group = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(record.substance.group.group_id)
-            if not group:
-                continue
-            if group not in country_records[country_name]:
-                country_records[country_name][group] = 0
-
             # convert consumption value to ODP
             consumption_value = record.get_consumption_value() * record.substance.odp
-            country_records[country_name][group] += consumption_value
-
+            
             # set a custom group for HCFC-141b in Imported Pre-blended Polyol
             if record.substance.name == "HCFC-141b in Imported Pre-blended Polyol":
                 group = "HCFC-141b Preblended Polyol"
                 if group not in country_records[country_name]:
                     country_records[country_name][group] = 0
                 country_records[country_name][group] += consumption_value
+                continue
+            
+            # set the group
+            group = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(record.substance.group.group_id)
+            if not group:
+                continue
+            if group not in country_records[country_name]:
+                country_records[country_name][group] = 0
+
+            country_records[country_name][group] += consumption_value
 
         return country_records
 
