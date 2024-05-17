@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import views
@@ -19,12 +20,6 @@ from core.api.serializers.cp_history import CPHistorySerializer
 from core.api.serializers.cp_price import CPPricesSerializer
 from core.api.serializers.cp_record import CPRecordSerializer
 from core.api.serializers.cp_report import CPReportSerializer, CPReportInfoSerializer
-from core.api.serializers.cp_record_diff import (
-    CPEmissionDiffSerializer,
-    CPGenerationDiffSerializer,
-    CPPricesDiffSerializer,
-    CPRecordDiffSerializer,
-)
 from core.api.views.utils import get_cp_report_from_request
 from core.models.adm import AdmRecord
 from core.models.country_programme import (
@@ -465,101 +460,99 @@ class CPRecordListView(CPRecordBaseListView):
 
 
 class CPRecordListDiffView(CPRecordListView):
-    cp_record_seri_class = CPRecordDiffSerializer
-    cp_prices_seri_class = CPPricesDiffSerializer
-    cp_generation_seri_class = CPGenerationDiffSerializer
-    cp_emission_seri_class = CPEmissionDiffSerializer
+    section_a_b_fields = [
+        "imports",
+        "import_quotas",
+        "exports",
+        "export_quotas",
+        "production",
+        "imports_gwp",
+        "import_quotas_gwp",
+        "exports_gwp",
+        "export_quotas_gwp",
+        "production_gwp",
+        "imports_odp",
+        "import_quotas_odp",
+        "exports_odp",
+        "export_quotas_odp",
+        "production_odp",
+    ]
+    section_c_fields = ["previous_year_price", "current_year_price", "remarks"]
+    section_d_fields = ["all_uses", "feedstock", "destruction"]
+    section_e_fields = [
+        "facility",
+        "total",
+        "all_uses",
+        "feedstock_gc",
+        "destruction",
+        "feedstock_wpc",
+        "destruction_wpc",
+        "generated_emissions",
+        "remarks",
+    ]
 
-    def get_diff(self, cp_report, cp_report_ar):
-        section_a = self._get_displayed_records(cp_report, "A")
-        context_a = {
-            "substances_old": {
-                str(record.substance_id): record
-                for record in self._get_displayed_records(cp_report_ar, "A")
-                if record.substance_id
-            },
-            "blends_old": {
-                str(record.blend_id): record
-                for record in self._get_displayed_records(cp_report_ar, "A")
-                if record.blend_id
-            },
-        }
+    def copy_fields(self, record, record_old, fields):
+        for field in fields:
+            record[f"{field}_old"] = record_old[field]
 
-        section_b = self._get_displayed_records(cp_report, "B")
-        context_b = {
-            "substances_old": {
-                str(record.substance_id): record
-                for record in self._get_displayed_records(cp_report_ar, "B")
-                if record.substance_id
-            },
-            "blends_old": {
-                str(record.blend_id): record
-                for record in self._get_displayed_records(cp_report_ar, "B")
-                if record.blend_id
-            },
-        }
+    def rename_fields(self, record, fields):
+        for field in fields:
+            record[f"{field}_old"] = record.pop(field, None)
 
-        section_c = self._get_cp_prices(cp_report)
-        context_c = {
-            "substances_old": {
-                str(cp_price.substance_id): cp_price
-                for cp_price in self._get_cp_prices(cp_report_ar)
-                if cp_price.substance_id
-            },
-            "blends_old": {
-                str(cp_price.blend_id): cp_price
-                for cp_price in self._get_cp_prices(cp_report_ar)
-                if cp_price.blend_id
-            },
-        }
+    def diff_records(self, data, data_old, fields):
+        usage_fields = ["quantity", "quantity_gwp", "quantity_odp"]
+        records_old = {record["row_id"]: record for record in data_old}
 
-        section_d = self._get_items_filtered_by_report(
-            self.cp_generation_class, cp_report.id
-        )
-        context_d = {
-            "cp_generation_ar": self._get_items_filtered_by_report(
-                self.cp_generation_class, cp_report_ar.id
-            )
-        }
+        for record in data:
+            record_old = records_old.pop(record["row_id"], None)
+            if not record_old:
+                continue
+            self.copy_fields(record, record_old, fields)
+            usages_old = {
+                str(usage["usage_id"]): usage
+                for usage in record_old.get("record_usages", [])
+            }
+            for usage in record.get("record_usages", []):
+                usage_old = usages_old.pop(str(usage["usage_id"]), None)
+                if not usage_old:
+                    continue
+                self.copy_fields(usage, usage_old, usage_fields)
 
-        section_e = self._get_items_filtered_by_report(
-            self.cp_emission_class, cp_report.id
-        )
-        context_e = {
-            str(cp_emission.facility): cp_emission
-            for cp_emission in self._get_items_filtered_by_report(
-                self.cp_emission_class, cp_report_ar.id
-            )
-        }
+        for record in records_old.values():
+            self.rename_fields(record, fields)
+            for usage in record.get("record_usages", []):
+                self.rename_fields(usage, usage_fields)
+            data.append(record)
 
-        section_f = {
-            "remarks": cp_report.comment,
-            "remarks_old": cp_report_ar.comment,
-        }
-
-        ret = {
-            "section_a": self.cp_record_seri_class(
-                section_a, many=True, context=context_a
-            ).data,
-            "section_b": self.cp_record_seri_class(
-                section_b, many=True, context=context_b
-            ).data,
-            "section_c": self.cp_prices_seri_class(
-                section_c, many=True, context=context_c
-            ).data,
-            "section_d": self.cp_generation_seri_class(
-                section_d, many=True, context=context_d
-            ).data,
-            "section_e": self.cp_emission_seri_class(
-                section_e, many=True, context=context_e
-            ).data,
-            "section_f": section_f,
-        }
-
-        return ret
+        return data
 
     def get(self, *args, **kwargs):
         cp_report = self._get_cp_report()
-        cp_report_ar = self._get_cp_report()  # for testing
+        cp_report_ar_id = self.request.query_params.get("cp_report_ar_id")
+        cp_report_ar = get_object_or_404(CPReportArchive, id=cp_report_ar_id)
+        data = self._get_new_cp_records(cp_report)
+        data_old = self._get_new_cp_records(cp_report_ar)
 
-        return Response(self.get_diff(cp_report, cp_report_ar))
+        return Response(
+            {
+                "section_a": self.diff_records(
+                    data["section_a"], data_old["section_a"], self.section_a_b_fields
+                ),
+                "section_b": self.diff_records(
+                    data["section_b"], data_old["section_b"], self.section_a_b_fields
+                ),
+                "section_c": self.diff_records(
+                    data["section_c"], data_old["section_c"], self.section_c_fields
+                ),
+                "section_d": self.diff_records(
+                    data["section_d"], data_old["section_d"], self.section_d_fields
+                ),
+                "section_e": self.diff_records(
+                    data["section_e"], data_old["section_e"], self.section_e_fields
+                ),
+                "section_f": {
+                    "remarks": cp_report.comment,
+                    "remarks_old": cp_report_ar.comment,
+                },
+            }
+        )
