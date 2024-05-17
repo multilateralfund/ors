@@ -504,15 +504,19 @@ class CPRecordListDiffView(CPRecordListView):
     def diff_records(self, data, data_old, fields):
         usage_fields = ["quantity", "quantity_gwp", "quantity_odp"]
 
-        # We only want reported things in the diff
+        # We only want actually-reported substances in the diff
         data = [item for item in data if item.get("id") != 0]
         data_old = [item for item in data_old if item.get("id") != 0]
-
         records_old = {record["row_id"]: record for record in data_old}
 
         for record in data:
             record_old = records_old.pop(record["row_id"], None)
+            if record == record_old:
+                # Only display newly-added or changed records
+                continue
             self.copy_fields(record, record_old, fields)
+            record["change_type"] = "changed" if record_old else "new"
+
             # Also copy nested usage fields
             old_record_usages = record_old.get("record_usages", []) if record_old else []
             usages_old = {
@@ -529,6 +533,7 @@ class CPRecordListDiffView(CPRecordListView):
             self.rename_fields(record, fields)
             for usage in record.get("record_usages", []):
                 self.rename_fields(usage, usage_fields)
+            record["change_type"] = "deleted"
             data.append(record)
 
         return data
@@ -546,8 +551,6 @@ class CPRecordListDiffView(CPRecordListView):
         cp_report_ar = get_object_or_404(
             CPReportArchive, version=ar_version, country=cp_report.country, year=cp_report.year
         )
-        print("---------------------")
-        print(cp_report, cp_report_ar)
         data = self._get_new_cp_records(cp_report, data_only=True)
         data_old = self._get_new_cp_records(cp_report_ar, data_only=True)
 
