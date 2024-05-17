@@ -261,6 +261,7 @@ class CPHFCConsumptionMTCO2Writer(BaseWriter):
             if not country_data:
                 continue
             self._write_row(row_idx, country, country_data)
+            row_idx += 1
 
     def _write_row(self, row_idx, country, values):
         for header_id, header in self.headers.items():

@@ -62,7 +62,7 @@ class CPReportHCFCWriter(CPDataHFCHCFCWriterBase):
             value = record.country_programme_report.country.name
         elif header_id == "chemical_name":
             value = record.get_chemical_display_name()
-        if header_id == "country_category":
+        elif header_id == "country_category":
             value = record.country_programme_report.country.consumption_category
         elif header.get("columnCategory") == "usage":
             value = by_usage_id.get(header_id) or 0
