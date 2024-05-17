@@ -6,6 +6,8 @@ from core.api.export.base import COLUMN_WIDTH
 from core.api.export.base import ROW_HEIGHT
 from core.api.export.section_export import SectionWriter
 
+# pylint: disable=R0913
+
 
 class CPReportNewExporter(CPReportBase):
     sections = (
