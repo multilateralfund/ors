@@ -114,11 +114,11 @@ class CPDetailsExtractionWriter(BaseWriter):
             elif header_id == "substance_name":
                 value = record.get_chemical_display_name()
             elif header_id == "substance_group":
-                value = record.substance.group.group_id
+                value = record.substance.group.group_id if record.substance else "F"
             elif header_id == "substance_odp":
-                value = record.substance.odp
+                value = record.get_chemical_odp()
             elif header_id == "substance_gwp":
-                value = record.substance.gwp
+                value = record.get_chemical_gwp()
             elif header_id == "record_value":
                 value = record.get_consumption_value()
             else:

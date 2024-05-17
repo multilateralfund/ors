@@ -45,7 +45,7 @@ class CPRecordManager(models.Manager):
     def get_for_year(self, year):
         return (
             self.select_related(
-                "substance",
+                "substance__group",
                 "blend",
                 "country_programme_report__country",
             )
@@ -91,9 +91,13 @@ class CPRecord(AbstractCPRecord):
         """
         return sum(usage.quantity for usage in self.record_usages.all())
 
-    def get_consumption_value(self, use_sectorial_total=True):
+    def get_consumption_value(
+        self,
+        use_sectorial_total=True,
+    ):
         """
         Get the consumption value for the record (imports - exports + production)
+        For Methil Bromide the sectorial total will only contain the non-Qps values
 
         @param use_sectorial_total: if True, the sectorial total value will be used
             only if there are no imports, exports or production values
@@ -101,7 +105,16 @@ class CPRecord(AbstractCPRecord):
         """
         if any([self.imports, self.exports, self.production]):
             return (self.imports or 0) - (self.exports or 0) + (self.production or 0)
+
+        # if there are no imports, exports or production values use the sectorial total
         if use_sectorial_total:
+            # for methil bromide the sectorial total will only contain the non-Qps values
+            if self.substance and "methil bromide" in self.substance.name.lower():
+                non_qps = self.record_usages.filter(
+                    usage__full_name__icontains="non-qps"
+                ).values("quantity")
+                return sum(usage["quantity"] for usage in non_qps)
+
             return self.get_sectorial_total()
         return 0
 
