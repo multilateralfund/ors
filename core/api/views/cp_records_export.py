@@ -5,6 +5,7 @@ import openpyxl
 
 from django.db.models import Prefetch
 from django.db import models
+from django.db.models.functions import Coalesce
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import views
@@ -19,6 +20,7 @@ from core.api.export.cp_data_extraction_all import (
     CPPricesExtractionWriter,
     HFC23EmissionWriter,
     HFC23GenerationWriter,
+    MbrConsumptionWriter,
 )
 from core.api.export.cp_report_hfc_hcfc import CPReportHFCWriter, CPReportHCFCWriter
 from core.api.export.cp_report_new import CPReportNewExporter
@@ -403,10 +405,42 @@ class CPDataExtractionAllExport(views.APIView):
         data = self._get_emissions(year)
         exporter.write(data)
 
+        # MbrConsumption
+        exporter = MbrConsumptionWriter(wb)
+        data = self.get_mbr_consumption_data(year)
+        exporter.write(data)
+
         # delete default sheet
         del wb[wb.sheetnames[0]]
 
         return workbook_response("CP Data Extraction-All", wb)
+
+    def get_mbr_consumption_data(self, year):
+        return (
+            CPRecord.objects.get_for_year(year)
+            .filter(substance__name__iexact="Methyl Bromide")
+            .annotate(
+                country_name=models.F("country_programme_report__country__name"),
+                methyl_bromide_qps=models.Sum(
+                    "record_usages__quantity",
+                    filter=models.Q(record_usages__usage__name__iexact="QPS"),
+                    default=0,
+                ),
+                methyl_bromide_non_qps=models.Sum(
+                    "record_usages__quantity",
+                    filter=models.Q(record_usages__usage__name__iexact="Non-QPS"),
+                    default=0,
+                ),
+                total=models.F("methyl_bromide_qps")
+                + models.F("methyl_bromide_non_qps"),
+            )
+        ).values(
+            "country_name",
+            "methyl_bromide_qps",
+            "methyl_bromide_non_qps",
+            "total",
+        )
+
 
     def get_prices(self, year):
         return (

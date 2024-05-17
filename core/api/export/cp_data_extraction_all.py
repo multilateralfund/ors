@@ -415,3 +415,32 @@ class HFC23EmissionWriter(BaseWriter):
                 header["column"],
                 value,
             )
+
+
+class MbrConsumptionWriter(BaseWriter):
+    header_row_start_idx = 1
+
+    def __init__(self, wb):
+        headers = [
+            {
+                "id": "country_name",
+                "headerName": "Country",
+            },
+            {
+                "id": "methyl_bromide_qps",
+                "headerName": "Methyl Bromide - QPS",
+                "type": "number",
+            },
+            {
+                "id": "methyl_bromide_non_qps",
+                "headerName": "Methyl Bromide — Non-QPS",
+                "type": "number",
+            },
+            {
+                "id": "total",
+                "headerName": "Total",
+                "type": "number",
+            }
+        ]
+        sheet = wb.create_sheet("MbrConsumption")
+        super().__init__(sheet, headers)
