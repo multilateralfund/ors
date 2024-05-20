@@ -3,16 +3,19 @@ import React from 'react'
 import cx from 'classnames'
 
 export default function DiffPill(props: any) {
-  const { type = 'new' } = props
+  const { change_type } = props
 
   return (
     <div
-      className={cx('shrink-0 px-1 text-sm uppercase text-center w-fit rounded-md whitespace-nowrap', {
-        'bg-gray-200 text-gray-700': type === 'deleted',
-        'bg-green-200 text-green-700': type === 'new',
-      })}
+      className={cx(
+        'w-fit shrink-0 whitespace-nowrap rounded-md px-1 text-center text-sm uppercase',
+        {
+          'bg-gray-200 text-gray-700': change_type === 'deleted',
+          'bg-green-200 text-green-700': change_type === 'new',
+        },
+      )}
     >
-      {type === "new" ? "NEW" : "DELETED"}
+      {change_type === 'new' ? 'NEW' : 'DELETED'}
     </div>
   )
 }
