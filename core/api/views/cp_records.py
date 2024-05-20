@@ -525,7 +525,7 @@ class CPRecordListDiffView(CPRecordListView):
             record[field] = None
             record[f"{field}_old"] = old_value
 
-    def diff_records(self, data, data_old, fields, row_identifier="row_id"):
+    def diff_records(self, data, data_old, fields, row_identifier="row_id", is_section_d=False):
         usage_fields = ["quantity", "quantity_gwp", "quantity_odp"]
         diff_data = []
 
@@ -536,6 +536,11 @@ class CPRecordListDiffView(CPRecordListView):
 
         for record in data:
             record_old = records_old.pop(record[row_identifier], None)
+
+            if is_section_d:
+                record.pop("row_id")
+                if record_old:
+                    record_old.pop("row_id")
             record.pop("id")
             if record_old:
                 record_old.pop("id")
@@ -600,7 +605,11 @@ class CPRecordListDiffView(CPRecordListView):
                     data["section_c"], data_old["section_c"], self.section_c_fields
                 ),
                 "section_d": self.diff_records(
-                    data["section_d"], data_old["section_d"], self.section_d_fields
+                    data["section_d"],
+                    data_old["section_d"],
+                    self.section_d_fields,
+                    row_identifier="chemical_name",
+                    is_section_d=True,
                 ),
                 "section_e": self.diff_records(
                     data["section_e"],
