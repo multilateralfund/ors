@@ -15,7 +15,7 @@ export default async function DocsLayout({
 }) {
   return (
     <PageWrapper className="max-w-screen-xl lg:px-0">
-      <div>{children}</div>
+      <div className="flex gap-x-2">{children}</div>
     </PageWrapper>
   )
 }
