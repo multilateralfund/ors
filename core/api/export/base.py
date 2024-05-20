@@ -86,7 +86,12 @@ class BaseWriter:
                 else:
                     value = value or ""
 
-                self._write_record_cell(row_idx, header["column"], value)
+                self._write_record_cell(
+                    row_idx,
+                    header["column"],
+                    value,
+                    align=header.get("align", "left"),
+                )
 
     def set_dimensions(self):
         for header in self.headers.values():
@@ -148,9 +153,9 @@ class BaseWriter:
             cell.comment = Comment(comment, "")
         return cell
 
-    def _write_record_cell(self, row, column, value, read_only=False):
+    def _write_record_cell(self, row, column, value, read_only=False, align="left"):
         cell = self.sheet.cell(row, column, value)
-        cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+        cell.alignment = Alignment(horizontal=align, vertical="center", wrap_text=True)
         cell.border = Border(
             left=Side(style="hair"),
             right=Side(style="hair"),
@@ -177,7 +182,10 @@ class CPReportBase:
             name = section.replace("_", " ").title()
             sheet = wb.create_sheet(name)
             configure_sheet_print(sheet, sheet.ORIENTATION_PORTRAIT)
-            sheet.cell(1, 1, "Country: %(country)s Year: %(year)s" % cp_report)
+            title_cell = sheet.cell(
+                1, 1, "Country: %(country)s Year: %(year)s" % cp_report
+            )
+            title_cell.font = Font(bold=True, size=20)
 
             if section not in "section_a,section_b" or not convert_data:
                 getattr(self, f"export_{section}")(
@@ -340,6 +348,7 @@ class CPDataHFCHCFCWriterBase(BaseWriter):
                 row_idx,
                 header["column"],
                 value,
+                align=header.get("align", "left"),
             )
 
 

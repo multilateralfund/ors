@@ -18,11 +18,13 @@ class CPCalculatedAmountWriter(BaseWriter):
                 "id": "sectorial_total",
                 "headerName": f"{year} - Calculated Total Sectoral",
                 "type": "number",
+                "align": "right",
             },
             {
                 "id": "consumption",
                 "headerName": f"{year} - Calculated Consumption = Import-Export+Production",
                 "type": "number",
+                "align": "right",
             },
             # {
             #     "id": "substances",
