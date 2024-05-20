@@ -163,6 +163,7 @@ type ApiBaseDiff = {
     remarks: null | string
     row_id: string
     substance_id: number
+    change_type: string
   }[]
 } & {
   report_info?: {
@@ -189,6 +190,7 @@ type ApiBaseDiff = {
     remarks: null | string
     row_id: string
     substance_id: number
+    change_type: string
   }[]
   section_d: {
     all_uses: null | string
@@ -197,6 +199,7 @@ type ApiBaseDiff = {
     display_name: string
     id: number
     row_id: string
+    change_type: string
   }[]
   section_e: {
     all_uses: null | string
@@ -210,9 +213,11 @@ type ApiBaseDiff = {
     remarks: null | string
     row_id: string
     total: string
+    change_type: string
   }
   section_f: {
     remarks: null | string
+    change_type: string
   }
 }
 
