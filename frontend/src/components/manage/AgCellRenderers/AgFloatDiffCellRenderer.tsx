@@ -2,15 +2,19 @@
 import { Tooltip } from '@mui/material'
 import { Typography } from '@mui/material'
 import { CustomCellRendererProps } from 'ag-grid-react'
+import cx from 'classnames'
 import { get, includes, isNull, isUndefined } from 'lodash'
 
 import aggFuncs from '@ors/config/Table/aggFuncs'
 
 import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSkeletonCellRenderer'
 import { getDecimalCellValue } from '@ors/components/manage/Utils/DecimalCellValue'
+import DiffTooltipHeader from '@ors/components/ui/DiffUtils/DiffTooltipHeader'
 import { fixFloat, parseNumber } from '@ors/helpers/Utils/Utils'
 
-export default function AgFloatDiffCellRenderer(props: CustomCellRendererProps) {
+export default function AgFloatDiffCellRenderer(
+  props: CustomCellRendererProps,
+) {
   if (props.data.rowType === 'skeleton') {
     return <AgSkeletonCellRenderer {...props} />
   }
@@ -57,8 +61,12 @@ export default function AgFloatDiffCellRenderer(props: CustomCellRendererProps) 
     valueODP = props.colDef ? props.data[`${props.colDef.field}_odp`] : null
 
     valueOld = props.colDef ? props.data[`${props.colDef.field}_old`] : null
-    valueGWPOld = props.colDef ? props.data[`${props.colDef.field}_gwp_old`] : null
-    valueODPOld = props.colDef ? props.data[`${props.colDef.field}_odp_old`] : null
+    valueGWPOld = props.colDef
+      ? props.data[`${props.colDef.field}_gwp_old`]
+      : null
+    valueODPOld = props.colDef
+      ? props.data[`${props.colDef.field}_odp_old`]
+      : null
   }
 
   if (isUndefined(value)) {
@@ -73,27 +81,39 @@ export default function AgFloatDiffCellRenderer(props: CustomCellRendererProps) 
     valueOld = 0
   }
 
-  const { TitleContent, formattedValue } = getDecimalCellValue(
+  const { formattedValue } = getDecimalCellValue(
     value,
     valueODP,
     valueGWP,
     props,
   )
 
-  
-  const ReturnOld = getDecimalCellValue(
+  const { formattedValue: old_value } = getDecimalCellValue(
     valueOld,
     valueODPOld,
     valueGWPOld,
     props,
   )
-  const formattedValueOld = ReturnOld.formattedValue
 
+  const new_value = props.data?.change_type === 'deleted' ? '-' : formattedValue
 
   return (
-    <Tooltip enterDelay={300} placement={'top-start'} title={TitleContent}>
-      <Typography className={props.className} component="span" lineHeight={1}>
-        {formattedValue}<br/>({formattedValueOld})
+    <Tooltip
+      enterDelay={300}
+      placement={'top'}
+      title={<DiffTooltipHeader new_value={new_value} old_value={old_value} />}
+    >
+      <Typography
+        className={cx(
+          props.className,
+          // 'grid grid-cols-2 grid-rows-2 gap-x-1 leading-normal',
+        )}
+        component="div"
+      >
+        <div className="whitespace-nowrap font-semibold">{new_value}</div>
+        <div className="col-start-2 row-start-2 whitespace-nowrap text-sm text-gray-500">
+          {old_value}
+        </div>
       </Typography>
     </Tooltip>
   )

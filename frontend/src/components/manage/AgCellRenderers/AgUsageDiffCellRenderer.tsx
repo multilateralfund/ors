@@ -1,19 +1,23 @@
 'use client'
 import { Tooltip, Typography } from '@mui/material'
 import { CustomCellRendererProps } from 'ag-grid-react'
+import cx from 'classnames'
 import { each, find, get, includes, isNull, isUndefined } from 'lodash'
 
 import aggFuncs from '@ors/config/Table/aggFuncs'
 
 import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSkeletonCellRenderer'
 import { getDecimalCellValue } from '@ors/components/manage/Utils/DecimalCellValue'
+import DiffTooltipHeader from '@ors/components/ui/DiffUtils/DiffTooltipHeader'
 import {
   getUnitAwareValue,
   parseNumber,
   sumFloats,
 } from '@ors/helpers/Utils/Utils'
 
-export default function AgUsageDiffCellRenderer(props: CustomCellRendererProps) {
+export default function AgUsageDiffCellRenderer(
+  props: CustomCellRendererProps,
+) {
   if (props.data.rowType === 'skeleton') {
     return <AgSkeletonCellRenderer {...props} />
   }
@@ -24,7 +28,6 @@ export default function AgUsageDiffCellRenderer(props: CustomCellRendererProps) 
   let valueOld: any = null
   let valueGWPOld: null | number = null
   let valueODPOld: null | number = null
-
 
   const aggFunc = get(aggFuncs, props.colDef?.orsAggFunc || '')
   const usageId = props.colDef?.id
@@ -48,7 +51,11 @@ export default function AgUsageDiffCellRenderer(props: CustomCellRendererProps) 
       if (!isNull(quantity)) {
         value.push(quantity)
       }
-      const quantityOld = getUnitAwareValue(usage, 'quantity_old', props.context.unit)
+      const quantityOld = getUnitAwareValue(
+        usage,
+        'quantity_old',
+        props.context.unit,
+      )
       if (!isNull(quantityOld)) {
         valueOld.push(quantityOld)
       }
@@ -61,7 +68,11 @@ export default function AgUsageDiffCellRenderer(props: CustomCellRendererProps) 
     valueOld = []
     each(recordUsages, (usage: any) => {
       const quantity = getUnitAwareValue(usage, 'quantity', props.context.unit)
-      const quantityOld = getUnitAwareValue(usage, 'quantity_old', props.context.unit)
+      const quantityOld = getUnitAwareValue(
+        usage,
+        'quantity_old',
+        props.context.unit,
+      )
       if (!isNull(quantity) && includes([6, 7], usage.usage_id)) {
         value.push(quantity)
       }
@@ -93,27 +104,40 @@ export default function AgUsageDiffCellRenderer(props: CustomCellRendererProps) 
     valueOld = 0
   }
 
-  const { TitleContent, formattedValue } = getDecimalCellValue(
+  const { formattedValue } = getDecimalCellValue(
     value,
     valueODP,
     valueGWP,
     props,
   )
 
-  const ReturnOld = getDecimalCellValue(
+  const { formattedValue: old_value } = getDecimalCellValue(
     valueOld,
     valueODPOld,
     valueGWPOld,
     props,
   )
-  const formattedValueOld = ReturnOld.formattedValue
+
+  const new_value = props.data?.change_type === 'deleted' ? '-' : formattedValue
 
   return (
-    <Tooltip enterDelay={300} placement={'top-start'} title={TitleContent}>
-      <Typography className={props.className} component="span" lineHeight={2}>
-        {formattedValue}<br/>({formattedValueOld})
+    <Tooltip
+      enterDelay={300}
+      placement={'top'}
+      title={<DiffTooltipHeader new_value={new_value} old_value={old_value} />}
+    >
+      <Typography
+        className={cx(
+          props.className,
+          // 'grid grid-cols-2 grid-rows-2 gap-x-1 leading-normal',
+        )}
+        component="div"
+      >
+        <div className="whitespace-nowrap font-semibold">{new_value}</div>
+        <div className="col-start-2 row-start-2 whitespace-nowrap text-sm text-gray-500">
+          {old_value}
+        </div>
       </Typography>
     </Tooltip>
   )
 }
-

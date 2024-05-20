@@ -1,7 +1,7 @@
 import { CPReportDiff } from '@ors/types/api_country-programme_records'
 import { ReportVariant } from '@ors/types/variants'
 
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 
 import { each, includes, union } from 'lodash'
 
@@ -67,11 +67,11 @@ function getRowData(
   return rowData
 }
 
-function getPinnedRowData(rowData: any) {
-  return rowData.length > 0
-    ? [{ display_name: 'TOTAL', rowType: 'total', tooltip: true }]
-    : []
-}
+// function getPinnedRowData(rowData: any) {
+//   return rowData.length > 0
+//     ? [{ display_name: 'TOTAL', rowType: 'total', tooltip: true }]
+//     : []
+// }
 
 export default function SectionAViewDiff(props: any) {
   const { TableProps, emptyForm, report, variant } =
@@ -85,7 +85,7 @@ export default function SectionAViewDiff(props: any) {
 
   const rowData = getRowData(report, false, variant.model)
   /* TODO: should probably remove bottom row */
-  const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
+  // const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
   return (
     <>
@@ -96,7 +96,7 @@ export default function SectionAViewDiff(props: any) {
         defaultColDef={gridOptionsAll.defaultColDef}
         gridRef={grid}
         headerDepth={3}
-        pinnedBottomRowData={pinnedBottomRowData}
+        // pinnedBottomRowData={pinnedBottomRowData}
         rowData={rowData}
       />
     </>

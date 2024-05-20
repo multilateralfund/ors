@@ -92,7 +92,6 @@ function getPinnedRowData(rowData: any) {
 
 export default function SectionBViewDiff(props: any) {
   const { TableProps, emptyForm, report, variant } = props
-  console.log(report)
   const { gridOptionsAll } =
     useGridOptions({
       model: variant.model,

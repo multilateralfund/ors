@@ -4,19 +4,20 @@ import { CellClassParams, GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-import { defaultColDef } from '@ors/config/Table/columnsDef'
-
 import { sectionColDefByIdFunc } from '../sectionColumnsDef'
 
-function useGridOptions(props: { model: string; usages: Record<string, any>[] }) {
+function useGridOptions(props: {
+  model: string
+  usages: Record<string, any>[]
+}) {
   const { model, usages } = props
-  const usagesDiff = usages.map(function(item) {
+  const usagesDiff = usages.map(function (item) {
     const itemDiff = { ...item }
     const children: Record<string, any>[] = itemDiff?.children
     if (!!children) {
-      const childrenDiff = children.map(function(child) {
+      const childrenDiff = children.map(function (child) {
         const childDiff = { ...child }
-        childDiff.category='usage_diff'
+        childDiff.category = 'usage_diff'
         return childDiff
       })
       itemDiff.children = childrenDiff
@@ -29,14 +30,15 @@ function useGridOptions(props: { model: string; usages: Record<string, any>[] })
 
   const substanceColumn = useMemo(
     () => ({
+      cellClass: 'flex items-center w-full',
       field: 'display_name',
       headerClass: 'ag-text-left',
       headerName: 'Substance',
       ...sectionColDefById['display_name'],
       editable: false,
-      ...(includes(['I', 'II', 'III'], model) ? { initialWidth: 165 } : {}),
+      // ...(includes(['I', 'II', 'III'], model) ? { initialWidth: 165 } : {}),
     }),
-    [model, sectionColDefById],
+    [sectionColDefById],
   )
 
   const defaultSectionColDef = useMemo(
@@ -52,7 +54,7 @@ function useGridOptions(props: { model: string; usages: Record<string, any>[] })
         })
       },
       headerClass: 'ag-text-center',
-      minWidth: defaultColDef.minWidth,
+      // minWidth: defaultColDef.minWidth,
       resizable: true,
       wrapText: true,
     }),
@@ -71,10 +73,10 @@ function useGridOptions(props: { model: string; usages: Record<string, any>[] })
         ...sectionColDefById['total_usages'],
       },
     ]
-  }, [usages, sectionColDefById])
+  }, [usagesDiff, sectionColDefById])
 
   const bySubstanceTrade = useCallback(
-    (standalone = false) => {
+    () => {
       return [
         {
           ...sectionColDefById['imports'],
@@ -82,7 +84,7 @@ function useGridOptions(props: { model: string; usages: Record<string, any>[] })
           field: 'imports',
           headerName: 'Import',
           orsAggFunc: 'sumTotal',
-          ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+          // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
         },
         {
           ...sectionColDefById['exports'],
@@ -90,7 +92,7 @@ function useGridOptions(props: { model: string; usages: Record<string, any>[] })
           field: 'exports',
           headerName: 'Export',
           orsAggFunc: 'sumTotal',
-          ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+          // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
         },
         {
           ...sectionColDefById['production'],
@@ -98,7 +100,7 @@ function useGridOptions(props: { model: string; usages: Record<string, any>[] })
           field: 'production',
           headerName: 'Production',
           orsAggFunc: 'sumTotal',
-          ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+          // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
         },
         ...(includes(['II', 'III', 'IV', 'V'], model)
           ? [
@@ -108,7 +110,7 @@ function useGridOptions(props: { model: string; usages: Record<string, any>[] })
                 field: 'import_quotas',
                 headerName: 'Import Quotas',
                 orsAggFunc: 'sumTotal',
-                ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+                // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
               },
             ]
           : []),
@@ -120,7 +122,7 @@ function useGridOptions(props: { model: string; usages: Record<string, any>[] })
                 field: 'export_quotas',
                 headerName: 'Export Quotas',
                 orsAggFunc: 'sumTotal',
-                ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+                // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
               },
             ]
           : []),
@@ -130,21 +132,21 @@ function useGridOptions(props: { model: string; usages: Record<string, any>[] })
                 ...sectionColDefById['banned_date'],
                 dataType: 'date',
                 field: 'banned_date',
-                ...(standalone ? { flex: 1 } : { flex: 1 }),
+                // ...(standalone ? { flex: 1 } : { flex: 1 }),
               },
             ]
           : []),
-        ...(includes(['II', 'III', 'IV', 'V'], model)
-          ? [
-              {
-                ...sectionColDefById['remarks'],
-                cellClass: 'ag-text-left',
-                field: 'remarks',
-                headerName: 'Remarks',
-                ...(standalone ? { flex: 1 } : { flex: 1 }),
-              },
-            ]
-          : []),
+        // ...(includes(['II', 'III', 'IV', 'V'], model)
+        //   ? [
+        //       {
+        //         ...sectionColDefById['remarks'],
+        //         cellClass: 'ag-text-left',
+        //         field: 'remarks',
+        //         headerName: 'Remarks',
+        //         ...(standalone ? { flex: 1 } : { flex: 1 }),
+        //       },
+        //     ]
+        //   : []),
       ]
     },
     [model, sectionColDefById],
@@ -178,7 +180,7 @@ function useGridOptions(props: { model: string; usages: Record<string, any>[] })
 
   const gridOptionsBySubstanceTrade: GridOptions = useMemo(() => {
     return {
-      columnDefs: [substanceColumn, ...bySubstanceTrade(true)],
+      columnDefs: [substanceColumn, ...bySubstanceTrade()],
       defaultColDef: defaultSectionColDef,
     }
   }, [bySubstanceTrade, substanceColumn, defaultSectionColDef])
