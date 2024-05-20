@@ -118,7 +118,7 @@ const TableProps: ITableProps = {
   enableCellChangeFlash: true,
   enableFullScreen: true,
   enablePagination: false,
-  noRowsOverlayComponentParams: { label: 'No data reported' },
+  noRowsOverlayComponentParams: { label: 'No differences to display' },
   rowsVisible: 30,
   suppressCellFocus: false,
   suppressColumnVirtualisation: true,
