@@ -3,19 +3,14 @@ import { ReportVariant } from '@ors/types/variants'
 
 import { useRef, useState } from 'react'
 
-import { Alert } from '@mui/material'
-import cx from 'classnames'
 import { each, includes, union } from 'lodash'
 
 import components from '@ors/config/Table/components'
 
 import Table from '@ors/components/manage/Form/Table'
-import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { DeserializedDataA } from '@ors/models/SectionA'
 
 import useGridOptions from './schema'
-
-import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export type RowData = {
   count?: number
@@ -94,16 +89,6 @@ export default function SectionAViewDiff(props: any) {
 
   return (
     <>
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
-      <div
-        className={cx('flex', {
-          'justify-between': includes(['IV', 'V'], variant.model),
-          'justify-end': !includes(['IV', 'V'], variant.model),
-        })}
-      >
-      </div>
       <Table
         {...TableProps}
         columnDefs={gridOptionsAll.columnDefs}

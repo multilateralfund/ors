@@ -4,16 +4,12 @@ import { ReportVariant } from '@ors/types/variants'
 
 import React, { useRef } from 'react'
 
-import { Alert } from '@mui/material'
 import { each, includes, union } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
-import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import SectionC, { DeserializedDataC } from '@ors/models/SectionC'
 
 import useGridOptions from './schema'
-
-import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export type RowData = {
   count?: number
@@ -84,15 +80,6 @@ export default function SectionCViewDiff(props: {
 
   return (
     <>
-      {includes(['II', 'III'], variant.model) ? null : (
-        <Alert
-          className="bg-mlfs-bannerColor"
-          icon={<IoInformationCircleOutline size={24} />}
-          severity="info"
-        >
-          <Footnotes />
-        </Alert>
-      )}
       <Table
         {...TableProps}
         columnDefs={gridOptions.columnDefs}

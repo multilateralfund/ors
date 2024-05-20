@@ -3,17 +3,12 @@ import { ReportVariant } from '@ors/types/variants'
 
 import React, { useRef, useState } from 'react'
 
-import { Alert } from '@mui/material'
-import cx from 'classnames'
 import { each, includes, union } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
-import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { DeserializedDataB } from '@ors/models/SectionB'
 
 import useGridOptions from './schema'
-
-import { IoInformationCircleOutline } from 'react-icons/io5'
 
 function getGroupName(substance: any, model: string) {
   if (substance.blend_id) {
@@ -109,16 +104,6 @@ export default function SectionBViewDiff(props: any) {
 
   return (
     <>
-      <Alert icon={<IoInformationCircleOutline size={24} />} severity="info">
-        <Footnotes />
-      </Alert>
-      <div
-        className={cx('flex', {
-          'justify-between': includes(['IV', 'V'], variant.model),
-          'justify-end': !includes(['IV', 'V'], variant.model),
-        })}
-      >
-      </div>
       <Table
         {...TableProps}
         columnDefs={gridOptionsAll.columnDefs}
