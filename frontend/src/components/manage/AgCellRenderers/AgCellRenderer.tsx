@@ -5,6 +5,7 @@ import { IconButton, Tooltip } from '@mui/material'
 import components from '@ors/config/Table/components'
 import renderers from '@ors/config/Table/renderers'
 
+import DiffPill from '@ors/components/ui/DiffUtils/DiffPill'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import { getError } from '@ors/helpers/Utils/Utils'
 
@@ -30,6 +31,8 @@ export default function AgCellRenderer(props: any) {
   const [showError, setShowError] = useState(false)
   const category = props.colDef.category
   const type = props.colDef.dataType
+  const change_type = props.data.change_type
+  const showDiff = props.column.colId === 'display_name' && change_type
 
   const error = getError(props)
 
@@ -59,7 +62,13 @@ export default function AgCellRenderer(props: any) {
       {!!options && !optionsInDropdown && (
         <div className="ag-cell-options inline-block pr-2">{options}</div>
       )}
-      <CellRenderer {...props} />
+      <div
+        className={`${showDiff ? 'flex flex-wrap-reverse items-center justify-between gap-x-2 py-1' : ''}`}
+      >
+        <CellRenderer {...props} />
+        {showDiff && <DiffPill change_type={change_type} />}
+      </div>
+
       {!!error && (
         <Tooltip
           open={showError}

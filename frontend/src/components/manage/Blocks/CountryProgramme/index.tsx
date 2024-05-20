@@ -12,16 +12,22 @@ import ReportInfoCreate from '@ors/components/manage/Blocks/Section/ReportInfo/C
 import ReportInfoView from '@ors/components/manage/Blocks/Section/ReportInfo/View/View'
 import SectionACreate from '@ors/components/manage/Blocks/Section/SectionA/Create/Create'
 import SectionAView from '@ors/components/manage/Blocks/Section/SectionA/View/View'
+import SectionAViewDiff from '@ors/components/manage/Blocks/Section/SectionA/ViewDiff/View'
 import SectionBCreate from '@ors/components/manage/Blocks/Section/SectionB/Create/Create'
 import SectionBView from '@ors/components/manage/Blocks/Section/SectionB/View/View'
+import SectionBViewDiff from '@ors/components/manage/Blocks/Section/SectionB/ViewDiff/View'
 import SectionCCreate from '@ors/components/manage/Blocks/Section/SectionC/Create/Create'
 import SectionCView from '@ors/components/manage/Blocks/Section/SectionC/View/View'
+import SectionCViewDiff from '@ors/components/manage/Blocks/Section/SectionC/ViewDiff/View'
 import SectionDCreate from '@ors/components/manage/Blocks/Section/SectionD/Create/Create'
 import SectionDView from '@ors/components/manage/Blocks/Section/SectionD/View/View'
+import SectionDViewDiff from '@ors/components/manage/Blocks/Section/SectionD/ViewDiff/View'
 import SectionECreate from '@ors/components/manage/Blocks/Section/SectionE/Create/Create'
 import SectionEView from '@ors/components/manage/Blocks/Section/SectionE/View/View'
+import SectionEViewDiff from '@ors/components/manage/Blocks/Section/SectionE/ViewDiff/View'
 import SectionFCreate from '@ors/components/manage/Blocks/Section/SectionF/Create'
 import SectionFView from '@ors/components/manage/Blocks/Section/SectionF/View'
+import SectionFViewDiff from '@ors/components/manage/Blocks/Section/SectionF/ViewDiff'
 
 import { DefaultComponentType, SectionMeta } from './types'
 
@@ -103,8 +109,22 @@ type ComponentsEdit = {
   section_f: typeof SectionFCreate
 }
 
+type ComponentsDiff = {
+  adm_b?: DefaultComponentType
+  adm_c?: DefaultComponentType
+  adm_d?: DefaultComponentType
+  report_info?: DefaultComponentType
+  section_a: typeof SectionAViewDiff
+  section_b: typeof SectionBViewDiff
+  section_c: typeof SectionCViewDiff
+  section_d: typeof SectionDViewDiff
+  section_e: typeof SectionEViewDiff
+  section_f: typeof SectionFViewDiff
+}
+
 const components: {
   create: ComponentsCreate
+  diff: ComponentsDiff
   edit: ComponentsEdit
   view: ComponentsView
 } = {
@@ -116,6 +136,14 @@ const components: {
     section_d: SectionDCreate,
     section_e: SectionECreate,
     section_f: SectionFCreate,
+  },
+  diff: {
+    section_a: SectionAViewDiff,
+    section_b: SectionBViewDiff,
+    section_c: SectionCViewDiff,
+    section_d: SectionDViewDiff,
+    section_e: SectionEViewDiff,
+    section_f: SectionFViewDiff,
   },
   edit: {
     adm_b: AdmBCreate,
@@ -166,7 +194,7 @@ export function getSections(
     ]) ||
       []),
     ...((includes(['II', 'III'], model) && ['adm_b', 'adm_c', 'adm_d']) || []),
-    ...((model === 'V' && ['report_info']) || []),
+    ...((model === 'V' && mode !== 'diff' && ['report_info']) || []),
   ]
 
   return filter(
