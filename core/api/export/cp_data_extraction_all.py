@@ -326,6 +326,8 @@ class HFC23GenerationWriter(BaseWriter):
         for header_id, header in self.headers.items():
             if header_id == "country_name":
                 value = record.country_programme_report.country.name
+            elif header_id == "year":
+                value = record.country_programme_report.year
             elif header_id == "substance_name":
                 value = "HFC-23"
             else:
@@ -443,7 +445,7 @@ class MbrConsumptionWriter(BaseWriter):
                 "id": "total",
                 "headerName": "Total",
                 "type": "number",
-            }
+            },
         ]
         sheet = wb.create_sheet("MbrConsumption")
         super().__init__(sheet, headers)
