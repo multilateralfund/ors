@@ -519,17 +519,17 @@ class CPRecordListDiffView(CPRecordListView):
             record[field] = None
             record[f"{field}_old"] = old_value
 
-    def diff_records(self, data, data_old, fields):
+    def diff_records(self, data, data_old, fields, row_identifier="row_id"):
         usage_fields = ["quantity", "quantity_gwp", "quantity_odp"]
         diff_data = []
 
         # We only want actually-reported substances in the diff
         data = [item for item in data if item.get("id") != 0]
         data_old = [item for item in data_old if item.get("id") != 0]
-        records_old = {record["row_id"]: record for record in data_old}
+        records_old = {record[row_identifier]: record for record in data_old}
 
         for record in data:
-            record_old = records_old.pop(record["row_id"], None)
+            record_old = records_old.pop(record[row_identifier], None)
             record.pop("id")
             if record_old:
                 record_old.pop("id")
@@ -597,7 +597,10 @@ class CPRecordListDiffView(CPRecordListView):
                     data["section_d"], data_old["section_d"], self.section_d_fields
                 ),
                 "section_e": self.diff_records(
-                    data["section_e"], data_old["section_e"], self.section_e_fields
+                    data["section_e"],
+                    data_old["section_e"],
+                    self.section_e_fields,
+                    row_identifier="facility",
                 ),
                 "section_f": {
                     "remarks": cp_report.comment,
