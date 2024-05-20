@@ -494,7 +494,6 @@ class CPRecordListDiffView(CPRecordListView):
     section_c_fields = ["previous_year_price", "current_year_price", "remarks"]
     section_d_fields = ["all_uses", "feedstock", "destruction"]
     section_e_fields = [
-        "facility",
         "total",
         "all_uses",
         "feedstock_gc",
@@ -589,6 +588,9 @@ class CPRecordListDiffView(CPRecordListView):
             country=cp_report.country,
             year=cp_report.year,
         )
+
+        if isinstance(cp_report, CPReportArchive):
+            self.set_archive_class_attributes()
         data = self._get_new_cp_records(cp_report, data_only=True)
         self.set_archive_class_attributes()
         data_old = self._get_new_cp_records(cp_report_ar, data_only=True)
