@@ -30,7 +30,13 @@ from core.models.country_programme import (
     CPReport,
     CPReportFormatRow,
 )
-from core.models.country_programme_archive import CPReportArchive
+from core.models.country_programme_archive import (
+    CPEmissionArchive,
+    CPGenerationArchive,
+    CPPricesArchive,
+    CPRecordArchive,
+    CPReportArchive,
+)
 from core.utils import IMPORT_DB_MAX_YEAR, IMPORT_DB_OLDEST_MAX_YEAR
 
 # pylint: disable=E1102
@@ -493,6 +499,13 @@ class CPRecordListDiffView(CPRecordListView):
         "remarks",
     ]
 
+    def set_archive_class_attributes(self):
+        self.cp_report_class = CPReportArchive
+        self.cp_record_class = CPRecordArchive
+        self.cp_prices_class = CPPricesArchive
+        self.cp_generation_class = CPGenerationArchive
+        self.cp_emission_class = CPEmissionArchive
+
     def copy_fields(self, record, record_old, fields):
         for field in fields:
             record[f"{field}_old"] = record_old[field] if record_old else None
@@ -523,11 +536,10 @@ class CPRecordListDiffView(CPRecordListView):
             record["change_type"] = "changed" if record_old else "new"
 
             # Also copy nested usage fields
-            old_record_usages = record_old.get("record_usages", []) if record_old else []
-            usages_old = {
-                str(usage["usage_id"]): usage
-                for usage in old_record_usages
-            }
+            old_record_usages = (
+                record_old.get("record_usages", []) if record_old else []
+            )
+            usages_old = {str(usage["usage_id"]): usage for usage in old_record_usages}
             for usage in record.get("record_usages", []):
                 usage_old = usages_old.pop(str(usage["usage_id"]), None)
                 self.copy_fields(usage, usage_old, usage_fields)
@@ -547,14 +559,21 @@ class CPRecordListDiffView(CPRecordListView):
         version = float(version) if version else None
         if version and version < cp_report.version:
             cp_report = get_object_or_404(
-                CPReportArchive, version=version, country=cp_report.country, year=cp_report.year
+                CPReportArchive,
+                version=version,
+                country=cp_report.country,
+                year=cp_report.year,
             )
         # We are diff-ing with the previous version by default
         ar_version = cp_report.version - 1
         cp_report_ar = get_object_or_404(
-            CPReportArchive, version=ar_version, country=cp_report.country, year=cp_report.year
+            CPReportArchive,
+            version=ar_version,
+            country=cp_report.country,
+            year=cp_report.year,
         )
         data = self._get_new_cp_records(cp_report, data_only=True)
+        self.set_archive_class_attributes()
         data_old = self._get_new_cp_records(cp_report_ar, data_only=True)
 
         return Response(
