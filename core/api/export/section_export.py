@@ -4,6 +4,11 @@ from core.api.export.base import BaseWriter
 
 
 class SectionWriter(BaseWriter):
+
+    def __init__(self, sheet, headers, convert_to="mt"):
+        self.convert_to = convert_to
+        super().__init__(sheet, headers)
+
     def write_data(self, data):
         """Write data row by row:
 
@@ -70,8 +75,11 @@ class SectionWriter(BaseWriter):
 
     def _write_record_row(self, row_idx, record):
         excluded = set(record.get("excluded_usages", []))
+        quantity_key = (
+            "quantity" if self.convert_to == "mt" else f"quantity_{self.convert_to}"
+        )
         by_usage_id = {
-            item["usage_id"]: item["quantity"]
+            item["usage_id"]: item[quantity_key]
             for item in record.get("record_usages", [])
         }
         for header_id, header in self.headers.items():

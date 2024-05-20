@@ -2,15 +2,14 @@ import * as React from 'react'
 
 import {
   Box,
-  FormControlLabel,
   Skeleton,
-  Switch,
   Table,
   TableBody,
   TableContainer,
   TableHead,
   TableRow,
   TableSortLabel,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import TableCell, { tableCellClasses } from '@mui/material/TableCell'
@@ -22,7 +21,7 @@ import { useStore } from '@ors/store'
 import { FiEdit, FiEye } from 'react-icons/fi'
 import { IoEllipse } from 'react-icons/io5'
 
-const StyledTableCell = styled(TableCell)(({theme}) => {
+const StyledTableCell = styled(TableCell)(({ theme }) => {
   // const borderColor = theme.palette.secondary.light
 
   return {
@@ -227,8 +226,7 @@ export default function SimpleTable(props: any) {
 
   const [order, setOrder] = React.useState<Order>('desc')
   const [orderBy, setOrderBy] = React.useState<keyof Data>('created_at')
-  const [loading, setLoading] = React.useState(false) // Add loading state
-  const [dense, setDense] = React.useState(false)
+  const [loading, setLoading] = React.useState(false)
   const rows = data.map((item: any) => {
     return createData(
       item.id,
@@ -261,10 +259,6 @@ export default function SimpleTable(props: any) {
     setOrderBy(property)
   }
 
-  const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDense(event.target.checked)
-  }
-
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const countriesById = new Map<number, any>(
     countries.map((country: any) => [country.id, country]),
@@ -275,11 +269,11 @@ export default function SimpleTable(props: any) {
   }, [data])
 
   return (
-    <Box className="SimpleTable py-0 px-0 lg:px-4" sx={{ width: '100%' }}>
+    <Box className="SimpleTable px-0 py-2 lg:px-4" sx={{ width: '100%' }}>
       <TableContainer>
         <Table
           aria-labelledby="tableTitle"
-          size={dense ? 'small' : 'medium'}
+          size="small"
           // sx={{ minWidth: 600 }}
         >
           <EnhancedTableHead
@@ -295,6 +289,7 @@ export default function SimpleTable(props: any) {
               rows.map((row: Data, index: number) => {
                 const labelId = `cell-${index}`
                 const statusDot = row.status === 'final' ? '#4191CD' : '#EE8E34'
+                const status = row.status === 'final' ? 'Final' : 'Draft'
                 const country = countriesById.get(row.country_id as number)
 
                 return (
@@ -306,9 +301,11 @@ export default function SimpleTable(props: any) {
                       {row.country}
                     </StyledTableCell>
                     <StyledTableCell align="center">
-                      <Typography className="flex justify-center">
-                        <IoEllipse color={statusDot} size={12} />
-                      </Typography>
+                      <Tooltip title={status}>
+                        <Typography className="flex justify-center">
+                          <IoEllipse color={statusDot} size={12} />
+                        </Typography>
+                      </Tooltip>
                     </StyledTableCell>
                     <StyledTableCell align="center">
                       {row.version}
@@ -345,11 +342,6 @@ export default function SimpleTable(props: any) {
           </TableBody>
         </Table>
       </TableContainer>
-      <FormControlLabel
-        className="m-0 p-4"
-        control={<Switch checked={dense} onChange={handleChangeDense} />}
-        label="Dense padding"
-      />
     </Box>
   )
 }

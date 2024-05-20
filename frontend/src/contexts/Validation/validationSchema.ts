@@ -5,13 +5,13 @@ import {
   validateAnnexENonQPSRemarks,
   validateBannedImportsDate,
   validateBannedImportsRemarks,
-  validateBlendComponents,
+  // validateBlendComponents,
   validateFacilityName,
   validateHFC23,
   validateOtherUnidentifiedManufacturing,
   validatePrices,
   validateSectionBOther,
-  validateSectionDFilled,
+  // validateSectionDFilled,
   validateSectionDTotals,
   validateUncommonSubstance,
   validateUsageTotals,
@@ -94,7 +94,7 @@ const validationSchema: ValidationSchema = {
         id: 'validate-section-b-other',
         highlight_cells: {},
         message:
-          'For "Other" – Only apply for uses in other sectors that do not fall specifically within the listed sectors in the table.',
+          'For "Other" – Only apply for uses in other sectors that do not fall specifically within the listed sectors in the table. The sector should be provided in the "Remarks" column',
         validator: validateSectionBOther,
       },
       {
@@ -104,13 +104,13 @@ const validationSchema: ValidationSchema = {
           'When reporting HFC-41, HFC-134, HFC-143 or HFC-152 - These substances are not commonly used; please check the substance is used while reporting.',
         validator: validateUncommonSubstance,
       },
-      {
-        id: 'validate-blend-components',
-        highlight_cells: {},
-        message:
-          'Where new blends/mixtures containing controlled substances are imported, details relating to the composition of these blends should be provided.',
-        validator: validateBlendComponents,
-      },
+      // {
+      //   id: 'validate-blend-components',
+      //   highlight_cells: {},
+      //   message:
+      //     'Where new blends/mixtures containing controlled substances are imported, details relating to the composition of these blends should be provided.',
+      //   validator: validateBlendComponents,
+      // },
       {
         id: 'validate-hfc23',
         highlight_cells: {},
@@ -139,20 +139,20 @@ const validationSchema: ValidationSchema = {
           'Total for columns under "Amount generated and captured" in Section E should be reported in Section D under the respective column.',
         validator: validateSectionDTotals,
       },
-      {
-        id: 'validate-section-d-filled',
-        highlight_cells: {},
-        message:
-          'This form should be filled only if the country generated HFC-23 from any facility that produced (manufactured) HCFC (Annex C - Group I) or HFC (Annex F) substances.',
-        validator: validateSectionDFilled,
-      },
+      // {
+      //   id: 'validate-section-d-filled',
+      //   highlight_cells: {},
+      //   message:
+      //     'This form should be filled only if the country generated HFC-23 from any facility that produced (manufactured) HCFC (Annex C - Group I) or HFC (Annex F) substances.',
+      //   validator: validateSectionDFilled,
+      // },
     ],
   },
   section_e: {
-    rows: [
+    global: [
       {
         id: 'validate-facility-name',
-        highlight_cells: { facility: () => true },
+        highlight: ['+ Add facility'],
         message:
           'Facility name must be provided if data in Section D is provided.',
         validator: validateFacilityName,

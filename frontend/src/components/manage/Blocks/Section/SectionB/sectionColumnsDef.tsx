@@ -99,11 +99,11 @@ const sectionColDefById: Record<string, ColDef> = {
       const model = props.context?.variant.model
       return {
         footnote: {
-          id: includes(['V'], model) ? '4' : '5',
+          id: includes(['V'], model) ? '3' : '5',
           content:
             'Provide explanation if total sector use and consumption (import-export+production) is different (e.g, stockpiling).',
           icon: false,
-          order: 5,
+          order: includes(['V'], model) ? 3 : 5,
         },
       }
     },

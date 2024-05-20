@@ -170,7 +170,7 @@ class CPReportBase:
     def __init__(self, cp_report):
         self.cp_report = cp_report
 
-    def get_xlsx(self, data, usages):
+    def get_xlsx(self, data, usages, convert_data=False):
         cp_report = data["cp_report"]
         wb = openpyxl.Workbook()
         for section in self.sections:
@@ -179,11 +179,20 @@ class CPReportBase:
             configure_sheet_print(sheet, sheet.ORIENTATION_PORTRAIT)
             sheet.cell(1, 1, "Country: %(country)s Year: %(year)s" % cp_report)
 
-            getattr(self, f"export_{section}")(
-                sheet,
-                data.get(section, []),
-                usages.get(section, []),
-            )
+            if section not in "section_a,section_b" or not convert_data:
+                getattr(self, f"export_{section}")(
+                    sheet,
+                    data.get(section, []),
+                    usages.get(section, []),
+                )
+            else:
+                convert_to = "odp" if section == "section_a" else "gwp"
+                getattr(self, f"export_{section}")(
+                    sheet,
+                    data.get(section, []),
+                    usages.get(section, []),
+                    convert_to=convert_to,
+                )
 
         # Remove the default sheet before saving
         del wb[wb.sheetnames[0]]

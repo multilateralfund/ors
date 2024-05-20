@@ -198,7 +198,7 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
           />
         </div>
         <InputLabel className="mb-2 inline-flex items-center gap-2">
-          <span>Blend composition</span>
+          <span>Add blend composition</span>
         </InputLabel>
         <Table
           defaultColDef={defaultColDef}
