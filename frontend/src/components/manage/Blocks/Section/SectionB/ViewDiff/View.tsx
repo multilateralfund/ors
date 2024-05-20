@@ -95,7 +95,7 @@ function getPinnedRowData(rowData: any) {
     : []
 }
 
-export default function SectionBView(props: any) {
+export default function SectionBViewDiff(props: any) {
   const { TableProps, emptyForm, report, variant } = props
   console.log(report)
   const { gridOptionsAll } =
@@ -104,7 +104,7 @@ export default function SectionBView(props: any) {
       usages: emptyForm.usage_columns?.section_b || [],
     })
   const grid = useRef<any>()
-  const rowData = getRowData(report, variant, false)
+  const rowData = getRowData(report, variant, true)
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
   return (
