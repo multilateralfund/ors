@@ -8,10 +8,9 @@ import { ValidationSchemaKeys } from '@ors/contexts/Validation/types'
 import CellValidationAlert from './CellValidationAlert'
 
 export default function CellValidationWidget(props: any) {
+  const validationContext = useContext(ValidationContext)
   const validation =
-    useContext(ValidationContext)?.errors[
-      props.context?.section.id as ValidationSchemaKeys
-    ]
+    validationContext?.errors[props.context?.section.id as ValidationSchemaKeys]
 
   const rowErrors = validation?.rows[props.data.row_id] || []
   const cellErrors = rowErrors.filter((err) =>
@@ -22,7 +21,7 @@ export default function CellValidationWidget(props: any) {
     props.column.colId === 'display_name' && rowErrors.length > 0
 
   const errors = showErrorInfo ? rowErrors : cellErrors
-  const display = errors.length > 0
+  const display = !validationContext.silent && errors.length > 0
 
   return (
     <div

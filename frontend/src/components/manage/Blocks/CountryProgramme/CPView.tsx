@@ -14,6 +14,7 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
 import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
+import ValidationProvider from '@ors/contexts/Validation/ValidationProvider'
 import { formatApiUrl } from '@ors/helpers/Api/utils'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import { useStore } from '@ors/store'
@@ -22,6 +23,7 @@ import { getSections } from '.'
 import Portal from '../../Utils/Portal'
 import { CPArchiveHeader, CPViewHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
+import { CPBaseForm } from './typesCPCreate'
 import { ITableProps } from './typesCPView'
 
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
@@ -187,6 +189,25 @@ const TableProps: ITableProps = {
   withSeparators: false,
 }
 
+function getFormForValidation(reportData: any) {
+  const result: Record<string, any> = {}
+
+  const reportKeys = Object.keys(reportData).filter(
+    (key) => key.startsWith('report_info') || key.startsWith('section_'),
+  )
+
+  for (let i = 0; i < reportKeys.length; i++) {
+    const key = reportKeys[i]
+    const value = reportData[key]
+    if (value?.length) {
+      result[key] = value.filter((row: any) => row.id)
+    } else {
+      result[key] = value
+    }
+  }
+  return result
+}
+
 function CPView(props: { archive?: boolean }) {
   const tabsEl = React.useRef<HTMLDivElement>(null)
   const { archive } = props
@@ -230,8 +251,14 @@ function CPView(props: { archive?: boolean }) {
 
   const showComments = variant?.model === 'V'
 
+  const formForValidation = getFormForValidation(report?.data || {})
+
   return (
-    <>
+    <ValidationProvider
+      form={formForValidation as CPBaseForm}
+      model={variant?.model}
+      silent={true}
+    >
       <Loading
         className="!fixed bg-action-disabledBackground"
         active={
@@ -321,7 +348,7 @@ function CPView(props: { archive?: boolean }) {
             )
           })}
       </CPSectionWrapper>
-    </>
+    </ValidationProvider>
   )
 }
 

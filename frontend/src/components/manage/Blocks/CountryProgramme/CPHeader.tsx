@@ -28,7 +28,7 @@ const CloseDiffButton = (props: any) => {
 
   return (
     <Link
-      className="btn-close bg-gray-600 px-4 py-2 shadow-none ml-auto"
+      className="btn-close ml-auto bg-gray-600 px-4 py-2 shadow-none"
       color="secondary"
       href={`/country-programme/${report.country?.iso3}/${report.data.year}`}
       size="large"
@@ -209,7 +209,12 @@ const ArchiveHeaderActions = () => {
   return <div className="flex items-center"></div>
 }
 
-const ViewHeaderActions = () => {
+interface ViewHeaderActionsProps {
+  validation?: IValidationContext
+}
+
+const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
+  const { validation } = props
   const { cacheInvalidateReport, fetchBundle, report } = useStore(
     (state) => state.cp_reports,
   )
@@ -291,6 +296,7 @@ const ViewHeaderActions = () => {
       {showConfirm ? (
         <ConfirmSubmission
           mode={'edit'}
+          validation={validation}
           onCancel={() => setShowConfirm(false)}
           onSubmit={handleSubmissionConfirmation}
         />
@@ -509,7 +515,13 @@ const CPCreateHeader = ({
 }
 
 const CPViewHeader = () => {
-  return <CPHeader actions={<ViewHeaderActions />} tag={<ViewHeaderTag />} />
+  const validation = useContext(ValidationContext)
+  return (
+    <CPHeader
+      actions={<ViewHeaderActions validation={validation} />}
+      tag={<ViewHeaderTag />}
+    />
+  )
 }
 
 const CPEditHeader = (props: Omit<EditHeaderActionsProps, 'validation'>) => {

@@ -30,7 +30,7 @@ function hasErrors(
 }
 
 const ValidationProvider = (props: IValidationProvider) => {
-  const { children, form, model } = props
+  const { children, form, model, silent = false } = props
 
   const [openDrawer, setOpenDrawer] = useState(false)
 
@@ -56,6 +56,7 @@ const ValidationProvider = (props: IValidationProvider) => {
         errors: errors,
         hasErrors: hasErrors(errors),
         setOpenDrawer,
+        silent,
       }}
     >
       <ValidationDrawer
