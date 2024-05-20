@@ -174,7 +174,7 @@ function CPDiffView() {
           !report.error &&
           !reportDiff.error &&
           (report.loading || !includes(renderedSections, activeTab)) &&
-          (reportDiff.loading)
+          reportDiff.loading
         }
       />
       {!!reportDiff.error && <Error error={reportDiff.error} />}
@@ -196,19 +196,25 @@ function CPDiffView() {
           }}
           allowScrollButtonsMobile
         >
-          {sections.map((section) => (
-            <Tab
-              id={section.id}
-              key={section.id}
-              className="rounded-b-none px-3 py-2"
-              aria-controls={section.panelId}
-              label={section.label}
-              classes={{
-                selected:
-                  'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
-              }}
-            />
-          ))}
+          {sections.map((section) => {
+            // @ts-ignore
+            const disabled = !reportDiff.data?.[section.id].length
+            return (
+              <Tab
+                id={section.id}
+                key={section.id}
+                className="rounded-b-none px-3 py-2"
+                aria-controls={section.panelId}
+                disabled={disabled}
+                label={section.label}
+                classes={{
+                  disabled: 'text-gray-300',
+                  selected:
+                    'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
+                }}
+              />
+            )
+          })}
         </Tabs>
         <div id="sectionToolbar"></div>
       </div>
@@ -260,7 +266,10 @@ function CPDiffView() {
   )
 }
 
-export default function CPDiffViewWrapper(props: { iso3: string; year: number }) {
+export default function CPDiffViewWrapper(props: {
+  iso3: string
+  year: number
+}) {
   const { iso3, year } = props
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const country = countries.filter((country) => country.iso3 === iso3)[0]

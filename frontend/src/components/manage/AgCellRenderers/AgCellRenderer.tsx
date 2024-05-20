@@ -63,7 +63,7 @@ export default function AgCellRenderer(props: any) {
         <div className="ag-cell-options inline-block pr-2">{options}</div>
       )}
       <div
-        className={`${showDiff ? 'flex flex-wrap-reverse items-center justify-between gap-x-2 py-1' : ''}`}
+        className={`${showDiff ? 'flex flex-wrap-reverse items-center justify-between gap-x-2 py-1' : 'inline-block'}`}
       >
         <CellRenderer {...props} />
         {showDiff && <DiffPill change_type={change_type} />}

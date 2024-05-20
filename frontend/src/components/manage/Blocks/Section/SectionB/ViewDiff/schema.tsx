@@ -27,6 +27,11 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
 
   const substanceColumn = useCallback(
     (extra?: ColDef) => ({
+      cellClass: (props: CellClassParams) => {
+        return cx('flex items-center w-full', {
+          'ag-text-center': props.data?.change_type,
+        })
+      },
       ...sectionColDefById['display_name'],
       field: 'display_name',
       headerClass: 'ag-text-left',
