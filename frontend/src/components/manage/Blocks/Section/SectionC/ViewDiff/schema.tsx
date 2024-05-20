@@ -29,7 +29,7 @@ function useGridOptions(props: { model: string }) {
       ...(!includes(['II', 'III'], model)
         ? [
             {
-              dataType: 'number',
+              dataType: 'number_diff',
               field: 'previous_year_price',
               headerName: 'Previous year price',
               orsAggFunc: 'sumTotal',
@@ -38,7 +38,7 @@ function useGridOptions(props: { model: string }) {
           ]
         : []),
       {
-        dataType: 'number',
+        dataType: 'number_diff',
         field: 'current_year_price',
         headerName: 'Current prices',
         orsAggFunc: 'sumTotal',

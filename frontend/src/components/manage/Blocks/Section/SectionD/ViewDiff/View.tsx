@@ -17,8 +17,8 @@ function getRowData(report: any) {
   }))
 }
 
-export default function SectionDView(props: any) {
-  const { Comments, TableProps, report, showComments } = props
+export default function SectionDViewDiff(props: any) {
+  const { TableProps, report } = props
   const gridOptions = useGridOptions()
   const grid = useRef<any>()
   const [rowData] = useState(() => getRowData(report))
@@ -40,7 +40,6 @@ export default function SectionDView(props: any) {
         gridRef={grid}
         rowData={rowData}
       />
-      {showComments && <Comments section="section_d" viewOnly={false} />}
     </>
   )
 }

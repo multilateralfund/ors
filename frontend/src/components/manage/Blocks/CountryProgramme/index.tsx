@@ -21,6 +21,7 @@ import SectionCView from '@ors/components/manage/Blocks/Section/SectionC/View/Vi
 import SectionCViewDiff from '@ors/components/manage/Blocks/Section/SectionC/ViewDiff/View'
 import SectionDCreate from '@ors/components/manage/Blocks/Section/SectionD/Create/Create'
 import SectionDView from '@ors/components/manage/Blocks/Section/SectionD/View/View'
+import SectionDViewDiff from '@ors/components/manage/Blocks/Section/SectionD/ViewDiff/View'
 import SectionECreate from '@ors/components/manage/Blocks/Section/SectionE/Create/Create'
 import SectionEView from '@ors/components/manage/Blocks/Section/SectionE/View/View'
 import SectionFCreate from '@ors/components/manage/Blocks/Section/SectionF/Create'
@@ -114,7 +115,7 @@ type ComponentsDiff = {
   section_a: typeof SectionAViewDiff
   section_b: typeof SectionBViewDiff
   section_c: typeof SectionCViewDiff
-  section_d?: DefaultComponentType
+  section_d: typeof SectionDViewDiff
   section_e?: DefaultComponentType
   section_f?: DefaultComponentType
 }
@@ -138,6 +139,7 @@ const components: {
     section_a: SectionAViewDiff,
     section_b: SectionBViewDiff,
     section_c: SectionCViewDiff,
+    section_d: SectionDViewDiff,
   },
   edit: {
     adm_b: AdmBCreate,
