@@ -53,10 +53,17 @@ export default function SectionErrorIndicator({
         }}
         disableRestoreFocus
       >
-        <div className="bg-mlfs-bannerColor px-4 py-2">
-          {errors.map((err, idx) => (
-            <div key={idx}>{err.message}</div>
-          ))}
+        <div className="bg-mlfs-bannerColor">
+          <div className="border-0 border-b border-solid border-gray-300 px-2 py-2">
+            This section contains incomplete or invalid data.
+          </div>
+          {errors.map((err, idx) => {
+            return (
+              <div key={idx} className="px-2 py-2">
+                {'\u2022'} {err.message}
+              </div>
+            )
+          })}
         </div>
       </Popover>
     </div>

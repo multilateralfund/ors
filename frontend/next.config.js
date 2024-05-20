@@ -1,3 +1,5 @@
+const createMDX = require('@next/mdx')
+
 const transformModulesMapper = require('./transform.modules.json')
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
@@ -7,6 +9,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
   reactStrictMode: true,
   webpack: (config, { dev, isServer, webpack }) => {
     const globals = {
@@ -84,4 +87,8 @@ const nextConfig = {
   },
 }
 
-module.exports = withBundleAnalyzer(nextConfig)
+const withMDX = createMDX({
+  // Add markdown plugins here, as desired
+})
+
+module.exports = withBundleAnalyzer(withMDX(nextConfig))

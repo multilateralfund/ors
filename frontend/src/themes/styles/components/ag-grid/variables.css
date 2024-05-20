@@ -10,7 +10,9 @@
   --ag-borders-side-button: var(--ag-borders);
   --ag-borders: solid 1px;
   --ag-cell-horizontal-border: 1px solid transparent;
-  --ag-cell-horizontal-padding: 10px;
+  --ag-cell-horizontal-padding: 3px;
+  --x-ag-first-column-cell-horizontal-padding: 10px;
+  --x-ag-header-cell-horizontal-padding: 10px;
   --ag-cell-widget-spacing: calc(var(--ag-grid-size) * 2);
   --ag-column-select-indent-size: var(--ag-icon-size);
   --ag-data-color: var(--ag-foreground-color);

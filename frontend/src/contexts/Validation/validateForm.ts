@@ -1,4 +1,5 @@
 import type {
+  IGlobalValidationResult,
   IRow,
   IRowValidationResult,
   UsageMapping,
@@ -47,6 +48,26 @@ function validateSectionRows(
     .filter((val) => val != undefined) as IRowValidationResult[]
 }
 
+function validateSectionGlobal(
+  section_id: ValidationSchemaKeys,
+  usages: UsageMapping,
+  form: CPBaseForm,
+): IGlobalValidationResult[] {
+  const sectionValidators = validationSchema?.[section_id]?.global || []
+
+  const result = []
+
+  for (let i = 0; i < sectionValidators.length; i++) {
+    const { validator, ...validatorProps } = sectionValidators[i]
+    const invalidResult = validator(section_id, { form, usages })
+    if (invalidResult) {
+      result.push({ ...validatorProps, ...invalidResult })
+    }
+  }
+
+  return result
+}
+
 function validateSection(
   form: CPBaseForm,
   section_id: ValidationSchemaKeys,
@@ -69,14 +90,9 @@ function validateSection(
     {},
   )
   const hasRowErrors = !!Object.keys(rowErrors).length
-  const globalErrors = hasRowErrors
-    ? [
-        {
-          id: 'section-validation',
-          message: 'This section contains incomplete or invalid data.',
-        },
-      ]
-    : []
+
+  const globalErrors = validateSectionGlobal(section_id, usages, form)
+
   return {
     global: globalErrors,
     hasErrors: hasRowErrors || !!globalErrors.length,

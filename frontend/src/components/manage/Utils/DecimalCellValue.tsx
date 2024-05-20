@@ -19,18 +19,52 @@ function getDecimalCellValue(
       valueToFormat = value
   }
 
-  const formattedValue = formatDecimalValue(valueToFormat, props)
+  const formattedValue =
+    props.context?.unit === 'gwp'
+      ? parseInt(`${valueToFormat}`, 10)
+      : formatDecimalValue(valueToFormat, props)
 
-  const TitleContent =
-    valueGWP != null && valueODP != null ? (
-      <div className="flex flex-col gap-1">
-        <span>Metric tonnes: {value}</span>
-        <span>GWP: {valueGWP}</span>
-        <span>ODP tonnes: {valueODP}</span>
-      </div>
-    ) : (
-      <span>{value}</span>
-    )
+  let TitleContent = null
+
+  switch (props.context?.section?.id) {
+    case 'section_a':
+      TitleContent =
+        valueODP != null ? (
+          <div className="flex flex-col gap-1">
+            <span>Metric tonnes: {value}</span>
+            <span>ODP tonnes: {valueODP}</span>
+          </div>
+        ) : (
+          <span>{value}</span>
+        )
+      break
+    case 'section_b':
+      TitleContent =
+        valueGWP != null ? (
+          <div className="flex flex-col gap-1">
+            <span>Metric tonnes: {value}</span>
+            <span>
+              CO<sup>2</sup> equivalent: {valueGWP}
+            </span>
+          </div>
+        ) : (
+          <span>{value}</span>
+        )
+      break
+    default:
+      TitleContent =
+        valueGWP != null && valueODP != null ? (
+          <div className="flex flex-col gap-1">
+            <span>Metric tonnes: {value}</span>
+            <span>
+              CO<sup>2</sup> equivalent: {valueGWP}
+            </span>
+            <span>ODP tonnes: {valueODP}</span>
+          </div>
+        ) : (
+          <span>{value}</span>
+        )
+  }
 
   return {
     TitleContent,

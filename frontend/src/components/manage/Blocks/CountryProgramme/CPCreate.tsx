@@ -39,6 +39,7 @@ import { getSections } from '.'
 import Portal from '../../Utils/Portal'
 import { CPCreateHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
+import ConfirmSubmission from './ConfirmSubmission'
 import {
   CPBaseForm,
   CPCreateTableProps,
@@ -168,6 +169,7 @@ const CPCreate: React.FC = () => {
     (state) => state.common.countries_for_listing.data,
   )
   const [currentCountry, setCurrentCountry] = useState<Country | null>(null)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   const countries: WidgetCountry[] = useStore((state) => [
     ...getResults(state.common.countries_for_create.data).results.map(
@@ -514,6 +516,15 @@ const CPCreate: React.FC = () => {
     }
   }
 
+  function handleShowConfirmation() {
+    setShowConfirm(true)
+  }
+
+  function handleSubmissionConfirmation() {
+    setShowConfirm(false)
+    getFormSubmitter('final')()
+  }
+
   return (
     <ValidationProvider form={form} model={variant.model}>
       <Loading
@@ -527,7 +538,7 @@ const CPCreate: React.FC = () => {
         currentYear={form.year}
         actions={
           <div className="flex items-center">
-            <div className="container flex w-full justify-between gap-x-4">
+            <div className="container flex w-full justify-between gap-x-4 px-0">
               <Link
                 className="btn-close bg-gray-600 px-4 py-2 shadow-none"
                 color="secondary"
@@ -566,7 +577,7 @@ const CPCreate: React.FC = () => {
                 disabled={
                   !!existingReports.data?.length || existingReports.loading
                 }
-                onClick={getFormSubmitter('final')}
+                onClick={handleShowConfirmation}
               >
                 Submit
               </Button>
@@ -696,6 +707,13 @@ const CPCreate: React.FC = () => {
           })}
         </CPSectionWrapper>
       </form>
+      {showConfirm ? (
+        <ConfirmSubmission
+          mode={'create'}
+          onCancel={() => setShowConfirm(false)}
+          onSubmit={handleSubmissionConfirmation}
+        />
+      ) : null}
     </ValidationProvider>
   )
 }

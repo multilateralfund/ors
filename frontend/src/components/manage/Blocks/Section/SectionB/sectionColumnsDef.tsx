@@ -25,7 +25,10 @@ const sectionColDefById: Record<string, ColDef> = {
     ...colDefById['display_name'],
     cellRenderer: (props: ICellRendererParams) => {
       const model = props.context?.variant.model
-      if (includes(['V'], model) && props.data?.row_id?.startsWith('blend_')) {
+      if (
+        includes(['IV', 'V'], model) &&
+        props.data?.row_id?.startsWith('blend_')
+      ) {
         const newProps = {
           ...props,
           tooltipValue: props.value,
@@ -96,11 +99,11 @@ const sectionColDefById: Record<string, ColDef> = {
       const model = props.context?.variant.model
       return {
         footnote: {
-          id: includes(['V'], model) ? '4' : '5',
+          id: includes(['V'], model) ? '3' : '5',
           content:
             'Provide explanation if total sector use and consumption (import-export+production) is different (e.g, stockpiling).',
           icon: false,
-          order: 5,
+          order: includes(['V'], model) ? 3 : 5,
         },
       }
     },

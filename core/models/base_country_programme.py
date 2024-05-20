@@ -28,6 +28,27 @@ class AbstractCPReport(models.Model):
         abstract = True
 
 
+class CPRecordAbstractManager(models.Manager):
+    def get_for_year(self, year):
+        return (
+            self.select_related(
+                "substance__group",
+                "blend",
+                "country_programme_report__country",
+            )
+            .prefetch_related(
+                "record_usages",
+                "blend__components",
+            )
+            .filter(country_programme_report__year=year)
+            .order_by(
+                "country_programme_report__country__name",
+                "substance__sort_order",
+                "blend__sort_order",
+            )
+        )
+
+
 class AbstractCPRecord(AbstractWChemical):
     display_name = models.CharField(max_length=248, null=True, blank=True)
     section = models.CharField(max_length=164)
@@ -54,8 +75,45 @@ class AbstractCPRecord(AbstractWChemical):
 
     source_file = models.CharField(max_length=248)
 
+    objects = CPRecordAbstractManager()
+
     class Meta:
         abstract = True
+
+    def get_sectorial_total(self):
+        """
+        Get the sectorial total value for the record
+        (sum of all the usages for the record)
+
+        """
+        return sum(usage.quantity for usage in self.record_usages.all())
+
+    def get_consumption_value(
+        self,
+        use_sectorial_total=True,
+    ):
+        """
+        Get the consumption value for the record (imports - exports + production)
+        For Methil Bromide the sectorial total will only contain the non-Qps values
+
+        @param use_sectorial_total: if True, the sectorial total value will be used
+            only if there are no imports, exports or production values
+
+        """
+        if any([self.imports, self.exports, self.production]):
+            return (self.imports or 0) - (self.exports or 0) + (self.production or 0)
+
+        # if there are no imports, exports or production values use the sectorial total
+        if use_sectorial_total:
+            # for methil bromide the sectorial total will only contain the non-Qps values
+            if self.substance and "methil bromide" in self.substance.name.lower():
+                non_qps = self.record_usages.filter(
+                    usage__full_name__icontains="non-qps"
+                ).values("quantity")
+                return sum(usage["quantity"] for usage in non_qps)
+
+            return self.get_sectorial_total()
+        return 0
 
 
 class AbstractCPUsage(models.Model):

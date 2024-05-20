@@ -30,24 +30,41 @@ export interface IRow {
   substance_id: null | number
 }
 
-export interface IGlobalValidator {}
+export interface IGlobalValidator {
+  highlight: string[]
+  id: string
+  message: string
+  validator: GlobalValidatorFunc
+}
 
 export interface IInvalidRowResult {
   highlight_cells?: string[]
   row: string
 }
 
+export interface IInvalidGlobalResult {
+  highlight?: string[]
+}
+
 export type RowValidatorFuncResult = IInvalidRowResult | null | undefined
+export type GlobalValidatorFuncResult = IInvalidGlobalResult | null | undefined
 
 export type RowValidatorFuncContext = {
   form: CPBaseForm
   usages: UsageMapping
 }
 
+export type GlobalValidatorFuncContext = RowValidatorFuncContext
+
 export type RowValidatorFunc = (
   row: IRow,
   context: RowValidatorFuncContext,
 ) => RowValidatorFuncResult
+
+export type GlobalValidatorFunc = (
+  section_id: ValidationSchemaKeys,
+  context: GlobalValidatorFuncContext,
+) => GlobalValidatorFuncResult
 
 export interface IRowValidator {
   highlight_cells: Record<string, (row: IRow) => boolean>
@@ -99,6 +116,7 @@ export type UsageMapping = Record<string, ApiUsage>
 
 export interface IValidationContext {
   errors: Record<ValidationSchemaKeys, ValidateSectionResult>
+  hasErrors: boolean
   setOpenDrawer: React.Dispatch<React.SetStateAction<boolean>>
 }
 

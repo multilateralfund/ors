@@ -91,6 +91,7 @@ const CPExport = () => {
   ) {
     yearOptions.push({ id: i, label: i.toString(), value: i })
   }
+  const reversedYearOptions = [...yearOptions].reverse()
 
   // const minYearOptions = yearOptions.filter(
   //   (year) => year.value <= (maxYear || calculatedMaxYear),
@@ -143,7 +144,7 @@ const CPExport = () => {
             <Field
               id="year"
               FieldProps={{ className: 'mb-0' }}
-              options={yearOptions}
+              options={reversedYearOptions}
               widget="autocomplete"
               Input={{
                 placeholder: 'Select year...',
@@ -176,7 +177,7 @@ const CPExport = () => {
                 <Field
                   id="min-year"
                   FieldProps={{ className: 'mb-0' }}
-                  options={yearOptions}
+                  options={reversedYearOptions}
                   widget="autocomplete"
                   Input={{
                     placeholder: 'Select min year...',
@@ -215,7 +216,7 @@ const CPExport = () => {
                 <Field
                   id="max-year"
                   FieldProps={{ className: 'mb-0' }}
-                  options={yearOptions}
+                  options={reversedYearOptions}
                   widget="autocomplete"
                   Input={{
                     placeholder: 'Select max year...',

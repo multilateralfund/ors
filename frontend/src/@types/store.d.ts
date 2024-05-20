@@ -49,7 +49,7 @@ export interface CPReportsSlice {
   fetchArchivedFiles: (country_id: number) => void
   fetchArchivedReport: (report_id: number) => Promise<void>
   fetchBlends: () => Promise<void>
-  fetchBundle: (country_id: number, year: number, view: boolean) => void
+  fetchBundle: (country_id: number, year: number, view?: boolean) => Promise<void>
   fetchEmptyForm: (report: CPReport | null, view: boolean) => void
   fetchFiles: (country_id: number, year: number) => void
   fetchReport: (country_id: number, year: number) => Promise<void>

@@ -3,6 +3,7 @@ import logging
 import pandas as pd
 
 from django.db import transaction
+from django.db.models import Q
 from core.import_data.mapping_names_dict import COUNTRY_NAME_MAPPING
 from core.import_data.utils import IMPORT_RESOURCES_DIR
 
@@ -11,18 +12,19 @@ from core.models import Country
 logger = logging.getLogger(__name__)
 
 A2_COUNTRY_LIST = [
-"Bulgaria",
-"Canada",
-"Croatia",
-"Estonia",
-"France",
-"Kazakhstan",
-"Romania",
-"Ukraine",
-"United Arab Emirates",
-"United States of America",
-"Yugoslavia",
+    "Bulgaria",
+    "Canada",
+    "Croatia",
+    "Estonia",
+    "France",
+    "Kazakhstan",
+    "Romania",
+    "Ukraine",
+    "United Arab Emirates",
+    "United States of America",
+    "Yugoslavia",
 ]
+
 
 def parse_country_lvc_file(file_path):
     """
@@ -205,6 +207,34 @@ def parse_subregions_file(file_path):
             defaults=subregion_data,
         )
 
+
+def parse_consumption_json_files(file_path_categories, file_path_groups):
+    """
+    Parse consumption json files and update country fields
+    @param file_path_categories string
+    @param file_path_groups string
+    """
+    with open(file_path_categories, "r", encoding="utf-8") as f:
+        json_data_categories = json.load(f)
+
+    with open(file_path_groups, "r", encoding="utf-8") as f:
+        json_data_groups = json.load(f)
+
+    for category, countries in json_data_categories.items():
+        Country.objects.filter(
+            Q(name__in=countries)
+            | Q(full_name__in=countries)
+            | Q(name_alt__in=countries)
+        ).update(consumption_category=category)
+
+    for group, countries in json_data_groups.items():
+        Country.objects.filter(
+            Q(name__in=countries)
+            | Q(full_name__in=countries)
+            | Q(name_alt__in=countries)
+        ).update(consumption_group=group)
+
+
 def set_a2_countries():
     """
     Set A2 countries
@@ -230,4 +260,9 @@ def import_countries():
     logger.info("✔ countries json parsed")
     parse_countries_xlsx_file(IMPORT_RESOURCES_DIR / "countries.xlsx", country_lvc)
     logger.info("✔ countries xlsx parsed")
+    parse_consumption_json_files(
+        IMPORT_RESOURCES_DIR / "country_consumption_categories.json",
+        IMPORT_RESOURCES_DIR / "country_consumption_groups.json",
+    )
+    logger.info("✔ countries consumption files parsed")
     set_a2_countries()

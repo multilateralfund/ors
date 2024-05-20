@@ -11,7 +11,6 @@ import {
 import { ICellEditorParams } from 'ag-grid-community'
 import { isNaN, isNumber } from 'lodash'
 
-import { KEY_BACKSPACE, KEY_F2 } from '@ors/constants'
 import { parseNumber } from '@ors/helpers/Utils/Utils'
 
 function getInput(element: HTMLInputElement) {
@@ -20,6 +19,7 @@ function getInput(element: HTMLInputElement) {
   }
   return element.querySelector('input')
 }
+
 
 export const CellNumberWidget = memo(
   forwardRef(
@@ -31,23 +31,14 @@ export const CellNumberWidget = memo(
       ref,
     ) => {
       const createInitialState = () => {
-        let startValue
+        let startValue = props.value || ''
         let highlightAllOnFocus = true
-        const eventKey = props.eventKey
 
-        if (eventKey === KEY_BACKSPACE) {
-          // if backspace or delete pressed, we clear the cell
-          startValue = ''
-        } else if (eventKey && eventKey.length === 1) {
+        const eventKey = props.eventKey
+        if (eventKey && eventKey.length === 1) {
           // if a letter was pressed, we start with the letter
           startValue = eventKey
           highlightAllOnFocus = false
-        } else {
-          // otherwise we start with the current value
-          startValue = props.value
-          if (eventKey === KEY_F2) {
-            highlightAllOnFocus = false
-          }
         }
 
         return {
@@ -62,6 +53,22 @@ export const CellNumberWidget = memo(
         initialState.highlightAllOnFocus,
       )
       const refInput = useRef<HTMLInputElement>(null)
+
+      // enforce valid, positive numbers
+      function handleValue(evt: any) {
+        setValue((oldValue: any) => {
+          let newValue = evt.target.value
+          if (newValue === '') {
+            newValue = ''
+          } else {
+            newValue = parseNumber(newValue) || oldValue
+          }
+          if (newValue < 0) {
+            newValue = oldValue
+          }
+          return newValue
+        })
+      }
 
       // focus on the input
       useEffect(() => {
@@ -93,6 +100,9 @@ export const CellNumberWidget = memo(
           // Gets called once before editing starts, to give editor a chance to
           // If you return true, then the result of the edit will be ignored.
           isCancelAfterEnd() {
+            if (value === '') {
+              return false
+            }
             const finalValue = parseNumber(value)
             return !isNumber(finalValue) || isNaN(finalValue)
           },
@@ -107,11 +117,11 @@ export const CellNumberWidget = memo(
 
       return (
         <input
-          className="width-full h-full grow border-0 outline-none"
+          className="w-full border-0 outline-none"
           ref={refInput}
           type="number"
           value={value}
-          onChange={(event: any) => setValue(event.target.value)}
+          onChange={handleValue}
         />
       )
     },

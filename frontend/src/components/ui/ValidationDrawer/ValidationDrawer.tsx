@@ -1,9 +1,6 @@
 import cx from 'classnames'
 
-import {
-  ValidateSectionResultValue,
-  ValidationSchemaKeys,
-} from '@ors/contexts/Validation/types'
+import { extractErrors } from '@ors/contexts/Validation/utils'
 import useClickOutside from '@ors/hooks/useClickOutside'
 
 import { IValidationDrawer } from './types'
@@ -11,10 +8,11 @@ import { IValidationDrawer } from './types'
 import { IoCloseCircle } from 'react-icons/io5'
 
 export default function ValidationDrawer({
-  errors,
   isOpen,
   onClose,
+  ...props
 }: IValidationDrawer) {
+  const errors = extractErrors(props.errors)
   const ref = useClickOutside<HTMLDivElement>(() => {
     onClose()
   })
@@ -37,33 +35,29 @@ export default function ValidationDrawer({
         </div>
       </div>
       <div className="h-full overflow-auto px-6 py-4">
-        {(Object.keys(errors) as ValidationSchemaKeys[]).map((section_id) => {
-          const hasErrors = errors[section_id].hasErrors
-          const rowErrors = Object.values(errors[section_id].rows).flatMap(
-            (val) => val,
-          ) as ValidateSectionResultValue[]
-          if (hasErrors) {
-            return (
-              <div key={section_id}>
-                <h4 className="uppercase">{section_id.replace('_', ' ')}</h4>
-                <div className="text-xl ">
-                  {rowErrors.map((item, index) => (
+        {errors.map((sectionErrors) => {
+          const { errors: errorList, section_id } = sectionErrors
+          return (
+            <div key={section_id}>
+              <h4 className="uppercase">{section_id.replace('_', ' ')}</h4>
+              <div className="text-xl ">
+                {errorList.map((item: any, index) => {
+                  const message = item.row
+                    ? `${item.row} - ${item.message}`
+                    : item.message
+                  return (
                     <div
                       key={index}
                       className="flex items-center gap-x-4 px-4 py-2"
                     >
                       <div className="text-5xl leading-tight">{'\u2022'}</div>
-                      <div>
-                        {item.row} - {item.message}
-                      </div>
+                      <div>{message}</div>
                     </div>
-                  ))}
-                </div>
+                  )
+                })}
               </div>
-            )
-          } else {
-            return null
-          }
+            </div>
+          )
         })}
       </div>
     </div>
