@@ -127,37 +127,37 @@ type ApiBaseDiff = {
     chemical_sort_order: number
     display_name: string
     excluded_usages: number[]
-    export_quotas_old: null | string
     export_quotas_gwp_old: number
     export_quotas_odp_old: number
+    export_quotas_old: null | string
     exports: null | string
     exports_gwp: number
-    exports_odp: number
-    exports_old: null | string
     exports_gwp_old: number
+    exports_odp: number
     exports_odp_old: number
+    exports_old: null | string
     group: 'Annex A, Group I'
     id: 0
     import_quotas: null | string
     import_quotas_gwp: number
-    import_quotas_odp: number
-    import_quotas_old: null | string
     import_quotas_gwp_old: number
+    import_quotas_odp: number
     import_quotas_odp_old: number
+    import_quotas_old: null | string
     imports: null | string
     imports_gwp: number
-    imports_odp: number
-    imports_old: null | string
     imports_gwp_old: number
+    imports_odp: number
     imports_odp_old: number
+    imports_old: null | string
     manufacturing_blends: null | string
-    production_old: null | string
     production_gwp_old: number
     production_odp_old: number
+    production_old: null | string
     record_usages: {
-      quantity_old: string
       quantity_gwp_old: string
       quantity_odp_old: string
+      quantity_old: string
       usage: string
       usage_id: number
     }[]
