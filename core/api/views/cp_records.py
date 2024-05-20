@@ -17,7 +17,9 @@ from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_history import CPHistorySerializer
 from core.api.serializers.cp_price import CPPricesSerializer
-from core.api.serializers.cp_record import CPRecordSerializer
+from core.api.serializers.cp_record import (
+    CPRecordReadOnlySerializer,
+)
 from core.api.serializers.cp_report import CPReportSerializer, CPReportInfoSerializer
 from core.api.views.utils import get_cp_report_from_request
 from core.models.adm import AdmRecord
@@ -110,7 +112,12 @@ class CPRecordBaseListView(views.APIView):
         displayed_rows = (
             CPReportFormatRow.objects.get_for_year(cp_report.year)
             .filter(section=section)
-            .select_related("substance", "blend")
+            .select_related("substance__group", "blend")
+            .prefetch_related(
+                "substance__excluded_usages",
+                "blend__excluded_usages",
+                "blend__components",
+            )
             .all()
         )
 
@@ -122,9 +129,9 @@ class CPRecordBaseListView(views.APIView):
             )
             if chemical_key not in existing_items_dict:
                 cp_record_data = {
-                    "country_programme_report_id": cp_report.id,
-                    "substance_id": chemical.id if row.substance else None,
-                    "blend_id": chemical.id if row.blend else None,
+                    "country_programme_report": cp_report,
+                    "substance": chemical if row.substance else None,
+                    "blend": chemical if row.blend else None,
                     "id": 0,
                 }
                 if section in ["A", "B"]:
@@ -217,7 +224,6 @@ class CPRecordBaseListView(views.APIView):
     def _get_cp_prices(self, cp_report):
         exist_records = (
             self.cp_prices_class.objects.select_related("substance__group", "blend")
-            .prefetch_related("blend__components")
             .filter(country_programme_report=cp_report.id)
             .all()
         )
@@ -449,7 +455,7 @@ class CPRecordListView(CPRecordBaseListView):
 
     cp_report_seri_class = CPReportSerializer
     cp_report_info_seri_class = CPReportInfoSerializer
-    cp_record_seri_class = CPRecordSerializer
+    cp_record_seri_class = CPRecordReadOnlySerializer
     cp_prices_seri_class = CPPricesSerializer
     cp_generation_seri_class = CPGenerationSerializer
     cp_emission_seri_class = CPEmissionSerializer
