@@ -65,7 +65,7 @@ const makeInternalNavItem = (
 }
 
 const useInternalNavSections = () => {
-  const { user_type } = useStore((state) => state.user.data)
+  const { user_type } = useStore((state) => state.user?.data)
   const pathname = usePathname()
   const nI = makeInternalNavItem.bind(null, pathname)
   return [

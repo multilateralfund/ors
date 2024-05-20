@@ -55,20 +55,20 @@ export const createUserSlice = ({
         method: 'post',
       })
       removeCookies()
-      // setSlice('user', {
-      //   data: null,
-      //   error: null,
-      //   loaded: false,
-      //   loading: false,
-      // })
+      setSlice('user', {
+        data: null,
+        error: null,
+        loaded: true,
+        loading: false,
+      })
     } catch (error) {
       removeCookies()
-      // setSlice('user', {
-      //   data: null,
-      //   error,
-      //   loaded: false,
-      //   loading: false,
-      // })
+      setSlice('user', {
+        data: null,
+        error,
+        loaded: true,
+        loading: false,
+      })
     }
   },
   ...(initialState?.user || {}),

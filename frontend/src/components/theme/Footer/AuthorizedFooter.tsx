@@ -1,6 +1,5 @@
 import { Box } from '@mui/material'
 import cx from 'classnames'
-import { useRouter } from 'next/navigation'
 
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Logo from '@ors/components/theme/Logo/Logo'
@@ -12,7 +11,6 @@ const makeExternalUrl = (path: string) => `${EXTERNAL_BASE_URL}${path}`
 
 const FooterLinks = () => {
   const user = useStore((state) => state.user)
-  const router = useRouter()
   const items = [
     { label: 'Careers', url: makeExternalUrl('/') },
     { label: 'Contact us', url: makeExternalUrl('/') },
@@ -43,7 +41,6 @@ const FooterLinks = () => {
         onClick={async () => {
           try {
             await user.logout()
-            router.replace('/login')
           } catch (error) {
             console.error('Error logging out:', error)
           }
