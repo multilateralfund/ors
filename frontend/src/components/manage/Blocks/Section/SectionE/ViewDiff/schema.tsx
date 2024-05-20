@@ -82,11 +82,6 @@ function useGridOptions() {
         orsAggFunc: 'sumTotal',
         ...sectionColDefById['generated_emissions'],
       },
-      {
-        field: 'remarks',
-        headerName: 'Remarks',
-        ...sectionColDefById['remarks'],
-      },
     ],
     defaultColDef: {
       autoHeight: true,

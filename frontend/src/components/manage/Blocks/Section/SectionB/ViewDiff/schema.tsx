@@ -5,20 +5,18 @@ import { ColDef } from 'ag-grid-community/dist/types/main'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-import { defaultColDef } from '@ors/config/Table/columnsDef'
-
 import { sectionColDefById } from '../sectionColumnsDef'
 
 function useGridOptions(props: { model: string; usages: Array<any> }) {
   const { model, usages } = props
 
-  const usagesDiff = usages.map(function(item) {
+  const usagesDiff = usages.map(function (item) {
     const itemDiff = { ...item }
     const children: Record<string, any>[] = itemDiff?.children
     if (!!children) {
-      const childrenDiff = children.map(function(child) {
+      const childrenDiff = children.map(function (child) {
         const childDiff = { ...child }
-        childDiff.category='usage_diff'
+        childDiff.category = 'usage_diff'
         return childDiff
       })
       itemDiff.children = childrenDiff
@@ -57,7 +55,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
         })
       },
       headerClass: 'ag-text-center',
-      minWidth: defaultColDef.minWidth,
+      // minWidth: defaultColDef.minWidth,
       resizable: true,
       wrapText: true,
     }),
@@ -78,75 +76,66 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
     ]
   }, [usagesDiff])
 
-  const bySubstanceTrade = useCallback(
-    (standalone = false) => {
-      return [
-        {
-          ...sectionColDefById['imports'],
-          dataType: 'number_diff',
-          field: 'imports',
-          headerName: 'Import',
-          orsAggFunc: 'sumTotal',
-          ...(standalone ? { flex: 1 } : { flex: 0.5 }),
-        },
-        {
-          ...sectionColDefById['exports'],
-          dataType: 'number_diff',
-          field: 'exports',
-          headerName: 'Export',
-          orsAggFunc: 'sumTotal',
-          ...(standalone ? { flex: 1 } : { flex: 0.5 }),
-        },
-        {
-          ...sectionColDefById['production'],
-          dataType: 'number_diff',
-          field: 'production',
-          headerName: 'Production',
-          orsAggFunc: 'sumTotal',
-          ...(standalone ? { flex: 1 } : { initialWidth: 100, maxWidth: 100 }),
-        },
-        ...(includes(['V'], model)
-          ? [
-              {
-                ...sectionColDefById['manufacturing_blends'],
-                dataType: 'number_diff',
-                field: 'manufacturing_blends',
-                headerName: 'Manufacturing of Blends',
-                orsAggFunc: 'sumTotal',
-                ...(standalone
-                  ? { flex: 1 }
-                  : { initialWidth: 110, minWidth: 110 }),
-              },
-            ]
-          : []),
-        ...(includes(['II', 'III', 'IV', 'V'], model)
-          ? [
-              {
-                ...sectionColDefById['import_quotas'],
-                dataType: 'number_diff',
-                field: 'import_quotas',
-                headerName: 'Import Quotas',
-                orsAggFunc: 'sumTotal',
-                ...(standalone ? { flex: 1 } : { flex: 0.5 }),
-              },
-            ]
-          : []),
-        {
-          ...sectionColDefById['banned_date'],
-          dataType: 'date',
-          field: 'banned_date',
-          ...(standalone ? { flex: 1 } : { initialWidth: 110, maxWidth: 110 }),
-        },
-        {
-          ...sectionColDefById['remarks'],
-          field: 'remarks',
-          headerName: 'Remarks',
-          ...(standalone ? { flex: 1 } : { initialWidth: 80, maxWidth: 80 }),
-        },
-      ]
-    },
-    [model],
-  )
+  const bySubstanceTrade = useCallback(() => {
+    return [
+      {
+        ...sectionColDefById['imports'],
+        dataType: 'number_diff',
+        field: 'imports',
+        headerName: 'Import',
+        orsAggFunc: 'sumTotal',
+        // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+      },
+      {
+        ...sectionColDefById['exports'],
+        dataType: 'number_diff',
+        field: 'exports',
+        headerName: 'Export',
+        orsAggFunc: 'sumTotal',
+        // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+      },
+      {
+        ...sectionColDefById['production'],
+        dataType: 'number_diff',
+        field: 'production',
+        headerName: 'Production',
+        orsAggFunc: 'sumTotal',
+        // ...(standalone ? { flex: 1 } : { initialWidth: 100, maxWidth: 100 }),
+      },
+      ...(includes(['V'], model)
+        ? [
+            {
+              ...sectionColDefById['manufacturing_blends'],
+              dataType: 'number_diff',
+              field: 'manufacturing_blends',
+              headerName: 'Manufacturing of Blends',
+              orsAggFunc: 'sumTotal',
+              // ...(standalone
+              //   ? { flex: 1 }
+              //   : { initialWidth: 110, minWidth: 110 }),
+            },
+          ]
+        : []),
+      ...(includes(['II', 'III', 'IV', 'V'], model)
+        ? [
+            {
+              ...sectionColDefById['import_quotas'],
+              dataType: 'number_diff',
+              field: 'import_quotas',
+              headerName: 'Import Quotas',
+              orsAggFunc: 'sumTotal',
+              // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+            },
+          ]
+        : []),
+      {
+        ...sectionColDefById['banned_date'],
+        dataType: 'date',
+        field: 'banned_date',
+        // ...(standalone ? { flex: 1 } : { initialWidth: 110, maxWidth: 110 }),
+      },
+    ]
+  }, [model])
 
   const gridOptionsAll: GridOptions = useMemo(() => {
     return {
@@ -176,7 +165,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
 
   const gridOptionsBySubstanceTrade: GridOptions = useMemo(() => {
     return {
-      columnDefs: [substanceColumn(), ...bySubstanceTrade(true)],
+      columnDefs: [substanceColumn(), ...bySubstanceTrade()],
       defaultColDef: defaultSectionColDef,
     }
   }, [bySubstanceTrade, substanceColumn, defaultSectionColDef])

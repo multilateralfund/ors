@@ -30,7 +30,11 @@ function useGridOptions(props: {
 
   const substanceColumn = useMemo(
     () => ({
-      cellClass: 'flex items-center w-full',
+      cellClass: (props: CellClassParams) => {
+        return cx('flex items-center w-full', {
+          'ag-text-center': props.data?.change_type,
+        })
+      },
       field: 'display_name',
       headerClass: 'ag-text-left',
       headerName: 'Substance',
@@ -75,82 +79,68 @@ function useGridOptions(props: {
     ]
   }, [usagesDiff, sectionColDefById])
 
-  const bySubstanceTrade = useCallback(
-    () => {
-      return [
-        {
-          ...sectionColDefById['imports'],
-          dataType: 'number_diff',
-          field: 'imports',
-          headerName: 'Import',
-          orsAggFunc: 'sumTotal',
-          // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
-        },
-        {
-          ...sectionColDefById['exports'],
-          dataType: 'number_diff',
-          field: 'exports',
-          headerName: 'Export',
-          orsAggFunc: 'sumTotal',
-          // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
-        },
-        {
-          ...sectionColDefById['production'],
-          dataType: 'number_diff',
-          field: 'production',
-          headerName: 'Production',
-          orsAggFunc: 'sumTotal',
-          // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
-        },
-        ...(includes(['II', 'III', 'IV', 'V'], model)
-          ? [
-              {
-                ...sectionColDefById['import_quotas'],
-                dataType: 'number_diff',
-                field: 'import_quotas',
-                headerName: 'Import Quotas',
-                orsAggFunc: 'sumTotal',
-                // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
-              },
-            ]
-          : []),
-        ...(includes(['I', 'II', 'III'], model)
-          ? [
-              {
-                ...sectionColDefById['export_quotas'],
-                dataType: 'number_diff',
-                field: 'export_quotas',
-                headerName: 'Export Quotas',
-                orsAggFunc: 'sumTotal',
-                // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
-              },
-            ]
-          : []),
-        ...(includes(['IV', 'V'], model)
-          ? [
-              {
-                ...sectionColDefById['banned_date'],
-                dataType: 'date',
-                field: 'banned_date',
-                // ...(standalone ? { flex: 1 } : { flex: 1 }),
-              },
-            ]
-          : []),
-        // ...(includes(['II', 'III', 'IV', 'V'], model)
-        //   ? [
-        //       {
-        //         ...sectionColDefById['remarks'],
-        //         cellClass: 'ag-text-left',
-        //         field: 'remarks',
-        //         headerName: 'Remarks',
-        //         ...(standalone ? { flex: 1 } : { flex: 1 }),
-        //       },
-        //     ]
-        //   : []),
-      ]
-    },
-    [model, sectionColDefById],
-  )
+  const bySubstanceTrade = useCallback(() => {
+    return [
+      {
+        ...sectionColDefById['imports'],
+        dataType: 'number_diff',
+        field: 'imports',
+        headerName: 'Import',
+        orsAggFunc: 'sumTotal',
+        // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+      },
+      {
+        ...sectionColDefById['exports'],
+        dataType: 'number_diff',
+        field: 'exports',
+        headerName: 'Export',
+        orsAggFunc: 'sumTotal',
+        // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+      },
+      {
+        ...sectionColDefById['production'],
+        dataType: 'number_diff',
+        field: 'production',
+        headerName: 'Production',
+        orsAggFunc: 'sumTotal',
+        // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+      },
+      ...(includes(['II', 'III', 'IV', 'V'], model)
+        ? [
+            {
+              ...sectionColDefById['import_quotas'],
+              dataType: 'number_diff',
+              field: 'import_quotas',
+              headerName: 'Import Quotas',
+              orsAggFunc: 'sumTotal',
+              // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+            },
+          ]
+        : []),
+      ...(includes(['I', 'II', 'III'], model)
+        ? [
+            {
+              ...sectionColDefById['export_quotas'],
+              dataType: 'number_diff',
+              field: 'export_quotas',
+              headerName: 'Export Quotas',
+              orsAggFunc: 'sumTotal',
+              // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
+            },
+          ]
+        : []),
+      ...(includes(['IV', 'V'], model)
+        ? [
+            {
+              ...sectionColDefById['banned_date'],
+              dataType: 'date',
+              field: 'banned_date',
+              // ...(standalone ? { flex: 1 } : { flex: 1 }),
+            },
+          ]
+        : []),
+    ]
+  }, [model, sectionColDefById])
 
   const gridOptionsAll: GridOptions = useMemo(() => {
     return {

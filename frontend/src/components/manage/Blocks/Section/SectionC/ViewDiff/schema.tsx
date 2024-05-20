@@ -44,11 +44,6 @@ function useGridOptions(props: { model: string }) {
         orsAggFunc: 'sumTotal',
         ...sectionColDefById['current_year_price'],
       },
-      {
-        field: 'remarks',
-        headerName: 'Remarks',
-        ...sectionColDefById['remarks'],
-      },
     ],
     defaultColDef: {
       autoHeight: true,
