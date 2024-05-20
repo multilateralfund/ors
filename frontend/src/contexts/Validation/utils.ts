@@ -6,7 +6,7 @@ import type {
 } from '@ors/contexts/Validation/types'
 
 export function extractSectionErrors(vResult: ValidateSectionResult) {
-  const result = vResult.global || []
+  const result = [...vResult.global] || []
   if (vResult.hasErrors) {
     const rowData = Object.values(
       vResult.rows,
