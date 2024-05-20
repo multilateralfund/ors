@@ -197,7 +197,6 @@ class TestCPRecordsDiff:
         data = _setup_new_cp_report_create
         data["section_e"] = [
             {
-                "row_id": "emission_1",
                 "facility": "Facility",
                 "all_uses": 100,
             },
@@ -211,12 +210,10 @@ class TestCPRecordsDiff:
         data = _setup_new_cp_report_create
         data["section_e"] = [
             {
-                "row_id": "emission_1",
                 "facility": "Facility",
                 "all_uses": 200,
             },
             {
-                "row_id": "emission_2",
                 "facility": "Facility new",
                 "total": 200,
             },
@@ -230,9 +227,9 @@ class TestCPRecordsDiff:
         response = self.client.get(url, {"cp_report_id": new_id})
         assert response.status_code == 200
 
-        # assert response.data["section_e"][0]["change_type"] == "changed"
+        assert response.data["section_e"][0]["change_type"] == "changed"
         assert float(response.data["section_e"][0]["all_uses"]) == 200
-        # assert float(response.data["section_e"][0]["all_uses_old"]) == 100
+        assert float(response.data["section_e"][0]["all_uses_old"]) == 100
 
         assert response.data["section_e"][1]["change_type"] == "new"
         assert float(response.data["section_e"][1]["total"]) == 200

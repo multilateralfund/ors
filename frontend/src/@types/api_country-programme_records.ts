@@ -121,6 +121,7 @@ type ApiBaseDiff = {
   [key in 'section_a' | 'section_b']: {
     banned_date: null | string
     blend_id: null | number
+    change_type: string
     chemical_name: string
     chemical_note: null | string
     chemical_sort_order: number
@@ -163,7 +164,6 @@ type ApiBaseDiff = {
     remarks: null | string
     row_id: string
     substance_id: number
-    change_type: string
   }[]
 } & {
   report_info?: {
@@ -178,6 +178,7 @@ type ApiBaseDiff = {
   }
   section_c: {
     blend_id: null | number
+    change_type: string
     chemical_name: string
     chemical_note: null | string
     chemical_sort_order: number
@@ -190,19 +191,19 @@ type ApiBaseDiff = {
     remarks: null | string
     row_id: string
     substance_id: number
-    change_type: string
   }[]
   section_d: {
     all_uses: null | string
+    change_type: string
     chemical_name: string
     destruction: string
     display_name: string
     id: number
     row_id: string
-    change_type: string
   }[]
   section_e: {
     all_uses: null | string
+    change_type: string
     destruction: string
     destruction_wpc: string
     facility: string
@@ -213,11 +214,10 @@ type ApiBaseDiff = {
     remarks: null | string
     row_id: string
     total: string
-    change_type: string
   }
   section_f: {
-    remarks: null | string
     change_type: string
+    remarks: null | string
   }
 }
 

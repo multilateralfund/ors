@@ -32,16 +32,12 @@ export type RowData = {
 function getRowData(
   reportDiff: CPReportDiff,
   variant: ReportVariant,
-  showOnlyReported: boolean,
 ): RowData[] {
   let rowData: Array<any> = []
   const dataByGroup: Record<string, any> = {}
   const groups: Array<string> = []
 
-  let data = reportDiff.section_b
-  if (showOnlyReported) {
-    data = data.filter((item) => item.id !== 0)
-  }
+  const data = reportDiff.section_b
 
   each(data, (item) => {
     const group = getGroupName(item, variant.model)
@@ -98,7 +94,7 @@ export default function SectionBViewDiff(props: any) {
       usages: emptyForm.usage_columns?.section_b || [],
     })
   const grid = useRef<any>()
-  const rowData = getRowData(report, variant, true)
+  const rowData = getRowData(report, variant)
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
   return (
