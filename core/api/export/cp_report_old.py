@@ -36,20 +36,24 @@ class CPReportOldExporter(CPReportBase):
                                     "id": "total",
                                     "headerName": "TOTAL",
                                     "is_sum_function": True,
+                                    "align": "right",
                                 },
                             ],
                         },
                         {
                             "id": "imports",
                             "headerName": "Import",
+                            "align": "right",
                         },
                         {
                             "id": "exports",
                             "headerName": "Export",
+                            "align": "right",
                         },
                         {
                             "id": "production",
                             "headerName": "Production",
+                            "align": "right",
                         },
                         {
                             "id": "remarks",

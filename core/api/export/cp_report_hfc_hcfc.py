@@ -93,21 +93,25 @@ class CPReportHFCWriter(CPDataHFCHCFCWriterBase):
                         "headerName": f"Total {q_type}",
                         "is_sum_function": True,
                         "quantity_type": q_type,
+                        "align": "right",
                     },
                     {
                         "id": f"imports {q_type}",
                         "headerName": f"Import {q_type}",
                         "quantity_type": q_type,
+                        "align": "right",
                     },
                     {
                         "id": f"exports {q_type}",
                         "headerName": f"Export{q_type}",
                         "quantity_type": q_type,
+                        "align": "right",
                     },
                     {
                         "id": f"production {q_type}",
                         "headerName": f"Production{q_type}",
                         "quantity_type": q_type,
+                        "align": "right",
                     },
                 ]
             )
@@ -128,10 +132,12 @@ class CPReportHFCWriter(CPDataHFCHCFCWriterBase):
             {
                 "id": "chemical_gwp",
                 "headerName": "GWP",
+                "align": "right",
             },
             {
                 "id": "year",
                 "headerName": "Year",
+                "align": "right",
             },
             *usages_headers,
             {

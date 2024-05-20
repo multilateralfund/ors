@@ -16,6 +16,7 @@ class UsageSerializer(serializers.ModelSerializer):
     children = RecursiveField(many=True, read_only=True)
     columnCategory = serializers.SerializerMethodField()
     dataType = serializers.SerializerMethodField()
+    align = serializers.SerializerMethodField()  # we need this for exports
 
     class Meta:
         model = Usage
@@ -27,10 +28,11 @@ class UsageSerializer(serializers.ModelSerializer):
             "children",
             "columnCategory",
             "dataType",
+            "align",
         ]
 
     def get_headerName(self, obj):
-        header_name =  getattr(obj, "header_name", None)
+        header_name = getattr(obj, "header_name", None)
         return header_name or obj.name
 
     def get_field(self, obj):
@@ -42,3 +44,6 @@ class UsageSerializer(serializers.ModelSerializer):
 
     def get_dataType(self, _obj):
         return "object"
+
+    def get_align(self, _obj):
+        return "right"
