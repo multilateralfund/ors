@@ -32,16 +32,19 @@ class CPReportHCFCWriter(CPDataHFCHCFCWriterBase):
             {
                 "id": "imports",
                 "headerName": "Import",
+                "type": "number",
                 "convert_to_odp": True,
             },
             {
                 "id": "exports",
                 "headerName": "Export",
+                "type": "number",
                 "convert_to_odp": True,
             },
             {
                 "id": "production",
                 "headerName": "Production",
+                "type": "number",
                 "convert_to_odp": True,
             },
             {

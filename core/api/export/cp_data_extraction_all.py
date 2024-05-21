@@ -88,16 +88,19 @@ class CPDetailsExtractionWriter(BaseWriter):
                 "id": "substance_odp",
                 "headerName": "ODP Conversion for HCFC",
                 "align": "right",
+                "type": "number",
             },
             {
                 "id": "substance_gwp",
                 "headerName": "GWP for HFC",
                 "align": "right",
+                "type": "number",
             },
             {
                 "id": "record_value",
                 "headerName": str(year),
                 "align": "right",
+                "type": "number",
             },
             {
                 "id": "notes",
@@ -155,6 +158,7 @@ class CPConsumptionODPWriter(BaseWriter):
                 "id": "record_value",
                 "headerName": str(year),
                 "align": "right",
+                "type": "number",
             },
             {
                 "id": "notes",
@@ -229,21 +233,25 @@ class CPHFCConsumptionMTCO2Writer(BaseWriter):
                 "id": "consumption_mt",
                 "headerName": f"{year} (MT)",
                 "align": "right",
+                "type": "number",
             },
             {
                 "id": "consumption_co2",
                 "headerName": f"{year} (MT CO2-eq)",
                 "align": "right",
+                "type": "number",
             },
             {
                 "id": "servicing",
                 "headerName": f"{year} (MT) - Servicing",
                 "align": "right",
+                "type": "number",
             },
             {
                 "id": "usages_total",
                 "headerName": f"{year} (MT) - Use By Sector Total",
                 "align": "right",
+                "type": "number",
             },
             {
                 "id": "notes",
@@ -314,16 +322,19 @@ class HFC23GenerationWriter(BaseWriter):
                 "id": "all_uses",
                 "headerName": "Captured for all uses",
                 "align": "right",
+                "type": "number",
             },
             {
                 "id": "feedstock",
                 "headerName": "Captured for feedstock uses within your country",
                 "align": "right",
+                "type": "number",
             },
             {
                 "id": "destruction",
                 "headerName": "Captured for destruction",
                 "align": "right",
+                "type": "number",
             },
             {
                 "id": "notes",
@@ -379,11 +390,13 @@ class HFC23EmissionWriter(BaseWriter):
                 "id": "total",
                 "headerName": "Total amount generated",
                 "align": "right",
+                "type": "number",
             },
             {
                 "id": "all_uses",
                 "headerName": "Amount generated and captured - For all uses",
                 "align": "right",
+                "type": "number",
             },
             {
                 "id": "feedstock_gc",
@@ -392,26 +405,31 @@ class HFC23EmissionWriter(BaseWriter):
                     "- For feedstock use in your country"
                 ),
                 "align": "right",
+                "type": "number",
             },
             {
                 "id": "destruction",
                 "headerName": "Amount generated and captured - For destruction",
                 "align": "right",
+                "type": "number",
             },
             {
                 "id": "feedstock_wpc",
                 "headerName": "Amount used for feedstock without prior capture",
                 "align": "right",
+                "type": "number",
             },
             {
                 "id": "destruction_wpc",
                 "headerName": "Amount destroyed without prior capture",
                 "align": "right",
+                "type": "number",
             },
             {
                 "id": "generated_emissions",
                 "headerName": "Amount of generated emissions",
                 "align": "right",
+                "type": "number",
             },
             {
                 "id": "remarks",

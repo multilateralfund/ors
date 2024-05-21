@@ -207,9 +207,12 @@ class CPCalculatedAmountExportView(CPRecordListView):
         for record in records:
             # set the substance category
             if record.substance:
-                substance_category = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(
-                    record.substance.group.group_id
-                )
+                if "HFC" in record.substance.name:
+                    substance_category = "HFC"
+                else:
+                    substance_category = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(
+                        record.substance.group.group_id
+                    )
             else:
                 substance_category = "HFC"
 

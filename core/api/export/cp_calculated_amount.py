@@ -26,10 +26,6 @@ class CPCalculatedAmountWriter(BaseWriter):
                 "type": "number",
                 "align": "right",
             },
-            # {
-            #     "id": "substances",
-            #     "headerName": "Substances List",
-            # },
         ]
         sheet = wb.create_sheet("Calculated Amount")
         super().__init__(sheet, headers)
