@@ -3,6 +3,7 @@
 @import './header.css';
 @import './row.css';
 @import './cell.css';
+@import './diff.css';
 
 .ag-table .ag-root-wrapper {
   @apply rounded;

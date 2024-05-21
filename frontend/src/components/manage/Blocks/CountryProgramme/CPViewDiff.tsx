@@ -114,6 +114,7 @@ const TableProps: ITableProps = {
       </div>
     )
   },
+  className: 'diff-table',
   domLayout: 'autoHeight',
   enableCellChangeFlash: true,
   enableFullScreen: true,

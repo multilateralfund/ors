@@ -1,0 +1,27 @@
+.ag-table .diff-table {
+  .ag-cell {
+    @apply items-stretch;
+
+    .ag-cell-wrapper {
+      @apply items-stretch;
+    }
+
+    .ag-cell-value {
+      @apply flex items-stretch;
+    }
+
+    .cell-renderer {
+      @apply flex h-full w-full items-center justify-center;
+
+      .inline {
+        display: flex !important;
+
+        @apply h-full w-full items-center justify-center;
+
+        .MuiTypography-root {
+          @apply flex h-full w-full flex-col justify-center;
+        }
+      }
+    }
+  }
+}
