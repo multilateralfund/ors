@@ -208,6 +208,8 @@ class CPReportBase:
 
 
 class WriteOnlyBase:
+    ROW_HEIGHT = 30
+    COLUMN_WIDTH = 15
     header_row_start_idx = 1
 
     def __init__(self, sheet, headers):
