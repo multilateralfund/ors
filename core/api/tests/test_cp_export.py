@@ -276,7 +276,7 @@ class TestCPExtractionALLExport(BaseTest):
             "HFC-Consumption(MTvsCO2Equi)",
             "HFC-23Generation",
             "HFC-23Emission",
-            "MbrConsumption"
+            "MbrConsumption",
         ]
         # check number of rows
         assert wb["ODSPrice"].max_row == 8
@@ -320,3 +320,35 @@ class TestCPCalculatedAmountExport(BaseTest):
         assert wb.sheetnames == ["Calculated Amount"]
         assert wb["Calculated Amount"].max_row == 9
         assert wb["Calculated Amount"].max_column == 4
+
+
+class TestCPCalculatedAmountExportPDF(BaseTest):
+    url = reverse("country-programme-calculated-amount-print")
+
+    def test_get_cp_export(self, user, cp_report_2019, _setup_new_cp_report):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
+        assert response.status_code == 200
+        assert response.filename == f"CalculatedAmount {cp_report_2019.name}.pdf"
+
+        text = pdf_text(io.BytesIO(response.getvalue()))
+        for name in [
+            "Substances",
+            "Unit",
+            "Calculated Total",
+            "Consumption",
+        ]:
+            assert name in text
+
+        for name in [
+            "CFC",
+            "Halon",
+            "CTC",
+            "TCA",
+            "HCFC",
+            "HBFC",
+            "MB Non-QPS only",
+            "HFC",
+        ]:
+            assert name in text
