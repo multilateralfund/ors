@@ -6,48 +6,37 @@ import cx from 'classnames'
 import { produce } from 'immer'
 import { includes } from 'lodash'
 
-import CPComments from '@ors/components/manage/Blocks/CountryProgramme/CPComments'
 import UnitSelectionWidget from '@ors/components/manage/Widgets/UnitSelectionWidget'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
-import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
-import Link from '@ors/components/ui/Link/Link'
 import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
-import ValidationProvider from '@ors/contexts/Validation/ValidationProvider'
-import { formatApiUrl } from '@ors/helpers/Api/utils'
-import { defaultSliceData } from '@ors/helpers/Store/Store'
+//import { defaultSliceData } from '@ors/helpers/Store/Store'
 import { useStore } from '@ors/store'
 
 import { getSections } from '.'
 import Portal from '../../Utils/Portal'
-import { CPArchiveHeader, CPViewHeader } from './CPHeader'
+import { CPDiffHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
-import { CPBaseForm } from './typesCPCreate'
 import { ITableProps } from './typesCPView'
 
-import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
-import { IoClose, IoDownloadOutline, IoExpand } from 'react-icons/io5'
+import { IoClose, IoExpand } from 'react-icons/io5'
 
 const TableProps: ITableProps = {
   Toolbar: ({
-    archive,
     enterFullScreen,
     exitFullScreen,
     fullScreen,
     gridContext,
     isActiveSection,
-    onPrint,
     onUnitSelectionChange,
     print,
-    report,
     section,
   }: any) => {
     // [refs #24639] remove (METRIC TONNES) as we use <UnitSelectionWidget />
     const sectionTitle = section.title
       .split(/\((\w+\s)?METRIC TONNES\)/)[0]
       .trim()
-    const convertData = (gridContext?.unit || 'mt') === 'mt' ? 0 : 1
     return (
       <div
         className={cx('mb-4 flex', {
@@ -88,57 +77,6 @@ const TableProps: ITableProps = {
           domNode="sectionToolbar"
         >
           <div className="flex items-center justify-end">
-            <Link
-              className="flex items-center justify-between gap-x-2 text-nowrap rounded-md border border-solid border-primary px-2 py-1 text-base text-black no-underline hover:bg-primary hover:text-mlfs-hlYellow"
-              target="_blank"
-              href={`${formatApiUrl(
-                '/api/country-programme/calculated-amount/export/',
-              )}?cp_report_id=${report.data?.id.toString()}`}
-              download
-            >
-              <Tooltip placement="top" title="Download calculated amounts">
-                <span>Calculated amounts</span>
-              </Tooltip>
-            </Link>
-            <Dropdown
-              className="normal-case hover:bg-transparent"
-              color="primary"
-              tooltip="Download"
-              label={
-                <div className="flex items-center justify-between gap-x-2 text-base">
-                  <span className="font-medium text-primary">Download</span>
-                  <IoDownloadOutline className="text-xl text-secondary" />
-                </div>
-              }
-              icon
-            >
-              <Dropdown.Item>
-                <Link
-                  className="flex items-center gap-x-2 text-black no-underline"
-                  target="_blank"
-                  href={`${formatApiUrl(
-                    `api/country-programme${archive ? '-archive' : ''}/export/`,
-                  )}?cp_report_id=${report.data?.id.toString()}&convert_data=${convertData}`}
-                  download
-                >
-                  <AiFillFileExcel className="fill-green-700" size={24} />
-                  <span>XLSX</span>
-                </Link>
-              </Dropdown.Item>
-              <Dropdown.Item onClick={onPrint}>
-                <Link
-                  className="flex items-center gap-x-2 text-black no-underline"
-                  target="_blank"
-                  href={`${formatApiUrl(
-                    `api/country-programme${archive ? '-archive' : ''}/print/`,
-                  )}?cp_report_id=${report.data?.id.toString()}&convert_data=${convertData}`}
-                  download
-                >
-                  <AiFillFilePdf className="fill-red-700" size={24} />
-                  <span>PDF</span>
-                </Link>
-              </Dropdown.Item>
-            </Dropdown>
             {section.allowFullScreen && !fullScreen && (
               <Tooltip placement="top" title="Enter fullscreen">
                 <div
@@ -180,7 +118,7 @@ const TableProps: ITableProps = {
   enableCellChangeFlash: true,
   enableFullScreen: true,
   enablePagination: false,
-  noRowsOverlayComponentParams: { label: 'No data reported' },
+  noRowsOverlayComponentParams: { label: 'No differences to display' },
   rowsVisible: 30,
   suppressCellFocus: false,
   suppressColumnVirtualisation: true,
@@ -189,32 +127,11 @@ const TableProps: ITableProps = {
   withSeparators: false,
 }
 
-function getFormForValidation(reportData: any) {
-  const result: Record<string, any> = {}
-
-  const reportKeys = Object.keys(reportData).filter(
-    (key) => key.startsWith('report_info') || key.startsWith('section_'),
-  )
-
-  for (let i = 0; i < reportKeys.length; i++) {
-    const key = reportKeys[i]
-    const value = reportData[key]
-    if (value?.length) {
-      result[key] = value.filter((row: any) => row.id)
-    } else {
-      result[key] = value
-    }
-  }
-  return result
-}
-
-function CPView(props: { archive?: boolean }) {
+function CPDiffView() {
   const tabsEl = React.useRef<HTMLDivElement>(null)
-  const { archive } = props
-  const { report } = useStore((state) => state.cp_reports)
+  const { report, reportDiff } = useStore((state) => state.cp_reports)
   const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
   const [renderedSections, setRenderedSections] = useState<number[]>([])
-
   const [unit, setUnit] = useState('mt')
 
   function handleUnitSelectionChange(option: any) {
@@ -224,7 +141,7 @@ function CPView(props: { archive?: boolean }) {
   const variant = useMemo(() => report.variant, [report])
 
   const sections = useMemo(
-    () => (variant ? getSections(variant, 'view') : []),
+    () => (variant ? getSections(variant, 'diff') : []),
     [variant],
   )
 
@@ -249,25 +166,19 @@ function CPView(props: { archive?: boolean }) {
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [activeTab, renderedSections])
 
-  const showComments = variant?.model === 'V'
-
-  const formForValidation = getFormForValidation(report?.data || {})
-
   return (
-    <ValidationProvider
-      form={formForValidation as CPBaseForm}
-      model={variant?.model}
-      silent={true}
-    >
+    <>
       <Loading
         className="!fixed bg-action-disabledBackground"
         active={
           !report.error &&
-          (report.loading || !includes(renderedSections, activeTab))
+          !reportDiff.error &&
+          (report.loading || !includes(renderedSections, activeTab)) &&
+          reportDiff.loading
         }
       />
-      {!!report.error && <Error error={report.error} />}
-      {archive ? <CPArchiveHeader /> : <CPViewHeader />}
+      {!!reportDiff.error && <Error error={reportDiff.error} />}
+      <CPDiffHeader />
       <div className="flex items-center justify-between">
         <Tabs
           className="scrollable"
@@ -285,19 +196,25 @@ function CPView(props: { archive?: boolean }) {
           }}
           allowScrollButtonsMobile
         >
-          {sections.map((section) => (
-            <Tab
-              id={section.id}
-              key={section.id}
-              className="rounded-b-none px-3 py-2"
-              aria-controls={section.panelId}
-              label={section.label}
-              classes={{
-                selected:
-                  'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
-              }}
-            />
-          ))}
+          {sections.map((section) => {
+            // @ts-ignore
+            const disabled = !reportDiff.data?.[section.id].length
+            return (
+              <Tab
+                id={section.id}
+                key={section.id}
+                className="rounded-b-none px-3 py-2"
+                aria-controls={section.panelId}
+                disabled={disabled}
+                label={section.label}
+                classes={{
+                  disabled: 'text-gray-300',
+                  selected:
+                    'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
+                }}
+              />
+            )
+          })}
         </Tabs>
         <div id="sectionToolbar"></div>
       </div>
@@ -324,15 +241,12 @@ function CPView(props: { archive?: boolean }) {
               >
                 <FootnotesProvider>
                   <Section
-                    Comments={CPComments}
                     emptyForm={report.emptyForm.data || {}}
-                    report={report.data}
+                    report={reportDiff.data}
                     section={section}
-                    showComments={showComments}
                     variant={variant}
                     TableProps={{
                       ...TableProps,
-                      archive,
                       context: { section, unit, variant },
                       handleUnitSelectionChange,
                       isActiveSection: activeTab == index,
@@ -348,39 +262,32 @@ function CPView(props: { archive?: boolean }) {
             )
           })}
       </CPSectionWrapper>
-    </ValidationProvider>
+    </>
   )
 }
 
-export default function CPViewWrapper(props: { iso3: string; year: number }) {
+export default function CPDiffViewWrapper(props: {
+  iso3: string
+  year: number
+}) {
   const { iso3, year } = props
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const country = countries.filter((country) => country.iso3 === iso3)[0]
 
-  const { fetchBundle, report, setReport } = useStore(
+  const { fetchDiffBundle, report, reportDiff } = useStore(
     (state) => state.cp_reports,
   )
 
   const dataReady =
     report.data &&
-    report.files?.data &&
     report.emptyForm.data &&
     report.data.country_id === country.id &&
-    report.data.year == year
+    report.data.year == year &&
+    reportDiff.data
 
   useEffect(() => {
-    return () => {
-      setReport({
-        ...defaultSliceData,
-        emptyForm: defaultSliceData,
-        versions: defaultSliceData,
-      })
-    }
-  }, [setReport])
-
-  useEffect(() => {
-    fetchBundle(country.id, year, true)
-  }, [country, year, fetchBundle])
+    fetchDiffBundle(country.id, year)
+  }, [country, year, fetchDiffBundle])
 
   if (!dataReady)
     return (
@@ -390,38 +297,5 @@ export default function CPViewWrapper(props: { iso3: string; year: number }) {
       />
     )
 
-  return <CPView />
-}
-
-export function CPArchiveViewWrapper({ id }: { id: number }) {
-  const { fetchArchivedBundle, report, setReport } = useStore(
-    (state) => state.cp_reports,
-  )
-
-  const dataReady =
-    report.data && report.emptyForm.data && report.data.id === id
-
-  useEffect(() => {
-    return () => {
-      setReport({
-        ...defaultSliceData,
-        emptyForm: defaultSliceData,
-        versions: defaultSliceData,
-      })
-    }
-  }, [setReport])
-
-  useEffect(() => {
-    fetchArchivedBundle(id, true)
-  }, [fetchArchivedBundle, id])
-
-  if (!dataReady)
-    return (
-      <Loading
-        className="!fixed bg-action-disabledBackground"
-        active={!report.error && report.loading}
-      />
-    )
-
-  return <CPView archive={true} />
+  return <CPDiffView />
 }

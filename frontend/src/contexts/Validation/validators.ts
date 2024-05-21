@@ -287,34 +287,34 @@ export function validateSectionBOther(
   }
 }
 
-// export function validateBlendComponents(
-//   row: IRow,
-//   { form }: RowValidatorFuncContext,
-// ): RowValidatorFuncResult {
-//   const isBlend = !!row.blend_id
-//
-//   const components = row.composition?.split(';').map((comp) =>
-//     comp
-//       .substring(0, comp.lastIndexOf(comp.includes('=') ? '=' : '-')) // CustMix has format like "CFC-11-50%", while other blends have format like "HCFC-22=60%"
-//       .trim(),
-//   )
-//
-//   const substances = [form.section_a, form.section_b].flatMap((rows) =>
-//     rows
-//       .filter(
-//         (row) =>
-//           sumUsages((row.record_usages as unknown as IUsage[]) || []) > 0,
-//       )
-//       .map((row) => row.chemical_name),
-//   )
-//   const allComponentsReported =
-//     components?.filter((comp) => substances.includes(comp)).length ==
-//     components?.length
-//
-//   if (isBlend && !allComponentsReported) {
-//     return { row: row.display_name }
-//   }
-// }
+export function validateBlendComponents(
+  row: IRow,
+  { form }: RowValidatorFuncContext,
+): RowValidatorFuncResult {
+  const isBlend = !!row.blend_id
+
+  const components = row.composition?.split(';').map((comp) =>
+    comp
+      .substring(0, comp.lastIndexOf(comp.includes('=') ? '=' : '-')) // CustMix has format like "CFC-11-50%", while other blends have format like "HCFC-22=60%"
+      .trim(),
+  )
+
+  const substances = [form.section_a, form.section_b].flatMap((rows) =>
+    rows
+      .filter(
+        (row) =>
+          sumUsages((row.record_usages as unknown as IUsage[]) || []) > 0,
+      )
+      .map((row) => row.chemical_name),
+  )
+  const allComponentsReported =
+    components?.filter((comp) => substances.includes(comp)).length ==
+    components?.length
+
+  if (isBlend && !allComponentsReported) {
+    return { row: row.display_name }
+  }
+}
 
 export function validateHFC23(row: IRow): RowValidatorFuncResult {
   if (row.chemical_name === 'HFC-23') {

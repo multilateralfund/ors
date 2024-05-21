@@ -23,6 +23,40 @@ import ConfirmSubmission from './ConfirmSubmission'
 
 import { IoChevronDown } from 'react-icons/io5'
 
+const CloseDiffButton = (props: any) => {
+  const { report } = props
+
+  return (
+    <Link
+      className="btn-close ml-auto bg-gray-600 px-4 py-2 shadow-none"
+      color="secondary"
+      href={`/country-programme/${report.country?.iso3}/${report.data.year}`}
+      size="large"
+      variant="contained"
+      button
+    >
+      Close
+    </Link>
+  )
+}
+
+const ReportDiffButton = (props: any) => {
+  const { report } = props
+
+  return (
+    <Link
+      className="px-5"
+      color="secondary"
+      href={`/country-programme/${report.country?.iso3}/${report.data.year}/diff`}
+      size="large"
+      variant="contained"
+      button
+    >
+      See differences
+    </Link>
+  )
+}
+
 function padDateNr(n: number) {
   return n < 10 ? `0${n}` : `${n}`
 }
@@ -175,7 +209,12 @@ const ArchiveHeaderActions = () => {
   return <div className="flex items-center"></div>
 }
 
-const ViewHeaderActions = () => {
+interface ViewHeaderActionsProps {
+  validation?: IValidationContext
+}
+
+const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
+  const { validation } = props
   const { cacheInvalidateReport, fetchBundle, report } = useStore(
     (state) => state.cp_reports,
   )
@@ -257,6 +296,7 @@ const ViewHeaderActions = () => {
       {showConfirm ? (
         <ConfirmSubmission
           mode={'edit'}
+          validation={validation}
           onCancel={() => setShowConfirm(false)}
           onSubmit={handleSubmissionConfirmation}
         />
@@ -439,11 +479,14 @@ const CPHeader = ({
         <div className="mb-2 font-[500] uppercase">
           Country programme report
         </div>
-        <div className="mb-4 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-6">
-          <div className="flex items-center gap-x-2">
-            {titlePrefix}
-            <HeaderVersionsDropdown />
-            {tag}
+        <div className="mb-4 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-2">
+          <div className="flex flex-wrap items-center gap-x-2">
+            <div className="flex items-center gap-x-2">
+              {titlePrefix}
+              <HeaderVersionsDropdown />
+              {tag}
+            </div>
+            <ReportDiffButton report={report} />
           </div>
           <div className="ml-auto">{actions}</div>
         </div>
@@ -451,6 +494,7 @@ const CPHeader = ({
     )
   )
 }
+
 const CPCreateHeader = ({
   actions,
   currentYear,
@@ -471,7 +515,13 @@ const CPCreateHeader = ({
 }
 
 const CPViewHeader = () => {
-  return <CPHeader actions={<ViewHeaderActions />} tag={<ViewHeaderTag />} />
+  const validation = useContext(ValidationContext)
+  return (
+    <CPHeader
+      actions={<ViewHeaderActions validation={validation} />}
+      tag={<ViewHeaderTag />}
+    />
+  )
 }
 
 const CPEditHeader = (props: Omit<EditHeaderActionsProps, 'validation'>) => {
@@ -491,4 +541,79 @@ const CPArchiveHeader = () => {
   )
 }
 
-export { CPArchiveHeader, CPCreateHeader, CPEditHeader, CPViewHeader }
+const CPDiffHeader = () => {
+  const { report } = useStore((state) => state.cp_reports)
+  const { versions } = report
+  const [memo, setMemo] = useState(0)
+
+  const currentVersion = useMemo(
+    () => ({
+      date: formattedDateFromTimestamp(versions.data?.[0].created_at),
+      status: versions.data?.[0].status,
+      version: versions.data?.[0].version,
+    }),
+    [versions.data],
+  )
+
+  const previousVersion = useMemo(
+    () => ({
+      date: formattedDateFromTimestamp(versions.data?.[1].created_at),
+      status: versions.data?.[1].status,
+      version: versions.data?.[1].version,
+    }),
+    [versions.data],
+  )
+
+  const VersionTag = ({ date, status, version }: any) => {
+    return (
+      <span
+        className={cx('self-baseline rounded p-1', {
+          'bg-mlfs-hlYellow': status === 'final',
+          'bg-warning': status === 'draft',
+        })}
+      >
+        Version {version} - {date}
+      </span>
+    )
+  }
+
+  useEffect(() => {
+    setMemo((prev) => prev + 1)
+  }, [report.data?.status, report.versions.data])
+
+  return (
+    !!report.data && (
+      <HeaderTitle memo={memo}>
+        <div className="mb-2 font-[500] uppercase">
+          Country programme report
+        </div>
+        <div className="mb-4 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-4">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-4">
+            <div className="flex flex-wrap items-center gap-x-4">
+              <h1 className="m-0 text-5xl font-normal leading-normal">
+                Comparing:
+              </h1>
+              <h1 className="m-0 text-5xl leading-normal">
+                {report.data?.name}
+              </h1>
+            </div>
+            <div className="self-baseline font-medium uppercase leading-none">
+              <VersionTag {...currentVersion} />
+              <span className="mx-2">VS.</span>
+              <VersionTag {...previousVersion} />
+            </div>
+          </div>
+          <CloseDiffButton report={report} />
+        </div>
+      </HeaderTitle>
+    )
+  )
+}
+
+export {
+  CPArchiveHeader,
+  CPCreateHeader,
+  CPDiffHeader,
+  CPEditHeader,
+  CPViewHeader,
+}

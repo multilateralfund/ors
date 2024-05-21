@@ -53,3 +53,25 @@
     opacity: 0.7;
   }
 }
+
+
+/* TOC */
+
+nav.toc {
+  @apply p-8;
+}
+
+.hash-link {
+  @apply no-underline;
+}
+
+.hash-link::before {
+  content: '#';
+
+  @apply collapse text-gray-300 mr-1;
+}
+
+.hash-link:hover::before {
+  @apply visible;
+}
+

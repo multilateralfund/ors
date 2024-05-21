@@ -14,6 +14,7 @@ export default function SectionTab(props: ISectionTab) {
   const { errors, isActive, section, ...rest } = props
   const validation = useContext(ValidationContext)
   const sectionErrors = validation?.errors[section.id as ValidationSchemaKeys]
+  const showErrors = !validation.silent && sectionErrors?.hasErrors
 
   return (
     <Tab
@@ -27,12 +28,12 @@ export default function SectionTab(props: ISectionTab) {
       label={
         <div className="relative flex items-center justify-between gap-x-2">
           <div>{section.label}</div>
-          {sectionErrors?.hasErrors && (
+          {showErrors ? (
             <SectionErrorIndicator
               className={cx({ 'text-white': isActive })}
               errors={sectionErrors.global}
             />
-          )}
+          ) : null}
         </div>
       }
       {...rest}

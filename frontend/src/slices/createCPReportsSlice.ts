@@ -205,6 +205,25 @@ export const createCPReportsSlice = ({
       fetchVersions(country_id, year)
       fetchFiles(country_id, year)
     },
+    fetchDiffBundle: async (country_id, year) => {
+      const {
+        fetchEmptyForm,
+        fetchFiles,
+        fetchReport,
+        fetchReportDiff,
+        fetchVersions,
+        setReportCountry,
+        setReportVariant,
+      } = get().cp_reports
+      await fetchReport(country_id, year)
+      const report = getSlice<CPReport>('cp_reports.report.data')
+      setReportCountry(report)
+      setReportVariant(report)
+      fetchEmptyForm(report, true)
+      fetchReportDiff(country_id, year, report.version)
+      fetchVersions(country_id, year)
+      fetchFiles(country_id, year)
+    },
     fetchEmptyForm: async (report = null, view = true) => {
       const variant = getVariant(report)
       const options = {
@@ -283,6 +302,27 @@ export const createCPReportsSlice = ({
         slice: 'cp_reports.report',
       })
     },
+    fetchReportDiff: async (country_id, year, version) => {
+      const { cacheInvalidate } = get().cp_reports
+      const options = {
+        invalidateCache: cacheInvalidate.includes(hash({ country_id, year })),
+        removeCacheTimeout: 60,
+        withStoreCache: true,
+      }
+      const path = `api/country-programme/records/diff/?country_id=${country_id}&year=${year}&version=${version}`
+
+      return await fetchSliceData({
+        apiSettings: {
+          options,
+          path,
+        },
+        parseResponse: (response) => ({
+          ...(response.cp_report || {}),
+          ...omit(response, 'cp_report'),
+        }),
+        slice: 'cp_reports.reportDiff',
+      })
+    },
     fetchVersions: async (country_id, year) => {
       const { cacheInvalidate } = get().cp_reports
       const options = {
@@ -308,6 +348,7 @@ export const createCPReportsSlice = ({
       emptyForm: getInitialSliceData(),
       versions: getInitialSliceData(),
     },
+    reportDiff: { ...defaultSliceData },
     setReport: (report) => {
       setSlice('cp_reports.report', report)
     },
@@ -317,6 +358,9 @@ export const createCPReportsSlice = ({
         (country) => country.id === report?.country_id,
       )[0]
       setSlice('cp_reports.report.country', country)
+    },
+    setReportDiff: (reportDiff) => {
+      setSlice('cp_reports.reportDiff', reportDiff)
     },
     setReportVariant: (report) => {
       const variant = getVariant(report)

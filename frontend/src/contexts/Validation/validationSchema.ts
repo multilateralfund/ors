@@ -5,7 +5,7 @@ import {
   validateAnnexENonQPSRemarks,
   validateBannedImportsDate,
   validateBannedImportsRemarks,
-  // validateBlendComponents,
+  validateBlendComponents,
   validateFacilityName,
   validateHFC23,
   validateOtherUnidentifiedManufacturing,
@@ -104,13 +104,13 @@ const validationSchema: ValidationSchema = {
           'When reporting HFC-41, HFC-134, HFC-143 or HFC-152 - These substances are not commonly used; please check the substance is used while reporting.',
         validator: validateUncommonSubstance,
       },
-      // {
-      //   id: 'validate-blend-components',
-      //   highlight_cells: {},
-      //   message:
-      //     'Where new blends/mixtures containing controlled substances are imported, details relating to the composition of these blends should be provided.',
-      //   validator: validateBlendComponents,
-      // },
+      {
+        id: 'validate-blend-components',
+        highlight_cells: {},
+        message:
+          'Where new blends/mixtures containing controlled substances are imported, details relating to the composition of these blends should be provided.',
+        validator: validateBlendComponents,
+      },
       {
         id: 'validate-hfc23',
         highlight_cells: {},

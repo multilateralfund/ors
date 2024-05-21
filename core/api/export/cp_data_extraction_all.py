@@ -17,10 +17,12 @@ class CPPricesExtractionWriter(BaseWriter):
             {
                 "id": "previous_year_price",
                 "headerName": "Previous Year Price",
+                "align": "right",
             },
             {
                 "id": "current_year_price",
                 "headerName": str(year),
+                "align": "right",
             },
             {
                 "id": "remarks",
@@ -61,6 +63,7 @@ class CPPricesExtractionWriter(BaseWriter):
                 row_idx,
                 header["column"],
                 value,
+                align=header.get("align", "left"),
             )
 
 
@@ -84,14 +87,17 @@ class CPDetailsExtractionWriter(BaseWriter):
             {
                 "id": "substance_odp",
                 "headerName": "ODP Conversion for HCFC",
+                "align": "right",
             },
             {
                 "id": "substance_gwp",
                 "headerName": "GWP for HFC",
+                "align": "right",
             },
             {
                 "id": "record_value",
                 "headerName": str(year),
+                "align": "right",
             },
             {
                 "id": "notes",
@@ -128,6 +134,7 @@ class CPDetailsExtractionWriter(BaseWriter):
                 row_idx,
                 header["column"],
                 value,
+                align=header.get("align", "left"),
             )
 
 
@@ -147,6 +154,7 @@ class CPConsumptionODPWriter(BaseWriter):
             {
                 "id": "record_value",
                 "headerName": str(year),
+                "align": "right",
             },
             {
                 "id": "notes",
@@ -192,6 +200,7 @@ class CPConsumptionODPWriter(BaseWriter):
                 row_idx,
                 header["column"],
                 value,
+                align=header.get("align", "left"),
             )
 
 
@@ -219,18 +228,22 @@ class CPHFCConsumptionMTCO2Writer(BaseWriter):
             {
                 "id": "consumption_mt",
                 "headerName": f"{year} (MT)",
+                "align": "right",
             },
             {
                 "id": "consumption_co2",
                 "headerName": f"{year} (MT CO2-eq)",
+                "align": "right",
             },
             {
                 "id": "servicing",
                 "headerName": f"{year} (MT) - Servicing",
+                "align": "right",
             },
             {
                 "id": "usages_total",
                 "headerName": f"{year} (MT) - Use By Sector Total",
+                "align": "right",
             },
             {
                 "id": "notes",
@@ -276,6 +289,7 @@ class CPHFCConsumptionMTCO2Writer(BaseWriter):
                 row_idx,
                 header["column"],
                 value,
+                align=header.get("align", "left"),
             )
 
 
@@ -299,14 +313,17 @@ class HFC23GenerationWriter(BaseWriter):
             {
                 "id": "all_uses",
                 "headerName": "Captured for all uses",
+                "align": "right",
             },
             {
                 "id": "feedstock",
                 "headerName": "Captured for feedstock uses within your country",
+                "align": "right",
             },
             {
                 "id": "destruction",
                 "headerName": "Captured for destruction",
+                "align": "right",
             },
             {
                 "id": "notes",
@@ -337,6 +354,7 @@ class HFC23GenerationWriter(BaseWriter):
                 row_idx,
                 header["column"],
                 value,
+                align=header.get("align", "left"),
             )
 
 
@@ -360,10 +378,12 @@ class HFC23EmissionWriter(BaseWriter):
             {
                 "id": "total",
                 "headerName": "Total amount generated",
+                "align": "right",
             },
             {
                 "id": "all_uses",
                 "headerName": "Amount generated and captured - For all uses",
+                "align": "right",
             },
             {
                 "id": "feedstock_gc",
@@ -371,22 +391,27 @@ class HFC23EmissionWriter(BaseWriter):
                     "Amount generated and captured "
                     "- For feedstock use in your country"
                 ),
+                "align": "right",
             },
             {
                 "id": "destruction",
                 "headerName": "Amount generated and captured - For destruction",
+                "align": "right",
             },
             {
                 "id": "feedstock_wpc",
                 "headerName": "Amount used for feedstock without prior capture",
+                "align": "right",
             },
             {
                 "id": "destruction_wpc",
                 "headerName": "Amount destroyed without prior capture",
+                "align": "right",
             },
             {
                 "id": "generated_emissions",
                 "headerName": "Amount of generated emissions",
+                "align": "right",
             },
             {
                 "id": "remarks",
@@ -419,6 +444,7 @@ class HFC23EmissionWriter(BaseWriter):
                 row_idx,
                 header["column"],
                 value,
+                align=header.get("align", "left"),
             )
 
 

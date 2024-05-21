@@ -98,6 +98,18 @@ class CPRecordSerializer(CPRecordBaseSerializer):
         model = CPRecord
 
 
+class CPRecordReadOnlySerializer(CPRecordBaseSerializer):
+    record_usages = serializers.SerializerMethodField()
+
+    def get_record_usages(self, obj):
+        if obj.id == 0:
+            return []
+        return CPUsageSerializer(obj.record_usages.all(), many=True).data
+
+    class Meta(CPRecordBaseSerializer.Meta):
+        model = CPRecord
+
+
 class CPRecordArchiveSerializer(CPRecordBaseSerializer):
     class Meta(CPRecordBaseSerializer.Meta):
         model = CPRecordArchive

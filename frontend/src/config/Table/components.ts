@@ -2,8 +2,10 @@ import { AgAdmCellRenderer } from '@ors/components/manage/AgCellRenderers/AgAdmC
 import AgBooleanCellRenderer from '@ors/components/manage/AgCellRenderers/AgBooleanCellRenderer'
 import AgDateCellRenderer from '@ors/components/manage/AgCellRenderers/AgDateCellRenderer'
 import AgFloatCellRenderer from '@ors/components/manage/AgCellRenderers/AgFloatCellRenderer'
+import AgFloatDiffCellRenderer from '@ors/components/manage/AgCellRenderers/AgFloatDiffCellRenderer'
 import AgTextCellRenderer from '@ors/components/manage/AgCellRenderers/AgTextCellRenderer'
 import AgUsageCellRenderer from '@ors/components/manage/AgCellRenderers/AgUsageCellRenderer'
+import AgUsageDiffCellRenderer from '@ors/components/manage/AgCellRenderers/AgUsageDiffCellRenderer'
 import AgHeaderComponent from '@ors/components/manage/AgComponents/AgHeaderComponent'
 import AgHeaderGroupComponent from '@ors/components/manage/AgComponents/AgHeaderGroupComponent'
 import CellAdmDateWidget from '@ors/components/manage/AgWidgets/CellAdmDateWidget'
@@ -26,12 +28,14 @@ const components: Record<string, React.FC<any>> = {
   agDateCellEditor: CellDateWidget,
   agDateCellRenderer: AgDateCellRenderer,
   agFloatCellRenderer: AgFloatCellRenderer,
+  agFloatDiffCellRenderer: AgFloatDiffCellRenderer,
   agNumberCellEditor: CellNumberWidget,
   agSelectCellEditor: CellAutocompleteWidget,
   agTextCellEditor: CellTextareaWidget,
   agTextCellRenderer: AgTextCellRenderer,
   agUsageCellEditor: CellUsageWidget,
   agUsageCellRenderer: AgUsageCellRenderer,
+  agUsageDiffCellRenderer: AgUsageDiffCellRenderer,
 }
 
 export default components

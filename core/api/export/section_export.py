@@ -71,6 +71,7 @@ class SectionWriter(BaseWriter):
                 col_idx,
                 value,
                 read_only=True,
+                align=header.get("align", "left"),
             )
 
     def _write_record_row(self, row_idx, record):
@@ -106,6 +107,7 @@ class SectionWriter(BaseWriter):
                 header["column"],
                 value,
                 read_only=read_only,
+                align=header.get("align", "left"),
             )
 
     def _write_total_row(self, row_idx, group_ranges):
@@ -119,4 +121,10 @@ class SectionWriter(BaseWriter):
                     [f"{col}{start}:{col}{end}" for start, end in group_ranges]
                 )
                 value = f"=SUM({ranges})"
-            self._write_record_cell(row_idx, col_idx, value, read_only=True)
+            self._write_record_cell(
+                row_idx,
+                col_idx,
+                value,
+                read_only=True,
+                align=header.get("align", "left"),
+            )

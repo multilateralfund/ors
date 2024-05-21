@@ -78,7 +78,7 @@ const MSG_EDIT = [
 ]
 
 const MSG_HAS_ERRORS =
-  'Do you confirm the submission, taking into account the warnings/errors listed below ?'
+  'Do you confirm the submission, taking into account the warnings/errors listed below?'
 const MSG_NO_ERRORS = 'Do you confirm the submission?'
 
 interface IConfirmSubmission {

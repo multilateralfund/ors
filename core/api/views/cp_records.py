@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import views
@@ -17,7 +18,9 @@ from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_history import CPHistorySerializer
 from core.api.serializers.cp_price import CPPricesSerializer
-from core.api.serializers.cp_record import CPRecordSerializer
+from core.api.serializers.cp_record import (
+    CPRecordReadOnlySerializer,
+)
 from core.api.serializers.cp_report import CPReportSerializer, CPReportInfoSerializer
 from core.api.views.utils import get_cp_report_from_request
 from core.models.adm import AdmRecord
@@ -29,7 +32,13 @@ from core.models.country_programme import (
     CPReport,
     CPReportFormatRow,
 )
-from core.models.country_programme_archive import CPReportArchive
+from core.models.country_programme_archive import (
+    CPEmissionArchive,
+    CPGenerationArchive,
+    CPPricesArchive,
+    CPRecordArchive,
+    CPReportArchive,
+)
 from core.utils import IMPORT_DB_MAX_YEAR, IMPORT_DB_OLDEST_MAX_YEAR
 
 # pylint: disable=E1102
@@ -110,7 +119,12 @@ class CPRecordBaseListView(views.APIView):
         displayed_rows = (
             CPReportFormatRow.objects.get_for_year(cp_report.year)
             .filter(section=section)
-            .select_related("substance", "blend")
+            .select_related("substance__group", "blend")
+            .prefetch_related(
+                "substance__excluded_usages",
+                "blend__excluded_usages",
+                "blend__components",
+            )
             .all()
         )
 
@@ -122,14 +136,15 @@ class CPRecordBaseListView(views.APIView):
             )
             if chemical_key not in existing_items_dict:
                 cp_record_data = {
-                    "country_programme_report_id": cp_report.id,
-                    "substance_id": chemical.id if row.substance else None,
-                    "blend_id": chemical.id if row.blend else None,
+                    "country_programme_report": cp_report,
+                    "substance": chemical if row.substance else None,
+                    "blend": chemical if row.blend else None,
                     "id": 0,
                 }
                 if section in ["A", "B"]:
                     cp_record_data["section"] = section
                 existing_items_dict[chemical_key] = item_cls(**cp_record_data)
+
             existing_items_dict[chemical_key].sort_order = row.sort_order
 
         return list(existing_items_dict.values())
@@ -217,7 +232,6 @@ class CPRecordBaseListView(views.APIView):
     def _get_cp_prices(self, cp_report):
         exist_records = (
             self.cp_prices_class.objects.select_related("substance__group", "blend")
-            .prefetch_related("blend__components")
             .filter(country_programme_report=cp_report.id)
             .all()
         )
@@ -327,7 +341,7 @@ class CPRecordBaseListView(views.APIView):
 
         return self.cp_comment_seri_class(cp_report.cpcomments.all(), many=True).data
 
-    def _get_new_cp_records(self, cp_report):
+    def _get_new_cp_records(self, cp_report, data_only=False):
         section_a = self._get_displayed_records(cp_report, "A")
         section_b = self._get_displayed_records(cp_report, "B")
         section_c = self._get_cp_prices(cp_report)
@@ -342,16 +356,18 @@ class CPRecordBaseListView(views.APIView):
         }
 
         ret = {
-            "cp_report": self.cp_report_seri_class(cp_report).data,
             "section_a": self.cp_record_seri_class(section_a, many=True).data,
             "section_b": self.cp_record_seri_class(section_b, many=True).data,
             "section_c": self.cp_prices_seri_class(section_c, many=True).data,
             "section_d": self.cp_generation_seri_class(section_d, many=True).data,
             "section_e": self.cp_emission_seri_class(section_e, many=True).data,
             "section_f": section_f,
-            "history": self._get_cp_history(cp_report),
-            "comments": self._get_serialized_cp_comments(cp_report),
         }
+        if data_only is False:
+            ret["cp_report"] = self.cp_report_seri_class(cp_report).data
+            ret["history"] = self._get_cp_history(cp_report)
+            ret["comments"] = self._get_serialized_cp_comments(cp_report)
+
         if hasattr(cp_report, "cpreportedsections"):
             # This property will not be present for pre-2023
             ret["report_info"] = self.cp_report_info_seri_class(
@@ -449,9 +465,163 @@ class CPRecordListView(CPRecordBaseListView):
 
     cp_report_seri_class = CPReportSerializer
     cp_report_info_seri_class = CPReportInfoSerializer
-    cp_record_seri_class = CPRecordSerializer
+    cp_record_seri_class = CPRecordReadOnlySerializer
     cp_prices_seri_class = CPPricesSerializer
     cp_generation_seri_class = CPGenerationSerializer
     cp_emission_seri_class = CPEmissionSerializer
     cp_comment_seri_class = CPCommentSerializer
     adm_record_seri_class = AdmRecordSerializer
+
+
+class CPRecordListDiffView(CPRecordListView):
+    section_a_b_fields = [
+        "imports",
+        "import_quotas",
+        "exports",
+        "export_quotas",
+        "production",
+        "imports_gwp",
+        "import_quotas_gwp",
+        "exports_gwp",
+        "export_quotas_gwp",
+        "production_gwp",
+        "imports_odp",
+        "import_quotas_odp",
+        "exports_odp",
+        "export_quotas_odp",
+        "production_odp",
+    ]
+    section_c_fields = ["previous_year_price", "current_year_price", "remarks"]
+    section_d_fields = ["all_uses", "feedstock", "destruction"]
+    section_e_fields = [
+        "total",
+        "all_uses",
+        "feedstock_gc",
+        "destruction",
+        "feedstock_wpc",
+        "destruction_wpc",
+        "generated_emissions",
+        "remarks",
+    ]
+
+    def set_archive_class_attributes(self):
+        self.cp_report_class = CPReportArchive
+        self.cp_record_class = CPRecordArchive
+        self.cp_prices_class = CPPricesArchive
+        self.cp_generation_class = CPGenerationArchive
+        self.cp_emission_class = CPEmissionArchive
+
+    def copy_fields(self, record, record_old, fields):
+        for field in fields:
+            record[f"{field}_old"] = record_old[field] if record_old else None
+
+    def rename_fields(self, record, fields):
+        """
+        This is used for "old" records/usages that have now been deleted.
+        """
+        for field in fields:
+            old_value = record.pop(field, None)
+            record[field] = None
+            record[f"{field}_old"] = old_value
+
+    def diff_records(self, data, data_old, fields, row_identifier="row_id", is_section_d=False):
+        usage_fields = ["quantity", "quantity_gwp", "quantity_odp"]
+        diff_data = []
+
+        # We only want actually-reported substances in the diff
+        data = [item for item in data if item.get("id") != 0]
+        data_old = [item for item in data_old if item.get("id") != 0]
+        records_old = {record[row_identifier]: record for record in data_old}
+
+        for record in data:
+            record_old = records_old.pop(record[row_identifier], None)
+
+            if is_section_d:
+                record.pop("row_id")
+                if record_old:
+                    record_old.pop("row_id")
+            record.pop("id")
+            if record_old:
+                record_old.pop("id")
+            if record == record_old:
+                # Only display newly-added or changed records
+                continue
+            self.copy_fields(record, record_old, fields)
+            record["change_type"] = "changed" if record_old else "new"
+
+            # Also copy nested usage fields
+            old_record_usages = (
+                record_old.get("record_usages", []) if record_old else []
+            )
+            usages_old = {str(usage["usage_id"]): usage for usage in old_record_usages}
+            for usage in record.get("record_usages", []):
+                usage_old = usages_old.pop(str(usage["usage_id"]), None)
+                self.copy_fields(usage, usage_old, usage_fields)
+
+            diff_data.append(record)
+
+        for record in records_old.values():
+            self.rename_fields(record, fields)
+            for usage in record.get("record_usages", []):
+                self.rename_fields(usage, usage_fields)
+            record["change_type"] = "deleted"
+            diff_data.append(record)
+
+        return diff_data
+
+    def get(self, *args, **kwargs):
+        cp_report = self._get_cp_report()
+        version = self.request.query_params.get("version")
+        version = float(version) if version else None
+        if version and version < cp_report.version:
+            cp_report = get_object_or_404(
+                CPReportArchive,
+                version=version,
+                country=cp_report.country,
+                year=cp_report.year,
+            )
+        # We are diff-ing with the previous version by default
+        ar_version = cp_report.version - 1
+        cp_report_ar = get_object_or_404(
+            CPReportArchive,
+            version=ar_version,
+            country=cp_report.country,
+            year=cp_report.year,
+        )
+
+        if isinstance(cp_report, CPReportArchive):
+            self.set_archive_class_attributes()
+        data = self._get_new_cp_records(cp_report, data_only=True)
+        self.set_archive_class_attributes()
+        data_old = self._get_new_cp_records(cp_report_ar, data_only=True)
+
+        return Response(
+            {
+                "section_a": self.diff_records(
+                    data["section_a"], data_old["section_a"], self.section_a_b_fields
+                ),
+                "section_b": self.diff_records(
+                    data["section_b"], data_old["section_b"], self.section_a_b_fields
+                ),
+                "section_c": self.diff_records(
+                    data["section_c"], data_old["section_c"], self.section_c_fields
+                ),
+                "section_d": self.diff_records(
+                    data["section_d"],
+                    data_old["section_d"],
+                    self.section_d_fields,
+                    row_identifier="chemical_name",
+                    is_section_d=True,
+                ),
+                "section_e": self.diff_records(
+                    data["section_e"],
+                    data_old["section_e"],
+                    self.section_e_fields,
+                    row_identifier="facility",
+                ),
+                "section_f": {
+                    "remarks": cp_report.comment,
+                    "remarks_old": cp_report_ar.comment,
+                },
+            }
+        )

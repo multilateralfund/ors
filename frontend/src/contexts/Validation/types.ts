@@ -118,10 +118,12 @@ export interface IValidationContext {
   errors: Record<ValidationSchemaKeys, ValidateSectionResult>
   hasErrors: boolean
   setOpenDrawer: React.Dispatch<React.SetStateAction<boolean>>
+  silent: boolean
 }
 
 export interface IValidationProvider {
   children: React.ReactNode
   form: CPBaseForm
   model?: string
+  silent?: boolean
 }

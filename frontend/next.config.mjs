@@ -1,8 +1,13 @@
-const createMDX = require('@next/mdx')
+import createBundleAnalyzer from '@next/bundle-analyzer'
+import createMDX from '@next/mdx'
+// import rehypeAutolinkHeadings from 'rehype-autolink-headings'
+import rehypeSlug from 'rehype-slug'
+import rehypeToc from 'rehype-toc'
+// import remarkToc from 'remark-toc'
 
-const transformModulesMapper = require('./transform.modules.json')
+import transformModulesMapper from './transform.modules.json' assert { type: 'json' }
 
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
+const withBundleAnalyzer = createBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
   openAnalyzer: true,
 })
@@ -88,7 +93,24 @@ const nextConfig = {
 }
 
 const withMDX = createMDX({
-  // Add markdown plugins here, as desired
+  options: {
+    rehypePlugins: [
+      rehypeSlug,
+      // [
+      //   rehypeAutolinkHeadings,
+      //   {
+      //     behaviour: 'append',
+      //     properties: {
+      //       ariaHidden: true,
+      //       className: 'hash-link',
+      //       tabIndex: -1,
+      //     },
+      //   },
+      // ],
+      [rehypeToc, { position: 'beforebegin' }],
+    ],
+    // remarkPlugins: [remarkToc],
+  },
 })
 
-module.exports = withBundleAnalyzer(withMDX(nextConfig))
+export default withBundleAnalyzer(withMDX(nextConfig))
