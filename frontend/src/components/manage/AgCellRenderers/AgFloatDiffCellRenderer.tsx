@@ -9,8 +9,9 @@ import aggFuncs from '@ors/config/Table/aggFuncs'
 
 import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSkeletonCellRenderer'
 import { getDecimalCellValue } from '@ors/components/manage/Utils/DecimalCellValue'
+import { highlightCell } from '@ors/components/manage/Utils/diffUtils'
 import DiffTooltipHeader from '@ors/components/ui/DiffUtils/DiffTooltipHeader'
-import { fixFloat, highlightCell, parseNumber } from '@ors/helpers/Utils/Utils'
+import { fixFloat, parseNumber } from '@ors/helpers/Utils/Utils'
 
 export default function AgFloatDiffCellRenderer(
   props: CustomCellRendererProps,
