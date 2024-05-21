@@ -191,16 +191,14 @@ class CPCalculatedAmountExportView(CPRecordListView):
 
     def get_data(self, cp_report):
         records = (
-            CPRecord.objects.filter(
-                country_programme_report_id=cp_report.id, substance_id__isnull=False
-            )
-            .select_related("substance__group")
+            CPRecord.objects.filter(country_programme_report_id=cp_report.id)
+            .select_related("substance__group", "blend")
             .prefetch_related("record_usages")
             .all()
         )
         # set all consumprtion to 0
         data = {
-            group: {"sectorial_total": 0, "consumption": 0, "substances": ""}
+            group: {"sectorial_total": 0, "consumption": 0}
             for group in SUBSTANCE_GROUP_ID_TO_CATEGORY.values()
             if group not in ["Other", "Legacy"]
         }
@@ -208,9 +206,13 @@ class CPCalculatedAmountExportView(CPRecordListView):
         # calculate the consumption and sectorial total
         for record in records:
             # set the substance category
-            substance_category = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(
-                record.substance.group.group_id
-            )
+            if record.substance:
+                substance_category = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(
+                    record.substance.group.group_id
+                )
+            else:
+                substance_category = "HFC"
+
             if substance_category in ["Other", "Legacy"]:
                 continue
 
@@ -221,18 +223,15 @@ class CPCalculatedAmountExportView(CPRecordListView):
             # convert data
             if substance_category == "HFC":
                 # convert consumption value to CO2 equivalent
-                # substance = f"{record.substance.name} (gwp:{record.substance.gwp or 0}), consump:{consumption or 0})"
-                consumption *= record.substance.gwp or 0
-                sectorial_total *= record.substance.gwp or 0
+                consumption *= record.get_chemical_gwp() or 0
+                sectorial_total *= record.get_chemical_gwp() or 0
             else:
                 # convert consumption value to ODP
-                # substance = f"{record.substance.name} (odp:{record.substance.odp or 0}, consump:{consumption or 0})"
-                consumption *= record.substance.odp or 0
-                sectorial_total *= record.substance.odp or 0
+                consumption *= record.get_chemical_odp() or 0
+                sectorial_total *= record.get_chemical_odp() or 0
 
             data[substance_category]["sectorial_total"] += sectorial_total
             data[substance_category]["consumption"] += consumption
-            # data[substance_category]["substances"] += f"{substance};\n"
 
         # set the correct decimals number (for odp 2 decimals, for CO2 0 decimals)
         response_data = []
