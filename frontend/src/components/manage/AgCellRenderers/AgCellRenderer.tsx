@@ -45,8 +45,8 @@ export default function AgCellRenderer(props: any) {
     getDefaultCellRenderer()
 
   return (
-    <div>
-      <CellValidationWidget {...props} />
+    <div className="cell-renderer">
+      <CellValidationWidget className="cell-validation-error" {...props} />
       {!!options && optionsInDropdown && (
         <div className="ag-cell-options inline-block">
           <Dropdown
