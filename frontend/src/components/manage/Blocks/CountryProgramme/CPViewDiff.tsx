@@ -153,7 +153,7 @@ function CPDiffView() {
       : 0
     setActiveTab(newActiveTab === -1 ? 0 : newActiveTab)
     /* eslint-disable-next-line */
-  }, [])
+  }, [reportDiff])
 
   useEffect(() => {
     const indicator = tabsEl.current?.querySelector('.MuiTabs-indicator')

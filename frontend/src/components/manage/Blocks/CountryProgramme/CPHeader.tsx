@@ -25,12 +25,17 @@ import { IoChevronDown } from 'react-icons/io5'
 
 const CloseDiffButton = (props: any) => {
   const { report } = props
+  const isLastVersion = report.data.version === report.versions.data[0].version
+
+  const href = isLastVersion
+    ? `/country-programme/${report.country?.iso3}/${report.data.year}`
+    : `/country-programme/${report.country!.iso3}/${report.data.year}/archive/${report.data.version}`
 
   return (
     <Link
       className="btn-close ml-auto bg-gray-600 px-4 py-2 shadow-none"
       color="secondary"
-      href={`/country-programme/${report.country?.iso3}/${report.data.year}`}
+      href={href}
       size="large"
       variant="contained"
       button
