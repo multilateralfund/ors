@@ -187,7 +187,7 @@ class CPCalculatedAmountExportView(CPRecordListView):
         # delete default sheet
         del wb[wb.sheetnames[0]]
 
-        return workbook_response(f"CalculatedAmount {cp_report.name}", wb)
+        return self.get_response(f"CalculatedAmount {cp_report.name}", wb)
 
     def get_data(self, cp_report):
         records = (
@@ -254,6 +254,14 @@ class CPCalculatedAmountExportView(CPRecordListView):
                 }
             )
         return response_data
+
+    def get_response(self, name, wb):
+        return workbook_response(name, wb)
+
+
+class CPCalculatedAmountPrintView(CPCalculatedAmountExportView):
+    def get_response(self, name, wb):
+        return workbook_pdf_response(name, wb)
 
 
 class CPHFCHCFCExportBaseView(views.APIView):

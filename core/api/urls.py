@@ -40,7 +40,10 @@ from core.api.views.cp_reports import (
     CPReportCommentsView,
 )
 from core.api.views.cp_records import CPRecordListView, CPRecordListDiffView
-from core.api.views.cp_records_export import CPRecordPrintView
+from core.api.views.cp_records_export import (
+    CPCalculatedAmountPrintView,
+    CPRecordPrintView,
+)
 from core.api.views.cp_records_export import CPRecordExportView
 from core.api.views.cp_report_empty_form import EmptyFormView
 from core.api.views.meetings import MeetingListView
@@ -190,6 +193,11 @@ urlpatterns = [
         "country-programme/calculated-amount/export/",
         CPCalculatedAmountExportView.as_view(),
         name="country-programme-calculated-amount-export",
+    ),
+    path(
+        "country-programme/calculated-amount/print/",
+        CPCalculatedAmountPrintView.as_view(),
+        name="country-programme-calculated-amount-print",
     ),
     path(
         "country-programme/export-empty/",
