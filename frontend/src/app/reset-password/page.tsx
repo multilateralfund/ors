@@ -12,8 +12,9 @@ export const metadata: Metadata = {
 export default function ResetPassword() {
   return (
     <PageWrapper
-      className="mx-auto flex h-full w-full max-w-screen-sm flex-col items-center justify-center px-4"
+      className="mx-auto flex w-full max-w-screen-sm flex-col items-center justify-center"
       defaultSpacing={false}
+      fill
     >
       <ResetPasswordForm />
     </PageWrapper>
