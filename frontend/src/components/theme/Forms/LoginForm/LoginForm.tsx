@@ -42,7 +42,7 @@ export default function LoginForm() {
         }}
       >
         <Typography
-          className="mb-4 leading-tight tracking-tight font-medium"
+          className="mb-4 font-medium leading-tight tracking-tight"
           component="h1"
           variant="h4"
         >

@@ -7,7 +7,6 @@ import type { Metadata } from 'next'
 
 import React from 'react'
 
-import cx from 'classnames'
 // import { includes } from 'lodash'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { headers as nextHeaders } from 'next/headers'
@@ -141,12 +140,7 @@ export default async function RootLayout({
       data-ssr="yes"
     >
       <body id="next-app">
-        <div
-          id="layout"
-          className={cx('h-full', {
-            'bg-mlfs-deepTealShade': currentView?.path === '/login',
-          })}
-        >
+        <div id="layout" className={'h-full'}>
           <Script src="/critical.js" strategy="beforeInteractive" />
           <StoreProvider
             initialState={{
