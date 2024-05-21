@@ -8,6 +8,7 @@ import type { PartialDeep } from 'type-fest'
 import { StoreApi } from 'zustand'
 
 import { ReportVariant } from './variants'
+
 type StoreProviderProps = {
   children: React.ReactNode
   initialState: InitialStoreState
@@ -51,8 +52,17 @@ export interface CPReportsSlice {
   fetchArchivedFiles: (country_id: number) => void
   fetchArchivedReport: (report_id: number) => Promise<void>
   fetchBlends: () => Promise<void>
-  fetchBundle: (country_id: number, year: number, view?: boolean) => Promise<void>
-  fetchDiffBundle: (country_id: number, year: number) => void
+  fetchBundle: (
+    country_id: number,
+    year: number,
+    view?: boolean,
+  ) => Promise<void>
+  fetchDiffBundle: (
+    country_id: number,
+    year: number,
+    version: number,
+    report_id?: number,
+  ) => void
   fetchEmptyForm: (report: CPReport | null, view: boolean) => void
   fetchFiles: (country_id: number, year: number) => void
   fetchReport: (country_id: number, year: number) => Promise<void>

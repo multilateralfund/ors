@@ -128,12 +128,10 @@ export const createCPReportsSlice = ({
         setReportCountry,
         setReportVariant,
       } = get().cp_reports
-      // const {setSectionsCHecked} = get().cp_sections;
       await fetchArchivedReport(report_id)
       const report = getSlice<CPReport>('cp_reports.report.data')
       setReportCountry(report)
       setReportVariant(report)
-      // setSectionsCHecked(report.)
       fetchEmptyForm(report, view)
       if (view) {
         fetchVersions(report.country_id, report.year)
@@ -205,24 +203,29 @@ export const createCPReportsSlice = ({
       fetchVersions(country_id, year)
       fetchFiles(country_id, year)
     },
-    fetchDiffBundle: async (country_id, year) => {
+    fetchDiffBundle: async (country_id, year, version, report_id) => {
       const {
+        fetchArchivedReport,
         fetchEmptyForm,
-        fetchFiles,
         fetchReport,
         fetchReportDiff,
         fetchVersions,
         setReportCountry,
         setReportVariant,
       } = get().cp_reports
-      await fetchReport(country_id, year)
+      if (report_id) {
+        await fetchArchivedReport(report_id)
+      } else {
+        await fetchReport(country_id, year)
+      }
+
       const report = getSlice<CPReport>('cp_reports.report.data')
+
       setReportCountry(report)
       setReportVariant(report)
       fetchEmptyForm(report, true)
-      fetchReportDiff(country_id, year, report.version)
+      fetchReportDiff(country_id, year, version)
       fetchVersions(country_id, year)
-      fetchFiles(country_id, year)
     },
     fetchEmptyForm: async (report = null, view = true) => {
       const variant = getVariant(report)

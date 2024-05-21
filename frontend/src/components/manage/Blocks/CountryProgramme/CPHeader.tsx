@@ -43,11 +43,16 @@ const CloseDiffButton = (props: any) => {
 const ReportDiffButton = (props: any) => {
   const { report } = props
 
+  const showButton =
+    report.versions.data.length > 1 && report.data.version !== 1
+
+  if (!showButton) return null
+
   return (
     <Link
       className="px-5"
       color="secondary"
-      href={`/country-programme/${report.country?.iso3}/${report.data.year}/diff`}
+      href={`/country-programme/${report.country?.iso3}/${report.data.year}/diff/${report.data.version}`}
       size="large"
       variant="contained"
       button
@@ -545,24 +550,34 @@ const CPDiffHeader = () => {
   const { report } = useStore((state) => state.cp_reports)
   const { versions } = report
   const [memo, setMemo] = useState(0)
+  const report_version = report.data?.version
 
-  const currentVersion = useMemo(
-    () => ({
-      date: formattedDateFromTimestamp(versions.data?.[0].created_at),
-      status: versions.data?.[0].status,
-      version: versions.data?.[0].version,
-    }),
-    [versions.data],
-  )
+  const currentVersion = useMemo(() => {
+    if (!report_version) return null
+    const versionObject = versions.data?.find(
+      (v) => v.version === report_version,
+    )
+    if (!versionObject) return null
+    return {
+      date: formattedDateFromTimestamp(versionObject.created_at),
+      status: versionObject.status,
+      version: versionObject.version,
+    }
+  }, [versions, report_version])
 
-  const previousVersion = useMemo(
-    () => ({
-      date: formattedDateFromTimestamp(versions.data?.[1].created_at),
-      status: versions.data?.[1].status,
-      version: versions.data?.[1].version,
-    }),
-    [versions.data],
-  )
+  const previousVersion = useMemo(() => {
+    if (!report_version) return null
+    const versionObject = versions.data?.find(
+      (v) => v.version === report_version - 1,
+    )
+    if (!versionObject) return null
+
+    return {
+      date: formattedDateFromTimestamp(versionObject.created_at),
+      status: versionObject.status,
+      version: versionObject.version,
+    }
+  }, [versions, report_version])
 
   const VersionTag = ({ date, status, version }: any) => {
     return (

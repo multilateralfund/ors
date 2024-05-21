@@ -277,12 +277,12 @@ function CPDiffView() {
 }
 
 export default function CPDiffViewWrapper(props: {
-  iso3: string
+  country_id: number
+  report_id?: number
+  version: number
   year: number
 }) {
-  const { iso3, year } = props
-  const countries = useStore((state) => state.common.countries_for_listing.data)
-  const country = countries.filter((country) => country.iso3 === iso3)[0]
+  const { country_id, report_id, version, year } = props
 
   const { fetchDiffBundle, report, reportDiff } = useStore(
     (state) => state.cp_reports,
@@ -291,13 +291,12 @@ export default function CPDiffViewWrapper(props: {
   const dataReady =
     report.data &&
     report.emptyForm.data &&
-    report.data.country_id === country.id &&
     report.data.year == year &&
     reportDiff.data
 
   useEffect(() => {
-    fetchDiffBundle(country.id, year)
-  }, [country, year, fetchDiffBundle])
+    fetchDiffBundle(country_id, year, version, report_id)
+  }, [year, fetchDiffBundle, version, report_id, country_id])
 
   if (!dataReady)
     return (

@@ -1,4 +1,4 @@
-import { Country } from '@ors/types/store'
+import { CPVersionInfo, Country } from '@ors/types/store'
 import type { Metadata } from 'next'
 
 import CPDiffViewWrapper from '@ors/components/manage/Blocks/CountryProgramme/CPViewDiff'
@@ -12,10 +12,12 @@ export const metadata: Metadata = {
 export default async function CountryProgrammeReportDiff(props: {
   params: {
     iso3: string
+    version: string
     year: string
   }
 }) {
   const { iso3, year } = props.params
+  const version = parseInt(props.params.version, 10)
 
   const countries =
     (await api<Country[]>(
@@ -26,7 +28,6 @@ export default async function CountryProgrammeReportDiff(props: {
 
   const country = countries.filter((country) => country.iso3 === iso3)[0]
 
-  /*
   const versions =
     (await api<CPVersionInfo[]>(
       'api/country-programme/versions',
@@ -34,14 +35,17 @@ export default async function CountryProgrammeReportDiff(props: {
       false,
     )) || []
 
-  const version_numbers = versions.map((ver) => ver.version)
-  const max_version = Math.max(...version_numbers)
-  const id = versions.filter((ver) => ver.version == max_version - 1).pop()!.id
-  */
+  const report_id = versions.filter((ver) => ver.version == version).pop()!.id
+  const isLastVersion = version === versions.length
 
   return (
     <PageWrapper>
-      <CPDiffViewWrapper iso3={country.iso3} year={parseInt(year, 10)} />
+      <CPDiffViewWrapper
+        country_id={country.id}
+        report_id={!isLastVersion ? report_id : undefined}
+        version={version}
+        year={parseInt(year, 10)}
+      />
     </PageWrapper>
   )
 }
