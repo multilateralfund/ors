@@ -1,5 +1,4 @@
 from core.api.export.base import WriteOnlyBase
-from core.api.export.base import COLUMN_WIDTH
 
 
 class ProjectWriter(WriteOnlyBase):
@@ -10,12 +9,12 @@ class ProjectWriter(WriteOnlyBase):
             {
                 "id": "code",
                 "headerName": "Code",
-                "column_width": COLUMN_WIDTH * 2,
+                "column_width": self.COLUMN_WIDTH * 2,
             },
             {
                 "id": "code_legacy",
                 "headerName": "Legacy code",
-                "column_width": COLUMN_WIDTH * 2,
+                "column_width": self.COLUMN_WIDTH * 2,
             },
             {
                 "id": "metaproject_code",
@@ -24,7 +23,7 @@ class ProjectWriter(WriteOnlyBase):
             {
                 "id": "cluster",
                 "headerName": "Cluster",
-                "column_width": COLUMN_WIDTH * 2,
+                "column_width": self.COLUMN_WIDTH * 2,
             },
             {
                 "id": "metaproject_category",
@@ -45,7 +44,7 @@ class ProjectWriter(WriteOnlyBase):
             {
                 "id": "sector",
                 "headerName": "Sector",
-                "column_width": COLUMN_WIDTH * 1.5,
+                "column_width": self.COLUMN_WIDTH * 1.5,
             },
             {
                 "id": "sector_legacy",
@@ -54,7 +53,7 @@ class ProjectWriter(WriteOnlyBase):
             {
                 "id": "subsector",
                 "headerName": "Subsector",
-                "column_width": COLUMN_WIDTH * 1.5,
+                "column_width": self.COLUMN_WIDTH * 1.5,
             },
             {
                 "id": "subsector_legacy",
@@ -71,7 +70,7 @@ class ProjectWriter(WriteOnlyBase):
             {
                 "id": "status",
                 "headerName": "Status",
-                "column_width": COLUMN_WIDTH * 1.5,
+                "column_width": self.COLUMN_WIDTH * 1.5,
             },
             {
                 "id": "serial_number",
@@ -88,7 +87,7 @@ class ProjectWriter(WriteOnlyBase):
             {
                 "id": "title",
                 "headerName": "Title",
-                "column_width": COLUMN_WIDTH * 5,
+                "column_width": self.COLUMN_WIDTH * 5,
             },
         ]
 

@@ -10,11 +10,9 @@ from openpyxl.styles import DEFAULT_FONT
 from openpyxl.utils import get_column_letter
 
 
-ROW_HEIGHT = 30
-COLUMN_WIDTH = 15
-
-
 class BaseWriter:
+    ROW_HEIGHT = 30
+    COLUMN_WIDTH = 15
     header_row_start_idx = 2
 
     def __init__(self, sheet, headers):
@@ -96,11 +94,11 @@ class BaseWriter:
     def set_dimensions(self):
         for header in self.headers.values():
             self.sheet.column_dimensions[header["column_letter"]].width = header.get(
-                "column_width", COLUMN_WIDTH
+                "column_width", self.COLUMN_WIDTH
             )
 
         for row in range(self.header_row_start_idx, self.sheet.max_row + 1):
-            self.sheet.row_dimensions[row].height = ROW_HEIGHT
+            self.sheet.row_dimensions[row].height = self.ROW_HEIGHT
 
     def _compute_header_positions(self, items, column=1, row=3):
         """
@@ -170,6 +168,8 @@ class BaseWriter:
 
 
 class CPReportBase:
+    ROW_HEIGHT = 30
+    COLUMN_WIDTH = 15
     sections = ()
 
     def __init__(self, cp_report):
@@ -265,7 +265,7 @@ class WriteOnlyBase:
         for i, header in enumerate(self.headers):
             column_letter = get_column_letter(i + 1)
             self.sheet.column_dimensions[column_letter].width = header.get(
-                "column_width", COLUMN_WIDTH
+                "column_width", self.COLUMN_WIDTH
             )
 
     def write_header_cell(self, value, comment=None):

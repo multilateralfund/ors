@@ -336,7 +336,7 @@ class TestCPCalculatedAmountExportPDF(BaseTest):
         for name in [
             "Substances",
             "Unit",
-            "Calculated Total",
+            "Sectoral",
             "Consumption",
         ]:
             assert name in text

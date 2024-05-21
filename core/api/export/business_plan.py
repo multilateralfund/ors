@@ -1,5 +1,4 @@
 from core.api.export.base import BaseWriter
-from core.api.export.base import COLUMN_WIDTH
 
 
 class BusinessPlanWriter(BaseWriter):
@@ -42,7 +41,7 @@ class BusinessPlanWriter(BaseWriter):
             {
                 "id": "country",
                 "headerName": "Country",
-                "column_width": COLUMN_WIDTH * 2,
+                "column_width": self.COLUMN_WIDTH * 2,
             },
             {
                 "id": "agency",
@@ -72,7 +71,7 @@ class BusinessPlanWriter(BaseWriter):
                 "id": "amount_polyol",
                 "headerName": "Amount of Polyol in Project (MT)",
                 "type": "number",
-                "column_width": COLUMN_WIDTH * 1.5,
+                "column_width": self.COLUMN_WIDTH * 1.5,
             },
             {"id": "project_cluster","headerName": "Cluster"},
             {"id": "sector", "headerName": "Sector"},
@@ -81,18 +80,18 @@ class BusinessPlanWriter(BaseWriter):
             {
                 "id": "title",
                 "headerName": "Title",
-                "column_width": COLUMN_WIDTH * 4,
+                "column_width": self.COLUMN_WIDTH * 4,
             },
             {
                 "id": "required_by_model",
                 "headerName": "Required by Model",
-                "column_width": COLUMN_WIDTH * 2,
+                "column_width": self.COLUMN_WIDTH * 2,
             },
             *year_headers,
             {
                 "id": "reason_for_exceeding",
                 "headerName": "Reason for exceeding 35% of baseline",
-                "column_width": COLUMN_WIDTH * 2,
+                "column_width": self.COLUMN_WIDTH * 2,
             },
             {
                 "id": "bp_type",
@@ -106,12 +105,12 @@ class BusinessPlanWriter(BaseWriter):
             {
                 "id": "remarks",
                 "headerName": "Remarks",
-                "column_width": COLUMN_WIDTH * 4,
+                "column_width": self.COLUMN_WIDTH * 4,
             },
             {
                 "id": "remarks_additional",
                 "headerName": "Remarks (Additional)",
-                "column_width": COLUMN_WIDTH * 4,
+                "column_width": self.COLUMN_WIDTH * 4,
             },
         ]
 
