@@ -2,8 +2,6 @@ from openpyxl.styles import Alignment
 from openpyxl.utils import get_column_letter
 
 from core.api.export.base import CPReportBase
-from core.api.export.base import COLUMN_WIDTH
-from core.api.export.base import ROW_HEIGHT
 from core.api.export.section_export import SectionWriter
 
 # pylint: disable=R0913
@@ -55,7 +53,7 @@ class CPReportNewExporter(CPReportBase):
                         "id": "display_name",
                         "headerName": "Substance",
                         "is_numeric": False,
-                        "column_width": COLUMN_WIDTH * 2,
+                        "column_width": self.COLUMN_WIDTH * 2,
                     },
                     {
                         "id": "use-by-sector",
@@ -113,7 +111,7 @@ class CPReportNewExporter(CPReportBase):
                         "id": "remarks",
                         "headerName": "Remarks",
                         "is_numeric": False,
-                        "column_width": COLUMN_WIDTH * 2,
+                        "column_width": self.COLUMN_WIDTH * 2,
                     },
                 ],
             }
@@ -136,25 +134,25 @@ class CPReportNewExporter(CPReportBase):
                             "id": "display_name",
                             "headerName": "Substance",
                             "is_numeric": False,
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                         },
                         {
                             "id": "previous_year_price",
                             "headerName": "Previous year price",
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                             "align": "right",
                         },
                         {
                             "id": "current_year_price",
                             "headerName": "Current prices",
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                             "align": "right",
                         },
                         {
                             "id": "remarks",
                             "headerName": "Remarks",
                             "is_numeric": False,
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                         },
                     ],
                 }
@@ -173,24 +171,24 @@ class CPReportNewExporter(CPReportBase):
                             "id": "display_name",
                             "headerName": "Substance",
                             "is_numeric": False,
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                         },
                         {
                             "id": "all_uses",
                             "headerName": "Captured for all uses",
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                             "align": "right",
                         },
                         {
                             "id": "feedstock",
                             "headerName": "Captured for feedstock uses within your country",
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                             "align": "right",
                         },
                         {
                             "id": "destruction",
                             "headerName": "Captured for destruction",
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                             "align": "right",
                         },
                     ],
@@ -210,7 +208,7 @@ class CPReportNewExporter(CPReportBase):
                             "id": "facility",
                             "headerName": "Facility name or identifier",
                             "is_numeric": False,
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                         },
                         {
                             "id": "total",
@@ -224,19 +222,19 @@ class CPReportNewExporter(CPReportBase):
                                 {
                                     "id": "all_uses",
                                     "headerName": "For all uses",
-                                    "column_width": COLUMN_WIDTH * 2,
+                                    "column_width": self.COLUMN_WIDTH * 2,
                                     "align": "right",
                                 },
                                 {
                                     "id": "feedstock_gc",
                                     "headerName": "For feedstock use in your country",
-                                    "column_width": COLUMN_WIDTH * 2,
+                                    "column_width": self.COLUMN_WIDTH * 2,
                                     "align": "right",
                                 },
                                 {
                                     "id": "destruction",
                                     "headerName": "For destruction",
-                                    "column_width": COLUMN_WIDTH * 2,
+                                    "column_width": self.COLUMN_WIDTH * 2,
                                     "align": "right",
                                 },
                             ],
@@ -244,26 +242,26 @@ class CPReportNewExporter(CPReportBase):
                         {
                             "id": "feedstock_wpc",
                             "headerName": "Amount used for feedstock without prior capture",
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                             "align": "right",
                         },
                         {
                             "id": " destruction_wpc",
                             "headerName": "Amount destroyed without prior capture",
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                             "align": "right",
                         },
                         {
                             "id": "generated_emissions",
                             "headerName": "Amount of generated emission",
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                             "align": "right",
                         },
                         {
                             "id": "remarks",
                             "headerName": "Remarks",
                             "is_numeric": False,
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                         },
                     ],
                 }
@@ -295,5 +293,5 @@ class CPReportNewExporter(CPReportBase):
 
         cell = sheet.cell(row_idx, col_idx, value)
         cell.alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
-        sheet.column_dimensions[get_column_letter(col_idx)].width = COLUMN_WIDTH * 4
-        sheet.row_dimensions[row_idx].height = ROW_HEIGHT * 16
+        sheet.column_dimensions[get_column_letter(col_idx)].width = self.COLUMN_WIDTH * 4
+        sheet.row_dimensions[row_idx].height = self.ROW_HEIGHT * 16

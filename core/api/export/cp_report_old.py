@@ -1,6 +1,5 @@
 from core.api.export.adm_export import AdmWriter
 from core.api.export.base import CPReportBase
-from core.api.export.base import COLUMN_WIDTH
 from core.api.export.section_export import SectionWriter
 
 
@@ -25,7 +24,7 @@ class CPReportOldExporter(CPReportBase):
                             "id": "display_name",
                             "headerName": "Substance",
                             "is_numeric": False,
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                         },
                         {
                             "id": "use-by-sector",
@@ -59,7 +58,7 @@ class CPReportOldExporter(CPReportBase):
                             "id": "remarks",
                             "headerName": "Remarks",
                             "is_numeric": False,
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                         },
                     ],
                 }
@@ -87,7 +86,7 @@ class CPReportOldExporter(CPReportBase):
                                     "id": "text",
                                     "headerName": "",
                                     "is_row_header": True,
-                                    "column_width": COLUMN_WIDTH * 6,
+                                    "column_width": self.COLUMN_WIDTH * 6,
                                 },
                             ],
                         },
@@ -95,7 +94,7 @@ class CPReportOldExporter(CPReportBase):
                         {
                             "id": "remarks",
                             "headerName": "Remarks",
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                         },
                     ],
                 }
@@ -115,13 +114,13 @@ class CPReportOldExporter(CPReportBase):
                             "id": "text",
                             "headerName": "Description",
                             "is_row_header": True,
-                            "column_width": COLUMN_WIDTH * 6,
+                            "column_width": self.COLUMN_WIDTH * 6,
                         },
                         *usages["columns"],
                         {
                             "id": "remarks",
                             "headerName": "Remarks",
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                         },
                     ],
                 }
@@ -141,23 +140,23 @@ class CPReportOldExporter(CPReportBase):
                             "id": "display_name",
                             "headerName": "Substance",
                             "is_numeric": False,
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                         },
                         {
                             "id": "previous_year_price",
                             "headerName": "Previous year price",
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                         },
                         {
                             "id": "current_year_price",
                             "headerName": "Current prices",
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                         },
                         {
                             "id": "remarks",
                             "headerName": "Remarks",
                             "is_numeric": False,
-                            "column_width": COLUMN_WIDTH * 2,
+                            "column_width": self.COLUMN_WIDTH * 2,
                         },
                     ],
                 }
@@ -176,18 +175,18 @@ class CPReportOldExporter(CPReportBase):
                 {
                     "id": "sheet-title",
                     "headerName": f"ADM D. {header}",
-                    "column_width": COLUMN_WIDTH * 16,
+                    "column_width": self.COLUMN_WIDTH * 16,
                     "children": [
                         {
                             "id": "text",
                             "headerName": "Question",
                             "is_row_header": True,
-                            "column_width": COLUMN_WIDTH * 6,
+                            "column_width": self.COLUMN_WIDTH * 6,
                         },
                         {
                             "id": None,
                             "headerName": "Answer",
-                            "column_width": COLUMN_WIDTH * 4,
+                            "column_width": self.COLUMN_WIDTH * 4,
                         },
                     ],
                 }
