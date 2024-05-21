@@ -21,7 +21,7 @@ export default function CellValidationWidget(props: any) {
     props.column.colId === 'display_name' && rowErrors.length > 0
 
   const errors = showErrorInfo ? rowErrors : cellErrors
-  const display = !validationContext.silent && errors.length > 0
+  const display = !validationContext?.silent && errors.length > 0
 
   return (
     <div

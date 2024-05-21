@@ -10,9 +10,10 @@ function useGridOptions() {
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
       {
+        ...sectionColDefById['facility'],
         cellClass: 'bg-mui-box-background',
         cellRendererParams: (props: any) => ({
-          className: cx({
+          className: cx('px-0', {
             'font-bold': includes(
               ['group', 'total', 'subtotal'],
               props.data.rowType,
@@ -22,37 +23,40 @@ function useGridOptions() {
         field: 'facility',
         headerClass: 'ag-text-left',
         headerName: 'Facility name or identifier',
-        ...sectionColDefById['facility'],
       },
       {
+        ...sectionColDefById['total_amount_generated'],
+        cellClass: 'bg-white ag-text-center px-0',
         dataType: 'number_diff',
         field: 'total',
         headerName: 'Total amount generated',
         orsAggFunc: 'sumTotal',
-        ...sectionColDefById['total_amount_generated'],
       },
       {
         children: [
           {
+            ...sectionColDefById['all_uses'],
+            cellClass: 'bg-white ag-text-center px-0',
             dataType: 'number_diff',
             field: 'all_uses',
             headerName: 'For all uses',
             orsAggFunc: 'sumTotal',
-            ...sectionColDefById['all_uses'],
           },
           {
+            ...sectionColDefById['feedstock_gc'],
+            cellClass: 'bg-white ag-text-center px-0',
             dataType: 'number_diff',
             field: 'feedstock_gc',
             headerName: 'For feedstock use in your country',
             orsAggFunc: 'sumTotal',
-            ...sectionColDefById['feedstock_gc'],
           },
           {
+            ...sectionColDefById['destruction'],
+            cellClass: 'bg-white ag-text-center px-0',
             dataType: 'number_diff',
             field: 'destruction',
             headerName: 'For destruction',
             orsAggFunc: 'sumTotal',
-            ...sectionColDefById['destruction'],
           },
         ],
         groupId: 'amount_generated_and_captured',
@@ -62,25 +66,28 @@ function useGridOptions() {
         ...sectionColGroupDefById['amount_generated_and_captured'],
       },
       {
+        ...sectionColDefById['feedstock_wpc'],
+        cellClass: 'bg-white ag-text-center px-0',
         dataType: 'number_diff',
         field: 'feedstock_wpc',
         headerName: 'Amount used for feedstock without prior capture',
         orsAggFunc: 'sumTotal',
-        ...sectionColDefById['feedstock_wpc'],
       },
       {
+        ...sectionColDefById['destruction_wpc'],
+        cellClass: 'bg-white ag-text-center px-0',
         dataType: 'number_diff',
         field: 'destruction_wpc',
         headerName: 'Amount destroyed without prior capture',
         orsAggFunc: 'sumTotal',
-        ...sectionColDefById['destruction_wpc'],
       },
       {
+        ...sectionColDefById['generated_emissions'],
+        cellClass: 'bg-white ag-text-center px-0',
         dataType: 'number_diff',
         field: 'generated_emissions',
         headerName: 'Amount of generated emissions',
         orsAggFunc: 'sumTotal',
-        ...sectionColDefById['generated_emissions'],
       },
     ],
     defaultColDef: {

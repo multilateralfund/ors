@@ -144,6 +144,15 @@ function CPDiffView() {
     () => (variant ? getSections(variant, 'diff') : []),
     [variant],
   )
+  // iterate through sections, find the first section that is not disabled
+  useEffect(() => {
+    const newActiveTab = reportDiff.data
+      ? // @ts-ignore
+        sections.findIndex((section) => reportDiff.data[section.id]?.length)
+      : 0
+    setActiveTab(newActiveTab === -1 ? 0 : newActiveTab)
+    /* eslint-disable-next-line */
+  }, [])
 
   useEffect(() => {
     const indicator = tabsEl.current?.querySelector('.MuiTabs-indicator')

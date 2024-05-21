@@ -10,6 +10,7 @@ function useGridOptions() {
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
       {
+        ...sectionColDefById['display_name'],
         cellClass: 'bg-mui-box-background',
         cellRendererParams: (props: any) => ({
           className: cx({
@@ -22,28 +23,30 @@ function useGridOptions() {
         field: 'display_name',
         headerClass: 'ag-text-left',
         headerName: 'Substance',
-        ...sectionColDefById['display_name'],
       },
       {
+        ...sectionColDefById['all_uses'],
+        cellClass: 'ag-text-center px-0',
         dataType: 'number_diff',
         field: 'all_uses',
         headerName: 'Captured for all uses',
         orsAggFunc: 'sumTotal',
-        ...sectionColDefById['all_uses'],
       },
       {
+        ...sectionColDefById['feedstock'],
+        cellClass: 'ag-text-center px-0',
         dataType: 'number_diff',
         field: 'feedstock',
         headerName: 'Captured for feedstock uses within your country',
         orsAggFunc: 'sumTotal',
-        ...sectionColDefById['feedstock'],
       },
       {
+        ...sectionColDefById['destruction'],
+        cellClass: 'ag-text-center px-0',
         dataType: 'number_diff',
         field: 'destruction',
         headerName: 'Captured for destruction',
         orsAggFunc: 'sumTotal',
-        ...sectionColDefById['destruction'],
       },
     ],
     defaultColDef: {

@@ -2,20 +2,28 @@ import React from 'react'
 
 import cx from 'classnames'
 
-export default function DiffPill(props: any) {
+type ChangeType = 'changed' | 'deleted' | 'new'
+
+interface DiffPillProps {
+  change_type: ChangeType
+}
+
+export default function DiffPill(props: DiffPillProps) {
   const { change_type } = props
+  const type = { changed: 'CHANGED', deleted: 'DELETED', new: 'NEW' }
 
   return (
     <div
       className={cx(
-        'w-fit shrink-0 whitespace-nowrap rounded-md px-1 text-center text-sm uppercase',
+        'w-fit rounded-md px-1 text-center text-sm uppercase',
         {
           'bg-gray-200 text-gray-700': change_type === 'deleted',
-          'bg-green-200 text-green-700': change_type === 'new',
+          'bg-green-200 text-green-700':
+            change_type === 'new' || change_type === 'changed',
         },
       )}
     >
-      {change_type === 'new' ? 'NEW' : 'DELETED'}
+      {type[change_type]}
     </div>
   )
 }

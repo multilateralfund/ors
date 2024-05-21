@@ -11,6 +11,7 @@ import { getDecimalCellValue } from '@ors/components/manage/Utils/DecimalCellVal
 import DiffTooltipHeader from '@ors/components/ui/DiffUtils/DiffTooltipHeader'
 import {
   getUnitAwareValue,
+  highlightCell,
   parseNumber,
   sumFloats,
 } from '@ors/helpers/Utils/Utils'
@@ -129,6 +130,7 @@ export default function AgUsageDiffCellRenderer(
       <Typography
         className={cx(
           props.className,
+          `${highlightCell(new_value, old_value, props.data?.change_type)}`,
           // 'grid grid-cols-2 grid-rows-2 gap-x-1 leading-normal',
         )}
         component="div"

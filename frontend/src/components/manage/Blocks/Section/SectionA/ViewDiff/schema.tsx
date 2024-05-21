@@ -40,6 +40,7 @@ function useGridOptions(props: {
       headerName: 'Substance',
       ...sectionColDefById['display_name'],
       editable: false,
+      // minWidth: 130,
       // ...(includes(['I', 'II', 'III'], model) ? { initialWidth: 165 } : {}),
     }),
     [sectionColDefById],
@@ -49,7 +50,7 @@ function useGridOptions(props: {
     () => ({
       autoHeight: true,
       cellClass: (props: CellClassParams) => {
-        return cx({
+        return cx('px-0', {
           'ag-cell-hashed theme-dark:bg-gray-900/40': includes(
             props.data.excluded_usages || [],
             props.colDef.id,
@@ -58,7 +59,6 @@ function useGridOptions(props: {
         })
       },
       headerClass: 'ag-text-center',
-      // minWidth: defaultColDef.minWidth,
       resizable: true,
       wrapText: true,
     }),
@@ -71,7 +71,7 @@ function useGridOptions(props: {
       {
         id: 'total_usages',
         category: 'usage_diff',
-        cellClass: 'bg-yellow-50 text-center',
+        cellClass: 'bg-yellow-50 text-center px-0',
         headerName: 'TOTAL',
         orsAggFunc: 'sumTotalUsages',
         ...sectionColDefById['total_usages'],

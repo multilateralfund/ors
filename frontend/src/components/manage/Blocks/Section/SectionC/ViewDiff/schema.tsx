@@ -29,24 +29,27 @@ function useGridOptions(props: { model: string }) {
       ...(!includes(['II', 'III'], model)
         ? [
             {
+              ...sectionColDefById['previous_year_price'],
+              cellClass: 'px-0 ag-text-center',
               dataType: 'number_diff',
               field: 'previous_year_price',
               headerName: 'Previous year price',
               orsAggFunc: 'sumTotal',
-              ...sectionColDefById['previous_year_price'],
             },
           ]
         : []),
       {
+        ...sectionColDefById['current_year_price'],
+        cellClass: 'px-0 ag-text-center',
         dataType: 'number_diff',
         field: 'current_year_price',
         headerName: 'Current prices',
         orsAggFunc: 'sumTotal',
-        ...sectionColDefById['current_year_price'],
       },
     ],
     defaultColDef: {
       autoHeight: true,
+      cellClass: 'px-0 ag-text-center',
       // minWidth: defaultColDef.minWidth,
       resizable: true,
       wrapText: true,

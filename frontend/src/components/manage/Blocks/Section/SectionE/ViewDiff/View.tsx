@@ -8,18 +8,11 @@ function getRowData(report: any) {
   return [...report.section_e]
 }
 
-function getPinnedRowData(rowData: any) {
-  return rowData.length > 0
-    ? [{ facility: 'TOTAL', rowType: 'total', tooltip: true }]
-    : []
-}
-
 export default function SectionEViewDiff(props: any) {
   const { TableProps, report } = props
   const gridOptions = useGridOptions()
   const grid = useRef<any>()
   const [rowData] = useState(() => getRowData(report))
-  const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
   return (
     <>
@@ -29,7 +22,6 @@ export default function SectionEViewDiff(props: any) {
         defaultColDef={gridOptions.defaultColDef}
         gridRef={grid}
         headerDepth={2}
-        pinnedBottomRowData={pinnedBottomRowData}
         rowData={rowData}
       />
     </>

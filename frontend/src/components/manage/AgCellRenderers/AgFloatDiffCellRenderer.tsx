@@ -10,7 +10,7 @@ import aggFuncs from '@ors/config/Table/aggFuncs'
 import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSkeletonCellRenderer'
 import { getDecimalCellValue } from '@ors/components/manage/Utils/DecimalCellValue'
 import DiffTooltipHeader from '@ors/components/ui/DiffUtils/DiffTooltipHeader'
-import { fixFloat, parseNumber } from '@ors/helpers/Utils/Utils'
+import { fixFloat, highlightCell, parseNumber } from '@ors/helpers/Utils/Utils'
 
 export default function AgFloatDiffCellRenderer(
   props: CustomCellRendererProps,
@@ -60,7 +60,9 @@ export default function AgFloatDiffCellRenderer(
     valueGWP = props.colDef ? props.data[`${props.colDef.field}_gwp`] : null
     valueODP = props.colDef ? props.data[`${props.colDef.field}_odp`] : null
 
-    valueOld = props.colDef ? props.data[`${props.colDef.field}_old`] : null
+    valueOld = props.colDef
+      ? parseNumber(props.data[`${props.colDef.field}_old`])
+      : null
     valueGWPOld = props.colDef
       ? props.data[`${props.colDef.field}_gwp_old`]
       : null
@@ -106,6 +108,7 @@ export default function AgFloatDiffCellRenderer(
       <Typography
         className={cx(
           props.className,
+          `${highlightCell(new_value, old_value, props.data?.change_type)}`,
           // 'grid grid-cols-2 grid-rows-2 gap-x-1 leading-normal',
         )}
         component="div"

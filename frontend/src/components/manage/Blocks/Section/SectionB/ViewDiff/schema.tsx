@@ -45,7 +45,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
     () => ({
       autoHeight: true,
       cellClass: (props: CellClassParams) => {
-        return cx({
+        return cx('px-0', {
           'ag-cell-hashed theme-dark:bg-gray-900/40':
             includes(props.data?.excluded_usages || [], props.colDef.id) ||
             (props.column.getColId() === 'manufacturing_blends' &&
@@ -73,7 +73,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
       {
         id: 'total_usages',
         category: 'usage_diff',
-        cellClass: 'bg-yellow-50 text-center',
+        cellClass: 'bg-yellow-50 text-center px-0',
         headerName: 'TOTAL',
         orsAggFunc: 'sumTotalUsages',
         ...sectionColDefById['total_usages'],
