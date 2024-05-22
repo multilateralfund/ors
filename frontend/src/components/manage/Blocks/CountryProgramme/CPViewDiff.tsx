@@ -319,6 +319,10 @@ export default function CPDiffViewWrapper(props: {
     fetchDiffBundle(country_id, year, version, report_id)
   }, [year, fetchDiffBundle, version, report_id, country_id])
 
+  const diffError = reportDiff.error
+
+  if (diffError) return <Error error={diffError} />
+
   if (!dataReady)
     return (
       <Loading
