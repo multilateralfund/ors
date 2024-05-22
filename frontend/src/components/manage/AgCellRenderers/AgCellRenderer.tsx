@@ -27,12 +27,14 @@ function getCellRendererByCategory(category?: string) {
   return componentName ? components[componentName] : null
 }
 
+const colsWithDiffPill = ['display_name', 'facility']
+
 export default function AgCellRenderer(props: any) {
   const [showError, setShowError] = useState(false)
   const category = props.colDef.category
   const type = props.colDef.dataType
   const change_type = props.data.change_type
-  const showDiff = props.column.colId === 'display_name' && change_type
+  const showDiff = colsWithDiffPill.includes(props.column.colId) && change_type
 
   const error = getError(props)
 

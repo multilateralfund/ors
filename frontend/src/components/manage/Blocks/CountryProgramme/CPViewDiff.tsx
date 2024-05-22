@@ -22,6 +22,14 @@ import { ITableProps } from './typesCPView'
 
 import { IoClose, IoExpand } from 'react-icons/io5'
 
+type SectionId =
+  | 'section_a'
+  | 'section_b'
+  | 'section_c'
+  | 'section_d'
+  | 'section_e'
+  | 'section_f'
+
 const TableProps: ITableProps = {
   Toolbar: ({
     enterFullScreen,
@@ -131,7 +139,9 @@ const TableProps: ITableProps = {
 function CPDiffView() {
   const tabsEl = React.useRef<HTMLDivElement>(null)
   const { report, reportDiff } = useStore((state) => state.cp_reports)
-  const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
+  const { activeTab, diffActiveTab, setDiffActiveTab } = useStore(
+    (state) => state.cp_current_tab,
+  )
   const [renderedSections, setRenderedSections] = useState<number[]>([])
   const [unit, setUnit] = useState('mt')
 
@@ -145,13 +155,24 @@ function CPDiffView() {
     () => (variant ? getSections(variant, 'diff') : []),
     [variant],
   )
-  // iterate through sections, find the first section that is not disabled
+
   useEffect(() => {
-    const newActiveTab = reportDiff.data
-      ? // @ts-ignore
-        sections.findIndex((section) => reportDiff.data[section.id]?.length)
-      : 0
-    setActiveTab(newActiveTab === -1 ? 0 : newActiveTab)
+    if (reportDiff.data) {
+      const firstTabWithDiff = sections.findIndex(
+        (section) => reportDiff.data?.[section.id as SectionId].length,
+      )
+
+      const oldTab = activeTab - 1
+      let newActiveTab = oldTab >= 0 ? oldTab : 0
+
+      if (
+        reportDiff.data?.[sections[newActiveTab]?.id as SectionId]?.length === 0
+      ) {
+        newActiveTab = firstTabWithDiff !== -1 ? firstTabWithDiff : 0
+      }
+
+      setDiffActiveTab(newActiveTab)
+    }
     /* eslint-disable-next-line */
   }, [reportDiff])
 
@@ -161,8 +182,8 @@ function CPDiffView() {
     function handleTransitionEnd() {
       setRenderedSections(
         produce((sections) => {
-          if (includes(sections, activeTab)) return
-          sections.push(activeTab)
+          if (includes(sections, diffActiveTab)) return
+          sections.push(diffActiveTab)
         }),
       )
       if (!indicator) return
@@ -174,7 +195,7 @@ function CPDiffView() {
     }
 
     indicator.addEventListener('transitionend', handleTransitionEnd)
-  }, [activeTab, renderedSections])
+  }, [diffActiveTab, renderedSections])
 
   return (
     <>
@@ -183,7 +204,7 @@ function CPDiffView() {
         active={
           !report.error &&
           !reportDiff.error &&
-          (report.loading || !includes(renderedSections, activeTab)) &&
+          (report.loading || !includes(renderedSections, diffActiveTab)) &&
           reportDiff.loading
         }
       />
@@ -195,14 +216,14 @@ function CPDiffView() {
           aria-label="view country programme report"
           ref={tabsEl}
           scrollButtons="auto"
-          value={activeTab}
+          value={diffActiveTab}
           variant="scrollable"
           TabIndicatorProps={{
             className: 'h-0',
             style: { transitionDuration: '150ms' },
           }}
           onChange={(event, newValue) => {
-            setActiveTab(newValue)
+            setDiffActiveTab(newValue)
           }}
           allowScrollButtonsMobile
         >
@@ -244,7 +265,7 @@ function CPDiffView() {
                 key={section.panelId}
                 className={cx('flex flex-col gap-6 transition', {
                   'absolute -left-[9999px] -top-[9999px] opacity-0':
-                    activeTab !== index,
+                    diffActiveTab !== index,
                 })}
                 aria-labelledby={section.id}
                 role="tabpanel"
@@ -259,7 +280,7 @@ function CPDiffView() {
                       ...TableProps,
                       context: { section, unit, variant },
                       handleUnitSelectionChange,
-                      isActiveSection: activeTab == index,
+                      isActiveSection: diffActiveTab == index,
                       report,
                       section,
                     }}

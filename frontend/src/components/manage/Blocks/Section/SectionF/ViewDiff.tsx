@@ -5,6 +5,9 @@ import Field from '@ors/components/manage/Form/Field'
 export default function SectionFViewDiff(props: any) {
   const { report, section } = props
 
+  const newRemakrs = report.section_f?.[0].remarks
+  const oldRemarks = report.section_f?.[0].remarks_old
+
   return (
     <>
       <Box>
@@ -15,14 +18,15 @@ export default function SectionFViewDiff(props: any) {
           FieldProps={{ className: 'mb-0' }}
           readOnly={true}
           type="textarea"
-          value={report.section_f.remarks}
+          value={newRemakrs}
         />
         <Field
           FieldProps={{ className: 'mb-0' }}
           readOnly={true}
           type="textarea"
-          value={report.section_f.remarks_old}
+          value={oldRemarks}
         />
+
       </Box>
     </>
   )

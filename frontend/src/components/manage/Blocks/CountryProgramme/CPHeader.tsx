@@ -25,8 +25,11 @@ import { IoChevronDown } from 'react-icons/io5'
 
 const CloseDiffButton = (props: any) => {
   const { report } = props
+
+  if (!report.data || !report.versions) return null
+
   const isLastVersion =
-    report.data.version === report.versions.data?.[0]?.version
+    report.data?.version === report.versions?.data?.[0]?.version
 
   const href = isLastVersion
     ? `/country-programme/${report.country?.iso3}/${report.data.year}`
@@ -50,7 +53,7 @@ const ReportDiffButton = (props: any) => {
   const { report } = props
 
   const showButton =
-    (report.versions.data?.length || 0) > 1 && report.data.version !== 1
+    (report.versions?.data?.length || 0) > 1 && report.data?.version !== 1
 
   if (!showButton) return null
 

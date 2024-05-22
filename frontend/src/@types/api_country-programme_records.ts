@@ -214,11 +214,11 @@ type ApiBaseDiff = {
     remarks: null | string
     row_id: string
     total: string
-  }
+  }[]
   section_f: {
-    change_type: string
     remarks: null | string
-  }
+    remarks_old: null | string
+  }[]
 }
 
 // The server response contains the cp_report property which is destructured into the root by the client.

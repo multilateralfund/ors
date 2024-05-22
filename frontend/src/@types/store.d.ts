@@ -79,7 +79,9 @@ export interface CPReportsSlice {
 
 export interface CPCurrentTabSlice {
   activeTab: number
+  diffActiveTab: number
   setActiveTab: (nr: number) => void
+  setDiffActiveTab: (nr: number) => void
 }
 
 export interface HeaderSlice {
