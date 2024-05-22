@@ -473,11 +473,13 @@ const EditHeaderActions = ({
 
 const CPHeader = ({
   actions = <ViewHeaderActions />,
+  seeDifferences = true,
   tag = <ViewHeaderTag />,
   titlePrefix,
 }: {
   actions?: React.JSX.Element
-  tag?: React.JSX.Element
+  seeDifferences?: boolean
+  tag?: React.JSX.Element 
   titlePrefix?: React.JSX.Element
 }) => {
   const { report } = useStore((state) => state.cp_reports)
@@ -500,7 +502,7 @@ const CPHeader = ({
               <HeaderVersionsDropdown />
               {tag}
             </div>
-            <ReportDiffButton report={report} />
+            {seeDifferences && <ReportDiffButton report={report} />}
           </div>
           <div className="ml-auto">{actions}</div>
         </div>
@@ -543,6 +545,7 @@ const CPEditHeader = (props: Omit<EditHeaderActionsProps, 'validation'>) => {
   return (
     <CPHeader
       actions={<EditHeaderActions validation={validation} {...props} />}
+      seeDifferences={false}
       tag={<EditHeaderTag />}
       titlePrefix={<span className="text-4xl">Editing: </span>}
     />

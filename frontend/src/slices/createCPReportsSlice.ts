@@ -124,6 +124,7 @@ export const createCPReportsSlice = ({
         fetchArchivedFiles,
         fetchArchivedReport,
         fetchEmptyForm,
+        fetchReportDiff,
         fetchVersions,
         setReportCountry,
         setReportVariant,
@@ -136,6 +137,7 @@ export const createCPReportsSlice = ({
       if (view) {
         fetchVersions(report.country_id, report.year)
         fetchArchivedFiles(report.country_id)
+        fetchReportDiff(report.country_id, report.year, report.version)
       }
     },
     fetchArchivedFiles: async (report_id) => {
