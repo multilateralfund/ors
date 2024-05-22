@@ -30,7 +30,7 @@ export default function LoginForm() {
         text="Stay tuned"
       />
       <Paper
-        className="flex w-full flex-col rounded-lg p-8"
+        className="flex w-full flex-col rounded-lg p-6"
         component="form"
         onSubmit={async (e) => {
           e.preventDefault()
@@ -42,7 +42,7 @@ export default function LoginForm() {
         }}
       >
         <Typography
-          className="mb-4 leading-tight tracking-tight"
+          className="mb-4 font-medium leading-tight tracking-tight"
           component="h1"
           variant="h4"
         >
@@ -55,7 +55,7 @@ export default function LoginForm() {
           error={!!user.error?.username}
           helperText={user.error?.username}
           InputLabel={{
-            className: 'text-lg font-bold',
+            className: 'text-lg font-medium',
             label: 'Username',
           }}
         />
@@ -67,13 +67,13 @@ export default function LoginForm() {
           helperText={user.error?.password}
           type="password"
           InputLabel={{
-            className: 'text-lg font-bold',
+            className: 'text-lg font-medium',
             label: 'Password',
           }}
         />
         <Typography className="mb-4 text-right">
           <Link
-            className="font-bold text-secondary"
+            className="font-medium text-secondary"
             href="forgot-password"
             underline="hover"
           >
@@ -86,7 +86,7 @@ export default function LoginForm() {
           </Alert>
         </Collapse>
         <Button
-          className="bg-secondary text-lg font-bold shadow-none"
+          className="bg-secondary text-lg font-semibold shadow-none"
           type="submit"
           variant="contained"
         >

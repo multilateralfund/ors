@@ -3,12 +3,14 @@ import cx from 'classnames'
 
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Logo from '@ors/components/theme/Logo/Logo'
+import { useStore } from '@ors/store'
 import { robotoCondensed } from '@ors/themes/fonts'
 
 const EXTERNAL_BASE_URL = 'https://prod.multilateralfund.edw.ro'
 const makeExternalUrl = (path: string) => `${EXTERNAL_BASE_URL}${path}`
 
 const FooterLinks = () => {
+  const user = useStore((state) => state.user)
   const items = [
     { label: 'Careers', url: makeExternalUrl('/') },
     { label: 'Contact us', url: makeExternalUrl('/') },
@@ -31,6 +33,17 @@ const FooterLinks = () => {
           {item.label}
         </a>
       ))}
+      <button
+        className={cx(
+          'cursor-pointer text-nowrap rounded-full border border-solid border-mlfs-hlYellow bg-transparent px-4 py-0 text-xl font-normal uppercase text-mlfs-hlYellow no-underline transition-all hover:bg-black',
+          robotoCondensed.className,
+        )}
+        onClick={async () => {
+          await user.logout()
+        }}
+      >
+        Logout
+      </button>
     </div>
   )
 }

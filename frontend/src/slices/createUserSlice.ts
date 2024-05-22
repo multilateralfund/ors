@@ -58,7 +58,7 @@ export const createUserSlice = ({
       setSlice('user', {
         data: null,
         error: null,
-        loaded: false,
+        loaded: true,
         loading: false,
       })
     } catch (error) {
@@ -66,7 +66,7 @@ export const createUserSlice = ({
       setSlice('user', {
         data: null,
         error,
-        loaded: false,
+        loaded: true,
         loading: false,
       })
     }

@@ -26,9 +26,12 @@ export default function AuthorizedView({
     }
   }, [user, pathname, router])
 
+  if (!user) {
+    return <Loading className="bg-action-disabledBackground" />
+  }
+
   return (
     <>
-      {!user && <Loading className="bg-action-disabledBackground" />}
       <Print />
       <Header />
       <main className="grid-cols-[auto]">
