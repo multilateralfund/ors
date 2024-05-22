@@ -349,6 +349,7 @@ export const createCPReportsSlice = ({
         CPReportsSlice['report']['error']
       >(),
       emptyForm: getInitialSliceData(),
+      files: getInitialSliceData(),
       versions: getInitialSliceData(),
     },
     reportDiff: { ...defaultSliceData },

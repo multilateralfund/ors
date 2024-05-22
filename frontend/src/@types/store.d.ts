@@ -23,7 +23,7 @@ export type CreateSliceProps = {
 type Report = {
   country?: Country
   emptyForm: SliceData<EmptyFormType, Record<string, any> | null>
-  files?: SliceData<File[]>
+  files: SliceData<File[]>
   variant?: ReportVariant
   versions: SliceData<CPVersionInfo[]>
 } & SliceData<CPReport | null, Record<string, any> | null>
