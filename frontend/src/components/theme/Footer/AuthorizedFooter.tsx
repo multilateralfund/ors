@@ -35,15 +35,11 @@ const FooterLinks = () => {
       ))}
       <button
         className={cx(
-          'text-nowrap rounded-full border border-solid border-mlfs-hlYellow bg-transparent px-4 text-xl font-normal uppercase text-mlfs-hlYellow no-underline transition-all hover:bg-black py-0 cursor-pointer',
+          'cursor-pointer text-nowrap rounded-full border border-solid border-mlfs-hlYellow bg-transparent px-4 py-0 text-xl font-normal uppercase text-mlfs-hlYellow no-underline transition-all hover:bg-black',
           robotoCondensed.className,
         )}
         onClick={async () => {
-          try {
-            await user.logout()
-          } catch (error) {
-            console.error('Error logging out:', error)
-          }
+          await user.logout()
         }}
       >
         Logout
