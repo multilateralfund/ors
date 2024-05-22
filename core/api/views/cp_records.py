@@ -595,6 +595,13 @@ class CPRecordListDiffView(CPRecordListView):
         self.set_archive_class_attributes()
         data_old = self._get_new_cp_records(cp_report_ar, data_only=True)
 
+        section_f_diff = [] if cp_report.comment == cp_report_ar.comment else [
+            {
+                "remarks": cp_report.comment,
+                "remarks_old": cp_report_ar.comment,
+            },
+        ]
+
         return Response(
             {
                 "section_a": self.diff_records(
@@ -619,9 +626,6 @@ class CPRecordListDiffView(CPRecordListView):
                     self.section_e_fields,
                     row_identifier="facility",
                 ),
-                "section_f": {
-                    "remarks": cp_report.comment,
-                    "remarks_old": cp_report_ar.comment,
-                },
+                "section_f": section_f_diff,
             }
         )
