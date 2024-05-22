@@ -10,13 +10,13 @@ import CPComments from '@ors/components/manage/Blocks/CountryProgramme/CPComment
 import UnitSelectionWidget from '@ors/components/manage/Widgets/UnitSelectionWidget'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
-import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
 import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
 import ValidationProvider from '@ors/contexts/Validation/ValidationProvider'
 import { formatApiUrl } from '@ors/helpers/Api/utils'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
+import useClickOutside from '@ors/hooks/useClickOutside'
 import { useStore } from '@ors/store'
 
 import { getSections } from '.'
@@ -29,6 +29,122 @@ import { ITableProps } from './typesCPView'
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 import { IoClose, IoDownloadOutline, IoExpand } from 'react-icons/io5'
 
+function DownloadReport(props: any) {
+  const { archive, convertData, report } = props
+
+  const [showMenu, setShowMenu] = useState(false)
+
+  const toggleShowMenu = () => setShowMenu((prev) => !prev)
+
+  const ref = useClickOutside<HTMLDivElement>(() => {
+    setShowMenu(false)
+  })
+
+  const urlXLS = `${formatApiUrl(`api/country-programme${archive ? '-archive' : ''}/export/`)}?cp_report_id=${report.data?.id.toString()}&convert_data=${convertData}`
+  const urlPDF = `${formatApiUrl(`api/country-programme${archive ? '-archive' : ''}/print/`)}?cp_report_id=${report.data?.id.toString()}&convert_data=${convertData}`
+
+  return (
+    <div className="relative">
+      <div
+        className="flex cursor-pointer items-center justify-between text-nowrap"
+        ref={ref}
+        onClick={toggleShowMenu}
+      >
+        <Tooltip placement="top" title="Download">
+          <div className="flex items-center justify-between gap-x-2">
+            <span>Download</span>
+            <IoDownloadOutline className="text-xl text-secondary" />
+          </div>
+        </Tooltip>
+      </div>
+      <div
+        className={cx(
+          'absolute left-0 z-10 max-h-[200px] origin-top overflow-y-auto rounded-md border border-solid border-gray-300 bg-gray-A100 opacity-0 transition-all',
+          {
+            'collapse scale-y-0': !showMenu,
+            'scale-y-100 opacity-100': showMenu,
+          },
+        )}
+      >
+        <Link
+          className="flex items-center gap-x-2 text-nowrap px-2 py-1 text-base text-black no-underline transition-all hover:bg-primary hover:text-mlfs-hlYellow"
+          href={urlXLS}
+          target="_blank"
+          download
+        >
+          <AiFillFileExcel className="fill-green-700" size={24} />
+          <span>XLSX</span>
+        </Link>
+        <Link
+          className="flex items-center gap-x-2 text-nowrap px-2 py-1 text-base text-black no-underline transition-all hover:bg-primary hover:text-mlfs-hlYellow"
+          href={urlPDF}
+          target="_blank"
+          download
+        >
+          <AiFillFilePdf className="fill-red-700" size={24} />
+          <span>PDF</span>
+        </Link>
+      </div>
+    </div>
+  )
+}
+function DownloadCalculatedAmounts(props: any) {
+  const { report } = props
+
+  const [showMenu, setShowMenu] = useState(false)
+
+  const toggleShowMenu = () => setShowMenu((prev) => !prev)
+
+  const ref = useClickOutside<HTMLDivElement>(() => {
+    setShowMenu(false)
+  })
+
+  const urlXLS = `${formatApiUrl('/api/country-programme/calculated-amount/export/')}?cp_report_id=${report.data?.id.toString()}`
+  const urlPDF = `${formatApiUrl('/api/country-programme/calculated-amount/print/')}?cp_report_id=${report.data?.id.toString()}`
+
+  return (
+    <div className="relative">
+      <div
+        className="flex cursor-pointer items-center justify-between gap-x-2 text-nowrap rounded-md border border-solid border-primary px-2 py-1 text-base text-black no-underline hover:bg-primary hover:text-mlfs-hlYellow"
+        ref={ref}
+        onClick={toggleShowMenu}
+      >
+        <Tooltip placement="top" title="Download calculated amounts">
+          <span>Calculated amounts</span>
+        </Tooltip>
+      </div>
+      <div
+        className={cx(
+          'absolute left-0 z-10 max-h-[200px] origin-top overflow-y-auto rounded-md border border-solid border-gray-300 bg-gray-A100 opacity-0 transition-all',
+          {
+            'collapse scale-y-0': !showMenu,
+            'scale-y-100 opacity-100': showMenu,
+          },
+        )}
+      >
+        <Link
+          className="flex items-center gap-x-2 text-nowrap px-2 py-1 text-base text-black no-underline transition-all hover:bg-primary hover:text-mlfs-hlYellow"
+          href={urlXLS}
+          target="_blank"
+          download
+        >
+          <AiFillFileExcel className="fill-green-700" size={24} />
+          <span>XLSX</span>
+        </Link>
+        <Link
+          className="flex items-center gap-x-2 text-nowrap px-2 py-1 text-base text-black no-underline transition-all hover:bg-primary hover:text-mlfs-hlYellow"
+          href={urlPDF}
+          target="_blank"
+          download
+        >
+          <AiFillFilePdf className="fill-red-700" size={24} />
+          <span>PDF</span>
+        </Link>
+      </div>
+    </div>
+  )
+}
+
 const TableProps: ITableProps = {
   Toolbar: ({
     archive,
@@ -37,7 +153,6 @@ const TableProps: ITableProps = {
     fullScreen,
     gridContext,
     isActiveSection,
-    onPrint,
     onUnitSelectionChange,
     print,
     report,
@@ -87,58 +202,13 @@ const TableProps: ITableProps = {
           active={isActiveSection && !fullScreen}
           domNode="sectionToolbar"
         >
-          <div className="flex items-center justify-end">
-            <Link
-              className="flex items-center justify-between gap-x-2 text-nowrap rounded-md border border-solid border-primary px-2 py-1 text-base text-black no-underline hover:bg-primary hover:text-mlfs-hlYellow"
-              target="_blank"
-              href={`${formatApiUrl(
-                '/api/country-programme/calculated-amount/export/',
-              )}?cp_report_id=${report.data?.id.toString()}`}
-              download
-            >
-              <Tooltip placement="top" title="Download calculated amounts">
-                <span>Calculated amounts</span>
-              </Tooltip>
-            </Link>
-            <Dropdown
-              className="normal-case hover:bg-transparent"
-              color="primary"
-              tooltip="Download"
-              label={
-                <div className="flex items-center justify-between gap-x-2 text-base">
-                  <span className="font-medium text-primary">Download</span>
-                  <IoDownloadOutline className="text-xl text-secondary" />
-                </div>
-              }
-              icon
-            >
-              <Dropdown.Item>
-                <Link
-                  className="flex items-center gap-x-2 text-black no-underline"
-                  target="_blank"
-                  href={`${formatApiUrl(
-                    `api/country-programme${archive ? '-archive' : ''}/export/`,
-                  )}?cp_report_id=${report.data?.id.toString()}&convert_data=${convertData}`}
-                  download
-                >
-                  <AiFillFileExcel className="fill-green-700" size={24} />
-                  <span>XLSX</span>
-                </Link>
-              </Dropdown.Item>
-              <Dropdown.Item onClick={onPrint}>
-                <Link
-                  className="flex items-center gap-x-2 text-black no-underline"
-                  target="_blank"
-                  href={`${formatApiUrl(
-                    `api/country-programme${archive ? '-archive' : ''}/print/`,
-                  )}?cp_report_id=${report.data?.id.toString()}&convert_data=${convertData}`}
-                  download
-                >
-                  <AiFillFilePdf className="fill-red-700" size={24} />
-                  <span>PDF</span>
-                </Link>
-              </Dropdown.Item>
-            </Dropdown>
+          <div className="flex items-center justify-end gap-x-2">
+            <DownloadCalculatedAmounts report={report} />
+            <DownloadReport
+              archive={archive}
+              convertData={convertData}
+              report={report}
+            />
             {section.allowFullScreen && !fullScreen && (
               <Tooltip placement="top" title="Enter fullscreen">
                 <div
