@@ -34,6 +34,7 @@ const mlfs = {
   hlYellowTint: 'hsla(65, 100%, 75%, 1)',
   deepTealShade: 'hsla(199, 100%, 8%, 1);',
   bannerColor: '#E6F4FB',
+  purple: '#AD72FA',
 }
 
 const originalColors = {

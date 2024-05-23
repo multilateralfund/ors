@@ -273,7 +273,8 @@ function CPDiffView() {
                 <FootnotesProvider>
                   <Section
                     emptyForm={report.emptyForm.data || {}}
-                    report={reportDiff.data}
+                    report={report}
+                    reportDiff={reportDiff.data}
                     section={section}
                     variant={variant}
                     TableProps={{
