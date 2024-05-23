@@ -4,7 +4,7 @@ import openpyxl
 from django.db.models import Max
 from django.db.models import Min
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -22,7 +22,11 @@ from core.api.utils import workbook_response
 from core.models import BusinessPlan, BPRecord
 
 
-class BusinessPlanViewSet(viewsets.ReadOnlyModelViewSet):
+class BusinessPlanViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
     serializer_class = BusinessPlanSerializer
     queryset = BusinessPlan.objects.select_related("agency").order_by(
         "year_start", "year_end", "id"
@@ -52,21 +56,18 @@ class BusinessPlanViewSet(viewsets.ReadOnlyModelViewSet):
 
 class BPRecordViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = BPRecordDetailSerializer
-    queryset = (
-        BPRecord.objects.select_related(
-            "business_plan",
-            "business_plan__agency",
-            "country",
-            "sector",
-            "subsector",
-            "project_type",
-            "bp_chemical_type",
-        )
-        .prefetch_related(
-            "substances",
-            "blends",
-            "values",
-        )
+    queryset = BPRecord.objects.select_related(
+        "business_plan",
+        "business_plan__agency",
+        "country",
+        "sector",
+        "subsector",
+        "project_type",
+        "bp_chemical_type",
+    ).prefetch_related(
+        "substances",
+        "blends",
+        "values",
     )
     filterset_class = BPRecordFilter
     filter_backends = [
@@ -96,7 +97,9 @@ class BPRecordViewSet(viewsets.ReadOnlyModelViewSet):
             min_year=Min("values__year"), max_year=Max("values__year")
         )
 
-        if start_year := int(self.request.query_params.get("business_plan__year_start", "0")):
+        if start_year := int(
+            self.request.query_params.get("business_plan__year_start", "0")
+        ):
             # If there is no data, or only partial data. Ensure we have fields for
             # start_year, start_year + 1, start_year + 2, after start_year + 2
             limits["min_year"] = limits["min_year"] or start_year
