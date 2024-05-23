@@ -1,7 +1,6 @@
 from django_filters import rest_framework as filters
 from django_filters.widgets import CSVWidget
 
-from core.models import Agency
 from core.models import BPFile, BPRecord
 from core.models import BusinessPlan
 from core.models import Country

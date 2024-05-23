@@ -20,7 +20,7 @@ class BPFilesView(
     API endpoint that allows uploading business plan files.
     """
 
-    queryset = BPFile.objects.select_related("business_plan")
+    queryset = BPFile.objects.select_related("agency")
     serializer_class = BPFileSerializer
     filterset_class = BPFileFilter
 

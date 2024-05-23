@@ -96,7 +96,6 @@ urlpatterns = [
         schema_view.with_ui("swagger", cache_timeout=0),
         name="schema-swagger-ui",
     ),
-    *router.urls,
     path(
         "settings/",
         SettingsView.as_view(),
@@ -310,4 +309,5 @@ urlpatterns = [
         BPFilesDownloadView.as_view(),
         name="business-plan-files-download",
     ),
+    *router.urls,
 ]
