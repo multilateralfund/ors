@@ -40,6 +40,8 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
     status = serializers.ChoiceField(
         choices=BusinessPlan.Status.choices, required=False
     )
+    comment_agency = serializers.CharField(read_only=True)
+    comment_secretariat = serializers.CharField(read_only=True)
 
     class Meta:
         model = BusinessPlan
@@ -49,6 +51,8 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
             "year_start",
             "year_end",
             "agency",
+            "comment_agency",
+            "comment_secretariat",
         ]
 
 
@@ -157,3 +161,12 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
 
     def get_bp_type_display(self, obj):
         return obj.get_bp_type_display()
+
+
+class BPCommentsSerializer(serializers.ModelSerializer):
+    comment_agency = serializers.CharField(required=False, allow_blank=True)
+    comment_secretariat = serializers.CharField(required=False, allow_blank=True)
+
+    class Meta:
+        model = BusinessPlan
+        fields = ["comment_agency", "comment_secretariat"]

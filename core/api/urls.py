@@ -8,7 +8,7 @@ from core.api.views import ProjectFundViewSet
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
 from core.api.views.agency import AgencyListView
-from core.api.views.business_plan import BPRecordViewSet
+from core.api.views.business_plan import BPCommentsView, BPRecordViewSet
 from core.api.views.business_plan import BusinessPlanViewSet
 from core.api.views.chemicals import (
     BlendCreateView,
@@ -17,6 +17,7 @@ from core.api.views.chemicals import (
     SimilarBlendsListView,
     SubstancesListView,
 )
+from core.api.views.bp_files import BPFilesDownloadView, BPFilesView
 from core.api.views.cp_archive import (
     CPRecordArchiveExportView,
     CPRecordArchivePrintView,
@@ -293,5 +294,20 @@ urlpatterns = [
         "^project-files/(?P<pk>[^/]+)/$",
         ProjectFileView.as_view(),
         name="project-files",
+    ),
+    path(
+        "business-plan/<int:id>/comments/",
+        BPCommentsView.as_view(),
+        name="business-plan-comments",
+    ),
+    path(
+        "business-plan/files/",
+        BPFilesView.as_view(),
+        name="business-plan-files",
+    ),
+    path(
+        "business-plan/files/<int:id>/download/",
+        BPFilesDownloadView.as_view(),
+        name="business-plan-files-download",
     ),
 ]
