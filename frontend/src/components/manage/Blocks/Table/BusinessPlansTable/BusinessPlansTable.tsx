@@ -54,6 +54,7 @@ export default function BusinessPlansTable() {
     sector_id: [],
     subsector_id: [],
   }
+ // TODO: Take filters from params /[agency]/[start_year]/[end_year]
   const [filters, setFilters] = useState({ ...initialFilters })
 
   const { data, loading, setParams } = useApi({

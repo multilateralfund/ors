@@ -3,7 +3,7 @@ import React from 'react'
 import { Typography } from '@mui/material'
 import { Metadata } from 'next'
 
-import BPList from "@ors/components/manage/Blocks/BusinessPlans/BPList";
+import BusinessPlansTable from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: 'Business Plans',
 }
 
-export default async function BusinessPlans() {
+export default async function BPDetails() {
   return (
     <PageWrapper>
       <HeaderTitle>
@@ -19,7 +19,7 @@ export default async function BusinessPlans() {
           Business Plans
         </Typography>
       </HeaderTitle>
-      <BPList />
+      <BusinessPlansTable />
     </PageWrapper>
   )
 }
