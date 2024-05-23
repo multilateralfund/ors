@@ -26,12 +26,11 @@ import { IoChevronDown } from 'react-icons/io5'
 const CloseDiffButton = (props: any) => {
   const { report } = props
 
-  if (!report.data || !report.versions) return null
+  if (!report.data) return null
 
-  const isLastVersion =
-    report.data?.version === report.versions?.data?.[0]?.version
+  const isLatestVersion = !report.data?.final_version_id
 
-  const href = isLastVersion
+  const href = isLatestVersion
     ? `/country-programme/${report.country?.iso3}/${report.data.year}`
     : `/country-programme/${report.country!.iso3}/${report.data.year}/archive/${report.data.version}`
 
@@ -479,7 +478,7 @@ const CPHeader = ({
 }: {
   actions?: React.JSX.Element
   seeDifferences?: boolean
-  tag?: React.JSX.Element 
+  tag?: React.JSX.Element
   titlePrefix?: React.JSX.Element
 }) => {
   const { report } = useStore((state) => state.cp_reports)

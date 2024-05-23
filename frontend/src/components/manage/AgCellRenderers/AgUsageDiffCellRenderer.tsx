@@ -136,7 +136,7 @@ export default function AgUsageDiffCellRenderer(
         component="div"
       >
         <div className="whitespace-nowrap font-semibold">{new_value}</div>
-        <div className="col-start-2 row-start-2 whitespace-nowrap text-sm text-gray-500">
+        <div className="col-start-2 row-start-2 whitespace-nowrap text-sm diff-text-old">
           {old_value}
         </div>
       </Typography>

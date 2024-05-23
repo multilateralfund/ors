@@ -8,6 +8,7 @@ from core.models import Country
 from core.models import ProjectSector
 from core.models import ProjectSubSector
 from core.models import ProjectType
+from core.models.agency import Agency
 
 
 class BusinessPlanFilter(filters.FilterSet):
@@ -15,12 +16,17 @@ class BusinessPlanFilter(filters.FilterSet):
         choices=BusinessPlan.Status.choices,
         widget=CSVWidget,
     )
+    agency_id = filters.ModelMultipleChoiceFilter(
+        field_name="agency_id",
+        queryset=Agency.objects.all(),
+        widget=CSVWidget,
+    )
 
     class Meta:
         model = BusinessPlan
         fields = [
             "status",
-            "agency",
+            "agency_id",
             "year_start",
             "year_end",
         ]

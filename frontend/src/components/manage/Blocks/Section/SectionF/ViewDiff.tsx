@@ -1,12 +1,14 @@
 import { Box, Typography } from '@mui/material'
 
 export default function SectionFViewDiff(props: any) {
-  const { report, section } = props
+  const { report, reportDiff, section } = props
 
-  if (!report.section_f.length) return null
+  if (!reportDiff.section_f.length) return null
 
-  const newRemarks = report.section_f?.[0].remarks
-  const oldRemarks = report.section_f?.[0].remarks_old
+  const newRemarks = reportDiff.section_f?.[0].remarks
+  const oldRemarks = reportDiff.section_f?.[0].remarks_old
+
+  const version = report.data?.version
 
   return (
     <>
@@ -16,20 +18,18 @@ export default function SectionFViewDiff(props: any) {
         </Typography>
         <div className="mb-4">
           <Typography component="h4" variant="h4">
-            New Remarks
+            Version {version} Remarks
           </Typography>
           <Typography className="text-lg text-gray-900">
             {newRemarks}
           </Typography>
         </div>
-        {oldRemarks && (
-          <div className="text-gray-400">
-            <Typography component="h4" variant="h4">
-              Old Remarks
-            </Typography>
-            <Typography className="text-lg">{oldRemarks}</Typography>
-          </div>
-        )}
+        <div className="text-gray-400">
+          <Typography component="h4" variant="h4">
+            Version {version - 1} Remarks
+          </Typography>
+          <Typography className="text-lg">{oldRemarks || "No content"}</Typography>
+        </div>
       </Box>
     </>
   )

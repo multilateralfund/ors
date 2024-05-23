@@ -24,4 +24,16 @@
       }
     }
   }
+
+  .diff-text-old {
+    @apply text-gray-500;
+  }
+
+  .diff-cell-new {
+    @apply bg-mlfs-purple text-white;
+  }
+
+  .diff-cell-new .diff-text-old {
+    @apply text-gray-300;
+  }
 }

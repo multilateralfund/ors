@@ -11,7 +11,7 @@ import pathlib
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0092_country_consumption_category_and_more"),
+        ("core", "0093_alter_businessplan_status"),
     ]
 
     operations = [

@@ -6,7 +6,7 @@ from django.db.models import Min
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import generics, viewsets, filters, status
+from rest_framework import generics, viewsets, filters, mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -25,7 +25,11 @@ from core.api.utils import workbook_response
 from core.models import BusinessPlan, BPRecord
 
 
-class BusinessPlanViewSet(viewsets.ReadOnlyModelViewSet):
+class BusinessPlanViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
     serializer_class = BusinessPlanSerializer
     queryset = BusinessPlan.objects.select_related("agency").order_by(
         "year_start", "year_end", "id"
