@@ -300,7 +300,12 @@ function BPListTable(props: any) {
 function useBPListApi(filters?: any) {
   const { data, loading, setParams } = useApi({
     options: {
-      params: { ...filters },
+      params: {
+        ...filters,
+        limit: PLANS_PER_PAGE,
+        offset: 0,
+        ordering: '-year_start',
+      },
       withStoreCache: true,
     },
     path: 'api/business-plan/',
