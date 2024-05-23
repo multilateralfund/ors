@@ -6,6 +6,7 @@ from django.urls import reverse
 
 from core.api.tests.base import BaseTest
 from core.api.tests.conftest import pdf_text
+from core.api.tests.factories import AgencyFactory, BusinessPlanFactory
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008, W0221
@@ -81,3 +82,61 @@ class TestBPPrint(BaseTest):
         assert bp_record.country.name in text
         assert business_plan.agency.name in text
         assert bp_record.title in text
+
+
+@pytest.fixture(name="_setup_bp_list")
+def setup_bp_list(agency):
+    new_agency = AgencyFactory.create(name="Agency2", code="AG2")
+    for i in range(3):
+        for ag, status in [(agency, "Approved"), (new_agency, "Draft")]:
+            data = {
+                "agency": ag,
+                "year_start": 2020 + i,
+                "year_end": 2022 + i,
+                "status": status,
+            }
+            BusinessPlanFactory.create(**data)
+
+
+class TestBPList(BaseTest):
+    url = reverse("businessplan-list")
+
+    def test_list_anon(self):
+        response = self.client.get(self.url)
+        assert response.status_code == 403
+
+    def test_list(self, user, _setup_bp_list):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.json()) == 6
+
+    def test_list_agency_filter(self, user, _setup_bp_list, agency):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"agency_id": agency.id})
+        assert response.status_code == 200
+        assert len(response.json()) == 3
+        assert all(bp["agency"]["id"] == agency.id for bp in response.json())
+
+    def test_list_status_filter(self, user, _setup_bp_list):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"status": "Draft"})
+        assert response.status_code == 200
+        assert len(response.json()) == 3
+        assert all(bp["status"] == "Draft" for bp in response.json())
+
+    def test_list_year_filter(self, user, _setup_bp_list):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"year_start": 2021})
+        assert response.status_code == 200
+        assert len(response.json()) == 2
+        assert all(bp["year_start"] == 2021 for bp in response.json())
+
+        response = self.client.get(self.url, {"year_end": 2023})
+        assert response.status_code == 200
+        assert len(response.json()) == 2
+        assert all(bp["year_end"] == 2023 for bp in response.json())

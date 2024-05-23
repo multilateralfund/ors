@@ -5,7 +5,12 @@ from core.models.agency import Agency
 from core.models.blend import Blend
 
 from core.models.country import Country
-from core.models.project import ProjectCluster, ProjectSector, ProjectSubSector, ProjectType
+from core.models.project import (
+    ProjectCluster,
+    ProjectSector,
+    ProjectSubSector,
+    ProjectType,
+)
 from core.models.substance import Substance
 
 
@@ -19,7 +24,8 @@ class BPChemicalType(models.Model):
 class BusinessPlan(models.Model):
     class Status(models.TextChoices):
         draft = "Draft", "Draft"  # update => not saving versions
-        submitted = "Submitted", "Submitted"  # update => saving versions
+        submitted = "Submitted", "Submitted"  # can't update
+        need_changes = "Need Changes", "Need Changes"  # update => saving versions
         approved = "Approved", "Approved"  # can't update
         rejected = "Rejected", "Rejected"  # can't update ???
 
@@ -76,7 +82,9 @@ class BPRecord(models.Model):
     subsector = models.ForeignKey(
         ProjectSubSector, on_delete=models.CASCADE, null=True, blank=True
     )
-    legacy_sector_and_subsector = models.CharField(max_length=255, null=True, blank=True)
+    legacy_sector_and_subsector = models.CharField(
+        max_length=255, null=True, blank=True
+    )
     bp_type = models.CharField(max_length=16, choices=BPType.choices)
     is_multi_year = models.BooleanField(default=False)
     reason_for_exceeding = models.TextField(null=True, blank=True)
