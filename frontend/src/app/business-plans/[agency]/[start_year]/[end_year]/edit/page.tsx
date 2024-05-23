@@ -1,7 +1,7 @@
 import { Typography } from '@mui/material'
 import { Metadata } from 'next'
 
-import BPView from "@ors/components/manage/Blocks/BusinessPlans/BPView";
+import BPEdit from "@ors/components/manage/Blocks/BusinessPlans/BPEdit";
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
@@ -24,7 +24,7 @@ export default async function BusinessPlansDetails(props: {
           Business Plans
         </Typography>
       </HeaderTitle>
-      <BPView
+      <BPEdit
         agency={agency}
         end_year={parseInt(end_year, 10)}
         start_year={parseInt(start_year, 10)}

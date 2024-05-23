@@ -16,6 +16,7 @@ import {
 import TableCell, { tableCellClasses } from '@mui/material/TableCell'
 import { styled } from '@mui/material/styles'
 
+import Link from '@ors/components/ui/Link/Link'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import { getResults } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
@@ -281,9 +282,21 @@ function BPListTable(props: any) {
                     </StyledTableCell>
                     <StyledTableCell id={labelId} align="center">
                       <Typography className="flex items-center justify-center">
-                        <FiEye size={16} />
+                        <Link
+                          className="text-pretty border-0 p-2 hover:text-secondary"
+                          href={`/business-plans/${row.agency.name}/${row.year_start}/${row.year_end}`}
+                          underline="none"
+                        >
+                          <FiEye size={16} />
+                        </Link>
                         <span>/</span>
-                        <FiEdit size={16} />
+                        <Link
+                          className="text-pretty border-0 p-2 hover:text-secondary"
+                          href={`/business-plans/${row.agency.name}/${row.year_start}/${row.year_end}/edit`}
+                          underline="none"
+                        >
+                          <FiEdit size={16} />
+                        </Link>
                       </Typography>
                     </StyledTableCell>
                   </StyledTableRow>
