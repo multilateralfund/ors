@@ -17,6 +17,17 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
       const childrenDiff = children.map(function (child) {
         const childDiff = { ...child }
         childDiff.category = 'usage_diff'
+
+        const childChildren: Record<string, any>[] = childDiff?.children
+        if (!!childChildren) {
+          const childChildrenDiff = childChildren.map(function (childChild) {
+            const childChildDiff = { ...childChild }
+            childChildDiff.category = 'usage_diff'
+            return childChildDiff
+          })
+          childDiff.children = childChildrenDiff
+        }
+
         return childDiff
       })
       itemDiff.children = childrenDiff
