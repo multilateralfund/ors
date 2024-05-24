@@ -91,6 +91,7 @@ function useGridOptions() {
       },
       {
         ...sectionColDefById['remarks'],
+        cellClass: 'ag-text-left remarks-cell',
         field: 'remarks',
         headerName: 'Remarks',
       },

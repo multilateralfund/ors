@@ -50,8 +50,8 @@ function useGridOptions(props: { model: string }) {
         field: 'remarks',
         headerName: 'Remarks',
         ...sectionColDefById['remarks'],
+        cellClass: 'ag-text-left remarks-cell',
       },
-
     ],
     defaultColDef: {
       autoHeight: true,
