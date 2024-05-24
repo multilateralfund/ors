@@ -45,7 +45,7 @@ export default function AgTextCellRenderer(props: CustomCellRendererProps) {
   const textValue = remarks ? truncateText(props.value, 5) : props.value
 
   return (
-    <AgTooltipComponent {...props}>
+    <AgTooltipComponent {...props} remarks={remarks}>
       <Typography
         className={cx(props.className, { 'cursor-pointer': !!footnote })}
         component="span"
