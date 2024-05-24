@@ -13,8 +13,7 @@ import {
   TableSortLabel,
   Typography,
 } from '@mui/material'
-import TableCell, { tableCellClasses } from '@mui/material/TableCell'
-import { styled } from '@mui/material/styles'
+import TableCell from '@mui/material/TableCell'
 
 import Link from '@ors/components/ui/Link/Link'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
@@ -24,35 +23,6 @@ import useApi from '@ors/hooks/useApi'
 import { FiEdit, FiEye } from 'react-icons/fi'
 
 const PLANS_PER_PAGE = 50
-
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  [`&.${tableCellClasses.body}`]: {
-    fontSize: theme.typography.fontSize,
-  },
-  [`&.${tableCellClasses.head}`]: {
-    '&:first-child': {
-      borderTopLeftRadius: '0.25rem',
-    },
-    '&:last-child': {
-      borderTopRightRadius: '0.25rem',
-    },
-    borderCollapse: 'collapse',
-    fontSize: theme.typography.fontSize,
-  },
-}))
-
-const StyledTableRow = styled(TableRow)(({ theme }) => {
-  const borderColor = theme.palette.secondary.light
-
-  return {
-    '& td': {
-      borderBottom: `1px solid ${borderColor}`,
-    },
-    '&:last-child td': {
-      borderBottom: 0,
-    },
-  }
-})
 
 interface Data {
   agency: {
@@ -140,7 +110,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     <TableHead className="select-none uppercase">
       <TableRow>
         {headCells.map((headCell) => (
-          <StyledTableCell
+          <TableCell
             key={headCell.id}
             align={headCell.align || 'center'}
             padding={headCell.disablePadding ? 'none' : 'normal'}
@@ -164,9 +134,9 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             ) : (
               headCell.label
             )}
-          </StyledTableCell>
+          </TableCell>
         ))}
-        <StyledTableCell align="center">Action</StyledTableCell>
+        <TableCell align="center">Action</TableCell>
       </TableRow>
     </TableHead>
   )
@@ -267,20 +237,20 @@ function BPListTable(props: any) {
               sortedRows.map((row: Data, index: number) => {
                 const labelId = `cell-${index}`
                 return (
-                  <StyledTableRow key={row.id} tabIndex={-1}>
-                    <StyledTableCell id={labelId} align="center">
+                  <TableRow key={row.id} tabIndex={-1}>
+                    <TableCell id={labelId} align="center">
                       {row.agency.name}
-                    </StyledTableCell>
-                    <StyledTableCell id={labelId} align="center">
+                    </TableCell>
+                    <TableCell id={labelId} align="center">
                       {row.status}
-                    </StyledTableCell>
-                    <StyledTableCell id={labelId} align="center">
+                    </TableCell>
+                    <TableCell id={labelId} align="center">
                       {row.year_start}
-                    </StyledTableCell>
-                    <StyledTableCell id={labelId} align="center">
+                    </TableCell>
+                    <TableCell id={labelId} align="center">
                       {row.year_end}
-                    </StyledTableCell>
-                    <StyledTableCell id={labelId} align="center">
+                    </TableCell>
+                    <TableCell id={labelId} align="center">
                       <Typography className="flex items-center justify-center">
                         <Link
                           className="text-pretty border-0 p-2 hover:text-secondary"
@@ -298,8 +268,8 @@ function BPListTable(props: any) {
                           <FiEdit size={16} />
                         </Link>
                       </Typography>
-                    </StyledTableCell>
-                  </StyledTableRow>
+                    </TableCell>
+                  </TableRow>
                 )
               })
             )}
