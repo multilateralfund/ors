@@ -42,7 +42,7 @@ export default function AgTextCellRenderer(props: CustomCellRendererProps) {
 
   const remarks = props.column?.getColId() === 'remarks' && props.value
 
-  const textValue = remarks ? truncateText(props.value, 5) : props.value
+  const textValue = remarks ? truncateText(props.value, 30) : props.value
 
   return (
     <AgTooltipComponent {...props} remarks={remarks}>
