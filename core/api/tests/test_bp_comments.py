@@ -65,3 +65,9 @@ class TestBPComments:
         response = self.client.post(url, data, format="json")
         assert response.status_code == 201
         assert response.data["comment_secretariat"] == "Test update secretariat"
+
+        url = reverse("businessplan-list") + f"{business_plan.id}/"
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert response.data["comment_agency"] == "Test create agency"
+        assert response.data["comment_secretariat"] == "Test update secretariat"
