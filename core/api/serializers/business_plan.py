@@ -43,6 +43,7 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
     )
     comment_agency = serializers.CharField(read_only=True)
     comment_secretariat = serializers.CharField(read_only=True)
+    feedback_file_download_url = serializers.SerializerMethodField()
 
     class Meta:
         model = BusinessPlan
@@ -55,7 +56,11 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
             "comment_agency",
             "comment_secretariat",
             "feedback_filename",
+            "feedback_file_download_url",
         ]
+
+    def get_feedback_file_download_url(self, obj):
+        return reverse("business-plan-file-download", args=(obj.id,))
 
 
 class BPRecordExportSerializer(serializers.ModelSerializer):
@@ -175,14 +180,6 @@ class BPCommentsSerializer(serializers.ModelSerializer):
 
 
 class BPFileSerializer(serializers.ModelSerializer):
-    download_url = serializers.SerializerMethodField()
-
     class Meta:
         model = BusinessPlan
-        fields = [
-            "feedback_filename",
-            "download_url",
-        ]
-
-    def get_download_url(self, obj):
-        return reverse("business-plan-file-download", args=(obj.id,))
+        fields = ["feedback_filename"]
