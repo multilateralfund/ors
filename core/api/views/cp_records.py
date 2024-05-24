@@ -491,7 +491,7 @@ class CPRecordListDiffView(CPRecordListView):
         "export_quotas_odp",
         "production_odp",
     ]
-    section_c_fields = ["previous_year_price", "current_year_price", "remarks"]
+    section_c_fields = ["previous_year_price", "current_year_price"]
     section_d_fields = ["all_uses", "feedstock", "destruction"]
     section_e_fields = [
         "total",
@@ -501,7 +501,6 @@ class CPRecordListDiffView(CPRecordListView):
         "feedstock_wpc",
         "destruction_wpc",
         "generated_emissions",
-        "remarks",
     ]
 
     def set_archive_class_attributes(self):
