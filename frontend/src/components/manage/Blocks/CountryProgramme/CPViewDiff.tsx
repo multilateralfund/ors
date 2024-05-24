@@ -197,6 +197,37 @@ function CPDiffView() {
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [diffActiveTab, renderedSections])
 
+  const diffSections = reportDiff.data
+    ? [
+        reportDiff.data.section_a,
+        reportDiff.data.section_b,
+        reportDiff.data.section_c,
+        reportDiff.data.section_d,
+        reportDiff.data.section_e,
+        reportDiff.data.section_f,
+      ]
+    : []
+
+  const hasData = diffSections.some((section) => section.length > 0)
+
+  if (!hasData) {
+    const currentVersion = report.data?.version || undefined
+    const previousVersion = report.data?.version
+      ? report.data.version - 1
+      : undefined
+    return (
+      <>
+        <CPDiffHeader />
+        <CPSectionWrapper className="h-full">
+          <Typography className="flex items-center justify-center text-lg">
+            There are no differences between versions {currentVersion} and{' '}
+            {previousVersion}.
+          </Typography>
+        </CPSectionWrapper>
+      </>
+    )
+  }
+
   return (
     <>
       <Loading
