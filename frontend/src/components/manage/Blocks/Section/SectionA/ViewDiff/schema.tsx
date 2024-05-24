@@ -30,11 +30,7 @@ function useGridOptions(props: {
 
   const substanceColumn = useMemo(
     () => ({
-      cellClass: (props: CellClassParams) => {
-        return cx('flex items-center w-full', {
-          'ag-text-center': props.data?.change_type,
-        })
-      },
+      cellClass: 'flex items-center w-full',
       field: 'display_name',
       headerClass: 'ag-text-left',
       headerName: 'Substance',
