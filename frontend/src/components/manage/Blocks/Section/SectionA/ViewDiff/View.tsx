@@ -8,6 +8,7 @@ import { each, includes, union } from 'lodash'
 
 import components from '@ors/config/Table/components'
 
+import SimpleTable from '@ors/components/manage/Form/SimpleTable'
 import Table from '@ors/components/manage/Form/Table'
 import { DeserializedDataA } from '@ors/models/SectionA'
 
@@ -108,6 +109,11 @@ export default function SectionAViewDiff(props: any) {
           </Typography>
         </Alert>
       )}
+      <SimpleTable
+        columnDefs={gridOptionsAll.columnDefs}
+        defaultColDef={gridOptionsAll.defaultColDef}
+        rowData={rowData}
+      />
       <Table
         {...tableProps}
         columnDefs={gridOptionsAll.columnDefs}
