@@ -135,6 +135,17 @@ function useGridOptions(props: {
             },
           ]
         : []),
+      ...(includes(['II', 'III', 'IV', 'V'], model)
+        ? [
+            {
+              ...sectionColDefById['remarks'],
+              cellClass: 'ag-text-left remarks-cell',
+              field: 'remarks',
+              headerName: 'Remarks',
+              // ...(standalone ? { flex: 1 } : { flex: 1 }),
+            },
+          ]
+        : []),
     ]
   }, [model, sectionColDefById])
 
