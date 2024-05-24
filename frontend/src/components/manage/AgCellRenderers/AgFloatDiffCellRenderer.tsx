@@ -112,12 +112,12 @@ export default function AgFloatDiffCellRenderer(
           `${highlightCell(new_value, old_value, props.data?.change_type)}`,
           // 'grid grid-cols-2 grid-rows-2 gap-x-1 leading-normal',
         )}
-        component="div"
+        component="span"
       >
-        <div className="whitespace-nowrap font-semibold">{new_value}</div>
-        <div className="col-start-2 row-start-2 whitespace-nowrap text-sm diff-text-old">
+        <span className="whitespace-nowrap font-semibold">{new_value}</span>
+        <span className="diff-old-value col-start-2 row-start-2 whitespace-nowrap">
           {old_value}
-        </div>
+        </span>
       </Typography>
     </Tooltip>
   )

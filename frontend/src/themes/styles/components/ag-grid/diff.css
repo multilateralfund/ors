@@ -2,6 +2,8 @@
   .ag-cell {
     @apply items-stretch;
 
+    padding: 0 !important;
+
     .ag-cell-wrapper {
       @apply items-stretch;
     }
@@ -23,9 +25,29 @@
         }
       }
     }
+
+    @media (width <= 1680px) {
+      span {
+        @apply text-sm;
+      }
+
+      .diff-old-value {
+        @apply text-xs leading-3;
+      }
+    }
+
+    @media (width >= 1680px) {
+      span {
+        @apply text-base;
+      }
+
+      .diff-old-value {
+        @apply text-sm leading-3;
+      }
+    }
   }
 
-  .diff-text-old {
+  .diff-old-value {
     @apply text-gray-500;
   }
 
@@ -33,7 +55,7 @@
     @apply bg-mlfs-purple text-white;
   }
 
-  .diff-cell-new .diff-text-old {
+  .diff-cell-new .diff-old-value {
     @apply text-gray-300;
   }
 }
