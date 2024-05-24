@@ -524,7 +524,9 @@ class CPRecordListDiffView(CPRecordListView):
             record[field] = None
             record[f"{field}_old"] = old_value
 
-    def diff_records(self, data, data_old, fields, row_identifier="row_id", is_section_d=False):
+    def diff_records(
+        self, data, data_old, fields, row_identifier="row_id", is_section_d_e=False
+    ):
         usage_fields = ["quantity", "quantity_gwp", "quantity_odp"]
         diff_data = []
 
@@ -536,13 +538,20 @@ class CPRecordListDiffView(CPRecordListView):
         for record in data:
             record_old = records_old.pop(record[row_identifier], None)
 
-            if is_section_d:
-                record.pop("row_id")
+            # Prepare data for comparison
+            if is_section_d_e:
+                record.pop("row_id", None)
                 if record_old:
-                    record_old.pop("row_id")
-            record.pop("id")
+                    record_old.pop("row_id", None)
+            if "remarks" not in fields:
+                record.pop("remarks", None)
+                if record_old:
+                    record_old.pop("remarks", None)
+            record.pop("id", None)
             if record_old:
-                record_old.pop("id")
+                record_old.pop("id", None)
+
+            # And now actually compare
             if record == record_old:
                 # Only display newly-added or changed records
                 continue
@@ -595,12 +604,16 @@ class CPRecordListDiffView(CPRecordListView):
         self.set_archive_class_attributes()
         data_old = self._get_new_cp_records(cp_report_ar, data_only=True)
 
-        section_f_diff = [] if cp_report.comment == cp_report_ar.comment else [
-            {
-                "remarks": cp_report.comment,
-                "remarks_old": cp_report_ar.comment,
-            },
-        ]
+        section_f_diff = (
+            []
+            if cp_report.comment == cp_report_ar.comment
+            else [
+                {
+                    "remarks": cp_report.comment,
+                    "remarks_old": cp_report_ar.comment,
+                },
+            ]
+        )
 
         return Response(
             {
@@ -618,13 +631,14 @@ class CPRecordListDiffView(CPRecordListView):
                     data_old["section_d"],
                     self.section_d_fields,
                     row_identifier="chemical_name",
-                    is_section_d=True,
+                    is_section_d_e=True,
                 ),
                 "section_e": self.diff_records(
                     data["section_e"],
                     data_old["section_e"],
                     self.section_e_fields,
                     row_identifier="facility",
+                    is_section_d_e=True,
                 ),
                 "section_f": section_f_diff,
             }

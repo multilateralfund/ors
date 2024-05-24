@@ -55,6 +55,7 @@ const ReportDiffButton = (props: any) => {
     (report.versions?.data?.length || 0) > 1 && report.data?.version !== 1
 
   if (!showButton) return null
+  if (report.variant?.model !== 'V') return null
 
   return (
     <Link
