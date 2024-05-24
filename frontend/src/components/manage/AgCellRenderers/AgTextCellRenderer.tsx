@@ -8,6 +8,7 @@ import hash from 'object-hash'
 
 import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSkeletonCellRenderer'
 import AgTooltipComponent from '@ors/components/manage/AgComponents/AgTooltipComponent'
+import { truncateText } from '@ors/components/manage/Utils/diffUtils'
 import { FootnotesContext } from '@ors/contexts/Footnote/Footnote'
 import { scrollToElement } from '@ors/helpers/Utils/Utils'
 
@@ -39,6 +40,10 @@ export default function AgTextCellRenderer(props: CustomCellRendererProps) {
     return <AgSkeletonCellRenderer {...props} />
   }
 
+  const remarks = props.column?.getColId() === 'remarks' && props.value
+
+  const textValue = remarks ? truncateText(props.value, 5) : props.value
+
   return (
     <AgTooltipComponent {...props}>
       <Typography
@@ -58,7 +63,7 @@ export default function AgTextCellRenderer(props: CustomCellRendererProps) {
           })
         }}
       >
-        {props.value}
+        {textValue}
         {!!footnote && (
           <sup className="font-bold" title={footnote.content}>
             {footnote.index || footnoteId}
