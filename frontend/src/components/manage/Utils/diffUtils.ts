@@ -11,12 +11,12 @@ export const highlightCell = (
 }
 
 export function truncateText(text: string, maxChars: number = 20) {
-  // Check if the length of the text is less than or equal to maxChars
-  if (text.length <= maxChars) {
-    return text // No need to truncate
+  const cleanedText = text.replace(/[\r\n]+/g, '');
+
+  if (cleanedText.length <= maxChars) {
+    return cleanedText; // No need to truncate
   }
 
-  // Truncate the text to the maximum number of characters and add ellipsis
-  return text.substring(0, maxChars) + '...'
+  return cleanedText.substring(0, maxChars) + '...';
 }
 
