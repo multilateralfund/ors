@@ -1,8 +1,11 @@
+import os
 import math
+import urllib
 
 import openpyxl
 from django.db.models import Max
 from django.db.models import Min
+from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -17,6 +20,7 @@ from core.api.filters.business_plan import BusinessPlanFilter
 from core.api.serializers.business_plan import (
     BusinessPlanSerializer,
     BPCommentsSerializer,
+    BPFileSerializer,
     BPRecordExportSerializer,
     BPRecordDetailSerializer,
 )
@@ -190,3 +194,75 @@ class BPCommentsView(generics.GenericAPIView):
 
     def put(self, request, *args, **kwargs):
         return self._comments_update_or_create(request, *args, **kwargs)
+
+
+class BPFileView(generics.GenericAPIView):
+    """
+    API endpoint that allows uploading business plan file.
+    """
+
+    queryset = BusinessPlan.objects.all()
+    serializer_class = BPFileSerializer
+    lookup_field = "id"
+
+    ACCEPTED_EXTENSIONS = [
+        ".pdf",
+        ".doc",
+        ".docx",
+        ".xls",
+        ".xlsx",
+        ".csv",
+        ".ppt",
+        ".pptx",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".zip",
+        ".rar",
+        ".7z",
+    ]
+
+    def _file_create(self, request, *args, **kwargs):
+        business_plan = self.get_object()
+
+        files = request.FILES
+        if not files:
+            return Response(
+                {"feedback_file": "File not provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        filename, file = next(files.items())
+        extension = os.path.splitext(filename)[-1]
+        if extension not in self.ACCEPTED_EXTENSIONS:
+            return Response(
+                {"feedback_file": f"File extension {extension} is not valid"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        business_plan.feedback_filename = filename
+        business_plan.feedback_file = file
+        business_plan.save()
+        serializer = self.get_serializer(business_plan)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def post(self, request, *args, **kwargs):
+        return self._file_create(request, *args, **kwargs)
+
+
+class BPFileDownloadView(generics.RetrieveAPIView):
+    queryset = BusinessPlan.objects.all()
+    lookup_field = "id"
+
+    def get(self, request, *args, **kwargs):
+        business_plan = self.get_object()
+        response = HttpResponse(
+            business_plan.feedback_file.read(), content_type="application/octet-stream"
+        )
+        file_name = urllib.parse.quote(business_plan.feedback_filename)
+        response["Content-Disposition"] = (
+            f"attachment; filename*=UTF-8''{file_name}; filename=\"{file_name}\""
+        )
+        return response

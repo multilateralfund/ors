@@ -1,5 +1,6 @@
 import itertools
 
+from django.urls import reverse
 from rest_framework import serializers
 
 from core.api.serializers import CountrySerializer
@@ -53,6 +54,7 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
             "agency",
             "comment_agency",
             "comment_secretariat",
+            "feedback_filename",
         ]
 
 
@@ -170,3 +172,17 @@ class BPCommentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = BusinessPlan
         fields = ["comment_agency", "comment_secretariat"]
+
+
+class BPFileSerializer(serializers.ModelSerializer):
+    download_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BusinessPlan
+        fields = [
+            "feedback_filename",
+            "download_url",
+        ]
+
+    def get_download_url(self, obj):
+        return reverse("business-plan-file-download", args=(obj.id,))

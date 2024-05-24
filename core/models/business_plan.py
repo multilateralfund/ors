@@ -32,6 +32,9 @@ class BusinessPlan(models.Model):
         approved = "Approved", "Approved"  # can't update
         rejected = "Rejected", "Rejected"  # can't update ???
 
+    def upload_path(self, filename):
+        return f"bp_files/{self.agency}/{self.year_start}-{self.year_end}/{filename}"
+
     year_start = models.IntegerField(
         validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
     )
@@ -45,6 +48,12 @@ class BusinessPlan(models.Model):
     # General business plan comments for Agency and Secretariat
     comment_agency = models.TextField(blank=True)
     comment_secretariat = models.TextField(blank=True)
+
+    # feedback file
+    feedback_filename = models.CharField(max_length=100, blank=True)
+    feedback_file = models.FileField(
+        storage=PROTECTED_STORAGE, upload_to=upload_path, blank=True
+    )
 
     def __str__(self):
         return f"{self.agency_id} {self.year_start}-{self.year_end}"
@@ -115,30 +124,3 @@ class BPRecordValue(models.Model):
     value_mt = models.DecimalField(
         max_digits=25, decimal_places=15, null=True, blank=True
     )
-
-
-class BPFile(models.Model):
-    def upload_path(self, filename):
-        return f"bp_files/{self.agency}/{self.year_start}-{self.year_end}/{filename}"
-
-    uploaded_at = models.DateTimeField(
-        auto_now_add=True, help_text="Date of file upload"
-    )
-    year_start = models.IntegerField(
-        validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
-    )
-    year_end = models.IntegerField(
-        validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
-    )
-    agency = models.ForeignKey(Agency, on_delete=models.CASCADE, related_name="bpfiles")
-    filename = models.CharField(max_length=100)
-    file = models.FileField(storage=PROTECTED_STORAGE, upload_to=upload_path)
-
-    class Meta:
-        ordering = ["-uploaded_at"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["agency", "year_start", "year_end", "filename"],
-                name="unique_agency_years_filename",
-            )
-        ]

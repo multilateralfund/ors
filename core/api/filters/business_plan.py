@@ -1,7 +1,7 @@
 from django_filters import rest_framework as filters
 from django_filters.widgets import CSVWidget
 
-from core.models import BPFile, BPRecord
+from core.models import BPRecord
 from core.models import BusinessPlan
 from core.models import Country
 from core.models import ProjectSector
@@ -67,21 +67,3 @@ class BPRecordFilter(filters.FilterSet):
             "bp_type",
             "is_multi_year",
         ]
-
-
-class BPFileFilter(filters.FilterSet):
-    """
-    Filter for BP Files
-    """
-
-    agency_id = filters.ModelChoiceFilter(
-        required=True,
-        queryset=Agency.objects.all(),
-        field_name="agency_id",
-    )
-    year_start = filters.NumberFilter(required=True, field_name="year_start")
-    year_end = filters.NumberFilter(required=True, field_name="year_end")
-
-    class Meta:
-        model = BPFile
-        fields = ["agency_id", "year_start", "year_end"]
