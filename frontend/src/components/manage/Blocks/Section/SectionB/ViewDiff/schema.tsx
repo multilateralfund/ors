@@ -150,6 +150,12 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
         field: 'banned_date',
         // ...(standalone ? { flex: 1 } : { initialWidth: 110, maxWidth: 110 }),
       },
+      {
+        ...sectionColDefById['remarks'],
+        field: 'remarks',
+        headerName: 'Remarks',
+        // ...(standalone ? { flex: 1 } : { initialWidth: 80, maxWidth: 80 }),
+      },
     ]
   }, [model])
 
