@@ -43,7 +43,8 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
     )
     comment_agency = serializers.CharField(read_only=True)
     comment_secretariat = serializers.CharField(read_only=True)
-    feedback_file_download_url = serializers.SerializerMethodField()
+    feedback_filename = serializers.CharField(read_only=True)
+    feedback_file_download_url = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = BusinessPlan
