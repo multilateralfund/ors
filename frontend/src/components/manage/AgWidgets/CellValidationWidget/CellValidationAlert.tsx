@@ -12,7 +12,9 @@ import { IoAlertCircle } from 'react-icons/io5'
 
 export default function CellValidationAlert({
   errors,
+  ...props
 }: {
+  className?: string
   errors: IGlobalValidationResult[] | ValidateSectionResultValue[]
 }) {
   const [showTooltip, setShowTooltip] = useState(false)
@@ -26,7 +28,7 @@ export default function CellValidationAlert({
   }
 
   return (
-    <div>
+    <div className={props.className}>
       <div
         className="cursor-pointer"
         onClick={handleClick}

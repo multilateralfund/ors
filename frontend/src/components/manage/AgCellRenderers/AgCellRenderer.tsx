@@ -48,7 +48,6 @@ export default function AgCellRenderer(props: any) {
 
   return (
     <div className="cell-renderer">
-      <CellValidationWidget {...props} className="cell-validation-error" />
       {!!options && optionsInDropdown && (
         <div className="ag-cell-options inline-block">
           <Dropdown
@@ -70,6 +69,8 @@ export default function AgCellRenderer(props: any) {
         <CellRenderer {...props} />
         {showDiff && <DiffPill change_type={change_type} />}
       </div>
+
+      <CellValidationWidget {...props} className="cell-validation-error" />
 
       {!!error && (
         <Tooltip
