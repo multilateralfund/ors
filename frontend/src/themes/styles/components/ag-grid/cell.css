@@ -158,4 +158,10 @@
       @apply flex items-center;
     }
   }
+
+  .ag-column-first .cell-validation-error {
+    top: -12px !important;
+    right: -12px !important;
+    transform: none !important;
+  }
 }

@@ -21,7 +21,7 @@ function getDecimalCellValue(
 
   const formattedValue =
     props.context?.unit === 'gwp'
-      ? parseInt(`${valueToFormat}`, 10)
+      ? parseInt(`${valueToFormat}`, 10).toLocaleString()
       : formatDecimalValue(valueToFormat, props)
 
   let TitleContent = null
