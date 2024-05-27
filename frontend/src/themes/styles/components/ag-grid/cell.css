@@ -51,7 +51,8 @@
 
   .ag-cell.ag-column-first {
     padding-left: calc(var(--x-ag-first-column-cell-horizontal-padding) - 1px);
-    padding-right: calc(var(--x-ag-first-column-cell-horizontal-padding) - 1px);
+
+    /* padding-right: calc(var(--x-ag-first-column-cell-horizontal-padding) - 1px); */
   }
 
   .ag-cell.ag-text-left .ag-cell-value {

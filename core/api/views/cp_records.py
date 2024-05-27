@@ -538,6 +538,7 @@ class CPRecordListDiffView(CPRecordListView):
             record_old = records_old.pop(record[row_identifier], None)
 
             # Prepare data for comparison
+            remarks = record.get("remarks", "")
             if is_section_d_e:
                 record.pop("row_id", None)
                 if record_old:
@@ -566,6 +567,7 @@ class CPRecordListDiffView(CPRecordListView):
                 usage_old = usages_old.pop(str(usage["usage_id"]), None)
                 self.copy_fields(usage, usage_old, usage_fields)
 
+            record["remarks"] = remarks
             diff_data.append(record)
 
         for record in records_old.values():
@@ -573,6 +575,8 @@ class CPRecordListDiffView(CPRecordListView):
             for usage in record.get("record_usages", []):
                 self.rename_fields(usage, usage_fields)
             record["change_type"] = "deleted"
+            # Do not keep old version's remarks
+            record["remarks"] = ""
             diff_data.append(record)
 
         return diff_data

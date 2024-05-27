@@ -1,5 +1,6 @@
 import itertools
 
+from django.urls import reverse
 from rest_framework import serializers
 
 from core.api.serializers import CountrySerializer
@@ -40,6 +41,10 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
     status = serializers.ChoiceField(
         choices=BusinessPlan.Status.choices, required=False
     )
+    comment_agency = serializers.CharField(read_only=True)
+    comment_secretariat = serializers.CharField(read_only=True)
+    feedback_filename = serializers.CharField(read_only=True)
+    feedback_file_download_url = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = BusinessPlan
@@ -49,7 +54,14 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
             "year_start",
             "year_end",
             "agency",
+            "comment_agency",
+            "comment_secretariat",
+            "feedback_filename",
+            "feedback_file_download_url",
         ]
+
+    def get_feedback_file_download_url(self, obj):
+        return reverse("business-plan-file-download", args=(obj.id,))
 
 
 class BPRecordExportSerializer(serializers.ModelSerializer):
@@ -157,3 +169,18 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
 
     def get_bp_type_display(self, obj):
         return obj.get_bp_type_display()
+
+
+class BPCommentsSerializer(serializers.ModelSerializer):
+    comment_agency = serializers.CharField(required=False, allow_blank=True)
+    comment_secretariat = serializers.CharField(required=False, allow_blank=True)
+
+    class Meta:
+        model = BusinessPlan
+        fields = ["comment_agency", "comment_secretariat"]
+
+
+class BPFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BusinessPlan
+        fields = ["feedback_filename"]

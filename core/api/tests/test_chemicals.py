@@ -279,18 +279,18 @@ class TestSimilarBlend(BaseTest):
         blends, components = _setup_similar_blend
         # get similar blends for blendAFOF
         response = self.client.post(
-            self.url, {"components": components["blendAFOF"]}, format="json"
+            self.url, {"components": components["blendAFOF"][1:]}, format="json"
         )
         assert response.status_code == 200
-        assert len(response.data) == 1
-        assert response.data[0]["id"] == blends["blendAFOF"].id
+        assert len(response.data["similar_composition"]) == 1
+        assert response.data["similar_composition"][0]["id"] == blends["blendAFOF"].id
 
-        # get similar blends for blendAF
+        # get similar blends for blendAF (blends with more components)
         response = self.client.post(
             self.url, {"components": components["blendAF"]}, format="json"
         )
         assert response.status_code == 200
-        assert len(response.data) == 3
+        assert len(response.data["similar_composition"]) == 1
 
     def test_same_substnces_list_filter(self, user, _setup_similar_blend):
         self.client.force_authenticate(user=user)
@@ -302,8 +302,8 @@ class TestSimilarBlend(BaseTest):
         }
         response = self.client.post(self.url, params, format="json")
         assert response.status_code == 200
-        assert len(response.data) == 2
-        for blend in response.data:
+        assert len(response.data["same_composition"]) == 2
+        for blend in response.data["same_composition"]:
             assert len(blend["components"]) == 2
 
     def test_invalid_substance(self, user, _setup_similar_blend):
@@ -315,7 +315,7 @@ class TestSimilarBlend(BaseTest):
             self.url, {"components": components_data}, format="json"
         )
         assert response.status_code == 200
-        assert len(response.data) == 0
+        assert len(response.data["similar_composition"]) == 0
 
     def test_no_components(self, user, _setup_similar_blend):
         self.client.force_authenticate(user=user)
@@ -334,7 +334,8 @@ class TestSimilarBlend(BaseTest):
             self.url, {"components": components_data}, format="json"
         )
         assert response.status_code == 200
-        assert len(response.data) == 0
+        assert len(response.data["similar_composition"]) == 0
+        assert len(response.data["same_composition"]) == 0
 
 
 class TestCreateBlend:

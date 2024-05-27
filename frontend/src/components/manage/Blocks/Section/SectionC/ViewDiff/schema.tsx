@@ -46,6 +46,12 @@ function useGridOptions(props: { model: string }) {
         headerName: 'Current prices',
         orsAggFunc: 'sumTotal',
       },
+      {
+        field: 'remarks',
+        headerName: 'Remarks',
+        ...sectionColDefById['remarks'],
+        cellClass: 'ag-text-left remarks-cell',
+      },
     ],
     defaultColDef: {
       autoHeight: true,

@@ -164,32 +164,18 @@ class SimilarBlendsListView(ChemicalBaseListView):
 
     def get_queryset(self):
         data = self.request.data
-        same_substances = data.get("same_substances", False)
 
         queryset = BlendComponents.objects
         if not data.get("components", None):
             return queryset.none()
 
-        components_list = [
-            (vals["substance_id"], vals["percentage"] / 100)
-            for vals in data["components"]
-        ]
-        queryset = queryset.get_similar_blends(
-            components_list, same_subs_list=same_substances
-        )
-
-        return queryset.order_by("sort_order")
+        return queryset
 
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             required=["components"],
             properties={
-                "same_substances": openapi.Schema(
-                    type=openapi.TYPE_BOOLEAN,
-                    description="If true, the blend must have the same number"
-                    " of components as the components_list",
-                ),
                 "components": openapi.Schema(
                     type=openapi.TYPE_ARRAY,
                     description="Array of objects",
@@ -219,7 +205,27 @@ class SimilarBlendsListView(ChemicalBaseListView):
         data = request.data
         self.serializer_class(data=data).validate_components(data)
 
-        return self.list(request, *args, **kwargs)
+        components_list = [
+            (vals["substance_id"], vals["percentage"] / 100)
+            for vals in data["components"]
+        ]
+        same_comp = (
+            self.get_queryset()
+            .get_similar_blends(components_list, same_subs_list=True)
+            .order_by("sort_order")
+        )
+        similat_comp = (
+            self.get_queryset()
+            .get_similar_blends(components_list, same_subs_list=False)
+            .order_by("sort_order")
+        )
+
+        response_data = {
+            "same_composition": self.get_serializer(same_comp, many=True).data,
+            "similar_composition": self.get_serializer(similat_comp, many=True).data,
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 class BlendCreateView(generics.CreateAPIView):
