@@ -165,7 +165,7 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
     <>
       <div className="modal-content">
         <Alert
-          className="bg-mlfs-bannerColor mb-4"
+          className="mb-4 bg-mlfs-bannerColor"
           icon={<IoInformationCircle size={24} />}
           severity="info"
         >
@@ -356,36 +356,42 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td className="flex justify-between">
-                  <span>Same composition</span>
-                  <div className="flex gap-x-2">
-                    {similarBlends.same.map((blend: any) => (
-                      <SimilarBlend
-                        key={blend.id}
-                        blend={blend}
-                        substances={substances}
-                        onClick={() => selectSimilarBlend(blend)}
-                      />
-                    ))}
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td className="flex justify-between">
-                  <span>Similar composition</span>
-                  <div className="flex gap-x-2">
-                    {similarBlends.default.map((blend: any) => (
-                      <SimilarBlend
-                        key={blend.id}
-                        blend={blend}
-                        substances={substances}
-                        onClick={() => selectSimilarBlend(blend)}
-                      />
-                    ))}
-                  </div>
-                </td>
-              </tr>
+              {similarBlends.same?.length > 0 && (
+                <tr>
+                  <td className="flex justify-between">
+                    <span>Same composition</span>
+                    <div className="flex gap-x-2">
+                      {similarBlends.same.map((blend: any) => (
+                        <SimilarBlend
+                          key={blend.id}
+                          blend={blend}
+                          substances={substances}
+                          onClick={() => selectSimilarBlend(blend)}
+                        />
+                      ))}
+                    </div>
+                  </td>
+                </tr>
+              )}
+              {similarBlends.same?.length > 0 &&
+                similarBlends.default?.length > 0 && <hr />}
+              {similarBlends.default?.length > 0 && (
+                <tr>
+                  <td className="flex justify-between">
+                    <span>Similar composition</span>
+                    <div className="flex gap-x-2">
+                      {similarBlends.default.map((blend: any) => (
+                        <SimilarBlend
+                          key={blend.id}
+                          blend={blend}
+                          substances={substances}
+                          onClick={() => selectSimilarBlend(blend)}
+                        />
+                      ))}
+                    </div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         )}
@@ -393,16 +399,12 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
           className="mt-2 rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
           onClick={async () => {
             try {
-              const defaultSimilarBlends = await api('api/blends/similar', {
+              const {
+                same_composition: sameSimilarBlends,
+                similar_composition: defaultSimilarBlends,
+              } = await api('api/blends/similar', {
                 data: {
                   components: form.components,
-                },
-                method: 'post',
-              })
-              const sameSimilarBlends = await api('api/blends/similar', {
-                data: {
-                  components: form.components,
-                  same_substances: true,
                 },
                 method: 'post',
               })
