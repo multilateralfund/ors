@@ -10,6 +10,7 @@ import { each, includes, union } from 'lodash'
 
 import components from '@ors/config/Table/components'
 
+import SimpleTable from '@ors/components/manage/Form/SimpleTable'
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 
@@ -149,6 +150,12 @@ export default function SectionAView(props: SectionAViewProps) {
           }
         />
       </div>
+      <SimpleTable
+        {...TableProps}
+        columnDefs={gridOptionsAll.columnDefs}
+        defaultColDef={gridOptionsAll.defaultColDef}
+        rowData={rowData}
+      />
       <Table
         key={tableDataValue}
         {...TableProps}
