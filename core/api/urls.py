@@ -8,7 +8,12 @@ from core.api.views import ProjectFundViewSet
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
 from core.api.views.agency import AgencyListView
-from core.api.views.business_plan import BPRecordViewSet
+from core.api.views.business_plan import (
+    BPCommentsView,
+    BPFileDownloadView,
+    BPFileView,
+    BPRecordViewSet,
+)
 from core.api.views.business_plan import BusinessPlanViewSet
 from core.api.views.chemicals import (
     BlendCreateView,
@@ -95,7 +100,6 @@ urlpatterns = [
         schema_view.with_ui("swagger", cache_timeout=0),
         name="schema-swagger-ui",
     ),
-    *router.urls,
     path(
         "settings/",
         SettingsView.as_view(),
@@ -294,4 +298,20 @@ urlpatterns = [
         ProjectFileView.as_view(),
         name="project-files",
     ),
+    path(
+        "business-plan/<int:id>/comments/",
+        BPCommentsView.as_view(),
+        name="business-plan-comments",
+    ),
+    path(
+        "business-plan/<int:id>/file/",
+        BPFileView.as_view(),
+        name="business-plan-file",
+    ),
+    path(
+        "business-plan/<int:id>/file/download/",
+        BPFileDownloadView.as_view(),
+        name="business-plan-file-download",
+    ),
+    *router.urls,
 ]

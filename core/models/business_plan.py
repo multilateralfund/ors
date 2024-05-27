@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 from django.core.validators import MinValueValidator
 from django.db import models
 from core.models.agency import Agency
@@ -12,6 +13,8 @@ from core.models.project import (
     ProjectType,
 )
 from core.models.substance import Substance
+
+PROTECTED_STORAGE = FileSystemStorage(location=settings.PROTECTED_MEDIA_ROOT)
 
 
 class BPChemicalType(models.Model):
@@ -29,6 +32,9 @@ class BusinessPlan(models.Model):
         approved = "Approved", "Approved"  # can't update
         rejected = "Rejected", "Rejected"  # can't update ???
 
+    def upload_path(self, filename):
+        return f"bp_files/{self.agency}/{self.year_start}-{self.year_end}/{filename}"
+
     year_start = models.IntegerField(
         validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
     )
@@ -38,6 +44,15 @@ class BusinessPlan(models.Model):
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
     status = models.CharField(
         max_length=32, choices=Status.choices, default=Status.draft
+    )
+    # General business plan comments for Agency and Secretariat
+    comment_agency = models.TextField(blank=True)
+    comment_secretariat = models.TextField(blank=True)
+
+    # feedback file
+    feedback_filename = models.CharField(max_length=100, blank=True)
+    feedback_file = models.FileField(
+        storage=PROTECTED_STORAGE, upload_to=upload_path, blank=True
     )
 
     def __str__(self):
