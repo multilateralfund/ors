@@ -279,18 +279,18 @@ class TestSimilarBlend(BaseTest):
         blends, components = _setup_similar_blend
         # get similar blends for blendAFOF
         response = self.client.post(
-            self.url, {"components": components["blendAFOF"]}, format="json"
+            self.url, {"components": components["blendAFOF"][1:]}, format="json"
         )
         assert response.status_code == 200
         assert len(response.data) == 1
         assert response.data[0]["id"] == blends["blendAFOF"].id
 
-        # get similar blends for blendAF
+        # get similar blends for blendAF (blends with more components)
         response = self.client.post(
             self.url, {"components": components["blendAF"]}, format="json"
         )
         assert response.status_code == 200
-        assert len(response.data) == 3
+        assert len(response.data) == 1
 
     def test_same_substnces_list_filter(self, user, _setup_similar_blend):
         self.client.force_authenticate(user=user)

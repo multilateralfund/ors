@@ -229,7 +229,7 @@ class BlendComponentManager(models.Manager):
     def get_similar_blends(self, components_list, same_subs_list=False):
         """
         get similar blends by a list of components
-          -> blends that have all the components in the components_list and maybe more
+          -> blends that have all the components in the components_list and more
           -> the percentage of the components does not have to be the same as in the blend
 
         @param components_list: list of tuples (substance_id, percentage)
@@ -261,7 +261,12 @@ class BlendComponentManager(models.Manager):
 
         blend_ids = [item["blend_id"] for item in queryset]
         if not same_subs_list:
-            return Blend.objects.filter(id__in=blend_ids)
+            # check if the blend has more components than the components list
+            return (
+                Blend.objects.filter(id__in=blend_ids)
+                .annotate(total=models.Count("components"))
+                .filter(models.Q(total__gt=len(components_list)))
+            )
 
         # check if the blend has the same number of components as the components list
 
