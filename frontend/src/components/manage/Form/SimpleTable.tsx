@@ -65,6 +65,15 @@ function getCellClass(colDef: any, cellProps: any) {
   return result
 }
 
+function apiForEachNodeSetup(rowData: any) {
+  function iterator(callback: any) {
+    for (let i = 0; i < rowData.length; i++) {
+      callback({ data: rowData[i] })
+    }
+  }
+  return iterator
+}
+
 function SimpleTable(props: any) {
   const { columnDefs, context, defaultColDef, rowData } = props
 
@@ -87,18 +96,18 @@ function SimpleTable(props: any) {
         colId: colDef.field ?? colDef.id,
         getColId: () => colDef.field ?? colDef.id,
       }
-      const cellProps = { colDef, column, context, data }
+      const cellProps = {
+        api: { forEachNode: apiForEachNodeSetup(rowData) },
+        colDef,
+        column,
+        context,
+        data,
+      }
       const cellClass =
         getCellClass(colDef, cellProps) ||
         getCellClass(defaultColDef, cellProps)
       const cellRenderer = (
-        <AgCellRenderer
-          colDef={colDef}
-          column={column}
-          context={context}
-          data={data}
-          value={data[colDef.field]}
-        />
+        <AgCellRenderer value={data[colDef.field]} {...cellProps} />
       )
       row.push(
         <td
