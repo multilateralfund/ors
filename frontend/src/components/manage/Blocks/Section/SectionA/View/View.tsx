@@ -148,9 +148,9 @@ export default function SectionAView(props: any) {
       </div>
       <SimpleTable
         {...TableProps}
-        columnDefs={gridOptionsAll.columnDefs}
-        defaultColDef={gridOptionsAll.defaultColDef}
-        rowData={rowData}
+        columnDefs={gridOptions.columnDefs}
+        defaultColDef={gridOptions.defaultColDef}
+        rowData={[...rowData, ...pinnedBottomRowData]}
       />
       <Table
         key={tableDataValue}

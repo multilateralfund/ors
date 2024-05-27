@@ -1,4 +1,22 @@
+import { defaultColDef as globalColDef } from '@ors/config/Table/columnsDef'
+
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
+import AgHeaderComponent from '@ors/components/manage/AgComponents/AgHeaderComponent'
+
+const ROW_CLASS_RULES: any = [
+  ['ag-row-control', (props: any) => props.data.rowType === 'control'],
+  ['ag-row-error', (props: any) => !!props.data.error],
+  ['ag-row-group', (props: any) => props.data.rowType === 'group'],
+  ['ag-row-hashed', (props: any) => props.data.rowType === 'hashed'],
+  [
+    'ag-row-sub-total border-b-3 border-primary border-solid border-x-0 border-t-0',
+    (props: any) => props.data.rowType === 'subtotal',
+  ],
+  [
+    'ag-row-total border-t-3 border-primary border-solid border-x-0 border-b-0',
+    (props: any) => props.data.rowType === 'total',
+  ],
+]
 
 function countHeader(columnDefs: any, iRow = 0, rows: any = []): any {
   let tCol = 0
@@ -10,7 +28,7 @@ function countHeader(columnDefs: any, iRow = 0, rows: any = []): any {
 
   for (let i = 0; i < columnDefs.length; i++) {
     const colDef = columnDefs[i]
-    rows[iRow].push({ label: colDef.headerName })
+    rows[iRow].push({ colDef, label: colDef.headerName })
     if (colDef.children && colDef.children.length) {
       const counts = countHeader(colDef.children, iRow + 1, rows)
       tCol += counts.tCol
@@ -25,24 +43,46 @@ function countHeader(columnDefs: any, iRow = 0, rows: any = []): any {
   return { colDefs, depth: iRow, rows, tCol }
 }
 
+function getHeaderComponentParams(colDef: any, cellProps: any): any {
+  let result = null
+
+  if (
+    colDef.headerComponentParams &&
+    typeof colDef.headerComponentParams === 'function'
+  ) {
+    result = colDef.headerComponentParams(cellProps)
+  } else if (colDef.headerComponentParams) {
+    result = colDef.headerComponentParams
+  }
+
+  return result
+}
+
 function Header(props: any) {
-  const { rows } = props
+  const { context, rows } = props
 
   const result = []
 
   for (let i = 0; i < rows.length; i++) {
     const Row = []
     const cols = rows[i]
+    console.log(cols)
     for (let j = 0; j < cols.length; j++) {
       const colDef = cols[j]
+      const headerParams = {
+        colDef: colDef.colDef,
+        displayName: colDef.label,
+        ...getHeaderComponentParams(colDef.colDef, { context }),
+      }
+      console.log(colDef.label, headerParams.footnote)
       const Col = (
         <th
           key={j}
-          className="break-words border border-solid border-gray-200 bg-gray-50"
+          className="break-words border border-solid border-gray-200 bg-gray-50 p-2 align-bottom"
           colSpan={colDef.colspan || 0}
           rowSpan={colDef.colspan ? 1 : rows.length - i}
         >
-          {colDef.label}
+          <AgHeaderComponent className="font-bold" {...headerParams} />
         </th>
       )
       Row.push(Col)
@@ -65,6 +105,26 @@ function getCellClass(colDef: any, cellProps: any) {
   return result
 }
 
+function getCellRendererParams(colDef: any, cellProps: any): any {
+  let result = null
+
+  if (colDef.cellRendererParams) {
+    result = colDef.cellRendererParams(cellProps)
+  }
+
+  return result
+}
+
+function getRowClass(data: any) {
+  const result = []
+  for (let i = 0; i < ROW_CLASS_RULES.length; i++) {
+    if (ROW_CLASS_RULES[i][1]({ data })) {
+      result.push(ROW_CLASS_RULES[i][0])
+    }
+  }
+  return result.join(' ')
+}
+
 function apiForEachNodeSetup(rowData: any) {
   function iterator(callback: any) {
     for (let i = 0; i < rowData.length; i++) {
@@ -81,9 +141,9 @@ function SimpleTable(props: any) {
   console.log('columnDefs', columnDefs)
   console.log('defaultColDef', defaultColDef)
 
-  const counts = countHeader(columnDefs)
+  const combinedColDef = { ...globalColDef, ...defaultColDef }
 
-  console.log(counts)
+  const counts = countHeader(columnDefs)
 
   const rows = []
 
@@ -91,7 +151,7 @@ function SimpleTable(props: any) {
     const row = []
     const data = rowData[i]
     for (let j = 0; j < counts.colDefs.length; j++) {
-      const colDef = counts.colDefs[j]
+      const colDef = { ...combinedColDef, ...counts.colDefs[j] }
       const column = {
         colId: colDef.field ?? colDef.id,
         getColId: () => colDef.field ?? colDef.id,
@@ -103,31 +163,40 @@ function SimpleTable(props: any) {
         context,
         data,
       }
-      const cellClass =
-        getCellClass(colDef, cellProps) ||
-        getCellClass(defaultColDef, cellProps)
+      const cellClass = getCellClass(colDef, cellProps)
+      const cellRendererParams = getCellRendererParams(colDef, cellProps)
       const cellRenderer = (
-        <AgCellRenderer value={data[colDef.field]} {...cellProps} />
+        <AgCellRenderer
+          value={data[colDef.field]}
+          {...cellProps}
+          {...cellRendererParams}
+        />
       )
       row.push(
         <td
           key={j}
-          className={`border border-solid border-gray-200 ${cellClass}`}
+          className={`border border-solid border-gray-200 px-2 py-2 ${cellClass}`}
         >
-          {cellRenderer}
+          <div
+            className={`flex ${cellClass.indexOf('text-center') !== -1 ? 'justify-center' : ''}`}
+          >
+            {cellRenderer}
+          </div>
         </td>,
       )
     }
-    rows.push(<tr key={i}>{row}</tr>)
+    rows.push(
+      <tr key={i} className={getRowClass(data)}>
+        {row}
+      </tr>,
+    )
   }
-
-  console.log(rows)
 
   return (
     <>
       <table className="ag-table border-collapse border border-solid border-gray-200">
         <thead className="border-b-3 border-x-0 border-t-0 border-solid border-primary">
-          {<Header rows={counts.rows} />}
+          {<Header context={context} rows={counts.rows} />}
         </thead>
         <tbody>{rows}</tbody>
       </table>
