@@ -241,6 +241,9 @@ class BPFileView(generics.GenericAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        if bool(business_plan.feedback_file):
+            business_plan.feedback_file.delete(save=False)
+
         business_plan.feedback_filename = filename
         business_plan.feedback_file = file
         business_plan.save()
