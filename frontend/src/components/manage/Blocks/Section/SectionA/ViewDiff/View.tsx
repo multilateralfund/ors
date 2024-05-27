@@ -110,6 +110,7 @@ export default function SectionAViewDiff(props: any) {
         </Alert>
       )}
       <SimpleTable
+        {...TableProps}
         columnDefs={gridOptionsAll.columnDefs}
         defaultColDef={gridOptionsAll.defaultColDef}
         rowData={rowData}
