@@ -19,3 +19,26 @@
   @apply px-1 md:px-2 lg:px-3;
 }
 
+.SimpleTable .MuiTableCell-root.MuiTableCell-body {
+  @apply text-base;
+}
+
+.SimpleTable .MuiTableCell-root.MuiTableCell-head {
+  @apply text-base border-collapse;
+}
+
+.SimpleTable .MuiTableCell-root.MuiTableCell-head:first-child {
+  @apply rounded-tl;
+}
+
+.SimpleTable .MuiTableCell-root.MuiTableCell-head:last-child {
+  @apply rounded-tr;
+}
+
+.SimpleTable .MuiTableRow-root td {
+  @apply border-solid border-0 border-b border-mui-default-border;
+}
+
+.SimpleTable .MuiTableRow-root:last-child td {
+  @apply border-0;
+}

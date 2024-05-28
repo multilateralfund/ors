@@ -1,14 +1,25 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 
 import { Button, Typography } from '@mui/material'
+import * as Sentry from '@sentry/nextjs'
 import { useRouter } from 'next/navigation'
 
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
-export default function Error({ reset }: { reset: () => void }) {
+export default function Error({
+  error,
+  reset,
+}: {
+  error: { digest?: string } & Error
+  reset: () => void
+}) {
   const router = useRouter()
+
+  useEffect(() => {
+    Sentry.captureException(error)
+  }, [error])
 
   return (
     <PageWrapper
