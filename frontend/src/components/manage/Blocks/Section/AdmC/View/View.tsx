@@ -1,8 +1,8 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 import { groupBy, map } from 'lodash'
 
-import Table from '@ors/components/manage/Form/Table'
+import SimpleTable from '@ors/components/manage/Form/SimpleTable'
 
 import useGridOptions from './schema'
 
@@ -20,7 +20,6 @@ function getRowData(report: any, rows: any) {
 export default function AdmC(props: any) {
   const { TableProps, emptyForm, report, variant } = props
   const { columns = [], rows = [] } = emptyForm.adm_c || {}
-  const grid = useRef<any>()
   const gridOptions = useGridOptions({
     adm_columns: columns,
     model: variant.model,
@@ -29,13 +28,11 @@ export default function AdmC(props: any) {
 
   return (
     <>
-      <Table
+      <SimpleTable
         {...TableProps}
         className="two-groups"
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
-        gridRef={grid}
-        headerDepth={2}
         rowData={rowData}
       />
     </>

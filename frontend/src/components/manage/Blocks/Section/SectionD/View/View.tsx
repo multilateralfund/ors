@@ -1,8 +1,8 @@
-import React, { useRef, useState } from 'react'
+import React, { useState } from 'react'
 
 import { Alert } from '@mui/material'
 
-import Table from '@ors/components/manage/Form/Table'
+import SimpleTable from '@ors/components/manage/Form/SimpleTable'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import Footnote from '@ors/components/ui/Footnote/Footnote'
 
@@ -20,12 +20,15 @@ function getRowData(report: any) {
 export default function SectionDView(props: any) {
   const { Comments, TableProps, report, showComments } = props
   const gridOptions = useGridOptions()
-  const grid = useRef<any>()
   const [rowData] = useState(() => getRowData(report))
 
   return (
     <>
-      <Alert className="bg-mlfs-bannerColor" icon={<IoInformationCircleOutline size={24} />} severity="info">
+      <Alert
+        className="bg-mlfs-bannerColor"
+        icon={<IoInformationCircleOutline size={24} />}
+        severity="info"
+      >
         <Footnote id="" index="">
           Data in Section D should be provided (if applicable) even if breakdown
           in Section E by enterprises are not reported as reporting under
@@ -33,11 +36,10 @@ export default function SectionDView(props: any) {
         </Footnote>
         <Footnotes />
       </Alert>
-      <Table
+      <SimpleTable
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
-        gridRef={grid}
         rowData={rowData}
       />
       {showComments && <Comments section="section_d" viewOnly={false} />}

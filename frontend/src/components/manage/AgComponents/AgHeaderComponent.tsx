@@ -1,5 +1,5 @@
 'use client'
-import { ReactNode, useContext, useEffect, useState } from 'react'
+import { ReactNode, useContext, useEffect } from 'react'
 
 import { IconButton, Typography } from '@mui/material'
 import { ColDef, IHeaderParams } from 'ag-grid-community'
@@ -33,13 +33,18 @@ export interface IAgHeaderParams extends IHeaderParams {
 export default function AgHeaderComponent(props: IAgHeaderParams) {
   const footnotes = useContext(FootnotesContext)
 
-  const [footnote] = useState(props.footnote)
-  const [footnoteId] = useState(
-    () =>
-      !!footnote &&
-      (footnote.id || (footnote.content ? hash(footnote.content) : null)),
-  )
-  const { details, displayName } = props
+  // const [footnote] = useState(props.footnote)
+  // const [footnoteId] = useState(
+  //   () =>
+  //     !!footnote &&
+  //     (footnote.id || (footnote.content ? hash(footnote.content) : null)),
+  // )
+
+  const { details, displayName, footnote } = props
+
+  const footnoteId =
+    !!footnote &&
+    (footnote.id || (footnote.content ? hash(footnote.content) : null))
 
   useEffect(() => {
     if (!footnotes || !footnote || !footnoteId) {
@@ -51,7 +56,7 @@ export default function AgHeaderComponent(props: IAgHeaderParams) {
       index: footnote.index,
       order: footnote.order,
     })
-  }, [footnotes, footnote, footnoteId])
+  }, [footnotes, footnote, props.footnote, footnoteId])
 
   return (
     <AgTooltipComponent
@@ -61,7 +66,9 @@ export default function AgHeaderComponent(props: IAgHeaderParams) {
       value={getTooltipTitle(props)}
     >
       <Typography
-        className={cx(props.className, { 'cursor-pointer font-bold': !!footnote })}
+        className={cx(props.className, {
+          'cursor-pointer font-bold': !!footnote,
+        })}
         component="span"
         onClick={() => {
           if (!footnote) return
