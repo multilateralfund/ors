@@ -94,6 +94,7 @@ function useGridOptions(props: {
             ),
           }),
           field: 'display_name',
+          flex: 2,
           headerClass: 'ag-text-left',
           headerName: 'Substance',
         },
