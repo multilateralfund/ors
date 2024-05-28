@@ -1,6 +1,7 @@
 from rest_framework.exceptions import ValidationError
 
 from django.db import models
+from core.models.business_plan import BusinessPlan
 from core.models.country_programme import CPRecord, CPReport
 from core.models.country_programme_archive import CPRecordArchive, CPReportArchive
 
@@ -116,3 +117,35 @@ def get_final_records_for_year(year, filter_list=None):
 
     # union the final records with the archive records
     return list(final_records) + list(archive_records)
+
+
+def get_business_plan_from_request(request):
+    """
+    Get business plan from request query params
+
+    @param request: request object
+
+    @return: business plan
+    """
+    business_plan_id = request.query_params.get("business_plan_id")
+    agency_id = request.query_params.get("agency_id")
+    year_start = request.query_params.get("year_start")
+    year_end = request.query_params.get("year_end")
+    business_plan = None
+
+    try:
+        if business_plan_id:
+            business_plan = BusinessPlan.objects.get(id=business_plan_id)
+        elif all([agency_id, year_start, year_end]):
+            business_plan = BusinessPlan.objects.get(
+                agency_id=agency_id,
+                year_start=year_start,
+                year_end=year_end,
+            )
+
+        if not business_plan:
+            raise BusinessPlan.DoesNotExist
+    except BusinessPlan.DoesNotExist as e:
+        raise ValidationError({"error": "Business plan not found"}) from e
+
+    return business_plan

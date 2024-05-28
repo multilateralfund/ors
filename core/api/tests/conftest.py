@@ -9,6 +9,7 @@ from core.api.tests.factories import (
     AdmColumnFactory,
     AdmRowFactory,
     AgencyFactory,
+    BPChemicalTypeFactory,
     BlendFactory,
     CPRaportFormatColumnFactory,
     CPRaportFormatRowFactory,
@@ -393,6 +394,11 @@ def project_ods_odp_blend(project, blend):
 @pytest.fixture
 def business_plan(agency):
     return BusinessPlanFactory(year_start=2020, year_end=2022, agency=agency)
+
+
+@pytest.fixture
+def bp_chemical_type():
+    return BPChemicalTypeFactory(name="BPChemicalType")
 
 
 @pytest.fixture

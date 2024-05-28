@@ -26,6 +26,7 @@ from core.api.serializers.business_plan import (
 )
 from core.api.utils import workbook_pdf_response
 from core.api.utils import workbook_response
+from core.api.views.utils import get_business_plan_from_request
 from core.models import BusinessPlan, BPRecord
 
 
@@ -61,7 +62,11 @@ class BusinessPlanViewSet(
         )
 
 
-class BPRecordViewSet(viewsets.ReadOnlyModelViewSet):
+class BPRecordViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
     serializer_class = BPRecordDetailSerializer
     queryset = BPRecord.objects.select_related(
         "business_plan",
@@ -71,6 +76,7 @@ class BPRecordViewSet(viewsets.ReadOnlyModelViewSet):
         "subsector",
         "project_type",
         "bp_chemical_type",
+        "project_cluster",
     ).prefetch_related(
         "substances",
         "blends",
@@ -97,7 +103,11 @@ class BPRecordViewSet(viewsets.ReadOnlyModelViewSet):
     ]
 
     def get_wb(self, method):
-        queryset = self.filter_queryset(self.get_queryset())
+        bp = get_business_plan_from_request(self.request)
+
+        # get records for the business plan
+        queryset = self.filter_queryset(self.get_queryset()).filter(business_plan=bp)
+
         data = BPRecordExportSerializer(queryset, many=True).data
 
         limits = queryset.aggregate(
@@ -133,6 +143,50 @@ class BPRecordViewSet(viewsets.ReadOnlyModelViewSet):
     @action(methods=["GET"], detail=False)
     def print(self, *args, **kwargs):
         return self.get_wb(workbook_pdf_response)
+
+    @swagger_auto_schema(
+        operation_description="List records for a specific business plan",
+        manual_parameters=[
+            openapi.Parameter(
+                name="business_plan_id",
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                description="Business plan ID",
+            ),
+            openapi.Parameter(
+                name="agency_id",
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                description="Agency ID",
+            ),
+            openapi.Parameter(
+                name="year_start",
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                description="Year start",
+            ),
+            openapi.Parameter(
+                name="year_end",
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                description="Year end",
+            ),
+        ],
+    )
+    def list(self, request, *args, **kwargs):
+        # get records for a specific business plan
+        bp = get_business_plan_from_request(request)
+
+        # get records for the business plan
+        queryset = self.filter_queryset(self.get_queryset()).filter(business_plan=bp)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class BPCommentsView(generics.GenericAPIView):
