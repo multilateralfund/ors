@@ -20,24 +20,20 @@ from core.api.tests.factories import (
 )
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008, W0221
+# pylint: disable=C8008, W0221, W0613, R0913
 
 
 class TestBPExport(BaseTest):
     url = reverse("bprecord-export")
 
     def test_export_anon(self, business_plan):
-        response = self.client.get(
-            self.url, {"business_plan__year_start": business_plan.year_start}
-        )
+        response = self.client.get(self.url, {"business_plan_id": business_plan.id})
         assert response.status_code == 403
 
     def test_export(self, user, business_plan, bp_record, bp_record_values):
         self.client.force_authenticate(user=user)
 
-        response = self.client.get(
-            self.url, {"business_plan__year_start": business_plan.year_start}
-        )
+        response = self.client.get(self.url, {"business_plan_id": business_plan.id})
         assert response.status_code == 200
         assert (
             response.filename
@@ -71,17 +67,13 @@ class TestBPPrint(BaseTest):
     url = reverse("bprecord-print")
 
     def test_export_anon(self, business_plan):
-        response = self.client.get(
-            self.url, {"business_plan__year_start": business_plan.year_start}
-        )
+        response = self.client.get(self.url, {"business_plan_id": business_plan.id})
         assert response.status_code == 403
 
-    def test_export(self, user, business_plan, bp_record):
+    def test_export(self, user, business_plan, bp_record, bp_record_values):
         self.client.force_authenticate(user=user)
 
-        response = self.client.get(
-            self.url, {"business_plan__year_start": business_plan.year_start}
-        )
+        response = self.client.get(self.url, {"business_plan_id": business_plan.id})
         assert response.status_code == 200
         assert (
             response.filename
