@@ -1,9 +1,9 @@
-import React, { useRef, useState } from 'react'
+import React, { useState } from 'react'
 
 import { Alert, Typography } from '@mui/material'
 import { groupBy, map } from 'lodash'
 
-import Table from '@ors/components/manage/Form/Table'
+import SimpleTable from '@ors/components/manage/Form/SimpleTable'
 
 import useGridOptions from './schema'
 
@@ -34,7 +34,6 @@ export default function AdmB(props: any) {
     adm_columns: columns,
     model: variant.model,
   })
-  const grid = useRef<any>()
   const [rowData] = useState(() => getRowData(report, rows))
 
   return (
@@ -49,13 +48,11 @@ export default function AdmB(props: any) {
           If Yes, since when (Date) / If No, planned date.
         </Typography>
       </Alert>
-      <Table
+      <SimpleTable
         {...TableProps}
         className="two-groups"
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
-        gridRef={grid}
-        headerDepth={2}
         rowData={rowData}
       />
     </>

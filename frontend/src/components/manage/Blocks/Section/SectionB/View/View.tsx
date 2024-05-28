@@ -4,13 +4,13 @@ import { CPReport } from '@ors/types/api_country-programme_records'
 import { EmptyFormType } from '@ors/types/api_empty-form'
 import { ReportVariant } from '@ors/types/variants'
 
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 
 import { Alert, Checkbox, FormControlLabel } from '@mui/material'
 import cx from 'classnames'
 import { each, includes, union } from 'lodash'
 
-import Table from '@ors/components/manage/Form/Table'
+import SimpleTable from '@ors/components/manage/Form/SimpleTable'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 
 import TableDataSelector, {
@@ -113,7 +113,6 @@ export default function SectionBView(props: SectionBViewProps) {
       model: variant.model,
       usages: emptyForm.usage_columns?.section_b || [],
     })
-  const grid = useRef<any>()
   const [showOnlyReported, setShowOnlyReported] = useState(false)
   const { setValue: setTableDataValue, value: tableDataValue } =
     useTableDataSelector()
@@ -169,15 +168,11 @@ export default function SectionBView(props: SectionBViewProps) {
           }
         />
       </div>
-      <Table
-        key={tableDataValue}
+      <SimpleTable
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
-        gridRef={grid}
-        headerDepth={4}
-        pinnedBottomRowData={pinnedBottomRowData}
-        rowData={rowData}
+        rowData={[...rowData, ...pinnedBottomRowData]}
       />
       {showComments && <Comments section="section_b" viewOnly={false} />}
     </>

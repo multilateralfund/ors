@@ -1,3 +1,8 @@
+import { useEffect, useRef, useState } from 'react'
+
+import cx from 'classnames'
+import { range } from 'lodash'
+
 import { defaultColDef as globalColDef } from '@ors/config/Table/columnsDef'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
@@ -17,6 +22,46 @@ const ROW_CLASS_RULES: any = [
     (props: any) => props.data.rowType === 'total',
   ],
 ]
+
+function usePinTableHeader(tableRef: any) {
+  const observerRef = useRef<IntersectionObserver | null>(null)
+  const theadRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver(
+      ([entry]) => {
+        const tHeader = theadRef.current as HTMLElement
+        if (entry.intersectionRatio && entry.intersectionRect.top < 10) {
+          tHeader.style.position = 'sticky'
+          tHeader.style.top = '0'
+          tHeader.style.zIndex = '10'
+        } else {
+          tHeader.style.removeProperty('position')
+          tHeader.style.removeProperty('top')
+          tHeader.style.removeProperty('z-index')
+        }
+      },
+      {
+        threshold: range(1, 101).map((v) => v / 100), // [..., 0.09, 0.1] instead of [..., 0.09, 0.09999999...]
+      },
+    )
+    const currentObserver = observerRef.current
+    return () => currentObserver.disconnect()
+  }, [])
+
+  useEffect(() => {
+    const currentObserver = observerRef.current as IntersectionObserver
+    const currentTable = tableRef.current
+
+    theadRef.current = currentTable.querySelector('thead')
+
+    currentObserver.observe(currentTable)
+
+    return () => {
+      currentObserver.unobserve(currentTable)
+    }
+  }, [tableRef])
+}
 
 function countHeader(columnDefs: any, iRow = 0, rows: any = []): any {
   let tCol = 0
@@ -66,7 +111,6 @@ function Header(props: any) {
   for (let i = 0; i < rows.length; i++) {
     const Row = []
     const cols = rows[i]
-    console.log(cols)
     for (let j = 0; j < cols.length; j++) {
       const colDef = cols[j]
       const headerParams = {
@@ -74,11 +118,10 @@ function Header(props: any) {
         displayName: colDef.label,
         ...getHeaderComponentParams(colDef.colDef, { context }),
       }
-      console.log(colDef.label, headerParams.footnote)
       const Col = (
         <th
           key={j}
-          className="break-words border border-solid border-gray-200 bg-gray-50 p-2 align-bottom"
+          className="break-words border border-t-0 border-solid border-gray-200 bg-gray-50 p-2 align-bottom first:rounded-tl-lg first:border-l-0 last:rounded-tr-lg last:border-r-0"
           colSpan={colDef.colspan || 0}
           rowSpan={colDef.colspan ? 1 : rows.length - i}
         >
@@ -135,11 +178,12 @@ function apiForEachNodeSetup(rowData: any) {
 }
 
 function SimpleTable(props: any) {
-  const { columnDefs, context, defaultColDef, rowData } = props
+  const { Toolbar, columnDefs, context, defaultColDef, rowData } = props
 
-  console.log('rowData', rowData)
-  console.log('columnDefs', columnDefs)
-  console.log('defaultColDef', defaultColDef)
+  const [fullScreen, setFullScreen] = useState(false)
+  const tableRef = useRef(null)
+
+  usePinTableHeader(tableRef)
 
   const combinedColDef = { ...globalColDef, ...defaultColDef }
 
@@ -175,7 +219,7 @@ function SimpleTable(props: any) {
       row.push(
         <td
           key={j}
-          className={`border border-solid border-gray-200 px-2 py-2 ${cellClass}`}
+          className={`border border-x border-solid border-gray-200 px-2 py-2 first:border-l-0 last:border-r-0 ${cellClass}`}
         >
           <div
             className={`flex ${cellClass.indexOf('text-center') !== -1 ? 'justify-center' : ''}`}
@@ -186,7 +230,7 @@ function SimpleTable(props: any) {
       )
     }
     rows.push(
-      <tr key={i} className={getRowClass(data)}>
+      <tr key={i} className={cx(getRowClass(data))}>
         {row}
       </tr>,
     )
@@ -194,12 +238,37 @@ function SimpleTable(props: any) {
 
   return (
     <>
-      <table className="ag-table border-collapse border border-solid border-gray-200">
-        <thead className="border-b-3 border-x-0 border-t-0 border-solid border-primary">
-          {<Header context={context} rows={counts.rows} />}
-        </thead>
-        <tbody>{rows}</tbody>
-      </table>
+      <div
+        className={cx('ag-table-root flex flex-col', {
+          'ag-full-screen': fullScreen,
+        })}
+      >
+        {Toolbar && (
+          <div className="ag-toolbar">
+            <Toolbar
+              {...props}
+              enterFullScreen={() => setFullScreen(true)}
+              exitFullScreen={() => setFullScreen(false)}
+              fullScreen={fullScreen}
+              gridContext={context}
+              onUnitSelectionChange={props.handleUnitSelectionChange}
+            />
+          </div>
+        )}
+        <div
+          className={cx(
+            'w-full rounded-t-lg border border-b-0 border-solid border-gray-200',
+            props.className,
+          )}
+        >
+          <table className="ag-table w-full border-collapse" ref={tableRef}>
+            <thead className="border-b-3 border-x-0 border-t-0 border-solid border-primary">
+              {<Header context={context} rows={counts.rows} />}
+            </thead>
+            <tbody>{rows}</tbody>
+          </table>
+        </div>
+      </div>
     </>
   )
 }

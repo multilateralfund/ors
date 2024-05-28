@@ -2,12 +2,12 @@ import type { ITableProps } from '../../../CountryProgramme/typesCPView'
 import { CPReport } from '@ors/types/api_country-programme_records'
 import { ReportVariant } from '@ors/types/variants'
 
-import React, { useRef, useState } from 'react'
+import React, { useState } from 'react'
 
 import { Alert, Checkbox, FormControlLabel } from '@mui/material'
 import { each, includes, union } from 'lodash'
 
-import Table from '@ors/components/manage/Form/Table'
+import SimpleTable from '@ors/components/manage/Form/SimpleTable'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 
 import { SectionCViewProps } from '../types'
@@ -65,7 +65,6 @@ export default function SectionCView(props: SectionCViewProps) {
   const gridOptions = useGridOptions({
     model: variant.model,
   })
-  const grid = useRef<any>()
   const [showOnlyReported, setShowOnlyReported] = useState(false)
   const rowData = getRowData(report, variant.model, showOnlyReported)
 
@@ -91,11 +90,10 @@ export default function SectionCView(props: SectionCViewProps) {
           }
         />
       </div>
-      <Table
+      <SimpleTable
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
-        gridRef={grid}
         rowData={rowData}
       />
       {showComments && <Comments section="section_c" viewOnly={false} />}

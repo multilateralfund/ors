@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react'
 
 import { Alert } from '@mui/material'
 
-import Table from '@ors/components/manage/Form/Table'
+import SimpleTable from '@ors/components/manage/Form/SimpleTable'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import Footnote from '@ors/components/ui/Footnote/Footnote'
 
@@ -40,11 +40,10 @@ export default function SectionDView(props: SectionDViewProps) {
         </Footnote>
         <Footnotes />
       </Alert>
-      <Table
+      <SimpleTable
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
-        gridRef={grid}
         rowData={rowData}
       />
       {showComments && <Comments section="section_d" viewOnly={false} />}

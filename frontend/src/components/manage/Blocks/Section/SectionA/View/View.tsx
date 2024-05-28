@@ -2,16 +2,13 @@ import type { SectionARowData } from '../types'
 import { CPReport } from '@ors/types/api_country-programme_records'
 import { ReportVariant } from '@ors/types/variants'
 
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { Alert, Checkbox, FormControlLabel } from '@mui/material'
 import cx from 'classnames'
 import { each, includes, union } from 'lodash'
 
-import components from '@ors/config/Table/components'
-
 import SimpleTable from '@ors/components/manage/Form/SimpleTable'
-import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 
 import TableDataSelector, { useTableDataSelector } from '../TableDataSelector'
@@ -93,7 +90,6 @@ export default function SectionAView(props: SectionAViewProps) {
       model: variant.model,
       usages: emptyForm.usage_columns?.section_a || [],
     })
-  const grid = useRef<any>()
   const [showOnlyReported, setShowOnlyReported] = useState(false)
   const { setValue: setTableDataValue, value: tableDataValue } =
     useTableDataSelector()
@@ -155,17 +151,6 @@ export default function SectionAView(props: SectionAViewProps) {
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
         rowData={[...rowData, ...pinnedBottomRowData]}
-      />
-      <Table
-        key={tableDataValue}
-        {...TableProps}
-        columnDefs={gridOptions.columnDefs}
-        components={components}
-        defaultColDef={gridOptions.defaultColDef}
-        gridRef={grid}
-        headerDepth={3}
-        pinnedBottomRowData={pinnedBottomRowData}
-        rowData={rowData}
       />
       {showComments && <Comments section="section_a" viewOnly={false} />}
     </>

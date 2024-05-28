@@ -5,7 +5,7 @@ import { useMemo, useRef } from 'react'
 
 import { groupBy } from 'lodash'
 
-import Table from '@ors/components/manage/Form/Table'
+import SimpleTable from '@ors/components/manage/Form/SimpleTable'
 
 import { ITableProps } from '../../../CountryProgramme/typesCPView'
 import { AdmCRow } from '../types'
@@ -49,7 +49,6 @@ interface AdmCProps {
 export default function AdmC(props: AdmCProps) {
   const { TableProps, emptyForm, report } = props
   const { columns = [], rows = [] } = emptyForm.adm_c || {}
-  const grid = useRef<any>()
   const gridOptions = useGridOptions({
     adm_columns: columns,
   })
@@ -57,13 +56,11 @@ export default function AdmC(props: AdmCProps) {
 
   return (
     <>
-      <Table
+      <SimpleTable
         {...TableProps}
         className="two-groups"
         columnDefs={gridOptions.columnDefs}
         defaultColDef={gridOptions.defaultColDef}
-        gridRef={grid}
-        headerDepth={2}
         rowData={rowData}
       />
     </>
