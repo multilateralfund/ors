@@ -47,12 +47,6 @@
     }
   }
 
-  .remarks-cell {
-    @apply flex items-center justify-center;
-
-    padding: 2px !important;
-  }
-
   .diff-old-value {
     @apply text-gray-500;
   }

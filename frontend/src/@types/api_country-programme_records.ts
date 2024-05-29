@@ -162,6 +162,7 @@ type ApiBaseDiff = {
       usage_id: number
     }[]
     remarks: null | string
+    remarks_old: null | string
     row_id: string
     substance_id: number
   }[]
@@ -189,6 +190,7 @@ type ApiBaseDiff = {
     id: number
     previous_year_price: string
     remarks: null | string
+    remarks_old: null | string
     row_id: string
     substance_id: number
   }[]
@@ -212,6 +214,7 @@ type ApiBaseDiff = {
     generated_emissions: string
     id: number
     remarks: null | string
+    remarks_old: null | string
     row_id: string
     total: string
   }[]

@@ -51,6 +51,7 @@ function useGridOptions(props: { model: string }) {
         headerName: 'Remarks',
         ...sectionColDefById['remarks'],
         cellClass: 'ag-text-left remarks-cell',
+        dataType: 'text_diff',
       },
     ],
     defaultColDef: {
