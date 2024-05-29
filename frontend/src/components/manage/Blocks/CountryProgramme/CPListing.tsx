@@ -224,7 +224,7 @@ const SubmissionItem = (props: any) => {
           return (
             <Link
               key={index}
-              className="flex items-baseline justify-between gap-4 text-pretty border-0 border-b border-solid border-blue-600 pb-2 sm:min-w-60"
+              className="flex items-baseline justify-between gap-4 text-pretty border-0 border-b border-solid border-secondary pb-2 sm:min-w-60"
               underline="none"
               href={
                 report.status === 'draft'
@@ -342,7 +342,7 @@ const SubmissionSection = function SubmissionSection(
                   {times(REPORTS_PER_COUNTRY, (index) => (
                     <div
                       key={index}
-                      className="flex items-baseline justify-between gap-4 text-pretty border-0 border-b border-solid border-blue-600 p-2 sm:min-w-60"
+                      className="flex items-baseline justify-between gap-4 text-pretty border-0 border-b border-solid border-secondary p-2 sm:min-w-60"
                     >
                       <Skeleton height={40} variant="text" width="100%" />
                     </div>
