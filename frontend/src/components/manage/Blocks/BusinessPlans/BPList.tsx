@@ -8,7 +8,7 @@ import SimpleList from '@ors/components/ui/SimpleList/SimpleList'
 import { getResults } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
 
-const PLANS_PER_PAGE = 50
+const PLANS_PER_PAGE = 20
 
 // const LoadingSkeleton = ({ rows }: { rows?: number }) => (
 //   <>

@@ -16,7 +16,7 @@ export default function DiffPill(props: DiffPillProps) {
 
   return (
     <div
-      className={cx('w-fit rounded-md px-1 text-center text-sm uppercase', {
+      className={cx('w-fit rounded px-1 text-center text-sm uppercase', {
         'bg-gray-200 text-gray-700': change_type === 'deleted',
         'bg-mlfs-purple text-white': change_type === 'new',
       })}

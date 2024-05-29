@@ -1,3 +1,5 @@
+import StatusPill from '@ors/components/ui/StatusPill/StatusPill'
+
 function SimpleList(props: any) {
   const { list } = props
   console.log(list)
@@ -15,9 +17,12 @@ function SimpleList(props: any) {
               key={item.id}
               className="flex flex-wrap items-center justify-between border-0 border-b border-solid border-secondary pb-4"
             >
-              <span className="text-2xl font-semibold text-typography">
-                {item.agency.name} {item.year_start} - {item.year_end}
-              </span>
+              <div className="flex items-center gap-2 text-2xl font-semibold text-typography">
+                <span>
+                  {item.agency.name} {item.year_start} - {item.year_end}
+                </span>
+                <StatusPill status={item.status} />
+              </div>
               <span className="font-normal tracking-tight">
                 Modified on {randomDate} by {mockUser}
               </span>
