@@ -1,0 +1,41 @@
+.replTable {
+  --table-thead-bg: hsl(0deg 0% 95%);
+  --table-border: hsl(0deg 0% 90%);
+  --table-hover: hsl(200deg 42% 84%);
+
+  border-collapse: collapse;
+  border-left: 1px solid var(--table-border);
+  border-right: 1px solid var(--table-border);
+  border-bottom: 1px solid var(--table-border);
+
+  th, td {
+    border: 1px solid var(--table-border);
+    padding: 0.5em 1em;
+  }
+
+  th {
+    background-color: var(--table-thead-bg);
+    position: relative;
+  }
+
+  thead {
+    border-bottom: 3px solid var(--table-border);
+    position: sticky;
+    top: 0;
+  }
+
+  thead::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--table-border);
+    z-index: -1;
+  }
+
+  tr:hover td {
+    background-color: var(--table-hover);
+  }
+}

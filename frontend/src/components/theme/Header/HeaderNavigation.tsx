@@ -143,6 +143,7 @@ const useMenuItems = () => {
         'Projects Dashboard',
         '/projects-data/projects-dashboard',
       ),
+      { label: 'Replenishment', url: '/replenishment' },
     ]),
     makeExternalNavItem('Resources', '/resources', [
       makeExternalNavItem('Decision handbook', '/resources/decisions'),
