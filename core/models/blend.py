@@ -227,6 +227,7 @@ class BlendComponentManager(models.Manager):
         return None
 
     def get_similar_blends(self, components_list, same_subs_list=False):
+        # we let this here for now but it should be removed if not used
         """
         get similar blends by a list of components
           -> blends that have all the components in the components_list and more
@@ -274,6 +275,50 @@ class BlendComponentManager(models.Manager):
             Blend.objects.filter(id__in=blend_ids)
             .annotate(total=models.Count("components"))
             .filter(models.Q(total=len(components_list)))
+        )
+
+    def get_suggested_blends(self, components_list):
+        """
+        get sugested blends by a list of components
+          -> blends that have all the components in the components_list and more
+          -> the percentage needs to be the same as in the blend
+
+        @param components_list: list of tuples (substance_id, percentage)
+
+        @return: list of Blend objects
+        """
+
+        if not components_list:
+            return Blend.objects.none()
+
+        filter_list = []
+        # set the filter list for the query using the components list
+        for substance_id, percentage in components_list:
+            filter_list.append(
+                models.Q(substance_id=substance_id, percentage=percentage)
+            )
+
+        # create the query
+        filters = filter_list.pop()
+        for item in filter_list:
+            filters |= item
+
+        queryset = (
+            self.values("blend_id")
+            .filter(filters)
+            .annotate(total=models.Count("id"))
+            .filter(models.Q(total=len(components_list)))
+        )
+
+        if not queryset:
+            return Blend.objects.none()
+
+        blend_ids = [item["blend_id"] for item in queryset]
+
+        return (
+            Blend.objects.filter(id__in=blend_ids)
+            .annotate(total=models.Count("components"))
+            .filter(models.Q(total__gt=len(components_list)))
         )
 
 
