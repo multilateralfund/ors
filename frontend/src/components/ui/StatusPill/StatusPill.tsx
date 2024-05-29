@@ -9,19 +9,19 @@ interface StatusStyle {
 }
 
 const statusStyles: Record<Status, StatusStyle> = {
-  Approved: { bgColor: 'bg-blue-500', textColor: 'text-white' },
+  Approved: { bgColor: 'bg-secondary', textColor: 'text-white' },
   Draft: {
     bgColor: 'bg-white',
-    border: 'border-black',
-    textColor: 'text-black',
+    border: 'border-mlfs-deepTealShade',
+    textColor: 'text-mlfs-deepTealShade',
   },
   'Needs Changes': {
     bgColor: 'bg-white',
-    border: 'border-black',
-    textColor: 'text-black',
+    border: 'border-mlfs-deepTealShade',
+    textColor: 'text-mlfs-deepTealShade',
   },
   Rejected: { bgColor: 'bg-gray-500', textColor: 'text-white' },
-  Submitted: { bgColor: 'bg-black', textColor: 'text-white' },
+  Submitted: { bgColor: 'bg-mlfs-deepTealShade', textColor: 'text-white' },
 }
 
 function StatusPill(props: { status: Status }) {
@@ -33,7 +33,7 @@ function StatusPill(props: { status: Status }) {
   return (
     <div
       className={cx(
-        'w-fit rounded px-1 text-center text-sm font-normal uppercase',
+        'w-fit rounded px-2 text-center text-sm font-normal uppercase',
         bgColor,
         textColor,
         border,
