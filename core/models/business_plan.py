@@ -35,6 +35,27 @@ class BusinessPlan(models.Model):
     def upload_path(self, filename):
         return f"bp_files/{self.agency}/{self.year_start}-{self.year_end}/{filename}"
 
+    created_at = models.DateTimeField(
+        auto_now_add=True, null=True, help_text="Date of creation of the business plan"
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        related_name="created_business_plans",
+        help_text="User who created the business plan",
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True, null=True, help_text="Date of business plan last update"
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        related_name="updated_business_plans",
+        help_text="User who last updated the business plan",
+    )
+
     year_start = models.IntegerField(
         validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
     )
