@@ -26,6 +26,8 @@ services:
 
   nextjs:
     image: ghcr.io/multilateralfund/multilateralfund-nextjs:${DOCKER_TAG:-latest}
+    env_file:
+      - .env.nextjs
     volumes:
       - nextjs_data:/frontend/.shared
     expose:
