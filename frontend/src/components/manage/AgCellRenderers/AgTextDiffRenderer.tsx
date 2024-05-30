@@ -28,7 +28,7 @@ export default function AgTextDiffRenderer(props: CustomCellRendererProps) {
     <AgTooltipDiffComponent {...props} remarks={remarks}>
       <Typography
         className={cx(
-          "p-2",
+          "p-1 2xl:p-0",
           props.className,
           remarks &&
             highlightCell(

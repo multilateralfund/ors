@@ -25,7 +25,7 @@ const RemarksDiff = (props: any) => {
           {currentVersion && `Remarks version ${currentVersion - 1}:`}
         </Typography>
         <Typography component="h1" variant="subtitle1">
-          {oldRemarks}
+          {oldRemarks || 'No remarks'}
         </Typography>
       </div>
     </div>

@@ -122,9 +122,9 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
           // ...(standalone ? { flex: 1 } : { initialWidth: 110, maxWidth: 110 }),
         },
         {
-          ...sectionColDefById['remarks'],
           field: 'remarks',
           headerName: 'Remarks',
+          ...sectionColDefById['remarks'],
           // ...(standalone ? { flex: 1 } : { initialWidth: 80, maxWidth: 80 }),
         },
       ]
