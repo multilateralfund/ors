@@ -9,3 +9,14 @@ export const highlightCell = (
   }
   return ''
 }
+
+export function truncateText(text: string, maxChars: number = 20) {
+  const cleanedText = text.replace(/[\r\n]+/g, '');
+
+  if (cleanedText.length <= maxChars) {
+    return cleanedText; // No need to truncate
+  }
+
+  return cleanedText.substring(0, maxChars) + '...';
+}
+
