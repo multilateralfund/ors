@@ -120,6 +120,7 @@ export default function SectionAView(props: any) {
 
   return (
     <>
+      {/* @ts-ignore */}
       {a.missing}
       <Alert
         className="bg-mlfs-bannerColor"
