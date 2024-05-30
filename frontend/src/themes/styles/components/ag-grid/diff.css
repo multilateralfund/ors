@@ -1,61 +1,65 @@
 .ag-table .diff-table {
-  .ag-cell {
-    @apply items-stretch;
+    .ag-cell {
+        @apply items-stretch;
 
-    padding: 0 !important;
+        padding: 0 !important;
 
-    .ag-cell-wrapper {
-      @apply items-stretch;
-    }
-
-    .ag-cell-value {
-      @apply flex items-stretch;
-    }
-
-    .cell-renderer {
-      @apply flex h-full w-full items-center justify-center;
-
-      .inline {
-        display: flex !important;
-
-        @apply h-full w-full items-center justify-center;
-
-        .MuiTypography-root {
-          @apply flex h-full w-full flex-col justify-center;
+        .ag-cell-wrapper {
+            @apply items-stretch;
         }
-      }
+
+        .ag-cell-value {
+            @apply flex items-stretch;
+        }
+
+        .cell-renderer {
+            @apply flex w-full items-stretch justify-center;
+
+            .inline {
+                display: flex !important;
+
+                @apply w-full items-stretch justify-center;
+
+                .MuiTypography-root {
+                    @apply flex w-full flex-col justify-center items-stretch;
+                }
+            }
+        }
+
+        @media (width <= 1680px) {
+            span {
+                @apply text-sm;
+            }
+
+            .diff-old-value {
+                @apply text-xs leading-3;
+            }
+        }
+
+        @media (width >= 1680px) {
+            span {
+                @apply text-base;
+            }
+
+            .diff-old-value {
+                @apply text-sm leading-3;
+            }
+        }
     }
 
-    @media (width <= 1680px) {
-      span {
-        @apply text-sm;
-      }
-
-      .diff-old-value {
-        @apply text-xs leading-3;
-      }
+    .remarks-cell {
+        @apply flex items-center justify-center;
     }
 
-    @media (width >= 1680px) {
-      span {
-        @apply text-base;
-      }
-
-      .diff-old-value {
-        @apply text-sm leading-3;
-      }
+    .diff-old-value {
+        @apply text-gray-500;
     }
-  }
 
-  .diff-old-value {
-    @apply text-gray-500;
-  }
+    .diff-cell-new {
+        @apply bg-mlfs-purple text-white;
+    }
 
-  .diff-cell-new {
-    @apply bg-mlfs-purple text-white;
-  }
-
-  .diff-cell-new .diff-old-value {
-    @apply text-gray-300;
-  }
+    .diff-cell-new .diff-old-value {
+        @apply text-gray-300;
+    }
 }

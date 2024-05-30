@@ -1,8 +1,15 @@
-import { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
-import { ClickAwayListener, Tooltip, Typography } from '@mui/material'
+import {
+  ClickAwayListener,
+  IconButton,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 
 import { useStore } from '@ors/store'
+
+import { IoClose } from 'react-icons/io5'
 
 const RemarksDiff = (props: any) => {
   const { remarks } = props
@@ -25,7 +32,7 @@ const RemarksDiff = (props: any) => {
           {currentVersion && `Remarks version ${currentVersion - 1}:`}
         </Typography>
         <Typography component="h1" variant="subtitle1">
-          {oldRemarks}
+          {oldRemarks || 'No remarks'}
         </Typography>
       </div>
     </div>
@@ -42,9 +49,15 @@ export default function AgTooltipDiffComponent(props: any) {
   } = props
 
   const [open, setOpen] = useState(false)
+  const tooltipRef = useRef(null)
 
-  const handleTooltipClose = () => {
-    if (remarks) {
+  const handleTooltipClose = (event: MouseEvent | TouchEvent) => {
+    if (
+      remarks &&
+      ((event.target as Element).closest('.close-tooltip') ||
+        (tooltipRef.current &&
+          !(tooltipRef.current as Node).contains(event.target as Node)))
+    ) {
       setOpen(false)
     }
   }
@@ -55,6 +68,18 @@ export default function AgTooltipDiffComponent(props: any) {
     }
   }
 
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpen(false)
+      }
+    }
+    window.addEventListener('keydown', handleEscape)
+    return () => {
+      window.removeEventListener('keydown', handleEscape)
+    }
+  }, [])
+
   const title = tooltipValue || value
 
   if (tooltipValue || props.colDef.tooltip || props.data?.tooltip) {
@@ -64,7 +89,24 @@ export default function AgTooltipDiffComponent(props: any) {
           enterDelay={300}
           open={remarks ? open : undefined}
           placement={placement}
-          title={remarks ? <RemarksDiff remarks={remarks} /> : title}
+          title={
+            <div className="flex flex-col" ref={tooltipRef}>
+              {remarks ? (
+                // @ts-ignore
+                <IconButton
+                  className="close-tooltip flex justify-end"
+                  size="small"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    setOpen(false)
+                  }}
+                >
+                  <IoClose className="text-white" />
+                </IconButton>
+              ) : null}
+              {remarks ? <RemarksDiff remarks={remarks} /> : title}
+            </div>
+          }
           onMouseEnter={handleTooltipOpen}
         >
           {children}

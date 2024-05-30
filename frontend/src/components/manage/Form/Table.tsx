@@ -36,6 +36,7 @@ import {
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import DefaultFadeInOut from '@ors/components/manage/Transitions/FadeInOut'
+import { hasDiff } from '@ors/components/manage/Utils/diffUtils'
 import { KEY_BACKSPACE } from '@ors/constants'
 import ValidationContext from '@ors/contexts/Validation/ValidationContext'
 import {
@@ -216,6 +217,10 @@ function Table(props: TableProps) {
     },
     cellClassRules: {
       'ag-error': (props) => !!getError(props),
+      'bg-gray-200': (props) =>
+        props.context.is_diff &&
+        hasDiff(props) &&
+        props.data.change_type === 'deleted',
       'border-solid border border-mlfs-hlYellow': (props) => {
         const errors: ValidateSectionResultValue[] = props.data.validationErrors
         if (errors) {
@@ -224,6 +229,10 @@ function Table(props: TableProps) {
         }
         return false
       },
+      'diff-cell-new': (props) =>
+        props.context.is_diff &&
+        hasDiff(props) &&
+        props.data.change_type !== 'deleted',
     },
     cellRenderer: (props: any) => {
       return <AgCellRenderer {...props} />

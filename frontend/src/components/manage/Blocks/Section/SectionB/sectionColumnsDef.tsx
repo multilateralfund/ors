@@ -93,7 +93,6 @@ const sectionColDefById: Record<string, ColDef> = {
   },
   remarks: {
     ...colDefById['remarks'],
-    cellClass: 'ag-text-center',
     headerClass: 'ag-text-center',
     headerComponentParams: (props: IAgHeaderParams) => {
       const model = props.context?.variant.model
