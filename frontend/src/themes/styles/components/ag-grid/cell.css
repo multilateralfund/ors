@@ -9,6 +9,16 @@
       @apply flex items-center;
     }
 
+    /* Center cell contents (cell-validation-error takes up the right hand side) */
+    &.ag-text-center .cell-renderer {
+      @apply flex;
+
+      .inline {
+        transform: translateX(-50%);
+        margin-left: 50%;
+      }
+    }
+
     .ag-cell-options {
       padding-right: 2px !important;
       margin-top: -4px;
