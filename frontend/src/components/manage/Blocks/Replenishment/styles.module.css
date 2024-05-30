@@ -1,5 +1,6 @@
 .replTable {
-  --table-thead-bg: hsl(0deg 0% 95%);
+  --color-gray: 0deg 0% 95%;
+  --table-thead-bg: hsl(var(--color-gray));
   --table-border: hsl(0deg 0% 90%);
   --table-hover: hsl(200deg 42% 84%);
 
@@ -8,7 +9,8 @@
   border-right: 1px solid var(--table-border);
   border-bottom: 1px solid var(--table-border);
 
-  th, td {
+  th,
+  td {
     border: 1px solid var(--table-border);
     padding: 0.5em 1em;
   }
@@ -19,13 +21,14 @@
   }
 
   thead {
-    border-bottom: 3px solid var(--table-border);
     position: sticky;
     top: 0;
   }
 
+  /* These :before and :after rules are needed to preserve
+   * borders when the header sticks to the top of the page. */
   thead::before {
-    content: "";
+    content: '';
     position: absolute;
     top: 0;
     left: 0;
@@ -33,6 +36,15 @@
     height: 100%;
     background-color: var(--table-border);
     z-index: -1;
+  }
+
+  thead::after {
+    content: '';
+    border-bottom: 3px solid var(--color-primary);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
   }
 
   tr:hover td {

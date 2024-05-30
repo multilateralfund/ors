@@ -30,11 +30,11 @@ const gray = {
 }
 
 const mlfs = {
-  hlYellow: '#ebff00',
-  hlYellowTint: 'hsla(65, 100%, 75%, 1)',
-  deepTealShade: 'hsla(199, 100%, 8%, 1);',
-  bannerColor: '#E6F4FB',
-  purple: '#AD72FA',
+  hlYellow: 'hsl(var(--tw-mlfs-hlYellow) / <alpha-value>)',
+  hlYellowTint: 'hsl(var(--tw-mlfs-hlYellowTint) / <alpha-value>)',
+  deepTealShade: 'hsl(var(--tw-mlfs-deepTealShade) / <alpha-value>)',
+  bannerColor: 'hsl(var(--tw-mlfs-bannerColor) / <alpha-value>)',
+  purple: 'hsl(var(--tw-mlfs-purple) / <alpha-value>)',
 }
 
 const originalColors = {

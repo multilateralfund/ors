@@ -21,6 +21,19 @@
 @layer base {
   :root {
     @apply h-full;
+
+    --tw-primary: 198 100% 12%;
+    --color-primary: hsl(var(--tw-primary));
+    --tw-mlfs-hlYellow: 64.7 100% 50%;
+    --color-mlfs-hlYellow: hsl(var(--tw-mlfs-hlYellow));
+    --tw-mlfs-hlYellowTint: 65 100% 75%;
+    --color-mlfs-hlYellowTint: hsl(var(--tw-mlfs-hlYellowTint));
+    --tw-mlfs-deepTealShade: 199 100% 8%;
+    --color-mlfs-deepTealShade: hsl(var(--tw-mlfs-deepTealShade));
+    --tw-mlfs-bannerColor: 200 72.4% 94.3%;
+    --color-mlfs-bannerColor: hsl(var(--tw-mlfs-bannerColor));
+    --tw-mlfs-purple: 266 93.2% 71.4%;
+    --color-mlfs-purple: hsl(var(--tw-mlfs-purple));
   }
 
   :root[data-connection='slow'] .fade-in-out {
@@ -54,7 +67,6 @@
   }
 }
 
-
 /* TOC */
 
 nav.toc {
@@ -68,10 +80,9 @@ nav.toc {
 .hash-link::before {
   content: '#';
 
-  @apply collapse text-gray-300 mr-1;
+  @apply collapse mr-1 text-gray-300;
 }
 
 .hash-link:hover::before {
   @apply visible;
 }
-
