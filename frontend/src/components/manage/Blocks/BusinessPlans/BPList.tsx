@@ -1,152 +1,34 @@
 'use client'
+
 import * as React from 'react'
 import { useState } from 'react'
 
+import { Box } from '@mui/material'
+
+import Field from '@ors/components/manage/Form/Field'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
-// import { FiEdit, FiEye } from 'react-icons/fi'
 import SimpleList from '@ors/components/ui/SimpleList/SimpleList'
-import { getResults } from '@ors/helpers'
+import { debounce, getResults } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
+import { useStore } from '@ors/store'
+
+import { IoChevronDownCircle } from 'react-icons/io5'
+
+type StatusFilterTypes =
+  | 'Approved'
+  | 'Draft'
+  | 'Need Changes'
+  | 'Rejected'
+  | 'Submitted'
+
+type FiltersType = {
+  agency_id: null | number
+  status: StatusFilterTypes | null
+  year_end: null | number
+  year_start: null | number
+}
 
 const PLANS_PER_PAGE = 20
-
-// const LoadingSkeleton = ({ rows }: { rows?: number }) => (
-//   <>
-//     {[...Array(rows ?? 50)].map((_, index) => (
-//       <TableRow key={index}>
-//         {headCells.map((headCell) => (
-//           <TableCell key={headCell.id}>
-//             <Skeleton />
-//           </TableCell>
-//         ))}
-//         <TableCell>
-//           <Skeleton />
-//         </TableCell>
-//       </TableRow>
-//     ))}
-//   </>
-// )
-
-// function BPListTable(props: any) {
-//   const { data, setPagination, setParams } = props
-//
-//   const [order, setOrder] = React.useState<Order>('desc')
-//   const [orderBy, setOrderBy] = React.useState<'agencyName' | keyof Data>(
-//     'year_start',
-//   )
-//   const [loading, setLoading] = React.useState(false)
-//   const rows = data.map((item: any) => {
-//     return createData(
-//       item.id,
-//       item.status,
-//       item.year_start,
-//       item.year_end,
-//       item.agency,
-//     )
-//   })
-//
-//   const handleRequestSort = (
-//     event: React.MouseEvent<unknown>,
-//     property: 'agencyName' | keyof Data,
-//   ) => {
-//     const isAsc = orderBy === property && order === 'asc'
-//     setLoading(true)
-//     setPagination((pagination: any) => ({
-//       ...pagination,
-//       page: 1,
-//     }))
-//     setParams({
-//       offset: 0,
-//       ordering: isAsc ? `-${property}` : property,
-//     })
-//     setOrder(isAsc ? 'desc' : 'asc')
-//     setOrderBy(property)
-//   }
-//
-//   const sortedRows = React.useMemo(() => {
-//     if (orderBy === 'agencyName') {
-//       return rows.sort(
-//         (a: { agency: { name: string } }, b: { agency: { name: string } }) => {
-//           const nameA = a.agency.name.toLowerCase()
-//           const nameB = b.agency.name.toLowerCase()
-//           if (nameA < nameB) return order === 'asc' ? -1 : 1
-//           if (nameA > nameB) return order === 'asc' ? 1 : -1
-//           return 0
-//         },
-//       )
-//     }
-//     return rows.sort((a: any, b: any) => {
-//       if (a[orderBy as keyof Data] < b[orderBy as keyof Data])
-//         return order === 'asc' ? -1 : 1
-//       if (a[orderBy as keyof Data] > b[orderBy as keyof Data])
-//         return order === 'asc' ? 1 : -1
-//       return 0
-//     })
-//   }, [rows, order, orderBy])
-//
-//   React.useEffect(() => {
-//     setLoading(false)
-//   }, [data])
-//
-//   return (
-//     <Box className="SimpleTable px-0 py-2 lg:px-4" sx={{ width: '100%' }}>
-//       <TableContainer>
-//         <Table aria-labelledby="tableTitle" size="small">
-//           <EnhancedTableHead
-//             order={order}
-//             orderBy={orderBy}
-//             rowCount={rows.length}
-//             onRequestSort={handleRequestSort}
-//           />
-//           <TableBody>
-//             {loading ? (
-//               <LoadingSkeleton rows={sortedRows.length} />
-//             ) : (
-//               sortedRows.map((row: Data, index: number) => {
-//                 const labelId = `cell-${index}`
-//                 return (
-//                   <TableRow key={row.id} tabIndex={-1}>
-//                     <TableCell id={labelId} align="center">
-//                       {row.agency.name}
-//                     </TableCell>
-//                     <TableCell id={labelId} align="center">
-//                       {row.status}
-//                     </TableCell>
-//                     <TableCell id={labelId} align="center">
-//                       {row.year_start}
-//                     </TableCell>
-//                     <TableCell id={labelId} align="center">
-//                       {row.year_end}
-//                     </TableCell>
-//                     <TableCell id={labelId} align="center">
-//                       <Typography className="flex items-center justify-center">
-//                         <Link
-//                           className="text-pretty border-0 p-2 hover:text-secondary"
-//                           href={`/business-plans/${row.agency.name}/${row.year_start}/${row.year_end}`}
-//                           underline="none"
-//                         >
-//                           <FiEye size={16} />
-//                         </Link>
-//                         <span>/</span>
-//                         <Link
-//                           className="text-pretty border-0 p-2 hover:text-secondary"
-//                           href={`/business-plans/${row.agency.name}/${row.year_start}/${row.year_end}/edit`}
-//                           underline="none"
-//                         >
-//                           <FiEdit size={16} />
-//                         </Link>
-//                       </Typography>
-//                     </TableCell>
-//                   </TableRow>
-//                 )
-//               })
-//             )}
-//           </TableBody>
-//         </Table>
-//       </TableContainer>
-//     </Box>
-//   )
-// }
 
 function useBPListApi(filters?: any) {
   const { data, loading, setParams } = useApi({
@@ -165,22 +47,187 @@ function useBPListApi(filters?: any) {
   return { count, data, loaded, loading, results, setParams }
 }
 
+const StatusFilter = (props: {
+  filters: any
+  setFilters: any
+  statuses: any
+}) => {
+  const { filters, setFilters, statuses } = props
+
+  // Map statuses to an array of objects with label and value
+  const statusOptions = statuses.map((status: any) => ({
+    label: status[1],
+    value: status[0],
+  }))
+
+  return (
+    <Field
+      FieldProps={{ className: 'mb-0 w-full CPListing' }}
+      options={statusOptions}
+      popupIcon={<IoChevronDownCircle color="black" size={24} />}
+      widget="autocomplete"
+      Input={{
+        placeholder: 'STATUS',
+      }}
+      getOptionLabel={(option: { label: string; value: string }) =>
+        option.label
+      }
+      value={
+        statusOptions.find((option: any) => option.value === filters.status) ||
+        null
+      }
+      onChange={(_: any, value: any) => {
+        debounce(() => {
+          setFilters({ ...filters, status: value ? value.value : null })
+        })
+      }}
+    />
+  )
+}
+
+const YearSelect = (props: {
+  filters: any
+  setFilters: any
+  yearRanges: any
+}) => {
+  const { filters, setFilters, yearRanges } = props
+
+  // Extract start and end years as separate lists
+  const startYearOptions = yearRanges.map((range: any) => range.year_start)
+  const endYearOptions = yearRanges.map((range: any) => range.year_end)
+
+  return (
+    <div className="flex gap-4">
+      <Field
+        FieldProps={{ className: 'mb-0 w-full CPListing' }}
+        getOptionLabel={(option: number) => option.toString()}
+        options={startYearOptions}
+        popupIcon={<IoChevronDownCircle color="black" size={24} />}
+        value={filters.year_start}
+        widget="autocomplete"
+        Input={{
+          placeholder: 'Start Year',
+        }}
+        onChange={(_: any, value: any) => {
+          debounce(() => {
+            setFilters({ ...filters, year_start: value || null })
+          })
+        }}
+      />
+      <Field
+        FieldProps={{ className: 'mb-0 w-full CPListing' }}
+        getOptionLabel={(option: number) => option.toString()}
+        options={endYearOptions}
+        popupIcon={<IoChevronDownCircle color="black" size={24} />}
+        value={filters.year_end}
+        widget="autocomplete"
+        Input={{
+          placeholder: 'End Year',
+        }}
+        onChange={(_: any, value: any) => {
+          debounce(() => {
+            setFilters({ ...filters, year_end: value || null })
+          })
+        }}
+      />
+    </div>
+  )
+}
+
+const AgencyFilter = (props: {
+  agencies: any
+  filters: any
+  setFilters: any
+}) => {
+  const { agencies, filters, setFilters } = props
+
+  const agencyOptions = agencies.map((agency: any) => ({
+    id: agency.id,
+    label: agency.name,
+  }))
+
+  return (
+    <Field
+      FieldProps={{ className: 'mb-0 w-full CPListing' }}
+      getOptionLabel={(option: { id: number; label: string }) => option.label}
+      options={agencyOptions}
+      popupIcon={<IoChevronDownCircle color="black" size={24} />}
+      widget="autocomplete"
+      Input={{
+        placeholder: 'AGENCY',
+      }}
+      value={
+        agencyOptions.find((option: any) => option.id === filters.agency_id) ||
+        null
+      }
+      onChange={(_: any, value: any) => {
+        debounce(() => {
+          setFilters({ ...filters, agency_id: value ? value.id : null })
+        })
+      }}
+    />
+  )
+}
+
+function BPFilters(props: any) {
+  const { agencies, filters, setFilters, statuses, yearRanges } = props
+
+  return (
+    <Box
+      id="filters"
+      className="sticky top-2 flex h-fit flex-col gap-6 rounded-lg p-8 md:min-w-96"
+    >
+      <StatusFilter
+        filters={filters}
+        setFilters={setFilters}
+        statuses={statuses}
+      />
+      <AgencyFilter
+        agencies={agencies}
+        filters={filters}
+        setFilters={setFilters}
+      />
+      <YearSelect
+        filters={filters}
+        setFilters={setFilters}
+        yearRanges={yearRanges}
+      />
+    </Box>
+  )
+}
+
 export default function BPList() {
+  const bpSlice = useStore((state) => state.businessPlans)
+  const { agencies, settings } = useStore((state) => state.common)
+
   const [pagination, setPagination] = useState({
     page: 1,
     rowsPerPage: PLANS_PER_PAGE,
   })
+  const [filters, setFilters] = useState<FiltersType>({
+    agency_id: null,
+    status: null,
+    year_end: null,
+    year_start: null,
+  })
 
-  const { count, results, setParams } = useBPListApi()
+  const { count, results, setParams } = useBPListApi(filters)
 
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
+  const handleFiltersChange = (newFilters: FiltersType) => {
+    const newFilterState = { ...filters, ...newFilters }
+    setFilters(newFilterState)
+    setParams({ ...newFilters, limit: pagination.rowsPerPage, offset: 0 })
+    setPagination({ page: 1, rowsPerPage: pagination.rowsPerPage })
+  }
+
   return (
-    <div className="relative flex flex-col-reverse gap-6 lg:flex-row lg:gap-4">
-      <div className="flex-1 flex flex-col gap-6">
+    <div className="container relative flex flex-col-reverse gap-6 lg:flex-row lg:gap-4 xl:px-0">
+      <div className="flex flex-1 flex-col justify-start gap-6">
         <SimpleList list={results} />
         {!!pages && pages > 1 && (
-          <div className="mt-4 flex items-center justify-center">
+          <div className="mt-4 flex items-center justify-start">
             <Pagination
               count={pages}
               page={pagination.page}
@@ -196,7 +243,13 @@ export default function BPList() {
           </div>
         )}
       </div>
-      <div>FILTERS</div>
+      <BPFilters
+        agencies={agencies.data}
+        filters={filters}
+        setFilters={handleFiltersChange}
+        statuses={settings.data.business_plan_statuses}
+        yearRanges={bpSlice.yearRanges.data}
+      />
     </div>
   )
 }
