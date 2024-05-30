@@ -4,21 +4,23 @@
 
 import * as Sentry from '@sentry/nextjs'
 
-if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+import { PUBLIC_SENTRY_DSN, PUBLIC_SENTRY_ENVIRONMENT } from '@ors/constants'
+
+if (PUBLIC_SENTRY_DSN) {
   Sentry.init({
     // Setting this option to true will print useful information to the console while you're setting up Sentry.
     debug: false,
-    dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    dsn: PUBLIC_SENTRY_DSN,
 
-    environment: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT || 'client',
+    environment: PUBLIC_SENTRY_ENVIRONMENT || 'client',
 
     // You can remove this option if you're not planning to use the Sentry Session Replay feature:
     integrations: [
       Sentry.replayIntegration({
         blockAllMedia: true,
         // Additional Replay configuration goes in here, for example:
-        maskAllText: true
-      })
+        maskAllText: true,
+      }),
     ],
 
     replaysOnErrorSampleRate: 1.0,
@@ -28,6 +30,6 @@ if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
     replaysSessionSampleRate: 0.1,
 
     // Adjust this value in production, or use tracesSampler for greater control
-    tracesSampleRate: 1
+    tracesSampleRate: 1,
   })
 }
