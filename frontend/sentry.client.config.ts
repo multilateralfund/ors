@@ -6,6 +6,8 @@ import * as Sentry from '@sentry/nextjs'
 
 import { PUBLIC_SENTRY_DSN, PUBLIC_SENTRY_ENVIRONMENT } from '@ors/constants'
 
+console.log('PUBLIC_SENTRY_DSN', PUBLIC_SENTRY_DSN)
+console.log('PUBLIC_SENTRY_ENVIRONMENT', PUBLIC_SENTRY_ENVIRONMENT)
 if (PUBLIC_SENTRY_DSN) {
   Sentry.init({
     // Setting this option to true will print useful information to the console while you're setting up Sentry.
