@@ -8,6 +8,12 @@ COPY frontend/package.json .
 COPY frontend/package-lock.json .
 RUN npm install
 
+ARG NEXT_PUBLIC_SENTRY_DSN
+ENV NEXT_PUBLIC_SENTRY_DSN $NEXT_PUBLIC_SENTRY_DSN
+
+ARG NEXT_PUBLIC_SENTRY_ENVIRONMENT
+ENV NEXT_PUBLIC_SENTRY_ENVIRONMENT $NEXT_PUBLIC_SENTRY_ENVIRONMENT
+
 COPY frontend/ .
 RUN npm run build
 RUN cat /frontend/.next/BUILD_ID && cp /frontend/.next/BUILD_ID /frontend/.next/static/BUILD_ID

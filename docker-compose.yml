@@ -28,6 +28,9 @@ services:
     image: ghcr.io/multilateralfund/multilateralfund-nextjs:${DOCKER_TAG:-latest}
     env_file:
       - .env.nextjs
+    args:
+      NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN}
+      NEXT_PUBLIC_SENTRY_ENVIRONMENT: ${NEXT_PUBLIC_SENTRY_ENVIRONMENT}
     volumes:
       - nextjs_data:/frontend/.shared
     expose:
