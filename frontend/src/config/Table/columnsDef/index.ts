@@ -49,6 +49,7 @@ const colDefById: Record<string, ColDef> = {
   },
   remarks: {
     // initialWidth: mobile ? 200 : 250,
+    tooltip: true,
   },
   total_amount_generated: {
     // initialWidth: 250,

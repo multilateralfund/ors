@@ -116,8 +116,12 @@ export default function SectionAView(props: any) {
     tableDataValue,
   ])
 
+  const a = null
+
   return (
     <>
+      {/* @ts-ignore */}
+      {a.missing}
       <Alert
         className="bg-mlfs-bannerColor"
         icon={<IoInformationCircleOutline size={24} />}

@@ -140,6 +140,7 @@ function useGridOptions(props: {
             {
               ...sectionColDefById['remarks'],
               cellClass: 'ag-text-left remarks-cell',
+              dataType: 'text_diff',
               field: 'remarks',
               headerName: 'Remarks',
               // ...(standalone ? { flex: 1 } : { flex: 1 }),

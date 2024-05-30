@@ -45,6 +45,7 @@ class BusinessPlan(models.Model):
     status = models.CharField(
         max_length=32, choices=Status.choices, default=Status.draft
     )
+    version = models.IntegerField(default=1)
     # General business plan comments for Agency and Secretariat
     comment_agency = models.TextField(blank=True)
     comment_secretariat = models.TextField(blank=True)
@@ -124,3 +125,23 @@ class BPRecordValue(models.Model):
     value_mt = models.DecimalField(
         max_digits=25, decimal_places=15, null=True, blank=True
     )
+
+
+class BPHistory(models.Model):
+    created_at = models.DateTimeField(
+        auto_now_add=True, help_text="Date of creation of the event"
+    )
+    business_plan = models.ForeignKey(
+        BusinessPlan, on_delete=models.CASCADE, related_name="bphistory"
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="updated_bp",
+        help_text="User who updated the business plan",
+    )
+    event_description = models.TextField(blank=True)
+    bp_version = models.FloatField(default=1)
+
+    class Meta:
+        ordering = ["-created_at"]

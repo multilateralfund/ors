@@ -92,6 +92,7 @@ function useGridOptions() {
       {
         ...sectionColDefById['remarks'],
         cellClass: 'ag-text-left remarks-cell',
+        dataType: 'text_diff',
         field: 'remarks',
         headerName: 'Remarks',
       },

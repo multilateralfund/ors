@@ -76,7 +76,7 @@ router.register("project-ods-odp", ProjectOdsOdpViewSet)
 router.register("project-comment", ProjectCommentViewSet)
 router.register("project-rbm-measure", ProjectRbmMeasureViewSet)
 router.register("submission-amount", ProjectSubmissionAmountViewSet)
-router.register("business-plan", BusinessPlanViewSet)
+router.register("business-plan", BusinessPlanViewSet, basename="businessplan")
 router.register("business-plan-record", BPRecordViewSet)
 
 

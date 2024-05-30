@@ -16,7 +16,7 @@ class BusinessPlanAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["bprecord", "records"]
+        exclude = ["bphistory", "bprecord", "records"]
         return get_final_display_list(BusinessPlan, exclude)
 
 

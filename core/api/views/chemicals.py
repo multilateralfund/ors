@@ -169,7 +169,13 @@ class SimilarBlendsListView(ChemicalBaseListView):
         if not data.get("components", None):
             return queryset.none()
 
-        return queryset
+        components_list = [
+            (vals["substance_id"], vals["percentage"] / 100)
+            for vals in data["components"]
+        ]
+        queryset = queryset.get_suggested_blends(components_list)
+
+        return queryset.order_by("sort_order")
 
     @swagger_auto_schema(
         request_body=openapi.Schema(
@@ -205,27 +211,7 @@ class SimilarBlendsListView(ChemicalBaseListView):
         data = request.data
         self.serializer_class(data=data).validate_components(data)
 
-        components_list = [
-            (vals["substance_id"], vals["percentage"] / 100)
-            for vals in data["components"]
-        ]
-        same_comp = (
-            self.get_queryset()
-            .get_similar_blends(components_list, same_subs_list=True)
-            .order_by("sort_order")
-        )
-        similat_comp = (
-            self.get_queryset()
-            .get_similar_blends(components_list, same_subs_list=False)
-            .order_by("sort_order")
-        )
-
-        response_data = {
-            "same_composition": self.get_serializer(same_comp, many=True).data,
-            "similar_composition": self.get_serializer(similat_comp, many=True).data,
-        }
-
-        return Response(response_data, status=status.HTTP_200_OK)
+        return self.list(request, *args, **kwargs)
 
 
 class BlendCreateView(generics.CreateAPIView):
