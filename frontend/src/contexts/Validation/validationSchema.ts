@@ -108,7 +108,7 @@ const validationSchema: ValidationSchema = {
         id: 'validate-blend-components',
         highlight_cells: {},
         message:
-          'Where new blends/mixtures containing controlled substances are imported, details relating to the composition of these blends should be provided in sections A or B',
+          'When reporting HFC/HCFC blends, HCFC components should be reported under Section A.',
         validator: validateBlendComponents,
       },
       {

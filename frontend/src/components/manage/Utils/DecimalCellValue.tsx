@@ -51,6 +51,9 @@ function getDecimalCellValue(
           <span>{value}</span>
         )
       break
+    case 'section_c':
+      TitleContent = <span>{value % 1 == 0 ? `${value}.00` : value}</span>
+      break
     default:
       TitleContent =
         valueGWP != null && valueODP != null ? (
