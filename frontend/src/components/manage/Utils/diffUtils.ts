@@ -21,14 +21,14 @@ export function truncateText(text: string, maxChars: number = 20) {
 }
 
 export function hasDiff(params: any) {
-  const field = params.colDef.field
-  const isDiffField = params.colDef.dataType?.toLowerCase().endsWith('diff')
+  const field = params?.colDef?.field
+  const isDiffField = params?.colDef?.dataType?.toLowerCase().endsWith('diff')
 
   if (field && isDiffField) {
     const field_old = `${field}_old`
-    let value = params.data[field]
+    let value = params?.data[field]
     value = value === null ? 0 : value
-    let value_old = params.data[field_old]
+    let value_old = params?.data[field_old]
     value_old = value_old === null ? 0 : value_old
     return value != value_old
   }

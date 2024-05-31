@@ -218,7 +218,7 @@ function Table(props: TableProps) {
     cellClassRules: {
       'ag-error': (props) => !!getError(props),
       'bg-gray-200': (props) =>
-        props.context.is_diff &&
+        gridContext?.is_diff &&
         hasDiff(props) &&
         props.data.change_type === 'deleted',
       'border-solid border border-mlfs-hlYellow': (props) => {
@@ -230,7 +230,7 @@ function Table(props: TableProps) {
         return false
       },
       'diff-cell-new': (props) =>
-        props.context.is_diff &&
+        gridContext?.is_diff &&
         hasDiff(props) &&
         props.data.change_type !== 'deleted',
     },
