@@ -17,6 +17,8 @@
 
             .inline {
                 display: flex !important;
+                transform: none;
+                margin: 0;
 
                 @apply w-full items-stretch justify-center;
 
