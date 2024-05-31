@@ -1,5 +1,6 @@
 import { Typography } from '@mui/material'
 
+import Link from '@ors/components/ui/Link/Link'
 import StatusPill from '@ors/components/ui/StatusPill/StatusPill'
 
 function SimpleList(props: any) {
@@ -17,12 +18,16 @@ function SimpleList(props: any) {
             key={item.id}
             className="flex flex-wrap items-center justify-between border-0 border-b border-solid border-secondary pb-4"
           >
-            <div className="flex items-center gap-2 text-2xl font-semibold text-typography">
+            <Link
+              className="flex items-center gap-2 text-2xl font-semibold text-typography"
+              href={`/business-plans/${item.agency.name}/${item.year_start}/${item.year_end}`}
+              underline="none"
+            >
               <span>
                 {item.agency.name} {item.year_start} - {item.year_end}
               </span>
               <StatusPill status={item.status} />
-            </div>
+            </Link>
             <span className="font-normal tracking-tight">
               Modified on {randomDate} by {mockUser}
             </span>
