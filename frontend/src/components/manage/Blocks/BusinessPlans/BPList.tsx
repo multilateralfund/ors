@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { Box } from '@mui/material'
 
 import Field from '@ors/components/manage/Form/Field'
+import Link from '@ors/components/ui/Link/Link'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import SimpleList from '@ors/components/ui/SimpleList/SimpleList'
 import { debounce, getResults } from '@ors/helpers'
@@ -223,33 +224,46 @@ export default function BPList() {
   }
 
   return (
-    <div className="container relative flex flex-col-reverse gap-6 lg:flex-row lg:gap-4 xl:px-0">
-      <div className="flex flex-1 flex-col justify-start gap-6">
-        <SimpleList list={results} />
-        {!!pages && pages > 1 && (
-          <div className="mt-4 flex items-center justify-start">
-            <Pagination
-              count={pages}
-              page={pagination.page}
-              siblingCount={1}
-              onPaginationChanged={(page) => {
-                setPagination({ ...pagination, page: page || 1 })
-                setParams({
-                  limit: pagination.rowsPerPage,
-                  offset: ((page || 1) - 1) * pagination.rowsPerPage,
-                })
-              }}
-            />
-          </div>
-        )}
+    <>
+      <div className="container mb-6 flex items-center justify-end gap-x-6 lg:mb-4 lg:gap-x-4">
+        <Link
+          className="px-4 py-2 text-lg uppercase"
+          color="secondary"
+          href="/business-plans/create"
+          variant="contained"
+          button
+        >
+          Create new plan
+        </Link>
       </div>
-      <BPFilters
-        agencies={agencies.data}
-        filters={filters}
-        setFilters={handleFiltersChange}
-        statuses={settings.data.business_plan_statuses}
-        yearRanges={bpSlice.yearRanges.data}
-      />
-    </div>
+      <div className="container relative flex flex-col-reverse gap-6 lg:flex-row lg:gap-4 xl:px-0">
+        <div className="flex flex-1 flex-col justify-start gap-6">
+          <SimpleList list={results} />
+          {!!pages && pages > 1 && (
+            <div className="mt-4 flex items-center justify-start">
+              <Pagination
+                count={pages}
+                page={pagination.page}
+                siblingCount={1}
+                onPaginationChanged={(page) => {
+                  setPagination({ ...pagination, page: page || 1 })
+                  setParams({
+                    limit: pagination.rowsPerPage,
+                    offset: ((page || 1) - 1) * pagination.rowsPerPage,
+                  })
+                }}
+              />
+            </div>
+          )}
+        </div>
+        <BPFilters
+          agencies={agencies.data}
+          filters={filters}
+          setFilters={handleFiltersChange}
+          statuses={settings.data.business_plan_statuses}
+          yearRanges={bpSlice.yearRanges.data}
+        />
+      </div>
+    </>
   )
 }
