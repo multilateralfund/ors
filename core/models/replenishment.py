@@ -56,7 +56,7 @@ class Invoice(models.Model):
 
 class InvoiceFile(models.Model):
     def upload_path(self, filename):
-        return f"invoice_files/{self.invoice.number}_{filename}"
+        return f"invoice_files/{self.invoice.country}/{self.invoice.number}__{filename}"
 
     uploaded_at = models.DateTimeField(
         auto_now_add=True, help_text="Date of invoice file upload"
@@ -77,3 +77,34 @@ class Payment(models.Model):
     )
     date = models.DateField()
     payment_for_year = models.CharField(max_length=16)
+    gain_or_loss = models.DecimalField(max_digits=20, decimal_places=6)
+    amount_local_currency = models.DecimalField(max_digits=20, decimal_places=6)
+    amount_usd = models.DecimalField(max_digits=20, decimal_places=6)
+
+
+class PaymentFile(models.Model):
+    def upload_path(self, filename):
+        return f"payment_files/{self.payment.country}/{self.payment.id}__{filename}"
+
+    uploaded_at = models.DateTimeField(
+        auto_now_add=True, help_text="Date of payment file upload"
+    )
+    payment = models.ForeignKey(
+        Payment, on_delete=models.CASCADE, related_name="payment_files"
+    )
+    filename = models.CharField(max_length=128)
+    file = models.FileField(upload_to=upload_path)
+
+
+class PromissoryNoteFile(models.Model):
+    def upload_path(self, filename):
+        return f"promissory_note_files/{self.payment.country}/{self.payment.id}__{filename}"
+
+    uploaded_at = models.DateTimeField(
+        auto_now_add=True, help_text="Date of promissory note file upload"
+    )
+    payment = models.ForeignKey(
+        Payment, on_delete=models.CASCADE, related_name="promissory_note_files"
+    )
+    filename = models.CharField(max_length=128)
+    file = models.FileField(upload_to=upload_path)
