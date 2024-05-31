@@ -6,6 +6,7 @@ import cx from 'classnames'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
+import { PERIODS } from '@ors/components/manage/Blocks/Replenishment/constants'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 import styles from './styles.module.css'
@@ -17,13 +18,31 @@ const SECTIONS = [
   { label: 'Payments', path: '/replenishment/payments' },
 ]
 
+
+function getPathPeriod(path: string) {
+  let result = null
+  const candidate = path.split('/').at(-1)
+
+  for (let i = 0; i < PERIODS.length; i++) {
+    if (candidate === PERIODS[i]) {
+      result = candidate
+      break
+    }
+  }
+
+  return result
+}
+
+
 export default function ReplenishmentLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const period = getPathPeriod(pathname)
   const navLinks = []
+
   for (let i = 0; i < SECTIONS.length; i++) {
     const entry = SECTIONS[i]
     const isCurrent = pathname.startsWith(entry.path)
@@ -31,7 +50,7 @@ export default function ReplenishmentLayout({
       <Link
         key={i}
         className={cx({ [styles.current]: isCurrent })}
-        href={entry.path}
+        href={i > 0 && period != null ? `${entry.path}/${period}` : entry.path}
       >
         {entry.label}
       </Link>,

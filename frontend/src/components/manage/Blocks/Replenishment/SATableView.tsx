@@ -1,4 +1,5 @@
-import styles from './styles.module.css'
+import { PERIOD } from './constants'
+import styles from './table.module.css'
 
 const COLUMNS = [
   { field: "country", label: "Country" },
@@ -27,13 +28,13 @@ const DATA = [
   }
 ]
 
-const PERIOD = '2021-2023'
 
+function ReplenishmentTableView(props: any) {
+  const period = props.period ?? PERIOD
 
-function ReplenishmentTableView() {
   const hCols = []
   for (let i = 0; i < COLUMNS.length; i++) {
-    hCols.push(<th key={i}>{COLUMNS[i].label.replace('[PERIOD]', PERIOD)}</th>)
+    hCols.push(<th key={i}>{COLUMNS[i].label.replace('[PERIOD]', period)}</th>)
   }
 
   const rows = []

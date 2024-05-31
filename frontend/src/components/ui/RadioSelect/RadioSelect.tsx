@@ -2,8 +2,6 @@ import { useState } from 'react'
 
 import cx from 'classnames'
 
-import { robotoCondensed } from '@ors/themes/fonts'
-
 const RadioOn = () => {
   return (
     <div className="rounded-full border border-solid border-primary bg-primary p-1">
@@ -72,7 +70,6 @@ const RadioSelect = ({
     <div
       className={cx(
         'flex items-center gap-x-8 rounded-lg bg-primary px-8 py-4 font-normal',
-        robotoCondensed.className,
         className,
       )}
     >

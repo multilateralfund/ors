@@ -1,8 +1,7 @@
 .replTable {
-  --color-gray: 0deg 0% 95%;
-  --table-thead-bg: hsl(var(--color-gray));
-  --table-border: hsl(0deg 0% 90%);
-  --table-hover: hsl(200deg 42% 84%);
+  --table-thead-bg: var(--color-gray-100);
+  --table-border: var(--color-gray-200);
+  --table-hover: rgb(33 150 243 / 10%);
 
   border-collapse: collapse;
   border-left: 1px solid var(--table-border);

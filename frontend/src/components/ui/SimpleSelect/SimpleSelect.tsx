@@ -2,8 +2,6 @@ import { useState } from 'react'
 
 import cx from 'classnames'
 
-import { robotoCondensed } from '@ors/themes/fonts'
-
 import { IoChevronDownCircle } from 'react-icons/io5'
 
 interface ISimpleSelectOption {
@@ -40,7 +38,6 @@ const SimpleSelect = ({
     <div
       className={cx(
         'flex items-center justify-between gap-x-2 text-lg uppercase',
-        robotoCondensed.className,
         className,
       )}
     >

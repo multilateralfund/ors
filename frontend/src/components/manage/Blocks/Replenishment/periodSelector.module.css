@@ -1,0 +1,6 @@
+.selector {
+  display: flex;
+  width: 100%;
+  justify-content: end;
+  padding-bottom: 1rem;
+}
