@@ -24,6 +24,8 @@
 
     --tw-primary: 198 100% 12%;
     --color-primary: hsl(var(--tw-primary));
+    --tw-gray-400: 218 11% 65%;
+    --color-gray-400: hsl(var(--tw-gray-400));
     --tw-mlfs-hlYellow: 64.7 100% 50%;
     --color-mlfs-hlYellow: hsl(var(--tw-mlfs-hlYellow));
     --tw-mlfs-hlYellowTint: 65 100% 75%;
