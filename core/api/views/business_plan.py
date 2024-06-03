@@ -18,6 +18,7 @@ from core.api.export.base import configure_sheet_print
 from core.api.export.business_plan import BusinessPlanWriter
 from core.api.filters.business_plan import BPRecordFilter
 from core.api.filters.business_plan import BusinessPlanFilter
+from core.api.serializers.bp_history import BPHistorySerializer
 from core.api.serializers.business_plan import (
     BusinessPlanCreateSerializer,
     BusinessPlanSerializer,
@@ -226,6 +227,14 @@ class BPRecordViewSet(
     def print(self, *args, **kwargs):
         return self.get_wb(workbook_pdf_response)
 
+    def get_history(self, business_plan):
+        history_qs = business_plan.bphistory.all().select_related(
+            "business_plan", "updated_by"
+        )
+        history = BPHistorySerializer(history_qs, many=True).data
+
+        return history
+
     @swagger_auto_schema(
         operation_description="List records for a specific business plan",
         manual_parameters=[
@@ -258,17 +267,21 @@ class BPRecordViewSet(
     def list(self, request, *args, **kwargs):
         # get records for a specific business plan
         bp = get_business_plan_from_request(request)
+        ret = {
+            "business_plan": BusinessPlanSerializer(bp).data,
+            "history": self.get_history(bp),
+        }
 
         # get records for the business plan
         queryset = self.filter_queryset(self.get_queryset()).filter(business_plan=bp)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+            ret["records"] = self.get_serializer(page, many=True).data
+            return self.get_paginated_response(ret)
 
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        ret["records"] = self.get_serializer(queryset, many=True).data
+        return Response(ret)
 
 
 class BPCommentsView(generics.GenericAPIView):

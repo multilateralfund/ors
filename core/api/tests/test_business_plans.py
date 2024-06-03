@@ -215,7 +215,7 @@ class TestBPRecordList:
         # get by id
         response = self.client.get(self.url, {"business_plan_id": business_plan.id})
         assert response.status_code == 200
-        assert len(response.json()) == 4
+        assert len(response.json()["records"]) == 4
 
         # get by agency, start_year, end_year
         response = self.client.get(
@@ -227,7 +227,7 @@ class TestBPRecordList:
             },
         )
         assert response.status_code == 200
-        assert len(response.json()) == 4
+        assert len(response.json()["records"]) == 4
 
     def test_country_filter(
         self, user, business_plan, country_ro, _setup_bp_record_list
@@ -239,8 +239,8 @@ class TestBPRecordList:
             {"business_plan_id": business_plan.id, "country_id": country_ro.id},
         )
         assert response.status_code == 200
-        assert len(response.json()) == 1
-        assert response.json()[0]["country"]["id"] == country_ro.id
+        assert len(response.json()["records"]) == 1
+        assert response.json()["records"][0]["country"]["id"] == country_ro.id
 
     def test_invalid_country_filter(self, user, _setup_bp_record_list, business_plan):
         self.client.force_authenticate(user=user)
@@ -259,8 +259,8 @@ class TestBPRecordList:
             {"business_plan_id": business_plan.id, "search": "Planu2"},
         )
         assert response.status_code == 200
-        assert len(response.json()) == 1
-        assert response.json()[0]["title"] == "Planu2"
+        assert len(response.json()["records"]) == 1
+        assert response.json()["records"][0]["title"] == "Planu2"
 
     def test_invalid_bp_id(self, user, _setup_bp_record_list):
         self.client.force_authenticate(user=user)
