@@ -3,6 +3,7 @@ import math
 import urllib
 
 import openpyxl
+from django.db import transaction
 from django.db.models import Max
 from django.db.models import Min
 from django.http import HttpResponse
@@ -18,6 +19,7 @@ from core.api.export.business_plan import BusinessPlanWriter
 from core.api.filters.business_plan import BPRecordFilter
 from core.api.filters.business_plan import BusinessPlanFilter
 from core.api.serializers.business_plan import (
+    BusinessPlanCreateSerializer,
     BusinessPlanSerializer,
     BPCommentsSerializer,
     BPFileSerializer,
@@ -27,18 +29,17 @@ from core.api.serializers.business_plan import (
 from core.api.utils import workbook_pdf_response
 from core.api.utils import workbook_response
 from core.api.views.utils import get_business_plan_from_request
-from core.models import BusinessPlan, BPRecord
+from core.models import BusinessPlan, BPHistory, BPRecord
 
 
 class BusinessPlanViewSet(
+    mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
     serializer_class = BusinessPlanSerializer
-    queryset = BusinessPlan.objects.select_related("agency").order_by(
-        "year_start", "year_end", "id"
-    )
     filterset_class = BusinessPlanFilter
     filter_backends = [
         DjangoFilterBackend,
@@ -47,6 +48,15 @@ class BusinessPlanViewSet(
     ]
     ordering_fields = "__all__"
     search_fields = ["agency__name"]
+
+    def get_queryset(self):
+        business_plans = BusinessPlan.objects.all()
+
+        if self.request.method == "PUT":
+            return business_plans.select_for_update()
+        return business_plans.select_related("agency").order_by(
+            "year_start", "year_end", "id"
+        )
 
     @action(methods=["GET"], detail=False, url_path="get-years")
     def get_years(self, *args, **kwargs):
@@ -60,6 +70,78 @@ class BusinessPlanViewSet(
                 .order_by("-year_start")
             )
         )
+
+    def create(self, request, *args, **kwargs):
+        # check if the business plan already exists
+        business_plan = BusinessPlan.objects.filter(
+            agency_id=request.data.get("agency_id"),
+            year_start=request.data.get("year_start"),
+            year_end=request.data.get("year_end"),
+        ).first()
+        if business_plan:
+            return Response(
+                {
+                    "general_error": "A business plan for this agency and these years already exists"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = BusinessPlanCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            instance = serializer.instance
+
+            BPHistory.objects.create(
+                business_plan=instance,
+                bp_version=instance.version,
+                updated_by=request.user,
+                event_description="Created by user",
+            )
+
+            headers = self.get_success_headers(serializer.data)
+            return Response(
+                serializer.data, status=status.HTTP_201_CREATED, headers=headers
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def check_readonly_fields(self, serializer, current_obj):
+        return (
+            serializer.initial_data["agency_id"] != current_obj.agency_id
+            or serializer.initial_data["year_start"] != current_obj.year_start
+            or serializer.initial_data["year_end"] != current_obj.year_end
+        )
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        current_obj = self.get_object()
+
+        serializer = BusinessPlanCreateSerializer(data=request.data)
+        if not serializer.is_valid() or self.check_readonly_fields(
+            serializer, current_obj
+        ):
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        self.perform_create(serializer)
+        new_instance = serializer.instance
+
+        # inherit all history
+        BPHistory.objects.filter(business_plan=current_obj).update(
+            business_plan=new_instance
+        )
+
+        # create new history for update event
+        BPHistory.objects.create(
+            business_plan=new_instance,
+            bp_version=new_instance.version,
+            updated_by=request.user,
+            event_description="Updated by user",
+        )
+
+        current_obj.delete()
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
 
 class BPRecordViewSet(
@@ -239,6 +321,12 @@ class BPCommentsView(generics.GenericAPIView):
             business_plan.comment_secretariat = comment
 
         business_plan.save()
+        BPHistory.objects.create(
+            business_plan=business_plan,
+            bp_version=business_plan.version,
+            updated_by=user,
+            event_description="Comments updated by user",
+        )
         serializer = self.get_serializer(business_plan)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)

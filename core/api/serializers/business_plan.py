@@ -8,6 +8,7 @@ from core.api.serializers.agency import AgencySerializer
 from core.api.serializers.project import ProjectSectorSerializer
 from core.api.serializers.project import ProjectSubSectorSerializer
 from core.api.serializers.project import ProjectTypeSerializer
+from core.models import Agency
 from core.models import BPChemicalType
 from core.models import BPRecord
 from core.models import BPRecordValue
@@ -62,6 +63,25 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
 
     def get_feedback_file_download_url(self, obj):
         return reverse("business-plan-file-download", args=(obj.id,))
+
+
+class BusinessPlanCreateSerializer(serializers.ModelSerializer):
+    agency_id = serializers.PrimaryKeyRelatedField(
+        queryset=Agency.objects.all().values_list("id", flat=True),
+    )
+    status = serializers.ChoiceField(
+        choices=BusinessPlan.Status.choices, required=False
+    )
+
+    class Meta:
+        model = BusinessPlan
+        fields = [
+            "id",
+            "year_start",
+            "year_end",
+            "agency_id",
+            "status",
+        ]
 
 
 class BPRecordExportSerializer(serializers.ModelSerializer):

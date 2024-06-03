@@ -274,37 +274,29 @@ class TestSimilarBlend(BaseTest):
         response = self.client.post(self.url, kwargs)
         assert response.status_code == 403
 
-    def test_similar_blend_list(self, user, _setup_similar_blend):
-        self.client.force_authenticate(user=user)
-        blends, components = _setup_similar_blend
-        # get similar blends for blendAFOF
-        response = self.client.post(
-            self.url, {"components": components["blendAFOF"][1:]}, format="json"
-        )
-        assert response.status_code == 200
-        assert len(response.data["similar_composition"]) == 1
-        assert response.data["similar_composition"][0]["id"] == blends["blendAFOF"].id
-
-        # get similar blends for blendAF (blends with more components)
-        response = self.client.post(
-            self.url, {"components": components["blendAF"]}, format="json"
-        )
-        assert response.status_code == 200
-        assert len(response.data["similar_composition"]) == 1
-
-    def test_same_substnces_list_filter(self, user, _setup_similar_blend):
+    def test_suggested_blend_list(self, user, _setup_similar_blend):
         self.client.force_authenticate(user=user)
         _, components = _setup_similar_blend
 
         params = {
-            "components": components["blendAF"],
-            "same_substances": True,
+            "components": components["blendAF"][:1],  # substaA -> 0.2
         }
         response = self.client.post(self.url, params, format="json")
         assert response.status_code == 200
-        assert len(response.data["same_composition"]) == 2
-        for blend in response.data["same_composition"]:
-            assert len(blend["components"]) == 2
+        assert len(response.data) == 2
+        for blend in response.data:
+            assert blend["name"] in ["blendAFOF", "blendAF"]
+
+    def test_blend_all_comps(self, user, _setup_similar_blend):
+        # test with all components => 0 blends
+        self.client.force_authenticate(user=user)
+        _, components = _setup_similar_blend
+
+        response = self.client.post(
+            self.url, {"components": components["blendAFOF"]}, format="json"
+        )
+        assert response.status_code == 200
+        assert len(response.data) == 0
 
     def test_invalid_substance(self, user, _setup_similar_blend):
         self.client.force_authenticate(user=user)
@@ -315,7 +307,7 @@ class TestSimilarBlend(BaseTest):
             self.url, {"components": components_data}, format="json"
         )
         assert response.status_code == 200
-        assert len(response.data["similar_composition"]) == 0
+        assert len(response.data) == 0
 
     def test_no_components(self, user, _setup_similar_blend):
         self.client.force_authenticate(user=user)
@@ -334,8 +326,7 @@ class TestSimilarBlend(BaseTest):
             self.url, {"components": components_data}, format="json"
         )
         assert response.status_code == 200
-        assert len(response.data["similar_composition"]) == 0
-        assert len(response.data["same_composition"]) == 0
+        assert len(response.data) == 0
 
 
 class TestCreateBlend:

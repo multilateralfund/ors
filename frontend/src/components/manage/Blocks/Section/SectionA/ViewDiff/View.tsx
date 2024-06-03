@@ -83,6 +83,14 @@ export default function SectionAViewDiff(props: any) {
   const isLatestVersion = !report.data?.final_version_id
   const version = report.data?.version
 
+  const tableProps = {
+    ...TableProps,
+    context: {
+      ...TableProps.context,
+      is_diff: true,
+    },
+  }
+
   return (
     <>
       {version && (
@@ -101,7 +109,7 @@ export default function SectionAViewDiff(props: any) {
         </Alert>
       )}
       <Table
-        {...TableProps}
+        {...tableProps}
         columnDefs={gridOptionsAll.columnDefs}
         components={components}
         defaultColDef={gridOptionsAll.defaultColDef}

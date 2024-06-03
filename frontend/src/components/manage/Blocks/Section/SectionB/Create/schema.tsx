@@ -160,7 +160,6 @@ function useGridOptions(props: {
           ...sectionColDefById['banned_date'],
         },
         {
-          cellClass: 'ag-text-left',
           cellEditor: 'agTextCellEditor',
           field: 'remarks',
           headerName: 'Remarks',

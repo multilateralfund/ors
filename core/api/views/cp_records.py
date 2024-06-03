@@ -490,8 +490,9 @@ class CPRecordListDiffView(CPRecordListView):
         "exports_odp",
         "export_quotas_odp",
         "production_odp",
+        "remarks",
     ]
-    section_c_fields = ["previous_year_price", "current_year_price"]
+    section_c_fields = ["previous_year_price", "current_year_price", "remarks"]
     section_d_fields = ["all_uses", "feedstock", "destruction"]
     section_e_fields = [
         "total",
@@ -501,6 +502,7 @@ class CPRecordListDiffView(CPRecordListView):
         "feedstock_wpc",
         "destruction_wpc",
         "generated_emissions",
+        "remarks",
     ]
 
     def set_archive_class_attributes(self):
@@ -538,15 +540,10 @@ class CPRecordListDiffView(CPRecordListView):
             record_old = records_old.pop(record[row_identifier], None)
 
             # Prepare data for comparison
-            remarks = record.get("remarks", "")
             if is_section_d_e:
                 record.pop("row_id", None)
                 if record_old:
                     record_old.pop("row_id", None)
-            if "remarks" not in fields:
-                record.pop("remarks", None)
-                if record_old:
-                    record_old.pop("remarks", None)
             record.pop("id", None)
             if record_old:
                 record_old.pop("id", None)
@@ -567,7 +564,6 @@ class CPRecordListDiffView(CPRecordListView):
                 usage_old = usages_old.pop(str(usage["usage_id"]), None)
                 self.copy_fields(usage, usage_old, usage_fields)
 
-            record["remarks"] = remarks
             diff_data.append(record)
 
         for record in records_old.values():
@@ -575,8 +571,6 @@ class CPRecordListDiffView(CPRecordListView):
             for usage in record.get("record_usages", []):
                 self.rename_fields(usage, usage_fields)
             record["change_type"] = "deleted"
-            # Do not keep old version's remarks
-            record["remarks"] = ""
             diff_data.append(record)
 
         return diff_data

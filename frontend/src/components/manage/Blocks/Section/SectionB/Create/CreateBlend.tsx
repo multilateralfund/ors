@@ -95,13 +95,7 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
     getNextCustomMixName()
   }, [prevForm, setForm])
 
-  const [similarBlends, setSimilarBlends] = useState<Record<
-    string,
-    Array<any>
-  > | null>({
-    default: [],
-    similar: [],
-  })
+  const [similarBlends, setSimilarBlends] = useState<Array<object>>([])
   const options = useMemo(() => {
     const addedSubstances = form.components.map(
       (component: any) => component.substance?.id,
@@ -344,54 +338,32 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
             </Alert>
           )}
         </Collapse>
-        {(!!similarBlends?.default?.length ||
-          !!similarBlends?.same?.length) && (
+        {similarBlends.length > 0 && (
           <table className="mt-2 w-full text-base">
             <thead>
               <tr>
                 <th className="flex">
-                  {similarBlends.default.length + similarBlends.same.length}{' '}
-                  blend(s) found in the system. Click on a blend name to use it
+                  {similarBlends.length} blend(s) found in the system. Click on
+                  a blend name to use it
                 </th>
               </tr>
             </thead>
             <tbody>
-              {similarBlends.same?.length > 0 && (
-                <tr>
-                  <td className="flex justify-between">
-                    <span>Same composition</span>
-                    <div className="flex gap-x-2">
-                      {similarBlends.same.map((blend: any) => (
-                        <SimilarBlend
-                          key={blend.id}
-                          blend={blend}
-                          substances={substances}
-                          onClick={() => selectSimilarBlend(blend)}
-                        />
-                      ))}
-                    </div>
-                  </td>
-                </tr>
-              )}
-              {similarBlends.same?.length > 0 &&
-                similarBlends.default?.length > 0 && <hr />}
-              {similarBlends.default?.length > 0 && (
-                <tr>
-                  <td className="flex justify-between">
-                    <span>Similar composition</span>
-                    <div className="flex gap-x-2">
-                      {similarBlends.default.map((blend: any) => (
-                        <SimilarBlend
-                          key={blend.id}
-                          blend={blend}
-                          substances={substances}
-                          onClick={() => selectSimilarBlend(blend)}
-                        />
-                      ))}
-                    </div>
-                  </td>
-                </tr>
-              )}
+              <tr>
+                <td className="flex justify-between">
+                  <span>Suggested blends</span>
+                  <div className="flex gap-x-2">
+                    {similarBlends.map((blend: any) => (
+                      <SimilarBlend
+                        key={blend.id}
+                        blend={blend}
+                        substances={substances}
+                        onClick={() => selectSimilarBlend(blend)}
+                      />
+                    ))}
+                  </div>
+                </td>
+              </tr>
             </tbody>
           </table>
         )}
@@ -399,21 +371,14 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
           className="mt-2 rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
           onClick={async () => {
             try {
-              const {
-                same_composition: sameSimilarBlends,
-                similar_composition: defaultSimilarBlends,
-              } = await api('api/blends/similar', {
+              const similarBlends = await api('api/blends/similar', {
                 data: {
                   components: form.components,
                 },
                 method: 'post',
               })
-              const hasSimilarBlends =
-                defaultSimilarBlends.length > 0 || sameSimilarBlends.length > 0
-              setSimilarBlends({
-                default: defaultSimilarBlends,
-                same: sameSimilarBlends,
-              })
+              const hasSimilarBlends = similarBlends.length > 0
+              setSimilarBlends(similarBlends)
               enqueueSnackbar(
                 hasSimilarBlends
                   ? "Found similar blends. Please check the list below 'Blend composition'!"
@@ -423,7 +388,7 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
                 },
               )
             } catch (error) {
-              setSimilarBlends(null)
+              setSimilarBlends([])
               const message = await error.json()
               if (message.components) {
                 enqueueSnackbar(message.components, {
