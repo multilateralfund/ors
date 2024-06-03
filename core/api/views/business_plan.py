@@ -53,7 +53,7 @@ class BusinessPlanViewSet(
 
         if self.request.method == "PUT":
             return business_plans.select_for_update()
-        return business_plans.select_related("agency").order_by(
+        return business_plans.select_related("agency", "created_by", "updated_by").order_by(
             "year_start", "year_end", "id"
         )
 
