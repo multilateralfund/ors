@@ -17,19 +17,19 @@ class ReplenishmentAdmin(admin.ModelAdmin):
 @admin.register(Contribution)
 class ContributionAdmin(admin.ModelAdmin):
     search_fields = [
-        "contributor__name",
+        "country__name",
         "replenishment__start_year",
         "replenishment__end_year",
         "amount",
     ]
     list_filter = [
-        AutocompleteFilterFactory("country", "contributor"),
+        AutocompleteFilterFactory("country", "country"),
         AutocompleteFilterFactory("replenishment", "replenishment"),
     ]
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        return queryset.select_related("contributor", "replenishment")
+        return queryset.select_related("country", "replenishment")
 
 
 @admin.register(Invoice)
@@ -39,7 +39,15 @@ class InvoiceAdmin(admin.ModelAdmin):
         "date",
         "number",
     ]
-    list_filter = ["date", AutocompleteFilterFactory("country", "country")]
+    list_filter = [
+        "date",
+        AutocompleteFilterFactory("country", "country"),
+        AutocompleteFilterFactory("replenishment", "replenishment"),
+    ]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("country", "replenishment")
 
 
 @admin.register(Payment)
@@ -54,3 +62,7 @@ class PaymentAdmin(admin.ModelAdmin):
         AutocompleteFilterFactory("country", "country"),
         AutocompleteFilterFactory("replenishment", "replenishment"),
     ]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("country", "replenishment")

@@ -10,6 +10,9 @@ class Replenishment(models.Model):
     end_year = models.IntegerField()
     amount = models.DecimalField(max_digits=20, decimal_places=6)
 
+    def __str__(self):
+        return f"Replenishment ({self.start_year} - {self.end_year})"
+
 
 class Contribution(models.Model):
     replenishment = models.ForeignKey(
@@ -18,7 +21,7 @@ class Contribution(models.Model):
         null=True,
         related_name="contributions",
     )
-    contributor = models.ForeignKey(
+    country = models.ForeignKey(
         Country, on_delete=models.SET_NULL, null=True, related_name="contributions"
     )
     paid_in_local_currency = models.BooleanField(default=False)
@@ -41,7 +44,11 @@ class Contribution(models.Model):
 
     @cached_property
     def adjusted_scale_of_assessment(self):
+        # TODO: formula
         return self.overridden_scale_of_assessment or 0
+
+    def __str__(self):
+        return f"Contribution {self.country.name} ({self.replenishment.start_year} - {self.replenishment.end_year})"
 
 
 class Invoice(models.Model):
@@ -53,6 +60,9 @@ class Invoice(models.Model):
     )
     date = models.DateField()
     number = models.CharField(max_length=128, unique=True)
+
+    def __str__(self):
+        return f"Invoice {self.country.name} - {self.number}"
 
 
 class InvoiceFile(models.Model):
@@ -81,6 +91,9 @@ class Payment(models.Model):
     gain_or_loss = models.DecimalField(max_digits=20, decimal_places=6)
     amount_local_currency = models.DecimalField(max_digits=20, decimal_places=6)
     amount_usd = models.DecimalField(max_digits=20, decimal_places=6)
+
+    def __str__(self):
+        return f"Payment {self.country.name} - {self.payment_for_year}"
 
 
 class PaymentFile(models.Model):
