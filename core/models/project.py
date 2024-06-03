@@ -1,6 +1,5 @@
 from colorfield.fields import ColorField
 from django.conf import settings
-from django.core.files.storage import FileSystemStorage
 from django.core.validators import MinValueValidator
 from django.db import models
 
@@ -11,9 +10,7 @@ from core.models.country import Country
 from core.models.meeting import Decision, Meeting
 from core.models.rbm_measures import RBMMeasure
 from core.models.substance import Substance
-from core.models.utils import SubstancesType
-
-PROTECTED_STORAGE = FileSystemStorage(location=settings.PROTECTED_MEDIA_ROOT)
+from core.models.utils import SubstancesType, get_protected_storage
 
 
 class MetaProject(models.Model):
@@ -308,7 +305,7 @@ class Project(models.Model):
 
 class ProjectFile(models.Model):
     file = models.FileField(
-        storage=PROTECTED_STORAGE,
+        storage=get_protected_storage,
         upload_to="project_files/",
     )
     project = models.ForeignKey(

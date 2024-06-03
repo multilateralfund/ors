@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.functional import cached_property
 
 from core.models import Country
+from core.models.utils import get_protected_storage
 
 
 class Replenishment(models.Model):
@@ -65,7 +66,7 @@ class InvoiceFile(models.Model):
         Invoice, on_delete=models.CASCADE, related_name="invoice_files"
     )
     filename = models.CharField(max_length=128)
-    file = models.FileField(upload_to=upload_path)
+    file = models.FileField(storage=get_protected_storage, upload_to=upload_path)
 
 
 class Payment(models.Model):
@@ -93,7 +94,7 @@ class PaymentFile(models.Model):
         Payment, on_delete=models.CASCADE, related_name="payment_files"
     )
     filename = models.CharField(max_length=128)
-    file = models.FileField(upload_to=upload_path)
+    file = models.FileField(storage=get_protected_storage, upload_to=upload_path)
 
 
 class PromissoryNoteFile(models.Model):
@@ -107,4 +108,4 @@ class PromissoryNoteFile(models.Model):
         Payment, on_delete=models.CASCADE, related_name="promissory_note_files"
     )
     filename = models.CharField(max_length=128)
-    file = models.FileField(upload_to=upload_path)
+    file = models.FileField(storage=get_protected_storage, upload_to=upload_path)

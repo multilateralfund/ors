@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.core.files.storage import FileSystemStorage
 from django.db import models
 from core.models.base import AbstractWChemical, BaseWTimeFrameManager
 from core.models.base_country_programme import (
@@ -11,8 +10,7 @@ from core.models.base_country_programme import (
     AbstractCPReport,
     AbstractCPUsage,
 )
-
-PROTECTED_STORAGE = FileSystemStorage(location=settings.PROTECTED_MEDIA_ROOT)
+from core.models.utils import get_protected_storage
 
 
 class CPReport(AbstractCPReport):
@@ -171,7 +169,7 @@ class CPFile(models.Model):
     )
     year = models.IntegerField()
     filename = models.CharField(max_length=100)
-    file = models.FileField(storage=PROTECTED_STORAGE, upload_to=upload_path)
+    file = models.FileField(storage=get_protected_storage, upload_to=upload_path)
 
     class Meta:
         ordering = ["-uploaded_at"]
