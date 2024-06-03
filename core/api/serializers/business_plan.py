@@ -46,6 +46,9 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
     comment_secretariat = serializers.CharField(read_only=True)
     feedback_filename = serializers.CharField(read_only=True)
     feedback_file_download_url = serializers.SerializerMethodField(read_only=True)
+    updated_by = serializers.StringRelatedField(
+        read_only=True, source="updated_by.username"
+    )
 
     class Meta:
         model = BusinessPlan
@@ -59,6 +62,8 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
             "comment_secretariat",
             "feedback_filename",
             "feedback_file_download_url",
+            "updated_at",
+            "updated_by",
         ]
 
     def get_feedback_file_download_url(self, obj):

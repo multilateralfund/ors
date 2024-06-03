@@ -3,6 +3,7 @@ import math
 import urllib
 
 import openpyxl
+from constance import config
 from django.db import transaction
 from django.db.models import Max
 from django.db.models import Min
@@ -31,6 +32,7 @@ from core.api.utils import workbook_pdf_response
 from core.api.utils import workbook_response
 from core.api.views.utils import get_business_plan_from_request
 from core.models import BusinessPlan, BPHistory, BPRecord
+from core.tasks import send_mail_comment_submit_bp, send_mail_bp_create
 
 
 class BusinessPlanViewSet(
@@ -55,9 +57,9 @@ class BusinessPlanViewSet(
 
         if self.request.method == "PUT":
             return business_plans.select_for_update()
-        return business_plans.select_related("agency").order_by(
-            "year_start", "year_end", "id"
-        )
+        return business_plans.select_related(
+            "agency", "created_by", "updated_by"
+        ).order_by("year_start", "year_end", "id")
 
     @action(methods=["GET"], detail=False, url_path="get-years")
     def get_years(self, *args, **kwargs):
@@ -98,6 +100,8 @@ class BusinessPlanViewSet(
                 updated_by=request.user,
                 event_description="Created by user",
             )
+            if config.SEND_MAIL and instance.status != BusinessPlan.Status.draft:
+                send_mail_bp_create.delay(business_plan.id)  # send mail to MLFS
 
             headers = self.get_success_headers(serializer.data)
             return Response(
@@ -341,6 +345,10 @@ class BPCommentsView(generics.GenericAPIView):
             event_description="Comments updated by user",
         )
         serializer = self.get_serializer(business_plan)
+
+        if config.SEND_MAIL:
+            # send mail to agency or MLFS
+            send_mail_comment_submit_bp.delay(business_plan.id, comment_type)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
