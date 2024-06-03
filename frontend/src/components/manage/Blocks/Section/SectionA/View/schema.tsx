@@ -123,7 +123,6 @@ function useGridOptions(props: { model: string; usages: object[] }) {
           ? [
               {
                 ...sectionColDefById['remarks'],
-                cellClass: 'ag-text-left',
                 field: 'remarks',
                 headerName: 'Remarks',
                 // ...(standalone ? { flex: 1 } : { flex: 1 }),

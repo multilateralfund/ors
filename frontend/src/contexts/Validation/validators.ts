@@ -293,19 +293,29 @@ export function validateBlendComponents(
 ): RowValidatorFuncResult {
   const isBlend = !!row.blend_id
 
-  const components = row.composition?.split(';').map((comp) =>
-    comp
-      .substring(0, comp.lastIndexOf(comp.includes('=') ? '=' : '-')) // CustMix has format like "CFC-11-50%", while other blends have format like "HCFC-22=60%"
-      .trim(),
-  )
+  const components = row.composition
+    ?.split(';')
+    .map((comp) =>
+      comp
+        .substring(0, comp.lastIndexOf(comp.includes('=') ? '=' : '-')) // CustMix has format like "CFC-11-50%", while other blends have format like "HCFC-22=60%"
+        .trim(),
+    )
+    .filter((comp) => comp.startsWith('HCFC'))
 
-  const substances = [form.section_a, form.section_b].flatMap((rows) =>
+  const substances = [form.section_a].flatMap((rows) =>
     rows
-      .filter(
+      .filter((row) => {
+        const chemical_name =
+          row.chemical_name || row.chemical_display_name || row.display_name
+        return (
+          components?.includes(chemical_name) &&
+          sumUsages((row.record_usages as unknown as IUsage[]) || []) > 0
+        )
+      })
+      .map(
         (row) =>
-          sumUsages((row.record_usages as unknown as IUsage[]) || []) > 0,
-      )
-      .map((row) => row.chemical_name),
+          row.chemical_name || row.chemical_display_name || row.display_name,
+      ),
   )
   const allComponentsReported =
     components?.filter((comp) => substances.includes(comp)).length ==

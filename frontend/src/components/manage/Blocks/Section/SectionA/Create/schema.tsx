@@ -180,7 +180,6 @@ function useGridOptions(props: {
         ...(includes(['II', 'III', 'IV', 'V'], model)
           ? [
               {
-                cellClass: 'ag-text-left',
                 cellEditor: 'agTextCellEditor',
                 field: 'remarks',
                 headerName: 'Remarks',
