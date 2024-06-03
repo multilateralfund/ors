@@ -84,6 +84,19 @@ const useInternalNavSections = () => {
       ].filter(Boolean),
       url: '/country-programme/reports',
     },
+    {
+      label: 'Replenishment',
+      menu: [
+        { label: 'Dashboard', url: '/replenishment/dashboard' },
+        {
+          label: 'Scale of assessment',
+          url: '/replenishment/scale-of-assessment',
+        },
+        { label: 'Invoices', url: '/replenishment/invoices' },
+        { label: 'Payments', url: '/replenishment/payments' },
+      ],
+      url: '/replenishment',
+    },
     { label: 'Business plans', url: '/business-plans' },
     { label: 'Project submissions', url: '/project-submissions' },
     { label: 'Projects', url: '/projects' },
@@ -142,7 +155,6 @@ const useMenuItems = () => {
         'Projects Dashboard',
         '/projects-data/projects-dashboard',
       ),
-      { label: 'Replenishment', url: '/replenishment' },
     ]),
     makeExternalNavItem('Resources', '/resources', [
       makeExternalNavItem('Decision handbook', '/resources/decisions'),

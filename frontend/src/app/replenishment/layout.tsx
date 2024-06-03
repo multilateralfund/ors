@@ -6,6 +6,7 @@ import cx from 'classnames'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
+import PeriodSelector from '@ors/components/manage/Blocks/Replenishment/PeriodSelector'
 import { PERIODS } from '@ors/components/manage/Blocks/Replenishment/constants'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
@@ -17,7 +18,6 @@ const SECTIONS = [
   { label: 'Invoices', path: '/replenishment/invoices' },
   { label: 'Payments', path: '/replenishment/payments' },
 ]
-
 
 function getPathPeriod(path: string) {
   let result = null
@@ -32,7 +32,6 @@ function getPathPeriod(path: string) {
 
   return result
 }
-
 
 export default function ReplenishmentLayout({
   children,
@@ -58,7 +57,12 @@ export default function ReplenishmentLayout({
   }
   return (
     <PageWrapper className="max-w-screen-2xl">
-      <nav className={styles.nav}>{navLinks}</nav>
+      <div className={styles.nav}>
+        <nav>{navLinks}</nav>
+        <div>
+          <PeriodSelector period={period} />
+        </div>
+      </div>
       <div className={styles.page}>{children}</div>
     </PageWrapper>
   )

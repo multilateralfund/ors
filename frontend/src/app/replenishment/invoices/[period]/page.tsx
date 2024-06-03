@@ -4,15 +4,15 @@ import React from 'react'
 
 import { Typography } from '@mui/material'
 
-import SATableView from '@ors/components/manage/Blocks/Replenishment/SATableView'
+import InvoicesTableView from '@ors/components/manage/Blocks/Replenishment/InvoicesTableView'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export const metadata: Metadata = {
-  title: 'Replenishment - Scale of assessment',
+  title: 'Replenishment - Invoices',
 }
 
-export default async function ReplenishmentScaleOfAssessment(props: any) {
+export default async function ReplenishmentInvoices(props: any) {
   const { period } = props.params
   return (
     <PageWrapper className="w-full p-2" defaultSpacing={false}>
@@ -22,10 +22,10 @@ export default async function ReplenishmentScaleOfAssessment(props: any) {
           component="h1"
           variant="h3"
         >
-          Replenishment - Scale of assessment
+          Replenishment - Invoices
         </Typography>
       </HeaderTitle>
-      <SATableView period={period} />
+      <InvoicesTableView period={period} />
     </PageWrapper>
   )
 }

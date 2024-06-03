@@ -2,19 +2,45 @@ import { PERIOD } from './constants'
 import styles from './table.module.css'
 
 const COLUMNS = [
-  { field: "country", label: "Country" },
-  { field: "un_soa", label: "United Nations scale of assessment for the period [PERIOD]" },
-  { field: "adj_un_soa", label: "Adjusted UN Scale of Assessment using [PERIOD] scale with no party contributing more than 22%" },
-  { field: "annual_contributions", label: "Annual contributions for years [PERIOD] in (United States Dollar)" },
-  { field: "avg_ir", label: "Average inflation rate for the period [PERIOD] (percent)**" },
-  { field: "qual_ferm", label: "Qualifying for fixed exchange rate mechanism, use 1=Yes, 0=No" },
-  { field: "ferm_rate", label: "Fixed exchange rate mechanism users' currencies rate of Exchange 01 Jan - 30 June 2023***" },
-  { field: "ferm_cur", label: "Fixed exchange mechanism users national currencies" },
-  { field: "ferm_cur_amount", label: "Fixed exchange mechanism users contribution amount in national currencies" },
+  { field: 'country', label: 'Country' },
+  {
+    field: 'un_soa',
+    label: 'United Nations scale of assessment for the period [PERIOD]',
+  },
+  {
+    field: 'adj_un_soa',
+    label:
+      'Adjusted UN Scale of Assessment using [PERIOD] scale with no party contributing more than 22%',
+  },
+  {
+    field: 'annual_contributions',
+    label: 'Annual contributions for years [PERIOD] in (United States Dollar)',
+  },
+  {
+    field: 'avg_ir',
+    label: 'Average inflation rate for the period [PERIOD] (percent)**',
+  },
+  {
+    field: 'qual_ferm',
+    label: 'Qualifying for fixed exchange rate mechanism, use 1=Yes, 0=No',
+  },
+  {
+    field: 'ferm_rate',
+    label:
+      "Fixed exchange rate mechanism users' currencies rate of Exchange 01 Jan - 30 June 2023***",
+  },
+  {
+    field: 'ferm_cur',
+    label: 'Fixed exchange mechanism users national currencies',
+  },
+  {
+    field: 'ferm_cur_amount',
+    label:
+      'Fixed exchange mechanism users contribution amount in national currencies',
+  },
 ]
 
-
-const DATA = [
+const DATA: any[] = [
   {
     adj_un_soa: 0.5286,
     annual_contributions: 1000000,
@@ -25,9 +51,8 @@ const DATA = [
     ferm_rate: 4.55658,
     qual_ferm: 1,
     un_soa: 0.312,
-  }
+  },
 ]
-
 
 function ReplenishmentTableView(props: any) {
   const period = props.period ?? PERIOD
@@ -49,13 +74,9 @@ function ReplenishmentTableView(props: any) {
   return (
     <table className={styles.replTable}>
       <thead>
-        <tr>
-          {hCols}
-        </tr>
+        <tr>{hCols}</tr>
       </thead>
-      <tbody>
-        {rows}
-      </tbody>
+      <tbody>{rows}</tbody>
     </table>
   )
 }
