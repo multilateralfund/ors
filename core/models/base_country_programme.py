@@ -84,17 +84,22 @@ class AbstractCPRecord(AbstractWChemical):
         """
         Get the sectorial total value for the record
         (sum of all the usages for the record)
+        For Methyl Bromide the sectorial total will only contain the non-Qps values
 
         """
+
+        if self.substance and "methyl bromide" in self.substance.name.lower():
+            return sum(
+                usage.quantity
+                for usage in self.record_usages.filter(
+                    usage__full_name__icontains="non-qps"
+                )
+            )
         return sum(usage.quantity for usage in self.record_usages.all())
 
-    def get_consumption_value(
-        self,
-        use_sectorial_total=True,
-    ):
+    def get_consumption_value(self, use_sectorial_total=True):
         """
         Get the consumption value for the record (imports - exports + production)
-        For Methil Bromide the sectorial total will only contain the non-Qps values
 
         @param use_sectorial_total: if True, the sectorial total value will be used
             only if there are no imports, exports or production values
@@ -105,14 +110,8 @@ class AbstractCPRecord(AbstractWChemical):
 
         # if there are no imports, exports or production values use the sectorial total
         if use_sectorial_total:
-            # for methil bromide the sectorial total will only contain the non-Qps values
-            if self.substance and "methil bromide" in self.substance.name.lower():
-                non_qps = self.record_usages.filter(
-                    usage__full_name__icontains="non-qps"
-                ).values("quantity")
-                return sum(usage["quantity"] for usage in non_qps)
-
             return self.get_sectorial_total()
+
         return 0
 
 
