@@ -1,7 +1,5 @@
 import type { Metadata } from 'next'
 
-import React from 'react'
-
 import { Typography } from '@mui/material'
 
 import InvoicesTableView from '@ors/components/manage/Blocks/Replenishment/InvoicesTableView'

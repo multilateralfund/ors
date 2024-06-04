@@ -12,5 +12,14 @@ export const PERIODS = [
   '1991-1993',
 ]
 
+function asOptions(strings: string[]) {
+  const result = []
+  for (let i = 0; i < strings.length; i++) {
+    result.push({ label: strings[i], value: strings[i] })
+  }
+  return result
+}
+
+export const PERIODS_AS_OPTIONS = asOptions(PERIODS)
 
 export const PERIOD = PERIODS[0]
