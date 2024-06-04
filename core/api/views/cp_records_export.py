@@ -642,8 +642,14 @@ class CPDataExtractionAllExport(views.APIView):
             if country_name not in country_records:
                 country_records[country_name] = {}
 
+            # get consumption value
+            if "methyl bromide" in record.substance.name.lower():
+                # for methyl bromide, only Non-QPS should be extracted
+                consumption_value = record.get_sectorial_total()
+            else:
+                consumption_value = record.get_consumption_value()
             # convert consumption value to ODP
-            consumption_value = record.get_consumption_value() * record.substance.odp
+            consumption_value *= record.substance.odp
 
             # set a custom group for HCFC-141b in Imported Pre-blended Polyol
             if (

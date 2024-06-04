@@ -47,7 +47,7 @@ class CPPricesExtractionWriter(BaseWriter):
             if header_id == "country_name":
                 value = price.country_programme_report.country.name
             elif header_id == "chemical_name":
-                value = price.get_chemical_display_name()
+                value = price.display_name or price.get_chemical_display_name()
             elif "price" in header_id:
                 # try to convert the value to float else keep it as it is
                 value = getattr(price, header_id, None)
@@ -121,7 +121,7 @@ class CPDetailsExtractionWriter(BaseWriter):
             if header_id == "country_name":
                 value = record.country_programme_report.country.name
             elif header_id == "substance_name":
-                value = record.get_chemical_display_name()
+                value = record.display_name or record.get_chemical_display_name()
             elif header_id == "substance_group":
                 value = record.substance.group.group_id if record.substance else "F"
             elif header_id == "substance_odp":
@@ -129,7 +129,14 @@ class CPDetailsExtractionWriter(BaseWriter):
             elif header_id == "substance_gwp":
                 value = record.get_chemical_gwp()
             elif header_id == "record_value":
-                value = record.get_consumption_value()
+                if (
+                    record.substance
+                    and "methyl bromide" in record.substance.name.lower()
+                ):
+                    # For methyl bromide, the record value will be the non-QPS value
+                    value = record.get_sectorial_total()
+                else:
+                    value = record.get_consumption_value()
             else:
                 value = getattr(record, header_id, None)
 
