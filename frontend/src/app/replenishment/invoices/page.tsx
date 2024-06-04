@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 import { Typography } from '@mui/material'
 
-import InvoicesTableView from '@ors/components/manage/Blocks/Replenishment/InvoicesTableView'
+import InvoicesView from '@ors/components/manage/Blocks/Replenishment/InvoicesView'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
@@ -22,7 +22,7 @@ export default async function ReplenishmentInvoices() {
           Replenishment - Invoices
         </Typography>
       </HeaderTitle>
-      <InvoicesTableView />
+      <InvoicesView />
     </PageWrapper>
   )
 }

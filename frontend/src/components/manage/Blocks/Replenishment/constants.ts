@@ -1,3 +1,5 @@
+import COUNTRIES from './countries'
+
 export const PERIODS = [
   '2021-2023',
   '2018-2020',
@@ -23,3 +25,5 @@ function asOptions(strings: string[]) {
 export const PERIODS_AS_OPTIONS = asOptions(PERIODS)
 
 export const PERIOD = PERIODS[0]
+
+export { COUNTRIES }

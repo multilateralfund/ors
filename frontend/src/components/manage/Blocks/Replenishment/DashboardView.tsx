@@ -115,7 +115,7 @@ function DashboardView() {
         ALLOCATIONS<sup>**</sup> AND PROVISIONS
       </h3>
       <ul className="list-none pl-0">
-        {DATA_ALLOCATIONS.map((item, idx) => (
+        {DATA_ALLOCATIONS.map((item: any, idx: number) => (
           <ListItem
             key={idx}
             className={item.className}
@@ -125,7 +125,7 @@ function DashboardView() {
         ))}
       </ul>
       <ul className="mt-8 list-none pl-0">
-        {DATA_PROVISIONS.map((item, idx) => (
+        {DATA_PROVISIONS.map((item: any, idx: number) => (
           <ListItem
             key={idx}
             className={item.className}
@@ -135,7 +135,7 @@ function DashboardView() {
         ))}
       </ul>
       <ul className="mt-8 list-none pl-0">
-        {DATA_TOTAL.map((item, idx) => (
+        {DATA_TOTAL.map((item: any, idx: number) => (
           <ListItem
             key={idx}
             className={item.className}
