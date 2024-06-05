@@ -4,7 +4,7 @@ import React from 'react'
 
 import { Typography } from '@mui/material'
 
-import PaymentsTableView from '@ors/components/manage/Blocks/Replenishment/PaymentsTableView'
+import PaymentsView from '@ors/components/manage/Blocks/Replenishment/PaymentsView'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
@@ -24,7 +24,7 @@ export default async function ReplenishmentPayments() {
           Replenishment - Payments
         </Typography>
       </HeaderTitle>
-      <PaymentsTableView />
+      <PaymentsView />
     </PageWrapper>
   )
 }

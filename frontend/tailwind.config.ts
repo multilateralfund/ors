@@ -292,6 +292,9 @@ export default {
       padding: '1rem',
     },
     extend: {
+      fontFamily: {
+        sans: ['var(--font-roboto-condensed)'],
+      },
       colors: {
         gray,
         mlfs,

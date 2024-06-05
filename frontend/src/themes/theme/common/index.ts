@@ -118,7 +118,7 @@ const commonTheme = (tailwindTheme: ThemeConfig): ThemeOptions => {
       caption: {
         ...getTypography('xs'),
       },
-      fontFamily: 'inherit',
+      fontFamily: 'var(--font-roboto-condensed)',
       h1: {
         ...getTypography('6xl'),
         fontWeight: 'bold',

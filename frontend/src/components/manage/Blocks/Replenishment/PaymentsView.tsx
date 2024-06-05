@@ -16,35 +16,50 @@ import { IoCloseCircle } from 'react-icons/io5'
 const COLUMNS = [
   { field: 'country', label: 'Country' },
   { field: 'date', label: 'Date' },
-  { field: 'sent_out', label: 'Sent out' },
-  { field: 'number', label: 'Number' },
+  { field: 'amount_usd', label: 'Amount (USD)' },
+  { field: 'amount_national', label: 'Amount (national currency)' },
+  { field: 'gain_loss', label: 'Gain / Loss' },
+  { field: 'acknowledged', label: 'Acknowledged' },
+  { field: 'promissory_note', label: 'Promissory note' },
 ]
 
 const DATA: any[] = [
   {
+    acknowledged: 'Yes',
+    amount_national: '1,300,000.0000',
+    amount_usd: '1,000,000.0000',
+    country: 'Finland',
+    date: '17-MAY-2022',
+    gain_loss: '100,000.0000',
+    iso3: 'FIN',
+    promissory_note: 'No',
+  },
+  {
+    acknowledged: 'No',
+    amount_national: '1,300,000.0000',
+    amount_usd: '1,000,000.0000',
     country: 'Finland',
     date: '17-MAY-2023',
+    gain_loss: '-100,000.0000',
     iso3: 'FIN',
-    number: '40-MFL-FIN',
-    sent_out: '18-MAY-2023',
+    promissory_note: 'Yes',
   },
 ]
 
 function populateData() {
   for (let i = 0; i < COUNTRIES.length; i++) {
     DATA.push({
-      ...DATA[0],
+      ...DATA[i % 2],
       country: COUNTRIES[i].name_alt,
       iso3: COUNTRIES[i].iso3,
-      number: `${DATA[0].number.split('-').slice(0, 2).join('-')}-${COUNTRIES[i].iso3}`,
     })
   }
-  DATA.splice(0, 1)
+  DATA.splice(0, 2)
 }
 
 populateData()
 
-const AddInvoiceDialog = forwardRef(function AddInvoiceDialog(
+const AddPaymentDialog = forwardRef(function AddPaymentDialog(
   props: any,
   ref: any,
 ) {
@@ -87,7 +102,7 @@ const AddInvoiceDialog = forwardRef(function AddInvoiceDialog(
       ref={dialogRef}
     >
       <div className="mb-8 flex items-center justify-between text-secondary">
-        <h3 className="m-0 text-xl">Add invoice</h3>
+        <h3 className="m-0 text-xl">Add payment</h3>
         <IoCloseCircle
           className="cursor-pointer transition-all hover:rotate-90"
           size={32}
@@ -114,18 +129,6 @@ const AddInvoiceDialog = forwardRef(function AddInvoiceDialog(
           </select>
         </div>
         <div className="my-2">
-          <label className="inline-block w-32" htmlFor="number">
-            Invoice number
-          </label>
-          <input
-            id="number"
-            name="number"
-            className="ml-4 rounded-lg border border-solid border-primary bg-white px-4 py-2"
-            type="text"
-            required
-          />
-        </div>
-        <div className="my-2">
           <label className="inline-block w-32" htmlFor="date">
             Date
           </label>
@@ -138,15 +141,61 @@ const AddInvoiceDialog = forwardRef(function AddInvoiceDialog(
           />
         </div>
         <div className="my-2">
-          <label className="inline-block w-32" htmlFor="sent_out">
-            Sent out
+          <label className="inline-block w-32" htmlFor="amount_usd">
+            Amount (USD)
           </label>
           <input
-            id="sent_out"
-            name="sent_out"
+            id="amount_usd"
+            name="amount_usd"
             className="ml-4 rounded-lg border border-solid border-primary bg-white px-4 py-2"
-            type="date"
+            type="text"
             required
+          />
+        </div>
+        <div className="my-2">
+          <label className="inline-block w-32" htmlFor="amount_national">
+            Amount (national currency)
+          </label>
+          <input
+            id="amount_national"
+            name="amount_national"
+            className="ml-4 rounded-lg border border-solid border-primary bg-white px-4 py-2"
+            type="text"
+            required
+          />
+        </div>
+        <div className="my-2">
+          <label className="inline-block w-32" htmlFor="gain_loss">
+            Gain / Loss
+          </label>
+          <input
+            id="gain_loss"
+            name="gain_loss"
+            className="ml-4 rounded-lg border border-solid border-primary bg-white px-4 py-2"
+            type="text"
+            required
+          />
+        </div>
+        <div className="my-2">
+          <label className="inline-block w-32" htmlFor="acknowledged">
+            Acknowledged
+          </label>
+          <input
+            id="acknowledged"
+            name="acknowledged"
+            className="ml-4 rounded-lg border border-solid border-primary bg-white px-4 py-2"
+            type="checkbox"
+          />
+        </div>
+        <div className="my-2">
+          <label className="inline-block w-32" htmlFor="promissory_note">
+            Promissory note
+          </label>
+          <input
+            id="promissory_note"
+            name="promissory_note"
+            className="ml-4 rounded-lg border border-solid border-primary bg-white px-4 py-2"
+            type="checkbox"
           />
         </div>
         <div className="mt-8 flex items-center justify-between border-x-0 border-b-0 border-t border-solid border-gray-200 pt-6">
@@ -160,7 +209,7 @@ const AddInvoiceDialog = forwardRef(function AddInvoiceDialog(
   )
 })
 
-function InvoicesTable(props: any) {
+function PaymentsTable(props: any) {
   const { rowData } = props
 
   const hCols = []
@@ -187,31 +236,41 @@ function InvoicesTable(props: any) {
   )
 }
 
-function InvoicesView(props: any) {
+function formatDateValue(value: string) {
+  const intl = new Intl.DateTimeFormat('en-US', { month: 'short' })
+  const date = new Date(Date.parse(value))
+  return `${date.getDate()}-${intl.format(date).toUpperCase()}-${date.getFullYear()}`
+}
+
+function PaymentsView(props: any) {
   const [tableData, setTableData] = useState(DATA)
 
   const addInvoiceModal = useRef<any>(null)
 
-  function showAddInvoiceModal() {
+  function showAddPaymentModal() {
     addInvoiceModal.current.show()
   }
 
-  function handleAddInvoiceSubmit(data: any) {
-    setTableData((prev) => [data, ...prev])
+  function handleAddPaymentSubmit(data: any) {
+    const entry = { ...data }
+    entry.acknowledged = !entry.acknowledged ? 'No' : 'Yes'
+    entry.promissory_note = !entry.promissory_note ? 'No' : 'Yes'
+    entry.date = formatDateValue(entry.date)
+    setTableData((prev) => [entry, ...prev])
   }
 
   return (
     <>
-      <AddInvoiceDialog
+      <AddPaymentDialog
         ref={addInvoiceModal}
-        onSubmit={handleAddInvoiceSubmit}
+        onSubmit={handleAddPaymentSubmit}
       />
       <div className="flex items-center py-4">
-        <AddButton onClick={showAddInvoiceModal}>Add invoice</AddButton>
+        <AddButton onClick={showAddPaymentModal}>Add payment</AddButton>
       </div>
-      <InvoicesTable rowData={tableData} />
+      <PaymentsTable rowData={tableData} />
     </>
   )
 }
 
-export default InvoicesView
+export default PaymentsView
