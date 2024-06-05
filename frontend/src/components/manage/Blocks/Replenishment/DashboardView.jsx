@@ -1,6 +1,6 @@
 import cx from 'classnames'
 
-const DATA_INCOME: any = {
+const DATA_INCOME = {
   bilateral_cooperation: '187,767,175',
   cash_payments: '4,239,242,826',
   interest_earned: '256,310,311',
@@ -9,7 +9,7 @@ const DATA_INCOME: any = {
   total_income: '4,705,161,892',
 }
 
-const DATA_ALLOCATIONS: any = [
+const DATA_ALLOCATIONS = [
   { label: 'UNDP', value: '1,029,932,433' },
   { label: 'UNEP', value: '423,780,713' },
   { label: 'UNIDO', value: '1,022,487,150' },
@@ -23,7 +23,7 @@ const DATA_ALLOCATIONS: any = [
   },
 ]
 
-const DATA_PROVISIONS: any = [
+const DATA_PROVISIONS = [
   { label: 'Secretariat and Executive Committee costs  (1991-2025)' },
   {
     label: ' -     includes provision for staff contracts into 2025',
@@ -47,7 +47,7 @@ const DATA_PROVISIONS: any = [
   },
 ]
 
-const DATA_TOTAL: any = [
+const DATA_TOTAL = [
   {
     label: (
       <>
@@ -64,7 +64,7 @@ const DATA_TOTAL: any = [
   },
 ]
 
-function ListItem(props: any) {
+function ListItem(props) {
   const { label, value } = props
   return (
     <li className={cx('mb-2 flex', props.className)}>
@@ -115,7 +115,7 @@ function DashboardView() {
         ALLOCATIONS<sup>**</sup> AND PROVISIONS
       </h3>
       <ul className="list-none pl-0">
-        {DATA_ALLOCATIONS.map((item: any, idx: number) => (
+        {DATA_ALLOCATIONS.map((item, idx) => (
           <ListItem
             key={idx}
             className={item.className}
@@ -125,7 +125,7 @@ function DashboardView() {
         ))}
       </ul>
       <ul className="mt-8 list-none pl-0">
-        {DATA_PROVISIONS.map((item: any, idx: number) => (
+        {DATA_PROVISIONS.map((item, idx) => (
           <ListItem
             key={idx}
             className={item.className}
@@ -135,7 +135,7 @@ function DashboardView() {
         ))}
       </ul>
       <ul className="mt-8 list-none pl-0">
-        {DATA_TOTAL.map((item: any, idx: number) => (
+        {DATA_TOTAL.map((item, idx) => (
           <ListItem
             key={idx}
             className={item.className}

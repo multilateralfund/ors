@@ -40,7 +40,7 @@ const COLUMNS = [
   },
 ]
 
-const DATA: any[] = [
+const DATA = [
   {
     adj_un_soa: 0.5286,
     annual_contributions: 1000000,
@@ -54,7 +54,7 @@ const DATA: any[] = [
   },
 ]
 
-function ReplenishmentTableView(props: any) {
+function ReplenishmentTableView(props) {
   const period = props.period ?? PERIOD
 
   const hCols = []

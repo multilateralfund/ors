@@ -1,18 +1,16 @@
-import type { Metadata } from 'next'
-
 import React from 'react'
 
 import { Typography } from '@mui/material'
 
-import PaymentsView from '@ors/components/manage/Blocks/Replenishment/PaymentsView'
+import DashboardView from '@ors/components/manage/Blocks/Replenishment/DashboardView'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
-export const metadata: Metadata = {
-  title: 'Replenishment - Payments',
+export const metadata = {
+  title: 'Replenishment - Dashboard',
 }
 
-export default async function ReplenishmentPayments() {
+export default async function ReplenishmentDashboard() {
   return (
     <PageWrapper className="w-full p-2" defaultSpacing={false}>
       <HeaderTitle>
@@ -21,10 +19,10 @@ export default async function ReplenishmentPayments() {
           component="h1"
           variant="h3"
         >
-          Replenishment - Payments
+          Replenishment - Dashboard
         </Typography>
       </HeaderTitle>
-      <PaymentsView />
+      <DashboardView />
     </PageWrapper>
   )
 }

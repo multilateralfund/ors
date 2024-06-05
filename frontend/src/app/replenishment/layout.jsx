@@ -34,8 +34,6 @@ const SECTIONS = [
 
 export default function ReplenishmentLayout({
   children,
-}: {
-  children: React.ReactNode
 }) {
   const pathname = usePathname()
   const period = getPathPeriod(pathname)
