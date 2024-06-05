@@ -358,6 +358,16 @@ class HFC23GenerationWriter(BaseWriter):
             row_idx += 1
 
     def _write_record_row(self, row_idx, record):
+        # check if there is a column with non-zero value
+        non_zero_value = False
+        for col_name in ["all_uses", "feedstock", "destruction"]:
+            if getattr(record, col_name):
+                non_zero_value = True
+                break
+
+        if not non_zero_value:
+            return
+        # write the record data
         for header_id, header in self.headers.items():
             if header_id == "country_name":
                 value = record.country_programme_report.country.name
