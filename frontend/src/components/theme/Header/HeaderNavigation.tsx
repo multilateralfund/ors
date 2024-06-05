@@ -84,6 +84,7 @@ const useInternalNavSections = () => {
       ].filter(Boolean),
       url: '/country-programme/reports',
     },
+    { label: 'Business plans', url: '/business-plans' },
     {
       label: 'Replenishment',
       menu: [
@@ -97,7 +98,6 @@ const useInternalNavSections = () => {
       ],
       url: '/replenishment',
     },
-    { label: 'Business plans', url: '/business-plans' },
     { label: 'Project submissions', url: '/project-submissions' },
     { label: 'Projects', url: '/projects' },
     // @ts-ignore
