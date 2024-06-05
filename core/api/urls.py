@@ -77,7 +77,7 @@ router.register("project-comment", ProjectCommentViewSet)
 router.register("project-rbm-measure", ProjectRbmMeasureViewSet)
 router.register("submission-amount", ProjectSubmissionAmountViewSet)
 router.register("business-plan", BusinessPlanViewSet, basename="businessplan")
-router.register("business-plan-record", BPRecordViewSet)
+router.register("business-plan-record", BPRecordViewSet, basename="bprecord")
 
 
 schema_view = get_schema_view(

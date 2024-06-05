@@ -25,6 +25,7 @@ from core.api.serializers.business_plan import (
     BPCommentsSerializer,
     BPFileSerializer,
     BPRecordExportSerializer,
+    BPRecordCreateSerializer,
     BPRecordDetailSerializer,
 )
 from core.api.utils import workbook_pdf_response
@@ -37,9 +38,11 @@ class BusinessPlanViewSet(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
-    mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
+    queryset = BusinessPlan.objects.select_related(
+        "agency", "created_by", "updated_by"
+    ).order_by("year_start", "year_end", "id")
     serializer_class = BusinessPlanSerializer
     filterset_class = BusinessPlanFilter
     filter_backends = [
@@ -49,15 +52,6 @@ class BusinessPlanViewSet(
     ]
     ordering_fields = "__all__"
     search_fields = ["agency__name"]
-
-    def get_queryset(self):
-        business_plans = BusinessPlan.objects.all()
-
-        if self.request.method == "PUT":
-            return business_plans.select_for_update()
-        return business_plans.select_related(
-            "agency", "created_by", "updated_by"
-        ).order_by("year_start", "year_end", "id")
 
     @action(methods=["GET"], detail=False, url_path="get-years")
     def get_years(self, *args, **kwargs):
@@ -94,7 +88,6 @@ class BusinessPlanViewSet(
 
             BPHistory.objects.create(
                 business_plan=instance,
-                bp_version=instance.version,
                 updated_by=request.user,
                 event_description="Created by user",
             )
@@ -108,60 +101,15 @@ class BusinessPlanViewSet(
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def check_readonly_fields(self, serializer, current_obj):
-        return (
-            serializer.initial_data["agency_id"] != current_obj.agency_id
-            or serializer.initial_data["year_start"] != current_obj.year_start
-            or serializer.initial_data["year_end"] != current_obj.year_end
-        )
 
-    @transaction.atomic
-    def update(self, request, *args, **kwargs):
-        current_obj = self.get_object()
-
-        serializer = BusinessPlanCreateSerializer(data=request.data)
-        if not serializer.is_valid() or self.check_readonly_fields(
-            serializer, current_obj
-        ):
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        self.perform_create(serializer)
-        new_instance = serializer.instance
-
-        # inherit all history
-        BPHistory.objects.filter(business_plan=current_obj).update(
-            business_plan=new_instance
-        )
-
-        # create new history for update event
-        BPHistory.objects.create(
-            business_plan=new_instance,
-            bp_version=new_instance.version,
-            updated_by=request.user,
-            event_description="Updated by user",
-        )
-
-        current_obj.delete()
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
-
-
-class BPRecordViewSet(viewsets.ReadOnlyModelViewSet):
+class BPRecordViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     serializer_class = BPRecordDetailSerializer
-    queryset = BPRecord.objects.select_related(
-        "business_plan",
-        "business_plan__agency",
-        "country",
-        "sector",
-        "subsector",
-        "project_type",
-        "bp_chemical_type",
-    ).prefetch_related(
-        "substances",
-        "blends",
-        "values",
-    )
     filterset_class = BPRecordFilter
     filter_backends = [
         DjangoFilterBackend,
@@ -181,6 +129,25 @@ class BPRecordViewSet(viewsets.ReadOnlyModelViewSet):
         "bp_type",
         "is_multi_year",
     ]
+
+    def get_queryset(self):
+        bp_records = BPRecord.objects.all()
+
+        if self.request.method == "PUT":
+            return bp_records.select_for_update()
+        return bp_records.select_related(
+            "business_plan",
+            "business_plan__agency",
+            "country",
+            "sector",
+            "subsector",
+            "project_type",
+            "bp_chemical_type",
+        ).prefetch_related(
+            "substances",
+            "blends",
+            "values",
+        )
 
     def get_wb(self, method):
         queryset = self.filter_queryset(self.get_queryset())
@@ -219,6 +186,45 @@ class BPRecordViewSet(viewsets.ReadOnlyModelViewSet):
     @action(methods=["GET"], detail=False)
     def print(self, *args, **kwargs):
         return self.get_wb(workbook_pdf_response)
+
+    def create(self, request, *args, **kwargs):
+        serializer = BPRecordCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            instance = serializer.instance
+
+            BPHistory.objects.create(
+                business_plan=instance.business_plan,
+                updated_by=request.user,
+                event_description=f"Created record {instance.id}",
+            )
+
+            headers = self.get_success_headers(serializer.data)
+            return Response(
+                serializer.data, status=status.HTTP_201_CREATED, headers=headers
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        current_obj = self.get_object()
+
+        serializer = BPRecordCreateSerializer(current_obj, data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        self.perform_update(serializer)
+
+        # create new history for update event
+        BPHistory.objects.create(
+            business_plan=current_obj.business_plan,
+            updated_by=request.user,
+            event_description=f"Updated record {current_obj.id}",
+        )
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
 
 class BPCommentsView(generics.GenericAPIView):
@@ -273,7 +279,6 @@ class BPCommentsView(generics.GenericAPIView):
         business_plan.save()
         BPHistory.objects.create(
             business_plan=business_plan,
-            bp_version=business_plan.version,
             updated_by=user,
             event_description="Comments updated by user",
         )

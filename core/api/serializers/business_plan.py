@@ -8,11 +8,19 @@ from core.api.serializers.agency import AgencySerializer
 from core.api.serializers.project import ProjectSectorSerializer
 from core.api.serializers.project import ProjectSubSectorSerializer
 from core.api.serializers.project import ProjectTypeSerializer
-from core.models import Agency
-from core.models import BPChemicalType
-from core.models import BPRecord
-from core.models import BPRecordValue
-from core.models import BusinessPlan
+from core.models import (
+    Agency,
+    Blend,
+    BPChemicalType,
+    BPRecord,
+    BPRecordValue,
+    BusinessPlan,
+    Country,
+    ProjectSector,
+    ProjectSubSector,
+    ProjectType,
+    Substance,
+)
 
 
 class BPChemicalTypeSerializer(serializers.ModelSerializer):
@@ -194,6 +202,68 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
 
     def get_bp_type_display(self, obj):
         return obj.get_bp_type_display()
+
+
+class BPRecordCreateSerializer(serializers.ModelSerializer):
+    business_plan_id = serializers.PrimaryKeyRelatedField(
+        queryset=BusinessPlan.objects.all().values_list("id", flat=True),
+    )
+    country_id = serializers.PrimaryKeyRelatedField(
+        queryset=Country.objects.all().values_list("id", flat=True),
+    )
+    lvc_status = serializers.ChoiceField(choices=BPRecord.LVCStatus.choices)
+    project_type_id = serializers.PrimaryKeyRelatedField(
+        queryset=ProjectType.objects.all().values_list("id", flat=True),
+    )
+    bp_type = serializers.ChoiceField(choices=BPRecord.BPType.choices)
+    bp_chemical_type_id = serializers.PrimaryKeyRelatedField(
+        queryset=BPChemicalType.objects.all().values_list("id", flat=True),
+    )
+
+    substances = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Substance.objects.all().values_list("id", flat=True),
+    )
+    blends = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Blend.objects.all().values_list("id", flat=True),
+    )
+
+    sector_id = serializers.PrimaryKeyRelatedField(
+        queryset=ProjectSector.objects.all().values_list("id", flat=True),
+    )
+    subsector_id = serializers.PrimaryKeyRelatedField(
+        queryset=ProjectSubSector.objects.all().values_list("id", flat=True),
+    )
+    values = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=BPRecordValue.objects.all().values_list("id", flat=True),
+    )
+
+    class Meta:
+        model = BPRecord
+        fields = [
+            "id",
+            "business_plan_id",
+            "title",
+            "required_by_model",
+            "country_id",
+            "lvc_status",
+            "project_type_id",
+            "bp_chemical_type_id",
+            "substances",
+            "blends",
+            "amount_polyol",
+            "sector_id",
+            "subsector_id",
+            "legacy_sector_and_subsector",
+            "bp_type",
+            "is_multi_year",
+            "reason_for_exceeding",
+            "remarks",
+            "remarks_additional",
+            "values",
+        ]
 
 
 class BPCommentsSerializer(serializers.ModelSerializer):
