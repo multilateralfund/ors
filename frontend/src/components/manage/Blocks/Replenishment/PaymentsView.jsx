@@ -4,7 +4,7 @@ import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 
 import { AddButton } from '@ors/components/ui/Button/Button'
 
-import AddDialog from './AddDialog'
+import Dialog from './Dialog'
 import { FieldInput, FieldSelect } from './Inputs'
 import { COUNTRIES } from './constants'
 import styles from './table.module.css'
@@ -58,7 +58,7 @@ populateData()
 
 const AddPaymentDialog = forwardRef(function AddPaymentDialog(props, ref) {
   return (
-    <AddDialog ref={ref} title="Add payment" {...props}>
+    <Dialog ref={ref} title="Add payment" {...props}>
       <FieldSelect id="iso3" label="Country" required>
         <option value=""> - </option>
         {COUNTRIES.map((c) => (
@@ -82,7 +82,7 @@ const AddPaymentDialog = forwardRef(function AddPaymentDialog(props, ref) {
         label="Promissory note"
         type="checkbox"
       />
-    </AddDialog>
+    </Dialog>
   )
 })
 

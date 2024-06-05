@@ -15,6 +15,12 @@
     padding: 0.5em 1em;
   }
 
+  td .adminButtons {
+    display: flex;
+    column-gap: 0.5rem;
+    visibility: collapse;
+  }
+
   th {
     background-color: var(--table-thead-bg);
     position: relative;
@@ -49,5 +55,9 @@
 
   tr:hover td {
     background-color: var(--table-hover);
+
+    .adminButtons {
+      visibility: visible;
+    }
   }
 }

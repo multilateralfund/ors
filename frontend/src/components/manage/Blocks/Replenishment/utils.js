@@ -19,3 +19,12 @@ export function formatDateValue(value) {
   const date = new Date(Date.parse(value))
   return `${date.getDate()}-${intl.format(date).toUpperCase()}-${date.getFullYear()}`
 }
+
+export function dateForEditField(value) {
+  const date = new Date(Date.parse(value))
+  let day = date.getDate()
+  let month = date.getMonth() + 1
+  day = day < 10 ? `0${day}` : day
+  month = month < 10 ? `0${month}` : month
+  return `${date.getFullYear()}-${month}-${day}`
+}

@@ -4,7 +4,7 @@ import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
 
 import { IoCloseCircle } from 'react-icons/io5'
 
-const AddDialog = forwardRef(function AddInvoiceDialog(props, ref) {
+const Dialog = forwardRef(function AddInvoiceDialog(props, ref) {
   const { children, onSubmit, title } = props
   const dialogRef = useRef(null)
 
@@ -35,6 +35,7 @@ const AddDialog = forwardRef(function AddInvoiceDialog(props, ref) {
       data[k] = v
     }
     dialogRef.current.close()
+    evt.target.reset()
     onSubmit(data, evt)
   }
 
@@ -64,4 +65,4 @@ const AddDialog = forwardRef(function AddInvoiceDialog(props, ref) {
   )
 })
 
-export default AddDialog
+export default Dialog
