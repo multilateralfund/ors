@@ -17,7 +17,7 @@ export default async function CountryProgramme() {
     <PageWrapper className="max-w-screen-xl lg:px-0">
       <HeaderTitle>
         <Typography
-          className="text-typography-primary"
+          className="text-typography-primary mx-auto max-w-screen-xl"
           component="h1"
           variant="h3"
         >

@@ -18,3 +18,7 @@
 .CPListing .MuiAutocomplete-inputRoot fieldset {
     @apply border-2 border-primary;
 }
+
+.CPListing .MuiAutocomplete-inputRoot input::placeholder {
+    @apply text-mlfs-deepTealShade opacity-100 uppercase text-lg font-normal;
+}
