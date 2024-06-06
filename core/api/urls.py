@@ -14,7 +14,7 @@ from core.api.views.business_plan import (
     BPFileView,
     BPRecordViewSet,
 )
-from core.api.views.business_plan import BusinessPlanViewSet
+from core.api.views.business_plan import BPStatusUpdateView, BusinessPlanViewSet
 from core.api.views.chemicals import (
     BlendCreateView,
     BlendNextCustNameView,
@@ -312,6 +312,11 @@ urlpatterns = [
         "business-plan/<int:id>/file/download/",
         BPFileDownloadView.as_view(),
         name="business-plan-file-download",
+    ),
+    path(
+        "business-plan/<int:id>/status-update/",
+        BPStatusUpdateView.as_view(),
+        name="business-plan-status",
     ),
     *router.urls,
 ]

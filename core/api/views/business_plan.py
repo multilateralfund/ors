@@ -83,24 +83,73 @@ class BusinessPlanViewSet(
             )
 
         serializer = BusinessPlanCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            self.perform_create(serializer)
-            instance = serializer.instance
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            BPHistory.objects.create(
-                business_plan=instance,
-                updated_by=request.user,
-                event_description="Created by user",
-            )
-            if config.SEND_MAIL and instance.status != BusinessPlan.Status.draft:
-                send_mail_bp_create.delay(business_plan.id)  # send mail to MLFS
+        self.perform_create(serializer)
+        instance = serializer.instance
 
-            headers = self.get_success_headers(serializer.data)
+        # set created by user
+        instance.created_by = request.user
+        instance.save()
+
+        BPHistory.objects.create(
+            business_plan=instance,
+            updated_by=request.user,
+            event_description="Created by user",
+        )
+        if config.SEND_MAIL and instance.status != BusinessPlan.Status.draft:
+            send_mail_bp_create.delay(business_plan.id)  # send mail to MLFS
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+
+class BPStatusUpdateView(generics.GenericAPIView):
+    """
+    API endpoint that allows updating business plan status.
+    """
+
+    queryset = BusinessPlan.objects.all()
+    serializer_class = BusinessPlanSerializer
+    lookup_field = "id"
+
+    @swagger_auto_schema(
+        operation_description="Update business plan status",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "status": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    enum=BusinessPlan.Status.choices,
+                )
+            },
+        ),
+    )
+    def put(self, request, *args, **kwargs):
+        business_plan = self.get_object()
+        bp_status = request.data.get("status")
+        if bp_status not in BusinessPlan.Status.values:
             return Response(
-                serializer.data, status=status.HTTP_201_CREATED, headers=headers
+                {"status": f"Invalid value {bp_status}"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        initial_value = business_plan.status
+        business_plan.status = bp_status
+        business_plan.save()
+
+        BPHistory.objects.create(
+            business_plan=business_plan,
+            updated_by=request.user,
+            event_description=f"Status updated from {initial_value} to {bp_status}",
+        )
+
+        serializer = self.get_serializer(business_plan)
+
+        return Response(serializer.data)
 
 
 class BPRecordViewSet(
@@ -208,6 +257,10 @@ class BPRecordViewSet(
         self.perform_create(serializer)
         instance = serializer.instance
 
+        # set updated by user
+        business_plan.updated_by = request.user
+        business_plan.save()
+
         BPHistory.objects.create(
             business_plan=instance.business_plan,
             updated_by=request.user,
@@ -252,6 +305,10 @@ class BPRecordViewSet(
             )
 
         self.perform_update(serializer)
+
+        # set updated by user
+        business_plan.updated_by = request.user
+        business_plan.save()
 
         # create new history for update event
         BPHistory.objects.create(

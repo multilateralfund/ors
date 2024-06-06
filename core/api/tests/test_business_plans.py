@@ -285,3 +285,55 @@ class TestBPRecordUpdate:
         assert response.data["is_multi_year"] is True
         assert response.data["remarks"] == "Merge rau"
         assert response.data["values"][0]["year"] == 2022
+
+
+@pytest.fixture(name="_setup_new_business_plan_create")
+def setup_new_business_plan_create(agency):
+    return {
+        "agency_id": agency.id,
+        "year_start": 2020,
+        "year_end": 2022,
+        "status": "Draft",
+    }
+
+
+class TestBPCreate:
+    client = APIClient()
+
+    def test_create_business_plan(self, user, agency, _setup_new_business_plan_create):
+        # create new business plan
+        self.client.force_authenticate(user=user)
+        url = reverse("businessplan-list")
+        response = self.client.post(url, _setup_new_business_plan_create, format="json")
+
+        assert response.status_code == 201
+        assert response.data["status"] == "Draft"
+        assert response.data["year_start"] == 2020
+        assert response.data["year_end"] == 2022
+        assert response.data["agency_id"] == agency.id
+
+
+class TestBPStatusUpdate:
+    client = APIClient()
+
+    def test_without_login(self, business_plan):
+        url = reverse("business-plan-status", kwargs={"id": business_plan.id})
+        response = self.client.put(url, {"status": "Draft"})
+        assert response.status_code == 403
+
+    def test_invalid_status(self, user, business_plan):
+        self.client.force_authenticate(user=user)
+        url = reverse("business-plan-status", kwargs={"id": business_plan.id})
+        response = self.client.put(url, {"status": "invalid"})
+
+        assert response.status_code == 400
+        assert "Invalid value" in response.data["status"]
+
+    def test_update_status(self, user, business_plan):
+        self.client.force_authenticate(user=user)
+        url = reverse("business-plan-status", kwargs={"id": business_plan.id})
+        response = self.client.put(url, {"status": "Draft"})
+
+        assert response.status_code == 200
+        assert response.data["status"] == "Draft"
+        assert response.data["id"] == business_plan.id
