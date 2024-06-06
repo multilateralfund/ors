@@ -8,6 +8,7 @@ from django.db import transaction
 from django.db.models import Max
 from django.db.models import Min
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -189,22 +190,43 @@ class BPRecordViewSet(
 
     def create(self, request, *args, **kwargs):
         serializer = BPRecordCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            self.perform_create(serializer)
-            instance = serializer.instance
 
-            BPHistory.objects.create(
-                business_plan=instance.business_plan,
-                updated_by=request.user,
-                event_description=f"Created record {instance.id}",
-            )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            headers = self.get_success_headers(serializer.data)
+        business_plan = get_object_or_404(
+            BusinessPlan,
+            id=serializer.initial_data["business_plan_id"],
+        )
+        if not self.check_readonly_fields(serializer, business_plan):
             return Response(
-                serializer.data, status=status.HTTP_201_CREATED, headers=headers
+                {
+                    "general_error": "BP record values year not in business plan interval"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
+        self.perform_create(serializer)
+        instance = serializer.instance
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        BPHistory.objects.create(
+            business_plan=instance.business_plan,
+            updated_by=request.user,
+            event_description=f"Created record {instance.id}",
+        )
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    def check_readonly_fields(self, serializer, business_plan):
+        for record_value in serializer.initial_data.get("values", []):
+            if (
+                business_plan.year_start > record_value["year"]
+                or record_value["year"] > business_plan.year_end
+            ):
+                return False
+        return True
 
     @transaction.atomic
     def update(self, request, *args, **kwargs):
@@ -213,6 +235,21 @@ class BPRecordViewSet(
         serializer = BPRecordCreateSerializer(current_obj, data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if serializer.initial_data["business_plan_id"] != current_obj.business_plan_id:
+            return Response(
+                {"general_error": "Business plan changed"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        business_plan = current_obj.business_plan
+        if not self.check_readonly_fields(serializer, business_plan):
+            return Response(
+                {
+                    "general_error": "BP record values year not in business plan interval"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         self.perform_update(serializer)
 

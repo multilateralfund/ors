@@ -176,13 +176,13 @@ def setup_bp_record_create(
         "remarks_additional": "Poate si la anu / Daca merge bine planu stau ca barosanu.",
         "values": [
             {
-                "year": 2021,
+                "year": 2020,
                 "value_usd": 100,
                 "value_odp": 100,
                 "value_mt": 100,
             },
             {
-                "year": 2022,
+                "year": 2021,
                 "value_usd": 200,
                 "value_odp": 200,
                 "value_mt": 200,
@@ -194,6 +194,10 @@ def setup_bp_record_create(
 class TestBPRecordCreate:
     client = APIClient()
     url = reverse("bprecord-list")
+
+    def test_create_anon(self, _setup_bp_record_create):
+        response = self.client.post(self.url, _setup_bp_record_create, format="json")
+        assert response.status_code == 403
 
     def test_create_record(
         self,
@@ -232,8 +236,8 @@ class TestBPRecordCreate:
             response.data["remarks_additional"]
             == "Poate si la anu / Daca merge bine planu stau ca barosanu."
         )
-        assert response.data["values"][0]["year"] == 2021
-        assert response.data["values"][1]["year"] == 2022
+        assert response.data["values"][0]["year"] == 2020
+        assert response.data["values"][1]["year"] == 2021
 
 
 class TestBPRecordUpdate:
@@ -264,7 +268,7 @@ class TestBPRecordUpdate:
         data["remarks"] = "Merge rau"
         data["values"] = [
             {
-                "year": 2023,
+                "year": 2022,
                 "value_usd": 300,
                 "value_odp": 300,
                 "value_mt": 300,
@@ -280,4 +284,4 @@ class TestBPRecordUpdate:
         assert response.data["bp_type"] == "P"
         assert response.data["is_multi_year"] is True
         assert response.data["remarks"] == "Merge rau"
-        assert response.data["values"][0]["year"] == 2023
+        assert response.data["values"][0]["year"] == 2022
