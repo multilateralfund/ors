@@ -174,7 +174,20 @@ def setup_bp_record_create(
         "reason_for_exceeding": "Planu, planu, planu, planu, planu",
         "remarks": "Merge bine, bine, bine ca aeroplanu",
         "remarks_additional": "Poate si la anu / Daca merge bine planu stau ca barosanu.",
-        "values": [],
+        "values": [
+            {
+                "year": 2021,
+                "value_usd": 100,
+                "value_odp": 100,
+                "value_mt": 100,
+            },
+            {
+                "year": 2022,
+                "value_usd": 200,
+                "value_odp": 200,
+                "value_mt": 200,
+            },
+        ],
     }
 
 
@@ -197,6 +210,7 @@ class TestBPRecordCreate:
     ):
         self.client.force_authenticate(user=user)
         response = self.client.post(self.url, _setup_bp_record_create, format="json")
+
         assert response.status_code == 201
         assert response.data["business_plan_id"] == business_plan.id
         assert response.data["title"] == "Planu"
@@ -218,6 +232,8 @@ class TestBPRecordCreate:
             response.data["remarks_additional"]
             == "Poate si la anu / Daca merge bine planu stau ca barosanu."
         )
+        assert response.data["values"][0]["year"] == 2021
+        assert response.data["values"][1]["year"] == 2022
 
 
 class TestBPRecordUpdate:
@@ -246,6 +262,14 @@ class TestBPRecordUpdate:
         data["bp_type"] = "P"
         data["is_multi_year"] = True
         data["remarks"] = "Merge rau"
+        data["values"] = [
+            {
+                "year": 2023,
+                "value_usd": 300,
+                "value_odp": 300,
+                "value_mt": 300,
+            }
+        ]
         response = self.client.put(url, data, format="json")
 
         assert response.status_code == 200
@@ -256,3 +280,4 @@ class TestBPRecordUpdate:
         assert response.data["bp_type"] == "P"
         assert response.data["is_multi_year"] is True
         assert response.data["remarks"] == "Merge rau"
+        assert response.data["values"][0]["year"] == 2023

@@ -33,6 +33,12 @@ class BPChemicalTypeSerializer(serializers.ModelSerializer):
 
 
 class BPRecordValueSerializer(serializers.ModelSerializer):
+    bp_record_id = serializers.PrimaryKeyRelatedField(
+        required=False,
+        queryset=BPRecord.objects.all().values_list("id", flat=True),
+        write_only=True,
+    )
+
     class Meta:
         model = BPRecordValue
         fields = [
@@ -235,10 +241,7 @@ class BPRecordCreateSerializer(serializers.ModelSerializer):
     subsector_id = serializers.PrimaryKeyRelatedField(
         queryset=ProjectSubSector.objects.all().values_list("id", flat=True),
     )
-    values = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset=BPRecordValue.objects.all().values_list("id", flat=True),
-    )
+    values = BPRecordValueSerializer(many=True)
 
     class Meta:
         model = BPRecord
@@ -264,6 +267,29 @@ class BPRecordCreateSerializer(serializers.ModelSerializer):
             "remarks_additional",
             "values",
         ]
+
+    def _create_bp_record_values(self, bp_record, record_values):
+        bp_record.values.all().delete()
+
+        for record_value in record_values:
+            record_value["bp_record_id"] = bp_record.id
+            record_value_serializer = BPRecordValueSerializer(data=record_value)
+            record_value_serializer.is_valid(raise_exception=True)
+            record_value_serializer.save()
+
+    def create(self, validated_data):
+        record_values = validated_data.pop("values", [])
+        bp_record = super().create(validated_data)
+        self._create_bp_record_values(bp_record, record_values)
+
+        return bp_record
+
+    def update(self, instance, validated_data):
+        record_values = validated_data.pop("values", [])
+        bp_record = super().update(instance, validated_data)
+        self._create_bp_record_values(bp_record, record_values)
+
+        return bp_record
 
 
 class BPCommentsSerializer(serializers.ModelSerializer):
