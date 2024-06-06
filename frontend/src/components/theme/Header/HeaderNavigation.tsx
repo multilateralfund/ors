@@ -85,19 +85,23 @@ const useInternalNavSections = () => {
       url: '/country-programme/reports',
     },
     { label: 'Business plans', url: '/business-plans' },
-    {
-      label: 'Replenishment',
-      menu: [
-        { label: 'Dashboard', url: '/replenishment/dashboard' },
-        {
-          label: 'Scale of assessment',
-          url: '/replenishment/scale-of-assessment',
-        },
-        { label: 'Invoices', url: '/replenishment/invoices' },
-        { label: 'Payments', url: '/replenishment/payments' },
-      ],
-      url: '/replenishment',
-    },
+    ...(['admin', 'secretariat'].includes(user_type)
+      ? [
+          {
+            label: 'Replenishment',
+            menu: [
+              { label: 'Dashboard', url: '/replenishment/dashboard' },
+              {
+                label: 'Scale of assessment',
+                url: '/replenishment/scale-of-assessment',
+              },
+              { label: 'Invoices', url: '/replenishment/invoices' },
+              { label: 'Payments', url: '/replenishment/payments' },
+            ],
+            url: '/replenishment',
+          },
+        ]
+      : []),
     { label: 'Project submissions', url: '/project-submissions' },
     { label: 'Projects', url: '/projects' },
     // @ts-ignore
