@@ -28,3 +28,23 @@ export function dateForEditField(value) {
   month = month < 10 ? `0${month}` : month
   return `${date.getFullYear()}-${month}-${day}`
 }
+
+export function filterTableData(tableData, searchValue) {
+  const result = []
+  const searchFor = searchValue.toLowerCase()
+  for (let i = 0; i < tableData.length; i++) {
+    const rowValues = Object.values(tableData[i])
+
+    for (let j = 0; j < rowValues.length; j++) {
+      const value =
+        typeof rowValues[j] === 'string'
+          ? rowValues[j]
+          : rowValues[j].toString()
+      if (value.toLowerCase().indexOf(searchFor) !== -1) {
+        result.push(tableData[i])
+        break
+      }
+    }
+  }
+  return result
+}

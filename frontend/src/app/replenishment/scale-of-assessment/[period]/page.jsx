@@ -2,7 +2,7 @@ import React from 'react'
 
 import { Typography } from '@mui/material'
 
-import SATableView from '@ors/components/manage/Blocks/Replenishment/SATableView'
+import SAView from '@ors/components/manage/Blocks/Replenishment/SAView'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
@@ -23,7 +23,7 @@ export default async function ReplenishmentScaleOfAssessment(props) {
           Replenishment - Scale of assessment
         </Typography>
       </HeaderTitle>
-      <SATableView period={period} />
+      <SAView period={period} />
     </PageWrapper>
   )
 }

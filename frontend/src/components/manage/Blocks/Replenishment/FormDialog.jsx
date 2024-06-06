@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react'
 
+import cx from 'classnames'
+
 import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
 
 import { IoCloseCircle } from 'react-icons/io5'
@@ -11,6 +13,11 @@ const FormDialog = function FormDialog(props) {
 
   useEffect(() => {
     dialogRef.current.showModal()
+    const bodyOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = bodyOverflow
+    }
   }, [])
 
   function submitHandler(evt) {
@@ -37,7 +44,10 @@ const FormDialog = function FormDialog(props) {
 
   return (
     <dialog
-      className="max-h-2/3 justify-between rounded-xl border-none bg-white p-8 shadow-2xl"
+      className={cx(
+        'max-h-2/3 justify-between rounded-xl border-none bg-white p-8 shadow-2xl',
+        props.className,
+      )}
       ref={dialogRef}
     >
       <div className="mb-8 flex items-center justify-between text-secondary">

@@ -1,14 +1,14 @@
 import cx from 'classnames'
 
 const CLASSESS =
-  'ml-4 rounded-lg border border-solid border-primary bg-white px-4 py-2'
+  'ml-4 rounded-lg border border-solid border-primary bg-white px-4 py-2 grow'
 
 export function Field(props) {
   const { id, children, label } = props
 
   return (
-    <div className="my-2">
-      <label className="inline-block w-32" htmlFor={id}>
+    <div className="my-2 flex items-center">
+      <label className="inline-block w-48" htmlFor={id}>
         {label}
       </label>
       {children}

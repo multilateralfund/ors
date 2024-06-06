@@ -1,16 +1,14 @@
 'use client'
 
-import { useImperativeHandle, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { AddButton } from '@ors/components/ui/Button/Button'
 
 import FormDialog from './FormDialog'
-import { FieldInput, FieldSelect } from './Inputs'
+import { FieldInput, FieldSelect, Input } from './Inputs'
+import Table from './Table'
 import { COUNTRIES } from './constants'
-import styles from './table.module.css'
-import { dateForEditField, formatDateValue } from './utils'
-
-import { IoPencil, IoTrash } from 'react-icons/io5'
+import { dateForEditField, filterTableData, formatDateValue } from './utils'
 
 const COLUMNS = [
   { field: 'country', label: 'Country' },
@@ -89,69 +87,14 @@ const InvoiceDialog = function InvoiceDialog(props) {
   )
 }
 
-function AdminButtons(props) {
-  const { onDelete, onEdit } = props
-  return (
-    <div className={styles.adminButtons}>
-      <button
-        className="cursor-pointer rounded-lg border border-solid border-secondary bg-white text-secondary hover:bg-secondary hover:text-white"
-        title="Edit"
-        onClick={onEdit}
-      >
-        <IoPencil />
-      </button>
-      <button
-        className="cursor-pointer rounded-lg border border-solid border-error bg-white text-error hover:bg-error hover:text-white"
-        title="Delete"
-        onClick={onDelete}
-      >
-        <IoTrash />
-      </button>
-    </div>
-  )
-}
-
 function InvoicesTable(props) {
-  const { enableEdit, onDelete, onEdit, rowData } = props
-
-  const hCols = []
-  for (let i = 0; i < COLUMNS.length; i++) {
-    hCols.push(<th key={i}>{COLUMNS[i].label}</th>)
-  }
-
-  const rows = []
-  for (let j = 0; j < rowData.length; j++) {
-    const row = []
-    for (let i = 0; i < COLUMNS.length; i++) {
-      row.push(
-        <td key={i}>
-          <div className="flex justify-between">
-            {rowData[j][COLUMNS[i].field]}
-            {!i && enableEdit ? (
-              <AdminButtons
-                onDelete={() => onDelete(j)}
-                onEdit={() => onEdit(j)}
-              />
-            ) : null}
-          </div>
-        </td>,
-      )
-    }
-    rows.push(<tr key={j}>{row}</tr>)
-  }
-
-  return (
-    <table className={styles.replTable}>
-      <thead>
-        <tr>{hCols}</tr>
-      </thead>
-      <tbody>{rows}</tbody>
-    </table>
-  )
+  return <Table columns={COLUMNS} {...props} />
 }
 
 function InvoicesView(props) {
   const [tableData, setTableData] = useState(DATA)
+  const [searchValue, setSearchValue] = useState('')
+
   const [editIdx, setEditIdx] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
 
@@ -164,6 +107,10 @@ function InvoicesView(props) {
     }
     return entry
   }, [editIdx, tableData])
+
+  const filteredTableData = useMemo(() => {
+    return filterTableData(tableData, searchValue)
+  }, [tableData, searchValue])
 
   function showAddInvoiceDialog() {
     setShowAdd(true)
@@ -204,6 +151,10 @@ function InvoicesView(props) {
     setEditIdx(null)
   }
 
+  function handleSearchInput(evt) {
+    setSearchValue(evt.target.value)
+  }
+
   return (
     <>
       {showAdd ? (
@@ -221,10 +172,21 @@ function InvoicesView(props) {
       ) : null}
       <div className="flex items-center py-4">
         <AddButton onClick={showAddInvoiceDialog}>Add invoice</AddButton>
+        <div className="ml-8">
+          <label>
+            Search:{' '}
+            <Input
+              id="search"
+              type="text"
+              value={searchValue}
+              onChange={handleSearchInput}
+            />
+          </label>
+        </div>
       </div>
       <InvoicesTable
         enableEdit={true}
-        rowData={tableData}
+        rowData={filteredTableData}
         onDelete={handleDeleteInvoice}
         onEdit={showEditInvoiceDialog}
       />
