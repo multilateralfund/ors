@@ -45,7 +45,7 @@ export const CellUsageWidget = memo(
       }, [usageId, props.data.record_usages])
 
       const createInitialState = () => {
-        let startValue = props.value || ''
+        let startValue = props.value || usage?.quantity || ''
         let highlightAllOnFocus = true
 
         const eventKey = props.eventKey
