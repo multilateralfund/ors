@@ -1,16 +1,10 @@
 'use client'
 
-import {
-  forwardRef,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { useImperativeHandle, useMemo, useState } from 'react'
 
 import { AddButton } from '@ors/components/ui/Button/Button'
 
-import Dialog from './Dialog'
+import FormDialog from './FormDialog'
 import { FieldInput, FieldSelect } from './Inputs'
 import { COUNTRIES } from './constants'
 import styles from './table.module.css'
@@ -49,36 +43,20 @@ function populateData() {
 
 populateData()
 
-const AddInvoiceDialog = forwardRef(function AddInvoiceDialog(props, ref) {
-  return (
-    <Dialog ref={ref} title="Add invoice" {...props}>
-      <FieldSelect id="iso3" label="Country" required>
-        <option value=""> - </option>
-        {COUNTRIES.map((c) => (
-          <option key={c.iso3} data-name={c.name_alt} value={c.iso3}>
-            {c.name_alt}
-          </option>
-        ))}
-      </FieldSelect>
-      <FieldInput id="number" label="Invoice number" type="text" required />
-      <FieldInput id="date" label="Date" type="date" required />
-      <FieldInput id="sent_out" label="Sent out" type="date" required />
-    </Dialog>
-  )
-})
+const AddInvoiceDialog = function AddInvoiceDialog(props) {
+  return <InvoiceDialog title="Add invoice" {...props} />
+}
 
-const EditInvoiceDialog = forwardRef(function AddInvoiceDialog(props, ref) {
-  const { data } = props
+const EditInvoiceDialog = function EditInvoiceDialog(props) {
+  return <InvoiceDialog title="Edit invoice" {...props} />
+}
+
+const InvoiceDialog = function InvoiceDialog(props) {
+  const { data, title, ...dialogProps } = props
 
   return (
-    <Dialog ref={ref} title="Edit invoice" {...props}>
-      <FieldSelect
-        id="iso3"
-        label="Country"
-        value={data.iso3}
-        disabled
-        required
-      >
+    <FormDialog title={title} {...dialogProps}>
+      <FieldSelect id="iso3" defaultValue={data?.iso3} label="Country" required>
         <option value=""> - </option>
         {COUNTRIES.map((c) => (
           <option key={c.iso3} data-name={c.name_alt} value={c.iso3}>
@@ -88,28 +66,28 @@ const EditInvoiceDialog = forwardRef(function AddInvoiceDialog(props, ref) {
       </FieldSelect>
       <FieldInput
         id="number"
-        defaultValue={data.number}
+        defaultValue={data?.number}
         label="Invoice number"
         type="text"
         required
       />
       <FieldInput
         id="date"
-        defaultValue={data.date}
+        defaultValue={data?.date}
         label="Date"
         type="date"
         required
       />
       <FieldInput
         id="sent_out"
-        defaultValue={data.sent_out}
+        defaultValue={data?.sent_out}
         label="Sent out"
         type="date"
         required
       />
-    </Dialog>
+    </FormDialog>
   )
-})
+}
 
 function AdminButtons(props) {
   const { onDelete, onEdit } = props
@@ -175,12 +153,10 @@ function InvoicesTable(props) {
 function InvoicesView(props) {
   const [tableData, setTableData] = useState(DATA)
   const [editIdx, setEditIdx] = useState(null)
-
-  const addInvoiceDialog = useRef(null)
-  const editInvoiceDialog = useRef(null)
+  const [showAdd, setShowAdd] = useState(false)
 
   const editData = useMemo(() => {
-    let entry = {}
+    let entry = null
     if (editIdx !== null) {
       entry = { ...tableData[editIdx] }
       entry.date = dateForEditField(entry.date)
@@ -190,12 +166,11 @@ function InvoicesView(props) {
   }, [editIdx, tableData])
 
   function showAddInvoiceDialog() {
-    addInvoiceDialog.current.show()
+    setShowAdd(true)
   }
 
   function showEditInvoiceDialog(idx) {
     setEditIdx(idx)
-    editInvoiceDialog.current.show()
   }
 
   function handleAddInvoiceSubmit(data) {
@@ -203,10 +178,11 @@ function InvoicesView(props) {
     entry.date = formatDateValue(entry.date)
     entry.sent_out = formatDateValue(entry.sent_out)
     setTableData((prev) => [entry, ...prev])
+    setShowAdd(false)
   }
 
   function handleDeleteInvoice(idx) {
-    const confirmed = confirm('Are you sure you want to delete this entry?')
+    const confirmed = confirm('Are you sure you want to delete this invoice?')
     if (confirmed) {
       setTableData((prev) => {
         const next = [...prev]
@@ -225,19 +201,24 @@ function InvoicesView(props) {
       next[editIdx] = entry
       return next
     })
+    setEditIdx(null)
   }
 
   return (
     <>
-      <AddInvoiceDialog
-        ref={addInvoiceDialog}
-        onSubmit={handleAddInvoiceSubmit}
-      />
-      <EditInvoiceDialog
-        data={editData}
-        ref={editInvoiceDialog}
-        onSubmit={handleEditInvoiceSubmit}
-      />
+      {showAdd ? (
+        <AddInvoiceDialog
+          onCancel={() => setShowAdd(false)}
+          onSubmit={handleAddInvoiceSubmit}
+        />
+      ) : null}
+      {editData !== null ? (
+        <EditInvoiceDialog
+          data={editData}
+          onCancel={() => setEditIdx(null)}
+          onSubmit={handleEditInvoiceSubmit}
+        />
+      ) : null}
       <div className="flex items-center py-4">
         <AddButton onClick={showAddInvoiceDialog}>Add invoice</AddButton>
       </div>

@@ -1,27 +1,17 @@
-import { forwardRef, useImperativeHandle, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
 
 import { IoCloseCircle } from 'react-icons/io5'
 
-const Dialog = forwardRef(function AddInvoiceDialog(props, ref) {
-  const { children, onSubmit, title } = props
+const FormDialog = function FormDialog(props) {
+  const { children, onCancel, onSubmit, title } = props
   const dialogRef = useRef(null)
+  const formRef = useRef(null)
 
-  useImperativeHandle(
-    ref,
-    () => {
-      return {
-        hide() {
-          dialogRef.current.close()
-        },
-        show() {
-          dialogRef.current.showModal()
-        },
-      }
-    },
-    [],
-  )
+  useEffect(() => {
+    dialogRef.current.showModal()
+  }, [])
 
   function submitHandler(evt) {
     evt.preventDefault()
@@ -39,6 +29,12 @@ const Dialog = forwardRef(function AddInvoiceDialog(props, ref) {
     onSubmit(data, evt)
   }
 
+  function cancelHandler(evt) {
+    formRef.current.reset()
+    dialogRef.current.close()
+    onCancel()
+  }
+
   return (
     <dialog
       className="max-h-2/3 justify-between rounded-xl border-none bg-white p-8 shadow-2xl"
@@ -49,20 +45,18 @@ const Dialog = forwardRef(function AddInvoiceDialog(props, ref) {
         <IoCloseCircle
           className="cursor-pointer transition-all hover:rotate-90"
           size={32}
-          onClick={() => dialogRef.current.close()}
+          onClick={cancelHandler}
         />
       </div>
-      <form onSubmit={submitHandler}>
+      <form ref={formRef} onSubmit={submitHandler}>
         {children}
-        <div className="mt-8 flex items-center justify-between border-x-0 border-b-0 border-t border-solid border-gray-200 pt-6">
-          <CancelButton onClick={() => dialogRef.current.close()}>
-            Cancel
-          </CancelButton>
+        <footer className="mt-8 flex items-center justify-between border-x-0 border-b-0 border-t border-solid border-gray-200 pt-6">
+          <CancelButton onClick={cancelHandler}>Cancel</CancelButton>
           <SubmitButton>Submit</SubmitButton>
-        </div>
+        </footer>
       </form>
     </dialog>
   )
-})
+}
 
-export default Dialog
+export default FormDialog

@@ -1,14 +1,16 @@
 'use client'
 
-import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
+import { useImperativeHandle, useMemo, useState } from 'react'
 
 import { AddButton } from '@ors/components/ui/Button/Button'
 
-import Dialog from './Dialog'
+import FormDialog from './FormDialog'
 import { FieldInput, FieldSelect } from './Inputs'
 import { COUNTRIES } from './constants'
 import styles from './table.module.css'
-import { formatDateValue } from './utils'
+import { dateForEditField, formatDateValue } from './utils'
+
+import { IoPencil, IoTrash } from 'react-icons/io5'
 
 const COLUMNS = [
   { field: 'country', label: 'Country' },
@@ -56,10 +58,20 @@ function populateData() {
 
 populateData()
 
-const AddPaymentDialog = forwardRef(function AddPaymentDialog(props, ref) {
+const AddPaymentDialog = function AddPaymentDialog(props) {
+  return <PaymentDialog title="Add payment" {...props} />
+}
+
+const EditPaymentDialog = function EditPaymentDialog(props) {
+  return <PaymentDialog title="Edit payment" {...props} />
+}
+
+const PaymentDialog = function PaymentDialog(props) {
+  const { data, title, ...dialogProps } = props
+
   return (
-    <Dialog ref={ref} title="Add payment" {...props}>
-      <FieldSelect id="iso3" label="Country" required>
+    <FormDialog title={title} {...dialogProps}>
+      <FieldSelect id="iso3" defaultValue={data?.iso3} label="Country" required>
         <option value=""> - </option>
         {COUNTRIES.map((c) => (
           <option key={c.iso3} data-name={c.name_alt} value={c.iso3}>
@@ -67,27 +79,74 @@ const AddPaymentDialog = forwardRef(function AddPaymentDialog(props, ref) {
           </option>
         ))}
       </FieldSelect>
-      <FieldInput id="date" label="Date" type="date" required />
-      <FieldInput id="amount_usd" label="Amount (USD)" type="text" required />
+      <FieldInput
+        id="date"
+        defaultValue={data?.date}
+        label="Date"
+        type="date"
+        required
+      />
+      <FieldInput
+        id="amount_usd"
+        defaultValue={data?.amount_usd}
+        label="Amount (USD)"
+        type="text"
+        required
+      />
       <FieldInput
         id="amount_national"
+        defaultValue={data?.amount_national}
         label="Amount (national currency)"
         type="text"
         required
       />
-      <FieldInput id="gain_loss" label="Gain / Loss" type="text" required />
-      <FieldInput id="acknowledged" label="Acknowledged" type="checkbox" />
+      <FieldInput
+        id="gain_loss"
+        defaultValue={data?.gain_loss}
+        label="Gain / Loss"
+        type="text"
+        required
+      />
+      <FieldInput
+        id="acknowledged"
+        defaultChecked={data?.acknowledged}
+        label="Acknowledged"
+        type="checkbox"
+      />
       <FieldInput
         id="promissory_note"
+        defaultChecked={data?.promissory_note}
         label="Promissory note"
         type="checkbox"
       />
-    </Dialog>
+    </FormDialog>
   )
-})
+}
+
+function AdminButtons(props) {
+  const { onDelete, onEdit } = props
+  return (
+    <div className={styles.adminButtons}>
+      <button
+        className="cursor-pointer rounded-lg border border-solid border-secondary bg-white text-secondary hover:bg-secondary hover:text-white"
+        title="Edit"
+        onClick={onEdit}
+      >
+        <IoPencil />
+      </button>
+      <button
+        className="cursor-pointer rounded-lg border border-solid border-error bg-white text-error hover:bg-error hover:text-white"
+        title="Delete"
+        onClick={onDelete}
+      >
+        <IoTrash />
+      </button>
+    </div>
+  )
+}
 
 function PaymentsTable(props) {
-  const { rowData } = props
+  const { enableEdit, onDelete, onEdit, rowData } = props
 
   const hCols = []
   for (let i = 0; i < COLUMNS.length; i++) {
@@ -98,7 +157,19 @@ function PaymentsTable(props) {
   for (let j = 0; j < rowData.length; j++) {
     const row = []
     for (let i = 0; i < COLUMNS.length; i++) {
-      row.push(<td key={i}>{rowData[j][COLUMNS[i].field]}</td>)
+      row.push(
+        <td key={i}>
+          <div className="flex justify-between">
+            {rowData[j][COLUMNS[i].field]}
+            {!i && enableEdit ? (
+              <AdminButtons
+                onDelete={() => onDelete(j)}
+                onEdit={() => onEdit(j)}
+              />
+            ) : null}
+          </div>
+        </td>,
+      )
     }
     rows.push(<tr key={j}>{row}</tr>)
   }
@@ -115,11 +186,26 @@ function PaymentsTable(props) {
 
 function PaymentsView(props) {
   const [tableData, setTableData] = useState(DATA)
+  const [editIdx, setEditIdx] = useState(null)
+  const [showAdd, setShowAdd] = useState(false)
 
-  const addInvoiceModal = useRef(null)
+  const editData = useMemo(() => {
+    let entry = null
+    if (editIdx !== null) {
+      entry = { ...tableData[editIdx] }
+      entry.acknowledged = entry.acknowledged === 'Yes' ? true : false
+      entry.promissory_note = entry.promissory_note === 'Yes' ? true : false
+      entry.date = dateForEditField(entry.date)
+    }
+    return entry
+  }, [editIdx, tableData])
 
-  function showAddPaymentModal() {
-    addInvoiceModal.current.show()
+  function showAddPaymentDialog() {
+    setShowAdd(true)
+  }
+
+  function showEditPaymentDialog(idx) {
+    setEditIdx(idx)
   }
 
   function handleAddPaymentSubmit(data) {
@@ -128,18 +214,57 @@ function PaymentsView(props) {
     entry.promissory_note = !entry.promissory_note ? 'No' : 'Yes'
     entry.date = formatDateValue(entry.date)
     setTableData((prev) => [entry, ...prev])
+    setShowAdd(false)
+  }
+
+  function handleDeletePayment(idx) {
+    const confirmed = confirm('Are you sure you want to delete this payment?')
+    if (confirmed) {
+      setTableData((prev) => {
+        const next = [...prev]
+        next.splice(idx, 1)
+        return next
+      })
+    }
+  }
+
+  function handleEditPaymentSubmit(data) {
+    const entry = { ...data }
+    entry.acknowledged = !entry.acknowledged ? 'No' : 'Yes'
+    entry.promissory_note = !entry.promissory_note ? 'No' : 'Yes'
+    entry.date = formatDateValue(entry.date)
+    setTableData((prev) => {
+      const next = [...prev]
+      next[editIdx] = entry
+      return next
+    })
+    setEditIdx(null)
   }
 
   return (
     <>
-      <AddPaymentDialog
-        ref={addInvoiceModal}
-        onSubmit={handleAddPaymentSubmit}
-      />
+      {showAdd ? (
+        <AddPaymentDialog
+          onCancel={() => setShowAdd(false)}
+          onSubmit={handleAddPaymentSubmit}
+        />
+      ) : null}
+      {editData !== null ? (
+        <EditPaymentDialog
+          data={editData}
+          onCancel={() => setEditIdx(null)}
+          onSubmit={handleEditPaymentSubmit}
+        />
+      ) : null}
       <div className="flex items-center py-4">
-        <AddButton onClick={showAddPaymentModal}>Add payment</AddButton>
+        <AddButton onClick={showAddPaymentDialog}>Add payment</AddButton>
       </div>
-      <PaymentsTable rowData={tableData} />
+      <PaymentsTable
+        enableEdit={true}
+        rowData={tableData}
+        onDelete={handleDeletePayment}
+        onEdit={showEditPaymentDialog}
+      />
     </>
   )
 }
