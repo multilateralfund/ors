@@ -194,6 +194,7 @@ export type CPVersionInfo = {
 
 export type Settings = {
   blend_types: [string, string][]
+  business_plan_statuses: [string, string][]
   cp_reports: {
     max_year: number
     min_year: number

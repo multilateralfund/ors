@@ -22,7 +22,7 @@ function FacilityCellRenderer({ addFacility, ...props }: any) {
       props.context?.section.id as ValidationSchemaKeys
     ]
 
-  const errors = validation.global.filter((err) =>
+  const errors = validation?.global.filter((err) =>
     (err?.highlight || []).includes('+ Add facility'),
   )
   if (props.data.rowType === 'control') {
@@ -33,7 +33,7 @@ function FacilityCellRenderer({ addFacility, ...props }: any) {
         onClick={addFacility}
       >
         + Add facility
-        {errors.length ? (
+        {errors?.length ? (
           <div className="absolute right-0">
             <CellValidationAlert errors={errors} />
           </div>

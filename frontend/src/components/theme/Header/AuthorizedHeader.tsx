@@ -1,11 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 
-import { useEffect, useState } from 'react'
-
 import { AnimatePresence } from 'framer-motion'
 import { isFunction } from 'lodash'
-import { usePathname } from 'next/navigation'
 
 // import CollapseInOut from '@ors/components/manage/Transitions/CollapseInOut'
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
@@ -18,12 +15,6 @@ import HeaderNavigation from './HeaderNavigation'
 
 export default function Header() {
   const { HeaderTitle } = useStore((state) => state.header)
-  const [isCP, setIsCP] = useState(false)
-  const pathname = usePathname()
-
-  useEffect(() => {
-    setIsCP(pathname === '/country-programme/reports')
-  }, [pathname, setIsCP])
 
   return (
     <FadeInOut className="header-motion">
@@ -40,10 +31,7 @@ export default function Header() {
           </div>
         </div>
         <div className="container relative">
-          <div
-            id="header-title"
-            className={`${isCP ? 'mx-auto max-w-screen-xl' : ''}`}
-          >
+          <div id="header-title">
             <AnimatePresence>
               {isFunction(HeaderTitle) && <HeaderTitle />}
               {!!HeaderTitle && !isFunction(HeaderTitle) && HeaderTitle}

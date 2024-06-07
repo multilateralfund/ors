@@ -253,6 +253,8 @@ CHEMICAL_NAME_MAPPING = {
     "(HFC-365mfc=93%, HFC-227ea=7%)": "CustMix-134",
     "HFC-365mfc/HFC-227ea in imported pre-blended polyol": "CustMix-134 in imported pre-blended polyol",
     "HFC-365/227 in imported pre-blended polyol": "CustMix-134 in imported pre-blended polyol",
+    "HFC-365mfc/HFC-227ea en polioles premezclados imp. "
+    "(HFC-365mfc = 93%, HFC-227ea = 7%)": "CustMix-134 in imported pre-blended polyol",
     "HFC-365/227 (93/7)": "CustMix-134",
     "HFC-356mfc": "HFC-365mfc",
     "HFOs1234": "HFO-1234yf",
