@@ -784,6 +784,13 @@ def get_decimal_from_excel_string(string_value):
         return None
 
 
+def decimal_converter(value):
+    try:
+        return decimal.Decimal(value)
+    except decimal.InvalidOperation:
+        return value
+
+
 def check_headers(df, required_columns):
     """
     check if the df has all the required columns
