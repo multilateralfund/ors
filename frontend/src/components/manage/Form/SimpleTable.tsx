@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import React, { useRef, useState } from 'react'
 
 import cx from 'classnames'
 
 import { defaultColDef as globalColDef } from '@ors/config/Table/columnsDef'
+import components from '@ors/config/Table/components'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import AgHeaderComponent from '@ors/components/manage/AgComponents/AgHeaderComponent'
@@ -136,17 +137,83 @@ function apiForEachNodeSetup(rowData: any) {
   return iterator
 }
 
-function SimpleTable(props: any) {
-  const { Toolbar, columnDefs, context, defaultColDef, rowData } = props
+function apiGetRowNodeSetup(rowData: any) {
+  function iterator(row_id: any) {
+    let result = null
+    for (let i = 0; i < rowData.length; i++) {
+      if (rowData[i].row_id === row_id) {
+        result = rowData[i]
+        break
+      }
+    }
+    return result
+  }
+  return iterator
+}
 
-  const [fullScreen, setFullScreen] = useState(false)
+function getCellEditable(colDef: any, cellProps: any): any {
+  let result = null
 
-  const combinedColDef = { ...globalColDef, ...defaultColDef }
+  if (colDef.editable && typeof colDef.editable === 'function') {
+    result = colDef.editable(cellProps)
+  } else if (colDef.editable !== undefined) {
+    result = colDef.editable
+  }
 
-  const counts = countHeader(columnDefs)
+  return result
+}
 
+const TableCell = React.memo(function TableCell(props: any) {
+  const { cellProps, colDef, edit, iCol, iRow, onStartEdit, onStopEdit } = props
+
+  const cellRef = useRef(null)
+
+  const isEditableCell = getCellEditable(colDef, cellProps)
+  const isEditCell = getCellEditable && edit
+
+  function handleStopEditing() {
+    const savedValue = cellRef.current.getValue()
+    onStopEdit(iRow, iCol, savedValue)
+  }
+
+  const cellClass = getCellClass(colDef, cellProps)
+  const cellRendererParams = getCellRendererParams(colDef, cellProps)
+  const CellRenderer = isEditCell
+    ? components[colDef['cellEditor']]
+    : AgCellRenderer
+  return (
+    <td
+      className={`border border-x border-solid border-gray-200 first:border-l-0 last:border-r-0 ${cellClass}`}
+      onDoubleClick={() => (isEditableCell ? onStartEdit(iRow, iCol) : null)}
+    >
+      <div
+        className={`flex ${cellClass.indexOf('text-center') !== -1 ? 'justify-center' : ''}`}
+      >
+        <CellRenderer
+          ref={cellRef}
+          value={cellProps.data[colDef.field]}
+          {...cellProps}
+          {...cellRendererParams}
+          stopEditing={handleStopEditing}
+        />
+      </div>
+    </td>
+  )
+})
+
+function makeRows(
+  rowData,
+  counts,
+  combinedColDef,
+  context,
+  editableTable,
+  editCell,
+  onStartEdit,
+  onStopEdit,
+) {
   const rows = []
 
+  const t0 = performance.now()
   for (let i = 0; i < rowData.length; i++) {
     const row = []
     const data = rowData[i]
@@ -157,32 +224,30 @@ function SimpleTable(props: any) {
         getColId: () => colDef.field ?? colDef.id,
       }
       const cellProps = {
-        api: { forEachNode: apiForEachNodeSetup(rowData) },
+        api: {
+          applyTransaction: () => null,
+          flashCells: () => null,
+          forEachNode: apiForEachNodeSetup(rowData),
+          getRowNode: apiGetRowNodeSetup(rowData),
+        },
         colDef,
         column,
         context,
         data,
       }
-      const cellClass = getCellClass(colDef, cellProps)
-      const cellRendererParams = getCellRendererParams(colDef, cellProps)
-      const cellRenderer = (
-        <AgCellRenderer
-          value={data[colDef.field]}
-          {...cellProps}
-          {...cellRendererParams}
-        />
-      )
+      const edit =
+        editableTable && editCell && editCell[0] == i && editCell[1] == j
       row.push(
-        <td
+        <TableCell
           key={j}
-          className={`border border-x border-solid border-gray-200 first:border-l-0 last:border-r-0 ${cellClass}`}
-        >
-          <div
-            className={`flex ${cellClass.indexOf('text-center') !== -1 ? 'justify-center' : ''}`}
-          >
-            {cellRenderer}
-          </div>
-        </td>,
+          cellProps={cellProps}
+          colDef={colDef}
+          edit={edit}
+          iCol={j}
+          iRow={i}
+          onStartEdit={onStartEdit}
+          onStopEdit={onStopEdit}
+        />,
       )
     }
     rows.push(
@@ -191,6 +256,39 @@ function SimpleTable(props: any) {
       </tr>,
     )
   }
+  return rows
+}
+
+function SimpleTable(props: any) {
+  const { Toolbar, columnDefs, context, defaultColDef, editable, rowData } =
+    props
+
+  const [fullScreen, setFullScreen] = useState(false)
+  const [editingCell, setEditingCell] = useState(null)
+
+  const combinedColDef = { ...globalColDef, ...defaultColDef }
+
+  const counts = countHeader(columnDefs)
+
+  function handleStartEdit(row, col) {
+    setEditingCell([row, col])
+  }
+
+  function handleStopEdit(row, col, value) {
+    console.log(row, col, value)
+    setEditingCell(null)
+  }
+
+  const rows = makeRows(
+    rowData,
+    counts,
+    combinedColDef,
+    context,
+    editable,
+    editingCell,
+    handleStartEdit,
+    handleStopEdit,
+  )
 
   return (
     <>
