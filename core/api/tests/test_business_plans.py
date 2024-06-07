@@ -3,13 +3,18 @@ import io
 import openpyxl
 import pytest
 from django.urls import reverse
+from rest_framework.test import APIClient
 
 from core.api.tests.base import BaseTest
 from core.api.tests.conftest import pdf_text
-from core.api.tests.factories import AgencyFactory, BusinessPlanFactory
+from core.api.tests.factories import (
+    AgencyFactory,
+    BusinessPlanFactory,
+    SubstanceFactory,
+)
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008, W0221
+# pylint: disable=C8008, W0221, R0913
 
 
 class TestBPExport(BaseTest):
@@ -140,3 +145,240 @@ class TestBPList(BaseTest):
         assert response.status_code == 200
         assert len(response.json()) == 2
         assert all(bp["year_end"] == 2023 for bp in response.json())
+
+
+@pytest.fixture(name="_setup_bp_record_create")
+def setup_bp_record_create(
+    business_plan,
+    country_ro,
+    sector,
+    subsector,
+    project_type,
+    bp_chemical_type,
+    substance,
+    blend,
+):
+    return {
+        "business_plan_id": business_plan.id,
+        "title": "Planu",
+        "country_id": country_ro.id,
+        "lvc_status": "LVC",
+        "project_type_id": project_type.id,
+        "bp_chemical_type_id": bp_chemical_type.id,
+        "substances": [substance.id],
+        "blends": [blend.id],
+        "sector_id": sector.id,
+        "subsector_id": subsector.id,
+        "bp_type": "A",
+        "is_multi_year": False,
+        "reason_for_exceeding": "Planu, planu, planu, planu, planu",
+        "remarks": "Merge bine, bine, bine ca aeroplanu",
+        "remarks_additional": "Poate si la anu / Daca merge bine planu stau ca barosanu.",
+        "values": [
+            {
+                "year": 2020,
+                "value_usd": 100,
+                "value_odp": 100,
+                "value_mt": 100,
+            },
+            {
+                "year": 2021,
+                "value_usd": 200,
+                "value_odp": 200,
+                "value_mt": 200,
+            },
+        ],
+    }
+
+
+class TestBPRecordCreate:
+    client = APIClient()
+    url = reverse("bprecord-list")
+
+    def test_create_anon(self, _setup_bp_record_create):
+        response = self.client.post(self.url, _setup_bp_record_create, format="json")
+        assert response.status_code == 403
+
+    def test_create_wrong_record_values(self, user, _setup_bp_record_create):
+        self.client.force_authenticate(user=user)
+        data = _setup_bp_record_create
+        data["values"] = [
+            {
+                "year": 2025,  # wrong year
+                "value_usd": 100,
+                "value_odp": 100,
+                "value_mt": 100,
+            }
+        ]
+        response = self.client.post(self.url, _setup_bp_record_create, format="json")
+
+        assert response.status_code == 400
+        assert (
+            response.data["general_error"]
+            == "BP record values year not in business plan interval"
+        )
+
+    def test_create_record(
+        self,
+        user,
+        _setup_bp_record_create,
+        business_plan,
+        country_ro,
+        substance,
+        blend,
+        sector,
+        subsector,
+        project_type,
+        bp_chemical_type,
+    ):
+        self.client.force_authenticate(user=user)
+        response = self.client.post(self.url, _setup_bp_record_create, format="json")
+
+        assert response.status_code == 201
+        assert response.data["business_plan_id"] == business_plan.id
+        assert response.data["title"] == "Planu"
+        assert response.data["country_id"] == country_ro.id
+        assert response.data["lvc_status"] == "LVC"
+        assert response.data["project_type_id"] == project_type.id
+        assert response.data["bp_chemical_type_id"] == bp_chemical_type.id
+        assert response.data["substances"] == [substance.id]
+        assert response.data["blends"] == [blend.id]
+        assert response.data["sector_id"] == sector.id
+        assert response.data["subsector_id"] == subsector.id
+        assert response.data["bp_type"] == "A"
+        assert response.data["is_multi_year"] is False
+        assert (
+            response.data["reason_for_exceeding"] == "Planu, planu, planu, planu, planu"
+        )
+        assert response.data["remarks"] == "Merge bine, bine, bine ca aeroplanu"
+        assert (
+            response.data["remarks_additional"]
+            == "Poate si la anu / Daca merge bine planu stau ca barosanu."
+        )
+        assert response.data["values"][0]["year"] == 2020
+        assert response.data["values"][1]["year"] == 2021
+
+
+class TestBPRecordUpdate:
+    client = APIClient()
+
+    def test_update_wrong_record_values(self, user, _setup_bp_record_create):
+        self.client.force_authenticate(user=user)
+
+        url = reverse("bprecord-list")
+        response = self.client.post(url, _setup_bp_record_create, format="json")
+        assert response.status_code == 201
+        bp_record_id = response.data["id"]
+
+        url = reverse("bprecord-list") + f"{bp_record_id}/"
+        data = _setup_bp_record_create
+        data["values"] = [
+            {
+                "year": 2025,  # wrong year
+                "value_usd": 100,
+                "value_odp": 100,
+                "value_mt": 100,
+            }
+        ]
+        response = self.client.put(url, data, format="json")
+
+        assert response.status_code == 400
+        assert (
+            response.data["general_error"]
+            == "BP record values year not in business plan interval"
+        )
+
+    def test_update_record(
+        self,
+        user,
+        _setup_bp_record_create,
+        business_plan,
+        substance,
+    ):
+        self.client.force_authenticate(user=user)
+
+        url = reverse("bprecord-list")
+        response = self.client.post(url, _setup_bp_record_create, format="json")
+        assert response.status_code == 201
+        bp_record_id = response.data["id"]
+
+        url = reverse("bprecord-list") + f"{bp_record_id}/"
+        data = _setup_bp_record_create
+        substance2 = SubstanceFactory.create(name="substance2")
+        data["substances"] = [substance.id, substance2.id]
+        data["blends"] = []
+        data["title"] = "Planu 2"
+        data["bp_type"] = "P"
+        data["is_multi_year"] = True
+        data["remarks"] = "Merge rau"
+        data["values"] = [
+            {
+                "year": 2022,
+                "value_usd": 300,
+                "value_odp": 300,
+                "value_mt": 300,
+            }
+        ]
+        response = self.client.put(url, data, format="json")
+
+        assert response.status_code == 200
+        assert response.data["business_plan_id"] == business_plan.id
+        assert response.data["title"] == "Planu 2"
+        assert response.data["substances"] == [substance.id, substance2.id]
+        assert response.data["blends"] == []
+        assert response.data["bp_type"] == "P"
+        assert response.data["is_multi_year"] is True
+        assert response.data["remarks"] == "Merge rau"
+        assert response.data["values"][0]["year"] == 2022
+
+
+@pytest.fixture(name="_setup_new_business_plan_create")
+def setup_new_business_plan_create(agency):
+    return {
+        "agency_id": agency.id,
+        "year_start": 2020,
+        "year_end": 2022,
+        "status": "Draft",
+    }
+
+
+class TestBPCreate:
+    client = APIClient()
+
+    def test_create_business_plan(self, user, agency, _setup_new_business_plan_create):
+        # create new business plan
+        self.client.force_authenticate(user=user)
+        url = reverse("businessplan-list")
+        response = self.client.post(url, _setup_new_business_plan_create, format="json")
+
+        assert response.status_code == 201
+        assert response.data["status"] == "Draft"
+        assert response.data["year_start"] == 2020
+        assert response.data["year_end"] == 2022
+        assert response.data["agency_id"] == agency.id
+
+
+class TestBPStatusUpdate:
+    client = APIClient()
+
+    def test_without_login(self, business_plan):
+        url = reverse("business-plan-status", kwargs={"id": business_plan.id})
+        response = self.client.put(url, {"status": "Approved"})
+        assert response.status_code == 403
+
+    def test_invalid_status(self, user, business_plan):
+        self.client.force_authenticate(user=user)
+        url = reverse("business-plan-status", kwargs={"id": business_plan.id})
+        response = self.client.put(url, {"status": "Draft"})
+
+        assert response.status_code == 400
+        assert "Invalid value" in response.data["status"]
+
+    def test_update_status(self, user, business_plan):
+        self.client.force_authenticate(user=user)
+        url = reverse("business-plan-status", kwargs={"id": business_plan.id})
+        response = self.client.put(url, {"status": "Approved"})
+
+        assert response.status_code == 200
+        assert response.data["status"] == "Approved"
+        assert response.data["id"] == business_plan.id
