@@ -134,7 +134,7 @@ export default async function RootLayout({
     <html
       lang="en"
       {...(theme.value ? { 'data-theme': theme.value } : {})}
-      className={robotoCondensed.className}
+      className={`${robotoCondensed.className} ${robotoCondensed.variable}`}
       data-layout={currentView?.layout}
       data-printing="no"
       data-ssr="yes"

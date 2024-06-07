@@ -5,8 +5,6 @@ import {
 } from '@mui/material'
 import cx from 'classnames'
 
-import { robotoCondensed } from '@ors/themes/fonts'
-
 import BackArrow from './back-arrow.svg'
 import NextArrow from './next-arrow.svg'
 
@@ -29,7 +27,6 @@ export function Pagination({
     <MuiPagination
       className={cx(
         'mb-8 inline-block flex-nowrap rounded-sm',
-        robotoCondensed.className,
         className,
       )}
       count={count}
