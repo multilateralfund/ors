@@ -9,6 +9,7 @@ import { each, find, findIndex, includes, union } from 'lodash'
 
 import { NewAddSubstanceDropdowns } from '@ors/components/manage/Blocks/Section/SectionA/Create/NewAddSubstanceDropdowns'
 import { OldAddSubstanceDropdowns } from '@ors/components/manage/Blocks/Section/SectionA/Create/OldAddSubstanceDropdowns'
+import SimpleTable from '@ors/components/manage/Form/SimpleTable'
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { getResults } from '@ors/helpers/Api/Api'
@@ -253,45 +254,14 @@ export default function SectionACreate(props: SectionACreateProps) {
           </Button>
         </div>
       )}
-      <Table
+      <SimpleTable
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
-        gridRef={grid}
-        headerDepth={3}
-        pinnedBottomRowData={pinnedBottomRowData}
-        rowData={rowData}
+        editable={true}
+        rowData={[...rowData, ...pinnedBottomRowData]}
         defaultColDef={{
           ...TableProps.defaultColDef,
           ...gridOptions.defaultColDef,
-        }}
-        onCellValueChanged={(event) => {
-          const usages = getUsagesOnCellValueChange(event)
-          const newData = [...form.section_a]
-          const index = findIndex(
-            newData,
-            (row) => row.row_id == event.data.row_id,
-          )
-          if (index > -1) {
-            // Should not be posible for index to be -1
-            newData.splice(index, 1, {
-              ...event.data,
-              record_usages: usages,
-            })
-            setForm({ ...form, section_a: newData })
-          }
-        }}
-        onRowDataUpdated={() => {
-          if (newNode.current) {
-            scrollToElement({
-              callback: () => {
-                grid.current.api.flashCells({
-                  rowNodes: [newNode.current],
-                })
-                newNode.current = undefined
-              },
-              selectors: `.ag-row[row-id=${newNode.current.data.row_id}]`,
-            })
-          }
         }}
       />
       {addSubstanceModal && (
