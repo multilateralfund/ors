@@ -199,6 +199,25 @@ class TestBPRecordCreate:
         response = self.client.post(self.url, _setup_bp_record_create, format="json")
         assert response.status_code == 403
 
+    def test_create_wrong_record_values(self, user, _setup_bp_record_create):
+        self.client.force_authenticate(user=user)
+        data = _setup_bp_record_create
+        data["values"] = [
+            {
+                "year": 2025,  # wrong year
+                "value_usd": 100,
+                "value_odp": 100,
+                "value_mt": 100,
+            }
+        ]
+        response = self.client.post(self.url, _setup_bp_record_create, format="json")
+
+        assert response.status_code == 400
+        assert (
+            response.data["general_error"]
+            == "BP record values year not in business plan interval"
+        )
+
     def test_create_record(
         self,
         user,
@@ -242,6 +261,32 @@ class TestBPRecordCreate:
 
 class TestBPRecordUpdate:
     client = APIClient()
+
+    def test_update_wrong_record_values(self, user, _setup_bp_record_create):
+        self.client.force_authenticate(user=user)
+
+        url = reverse("bprecord-list")
+        response = self.client.post(url, _setup_bp_record_create, format="json")
+        assert response.status_code == 201
+        bp_record_id = response.data["id"]
+
+        url = reverse("bprecord-list") + f"{bp_record_id}/"
+        data = _setup_bp_record_create
+        data["values"] = [
+            {
+                "year": 2025,  # wrong year
+                "value_usd": 100,
+                "value_odp": 100,
+                "value_mt": 100,
+            }
+        ]
+        response = self.client.put(url, data, format="json")
+
+        assert response.status_code == 400
+        assert (
+            response.data["general_error"]
+            == "BP record values year not in business plan interval"
+        )
 
     def test_update_record(
         self,
@@ -318,13 +363,13 @@ class TestBPStatusUpdate:
 
     def test_without_login(self, business_plan):
         url = reverse("business-plan-status", kwargs={"id": business_plan.id})
-        response = self.client.put(url, {"status": "Draft"})
+        response = self.client.put(url, {"status": "Approved"})
         assert response.status_code == 403
 
     def test_invalid_status(self, user, business_plan):
         self.client.force_authenticate(user=user)
         url = reverse("business-plan-status", kwargs={"id": business_plan.id})
-        response = self.client.put(url, {"status": "invalid"})
+        response = self.client.put(url, {"status": "Draft"})
 
         assert response.status_code == 400
         assert "Invalid value" in response.data["status"]
@@ -332,8 +377,8 @@ class TestBPStatusUpdate:
     def test_update_status(self, user, business_plan):
         self.client.force_authenticate(user=user)
         url = reverse("business-plan-status", kwargs={"id": business_plan.id})
-        response = self.client.put(url, {"status": "Draft"})
+        response = self.client.put(url, {"status": "Approved"})
 
         assert response.status_code == 200
-        assert response.data["status"] == "Draft"
+        assert response.data["status"] == "Approved"
         assert response.data["id"] == business_plan.id

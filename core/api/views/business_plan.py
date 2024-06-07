@@ -123,7 +123,7 @@ class BPStatusUpdateView(generics.GenericAPIView):
             properties={
                 "status": openapi.Schema(
                     type=openapi.TYPE_STRING,
-                    enum=BusinessPlan.Status.choices,
+                    description="Approved or Rejected",
                 )
             },
         ),
@@ -131,7 +131,10 @@ class BPStatusUpdateView(generics.GenericAPIView):
     def put(self, request, *args, **kwargs):
         business_plan = self.get_object()
         bp_status = request.data.get("status")
-        if bp_status not in BusinessPlan.Status.values:
+        if bp_status not in (
+            BusinessPlan.Status.approved,
+            BusinessPlan.Status.rejected,
+        ):
             return Response(
                 {"status": f"Invalid value {bp_status}"},
                 status=status.HTTP_400_BAD_REQUEST,
