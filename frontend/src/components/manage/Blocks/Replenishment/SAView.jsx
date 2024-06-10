@@ -68,6 +68,7 @@ function populateData() {
   for (let i = 0; i < COUNTRIES.length; i++) {
     DATA.push({
       ...DATA[0],
+      adj_un_soa: COUNTRIES[i].iso3 === 'USA' ? 22.0 : DATA[0].adj_un_soa,
       country: COUNTRIES[i].name_alt,
       ferm_cur: `${COUNTRIES[i].name_alt}n fiat`,
       iso3: COUNTRIES[i].iso3,
