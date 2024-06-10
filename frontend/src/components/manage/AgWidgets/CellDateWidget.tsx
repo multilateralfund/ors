@@ -54,6 +54,7 @@ export const CellDateWidget = memo(
 
       const onKeyDown = (event: any) => {
         if (finishedEditingPressed(event)) {
+          event.preventDefault()
           props.stopEditing()
         }
       }

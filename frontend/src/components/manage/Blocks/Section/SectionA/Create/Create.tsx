@@ -263,6 +263,31 @@ export default function SectionACreate(props: SectionACreateProps) {
           ...TableProps.defaultColDef,
           ...gridOptions.defaultColDef,
         }}
+        onEdit={(value: any, ctx: any) => {
+          // TODO: Handle new row / delete row
+          console.log(value, ctx)
+          const newData = new Array(form.section_a.length)
+          for (let i = 0; i < newData.length; i++) {
+            const oldRow = form.section_a[i]
+            if (oldRow.row_id === rowData[ctx.iRow].row_id) {
+              if (ctx.colDef.category === 'usage') {
+                const usages = [...(rowData[ctx.iRow].record_usages as any[])]
+                for (let j = 0; j < usages.length; j++) {
+                  if (usages[j].usage_id == ctx.colDef.id) {
+                    usages[j] = { ...usages[j], quantity: value }
+                    break
+                  }
+                }
+                newData[i] = { ...oldRow, record_usages: usages }
+              } else {
+                newData[i] = { ...rowData[ctx.iRow], [ctx.colDef.field]: value }
+              }
+            } else {
+              newData[i] = oldRow
+            }
+          }
+          setForm({ ...form, section_a: newData })
+        }}
       />
       {addSubstanceModal && (
         <Modal

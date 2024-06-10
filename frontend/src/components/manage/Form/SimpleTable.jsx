@@ -8,22 +8,22 @@ import components from '@ors/config/Table/components'
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import AgHeaderComponent from '@ors/components/manage/AgComponents/AgHeaderComponent'
 
-const ROW_CLASS_RULES: any = [
-  ['ag-row-control', (props: any) => props.data.rowType === 'control'],
-  ['ag-row-error', (props: any) => !!props.data.error],
-  ['ag-row-group', (props: any) => props.data.rowType === 'group'],
-  ['ag-row-hashed', (props: any) => props.data.rowType === 'hashed'],
+const ROW_CLASS_RULES = [
+  ['ag-row-control', (props) => props.data.rowType === 'control'],
+  ['ag-row-error', (props) => !!props.data.error],
+  ['ag-row-group', (props) => props.data.rowType === 'group'],
+  ['ag-row-hashed', (props) => props.data.rowType === 'hashed'],
   [
     'ag-row-sub-total border-b-3 border-primary border-solid border-x-0 border-t-0',
-    (props: any) => props.data.rowType === 'subtotal',
+    (props) => props.data.rowType === 'subtotal',
   ],
   [
     'ag-row-total border-t-3 border-primary border-solid border-x-0 border-b-0',
-    (props: any) => props.data.rowType === 'total',
+    (props) => props.data.rowType === 'total',
   ],
 ]
 
-function countHeader(columnDefs: any, iRow = 0, rows: any = []): any {
+function countHeader(columnDefs, iRow = 0, rows = []) {
   let tCol = 0
   const colDefs = []
 
@@ -48,7 +48,7 @@ function countHeader(columnDefs: any, iRow = 0, rows: any = []): any {
   return { colDefs, depth: iRow, rows, tCol }
 }
 
-function getHeaderComponentParams(colDef: any, cellProps: any): any {
+function getHeaderComponentParams(colDef, cellProps) {
   let result = null
 
   if (
@@ -63,7 +63,7 @@ function getHeaderComponentParams(colDef: any, cellProps: any): any {
   return result
 }
 
-function Header(props: any) {
+function Header(props) {
   const { context, rows } = props
 
   const result = []
@@ -96,7 +96,7 @@ function Header(props: any) {
   return result
 }
 
-function getCellClass(colDef: any, cellProps: any) {
+function getCellClass(colDef, cellProps) {
   let result = null
 
   if (colDef.cellClass && typeof colDef.cellClass === 'string') {
@@ -108,7 +108,7 @@ function getCellClass(colDef: any, cellProps: any) {
   return result
 }
 
-function getCellRendererParams(colDef: any, cellProps: any): any {
+function getCellRendererParams(colDef, cellProps) {
   let result = null
 
   if (colDef.cellRendererParams) {
@@ -118,7 +118,7 @@ function getCellRendererParams(colDef: any, cellProps: any): any {
   return result
 }
 
-function getRowClass(data: any) {
+function getRowClass(data) {
   const result = []
   for (let i = 0; i < ROW_CLASS_RULES.length; i++) {
     if (ROW_CLASS_RULES[i][1]({ data })) {
@@ -128,8 +128,8 @@ function getRowClass(data: any) {
   return result.join(' ')
 }
 
-function apiForEachNodeSetup(rowData: any) {
-  function iterator(callback: any) {
+function apiForEachNodeSetup(rowData) {
+  function iterator(callback) {
     for (let i = 0; i < rowData.length; i++) {
       callback({ data: rowData[i] })
     }
@@ -137,8 +137,8 @@ function apiForEachNodeSetup(rowData: any) {
   return iterator
 }
 
-function apiGetRowNodeSetup(rowData: any) {
-  function iterator(row_id: any) {
+function apiGetRowNodeSetup(rowData) {
+  function iterator(row_id) {
     let result = null
     for (let i = 0; i < rowData.length; i++) {
       if (rowData[i].row_id === row_id) {
@@ -151,7 +151,7 @@ function apiGetRowNodeSetup(rowData: any) {
   return iterator
 }
 
-function getCellEditable(colDef: any, cellProps: any): any {
+function getCellEditable(colDef, cellProps) {
   let result = null
 
   if (colDef.editable && typeof colDef.editable === 'function') {
@@ -163,17 +163,17 @@ function getCellEditable(colDef: any, cellProps: any): any {
   return result
 }
 
-const TableCell = React.memo(function TableCell(props: any) {
+const TableCell = React.memo(function TableCell(props) {
   const { cellProps, colDef, edit, iCol, iRow, onStartEdit, onStopEdit } = props
 
   const cellRef = useRef(null)
 
   const isEditableCell = getCellEditable(colDef, cellProps)
-  const isEditCell = getCellEditable && edit
+  const isEditCell = isEditableCell && edit
 
   function handleStopEditing() {
-    const savedValue = cellRef.current.getValue()
-    onStopEdit(iRow, iCol, savedValue)
+    const savedValue = cellRef.current?.getValue()
+    onStopEdit(savedValue, { colDef, iCol, iRow })
   }
 
   const cellClass = getCellClass(colDef, cellProps)
@@ -183,7 +183,12 @@ const TableCell = React.memo(function TableCell(props: any) {
     : AgCellRenderer
   return (
     <td
-      className={`border border-x border-solid border-gray-200 first:border-l-0 last:border-r-0 ${cellClass}`}
+      className={cx(
+        'border border-x border-solid border-gray-200 outline-2 outline-secondary first:border-l-0 last:border-r-0 focus:outline',
+        { outline: isEditCell },
+        cellClass,
+      )}
+      tabIndex="0"
       onDoubleClick={() => (isEditableCell ? onStartEdit(iRow, iCol) : null)}
     >
       <div
@@ -259,9 +264,16 @@ function makeRows(
   return rows
 }
 
-function SimpleTable(props: any) {
-  const { Toolbar, columnDefs, context, defaultColDef, editable, rowData } =
-    props
+function SimpleTable(props) {
+  const {
+    Toolbar,
+    columnDefs,
+    context,
+    defaultColDef,
+    editable,
+    onEdit,
+    rowData,
+  } = props
 
   const [fullScreen, setFullScreen] = useState(false)
   const [editingCell, setEditingCell] = useState(null)
@@ -274,9 +286,9 @@ function SimpleTable(props: any) {
     setEditingCell([row, col])
   }
 
-  function handleStopEdit(row, col, value) {
-    console.log(row, col, value)
+  function handleStopEdit(value, ctx) {
     setEditingCell(null)
+    onEdit(value, ctx)
   }
 
   const rows = makeRows(

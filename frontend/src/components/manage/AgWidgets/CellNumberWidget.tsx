@@ -11,6 +11,7 @@ import {
 import { ICellEditorParams } from 'ag-grid-community'
 import { isNaN, isNumber } from 'lodash'
 
+import { KEY_ENTER, KEY_TAB } from '@ors/constants'
 import { parseNumber } from '@ors/helpers/Utils/Utils'
 
 function getInput(element: HTMLInputElement) {
@@ -52,6 +53,16 @@ export const CellNumberWidget = memo(
         initialState.highlightAllOnFocus,
       )
       const refInput = useRef<HTMLInputElement>(null)
+
+      function handleKeyDown(evt: any) {
+        if (evt.key === KEY_ENTER) {
+          props.stopEditing()
+        } else if (evt.key == KEY_TAB) {
+          evt.preventDefault()
+          setValue(initialState.value)
+          props.stopEditing()
+        }
+      }
 
       // enforce valid, positive numbers
       function handleValue(evt: any) {
@@ -118,6 +129,7 @@ export const CellNumberWidget = memo(
           type="number"
           value={value}
           onChange={handleValue}
+          onKeyDown={handleKeyDown}
         />
       )
     },

@@ -12,7 +12,7 @@ import {
 import { ICellEditorParams } from 'ag-grid-community'
 import { findIndex, isNumber } from 'lodash'
 
-import { KEY_BACKSPACE, KEY_ENTER, KEY_TAB } from '@ors/constants'
+import { KEY_ENTER, KEY_TAB } from '@ors/constants'
 import { applyTransaction, parseNumber } from '@ors/helpers/Utils/Utils'
 
 function getInput(element: HTMLInputElement) {
@@ -74,6 +74,7 @@ export const CellUsageWidget = memo(
         if (evt.key === KEY_ENTER) {
           props.stopEditing()
         } else if (evt.key == KEY_TAB) {
+          evt.preventDefault()
           setValue(initialState.value)
           props.stopEditing()
         }
