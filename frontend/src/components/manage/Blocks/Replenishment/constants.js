@@ -1,5 +1,7 @@
 import COUNTRIES from './countries'
 
+export const DECIMALS = 5
+
 export const PERIODS = [
   '2021-2023',
   '2018-2020',

@@ -8,17 +8,25 @@ import FormDialog from './FormDialog'
 import { FieldInput, FieldSelect, Input } from './Inputs'
 import Table from './Table'
 import { COUNTRIES } from './constants'
-import { dateForEditField, filterTableData, formatDateValue } from './utils'
+import {
+  dateForEditField,
+  filterTableData,
+  formatDateValue,
+  formatNumberValue,
+  numberForEditField,
+} from './utils'
 
 const COLUMNS = [
   { field: 'country', label: 'Country' },
   { field: 'date', label: 'Date' },
   { field: 'sent_out', label: 'Sent out' },
+  { field: 'amount', label: 'Amount' },
   { field: 'number', label: 'Number' },
 ]
 
 const DATA = [
   {
+    amount: '123,123,123.123',
     country: 'Finland',
     date: '17-MAY-2023',
     iso3: 'FIN',
@@ -83,6 +91,13 @@ const InvoiceDialog = function InvoiceDialog(props) {
         type="date"
         required
       />
+      <FieldInput
+        id="amount"
+        defaultValue={data?.amount}
+        label={COLUMNS[3].label}
+        type="number"
+        required
+      />
     </FormDialog>
   )
 }
@@ -104,6 +119,7 @@ function InvoicesView(props) {
       entry = { ...tableData[editIdx] }
       entry.date = dateForEditField(entry.date)
       entry.sent_out = dateForEditField(entry.sent_out)
+      entry.amount = numberForEditField(entry.amount)
     }
     return entry
   }, [editIdx, tableData])
@@ -124,6 +140,7 @@ function InvoicesView(props) {
     const entry = { ...data }
     entry.date = formatDateValue(entry.date)
     entry.sent_out = formatDateValue(entry.sent_out)
+    entry.amount = formatNumberValue(entry.amount)
     setTableData((prev) => [entry, ...prev])
     setShowAdd(false)
   }
@@ -143,6 +160,7 @@ function InvoicesView(props) {
     const entry = { ...data }
     entry.date = formatDateValue(entry.date)
     entry.sent_out = formatDateValue(entry.sent_out)
+    entry.amount = formatNumberValue(entry.amount)
     setTableData((prev) => {
       const next = [...prev]
       next[editIdx] = entry

@@ -1,4 +1,4 @@
-import { PERIODS } from './constants'
+import { DECIMALS, PERIODS } from './constants'
 
 export function getPathPeriod(path) {
   let result = null
@@ -20,6 +20,12 @@ export function formatDateValue(value) {
   return `${date.getDate()}-${intl.format(date).toUpperCase()}-${date.getFullYear()}`
 }
 
+export function formatNumberValue(value) {
+  return parseFloat(value).toLocaleString('en-US', {
+    minimumFractionDigits: DECIMALS,
+  })
+}
+
 export function dateForEditField(value) {
   const date = new Date(Date.parse(value))
   let day = date.getDate()
@@ -27,6 +33,10 @@ export function dateForEditField(value) {
   day = day < 10 ? `0${day}` : day
   month = month < 10 ? `0${month}` : month
   return `${date.getFullYear()}-${month}-${day}`
+}
+
+export function numberForEditField(value) {
+  return parseFloat(value.replaceAll(',', ''))
 }
 
 export function filterTableData(tableData, searchValue) {

@@ -19,6 +19,11 @@
     display: flex;
     column-gap: 0.5rem;
     visibility: collapse;
+
+    button {
+      padding: 0.3rem;
+      height: fit-content;
+    }
   }
 
   th {

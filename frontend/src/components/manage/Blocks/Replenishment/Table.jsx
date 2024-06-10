@@ -38,8 +38,10 @@ function Table(props) {
     for (let i = 0; i < columns.length; i++) {
       row.push(
         <td key={i}>
-          <div className="flex justify-between">
-            {rowData[j][columns[i].field]}
+          <div className="flex items-center justify-between">
+            <span className="mr-4 whitespace-nowrap">
+              {rowData[j][columns[i].field]}
+            </span>
             {!i && enableEdit ? (
               <AdminButtons
                 onDelete={() => onDelete(j)}
