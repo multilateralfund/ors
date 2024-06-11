@@ -1,6 +1,6 @@
 import cx from 'classnames'
 
-import { IoAddCircle } from 'react-icons/io5'
+import { IoAddCircle, IoRemoveCircle } from 'react-icons/io5'
 
 function BaseButton(props: any) {
   const { children, className, onClick, ...rest } = props
@@ -40,16 +40,35 @@ function SubmitButton(props: any) {
 }
 
 function AddButton(props: any) {
-  const { children, ...rest } = props
+  const { children, className, iconSize, ...rest } = props
   return (
     <BaseButton
-      className="border-primary bg-white text-primary hover:bg-primary hover:text-mlfs-hlYellow"
+      className={cx(
+        'border-primary bg-white text-primary hover:bg-primary hover:text-mlfs-hlYellow',
+        className,
+      )}
       {...rest}
     >
       {children}
-      <IoAddCircle className="ml-1.5" size={18} />
+      <IoAddCircle className="ml-1.5" size={iconSize || 18} />
     </BaseButton>
   )
 }
 
-export { AddButton, BaseButton, CancelButton, SubmitButton }
+function DeleteButton(props: any) {
+  const { children, className, iconSize, ...rest } = props
+  return (
+    <BaseButton
+      className={cx(
+        'border-error bg-white text-error hover:bg-error hover:text-mlfs-hlYellow',
+        className,
+      )}
+      {...rest}
+    >
+      {children}
+      <IoRemoveCircle className="ml-1.5" size={iconSize || 18} />
+    </BaseButton>
+  )
+}
+
+export { AddButton, BaseButton, CancelButton, DeleteButton, SubmitButton }

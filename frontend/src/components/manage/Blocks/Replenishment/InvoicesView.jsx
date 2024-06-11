@@ -2,10 +2,12 @@
 
 import { useMemo, useState } from 'react'
 
-import { AddButton } from '@ors/components/ui/Button/Button'
+import cx from 'classnames'
+
+import { AddButton, DeleteButton } from '@ors/components/ui/Button/Button'
 
 import FormDialog from './FormDialog'
-import { FieldInput, FieldSelect, Input } from './Inputs'
+import { FieldInput, FieldSelect, Input, Select } from './Inputs'
 import Table from './Table'
 import { COUNTRIES } from './constants'
 import {
@@ -48,6 +50,97 @@ function populateData() {
 }
 
 populateData()
+
+function InvoiceAttachments(props) {
+  const [files, setFiles] = useState([{ id: 1 }])
+  const [selected, setSelected] = useState([])
+
+  function handleNewFileField() {
+    setFiles((prev) => [...prev, { id: [...prev].pop().id + 1 }])
+  }
+
+  function handleDeleteSelectedFileFields() {
+    setFiles(function (prev) {
+      const result = []
+      for (let i = 0; i < files.length; i++) {
+        if (!selected.includes(i)) {
+          result.push(files[i])
+        }
+      }
+      if (result.length === 0) {
+        result.push({ id: 1 })
+      }
+      return result
+    })
+    setSelected([])
+  }
+
+  function handleToggleSelected(idx) {
+    function toggle() {
+      setSelected(function (prev) {
+        const result = []
+        let removed = false
+        for (let i = 0; i < prev.length; i++) {
+          if (prev[i] !== idx) {
+            result.push(prev[i])
+          } else {
+            removed = true
+          }
+        }
+
+        if (!removed) {
+          result.push(idx)
+        }
+
+        return result
+      })
+    }
+    return toggle
+  }
+
+  return (
+    <div>
+      <div className="font-sm flex justify-between">
+        <AddButton
+          className="p-[0px] text-sm"
+          iconSize={14}
+          type="button"
+          onClick={handleNewFileField}
+        >
+          Add another
+        </AddButton>
+        {selected.length ? (
+          <DeleteButton
+            className="py-1 text-sm"
+            type="button"
+            onClick={handleDeleteSelectedFileFields}
+          >
+            Remove selected
+          </DeleteButton>
+        ) : null}
+      </div>
+      <div className="">
+        {files.map((o, i) => {
+          return (
+            <div
+              key={o.id}
+              className={cx('flex justify-between py-2 [&_select]:ml-0', {
+                'bg-secondary': selected.includes(i),
+              })}
+              onClick={handleToggleSelected(i)}
+            >
+              <Select id={`file_type_${i}`} label="File type">
+                <option value="invoice">Invoice</option>
+                <option value="reminder">Reminder</option>
+              </Select>
+              <Input id={`file_${i}`} label="File" type="file" />
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
 const AddInvoiceDialog = function AddInvoiceDialog(props) {
   return <InvoiceDialog title="Add invoice" {...props} />
@@ -98,6 +191,8 @@ const InvoiceDialog = function InvoiceDialog(props) {
         type="number"
         required
       />
+      <h5>Files</h5>
+      <InvoiceAttachments />
     </FormDialog>
   )
 }
