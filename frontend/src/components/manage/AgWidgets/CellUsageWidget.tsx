@@ -12,8 +12,9 @@ import {
 import { ICellEditorParams } from 'ag-grid-community'
 import { findIndex, isNumber } from 'lodash'
 
-import { KEY_ENTER, KEY_TAB } from '@ors/constants'
+import { KEY_ENTER, KEY_ESC, KEY_TAB } from '@ors/constants'
 import { applyTransaction, parseNumber } from '@ors/helpers/Utils/Utils'
+import useClickOutside from '@ors/hooks/useClickOutside'
 
 function getInput(element: HTMLInputElement) {
   if (element.tagName.toLowerCase() === 'input') {
@@ -65,18 +66,30 @@ export const CellUsageWidget = memo(
 
       const initialState = createInitialState()
       const [value, setValue] = useState(initialState.value)
+      const [cancelEdit, setCancelEdit] = useState(false)
       const [highlightAllOnFocus, setHighlightAllOnFocus] = useState(
         initialState.highlightAllOnFocus,
       )
-      const refInput = useRef<HTMLInputElement>(null)
+
+      const refInput = useClickOutside<HTMLInputElement>(() => {
+        props.stopEditing()
+      })
+
+      useEffect(() => {
+        if (cancelEdit && value === initialState.value) {
+          props.stopEditing()
+        }
+      }, [cancelEdit, initialState, props, value])
 
       function handleKeyDown(evt: any) {
         if (evt.key === KEY_ENTER) {
           props.stopEditing()
         } else if (evt.key == KEY_TAB) {
           evt.preventDefault()
-          setValue(initialState.value)
           props.stopEditing()
+        } else if (evt.key == KEY_ESC) {
+          setValue(initialState.value)
+          setCancelEdit(true)
         }
       }
 

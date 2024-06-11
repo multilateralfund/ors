@@ -176,6 +176,12 @@ const TableCell = React.memo(function TableCell(props) {
     onStopEdit(savedValue, { colDef, iCol, iRow })
   }
 
+  function handleStartEditing() {
+    if (isEditableCell && !isEditCell) {
+      onStartEdit(iRow, iCol)
+    }
+  }
+
   const cellClass = getCellClass(colDef, cellProps)
   const cellRendererParams = getCellRendererParams(colDef, cellProps)
   const CellRenderer = isEditCell
@@ -189,7 +195,8 @@ const TableCell = React.memo(function TableCell(props) {
         cellClass,
       )}
       tabIndex="0"
-      onDoubleClick={() => (isEditableCell ? onStartEdit(iRow, iCol) : null)}
+      onDoubleClick={handleStartEditing}
+      onKeyDown={handleStartEditing}
     >
       <div
         className={`flex ${cellClass.indexOf('text-center') !== -1 ? 'justify-center' : ''}`}
