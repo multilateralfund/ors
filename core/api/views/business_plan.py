@@ -32,7 +32,11 @@ from core.api.serializers.business_plan import (
 from core.api.utils import workbook_pdf_response
 from core.api.utils import workbook_response
 from core.models import BusinessPlan, BPHistory, BPRecord
-from core.tasks import send_mail_comment_submit_bp, send_mail_bp_create
+from core.tasks import (
+    send_mail_bp_create,
+    send_mail_bp_status_update,
+    send_mail_comment_submit_bp,
+)
 
 
 class BusinessPlanViewSet(
@@ -99,7 +103,7 @@ class BusinessPlanViewSet(
             event_description="Created by user",
         )
         if config.SEND_MAIL and instance.status != BusinessPlan.Status.draft:
-            send_mail_bp_create.delay(business_plan.id)  # send mail to MLFS
+            send_mail_bp_create.delay(instance.id)  # send mail to MLFS
 
         headers = self.get_success_headers(serializer.data)
         return Response(
@@ -151,6 +155,9 @@ class BPStatusUpdateView(generics.GenericAPIView):
         )
 
         serializer = self.get_serializer(business_plan)
+
+        if config.SEND_MAIL:
+            send_mail_bp_status_update.delay(business_plan.id)
 
         return Response(serializer.data)
 

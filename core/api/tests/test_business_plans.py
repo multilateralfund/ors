@@ -4,6 +4,7 @@ import openpyxl
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
+from unittest.mock import patch
 
 from core.api.tests.base import BaseTest
 from core.api.tests.conftest import pdf_text
@@ -15,6 +16,18 @@ from core.api.tests.factories import (
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008, W0221, R0913
+
+
+@pytest.fixture(name="mock_send_mail_bp_create")
+def _mock_send_mail_bp_create():
+    with patch("core.tasks.send_mail_bp_create.delay") as send_mail:
+        yield send_mail
+
+
+@pytest.fixture(name="mock_send_mail_bp_status_update")
+def _mock_send_mail_bp_status_update():
+    with patch("core.tasks.send_mail_bp_status_update.delay") as send_mail:
+        yield send_mail
 
 
 class TestBPExport(BaseTest):
@@ -338,24 +351,33 @@ def setup_new_business_plan_create(agency):
         "agency_id": agency.id,
         "year_start": 2020,
         "year_end": 2022,
-        "status": "Draft",
+        "status": "Submitted",
     }
 
 
 class TestBPCreate:
     client = APIClient()
 
-    def test_create_business_plan(self, user, agency, _setup_new_business_plan_create):
+    def test_without_login(self, _setup_new_business_plan_create):
+        url = reverse("businessplan-list")
+        response = self.client.post(url, _setup_new_business_plan_create, format="json")
+        assert response.status_code == 403
+
+    def test_create_business_plan(
+        self, user, agency, _setup_new_business_plan_create, mock_send_mail_bp_create
+    ):
         # create new business plan
         self.client.force_authenticate(user=user)
         url = reverse("businessplan-list")
         response = self.client.post(url, _setup_new_business_plan_create, format="json")
 
         assert response.status_code == 201
-        assert response.data["status"] == "Draft"
+        assert response.data["status"] == "Submitted"
         assert response.data["year_start"] == 2020
         assert response.data["year_end"] == 2022
         assert response.data["agency_id"] == agency.id
+
+        mock_send_mail_bp_create.assert_called_once()
 
 
 class TestBPStatusUpdate:
@@ -374,7 +396,7 @@ class TestBPStatusUpdate:
         assert response.status_code == 400
         assert "Invalid value" in response.data["status"]
 
-    def test_update_status(self, user, business_plan):
+    def test_update_status(self, user, business_plan, mock_send_mail_bp_status_update):
         self.client.force_authenticate(user=user)
         url = reverse("business-plan-status", kwargs={"id": business_plan.id})
         response = self.client.put(url, {"status": "Approved"})
@@ -382,3 +404,5 @@ class TestBPStatusUpdate:
         assert response.status_code == 200
         assert response.data["status"] == "Approved"
         assert response.data["id"] == business_plan.id
+
+        mock_send_mail_bp_status_update.assert_called_once()
