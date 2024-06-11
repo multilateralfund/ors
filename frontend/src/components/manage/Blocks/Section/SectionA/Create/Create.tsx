@@ -22,6 +22,49 @@ import useGridOptions from './schema'
 
 import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
 
+function updateUsagesOnEdit(value: any, rowData: any[], ctx: any) {
+  const usages = []
+
+  const oldUsages = rowData[ctx.iRow].record_usages
+
+  let usageExists = false
+  for (let j = 0; j < oldUsages.length; j++) {
+    if (oldUsages[j].usage_id == ctx.colDef.id) {
+      usageExists = true
+      usages.push({ ...oldUsages[j], quantity: value })
+    } else {
+      usages.push(oldUsages[j])
+    }
+  }
+  if (!usageExists) {
+    usages.push({
+      quantity: value,
+      usage: ctx.colDef.headerName,
+      usage_id: ctx.colDef.id,
+    })
+  }
+
+  return usages
+}
+
+function handleTableEdit(value: any, ctx: any, formSection: any, rowData: any) {
+  const newData = new Array(formSection.length)
+  for (let i = 0; i < newData.length; i++) {
+    const oldRow = formSection[i]
+    if (oldRow.row_id === rowData[ctx.iRow].row_id) {
+      if (ctx.colDef.category === 'usage') {
+        const usages = updateUsagesOnEdit(value, rowData, ctx)
+        newData[i] = { ...oldRow, record_usages: usages }
+      } else {
+        newData[i] = { ...rowData[ctx.iRow], [ctx.colDef.field]: value }
+      }
+    } else {
+      newData[i] = oldRow
+    }
+  }
+  return newData
+}
+
 function getRowData(
   data: SectionA['data'],
   model: ReportVariant['model'],
@@ -188,13 +231,15 @@ export default function SectionACreate(props: SectionACreateProps) {
         (substance: any) => substance.row_id == removedSubstance.row_id,
       )
       if (index > -1) {
-        const groupNode = grid.current.api.getRowNode(removedSubstance.group)
+        const groupNode = grid.current?.api.getRowNode(removedSubstance.group)
         newData.splice(index, 1)
         setForm((form) => ({ ...form, section_a: newData }))
-        applyTransaction(grid.current.api, {
-          remove: [props.data],
-          update: [{ ...groupNode.data, count: groupNode.data.count - 1 }],
-        })
+        if (groupNode) {
+          applyTransaction(grid.current?.api, {
+            remove: [props.data],
+            update: [{ ...groupNode.data, count: groupNode.data.count - 1 }],
+          })
+        }
       }
     },
     openAddSubstanceModal: () => setAddSubstanceModal(true),
@@ -264,28 +309,7 @@ export default function SectionACreate(props: SectionACreateProps) {
           ...gridOptions.defaultColDef,
         }}
         onEdit={(value: any, ctx: any) => {
-          // TODO: Handle new row / delete row
-          console.log(value, ctx)
-          const newData = new Array(form.section_a.length)
-          for (let i = 0; i < newData.length; i++) {
-            const oldRow = form.section_a[i]
-            if (oldRow.row_id === rowData[ctx.iRow].row_id) {
-              if (ctx.colDef.category === 'usage') {
-                const usages = [...(rowData[ctx.iRow].record_usages as any[])]
-                for (let j = 0; j < usages.length; j++) {
-                  if (usages[j].usage_id == ctx.colDef.id) {
-                    usages[j] = { ...usages[j], quantity: value }
-                    break
-                  }
-                }
-                newData[i] = { ...oldRow, record_usages: usages }
-              } else {
-                newData[i] = { ...rowData[ctx.iRow], [ctx.colDef.field]: value }
-              }
-            } else {
-              newData[i] = oldRow
-            }
-          }
+          const newData = handleTableEdit(value, ctx, form.section_a, rowData)
           setForm({ ...form, section_a: newData })
         }}
       />
