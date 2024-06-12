@@ -83,7 +83,8 @@ const AutocompleteWidget = forwardRef(function AutocompleteWidget(
         //   return <Fragment key={option.id} />
         // }
         return (
-          <li {...props} key={option.id}>
+          // @ts-ignore
+          <li {...props} key={option.id || option.value || option.label || option}>
             <div className="flex w-full items-start justify-between gap-x-4">
               <span>
                 {!!getOptionLabel ? getOptionLabel(option) : option.label}

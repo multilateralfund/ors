@@ -7,7 +7,6 @@ from core.models import Replenishment, Country, Contribution
 from core.import_data.utils import (
     IMPORT_RESOURCES_DIR,
     delete_old_data,
-    decimal_converter,
 )
 
 logger = logging.getLogger(__name__)

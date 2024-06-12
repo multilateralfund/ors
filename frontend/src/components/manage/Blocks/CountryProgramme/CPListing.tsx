@@ -224,7 +224,7 @@ const SubmissionItem = (props: any) => {
           return (
             <Link
               key={index}
-              className="flex items-baseline justify-between gap-4 text-pretty border-0 border-b border-solid border-blue-600 pb-2 sm:min-w-60"
+              className="flex items-baseline justify-between gap-4 text-pretty border-0 border-b border-solid border-secondary pb-2 sm:min-w-60"
               underline="none"
               href={
                 report.status === 'draft'
@@ -342,7 +342,7 @@ const SubmissionSection = function SubmissionSection(
                   {times(REPORTS_PER_COUNTRY, (index) => (
                     <div
                       key={index}
-                      className="flex items-baseline justify-between gap-4 text-pretty border-0 border-b border-solid border-blue-600 p-2 sm:min-w-60"
+                      className="flex items-baseline justify-between gap-4 text-pretty border-0 border-b border-solid border-secondary p-2 sm:min-w-60"
                     >
                       <Skeleton height={40} variant="text" width="100%" />
                     </div>
@@ -659,7 +659,7 @@ export default function CPListing() {
 
   return (
     <>
-      <div className="mb-6 flex items-center justify-end gap-x-6 lg:mb-4 lg:gap-x-4">
+      <div className="container mb-6 flex items-center justify-end gap-x-6 lg:mb-4 lg:gap-x-4">
         {userCanSubmitReport[user_type as UserType] && (
           <Link
             className="px-4 py-2 text-lg uppercase"
@@ -685,7 +685,7 @@ export default function CPListing() {
       </div>
       <div
         id="cp-listing-sections"
-        className="relative flex flex-col-reverse gap-6 lg:flex-row lg:gap-4"
+        className="container relative flex flex-col-reverse gap-6 lg:flex-row lg:gap-4 xl:px-0"
       >
         <div className="flex-1">
           <div className="flex flex-wrap-reverse items-center justify-between gap-2 border-0 border-b border-solid border-primary lg:flex-nowrap">
