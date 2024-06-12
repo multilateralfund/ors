@@ -8,7 +8,7 @@ import FormDialog from './FormDialog'
 import { FieldInput, FieldSelect, Input } from './Inputs'
 import Table from './Table'
 import { COUNTRIES, PERIOD } from './constants'
-import { filterTableData } from './utils'
+import { filterTableData, sortTableData } from './utils'
 
 const COLUMNS = [
   { field: 'country', label: 'Country' },
@@ -80,7 +80,43 @@ function populateData() {
 populateData()
 
 const AddDialog = function AddDialog(props) {
-  return <SADialog title="Add entry" {...props} />
+  const { columns, ...dialogProps } = props
+  return (
+    <FormDialog title="Add entry" {...dialogProps}>
+      <FieldSelect id="iso3" label="Country" required>
+        <option value=""> - </option>
+        {COUNTRIES.map((c) => (
+          <option key={c.iso3} data-name={c.name_alt} value={c.iso3}>
+            {c.name_alt}
+          </option>
+        ))}
+      </FieldSelect>
+      <FieldInput
+        id={columns[1].field}
+        label={columns[1].label}
+        type="number"
+        required
+      />
+      <FieldInput
+        id={columns[4].field}
+        label={columns[4].label}
+        type="number"
+        required
+      />
+      <FieldInput
+        id={columns[6].field}
+        label={columns[6].label}
+        type="number"
+        required
+      />
+      <FieldInput
+        id={columns[7].field}
+        label={columns[7].label}
+        type="text"
+        required
+      />
+    </FormDialog>
+  )
 }
 
 const EditDialog = function EditDialog(props) {
@@ -180,16 +216,25 @@ function SATable(props) {
 function SAView(props) {
   const period = props.period ?? PERIOD
 
-  const columns = []
-  for (let i = 0; i < COLUMNS.length; i++) {
-    columns.push({
-      ...COLUMNS[i],
-      label: COLUMNS[i].label.replace('[PERIOD]', period),
-    })
-  }
+  const columns = useMemo(
+    function () {
+      const result = []
+      for (let i = 0; i < COLUMNS.length; i++) {
+        result.push({
+          ...COLUMNS[i],
+          label: COLUMNS[i].label.replace('[PERIOD]', period),
+        })
+      }
+      return result
+    },
+    [period],
+  )
 
   const [tableData, setTableData] = useState(DATA)
   const [searchValue, setSearchValue] = useState('')
+
+  const [sortOn, setSortOn] = useState(0)
+  const [sortDirection, setSortDirection] = useState(1)
 
   const [editIdx, setEditIdx] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
@@ -203,8 +248,9 @@ function SAView(props) {
   }, [editIdx, tableData])
 
   const filteredTableData = useMemo(() => {
-    return filterTableData(tableData, searchValue)
-  }, [tableData, searchValue])
+    const data = filterTableData(tableData, searchValue)
+    return sortTableData(data, columns[sortOn].field, sortDirection)
+  }, [tableData, searchValue, sortOn, sortDirection, columns])
 
   function showAddDialog() {
     setShowAdd(true)
@@ -244,6 +290,12 @@ function SAView(props) {
   function handleSearchInput(evt) {
     setSearchValue(evt.target.value)
   }
+
+  function handleSort(column) {
+    setSortDirection((direction) => (column === sortOn ? -direction : 1))
+    setSortOn(column)
+  }
+
   return (
     <>
       {showAdd ? (
@@ -278,9 +330,13 @@ function SAView(props) {
       <SATable
         columns={columns}
         enableEdit={true}
+        enableSort={true}
         rowData={filteredTableData}
+        sortDirection={sortDirection}
+        sortOn={sortOn}
         onDelete={handleDelete}
         onEdit={showEditDialog}
+        onSort={handleSort}
       />
     </>
   )

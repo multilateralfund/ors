@@ -8,7 +8,12 @@ import FormDialog from './FormDialog'
 import { FieldInput, FieldSelect, Input } from './Inputs'
 import Table from './Table'
 import { COUNTRIES } from './constants'
-import { dateForEditField, filterTableData, formatDateValue } from './utils'
+import {
+  dateForEditField,
+  filterTableData,
+  formatDateValue,
+  sortTableData,
+} from './utils'
 
 const COLUMNS = [
   { field: 'country', label: 'Country' },
@@ -129,6 +134,9 @@ function PaymentsView(props) {
   const [tableData, setTableData] = useState(DATA)
   const [searchValue, setSearchValue] = useState('')
 
+  const [sortOn, setSortOn] = useState(0)
+  const [sortDirection, setSortDirection] = useState(1)
+
   const [editIdx, setEditIdx] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
 
@@ -144,8 +152,9 @@ function PaymentsView(props) {
   }, [editIdx, tableData])
 
   const filteredTableData = useMemo(() => {
-    return filterTableData(tableData, searchValue)
-  }, [tableData, searchValue])
+    const data = filterTableData(tableData, searchValue)
+    return sortTableData(data, COLUMNS[sortOn].field, sortDirection)
+  }, [tableData, searchValue, sortOn, sortDirection])
 
   function showAddPaymentDialog() {
     setShowAdd(true)
@@ -192,6 +201,11 @@ function PaymentsView(props) {
     setSearchValue(evt.target.value)
   }
 
+  function handleSort(column) {
+    setSortDirection((direction) => (column === sortOn ? -direction : 1))
+    setSortOn(column)
+  }
+
   return (
     <>
       {showAdd ? (
@@ -223,9 +237,13 @@ function PaymentsView(props) {
       </div>
       <PaymentsTable
         enableEdit={true}
+        enableSort={true}
         rowData={filteredTableData}
+        sortDirection={sortDirection}
+        sortOn={sortOn}
         onDelete={handleDeletePayment}
         onEdit={showEditPaymentDialog}
+        onSort={handleSort}
       />
     </>
   )

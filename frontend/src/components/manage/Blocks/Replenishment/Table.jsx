@@ -1,6 +1,6 @@
 import styles from './table.module.css'
 
-import { IoPencil, IoTrash } from 'react-icons/io5'
+import { IoChevronDown, IoChevronUp, IoPencil, IoTrash } from 'react-icons/io5'
 
 function AdminButtons(props) {
   const { onDelete, onEdit } = props
@@ -25,11 +25,35 @@ function AdminButtons(props) {
 }
 
 function Table(props) {
-  const { columns, enableEdit, onDelete, onEdit, rowData } = props
+  const {
+    columns,
+    enableEdit,
+    enableSort,
+    onDelete,
+    onEdit,
+    onSort,
+    rowData,
+    sortDirection,
+    sortOn,
+  } = props
+
+  const sortIcon =
+    sortDirection > 0 ? (
+      <IoChevronDown className="min-w-8 text-secondary" size={18} />
+    ) : (
+      <IoChevronUp className="min-w-8 text-secondary" size={18} />
+    )
 
   const hCols = []
   for (let i = 0; i < columns.length; i++) {
-    hCols.push(<th key={i}>{columns[i].label}</th>)
+    hCols.push(
+      <th key={i} className="relative" onClick={() => enableSort && onSort(i)}>
+        {columns[i].label}{' '}
+        {sortOn === i ? (
+          <div className="absolute bottom-1 right-1">{sortIcon}</div>
+        ) : null}
+      </th>,
+    )
   }
 
   const rows = []
@@ -53,6 +77,16 @@ function Table(props) {
       )
     }
     rows.push(<tr key={j}>{row}</tr>)
+  }
+
+  if (rows.length === 0) {
+    rows.push(
+      <tr>
+        <td className="text-center" colSpan={hCols.length}>
+          Empty
+        </td>
+      </tr>,
+    )
   }
 
   return (

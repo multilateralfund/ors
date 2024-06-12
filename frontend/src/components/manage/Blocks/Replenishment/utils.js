@@ -58,3 +58,21 @@ export function filterTableData(tableData, searchValue) {
   }
   return result
 }
+
+export function sortTableData(tableData, field, direction) {
+  const result = [...tableData]
+  result.sort(function (a, b) {
+    const a_val = a[field]
+    const b_val = b[field]
+    if (typeof a_val === 'string') {
+      return a_val.localeCompare(b_val) * direction
+    } else {
+      if (a_val < b_val) {
+        return direction
+      } else {
+        return -direction
+      }
+    }
+  })
+  return result
+}
