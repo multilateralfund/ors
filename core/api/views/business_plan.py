@@ -35,6 +35,7 @@ from core.models import BusinessPlan, BPHistory, BPRecord
 from core.tasks import (
     send_mail_bp_create,
     send_mail_bp_status_update,
+    send_mail_bp_update,
     send_mail_comment_submit_bp,
 )
 
@@ -43,11 +44,9 @@ class BusinessPlanViewSet(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = BusinessPlan.objects.select_related(
-        "agency", "created_by", "updated_by"
-    ).order_by("year_start", "year_end", "id")
     serializer_class = BusinessPlanSerializer
     filterset_class = BusinessPlanFilter
     filter_backends = [
@@ -57,6 +56,15 @@ class BusinessPlanViewSet(
     ]
     ordering_fields = "__all__"
     search_fields = ["agency__name"]
+
+    def get_queryset(self):
+        business_plans = BusinessPlan.objects.all()
+
+        if self.request.method == "PUT":
+            return business_plans.select_for_update()
+        return business_plans.select_related(
+            "agency", "created_by", "updated_by"
+        ).order_by("year_start", "year_end", "id")
 
     @action(methods=["GET"], detail=False, url_path="get-years")
     def get_years(self, *args, **kwargs):
@@ -109,6 +117,72 @@ class BusinessPlanViewSet(
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
+
+    def check_record_values(self, serializer, business_plan):
+        for record in serializer.initial_data.get("records", []):
+            for record_value in record.get("values", []):
+                if (
+                    business_plan.year_start > record_value["year"]
+                    or record_value["year"] > business_plan.year_end
+                ):
+                    return False
+        return True
+
+    def check_readonly_fields(self, serializer, current_obj):
+        return (
+            serializer.initial_data["agency_id"] != current_obj.agency_id
+            or serializer.initial_data["year_start"] != current_obj.year_start
+            or serializer.initial_data["year_end"] != current_obj.year_end
+        )
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        current_obj = self.get_object()
+
+        serializer = BusinessPlanCreateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if self.check_readonly_fields(serializer, current_obj):
+            return Response(
+                {"general_error": "Business plan readonly fields changed"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not self.check_record_values(serializer, current_obj):
+            return Response(
+                {
+                    "general_error": "BP record values year not in business plan interval"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        self.perform_create(serializer)
+        new_instance = serializer.instance
+
+        # set updated by user
+        new_instance.updated_by = request.user
+        new_instance.save()
+
+        # inherit all history
+        BPHistory.objects.filter(business_plan=current_obj).update(
+            business_plan=new_instance
+        )
+
+        # create new history for update event
+        BPHistory.objects.create(
+            business_plan=new_instance,
+            updated_by=request.user,
+            event_description="Updated by user",
+        )
+
+        current_obj.delete()
+
+        if config.SEND_MAIL and new_instance.status != BusinessPlan.Status.draft:
+            send_mail_bp_update.delay(new_instance.id)  # send mail to MLFS
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
 
 class BPStatusUpdateView(generics.GenericAPIView):
