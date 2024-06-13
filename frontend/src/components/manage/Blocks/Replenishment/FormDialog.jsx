@@ -29,7 +29,12 @@ const FormDialog = function FormDialog(props) {
       ).dataset.name,
     }
     for (const [k, v] of formData.entries()) {
-      data[k] = v
+      const asFloat = parseFloat(v)
+      if (asFloat) {
+        data[k] = asFloat
+      } else {
+        data[k] = v
+      }
     }
     dialogRef.current.close()
     evt.target.reset()

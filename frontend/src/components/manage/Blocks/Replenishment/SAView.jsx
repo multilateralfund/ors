@@ -8,7 +8,15 @@ import FormDialog from './FormDialog'
 import { FieldInput, FieldSelect, Input } from './Inputs'
 import Table from './Table'
 import { COUNTRIES, PERIOD } from './constants'
-import { filterTableData, sortTableData } from './utils'
+import DATA from './data'
+import {
+  computeTableData,
+  filterTableData,
+  formatTableData,
+  sortTableData,
+} from './utils'
+
+const REPLENISHMENT_AMOUNT = 475000000
 
 const COLUMNS = [
   { field: 'country', label: 'Country' },
@@ -49,35 +57,20 @@ const COLUMNS = [
   },
 ]
 
-const DATA = [
-  {
-    adj_un_soa: 0.5286,
-    annual_contributions: 1000000,
-    avg_ir: 9.774,
-    country: 'Romania',
-    ferm_cur: 'Romanian LEU',
-    ferm_cur_amount: 4556580,
-    ferm_rate: 4.55658,
-    iso3: 'ROM',
-    qual_ferm: 1,
-    un_soa: 0.312,
-  },
-]
-
-function populateData() {
-  for (let i = 0; i < COUNTRIES.length; i++) {
-    DATA.push({
-      ...DATA[0],
-      adj_un_soa: COUNTRIES[i].iso3 === 'USA' ? 22.0 : DATA[0].adj_un_soa,
-      country: COUNTRIES[i].name_alt,
-      ferm_cur: `${COUNTRIES[i].name_alt}n fiat`,
-      iso3: COUNTRIES[i].iso3,
-    })
-  }
-  DATA.splice(0, 1)
-}
-
-populateData()
+// function populateData() {
+//   for (let i = 0; i < COUNTRIES.length; i++) {
+//     DATA.push({
+//       ...DATA[0],
+//       adj_un_soa: COUNTRIES[i].iso3 === 'USA' ? 22.0 : DATA[0].adj_un_soa,
+//       country: COUNTRIES[i].name_alt,
+//       ferm_cur: `${COUNTRIES[i].name_alt}n fiat`,
+//       iso3: COUNTRIES[i].iso3,
+//     })
+//   }
+//   DATA.splice(0, 1)
+// }
+//
+// populateData()
 
 const AddDialog = function AddDialog(props) {
   const { columns, ...dialogProps } = props
@@ -155,6 +148,8 @@ const SADialog = function InvoiceDialog(props) {
             defaultValue={data?.[columns[2].field]}
             label={columns[2].label}
             type="number"
+            disabled
+            readOnly
             required
           />
           <FieldInput
@@ -162,6 +157,8 @@ const SADialog = function InvoiceDialog(props) {
             defaultValue={data?.[columns[3].field]}
             label={columns[3].label}
             type="number"
+            disabled
+            readOnly
             required
           />
           <FieldInput
@@ -180,6 +177,8 @@ const SADialog = function InvoiceDialog(props) {
             max={1}
             min={0}
             type="number"
+            disabled
+            readOnly
             required
           />
           <FieldInput
@@ -201,6 +200,8 @@ const SADialog = function InvoiceDialog(props) {
             defaultValue={data?.[columns[8].field]}
             label={columns[8].label}
             type="number"
+            disabled
+            readOnly
             required
           />
         </div>
@@ -239,18 +240,29 @@ function SAView(props) {
   const [editIdx, setEditIdx] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
 
+  const computedData = useMemo(
+    () => computeTableData(tableData, REPLENISHMENT_AMOUNT),
+    [tableData],
+  )
+
   const editData = useMemo(() => {
     let entry = null
     if (editIdx !== null) {
-      entry = { ...tableData[editIdx] }
+      entry = { ...computedData[editIdx] }
     }
     return entry
-  }, [editIdx, tableData])
+  }, [editIdx, computedData])
 
   const filteredTableData = useMemo(() => {
-    const data = filterTableData(tableData, searchValue)
-    return sortTableData(data, columns[sortOn].field, sortDirection)
-  }, [tableData, searchValue, sortOn, sortDirection, columns])
+    const filteredData = filterTableData(computedData, searchValue)
+    const sortedData = sortTableData(
+      filteredData,
+      columns[sortOn].field,
+      sortDirection,
+    )
+    const formattedData = formatTableData(sortedData)
+    return formattedData
+  }, [computedData, searchValue, sortOn, sortDirection, columns])
 
   function showAddDialog() {
     setShowAdd(true)

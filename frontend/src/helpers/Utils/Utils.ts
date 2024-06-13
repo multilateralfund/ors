@@ -204,8 +204,8 @@ export const formatDecimalValue = (
   return formatted
 }
 
-export function fixFloat(f: number): number {
-  return parseFloat(f.toFixed(10))
+export function fixFloat(f: number, decimals: number = 10): number {
+  return parseFloat(f.toFixed(decimals))
 }
 
 export function sumFloats(fs: number[]): number {
