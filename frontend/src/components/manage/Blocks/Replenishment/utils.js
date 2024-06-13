@@ -48,10 +48,14 @@ export function filterTableData(tableData, searchValue) {
     const rowValues = Object.values(tableData[i])
 
     for (let j = 0; j < rowValues.length; j++) {
-      const value =
-        typeof rowValues[j] === 'string'
-          ? rowValues[j]
-          : rowValues[j].toString()
+      let value = ''
+
+      if (typeof rowValues[j] === 'string') {
+        value = rowValues[j]
+      } else if (rowValues[j]) {
+        value = rowValues[j].toString()
+      }
+
       if (value.toLowerCase().indexOf(searchFor) !== -1) {
         result.push(tableData[i])
         break
