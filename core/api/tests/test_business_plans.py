@@ -4,6 +4,7 @@ import openpyxl
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
+from unittest.mock import patch
 
 from core.api.tests.base import BaseTest
 from core.api.tests.conftest import pdf_text
@@ -22,6 +23,24 @@ from core.api.tests.factories import (
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008, W0221, W0613, R0913
+
+
+@pytest.fixture(name="mock_send_mail_bp_create")
+def _mock_send_mail_bp_create():
+    with patch("core.tasks.send_mail_bp_create.delay") as send_mail:
+        yield send_mail
+
+
+@pytest.fixture(name="mock_send_mail_bp_update")
+def _mock_send_mail_bp_update():
+    with patch("core.tasks.send_mail_bp_update.delay") as send_mail:
+        yield send_mail
+
+
+@pytest.fixture(name="mock_send_mail_bp_status_update")
+def _mock_send_mail_bp_status_update():
+    with patch("core.tasks.send_mail_bp_status_update.delay") as send_mail:
+        yield send_mail
 
 
 class TestBPExport(BaseTest):
@@ -337,24 +356,33 @@ def setup_new_business_plan_create(agency):
         "agency_id": agency.id,
         "year_start": 2020,
         "year_end": 2022,
-        "status": "Draft",
+        "status": "Submitted",
     }
 
 
 class TestBPCreate:
     client = APIClient()
 
-    def test_create_business_plan(self, user, agency, _setup_new_business_plan_create):
+    def test_without_login(self, _setup_new_business_plan_create):
+        url = reverse("businessplan-list")
+        response = self.client.post(url, _setup_new_business_plan_create, format="json")
+        assert response.status_code == 403
+
+    def test_create_business_plan(
+        self, user, agency, _setup_new_business_plan_create, mock_send_mail_bp_create
+    ):
         # create new business plan
         self.client.force_authenticate(user=user)
         url = reverse("businessplan-list")
         response = self.client.post(url, _setup_new_business_plan_create, format="json")
 
         assert response.status_code == 201
-        assert response.data["status"] == "Draft"
+        assert response.data["status"] == "Submitted"
         assert response.data["year_start"] == 2020
         assert response.data["year_end"] == 2022
         assert response.data["agency_id"] == agency.id
+
+        mock_send_mail_bp_create.assert_called_once()
 
 
 class TestBPStatusUpdate:
@@ -373,7 +401,7 @@ class TestBPStatusUpdate:
         assert response.status_code == 400
         assert "Invalid value" in response.data["status"]
 
-    def test_update_status(self, user, business_plan):
+    def test_update_status(self, user, business_plan, mock_send_mail_bp_status_update):
         self.client.force_authenticate(user=user)
         url = reverse("business-plan-status", kwargs={"id": business_plan.id})
         response = self.client.put(url, {"status": "Approved"})
@@ -381,6 +409,8 @@ class TestBPStatusUpdate:
         assert response.status_code == 200
         assert response.data["status"] == "Approved"
         assert response.data["id"] == business_plan.id
+
+        mock_send_mail_bp_status_update.assert_called_once()
 
 
 @pytest.fixture(name="_setup_bp_record_list")
@@ -534,3 +564,98 @@ class TestBPRecordList:
             },
         )
         assert response.status_code == 400
+
+
+class TestBPUpdate:
+    client = APIClient()
+
+    def test_without_login(self, _setup_bp_record_create, business_plan):
+        url = reverse("businessplan-list") + f"{business_plan.id}/"
+        data = {
+            "agency_id": business_plan.agency_id,
+            "year_start": business_plan.year_start,
+            "year_end": business_plan.year_end,
+            "status": "Submitted",
+            "records": [_setup_bp_record_create],
+        }
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 403
+
+    def test_update_wrong_record_values(
+        self, user, _setup_bp_record_create, business_plan
+    ):
+        self.client.force_authenticate(user=user)
+
+        url = reverse("businessplan-list") + f"{business_plan.id}/"
+        record_data = _setup_bp_record_create
+        record_data["values"] = [
+            {
+                "year": 2025,  # wrong year
+                "value_usd": 100,
+                "value_odp": 100,
+                "value_mt": 100,
+            }
+        ]
+        data = {
+            "agency_id": business_plan.agency_id,
+            "year_start": business_plan.year_start,
+            "year_end": business_plan.year_end,
+            "status": "Submitted",
+            "records": [record_data],
+        }
+        response = self.client.put(url, data, format="json")
+
+        assert response.status_code == 400
+        assert (
+            response.data["general_error"]
+            == "BP record values year not in business plan interval"
+        )
+
+    def test_bp_update(
+        self,
+        user,
+        _setup_bp_record_create,
+        business_plan,
+        substance,
+        mock_send_mail_bp_update,
+    ):
+        self.client.force_authenticate(user=user)
+
+        url = reverse("businessplan-list") + f"{business_plan.id}/"
+        record_data = _setup_bp_record_create
+        substance2 = SubstanceFactory.create(name="substance2")
+        record_data["substances"] = [substance.id, substance2.id]
+        record_data["blends"] = []
+        record_data["title"] = "Planu 2"
+        record_data["bp_type"] = "P"
+        record_data["is_multi_year"] = True
+        record_data["remarks"] = "Merge rau"
+        record_data["values"] = [
+            {
+                "year": 2022,
+                "value_usd": 300,
+                "value_odp": 300,
+                "value_mt": 300,
+            }
+        ]
+        data = {
+            "agency_id": business_plan.agency_id,
+            "year_start": business_plan.year_start,
+            "year_end": business_plan.year_end,
+            "status": "Submitted",
+            "records": [record_data],
+        }
+        response = self.client.put(url, data, format="json")
+
+        assert response.status_code == 200
+        records = response.data["records"]
+        assert records[0]["business_plan_id"] == response.data["id"]
+        assert records[0]["title"] == "Planu 2"
+        assert records[0]["substances"] == [substance.id, substance2.id]
+        assert records[0]["blends"] == []
+        assert records[0]["bp_type"] == "P"
+        assert records[0]["is_multi_year"] is True
+        assert records[0]["remarks"] == "Merge rau"
+        assert records[0]["values"][0]["year"] == 2022
+
+        mock_send_mail_bp_update.assert_called_once()

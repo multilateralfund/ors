@@ -5,8 +5,6 @@ import { Popover, Typography } from '@mui/material'
 import cx from 'classnames'
 import { chunk, range } from 'lodash'
 
-import { robotoCondensed } from '@ors/themes/fonts'
-
 import {
   IoChevronBackCircleOutline,
   IoChevronForwardCircleOutline,
@@ -202,7 +200,6 @@ export default function YearRangeWidget({
             <Typography
               className={cx(
                 'text-lg uppercase leading-6 text-primary',
-                robotoCondensed.className,
               )}
             >
               {label}
@@ -222,7 +219,6 @@ export default function YearRangeWidget({
           paper: {
             className: cx(
               'overflow-visible mt-2 px-3 pt-3 pb-5 rounded-lg border-2 border-solid border-primary bg-white p-4 shadow-xl',
-              robotoCondensed.className,
             ),
             style: { minWidth: popoverWidth ?? 'auto' },
           },

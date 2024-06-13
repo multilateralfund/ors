@@ -22,8 +22,9 @@ class TestBPHistory:
 
     def test_create_history(self, user, second_user, _setup_new_business_plan_create):
         VALIDATION_LIST = [
-            ("created by user", 2, 1, user.username),
-            ("comments updated", 1, 1, user.username),
+            ("created by user", 3, 1, user.username),
+            ("comments updated", 2, 1, user.username),
+            ("updated by user", 1, 1, second_user.username),
             ("comments updated", 0, 1, second_user.username),
         ]
 
@@ -46,10 +47,18 @@ class TestBPHistory:
         )
         assert response.status_code == 201
 
+        # update business plan
         self.client.force_authenticate(user=second_user)
+        url = reverse("businessplan-list") + f"{business_plan_id}/"
+        data = _setup_new_business_plan_create
+        data["records"] = []
+
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 200
+        new_id = response.data["id"]
 
         # add other comment
-        url = reverse("business-plan-comments", kwargs={"id": business_plan_id})
+        url = reverse("business-plan-comments", kwargs={"id": new_id})
         response = self.client.post(
             url,
             {
@@ -61,7 +70,7 @@ class TestBPHistory:
         assert response.status_code == 201
 
         # check 3 history objects created
-        history = BPHistory.objects.filter(business_plan_id=business_plan_id)
+        history = BPHistory.objects.filter(business_plan_id=new_id)
         assert history.count() == len(VALIDATION_LIST)
 
         for valid_string, i, version, req_user in VALIDATION_LIST:
@@ -71,7 +80,7 @@ class TestBPHistory:
 
         # check history in API response
         url = reverse("bprecord-list")
-        response = self.client.get(url, {"business_plan_id": business_plan_id})
+        response = self.client.get(url, {"business_plan_id": new_id})
         assert response.status_code == 200
 
         # check same history items in get records

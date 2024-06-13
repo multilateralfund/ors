@@ -4,7 +4,6 @@ import cx from 'classnames'
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Logo from '@ors/components/theme/Logo/Logo'
 import { useStore } from '@ors/store'
-import { robotoCondensed } from '@ors/themes/fonts'
 
 const EXTERNAL_BASE_URL = 'https://prod.multilateralfund.edw.ro'
 const makeExternalUrl = (path: string) => `${EXTERNAL_BASE_URL}${path}`
@@ -21,7 +20,6 @@ const FooterLinks = () => {
     <div
       className={cx(
         'flex flex-col items-center gap-x-8 gap-y-8 text-nowrap text-xl font-normal lg:flex-row',
-        robotoCondensed.className,
       )}
     >
       {items.map((item) => (
@@ -36,7 +34,6 @@ const FooterLinks = () => {
       <button
         className={cx(
           'cursor-pointer text-nowrap rounded-full border border-solid border-mlfs-hlYellow bg-transparent px-4 py-0 text-xl font-normal uppercase text-mlfs-hlYellow no-underline transition-all hover:bg-black',
-          robotoCondensed.className,
         )}
         onClick={async () => {
           await user.logout()

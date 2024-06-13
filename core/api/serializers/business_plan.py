@@ -1,5 +1,6 @@
 import itertools
 
+from django.db import transaction
 from django.urls import reverse
 from rest_framework import serializers
 
@@ -82,25 +83,6 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
 
     def get_feedback_file_download_url(self, obj):
         return reverse("business-plan-file-download", args=(obj.id,))
-
-
-class BusinessPlanCreateSerializer(serializers.ModelSerializer):
-    agency_id = serializers.PrimaryKeyRelatedField(
-        queryset=Agency.objects.all().values_list("id", flat=True),
-    )
-    status = serializers.ChoiceField(
-        choices=BusinessPlan.Status.choices, required=False
-    )
-
-    class Meta:
-        model = BusinessPlan
-        fields = [
-            "id",
-            "year_start",
-            "year_end",
-            "agency_id",
-            "status",
-        ]
 
 
 class BPRecordExportSerializer(serializers.ModelSerializer):
@@ -271,10 +253,11 @@ class BPRecordCreateSerializer(serializers.ModelSerializer):
 
         for record_value in record_values:
             record_value["bp_record_id"] = bp_record.id
-            record_value_serializer = BPRecordValueSerializer(data=record_value)
-            record_value_serializer.is_valid(raise_exception=True)
-            record_value_serializer.save()
+        record_value_serializer = BPRecordValueSerializer(data=record_values, many=True)
+        record_value_serializer.is_valid(raise_exception=True)
+        record_value_serializer.save()
 
+    @transaction.atomic
     def create(self, validated_data):
         record_values = validated_data.pop("values", [])
         bp_record = super().create(validated_data)
@@ -282,12 +265,49 @@ class BPRecordCreateSerializer(serializers.ModelSerializer):
 
         return bp_record
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         record_values = validated_data.pop("values", [])
         bp_record = super().update(instance, validated_data)
         self._create_bp_record_values(bp_record, record_values)
 
         return bp_record
+
+
+class BusinessPlanCreateSerializer(serializers.ModelSerializer):
+    agency_id = serializers.PrimaryKeyRelatedField(
+        queryset=Agency.objects.all().values_list("id", flat=True),
+    )
+    status = serializers.ChoiceField(
+        choices=BusinessPlan.Status.choices, required=False
+    )
+    records = BPRecordCreateSerializer(many=True, required=False)
+
+    class Meta:
+        model = BusinessPlan
+        fields = [
+            "id",
+            "year_start",
+            "year_end",
+            "agency_id",
+            "status",
+            "records",
+        ]
+
+    def _create_bp_records(self, business_plan, records):
+        for record in records:
+            record["business_plan_id"] = business_plan.id
+        record_serializer = BPRecordCreateSerializer(data=records, many=True)
+        record_serializer.is_valid(raise_exception=True)
+        record_serializer.save()
+
+    @transaction.atomic
+    def create(self, validated_data):
+        records = validated_data.pop("records", [])
+        business_plan = super().create(validated_data)
+        self._create_bp_records(business_plan, records)
+
+        return business_plan
 
 
 class BPCommentsSerializer(serializers.ModelSerializer):

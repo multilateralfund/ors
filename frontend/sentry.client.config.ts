@@ -4,15 +4,13 @@
 
 import * as Sentry from '@sentry/nextjs'
 
-import { PUBLIC_SENTRY_DSN, PUBLIC_SENTRY_ENVIRONMENT } from '@ors/constants'
-
-if (PUBLIC_SENTRY_DSN) {
+if (process.env.NODE_ENV === 'production') {
   Sentry.init({
     // Setting this option to true will print useful information to the console while you're setting up Sentry.
     debug: false,
-    dsn: PUBLIC_SENTRY_DSN,
+    dsn: 'https://f69d136467ee88ed69456638e731eb32@sentry.edw.ro/79',
 
-    environment: PUBLIC_SENTRY_ENVIRONMENT || 'client',
+    environment: 'client',
 
     // You can remove this option if you're not planning to use the Sentry Session Replay feature:
     integrations: [

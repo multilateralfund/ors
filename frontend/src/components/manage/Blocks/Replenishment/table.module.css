@@ -1,0 +1,68 @@
+.replTable {
+  --table-thead-bg: var(--color-gray-100);
+  --table-border: var(--color-gray-200);
+  --table-hover: rgb(33 150 243 / 10%);
+
+  border-collapse: collapse;
+  border-left: 1px solid var(--table-border);
+  border-right: 1px solid var(--table-border);
+  border-bottom: 1px solid var(--table-border);
+  width: 100%;
+
+  th,
+  td {
+    border: 1px solid var(--table-border);
+    padding: 0.5em 1em;
+  }
+
+  td .adminButtons {
+    display: flex;
+    column-gap: 0.5rem;
+    visibility: collapse;
+
+    button {
+      padding: 0.3rem;
+      height: fit-content;
+    }
+  }
+
+  th {
+    background-color: var(--table-thead-bg);
+    position: relative;
+  }
+
+  thead {
+    position: sticky;
+    top: 0;
+  }
+
+  /* These :before and :after rules are needed to preserve
+   * borders when the header sticks to the top of the page. */
+  thead::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--table-border);
+    z-index: -1;
+  }
+
+  thead::after {
+    content: '';
+    border-bottom: 3px solid var(--color-primary);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+  }
+
+  tr:hover td {
+    background-color: var(--table-hover);
+
+    .adminButtons {
+      visibility: visible;
+    }
+  }
+}

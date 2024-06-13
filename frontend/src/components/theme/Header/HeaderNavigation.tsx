@@ -21,7 +21,6 @@ import { usePathname } from 'next/navigation'
 
 import { matchPath } from '@ors/helpers/Url/Url'
 import { useStore } from '@ors/store'
-import { robotoCondensed } from '@ors/themes/fonts'
 
 import { IoChevronDown, IoChevronUp, IoClose, IoMenu } from 'react-icons/io5'
 
@@ -86,6 +85,23 @@ const useInternalNavSections = () => {
       url: '/country-programme/reports',
     },
     { label: 'Business plans', url: '/business-plans' },
+    ...(['admin', 'secretariat'].includes(user_type)
+      ? [
+          {
+            label: 'Replenishment',
+            menu: [
+              { label: 'Dashboard', url: '/replenishment/dashboard' },
+              {
+                label: 'Scale of assessment',
+                url: '/replenishment/scale-of-assessment',
+              },
+              { label: 'Invoices', url: '/replenishment/invoices' },
+              { label: 'Payments', url: '/replenishment/payments' },
+            ],
+            url: '/replenishment',
+          },
+        ]
+      : []),
     { label: 'Project submissions', url: '/project-submissions' },
     { label: 'Projects', url: '/projects' },
     // @ts-ignore
@@ -228,7 +244,6 @@ const DesktopHeaderNavigation = ({
       id="header-navigation"
       className={cx(
         'relative gap-x-4 text-nowrap rounded-full bg-white px-5 py-3 text-xl font-normal uppercase',
-        robotoCondensed.className,
         className,
       )}
       onMouseLeave={handleHideAllMenus}
@@ -386,7 +401,7 @@ const MobileHeaderNavigation = ({
   }
 
   return (
-    <div className={cx('text-primary', robotoCondensed.className, className)}>
+    <div className={cx('text-primary', className)}>
       <IconButton
         className="mobile-header-navigation-button rounded-full"
         onClick={toggleDrawer(true)}
@@ -394,7 +409,7 @@ const MobileHeaderNavigation = ({
         <IoMenu size={42} />
       </IconButton>
       <Drawer
-        className={cx('radius-none', robotoCondensed.className)}
+        className={cx('radius-none')}
         anchor="right"
         open={open}
         onClose={toggleDrawer(false)}
