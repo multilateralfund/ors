@@ -47,6 +47,13 @@ const FormDialog = function FormDialog(props) {
     onCancel()
   }
 
+  function handleKeyDown(evt) {
+    if (evt.key === 'Escape') {
+      evt.preventDefault()
+      cancelHandler(evt)
+    }
+  }
+
   return (
     <dialog
       className={cx(
@@ -54,6 +61,7 @@ const FormDialog = function FormDialog(props) {
         props.className,
       )}
       ref={dialogRef}
+      onKeyDown={handleKeyDown}
     >
       <div className="mb-8 flex items-center justify-between text-secondary">
         <h3 className="m-0 text-xl">{title}</h3>

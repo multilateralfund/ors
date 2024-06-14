@@ -87,18 +87,21 @@ const AddDialog = function AddDialog(props) {
       <FieldInput
         id={columns[1].field}
         label={columns[1].label}
+        step="0.000001"
         type="number"
         required
       />
       <FieldInput
         id={columns[4].field}
         label={columns[4].label}
+        step="0.000001"
         type="number"
         required
       />
       <FieldInput
         id={columns[6].field}
         label={columns[6].label}
+        step="0.000001"
         type="number"
         required
       />
@@ -113,14 +116,37 @@ const AddDialog = function AddDialog(props) {
 }
 
 const EditDialog = function EditDialog(props) {
-  return <SADialog title="Edit entry" {...props} />
-}
+  const {
+    columns,
+    editIdx,
+    replenishmentAmount,
+    tableData,
+    title,
+    ...dialogProps
+  } = props
 
-const SADialog = function InvoiceDialog(props) {
-  const { columns, data, title, ...dialogProps } = props
+  const [computedData, setComputedData] = useState(tableData)
+
+  const data = useMemo(
+    function () {
+      return computedData[editIdx]
+    },
+    [computedData, editIdx],
+  )
+
+  function handleChange(name) {
+    return function handler(evt) {
+      setComputedData(function (prevData) {
+        const nextData = [...prevData]
+        nextData[editIdx][name] =
+          parseFloat(evt.target.value) || prevData[editIdx][name]
+        return computeTableData(nextData, replenishmentAmount)
+      })
+    }
+  }
 
   return (
-    <FormDialog title={title} {...dialogProps}>
+    <FormDialog title="Edit entry" {...dialogProps}>
       <div className="flex justify-between gap-x-8">
         <div>
           <FieldSelect
@@ -138,54 +164,62 @@ const SADialog = function InvoiceDialog(props) {
           </FieldSelect>
           <FieldInput
             id={columns[1].field}
-            defaultValue={data?.[columns[1].field]}
             label={columns[1].label}
+            step="0.000001"
             type="number"
+            value={data?.[columns[1].field]}
+            onChange={handleChange(columns[1].field)}
             required
           />
           <FieldInput
             id={columns[2].field}
-            defaultValue={data?.[columns[2].field]}
             label={columns[2].label}
+            step="0.000001"
             type="number"
+            value={data?.[columns[2].field]}
             disabled
             readOnly
             required
           />
           <FieldInput
             id={columns[3].field}
-            defaultValue={data?.[columns[3].field]}
             label={columns[3].label}
+            step="0.000001"
             type="number"
+            value={data?.[columns[3].field]}
             disabled
             readOnly
             required
           />
           <FieldInput
             id={columns[4].field}
-            defaultValue={data?.[columns[4].field]}
             label={columns[4].label}
+            step="0.000001"
             type="number"
+            value={data?.[columns[4].field]}
+            onChange={handleChange(columns[4].field)}
             required
           />
         </div>
         <div>
           <FieldInput
             id={columns[5].field}
-            defaultValue={data?.[columns[5].field]}
             label={columns[5].label}
             max={1}
             min={0}
             type="number"
+            value={data?.[columns[5].field]}
             disabled
             readOnly
             required
           />
           <FieldInput
             id={columns[6].field}
-            defaultValue={data?.[columns[6].field]}
             label={columns[6].label}
+            step="0.000001"
             type="number"
+            value={data?.[columns[6].field]}
+            onChange={handleChange(columns[6].field)}
             required
           />
           <FieldInput
@@ -197,9 +231,10 @@ const SADialog = function InvoiceDialog(props) {
           />
           <FieldInput
             id={columns[8].field}
-            defaultValue={data?.[columns[8].field]}
             label={columns[8].label}
+            step="0.000001"
             type="number"
+            value={data?.[columns[8].field]}
             disabled
             readOnly
             required
@@ -245,13 +280,13 @@ function SAView(props) {
     [tableData],
   )
 
-  const editData = useMemo(() => {
-    let entry = null
-    if (editIdx !== null) {
-      entry = { ...computedData[editIdx] }
-    }
-    return entry
-  }, [editIdx, computedData])
+  // const editData = useMemo(() => {
+  //   let entry = null
+  //   if (editIdx !== null) {
+  //     entry = { ...computedData[editIdx] }
+  //   }
+  //   return entry
+  // }, [editIdx, computedData])
 
   const filteredTableData = useMemo(() => {
     const filteredData = filterTableData(computedData, searchValue)
@@ -317,10 +352,12 @@ function SAView(props) {
           onSubmit={handleAddSubmit}
         />
       ) : null}
-      {editData !== null ? (
+      {editIdx !== null ? (
         <EditDialog
           columns={columns}
-          data={editData}
+          editIdx={editIdx}
+          replenishmentAmount={REPLENISHMENT_AMOUNT}
+          tableData={computedData}
           onCancel={() => setEditIdx(null)}
           onSubmit={handleEditSubmit}
         />
