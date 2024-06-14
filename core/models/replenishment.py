@@ -5,13 +5,13 @@ from django.db import models
 from core.models import Country
 from core.models.utils import get_protected_storage
 
-US_SCALE_OF_ASSESSMENT = Decimal('22')
+US_SCALE_OF_ASSESSMENT = Decimal("22")
 
 
 class Replenishment(models.Model):
     start_year = models.IntegerField()
     end_year = models.IntegerField()
-    amount = models.DecimalField(max_digits=25, decimal_places=10)
+    amount = models.DecimalField(max_digits=30, decimal_places=15)
 
     def __str__(self):
         return f"Replenishment ({self.start_year} - {self.end_year})"
@@ -28,16 +28,16 @@ class Contribution(models.Model):
         Country, on_delete=models.PROTECT, null=True, related_name="contributions"
     )
     currency = models.CharField(max_length=64)
-    exchange_rate = models.DecimalField(max_digits=25, decimal_places=10, null=True)
+    exchange_rate = models.DecimalField(max_digits=30, decimal_places=15, null=True)
     bilateral_assistance_amount = models.DecimalField(
-        max_digits=25, decimal_places=10, default=0
+        max_digits=30, decimal_places=15, default=0
     )
-    un_scale_of_assessment = models.DecimalField(max_digits=25, decimal_places=10)
+    un_scale_of_assessment = models.DecimalField(max_digits=30, decimal_places=15)
     override_adjusted_scale_of_assessment = models.DecimalField(
-        max_digits=25, decimal_places=10, null=True
+        max_digits=30, decimal_places=15, null=True
     )
     average_inflation_rate = models.DecimalField(
-        max_digits=25, decimal_places=10, null=True
+        max_digits=30, decimal_places=15, null=True
     )
     override_qualifies_for_fixed_rate_mechanism = models.BooleanField(
         default=False, null=True
@@ -51,25 +51,28 @@ class Contribution(models.Model):
         if self.country.iso3 == "USA":
             return US_SCALE_OF_ASSESSMENT
 
-        un_assessment_sum = self.objects.aggregate(
-            models.Sum("un_scale_of_assessment")
-        )["un_scale_of_assessment__sum"]
+        un_assessment_sum = Contribution.objects.filter(
+            replenishment=self.replenishment
+        ).aggregate(models.Sum("un_scale_of_assessment"))["un_scale_of_assessment__sum"]
 
         return (
             self.un_scale_of_assessment / (un_assessment_sum - US_SCALE_OF_ASSESSMENT)
-        ) * (Decimal('100') - un_assessment_sum) + self.un_scale_of_assessment
+        ) * (Decimal("100") - un_assessment_sum) + self.un_scale_of_assessment
 
     @property
     def qualifies_for_fixed_rate_mechanism(self):
         if self.override_qualifies_for_fixed_rate_mechanism is not None:
             return self.override_qualifies_for_fixed_rate_mechanism
-
-        return self.average_inflation_rate < Decimal('10')
+        if self.average_inflation_rate is None:
+            return False
+        return self.average_inflation_rate < Decimal("10")
 
     @property
     def amount(self):
         return (
-            self.replenishment.amount * self.adjusted_scale_of_assessment / Decimal('100')
+            self.replenishment.amount
+            * self.adjusted_scale_of_assessment
+            / Decimal("100")
         )
 
     @property
@@ -89,7 +92,7 @@ class Invoice(models.Model):
     replenishment = models.ForeignKey(
         Replenishment, on_delete=models.PROTECT, null=True, related_name="invoices"
     )
-    amount = models.DecimalField(max_digits=25, decimal_places=10)
+    amount = models.DecimalField(max_digits=30, decimal_places=15)
     date = models.DateField()
     number = models.CharField(max_length=128, unique=True)
 
@@ -126,9 +129,9 @@ class Payment(models.Model):
     )
     date = models.DateField()
     payment_for_year = models.CharField(max_length=16)
-    gain_or_loss = models.DecimalField(max_digits=25, decimal_places=10)
-    amount_local_currency = models.DecimalField(max_digits=25, decimal_places=10)
-    amount_usd = models.DecimalField(max_digits=25, decimal_places=10)
+    gain_or_loss = models.DecimalField(max_digits=30, decimal_places=15)
+    amount_local_currency = models.DecimalField(max_digits=30, decimal_places=15)
+    amount_usd = models.DecimalField(max_digits=30, decimal_places=15)
 
     def __str__(self):
         return f"Payment {self.country.name} - {self.payment_for_year}"

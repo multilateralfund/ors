@@ -33,7 +33,7 @@ FIXED_EXCHANGE_RATE_NATIONAL_CURRENCY_COLUMN = 8
 
 def decimal_converter(value):
     try:
-        return Decimal(value)
+        return Decimal(str(value))
     except decimal.InvalidOperation:
         return None
 
