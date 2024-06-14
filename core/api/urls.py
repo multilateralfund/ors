@@ -4,7 +4,7 @@ from rest_framework import routers
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
-from core.api.views import ProjectFundViewSet
+from core.api.views import ProjectFundViewSet, ReplenishmentCountriesViewSet
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
 from core.api.views.agency import AgencyListView
@@ -78,6 +78,11 @@ router.register("project-rbm-measure", ProjectRbmMeasureViewSet)
 router.register("submission-amount", ProjectSubmissionAmountViewSet)
 router.register("business-plan", BusinessPlanViewSet, basename="businessplan")
 router.register("business-plan-record", BPRecordViewSet, basename="bprecord")
+router.register(
+    "replenishment/countries",
+    ReplenishmentCountriesViewSet,
+    basename="replenishment-countries",
+)
 
 
 schema_view = get_schema_view(
