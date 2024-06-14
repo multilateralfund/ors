@@ -86,7 +86,7 @@ export const CellDateWidget = memo(
 
       return (
         <DatePicker
-          format="YYYY-MM-DD"
+          format="DD/MM/YYYY"
           open={open}
           ref={refInput}
           value={dayjs(value)}
@@ -96,6 +96,9 @@ export const CellDateWidget = memo(
             },
           }}
           sx={{
+            '& .MuiInputAdornment-root': {
+              display: 'none',
+            },
             '& .MuiInputBase-root': {
               borderRadius: 0,
               height: '100%',

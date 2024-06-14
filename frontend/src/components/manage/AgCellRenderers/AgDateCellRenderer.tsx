@@ -10,7 +10,7 @@ export default function AgDateCellRenderer(props: CustomCellRendererProps) {
     return <AgSkeletonCellRenderer {...props} />
   }
 
-  const value = dayjs(props.value).format('YYYY-MM-DD')
+  const value = dayjs(props.value).format('DD/MM/YYYY')
   const finalValue = value !== 'Invalid Date' ? value : null
   return (
     !!props.value && (

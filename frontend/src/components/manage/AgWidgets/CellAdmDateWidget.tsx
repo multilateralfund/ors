@@ -129,7 +129,7 @@ export const CellAdmDateWidget = memo(
 
       return (
         <DatePicker
-          format="YYYY-MM-DD"
+          format="DD/MM/YYYY"
           ref={refInput}
           value={dayjs(value)}
           slotProps={{
@@ -138,6 +138,9 @@ export const CellAdmDateWidget = memo(
             },
           }}
           sx={{
+            '& .MuiInputAdornment-root': {
+              display: 'none',
+            },
             '& .MuiInputBase-root': {
               borderRadius: 0,
               height: '100%',

@@ -77,9 +77,6 @@ export const CellUsageWidget = memo(
           } else {
             newValue = parseNumber(newValue) || oldValue
           }
-          if (newValue < 0) {
-            newValue = oldValue
-          }
           return newValue
         })
       }

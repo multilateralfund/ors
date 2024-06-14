@@ -20,7 +20,6 @@ function getInput(element: HTMLInputElement) {
   return element.querySelector('input')
 }
 
-
 export const CellNumberWidget = memo(
   forwardRef(
     (
@@ -62,9 +61,6 @@ export const CellNumberWidget = memo(
             newValue = ''
           } else {
             newValue = parseNumber(newValue) || oldValue
-          }
-          if (newValue < 0) {
-            newValue = oldValue
           }
           return newValue
         })

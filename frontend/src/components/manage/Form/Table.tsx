@@ -221,14 +221,6 @@ function Table(props: TableProps) {
         gridContext?.is_diff &&
         hasDiff(props) &&
         props.data.change_type === 'deleted',
-      'border-solid border border-mlfs-hlYellow': (props) => {
-        const errors: ValidateSectionResultValue[] = props.data.validationErrors
-        if (errors) {
-          const colId = props.column.getColId()
-          return errors.flatMap((err) => err.highlight_cells).includes(colId)
-        }
-        return false
-      },
       'diff-cell-new': (props) =>
         gridContext?.is_diff &&
         hasDiff(props) &&

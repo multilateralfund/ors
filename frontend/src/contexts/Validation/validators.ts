@@ -81,6 +81,7 @@ export function validateAnnexENonQPSDate(
 
 export function validateBannedImportsRemarks(
   row: IRow,
+  ctx: any,
 ): RowValidatorFuncResult {
   const bannedByGroup =
     row.group.startsWith('Annex A, Group I') ||
@@ -90,8 +91,12 @@ export function validateBannedImportsRemarks(
     row.group.startsWith('Annex B, Group III')
 
   const isBanned = bannedByGroup && (row.substance_id || row.blend_id)
+  const hasUsages =
+    sumUsages((row.record_usages as unknown as IUsage[]) || []) > 0
+  const hasSomethingElse =
+    row.imports || row.exports || row.production || row.import_quotas
 
-  if (isBanned) {
+  if (isBanned && (hasUsages || hasSomethingElse)) {
     if (!row.remarks) {
       return { row: row.display_name }
     }

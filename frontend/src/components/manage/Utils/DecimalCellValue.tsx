@@ -26,47 +26,51 @@ function getDecimalCellValue(
 
   let TitleContent = null
 
-  switch (props.context?.section?.id) {
-    case 'section_a':
-      TitleContent =
-        valueODP != null ? (
-          <div className="flex flex-col gap-1">
-            <span>Metric tonnes: {value}</span>
-            <span>ODP tonnes: {valueODP}</span>
-          </div>
-        ) : (
-          <span>{value}</span>
-        )
-      break
-    case 'section_b':
-      TitleContent =
-        valueGWP != null ? (
-          <div className="flex flex-col gap-1">
-            <span>Metric tonnes: {value}</span>
-            <span>
-              CO<sup>2</sup> equivalent: {valueGWP}
-            </span>
-          </div>
-        ) : (
-          <span>{value}</span>
-        )
-      break
-    case 'section_c':
-      TitleContent = <span>{value % 1 == 0 ? `${value}.00` : value}</span>
-      break
-    default:
-      TitleContent =
-        valueGWP != null && valueODP != null ? (
-          <div className="flex flex-col gap-1">
-            <span>Metric tonnes: {value}</span>
-            <span>
-              CO<sup>2</sup> equivalent: {valueGWP}
-            </span>
-            <span>ODP tonnes: {valueODP}</span>
-          </div>
-        ) : (
-          <span>{value}</span>
-        )
+  if (props.context?.section.component.name.endsWith('Create')) {
+    TitleContent = <span>{value}</span>
+  } else {
+    switch (props.context?.section?.id) {
+      case 'section_a':
+        TitleContent =
+          valueODP != null ? (
+            <div className="flex flex-col gap-1">
+              <span>Metric tonnes: {value}</span>
+              <span>ODP tonnes: {valueODP}</span>
+            </div>
+          ) : (
+            <span>{value}</span>
+          )
+        break
+      case 'section_b':
+        TitleContent =
+          valueGWP != null ? (
+            <div className="flex flex-col gap-1">
+              <span>Metric tonnes: {value}</span>
+              <span>
+                CO<sup>2</sup> equivalent: {valueGWP}
+              </span>
+            </div>
+          ) : (
+            <span>{value}</span>
+          )
+        break
+      case 'section_c':
+        TitleContent = <span>{value % 1 == 0 ? `${value}.00` : value}</span>
+        break
+      default:
+        TitleContent =
+          valueGWP != null && valueODP != null ? (
+            <div className="flex flex-col gap-1">
+              <span>Metric tonnes: {value}</span>
+              <span>
+                CO<sup>2</sup> equivalent: {valueGWP}
+              </span>
+              <span>ODP tonnes: {valueODP}</span>
+            </div>
+          ) : (
+            <span>{value}</span>
+          )
+    }
   }
 
   return {
