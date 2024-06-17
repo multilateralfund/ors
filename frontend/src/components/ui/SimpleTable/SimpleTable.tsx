@@ -16,6 +16,7 @@ import {
 import TableCell, { tableCellClasses } from '@mui/material/TableCell'
 import { styled } from '@mui/material/styles'
 
+import Logo from '@ors/components/theme/Logo/Logo'
 import Link from '@ors/components/ui/Link/Link'
 import { useStore } from '@ors/store'
 
@@ -275,10 +276,17 @@ const SimpleTable = forwardRef(function SimpleTable(props: any, ref) {
     <Box
       className="SimpleTable px-0 py-2 lg:px-4"
       ref={ref}
-      sx={{ width: '100%' }}
+      sx={{
+        '@media print': {
+          fontFamily: 'var(--font-roboto-condensed)',
+        },
+        fontFamily: 'var(--font-roboto-condensed)',
+        width: '100%',
+      }}
     >
+      <Logo className="print-logo mb-5 hidden" />
       <Typography
-        className="text-typography-primary hidden print-title"
+        className="print-title hidden text-typography-primary"
         component="h1"
         variant="h3"
       >
@@ -318,7 +326,7 @@ const SimpleTable = forwardRef(function SimpleTable(props: any, ref) {
                       <Tooltip title={status}>
                         <Typography className="flex justify-center">
                           <IoEllipse
-                            className="print:inline-block"
+                            className="show-on-print print:inline-block"
                             color={statusDot}
                             size={12}
                           />

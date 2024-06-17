@@ -666,10 +666,10 @@ export default function CPListing() {
 
   return (
     <>
-      <div className="container mb-6 flex items-center justify-end gap-x-6 lg:mb-4 lg:gap-x-4">
+      <div className="container mb-6 flex items-center justify-end gap-x-6 lg:mb-4 lg:gap-x-4 print:hidden">
         {userCanSubmitReport[user_type as UserType] && (
           <Link
-            className="px-4 py-2 text-lg uppercase print:hidden"
+            className="px-4 py-2 text-lg uppercase"
             color="secondary"
             href="/country-programme/create"
             variant="contained"
@@ -680,7 +680,7 @@ export default function CPListing() {
         )}
         {userCanExportData[user_type as UserType] && (
           <Link
-            className="px-4 py-2 text-lg uppercase print:hidden"
+            className="px-4 py-2 text-lg uppercase"
             color="secondary"
             href="/country-programme/export-data"
             variant="contained"
@@ -695,7 +695,7 @@ export default function CPListing() {
             content={() => tableRef.current}
             trigger={() => (
               <Button
-                className="px-4 py-2 text-lg uppercase print:hidden"
+                className="px-4 py-2 text-lg uppercase"
                 color="secondary"
                 variant="contained"
               >

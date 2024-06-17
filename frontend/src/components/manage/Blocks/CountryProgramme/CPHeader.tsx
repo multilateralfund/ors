@@ -284,18 +284,16 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
       {!!report.data && (
         <div className="container flex w-full justify-between gap-x-4 px-0">
           <div className="flex justify-between gap-x-4">
-            {!isDraft && (
-              <Link
-                className="btn-close bg-gray-600 px-4 py-2 shadow-none"
-                color="secondary"
-                href={`/country-programme`}
-                size="large"
-                variant="contained"
-                button
-              >
-                Close
-              </Link>
-            )}
+            <Link
+              className="btn-close bg-gray-600 px-4 py-2 shadow-none"
+              color="secondary"
+              href={`/country-programme`}
+              size="large"
+              variant="contained"
+              button
+            >
+              View Reports
+            </Link>
             <Link
               className="px-4 py-2 shadow-none"
               color="secondary"
