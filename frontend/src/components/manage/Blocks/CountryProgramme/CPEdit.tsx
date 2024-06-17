@@ -390,9 +390,8 @@ function CPEdit() {
                 <div
                   id={section.panelId}
                   key={section.panelId}
-                  className={cx('flex flex-col gap-6 transition', {
-                    'absolute -left-[9999px] -top-[9999px] opacity-0':
-                      activeTab !== index,
+                  className={cx('flex flex-col gap-6', {
+                    hidden: activeTab !== index,
                   })}
                   aria-labelledby={section.id}
                   role="tabpanel"
