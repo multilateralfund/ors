@@ -1,6 +1,7 @@
 import factory.fuzzy
 from django.contrib.auth import get_user_model
 
+from core.models import Replenishment
 from core.models.business_plan import (
     BusinessPlan,
     BPRecord,
@@ -455,3 +456,12 @@ class BPRecordValueFactory(factory.django.DjangoModelFactory):
     value_usd = factory.Faker("random_int", min=1, max=10000)
     value_odp = factory.Faker("random_int", min=1, max=10000)
     value_mt = factory.Faker("random_int", min=1, max=10000)
+
+
+class ReplenishmentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Replenishment
+
+    start_year = factory.Faker("random_int", min=2000, max=2024)
+    end_year = factory.Faker("random_int", min=2000, max=2024)
+    amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)

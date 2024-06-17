@@ -4,7 +4,11 @@ from rest_framework import routers
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
-from core.api.views import ProjectFundViewSet, ReplenishmentCountriesViewSet
+from core.api.views import (
+    ProjectFundViewSet,
+    ReplenishmentCountriesViewSet,
+    ReplenishmentViewSet,
+)
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
 from core.api.views.agency import AgencyListView
@@ -82,6 +86,11 @@ router.register(
     "replenishment/countries",
     ReplenishmentCountriesViewSet,
     basename="replenishment-countries",
+)
+router.register(
+    "replenishment/replenishments",
+    ReplenishmentViewSet,
+    basename="replenishment-replenishments",
 )
 
 

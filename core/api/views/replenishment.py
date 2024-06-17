@@ -1,6 +1,6 @@
 from rest_framework import viewsets, mixins
 
-from core.api.serializers import CountrySerializer
+from core.api.serializers import CountrySerializer, ReplenishmentSerializer
 from core.models import Country, Replenishment
 
 
@@ -25,6 +25,10 @@ class ReplenishmentViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     """
 
     model = Replenishment
+    serializer_class = ReplenishmentSerializer
 
     def get_queryset(self):
-        Replenishment.objects.all()
+        user = self.request.user
+        if user.user_type == user.UserType.SECRETARIAT:
+            return Replenishment.objects.order_by("-start_year")
+        return Replenishment.objects.none()
