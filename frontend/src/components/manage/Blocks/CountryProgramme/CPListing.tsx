@@ -384,7 +384,9 @@ const SubmissionSection = function SubmissionSection(
   )
 }
 
-const LogSection = function LogSection(props: { logApi: any } & SectionProps) {
+const LogSection = function LogSection(
+  props: { logApi: any; tableRef: any } & SectionProps,
+) {
   const { filters, logApi, maxYear, minYear, setFilters, tableRef } = props
   const [pagination, setPagination] = useState({
     page: 1,
