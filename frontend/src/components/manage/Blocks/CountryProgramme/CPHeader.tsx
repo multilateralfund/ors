@@ -331,7 +331,7 @@ const EditHeaderActions = ({
   validation,
 }: EditHeaderActionsProps) => {
   const router = useRouter()
-  const { cacheInvalidateReport, report } = useStore(
+  const { cacheInvalidateReport, fetchBundle, report } = useStore(
     (state) => state.cp_reports,
   )
   const { enqueueSnackbar } = useSnackbar()
@@ -387,9 +387,7 @@ const EditHeaderActions = ({
           { variant: 'success' },
         )
         cacheInvalidateReport(response.country_id, response.year)
-        router.push(
-          `/country-programme/${report.country?.iso3}/${response.year}`,
-        )
+        await fetchBundle(response.country_id, response.year, false)
       } catch (error) {
         if (error.status === 400) {
           const errors = await error.json()

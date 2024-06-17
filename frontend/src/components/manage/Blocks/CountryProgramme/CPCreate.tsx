@@ -273,6 +273,7 @@ const CPCreate: React.FC = () => {
     })[0]
   }, [form.year])
   const [activeTab, setActiveTab] = useState(0)
+  const { setActiveTab: setActiveTabStore } = useStore((state) => state.cp_current_tab)
   const [renderedSections, setRenderedSections] = useState<number[]>([])
 
   const existingReports = useApi({
@@ -495,7 +496,9 @@ const CPCreate: React.FC = () => {
           </>,
           { variant: 'success' },
         )
-        router.push(`/country-programme/${currentCountry!.iso3}/${form.year}`)
+        router.push(
+          `/country-programme/${currentCountry!.iso3}/${form.year}/edit`,
+        )
       } catch (error) {
         if (error.status === 400) {
           const errors = await error.json()
@@ -600,6 +603,7 @@ const CPCreate: React.FC = () => {
             }}
             onChange={(event: React.SyntheticEvent, index: number) => {
               setActiveTab(index)
+              setActiveTabStore(index)
             }}
             allowScrollButtonsMobile
           >
