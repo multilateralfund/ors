@@ -1,6 +1,6 @@
 'use client'
 import type { SimpleSelectProps } from '@ors/components/ui/SimpleSelect/SimpleSelect'
-import { Country } from '@ors/types/store'
+import { Country, FiltersType, StatusFilterTypes } from '@ors/types/store'
 import {
   UserType,
   userCanExportData,
@@ -64,14 +64,6 @@ type ReportsResponse = {
   next: null | string
   previous: null | string
   results: ReportResponse[]
-}
-
-type StatusFilterTypes = 'all' | 'draft' | 'final'
-
-type FiltersType = {
-  country: Country[]
-  range: [number, number]
-  status: StatusFilterTypes
 }
 
 type paginationType = {
@@ -593,11 +585,18 @@ function useSubmissionSectionApi(filters: FiltersType) {
   const { data, loading, setParams } = useApi<ReportsResponse>({
     options: {
       params: {
+        country_id: filters?.country?.join(','),
         limit: SUBMISSIONS_PER_PAGE,
         offset: 0,
         ordering: 'asc',
         show_all_per_group: true,
         status: filters.status,
+        ...(filters.range.length == 2
+          ? {
+              year_max: filters.range[1],
+              year_min: filters.range[0],
+            }
+          : {}),
       },
       withStoreCache: false,
     },
@@ -612,10 +611,17 @@ function useLogSectionApi(filters: FiltersType) {
   const { data, loading, setParams } = useApi<ReportsResponse>({
     options: {
       params: {
+        country_id: filters?.country?.join(','),
         limit: LOGS_PER_PAGE,
         offset: 0,
         ordering: '-year',
         status: filters.status,
+        ...(filters.range.length == 2
+          ? {
+              year_max: filters.range[1],
+              year_min: filters.range[0],
+            }
+          : {}),
       },
       withStoreCache: false,
     },
@@ -637,13 +643,10 @@ export default function CPListing() {
 
   const minYear = settings.cp_reports.min_year
   const maxYear = settings.cp_reports.max_year
-  const [filters, setFilters] = useState<FiltersType>({
-    country: [],
-    range: [minYear, maxYear],
-    status: 'all',
-  })
+  const { filters, setFilters } = useStore((state) => state.filters)
   const countryApi = useSubmissionSectionApi(filters)
   const logApi = useLogSectionApi(filters)
+
 
   const handleFiltersChange = (newFilters: FiltersType) => {
     const newFilterState = { ...filters, ...newFilters }

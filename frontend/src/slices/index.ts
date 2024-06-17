@@ -5,6 +5,7 @@ import { createCPCurrentTabSlice } from '@ors/slices/createCPCurrentTabSlice'
 import { createCPReportsSlice } from '@ors/slices/createCPReportsSlice'
 import { createCacheSlice } from '@ors/slices/createCacheSlice'
 import { createCommonSlice } from '@ors/slices/createCommonSlice'
+import { createFiltersSlice } from '@ors/slices/createCpFiltersSlice'
 import { createHeaderSlice } from '@ors/slices/createHeaderSlice'
 import { createProjectSlice } from '@ors/slices/createProjectSlice'
 import { createSettingsSlice } from '@ors/slices/createSettingsSlice'
@@ -20,6 +21,7 @@ export default function createSlices(props: CreateSliceProps) {
     connection: (__CLIENT__ && navigator?.connection?.effectiveType) || null,
     cp_current_tab: { ...createCPCurrentTabSlice(props) },
     cp_reports: { ...createCPReportsSlice(props) },
+    filters: { ...createFiltersSlice(props) },
     header: { ...createHeaderSlice(props) },
     internalError: props.initialState.internalError || null,
     projects: { ...createProjectSlice(props) },
