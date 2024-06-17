@@ -594,7 +594,7 @@ function useSubmissionSectionApi(filters: FiltersType) {
         show_all_per_group: true,
         status: filters.status,
       },
-      withStoreCache: true,
+      withStoreCache: false,
     },
     path: 'api/country-programme/reports-by-country/',
   })
@@ -612,7 +612,7 @@ function useLogSectionApi(filters: FiltersType) {
         ordering: '-year',
         status: filters.status,
       },
-      withStoreCache: true,
+      withStoreCache: false,
     },
     path: 'api/country-programme/reports/',
   })
