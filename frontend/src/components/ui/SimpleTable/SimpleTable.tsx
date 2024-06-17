@@ -326,7 +326,7 @@ const SimpleTable = forwardRef(function SimpleTable(props: any, ref) {
                       <Tooltip title={status}>
                         <Typography className="flex justify-center">
                           <IoEllipse
-                            className="show-on-print print:inline-block"
+                            className="show-on-print print:block"
                             color={statusDot}
                             size={12}
                           />

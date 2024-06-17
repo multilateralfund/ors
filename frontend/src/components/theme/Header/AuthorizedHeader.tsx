@@ -17,13 +17,13 @@ export default function Header() {
   const { HeaderTitle } = useStore((state) => state.header)
 
   return (
-    <FadeInOut className="header-motion">
+    <FadeInOut className="header-motion print:break-after-avoid print:inline-block">
       <nav
         id="header"
         className="rounded-none border-0 from-white to-gray-900 px-0 pb-0 pt-4 shadow-none"
       >
         <div className="container flex w-full items-center justify-between pb-4">
-          <div className="flex w-full flex-auto items-center justify-center gap-x-8 ">
+          <div className="flex w-full flex-auto items-center justify-center gap-x-8">
             <UnstyledLink href="/">
               <Logo className="min-w-[240px]" />
             </UnstyledLink>
