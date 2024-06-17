@@ -26,7 +26,10 @@ import { RowData } from './types'
 
 import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
 
-function getRowData(data: SectionA['data'], model: ReportVariant['model']): RowData[] {
+function getRowData(
+  data: SectionA['data'],
+  model: ReportVariant['model'],
+): RowData[] {
   let rowData: RowData[] = []
   const dataByGroup: Record<string, any[]> = {}
   const groups: Array<string> = []
@@ -100,7 +103,7 @@ function getInitialPinnedBottomRowData(model: string): RowData[] {
 }
 
 export default function SectionACreate(props: {
-  Comments: React.FC<{ section: string, viewOnly: boolean }>
+  Comments: React.FC<{ section: string; viewOnly: boolean }>
   Section: SectionA
   TableProps: PassedCPCreateTableProps
   emptyForm: EmptyFormType
@@ -111,7 +114,16 @@ export default function SectionACreate(props: {
   showComments: boolean
   variant: ReportVariant
 }) {
-  const { Comments, Section, TableProps, emptyForm, form, setForm, showComments, variant } = props
+  const {
+    Comments,
+    Section,
+    TableProps,
+    emptyForm,
+    form,
+    setForm,
+    showComments,
+    variant,
+  } = props
   const newNode = useRef<RowNode>()
   const substances = useStore(
     (state) =>
@@ -247,13 +259,17 @@ export default function SectionACreate(props: {
 
   return (
     <>
-      <Alert className="bg-mlfs-bannerColor" icon={<IoInformationCircleOutline size={24} />} severity="info">
+      <Alert
+        className="bg-mlfs-bannerColor"
+        icon={<IoInformationCircleOutline size={24} />}
+        severity="info"
+      >
         <Footnotes />
       </Alert>
       {includes(['V'], variant.model) && (
-        <div className="flex justify-end">
+        <div className="sticky top-0 z-50 flex justify-end">
           <Button
-            className="rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
+            className="rounded-lg border-[1.5px] border-solid border-primary bg-white px-3 py-2.5 text-base hover:bg-primary"
             onClick={() => setAddSubstanceModal(true)}
           >
             Add substance <IoAddCircle className="ml-1.5" size={18} />

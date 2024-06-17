@@ -421,7 +421,11 @@ function CPEdit() {
                         variant={variant}
                         TableProps={{
                           ...TableProps,
-                          context: { section, variant },
+                          context: {
+                            section,
+                            variant,
+                            year: report.data?.year,
+                          },
                           errors: errors[section.id],
                           isActiveSection: activeTab == index,
                           report,

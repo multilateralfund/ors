@@ -1,4 +1,4 @@
-import { formatDecimalValue } from '@ors/helpers/Utils/Utils'
+import { fixFloat, formatDecimalValue } from '@ors/helpers/Utils/Utils'
 
 function getDecimalCellValue(
   value: number,
@@ -18,6 +18,8 @@ function getDecimalCellValue(
     default:
       valueToFormat = value
   }
+
+  valueToFormat = fixFloat(valueToFormat, 2)
 
   const formattedValue =
     props.context?.unit === 'gwp'

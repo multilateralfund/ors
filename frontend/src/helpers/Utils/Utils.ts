@@ -191,15 +191,10 @@ export const formatDecimalValue = (
 ) => {
   const [whole, decimal] = value.toString().split('.')
 
-  const formatted =
-    whole && decimal
-      ? parseFloat(
-          `${whole}.${decimal.slice(0, maximumFractionDigits)}`,
-        ).toLocaleString()
-      : value.toLocaleString(undefined, {
-          maximumFractionDigits,
-          minimumFractionDigits,
-        })
+  const formatted = value.toLocaleString(undefined, {
+    maximumFractionDigits,
+    minimumFractionDigits,
+  })
 
   return formatted
 }

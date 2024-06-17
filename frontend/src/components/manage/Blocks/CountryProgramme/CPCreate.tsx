@@ -689,7 +689,7 @@ const CPCreate: React.FC = () => {
                       yearFieldProps={yearFieldProps}
                       TableProps={{
                         ...TableProps,
-                        context: { section, variant },
+                        context: { section, variant, year: form.year },
                         errors: errors[section.id],
                         isActiveSection: activeTab == index,
                         report,
