@@ -7,10 +7,12 @@ import {
   userCanSubmitReport,
 } from '@ors/types/user_types'
 
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
+import ReactToPrint from 'react-to-print'
 
 import {
   Box,
+  Button,
   Skeleton,
   Tab,
   Tabs,
@@ -119,7 +121,7 @@ const CountryYearFilterPills = (props: any) => {
   )
 
   return (
-    <div className="my-6 flex gap-4">
+    <div className="my-6 flex gap-4 print:hidden">
       {filters.country.map((countryId: number) => (
         <Typography
           key={countryId}
@@ -363,7 +365,7 @@ const SubmissionSection = function SubmissionSection(
         })}
       </div>
       {!!pages && pages > 1 && (
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center print:hidden">
           <Pagination
             count={pages}
             page={pagination.page}
@@ -383,7 +385,7 @@ const SubmissionSection = function SubmissionSection(
 }
 
 const LogSection = function LogSection(props: { logApi: any } & SectionProps) {
-  const { filters, logApi, maxYear, minYear, setFilters } = props
+  const { filters, logApi, maxYear, minYear, setFilters, tableRef } = props
   const [pagination, setPagination] = useState({
     page: 1,
     rowsPerPage: LOGS_PER_PAGE,
@@ -423,13 +425,14 @@ const LogSection = function LogSection(props: { logApi: any } & SectionProps) {
       <div className="mb-10 flex w-full max-w-screen-xl">
         <SimpleTable
           data={memoResults}
+          ref={tableRef}
           setPagination={setPagination}
           setParams={setParams}
         />
       </div>
       {/* Pagination */}
       {!!pages && pages > 1 && (
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center print:hidden">
           <Pagination
             count={pages}
             page={pagination.page}
@@ -563,7 +566,7 @@ function CPFilters(props: any) {
   return (
     <Box
       id="filters"
-      className="sticky top-2 flex h-fit flex-col gap-6 rounded-lg p-8"
+      className="sticky top-2 flex h-fit flex-col gap-6 rounded-lg p-8 print:hidden"
     >
       <div className="flex items-center justify-between text-3xl font-light">
         <span>Filters</span> <StatusLegend className="mb-0" />
@@ -626,6 +629,8 @@ export default function CPListing() {
 
   const [activeTab, setActiveTab] = useState(0)
 
+  const tableRef = useRef()
+
   const tabsEl = React.useRef<HTMLDivElement>(null)
 
   const minYear = settings.cp_reports.min_year
@@ -662,7 +667,7 @@ export default function CPListing() {
       <div className="container mb-6 flex items-center justify-end gap-x-6 lg:mb-4 lg:gap-x-4">
         {userCanSubmitReport[user_type as UserType] && (
           <Link
-            className="px-4 py-2 text-lg uppercase"
+            className="px-4 py-2 text-lg uppercase print:hidden"
             color="secondary"
             href="/country-programme/create"
             variant="contained"
@@ -673,7 +678,7 @@ export default function CPListing() {
         )}
         {userCanExportData[user_type as UserType] && (
           <Link
-            className="px-4 py-2 text-lg uppercase"
+            className="px-4 py-2 text-lg uppercase print:hidden"
             color="secondary"
             href="/country-programme/export-data"
             variant="contained"
@@ -682,13 +687,28 @@ export default function CPListing() {
             Export
           </Link>
         )}
+        {userCanExportData[user_type as UserType] && activeTab === 1 && (
+          <ReactToPrint
+            // @ts-ignore
+            content={() => tableRef.current}
+            trigger={() => (
+              <Button
+                className="px-4 py-2 text-lg uppercase print:hidden"
+                color="secondary"
+                variant="contained"
+              >
+                Print
+              </Button>
+            )}
+          />
+        )}
       </div>
       <div
         id="cp-listing-sections"
         className="container relative flex flex-col-reverse gap-6 lg:flex-row lg:gap-4 xl:px-0"
       >
         <div className="flex-1">
-          <div className="flex flex-wrap-reverse items-center justify-between gap-2 border-0 border-b border-solid border-primary lg:flex-nowrap">
+          <div className="flex flex-wrap-reverse items-center justify-between gap-2 border-0 border-b border-solid border-primary lg:flex-nowrap print:hidden">
             <Tabs
               className="scrollable w-96"
               aria-label="view country programme report"
@@ -747,6 +767,7 @@ export default function CPListing() {
               maxYear={maxYear}
               minYear={minYear}
               setFilters={handleFiltersChange}
+              tableRef={tableRef}
               user_type={user_type}
             />
           )}
