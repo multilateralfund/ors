@@ -118,9 +118,7 @@ export default function SectionBView(props: {
   const grid = useRef<any>()
   const [showOnlyReported, setShowOnlyReported] = useState(false)
   const { setValue: setTableDataValue, value: tableDataValue } =
-    useTableDataSelector(
-      includes(['IV', 'V'], variant.model) ? 'sector' : 'all',
-    )
+    useTableDataSelector()
   const rowData = getRowData(report, variant, showOnlyReported)
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 

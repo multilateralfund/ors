@@ -50,7 +50,7 @@ export default function Footer() {
     <FadeInOut>
       <Box
         id="footer"
-        className="flex h-auto w-full items-center rounded-none border-0 bg-mlfs-deepTealShade shadow-none"
+        className="flex h-auto w-full items-center rounded-none border-0 bg-mlfs-deepTealShade shadow-none print:hidden"
       >
         <div className="container w-full">
           <div className="flex flex-col items-center justify-center gap-x-72 gap-y-14 py-12 md:flex-row md:gap-y-0">

@@ -13,7 +13,7 @@ const TableDataSelectorLabels: Record<string, string> = {
 }
 
 export const useTableDataSelector = (
-  initialValue: TableDataSelectorValuesType = 'sector',
+  initialValue: TableDataSelectorValuesType = 'all',
 ) => {
   const [value, setValue] = useState(initialValue)
 

@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { forwardRef } from 'react'
 
 import {
   Box,
@@ -185,7 +186,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
               >
                 {headCell.label}
                 {orderBy === headCell.id ? (
-                  <Box className="sr-only" component="span">
+                  <Box className="hide-on-print sr-only" component="span">
                     {order === 'desc'
                       ? 'sorted descending'
                       : 'sorted ascending'}
@@ -198,7 +199,9 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             )}
           </StyledTableCell>
         ))}
-        <StyledTableCell align="center">Action</StyledTableCell>
+        <StyledTableCell className="hide-on-print" align="center">
+          Action
+        </StyledTableCell>
       </TableRow>
     </TableHead>
   )
@@ -221,7 +224,7 @@ const LoadingSkeleton = ({ rows }: { rows?: number }) => (
   </>
 )
 
-export default function SimpleTable(props: any) {
+const SimpleTable = forwardRef(function SimpleTable(props: any, ref) {
   const { data, setPagination, setParams } = props
 
   const [order, setOrder] = React.useState<Order>('desc')
@@ -269,7 +272,18 @@ export default function SimpleTable(props: any) {
   }, [data])
 
   return (
-    <Box className="SimpleTable px-0 py-2 lg:px-4" sx={{ width: '100%' }}>
+    <Box
+      className="SimpleTable px-0 py-2 lg:px-4"
+      ref={ref}
+      sx={{ width: '100%' }}
+    >
+      <Typography
+        className="text-typography-primary hidden print-title"
+        component="h1"
+        variant="h3"
+      >
+        Country Reports
+      </Typography>
       <TableContainer>
         <Table
           aria-labelledby="tableTitle"
@@ -303,7 +317,11 @@ export default function SimpleTable(props: any) {
                     <StyledTableCell align="center">
                       <Tooltip title={status}>
                         <Typography className="flex justify-center">
-                          <IoEllipse color={statusDot} size={12} />
+                          <IoEllipse
+                            className="print:inline-block"
+                            color={statusDot}
+                            size={12}
+                          />
                         </Typography>
                       </Tooltip>
                     </StyledTableCell>
@@ -316,7 +334,7 @@ export default function SimpleTable(props: any) {
                     <StyledTableCell className="capitalize" align="left">
                       {row.version_created_by_role}
                     </StyledTableCell>
-                    <StyledTableCell align="center">
+                    <StyledTableCell className="hide-on-print" align="center">
                       <Typography className="flex items-center justify-center">
                         <Link
                           className="text-pretty border-0 p-2 hover:text-secondary"
@@ -344,4 +362,6 @@ export default function SimpleTable(props: any) {
       </TableContainer>
     </Box>
   )
-}
+})
+
+export default SimpleTable

@@ -38,4 +38,20 @@
   .ag-header-cell-resize::after {
     display: none;
   }
+
+  .hide-on-print {
+    display: none !important;
+  }
+
+  .print-title {
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  .SimpleTable table,
+  .SimpleTable th,
+  .SimpleTable td {
+    border: 1px solid #000;
+    border-collapse: separate;
+  }
 }
