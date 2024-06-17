@@ -171,7 +171,7 @@ const CPComments: React.FC = (props: any) => {
                 className="w-full resize-none rounded-lg border border-transparent bg-white p-2 pb-10 shadow-none"
                 minRows={3}
                 placeholder={canEditComment ? 'Type your comment here...' : ''}
-                tabIndex="-1"
+                tabIndex={-1}
                 value={texts[user]}
                 onChange={(e) => handleTextChange(user, e.target.value)}
               />
