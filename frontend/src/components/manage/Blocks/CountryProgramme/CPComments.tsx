@@ -147,7 +147,10 @@ const CPComments: React.FC = (props: any) => {
     <Container className="-mx-6 -mb-6 mt-6 flex w-auto flex-wrap justify-around gap-6 rounded-b-lg bg-gray-100 px-6 pb-6">
       {orderedUsers.map((user) => {
         const canEditComment =
-          user_type === commentsMeta[user].user_type && latestVersion && viewOnly === false && report.data?.status !== 'draft'
+          user_type === commentsMeta[user].user_type &&
+          latestVersion &&
+          viewOnly === false &&
+          report.data?.status !== 'draft'
         const disabledBtn = texts[user] === initialTexts[user]
         return (
           <div
@@ -168,6 +171,7 @@ const CPComments: React.FC = (props: any) => {
                 className="w-full resize-none rounded-lg border border-transparent bg-white p-2 pb-10 shadow-none"
                 minRows={3}
                 placeholder={canEditComment ? 'Type your comment here...' : ''}
+                tabIndex="-1"
                 value={texts[user]}
                 onChange={(e) => handleTextChange(user, e.target.value)}
               />

@@ -222,33 +222,33 @@ export function validateSectionDTotals(
   row: IRow,
   { form }: RowValidatorFuncContext,
 ): RowValidatorFuncResult {
-  const lTotal = sumRowColumns(row, ['all_uses', 'destruction', 'feedstock'])
-  const eTotal = sumNumbers(
-    form.section_e.flatMap((row) =>
-      sumRowColumns(row, ['all_uses', 'destruction', 'feedstock_gc']),
+  const lTotal = sumRowColumns(row, ['all_uses', 'destruction', 'feedstock_gc'])
+  const dTotal = sumNumbers(
+    form.section_d.flatMap((row) =>
+      sumRowColumns(row, ['all_uses', 'destruction', 'feedstock']),
     ),
   )
 
-  if (eTotal && lTotal != eTotal) {
-    const eA = sumNumbers(
-      form.section_e.flatMap((row) => row.all_uses) as number[],
+  if (lTotal != dTotal) {
+    const dA = sumNumbers(
+      form.section_d.flatMap((row) => row.all_uses) as number[],
     )
-    const eD = sumNumbers(
-      form.section_e.flatMap((row) => row.destruction) as number[],
+    const dD = sumNumbers(
+      form.section_d.flatMap((row) => row.destruction) as number[],
     )
-    const eF = sumNumbers(
-      form.section_e.flatMap((row) => row.feedstock_gc) as number[],
+    const dF = sumNumbers(
+      form.section_d.flatMap((row) => row.feedstock) as number[],
     )
 
     const highlight_cells = []
-    if (row.all_uses != eA) {
+    if (row.all_uses != dA) {
       highlight_cells.push('all_uses')
     }
-    if (row.destruction != eD) {
+    if (row.destruction != dD) {
       highlight_cells.push('destruction')
     }
-    if (row.feedstock != eF) {
-      highlight_cells.push('feedstock')
+    if (row.feedstock_gc != dF) {
+      highlight_cells.push('feedstock_gc')
     }
 
     return { highlight_cells, row: row.display_name }
