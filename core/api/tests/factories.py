@@ -1,7 +1,7 @@
 import factory.fuzzy
 from django.contrib.auth import get_user_model
 
-from core.models import Replenishment
+from core.models import Replenishment, Contribution
 from core.models.business_plan import (
     BusinessPlan,
     BPRecord,
@@ -465,3 +465,22 @@ class ReplenishmentFactory(factory.django.DjangoModelFactory):
     start_year = factory.Faker("random_int", min=2000, max=2024)
     end_year = factory.Faker("random_int", min=2000, max=2024)
     amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+
+
+class ContributionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Contribution
+
+    country = factory.SubFactory(CountryFactory)
+    replenishment = factory.SubFactory(ReplenishmentFactory)
+    currency = factory.Faker("pystr", max_chars=3)
+    exchange_rate = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    bilateral_assistance_amount = factory.Faker(
+        "pydecimal", left_digits=10, right_digits=2
+    )
+    un_scale_of_assessment = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    override_adjusted_scale_of_assessment = factory.Faker(
+        "pydecimal", left_digits=10, right_digits=2
+    )
+    average_inflation_rate = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    override_qualifies_for_fixed_rate_mechanism = factory.Faker("pybool")
