@@ -45,6 +45,7 @@ const colDefById: Record<string, ColDef> = {
     // initialWidth: 160,
   },
   banned_date: {
+    singleClickEdit: true,
     // initialWidth: 190,
   },
   remarks: {

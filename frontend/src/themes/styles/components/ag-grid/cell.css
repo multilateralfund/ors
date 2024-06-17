@@ -29,6 +29,14 @@
       @apply w-full;
     }
 
+    .MuiInputBase-root {
+      @apply p-0;
+    }
+
+    .MuiInputBase-input {
+      @apply p-1;
+    }
+
     @media (width <= 1680px) {
       padding: 2px !important;
 
@@ -37,6 +45,7 @@
         margin-top: -2px;
       }
 
+      input,
       span {
         @apply text-xs;
       }
@@ -44,6 +53,11 @@
       svg {
         width: 14px;
         height: 14px;
+      }
+
+      .MuiInputBase-root,
+      .MuiTypography-root {
+        @apply text-xs;
       }
     }
 

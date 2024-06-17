@@ -10,7 +10,7 @@ import type {
 export function validateUsageTotals(row: IRow): RowValidatorFuncResult {
   const isValid =
     row.imports - row.exports + row.production ==
-    row.record_usages.reduce((acc, usage) => acc + usage.quantity, 0)
+    sumUsages((row.record_usages as unknown as IUsage[]) || [])
   if (!isValid && !row.remarks) {
     return { row: row.display_name }
   }

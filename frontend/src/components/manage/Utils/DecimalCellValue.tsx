@@ -19,8 +19,6 @@ function getDecimalCellValue(
       valueToFormat = value
   }
 
-  valueToFormat = fixFloat(valueToFormat, 2)
-
   const formattedValue =
     props.context?.unit === 'gwp'
       ? parseInt(`${valueToFormat}`, 10).toLocaleString()

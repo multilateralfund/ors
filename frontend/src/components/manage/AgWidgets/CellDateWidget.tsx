@@ -92,7 +92,7 @@ export const CellDateWidget = memo(
           minDate={dayjs(`${minYear}-01-01`)}
           open={open}
           ref={refInput}
-          value={dayjs(`${props.context.year}-01-01`)}
+          value={value ? dayjs(value) : dayjs(`${props.context.year}-01-01`)}
           slotProps={{
             popper: {
               className: 'ag-custom-component-popup',
