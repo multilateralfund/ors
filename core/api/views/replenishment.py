@@ -1,7 +1,12 @@
 from rest_framework import viewsets, mixins
 
-from core.api.serializers import CountrySerializer, ReplenishmentSerializer
-from core.models import Country, Replenishment
+from core.api.filters.replenishments import ContributionFilter
+from core.api.serializers import (
+    CountrySerializer,
+    ReplenishmentSerializer,
+    ContributionSerializer,
+)
+from core.models import Country, Replenishment, Contribution
 
 
 class ReplenishmentCountriesViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
@@ -32,3 +37,21 @@ class ReplenishmentViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         if user.user_type == user.UserType.SECRETARIAT:
             return Replenishment.objects.order_by("-start_year")
         return Replenishment.objects.none()
+
+
+class ContributionViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+    """
+    Viewset for all contributions that are available.
+    """
+
+    model = Contribution
+    filterset_class = ContributionFilter
+    serializer_class = ContributionSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.user_type == user.UserType.SECRETARIAT:
+            return Contribution.objects.select_related(
+                "country", "replenishment"
+            ).order_by("country__name")
+        return Contribution.objects.none()

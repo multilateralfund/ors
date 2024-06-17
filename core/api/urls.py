@@ -7,7 +7,7 @@ from drf_yasg import openapi
 from core.api.views import (
     ProjectFundViewSet,
     ReplenishmentCountriesViewSet,
-    ReplenishmentViewSet,
+    ReplenishmentViewSet, ContributionViewSet,
 )
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
@@ -91,6 +91,11 @@ router.register(
     "replenishment/replenishments",
     ReplenishmentViewSet,
     basename="replenishment-replenishments",
+)
+router.register(
+    "replenishment/contributions",
+    ContributionViewSet,
+    basename="replenishment-contributions",
 )
 
 
