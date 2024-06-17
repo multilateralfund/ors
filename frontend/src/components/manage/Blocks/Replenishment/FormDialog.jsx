@@ -29,7 +29,12 @@ const FormDialog = function FormDialog(props) {
       ).dataset.name,
     }
     for (const [k, v] of formData.entries()) {
-      data[k] = v
+      const asFloat = parseFloat(v)
+      if (asFloat) {
+        data[k] = asFloat
+      } else {
+        data[k] = v
+      }
     }
     dialogRef.current.close()
     evt.target.reset()
@@ -42,6 +47,13 @@ const FormDialog = function FormDialog(props) {
     onCancel()
   }
 
+  function handleKeyDown(evt) {
+    if (evt.key === 'Escape') {
+      evt.preventDefault()
+      cancelHandler(evt)
+    }
+  }
+
   return (
     <dialog
       className={cx(
@@ -49,6 +61,7 @@ const FormDialog = function FormDialog(props) {
         props.className,
       )}
       ref={dialogRef}
+      onKeyDown={handleKeyDown}
     >
       <div className="mb-8 flex items-center justify-between text-secondary">
         <h3 className="m-0 text-xl">{title}</h3>

@@ -20,7 +20,6 @@ function getInput(element: HTMLInputElement) {
   return element.querySelector('input')
 }
 
-
 export const CellNumberWidget = memo(
   forwardRef(
     (
@@ -31,7 +30,7 @@ export const CellNumberWidget = memo(
       ref,
     ) => {
       const createInitialState = () => {
-        let startValue = props.value || ''
+        let startValue = parseFloat(props.value) || ''
         let highlightAllOnFocus = true
 
         const eventKey = props.eventKey
@@ -61,10 +60,7 @@ export const CellNumberWidget = memo(
           if (newValue === '') {
             newValue = ''
           } else {
-            newValue = parseNumber(newValue) || oldValue
-          }
-          if (newValue < 0) {
-            newValue = oldValue
+            newValue = parseNumber(newValue) ?? oldValue
           }
           return newValue
         })
@@ -114,6 +110,8 @@ export const CellNumberWidget = memo(
           },
         }
       })
+
+      console.log(value)
 
       return (
         <input

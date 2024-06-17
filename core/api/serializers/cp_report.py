@@ -203,30 +203,30 @@ class CPReportCreateSerializer(serializers.Serializer):
         for record in section_data:
             record["country_programme_report_id"] = cp_report.id
             record["section"] = section
-            record_serializer = CPRecordSerializer(data=record)
-            record_serializer.is_valid(raise_exception=True)
-            record_serializer.save()
+        record_serializer = CPRecordSerializer(data=section_data, many=True)
+        record_serializer.is_valid(raise_exception=True)
+        record_serializer.save()
 
     def _create_prices(self, cp_report, section_data):
         for price in section_data:
             price["country_programme_report_id"] = cp_report.id
-            price_serializer = CPPricesSerializer(data=price)
-            price_serializer.is_valid(raise_exception=True)
-            price_serializer.save()
+        price_serializer = CPPricesSerializer(data=section_data, many=True)
+        price_serializer.is_valid(raise_exception=True)
+        price_serializer.save()
 
     def _create_generation(self, cp_report, section_data):
         for generation in section_data:
             generation["country_programme_report_id"] = cp_report.id
-            generation_serializer = CPGenerationSerializer(data=generation)
-            generation_serializer.is_valid(raise_exception=True)
-            generation_serializer.save()
+        generation_serializer = CPGenerationSerializer(data=section_data, many=True)
+        generation_serializer.is_valid(raise_exception=True)
+        generation_serializer.save()
 
     def _create_emission(self, cp_report, section_data):
         for emission in section_data:
             emission["country_programme_report_id"] = cp_report.id
-            emission_serializer = CPEmissionSerializer(data=emission)
-            emission_serializer.is_valid(raise_exception=True)
-            emission_serializer.save()
+        emission_serializer = CPEmissionSerializer(data=section_data, many=True)
+        emission_serializer.is_valid(raise_exception=True)
+        emission_serializer.save()
 
     def _add_remarks(self, cp_report, section_data):
         cp_report.comment = section_data.get("remarks", "")
@@ -236,9 +236,9 @@ class CPReportCreateSerializer(serializers.Serializer):
         for record in section_data:
             record["country_programme_report_id"] = cp_report.id
             record["section"] = section
-            record_serializer = AdmRecordSerializer(data=record)
-            record_serializer.is_valid(raise_exception=True)
-            record_serializer.save()
+        record_serializer = AdmRecordSerializer(data=section_data, many=True)
+        record_serializer.is_valid(raise_exception=True)
+        record_serializer.save()
 
     def _create_report_info(self, cp_report, report_info_data):
         report_info_data["country_programme_report_id"] = cp_report.id

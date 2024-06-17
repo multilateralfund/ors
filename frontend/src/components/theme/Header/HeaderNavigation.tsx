@@ -243,7 +243,7 @@ const DesktopHeaderNavigation = ({
     <div
       id="header-navigation"
       className={cx(
-        'relative gap-x-4 text-nowrap rounded-full bg-white px-5 py-3 text-xl font-normal uppercase',
+        'relative gap-x-4 text-nowrap rounded-full bg-white px-5 py-3 text-xl font-normal uppercase print:hidden',
         className,
       )}
       onMouseLeave={handleHideAllMenus}
@@ -401,7 +401,7 @@ const MobileHeaderNavigation = ({
   }
 
   return (
-    <div className={cx('text-primary', className)}>
+    <div className={cx('text-primary print:hidden', className)}>
       <IconButton
         className="mobile-header-navigation-button rounded-full"
         onClick={toggleDrawer(true)}

@@ -16,6 +16,7 @@ import {
   formatDateValue,
   formatNumberValue,
   numberForEditField,
+  sortTableData,
 } from './utils'
 
 const COLUMNS = [
@@ -124,16 +125,19 @@ function InvoiceAttachments(props) {
           return (
             <div
               key={o.id}
-              className={cx('flex justify-between py-2 [&_select]:ml-0', {
-                'bg-secondary': selected.includes(i),
-              })}
-              onClick={handleToggleSelected(i)}
+              className={cx('flex justify-between py-2 [&_select]:ml-0')}
             >
-              <Select id={`file_type_${i}`} label="File type">
+              <Select id={`file_type_${i}`}>
                 <option value="invoice">Invoice</option>
                 <option value="reminder">Reminder</option>
               </Select>
-              <Input id={`file_${i}`} label="File" type="file" />
+              <Input id={`file_${i}`} type="file" />
+              <Input
+                id={`file_chk_${i}`}
+                checked={selected.includes(i)}
+                type="checkbox"
+                onClick={handleToggleSelected(i)}
+              />
             </div>
           )
         })}
@@ -205,6 +209,9 @@ function InvoicesView(props) {
   const [tableData, setTableData] = useState(DATA)
   const [searchValue, setSearchValue] = useState('')
 
+  const [sortOn, setSortOn] = useState(0)
+  const [sortDirection, setSortDirection] = useState(1)
+
   const [editIdx, setEditIdx] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
 
@@ -220,8 +227,9 @@ function InvoicesView(props) {
   }, [editIdx, tableData])
 
   const filteredTableData = useMemo(() => {
-    return filterTableData(tableData, searchValue)
-  }, [tableData, searchValue])
+    const data = filterTableData(tableData, searchValue)
+    return sortTableData(data, COLUMNS[sortOn].field, sortDirection)
+  }, [tableData, searchValue, sortOn, sortDirection])
 
   function showAddInvoiceDialog() {
     setShowAdd(true)
@@ -268,6 +276,11 @@ function InvoicesView(props) {
     setSearchValue(evt.target.value)
   }
 
+  function handleSort(column) {
+    setSortDirection((direction) => (column === sortOn ? -direction : 1))
+    setSortOn(column)
+  }
+
   return (
     <>
       {showAdd ? (
@@ -299,9 +312,13 @@ function InvoicesView(props) {
       </div>
       <InvoicesTable
         enableEdit={true}
+        enableSort={true}
         rowData={filteredTableData}
+        sortDirection={sortDirection}
+        sortOn={sortOn}
         onDelete={handleDeleteInvoice}
         onEdit={showEditInvoiceDialog}
+        onSort={handleSort}
       />
     </>
   )

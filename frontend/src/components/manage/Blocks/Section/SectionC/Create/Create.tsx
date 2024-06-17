@@ -380,9 +380,9 @@ export default function SectionCCreate(props: {
         </Alert>
       )}
       {includes(['V'], variant.model) && (
-        <div className="flex justify-end">
+        <div className="sticky top-0 z-50 flex justify-end">
           <Button
-            className="rounded-lg border-[1.5px] border-solid border-primary px-3 py-2.5 text-base"
+            className="rounded-lg border-[1.5px] border-solid border-primary bg-white px-3 py-2.5 text-base hover:bg-primary"
             onClick={() => setAddChemicalModal(true)}
           >
             Add substance/blend <IoAddCircle className="ml-1.5" size={18} />

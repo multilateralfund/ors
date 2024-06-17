@@ -132,13 +132,6 @@ const validationSchema: ValidationSchema = {
   },
   section_d: {
     rows: [
-      {
-        id: 'validate-section-d-totals',
-        highlight_cells: {},
-        message:
-          'Total for columns under "Amount generated and captured" in Section E should be reported in Section D under the respective column.',
-        validator: validateSectionDTotals,
-      },
       // {
       //   id: 'validate-section-d-filled',
       //   highlight_cells: {},
@@ -156,6 +149,15 @@ const validationSchema: ValidationSchema = {
         message:
           'Facility name must be provided if data in Section D is provided.',
         validator: validateFacilityName,
+      },
+    ],
+    rows: [
+      {
+        id: 'validate-section-d-totals',
+        highlight_cells: {},
+        message:
+          'Total for columns under "Amount generated and captured" in Section E should be reported in Section D under the respective column.',
+        validator: validateSectionDTotals,
       },
     ],
   },

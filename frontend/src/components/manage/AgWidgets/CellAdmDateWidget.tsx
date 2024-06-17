@@ -127,17 +127,23 @@ export const CellAdmDateWidget = memo(
         }
       })
 
+      const minYear = props.context.year >= 2000 ? 2000 : 1990
+
       return (
         <DatePicker
-          format="YYYY-MM-DD"
+          format="DD/MM/YYYY"
+          minDate={dayjs(`${minYear}-01-01`)}
           ref={refInput}
-          value={dayjs(value)}
+          value={value ? dayjs(value) : dayjs(`${props.context.year}-01-01`)}
           slotProps={{
             popper: {
               className: 'ag-custom-component-popup',
             },
           }}
           sx={{
+            '& .MuiInputAdornment-root': {
+              display: 'none',
+            },
             '& .MuiInputBase-root': {
               borderRadius: 0,
               height: '100%',

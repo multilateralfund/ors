@@ -10,7 +10,7 @@ import type {
 export function validateUsageTotals(row: IRow): RowValidatorFuncResult {
   const isValid =
     row.imports - row.exports + row.production ==
-    row.record_usages.reduce((acc, usage) => acc + usage.quantity, 0)
+    sumUsages((row.record_usages as unknown as IUsage[]) || [])
   if (!isValid && !row.remarks) {
     return { row: row.display_name }
   }
@@ -81,6 +81,7 @@ export function validateAnnexENonQPSDate(
 
 export function validateBannedImportsRemarks(
   row: IRow,
+  ctx: any,
 ): RowValidatorFuncResult {
   const bannedByGroup =
     row.group.startsWith('Annex A, Group I') ||
@@ -90,8 +91,12 @@ export function validateBannedImportsRemarks(
     row.group.startsWith('Annex B, Group III')
 
   const isBanned = bannedByGroup && (row.substance_id || row.blend_id)
+  const hasUsages =
+    sumUsages((row.record_usages as unknown as IUsage[]) || []) > 0
+  const hasSomethingElse =
+    row.imports || row.exports || row.production || row.import_quotas
 
-  if (isBanned) {
+  if (isBanned && (hasUsages || hasSomethingElse)) {
     if (!row.remarks) {
       return { row: row.display_name }
     }
@@ -217,33 +222,33 @@ export function validateSectionDTotals(
   row: IRow,
   { form }: RowValidatorFuncContext,
 ): RowValidatorFuncResult {
-  const lTotal = sumRowColumns(row, ['all_uses', 'destruction', 'feedstock'])
-  const eTotal = sumNumbers(
-    form.section_e.flatMap((row) =>
-      sumRowColumns(row, ['all_uses', 'destruction', 'feedstock_gc']),
+  const lTotal = sumRowColumns(row, ['all_uses', 'destruction', 'feedstock_gc'])
+  const dTotal = sumNumbers(
+    form.section_d.flatMap((row) =>
+      sumRowColumns(row, ['all_uses', 'destruction', 'feedstock']),
     ),
   )
 
-  if (eTotal && lTotal != eTotal) {
-    const eA = sumNumbers(
-      form.section_e.flatMap((row) => row.all_uses) as number[],
+  if (lTotal != dTotal) {
+    const dA = sumNumbers(
+      form.section_d.flatMap((row) => row.all_uses) as number[],
     )
-    const eD = sumNumbers(
-      form.section_e.flatMap((row) => row.destruction) as number[],
+    const dD = sumNumbers(
+      form.section_d.flatMap((row) => row.destruction) as number[],
     )
-    const eF = sumNumbers(
-      form.section_e.flatMap((row) => row.feedstock_gc) as number[],
+    const dF = sumNumbers(
+      form.section_d.flatMap((row) => row.feedstock) as number[],
     )
 
     const highlight_cells = []
-    if (row.all_uses != eA) {
+    if (row.all_uses != dA) {
       highlight_cells.push('all_uses')
     }
-    if (row.destruction != eD) {
+    if (row.destruction != dD) {
       highlight_cells.push('destruction')
     }
-    if (row.feedstock != eF) {
-      highlight_cells.push('feedstock')
+    if (row.feedstock_gc != dF) {
+      highlight_cells.push('feedstock_gc')
     }
 
     return { highlight_cells, row: row.display_name }

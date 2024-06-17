@@ -18,6 +18,7 @@ export interface IRow {
   exports: number
   facility?: string
   feedstock?: number | string
+  feedstock_gc?: number | string
   group: string
   import_quotas: number
   imports: number

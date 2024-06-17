@@ -1,3 +1,5 @@
+import { fixFloat } from '@ors/helpers/Utils/Utils'
+
 import { DECIMALS, PERIODS } from './constants'
 
 export function getPathPeriod(path) {
@@ -46,15 +48,110 @@ export function filterTableData(tableData, searchValue) {
     const rowValues = Object.values(tableData[i])
 
     for (let j = 0; j < rowValues.length; j++) {
-      const value =
-        typeof rowValues[j] === 'string'
-          ? rowValues[j]
-          : rowValues[j].toString()
+      let value = ''
+
+      if (typeof rowValues[j] === 'string') {
+        value = rowValues[j]
+      } else if (rowValues[j]) {
+        value = rowValues[j].toString()
+      }
+
       if (value.toLowerCase().indexOf(searchFor) !== -1) {
         result.push(tableData[i])
         break
       }
     }
   }
+  return result
+}
+
+export function sortTableData(tableData, field, direction) {
+  const result = [...tableData]
+  result.sort(function (a, b) {
+    const a_val = a[field]
+    const b_val = b[field]
+    if (typeof a_val === 'string') {
+      return a_val.localeCompare(b_val) * direction
+    } else {
+      if (a_val < b_val) {
+        return direction
+      } else {
+        return -direction
+      }
+    }
+  })
+  return result
+}
+
+export function computeTableData(tableData, totalReplenishment) {
+  const result = new Array(tableData.length)
+
+  let adj_un_soa = 0
+  let adj_un_soa_percent = 100
+
+  for (let i = 0; i < tableData.length; i++) {
+    if (tableData[i].iso3 !== 'USA') {
+      adj_un_soa += fixFloat(tableData[i].un_soa || 0, 30)
+    } else {
+      adj_un_soa_percent -= fixFloat(tableData[i].un_soa || 0, 30)
+    }
+  }
+
+  adj_un_soa_percent -= fixFloat(adj_un_soa, 30)
+
+  for (let i = 0; i < tableData.length; i++) {
+    result[i] = { ...tableData[i] }
+
+    const un_soa = fixFloat(tableData[i].un_soa || 0, 30)
+
+    if (tableData[i].iso3 === 'USA') {
+      result[i].adj_un_soa = un_soa
+    } else {
+      result[i].adj_un_soa = fixFloat(
+        (un_soa / adj_un_soa) * adj_un_soa_percent + un_soa,
+        30,
+      )
+    }
+
+    result[i].annual_contributions = fixFloat(
+      (result[i].adj_un_soa * totalReplenishment) / 100,
+      30,
+    )
+    result[i].qual_ferm = (result[i].avg_ir || 100) < 10 ? 1 : 0
+    result[i].ferm_cur_amount =
+      result[i].qual_ferm && result[i].ferm_rate
+        ? result[i].ferm_rate * result[i].annual_contributions
+        : null
+  }
+
+  return result
+}
+
+export function formatTableData(tableData) {
+  const result = new Array(tableData.length)
+
+  for (let i = 0; i < tableData.length; i++) {
+    result[i] = {}
+    const keys = Object.keys(tableData[i])
+    for (let j = 0; j < keys.length; j++) {
+      const key = keys[j]
+      const value = tableData[i][key]
+      const valueType = typeof value
+
+      let newValue = value
+
+      if (value === null) {
+        newValue = 'N/A'
+      } else if (valueType === 'number') {
+        newValue = value.toLocaleString('en-US', {
+          maximumFractionDigits: 6,
+          minimumFractionDigits: 6,
+        })
+      }
+
+      result[i][key] = newValue
+    }
+  }
+
   return result
 }

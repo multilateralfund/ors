@@ -285,6 +285,16 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
         <div className="container flex w-full justify-between gap-x-4 px-0">
           <div className="flex justify-between gap-x-4">
             <Link
+              className="btn-close bg-gray-600 px-4 py-2 shadow-none"
+              color="secondary"
+              href={`/country-programme`}
+              size="large"
+              variant="contained"
+              button
+            >
+              View Reports
+            </Link>
+            <Link
               className="px-4 py-2 shadow-none"
               color="secondary"
               href={`/country-programme/${report.country?.iso3}/${report.data?.year}/edit/`}
@@ -294,7 +304,7 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
             >
               {isDraft ? 'Edit report' : 'Add new version'}
             </Link>
-            {report.data.status === 'draft' && (
+            {isDraft && (
               <Button
                 color="primary"
                 size="small"
@@ -331,7 +341,7 @@ const EditHeaderActions = ({
   validation,
 }: EditHeaderActionsProps) => {
   const router = useRouter()
-  const { cacheInvalidateReport, report } = useStore(
+  const { cacheInvalidateReport, fetchBundle, report } = useStore(
     (state) => state.cp_reports,
   )
   const { enqueueSnackbar } = useSnackbar()
@@ -387,9 +397,11 @@ const EditHeaderActions = ({
           { variant: 'success' },
         )
         cacheInvalidateReport(response.country_id, response.year)
-        router.push(
-          `/country-programme/${report.country?.iso3}/${response.year}`,
-        )
+        await fetchBundle(response.country_id, response.year, false)
+        status === 'final' &&
+          router.push(
+            `/country-programme/${report.country?.iso3}/${response.year}`,
+          )
       } catch (error) {
         if (error.status === 400) {
           const errors = await error.json()
