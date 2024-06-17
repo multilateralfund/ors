@@ -277,6 +277,13 @@ const SimpleTable = forwardRef(function SimpleTable(props: any, ref) {
       ref={ref}
       sx={{ width: '100%' }}
     >
+      <Typography
+        className="text-typography-primary hidden print-title"
+        component="h1"
+        variant="h3"
+      >
+        Country Reports
+      </Typography>
       <TableContainer>
         <Table
           aria-labelledby="tableTitle"
