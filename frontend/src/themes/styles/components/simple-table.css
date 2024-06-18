@@ -4,4 +4,47 @@
     align-items: center;
     width: 100%;
   }
+
+  .MuiInputBase-root {
+    @apply p-0;
+  }
+
+  .MuiInputBase-input {
+    @apply p-1;
+  }
+
+  @media (width <= 1680px) {
+    padding: 2px !important;
+
+    .ag-cell-options {
+      padding-right: 1px !important;
+      margin-top: -2px;
+    }
+
+    input,
+    span {
+      @apply text-xs;
+    }
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .MuiInputBase-root,
+    .MuiTypography-root {
+      @apply text-xs;
+    }
+  }
+
+  @media (width >= 1680px) {
+    span {
+      @apply text-sm;
+    }
+
+    .MuiTypography-root {
+      line-height: var(--ag-line-height);
+      font-size: var(--ag-font-size);
+    }
+  }
 }
