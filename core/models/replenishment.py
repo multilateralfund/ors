@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.db import models
 
-from core.models import Country
+from core.models.country import Country
 from core.models.utils import get_protected_storage
 
 US_SCALE_OF_ASSESSMENT = Decimal("22")

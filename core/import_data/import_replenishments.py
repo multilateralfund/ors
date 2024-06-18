@@ -41,7 +41,7 @@ def decimal_converter(value):
 def boolean_converter(value):
     if pd.isna(value) or value == "N/A" or value == "Not Available" or pd.isnull(value):
         return None
-    if value == 0 or value == "0":
+    if value in {"0", 0}:
         return False
     return bool(value)
 

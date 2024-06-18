@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from core.api.serializers import CountrySerializer
+from core.api.serializers.country import CountrySerializer
 from core.models import Replenishment, Contribution
 
 
