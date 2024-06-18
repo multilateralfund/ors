@@ -700,7 +700,7 @@ export default function CPListing() {
       </div>
       <div
         id="cp-listing-sections"
-        className="container relative flex flex-col-reverse gap-6 lg:flex-row lg:gap-4 xl:px-0"
+        className="container relative flex flex-col-reverse gap-6 lg:flex-row lg:gap-4 xl:px-0 print:px-0"
       >
         <div className="flex-1">
           <div className="flex flex-wrap-reverse items-center justify-between gap-2 border-0 border-b border-solid border-primary lg:flex-nowrap print:hidden">

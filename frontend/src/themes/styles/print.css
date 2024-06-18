@@ -40,9 +40,7 @@
   }
 
   .SimpleTable table,
-  /*.SimpleTable th,*/
   .SimpleTable td {
-    border: 1px solid #000;
     border-collapse: separate;
   }
 }

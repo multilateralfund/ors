@@ -272,7 +272,7 @@ export default function SimpleTable(props: any) {
 
   return (
     <Box
-      className="SimpleTable px-0 py-2 lg:px-4"
+      className="SimpleTable px-0 py-2 lg:px-4 print:shadow-none print:border-none print:px-0"
       sx={{
         width: '100%',
       }}
