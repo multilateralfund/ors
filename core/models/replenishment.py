@@ -45,6 +45,8 @@ class Contribution(models.Model):
 
     @property
     def adjusted_scale_of_assessment(self):
+        # TODO: Might need to be moved to the serializer and pass un_assessment_sum as context,
+        # otherwise it will be computed for each contribution and will be inefficient
         if self.override_adjusted_scale_of_assessment is not None:
             return self.override_adjusted_scale_of_assessment
 
