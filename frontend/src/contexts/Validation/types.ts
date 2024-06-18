@@ -15,16 +15,16 @@ export interface IRow {
   current_year_price: number
   destruction?: number | string
   display_name: string
-  exports: number
+  exports: number | string
   facility?: string
   feedstock?: number | string
   feedstock_gc?: number | string
   group: string
   import_quotas: number
-  imports: number
+  imports: number | string
   manufacturing_blends?: string
   previous_year_price: number
-  production: number
+  production: number | string
   record_usages: IUsage[]
   remarks?: string
   row_id: string

@@ -8,9 +8,15 @@ import type {
 } from './types'
 
 export function validateUsageTotals(row: IRow): RowValidatorFuncResult {
-  const isValid =
-    row.imports - row.exports + row.production ==
-    sumUsages((row.record_usages as unknown as IUsage[]) || [])
+  const totalUsages = sumUsages(
+    (row.record_usages as unknown as IUsage[]) || [],
+  )
+  const totalImpExp =
+    parseFloat(row.imports as string) -
+    parseFloat(row.exports as string) +
+    parseFloat(row.production as string)
+  const isValid = totalUsages == totalImpExp
+
   if (!isValid && !row.remarks) {
     return { row: row.display_name }
   }
