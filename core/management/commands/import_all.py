@@ -13,3 +13,4 @@ class Command(BaseCommand):
         call_command("import_projects", "all")
         call_command("import_business_plans")
         call_command("import_cp_format")
+        call_command("import_replenishments")

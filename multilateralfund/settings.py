@@ -196,6 +196,21 @@ STATIC_ROOT = FS_DIR / "static"
 IMPORT_DATA_DIR = FS_DIR / "import_files"
 PROTECTED_MEDIA_ROOT = FS_DIR / "protected_media"
 
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "protected": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {
+            "location": PROTECTED_MEDIA_ROOT,
+        }
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 

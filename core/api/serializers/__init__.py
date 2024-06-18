@@ -8,3 +8,4 @@ from .cp_record import *
 from .cp_report import *
 from .cp_usage import *
 from .usage import *
+from .replenishment import *

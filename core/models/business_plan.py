@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.core.files.storage import FileSystemStorage
 from django.core.validators import MinValueValidator
 from django.db import models
 from core.models.agency import Agency
@@ -13,8 +12,7 @@ from core.models.project import (
     ProjectType,
 )
 from core.models.substance import Substance
-
-PROTECTED_STORAGE = FileSystemStorage(location=settings.PROTECTED_MEDIA_ROOT)
+from core.models.utils import get_protected_storage
 
 
 class BPChemicalType(models.Model):
@@ -74,7 +72,7 @@ class BusinessPlan(models.Model):
     # feedback file
     feedback_filename = models.CharField(max_length=100, blank=True)
     feedback_file = models.FileField(
-        storage=PROTECTED_STORAGE, upload_to=upload_path, blank=True
+        storage=get_protected_storage, upload_to=upload_path, blank=True
     )
 
     def __str__(self):

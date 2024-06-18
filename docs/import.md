@@ -201,7 +201,7 @@ docker-compose exec app ./manage.py import_projects proposals
 
 ---
 
-## Business Palns 
+## Business Plans
 To import business plans
 ```shell
 docker-compose exec app ./manage.py import_business_plans
@@ -211,3 +211,11 @@ docker-compose exec app ./manage.py import_business_plans
 : download all files from nextcloud except "Business Plan Template and Sample" file
   - **nextcloud path** OzoneMlf/Data/2.7 Business plans
   - **local path** .fs/import_files/business_plans
+
+---
+
+## Replenishments and contributions
+To import replenishments and contributions
+```shell
+docker-compose exec app ./manage.py import_replenishments
+```
