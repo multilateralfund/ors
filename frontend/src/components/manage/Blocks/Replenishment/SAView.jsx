@@ -402,7 +402,7 @@ function SAView(props) {
         sortOn={sortOn}
         rowData={[
           ...filteredTableData,
-          { country: 'Total', ...sumColumns(filteredTableData) },
+          { country: 'Total', ...sumColumns(computedData) },
         ]}
         onDelete={handleDelete}
         onEdit={showEditDialog}

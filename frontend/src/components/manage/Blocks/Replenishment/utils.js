@@ -160,12 +160,9 @@ export function sumColumns(tableData) {
   const result = { adj_un_soa: 0, annual_contributions: 0, un_soa: 0 }
 
   for (let i = 0; i < tableData.length; i++) {
-    result.un_soa += fixFloat(parseFloat(tableData[i].un_soa) || 0, 30)
-    result.adj_un_soa += fixFloat(parseFloat(tableData[i].adj_un_soa) || 0, 30)
-    result.annual_contributions += fixFloat(
-      parseFloat(tableData[i].annual_contributions) || 0,
-      30,
-    )
+    result.un_soa += tableData[i].un_soa
+    result.adj_un_soa += tableData[i].adj_un_soa
+    result.annual_contributions += tableData[i].annual_contributions
   }
 
   result.un_soa = result.un_soa.toLocaleString('en-US', {
