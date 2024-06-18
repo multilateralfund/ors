@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 
 import cx from 'classnames'
 
@@ -63,7 +63,7 @@ function getHeaderComponentParams(colDef, cellProps) {
   return result
 }
 
-function Header(props) {
+const Header = React.memo(function Header(props) {
   const { context, rows } = props
 
   const result = []
@@ -94,7 +94,7 @@ function Header(props) {
   }
 
   return result
-}
+})
 
 function getCellClass(colDef, cellProps) {
   let result = null
@@ -187,11 +187,12 @@ const TableCell = React.memo(function TableCell(props) {
   const CellRenderer = isEditCell
     ? components[colDef['cellEditor']]
     : AgCellRenderer
+
   return (
     <td
       className={cx(
         'border border-x border-solid border-gray-200 outline-2 outline-secondary first:border-l-0 last:border-r-0 focus:outline',
-        { outline: isEditCell },
+        { 'outline p-0': isEditCell },
         cellClass,
       )}
       tabIndex="0"
@@ -285,9 +286,9 @@ function SimpleTable(props) {
   const [fullScreen, setFullScreen] = useState(false)
   const [editingCell, setEditingCell] = useState(null)
 
-  const combinedColDef = { ...globalColDef, ...defaultColDef }
+  const combinedColDef = useMemo(() => ({ ...globalColDef, ...defaultColDef }), [defaultColDef])
 
-  const counts = countHeader(columnDefs)
+  const counts = useMemo(() => countHeader(columnDefs), [columnDefs])
 
   function handleStartEdit(row, col) {
     setEditingCell([row, col])
@@ -336,7 +337,7 @@ function SimpleTable(props) {
         >
           <table className="ag-table simple-table w-full border-collapse">
             <thead className="sticky top-0">
-              {<Header context={context} rows={counts.rows} />}
+              <Header context={context} rows={counts.rows} />
             </thead>
             <tbody>{rows}</tbody>
           </table>
