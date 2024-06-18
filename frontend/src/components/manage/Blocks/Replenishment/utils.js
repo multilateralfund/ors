@@ -155,3 +155,31 @@ export function formatTableData(tableData) {
 
   return result
 }
+
+export function sumColumns(tableData) {
+  const result = { adj_un_soa: 0, annual_contributions: 0, un_soa: 0 }
+
+  for (let i = 0; i < tableData.length; i++) {
+    result.un_soa += fixFloat(parseFloat(tableData[i].un_soa) || 0, 30)
+    result.adj_un_soa += fixFloat(parseFloat(tableData[i].adj_un_soa) || 0, 30)
+    result.annual_contributions += fixFloat(
+      parseFloat(tableData[i].annual_contributions) || 0,
+      30,
+    )
+  }
+
+  result.un_soa = result.un_soa.toLocaleString('en-US', {
+    maximumFractionDigits: 6,
+    minimumFractionDigits: 6,
+  })
+  result.adj_un_soa = result.adj_un_soa.toLocaleString('en-US', {
+    maximumFractionDigits: 6,
+    minimumFractionDigits: 6,
+  })
+  result.annual_contributions = result.annual_contributions.toLocaleString(
+    'en-US',
+    { maximumFractionDigits: 6, minimumFractionDigits: 6 },
+  )
+
+  return result
+}

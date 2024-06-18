@@ -14,9 +14,11 @@ import {
   filterTableData,
   formatTableData,
   sortTableData,
+  sumColumns,
 } from './utils'
 
-const REPLENISHMENT_AMOUNT = 475000000
+const REPLENISHMENT_AMOUNT = 175200000
+import styles from './table.module.css'
 
 const COLUMNS = [
   { field: 'country', label: 'Country' },
@@ -246,7 +248,7 @@ const EditDialog = function EditDialog(props) {
 }
 
 function SATable(props) {
-  return <Table {...props} />
+  return <Table {...props} className={styles.replenishmentTable} />
 }
 
 function SAView(props) {
@@ -396,9 +398,12 @@ function SAView(props) {
         columns={columns}
         enableEdit={true}
         enableSort={true}
-        rowData={filteredTableData}
         sortDirection={sortDirection}
         sortOn={sortOn}
+        rowData={[
+          ...filteredTableData,
+          { country: 'Total', ...sumColumns(filteredTableData) },
+        ]}
         onDelete={handleDelete}
         onEdit={showEditDialog}
         onSort={handleSort}
