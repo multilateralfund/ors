@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react'
 import { AddButton } from '@ors/components/ui/Button/Button'
 
 import FormDialog from './FormDialog'
-import { FieldInput, FieldSelect, Input } from './Inputs'
+import { FieldInput, FieldSelect, FormattedNumberInput, Input } from './Inputs'
 import Table from './Table'
 import { COUNTRIES, PERIOD } from './constants'
 import DATA from './data'
@@ -275,9 +275,12 @@ function SAView(props) {
   const [editIdx, setEditIdx] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
 
+  const [replenishmentAmount, setReplenishmentAmount] =
+    useState(REPLENISHMENT_AMOUNT)
+
   const computedData = useMemo(
-    () => computeTableData(tableData, REPLENISHMENT_AMOUNT),
-    [tableData],
+    () => computeTableData(tableData, replenishmentAmount),
+    [tableData, replenishmentAmount],
   )
 
   // const editData = useMemo(() => {
@@ -372,6 +375,19 @@ function SAView(props) {
               type="text"
               value={searchValue}
               onChange={handleSearchInput}
+            />
+          </label>
+        </div>
+        <div className="ml-8">
+          <label>
+            Replenishment amount:{' '}
+            <FormattedNumberInput
+              id="totalAmount"
+              type="number"
+              value={replenishmentAmount}
+              onChange={(evt) =>
+                setReplenishmentAmount(parseFloat(evt.target.value))
+              }
             />
           </label>
         </div>
