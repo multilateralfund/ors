@@ -20,6 +20,14 @@ export type CreateSliceProps = {
   set: StoreApi<StoreState>['setState']
 }
 
+export type StatusFilterTypes = 'all' | 'draft' | 'final'
+
+export type FiltersType = {
+  country: Country[]
+  range: [number?, number?]
+  status: StatusFilterTypes
+}
+
 type Report = {
   country?: Country
   emptyForm: SliceData<EmptyFormType, Record<string, any> | null>
@@ -131,6 +139,11 @@ export interface CommonSlice {
   settings: SliceData<Settings>
 }
 
+export interface FiltersSlice {
+  filters: FiltersType
+  setFilters: (newFilters: Partial<FiltersType>) => void
+}
+
 export interface CommentData {
   comment: string
   comment_type: string
@@ -155,6 +168,7 @@ export type StoreState = {
   connection: null | string
   cp_current_tab: CPCurrentTabSlice
   cp_reports: CPReportsSlice
+  filters: FiltersSlice
   header: HeaderSlice
   internalError: any
   projects: ProjectsSlice

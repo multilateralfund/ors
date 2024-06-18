@@ -285,16 +285,6 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
         <div className="container flex w-full justify-between gap-x-4 px-0">
           <div className="flex justify-between gap-x-4">
             <Link
-              className="btn-close bg-gray-600 px-4 py-2 shadow-none"
-              color="secondary"
-              href={`/country-programme`}
-              size="large"
-              variant="contained"
-              button
-            >
-              View Reports
-            </Link>
-            <Link
               className="px-4 py-2 shadow-none"
               color="secondary"
               href={`/country-programme/${report.country?.iso3}/${report.data?.year}/edit/`}
@@ -314,6 +304,16 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
                 Submit final version
               </Button>
             )}
+            <Link
+              className="btn-close bg-gray-600 px-4 py-2 shadow-none"
+              color="secondary"
+              href={`/country-programme`}
+              size="large"
+              variant="contained"
+              button
+            >
+              View Reports
+            </Link>
           </div>
         </div>
       )}
