@@ -17,7 +17,7 @@ export default function Header() {
   const { HeaderTitle } = useStore((state) => state.header)
 
   return (
-    <FadeInOut className="header-motion print:break-after-avoid print:inline-block">
+    <FadeInOut className="header-motion">
       <nav
         id="header"
         className="rounded-none border-0 from-white to-gray-900 px-0 pb-0 pt-4 shadow-none"

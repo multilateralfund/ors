@@ -7,8 +7,7 @@ import {
   userCanSubmitReport,
 } from '@ors/types/user_types'
 
-import React, { useMemo, useRef, useState } from 'react'
-import ReactToPrint from 'react-to-print'
+import React, { useMemo, useState } from 'react'
 
 import {
   Box,
@@ -377,9 +376,9 @@ const SubmissionSection = function SubmissionSection(
 }
 
 const LogSection = function LogSection(
-  props: { logApi: any; tableRef: any } & SectionProps,
+  props: { logApi: any } & SectionProps,
 ) {
-  const { filters, logApi, maxYear, minYear, setFilters, tableRef } = props
+  const { filters, logApi, maxYear, minYear, setFilters } = props
   const [pagination, setPagination] = useState({
     page: 1,
     rowsPerPage: LOGS_PER_PAGE,
@@ -419,7 +418,6 @@ const LogSection = function LogSection(
       <div className="mb-10 flex w-full max-w-screen-xl">
         <SimpleTable
           data={memoResults}
-          ref={tableRef}
           setPagination={setPagination}
           setParams={setParams}
         />
@@ -637,8 +635,6 @@ export default function CPListing() {
 
   const [activeTab, setActiveTab] = useState(0)
 
-  const tableRef = useRef()
-
   const tabsEl = React.useRef<HTMLDivElement>(null)
 
   const minYear = settings.cp_reports.min_year
@@ -646,7 +642,6 @@ export default function CPListing() {
   const { filters, setFilters } = useStore((state) => state.filters)
   const countryApi = useSubmissionSectionApi(filters)
   const logApi = useLogSectionApi(filters)
-
 
   const handleFiltersChange = (newFilters: FiltersType) => {
     const newFilterState = { ...filters, ...newFilters }
@@ -693,19 +688,14 @@ export default function CPListing() {
           </Link>
         )}
         {userCanExportData[user_type as UserType] && activeTab === 1 && (
-          <ReactToPrint
-            // @ts-ignore
-            content={() => tableRef.current}
-            trigger={() => (
-              <Button
-                className="px-4 py-2 text-lg uppercase"
-                color="secondary"
-                variant="contained"
-              >
-                Print
-              </Button>
-            )}
-          />
+          <Button
+            className="px-4 py-2 text-lg uppercase"
+            color="secondary"
+            variant="contained"
+            onClick={() => window.print()}
+          >
+            Print
+          </Button>
         )}
       </div>
       <div
@@ -772,7 +762,6 @@ export default function CPListing() {
               maxYear={maxYear}
               minYear={minYear}
               setFilters={handleFiltersChange}
-              tableRef={tableRef}
               user_type={user_type}
             />
           )}

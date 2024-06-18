@@ -39,25 +39,6 @@
     display: none;
   }
 
-  .show-on-print {
-    display: block !important;
-  }
-
-  .hide-on-print {
-    display: none !important;
-  }
-
-  .print-title {
-    display: block;
-    margin-bottom: 1rem;
-  }
-
-  .print-logo {
-    display: block;
-    margin-bottom: 1rem;
-    width: 50%;
-  }
-
   .SimpleTable table,
   /*.SimpleTable th,*/
   .SimpleTable td {

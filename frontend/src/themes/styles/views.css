@@ -20,7 +20,7 @@
   }
 
   :root[data-layout='authorized_document'] main {
-    @apply grid;
+    @apply grid print:block;
   }
 
   .shadow-mlfs {

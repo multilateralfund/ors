@@ -34,8 +34,8 @@ export default function AuthorizedView({
     <>
       <Print />
       <Header />
-      <main className="grid-cols-[auto]">
-        <div className="content grid grid-rows-[auto_1fr_auto]">
+      <main className="grid-cols-[auto] print:block">
+        <div className="content grid grid-rows-[auto_1fr_auto] print:block">
           <div id="top-control" className="not-printable z-10" />
           <div className="page-content-wrapper">{children}</div>
           <div id="bottom-control" className="not-printable z-10" />
