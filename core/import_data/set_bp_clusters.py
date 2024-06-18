@@ -1,6 +1,5 @@
 import logging
 
-from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
 
@@ -91,7 +90,7 @@ def set_substances_cluster(record):
     ):
         cluster_names.append("HFC Individual")
 
-    if not len(cluster_names):
+    if not cluster_names:
         logger.error(f"No cluster found for record {record.id}")
         return
 
