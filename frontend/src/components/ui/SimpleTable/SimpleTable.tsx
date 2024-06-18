@@ -5,6 +5,7 @@ import {
   Skeleton,
   Table,
   TableBody,
+  TableCell,
   TableContainer,
   TableHead,
   TableRow,
@@ -12,48 +13,12 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import TableCell, { tableCellClasses } from '@mui/material/TableCell'
-import { styled } from '@mui/material/styles'
 
 import Link from '@ors/components/ui/Link/Link'
 import { useStore } from '@ors/store'
 
 import { FiEdit, FiEye } from 'react-icons/fi'
 import { IoEllipse } from 'react-icons/io5'
-
-const StyledTableCell = styled(TableCell)(({ theme }) => {
-  // const borderColor = theme.palette.secondary.light
-
-  return {
-    [`&.${tableCellClasses.body}`]: {
-      // borderBottom: `1px solid ${borderColor}`,
-      fontSize: theme.typography.fontSize,
-    },
-    [`&.${tableCellClasses.head}`]: {
-      '&:first-child': {
-        borderTopLeftRadius: '0.25rem',
-      },
-      '&:last-child': {
-        borderTopRightRadius: '0.25rem',
-      },
-      borderCollapse: 'collapse',
-      fontSize: theme.typography.fontSize,
-    },
-  }
-})
-
-const StyledTableRow = styled(TableRow)(({ theme }) => {
-  const borderColor = theme.palette.secondary.light
-
-  return {
-    '& td': {
-      borderBottom: `1px solid ${borderColor}`, // Add border to all cells in the row
-    },
-    '&:last-child td': {
-      borderBottom: 0,
-    },
-  }
-})
 
 interface Data {
   country: string
@@ -171,7 +136,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     <TableHead className="select-none uppercase">
       <TableRow>
         {headCells.map((headCell) => (
-          <StyledTableCell
+          <TableCell
             key={headCell.id}
             align={headCell.align || 'center'}
             padding={headCell.disablePadding ? 'none' : 'normal'}
@@ -196,11 +161,11 @@ function EnhancedTableHead(props: EnhancedTableProps) {
               // If the column is not sortable, just render the label
               headCell.label
             )}
-          </StyledTableCell>
+          </TableCell>
         ))}
-        <StyledTableCell className="print:hidden" align="center">
+        <TableCell className="print:hidden" align="center">
           Action
-        </StyledTableCell>
+        </TableCell>
       </TableRow>
     </TableHead>
   )
@@ -272,7 +237,7 @@ export default function SimpleTable(props: any) {
 
   return (
     <Box
-      className="SimpleTable px-0 py-2 lg:px-4 print:shadow-none print:border-none print:px-0"
+      className="SimpleTable px-0 py-2 lg:px-4 print:border-none print:px-0 print:shadow-none"
       sx={{
         width: '100%',
       }}
@@ -300,30 +265,24 @@ export default function SimpleTable(props: any) {
                 const country = countriesById.get(row.country_id as number)
 
                 return (
-                  <StyledTableRow key={row.id} tabIndex={-1}>
-                    <StyledTableCell id={labelId} align="right" scope="row">
+                  <TableRow key={row.id} tabIndex={-1}>
+                    <TableCell id={labelId} align="right" scope="row">
                       {row.year}
-                    </StyledTableCell>
-                    <StyledTableCell align="center">
-                      {row.country}
-                    </StyledTableCell>
-                    <StyledTableCell align="center">
+                    </TableCell>
+                    <TableCell align="center">{row.country}</TableCell>
+                    <TableCell align="center">
                       <Tooltip title={status}>
                         <Typography className="flex justify-center">
                           <IoEllipse color={statusDot} size={12} />
                         </Typography>
                       </Tooltip>
-                    </StyledTableCell>
-                    <StyledTableCell align="center">
-                      {row.version}
-                    </StyledTableCell>
-                    <StyledTableCell align="right">
-                      {row.created_at}
-                    </StyledTableCell>
-                    <StyledTableCell className="capitalize" align="left">
+                    </TableCell>
+                    <TableCell align="center">{row.version}</TableCell>
+                    <TableCell align="right">{row.created_at}</TableCell>
+                    <TableCell className="capitalize" align="left">
                       {row.version_created_by_role}
-                    </StyledTableCell>
-                    <StyledTableCell className="print:hidden" align="center">
+                    </TableCell>
+                    <TableCell className="print:hidden" align="center">
                       <Typography className="flex items-center justify-center">
                         <Link
                           className="text-pretty border-0 p-2 hover:text-secondary"
@@ -341,8 +300,8 @@ export default function SimpleTable(props: any) {
                           <FiEdit size={16} />
                         </Link>
                       </Typography>
-                    </StyledTableCell>
-                  </StyledTableRow>
+                    </TableCell>
+                  </TableRow>
                 )
               })
             )}
