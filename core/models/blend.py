@@ -318,7 +318,7 @@ class BlendComponentManager(models.Manager):
         return (
             Blend.objects.filter(id__in=blend_ids)
             .annotate(total=models.Count("components"))
-            .filter(models.Q(total__gt=len(components_list)))
+            .filter(models.Q(total__gte=len(components_list)))
         )
 
 

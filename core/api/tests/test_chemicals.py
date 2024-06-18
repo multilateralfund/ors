@@ -288,7 +288,6 @@ class TestSimilarBlend(BaseTest):
             assert blend["name"] in ["blendAFOF", "blendAF"]
 
     def test_blend_all_comps(self, user, _setup_similar_blend):
-        # test with all components => 0 blends
         self.client.force_authenticate(user=user)
         _, components = _setup_similar_blend
 
@@ -296,7 +295,8 @@ class TestSimilarBlend(BaseTest):
             self.url, {"components": components["blendAFOF"]}, format="json"
         )
         assert response.status_code == 200
-        assert len(response.data) == 0
+        assert len(response.data) == 1
+        assert response.data[0]["name"] == "blendAFOF"
 
     def test_invalid_substance(self, user, _setup_similar_blend):
         self.client.force_authenticate(user=user)
