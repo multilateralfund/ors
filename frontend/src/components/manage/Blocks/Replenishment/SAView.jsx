@@ -1,14 +1,12 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 
 import { AddButton } from '@ors/components/ui/Button/Button'
 
 import FormDialog from './FormDialog'
 import { FieldInput, FieldSelect, FormattedNumberInput, Input } from './Inputs'
 import Table from './Table'
-import { COUNTRIES, PERIOD } from './constants'
-import DATA from './data'
 import {
   computeTableData,
   filterTableData,
@@ -18,6 +16,10 @@ import {
 } from './utils'
 
 const REPLENISHMENT_AMOUNT = 175200000
+import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
+import ReplenishmentProvider from '@ors/contexts/Replenishment/ReplenishmentProvider'
+import { formatApiUrl } from '@ors/helpers/Api/utils'
+
 import styles from './table.module.css'
 
 const COLUMNS = [
@@ -59,28 +61,13 @@ const COLUMNS = [
   },
 ]
 
-// function populateData() {
-//   for (let i = 0; i < COUNTRIES.length; i++) {
-//     DATA.push({
-//       ...DATA[0],
-//       adj_un_soa: COUNTRIES[i].iso3 === 'USA' ? 22.0 : DATA[0].adj_un_soa,
-//       country: COUNTRIES[i].name_alt,
-//       ferm_cur: `${COUNTRIES[i].name_alt}n fiat`,
-//       iso3: COUNTRIES[i].iso3,
-//     })
-//   }
-//   DATA.splice(0, 1)
-// }
-//
-// populateData()
-
 const AddDialog = function AddDialog(props) {
-  const { columns, ...dialogProps } = props
+  const { columns, countries, ...dialogProps } = props
   return (
     <FormDialog title="Add entry" {...dialogProps}>
       <FieldSelect id="iso3" label="Country" required>
         <option value=""> - </option>
-        {COUNTRIES.map((c) => (
+        {countries.map((c) => (
           <option key={c.iso3} data-name={c.name_alt} value={c.iso3}>
             {c.name_alt}
           </option>
@@ -120,6 +107,7 @@ const AddDialog = function AddDialog(props) {
 const EditDialog = function EditDialog(props) {
   const {
     columns,
+    countries,
     editIdx,
     replenishmentAmount,
     tableData,
@@ -141,7 +129,7 @@ const EditDialog = function EditDialog(props) {
       setComputedData(function (prevData) {
         const nextData = [...prevData]
         nextData[editIdx][name] =
-          parseFloat(evt.target.value) || prevData[editIdx][name]
+          parseFloat(evt.target.value) ?? prevData[editIdx][name]
         return computeTableData(nextData, replenishmentAmount)
       })
     }
@@ -158,7 +146,7 @@ const EditDialog = function EditDialog(props) {
             required
           >
             <option value=""> - </option>
-            {COUNTRIES.map((c) => (
+            {countries.map((c) => (
               <option key={c.iso3} data-name={c.name_alt} value={c.iso3}>
                 {c.name_alt}
               </option>
@@ -251,8 +239,61 @@ function SATable(props) {
   return <Table {...props} className={styles.replenishmentTable} />
 }
 
+function tranformContributions(cs) {
+  const r = []
+
+  for (let i = 0; i < cs.length; i++) {
+    r.push({
+      adj_un_soa: cs[i].adjusted_scale_of_assessment,
+      annual_contributions: cs[i].amount,
+      avg_ir: cs[i].average_inflation_rate,
+      country: cs[i].country.name_alt,
+      ferm_cur: cs[i].currency,
+      ferm_cur_amount: cs[i].amount_local_currency,
+      ferm_rate: cs[i].exchange_rate,
+      iso3: cs[i].country.iso3,
+      qual_ferm: cs[i].qualifies_for_fixed_rate_mechanism ? 1 : 0,
+      un_soa: cs[i].un_scale_of_assessment,
+    })
+  }
+
+  return r
+}
+
+function useApiReplenishment(startYear) {
+  const [contributions, setContributions] = useState([])
+  const [replenishmentAmount, setReplenishmentAmount] = useState(0)
+
+  useEffect(
+    function () {
+      const path = [
+        '/api/replenishment/contributions',
+        new URLSearchParams({ start_year: startYear }),
+      ].join('?')
+
+      fetch(formatApiUrl(path), {
+        credentials: 'include',
+      })
+        .then(function (resp) {
+          return resp.json()
+        })
+        .then(function (jsonData) {
+          setContributions(tranformContributions(jsonData))
+          if (jsonData.length > 0) {
+            setReplenishmentAmount(jsonData[0].replenishment.amount)
+          }
+        })
+    },
+    [startYear],
+  )
+
+  return { contributions, replenishmentAmount }
+}
+
 function SAView(props) {
-  const period = props.period ?? PERIOD
+  const { period } = props
+
+  const ctx = useContext(ReplenishmentContext)
 
   const columns = useMemo(
     function () {
@@ -268,7 +309,19 @@ function SAView(props) {
     [period],
   )
 
-  const [tableData, setTableData] = useState(DATA)
+  const { contributions, replenishmentAmount: apiReplenishmentAmount } =
+    useApiReplenishment(period.split('-')[0])
+
+  useEffect(
+    function () {
+      setTableData(contributions)
+      setReplenishmentAmount(apiReplenishmentAmount)
+    },
+    [contributions, apiReplenishmentAmount],
+  )
+
+  const [tableData, setTableData] = useState(contributions)
+  const [shouldCompute, setShouldCompute] = useState(false)
   const [searchValue, setSearchValue] = useState('')
 
   const [sortOn, setSortOn] = useState(0)
@@ -282,7 +335,8 @@ function SAView(props) {
 
   const computedData = useMemo(
     () => computeTableData(tableData, replenishmentAmount),
-    [tableData, replenishmentAmount],
+    /* eslint-disable-next-line */
+    [tableData, replenishmentAmount, shouldCompute],
   )
 
   // const editData = useMemo(() => {
@@ -316,6 +370,7 @@ function SAView(props) {
     const entry = { ...data }
     setTableData((prev) => [entry, ...prev])
     setShowAdd(false)
+    setShouldCompute(true)
   }
 
   function handleDelete(idx) {
@@ -326,6 +381,7 @@ function SAView(props) {
         next.splice(idx, 1)
         return next
       })
+      setShouldCompute(true)
     }
   }
 
@@ -337,10 +393,16 @@ function SAView(props) {
       return next
     })
     setEditIdx(null)
+    setShouldCompute(true)
   }
 
   function handleSearchInput(evt) {
     setSearchValue(evt.target.value)
+  }
+
+  function handleAmountInput(evt) {
+    setReplenishmentAmount(parseFloat(evt.target.value))
+    setShouldCompute(true)
   }
 
   function handleSort(column) {
@@ -353,6 +415,7 @@ function SAView(props) {
       {showAdd ? (
         <AddDialog
           columns={columns}
+          countries={ctx.countries}
           onCancel={() => setShowAdd(false)}
           onSubmit={handleAddSubmit}
         />
@@ -360,8 +423,9 @@ function SAView(props) {
       {editIdx !== null ? (
         <EditDialog
           columns={columns}
+          countries={ctx.countries}
           editIdx={editIdx}
-          replenishmentAmount={REPLENISHMENT_AMOUNT}
+          replenishmentAmount={replenishmentAmount}
           tableData={computedData}
           onCancel={() => setEditIdx(null)}
           onSubmit={handleEditSubmit}
@@ -387,9 +451,7 @@ function SAView(props) {
               id="totalAmount"
               type="number"
               value={replenishmentAmount}
-              onChange={(evt) =>
-                setReplenishmentAmount(parseFloat(evt.target.value))
-              }
+              onChange={handleAmountInput}
             />
           </label>
         </div>

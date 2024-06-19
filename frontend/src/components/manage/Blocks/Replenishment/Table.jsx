@@ -83,7 +83,7 @@ function Table(props) {
 
   if (rows.length === 0) {
     rows.push(
-      <tr>
+      <tr key="empty">
         <td className="text-center" colSpan={hCols.length}>
           Empty
         </td>
