@@ -13,11 +13,7 @@ import { OldAddSubstanceDropdowns } from '@ors/components/manage/Blocks/Section/
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { getResults } from '@ors/helpers/Api/Api'
-import {
-  applyTransaction,
-  // clonePreviousSubstances,
-  scrollToElement,
-} from '@ors/helpers/Utils/Utils'
+import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import SectionA from '@ors/models/SectionA'
 import { useStore } from '@ors/store'
 
@@ -204,25 +200,6 @@ export default function SectionACreate(props: {
     return data
   }, [Section, mandatorySubstances, substances, substancesInForm])
 
-  // const previousSubstances = useMemo(() => {
-  //   const data: Array<any> = []
-  //
-  //   each(emptyForm.previous_substances.section_a, (substance) => {
-  //     if (!includes(substancesInForm, `substance_${substance.substance_id}`)) {
-  //       const transformedSubstance = Section.transformSubstance(
-  //         substance,
-  //         false,
-  //       )
-  //       data.push({
-  //         ...transformedSubstance,
-  //         id: transformedSubstance.display_name,
-  //       })
-  //     }
-  //   })
-  //
-  //   return data
-  // }, [Section, emptyForm.previous_substances.section_a, substancesInForm])
-
   const gridOptions = useGridOptions({
     model: variant.model,
     onRemoveSubstance: (props: any) => {
@@ -280,26 +257,6 @@ export default function SectionACreate(props: {
     }
   }
 
-  // Function used to add substances from previous year report to the current one for report model V
-  function clonePreviousSubstances(
-    previousSubstances: Array<any>,
-    form: CPBaseForm,
-    setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>,
-  ) {
-    const newData = [...form.section_a]
-    each(previousSubstances, (pSubstance) => {
-      const added = find(
-        form.section_a,
-        (substance) =>
-          substance.row_id === pSubstance.row_id,
-      )
-      if (!added) {
-        newData.push(pSubstance)
-      }
-    })
-    setForm((form: CPBaseForm) => ({ ...form, section_a: newData }))
-  }
-
   return (
     <>
       <Alert
@@ -316,18 +273,6 @@ export default function SectionACreate(props: {
             onClick={() => setAddSubstanceModal(true)}
           >
             Add substance <IoAddCircle className="ml-1.5" size={18} />
-          </Button>
-        </div>
-      )}
-      {includes(['V'], variant.model) && (
-        <div className="sticky top-0 z-50 flex justify-end">
-          <Button
-            className="rounded-lg border-[1.5px] border-solid border-primary bg-white px-3 py-2.5 text-base hover:bg-primary"
-            onClick={() =>
-              clonePreviousSubstances(mandatorySubstances, form, setForm)
-            }
-          >
-            Clone previous substances
           </Button>
         </div>
       )}
