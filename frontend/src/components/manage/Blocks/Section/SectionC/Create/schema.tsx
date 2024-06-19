@@ -48,6 +48,7 @@ function useGridOptions(props: {
             return <AgCellRenderer {...props} />
           },
           cellRendererParams: (props: ICellRendererParams<RowData>) => ({
+            ...sectionColDefById['display_name'],
             className: cx({
               'font-bold': includes(
                 ['group', 'total', 'subtotal'],
@@ -67,7 +68,6 @@ function useGridOptions(props: {
           field: 'display_name',
           headerClass: 'ag-text-left',
           headerName: includes(['IV'], model) ? 'Description' : 'Substance',
-          ...sectionColDefById['display_name'],
         },
         ...(!includes(['II', 'III'], model)
           ? [
