@@ -11,8 +11,8 @@ from core.api.tests.factories import (
     AgencyFactory,
     BPChemicalTypeFactory,
     BlendFactory,
-    CPRaportFormatColumnFactory,
-    CPRaportFormatRowFactory,
+    CPReportFormatColumnFactory,
+    CPReportFormatRowFactory,
     CPReportFactory,
     CountryFactory,
     ExcludedUsageBlendFactory,
@@ -168,7 +168,7 @@ def cp_report_format(time_frames):
     )
     cp_report_formats = []
     for data in create_data:
-        cp_report_formats.append(CPRaportFormatColumnFactory.create(**data))
+        cp_report_formats.append(CPReportFormatColumnFactory.create(**data))
 
     return cp_report_formats
 
@@ -467,7 +467,7 @@ def setup_new_cp_report(cp_report_2019, blend, substance, time_frames, groupA):
 
     for i, subst in enumerate([substance, substAinform, substBinform]):
         for sect in ["A", "C"]:
-            CPRaportFormatRowFactory.create(
+            CPReportFormatRowFactory.create(
                 blend=None,
                 substance=subst,
                 section=sect,
@@ -476,7 +476,7 @@ def setup_new_cp_report(cp_report_2019, blend, substance, time_frames, groupA):
             )
     for i, subst in enumerate([substF1inform, substF2inform, substO1inform]):
         for sect in ["B", "C"]:
-            CPRaportFormatRowFactory.create(
+            CPReportFormatRowFactory.create(
                 blend=None,
                 substance=subst,
                 section=sect,
@@ -486,7 +486,7 @@ def setup_new_cp_report(cp_report_2019, blend, substance, time_frames, groupA):
 
     for i, ble in enumerate([blend, blend2inform]):
         for sect in ["B", "C"]:
-            CPRaportFormatRowFactory.create(
+            CPReportFormatRowFactory.create(
                 blend=ble,
                 substance=None,
                 section=sect,
@@ -557,7 +557,7 @@ def setup_old_cp_report(cp_report_2005, substance, blend, groupA, time_frames):
     # substance
     new_subst = SubstanceFactory.create(name="substance2", group=groupA)
 
-    CPRaportFormatRowFactory.create(
+    CPReportFormatRowFactory.create(
         blend=None,
         substance=new_subst,
         section="A",
@@ -630,7 +630,7 @@ def setup_old_version_2019(cp_report_2019, substance, blend, time_frames, user):
     cp_report_2019.version = 2
     cp_report_2019.save()
 
-    CPRaportFormatRowFactory.create(
+    CPReportFormatRowFactory.create(
         blend=blend,
         substance=None,
         section="B",
@@ -638,7 +638,7 @@ def setup_old_version_2019(cp_report_2019, substance, blend, time_frames, user):
         sort_order=2,
     )
 
-    CPRaportFormatRowFactory.create(
+    CPReportFormatRowFactory.create(
         blend=None,
         substance=substance,
         section="A",
@@ -666,7 +666,7 @@ def setup_old_version_2005(
     cp_report_2005.version = 2
     cp_report_2005.save()
 
-    CPRaportFormatRowFactory.create(
+    CPReportFormatRowFactory.create(
         blend=blend,
         substance=None,
         section="B",
@@ -674,7 +674,7 @@ def setup_old_version_2005(
         sort_order=2,
     )
 
-    CPRaportFormatRowFactory.create(
+    CPReportFormatRowFactory.create(
         blend=None,
         substance=substance,
         section="A",

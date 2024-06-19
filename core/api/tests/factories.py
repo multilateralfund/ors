@@ -140,7 +140,7 @@ class CountryFactory(factory.django.DjangoModelFactory):
     abbr = factory.Faker("pystr", max_chars=5)
 
 
-class CPRaportFormatColumnFactory(factory.django.DjangoModelFactory):
+class CPReportFormatColumnFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = CPReportFormatColumn
 
@@ -149,7 +149,7 @@ class CPRaportFormatColumnFactory(factory.django.DjangoModelFactory):
     section = factory.fuzzy.FuzzyChoice(["A", "B"])
 
 
-class CPRaportFormatRowFactory(factory.django.DjangoModelFactory):
+class CPReportFormatRowFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = CPReportFormatRow
 
