@@ -1,3 +1,5 @@
+import cx from 'classnames'
+
 import styles from './table.module.css'
 
 import { IoChevronDown, IoChevronUp, IoPencil, IoTrash } from 'react-icons/io5'
@@ -81,7 +83,7 @@ function Table(props) {
 
   if (rows.length === 0) {
     rows.push(
-      <tr>
+      <tr key="empty">
         <td className="text-center" colSpan={hCols.length}>
           Empty
         </td>
@@ -90,7 +92,7 @@ function Table(props) {
   }
 
   return (
-    <table className={styles.replTable}>
+    <table className={cx(styles.replTable, props.className)}>
       <thead>
         <tr>{hCols}</tr>
       </thead>

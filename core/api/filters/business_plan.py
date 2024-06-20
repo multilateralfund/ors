@@ -53,9 +53,6 @@ class BPRecordFilter(filters.FilterSet):
         model = BPRecord
         fields = [
             "business_plan_id",
-            "business_plan__agency_id",
-            "business_plan__year_start",
-            "business_plan__year_end",
             "country_id",
             "lvc_status",
             "project_type_id",

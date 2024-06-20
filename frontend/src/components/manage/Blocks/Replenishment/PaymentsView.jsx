@@ -1,13 +1,20 @@
 'use client'
 
-import { useImperativeHandle, useMemo, useState } from 'react'
+import {
+  useContext,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from 'react'
 
 import { AddButton } from '@ors/components/ui/Button/Button'
+import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
+import ReplenishmentProvider from '@ors/contexts/Replenishment/ReplenishmentProvider'
 
 import FormDialog from './FormDialog'
 import { FieldInput, FieldSelect, Input } from './Inputs'
 import Table from './Table'
-import { COUNTRIES } from './constants'
 import {
   dateForEditField,
   filterTableData,
@@ -48,18 +55,17 @@ const DATA = [
   },
 ]
 
-function populateData() {
-  for (let i = 0; i < COUNTRIES.length; i++) {
-    DATA.push({
+function generateData(cs) {
+  const r = []
+  for (let i = 0; i < cs.length; i++) {
+    r.push({
       ...DATA[i % 2],
-      country: COUNTRIES[i].name_alt,
-      iso3: COUNTRIES[i].iso3,
+      country: cs[i].name_alt,
+      iso3: cs[i].iso3,
     })
   }
-  DATA.splice(0, 2)
+  return r
 }
-
-populateData()
 
 const AddPaymentDialog = function AddPaymentDialog(props) {
   return <PaymentDialog title="Add payment" {...props} />
@@ -70,13 +76,13 @@ const EditPaymentDialog = function EditPaymentDialog(props) {
 }
 
 const PaymentDialog = function PaymentDialog(props) {
-  const { data, title, ...dialogProps } = props
+  const { countries, data, title, ...dialogProps } = props
 
   return (
     <FormDialog title={title} {...dialogProps}>
       <FieldSelect id="iso3" defaultValue={data?.iso3} label="Country" required>
         <option value=""> - </option>
-        {COUNTRIES.map((c) => (
+        {countries.map((c) => (
           <option key={c.iso3} data-name={c.name_alt} value={c.iso3}>
             {c.name_alt}
           </option>
@@ -131,7 +137,9 @@ function PaymentsTable(props) {
 }
 
 function PaymentsView(props) {
-  const [tableData, setTableData] = useState(DATA)
+  const ctx = useContext(ReplenishmentContext)
+
+  const [tableData, setTableData] = useState([])
   const [searchValue, setSearchValue] = useState('')
 
   const [sortOn, setSortOn] = useState(0)
@@ -139,6 +147,13 @@ function PaymentsView(props) {
 
   const [editIdx, setEditIdx] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
+
+  useEffect(
+    function () {
+      setTableData(generateData(ctx.countries))
+    },
+    [ctx],
+  )
 
   const editData = useMemo(() => {
     let entry = null
@@ -210,12 +225,14 @@ function PaymentsView(props) {
     <>
       {showAdd ? (
         <AddPaymentDialog
+          countries={ctx.countries}
           onCancel={() => setShowAdd(false)}
           onSubmit={handleAddPaymentSubmit}
         />
       ) : null}
       {editData !== null ? (
         <EditPaymentDialog
+          countries={ctx.countries}
           data={editData}
           onCancel={() => setEditIdx(null)}
           onSubmit={handleEditPaymentSubmit}

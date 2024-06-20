@@ -118,6 +118,33 @@ function getRowData(
   return rowData
 }
 
+function getChemicalGroup(
+  chemical: (ApiBlend | ApiSubstance | EmptyFormSubstance) &
+    Record<string, any>,
+): string {
+  if (chemical.row_id.includes('blend')) {
+    return 'HFCs'
+  }
+
+  if (chemical.row_id.includes('substance')) {
+    if (
+      chemical.name?.includes('HFC') ||
+      chemical.chemical_name?.includes('HFC')
+    ) {
+      return 'HFCs'
+    } else if (
+      chemical.name?.includes('HCFC') ||
+      chemical.chemical_name?.includes('HCFC')
+    ) {
+      return 'HCFCs'
+    } else {
+      return 'Alternatives'
+    }
+  }
+
+  return 'Alternatives'
+}
+
 export default function SectionCCreate(props: {
   Comments: React.FC<{ section: string; viewOnly: boolean }>
   Section: SectionC
@@ -319,13 +346,14 @@ export default function SectionCCreate(props: {
       (chemical) => chemical.row_id === newChemical.row_id,
     )
     if (!added) {
-      const groupNode = grid.current.api.getRowNode(newChemical.group)
+      const group = getChemicalGroup(newChemical)
+      const newChemicalWithGroup = { ...newChemical, group }
+      const groupNode = grid.current.api.getRowNode(group)
       const createGroup = !groupNode
-      const { group } = newChemical
 
       setForm((form: any) => ({
         ...form,
-        section_c: [...form.section_c, newChemical],
+        section_c: [...form.section_c, newChemicalWithGroup],
       }))
       if (createGroup) {
         applyTransaction(grid.current.api, {
@@ -337,7 +365,7 @@ export default function SectionCCreate(props: {
               row_id: group,
               rowType: 'group',
             },
-            newChemical,
+            newChemicalWithGroup,
             {
               display_name: 'Sub-total',
               group,
@@ -349,7 +377,7 @@ export default function SectionCCreate(props: {
         })
       } else {
         applyTransaction(grid.current.api, {
-          add: [newChemical],
+          add: [newChemicalWithGroup],
           addIndex: groupNode.rowIndex + groupNode.data.count + 1,
           update: [
             {
@@ -359,7 +387,9 @@ export default function SectionCCreate(props: {
           ],
         })
       }
-      const substanceNode = grid.current.api.getRowNode(newChemical.row_id)
+      const substanceNode = grid.current.api.getRowNode(
+        newChemicalWithGroup.row_id,
+      )
       newNode.current = substanceNode
     }
 

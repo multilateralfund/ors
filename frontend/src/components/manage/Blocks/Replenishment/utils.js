@@ -1,16 +1,15 @@
 import { fixFloat } from '@ors/helpers/Utils/Utils'
 
-import { DECIMALS, PERIODS } from './constants'
+import { MAX_DECIMALS, MIN_DECIMALS } from './constants'
+
+const RE_PERIOD = new RegExp(/\d{4}-\d{4}/)
 
 export function getPathPeriod(path) {
   let result = null
   const candidate = path.split('/').at(-1)
 
-  for (let i = 0; i < PERIODS.length; i++) {
-    if (candidate === PERIODS[i]) {
-      result = candidate
-      break
-    }
+  if (candidate.match(RE_PERIOD)) {
+    result = candidate
   }
 
   return result
@@ -24,7 +23,8 @@ export function formatDateValue(value) {
 
 export function formatNumberValue(value) {
   return parseFloat(value).toLocaleString('en-US', {
-    minimumFractionDigits: DECIMALS,
+    maximumFractionDigits: MAX_DECIMALS,
+    minimumFractionDigits: MIN_DECIMALS,
   })
 }
 
@@ -144,14 +144,42 @@ export function formatTableData(tableData) {
         newValue = 'N/A'
       } else if (valueType === 'number') {
         newValue = value.toLocaleString('en-US', {
-          maximumFractionDigits: 6,
-          minimumFractionDigits: 6,
+          maximumFractionDigits: MAX_DECIMALS,
+          minimumFractionDigits: MIN_DECIMALS,
         })
       }
 
       result[i][key] = newValue
     }
   }
+
+  return result
+}
+
+export function sumColumns(tableData) {
+  const result = { adj_un_soa: 0, annual_contributions: 0, un_soa: 0 }
+
+  for (let i = 0; i < tableData.length; i++) {
+    result.un_soa += tableData[i].un_soa
+    result.adj_un_soa += tableData[i].adj_un_soa
+    result.annual_contributions += tableData[i].annual_contributions
+  }
+
+  result.un_soa = result.un_soa.toLocaleString('en-US', {
+    maximumFractionDigits: MAX_DECIMALS,
+    minimumFractionDigits: MIN_DECIMALS,
+  })
+  result.adj_un_soa = result.adj_un_soa.toLocaleString('en-US', {
+    maximumFractionDigits: MAX_DECIMALS,
+    minimumFractionDigits: MIN_DECIMALS,
+  })
+  result.annual_contributions = result.annual_contributions.toLocaleString(
+    'en-US',
+    {
+      maximumFractionDigits: MAX_DECIMALS,
+      minimumFractionDigits: MIN_DECIMALS,
+    },
+  )
 
   return result
 }

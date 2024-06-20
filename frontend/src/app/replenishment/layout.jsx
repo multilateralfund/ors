@@ -1,43 +1,43 @@
 'use client'
 
-import React from 'react'
+import { useContext } from 'react'
 
 import cx from 'classnames'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import PeriodSelector from '@ors/components/manage/Blocks/Replenishment/PeriodSelector'
-import { PERIODS_AS_OPTIONS } from '@ors/components/manage/Blocks/Replenishment/constants'
 import { getPathPeriod } from '@ors/components/manage/Blocks/Replenishment/utils'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
+import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
+import ReplenishmentProvider from '@ors/contexts/Replenishment/ReplenishmentProvider'
 
 import styles from './styles.module.css'
 
 const SECTIONS = [
-  { label: 'Dashboard', path: '/replenishment/dashboard' },
+  {
+    label: 'Dashboard',
+    path: '/replenishment/dashboard',
+    showPeriodSelector: false,
+  },
   {
     label: 'Scale of assessment',
     path: '/replenishment/scale-of-assessment',
-    periodOptions: PERIODS_AS_OPTIONS,
   },
   {
+    extraPeriodOptions: [{ label: 'All', value: '' }],
     label: 'Invoices',
     path: '/replenishment/invoices',
-    periodOptions: [{ label: 'All', value: '' }, ...PERIODS_AS_OPTIONS],
   },
   {
+    extraPeriodOptions: [{ label: 'All', value: '' }],
     label: 'Payments',
     path: '/replenishment/payments',
-    periodOptions: [{ label: 'All', value: '' }, ...PERIODS_AS_OPTIONS],
   },
 ]
 
-export default function ReplenishmentLayout({
-  children,
-}) {
-  const pathname = usePathname()
-  const period = getPathPeriod(pathname)
-  const navLinks = []
+function getNavLinks(pathname, period) {
+  const result = []
 
   let currentSection
 
@@ -47,7 +47,7 @@ export default function ReplenishmentLayout({
     if (isCurrent) {
       currentSection = SECTIONS[i]
     }
-    navLinks.push(
+    result.push(
       <Link
         key={i}
         className={cx({ [styles.current]: isCurrent })}
@@ -57,21 +57,48 @@ export default function ReplenishmentLayout({
       </Link>,
     )
   }
+
+  return [currentSection, result]
+}
+
+function ReplenishmentLayoutContent(props) {
+  const { children } = props
+
+  const pathname = usePathname()
+  const period = getPathPeriod(pathname)
+
+  const [currentSection, navLinks] = getNavLinks(pathname, period)
+
+  const ctx = useContext(ReplenishmentContext)
+
   return (
-    <PageWrapper className="max-w-screen-2xl">
+    <>
       <div className={styles.nav}>
         <nav>{navLinks}</nav>
         <div>
-          {currentSection?.periodOptions ? (
+          {currentSection?.showPeriodSelector ?? true ? (
             <PeriodSelector
               key={currentSection.label}
               period={period}
-              periodOptions={currentSection.periodOptions}
+              periodOptions={[
+                ...(currentSection?.extraPeriodOptions ?? []),
+                ...ctx.periodOptions,
+              ]}
             />
           ) : null}
         </div>
       </div>
       <div className={styles.page}>{children}</div>
+    </>
+  )
+}
+
+export default function ReplenishmentLayout({ children }) {
+  return (
+    <PageWrapper className="max-w-screen-2xl">
+      <ReplenishmentProvider>
+        <ReplenishmentLayoutContent>{children}</ReplenishmentLayoutContent>
+      </ReplenishmentProvider>
     </PageWrapper>
   )
 }

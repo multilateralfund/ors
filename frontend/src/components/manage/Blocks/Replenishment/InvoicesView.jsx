@@ -1,15 +1,16 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 
 import cx from 'classnames'
 
 import { AddButton, DeleteButton } from '@ors/components/ui/Button/Button'
+import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
+import ReplenishmentProvider from '@ors/contexts/Replenishment/ReplenishmentProvider'
 
 import FormDialog from './FormDialog'
 import { FieldInput, FieldSelect, Input, Select } from './Inputs'
 import Table from './Table'
-import { COUNTRIES } from './constants'
 import {
   dateForEditField,
   filterTableData,
@@ -38,19 +39,18 @@ const DATA = [
   },
 ]
 
-function populateData() {
-  for (let i = 0; i < COUNTRIES.length; i++) {
-    DATA.push({
+function generateData(cs) {
+  const r = []
+  for (let i = 0; i < cs.length; i++) {
+    r.push({
       ...DATA[0],
-      country: COUNTRIES[i].name_alt,
-      iso3: COUNTRIES[i].iso3,
-      number: `${DATA[0].number.split('-').slice(0, 2).join('-')}-${COUNTRIES[i].iso3}`,
+      country: cs[i].name_alt,
+      iso3: cs[i].iso3,
+      number: `${DATA[0].number.split('-').slice(0, 2).join('-')}-${cs[i].iso3}`,
     })
   }
-  DATA.splice(0, 1)
+  return r
 }
-
-populateData()
 
 function InvoiceAttachments(props) {
   const [files, setFiles] = useState([{ id: 1 }])
@@ -155,13 +155,13 @@ const EditInvoiceDialog = function EditInvoiceDialog(props) {
 }
 
 const InvoiceDialog = function InvoiceDialog(props) {
-  const { data, title, ...dialogProps } = props
+  const { countries, data, title, ...dialogProps } = props
 
   return (
     <FormDialog title={title} {...dialogProps}>
       <FieldSelect id="iso3" defaultValue={data?.iso3} label="Country" required>
         <option value=""> - </option>
-        {COUNTRIES.map((c) => (
+        {countries.map((c) => (
           <option key={c.iso3} data-name={c.name_alt} value={c.iso3}>
             {c.name_alt}
           </option>
@@ -206,7 +206,9 @@ function InvoicesTable(props) {
 }
 
 function InvoicesView(props) {
-  const [tableData, setTableData] = useState(DATA)
+  const ctx = useContext(ReplenishmentContext)
+
+  const [tableData, setTableData] = useState([])
   const [searchValue, setSearchValue] = useState('')
 
   const [sortOn, setSortOn] = useState(0)
@@ -214,6 +216,13 @@ function InvoicesView(props) {
 
   const [editIdx, setEditIdx] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
+
+  useEffect(
+    function () {
+      setTableData(generateData(ctx.countries))
+    },
+    [ctx],
+  )
 
   const editData = useMemo(() => {
     let entry = null
@@ -285,12 +294,14 @@ function InvoicesView(props) {
     <>
       {showAdd ? (
         <AddInvoiceDialog
+          countries={ctx.countries}
           onCancel={() => setShowAdd(false)}
           onSubmit={handleAddInvoiceSubmit}
         />
       ) : null}
       {editData !== null ? (
         <EditInvoiceDialog
+          countries={ctx.countries}
           data={editData}
           onCancel={() => setEditIdx(null)}
           onSubmit={handleEditInvoiceSubmit}
