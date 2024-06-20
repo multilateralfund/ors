@@ -7,6 +7,7 @@ import {
   IconButton as MuiIconButton,
   Typography,
 } from '@mui/material'
+import { useParams } from 'next/navigation'
 
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
@@ -19,21 +20,31 @@ import { useStore } from '@ors/store'
 
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 import { IoClose, IoDownloadOutline, IoSearchOutline } from 'react-icons/io5'
+
 const PER_PAGE = 20
 
 export default function BusinessPlansTable() {
+  const params = useParams<{
+    agency: string
+    end_year: string
+    start_year: string
+  }>()
+  const { agency, end_year, start_year } = params
   const form = useRef<any>()
   const commonSlice = useStore((state) => state.common)
   const bpSlice = useStore((state) => state.businessPlans)
-  const defaultYear = bpSlice.yearRanges.data[0]?.year_start
+  // const defaultYearStart = bpSlice.yearRanges.data[0]?.year_start
+  // const defaultYearEnd = bpSlice.yearRanges.data[0]?.year_end
+
+  const currentAgency = useMemo(() => {
+    return commonSlice.agencies.data.find((item: any) => item.name === agency)
+  }, [agency, commonSlice.agencies.data])
 
   const initialParams = {
+    agency_id: currentAgency.id,
     blends: null,
     bp_chemical_type: null,
     bp_type: null,
-    business_plan__agency_id: null,
-    business_plan__year_end: null,
-    business_plan__year_start: defaultYear,
     business_plan_id: null,
     country_id: null,
     is_multi_year: null,
@@ -44,17 +55,20 @@ export default function BusinessPlansTable() {
     sector_id: null,
     subsector_id: null,
     substances: null,
+    year_end: end_year,
+    year_start: start_year,
   }
 
   const initialFilters = {
-    business_plan__year_start: defaultYear,
     country_id: [],
     project_type_id: [],
     search: '',
     sector_id: [],
     subsector_id: [],
+    // year_end: end_year,
+    year_start: start_year,
   }
- // TODO: Take filters from params /[agency]/[start_year]/[end_year]
+
   const [filters, setFilters] = useState({ ...initialFilters })
 
   const { data, loading, setParams } = useApi({
@@ -68,14 +82,14 @@ export default function BusinessPlansTable() {
     },
     path: 'api/business-plan-record/',
   })
-  const { count, loaded, results } = getResults(data)
+  const { count, loaded, results } = getResults(data?.results?.records)
 
   const yearRangeSelected = useMemo(
     () =>
       bpSlice.yearRanges.data.find(
-        (item: any) => item.year_start == filters.business_plan__year_start,
+        (item: any) => item.year_start == filters.year_start,
       ),
-    [bpSlice.yearRanges.data, filters.business_plan__year_start],
+    [bpSlice.yearRanges.data, filters.year_start],
   )
   const yearColumns = useMemo(() => {
     if (!yearRangeSelected) return []
@@ -146,11 +160,13 @@ export default function BusinessPlansTable() {
                     }
                     onChange={(_: any, value: any) => {
                       handleParamsChange({
-                        business_plan__year_start: value.year_start,
                         offset: 0,
+                        year_end: value.year_end,
+                        year_start: value.year_start,
                       })
                       handleFilterChange({
-                        business_plan__year_start: value.year_start,
+                        year_end: value.year_end,
+                        year_start: value.year_start,
                       })
                     }}
                     disableClearable
@@ -296,7 +312,7 @@ export default function BusinessPlansTable() {
                     target="_blank"
                     href={
                       formatApiUrl('api/business-plan-record/export/') +
-                      '?business_plan__year_start=' +
+                      '?year_start=' +
                       yearRangeSelected?.year_start.toString()
                     }
                     download
@@ -311,7 +327,7 @@ export default function BusinessPlansTable() {
                     target="_blank"
                     href={
                       formatApiUrl('api/business-plan-record/print/') +
-                      '?business_plan__year_start=' +
+                      '?year_start=' +
                       yearRangeSelected?.year_start.toString()
                     }
                     download
