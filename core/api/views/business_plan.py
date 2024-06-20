@@ -20,6 +20,7 @@ from core.api.export.base import configure_sheet_print
 from core.api.export.business_plan import BusinessPlanWriter
 from core.api.filters.business_plan import BPRecordFilter
 from core.api.filters.business_plan import BusinessPlanFilter
+from core.api.serializers.bp_history import BPHistorySerializer
 from core.api.serializers.business_plan import (
     BusinessPlanCreateSerializer,
     BusinessPlanSerializer,
@@ -31,6 +32,7 @@ from core.api.serializers.business_plan import (
 )
 from core.api.utils import workbook_pdf_response
 from core.api.utils import workbook_response
+from core.api.views.utils import get_business_plan_from_request
 from core.models import BusinessPlan, BPHistory, BPRecord
 from core.tasks import (
     send_mail_bp_create,
@@ -277,6 +279,7 @@ class BPRecordViewSet(
             "subsector",
             "project_type",
             "bp_chemical_type",
+            "project_cluster",
         ).prefetch_related(
             "substances",
             "blends",
@@ -284,7 +287,11 @@ class BPRecordViewSet(
         )
 
     def get_wb(self, method):
-        queryset = self.filter_queryset(self.get_queryset())
+        bp = get_business_plan_from_request(self.request)
+
+        # get records for the business plan
+        queryset = self.filter_queryset(self.get_queryset()).filter(business_plan=bp)
+
         data = BPRecordExportSerializer(queryset, many=True).data
 
         limits = queryset.aggregate(
@@ -320,6 +327,62 @@ class BPRecordViewSet(
     @action(methods=["GET"], detail=False)
     def print(self, *args, **kwargs):
         return self.get_wb(workbook_pdf_response)
+
+    def get_history(self, business_plan):
+        history_qs = business_plan.bphistory.all().select_related(
+            "business_plan", "updated_by"
+        )
+        history = BPHistorySerializer(history_qs, many=True).data
+
+        return history
+
+    @swagger_auto_schema(
+        operation_description="List records for a specific business plan",
+        manual_parameters=[
+            openapi.Parameter(
+                name="business_plan_id",
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                description="Business plan ID",
+            ),
+            openapi.Parameter(
+                name="agency_id",
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                description="Agency ID",
+            ),
+            openapi.Parameter(
+                name="year_start",
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                description="Year start",
+            ),
+            openapi.Parameter(
+                name="year_end",
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                description="Year end",
+            ),
+        ],
+    )
+    def list(self, request, *args, **kwargs):
+        # get records for a specific business plan
+        bp = get_business_plan_from_request(request)
+        ret = {
+            "business_plan": BusinessPlanSerializer(bp).data,
+            "history": self.get_history(bp),
+        }
+
+        # get records for the business plan
+        queryset = self.filter_queryset(self.get_queryset()).filter(business_plan=bp)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            ret["records"] = self.get_serializer(page, many=True).data
+            return self.get_paginated_response(ret)
+
+        ret["records"] = self.get_serializer(queryset, many=True).data
+        return Response(ret)
 
     def create(self, request, *args, **kwargs):
         serializer = BPRecordCreateSerializer(data=request.data)

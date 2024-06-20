@@ -140,7 +140,6 @@ class BPRecordExportSerializer(serializers.ModelSerializer):
 
 
 class BPRecordDetailSerializer(serializers.ModelSerializer):
-    business_plan = BusinessPlanSerializer()
     country = CountrySerializer()
     lvc_status = serializers.ChoiceField(choices=BPRecord.LVCStatus.choices)
     project_type = ProjectTypeSerializer()
@@ -160,7 +159,6 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
         model = BPRecord
         fields = [
             "id",
-            "business_plan",
             "title",
             "required_by_model",
             "country",

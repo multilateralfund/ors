@@ -77,3 +77,17 @@ class TestBPHistory:
             assert history[i].updated_by.username == req_user
             assert valid_string in history[i].event_description.lower()
             assert history[i].bp_version == version
+
+        # check history in API response
+        url = reverse("bprecord-list")
+        response = self.client.get(url, {"business_plan_id": new_id})
+        assert response.status_code == 200
+
+        # check same history items in get records
+        history = response.data["history"]
+        assert len(history) == len(VALIDATION_LIST)
+
+        for valid_string, i, version, req_user in VALIDATION_LIST:
+            assert history[i]["updated_by_username"] == req_user
+            assert valid_string in history[i]["event_description"].lower()
+            assert history[i]["bp_version"] == version
