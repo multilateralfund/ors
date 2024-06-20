@@ -375,9 +375,7 @@ const SubmissionSection = function SubmissionSection(
   )
 }
 
-const LogSection = function LogSection(
-  props: { logApi: any } & SectionProps,
-) {
+const LogSection = function LogSection(props: { logApi: any } & SectionProps) {
   const { filters, logApi, maxYear, minYear, setFilters } = props
   const [pagination, setPagination] = useState({
     page: 1,
@@ -630,6 +628,8 @@ function useLogSectionApi(filters: FiltersType) {
 }
 
 export default function CPListing() {
+  const { setActiveTab: setCpActiveTab } = useStore((state) => state.cp_current_tab)
+  setCpActiveTab(0)
   const settings = useStore((state) => state.common.settings.data)
   const { user_type } = useStore((state) => state.user.data)
 
