@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from 'react'
+
 import cx from 'classnames'
 
 import styles from './table.module.css'
@@ -9,19 +11,84 @@ function AdminButtons(props) {
   return (
     <div className={styles.adminButtons}>
       <button
-        className="cursor-pointer rounded-lg border border-solid border-secondary bg-white text-secondary hover:bg-secondary hover:text-white"
-        title="Edit"
-        onClick={onEdit}
-      >
-        <IoPencil />
-      </button>
-      <button
         className="cursor-pointer rounded-lg border border-solid border-error bg-white text-error hover:bg-error hover:text-white"
         title="Delete"
         onClick={onDelete}
       >
         <IoTrash />
       </button>
+      <button
+        className="cursor-pointer rounded-lg border border-solid border-secondary bg-white text-secondary hover:bg-secondary hover:text-white"
+        title="Edit"
+        onClick={onEdit}
+      >
+        <IoPencil />
+      </button>
+    </div>
+  )
+}
+
+function TableCell(props) {
+  const { c, columns, enableEdit, onCellEdit, onDelete, onEdit, r, rowData } =
+    props
+
+  const fname = columns[c].field
+  const cell = rowData[r][fname]
+  const initialValue = cell?.edit ?? cell
+  const isEditable = columns[c].editable === true
+
+  const [editing, setEditing] = useState(false)
+  const [value, setValue] = useState(initialValue)
+
+  const inputRef = useRef(null)
+
+  useEffect(
+    function () {
+      if (inputRef.current) {
+        inputRef.current.focus()
+      }
+    },
+    [editing],
+  )
+
+  function handleStartEdit() {
+    if (enableEdit && isEditable) {
+      setEditing(true)
+    }
+  }
+
+  function handleKeyDown(evt) {
+    if (evt.key === 'Escape') {
+      setEditing(false)
+      setValue(initialValue)
+    } else if (evt.key === 'Enter') {
+      onCellEdit(r, c, fname, value)
+      setEditing(false)
+    }
+  }
+
+  return (
+    <div
+      className="flex items-center justify-between"
+      onDoubleClick={handleStartEdit}
+    >
+      <div className="w-full whitespace-nowrap">
+        {editing ? (
+          <input
+            ref={inputRef}
+            type="text"
+            value={value}
+            onBlur={() => setEditing(false)}
+            onChange={(evt) => setValue(evt.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+        ) : (
+          cell?.view ?? cell
+        )}
+      </div>
+      {c === 0 && enableEdit && !editing ? (
+        <AdminButtons onDelete={() => onDelete(r)} onEdit={() => onEdit(r)} />
+      ) : null}
     </div>
   )
 }
@@ -31,6 +98,8 @@ function Table(props) {
     columns,
     enableEdit,
     enableSort,
+    extraRows,
+    onCellEdit,
     onDelete,
     onEdit,
     onSort,
@@ -64,21 +133,34 @@ function Table(props) {
     for (let i = 0; i < columns.length; i++) {
       row.push(
         <td key={i}>
-          <div className="flex items-center justify-between">
-            <span className="mr-4 whitespace-nowrap">
-              {rowData[j][columns[i].field]}
-            </span>
-            {!i && enableEdit ? (
-              <AdminButtons
-                onDelete={() => onDelete(j)}
-                onEdit={() => onEdit(j)}
-              />
-            ) : null}
-          </div>
+          <TableCell
+            c={i}
+            columns={columns}
+            enableEdit={enableEdit}
+            r={j}
+            rowData={rowData}
+            onCellEdit={onCellEdit}
+            onDelete={onDelete}
+            onEdit={onEdit}
+          />
         </td>,
       )
     }
     rows.push(<tr key={j}>{row}</tr>)
+  }
+
+  if (extraRows && extraRows.length > 0) {
+    for (let j = 0; j < extraRows.length; j++) {
+      const row = []
+      for (let i = 0; i < columns.length; i++) {
+        row.push(
+          <td key={i}>
+            <TableCell c={i} columns={columns} r={j} rowData={extraRows} />
+          </td>,
+        )
+      }
+      rows.push(<tr key={`er${j}`}>{row}</tr>)
+    }
   }
 
   if (rows.length === 0) {

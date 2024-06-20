@@ -20,21 +20,29 @@ function BaseButton(props: any) {
 }
 
 function CancelButton(props: any) {
+  const { className, ...rest } = props
   return (
     <BaseButton
-      className="border-gray-600 bg-gray-600 text-white outline-1 outline-primary hover:outline"
+      className={cx(
+        'border-gray-600 bg-gray-600 text-white outline-1 outline-primary hover:outline',
+        className,
+      )}
       type="button"
-      {...props}
+      {...rest}
     />
   )
 }
 
 function SubmitButton(props: any) {
+  const { className, ...rest } = props
   return (
     <BaseButton
-      className="border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow"
+      className={cx(
+        'border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow',
+        className,
+      )}
       type="submit"
-      {...props}
+      {...rest}
     />
   )
 }

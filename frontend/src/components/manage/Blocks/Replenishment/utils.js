@@ -90,10 +90,10 @@ export function computeTableData(tableData, totalReplenishment) {
   let adj_un_soa_percent = 100
 
   for (let i = 0; i < tableData.length; i++) {
-    if (tableData[i].iso3 !== 'USA') {
-      adj_un_soa += fixFloat(tableData[i].un_soa || 0, 30)
-    } else {
+    if (tableData[i].iso3 === 'USA') {
       adj_un_soa_percent -= fixFloat(tableData[i].un_soa || 0, 30)
+    } else {
+      adj_un_soa += fixFloat(tableData[i].un_soa || 0, 30)
     }
   }
 
@@ -117,7 +117,7 @@ export function computeTableData(tableData, totalReplenishment) {
       (result[i].adj_un_soa * totalReplenishment) / 100,
       30,
     )
-    result[i].qual_ferm = (result[i].avg_ir || 100) < 10 ? 1 : 0
+    result[i].qual_ferm = (result[i].avg_ir || 100) < 10 ? true : false
     result[i].ferm_cur_amount =
       result[i].qual_ferm && result[i].ferm_rate
         ? result[i].ferm_rate * result[i].annual_contributions
@@ -127,7 +127,7 @@ export function computeTableData(tableData, totalReplenishment) {
   return result
 }
 
-export function formatTableData(tableData) {
+export function formatTableData(tableData, editableColumns) {
   const result = new Array(tableData.length)
 
   for (let i = 0; i < tableData.length; i++) {
@@ -147,9 +147,28 @@ export function formatTableData(tableData) {
           maximumFractionDigits: MAX_DECIMALS,
           minimumFractionDigits: MIN_DECIMALS,
         })
+      } else if (value === false) {
+        newValue = 'No'
+      } else if (value === true) {
+        newValue = 'Yes'
       }
 
-      result[i][key] = newValue
+      if (editableColumns.includes(key)) {
+        result[i][key] = {
+          edit: value,
+          view: (
+            <div className="flex items-center justify-between">
+              <span className="w-full text-center">{newValue}</span>
+              <span className="text-gray-400">{'\u22EE'}</span>
+            </div>
+          ),
+        }
+      } else {
+        result[i][key] = {
+          edit: value,
+          view: <div className="text-center">{newValue}</div>,
+        }
+      }
     }
   }
 

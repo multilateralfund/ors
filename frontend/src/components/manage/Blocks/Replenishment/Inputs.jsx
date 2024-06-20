@@ -5,7 +5,7 @@ import cx from 'classnames'
 import { formatDecimalValue } from '@ors/helpers/Utils/Utils'
 
 const CLASSESS =
-  'ml-4 rounded-lg border border-solid border-primary bg-white px-4 py-2 grow'
+  'ml-4 rounded-lg border border-solid border-primary bg-white px-4 py-2 grow disabled:bg-gray-200 disabled:border-0'
 
 export function Field(props) {
   const { id, children, label } = props

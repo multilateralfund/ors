@@ -19,6 +19,7 @@
     display: flex;
     column-gap: 0.5rem;
     visibility: collapse;
+    float: right;
 
     button {
       padding: 0.3rem;
@@ -71,5 +72,9 @@
   tr:last-child {
     font-weight: bold;
     border-top: 2px solid var(--color-primary);
+
+    td {
+      text-align: center;
+    }
   }
 }
