@@ -13,9 +13,15 @@ from core.api.serializers.adm import (
     AdmRowSerializer,
 )
 from core.api.serializers.usage import UsageSerializer
-from core.api.views.utils import get_cp_report_from_request
+from core.api.views.utils import (
+    get_cp_prices,
+    get_cp_report_from_request,
+    get_displayed_records,
+)
 from core.models.adm import AdmColumn, AdmRow
 from core.models.country_programme import (
+    CPPrices,
+    CPRecord,
     CPReport,
     CPReportFormatColumn,
     CPReportFormatRow,
@@ -97,6 +103,19 @@ class EmptyFormView(views.APIView):
         return usage_columns
 
     @classmethod
+    def get_row_data(cls, row, group_name):
+        return {
+            "chemical_name": row.get_chemical_name(),
+            "chemical_display_name": row.get_chemical_display_name(),
+            "substance_id": row.substance_id,
+            "blend_id": row.blend_id,
+            "group": group_name,
+            "sort_order": row.sort_order if hasattr(row, "sort_order") else None,
+            "excluded_usages": row.get_excluded_usages_list(),
+            "chemical_note": row.get_chemical_note(),
+        }
+
+    @classmethod
     def get_substance_rows(cls, year):
         cp_report_rows = (
             CPReportFormatRow.objects.get_for_year(year)
@@ -123,18 +142,8 @@ class EmptyFormView(views.APIView):
             if row.section == "C" and row.blend:
                 group_name = "HFCs"
 
-            row_data = {
-                "chemical_name": row.get_chemical_name(),
-                "chemical_display_name": row.get_chemical_display_name(),
-                "substance_id": row.substance_id,
-                "blend_id": row.blend_id,
-                "group": group_name,
-                "sort_order": row.sort_order,
-                "excluded_usages": row.get_excluded_usages_list(),
-                "chemical_note": row.get_chemical_note(),
-            }
             section_key = f"section_{row.section.lower()}"
-            substance_rows[section_key].append(row_data)
+            substance_rows[section_key].append(cls.get_row_data(row, group_name))
 
         for k in ["section_a", "section_b", "section_c"]:
             if len(substance_rows[k]) == 0:
@@ -143,15 +152,64 @@ class EmptyFormView(views.APIView):
         return substance_rows
 
     @classmethod
-    def get_new_empty_form(cls, year=None):
+    def get_cp_records_rows(cls, cp_report):
+        section_a = get_displayed_records(cp_report, "A", CPRecord, append_items=False)
+        section_b = get_displayed_records(cp_report, "B", CPRecord, append_items=False)
+        cp_records = section_a + section_b
+        records_rows = {
+            "section_a": [],
+            "section_b": [],
+        }
+
+        for row in cp_records:
+            group_name = row.get_group_name()
+            section_key = f"section_{row.section.lower()}"
+            records_rows[section_key].append(cls.get_row_data(row, group_name))
+
+        return records_rows
+
+    @classmethod
+    def get_cp_prices_rows(cls, cp_report):
+        cp_prices = get_cp_prices(cp_report, CPPrices, append_items=False)
+        prices_rows = {
+            "section_c": [],
+        }
+
+        for row in cp_prices:
+            group_name = ""
+            if row.substance:
+                if "hfc" in row.substance.name.lower():
+                    group_name = "HFCs"
+                elif "hcfc" in row.substance.name.lower():
+                    group_name = "HCFCs"
+                else:
+                    group_name = "Alternatives"
+            if row.blend:
+                group_name = "HFCs"
+
+            prices_rows["section_c"].append(cls.get_row_data(row, group_name))
+
+        return prices_rows
+
+    @classmethod
+    def get_new_empty_form(cls, year=None, country_id=None):
         # for now, we return only the list of columns for usages
         if not year:
             year = datetime.now().year
-        usage_columns = cls.get_usage_columns(year)
-        substance_rows = cls.get_substance_rows(year)
+
+        previous_substances = {}
+        previous_report = (
+            CPReport.objects.filter(country_id=country_id).order_by("-year").first()
+        )
+        if previous_report:
+            previous_substances = cls.get_cp_records_rows(
+                previous_report
+            ) | cls.get_cp_prices_rows(previous_report)
+
         return {
-            "usage_columns": usage_columns,
-            "substance_rows": substance_rows,
+            "usage_columns": cls.get_usage_columns(year),
+            "substance_rows": cls.get_substance_rows(year),
+            "previous_substances": previous_substances,
         }
 
     @classmethod
@@ -244,13 +302,13 @@ class EmptyFormView(views.APIView):
         }
 
     @classmethod
-    def get_data(cls, year, cp_report):
+    def get_data(cls, year, cp_report, country_id=None):
         if year <= IMPORT_DB_OLDEST_MAX_YEAR:
             return cls.get_04_empty_form(year)
         if year <= IMPORT_DB_MAX_YEAR:
             return cls.get_old_empty_form(year, cp_report)
 
-        return cls.get_new_empty_form(year)
+        return cls.get_new_empty_form(year, country_id)
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -282,4 +340,5 @@ class EmptyFormView(views.APIView):
         else:
             year = cp_report.year
 
-        return Response(self.get_data(year, cp_report))
+        country_id = request.query_params.get("country_id")
+        return Response(self.get_data(year, cp_report, country_id))

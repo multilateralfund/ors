@@ -680,6 +680,7 @@ const CPCreate: React.FC = () => {
                   <FootnotesProvider>
                     <Section
                       Section={get(Sections, section.id)}
+                      Sections={Sections}
                       countryFieldProps={countryFieldProps}
                       emptyForm={report.emptyForm.data || {}}
                       errors={errors}

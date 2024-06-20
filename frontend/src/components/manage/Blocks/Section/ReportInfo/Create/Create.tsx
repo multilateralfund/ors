@@ -1,9 +1,10 @@
-import React, { ChangeEvent } from 'react'
+import React, { ChangeEvent, useEffect } from 'react'
 
 import { TextField } from '@mui/material'
 import Typography from '@mui/material/Typography'
 
 import { CPBaseForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
+import CloneSubstancesDialog from '@ors/components/manage/Blocks/Section/ReportInfo/Create/CloneSubstancesDialog'
 import { FilesViewer } from '@ors/components/manage/Blocks/Section/ReportInfo/FilesViewer'
 import ReportHistory from '@ors/components/manage/Blocks/Section/ReportInfo/ReportHistory'
 import ReportStatus from '@ors/components/manage/Blocks/Section/ReportInfo/ReportStatus'
@@ -102,8 +103,42 @@ function FileInput(props: {
   )
 }
 
+const CountrySelect: React.FC = (props: any) => {
+  const { countryFieldProps, isEdit, report, user_country, user_type } = props
+
+  if (user_type === 'country_user') {
+    return (
+      <SimpleInput
+        id="country"
+        defaultValue={user_country}
+        disabled={true}
+        label="Country"
+        type="string"
+      />
+    )
+  }
+
+  return (
+    <>
+      <label
+        className="mb-2 block text-lg font-normal text-gray-900"
+        htmlFor={isEdit ? undefined : 'country'}
+      >
+        Country
+      </label>
+      <Field
+        {...countryFieldProps}
+        FieldProps={{ className: 'mb-0 ReportInfo' }}
+        defaultValue={isEdit ? report.country : null}
+        disabled={isEdit}
+      />
+    </>
+  )
+}
+
 const ReportInfoCreate = (props: any) => {
   const {
+    Sections,
     countryFieldProps,
     form,
     isCreate,
@@ -138,37 +173,6 @@ const ReportInfoCreate = (props: any) => {
   const user_fullname = isEdit ? form.report_info.reporting_entry : full_name
   const user_email = isEdit ? form.report_info.reporting_email : email
 
-  const CountrySelect: React.FC = () => {
-    if (user_type === 'country_user') {
-      return (
-        <SimpleInput
-          id="country"
-          defaultValue={user_country}
-          disabled={true}
-          label="Country"
-          type="string"
-        />
-      )
-    }
-
-    return (
-      <>
-        <label
-          className="mb-2 block text-lg font-normal text-gray-900"
-          htmlFor={isEdit ? undefined : 'country'}
-        >
-          Country
-        </label>
-        <Field
-          {...countryFieldProps}
-          FieldProps={{ className: 'mb-0 ReportInfo' }}
-          defaultValue={isEdit ? report.country : null}
-          disabled={isEdit}
-        />
-      </>
-    )
-  }
-
   return (
     <section className="grid items-start gap-4 md:auto-rows-auto md:grid-cols-2">
       <Typography className="md:col-span-2" component="h2" variant="h6">
@@ -197,7 +201,22 @@ const ReportInfoCreate = (props: any) => {
         <div className="grid gap-6 md:grid-cols-4">
           <div className="h-full w-full items-center md:col-span-3">
             <div className="flex h-full flex-col justify-end">
-              <CountrySelect />
+              <CloneSubstancesDialog
+                Sections={Sections}
+                form={form}
+                setForm={setForm}
+                user_type={user_type}
+              />
+              <CountrySelect
+                // @ts-ignore
+                countryFieldProps={countryFieldProps}
+                form={form}
+                isEdit={isEdit}
+                report={report}
+                setForm={setForm}
+                user_country={user_country}
+                user_type={user_type}
+              />
             </div>
           </div>
           <div>
