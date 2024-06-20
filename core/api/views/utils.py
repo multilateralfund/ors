@@ -128,6 +128,7 @@ def set_chemical_items_dict(
     @param existing_items: list of existing ItemCls objects (CPRecord / CPPrices)
     @param section: str - section name
     @param cp_report: obj - CPReport object
+    @param append_items: bool - if True, append new ItemCls objects to the existing items
 
     @return: dict of chemical records
     structure: {chemical_id: CPRecord object}
@@ -190,6 +191,7 @@ def get_displayed_items(
     @param section: str - section name
     @param existing_items: list of existing ItemCls objects
     @param with_sort: bool - if True, sort the final list
+    @param append_items: bool - if True, append new ItemCls objects to the existing items
 
     @return: final list of ItemCls objects
     """
