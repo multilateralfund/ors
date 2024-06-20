@@ -13,7 +13,11 @@ from core.api.serializers.adm import (
     AdmRowSerializer,
 )
 from core.api.serializers.usage import UsageSerializer
-from core.api.views.utils import get_cp_report_from_request
+from core.api.views.utils import (
+    get_cp_prices,
+    get_cp_report_from_request,
+    get_displayed_records,
+)
 from core.models.adm import AdmColumn, AdmRow
 from core.models.country_programme import (
     CPPrices,
@@ -149,21 +153,9 @@ class EmptyFormView(views.APIView):
 
     @classmethod
     def get_cp_records_rows(cls, cp_report):
-        cp_records = (
-            CPRecord.objects.select_related(
-                "substance__group",
-                "blend",
-                "country_programme_report__country",
-            )
-            .prefetch_related(
-                "record_usages__usage",
-                "substance__excluded_usages",
-                "blend__excluded_usages",
-                "blend__components",
-            )
-            .filter(country_programme_report=cp_report)
-            .all()
-        )
+        section_a = get_displayed_records(cp_report, "A", CPRecord, append_items=False)
+        section_b = get_displayed_records(cp_report, "B", CPRecord, append_items=False)
+        cp_records = section_a + section_b
         records_rows = {
             "section_a": [],
             "section_b": [],
@@ -178,11 +170,7 @@ class EmptyFormView(views.APIView):
 
     @classmethod
     def get_cp_prices_rows(cls, cp_report):
-        cp_prices = (
-            CPPrices.objects.select_related("substance__group", "blend")
-            .filter(country_programme_report=cp_report)
-            .all()
-        )
+        cp_prices = get_cp_prices(cp_report, CPPrices, append_items=False)
         prices_rows = {
             "section_c": [],
         }
