@@ -37,6 +37,13 @@ function TableCell(props) {
   const initialValue = cell?.edit ?? cell
   const isEditable = columns[c].editable === true
 
+  useEffect(
+    function () {
+      setValue(initialValue)
+    },
+    [initialValue],
+  )
+
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(initialValue)
 
@@ -46,6 +53,7 @@ function TableCell(props) {
     function () {
       if (inputRef.current) {
         inputRef.current.focus()
+        inputRef.current.select()
       }
     },
     [editing],
@@ -59,12 +67,23 @@ function TableCell(props) {
 
   function handleKeyDown(evt) {
     if (evt.key === 'Escape') {
-      setEditing(false)
-      setValue(initialValue)
+      cancelNewValue()
     } else if (evt.key === 'Enter') {
-      onCellEdit(r, c, fname, value)
-      setEditing(false)
+      saveNewValue()
+    } else if (evt.key === 'Tab') {
+      evt.preventDefault()
+      saveNewValue()
     }
+  }
+
+  function cancelNewValue() {
+    setValue(initialValue)
+    setEditing(false)
+  }
+
+  function saveNewValue() {
+    onCellEdit(r, c, fname, value)
+    setEditing(false)
   }
 
   return (
@@ -78,7 +97,7 @@ function TableCell(props) {
             ref={inputRef}
             type="text"
             value={value}
-            onBlur={() => setEditing(false)}
+            onBlur={saveNewValue}
             onChange={(evt) => setValue(evt.target.value)}
             onKeyDown={handleKeyDown}
           />
