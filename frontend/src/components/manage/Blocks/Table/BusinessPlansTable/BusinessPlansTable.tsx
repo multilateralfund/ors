@@ -15,49 +15,38 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
 import { KEY_ENTER } from '@ors/constants'
 import { formatApiUrl, getResults } from '@ors/helpers'
-import useApi from '@ors/hooks/useApi'
+import useGetBpData, {BpPathParams} from '@ors/hooks/useGetBpData'
 import { useStore } from '@ors/store'
 
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 import { IoClose, IoDownloadOutline, IoSearchOutline } from 'react-icons/io5'
 
-const PER_PAGE = 20
+const BP_PER_PAGE = 20
 
 export default function BusinessPlansTable() {
-  const params = useParams<{
-    agency: string
-    end_year: string
-    start_year: string
-  }>()
-  const { agency, end_year, start_year } = params
+  const params = useParams<BpPathParams>()
+  const { start_year } = params
   const form = useRef<any>()
   const commonSlice = useStore((state) => state.common)
   const bpSlice = useStore((state) => state.businessPlans)
-  // const defaultYearStart = bpSlice.yearRanges.data[0]?.year_start
-  // const defaultYearEnd = bpSlice.yearRanges.data[0]?.year_end
 
-  const currentAgency = useMemo(() => {
-    return commonSlice.agencies.data.find((item: any) => item.name === agency)
-  }, [agency, commonSlice.agencies.data])
-
-  const initialParams = {
-    agency_id: currentAgency.id,
-    blends: null,
-    bp_chemical_type: null,
-    bp_type: null,
-    business_plan_id: null,
-    country_id: null,
-    is_multi_year: null,
-    lvc_status: null,
-    ordering: null,
-    project_type_id: null,
-    search: '',
-    sector_id: null,
-    subsector_id: null,
-    substances: null,
-    year_end: end_year,
-    year_start: start_year,
-  }
+  // const initialParams = {
+  //   blends: null,
+  //   bp_chemical_type: null,
+  //   bp_type: null,
+  //   business_plan_id: null,
+  //   country_id: null,
+  //   is_multi_year: null,
+  //   limit: BP_PER_PAGE,
+  //   lvc_status: null,
+  //   offset: 0,
+  //   ordering: null,
+  //   project_type_id: null,
+  //   search: '',
+  //   sector_id: null,
+  //   subsector_id: null,
+  //   substances: null,
+  // }
 
   const initialFilters = {
     country_id: [],
@@ -71,18 +60,8 @@ export default function BusinessPlansTable() {
 
   const [filters, setFilters] = useState({ ...initialFilters })
 
-  const { data, loading, setParams } = useApi({
-    options: {
-      params: {
-        limit: PER_PAGE,
-        offset: 0,
-        ...initialParams,
-      },
-      withStoreCache: true,
-    },
-    path: 'api/business-plan-record/',
-  })
-  const { count, loaded, results } = getResults(data?.results?.records)
+  const { data, loading, setParams } = useGetBpData()
+  const { count, loaded, results } = getResults(data?.records)
 
   const yearRangeSelected = useMemo(
     () =>
@@ -139,7 +118,7 @@ export default function BusinessPlansTable() {
         <Table
           loaded={loaded}
           loading={loading}
-          paginationPageSize={PER_PAGE}
+          paginationPageSize={BP_PER_PAGE}
           rowCount={count}
           rowData={results}
           tooltipShowDelay={200}
@@ -156,7 +135,7 @@ export default function BusinessPlansTable() {
                       `${option.year_start}-${option.year_end}`
                     }
                     isOptionEqualToValue={(option: any, value: any) =>
-                      option.year_start === value
+                      option.year_start === value.year_start
                     }
                     onChange={(_: any, value: any) => {
                       handleParamsChange({
