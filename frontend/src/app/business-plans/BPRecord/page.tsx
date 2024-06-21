@@ -8,6 +8,7 @@ import { groupBy } from 'lodash'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
+import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
 
@@ -74,9 +75,7 @@ export default function BPRecord({ params }: BPRecordProps) {
     loaded && (
       <PageWrapper>
         <HeaderTitle>
-          <Typography component="h1" variant="h3">
-            Business Plan Record view page
-          </Typography>
+          <PageHeading>Business Plan Record view page</PageHeading>
         </HeaderTitle>
         <Grid spacing={2} container>
           <Grid lg={9} xs={12} item>

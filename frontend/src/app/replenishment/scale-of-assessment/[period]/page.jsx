@@ -1,10 +1,9 @@
 import React from 'react'
 
-import { Typography } from '@mui/material'
-
 import SAView from '@ors/components/manage/Blocks/Replenishment/SAView'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
+import { PageHeading } from '@ors/components/ui/Heading/Heading'
 
 export const metadata = {
   title: 'Replenishment - Scale of assessment',
@@ -15,13 +14,7 @@ export default async function ReplenishmentScaleOfAssessment(props) {
   return (
     <PageWrapper className="w-full p-2" defaultSpacing={false}>
       <HeaderTitle>
-        <Typography
-          className="text-typography-primary"
-          component="h1"
-          variant="h3"
-        >
-          Replenishment - Scale of assessment
-        </Typography>
+        <PageHeading>Replenishment - Scale of assessment</PageHeading>
       </HeaderTitle>
       <SAView period={period} />
     </PageWrapper>

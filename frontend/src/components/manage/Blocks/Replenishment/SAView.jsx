@@ -289,6 +289,7 @@ function tranformContributions(cs) {
 function useApiReplenishment(startYear) {
   const [contributions, setContributions] = useState([])
   const [replenishmentAmount, setReplenishmentAmount] = useState(0)
+  const [loading, setLoading] = useState(false)
 
   useEffect(
     function () {
@@ -503,9 +504,15 @@ function SAView(props) {
             />
           </div>
         </div>
-        <SubmitButton onClick={() => confirm('Not yet implemented')}>
-          Save changes
-        </SubmitButton>
+        <div className="flex items-center gap-x-4">
+          <div className="flex items-center gap-x-2">
+            <Input id="markAsFinal" type="checkbox" />
+            <label htmlFor="markAsFinal">Mark as final</label>
+          </div>
+          <SubmitButton onClick={() => confirm('Not yet implemented')}>
+            Save changes
+          </SubmitButton>
+        </div>
       </div>
       <SATable
         columns={columns}

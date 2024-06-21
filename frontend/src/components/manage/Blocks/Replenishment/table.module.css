@@ -75,6 +75,7 @@
 
     td {
       text-align: center;
+      background-color: hsl(65deg 100% 75% / 20%);
     }
   }
 }

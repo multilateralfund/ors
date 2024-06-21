@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
+import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import Link from '@ors/components/ui/Link/Link'
 import ValidationContext from '@ors/contexts/Validation/ValidationContext'
 import { uploadFiles } from '@ors/helpers'
@@ -125,7 +126,7 @@ const HeaderVersionsDropdown = () => {
         ref={ref}
         onClick={toggleShowVersionsMenu}
       >
-        <h1 className="m-0 text-5xl leading-normal">{report?.data?.name}</h1>
+        <PageHeading>{report?.data?.name}</PageHeading>
         <IoChevronDown className="text-5xl font-bold text-gray-700" />
       </div>
       <div
@@ -533,9 +534,7 @@ const CPCreateHeader = ({
   return (
     <div className="my-12 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-6">
       <div className="flex items-center gap-x-2">
-        <h1 className="m-0 text-4xl leading-normal">
-          New submission - {currentYear}
-        </h1>
+        <PageHeading>New submission - {currentYear}</PageHeading>
       </div>
       <div className="ml-auto">{actions}</div>
     </div>
