@@ -57,7 +57,7 @@ const ReportInfoView = (props: any) => {
         />
       </div>
 
-      <div className="flex flex-col rounded-lg bg-gray-100 p-4">
+      <div className="flex flex-col rounded-lg bg-gray-100 p-4 gap-5">
         <ReportStatus report={report} sectionsChecked={sectionsChecked} />
         <ReportHistory />
       </div>

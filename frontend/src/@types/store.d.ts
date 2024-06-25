@@ -150,7 +150,7 @@ export interface CommentData {
   section: string
 }
 
-export interface CPHistoryItem {
+export interface HistoryListItem {
   created_at: string
   event_description: string
   id: number
@@ -198,7 +198,7 @@ export type CPVersionInfo = {
   country_id: number
   created_at: string
   final_version_id: number
-  history: CPHistoryItem[]
+  history: HistoryListItem[]
   id: number
   name: string
   status: string
