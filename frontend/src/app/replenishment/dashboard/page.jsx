@@ -11,7 +11,10 @@ export const metadata = {
 
 export default async function ReplenishmentDashboard() {
   return (
-    <PageWrapper className="w-full p-0" defaultSpacing={false}>
+    <PageWrapper
+      className="w-full rounded-b-lg bg-white p-4"
+      defaultSpacing={false}
+    >
       <HeaderTitle>
         <PageHeading>Replenishment - Dashboard</PageHeading>
       </HeaderTitle>

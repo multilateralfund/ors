@@ -54,7 +54,7 @@ const COLUMNS = [
     field: 'qual_ferm',
     label: 'Qualifying for fixed exchange rate mechanism',
     parser: function (v) {
-      return v === 'true' || v === 't' || v === 'y'
+      return v === 'true' || v === 't' || v === 'y' || v === '1'
     },
     subLabel: '(Yes / No)',
   },
@@ -436,13 +436,24 @@ function SAView(props) {
 
   function handleCellEdit(r, c, n, v) {
     const parser = columns[c].parser
+    const overrideKey = `override_${n}`
     setTableData((prev) => {
       const next = [...prev]
       let value = v
       if (parser) {
         value = parser(v)
       }
-      next[r][n] = value
+      if (
+        value === 0 ||
+        value === '' ||
+        value === undefined ||
+        isNaN(value) ||
+        next[r][n] === value
+      ) {
+        delete next[r][overrideKey]
+      } else {
+        next[r][overrideKey] = value
+      }
       return next
     })
     setShouldCompute(true)
