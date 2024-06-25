@@ -34,7 +34,7 @@ function TableCell(props) {
 
   const fname = columns[c].field
   const cell = rowData[r][fname]
-  const initialValue = cell?.edit ?? cell
+  const initialValue = cell?.hasOwnProperty('edit') ? cell.edit || '' : cell
   const isEditable = columns[c].editable === true
 
   useEffect(

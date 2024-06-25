@@ -447,7 +447,7 @@ function SAView(props) {
         value === 0 ||
         value === '' ||
         value === undefined ||
-        isNaN(value) ||
+        (typeof value === 'number' && isNaN(value)) ||
         next[r][n] === value
       ) {
         delete next[r][overrideKey]
