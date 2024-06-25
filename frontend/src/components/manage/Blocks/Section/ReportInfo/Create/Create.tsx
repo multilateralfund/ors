@@ -58,7 +58,7 @@ function FileInput(props: {
                   }
                 >
                   <IoTrash
-                    className="transition-colors ease-in-out hover:text-red-500"
+                    className="transition-colors ease-in-out hover:text-mlfs-purple"
                     size={16}
                   />
                 </IconButton>

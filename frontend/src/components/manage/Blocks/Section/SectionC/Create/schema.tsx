@@ -57,7 +57,7 @@ function useGridOptions(props: {
             }),
             options: !props.data?.mandatory && !props.data?.rowType && (
               <IoTrash
-                className="cursor-pointer fill-error"
+                className="cursor-pointer fill-mlfs-purple"
                 size={16}
                 onClick={() => {
                   onRemoveSubstance(props)
