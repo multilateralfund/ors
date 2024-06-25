@@ -69,7 +69,7 @@ const useInternalNavSections = () => {
   const nI = makeInternalNavItem.bind(null, pathname)
   return [
     {
-      label: 'Country programmes',
+      label: 'Online CP Reporting',
       menu: [
         { label: 'View reports', url: '/country-programme/reports' },
         userCanSubmitReport[user_type as UserType]
