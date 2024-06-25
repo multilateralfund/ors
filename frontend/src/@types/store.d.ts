@@ -118,60 +118,6 @@ export interface BusinessPlanSlice {
   yearRanges: SliceData
 }
 
-export type BusinessPlan = {
-  agency: { id: number; name: string }
-  comment_agency: string
-  comment_secretariat: string
-  feedback_file_download_url: string
-  feedback_filename: string
-  id: number
-  status: string
-  updated_at: string
-  year_end: number
-  year_start: number
-}
-
-export type BusinessPlanRecord = {
-  amount_polyol: number
-  blends: string[]
-  bp_chemical_type: { id: number; name: string }
-  bp_type: string
-  bp_type_display: string
-  country: Country
-  id: number
-  is_multi_year: boolean
-  is_multi_year_display: string
-  legacy_sector_and_subsector: string
-  lvc_status: string
-  project_type: { code: string; name: string; id: number; sort_order: number }
-  reason_for_exceeding: string
-  remarks: string
-  remarks_additional: string
-  required_by_model: boolean
-  sector: string
-  subsector: string
-  substances: ApiSubstance[]
-  title: string
-  values: {
-    id: number
-    value_mt: string
-    value_odp: string
-    value_usd: string
-    year: number
-  }[]
-}
-
-export type BusinessPlanData = {
-  business_plan: BusinessPlan | null
-  history: any[] | null
-  records: BusinessPlanRecord[] | null
-}
-
-export interface BusinessPlanDataSlice {
-  businessPlanData: BusinessPlanData
-  setBusinessPlanData: (newBusinessPlanData: Partial<BusinessPlanData>) => void
-}
-
 export interface ThemeSlice {
   mode: 'dark' | 'light' | null
   setMode: (mode: 'dark' | 'light' | null) => void
@@ -216,7 +162,6 @@ export interface CPHistoryItem {
 
 // Store state
 export type StoreState = {
-  businessPlanData: BusinessPlanDataSlice
   businessPlans: BusinessPlanSlice
   cache: CacheSlice
   common: CommonSlice

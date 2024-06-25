@@ -1,6 +1,5 @@
-// @ts-nocheck
 'use client'
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useContext, useMemo, useRef, useState } from 'react'
 
 import {
   InputAdornment,
@@ -9,13 +8,14 @@ import {
 } from '@mui/material'
 import { useParams } from 'next/navigation'
 
+import { BpPathParams } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import Link from '@ors/components/ui/Link/Link'
 import { KEY_ENTER } from '@ors/constants'
+import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import { formatApiUrl, getResults } from '@ors/helpers'
-import useGetBpData, {BpPathParams} from '@ors/hooks/useGetBpData'
 import { useStore } from '@ors/store'
 
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
@@ -59,9 +59,9 @@ export default function BusinessPlansTable() {
   }
 
   const [filters, setFilters] = useState({ ...initialFilters })
-
-  const { data, loading, setParams } = useGetBpData()
-  const { count, loaded, results } = getResults(data?.records)
+  const { data, loading, setParams } = useContext(BPContext) as any
+  const records = data?.results?.records
+  const { count, loaded, results } = getResults(records)
 
   const yearRangeSelected = useMemo(
     () =>
@@ -125,32 +125,32 @@ export default function BusinessPlansTable() {
           Toolbar={() => (
             <div className="flex items-center justify-between">
               <div className="flex flex-wrap items-center gap-2">
-                <div className="w-64">
-                  <Field
-                    Input={{ label: 'Year' }}
-                    options={bpSlice.yearRanges.data}
-                    value={yearRangeSelected}
-                    widget="autocomplete"
-                    getOptionLabel={(option: any) =>
-                      `${option.year_start}-${option.year_end}`
-                    }
-                    isOptionEqualToValue={(option: any, value: any) =>
-                      option.year_start === value.year_start
-                    }
-                    onChange={(_: any, value: any) => {
-                      handleParamsChange({
-                        offset: 0,
-                        year_end: value.year_end,
-                        year_start: value.year_start,
-                      })
-                      handleFilterChange({
-                        year_end: value.year_end,
-                        year_start: value.year_start,
-                      })
-                    }}
-                    disableClearable
-                  />
-                </div>
+                {/*<div className="w-64">*/}
+                {/*  <Field*/}
+                {/*    Input={{ label: 'Year' }}*/}
+                {/*    options={bpSlice.yearRanges.data}*/}
+                {/*    value={yearRangeSelected}*/}
+                {/*    widget="autocomplete"*/}
+                {/*    getOptionLabel={(option: any) =>*/}
+                {/*      `${option.year_start}-${option.year_end}`*/}
+                {/*    }*/}
+                {/*    isOptionEqualToValue={(option: any, value: any) =>*/}
+                {/*      option.year_start === value.year_start*/}
+                {/*    }*/}
+                {/*    onChange={(_: any, value: any) => {*/}
+                {/*      handleParamsChange({*/}
+                {/*        offset: 0,*/}
+                {/*        year_end: value.year_end,*/}
+                {/*        year_start: value.year_start,*/}
+                {/*      })*/}
+                {/*      handleFilterChange({*/}
+                {/*        year_end: value.year_end,*/}
+                {/*        year_start: value.year_start,*/}
+                {/*      })*/}
+                {/*    }}*/}
+                {/*    disableClearable*/}
+                {/*  />*/}
+                {/*</div>*/}
                 <div className="w-80">
                   <Field
                     Input={{ label: 'Country' }}

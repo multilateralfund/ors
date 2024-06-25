@@ -218,3 +218,12 @@ export function getUnitAwareValue(obj: any, propName: string, unit: string) {
     unit && unit !== 'mt' ? obj?.[`${propName}_${unit}`] : obj?.[propName]
   return parseNumber(value)
 }
+
+function padDateNr(n: number) {
+  return n < 10 ? `0${n}` : `${n}`
+}
+
+export const formattedDateFromTimestamp = (timestring: string) => {
+  const date = new Date(timestring)
+  return `${padDateNr(date.getDate())}.${padDateNr(date.getMonth() + 1)}.${date.getFullYear()}`
+}
