@@ -11,7 +11,7 @@ export const metadata = {
 
 export default async function ReplenishmentDashboard() {
   return (
-    <PageWrapper className="w-full p-2" defaultSpacing={false}>
+    <PageWrapper className="w-full p-0" defaultSpacing={false}>
       <HeaderTitle>
         <PageHeading>Replenishment - Dashboard</PageHeading>
       </HeaderTitle>

@@ -16,32 +16,36 @@ const DATA_ALLOCATIONS = [
   { label: 'World Bank', value: '1,310,140,942' },
   { label: 'Unspecified projects', value: '-' },
   { label: 'Less Adjustments', value: '-' },
+  { className: '!bg-transparent' },
   {
-    className: 'font-bold border border-solid border-x-0 py-2',
+    className: '!bg-primary text-white',
     label: 'Total allocations to implementing agencies',
     value: '3,786,341,238',
   },
 ]
 
 const DATA_PROVISIONS = [
-  { label: 'Secretariat and Executive Committee costs  (1991-2025)' },
   {
-    label: ' -     includes provision for staff contracts into 2025',
+    label: 'Secretariat and Executive Committee costs  (1991-2025)',
+    sub: '(includes provision for staff contracts into 2025)',
     value: '161,339,318',
   },
   { label: 'Treasury fees (2003-2025)', value: '11,556,982' },
   { label: 'Monitoring and Evaluation costs (1999-2023)', value: '3,812,244' },
   { label: 'Technical Audit costs (1998-2010)', value: '1,699,806' },
-  { label: 'Information Strategy costs (2003-2004)' },
   {
-    label: ' -     includes provision for Network maintenance costs for 2004',
+    label: 'Information Strategy costs (2003-2004)',
+    sub: '(includes provision for Network maintenance costs for 2004)',
     value: '104,750',
   },
   { label: 'Bilateral cooperation', value: '187,767,175' },
-  { label: "Provision for fixed-exchange-rate mechanism's fluctuations" },
-  { label: ' -     losses/(gains) in value', value: '29,540,239' },
   {
-    className: 'font-bold border border-solid border-x-0 py-2',
+    label: "Provision for fixed-exchange-rate mechanism's fluctuations",
+    sub: '(losses/(gains) in value)',
+    value: '29,540,239',
+  },
+  {
+    className: '!bg-primary text-white',
     label: 'Total allocations and  provisions',
     value: '4,182,161,753',
   },
@@ -57,8 +61,9 @@ const DATA_TOTAL = [
     value: '523,000,140',
   },
   { label: 'Promissory Notes:' },
+  { className: '!bg-transparent' },
   {
-    className: 'font-bold border-double border-x-0 py-2',
+    className: '!bg-primary text-white',
     label: 'BALANCE AVAILABLE FOR NEW ALLOCATIONS',
     value: '523,000,140',
   },
@@ -74,76 +79,120 @@ function ListItem(props) {
   )
 }
 
+function SummaryCard(props) {
+  const { label, value } = props
+  return (
+    <div className="flex h-[150px] w-[250px] flex-col justify-between rounded-lg bg-[#F5F5F5] px-4 py-4">
+      <div className="text-xl font-medium uppercase">{label}</div>
+      <div className="text-2xl font-bold">{value}</div>
+    </div>
+  )
+}
+
+function CashCard(props) {
+  const { className, label, sub, value } = props
+  return (
+    <li
+      className={cx(
+        'flex h-[90px] w-[516px] items-center justify-between rounded-lg bg-[#F5F5F5] px-4 py-4',
+        className,
+      )}
+    >
+      <div className="w-[280px]">
+        <div className="text-xl font-medium">{label}</div>
+        <div className="text-lg font-normal">{sub}</div>
+      </div>
+      <div className="text-2xl font-bold">{value}</div>
+    </li>
+  )
+}
+
 function DashboardView() {
   return (
-    <div>
-      <h2>STATUS OF THE FUND FROM 1991-2023 (IN US DOLLARS)</h2>
-      <h3 className="mb-0">INCOME</h3>
-      <p className="m-0">Contributions received:</p>
-      <ul className="list-none pl-0">
-        <ListItem
-          label="Cash payments including note encashments"
-          value={DATA_INCOME.cash_payments}
-        />
-        <ListItem
-          label="Promissory notes held"
-          value={DATA_INCOME.promissory_notes}
-        />
-        <ListItem
-          label="Bilateral cooperation"
-          value={DATA_INCOME.bilateral_cooperation}
-        />
-        <ListItem
-          value={DATA_INCOME.interest_earned}
-          label={
-            <>
-              Interest earned <sup>*</sup>
-            </>
-          }
-        />
-        <ListItem
-          label="Miscellaneous income"
-          value={DATA_INCOME.miscellaneous_income}
-        />
-        <ListItem
-          className="font-bold"
-          label="Total Income"
-          value={DATA_INCOME.total_income}
-        />
-      </ul>
-      <h3 className="mb-0">
-        ALLOCATIONS<sup>**</sup> AND PROVISIONS
-      </h3>
-      <ul className="list-none pl-0">
-        {DATA_ALLOCATIONS.map((item, idx) => (
-          <ListItem
-            key={idx}
-            className={item.className}
-            label={item.label}
-            value={item.value}
-          />
-        ))}
-      </ul>
-      <ul className="mt-8 list-none pl-0">
-        {DATA_PROVISIONS.map((item, idx) => (
-          <ListItem
-            key={idx}
-            className={item.className}
-            label={item.label}
-            value={item.value}
-          />
-        ))}
-      </ul>
-      <ul className="mt-8 list-none pl-0">
-        {DATA_TOTAL.map((item, idx) => (
-          <ListItem
-            key={idx}
-            className={item.className}
-            label={item.label}
-            value={item.value}
-          />
-        ))}
-      </ul>
+    <div className="rounded-b-lg bg-white p-4">
+      <h2 className="m-0 text-3xl">STATUS OF THE FUND</h2>
+      <p className="m-0 text-xl">as of 15 May 2024 ( US Dollars )</p>
+
+      <div className="flex">
+        <div className="w-7/12">
+          <h3 className="text-2xl">OVERVIEW</h3>
+
+          <div className="flex items-center gap-x-4">
+            <SummaryCard label="Cash fund ballance" value={'NNN,NNN,NNN'} />
+            <SummaryCard
+              label="Ballance available for 2021-2023"
+              value={'NNN,NNN,NNN'}
+            />
+            <SummaryCard
+              label="Pledge contribution received for 2021-2023"
+              value={'89%'}
+            />
+            <SummaryCard label="FERM loss" value={'NN,NNN,NNN'} />
+          </div>
+
+          <h3 className="text-2xl">INCOME</h3>
+
+          <ul className="flex list-none flex-wrap gap-4 pl-0">
+            <CashCard
+              label="Cash payments including note encashments"
+              value={DATA_INCOME.cash_payments}
+            />
+            <CashCard
+              label="Promissory notes held"
+              value={DATA_INCOME.promissory_notes}
+            />
+            <CashCard
+              label="Bilateral cooperation"
+              value={DATA_INCOME.bilateral_cooperation}
+            />
+            <CashCard
+              value={DATA_INCOME.interest_earned}
+              label={
+                <>
+                  Interest earned <sup>*</sup>
+                </>
+              }
+            />
+            <CashCard
+              label="Miscellaneous income"
+              value={DATA_INCOME.miscellaneous_income}
+            />
+            <CashCard
+              className="!bg-primary text-white"
+              label="Total Income"
+              value={DATA_INCOME.total_income}
+            />
+          </ul>
+
+          <h3 className="text-2xl">
+            ALLOCATIONS<sup>**</sup> AND PROVISIONS
+          </h3>
+
+          <ul className="flex list-none flex-wrap gap-4 pl-0">
+            {DATA_ALLOCATIONS.map((item, idx) => (
+              <CashCard key={idx} {...item} />
+            ))}
+          </ul>
+          <ul className="flex list-none flex-wrap gap-4 pl-0">
+            {DATA_PROVISIONS.map((item, idx) => (
+              <CashCard key={idx} {...item} />
+            ))}
+          </ul>
+          <ul className="flex list-none flex-wrap gap-4 pl-0">
+            {DATA_TOTAL.map((item, idx) => (
+              <CashCard key={idx} {...item} />
+            ))}
+          </ul>
+        </div>
+
+        <div className="w-5/12">
+          <br className="m-5 leading-7" />
+          <div className="flex flex-col gap-8">
+            <div className="h-[562px] w-[690px] rounded-lg bg-[#F5F5F5]"></div>
+            <div className="h-[464px] w-[690px] rounded-lg bg-[#F5F5F5]"></div>
+          </div>
+        </div>
+      </div>
       <div>
         <p className="my-0">
           <sup>*</sup> Includes interest amount US $1,553,069 earned by FECO/MEP
