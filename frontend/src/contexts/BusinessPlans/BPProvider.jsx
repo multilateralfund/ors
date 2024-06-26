@@ -17,7 +17,7 @@ function BPProvider(props) {
 
   const currentAgency = useMemo(() => {
     return commonSlice.agencies.data.find((item) => item.name === agency)
-  }, [pathParams.agency, commonSlice.agencies.data])
+  }, [agency, commonSlice.agencies.data])
 
   const { data, loaded, loading, setParams } = useApi({
     options: {
