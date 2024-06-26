@@ -15,7 +15,7 @@ import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import Link from '@ors/components/ui/Link/Link'
 import ValidationContext from '@ors/contexts/Validation/ValidationContext'
-import { uploadFiles } from '@ors/helpers'
+import {formattedDateFromTimestamp, uploadFiles} from '@ors/helpers'
 import api from '@ors/helpers/Api/_api'
 import useClickOutside from '@ors/hooks/useClickOutside'
 import { useStore } from '@ors/store'
@@ -70,15 +70,6 @@ const ReportDiffButton = (props: any) => {
       See differences
     </Link>
   )
-}
-
-function padDateNr(n: number) {
-  return n < 10 ? `0${n}` : `${n}`
-}
-
-const formattedDateFromTimestamp = (timestring: string) => {
-  const date = new Date(timestring)
-  return `${padDateNr(date.getDate())}.${padDateNr(date.getMonth() + 1)}.${date.getFullYear()}`
 }
 
 const HeaderVersionsDropdown = () => {
