@@ -6,7 +6,7 @@ import { AddButton, SubmitButton } from '@ors/components/ui/Button/Button'
 
 import FormDialog from './FormDialog'
 import { FieldInput, FieldSelect, FormattedNumberInput, Input } from './Inputs'
-import Table from './Table'
+import SATable from './SATable'
 import {
   computeTableData,
   filterTableData,
@@ -19,8 +19,6 @@ const REPLENISHMENT_AMOUNT = 175200000
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import ReplenishmentProvider from '@ors/contexts/Replenishment/ReplenishmentProvider'
 import { formatApiUrl } from '@ors/helpers/Api/utils'
-
-import styles from './table.module.css'
 
 const COLUMNS = [
   { field: 'country', label: 'Country' },
@@ -259,10 +257,6 @@ const EditDialog = function EditDialog(props) {
       </div>
     </FormDialog>
   )
-}
-
-function SATable(props) {
-  return <Table {...props} className={styles.replenishmentTable} />
 }
 
 function tranformContributions(cs) {

@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 
 import cx from 'classnames'
 
-import styles from './table.module.css'
+import HeaderCells from './Table/HeaderCells'
+import styles from './Table/table.module.css'
 
-import { IoChevronDown, IoChevronUp, IoPencil, IoTrash } from 'react-icons/io5'
+import { IoPencil, IoTrash } from 'react-icons/io5'
 
 function AdminButtons(props) {
-  const { onDelete, onEdit } = props
+  const { onDelete } = props
   return (
     <div className={styles.adminButtons}>
       <button
@@ -17,20 +18,12 @@ function AdminButtons(props) {
       >
         <IoTrash />
       </button>
-      <button
-        className="cursor-pointer rounded-lg border border-solid border-secondary bg-white text-secondary hover:bg-secondary hover:text-white"
-        title="Edit"
-        onClick={onEdit}
-      >
-        <IoPencil />
-      </button>
     </div>
   )
 }
 
 function TableCell(props) {
-  const { c, columns, enableEdit, onCellEdit, onDelete, onEdit, r, rowData } =
-    props
+  const { c, columns, enableEdit, onCellEdit, onDelete, r, rowData } = props
 
   const fname = columns[c].field
   const cell = rowData[r][fname]
@@ -106,13 +99,13 @@ function TableCell(props) {
         )}
       </div>
       {c === 0 && enableEdit && !editing ? (
-        <AdminButtons onDelete={() => onDelete(r)} onEdit={() => onEdit(r)} />
+        <AdminButtons onDelete={() => onDelete(r)} />
       ) : null}
     </div>
   )
 }
 
-function Table(props) {
+function SATable(props) {
   const {
     columns,
     enableEdit,
@@ -120,31 +113,11 @@ function Table(props) {
     extraRows,
     onCellEdit,
     onDelete,
-    onEdit,
     onSort,
     rowData,
     sortDirection,
     sortOn,
   } = props
-
-  const sortIcon =
-    sortDirection > 0 ? (
-      <IoChevronDown className="min-w-8 text-secondary" size={18} />
-    ) : (
-      <IoChevronUp className="min-w-8 text-secondary" size={18} />
-    )
-
-  const hCols = []
-  for (let i = 0; i < columns.length; i++) {
-    hCols.push(
-      <th key={i} className="relative" onClick={() => enableSort && onSort(i)}>
-        {columns[i].label}{' '}
-        {sortOn === i ? (
-          <div className="absolute bottom-1 right-1">{sortIcon}</div>
-        ) : null}
-      </th>,
-    )
-  }
 
   const rows = []
   for (let j = 0; j < rowData.length; j++) {
@@ -160,7 +133,6 @@ function Table(props) {
             rowData={rowData}
             onCellEdit={onCellEdit}
             onDelete={onDelete}
-            onEdit={onEdit}
           />
         </td>,
       )
@@ -185,7 +157,7 @@ function Table(props) {
   if (rows.length === 0) {
     rows.push(
       <tr key="empty">
-        <td className="text-center" colSpan={hCols.length}>
+        <td className="text-center" colSpan={columns.length}>
           Empty
         </td>
       </tr>,
@@ -193,13 +165,27 @@ function Table(props) {
   }
 
   return (
-    <table className={cx(styles.replTable, props.className)}>
+    <table
+      className={cx(
+        styles.replTable,
+        styles.replenishmentTable,
+        props.className,
+      )}
+    >
       <thead>
-        <tr>{hCols}</tr>
+        <tr>
+          <HeaderCells
+            columns={columns}
+            enableSort={enableSort}
+            sortDirection={sortDirection}
+            sortOn={sortOn}
+            onSort={onSort}
+          />
+        </tr>
       </thead>
       <tbody>{rows}</tbody>
     </table>
   )
 }
 
-export default Table
+export default SATable
