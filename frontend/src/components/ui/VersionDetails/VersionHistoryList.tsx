@@ -6,7 +6,8 @@ import cx from 'classnames'
 
 export default function VersionHistoryList(props: any) {
   const { currentDataVersion, historyList, length, type } = props
-  const [itemsToShow, setItemsToShow] = useState<number>(length || 3)
+  const initialItemsToShow = length || 3
+  const [itemsToShow, setItemsToShow] = useState<number>(initialItemsToShow)
   const options: Intl.DateTimeFormatOptions = {
     day: 'numeric',
     hour: 'numeric',
@@ -17,17 +18,25 @@ export default function VersionHistoryList(props: any) {
   }
 
   const showMoreItems = () => {
-    setItemsToShow((prevItemsToShow) => prevItemsToShow + 3)
+    setItemsToShow((prevItemsToShow) =>
+      Math.min(prevItemsToShow + 3, historyList.length),
+    )
+  }
+
+  const showLessItems = () => {
+    setItemsToShow((prevItemsToShow) =>
+      Math.max(prevItemsToShow - 3, initialItemsToShow),
+    )
   }
 
   return (
     <div className="flex flex-col gap-3">
       <p className="m-0 text-2xl font-normal">History</p>
-      <div className="flex flex-col flex-wrap justify-center rounded-lg bg-white shadow-lg">
+      <div className="flex flex-col flex-wrap justify-center rounded-lg bg-white shadow-lg transition-all">
         {historyList?.length === 0 && (
           <p
             id="business-plan-history"
-            className="text-md my-1 font-medium text-gray-900 px-4 py-3"
+            className="text-md my-1 px-4 py-3 font-medium text-gray-900"
           >
             There is no history for this version.
           </p>
@@ -91,16 +100,28 @@ export default function VersionHistoryList(props: any) {
               </React.Fragment>
             )
           })}
-        {itemsToShow < historyList.length && (
-          <div className="px-4 py-3">
-            <span
-              className="font-medium text-secondary hover:cursor-pointer"
-              onClick={showMoreItems}
-            >
-              Show more
-            </span>
-          </div>
-        )}
+        <div className="flex items-center justify-start">
+          {itemsToShow < historyList.length && (
+            <div className="px-4 py-3">
+              <span
+                className="font-medium text-secondary hover:cursor-pointer"
+                onClick={showMoreItems}
+              >
+                Show more
+              </span>
+            </div>
+          )}
+          {itemsToShow > initialItemsToShow && (
+            <div className="px-4 py-3">
+              <span
+                className="font-medium text-secondary hover:cursor-pointer"
+                onClick={showLessItems}
+              >
+                Show less
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
