@@ -155,21 +155,34 @@ function PaymentsView(props) {
     [ctx],
   )
 
+  const filteredTableData = useMemo(
+    function () {
+      return filterTableData(tableData, searchValue)
+    },
+    [tableData, searchValue],
+  )
+
+  const sortedTableData = useMemo(
+    function () {
+      return sortTableData(
+        filteredTableData,
+        COLUMNS[sortOn].field,
+        sortDirection,
+      )
+    },
+    [filteredTableData, sortOn, sortDirection],
+  )
+
   const editData = useMemo(() => {
     let entry = null
     if (editIdx !== null) {
-      entry = { ...tableData[editIdx] }
+      entry = { ...sortedTableData[editIdx] }
       entry.acknowledged = entry.acknowledged === 'Yes' ? true : false
       entry.promissory_note = entry.promissory_note === 'Yes' ? true : false
       entry.date = dateForEditField(entry.date)
     }
     return entry
-  }, [editIdx, tableData])
-
-  const filteredTableData = useMemo(() => {
-    const data = filterTableData(tableData, searchValue)
-    return sortTableData(data, COLUMNS[sortOn].field, sortDirection)
-  }, [tableData, searchValue, sortOn, sortDirection])
+  }, [editIdx, sortedTableData])
 
   function showAddPaymentDialog() {
     setShowAdd(true)
@@ -192,8 +205,12 @@ function PaymentsView(props) {
     const confirmed = confirm('Are you sure you want to delete this payment?')
     if (confirmed) {
       setTableData((prev) => {
-        const next = [...prev]
-        next.splice(idx, 1)
+        const next = []
+        for (let i = 0; i < sortedTableData.length; i++) {
+          if (i !== idx) {
+            next.push(sortedTableData[i])
+          }
+        }
         return next
       })
     }
@@ -204,11 +221,11 @@ function PaymentsView(props) {
     entry.acknowledged = !entry.acknowledged ? 'No' : 'Yes'
     entry.promissory_note = !entry.promissory_note ? 'No' : 'Yes'
     entry.date = formatDateValue(entry.date)
-    setTableData((prev) => {
-      const next = [...prev]
-      next[editIdx] = entry
-      return next
-    })
+
+    const next = [...sortedTableData]
+    next[editIdx] = entry
+
+    setTableData(next)
     setEditIdx(null)
   }
 
@@ -255,7 +272,7 @@ function PaymentsView(props) {
       <PaymentsTable
         enableEdit={true}
         enableSort={true}
-        rowData={filteredTableData}
+        rowData={sortedTableData}
         sortDirection={sortDirection}
         sortOn={sortOn}
         onDelete={handleDeletePayment}

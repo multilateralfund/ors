@@ -37,7 +37,10 @@ function TableCell(props) {
     <div className="flex items-center justify-between">
       <div className="w-full whitespace-nowrap">{cell}</div>
       {c === 0 ? (
-        <AdminButtons onDelete={() => onDelete(r)} onEdit={() => onEdit(r)} />
+        <AdminButtons
+          onDelete={() => onDelete(r, rowData[r])}
+          onEdit={() => onEdit(r)}
+        />
       ) : null}
     </div>
   )

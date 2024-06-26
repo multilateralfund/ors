@@ -3,22 +3,19 @@
 import { useContext, useEffect, useMemo, useState } from 'react'
 
 import { AddButton, SubmitButton } from '@ors/components/ui/Button/Button'
+import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
+import ReplenishmentProvider from '@ors/contexts/Replenishment/ReplenishmentProvider'
+import { formatApiUrl } from '@ors/helpers/Api/utils'
 
-import FormDialog from './FormDialog'
-import { FieldInput, FieldSelect, FormattedNumberInput, Input } from './Inputs'
+import FormDialog from '../FormDialog'
+import { FieldInput, FieldSelect, FormattedNumberInput, Input } from '../Inputs'
 import SATable from './SATable'
 import {
   computeTableData,
-  filterTableData,
   formatTableData,
   sortTableData,
   sumColumns,
 } from './utils'
-
-const REPLENISHMENT_AMOUNT = 175200000
-import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
-import ReplenishmentProvider from '@ors/contexts/Replenishment/ReplenishmentProvider'
-import { formatApiUrl } from '@ors/helpers/Api/utils'
 
 const COLUMNS = [
   { field: 'country', label: 'Country' },
@@ -130,135 +127,6 @@ const AddDialog = function AddDialog(props) {
   )
 }
 
-const EditDialog = function EditDialog(props) {
-  const {
-    columns,
-    countries,
-    editIdx,
-    replenishmentAmount,
-    tableData,
-    title,
-    ...dialogProps
-  } = props
-
-  const [computedData, setComputedData] = useState(tableData)
-
-  const data = useMemo(
-    function () {
-      return computedData[editIdx]
-    },
-    [computedData, editIdx],
-  )
-
-  function handleChange(name) {
-    return function handler(evt) {
-      setComputedData(function (prevData) {
-        const nextData = [...prevData]
-        nextData[editIdx][name] =
-          parseFloat(evt.target.value) ?? prevData[editIdx][name]
-        return computeTableData(nextData, replenishmentAmount)
-      })
-    }
-  }
-
-  return (
-    <FormDialog title="Edit country" {...dialogProps}>
-      <div className="flex justify-between gap-x-8">
-        <div>
-          <FieldSelect
-            id="iso3"
-            defaultValue={data?.iso3}
-            label="Country"
-            required
-          >
-            <option value=""> - </option>
-            {countries.map((c) => (
-              <option key={c.iso3} data-name={c.name_alt} value={c.iso3}>
-                {c.name_alt}
-              </option>
-            ))}
-          </FieldSelect>
-          <FieldInput
-            id={columns[1].field}
-            label={columns[1].label}
-            step="0.000001"
-            type="number"
-            value={data?.[columns[1].field]}
-            onChange={handleChange(columns[1].field)}
-            required
-          />
-          <FieldInput
-            id={columns[2].field}
-            label={columns[2].label}
-            step="0.000001"
-            type="number"
-            value={data?.[columns[2].field]}
-            disabled
-            readOnly
-            required
-          />
-          <FieldInput
-            id={columns[3].field}
-            label={columns[3].label}
-            step="0.000001"
-            type="number"
-            value={data?.[columns[3].field]}
-            disabled
-            readOnly
-            required
-          />
-          <FieldInput
-            id={columns[4].field}
-            label={columns[4].label}
-            step="0.000001"
-            type="number"
-            value={data?.[columns[4].field]}
-            onChange={handleChange(columns[4].field)}
-            required
-          />
-        </div>
-        <div>
-          <FieldInput
-            id={columns[5].field}
-            checked={data?.[columns[5].field]}
-            label={columns[5].label}
-            type="checkbox"
-            disabled
-            readOnly
-            required
-          />
-          <FieldInput
-            id={columns[6].field}
-            label={columns[6].label}
-            step="0.000001"
-            type="number"
-            value={data?.[columns[6].field]}
-            onChange={handleChange(columns[6].field)}
-            required
-          />
-          <FieldInput
-            id={columns[7].field}
-            defaultValue={data?.[columns[7].field]}
-            label={columns[7].label}
-            type="text"
-            required
-          />
-          <FieldInput
-            id={columns[8].field}
-            label={columns[8].label}
-            step="0.000001"
-            type="number"
-            value={data?.[columns[8].field]}
-            disabled
-            readOnly
-            required
-          />
-        </div>
-      </div>
-    </FormDialog>
-  )
-}
-
 function tranformContributions(cs) {
   const r = []
 
@@ -358,8 +226,7 @@ function SAView(props) {
   const [editIdx, setEditIdx] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
 
-  const [replenishmentAmount, setReplenishmentAmount] =
-    useState(REPLENISHMENT_AMOUNT)
+  const [replenishmentAmount, setReplenishmentAmount] = useState(0)
 
   const computedData = useMemo(
     () =>
@@ -370,22 +237,22 @@ function SAView(props) {
     [tableData, replenishmentAmount, shouldCompute],
   )
 
-  const filteredTableData = useMemo(() => {
-    const sortedData = sortTableData(
-      computedData,
-      columns[sortOn].field,
-      sortDirection,
-    )
-    const formattedData = formatTableData(sortedData, EDITABLE)
-    return formattedData
-  }, [computedData, sortOn, sortDirection, columns])
+  const sortedData = useMemo(
+    function () {
+      return sortTableData(computedData, columns[sortOn].field, sortDirection)
+    },
+    [computedData, sortOn, sortDirection, columns],
+  )
+
+  const formattedTableData = useMemo(
+    function () {
+      return formatTableData(sortedData, EDITABLE)
+    },
+    [sortedData],
+  )
 
   function showAddDialog() {
     setShowAdd(true)
-  }
-
-  function showEditDialog(idx) {
-    setEditIdx(idx)
   }
 
   function handleAddSubmit(data) {
@@ -398,24 +265,15 @@ function SAView(props) {
   function handleDelete(idx) {
     const confirmed = confirm('Are you sure you want to delete this entry?')
     if (confirmed) {
-      setTableData((prev) => {
-        const next = [...prev]
-        next.splice(idx, 1)
-        return next
-      })
+      const next = []
+      for (let i = 0; i < sortedData.length; i++) {
+        if (i !== idx) {
+          next.push(sortedData[i])
+        }
+      }
+      setTableData(next)
       setShouldCompute(true)
     }
-  }
-
-  function handleEditSubmit(data) {
-    const entry = { ...data }
-    setTableData((prev) => {
-      const next = [...prev]
-      next[editIdx] = entry
-      return next
-    })
-    setEditIdx(null)
-    setShouldCompute(true)
   }
 
   function handleAmountInput(evt) {
@@ -460,17 +318,6 @@ function SAView(props) {
           countries={ctx.countries}
           onCancel={() => setShowAdd(false)}
           onSubmit={handleAddSubmit}
-        />
-      ) : null}
-      {editIdx !== null ? (
-        <EditDialog
-          columns={columns}
-          countries={ctx.countries}
-          editIdx={editIdx}
-          replenishmentAmount={replenishmentAmount}
-          tableData={computedData}
-          onCancel={() => setEditIdx(null)}
-          onSubmit={handleEditSubmit}
         />
       ) : null}
       <div className="flex items-center justify-between">
@@ -523,12 +370,11 @@ function SAView(props) {
         enableEdit={true}
         enableSort={true}
         extraRows={[{ country: 'Total', ...sumColumns(computedData) }]}
-        rowData={filteredTableData}
+        rowData={formattedTableData}
         sortDirection={sortDirection}
         sortOn={sortOn}
         onCellEdit={handleCellEdit}
         onDelete={handleDelete}
-        onEdit={showEditDialog}
         onSort={handleSort}
       />
       <div className="flex items-center py-4">

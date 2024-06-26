@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 
 import cx from 'classnames'
 
-import HeaderCells from './Table/HeaderCells'
-import styles from './Table/table.module.css'
+import HeaderCells from '../Table/HeaderCells'
+import styles from '../Table/table.module.css'
 
 import { IoPencil, IoTrash } from 'react-icons/io5'
 
