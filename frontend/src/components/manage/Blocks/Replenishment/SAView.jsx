@@ -444,7 +444,6 @@ function SAView(props) {
         value = parser(v)
       }
       if (
-        value === 0 ||
         value === '' ||
         value === undefined ||
         (typeof value === 'number' && isNaN(value)) ||
