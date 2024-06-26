@@ -21,6 +21,11 @@ const SECTIONS = [
     showPeriodSelector: false,
   },
   {
+    label: 'Status of contributions',
+    path: '/replenishment/status-of-contributions',
+    showPeriodSelector: false,
+  },
+  {
     label: 'Scale of assessment',
     path: '/replenishment/scale-of-assessment',
   },
