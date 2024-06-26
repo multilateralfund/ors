@@ -6,13 +6,15 @@ export const metadata = {
   title: 'Replenishment - Status of contributions',
 }
 
-export default async function ReplenishmentStatusOfContribution() {
+export default async function ReplenishmentSoCAnnual(props) {
+  const { year } = props.params
   return (
     <PageWrapper className="w-full p-2" defaultSpacing={false}>
       <HeaderTitle>
-        <PageHeading>Replenishment - Status of contributions</PageHeading>
+        <div className="mb-2 font-[500] uppercase">Replenishment</div>
+        <PageHeading>Status of contributions</PageHeading>
       </HeaderTitle>
-      <span>status-of-contributions</span>
+      <span>{year}</span>
     </PageWrapper>
   )
 }

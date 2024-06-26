@@ -22,7 +22,7 @@ const SECTIONS = [
   },
   {
     label: 'Status of contributions',
-    path: '/replenishment/status-of-contributions',
+    path: '/replenishment/status-of-contributions/summary',
     showPeriodSelector: false,
   },
   {
@@ -56,7 +56,7 @@ function getNavLinks(pathname, period) {
       <Link
         key={i}
         className={cx({ [styles.current]: isCurrent })}
-        href={i > 0 && period != null ? `${entry.path}/${period}` : entry.path}
+        href={i > 1 && period != null ? `${entry.path}/${period}` : entry.path}
       >
         {entry.label}
       </Link>,
