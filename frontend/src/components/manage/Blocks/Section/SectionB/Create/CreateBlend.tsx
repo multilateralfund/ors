@@ -228,7 +228,7 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
               cellRendererParams: (props: any) => ({
                 options: !props.data.mandatory && !props.data.rowType && (
                   <IoTrash
-                    className="cursor-pointer fill-error"
+                    className="cursor-pointer fill-mlfs-purple"
                     size={20}
                     onClick={() => {
                       const newComponents = form.components

@@ -43,7 +43,7 @@ export function FilesViewer(props: {
               </a>
               {props.isEdit && (
                 <IoTrash
-                  className="transition-colors ease-in-out hover:cursor-pointer hover:text-red-500"
+                  className="transition-colors ease-in-out hover:cursor-pointer hover:text-mlfs-purple"
                   size={20}
                   onClick={async () => {
                     try {

@@ -47,7 +47,7 @@ class CPUsageSerializer(serializers.ModelSerializer):
 
         return intenal_value
 
-    def validate_quantity(self, value):
-        if value < 0:
-            raise ValidationError("Negative use data cannot be submitted")
-        return value
+    # def validate_quantity(self, value):
+    #     if value < 0:
+    #         raise ValidationError("Negative use data cannot be submitted")
+    #     return value

@@ -19,6 +19,9 @@ export type EmptyFormSubstance = {
 }
 
 export type EmptyFormType = {
+  previous_substances: {
+    [key in 'section_a' | 'section_b' | 'section_c']: EmptyFormSubstance[]
+  }
   substance_rows: {
     [key in 'section_a' | 'section_b' | 'section_c']: EmptyFormSubstance[]
   }

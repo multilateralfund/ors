@@ -9,6 +9,7 @@ import { SnackbarProvider } from 'notistack'
 
 import config from '@ors/config'
 
+import ScrollToTop from '@ors/components/manage/Utils/ScrollToTop'
 import DefaultAlert from '@ors/components/theme/Alerts/Default'
 import { getCurrentView } from '@ors/helpers/View/View'
 import { useStore } from '@ors/store'
@@ -77,6 +78,7 @@ export default function View({ children }: { children: React.ReactNode }) {
       }}
     >
       <RenderedView error={internalError?._info}>{children}</RenderedView>
+      <ScrollToTop />
     </SnackbarProvider>
   )
 }

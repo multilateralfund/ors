@@ -2,7 +2,7 @@
 
 import { useContext, useEffect, useMemo, useState } from 'react'
 
-import { AddButton } from '@ors/components/ui/Button/Button'
+import { AddButton, SubmitButton } from '@ors/components/ui/Button/Button'
 
 import FormDialog from './FormDialog'
 import { FieldInput, FieldSelect, FormattedNumberInput, Input } from './Inputs'
@@ -25,46 +25,74 @@ import styles from './table.module.css'
 const COLUMNS = [
   { field: 'country', label: 'Country' },
   {
+    editable: true,
     field: 'un_soa',
-    label: 'United Nations scale of assessment for the period [PERIOD]',
+    label: 'UN scale of assessment',
+    parser: parseFloat,
+    subLabel: '([PERIOD])',
   },
   {
+    editable: true,
     field: 'adj_un_soa',
-    label:
-      'Adjusted UN Scale of Assessment using [PERIOD] scale with no party contributing more than 22%',
+    label: 'Adjusted UN Scale of Assessment',
+    parser: parseFloat,
   },
   {
     field: 'annual_contributions',
-    label: 'Annual contributions for years [PERIOD] in (United States Dollar)',
+    label: 'Annual contributions',
+    subLabel: '([PERIOD] in U.S. Dollar)',
   },
   {
+    editable: true,
     field: 'avg_ir',
-    label: 'Average inflation rate for the period [PERIOD] (percent)**',
+    label: 'Average inflation rate',
+    parser: parseFloat,
+    subLabel: '([PERIOD])',
   },
   {
+    editable: true,
     field: 'qual_ferm',
-    label: 'Qualifying for fixed exchange rate mechanism, use 1=Yes, 0=No',
+    label: 'Qualifying for fixed exchange rate mechanism',
+    parser: function (v) {
+      return v === 'true' || v === 't' || v === 'y' || v === '1'
+    },
+    subLabel: '(Yes / No)',
   },
   {
+    editable: true,
     field: 'ferm_rate',
-    label:
-      "Fixed exchange rate mechanism users' currencies rate of Exchange 01 Jan - 30 June 2023***",
+    label: 'Currency rate of exchange used for fixed exchange',
+    parser: parseFloat,
+    subLabel: '(01 Jan - 30 Jun 2023)',
   },
   {
+    editable: true,
     field: 'ferm_cur',
-    label: 'Fixed exchange mechanism users national currencies',
+    label: 'National currencies used for fixed exchange',
   },
   {
     field: 'ferm_cur_amount',
-    label:
-      'Fixed exchange mechanism users contribution amount in national currencies',
+    label: 'Contribution amount in national currencies',
+    subLabel: '(for fixed exchange mechanism)',
   },
 ]
+
+function getEditableFieldNames(cs) {
+  const r = []
+  for (let i = 0; i < cs.length; i++) {
+    if (cs[i].editable === true) {
+      r.push(cs[i].field)
+    }
+  }
+  return r
+}
+
+const EDITABLE = getEditableFieldNames(COLUMNS)
 
 const AddDialog = function AddDialog(props) {
   const { columns, countries, ...dialogProps } = props
   return (
-    <FormDialog title="Add entry" {...dialogProps}>
+    <FormDialog title="Add country" {...dialogProps}>
       <FieldSelect id="iso3" label="Country" required>
         <option value=""> - </option>
         {countries.map((c) => (
@@ -136,7 +164,7 @@ const EditDialog = function EditDialog(props) {
   }
 
   return (
-    <FormDialog title="Edit entry" {...dialogProps}>
+    <FormDialog title="Edit country" {...dialogProps}>
       <div className="flex justify-between gap-x-8">
         <div>
           <FieldSelect
@@ -194,11 +222,9 @@ const EditDialog = function EditDialog(props) {
         <div>
           <FieldInput
             id={columns[5].field}
+            checked={data?.[columns[5].field]}
             label={columns[5].label}
-            max={1}
-            min={0}
-            type="number"
-            value={data?.[columns[5].field]}
+            type="checkbox"
             disabled
             readOnly
             required
@@ -252,7 +278,7 @@ function tranformContributions(cs) {
       ferm_cur_amount: cs[i].amount_local_currency,
       ferm_rate: cs[i].exchange_rate,
       iso3: cs[i].country.iso3,
-      qual_ferm: cs[i].qualifies_for_fixed_rate_mechanism ? 1 : 0,
+      qual_ferm: cs[i].qualifies_for_fixed_rate_mechanism,
       un_soa: cs[i].un_scale_of_assessment,
     })
   }
@@ -263,6 +289,7 @@ function tranformContributions(cs) {
 function useApiReplenishment(startYear) {
   const [contributions, setContributions] = useState([])
   const [replenishmentAmount, setReplenishmentAmount] = useState(0)
+  const [loading, setLoading] = useState(false)
 
   useEffect(
     function () {
@@ -299,9 +326,17 @@ function SAView(props) {
     function () {
       const result = []
       for (let i = 0; i < COLUMNS.length; i++) {
+        const Label = (
+          <div className="flex flex-col">
+            <span>{COLUMNS[i].label}</span>
+            <span className="whitespace-nowrap text-sm font-normal">
+              {COLUMNS[i].subLabel?.replace('[PERIOD]', period)}
+            </span>
+          </div>
+        )
         result.push({
           ...COLUMNS[i],
-          label: COLUMNS[i].label.replace('[PERIOD]', period),
+          label: Label,
         })
       }
       return result
@@ -322,7 +357,6 @@ function SAView(props) {
 
   const [tableData, setTableData] = useState(contributions)
   const [shouldCompute, setShouldCompute] = useState(false)
-  const [searchValue, setSearchValue] = useState('')
 
   const [sortOn, setSortOn] = useState(0)
   const [sortDirection, setSortDirection] = useState(1)
@@ -334,29 +368,23 @@ function SAView(props) {
     useState(REPLENISHMENT_AMOUNT)
 
   const computedData = useMemo(
-    () => computeTableData(tableData, replenishmentAmount),
+    () =>
+      shouldCompute
+        ? computeTableData(tableData, replenishmentAmount)
+        : tableData,
     /* eslint-disable-next-line */
     [tableData, replenishmentAmount, shouldCompute],
   )
 
-  // const editData = useMemo(() => {
-  //   let entry = null
-  //   if (editIdx !== null) {
-  //     entry = { ...computedData[editIdx] }
-  //   }
-  //   return entry
-  // }, [editIdx, computedData])
-
   const filteredTableData = useMemo(() => {
-    const filteredData = filterTableData(computedData, searchValue)
     const sortedData = sortTableData(
-      filteredData,
+      computedData,
       columns[sortOn].field,
       sortDirection,
     )
-    const formattedData = formatTableData(sortedData)
+    const formattedData = formatTableData(sortedData, EDITABLE)
     return formattedData
-  }, [computedData, searchValue, sortOn, sortDirection, columns])
+  }, [computedData, sortOn, sortDirection, columns])
 
   function showAddDialog() {
     setShowAdd(true)
@@ -396,10 +424,6 @@ function SAView(props) {
     setShouldCompute(true)
   }
 
-  function handleSearchInput(evt) {
-    setSearchValue(evt.target.value)
-  }
-
   function handleAmountInput(evt) {
     setReplenishmentAmount(parseFloat(evt.target.value))
     setShouldCompute(true)
@@ -408,6 +432,31 @@ function SAView(props) {
   function handleSort(column) {
     setSortDirection((direction) => (column === sortOn ? -direction : 1))
     setSortOn(column)
+  }
+
+  function handleCellEdit(r, c, n, v) {
+    const parser = columns[c].parser
+    const overrideKey = `override_${n}`
+    setTableData((prev) => {
+      const next = [...prev]
+      let value = v
+      if (parser) {
+        value = parser(v)
+      }
+      if (
+        value === 0 ||
+        value === '' ||
+        value === undefined ||
+        (typeof value === 'number' && isNaN(value)) ||
+        next[r][n] === value
+      ) {
+        delete next[r][overrideKey]
+      } else {
+        next[r][overrideKey] = value
+      }
+      return next
+    })
+    setShouldCompute(true)
   }
 
   return (
@@ -431,45 +480,67 @@ function SAView(props) {
           onSubmit={handleEditSubmit}
         />
       ) : null}
-      <div className="flex items-center py-4">
-        <AddButton onClick={showAddDialog}>Add entry</AddButton>
-        <div className="ml-8">
-          <label>
-            Search:{' '}
-            <Input
-              id="search"
-              type="text"
-              value={searchValue}
-              onChange={handleSearchInput}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-x-4 py-4">
+          <div className="flex items-center">
+            <label htmlFor="triannualBudget_mask">
+              <div className="flex flex-col uppercase text-primary">
+                <span className="font-bold">Triannual budget</span>
+                <span className="">(in u.s. dollar)</span>
+              </div>
+            </label>
+            <FormattedNumberInput
+              id="triannualBudget"
+              className="w-36"
+              type="number"
+              value={replenishmentAmount * 3}
+              disabled
+              readOnly
             />
-          </label>
-        </div>
-        <div className="ml-8">
-          <label>
-            Replenishment amount:{' '}
+          </div>
+          <div className="h-8 border-y-0 border-l border-r-0 border-solid border-gray-400"></div>
+          <div className="flex items-center">
+            <label htmlFor="totalAmount_mask">
+              <div className="flex flex-col uppercase text-primary">
+                <span className="font-bold">Annual budget</span>
+                <span className="">(in u.s. dollar)</span>
+              </div>
+            </label>
             <FormattedNumberInput
               id="totalAmount"
+              className="w-36"
               type="number"
               value={replenishmentAmount}
               onChange={handleAmountInput}
             />
-          </label>
+          </div>
+        </div>
+        <div className="flex items-center gap-x-4">
+          <div className="flex items-center gap-x-2">
+            <Input id="markAsFinal" type="checkbox" />
+            <label htmlFor="markAsFinal">Mark as final</label>
+          </div>
+          <SubmitButton onClick={() => confirm('Not yet implemented')}>
+            Save changes
+          </SubmitButton>
         </div>
       </div>
       <SATable
         columns={columns}
         enableEdit={true}
         enableSort={true}
+        extraRows={[{ country: 'Total', ...sumColumns(computedData) }]}
+        rowData={filteredTableData}
         sortDirection={sortDirection}
         sortOn={sortOn}
-        rowData={[
-          ...filteredTableData,
-          { country: 'Total', ...sumColumns(computedData) },
-        ]}
+        onCellEdit={handleCellEdit}
         onDelete={handleDelete}
         onEdit={showEditDialog}
         onSort={handleSort}
       />
+      <div className="flex items-center py-4">
+        <AddButton onClick={showAddDialog}>Add country</AddButton>
+      </div>
     </>
   )
 }

@@ -558,8 +558,8 @@ function CPFilters(props: any) {
       id="filters"
       className="sticky top-2 flex h-fit flex-col gap-6 rounded-lg p-8 print:hidden"
     >
-      <div className="flex items-center justify-between text-3xl font-light">
-        <span>Filters</span> <StatusLegend className="mb-0" />
+      <div className="flex justify-end text-3xl font-light">
+        <StatusLegend className="mb-0" />
       </div>
       <StatusFilter filters={filters} setFilters={setFilters} />
       <CountrySelect filters={filters} setFilters={setFilters} />

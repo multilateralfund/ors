@@ -22,7 +22,7 @@ def get_empty_report(country_ro):
     }
 
 
-class TestCPReportValidation(BaseTest):
+class TestCPReportNegativeUseValues(BaseTest):
     url = reverse("country-programme-reports")
 
     def test_section_a_validation(self, user, country_ro, usage, substance):
@@ -40,13 +40,14 @@ class TestCPReportValidation(BaseTest):
         ]
 
         response = self.client.post(self.url, report_data, format="json")
-        assert response.status_code == 400
-        assert (
-            "Negative use data"
-            in response.data["section_a"][f"substance_{substance.id}"]["record_usages"][
-                f"usage_{usage.id}"
-            ]["quantity"]
-        )
+        assert response.status_code == 201
+        # assert response.status_code == 400
+        # assert (
+        #     "Negative use data"
+        #     in response.data["section_a"][f"substance_{substance.id}"]["record_usages"][
+        #         f"usage_{usage.id}"
+        #     ]["quantity"]
+        # )
 
     def test_section_b_validation(self, user, country_ro, usage, blend):
         self.client.force_authenticate(user=user)
@@ -63,10 +64,11 @@ class TestCPReportValidation(BaseTest):
         ]
 
         response = self.client.post(self.url, report_data, format="json")
-        assert response.status_code == 400
-        assert (
-            "Negative use data"
-            in response.data["section_b"][f"blend_{blend.id}"]["record_usages"][
-                f"usage_{usage.id}"
-            ]["quantity"]
-        )
+        assert response.status_code == 201
+        # assert response.status_code == 400
+        # assert (
+        #     "Negative use data"
+        #     in response.data["section_b"][f"blend_{blend.id}"]["record_usages"][
+        #         f"usage_{usage.id}"
+        #     ]["quantity"]
+        # )

@@ -213,10 +213,15 @@ export default function SectionCCreate(props: {
         includes(substance.sections, 'C') &&
         !includes(chemicalsInForm, `substance_${substance.id}`)
       ) {
-        data.push(Section.transformApiSubstance(substance))
+        const apiSubstance = Section.transformApiSubstance(substance)
+        data.push({ ...apiSubstance, group: getChemicalGroup(apiSubstance) })
       }
     })
-    return data
+    return [
+      ...data.filter((substance) => substance.group === 'HCFCs'),
+      ...data.filter((substance) => substance.group === 'HFCs'),
+      ...data.filter((substance) => substance.group === 'Alternatives'),
+    ]
   }, [substances, chemicalsInForm, Section])
 
   // Needed in formats >=2023
@@ -249,21 +254,11 @@ export default function SectionCCreate(props: {
       },
     )
 
-    return data.toSorted((a, b) => {
-      if (a.group === b.group) {
-        return a.sort_order - b.sort_order
-      }
-
-      if (a.group === 'HCFCs') {
-        return -1
-      }
-
-      if (a.group === 'HFCs') {
-        return 0
-      }
-
-      return 1
-    })
+    return [
+      ...data.filter((substance) => substance.group === 'HCFCs'),
+      ...data.filter((substance) => substance.group === 'HFCs'),
+      ...data.filter((substance) => substance.group === 'Alternatives'),
+    ]
   }, [Section, chemicalsInForm, emptyForm.substance_rows.section_c])
 
   const optionalSubstances = useMemo(() => {
@@ -287,7 +282,8 @@ export default function SectionCCreate(props: {
         !includes(chemicalsInForm, `substance_${substance.id}`) &&
         !includes(mandatorySubstancesIds, `substance_${substance.id}`)
       ) {
-        data.push(Section.transformApiSubstance(substance))
+        const apiSubstance = Section.transformApiSubstance(substance)
+        data.push({ ...apiSubstance, group: getChemicalGroup(apiSubstance) })
       }
     })
 
@@ -296,11 +292,16 @@ export default function SectionCCreate(props: {
         !includes(chemicalsInForm, `blend_${blend.id}`) &&
         !includes(mandatorySubstancesIds, `blend_${blend.id}`)
       ) {
-        data.push(Section.transformApiBlend(blend))
+        const apiBlend = Section.transformApiBlend(blend)
+        data.push({ ...apiBlend, group: getChemicalGroup(apiBlend) })
       }
     })
 
-    return data
+    return [
+      ...data.filter((substance) => substance.group === 'HCFCs'),
+      ...data.filter((substance) => substance.group === 'HFCs'),
+      ...data.filter((substance) => substance.group === 'Alternatives'),
+    ]
   }, [Section, blends, chemicalsInForm, mandatorySubstances, substances])
 
   const gridOptions = useGridOptions({

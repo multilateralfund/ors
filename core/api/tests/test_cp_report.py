@@ -6,8 +6,8 @@ from unittest.mock import patch
 
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
-    CPRaportFormatColumnFactory,
-    CPRaportFormatRowFactory,
+    CPReportFormatColumnFactory,
+    CPReportFormatRowFactory,
     CountryFactory,
     CPReportFactory,
     GroupFactory,
@@ -1075,13 +1075,13 @@ def setup_get_empty_form(usage, substance, blend):
         min_year=2022,
         max_year=None,
     )
-    cerate_data = {
+    create_data = {
         "usage": usage,
         "time_frame": time_frame,
         "section": "B",
     }
     time_frame = TimeFrameFactory.create(min_year=2000, max_year=None)
-    CPRaportFormatColumnFactory.create(**cerate_data)
+    CPReportFormatColumnFactory.create(**create_data)
     for sect in ["A", "C"]:
         create_data = {
             "substance": substance,
@@ -1089,7 +1089,7 @@ def setup_get_empty_form(usage, substance, blend):
             "section": sect,
             "sort_order": 1,
         }
-        CPRaportFormatRowFactory.create(**create_data)
+        CPReportFormatRowFactory.create(**create_data)
     for sect in ["B", "C"]:
         create_data = {
             "blend": blend,
@@ -1097,7 +1097,7 @@ def setup_get_empty_form(usage, substance, blend):
             "section": sect,
             "sort_order": 2,
         }
-        CPRaportFormatRowFactory.create(**create_data)
+        CPReportFormatRowFactory.create(**create_data)
 
 
 class TestGetEmptyForm(BaseTest):
@@ -1138,3 +1138,31 @@ class TestGetEmptyForm(BaseTest):
         assert len(response.data["substance_rows"]["section_a"]) == 1
         assert len(response.data["substance_rows"]["section_b"]) == 1
         assert len(response.data["substance_rows"]["section_c"]) == 2
+
+    def test_with_previous_records(
+        self,
+        user,
+        country_ro,
+        _setup_get_empty_form,
+        _cp_report_format,
+        _setup_new_cp_report_create,
+    ):
+        self.client.force_authenticate(user=user)
+        response = self.client.post(
+            reverse("country-programme-reports"),
+            _setup_new_cp_report_create,
+            format="json",
+        )
+        assert response.status_code == 201
+
+        response = self.client.get(self.url, {"country_id": country_ro.id})
+        assert response.status_code == 200
+        assert len(response.data["usage_columns"]["section_a"]) == 1
+        assert len(response.data["usage_columns"]["section_b"]) == 2
+        assert len(response.data["substance_rows"]["section_a"]) == 1
+        assert len(response.data["substance_rows"]["section_b"]) == 1
+        assert len(response.data["substance_rows"]["section_c"]) == 2
+
+        assert len(response.data["previous_substances"]["section_a"]) == 2
+        assert len(response.data["previous_substances"]["section_b"]) == 1
+        assert len(response.data["previous_substances"]["section_c"]) == 2

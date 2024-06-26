@@ -11,6 +11,7 @@ import { find } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
+import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import { useStore } from '@ors/store'
 
 type ProjectProps = {
@@ -45,9 +46,7 @@ export default function PView({ data }: ProjectProps) {
   return (
     <>
       <HeaderTitle>
-        <Typography component="h1" variant="h3">
-          {data.title}
-        </Typography>
+        <PageHeading>{data.title}</PageHeading>
       </HeaderTitle>
       <Grid spacing={2} container>
         <Grid lg={9} xs={12} item>

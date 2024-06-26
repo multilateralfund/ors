@@ -22,7 +22,11 @@ from core.api.serializers.cp_record import (
     CPRecordReadOnlySerializer,
 )
 from core.api.serializers.cp_report import CPReportSerializer, CPReportInfoSerializer
-from core.api.views.utils import get_cp_report_from_request
+from core.api.views.utils import (
+    get_cp_prices,
+    get_cp_report_from_request,
+    get_displayed_records,
+)
 from core.models.adm import AdmRecord
 from core.models.country_programme import (
     CPEmission,
@@ -30,7 +34,6 @@ from core.models.country_programme import (
     CPPrices,
     CPRecord,
     CPReport,
-    CPReportFormatRow,
 )
 from core.models.country_programme_archive import (
     CPEmissionArchive,
@@ -71,149 +74,6 @@ class CPRecordBaseListView(views.APIView):
     cp_comment_seri_class = None
     adm_record_seri_class = None
 
-    def _get_cp_record(self, cp_report_id, section):
-        return (
-            self.cp_record_class.objects.select_related(
-                "substance__group",
-                "blend",
-                "country_programme_report__country",
-            )
-            .prefetch_related(
-                "record_usages__usage",
-                "substance__excluded_usages",
-                "blend__excluded_usages",
-                "blend__components",
-            )
-            .filter(country_programme_report_id=cp_report_id, section=section)
-            .all()
-        )
-
-    def _set_chemical_items_dict(
-        self,
-        item_cls,
-        existing_items,
-        section,
-        cp_report,
-    ):
-        """
-        Set chemical records dict that are displayed for this report and section
-
-        @param existing_items: list of existing ItemCls objects (CPRecord / CPPrices)
-        @param section: str - section name
-        @param cp_report: obj - CPReport object
-
-        @return: dict of chemical records
-            structure: {chemical_id: CPRecord object}
-        """
-        # set existing_items_dict
-        existing_items_dict = {}
-        for item in existing_items:
-            dict_key = (
-                f"blend_{item.blend_id}"
-                if item.blend
-                else f"substance_{item.substance_id}"
-            )
-            existing_items_dict[dict_key] = item
-
-        # get all substances or blends that are displayed in all formats
-        displayed_rows = (
-            CPReportFormatRow.objects.get_for_year(cp_report.year)
-            .filter(section=section)
-            .select_related("substance__group", "blend")
-            .prefetch_related(
-                "substance__excluded_usages",
-                "blend__excluded_usages",
-                "blend__components",
-            )
-            .all()
-        )
-
-        # add substances or blends that are not in the existing_items_dict yet
-        for row in displayed_rows:
-            chemical = row.substance or row.blend
-            chemical_key = (
-                f"blend_{chemical.id}" if row.blend else f"substance_{chemical.id}"
-            )
-            if chemical_key not in existing_items_dict:
-                cp_record_data = {
-                    "country_programme_report": cp_report,
-                    "substance": chemical if row.substance else None,
-                    "blend": chemical if row.blend else None,
-                    "id": 0,
-                }
-                if section in ["A", "B"]:
-                    cp_record_data["section"] = section
-                existing_items_dict[chemical_key] = item_cls(**cp_record_data)
-
-            existing_items_dict[chemical_key].sort_order = row.sort_order
-
-        return list(existing_items_dict.values())
-
-    def _get_displayed_items(
-        self, item_cls, cp_report, section, existing_items, with_sort=True
-    ):
-        """
-        Returns a list of ItemCls objects for the given section and cp_report_id
-         -> if there is no record for a substance or blend that is displayed in all formats
-                then append a new ItemCls object to the list with the substance or blend
-                and the cp_report_id
-
-        @param item_cls: ItemCls class (CPRecord / CPPrices)
-        @param cp_report_id: int - country programme report id
-        @param section: str - section name
-        @param existing_items: list of existing ItemCls objects
-        @param with_sort: bool - if True, sort the final list
-
-        @return: final list of ItemCls objects
-        """
-
-        # set the list of chemicals that are displayed for this report and section
-        final_list = self._set_chemical_items_dict(
-            item_cls, existing_items, section, cp_report
-        )
-
-        if with_sort:
-            final_list.sort(
-                key=lambda x: (
-                    (
-                        (
-                            x.substance.group.name
-                            if "Other" not in x.substance.group.name_alt
-                            else "zzzbbb"
-                        ),  # other substances needs to be displayed last
-                        getattr(x, "sort_order", float("inf")),
-                        x.substance.sort_order,
-                        x.substance.name,
-                    )
-                    if x.substance
-                    else (
-                        "zzzaaa",
-                        getattr(x, "sort_order", float("inf")),
-                        x.blend.sort_order or float("inf"),
-                        x.blend.name,
-                    )
-                )
-            )
-
-        return final_list
-
-    def _get_displayed_records(self, cp_report, section):
-        """
-        Returns a list of CPRecord objects for the given section and cp_report_id
-
-        @param cp_report_id: int - country programme report id
-        @param section: str - section name
-
-        @return: list of CPRecord objects
-        """
-
-        exist_records = self._get_cp_record(cp_report.id, section)
-        final_list = self._get_displayed_items(
-            self.cp_record_class, cp_report, section, exist_records
-        )
-
-        return final_list
-
     def _get_adm_records(self, cp_report_id, section):
         return (
             self.adm_record_class.objects.select_related("row", "column")
@@ -230,36 +90,7 @@ class CPRecordBaseListView(views.APIView):
         return cls.objects.filter(country_programme_report=cp_report_id).all()
 
     def _get_cp_prices(self, cp_report):
-        exist_records = (
-            self.cp_prices_class.objects.select_related("substance__group", "blend")
-            .filter(country_programme_report=cp_report.id)
-            .all()
-        )
-        final_list = self._get_displayed_items(
-            self.cp_prices_class, cp_report, "C", exist_records, with_sort=False
-        )
-        # set sort order for section C (we have set sor_order )
-        final_list.sort(
-            key=lambda x: (
-                (
-                    (
-                        x.substance.name[:4]
-                        if "HCFC" in x.substance.name or "HFC" in x.substance.name
-                        else "zzzBBB"
-                    ),  # other substances needs to be displayed last
-                    getattr(x, "sort_order", float("inf")),
-                    x.substance.sort_order,
-                    x.substance.name,
-                )
-                if x.substance
-                else (
-                    "zzzAAA",
-                    getattr(x, "sort_order", float("inf")),
-                    x.blend.sort_order or float("inf"),
-                    x.blend.name,
-                )
-            )
-        )
+        final_list = get_cp_prices(cp_report, self.cp_prices_class)
 
         # get last_year cp_report
         last_year_cp_report = self.cp_report_class.objects.filter(
@@ -291,7 +122,7 @@ class CPRecordBaseListView(views.APIView):
         return final_list
 
     def _get_04_cp_records(self, cp_report):
-        section_a = self._get_displayed_records(cp_report, "A")
+        section_a = get_displayed_records(cp_report, "A", self.cp_record_class)
         return {
             "cp_report": self.cp_report_seri_class(cp_report).data,
             "section_a": self.cp_record_seri_class(section_a, many=True).data,
@@ -342,8 +173,8 @@ class CPRecordBaseListView(views.APIView):
         return self.cp_comment_seri_class(cp_report.cpcomments.all(), many=True).data
 
     def _get_new_cp_records(self, cp_report, data_only=False):
-        section_a = self._get_displayed_records(cp_report, "A")
-        section_b = self._get_displayed_records(cp_report, "B")
+        section_a = get_displayed_records(cp_report, "A", self.cp_record_class)
+        section_b = get_displayed_records(cp_report, "B", self.cp_record_class)
         section_c = self._get_cp_prices(cp_report)
         section_d = self._get_items_filtered_by_report(
             self.cp_generation_class, cp_report.id
@@ -397,7 +228,7 @@ class CPRecordBaseListView(views.APIView):
         return result
 
     def _get_old_cp_records(self, cp_report):
-        section_a = self._get_displayed_records(cp_report, "A")
+        section_a = get_displayed_records(cp_report, "A", self.cp_record_class)
         adm_b = self._get_adm_records(cp_report.id, "B")
         adm_b = self._get_regroupped_adm_records(adm_b)
         section_c = self._get_cp_prices(cp_report)

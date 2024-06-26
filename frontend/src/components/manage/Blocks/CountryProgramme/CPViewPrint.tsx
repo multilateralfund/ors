@@ -6,6 +6,7 @@ import { Typography } from '@mui/material'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
+import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import { useStore } from '@ors/store'
 
@@ -70,9 +71,7 @@ export default function CPViewPrint(props: { iso3: string; year: number }) {
       {report.loaded && !!report.data && (
         <HeaderTitle memo={report.data.status}>
           <div className="mb-4 min-h-[40px]">
-            <Typography component="h1" variant="h3">
-              {report.data.name}
-            </Typography>
+            <PageHeading>{report.data.name}</PageHeading>
           </div>
         </HeaderTitle>
       )}
