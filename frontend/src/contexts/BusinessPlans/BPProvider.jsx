@@ -1,12 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import { useParams } from 'next/navigation'
 
-import { formatApiUrl } from '@ors/helpers/Api/utils'
+import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
 
 import BPContext from './BPContext'
-import useApi from '@ors/hooks/useApi'
 
 const BP_PER_PAGE = 20
 
@@ -17,9 +16,7 @@ function BPProvider(props) {
   const commonSlice = useStore((state) => state.common)
 
   const currentAgency = useMemo(() => {
-    return commonSlice.agencies.data.find(
-      (item) => item.name === agency,
-    )
+    return commonSlice.agencies.data.find((item) => item.name === agency)
   }, [pathParams.agency, commonSlice.agencies.data])
 
   const { data, loaded, loading, setParams } = useApi({

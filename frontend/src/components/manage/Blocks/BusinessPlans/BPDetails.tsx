@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import { useContext } from 'react'
 
 import { FilesViewer } from '@ors/components/manage/Blocks/Section/ReportInfo/FilesViewer'
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
