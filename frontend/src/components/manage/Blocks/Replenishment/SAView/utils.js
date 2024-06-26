@@ -4,6 +4,14 @@ import { MAX_DECIMALS, MIN_DECIMALS } from '../constants'
 
 export { sortTableData } from '../utils'
 
+export function uniformDecimals(v) {
+  let result = null
+  if (v !== null) {
+    result = fixFloat(v, MAX_DECIMALS)
+  }
+  return result
+}
+
 export function computeTableData(tableData, totalReplenishment) {
   const result = new Array(tableData.length)
 
@@ -12,47 +20,41 @@ export function computeTableData(tableData, totalReplenishment) {
 
   for (let i = 0; i < tableData.length; i++) {
     if (tableData[i].iso3 === 'USA') {
-      adj_un_soa_percent -= fixFloat(
+      adj_un_soa_percent -= uniformDecimals(
         tableData[i].override_un_soa ?? tableData[i].un_soa ?? 0,
-        MAX_DECIMALS,
       )
     } else if (tableData[i].hasOwnProperty('override_adj_un_soa')) {
-      adj_un_soa_percent -= fixFloat(
+      adj_un_soa_percent -= uniformDecimals(
         tableData[i].override_adj_un_soa ?? 0,
-        MAX_DECIMALS,
       )
     } else {
-      adj_un_soa += fixFloat(
+      adj_un_soa += uniformDecimals(
         tableData[i].override_un_soa ?? tableData[i].un_soa ?? 0,
-        MAX_DECIMALS,
       )
     }
   }
 
-  adj_un_soa_percent -= fixFloat(adj_un_soa, MAX_DECIMALS)
+  adj_un_soa_percent -= uniformDecimals(adj_un_soa)
 
   for (let i = 0; i < tableData.length; i++) {
     result[i] = { ...tableData[i] }
 
-    const un_soa = fixFloat(
+    const un_soa = uniformDecimals(
       tableData[i].override_un_soa ?? tableData[i].un_soa ?? 0,
-      MAX_DECIMALS,
     )
 
     if (tableData[i].iso3 === 'USA') {
       result[i].adj_un_soa = un_soa
     } else {
-      result[i].adj_un_soa = fixFloat(
+      result[i].adj_un_soa = uniformDecimals(
         (un_soa / adj_un_soa) * adj_un_soa_percent + un_soa,
-        MAX_DECIMALS,
       )
     }
 
-    result[i].annual_contributions = fixFloat(
+    result[i].annual_contributions = uniformDecimals(
       ((result[i].override_adj_un_soa ?? result[i].adj_un_soa) *
         totalReplenishment) /
         100,
-      MAX_DECIMALS,
     )
     result[i].qual_ferm = (result[i].avg_ir ?? 100) < 10 ? true : false
     result[i].ferm_cur_amount =

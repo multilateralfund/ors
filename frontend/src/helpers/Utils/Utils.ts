@@ -189,8 +189,6 @@ export const formatDecimalValue = (
     minimumFractionDigits = maximumFractionDigits || 2,
   }: formatDecimalValueProps,
 ) => {
-  const [whole, decimal] = value.toString().split('.')
-
   const formatted = value.toLocaleString(undefined, {
     maximumFractionDigits,
     minimumFractionDigits,

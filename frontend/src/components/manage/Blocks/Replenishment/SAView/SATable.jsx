@@ -75,7 +75,9 @@ function TableCell(props) {
   }
 
   function saveNewValue() {
-    onCellEdit(r, c, fname, value)
+    if (value !== initialValue) {
+      onCellEdit(r, c, fname, value)
+    }
     setEditing(false)
   }
 
