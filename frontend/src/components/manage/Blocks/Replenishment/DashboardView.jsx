@@ -109,7 +109,7 @@ function CashCard(props) {
 
 function DashboardView() {
   return (
-    <div className="rounded-b-lg bg-white p-4">
+    <>
       <h2 className="m-0 text-3xl">STATUS OF THE FUND</h2>
       <p className="m-0 text-xl">as of 15 May 2024 ( US Dollars )</p>
 
@@ -210,7 +210,7 @@ function DashboardView() {
           per the fifth extraordinary MoP decision Ex.V/1(2){' '}
         </p>
       </div>
-    </div>
+    </>
   )
 }
 

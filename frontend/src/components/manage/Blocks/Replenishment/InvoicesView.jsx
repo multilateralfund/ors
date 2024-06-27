@@ -224,21 +224,34 @@ function InvoicesView(props) {
     [ctx],
   )
 
+  const filteredTableData = useMemo(
+    function () {
+      return filterTableData(tableData, searchValue)
+    },
+    [tableData, searchValue],
+  )
+
+  const sortedTableData = useMemo(
+    function () {
+      return sortTableData(
+        filteredTableData,
+        COLUMNS[sortOn].field,
+        sortDirection,
+      )
+    },
+    [filteredTableData, sortOn, sortDirection],
+  )
+
   const editData = useMemo(() => {
     let entry = null
     if (editIdx !== null) {
-      entry = { ...tableData[editIdx] }
+      entry = { ...sortedTableData[editIdx] }
       entry.date = dateForEditField(entry.date)
       entry.sent_out = dateForEditField(entry.sent_out)
       entry.amount = numberForEditField(entry.amount)
     }
     return entry
-  }, [editIdx, tableData])
-
-  const filteredTableData = useMemo(() => {
-    const data = filterTableData(tableData, searchValue)
-    return sortTableData(data, COLUMNS[sortOn].field, sortDirection)
-  }, [tableData, searchValue, sortOn, sortDirection])
+  }, [editIdx, sortedTableData])
 
   function showAddInvoiceDialog() {
     setShowAdd(true)
@@ -261,8 +274,12 @@ function InvoicesView(props) {
     const confirmed = confirm('Are you sure you want to delete this invoice?')
     if (confirmed) {
       setTableData((prev) => {
-        const next = [...prev]
-        next.splice(idx, 1)
+        const next = []
+        for (let i = 0; i < sortedTableData.length; i++) {
+          if (i !== idx) {
+            next.push(sortedTableData[i])
+          }
+        }
         return next
       })
     }
@@ -273,11 +290,11 @@ function InvoicesView(props) {
     entry.date = formatDateValue(entry.date)
     entry.sent_out = formatDateValue(entry.sent_out)
     entry.amount = formatNumberValue(entry.amount)
-    setTableData((prev) => {
-      const next = [...prev]
-      next[editIdx] = entry
-      return next
-    })
+
+    const next = [...sortedTableData]
+    next[editIdx] = entry
+
+    setTableData(next)
     setEditIdx(null)
   }
 
@@ -324,7 +341,7 @@ function InvoicesView(props) {
       <InvoicesTable
         enableEdit={true}
         enableSort={true}
-        rowData={filteredTableData}
+        rowData={sortedTableData}
         sortDirection={sortDirection}
         sortOn={sortOn}
         onDelete={handleDeleteInvoice}

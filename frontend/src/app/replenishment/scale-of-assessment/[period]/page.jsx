@@ -12,7 +12,10 @@ export const metadata = {
 export default async function ReplenishmentScaleOfAssessment(props) {
   const { period } = props.params
   return (
-    <PageWrapper className="w-full p-2" defaultSpacing={false}>
+    <PageWrapper
+      className="w-full rounded-b-lg bg-white p-4"
+      defaultSpacing={false}
+    >
       <HeaderTitle>
         <PageHeading>Replenishment - Scale of assessment</PageHeading>
       </HeaderTitle>

@@ -189,8 +189,6 @@ export const formatDecimalValue = (
     minimumFractionDigits = maximumFractionDigits || 2,
   }: formatDecimalValueProps,
 ) => {
-  const [whole, decimal] = value.toString().split('.')
-
   const formatted = value.toLocaleString(undefined, {
     maximumFractionDigits,
     minimumFractionDigits,
@@ -217,4 +215,13 @@ export function getUnitAwareValue(obj: any, propName: string, unit: string) {
   const value =
     unit && unit !== 'mt' ? obj?.[`${propName}_${unit}`] : obj?.[propName]
   return parseNumber(value)
+}
+
+function padDateNr(n: number) {
+  return n < 10 ? `0${n}` : `${n}`
+}
+
+export const formattedDateFromTimestamp = (timestring: string) => {
+  const date = new Date(timestring)
+  return `${padDateNr(date.getDate())}.${padDateNr(date.getMonth() + 1)}.${date.getFullYear()}`
 }

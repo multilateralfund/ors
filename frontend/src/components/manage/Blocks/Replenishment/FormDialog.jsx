@@ -29,11 +29,10 @@ const FormDialog = function FormDialog(props) {
       ).dataset.name,
     }
     for (const [k, v] of formData.entries()) {
-      const asFloat = parseFloat(v)
-      if (asFloat) {
-        data[k] = asFloat
-      } else {
+      if (isNaN(v)) {
         data[k] = v
+      } else {
+        data[k] = parseFloat(v)
       }
     }
     dialogRef.current.close()

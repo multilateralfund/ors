@@ -1,5 +1,3 @@
-import React from 'react'
-
 export default function BPEdit(props: any) {
   const { agency, end_year, start_year } = props
 
