@@ -91,7 +91,13 @@ function Table(props) {
           </td>,
         )
       }
-      rows.push(<tr key={`er${j}`}>{row}</tr>)
+      const rowClass = extraRows[j].country === 'Total' ? 'totalRow' : ''
+
+      rows.push(
+        <tr key={`er${j}`} className={styles[rowClass]}>
+          {row}
+        </tr>,
+      )
     }
   }
 
