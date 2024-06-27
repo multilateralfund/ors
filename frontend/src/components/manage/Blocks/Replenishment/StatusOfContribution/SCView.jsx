@@ -48,7 +48,7 @@ function getTabLinks(pathname, period) {
         key={i}
         className={cx(
           { 'bg-primary text-mlfs-hlYellow': isCurrent },
-          'inline-flex justify-center items-center min-w-24 h-10 border-0 px-2 py-1 text-lg font-bold uppercase leading-10 text-gray-400 no-underline hover:bg-primary hover:text-mlfs-hlYellow',
+          'inline-flex h-10 min-w-24 items-center justify-center border-0 px-2 py-1 text-lg font-bold uppercase leading-10 text-gray-400 no-underline hover:bg-primary hover:text-mlfs-hlYellow',
           {
             'rounded-l-lg border-r border-solid border-primary': i === 0,
             'rounded-r-lg border-l border-solid border-primary':
@@ -83,8 +83,7 @@ export default function SCView(props) {
   const Component = currentSection?.component ?? SCSummary
 
   return (
-    <section className="flex flex-col gap-4">
-      {/* Header */}
+    <section className="flex flex-col gap-4 p-2">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2>
           {title}{' '}
@@ -92,7 +91,6 @@ export default function SCView(props) {
             as of {dateOfLastUpdate} (US Dollars)
           </span>
         </h2>
-        {/* Period/Year selector */}
         <div className="flex items-center gap-2">
           {currentSection?.showPeriodSelector ?? true ? (
             <PeriodSelector
@@ -105,7 +103,6 @@ export default function SCView(props) {
               ]}
             />
           ) : null}
-          {/* Tabs - Summary / Triennial / Annual */}
           <nav className="flex items-center rounded-lg border border-solid border-primary">
             {navLinks}
           </nav>
