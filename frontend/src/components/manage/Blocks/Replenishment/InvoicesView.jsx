@@ -16,6 +16,7 @@ import {
   filterTableData,
   formatDateValue,
   formatNumberValue,
+  getCountryForIso3,
   numberForEditField,
   sortTableData,
 } from './utils'
@@ -162,7 +163,7 @@ const InvoiceDialog = function InvoiceDialog(props) {
       <FieldSelect id="iso3" defaultValue={data?.iso3} label="Country" required>
         <option value=""> - </option>
         {countries.map((c) => (
-          <option key={c.iso3} data-name={c.name_alt} value={c.iso3}>
+          <option key={c.iso3} value={c.iso3}>
             {c.name_alt}
           </option>
         ))}
@@ -266,6 +267,7 @@ function InvoicesView(props) {
     entry.date = formatDateValue(entry.date)
     entry.sent_out = formatDateValue(entry.sent_out)
     entry.amount = formatNumberValue(entry.amount)
+    entry.country = getCountryForIso3(entry.iso3, ctx.countries)?.name_alt
     setTableData((prev) => [entry, ...prev])
     setShowAdd(false)
   }
@@ -290,6 +292,7 @@ function InvoicesView(props) {
     entry.date = formatDateValue(entry.date)
     entry.sent_out = formatDateValue(entry.sent_out)
     entry.amount = formatNumberValue(entry.amount)
+    entry.country = getCountryForIso3(entry.iso3, ctx.countries)?.name_alt
 
     const next = [...sortedTableData]
     next[editIdx] = entry

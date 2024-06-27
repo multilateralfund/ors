@@ -86,6 +86,83 @@ function getEditableFieldNames(cs) {
 
 const EDITABLE = getEditableFieldNames(COLUMNS)
 
+function SaveManager(props) {
+  const { data } = props
+
+  const [isFinal, setIsFinal] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  function handleChangeFinal() {
+    setIsFinal(function (prev) {
+      return !prev
+    })
+  }
+
+  function handleSave() {
+    setSaving(true)
+  }
+
+  function confirmSave(data) {
+    const saveData = { ...data }
+    saveData['final'] = isFinal
+    setSaving(false)
+    alert(`Save not implemented!\n\n${JSON.stringify(saveData, undefined, 2)}`)
+  }
+
+  function cancelSave() {
+    setSaving(false)
+  }
+
+  return (
+    <div className="flex items-center gap-x-4">
+      {saving ? (
+        <FormDialog
+          title="Save changes?"
+          onCancel={cancelSave}
+          onSubmit={confirmSave}
+        >
+          <div className="flex justify-between gap-4">
+            <p className="w-8/12 text-lg">
+              You can specify meeting and decision numbers where this version
+              was approved.
+            </p>
+            <div className="flex w-4/12 gap-4">
+              <div className="flex flex-col">
+                <label htmlFor="meeting">Meeting</label>
+                <Input
+                  id="meeting"
+                  className="!m-0 max-h-12 w-16 !py-1"
+                  type="text"
+                  required
+                />
+              </div>
+              <div className="flex flex-col">
+                <label htmlFor="decision">Decision</label>
+                <Input
+                  id="decision"
+                  className="!m-0 max-h-12 w-16 !py-1"
+                  type="text"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+        </FormDialog>
+      ) : null}
+      <div className="flex items-center gap-x-2">
+        <Input
+          id="markAsFinal"
+          checked={isFinal}
+          type="checkbox"
+          onChange={handleChangeFinal}
+        />
+        <label htmlFor="markAsFinal">Mark as final</label>
+      </div>
+      <SubmitButton onClick={handleSave}>Save changes</SubmitButton>
+    </div>
+  )
+}
+
 const AddDialog = function AddDialog(props) {
   const { columns, countries, ...dialogProps } = props
   return (
@@ -361,15 +438,7 @@ function SAView(props) {
             />
           </div>
         </div>
-        <div className="flex items-center gap-x-4">
-          <div className="flex items-center gap-x-2">
-            <Input id="markAsFinal" type="checkbox" />
-            <label htmlFor="markAsFinal">Mark as final</label>
-          </div>
-          <SubmitButton onClick={() => confirm('Not yet implemented')}>
-            Save changes
-          </SubmitButton>
-        </div>
+        <SaveManager data={tableData} />
       </div>
       <SATable
         columns={columns}

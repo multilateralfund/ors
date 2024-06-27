@@ -23,11 +23,7 @@ const FormDialog = function FormDialog(props) {
   function submitHandler(evt) {
     evt.preventDefault()
     const formData = new FormData(evt.target)
-    const data = {
-      country: evt.target.iso3.querySelector(
-        `option[value=${evt.target.iso3.value}]`,
-      ).dataset.name,
-    }
+    const data = {}
     for (const [k, v] of formData.entries()) {
       if (isNaN(v)) {
         data[k] = v

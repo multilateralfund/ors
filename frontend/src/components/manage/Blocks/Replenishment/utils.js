@@ -80,3 +80,14 @@ export function sortTableData(tableData, field, direction) {
   })
   return result
 }
+
+export function getCountryForIso3(iso3, countries) {
+  let result = null
+  for (let i = 0; i < countries.length; i++) {
+    if (countries[i].iso3 === iso3) {
+      result = countries[i]
+      break
+    }
+  }
+  return result
+}
