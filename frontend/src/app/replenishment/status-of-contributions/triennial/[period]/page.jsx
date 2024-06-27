@@ -7,14 +7,14 @@ export const metadata = {
 }
 
 export default async function ReplenishmentSoCTriennial(props) {
-    const { period } = props.params
+  const { period } = props.params
   return (
     <PageWrapper className="w-full p-2" defaultSpacing={false}>
       <HeaderTitle>
         <div className="mb-2 font-[500] uppercase">Replenishment</div>
         <PageHeading>Status of contributions</PageHeading>
       </HeaderTitle>
-      <span>status-of-contributions</span>
+      <span>{period}</span>
     </PageWrapper>
   )
 }

@@ -1,19 +1,20 @@
-import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
-import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-import { PageHeading } from '@ors/components/ui/Heading/Heading'
+'use client'
 
-export const metadata = {
-  title: 'Replenishment - Status of contributions',
-}
+import { useContext } from 'react'
 
-export default async function ReplenishmentSoCTriennial() {
-  return (
-    <PageWrapper className="w-full p-2" defaultSpacing={false}>
-      <HeaderTitle>
-        <div className="mb-2 font-[500] uppercase">Replenishment</div>
-        <PageHeading>Status of contributions</PageHeading>
-      </HeaderTitle>
-      <span>status-of-contributions</span>
-    </PageWrapper>
-  )
+import { useRouter } from 'next/navigation'
+
+import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
+
+export default function ReplenishmentSoCAnnual() {
+  const ctxPeriods = useContext(ReplenishmentContext)
+  const router = useRouter()
+
+  if (ctxPeriods.periodOptions.length > 0) {
+    const period = ctxPeriods.periodOptions[0].value
+
+    router.replace(
+      `/replenishment/status-of-contributions/triennial/${period}`,
+    )
+  }
 }
