@@ -7,6 +7,15 @@ export const SC_COLUMNS = [
   { field: 'outstanding_contributions', label: 'Outstanding Contribution' },
 ]
 
+export const mockScAnnualOptions = () => {
+  const options = []
+  for (let i = 2023; i >= 1991; i--) {
+    options.push({ label: i.toString(), value: i.toString() })
+  }
+
+  return options
+}
+
 export function transformData(data) {
   const rows = []
 

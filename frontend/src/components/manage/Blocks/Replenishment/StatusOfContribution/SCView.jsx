@@ -6,9 +6,11 @@ import cx from 'classnames'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
+import PeriodSelector from '@ors/components/manage/Blocks/Replenishment/PeriodSelector'
 import SCAnnual from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCAnnual'
 import SCSummary from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCSummary'
 import SCTriennial from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCTriennial'
+import { mockScAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
 const TABS = [
@@ -16,6 +18,7 @@ const TABS = [
     component: SCSummary,
     label: 'Summary',
     path: '/replenishment/status-of-contributions/summary',
+    showPeriodSelector: false,
   },
   {
     component: SCTriennial,
@@ -65,6 +68,8 @@ export default function SCView(props) {
 
   const ctx = useContext(ReplenishmentContext)
 
+  const periodOptions = props.period ? ctx.periodOptions : mockScAnnualOptions()
+
   const dateOfLastUpdate = '26 September 2023'
   const title = period
     ? `Status of Contribution for ${period}`
@@ -77,24 +82,24 @@ export default function SCView(props) {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2>
-          {title}
+          {title}{' '}
           <span className="text-2xl font-normal">
-            {' '}
             as of {dateOfLastUpdate} (US Dollars)
           </span>
         </h2>
         {/* Period/Year selector */}
         <div className="flex items-center gap-2">
-          {/*{currentSection?.showPeriodSelector ?? true ? (*/}
-          {/*  <PeriodSelector*/}
-          {/*    key={currentSection.label}*/}
-          {/*    period={period}*/}
-          {/*    periodOptions={[*/}
-          {/*      ...(currentSection?.extraPeriodOptions ?? []),*/}
-          {/*      ...ctx.periodOptions,*/}
-          {/*    ]}*/}
-          {/*  />*/}
-          {/*) : null}*/}
+          {currentSection?.showPeriodSelector ?? true ? (
+            <PeriodSelector
+              key={currentSection.label}
+              label=""
+              period={period}
+              periodOptions={[
+                ...(currentSection?.extraPeriodOptions ?? []),
+                ...periodOptions,
+              ]}
+            />
+          ) : null}
           {/* Tabs - Summary / Triennial / Annual */}
           <nav className="flex items-center rounded-lg border border-solid border-primary">
             {navLinks}

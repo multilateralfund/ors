@@ -1,12 +1,12 @@
 import { MAX_DECIMALS, MIN_DECIMALS } from './constants'
 
-const RE_PERIOD = new RegExp(/\d{4}-\d{4}/)
+const RE_PERIOD_OR_YEAR = new RegExp(/(\d{4}-\d{4})|(\d{4})/)
 
 export function getPathPeriod(path) {
   let result = null
   const candidate = path.split('/').at(-1)
 
-  if (candidate.match(RE_PERIOD)) {
+  if (candidate.match(RE_PERIOD_OR_YEAR)) {
     result = candidate
   }
 

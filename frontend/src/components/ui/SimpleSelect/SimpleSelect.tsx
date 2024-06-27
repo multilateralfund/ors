@@ -56,7 +56,7 @@ const SimpleSelect = ({
         </output>
         <menu
           className={cx(
-            'absolute right-0 z-10 mt-1 flex origin-top list-none flex-col rounded-lg bg-white p-0 font-light opacity-0 shadow-xl transition-all',
+            'absolute right-0 z-10 mt-1 flex max-h-64 origin-top list-none flex-col overflow-y-auto rounded-lg bg-white p-0 font-light opacity-0 shadow-xl transition-all',
             {
               'collapse scale-y-0': !showMenu,
               'scale-y-100 opacity-100': showMenu,
