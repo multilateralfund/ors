@@ -18,6 +18,12 @@ class Replenishment(models.Model):
     def __str__(self):
         return f"Replenishment ({self.start_year} - {self.end_year})"
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['start_year'], name='unique_start_year'),
+            models.UniqueConstraint(fields=['end_year'], name='unique_end_year'),
+        ]
+
 
 class Contribution(models.Model):
     """
@@ -91,6 +97,13 @@ class Contribution(models.Model):
 
     def __str__(self):
         return f"Contribution {self.country.name} ({self.replenishment.start_year} - {self.replenishment.end_year})"
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["replenishment", "country"], name="unique_replenishment_country"
+            )
+        ]
 
 
 class Invoice(models.Model):
@@ -191,3 +204,10 @@ class ContributionStatus(models.Model):
 
     def __str__(self):
         return f"Contribution Status {self.country.name} - {self.year}"
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["country", "year"], name="unique_country_year"
+            )
+        ]
