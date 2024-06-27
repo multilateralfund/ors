@@ -9,7 +9,6 @@ import { usePathname } from 'next/navigation'
 import SCAnnual from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCAnnual'
 import SCSummary from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCSummary'
 import SCTriennial from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCTriennial'
-import { getPathPeriod } from '@ors/components/manage/Blocks/Replenishment/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
 const TABS = [
@@ -66,6 +65,7 @@ export default function SCView(props) {
 
   const ctx = useContext(ReplenishmentContext)
 
+  const dateOfLastUpdate = '26 September 2023'
   const title = period
     ? `Status of Contribution for ${period}`
     : 'Status of Contribution'
@@ -74,9 +74,15 @@ export default function SCView(props) {
 
   return (
     <section className="flex flex-col gap-4">
+      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-        {/* Title */}
-        <h3>{title}</h3>
+        <h2>
+          {title}
+          <span className="text-2xl font-normal">
+            {' '}
+            as of {dateOfLastUpdate} (US Dollars)
+          </span>
+        </h2>
         {/* Period/Year selector */}
         <div className="flex items-center gap-2">
           {/*{currentSection?.showPeriodSelector ?? true ? (*/}
