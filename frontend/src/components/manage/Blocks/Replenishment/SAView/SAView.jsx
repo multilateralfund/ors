@@ -13,6 +13,7 @@ import SATable from './SATable'
 import {
   computeTableData,
   formatTableData,
+  getCountryForIso3,
   sortTableData,
   sumColumns,
 } from './utils'
@@ -24,7 +25,7 @@ const COLUMNS = [
     field: 'un_soa',
     label: 'UN scale of assessment',
     parser: parseFloat,
-    subLabel: '([PERIOD])',
+    subLabel: '( YYYY - YYYY )',
   },
   {
     confirmationText:
@@ -44,9 +45,17 @@ const COLUMNS = [
     field: 'avg_ir',
     label: 'Average inflation rate',
     parser: parseFloat,
-    subLabel: '([PERIOD])',
+    subLabel: '( YYYY - YYYY )',
   },
   {
+    editOptions: [
+      { label: 'Yes', value: 'true' },
+      { label: 'No', value: 'false' },
+    ],
+    editParser: function (v) {
+      return v ? v.toString() : 'false'
+    },
+    editWidget: 'select',
     editable: true,
     field: 'qual_ferm',
     label: 'Qualifying for fixed exchange rate mechanism',
@@ -60,7 +69,7 @@ const COLUMNS = [
     field: 'ferm_rate',
     label: 'Currency rate of exchange used for fixed exchange',
     parser: parseFloat,
-    subLabel: '(01 Jan - 30 Jun 2023)',
+    subLabel: '(01 Jan - 30 Jun YYYY)',
   },
   {
     editable: true,
@@ -102,8 +111,8 @@ function SaveManager(props) {
     setSaving(true)
   }
 
-  function confirmSave(data) {
-    const saveData = { ...data }
+  function confirmSave(formData) {
+    const saveData = { ...formData, data }
     saveData['final'] = isFinal
     setSaving(false)
     alert(`Save not implemented!\n\n${JSON.stringify(saveData, undefined, 2)}`)
@@ -215,6 +224,7 @@ function tranformContributions(cs) {
       annual_contributions: cs[i].amount,
       avg_ir: cs[i].average_inflation_rate,
       country: cs[i].country.name_alt,
+      country_id: cs[i].country.id,
       ferm_cur: cs[i].currency,
       ferm_cur_amount: cs[i].amount_local_currency,
       ferm_rate: cs[i].exchange_rate,
@@ -222,6 +232,46 @@ function tranformContributions(cs) {
       qual_ferm: cs[i].qualifies_for_fixed_rate_mechanism,
       un_soa: cs[i].un_scale_of_assessment,
     })
+  }
+
+  return r
+}
+
+function transformForSave(d) {
+  const r = []
+
+  const mapping = [
+    ['average_inflation_rate', 'avg_ir'],
+    ['currency', 'ferm_cur'],
+    ['exchange_rate', 'ferm_rate'],
+    ['un_scale_of_assessment', 'un_soa'],
+  ]
+
+  for (let i = 0; i < d.length; i++) {
+    const n = {
+      country: d[i].country_id,
+    }
+
+    for (let j = 0; j < mapping.length; j++) {
+      const serverKey = mapping[j][0]
+      const dataKey = mapping[j][1]
+      const overrideKey = `override_${dataKey}`
+      if (d[i].hasOwnProperty(overrideKey)) {
+        n[serverKey] = d[i][overrideKey]
+      } else {
+        n[serverKey] = d[i][dataKey]
+      }
+    }
+
+    if (!isNaN(d[i].override_adj_un_soa)) {
+      n.override_adjusted_scale_of_assessment = d[i].override_adj_un_soa
+    }
+
+    if (d[i].hasOwnProperty('override_qual_ferm')) {
+      n.override_qualifies_for_fixed_rate_mechanism = d[i].override_qual_ferm
+    }
+
+    r.push(n)
   }
 
   return r
@@ -312,10 +362,10 @@ function SAView(props) {
   const computedData = useMemo(
     () =>
       shouldCompute
-        ? computeTableData(tableData, annualReplenishmentAmount)
+        ? computeTableData(tableData, replenishmentAmount)
         : tableData,
     /* eslint-disable-next-line */
-    [tableData, annualReplenishmentAmount, shouldCompute],
+    [tableData, replenishmentAmount, shouldCompute],
   )
 
   const sortedData = useMemo(
@@ -338,6 +388,11 @@ function SAView(props) {
 
   function handleAddSubmit(data) {
     const entry = { ...data }
+
+    const country = getCountryForIso3(entry.iso3, ctx.countries)
+    entry.country = country?.name_alt
+    entry.country_id = country?.id
+
     setTableData((prev) => [entry, ...prev])
     setShowAdd(false)
     setShouldCompute(true)
@@ -372,24 +427,18 @@ function SAView(props) {
   function handleCellEdit(r, c, n, v) {
     const parser = columns[c].parser
     const overrideKey = `override_${n}`
-    setTableData((prev) => {
-      const next = [...prev]
-      let value = v
-      if (parser) {
-        value = parser(v)
-      }
-      if (
-        value === '' ||
-        value === undefined ||
-        (typeof value === 'number' && isNaN(value)) ||
-        next[r][n] === value
-      ) {
-        delete next[r][overrideKey]
-      } else {
-        next[r][overrideKey] = value
-      }
-      return next
-    })
+    const next = [...sortedData]
+    if (
+      v === '' ||
+      v === undefined ||
+      (typeof v === 'number' && isNaN(v)) ||
+      next[r][n] === v
+    ) {
+      delete next[r][overrideKey]
+    } else {
+      next[r][overrideKey] = v
+    }
+    setTableData(next)
     setShouldCompute(true)
   }
 
@@ -438,7 +487,7 @@ function SAView(props) {
             />
           </div>
         </div>
-        <SaveManager data={tableData} />
+        <SaveManager data={transformForSave(tableData)} />
       </div>
       <SATable
         columns={columns}

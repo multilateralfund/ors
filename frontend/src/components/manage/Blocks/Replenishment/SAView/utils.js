@@ -2,7 +2,7 @@ import { fixFloat } from '@ors/helpers/Utils/Utils'
 
 import { MAX_DECIMALS, MIN_DECIMALS, PRECISION } from '../constants'
 
-export { sortTableData } from '../utils'
+export { getCountryForIso3, sortTableData } from '../utils'
 
 export function uniformDecimals(v) {
   let result = null
@@ -21,16 +21,18 @@ export function computeTableData(tableData, totalReplenishment) {
   for (let i = 0; i < tableData.length; i++) {
     if (tableData[i].iso3 === 'USA') {
       adj_un_soa_percent -= fixFloat(
-        tableData[i].override_un_soa ?? tableData[i].un_soa ?? 0, PRECISION
+        tableData[i].override_un_soa ?? tableData[i].un_soa ?? 0,
+        PRECISION,
       )
     } else if (tableData[i].hasOwnProperty('override_adj_un_soa')) {
       adj_un_soa_percent -= fixFloat(
         tableData[i].override_adj_un_soa ?? 0,
-        PRECISION
+        PRECISION,
       )
     } else {
       adj_un_soa += fixFloat(
-        tableData[i].override_un_soa ?? tableData[i].un_soa ?? 0, PRECISION
+        tableData[i].override_un_soa ?? tableData[i].un_soa ?? 0,
+        PRECISION,
       )
     }
   }
@@ -42,7 +44,7 @@ export function computeTableData(tableData, totalReplenishment) {
 
     const un_soa = fixFloat(
       tableData[i].override_un_soa ?? tableData[i].un_soa ?? 0,
-      PRECISION
+      PRECISION,
     )
 
     if (tableData[i].iso3 === 'USA') {
@@ -50,7 +52,7 @@ export function computeTableData(tableData, totalReplenishment) {
     } else {
       result[i].adj_un_soa = fixFloat(
         (un_soa / adj_un_soa) * adj_un_soa_percent + un_soa,
-        PRECISION
+        PRECISION,
       )
     }
 
@@ -58,7 +60,7 @@ export function computeTableData(tableData, totalReplenishment) {
       ((result[i].override_adj_un_soa ?? result[i].adj_un_soa) *
         totalReplenishment) /
         100,
-      PRECISION
+      PRECISION,
     )
     result[i].qual_ferm = (result[i].avg_ir ?? 100) < 10 ? true : false
     result[i].ferm_cur_amount =
@@ -140,14 +142,16 @@ export function sumColumns(tableData) {
       tableData[i].annual_contributions
   }
 
-  result.un_soa = result.un_soa.toLocaleString('en-US', {
-    maximumFractionDigits: MAX_DECIMALS,
-    minimumFractionDigits: MIN_DECIMALS,
-  })
-  result.adj_un_soa = result.adj_un_soa.toLocaleString('en-US', {
-    maximumFractionDigits: MAX_DECIMALS,
-    minimumFractionDigits: MIN_DECIMALS,
-  })
+  result.un_soa =
+    result.un_soa.toLocaleString('en-US', {
+      maximumFractionDigits: MAX_DECIMALS,
+      minimumFractionDigits: MIN_DECIMALS,
+    }) + '%'
+  result.adj_un_soa =
+    result.adj_un_soa.toLocaleString('en-US', {
+      maximumFractionDigits: MAX_DECIMALS,
+      minimumFractionDigits: MIN_DECIMALS,
+    }) + '%'
   result.annual_contributions = result.annual_contributions.toLocaleString(
     'en-US',
     {

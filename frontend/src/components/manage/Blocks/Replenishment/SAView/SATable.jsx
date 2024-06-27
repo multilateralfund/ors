@@ -27,13 +27,54 @@ function AdminButtons(props) {
   )
 }
 
+function EditField(props) {
+  const { column, value, ...rest } = props
+
+  const inputRef = useRef(null)
+
+  const fieldValue = column.editParser ? column.editParser(value) : value
+
+  useEffect(function () {
+    if (inputRef.current) {
+      inputRef.current.focus()
+      if (inputRef.current.nodeName === 'INPUT') {
+        inputRef.current.select()
+      }
+    }
+  }, [])
+
+  let Field
+
+  switch (column.editWidget) {
+    case 'select':
+      const options = []
+      for (let i = 0; i < column.editOptions.length; i++) {
+        options.push(
+          <option key={i} value={column.editOptions[i].value}>
+            {column.editOptions[i].label}
+          </option>,
+        )
+      }
+      Field = (
+        <select className="w-full" ref={inputRef} value={fieldValue} {...rest}>
+          {options}
+        </select>
+      )
+      break
+    default:
+      Field = <input ref={inputRef} value={fieldValue} {...rest} />
+  }
+
+  return Field
+}
+
 function TableCell(props) {
   const { c, columns, enableEdit, onCellEdit, onDelete, r, rowData } = props
 
-  const fname = columns[c].field
+  const column = columns[c]
+  const fname = column.field
   const cell = rowData[r][fname]
   const initialValue = cell?.hasOwnProperty('edit') ? cell.edit || '' : cell
-  const isEditable = columns[c].editable === true
 
   const confirmationText = columns[c].confirmationText ?? null
 
@@ -49,20 +90,8 @@ function TableCell(props) {
 
   const [showConfirmEdit, setShowConfirmEdit] = useState(false)
 
-  const inputRef = useRef(null)
-
-  useEffect(
-    function () {
-      if (inputRef.current) {
-        inputRef.current.focus()
-        inputRef.current.select()
-      }
-    },
-    [editing],
-  )
-
   function handleStartEdit() {
-    if (enableEdit && isEditable) {
+    if (enableEdit && column.editable === true) {
       setEditing(true)
     }
   }
@@ -108,6 +137,15 @@ function TableCell(props) {
     cancelNewValue()
   }
 
+  function handleChangeValue(evt) {
+    const inputValue = evt.target.value
+    let newValue = column.parser ? column.parser(inputValue) : inputValue
+    if (isNaN(newValue) && typeof initialValue === 'number') {
+      newValue = ''
+    }
+    setValue(newValue)
+  }
+
   return (
     <div
       className="flex items-center justify-between"
@@ -123,12 +161,11 @@ function TableCell(props) {
       ) : null}
       <div className="w-full whitespace-nowrap">
         {editing ? (
-          <input
-            ref={inputRef}
-            type="text"
+          <EditField
+            column={columns[c]}
             value={value}
             onBlur={saveNewValue}
-            onChange={(evt) => setValue(evt.target.value)}
+            onChange={handleChangeValue}
             onKeyDown={handleKeyDown}
           />
         ) : (
