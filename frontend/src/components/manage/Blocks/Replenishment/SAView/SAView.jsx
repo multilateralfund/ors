@@ -215,6 +215,7 @@ function SAView(props) {
     function () {
       setTableData(contributions)
       setReplenishmentAmount(apiReplenishmentAmount)
+      setAnnualReplenishmentAmount(apiReplenishmentAmount / 3)
     },
     [contributions, apiReplenishmentAmount],
   )
@@ -229,14 +230,15 @@ function SAView(props) {
   const [showAdd, setShowAdd] = useState(false)
 
   const [replenishmentAmount, setReplenishmentAmount] = useState(0)
+  const [annualReplenishmentAmount, setAnnualReplenishmentAmount] = useState(0)
 
   const computedData = useMemo(
     () =>
       shouldCompute
-        ? computeTableData(tableData, replenishmentAmount)
+        ? computeTableData(tableData, annualReplenishmentAmount)
         : tableData,
     /* eslint-disable-next-line */
-    [tableData, replenishmentAmount, shouldCompute],
+    [tableData, annualReplenishmentAmount, shouldCompute],
   )
 
   const sortedData = useMemo(
@@ -279,7 +281,9 @@ function SAView(props) {
   }
 
   function handleAmountInput(evt) {
-    setReplenishmentAmount(parseFloat(evt.target.value))
+    const value = parseFloat(evt.target.value)
+    setAnnualReplenishmentAmount(value)
+    setReplenishmentAmount(value * 3)
     setShouldCompute(true)
   }
 
@@ -335,7 +339,7 @@ function SAView(props) {
               id="triannualBudget"
               className="w-36"
               type="number"
-              value={replenishmentAmount * 3}
+              value={replenishmentAmount}
               disabled
               readOnly
             />
@@ -352,7 +356,7 @@ function SAView(props) {
               id="totalAmount"
               className="w-36"
               type="number"
-              value={replenishmentAmount}
+              value={annualReplenishmentAmount}
               onChange={handleAmountInput}
             />
           </div>
