@@ -7,6 +7,8 @@ from core.models.utils import get_protected_storage
 
 US_SCALE_OF_ASSESSMENT = Decimal("22")
 
+# Scale of Assessment
+
 
 class Replenishment(models.Model):
     start_year = models.IntegerField()
@@ -18,6 +20,10 @@ class Replenishment(models.Model):
 
 
 class Contribution(models.Model):
+    """
+    Contribution to a replenishment, used in Scale of Assessment.
+    """
+
     replenishment = models.ForeignKey(
         Replenishment,
         on_delete=models.PROTECT,
@@ -160,3 +166,28 @@ class PaymentFile(models.Model):
         choices=PaymentFileType.choices,
         default=PaymentFileType.BANK_STATEMENT,
     )
+
+
+# Dashboard and Status of Contributions
+class ContributionStatus(models.Model):
+    country = models.ForeignKey(
+        Country,
+        on_delete=models.PROTECT,
+        null=True,
+        related_name="contributions_status",
+    )
+    year = models.IntegerField()
+    agreed_contributions = models.DecimalField(
+        max_digits=30, decimal_places=15, default=0
+    )
+    cash_payments = models.DecimalField(max_digits=30, decimal_places=15, default=0)
+    bilateral_assistance = models.DecimalField(
+        max_digits=30, decimal_places=15, default=0
+    )
+    promissory_notes = models.DecimalField(max_digits=30, decimal_places=15, default=0)
+    outstanding_contributions = models.DecimalField(
+        max_digits=30, decimal_places=15, default=0
+    )
+
+    def __str__(self):
+        return f"Contribution Status {self.country.name} - {self.year}"
