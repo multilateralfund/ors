@@ -48,7 +48,7 @@ const SimpleSelect = ({
       <div className="relative">
         <output
           id={idFromLabel}
-          className="flex cursor-pointer items-center justify-between gap-x-2 rounded-lg border-2 border-solid border-primary px-2 py-2"
+          className="flex cursor-pointer items-center justify-between gap-x-2 rounded-lg border border-solid border-primary px-2 py-2"
           onClick={toggleShowMenu}
         >
           <div>{options[selectedIndex]?.label}</div>
