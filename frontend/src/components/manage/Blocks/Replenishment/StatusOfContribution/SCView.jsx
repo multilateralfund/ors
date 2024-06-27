@@ -48,7 +48,12 @@ function getTabLinks(pathname, period) {
         key={i}
         className={cx(
           { 'bg-primary text-mlfs-hlYellow': isCurrent },
-          'inline-block rounded-t px-2 py-1 text-lg font-bold uppercase leading-10 text-gray-400 hover:bg-primary hover:text-mlfs-hlYellow',
+          'inline-flex justify-center items-center min-w-24 h-10 border-0 px-2 py-1 text-lg font-bold uppercase leading-10 text-gray-400 no-underline hover:bg-primary hover:text-mlfs-hlYellow',
+          {
+            'rounded-l-lg border-r border-solid border-primary': i === 0,
+            'rounded-r-lg border-l border-solid border-primary':
+              i === TABS.length - 1,
+          },
         )}
         href={entry.path}
       >
