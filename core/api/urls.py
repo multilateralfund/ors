@@ -7,7 +7,7 @@ from drf_yasg import openapi
 from core.api.views import (
     ProjectFundViewSet,
     ReplenishmentCountriesViewSet,
-    ReplenishmentViewSet, ContributionViewSet,
+    ReplenishmentViewSet, ContributionViewSet, StatusOfContributionsView,
 )
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
@@ -336,6 +336,11 @@ urlpatterns = [
         "business-plan/<int:id>/status-update/",
         BPStatusUpdateView.as_view(),
         name="business-plan-status",
+    ),
+    path(
+        "replenishment/status-of-contributions/",
+        StatusOfContributionsView.as_view(),
+        name="replenishment-status-of-contributions",
     ),
     *router.urls,
 ]
