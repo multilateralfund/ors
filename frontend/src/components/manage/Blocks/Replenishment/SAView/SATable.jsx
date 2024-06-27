@@ -2,10 +2,15 @@ import { useEffect, useRef, useState } from 'react'
 
 import cx from 'classnames'
 
+import ConfirmDialog from '../ConfirmDialog'
 import HeaderCells from '../Table/HeaderCells'
 import styles from '../Table/table.module.css'
 
 import { IoPencil, IoTrash } from 'react-icons/io5'
+
+function ConfirmEditDialog(props) {
+  return <ConfirmDialog title="Change this system computed value?" {...props} />
+}
 
 function AdminButtons(props) {
   const { onDelete } = props
@@ -30,6 +35,8 @@ function TableCell(props) {
   const initialValue = cell?.hasOwnProperty('edit') ? cell.edit || '' : cell
   const isEditable = columns[c].editable === true
 
+  const confirmationText = columns[c].confirmationText ?? null
+
   useEffect(
     function () {
       setValue(initialValue)
@@ -39,6 +46,8 @@ function TableCell(props) {
 
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(initialValue)
+
+  const [showConfirmEdit, setShowConfirmEdit] = useState(false)
 
   const inputRef = useRef(null)
 
@@ -62,6 +71,7 @@ function TableCell(props) {
     if (evt.key === 'Escape') {
       cancelNewValue()
     } else if (evt.key === 'Enter') {
+      evt.preventDefault()
       saveNewValue()
     } else if (evt.key === 'Tab') {
       evt.preventDefault()
@@ -76,9 +86,26 @@ function TableCell(props) {
 
   function saveNewValue() {
     if (value !== initialValue) {
-      onCellEdit(r, c, fname, value)
+      if (confirmationText) {
+        setShowConfirmEdit(true)
+      } else {
+        onCellEdit(r, c, fname, value)
+        setEditing(false)
+      }
+    } else {
+      setEditing(false)
     }
+  }
+
+  function handleConfirmEdit() {
+    onCellEdit(r, c, fname, value)
     setEditing(false)
+    setShowConfirmEdit(false)
+  }
+
+  function handleCancelEdit() {
+    setShowConfirmEdit(false)
+    cancelNewValue()
   }
 
   return (
@@ -86,6 +113,14 @@ function TableCell(props) {
       className="flex items-center justify-between"
       onDoubleClick={handleStartEdit}
     >
+      {showConfirmEdit ? (
+        <ConfirmEditDialog
+          onCancel={handleCancelEdit}
+          onSubmit={handleConfirmEdit}
+        >
+          <div className="text-lg">{confirmationText}</div>
+        </ConfirmEditDialog>
+      ) : null}
       <div className="w-full whitespace-nowrap">
         {editing ? (
           <input

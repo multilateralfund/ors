@@ -15,7 +15,6 @@ import {
   formatTableData,
   sortTableData,
   sumColumns,
-  uniformDecimals,
 } from './utils'
 
 const COLUMNS = [
@@ -135,16 +134,16 @@ function tranformContributions(cs) {
 
   for (let i = 0; i < cs.length; i++) {
     r.push({
-      adj_un_soa: uniformDecimals(cs[i].adjusted_scale_of_assessment),
-      annual_contributions: uniformDecimals(cs[i].amount),
-      avg_ir: uniformDecimals(cs[i].average_inflation_rate),
+      adj_un_soa: cs[i].adjusted_scale_of_assessment,
+      annual_contributions: cs[i].amount,
+      avg_ir: cs[i].average_inflation_rate,
       country: cs[i].country.name_alt,
       ferm_cur: cs[i].currency,
-      ferm_cur_amount: uniformDecimals(cs[i].amount_local_currency),
-      ferm_rate: uniformDecimals(cs[i].exchange_rate),
+      ferm_cur_amount: cs[i].amount_local_currency,
+      ferm_rate: cs[i].exchange_rate,
       iso3: cs[i].country.iso3,
       qual_ferm: cs[i].qualifies_for_fixed_rate_mechanism,
-      un_soa: uniformDecimals(cs[i].un_scale_of_assessment),
+      un_soa: cs[i].un_scale_of_assessment,
     })
   }
 
@@ -292,30 +291,25 @@ function SAView(props) {
   function handleCellEdit(r, c, n, v) {
     const parser = columns[c].parser
     const overrideKey = `override_${n}`
-    if (
-      (columns[c].confirmationText && confirm(columns[c].confirmationText)) ||
-      !columns[c].confirmationText
-    ) {
-      setTableData((prev) => {
-        const next = [...prev]
-        let value = v
-        if (parser) {
-          value = parser(v)
-        }
-        if (
-          value === '' ||
-          value === undefined ||
-          (typeof value === 'number' && isNaN(value)) ||
-          next[r][n] === value
-        ) {
-          delete next[r][overrideKey]
-        } else {
-          next[r][overrideKey] = value
-        }
-        return next
-      })
-      setShouldCompute(true)
-    }
+    setTableData((prev) => {
+      const next = [...prev]
+      let value = v
+      if (parser) {
+        value = parser(v)
+      }
+      if (
+        value === '' ||
+        value === undefined ||
+        (typeof value === 'number' && isNaN(value)) ||
+        next[r][n] === value
+      ) {
+        delete next[r][overrideKey]
+      } else {
+        next[r][overrideKey] = value
+      }
+      return next
+    })
+    setShouldCompute(true)
   }
 
   return (
