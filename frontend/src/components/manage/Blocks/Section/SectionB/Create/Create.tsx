@@ -7,6 +7,7 @@ import React, { useMemo, useRef, useState } from 'react'
 
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   Dialog,
@@ -19,8 +20,8 @@ import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, sortBy, union, uniqBy } from 'lodash'
 import { useSnackbar } from 'notistack'
 
-import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
+import TextWidget from '@ors/components/manage/Widgets/TextWidget'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
@@ -290,7 +291,7 @@ export default function SectionBCreate(props: {
   const onAddChemical = (event: any, newChemical: any) => {
     if (document.activeElement) {
       // @ts-ignore
-      document.activeElement.blur()
+      document.activeElement.focus()
     }
     const added = find(
       form.section_b,
@@ -459,42 +460,65 @@ export default function SectionBCreate(props: {
                   <Typography>
                     Mandatory / usual substances and blends
                   </Typography>
-                  <Field
+                  <Autocomplete
+                    id="mandatory-chemicals"
+                    className="widget"
                     getOptionLabel={(option: any) => option.display_name}
                     groupBy={(option: any) => option.group}
                     options={mandatoryChemicals}
-                    value={null}
-                    widget="autocomplete"
-                    Input={{
-                      autoComplete: 'off',
-                    }}
+                    renderInput={(params) => (
+                      <TextWidget
+                        {...params}
+                        autoComplete="false"
+                        size="small"
+                        variant="outlined"
+                      />
+                    )}
                     onChange={onAddChemical}
+                    disableClearable
+                    disableCloseOnSelect
                   />
                   <Typography>
                     Other blends (Mixture of controlled substances)
                   </Typography>
-                  <Field
+                  <Autocomplete
+                    id="other-blends"
+                    className="widget"
                     getOptionLabel={(option: any) => option.display_name}
                     groupBy={(option: any) => option.group}
                     options={optionalBlends}
-                    value={null}
-                    widget="autocomplete"
-                    Input={{
-                      autoComplete: 'off',
-                    }}
+                    renderInput={(params) => (
+                      <TextWidget
+                        {...params}
+                        autoComplete="false"
+                        size="small"
+                        variant="outlined"
+                      />
+                    )}
                     onChange={onAddChemical}
+                    disableClearable
+                    disableCloseOnSelect
                   />
                 </>
               )
             ) : (
-              <Field
-                Input={{ autoComplete: 'off' }}
+              <Autocomplete
+                id="all-substances"
+                className="widget"
                 getOptionLabel={(option: any) => option.display_name}
                 groupBy={(option: any) => option.group}
                 options={oldChemicalOptions}
-                value={null}
-                widget="autocomplete"
+                renderInput={(params) => (
+                  <TextWidget
+                    {...params}
+                    autoComplete="false"
+                    size="small"
+                    variant="outlined"
+                  />
+                )}
                 onChange={onAddChemical}
+                disableClearable
+                disableCloseOnSelect
               />
             )}
             {modalTab === 'new_blend' && (

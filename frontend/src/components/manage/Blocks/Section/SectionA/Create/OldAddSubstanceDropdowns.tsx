@@ -1,8 +1,8 @@
 import React from 'react'
 
-import { Typography } from '@mui/material'
+import { Autocomplete, Typography } from '@mui/material'
 
-import Field from '@ors/components/manage/Form/Field'
+import TextWidget from '@ors/components/manage/Widgets/TextWidget'
 
 export function OldAddSubstanceDropdowns(props: {
   onChange: (_: any, newSubstance: any) => void
@@ -18,14 +18,23 @@ export function OldAddSubstanceDropdowns(props: {
       >
         Select substance
       </Typography>
-      <Field
-        Input={{ autoComplete: 'off' }}
+      <Autocomplete
+        id="other-substances"
+        className="widget"
         getOptionLabel={(option: any) => option.display_name}
         groupBy={(option: any) => option.group}
         options={props.options}
-        value={null}
-        widget="autocomplete"
+        renderInput={(params) => (
+          <TextWidget
+            {...params}
+            autoComplete="false"
+            size="small"
+            variant="outlined"
+          />
+        )}
         onChange={props.onChange}
+        disableClearable
+        disableCloseOnSelect
       />
     </>
   )

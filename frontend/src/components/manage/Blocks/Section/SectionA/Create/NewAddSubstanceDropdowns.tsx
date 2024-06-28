@@ -1,8 +1,8 @@
 import React from 'react'
 
-import { Typography } from '@mui/material'
+import { Autocomplete, Typography } from '@mui/material'
 
-import Field from '@ors/components/manage/Form/Field'
+import TextWidget from '@ors/components/manage/Widgets/TextWidget'
 
 export function NewAddSubstanceDropdowns(props: {
   mandatoryOptions: Array<any>
@@ -20,24 +20,42 @@ export function NewAddSubstanceDropdowns(props: {
         Add substances
       </Typography>
       <Typography>Mandatory / usual substances</Typography>
-      <Field
-        Input={{ autoComplete: 'off' }}
+      <Autocomplete
+        id="mandatory-substances"
+        className="widget"
         getOptionLabel={(option: any) => option.display_name}
         groupBy={(option: any) => option.group}
         options={props.mandatoryOptions}
-        value={null}
-        widget="autocomplete"
+        renderInput={(params) => (
+          <TextWidget
+            {...params}
+            autoComplete="false"
+            size="small"
+            variant="outlined"
+          />
+        )}
         onChange={props.onChange}
+        disableClearable
+        disableCloseOnSelect
       />
       <Typography>Other substances</Typography>
-      <Field
-        Input={{ autoComplete: 'off' }}
+      <Autocomplete
+        id="other-substances"
+        className="widget"
         getOptionLabel={(option: any) => option.display_name}
         groupBy={(option: any) => option.group}
         options={props.optionalOptions}
-        value={null}
-        widget="autocomplete"
+        renderInput={(params) => (
+          <TextWidget
+            {...params}
+            autoComplete="false"
+            size="small"
+            variant="outlined"
+          />
+        )}
         onChange={props.onChange}
+        disableClearable
+        disableCloseOnSelect
       />
     </>
   )
