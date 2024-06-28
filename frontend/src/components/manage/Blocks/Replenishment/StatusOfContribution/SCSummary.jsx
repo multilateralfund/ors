@@ -38,6 +38,7 @@ export default function SCSummary() {
 
   return (
     <Table
+      adminButtons={false}
       columns={columns}
       enableEdit={false}
       enableSort={false}

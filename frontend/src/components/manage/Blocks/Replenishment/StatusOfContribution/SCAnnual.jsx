@@ -8,6 +8,7 @@ export default function SCAnnual({ year }) {
   const { extraRows, rows } = useGetSCData(year, year)
   return (
     <Table
+      adminButtons={false}
       columns={SC_COLUMNS}
       enableEdit={false}
       enableSort={false}

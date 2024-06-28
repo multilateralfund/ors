@@ -29,6 +29,7 @@ function AdminButtons(props) {
 
 function TableCell(props) {
   const {
+    adminButtons = true,
     c,
     columns,
     onDelete,
@@ -46,7 +47,7 @@ function TableCell(props) {
       <div className={`w-full whitespace-nowrap text-${textPosition}`}>
         {cell}
       </div>
-      {c === 0 ? (
+      {c === 0 && adminButtons ? (
         <AdminButtons
           onDelete={() => onDelete(r, rowData[r])}
           onEdit={() => onEdit(r)}
@@ -58,6 +59,7 @@ function TableCell(props) {
 
 function Table(props) {
   const {
+    adminButtons,
     columns,
     enableEdit,
     enableSort,
@@ -78,6 +80,7 @@ function Table(props) {
       row.push(
         <td key={i}>
           <TableCell
+            adminButtons={adminButtons}
             c={i}
             columns={columns}
             enableEdit={enableEdit}
@@ -100,6 +103,7 @@ function Table(props) {
         row.push(
           <td key={i}>
             <TableCell
+              adminButtons={adminButtons}
               c={i}
               columns={columns}
               r={j}

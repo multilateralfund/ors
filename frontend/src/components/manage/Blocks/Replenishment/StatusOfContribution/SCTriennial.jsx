@@ -11,6 +11,7 @@ export default function SCTriennial({ period }) {
 
   return (
     <Table
+      adminButtons={false}
       columns={SC_COLUMNS}
       enableEdit={false}
       enableSort={false}
