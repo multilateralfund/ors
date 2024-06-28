@@ -13,6 +13,10 @@ import {
 import { each, find, includes } from 'lodash'
 
 import { CPBaseForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
+import {
+  SubstancePrice,
+  SubstancePrices,
+} from '@ors/components/manage/Blocks/Section/SectionC/Create/types'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { debounce } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
@@ -24,58 +28,77 @@ interface CloneSubstancesDialogProps {
   user_type: UserType
 }
 
+function indexKey(elem: {
+  blend_id?: null | number
+  substance_id?: null | number
+}): string {
+  return elem.blend_id
+    ? `blend_${elem.blend_id}`
+    : `substance_${elem.substance_id}`
+}
+
 function clonePreviousSubstances(
   Sections: any,
   data: any,
   form: CPBaseForm,
   setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>,
   sections: Array<'section_a' | 'section_b' | 'section_c'>,
+  substancePrices: SubstancePrices,
 ) {
   let newForm = { ...form }
+
   sections.forEach((section) => {
     const previousSubstances = getPreviousSubstances(
       data.previous_substances[section],
       Sections[section],
+      substancePrices,
     )
 
     newForm = { ...newForm, [section]: previousSubstances }
+    if (section === 'section_c') {
+    }
   })
   setForm((form: CPBaseForm) => ({ ...form, ...newForm }))
 }
 
-const getPreviousSubstances = (sectionData: any[], Section: any) => {
+const getPreviousSubstances = (
+  sectionData: any[],
+  Section: any,
+  substancePrices: SubstancePrices,
+) => {
   const data: Array<any> = []
 
   const substancesInForm = sectionData.map((row) => row.id)
 
-  each(
-    sectionData.filter((row) => row.substance_id),
-    (substance) => {
-      if (!includes(substancesInForm, `substance_${substance.substance_id}`)) {
-        const transformedSubstance = Section.transformSubstance(
-          substance,
-          false,
-        )
-        data.push({
-          ...transformedSubstance,
-          id: transformedSubstance.display_name,
-        })
+  const priceMapping = substancePrices.reduce(
+    (acc: Record<string, SubstancePrice>, price) => {
+      if (!!price.substance_id) {
+        acc[`substance_${price.substance_id}`] = price
       }
+      if (!!price.blend_id) {
+        acc[`blend_${price.blend_id}`] = price
+      }
+      return acc
     },
+    {},
   )
 
-  each(
-    sectionData.filter((row) => row.blend_id),
-    (blend) => {
-      if (!includes(substancesInForm, `blend_${blend.blend_id}`)) {
-        const transformedBlend = Section.transformBlend(blend, false)
-        data.push({
-          ...transformedBlend,
-          id: transformedBlend.display_name,
-        })
-      }
-    },
-  )
+  each(sectionData, (item) => {
+    const key = indexKey(item)
+    if (!includes(substancesInForm, key)) {
+      const transformFunction = key.startsWith('substance_')
+        ? Section.transformSubstance
+        : Section.transformBlend
+      const transformedItem = transformFunction.call(Section, item, false)
+      transformedItem.previous_year_price =
+        priceMapping[key]?.current_year_price || item.previous_year_price
+
+      data.push({
+        ...transformedItem,
+        id: transformedItem.display_name,
+      })
+    }
+  })
 
   return data.toSorted((a, b) => {
     if (a.group === b.group) {
@@ -122,7 +145,26 @@ const CloneSubstancesDialog: React.FC<CloneSubstancesDialogProps> = ({
     selectedCountry?.id || null,
   )
 
-  const isDataReady = loaded && !loading && !!data && !!selectedCountry
+  const substancePrices = useApi<SubstancePrices>({
+    options: {
+      triggerIf: !!form.country?.id,
+    },
+    path: `/api/country-programme/prices/?year=${form.year - 1}&country_id=${form.country?.id}`,
+  })
+
+  useEffect(() => {
+    substancePrices.setApiSettings({
+      options: {
+        ...substancePrices.apiSettings.options,
+        triggerIf: !!form.country?.id,
+      },
+      path: `/api/country-programme/prices/?year=${form.year - 1}&country_id=${form.country?.id}`,
+    })
+    // eslint-disable-next-line
+  }, [form.country])
+
+  const isDataReady =
+    loaded && !loading && !!data && !!selectedCountry && !!substancePrices.data
 
   useEffect(() => {
     if (isCountryUser) {
@@ -181,7 +223,14 @@ const CloneSubstancesDialog: React.FC<CloneSubstancesDialogProps> = ({
             <Button onClick={handleClose}>No</Button>
             <Button
               onClick={() => {
-                clonePreviousSubstances(Sections, data, form, setForm, sections)
+                clonePreviousSubstances(
+                  Sections,
+                  data,
+                  form,
+                  setForm,
+                  sections,
+                  substancePrices.data || [],
+                )
                 handleClose()
               }}
               autoFocus
