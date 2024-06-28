@@ -15,7 +15,7 @@ import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import Link from '@ors/components/ui/Link/Link'
 import ValidationContext from '@ors/contexts/Validation/ValidationContext'
-import {formattedDateFromTimestamp, uploadFiles} from '@ors/helpers'
+import { formattedDateFromTimestamp, uploadFiles } from '@ors/helpers'
 import api from '@ors/helpers/Api/_api'
 import useClickOutside from '@ors/hooks/useClickOutside'
 import { useStore } from '@ors/store'
@@ -304,7 +304,7 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
               variant="contained"
               button
             >
-              View Reports
+              Close
             </Link>
           </div>
         </div>
@@ -420,16 +420,6 @@ const EditHeaderActions = ({
     <div className="flex items-center">
       {!!report.data && (
         <div className="container flex w-full justify-between gap-x-4 px-0">
-          <Link
-            className="btn-close bg-gray-600 px-4 py-2 shadow-none"
-            color="secondary"
-            href={`/country-programme/${report.country?.iso3}/${report.data.year}`}
-            size="large"
-            variant="contained"
-            button
-          >
-            Close
-          </Link>
           {isDraft && (
             <Button
               className="px-4 py-2 shadow-none"
@@ -461,6 +451,16 @@ const EditHeaderActions = ({
           >
             {isDraft ? 'Submit final version' : 'Submit new version'}
           </Button>
+          <Link
+            className="btn-close bg-gray-600 px-4 py-2 shadow-none"
+            color="secondary"
+            href={`/country-programme/${report.country?.iso3}/${report.data.year}`}
+            size="large"
+            variant="contained"
+            button
+          >
+            Close
+          </Link>
         </div>
       )}
       {showConfirm ? (
