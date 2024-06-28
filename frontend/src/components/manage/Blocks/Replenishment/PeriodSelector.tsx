@@ -8,7 +8,7 @@ import styles from './periodSelector.module.css'
 import { getPathPeriod } from './utils'
 
 function PeriodSelector(props: any) {
-  const { period, periodOptions } = props
+  const { label = 'Period', period, periodOptions } = props
 
   const pathname = usePathname()
   const router = useRouter()
@@ -36,7 +36,7 @@ function PeriodSelector(props: any) {
     <div className={styles.selector}>
       <SimpleSelect
         initialIndex={selectedIndex}
-        label="Period"
+        label={label}
         options={options}
         onChange={handleChange}
       />

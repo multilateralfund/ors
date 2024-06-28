@@ -28,14 +28,24 @@ function AdminButtons(props) {
 }
 
 function TableCell(props) {
-  const { c, columns, onDelete, onEdit, r, rowData } = props
+  const {
+    c,
+    columns,
+    onDelete,
+    onEdit,
+    r,
+    rowData,
+    textPosition = 'left',
+  } = props
 
   const fname = columns[c].field
   const cell = rowData[r][fname]
 
   return (
     <div className="flex items-center justify-between">
-      <div className="w-full whitespace-nowrap">{cell}</div>
+      <div className={`w-full whitespace-nowrap text-${textPosition}`}>
+        {cell}
+      </div>
       {c === 0 ? (
         <AdminButtons
           onDelete={() => onDelete(r, rowData[r])}
@@ -58,6 +68,7 @@ function Table(props) {
     rowData,
     sortDirection,
     sortOn,
+    textPosition,
   } = props
 
   const rows = []
@@ -72,6 +83,7 @@ function Table(props) {
             enableEdit={enableEdit}
             r={j}
             rowData={rowData}
+            textPosition={textPosition}
             onDelete={onDelete}
             onEdit={onEdit}
           />
@@ -87,11 +99,23 @@ function Table(props) {
       for (let i = 0; i < columns.length; i++) {
         row.push(
           <td key={i}>
-            <TableCell c={i} columns={columns} r={j} rowData={extraRows} />
+            <TableCell
+              c={i}
+              columns={columns}
+              r={j}
+              rowData={extraRows}
+              textPosition={textPosition}
+            />
           </td>,
         )
       }
-      rows.push(<tr key={`er${j}`}>{row}</tr>)
+      const rowClass = extraRows[j].country === 'Total' ? 'totalRow' : ''
+
+      rows.push(
+        <tr key={`er${j}`} className={styles[rowClass]}>
+          {row}
+        </tr>,
+      )
     }
   }
 
