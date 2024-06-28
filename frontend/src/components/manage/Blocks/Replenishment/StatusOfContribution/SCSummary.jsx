@@ -10,7 +10,7 @@ const summary_columns = [
   {
     field: 'gain_loss',
     label: 'Exchange (Gain)/Loss',
-    subLabel: '(negative amount = Gain',
+    subLabel: '(negative amount = Gain)',
   },
 ]
 
@@ -43,6 +43,7 @@ export default function SCSummary() {
       enableSort={false}
       extraRows={extraRows}
       rowData={rows}
+      textPosition="center"
     />
   )
 }

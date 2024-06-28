@@ -16,6 +16,7 @@ export default function SCTriennial({ period }) {
       enableSort={false}
       extraRows={extraRows}
       rowData={rows}
+      textPosition="center"
     />
   )
 }

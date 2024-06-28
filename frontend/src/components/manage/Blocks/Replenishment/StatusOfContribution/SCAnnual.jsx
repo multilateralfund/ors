@@ -13,6 +13,7 @@ export default function SCAnnual({ year }) {
       enableSort={false}
       extraRows={extraRows}
       rowData={rows}
+      textPosition="center"
     />
   )
 }
