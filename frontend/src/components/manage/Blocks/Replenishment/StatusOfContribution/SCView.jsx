@@ -12,6 +12,7 @@ import SCSummary from '@ors/components/manage/Blocks/Replenishment/StatusOfContr
 import SCTriennial from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCTriennial'
 import { mockScAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
+import SCNotes from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCNotes'
 
 const TABS = [
   {
@@ -109,6 +110,7 @@ export default function SCView(props) {
         </div>
       </div>
       <Component {...props} />
+      <SCNotes type={currentSection?.label.toLowerCase()} />
     </section>
   )
 }
