@@ -11,6 +11,7 @@ import FormDialog from '../FormDialog'
 import { FieldInput, FieldSelect, FormattedNumberInput, Input } from '../Inputs'
 import SATable from './SATable'
 import {
+  clearNew,
   computeTableData,
   formatTableData,
   getCountryForIso3,
@@ -172,49 +173,6 @@ function SaveManager(props) {
   )
 }
 
-const AddDialog = function AddDialog(props) {
-  const { columns, countries, ...dialogProps } = props
-  return (
-    <FormDialog title="Add country" {...dialogProps}>
-      <FieldSelect id="iso3" label="Country" required>
-        <option value=""> - </option>
-        {countries.map((c) => (
-          <option key={c.iso3} data-name={c.name_alt} value={c.iso3}>
-            {c.name_alt}
-          </option>
-        ))}
-      </FieldSelect>
-      <FieldInput
-        id={columns[1].field}
-        label={columns[1].label}
-        step="0.000001"
-        type="number"
-        required
-      />
-      <FieldInput
-        id={columns[4].field}
-        label={columns[4].label}
-        step="0.000001"
-        type="number"
-        required
-      />
-      <FieldInput
-        id={columns[6].field}
-        label={columns[6].label}
-        step="0.000001"
-        type="number"
-        required
-      />
-      <FieldInput
-        id={columns[7].field}
-        label={columns[7].label}
-        type="text"
-        required
-      />
-    </FormDialog>
-  )
-}
-
 function tranformContributions(cs) {
   const r = []
 
@@ -353,11 +311,24 @@ function SAView(props) {
   const [sortOn, setSortOn] = useState(0)
   const [sortDirection, setSortDirection] = useState(1)
 
-  const [editIdx, setEditIdx] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
 
   const [replenishmentAmount, setReplenishmentAmount] = useState(0)
   const [annualReplenishmentAmount, setAnnualReplenishmentAmount] = useState(0)
+
+  useEffect(
+    function () {
+      const newRow = document.querySelector('table tr.isNew')
+      if (newRow) {
+        newRow.classList.add('bg-secondary')
+        newRow.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        setTimeout(function () {
+          setTableData(clearNew(tableData))
+        }, 500)
+      }
+    },
+    [tableData],
+  )
 
   const computedData = useMemo(
     () =>
@@ -382,17 +353,22 @@ function SAView(props) {
     [sortedData],
   )
 
-  function showAddDialog() {
+  function showAddRow() {
     setShowAdd(true)
   }
 
-  function handleAddSubmit(data) {
-    const entry = { ...data }
-
-    const country = getCountryForIso3(entry.iso3, ctx.countries)
-    entry.country = country?.name_alt
-    entry.country_id = country?.id
-
+  function handleAddSubmit(country) {
+    const entry = {
+      avg_ir: null,
+      country: country.name_alt,
+      country_id: country.id,
+      ferm_cur: null,
+      ferm_rate: null,
+      isNew: true,
+      iso3: country.iso3,
+      qual_ferm: false,
+      un_soa: 0.0,
+    }
     setTableData((prev) => [entry, ...prev])
     setShowAdd(false)
     setShouldCompute(true)
@@ -428,15 +404,16 @@ function SAView(props) {
     const parser = columns[c].parser
     const overrideKey = `override_${n}`
     const next = [...sortedData]
+    const value = parser ? parser(v) : v
     if (
-      v === '' ||
-      v === undefined ||
-      (typeof v === 'number' && isNaN(v)) ||
-      next[r][n] === v
+      value === '' ||
+      value === undefined ||
+      (typeof value === 'number' && isNaN(value)) ||
+      next[r][n] === value
     ) {
       delete next[r][overrideKey]
     } else {
-      next[r][overrideKey] = v
+      next[r][overrideKey] = value
     }
     setTableData(next)
     setShouldCompute(true)
@@ -444,14 +421,6 @@ function SAView(props) {
 
   return (
     <>
-      {showAdd ? (
-        <AddDialog
-          columns={columns}
-          countries={ctx.countries}
-          onCancel={() => setShowAdd(false)}
-          onSubmit={handleAddSubmit}
-        />
-      ) : null}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-x-4 py-4">
           <div className="flex items-center">
@@ -491,19 +460,25 @@ function SAView(props) {
       </div>
       <SATable
         columns={columns}
+        countries={ctx.countries}
         enableEdit={true}
         enableSort={true}
         extraRows={[{ country: 'Total', ...sumColumns(computedData) }]}
         rowData={formattedTableData}
+        showAdd={showAdd}
         sortDirection={sortDirection}
         sortOn={sortOn}
+        onAddCancel={() => setShowAdd(false)}
+        onAddSubmit={handleAddSubmit}
         onCellEdit={handleCellEdit}
         onDelete={handleDelete}
         onSort={handleSort}
       />
-      <div className="flex items-center py-4">
-        <AddButton onClick={showAddDialog}>Add country</AddButton>
-      </div>
+      {!showAdd ? (
+        <div className="flex items-center py-4">
+          <AddButton onClick={showAddRow}>Add country</AddButton>
+        </div>
+      ) : null}
     </>
   )
 }

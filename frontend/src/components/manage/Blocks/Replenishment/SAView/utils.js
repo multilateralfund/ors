@@ -12,6 +12,15 @@ export function uniformDecimals(v) {
   return result
 }
 
+export function clearNew(d) {
+  const r = []
+  for (let i = 0; i < d.length; i++) {
+    r.push(d[i])
+    delete r[i].isNew
+  }
+  return r
+}
+
 export function computeTableData(tableData, totalReplenishment) {
   const result = new Array(tableData.length)
 
@@ -62,7 +71,8 @@ export function computeTableData(tableData, totalReplenishment) {
         100,
       PRECISION,
     )
-    result[i].qual_ferm = (result[i].avg_ir ?? 100) < 10 ? true : false
+    result[i].qual_ferm =
+      (result[i].override_avg_ir ?? result[i].avg_ir ?? 100) < 10 ? true : false
     result[i].ferm_cur_amount =
       (result[i].override_qual_ferm ?? result[i].qual_ferm) &&
       (result[i].override_ferm_rate ?? result[i].ferm_rate)

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 
 import cx from 'classnames'
 
+import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
+
 import ConfirmDialog from '../ConfirmDialog'
 import HeaderCells from '../Table/HeaderCells'
 import styles from '../Table/table.module.css'
@@ -56,7 +58,7 @@ function EditField(props) {
         )
       }
       Field = (
-        <select className="w-full" ref={inputRef} value={fieldValue} {...rest}>
+        <select ref={inputRef} value={fieldValue} {...rest}>
           {options}
         </select>
       )
@@ -138,12 +140,7 @@ function TableCell(props) {
   }
 
   function handleChangeValue(evt) {
-    const inputValue = evt.target.value
-    let newValue = column.parser ? column.parser(inputValue) : inputValue
-    if (isNaN(newValue) && typeof initialValue === 'number') {
-      newValue = ''
-    }
-    setValue(newValue)
+    setValue(evt.target.value)
   }
 
   return (
@@ -162,6 +159,7 @@ function TableCell(props) {
       <div className="w-full whitespace-nowrap">
         {editing ? (
           <EditField
+            className="w-full"
             column={columns[c]}
             value={value}
             onBlur={saveNewValue}
@@ -179,16 +177,62 @@ function TableCell(props) {
   )
 }
 
+function AddRow(props) {
+  const { columns, countries, onCancel, onSubmit } = props
+
+  const [countryIdx, setCountryIdx] = useState('')
+
+  const countryOptions = []
+
+  for (let i = 0; i < countries.length; i++) {
+    countryOptions.push(
+      <option key={countries[i].id} value={i}>
+        {countries[i].name_alt}
+      </option>,
+    )
+  }
+
+  function handleSubmit(evt) {
+    evt.preventDefault()
+    onSubmit(countries[countryIdx])
+  }
+
+  function handleChangeCountryIdx(evt) {
+    setCountryIdx(parseInt(evt.target.value, 10))
+  }
+
+  return (
+    <tr className="bg-gray-100">
+      <td colSpan={columns.length}>
+        <form className="flex items-center gap-x-4" onSubmit={handleSubmit}>
+          <select value={countryIdx} onChange={handleChangeCountryIdx} required>
+            <option value="">Select a country...</option>
+            {countryOptions}
+          </select>
+          <SubmitButton className="!py-1 !text-sm">Confirm</SubmitButton>
+          <CancelButton className="!py-1 !text-sm" onClick={onCancel}>
+            Cancel
+          </CancelButton>
+        </form>
+      </td>
+    </tr>
+  )
+}
+
 function SATable(props) {
   const {
     columns,
+    countries,
     enableEdit,
     enableSort,
     extraRows,
+    onAddCancel,
+    onAddSubmit,
     onCellEdit,
     onDelete,
     onSort,
     rowData,
+    showAdd,
     sortDirection,
     sortOn,
   } = props
@@ -211,7 +255,28 @@ function SATable(props) {
         </td>,
       )
     }
-    rows.push(<tr key={j}>{row}</tr>)
+    rows.push(
+      <tr
+        key={j}
+        className={cx('!duration-1000 ease-in-out transition-all', {
+          isNew: rowData[j].isNew,
+        })}
+      >
+        {row}
+      </tr>,
+    )
+  }
+
+  if (showAdd) {
+    rows.push(
+      <AddRow
+        key="addRow"
+        columns={columns}
+        countries={countries}
+        onCancel={onAddCancel}
+        onSubmit={onAddSubmit}
+      />,
+    )
   }
 
   if (extraRows && extraRows.length > 0) {
