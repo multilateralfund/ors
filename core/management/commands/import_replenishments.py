@@ -29,6 +29,9 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **kwargs):
+        if not Country.objects.exists():
+            raise ValueError("Import countries first")
+
         resource = kwargs["resource"]
 
         countries = {country.name: country for country in Country.objects.all()}

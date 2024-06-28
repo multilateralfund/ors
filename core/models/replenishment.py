@@ -20,8 +20,8 @@ class Replenishment(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['start_year'], name='unique_start_year'),
-            models.UniqueConstraint(fields=['end_year'], name='unique_end_year'),
+            models.UniqueConstraint(fields=["start_year"], name="unique_start_year"),
+            models.UniqueConstraint(fields=["end_year"], name="unique_end_year"),
         ]
 
 
@@ -33,11 +33,10 @@ class Contribution(models.Model):
     replenishment = models.ForeignKey(
         Replenishment,
         on_delete=models.PROTECT,
-        null=True,
         related_name="contributions",
     )
     country = models.ForeignKey(
-        Country, on_delete=models.PROTECT, null=True, related_name="contributions"
+        Country, on_delete=models.PROTECT, related_name="contributions"
     )
     currency = models.CharField(max_length=64)
     exchange_rate = models.DecimalField(max_digits=30, decimal_places=15, null=True)
@@ -108,7 +107,7 @@ class Contribution(models.Model):
 
 class Invoice(models.Model):
     country = models.ForeignKey(
-        Country, on_delete=models.PROTECT, null=True, related_name="invoices"
+        Country, on_delete=models.PROTECT, related_name="invoices"
     )
     replenishment = models.ForeignKey(
         Replenishment, on_delete=models.PROTECT, null=True, related_name="invoices"
@@ -143,10 +142,10 @@ class InvoiceFile(models.Model):
 
 class Payment(models.Model):
     country = models.ForeignKey(
-        Country, on_delete=models.PROTECT, null=True, related_name="payments"
+        Country, on_delete=models.PROTECT, related_name="payments"
     )
     replenishment = models.ForeignKey(
-        Replenishment, on_delete=models.PROTECT, null=True, related_name="payments"
+        Replenishment, on_delete=models.PROTECT, related_name="payments"
     )
     date = models.DateField()
     payment_for_year = models.CharField(max_length=16)
@@ -186,7 +185,6 @@ class ContributionStatus(models.Model):
     country = models.ForeignKey(
         Country,
         on_delete=models.PROTECT,
-        null=True,
         related_name="contributions_status",
     )
     year = models.IntegerField()
@@ -211,3 +209,26 @@ class ContributionStatus(models.Model):
                 fields=["country", "year"], name="unique_country_year"
             )
         ]
+
+
+class DisputedContribution(models.Model):
+    year = models.IntegerField()
+    amount = models.DecimalField(max_digits=30, decimal_places=15, default=0)
+
+    def __str__(self):
+        return f"Disputed Contribution {self.year} - {self.amount}"
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["year"], name="unique_year")]
+
+
+class FermGainLoss(models.Model):
+    country = models.OneToOneField(
+        Country,
+        on_delete=models.PROTECT,
+        related_name="ferm_gain_loss",
+    )
+    amount = models.DecimalField(max_digits=30, decimal_places=15, default=0)
+
+    def __str__(self):
+        return f"Ferm Gain/Loss {self.country.iso3} - {self.amount}"

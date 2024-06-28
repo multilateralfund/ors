@@ -5,7 +5,7 @@ import pandas as pd
 from django.db import transaction
 
 from core.import_data.utils import IMPORT_RESOURCES_DIR, delete_old_data
-from core.models import ContributionStatus
+from core.models import ContributionStatus, DisputedContribution, FermGainLoss
 
 
 logger = logging.getLogger(__name__)
@@ -48,6 +48,10 @@ STATUS_OF_CONTRIBUTIONS_SHEET_INFO = {
         "cols": "A:G",
         "start_row": 7,
         "end_row": 58,
+        "disputed_contributions": {
+            "col": "F",
+            "row": 59,
+        },
     },
     1997: {
         "cols": "A:F",
@@ -103,11 +107,19 @@ STATUS_OF_CONTRIBUTIONS_SHEET_INFO = {
         "cols": "A:F",
         "start_row": 7,
         "end_row": 52,
+        "disputed_contributions": {
+            "col": "B",
+            "row": 54,
+        },
     },
     2008: {
         "cols": "A:F",
         "start_row": 8,
         "end_row": 53,
+        "disputed_contributions": {
+            "col": "B",
+            "row": 55,
+        },
     },
     2009: {
         "cols": "A:F",
@@ -118,6 +130,10 @@ STATUS_OF_CONTRIBUTIONS_SHEET_INFO = {
         "cols": "A:F",
         "start_row": 8,
         "end_row": 55,
+        "disputed_contributions": {
+            "col": "B",
+            "row": 57,
+        },
     },
     2011: {
         "cols": "A:F",
@@ -128,26 +144,46 @@ STATUS_OF_CONTRIBUTIONS_SHEET_INFO = {
         "cols": "A:F",
         "start_row": 8,
         "end_row": 57,
+        "disputed_contributions": {
+            "col": "B",
+            "row": 59,
+        },
     },
     2013: {
         "cols": "A:F",
         "start_row": 8,
         "end_row": 57,
+        "disputed_contributions": {
+            "col": "B",
+            "row": 59,
+        },
     },
     2014: {
         "cols": "A:F",
         "start_row": 8,
         "end_row": 57,
+        "disputed_contributions": {
+            "col": "B",
+            "row": 59,
+        },
     },
     2015: {
         "cols": "A:F",
         "start_row": 8,
         "end_row": 57,
+        "disputed_contributions": {
+            "col": "B",
+            "row": 59,
+        },
     },
     2016: {
         "cols": "A:F",
         "start_row": 8,
         "end_row": 57,
+        "disputed_contributions": {
+            "col": "B",
+            "row": 59,
+        },
     },
     2017: {
         "cols": "A:F",
@@ -158,26 +194,46 @@ STATUS_OF_CONTRIBUTIONS_SHEET_INFO = {
         "cols": "A:F",
         "start_row": 8,
         "end_row": 57,
+        "disputed_contributions": {
+            "col": "B",
+            "row": 59,
+        },
     },
     2019: {
         "cols": "A:F",
         "start_row": 8,
         "end_row": 57,
+        "disputed_contributions": {
+            "col": "B",
+            "row": 59,
+        },
     },
     2020: {
         "cols": "A:F",
         "start_row": 8,
         "end_row": 57,
+        "disputed_contributions": {
+            "col": "B",
+            "row": 59,
+        },
     },
     2021: {
         "cols": "A:F",
         "start_row": 8,
         "end_row": 57,
+        "disputed_contributions": {
+            "col": "B",
+            "row": 59,
+        },
     },
     2022: {
         "cols": "A:F",
         "start_row": 8,
         "end_row": 57,
+        "disputed_contributions": {
+            "col": "B",
+            "row": 59,
+        },
     },
     2023: {
         "cols": "A:F",
@@ -201,12 +257,14 @@ def import_status_of_contributions(countries):
     """
 
     delete_old_data(ContributionStatus)
+    delete_old_data(DisputedContribution)
+    delete_old_data(FermGainLoss)
 
     soc_file = pd.ExcelFile(IMPORT_RESOURCES_DIR / "9303p2.xlsx")
 
     for year, info in STATUS_OF_CONTRIBUTIONS_SHEET_INFO.items():
         contributions_status_objects = []
-        sheet = soc_file.parse(
+        status_of_contributions_df = soc_file.parse(
             sheet_name=f"YR{year}",
             usecols=info["cols"],
             skiprows=info["start_row"] - 1,
@@ -222,7 +280,7 @@ def import_status_of_contributions(countries):
             },
         )
 
-        for index, row in sheet.iterrows():
+        for index, row in status_of_contributions_df.iterrows():
             country_name_sheet = (
                 row["Party"].replace("(*)", "").replace("*", "").strip()
             )
@@ -246,6 +304,47 @@ def import_status_of_contributions(countries):
             f"Imported ({len(contributions_status_objects)}) Status of Contributions for {year}"
         )
 
-        # TODO: disputed contributions
+        if info.get("disputed_contributions") is None:
+            continue
 
-        # TODO: CEITs
+        disputed_contributions_info = info["disputed_contributions"]
+        disputed_contributions_df = soc_file.parse(
+            sheet_name=f"YR{year}",
+            usecols=disputed_contributions_info["col"],
+            skiprows=disputed_contributions_info["row"] - 1,
+            nrows=1,
+            header=None,
+            converters={0: decimal_converter},
+        )
+        DisputedContribution.objects.create(
+            year=year,
+            amount=disputed_contributions_df.iloc[0, 0],
+        )
+        logger.info(
+            f"Imported Disputed Contributions for {year}, amount {disputed_contributions_df.iloc[0, 0]}"
+        )
+
+    ferm_gain_loss_objects = []
+    ferm_gain_loss_df = soc_file.parse(
+        sheet_name="YR91_23",
+        usecols="A,G",
+        skiprows=8 - 1,
+        nrows=63 - 8,
+        converters={1: decimal_converter},
+    )
+    for index, row in ferm_gain_loss_df.iterrows():
+        country_name_sheet = (
+            row["Party"].replace("(*)", "").replace("*", "").strip()
+        )
+        country = countries[
+            COUNTRY_MAPPING.get(country_name_sheet, country_name_sheet)
+        ]
+        ferm_gain_loss_objects.append(
+            FermGainLoss(
+                country=country,
+                amount=row.iloc[1],
+            )
+        )
+
+    FermGainLoss.objects.bulk_create(ferm_gain_loss_objects)
+    logger.info(f"Imported {len(ferm_gain_loss_objects)} Ferm Gain/Loss")
