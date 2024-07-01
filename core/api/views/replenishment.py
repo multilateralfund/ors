@@ -1,6 +1,6 @@
-import decimal
-
 from django.db import models
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, mixins, views
 from rest_framework.response import Response
 
@@ -68,6 +68,23 @@ class ContributionViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
 
 class StatusOfContributionsView(views.APIView):
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "start_year",
+                openapi.IN_QUERY,
+                description="Start year for the status of contributions",
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "end_year",
+                openapi.IN_QUERY,
+                description="End year for the status of contributions",
+                type=openapi.TYPE_INTEGER,
+            ),
+        ]
+    )
     def get(self, request, *args, **kwargs):
         user = request.user
 
