@@ -80,7 +80,9 @@ class SubstanceAltNameManager(models.Manager):
 
 
 class SubstanceAltName(models.Model):
-    substance = models.ForeignKey("Substance", on_delete=models.CASCADE)
+    substance = models.ForeignKey(
+        "Substance", on_delete=models.CASCADE, related_name="alt_names"
+    )
     name = models.CharField(max_length=128, unique=True)
     ozone_id = models.IntegerField(null=True, blank=True)
 

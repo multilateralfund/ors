@@ -28,6 +28,7 @@ class ChemicalBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
+        ctx["with_alt_names"] = self.request.query_params.get("with_alt_names", None)
         ctx["with_usages"] = self.request.query_params.get("with_usages", None)
         return ctx
 
@@ -38,15 +39,22 @@ class ChemicalBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
             queryset = queryset.select_related(self.select_related_string)
 
         with_usages = self.request.query_params.get("with_usages", None)
+        with_alt_names = self.request.query_params.get("with_alt_names", None)
         for_year = self.request.query_params.get("for_year", None)
+        pref_related_fields = []
 
         if with_usages:
-            queryset = queryset.prefetch_related(
+            pref_related_fields.append(
                 Prefetch(
                     "excluded_usages",
                     queryset=ExcludedUsage.objects.get_for_year(for_year),
-                ),
+                )
             )
+        if with_alt_names:
+            pref_related_fields.append("alt_names")
+
+        if pref_related_fields:
+            queryset = queryset.prefetch_related(*pref_related_fields)
         return queryset
 
     def get(self, request, *args, **kwargs):
@@ -73,7 +81,9 @@ class SubstancesListView(ChemicalBaseListView):
             annexes = SECTION_ANNEX_MAPPING.get(section, [])
             queryset = queryset.filter(group__annex__in=annexes)
 
-        include_user_substances = self.request.query_params.get("include_user_substances", False)
+        include_user_substances = self.request.query_params.get(
+            "include_user_substances", False
+        )
         if not include_user_substances:
             queryset = queryset.filter(created_by__isnull=True)
 
@@ -87,6 +97,18 @@ class SubstancesListView(ChemicalBaseListView):
                 description="Filter by section",
                 type=openapi.TYPE_STRING,
                 enum=["A", "B", "C"],
+            ),
+            openapi.Parameter(
+                "include_user_substances",
+                openapi.IN_QUERY,
+                description="Add substances created by user",
+                type=openapi.TYPE_BOOLEAN,
+            ),
+            openapi.Parameter(
+                "with_alt_names",
+                openapi.IN_QUERY,
+                description="Add alternative names to the substances",
+                type=openapi.TYPE_BOOLEAN,
             ),
             openapi.Parameter(
                 "with_usages",
@@ -142,6 +164,7 @@ class SubstancesListView(ChemicalBaseListView):
 class BlendsListView(ChemicalBaseListView):
     """
     API endpoint that allows blends to be viewed.
+    @param with_alt_names: boolean - if true, return blends with alternative names
     @param with_usages: boolean - if true, return blends with excluded usages ids list
     @param for_year: integer - if with_usages is true, return excluded usages for this year
     """
@@ -158,6 +181,12 @@ class BlendsListView(ChemicalBaseListView):
 
     @swagger_auto_schema(
         manual_parameters=[
+            openapi.Parameter(
+                "with_alt_names",
+                openapi.IN_QUERY,
+                description="Add alternative names to the blends",
+                type=openapi.TYPE_BOOLEAN,
+            ),
             openapi.Parameter(
                 "with_usages",
                 openapi.IN_QUERY,

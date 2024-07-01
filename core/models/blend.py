@@ -182,7 +182,9 @@ class BlendAltNameManager(models.Manager):
 
 class BlendAltName(models.Model):
     name = models.CharField(max_length=256)
-    blend = models.ForeignKey("Blend", on_delete=models.CASCADE)
+    blend = models.ForeignKey(
+        "Blend", on_delete=models.CASCADE, related_name="alt_names"
+    )
     ozone_id = models.IntegerField(null=True, blank=True)
 
     objects = BlendAltNameManager()
