@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from core.api.serializers.chemicals import BlendSerializer, SubstanceSerializer
 from core.api.utils import SECTION_ANNEX_MAPPING
 from core.models.blend import Blend, BlendComponents
+from core.models.group import Group
 from core.models.substance import Substance
 from core.models.usage import ExcludedUsage
 
@@ -148,8 +149,10 @@ class SubstancesListView(ChemicalBaseListView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         # create substance
+        group_other = Group.objects.filter(name="Other").first()
         substance = Substance.objects.create(
             name=name,
+            group=group_other,
             description=data.get("description", ""),
             odp=data.get("odp"),
             gwp=data.get("gwp"),
