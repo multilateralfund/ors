@@ -288,18 +288,18 @@ class TestStatusOfContributions(BaseTest):
         contribution_1 = ContributionStatusFactory.create(
             country=country_1, year=year_1
         )
-        contribution_2 = ContributionStatusFactory.create(
+        ContributionStatusFactory.create(
             country=country_1, year=year_2
         )
         contribution_3 = ContributionStatusFactory.create(
             country=country_2, year=year_1
         )
-        contribution_4 = ContributionStatusFactory.create(
+        ContributionStatusFactory.create(
             country=country_2, year=year_2
         )
 
         disputed_1 = DisputedContributionsFactory.create(year=year_1)
-        disputed_2 = DisputedContributionsFactory.create(year=year_2)
+        DisputedContributionsFactory.create(year=year_2)
 
         ferm_gain_loss_1 = FermGainLossFactory.create(country=country_1)
         ferm_gain_loss_2 = FermGainLossFactory.create(country=country_2)

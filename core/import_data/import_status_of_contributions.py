@@ -290,7 +290,7 @@ def import_status_of_contributions(countries):
             },
         )
 
-        for index, row in status_of_contributions_df.iterrows():
+        for _, row in status_of_contributions_df.iterrows():
             country_name_sheet = (
                 row["Party"].replace("(*)", "").replace("*", "").strip()
             )
@@ -303,10 +303,11 @@ def import_status_of_contributions(countries):
                 year in CONTRIBUTION_AMOUNT_MODIFIER
                 and country.iso3 in CONTRIBUTION_AMOUNT_MODIFIER[year]
             ):
+                modifier = CONTRIBUTION_AMOUNT_MODIFIER[year][country.iso3]
                 logger.info(
-                    f"Applying modifier for {country.name} in {year}: {CONTRIBUTION_AMOUNT_MODIFIER[year][country.iso3]}"
+                    f"Applying modifier for {country.name} in {year}: {modifier}"
                 )
-                agreed_contributions += CONTRIBUTION_AMOUNT_MODIFIER[year][country.iso3]
+                agreed_contributions += modifier
 
             contribution_status = ContributionStatus(
                 year=year,
@@ -353,7 +354,7 @@ def import_status_of_contributions(countries):
         nrows=63 - 8,
         converters={1: decimal_converter},
     )
-    for index, row in ferm_gain_loss_df.iterrows():
+    for _, row in ferm_gain_loss_df.iterrows():
         country_name_sheet = row["Party"].replace("(*)", "").replace("*", "").strip()
         country = countries[COUNTRY_MAPPING.get(country_name_sheet, country_name_sheet)]
         ferm_gain_loss_objects.append(
