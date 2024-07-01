@@ -21,7 +21,7 @@ class BlendAdmin(admin.ModelAdmin):
         exclude = [
             "blendcomponents",
             "cprecord",
-            "blendaltname",
+            "alt_names",
             "excludedusage",
             "excluded_usages",
             "admrecord",

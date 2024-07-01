@@ -4,8 +4,10 @@ from rest_framework.test import APIClient
 from core.api.tests.base import BaseTest
 
 from core.api.tests.factories import (
+    BlendAltNameFactory,
     ExcludedUsageSubstFactory,
     ExcludedUsageBlendFactory,
+    SubstanceAltNameFactory,
     UsageFactory,
     GroupFactory,
     SubstanceFactory,
@@ -51,12 +53,17 @@ def setup_substances_list(time_frames):
         group = GroupFactory.create(name=gr_name, annex=gr_name, name_alt=gr_name)
         groups.append(group)
         for i in range(2):
-            substances.append(
-                SubstanceFactory.create(
-                    group=group,
-                    sort_order=i,
-                )
+            subst = SubstanceFactory.create(
+                group=group,
+                sort_order=i,
             )
+
+            substances.append(subst)
+            for j in range(2):
+                SubstanceAltNameFactory.create(
+                    substance=subst, name=f"AltName{i}{j}{gr_name}"
+                )
+
     # add 3 usages
     usages = create_usages()
     # add excluded usages for first group substances
@@ -90,6 +97,17 @@ class TestSubstancesList(BaseTest):
         # check that excluded usages are returned
         for i in range(2):
             assert usages[i].id in response.data[0]["excluded_usages"]
+
+    def test_subst_list_w_alt_names(self, user, _setup_substances_list):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.url, {"with_alt_names": True})
+        assert response.status_code == 200
+        assert len(response.data) == 14
+        for i in range(14):
+            group = self.group_list[int(i / 2)]
+            assert len(response.data[i]["alt_names"]) == 2
+            assert f"{0}{group}" in response.data[i]["alt_names"][0]
+            assert f"{1}{group}" in response.data[i]["alt_names"][1]
 
     def test_subs_list_year_filter(self, user, _setup_substances_list):
         self.client.force_authenticate(user=user)
@@ -125,12 +143,15 @@ def setup_blend_list(time_frames):
     # add some blends
     blends = []
     for i in range(3):
-        blends.append(
-            BlendFactory.create(
-                name="Blend" + str(i),
-                sort_order=i,
-            )
+        blend = BlendFactory.create(
+            name="Blend" + str(i),
+            sort_order=i,
         )
+        blends.append(blend)
+        # create alt names
+        for j in range(2):
+            BlendAltNameFactory.create(blend=blend, name=f"AltName{i}{j}")
+
         # add legacy blends
         BlendFactory.create(
             name="BlendLegacy" + str(i),
@@ -177,6 +198,16 @@ class TestBlendList(BaseTest):
             assert usages[i].id in response.data[0]["excluded_usages"]
         # check that excluded usages are not returned for blends without excluded usages
         assert len(response.data[2]["excluded_usages"]) == 0
+
+    def test_blend_list_w_alt_names(self, user, _setup_blend_list):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.url, {"with_alt_names": True})
+        assert response.status_code == 200
+        assert len(response.data) == 3
+        for i in range(3):
+            assert len(response.data[i]["alt_names"]) == 2
+            assert response.data[i]["alt_names"][0] == f"AltName{i}{0}"
+            assert response.data[i]["alt_names"][1] == f"AltName{i}{1}"
 
     def test_blends_list_year_filter(self, user, _setup_blend_list):
         self.client.force_authenticate(user=user)
