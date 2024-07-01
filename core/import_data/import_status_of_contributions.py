@@ -242,6 +242,16 @@ STATUS_OF_CONTRIBUTIONS_SHEET_INFO = {
     },
 }
 
+CONTRIBUTION_AMOUNT_MODIFIER = {
+    1996: {
+        "FRA": decimal.Decimal("-693288"),
+        "DEU": decimal.Decimal("-171486"),
+        "ITA": decimal.Decimal("-1568782"),
+        "JPN": decimal.Decimal("-5164674"),
+        "GBR": decimal.Decimal("-500037"),
+    }
+}
+
 
 def decimal_converter(value):
     try:
@@ -287,10 +297,21 @@ def import_status_of_contributions(countries):
             country = countries[
                 COUNTRY_MAPPING.get(country_name_sheet, country_name_sheet)
             ]
+
+            agreed_contributions = row["Agreed Contributions"]
+            if (
+                year in CONTRIBUTION_AMOUNT_MODIFIER
+                and country.iso3 in CONTRIBUTION_AMOUNT_MODIFIER[year]
+            ):
+                logger.info(
+                    f"Applying modifier for {country.name} in {year}: {CONTRIBUTION_AMOUNT_MODIFIER[year][country.iso3]}"
+                )
+                agreed_contributions += CONTRIBUTION_AMOUNT_MODIFIER[year][country.iso3]
+
             contribution_status = ContributionStatus(
                 year=year,
                 country=country,
-                agreed_contributions=row["Agreed Contributions"],
+                agreed_contributions=agreed_contributions,
                 cash_payments=row["Cash Payments"],
                 bilateral_assistance=row["Bilateral Assistance"],
                 promissory_notes=row["Promissory Notes"],
@@ -333,12 +354,8 @@ def import_status_of_contributions(countries):
         converters={1: decimal_converter},
     )
     for index, row in ferm_gain_loss_df.iterrows():
-        country_name_sheet = (
-            row["Party"].replace("(*)", "").replace("*", "").strip()
-        )
-        country = countries[
-            COUNTRY_MAPPING.get(country_name_sheet, country_name_sheet)
-        ]
+        country_name_sheet = row["Party"].replace("(*)", "").replace("*", "").strip()
+        country = countries[COUNTRY_MAPPING.get(country_name_sheet, country_name_sheet)]
         ferm_gain_loss_objects.append(
             FermGainLoss(
                 country=country,
