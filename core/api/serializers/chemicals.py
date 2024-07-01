@@ -29,6 +29,9 @@ class SubstanceSerializer(ChemicalsBaseSerializer):
     group = serializers.SlugField(source="group.name_alt", read_only=True)
     sections = serializers.SerializerMethodField()
     chemical_note = serializers.SerializerMethodField()
+    created_by = serializers.StringRelatedField(
+        read_only=True, source="created_by.username"
+    )
 
     class Meta:
         model = Substance
@@ -46,10 +49,15 @@ class SubstanceSerializer(ChemicalsBaseSerializer):
             "excluded_usages",
             "sort_order",
             "chemical_note",
+            "created_by",
+            "description",
         ]
 
     def get_sections(self, obj):
         sections = []
+        if not obj.group:
+            return []
+
         for section, annexes in SECTION_ANNEX_MAPPING.items():
             if obj.group.annex in annexes:
                 sections.append(section)

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -28,8 +29,8 @@ class Substance(models.Model):
     name = models.CharField(max_length=128, unique=True)
     description = models.TextField(null=True, blank=True)
     odp = models.DecimalField(max_digits=20, decimal_places=10, null=True, blank=True)
-    min_odp = models.DecimalField(max_digits=20, decimal_places=10)
-    max_odp = models.DecimalField(max_digits=20, decimal_places=10)
+    min_odp = models.DecimalField(max_digits=20, decimal_places=10, default=0)
+    max_odp = models.DecimalField(max_digits=20, decimal_places=10, default=0)
     gwp = models.DecimalField(max_digits=20, decimal_places=10, null=True, blank=True)
     formula = models.CharField(max_length=256, null=True, blank=True)
     number_of_isomers = models.SmallIntegerField(null=True, blank=True)
@@ -47,7 +48,7 @@ class Substance(models.Model):
     sort_order = models.FloatField(
         null=True, blank=True, help_text="General sort order"
     )
-    is_contained_in_polyols = models.BooleanField()
+    is_contained_in_polyols = models.BooleanField(default=False)
     is_captured = models.BooleanField(default=False)
     ozone_id = models.IntegerField(null=True, blank=True)
     group = models.ForeignKey(
@@ -58,6 +59,13 @@ class Substance(models.Model):
         on_delete=models.SET_NULL,
     )
     cp_report_note = models.TextField(null=True, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        related_name="created_substancess",
+        help_text="User who created the substance",
+    )
 
     objects = SubstanceManager()
 
