@@ -41,7 +41,7 @@ class SubstanceAdmin(admin.ModelAdmin):
             "blendcomponents",
             "cpprices",
             "cprecord",
-            "substancealtname",
+            "alt_names",
             "excludedusage",
             "excluded_usages",
             "admrecord",
