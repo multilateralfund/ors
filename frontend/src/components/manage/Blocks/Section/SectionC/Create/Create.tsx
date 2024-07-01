@@ -5,12 +5,19 @@ import { ReportVariant } from '@ors/types/variants'
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 
-import { Alert, Box, Button, Modal, Typography } from '@mui/material'
+import {
+  Alert,
+  Autocomplete,
+  Box,
+  Button,
+  Modal,
+  Typography,
+} from '@mui/material'
 import { RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, sortBy, union } from 'lodash'
 
-import Field from '@ors/components/manage/Form/Field'
 import Table from '@ors/components/manage/Form/Table'
+import TextWidget from '@ors/components/manage/Widgets/TextWidget'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import { getResults } from '@ors/helpers/Api/Api'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
@@ -340,7 +347,7 @@ export default function SectionCCreate(props: {
   const onAddChemical = (event: any, newChemical: any) => {
     if (document.activeElement) {
       // @ts-ignore
-      document.activeElement.blur()
+      document.activeElement.focus()
     }
     const added = find(
       form.section_c,
@@ -477,35 +484,62 @@ export default function SectionCCreate(props: {
             {includes(['V'], variant.model) ? (
               <>
                 <Typography>Mandatory / usual substances and blends</Typography>
-                <Field
-                  Input={{ autoComplete: 'off' }}
+                <Autocomplete
+                  id="mandatory-substances"
+                  className="widget"
                   getOptionLabel={(option: any) => option.display_name}
                   groupBy={(option: any) => option.group}
                   options={mandatorySubstances}
-                  value={null}
-                  widget="autocomplete"
+                  renderInput={(params) => (
+                    <TextWidget
+                      {...params}
+                      autoComplete="false"
+                      size="small"
+                      variant="outlined"
+                    />
+                  )}
                   onChange={onAddChemical}
+                  disableClearable
+                  disableCloseOnSelect
                 />
                 <Typography>Optional substances</Typography>
-                <Field
-                  Input={{ autoComplete: 'off' }}
+                <Autocomplete
+                  id="other-substances"
+                  className="widget"
                   getOptionLabel={(option: any) => option.display_name}
                   groupBy={(option: any) => option.group}
                   options={optionalSubstances}
-                  value={null}
-                  widget="autocomplete"
+                  renderInput={(params) => (
+                    <TextWidget
+                      {...params}
+                      autoComplete="false"
+                      size="small"
+                      variant="outlined"
+                    />
+                  )}
                   onChange={onAddChemical}
+                  disableClearable
+                  disableCloseOnSelect
                 />
               </>
             ) : (
-              <Field
-                Input={{ autoComplete: 'off' }}
+              <Autocomplete
+                id="all-substances"
+                className="widget"
                 getOptionLabel={(option: any) => option.display_name}
                 groupBy={(option: any) => option.group}
                 options={allChemicalOptions}
-                value={null}
-                widget="autocomplete"
+                renderInput={(params) => (
+                  <TextWidget
+                    {...params}
+                    autoComplete="false"
+                    size="small"
+                    variant="outlined"
+                  />
+                )}
                 onChange={onAddChemical}
+                disableClearable
+                disableCloseOnSelect
               />
             )}
             <Typography className="text-right">

@@ -243,7 +243,7 @@ export default function SectionACreate(props: {
   function dropdownOnChange(_: any, newSubstance: any) {
     if (document.activeElement) {
       // @ts-ignore
-      document.activeElement.blur()
+      document.activeElement.focus()
     }
     const added = find(
       form.section_a,

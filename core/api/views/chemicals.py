@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from core.api.serializers.chemicals import BlendSerializer, SubstanceSerializer
 from core.api.utils import SECTION_ANNEX_MAPPING
 from core.models.blend import Blend, BlendComponents
+from core.models.group import Group
 from core.models.substance import Substance
 from core.models.usage import ExcludedUsage
 
@@ -28,6 +29,7 @@ class ChemicalBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
+        ctx["with_alt_names"] = self.request.query_params.get("with_alt_names", None)
         ctx["with_usages"] = self.request.query_params.get("with_usages", None)
         return ctx
 
@@ -38,15 +40,22 @@ class ChemicalBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
             queryset = queryset.select_related(self.select_related_string)
 
         with_usages = self.request.query_params.get("with_usages", None)
+        with_alt_names = self.request.query_params.get("with_alt_names", None)
         for_year = self.request.query_params.get("for_year", None)
+        pref_related_fields = []
 
         if with_usages:
-            queryset = queryset.prefetch_related(
+            pref_related_fields.append(
                 Prefetch(
                     "excluded_usages",
                     queryset=ExcludedUsage.objects.get_for_year(for_year),
-                ),
+                )
             )
+        if with_alt_names:
+            pref_related_fields.append("alt_names")
+
+        if pref_related_fields:
+            queryset = queryset.prefetch_related(*pref_related_fields)
         return queryset
 
     def get(self, request, *args, **kwargs):
@@ -73,6 +82,12 @@ class SubstancesListView(ChemicalBaseListView):
             annexes = SECTION_ANNEX_MAPPING.get(section, [])
             queryset = queryset.filter(group__annex__in=annexes)
 
+        include_user_substances = self.request.query_params.get(
+            "include_user_substances", False
+        )
+        if not include_user_substances:
+            queryset = queryset.filter(created_by__isnull=True)
+
         return queryset.order_by("group__name", "sort_order")
 
     @swagger_auto_schema(
@@ -83,6 +98,18 @@ class SubstancesListView(ChemicalBaseListView):
                 description="Filter by section",
                 type=openapi.TYPE_STRING,
                 enum=["A", "B", "C"],
+            ),
+            openapi.Parameter(
+                "include_user_substances",
+                openapi.IN_QUERY,
+                description="Add substances created by user",
+                type=openapi.TYPE_BOOLEAN,
+            ),
+            openapi.Parameter(
+                "with_alt_names",
+                openapi.IN_QUERY,
+                description="Add alternative names to the substances",
+                type=openapi.TYPE_BOOLEAN,
             ),
             openapi.Parameter(
                 "with_usages",
@@ -104,10 +131,43 @@ class SubstancesListView(ChemicalBaseListView):
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        name = data.get("name")
+
+        # check if substance name provided
+        if not name:
+            return Response(
+                {"name": "Substance name required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # check if substance already exists
+        substance = Substance.objects.find_by_name(name)
+        if substance:
+            serializer = self.get_serializer(substance)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # create substance
+        group_other = Group.objects.filter(name="Other").first()
+        substance = Substance.objects.create(
+            name=name,
+            group=group_other,
+            description=data.get("description", ""),
+            odp=data.get("odp"),
+            gwp=data.get("gwp"),
+            formula=data.get("formula", ""),
+            created_by=request.user,
+        )
+
+        serializer = self.get_serializer(substance)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 class BlendsListView(ChemicalBaseListView):
     """
     API endpoint that allows blends to be viewed.
+    @param with_alt_names: boolean - if true, return blends with alternative names
     @param with_usages: boolean - if true, return blends with excluded usages ids list
     @param for_year: integer - if with_usages is true, return excluded usages for this year
     """
@@ -124,6 +184,12 @@ class BlendsListView(ChemicalBaseListView):
 
     @swagger_auto_schema(
         manual_parameters=[
+            openapi.Parameter(
+                "with_alt_names",
+                openapi.IN_QUERY,
+                description="Add alternative names to the blends",
+                type=openapi.TYPE_BOOLEAN,
+            ),
             openapi.Parameter(
                 "with_usages",
                 openapi.IN_QUERY,

@@ -11,11 +11,12 @@ import FormDialog from '../FormDialog'
 import { FieldInput, FieldSelect, FormattedNumberInput, Input } from '../Inputs'
 import SATable from './SATable'
 import {
+  clearNew,
   computeTableData,
   formatTableData,
+  getCountryForIso3,
   sortTableData,
   sumColumns,
-  uniformDecimals,
 } from './utils'
 
 const COLUMNS = [
@@ -25,7 +26,7 @@ const COLUMNS = [
     field: 'un_soa',
     label: 'UN scale of assessment',
     parser: parseFloat,
-    subLabel: '([PERIOD])',
+    subLabel: '( YYYY - YYYY )',
   },
   {
     confirmationText:
@@ -45,9 +46,17 @@ const COLUMNS = [
     field: 'avg_ir',
     label: 'Average inflation rate',
     parser: parseFloat,
-    subLabel: '([PERIOD])',
+    subLabel: '( YYYY - YYYY )',
   },
   {
+    editOptions: [
+      { label: 'Yes', value: 'true' },
+      { label: 'No', value: 'false' },
+    ],
+    editParser: function (v) {
+      return v ? v.toString() : 'false'
+    },
+    editWidget: 'select',
     editable: true,
     field: 'qual_ferm',
     label: 'Qualifying for fixed exchange rate mechanism',
@@ -61,7 +70,7 @@ const COLUMNS = [
     field: 'ferm_rate',
     label: 'Currency rate of exchange used for fixed exchange',
     parser: parseFloat,
-    subLabel: '(01 Jan - 30 Jun 2023)',
+    subLabel: '(01 Jan - 30 Jun YYYY)',
   },
   {
     editable: true,
@@ -87,46 +96,80 @@ function getEditableFieldNames(cs) {
 
 const EDITABLE = getEditableFieldNames(COLUMNS)
 
-const AddDialog = function AddDialog(props) {
-  const { columns, countries, ...dialogProps } = props
+function SaveManager(props) {
+  const { data } = props
+
+  const [isFinal, setIsFinal] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  function handleChangeFinal() {
+    setIsFinal(function (prev) {
+      return !prev
+    })
+  }
+
+  function handleSave() {
+    setSaving(true)
+  }
+
+  function confirmSave(formData) {
+    const saveData = { ...formData, data }
+    saveData['final'] = isFinal
+    setSaving(false)
+    alert(`Save not implemented!\n\n${JSON.stringify(saveData, undefined, 2)}`)
+  }
+
+  function cancelSave() {
+    setSaving(false)
+  }
+
   return (
-    <FormDialog title="Add country" {...dialogProps}>
-      <FieldSelect id="iso3" label="Country" required>
-        <option value=""> - </option>
-        {countries.map((c) => (
-          <option key={c.iso3} data-name={c.name_alt} value={c.iso3}>
-            {c.name_alt}
-          </option>
-        ))}
-      </FieldSelect>
-      <FieldInput
-        id={columns[1].field}
-        label={columns[1].label}
-        step="0.000001"
-        type="number"
-        required
-      />
-      <FieldInput
-        id={columns[4].field}
-        label={columns[4].label}
-        step="0.000001"
-        type="number"
-        required
-      />
-      <FieldInput
-        id={columns[6].field}
-        label={columns[6].label}
-        step="0.000001"
-        type="number"
-        required
-      />
-      <FieldInput
-        id={columns[7].field}
-        label={columns[7].label}
-        type="text"
-        required
-      />
-    </FormDialog>
+    <div className="flex items-center gap-x-4">
+      {saving ? (
+        <FormDialog
+          title="Save changes?"
+          onCancel={cancelSave}
+          onSubmit={confirmSave}
+        >
+          <div className="flex justify-between gap-4">
+            <p className="w-8/12 text-lg">
+              You can specify meeting and decision numbers where this version
+              was approved.
+            </p>
+            <div className="flex w-4/12 gap-4">
+              <div className="flex flex-col">
+                <label htmlFor="meeting">Meeting</label>
+                <Input
+                  id="meeting"
+                  className="!m-0 max-h-12 w-16 !py-1"
+                  type="text"
+                  required
+                />
+              </div>
+              <div className="flex flex-col">
+                <label htmlFor="decision">Decision</label>
+                <Input
+                  id="decision"
+                  className="!m-0 max-h-12 w-16 !py-1"
+                  type="text"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+        </FormDialog>
+      ) : null}
+      <div className="flex items-center gap-x-2">
+        <Input
+          id="markAsFinal"
+          checked={isFinal}
+          type="checkbox"
+          onChange={handleChangeFinal}
+        />
+        <label htmlFor="markAsFinal">Mark as final</label>
+      </div>
+      <SubmitButton onClick={handleSave}>Save changes</SubmitButton>
+    </div>
   )
 }
 
@@ -135,17 +178,58 @@ function tranformContributions(cs) {
 
   for (let i = 0; i < cs.length; i++) {
     r.push({
-      adj_un_soa: uniformDecimals(cs[i].adjusted_scale_of_assessment),
-      annual_contributions: uniformDecimals(cs[i].amount),
-      avg_ir: uniformDecimals(cs[i].average_inflation_rate),
+      adj_un_soa: cs[i].adjusted_scale_of_assessment,
+      annual_contributions: cs[i].amount,
+      avg_ir: cs[i].average_inflation_rate,
       country: cs[i].country.name_alt,
+      country_id: cs[i].country.id,
       ferm_cur: cs[i].currency,
-      ferm_cur_amount: uniformDecimals(cs[i].amount_local_currency),
-      ferm_rate: uniformDecimals(cs[i].exchange_rate),
+      ferm_cur_amount: cs[i].amount_local_currency,
+      ferm_rate: cs[i].exchange_rate,
       iso3: cs[i].country.iso3,
       qual_ferm: cs[i].qualifies_for_fixed_rate_mechanism,
-      un_soa: uniformDecimals(cs[i].un_scale_of_assessment),
+      un_soa: cs[i].un_scale_of_assessment,
     })
+  }
+
+  return r
+}
+
+function transformForSave(d) {
+  const r = []
+
+  const mapping = [
+    ['average_inflation_rate', 'avg_ir'],
+    ['currency', 'ferm_cur'],
+    ['exchange_rate', 'ferm_rate'],
+    ['un_scale_of_assessment', 'un_soa'],
+  ]
+
+  for (let i = 0; i < d.length; i++) {
+    const n = {
+      country: d[i].country_id,
+    }
+
+    for (let j = 0; j < mapping.length; j++) {
+      const serverKey = mapping[j][0]
+      const dataKey = mapping[j][1]
+      const overrideKey = `override_${dataKey}`
+      if (d[i].hasOwnProperty(overrideKey)) {
+        n[serverKey] = d[i][overrideKey]
+      } else {
+        n[serverKey] = d[i][dataKey]
+      }
+    }
+
+    if (!isNaN(d[i].override_adj_un_soa)) {
+      n.override_adjusted_scale_of_assessment = d[i].override_adj_un_soa
+    }
+
+    if (d[i].hasOwnProperty('override_qual_ferm')) {
+      n.override_qualifies_for_fixed_rate_mechanism = d[i].override_qual_ferm
+    }
+
+    r.push(n)
   }
 
   return r
@@ -216,6 +300,7 @@ function SAView(props) {
     function () {
       setTableData(contributions)
       setReplenishmentAmount(apiReplenishmentAmount)
+      setAnnualReplenishmentAmount(apiReplenishmentAmount / 3)
     },
     [contributions, apiReplenishmentAmount],
   )
@@ -226,10 +311,24 @@ function SAView(props) {
   const [sortOn, setSortOn] = useState(0)
   const [sortDirection, setSortDirection] = useState(1)
 
-  const [editIdx, setEditIdx] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
 
   const [replenishmentAmount, setReplenishmentAmount] = useState(0)
+  const [annualReplenishmentAmount, setAnnualReplenishmentAmount] = useState(0)
+
+  useEffect(
+    function () {
+      const newRow = document.querySelector('table tr.isNew')
+      if (newRow) {
+        newRow.classList.add('bg-secondary')
+        newRow.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        setTimeout(function () {
+          setTableData(clearNew(tableData))
+        }, 500)
+      }
+    },
+    [tableData],
+  )
 
   const computedData = useMemo(
     () =>
@@ -254,12 +353,22 @@ function SAView(props) {
     [sortedData],
   )
 
-  function showAddDialog() {
+  function showAddRow() {
     setShowAdd(true)
   }
 
-  function handleAddSubmit(data) {
-    const entry = { ...data }
+  function handleAddSubmit(country) {
+    const entry = {
+      avg_ir: null,
+      country: country.name_alt,
+      country_id: country.id,
+      ferm_cur: null,
+      ferm_rate: null,
+      isNew: true,
+      iso3: country.iso3,
+      qual_ferm: false,
+      un_soa: 0.0,
+    }
     setTableData((prev) => [entry, ...prev])
     setShowAdd(false)
     setShouldCompute(true)
@@ -280,7 +389,9 @@ function SAView(props) {
   }
 
   function handleAmountInput(evt) {
-    setReplenishmentAmount(parseFloat(evt.target.value))
+    const value = parseFloat(evt.target.value)
+    setAnnualReplenishmentAmount(value)
+    setReplenishmentAmount(value * 3)
     setShouldCompute(true)
   }
 
@@ -292,42 +403,24 @@ function SAView(props) {
   function handleCellEdit(r, c, n, v) {
     const parser = columns[c].parser
     const overrideKey = `override_${n}`
+    const next = [...sortedData]
+    const value = parser ? parser(v) : v
     if (
-      (columns[c].confirmationText && confirm(columns[c].confirmationText)) ||
-      !columns[c].confirmationText
+      value === '' ||
+      value === undefined ||
+      (typeof value === 'number' && isNaN(value)) ||
+      next[r][n] === value
     ) {
-      setTableData((prev) => {
-        const next = [...prev]
-        let value = v
-        if (parser) {
-          value = parser(v)
-        }
-        if (
-          value === '' ||
-          value === undefined ||
-          (typeof value === 'number' && isNaN(value)) ||
-          next[r][n] === value
-        ) {
-          delete next[r][overrideKey]
-        } else {
-          next[r][overrideKey] = value
-        }
-        return next
-      })
-      setShouldCompute(true)
+      delete next[r][overrideKey]
+    } else {
+      next[r][overrideKey] = value
     }
+    setTableData(next)
+    setShouldCompute(true)
   }
 
   return (
     <>
-      {showAdd ? (
-        <AddDialog
-          columns={columns}
-          countries={ctx.countries}
-          onCancel={() => setShowAdd(false)}
-          onSubmit={handleAddSubmit}
-        />
-      ) : null}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-x-4 py-4">
           <div className="flex items-center">
@@ -341,7 +434,7 @@ function SAView(props) {
               id="triannualBudget"
               className="w-36"
               type="number"
-              value={replenishmentAmount * 3}
+              value={replenishmentAmount}
               disabled
               readOnly
             />
@@ -358,36 +451,34 @@ function SAView(props) {
               id="totalAmount"
               className="w-36"
               type="number"
-              value={replenishmentAmount}
+              value={annualReplenishmentAmount}
               onChange={handleAmountInput}
             />
           </div>
         </div>
-        <div className="flex items-center gap-x-4">
-          <div className="flex items-center gap-x-2">
-            <Input id="markAsFinal" type="checkbox" />
-            <label htmlFor="markAsFinal">Mark as final</label>
-          </div>
-          <SubmitButton onClick={() => confirm('Not yet implemented')}>
-            Save changes
-          </SubmitButton>
-        </div>
+        <SaveManager data={transformForSave(tableData)} />
       </div>
       <SATable
         columns={columns}
+        countries={ctx.countries}
         enableEdit={true}
         enableSort={true}
         extraRows={[{ country: 'Total', ...sumColumns(computedData) }]}
         rowData={formattedTableData}
+        showAdd={showAdd}
         sortDirection={sortDirection}
         sortOn={sortOn}
+        onAddCancel={() => setShowAdd(false)}
+        onAddSubmit={handleAddSubmit}
         onCellEdit={handleCellEdit}
         onDelete={handleDelete}
         onSort={handleSort}
       />
-      <div className="flex items-center py-4">
-        <AddButton onClick={showAddDialog}>Add country</AddButton>
-      </div>
+      {!showAdd ? (
+        <div className="flex items-center py-4">
+          <AddButton onClick={showAddRow}>Add country</AddButton>
+        </div>
+      ) : null}
     </>
   )
 }

@@ -91,6 +91,7 @@ const useInternalNavSections = () => {
             label: 'Replenishment',
             menu: [
               { label: 'Dashboard', url: '/replenishment/dashboard' },
+              { label: 'Status of contributions', url: '/replenishment/status-of-contributions' },
               {
                 label: 'Scale of assessment',
                 url: '/replenishment/scale-of-assessment',

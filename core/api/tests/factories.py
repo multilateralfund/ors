@@ -37,10 +37,10 @@ from core.models.project import (
     SubmissionAmount,
 )
 from core.models.rbm_measures import RBMMeasure
-from core.models.substance import Substance
+from core.models.substance import Substance, SubstanceAltName
 from core.models.time_frame import TimeFrame
 from core.models.usage import ExcludedUsage, Usage
-from core.models.blend import Blend
+from core.models.blend import Blend, BlendAltName
 
 User = get_user_model()
 
@@ -96,6 +96,14 @@ class SubstanceFactory(factory.django.DjangoModelFactory):
     sort_order = factory.Faker("random_int", min=1, max=100)
 
 
+class SubstanceAltNameFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = SubstanceAltName
+
+    name = factory.Faker("pystr", max_chars=100)
+    substance = factory.SubFactory(SubstanceFactory)
+
+
 class BlendFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Blend
@@ -105,6 +113,14 @@ class BlendFactory(factory.django.DjangoModelFactory):
     odp = factory.Faker("random_int", min=1, max=100)
     gwp = factory.Faker("random_int", min=1, max=100)
     sort_order = factory.Faker("random_int", min=1, max=100)
+
+
+class BlendAltNameFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = BlendAltName
+
+    name = factory.Faker("pystr", max_chars=100)
+    blend = factory.SubFactory(BlendFactory)
 
 
 class TimeFrameFactory(factory.django.DjangoModelFactory):

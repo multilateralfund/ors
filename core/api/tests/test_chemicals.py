@@ -1,11 +1,13 @@
 from django.urls import reverse
 import pytest
 from rest_framework.test import APIClient
-from core.api.tests.base import BaseTest
 
+from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
+    BlendAltNameFactory,
     ExcludedUsageSubstFactory,
     ExcludedUsageBlendFactory,
+    SubstanceAltNameFactory,
     UsageFactory,
     GroupFactory,
     SubstanceFactory,
@@ -44,19 +46,26 @@ def create_excluded_usages(usages, chemical, type_ch, time_frames, count=2):
 
 
 @pytest.fixture(name="_setup_substances_list")
-def setup_substances_list(time_frames):
+def setup_substances_list(time_frames, user):
     groups = []
     substances = []
     for gr_name in GROUP_LIST:
         group = GroupFactory.create(name=gr_name, annex=gr_name, name_alt=gr_name)
         groups.append(group)
         for i in range(2):
-            substances.append(
-                SubstanceFactory.create(
-                    group=group,
-                    sort_order=i,
-                )
+            subst = SubstanceFactory.create(
+                group=group,
+                sort_order=i,
             )
+
+            substances.append(subst)
+            for j in range(2):
+                SubstanceAltNameFactory.create(
+                    substance=subst, name=f"AltName{i}{j}{gr_name}"
+                )
+
+    # 1 substance created by user
+    substances.append(SubstanceFactory.create(created_by=user))
     # add 3 usages
     usages = create_usages()
     # add excluded usages for first group substances
@@ -91,6 +100,17 @@ class TestSubstancesList(BaseTest):
         for i in range(2):
             assert usages[i].id in response.data[0]["excluded_usages"]
 
+    def test_subst_list_w_alt_names(self, user, _setup_substances_list):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.url, {"with_alt_names": True})
+        assert response.status_code == 200
+        assert len(response.data) == 14
+        for i in range(14):
+            group = self.group_list[int(i / 2)]
+            assert len(response.data[i]["alt_names"]) == 2
+            assert f"{0}{group}" in response.data[i]["alt_names"][0]
+            assert f"{1}{group}" in response.data[i]["alt_names"][1]
+
     def test_subs_list_year_filter(self, user, _setup_substances_list):
         self.client.force_authenticate(user=user)
         usages = _setup_substances_list
@@ -119,18 +139,67 @@ class TestSubstancesList(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 6
 
+    def test_subs_list_include_user_substances(self, user, _setup_substances_list):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"include_user_substances": True})
+        assert response.status_code == 200
+        assert len(response.data) == 15
+
+
+class TestSubstanceCreate:
+    client = APIClient()
+    url = reverse("substances-list")
+
+    def test_substance_name_not_provided(self, user):
+        self.client.force_authenticate(user=user)
+        response = self.client.post(self.url, {}, format="json")
+        assert response.status_code == 400
+        assert response.data["name"] == "Substance name required"
+
+    def test_substance_create(self, user):
+        self.client.force_authenticate(user=user)
+        data = {
+            "name": "Test",
+            "description": "Va canta Babasha",
+            "odp": 1.0,
+            "gwp": 2.0,
+            "formula": "Test formula",
+        }
+        group = GroupFactory.create(name="Other", annex="unknown", name_alt="Other")
+        response = self.client.post(self.url, data, format="json")
+
+        assert response.status_code == 201
+        assert response.data["name"] == "Test"
+        assert response.data["description"] == "Va canta Babasha"
+        assert float(response.data["odp"]) == 1.0
+        assert float(response.data["gwp"]) == 2.0
+        assert response.data["formula"] == "Test formula"
+        assert response.data["created_by"] == user.username
+        assert response.data["group"] == group.name_alt
+
+    def test_substance_already_exists(self, user, substance):
+        self.client.force_authenticate(user=user)
+        data = {"name": substance.name}
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 200
+        assert response.data["name"] == substance.name
+
 
 @pytest.fixture(name="_setup_blend_list")
 def setup_blend_list(time_frames):
     # add some blends
     blends = []
     for i in range(3):
-        blends.append(
-            BlendFactory.create(
-                name="Blend" + str(i),
-                sort_order=i,
-            )
+        blend = BlendFactory.create(
+            name="Blend" + str(i),
+            sort_order=i,
         )
+        blends.append(blend)
+        # create alt names
+        for j in range(2):
+            BlendAltNameFactory.create(blend=blend, name=f"AltName{i}{j}")
+
         # add legacy blends
         BlendFactory.create(
             name="BlendLegacy" + str(i),
@@ -177,6 +246,16 @@ class TestBlendList(BaseTest):
             assert usages[i].id in response.data[0]["excluded_usages"]
         # check that excluded usages are not returned for blends without excluded usages
         assert len(response.data[2]["excluded_usages"]) == 0
+
+    def test_blend_list_w_alt_names(self, user, _setup_blend_list):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.url, {"with_alt_names": True})
+        assert response.status_code == 200
+        assert len(response.data) == 3
+        for i in range(3):
+            assert len(response.data[i]["alt_names"]) == 2
+            assert response.data[i]["alt_names"][0] == f"AltName{i}{0}"
+            assert response.data[i]["alt_names"][1] == f"AltName{i}{1}"
 
     def test_blends_list_year_filter(self, user, _setup_blend_list):
         self.client.force_authenticate(user=user)

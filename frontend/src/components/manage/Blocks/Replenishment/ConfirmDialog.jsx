@@ -6,10 +6,9 @@ import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
 
 import { IoCloseCircle } from 'react-icons/io5'
 
-const FormDialog = function FormDialog(props) {
+const ConfirmDialog = function ConfirmDialog(props) {
   const { children, onCancel, onSubmit, title } = props
   const dialogRef = useRef(null)
-  const formRef = useRef(null)
 
   useEffect(() => {
     dialogRef.current.showModal()
@@ -21,23 +20,11 @@ const FormDialog = function FormDialog(props) {
   }, [])
 
   function submitHandler(evt) {
-    evt.preventDefault()
-    const formData = new FormData(evt.target)
-    const data = {}
-    for (const [k, v] of formData.entries()) {
-      if (isNaN(v)) {
-        data[k] = v
-      } else {
-        data[k] = parseFloat(v)
-      }
-    }
     dialogRef.current.close()
-    evt.target.reset()
-    onSubmit(data, evt)
+    onSubmit()
   }
 
   function cancelHandler(evt) {
-    formRef.current.reset()
     dialogRef.current.close()
     onCancel()
   }
@@ -66,15 +53,13 @@ const FormDialog = function FormDialog(props) {
           onClick={cancelHandler}
         />
       </div>
-      <form ref={formRef} onSubmit={submitHandler}>
-        {children}
-        <footer className="mt-8 flex items-center justify-between border-x-0 border-b-0 border-t border-solid border-gray-200 pt-6">
-          <CancelButton onClick={cancelHandler}>Cancel</CancelButton>
-          <SubmitButton>Submit</SubmitButton>
-        </footer>
-      </form>
+      {children}
+      <footer className="mt-8 flex items-center justify-between border-x-0 border-b-0 border-t border-solid border-gray-200 pt-6">
+        <SubmitButton onClick={submitHandler}>Yes</SubmitButton>
+        <CancelButton onClick={cancelHandler}>Cancel</CancelButton>
+      </footer>
     </dialog>
   )
 }
 
-export default FormDialog
+export default ConfirmDialog

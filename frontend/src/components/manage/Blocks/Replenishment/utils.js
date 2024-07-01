@@ -1,12 +1,12 @@
 import { MAX_DECIMALS, MIN_DECIMALS } from './constants'
 
-const RE_PERIOD = new RegExp(/\d{4}-\d{4}/)
+const RE_PERIOD_OR_YEAR = new RegExp(/(\d{4}-\d{4})|(\d{4})/)
 
 export function getPathPeriod(path) {
   let result = null
   const candidate = path.split('/').at(-1)
 
-  if (candidate.match(RE_PERIOD)) {
+  if (candidate.match(RE_PERIOD_OR_YEAR)) {
     result = candidate
   }
 
@@ -78,5 +78,16 @@ export function sortTableData(tableData, field, direction) {
       }
     }
   })
+  return result
+}
+
+export function getCountryForIso3(iso3, countries) {
+  let result = null
+  for (let i = 0; i < countries.length; i++) {
+    if (countries[i].iso3 === iso3) {
+      result = countries[i]
+      break
+    }
+  }
   return result
 }

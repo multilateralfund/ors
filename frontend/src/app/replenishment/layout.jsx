@@ -21,6 +21,11 @@ const SECTIONS = [
     showPeriodSelector: false,
   },
   {
+    label: 'Status of contributions',
+    path: '/replenishment/status-of-contributions',
+    showPeriodSelector: false,
+  },
+  {
     label: 'Scale of assessment',
     path: '/replenishment/scale-of-assessment',
   },
@@ -51,7 +56,7 @@ function getNavLinks(pathname, period) {
       <Link
         key={i}
         className={cx({ [styles.current]: isCurrent })}
-        href={i > 0 && period != null ? `${entry.path}/${period}` : entry.path}
+        href={i > 1 && period != null ? `${entry.path}/${period}` : entry.path}
       >
         {entry.label}
       </Link>,

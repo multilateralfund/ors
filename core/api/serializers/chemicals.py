@@ -8,6 +8,11 @@ from core.models import Blend
 
 # pylint: disable=W0223
 class ChemicalsBaseSerializer(serializers.ModelSerializer):
+    def get_alt_names(self, obj):
+        if self.context.get("with_alt_names", False):
+            return [alt_name.name for alt_name in obj.alt_names.all()]
+        return []
+
     def get_excluded_usages(self, obj):
         if self.context.get("with_usages", False):
             return list({usage.usage_id for usage in obj.excluded_usages.all()})
@@ -19,16 +24,21 @@ class ChemicalsBaseSerializer(serializers.ModelSerializer):
 
 # substance serializer with excluded usages if the request has a with_usages query param
 class SubstanceSerializer(ChemicalsBaseSerializer):
+    alt_names = serializers.SerializerMethodField()
     excluded_usages = serializers.SerializerMethodField()
     group = serializers.SlugField(source="group.name_alt", read_only=True)
     sections = serializers.SerializerMethodField()
     chemical_note = serializers.SerializerMethodField()
+    created_by = serializers.StringRelatedField(
+        read_only=True, source="created_by.username"
+    )
 
     class Meta:
         model = Substance
         fields = [
             "id",
             "name",
+            "alt_names",
             "group_id",
             "group",
             "sections",
@@ -39,10 +49,15 @@ class SubstanceSerializer(ChemicalsBaseSerializer):
             "excluded_usages",
             "sort_order",
             "chemical_note",
+            "created_by",
+            "description",
         ]
 
     def get_sections(self, obj):
         sections = []
+        if not obj.group:
+            return []
+
         for section, annexes in SECTION_ANNEX_MAPPING.items():
             if obj.group.annex in annexes:
                 sections.append(section)
@@ -52,6 +67,7 @@ class SubstanceSerializer(ChemicalsBaseSerializer):
 
 # blend serializer with excluded usages if the request has a with_usages query param
 class BlendSerializer(ChemicalsBaseSerializer):
+    alt_names = serializers.SerializerMethodField()
     excluded_usages = serializers.SerializerMethodField()
     composition = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
@@ -66,6 +82,7 @@ class BlendSerializer(ChemicalsBaseSerializer):
             "name",
             "group",
             "other_names",
+            "alt_names",
             "type",
             "composition",
             "composition_alt",

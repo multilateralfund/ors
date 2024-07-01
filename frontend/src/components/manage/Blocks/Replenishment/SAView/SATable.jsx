@@ -2,10 +2,17 @@ import { useEffect, useRef, useState } from 'react'
 
 import cx from 'classnames'
 
+import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
+
+import ConfirmDialog from '../ConfirmDialog'
 import HeaderCells from '../Table/HeaderCells'
 import styles from '../Table/table.module.css'
 
 import { IoPencil, IoTrash } from 'react-icons/io5'
+
+function ConfirmEditDialog(props) {
+  return <ConfirmDialog title="Change this system computed value?" {...props} />
+}
 
 function AdminButtons(props) {
   const { onDelete } = props
@@ -22,13 +29,56 @@ function AdminButtons(props) {
   )
 }
 
+function EditField(props) {
+  const { column, value, ...rest } = props
+
+  const inputRef = useRef(null)
+
+  const fieldValue = column.editParser ? column.editParser(value) : value
+
+  useEffect(function () {
+    if (inputRef.current) {
+      inputRef.current.focus()
+      if (inputRef.current.nodeName === 'INPUT') {
+        inputRef.current.select()
+      }
+    }
+  }, [])
+
+  let Field
+
+  switch (column.editWidget) {
+    case 'select':
+      const options = []
+      for (let i = 0; i < column.editOptions.length; i++) {
+        options.push(
+          <option key={i} value={column.editOptions[i].value}>
+            {column.editOptions[i].label}
+          </option>,
+        )
+      }
+      Field = (
+        <select ref={inputRef} value={fieldValue} {...rest}>
+          {options}
+        </select>
+      )
+      break
+    default:
+      Field = <input ref={inputRef} value={fieldValue} {...rest} />
+  }
+
+  return Field
+}
+
 function TableCell(props) {
   const { c, columns, enableEdit, onCellEdit, onDelete, r, rowData } = props
 
-  const fname = columns[c].field
+  const column = columns[c]
+  const fname = column.field
   const cell = rowData[r][fname]
   const initialValue = cell?.hasOwnProperty('edit') ? cell.edit || '' : cell
-  const isEditable = columns[c].editable === true
+
+  const confirmationText = columns[c].confirmationText ?? null
 
   useEffect(
     function () {
@@ -40,20 +90,10 @@ function TableCell(props) {
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(initialValue)
 
-  const inputRef = useRef(null)
-
-  useEffect(
-    function () {
-      if (inputRef.current) {
-        inputRef.current.focus()
-        inputRef.current.select()
-      }
-    },
-    [editing],
-  )
+  const [showConfirmEdit, setShowConfirmEdit] = useState(false)
 
   function handleStartEdit() {
-    if (enableEdit && isEditable) {
+    if (enableEdit && column.editable === true) {
       setEditing(true)
     }
   }
@@ -62,6 +102,7 @@ function TableCell(props) {
     if (evt.key === 'Escape') {
       cancelNewValue()
     } else if (evt.key === 'Enter') {
+      evt.preventDefault()
       saveNewValue()
     } else if (evt.key === 'Tab') {
       evt.preventDefault()
@@ -76,9 +117,30 @@ function TableCell(props) {
 
   function saveNewValue() {
     if (value !== initialValue) {
-      onCellEdit(r, c, fname, value)
+      if (confirmationText) {
+        setShowConfirmEdit(true)
+      } else {
+        onCellEdit(r, c, fname, value)
+        setEditing(false)
+      }
+    } else {
+      setEditing(false)
     }
+  }
+
+  function handleConfirmEdit() {
+    onCellEdit(r, c, fname, value)
     setEditing(false)
+    setShowConfirmEdit(false)
+  }
+
+  function handleCancelEdit() {
+    setShowConfirmEdit(false)
+    cancelNewValue()
+  }
+
+  function handleChangeValue(evt) {
+    setValue(evt.target.value)
   }
 
   return (
@@ -86,14 +148,22 @@ function TableCell(props) {
       className="flex items-center justify-between"
       onDoubleClick={handleStartEdit}
     >
+      {showConfirmEdit ? (
+        <ConfirmEditDialog
+          onCancel={handleCancelEdit}
+          onSubmit={handleConfirmEdit}
+        >
+          <div className="text-lg">{confirmationText}</div>
+        </ConfirmEditDialog>
+      ) : null}
       <div className="w-full whitespace-nowrap">
         {editing ? (
-          <input
-            ref={inputRef}
-            type="text"
+          <EditField
+            className="w-full"
+            column={columns[c]}
             value={value}
             onBlur={saveNewValue}
-            onChange={(evt) => setValue(evt.target.value)}
+            onChange={handleChangeValue}
             onKeyDown={handleKeyDown}
           />
         ) : (
@@ -107,16 +177,62 @@ function TableCell(props) {
   )
 }
 
+function AddRow(props) {
+  const { columns, countries, onCancel, onSubmit } = props
+
+  const [countryIdx, setCountryIdx] = useState('')
+
+  const countryOptions = []
+
+  for (let i = 0; i < countries.length; i++) {
+    countryOptions.push(
+      <option key={countries[i].id} value={i}>
+        {countries[i].name_alt}
+      </option>,
+    )
+  }
+
+  function handleSubmit(evt) {
+    evt.preventDefault()
+    onSubmit(countries[countryIdx])
+  }
+
+  function handleChangeCountryIdx(evt) {
+    setCountryIdx(parseInt(evt.target.value, 10))
+  }
+
+  return (
+    <tr className="bg-gray-100">
+      <td colSpan={columns.length}>
+        <form className="flex items-center gap-x-4" onSubmit={handleSubmit}>
+          <select value={countryIdx} onChange={handleChangeCountryIdx} required>
+            <option value="">Select a country...</option>
+            {countryOptions}
+          </select>
+          <SubmitButton className="!py-1 !text-sm">Confirm</SubmitButton>
+          <CancelButton className="!py-1 !text-sm" onClick={onCancel}>
+            Cancel
+          </CancelButton>
+        </form>
+      </td>
+    </tr>
+  )
+}
+
 function SATable(props) {
   const {
     columns,
+    countries,
     enableEdit,
     enableSort,
     extraRows,
+    onAddCancel,
+    onAddSubmit,
     onCellEdit,
     onDelete,
     onSort,
     rowData,
+    showAdd,
     sortDirection,
     sortOn,
   } = props
@@ -139,7 +255,28 @@ function SATable(props) {
         </td>,
       )
     }
-    rows.push(<tr key={j}>{row}</tr>)
+    rows.push(
+      <tr
+        key={j}
+        className={cx('!duration-1000 ease-in-out transition-all', {
+          isNew: rowData[j].isNew,
+        })}
+      >
+        {row}
+      </tr>,
+    )
+  }
+
+  if (showAdd) {
+    rows.push(
+      <AddRow
+        key="addRow"
+        columns={columns}
+        countries={countries}
+        onCancel={onAddCancel}
+        onSubmit={onAddSubmit}
+      />,
+    )
   }
 
   if (extraRows && extraRows.length > 0) {

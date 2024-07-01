@@ -28,15 +28,26 @@ function AdminButtons(props) {
 }
 
 function TableCell(props) {
-  const { c, columns, onDelete, onEdit, r, rowData } = props
+  const {
+    adminButtons = true,
+    c,
+    columns,
+    onDelete,
+    onEdit,
+    r,
+    rowData,
+    textPosition = 'left',
+  } = props
 
   const fname = columns[c].field
   const cell = rowData[r][fname]
 
   return (
     <div className="flex items-center justify-between">
-      <div className="w-full whitespace-nowrap">{cell}</div>
-      {c === 0 ? (
+      <div className={`w-full whitespace-nowrap text-${textPosition}`}>
+        {cell}
+      </div>
+      {c === 0 && adminButtons ? (
         <AdminButtons
           onDelete={() => onDelete(r, rowData[r])}
           onEdit={() => onEdit(r)}
@@ -48,6 +59,7 @@ function TableCell(props) {
 
 function Table(props) {
   const {
+    adminButtons,
     columns,
     enableEdit,
     enableSort,
@@ -58,6 +70,7 @@ function Table(props) {
     rowData,
     sortDirection,
     sortOn,
+    textPosition,
   } = props
 
   const rows = []
@@ -67,11 +80,13 @@ function Table(props) {
       row.push(
         <td key={i}>
           <TableCell
+            adminButtons={adminButtons}
             c={i}
             columns={columns}
             enableEdit={enableEdit}
             r={j}
             rowData={rowData}
+            textPosition={textPosition}
             onDelete={onDelete}
             onEdit={onEdit}
           />
@@ -87,11 +102,24 @@ function Table(props) {
       for (let i = 0; i < columns.length; i++) {
         row.push(
           <td key={i}>
-            <TableCell c={i} columns={columns} r={j} rowData={extraRows} />
+            <TableCell
+              adminButtons={adminButtons}
+              c={i}
+              columns={columns}
+              r={j}
+              rowData={extraRows}
+              textPosition={textPosition}
+            />
           </td>,
         )
       }
-      rows.push(<tr key={`er${j}`}>{row}</tr>)
+      const rowClass = extraRows[j].country === 'Total' ? 'totalRow' : ''
+
+      rows.push(
+        <tr key={`er${j}`} className={styles[rowClass]}>
+          {row}
+        </tr>,
+      )
     }
   }
 

@@ -19,6 +19,7 @@ import {
   dateForEditField,
   filterTableData,
   formatDateValue,
+  getCountryForIso3,
   sortTableData,
 } from './utils'
 
@@ -197,6 +198,8 @@ function PaymentsView(props) {
     entry.acknowledged = !entry.acknowledged ? 'No' : 'Yes'
     entry.promissory_note = !entry.promissory_note ? 'No' : 'Yes'
     entry.date = formatDateValue(entry.date)
+    entry.country = getCountryForIso3(entry.iso3, ctx.countries)?.name_alt
+
     setTableData((prev) => [entry, ...prev])
     setShowAdd(false)
   }
@@ -221,6 +224,7 @@ function PaymentsView(props) {
     entry.acknowledged = !entry.acknowledged ? 'No' : 'Yes'
     entry.promissory_note = !entry.promissory_note ? 'No' : 'Yes'
     entry.date = formatDateValue(entry.date)
+    entry.country = getCountryForIso3(entry.iso3, ctx.countries)?.name_alt
 
     const next = [...sortedTableData]
     next[editIdx] = entry
