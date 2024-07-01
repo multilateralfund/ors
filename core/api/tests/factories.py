@@ -1,7 +1,13 @@
 import factory.fuzzy
 from django.contrib.auth import get_user_model
 
-from core.models import Replenishment, Contribution
+from core.models import (
+    Replenishment,
+    Contribution,
+    ContributionStatus,
+    DisputedContribution,
+    FermGainLoss,
+)
 from core.models.business_plan import (
     BusinessPlan,
     BPRecord,
@@ -500,3 +506,34 @@ class ContributionFactory(factory.django.DjangoModelFactory):
     )
     average_inflation_rate = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     override_qualifies_for_fixed_rate_mechanism = factory.Faker("pybool")
+
+
+class ContributionStatusFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ContributionStatus
+
+    country = factory.SubFactory(CountryFactory)
+    year = factory.Faker("random_int", min=2000, max=2024)
+    agreed_contributions = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    cash_payments = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    bilateral_assistance = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    promissory_notes = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    outstanding_contributions = factory.Faker(
+        "pydecimal", left_digits=10, right_digits=2
+    )
+
+
+class DisputedContributionsFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = DisputedContribution
+
+    year = factory.Faker("random_int", min=2000, max=2024)
+    amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+
+
+class FermGainLossFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = FermGainLoss
+
+    country = factory.SubFactory(CountryFactory)
+    amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)

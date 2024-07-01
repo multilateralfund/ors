@@ -88,6 +88,9 @@ class StatusOfContributionsView(views.APIView):
     def get(self, request, *args, **kwargs):
         user = request.user
 
+        if user.user_type != user.UserType.SECRETARIAT:
+            return Response({})
+
         data = {}
         disputed_contributions_qs = DisputedContribution.objects.all()
         contribution_status_qs = ContributionStatus.objects.all()
@@ -140,7 +143,4 @@ class StatusOfContributionsView(views.APIView):
         )
         data["disputed_contributions"] = disputed_contributions_total
 
-        if user.user_type == user.UserType.SECRETARIAT:
-            return Response(data)
-
-        return Response({})
+        return Response(data)
