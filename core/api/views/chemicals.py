@@ -73,6 +73,10 @@ class SubstancesListView(ChemicalBaseListView):
             annexes = SECTION_ANNEX_MAPPING.get(section, [])
             queryset = queryset.filter(group__annex__in=annexes)
 
+        include_user_substances = self.request.query_params.get("include_user_substances", False)
+        if not include_user_substances:
+            queryset = queryset.filter(created_by__isnull=True)
+
         return queryset.order_by("group__name", "sort_order")
 
     @swagger_auto_schema(
@@ -103,6 +107,36 @@ class SubstancesListView(ChemicalBaseListView):
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        name = data.get("name")
+
+        # check if substance name provided
+        if not name:
+            return Response(
+                {"name": "Substance name required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # check if substance already exists
+        substance = Substance.objects.find_by_name(name)
+        if substance:
+            serializer = self.get_serializer(substance)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # create substance
+        substance = Substance.objects.create(
+            name=name,
+            description=data.get("description", ""),
+            odp=data.get("odp"),
+            gwp=data.get("gwp"),
+            formula=data.get("formula", ""),
+            created_by=request.user,
+        )
+
+        serializer = self.get_serializer(substance)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class BlendsListView(ChemicalBaseListView):

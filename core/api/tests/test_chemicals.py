@@ -1,8 +1,8 @@
 from django.urls import reverse
 import pytest
 from rest_framework.test import APIClient
-from core.api.tests.base import BaseTest
 
+from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
     ExcludedUsageSubstFactory,
     ExcludedUsageBlendFactory,
@@ -44,7 +44,7 @@ def create_excluded_usages(usages, chemical, type_ch, time_frames, count=2):
 
 
 @pytest.fixture(name="_setup_substances_list")
-def setup_substances_list(time_frames):
+def setup_substances_list(time_frames, user):
     groups = []
     substances = []
     for gr_name in GROUP_LIST:
@@ -57,6 +57,9 @@ def setup_substances_list(time_frames):
                     sort_order=i,
                 )
             )
+
+    # 1 substance created by user
+    substances.append(SubstanceFactory.create(created_by=user))
     # add 3 usages
     usages = create_usages()
     # add excluded usages for first group substances
@@ -118,6 +121,50 @@ class TestSubstancesList(BaseTest):
         response = self.client.get(self.url, {"section": "C"})
         assert response.status_code == 200
         assert len(response.data) == 6
+
+    def test_subs_list_include_user_substances(self, user, _setup_substances_list):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"include_user_substances": True})
+        assert response.status_code == 200
+        assert len(response.data) == 15
+
+
+class TestSubstanceCreate:
+    client = APIClient()
+    url = reverse("substances-list")
+
+    def test_substance_name_not_provided(self, user):
+        self.client.force_authenticate(user=user)
+        response = self.client.post(self.url, {}, format="json")
+        assert response.status_code == 400
+        assert response.data["name"] == "Substance name required"
+
+    def test_substance_create(self, user):
+        self.client.force_authenticate(user=user)
+        data = {
+            "name": "Test",
+            "description": "Va canta Babasha",
+            "odp": 1.0,
+            "gwp": 2.0,
+            "formula": "Test formula",
+        }
+        response = self.client.post(self.url, data, format="json")
+
+        assert response.status_code == 201
+        assert response.data["name"] == "Test"
+        assert response.data["description"] == "Va canta Babasha"
+        assert float(response.data["odp"]) == 1.0
+        assert float(response.data["gwp"]) == 2.0
+        assert response.data["formula"] == "Test formula"
+        assert response.data["created_by"] == user.username
+
+    def test_substance_already_exists(self, user, substance):
+        self.client.force_authenticate(user=user)
+        data = {"name": substance.name}
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 200
+        assert response.data["name"] == substance.name
 
 
 @pytest.fixture(name="_setup_blend_list")
