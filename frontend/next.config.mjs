@@ -7,7 +7,7 @@ import rehypeSlug from 'rehype-slug'
 import rehypeToc from 'rehype-toc'
 // import remarkToc from 'remark-toc'
 
-import transformModulesMapper from './transform.modules.json' assert { type: 'json' }
+import transformModulesMapper from './transform.modules.json' with { type: 'json' }
 
 const withBundleAnalyzer = createBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',

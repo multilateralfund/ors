@@ -13,6 +13,7 @@ import CPComments from '@ors/components/manage/Blocks/CountryProgramme/CPComment
 import SectionReportedSelect from '@ors/components/manage/Blocks/Section/SectionReportedSelect'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
+import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
 import SectionTab from '@ors/components/ui/SectionTab/SectionTab'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
@@ -476,6 +477,17 @@ export default function CPEditWrapper(props: { iso3: string; year: number }) {
   useEffect(() => {
     fetchBundle(country.id, year, false)
   }, [country, year, fetchBundle])
+
+  if (report.error) {
+    return (
+      <div>
+        <PageHeading>
+          {report.error._info.status} - {report.error._info.statusText}
+        </PageHeading>
+        <p>{report.error.error}</p>
+      </div>
+    )
+  }
 
   if (!dataReady) {
     return (

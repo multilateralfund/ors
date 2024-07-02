@@ -10,6 +10,7 @@ import CPComments from '@ors/components/manage/Blocks/CountryProgramme/CPComment
 import UnitSelectionWidget from '@ors/components/manage/Widgets/UnitSelectionWidget'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
+import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import Link from '@ors/components/ui/Link/Link'
 import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
 import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
@@ -458,6 +459,17 @@ export default function CPViewWrapper(props: { iso3: string; year: number }) {
       fetchReportDiff(country.id, year, report.data.version)
     }
   }, [country.id, fetchReportDiff, report.data?.version, year])
+
+  if (report.error) {
+    return (
+      <div>
+        <PageHeading>
+          {report.error._info.status} - {report.error._info.statusText}
+        </PageHeading>
+        <p>{report.error.error}</p>
+      </div>
+    )
+  }
 
   if (!dataReady)
     return (
