@@ -14,6 +14,7 @@ import {
   Typography,
 } from '@mui/material'
 import { RowNode } from 'ag-grid-community'
+import cx from 'classnames'
 import { each, find, findIndex, includes, sortBy, union } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
@@ -152,6 +153,54 @@ function getChemicalGroup(
   return 'Alternatives'
 }
 
+function chemicalGroupIndex(name: string) {
+  switch (name) {
+    case 'HCFCs':
+      return 1
+    case 'HFCs':
+      return 2
+    case 'Alternatives':
+      return 3
+    default:
+      return Infinity
+  }
+}
+
+function sortByGroup(data: any[]) {
+  return data.sort(function (a: any, b: any) {
+    return chemicalGroupIndex(a.group) - chemicalGroupIndex(b.group)
+  })
+}
+
+function autoCompleteFilterOptions(options: any, state: any) {
+  const r: any[] = []
+  const searchString = state.inputValue.toLowerCase()
+  for (let i = 0; i < options.length; i++) {
+    const optionLabel = state.getOptionLabel(options[i]).toLowerCase()
+    const altNames = options[i].alt_names.join(', ').toLowerCase()
+    if (
+      optionLabel.indexOf(searchString) !== -1 ||
+      altNames.indexOf(searchString) !== -1
+    ) {
+      r.push(options[i])
+    }
+  }
+  return r
+}
+
+function autoCompleteRenderOption(props: any, option: any, state: any) {
+  const { key, className, ...optionProps } = props
+  const altName = option.alt_names.join(', ')
+  return (
+    <li key={key} className={cx(className, 'flex flex-wrap')} {...optionProps}>
+      {option.display_name}
+      {option.alt_names.length && altName !== option.display_name ? (
+        <span className="ml-2 text-gray-500">({altName})</span>
+      ) : null}{' '}
+    </li>
+  )
+}
+
 export default function SectionCCreate(props: {
   Comments: React.FC<{ section: string; viewOnly: boolean }>
   Section: SectionC
@@ -182,6 +231,32 @@ export default function SectionCCreate(props: {
   )
   const blends = useStore(
     (state) => getResults<ApiBlend>(state.cp_reports.blends.data).results,
+  )
+
+  const substancesById = useMemo(
+    function () {
+      const r: any = {}
+
+      for (let i = 0; i < substances.length; i++) {
+        r[substances[i].id] = substances[i]
+      }
+
+      return r
+    },
+    [substances],
+  )
+
+  const blendsById = useMemo(
+    function () {
+      const r: any = {}
+
+      for (let i = 0; i < blends.length; i++) {
+        r[blends[i].id] = blends[i]
+      }
+
+      return r
+    },
+    [blends],
   )
 
   const substancePrices = useApi<SubstancePrices>({
@@ -215,58 +290,58 @@ export default function SectionCCreate(props: {
   // For formats <2023
   const allChemicalOptions = useMemo(() => {
     const data: Array<any> = []
-    each(substances, (substance) => {
+
+    for (let i = 0; i < substances.length; i++) {
+      const substance = substances[i]
       if (
-        includes(substance.sections, 'C') &&
-        !includes(chemicalsInForm, `substance_${substance.id}`)
+        substance.sections.includes('C') &&
+        !chemicalsInForm.includes(`substance_${substance.id}`)
       ) {
         const apiSubstance = Section.transformApiSubstance(substance)
         data.push({ ...apiSubstance, group: getChemicalGroup(apiSubstance) })
       }
-    })
-    return [
-      ...data.filter((substance) => substance.group === 'HCFCs'),
-      ...data.filter((substance) => substance.group === 'HFCs'),
-      ...data.filter((substance) => substance.group === 'Alternatives'),
-    ]
+    }
+
+    return sortByGroup(data)
   }, [substances, chemicalsInForm, Section])
 
   // Needed in formats >=2023
   const mandatorySubstances = useMemo(() => {
     const data: Array<any> = []
 
-    each(
-      emptyForm.substance_rows.section_c.filter((row) => row.substance_id),
-      (substance) => {
-        if (!includes(chemicalsInForm, `substance_${substance.substance_id}`)) {
-          const transformedSubstance = Section.transformSubstance(
-            substance,
-            false,
-          )
-          data.push({
-            ...transformedSubstance,
-            id: transformedSubstance.display_name,
-          })
-        }
-      },
-    )
+    const substance_rows = emptyForm.substance_rows.section_c
 
-    each(
-      emptyForm.substance_rows.section_c.filter((row) => row.blend_id),
-      (blend) => {
-        if (!includes(chemicalsInForm, `blend_${blend.blend_id}`)) {
-          const transformedBlend = Section.transformBlend(blend, false)
-          data.push({ ...transformedBlend, id: transformedBlend.display_name })
-        }
-      },
-    )
+    for (let i = 0; i < substance_rows.length; i++) {
+      const row = substance_rows[i]
 
-    return [
-      ...data.filter((substance) => substance.group === 'HCFCs'),
-      ...data.filter((substance) => substance.group === 'HFCs'),
-      ...data.filter((substance) => substance.group === 'Alternatives'),
-    ]
-  }, [Section, chemicalsInForm, emptyForm.substance_rows.section_c])
+      let chemical
+      let alt_names
+
+      if (row.substance_id) {
+        chemical = Section.transformSubstance(row, false)
+        alt_names = substancesById[row.substance_id]?.alt_names ?? []
+      } else if (row.blend_id) {
+        chemical = Section.transformBlend(row, false)
+        alt_names = blendsById[row.blend_id]?.alt_names ?? []
+      }
+
+      if (!chemicalsInForm.includes(chemical?.row_id)) {
+        data.push({
+          ...(chemical || {}),
+          id: chemical?.display_name,
+          alt_names,
+        })
+      }
+    }
+
+    return sortByGroup(data)
+  }, [
+    Section,
+    chemicalsInForm,
+    emptyForm.substance_rows.section_c,
+    substancesById,
+    blendsById,
+  ])
 
   const optionalSubstances = useMemo(() => {
     const data: Array<any> = []
@@ -304,11 +379,7 @@ export default function SectionCCreate(props: {
       }
     })
 
-    return [
-      ...data.filter((substance) => substance.group === 'HCFCs'),
-      ...data.filter((substance) => substance.group === 'HFCs'),
-      ...data.filter((substance) => substance.group === 'Alternatives'),
-    ]
+    return sortByGroup(data)
   }, [Section, blends, chemicalsInForm, mandatorySubstances, substances])
 
   const gridOptions = useGridOptions({
@@ -487,9 +558,11 @@ export default function SectionCCreate(props: {
                 <Autocomplete
                   id="mandatory-substances"
                   className="widget"
+                  filterOptions={autoCompleteFilterOptions}
                   getOptionLabel={(option: any) => option.display_name}
                   groupBy={(option: any) => option.group}
                   options={mandatorySubstances}
+                  renderOption={autoCompleteRenderOption}
                   renderInput={(params) => (
                     <TextWidget
                       {...params}
@@ -506,9 +579,11 @@ export default function SectionCCreate(props: {
                 <Autocomplete
                   id="other-substances"
                   className="widget"
+                  filterOptions={autoCompleteFilterOptions}
                   getOptionLabel={(option: any) => option.display_name}
                   groupBy={(option: any) => option.group}
                   options={optionalSubstances}
+                  renderOption={autoCompleteRenderOption}
                   renderInput={(params) => (
                     <TextWidget
                       {...params}

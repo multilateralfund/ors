@@ -91,8 +91,16 @@ export default async function RootLayout({
       api('api/project-types/', {}, false),
       api('api/meetings/', {}, false),
       api('api/project-clusters/', {}, false),
-      api('api/blends/', { params: { with_usages: true } }, false),
-      api('api/substances/', { params: { with_usages: true } }, false),
+      api(
+        'api/blends/',
+        { params: { with_alt_names: true, with_usages: true } },
+        false,
+      ),
+      api(
+        'api/substances/',
+        { params: { with_alt_names: true, with_usages: true } },
+        false,
+      ),
       // api('api/usages/', {}, false),
       api('api/business-plan/get-years/', {}, false),
     ])
