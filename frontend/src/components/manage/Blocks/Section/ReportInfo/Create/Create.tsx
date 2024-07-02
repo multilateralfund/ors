@@ -145,6 +145,7 @@ const ReportInfoCreate = (props: any) => {
     isEdit,
     onSectionCheckChange,
     report,
+    reportAlreadyExists,
     section,
     sectionsChecked,
     setForm,
@@ -201,12 +202,14 @@ const ReportInfoCreate = (props: any) => {
         <div className="grid gap-6 md:grid-cols-4">
           <div className="h-full w-full items-center md:col-span-3">
             <div className="flex h-full flex-col justify-end">
-              <CloneSubstancesDialog
-                Sections={Sections}
-                form={form}
-                setForm={setForm}
-                user_type={user_type}
-              />
+              {!reportAlreadyExists && (
+                <CloneSubstancesDialog
+                  Sections={Sections}
+                  form={form}
+                  setForm={setForm}
+                  user_type={user_type}
+                />
+              )}
               <CountrySelect
                 // @ts-ignore
                 countryFieldProps={countryFieldProps}
@@ -245,7 +248,7 @@ const ReportInfoCreate = (props: any) => {
         )}
       </div>
 
-      <div className="flex flex-col rounded-lg bg-gray-100 p-4 gap-5">
+      <div className="flex flex-col gap-5 rounded-lg bg-gray-100 p-4">
         <ReportStatus
           isCreate={isCreate}
           isEdit={isEdit}

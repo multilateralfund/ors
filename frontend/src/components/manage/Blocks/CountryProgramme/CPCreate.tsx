@@ -40,6 +40,7 @@ import Portal from '../../Utils/Portal'
 import { CPCreateHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
 import ConfirmSubmission from './ConfirmSubmission'
+import SubmissionExistsDialog from './SubmissionExistsDialog'
 import {
   CPBaseForm,
   CPCreateTableProps,
@@ -273,7 +274,9 @@ const CPCreate: React.FC = () => {
     })[0]
   }, [form.year])
   const [activeTab, setActiveTab] = useState(0)
-  const { setActiveTab: setActiveTabStore } = useStore((state) => state.cp_current_tab)
+  const { setActiveTab: setActiveTabStore } = useStore(
+    (state) => state.cp_current_tab,
+  )
   const [renderedSections, setRenderedSections] = useState<number[]>([])
 
   const existingReports = useApi({
@@ -620,23 +623,15 @@ const CPCreate: React.FC = () => {
         </div>
         <CPSectionWrapper>
           {!!existingReports.data?.length && currentCountry && (
-            <div className="mb-4 grid grid-cols-1 gap-x-4 md:grid-cols-2 lg:grid-cols-3">
-              <div className="flex items-center">
-                <Tooltip
-                  placement="top"
-                  title={`There is already a submission for ${existingReports.data[0].name}. Click on this icon to view the submission.`}
-                >
-                  <Typography className="inline-flex items-center">
-                    <Link
-                      className="inline-block"
-                      href={`/country-programme/${currentCountry.iso3}/${form.year}`}
-                    >
-                      <IoLink size={24} />
-                    </Link>
-                  </Typography>
-                </Tooltip>
-              </div>
-            </div>
+            <SubmissionExistsDialog
+              existingReportTitle={existingReports.data[0].name}
+              href={`/country-programme/${currentCountry.iso3}/${form.year}`}
+              onCancel={function () {
+                setForm(function (prev) {
+                  return { ...prev, country: null }
+                })
+              }}
+            />
           )}
 
           {!!Object.keys(errors).length && (
@@ -700,6 +695,9 @@ const CPCreate: React.FC = () => {
                         report,
                         section,
                       }}
+                      reportAlreadyExists={
+                        !!existingReports.data?.length && currentCountry
+                      }
                       onSectionCheckChange={onSectionCheckChange}
                     />
                     {!isSectionChecked && variant?.model === 'V' ? (
