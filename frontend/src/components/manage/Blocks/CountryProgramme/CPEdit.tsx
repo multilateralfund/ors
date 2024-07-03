@@ -234,7 +234,7 @@ function CPEdit() {
   const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
   const [renderedSections, setRenderedSections] = useState<number[]>([])
 
-  function handleSetForm(value) {
+  function handleSetForm(value: any) {
     setForm(value)
     setWarnOnClose(true)
   }

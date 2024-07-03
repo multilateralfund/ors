@@ -273,7 +273,7 @@ const CPCreate: React.FC = () => {
     }
   })
 
-  function handleSetForm(value) {
+  function handleSetForm(value: any) {
     setForm(value)
     setWarnOnClose(true)
   }
@@ -341,7 +341,7 @@ const CPCreate: React.FC = () => {
     disabled: existingReports.loading,
     name: 'year',
     onChange: (_event: any, value: WidgetYear) => {
-      handleSetForm((oldForm) => ({ ...oldForm, year: value.id }))
+      handleSetForm((oldForm: any) => ({ ...oldForm, year: value.id }))
     },
     options: yearOptions,
     value: { id: form.year, label: `${form.year}` },
