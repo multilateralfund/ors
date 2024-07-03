@@ -7,7 +7,9 @@ from drf_yasg import openapi
 from core.api.views import (
     ProjectFundViewSet,
     ReplenishmentCountriesViewSet,
-    ReplenishmentViewSet, ContributionViewSet, StatusOfContributionsView,
+    ReplenishmentViewSet,
+    ContributionViewSet,
+    StatusOfContributionsView,
 )
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
@@ -40,6 +42,7 @@ from core.api.views.cp_records_export import (
     CPEmptyExportView,
     CPHCFCExportView,
     CPHFCExportView,
+    CPReportListExportView,
 )
 from core.api.views.cp_reports import (
     CPReportStatusUpdateView,
@@ -196,6 +199,11 @@ urlpatterns = [
         "country-programme/export/",
         CPRecordExportView.as_view(),
         name="country-programme-export",
+    ),
+    path(
+        "country-programme/reports/export/",
+        CPReportListExportView.as_view(),
+        name="country-programme-reports-export",
     ),
     path(
         "country-programme/hfc/export/",
