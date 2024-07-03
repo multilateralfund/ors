@@ -11,6 +11,8 @@ import {
   Box,
   Button,
   Modal,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from '@mui/material'
 import { RowNode } from 'ag-grid-community'
@@ -30,6 +32,8 @@ import {
   CPBaseForm,
   PassedCPCreateTableProps,
 } from '../../../CountryProgramme/typesCPCreate'
+import AddSubstance from './AddSubstance'
+import CreateSubstance from './CreateSubstance'
 import useGridOptions from './schema'
 import { RowData, SubstancePrice, SubstancePrices } from './types'
 
@@ -282,6 +286,7 @@ export default function SectionCCreate(props: {
   )
 
   const [addChemicalModal, setAddChemicalModal] = useState(false)
+  const [modalTab, setModalTab] = useState<'existing' | 'new'>('existing')
 
   const chemicalsInForm = useMemo(() => {
     return form.section_c.map((chemical: any) => chemical.row_id)
@@ -554,72 +559,82 @@ export default function SectionCCreate(props: {
             </Typography>
             {includes(['V'], variant.model) ? (
               <>
-                <Typography>Mandatory / usual substances and blends</Typography>
-                <Autocomplete
-                  id="mandatory-substances"
-                  className="widget"
-                  filterOptions={autoCompleteFilterOptions}
-                  getOptionLabel={(option: any) => option.display_name}
-                  groupBy={(option: any) => option.group}
-                  options={mandatorySubstances}
-                  renderOption={autoCompleteRenderOption}
-                  renderInput={(params) => (
-                    <TextWidget
-                      {...params}
-                      autoComplete="false"
-                      size="small"
-                      variant="outlined"
-                    />
-                  )}
-                  onChange={onAddChemical}
-                  disableClearable
-                  disableCloseOnSelect
-                />
-                <Typography>Optional substances</Typography>
-                <Autocomplete
-                  id="other-substances"
-                  className="widget"
-                  filterOptions={autoCompleteFilterOptions}
-                  getOptionLabel={(option: any) => option.display_name}
-                  groupBy={(option: any) => option.group}
-                  options={optionalSubstances}
-                  renderOption={autoCompleteRenderOption}
-                  renderInput={(params) => (
-                    <TextWidget
-                      {...params}
-                      autoComplete="false"
-                      size="small"
-                      variant="outlined"
-                    />
-                  )}
-                  onChange={onAddChemical}
-                  disableClearable
-                  disableCloseOnSelect
-                />
-              </>
-            ) : (
-              <Autocomplete
-                id="all-substances"
-                className="widget"
-                getOptionLabel={(option: any) => option.display_name}
-                groupBy={(option: any) => option.group}
-                options={allChemicalOptions}
-                renderInput={(params) => (
-                  <TextWidget
-                    {...params}
-                    autoComplete="false"
-                    size="small"
-                    variant="outlined"
+                <ToggleButtonGroup
+                  className="my-4"
+                  color="primary"
+                  value={modalTab}
+                  onChange={(_, value) => setModalTab(value)}
+                  exclusive
+                >
+                  <ToggleButton
+                    className="rounded-none border-primary py-2 text-base tracking-wide first:rounded-l-lg last:rounded-r-lg"
+                    value="existing"
+                    classes={{
+                      selected: 'bg-primary text-mlfs-hlYellow',
+                      standard: 'bg-white text-primary',
+                    }}
+                  >
+                    {includes(['V'], variant.model)
+                      ? 'Existing substance/blend'
+                      : 'Existing blend'}
+                  </ToggleButton>
+                  <ToggleButton
+                    className="rounded-none border-primary py-2 text-base tracking-wide first:rounded-l-lg last:rounded-r-lg"
+                    value="new"
+                    classes={{
+                      selected: 'bg-primary text-mlfs-hlYellow',
+                      standard: 'bg-white text-primary',
+                    }}
+                  >
+                    New substance
+                  </ToggleButton>
+                </ToggleButtonGroup>
+                {modalTab === 'existing' ? (
+                  <AddSubstance
+                    autoCompleteFilterOptions={autoCompleteFilterOptions}
+                    autoCompleteRenderOption={autoCompleteRenderOption}
+                    mandatorySubstances={mandatorySubstances}
+                    optionalSubstances={optionalSubstances}
+                    onAddChemical={onAddChemical}
+                    onCancel={() => setAddChemicalModal(false)}
+                  />
+                ) : (
+                  <CreateSubstance
+                    onCancel={() => setAddChemicalModal(false)}
+                    onSubmit={function (subst: ApiSubstance) {
+                      const ts = Section.transformApiSubstance(subst)
+                      onAddChemical(null, ts)
+                    }}
                   />
                 )}
-                onChange={onAddChemical}
-                disableClearable
-                disableCloseOnSelect
-              />
+              </>
+            ) : (
+              <>
+                <Autocomplete
+                  id="all-substances"
+                  className="widget"
+                  getOptionLabel={(option: any) => option.display_name}
+                  groupBy={(option: any) => option.group}
+                  options={allChemicalOptions}
+                  renderInput={(params) => (
+                    <TextWidget
+                      {...params}
+                      autoComplete="false"
+                      size="small"
+                      variant="outlined"
+                    />
+                  )}
+                  onChange={onAddChemical}
+                  disableClearable
+                  disableCloseOnSelect
+                />
+                <Typography className="flex flex-row-reverse gap-x-2">
+                  <Button onClick={() => setAddChemicalModal(false)}>
+                    Close
+                  </Button>
+                </Typography>
+              </>
             )}
-            <Typography className="text-right">
-              <Button onClick={() => setAddChemicalModal(false)}>Close</Button>
-            </Typography>
           </Box>
         </Modal>
       )}
