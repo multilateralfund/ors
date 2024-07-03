@@ -37,6 +37,11 @@ function CreateSubstance(props) {
 
   return (
     <div>
+      <p>
+        {
+          "Please make sure the substance you are about to add doesn't already exist in the database by searching the existing substances or blends."
+        }
+      </p>
       <form onSubmit={handleSubmit}>
         <Field
           InputLabel={{ label: 'Name' }}

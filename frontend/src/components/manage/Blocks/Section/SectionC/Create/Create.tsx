@@ -574,9 +574,7 @@ export default function SectionCCreate(props: {
                       standard: 'bg-white text-primary',
                     }}
                   >
-                    {includes(['V'], variant.model)
-                      ? 'Existing substance/blend'
-                      : 'Existing blend'}
+                    Existing substance or blend
                   </ToggleButton>
                   <ToggleButton
                     className="rounded-none border-primary py-2 text-base tracking-wide first:rounded-l-lg last:rounded-r-lg"
