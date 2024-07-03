@@ -26,6 +26,7 @@ import { getResults } from '@ors/helpers/Api/Api'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import useApi from '@ors/hooks/useApi'
 import useMakeClassInstance from '@ors/hooks/useMakeClassInstance'
+import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import SectionA from '@ors/models/SectionA'
 import SectionB from '@ors/models/SectionB'
 import SectionC from '@ors/models/SectionC'
@@ -172,6 +173,9 @@ const CPCreate: React.FC = () => {
   const [currentCountry, setCurrentCountry] = useState<Country | null>(null)
   const [showConfirm, setShowConfirm] = useState(false)
 
+  const [warnOnClose, setWarnOnClose] = useState(false)
+  useVisibilityChange(warnOnClose)
+
   const countries: WidgetCountry[] = useStore((state) => [
     ...getResults(state.common.countries_for_create.data).results.map(
       (country) => ({
@@ -268,6 +272,12 @@ const CPCreate: React.FC = () => {
       year: lastYear,
     }
   })
+
+  function handleSetForm(value) {
+    setForm(value)
+    setWarnOnClose(true)
+  }
+
   const variant = useMemo(() => {
     return filter(variants, (variant) => {
       return variant.minYear <= form.year && variant.maxYear >= form.year
@@ -302,7 +312,7 @@ const CPCreate: React.FC = () => {
     name: 'country_id',
     onChange: (_event: any, value: WidgetCountry) => {
       const country = value as WidgetCountry
-      setForm({ ...form, country })
+      handleSetForm({ ...form, country })
       setCurrentCountry(
         country && all_countries.filter((c) => c.id === country.id)[0],
       )
@@ -331,7 +341,7 @@ const CPCreate: React.FC = () => {
     disabled: existingReports.loading,
     name: 'year',
     onChange: (_event: any, value: WidgetYear) => {
-      setForm((oldForm) => ({ ...oldForm, year: value.id }))
+      handleSetForm((oldForm) => ({ ...oldForm, year: value.id }))
     },
     options: yearOptions,
     value: { id: form.year, label: `${form.year}` },
@@ -456,7 +466,7 @@ const CPCreate: React.FC = () => {
       [section]: isChecked,
     }))
 
-    setForm((prevState: any) => ({
+    handleSetForm((prevState: any) => ({
       ...prevState,
       report_info: {
         ...prevState.report_info,
@@ -684,7 +694,7 @@ const CPCreate: React.FC = () => {
                       report={report.data}
                       section={section}
                       sectionsChecked={sectionsChecked}
-                      setForm={setForm}
+                      setForm={handleSetForm}
                       variant={variant}
                       yearFieldProps={yearFieldProps}
                       TableProps={{

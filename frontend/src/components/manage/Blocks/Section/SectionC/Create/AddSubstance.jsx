@@ -22,6 +22,9 @@ function AddSubstance(props) {
         groupBy={(option) => option.group}
         options={mandatorySubstances}
         renderOption={autoCompleteRenderOption}
+        isOptionEqualToValue={function (option, value) {
+          return option.row_id === value.row_id
+        }}
         renderInput={(params) => (
           <TextWidget
             {...params}
@@ -43,6 +46,9 @@ function AddSubstance(props) {
         groupBy={(option) => option.group}
         options={optionalSubstances}
         renderOption={autoCompleteRenderOption}
+        isOptionEqualToValue={function (option, value) {
+          return option.row_id === value.row_id
+        }}
         renderInput={(params) => (
           <TextWidget
             {...params}

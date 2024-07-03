@@ -20,6 +20,7 @@ import { FootnotesProvider } from '@ors/contexts/Footnote/Footnote'
 import ValidationProvider from '@ors/contexts/Validation/ValidationProvider'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import useMakeClassInstance from '@ors/hooks/useMakeClassInstance'
+import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import SectionA from '@ors/models/SectionA'
 import SectionB from '@ors/models/SectionB'
 import SectionC from '@ors/models/SectionC'
@@ -138,6 +139,9 @@ function CPEdit() {
   const tabsEl = React.useRef<HTMLDivElement>(null)
   const { report } = useStore((state) => state.cp_reports)
 
+  const [warnOnClose, setWarnOnClose] = useState(false)
+  useVisibilityChange(warnOnClose)
+
   const Sections = {
     section_a: useMakeClassInstance<SectionA>(SectionA, [
       report.data?.section_a,
@@ -230,6 +234,11 @@ function CPEdit() {
   const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
   const [renderedSections, setRenderedSections] = useState<number[]>([])
 
+  function handleSetForm(value) {
+    setForm(value)
+    setWarnOnClose(true)
+  }
+
   const sections = useMemo(
     () => (variant ? getSections(variant, 'edit') : []),
     [variant],
@@ -299,7 +308,7 @@ function CPEdit() {
       [section]: isChecked,
     }))
 
-    setForm((prevState: any) => ({
+    handleSetForm((prevState: any) => ({
       ...prevState,
       report_info: {
         ...prevState.report_info,
@@ -416,7 +425,7 @@ function CPEdit() {
                         report={report.data}
                         section={section}
                         sectionsChecked={sectionsChecked}
-                        setForm={setForm}
+                        setForm={handleSetForm}
                         showComments={showComments}
                         variant={variant}
                         TableProps={{
