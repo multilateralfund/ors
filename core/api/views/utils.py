@@ -1,3 +1,4 @@
+from datetime import datetime
 from rest_framework.exceptions import ValidationError
 
 from django.db import models
@@ -34,6 +35,29 @@ def get_cp_report_from_request(request, cp_report_class):
         raise ValidationError({"error": "Country programme report not found"}) from e
 
     return cp_report
+
+
+def get_year_params_from_request(request):
+    """
+    Get min year and max year from request query params
+    -> if min year and max year are not provided, set current year for both
+    @param request: request object
+    @return: min year and max year as integers
+    """
+    min_year = request.query_params.get("min_year")
+    max_year = request.query_params.get("max_year")
+
+    current_year = datetime.now().year
+    if not min_year and not max_year:
+        # set current year for min year and max year
+        min_year = current_year
+        max_year = current_year
+    if not max_year:
+        max_year = current_year
+    if not min_year:
+        min_year = 1995
+
+    return min_year, max_year
 
 
 def get_archive_reports_final_for_year(year):

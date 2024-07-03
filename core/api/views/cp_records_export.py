@@ -1,5 +1,4 @@
 import collections
-from datetime import datetime
 import itertools
 import openpyxl
 
@@ -24,6 +23,7 @@ from core.api.export.cp_data_extraction_all import (
 from core.api.export.cp_report_hfc_hcfc import CPReportHFCWriter, CPReportHCFCWriter
 from core.api.export.cp_report_new import CPReportNewExporter
 from core.api.export.cp_report_old import CPReportOldExporter
+from core.api.export.cp_reports_list import CPReportListWriter
 from core.api.permissions import IsUserSecretariatOrAdmin
 from core.api.serializers import BlendSerializer
 from core.api.serializers import SubstanceSerializer
@@ -34,6 +34,7 @@ from core.api.views.cp_report_empty_form import EmptyFormView
 from core.api.views.utils import (
     get_archive_reports_final_for_year,
     get_final_records_for_year,
+    get_year_params_from_request,
 )
 from core.models import Blend
 from core.models import ExcludedUsage
@@ -165,6 +166,43 @@ class CPEmptyExportView(CPRecordExportView):
         }
 
 
+class CPReportListExportView(views.APIView):
+    permission_classes = [IsUserSecretariatOrAdmin]
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "min_year",
+                openapi.IN_QUERY,
+                description="Minimum year",
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "max_year",
+                openapi.IN_QUERY,
+                description="Maximum year",
+                type=openapi.TYPE_INTEGER,
+            ),
+        ],
+    )
+    def get(self, *args, **kwargs):
+        wb = openpyxl.Workbook()
+        exporter = CPReportListWriter(wb)
+        min_year, max_year = get_year_params_from_request(self.request)
+        data = (
+            CPReport.objects.select_related("country", "created_by")
+            .filter(year__gte=min_year, year__lte=max_year)
+            .order_by("country__name", "created_at")
+            .all()
+        )
+        exporter.write(data)
+
+        # delete default sheet
+        del wb[wb.sheetnames[0]]
+
+        return workbook_response("CP Reports", wb)
+
+
 class CPCalculatedAmountExportView(CPRecordListView):
     @swagger_auto_schema(
         manual_parameters=[
@@ -279,22 +317,6 @@ class CPHFCHCFCExportBaseView(views.APIView):
     def get_usages(self, year):
         raise NotImplementedError
 
-    def _get_year_params(self):
-        min_year = self.request.query_params.get("min_year")
-        max_year = self.request.query_params.get("max_year")
-
-        current_year = datetime.now().year
-        if not min_year and not max_year:
-            # set current year for min year and max year
-            min_year = current_year
-            max_year = current_year
-        if not max_year:
-            max_year = current_year
-        if not min_year:
-            min_year = 1995
-
-        return min_year, max_year
-
     def get_data(self, year, section, filter_list=None):
         if not filter_list:
             filter_list = []
@@ -360,7 +382,7 @@ class CPHCFCExportView(CPHFCHCFCExportBaseView):
         return super().get_data(year, section, filter_list)
 
     def get(self, *args, **kwargs):
-        min_year, max_year = self._get_year_params()
+        min_year, max_year = get_year_params_from_request(self.request)
         wb = openpyxl.Workbook()
 
         for year in range(int(min_year), int(max_year) + 1):
@@ -401,7 +423,7 @@ class CPHFCExportView(CPHFCHCFCExportBaseView):
         return usages["(MT)"], usages["(CO2)"]
 
     def get(self, *args, **kwargs):
-        min_year, max_year = self._get_year_params()
+        min_year, max_year = get_year_params_from_request(self.request)
         wb = openpyxl.Workbook()
 
         for year in range(int(min_year), int(max_year) + 1):
