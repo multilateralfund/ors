@@ -7,6 +7,7 @@ const SimpleInput = ({
   label,
   onChange,
   type,
+  value,
 }: {
   defaultValue?: any
   disabled?: boolean
@@ -14,6 +15,7 @@ const SimpleInput = ({
   label: string
   onChange?: (event: any) => void
   type: string
+  value?: any
 }) => {
   return (
     <div className="flex h-full flex-col justify-end">
@@ -31,6 +33,7 @@ const SimpleInput = ({
         defaultValue={defaultValue}
         disabled={disabled}
         type={type}
+        value={value}
         onChange={onChange}
       />
     </div>

@@ -145,16 +145,14 @@ const ReportInfoCreate = (props: any) => {
     isEdit,
     onSectionCheckChange,
     report,
-    reportAlreadyExists,
     section,
     sectionsChecked,
     setForm,
+    showCloneDialog,
     yearFieldProps,
   } = props
   const {
     country: user_country,
-    email,
-    full_name,
     user_type,
     username,
   } = useStore((state) => state.user.data)
@@ -171,8 +169,8 @@ const ReportInfoCreate = (props: any) => {
       },
     })
 
-  const user_fullname = isEdit ? form.report_info.reporting_entry : full_name
-  const user_email = isEdit ? form.report_info.reporting_email : email
+  const user_fullname = form.report_info.reporting_entry
+  const user_email = form.report_info.reporting_email
 
   return (
     <section className="grid items-start gap-4 md:auto-rows-auto md:grid-cols-2">
@@ -186,23 +184,23 @@ const ReportInfoCreate = (props: any) => {
         <div className="grid gap-6 md:grid-cols-2">
           <SimpleInput
             id="name_reporting_officer"
-            defaultValue={user_fullname}
             label="Name of reporting officer"
             type="text"
+            value={user_fullname}
             onChange={(event: any) => updateForm(event, 'reporting_entry')}
           />
           <SimpleInput
             id="email_reporting_officer"
-            defaultValue={user_email}
             label="Email of reporting officer"
             type="email"
+            value={user_email}
             onChange={(event: any) => updateForm(event, 'reporting_email')}
           />
         </div>
         <div className="grid gap-6 md:grid-cols-4">
           <div className="h-full w-full items-center md:col-span-3">
             <div className="flex h-full flex-col justify-end">
-              {!reportAlreadyExists && (
+              {showCloneDialog && (
                 <CloneSubstancesDialog
                   Sections={Sections}
                   form={form}

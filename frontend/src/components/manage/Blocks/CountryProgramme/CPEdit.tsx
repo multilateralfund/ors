@@ -32,8 +32,10 @@ import { useStore } from '@ors/store'
 import { getSections } from '.'
 import Portal from '../../Utils/Portal'
 import { CPEditHeader } from './CPHeader'
+import CPRestoreEdit from './CPRestoreEdit'
 import CPSectionWrapper from './CPSectionWrapper'
 import { CPBaseForm } from './typesCPCreate'
+import { useEditLocalStorage } from './useLocalStorage'
 
 import { IoClose, IoExpand } from 'react-icons/io5'
 
@@ -235,9 +237,16 @@ function CPEdit() {
   const [renderedSections, setRenderedSections] = useState<number[]>([])
 
   function handleSetForm(value: any) {
+    if (typeof value === 'function') {
+      localStorage.update(value(form))
+    } else {
+      localStorage.update(value)
+    }
     setForm(value)
     setWarnOnClose(true)
   }
+
+  const localStorage = useEditLocalStorage(report)
 
   const sections = useMemo(
     () => (variant ? getSections(variant, 'edit') : []),
@@ -354,6 +363,7 @@ function CPEdit() {
         getSubmitFormData={getSubmitFormData}
         setErrors={setErrors}
       />
+      <CPRestoreEdit localStorage={localStorage} setForm={handleSetForm} />
       <form className="create-submission-form">
         <div className="flex items-center justify-between">
           <Tabs

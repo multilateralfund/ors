@@ -39,6 +39,7 @@ import { useStore } from '@ors/store'
 import { getSections } from '.'
 import Portal from '../../Utils/Portal'
 import { CPCreateHeader } from './CPHeader'
+import CPRestoreCreate from './CPRestoreCreate'
 import CPSectionWrapper from './CPSectionWrapper'
 import ConfirmSubmission from './ConfirmSubmission'
 import SubmissionExistsDialog from './SubmissionExistsDialog'
@@ -49,6 +50,7 @@ import {
   WidgetCountry,
   WidgetYear,
 } from './typesCPCreate'
+import { useCreateLocalStorage } from './useLocalStorage'
 
 import { IoClose, IoExpand, IoLink } from 'react-icons/io5'
 
@@ -172,6 +174,7 @@ const CPCreate: React.FC = () => {
   )
   const [currentCountry, setCurrentCountry] = useState<Country | null>(null)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [usedRestore, setUsedRestore] = useState(false)
 
   const [warnOnClose, setWarnOnClose] = useState(false)
   useVisibilityChange(warnOnClose)
@@ -273,7 +276,25 @@ const CPCreate: React.FC = () => {
     }
   })
 
+  const localStorage = useCreateLocalStorage()
+
+  useEffect(
+    function () {
+      if (form?.country?.id) {
+        setCurrentCountry(
+          all_countries.filter((c) => c.id === form!.country!.id)[0],
+        )
+      }
+    },
+    [form, all_countries],
+  )
+
   function handleSetForm(value: any) {
+    if (typeof value === 'function') {
+      localStorage.update(value(form))
+    } else {
+      localStorage.update(value)
+    }
     setForm(value)
     setWarnOnClose(true)
   }
@@ -313,9 +334,6 @@ const CPCreate: React.FC = () => {
     onChange: (_event: any, value: WidgetCountry) => {
       const country = value as WidgetCountry
       handleSetForm({ ...form, country })
-      setCurrentCountry(
-        country && all_countries.filter((c) => c.id === country.id)[0],
-      )
     },
     options: countries,
     value: form.country,
@@ -447,7 +465,6 @@ const CPCreate: React.FC = () => {
         ...form,
         country: { id: country_id, label: user_country },
       })
-      setCurrentCountry(all_countries.filter((c) => c.id === country_id)[0])
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -503,6 +520,8 @@ const CPCreate: React.FC = () => {
         Sections.section_d.clearLocalStorage()
         Sections.section_e.clearLocalStorage()
         Sections.section_f.clearLocalStorage()
+        localStorage.clear()
+        setWarnOnClose(false)
         enqueueSnackbar(
           <>
             Added new submission for {form.country!.label} {form.year}.
@@ -539,6 +558,11 @@ const CPCreate: React.FC = () => {
   function handleSubmissionConfirmation() {
     setShowConfirm(false)
     getFormSubmitter('final')()
+  }
+
+  function handleRestoreData(storedData: any) {
+    setUsedRestore(true)
+    handleSetForm(storedData)
   }
 
   return (
@@ -601,6 +625,10 @@ const CPCreate: React.FC = () => {
           </div>
         }
       />
+      <CPRestoreCreate
+        localStorage={localStorage}
+        onRestore={handleRestoreData}
+      />
       <form className="create-submission-form">
         <div className="flex items-center justify-between">
           <Tabs
@@ -640,6 +668,7 @@ const CPCreate: React.FC = () => {
                 setForm(function (prev) {
                   return { ...prev, country: null }
                 })
+                localStorage.clear()
               }}
             />
           )}
@@ -705,8 +734,10 @@ const CPCreate: React.FC = () => {
                         report,
                         section,
                       }}
-                      reportAlreadyExists={
-                        !!existingReports.data?.length && currentCountry
+                      showCloneDialog={
+                        !existingReports.data?.length &&
+                        !!currentCountry &&
+                        !usedRestore
                       }
                       onSectionCheckChange={onSectionCheckChange}
                     />
