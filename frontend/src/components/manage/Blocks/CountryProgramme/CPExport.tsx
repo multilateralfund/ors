@@ -17,6 +17,8 @@ import { useStore } from '@ors/store'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
+const OPT_SUBMISSION_LOG = 'Submission log'
+
 const updateDownloadUrl = (
   exportOption: string,
   year?: null | number,
@@ -42,6 +44,9 @@ const updateDownloadUrl = (
       apiUrl = exportOption.includes('HCFC')
         ? '/api/country-programme/hcfc/export/'
         : '/api/country-programme/hfc/export/'
+      break
+    case OPT_SUBMISSION_LOG:
+      apiUrl = '/api/country-programme/reports/export/'
       break
     default:
       return
@@ -78,6 +83,9 @@ const CPExport = () => {
       selectedOption.includes('HCFC') ||
       selectedOption.includes('HFC')
     ) {
+      setMinYear(null)
+      setMaxYear(null)
+    } else if (selectedOption === OPT_SUBMISSION_LOG) {
       setMinYear(null)
       setMaxYear(null)
     }
@@ -129,6 +137,7 @@ const CPExport = () => {
             <MenuItem value="CP data extraction - HFC">
               CP data extraction - HFC
             </MenuItem>
+            <MenuItem value={OPT_SUBMISSION_LOG}>{OPT_SUBMISSION_LOG}</MenuItem>
           </Select>
         </FormControl>
 
@@ -164,7 +173,9 @@ const CPExport = () => {
 
         {/* Min/Max year select */}
         {exportOption &&
-          (exportOption.includes('HCFC') || exportOption.includes('HFC')) && (
+          (exportOption.includes('HCFC') ||
+            exportOption.includes('HFC') ||
+            exportOption === OPT_SUBMISSION_LOG) && (
             <>
               <div className="flex w-full flex-col md:w-1/4 md:min-w-28">
                 <label htmlFor="min-year">
