@@ -178,6 +178,21 @@ class TestSubstanceCreate:
         assert response.data["created_by"] == user.username
         assert response.data["group"] == group.name_alt
 
+    def test_substance_create_empty_str(self, user):
+        self.client.force_authenticate(user=user)
+        data = {
+            "name": "Test",
+            "description": "",
+            "odp": "",
+            "gwp": "",
+            "formula": "",
+        }
+        GroupFactory.create(name="Other", annex="unknown", name_alt="Other")
+        response = self.client.post(self.url, data, format="json")
+
+        assert response.status_code == 201
+        assert response.data["name"] == "Test"
+
     def test_substance_already_exists(self, user, substance):
         self.client.force_authenticate(user=user)
         data = {"name": substance.name}

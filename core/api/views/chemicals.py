@@ -154,8 +154,8 @@ class SubstancesListView(ChemicalBaseListView):
             name=name,
             group=group_other,
             description=data.get("description", ""),
-            odp=data.get("odp"),
-            gwp=data.get("gwp"),
+            odp=data.get("odp") or 0,  # allow empty string
+            gwp=data.get("gwp") or 0,  # allow empty string
             formula=data.get("formula", ""),
             created_by=request.user,
         )
