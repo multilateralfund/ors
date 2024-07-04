@@ -55,7 +55,6 @@ function CreateSubstance(props) {
           disabled={false}
           value={form.description}
           onChange={handleChangeFieldValue('description')}
-          required
         />
         <Divider className="my-4" />
         <div className="flex gap-x-4">
@@ -66,7 +65,6 @@ function CreateSubstance(props) {
             type="number"
             value={form.odp}
             onChange={handleChangeFieldValue('odp')}
-            required
           />
           <Field
             InputLabel={{ label: 'GWP' }}
@@ -74,7 +72,6 @@ function CreateSubstance(props) {
             disabled={false}
             value={form.gwp}
             onChange={handleChangeFieldValue('gwp')}
-            required
           />
         </div>
         <Field
