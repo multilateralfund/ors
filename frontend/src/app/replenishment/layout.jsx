@@ -83,7 +83,7 @@ function ReplenishmentLayoutContent(props) {
         <div>
           {currentSection?.showPeriodSelector ?? true ? (
             <PeriodSelector
-              key={currentSection.label}
+              key={currentSection?.label}
               period={period}
               periodOptions={[
                 ...(currentSection?.extraPeriodOptions ?? []),

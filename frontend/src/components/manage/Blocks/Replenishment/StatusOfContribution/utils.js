@@ -1,3 +1,10 @@
+import {
+  MAX_DECIMALS,
+  MIN_DECIMALS,
+  PRECISION,
+} from '@ors/components/manage/Blocks/Replenishment/constants'
+import { makePeriodOptions } from '@ors/components/manage/Blocks/Replenishment/utils'
+
 export const SC_COLUMNS = [
   { field: 'country', label: 'Country' },
   { field: 'agreed_contributions', label: 'Agreed Contributions' },
@@ -16,6 +23,23 @@ export const mockScAnnualOptions = () => {
   return options
 }
 
+export function mockSCPeriodOptions(periods) {
+  const options = periods.length > 1 ? periods.slice(1) : periods.slice(0)
+
+  const fillFrom = 1991
+  const fillTo =
+    (options.length ? options[options.length - 1].start_year : 2023) - 1
+
+  for (let y = fillTo; y >= fillFrom; y--) {
+    if ((fillTo - y) % 3 === 0) {
+      options.push({ end_year: y, start_year: y - 2 })
+      y -= 2
+    }
+  }
+
+  return makePeriodOptions(options)
+}
+
 export function transformData(data) {
   const rows = []
 
@@ -32,4 +56,32 @@ export function transformData(data) {
   }
 
   return rows
+}
+
+export function formatTableRows(rows) {
+  const result = new Array(rows.length)
+
+  for (let i = 0; i < rows.length; i++) {
+    result[i] = {}
+
+    const keys = Object.keys(rows[i])
+
+    for (let j = 0; j < keys.length; j++) {
+      const key = keys[j]
+      const value = rows[i][key]
+
+      switch (typeof value) {
+        case 'number':
+          result[i][key] = value.toLocaleString('en-US', {
+            maximumFractionDigits: MAX_DECIMALS,
+            minimumFractionDigits: MIN_DECIMALS,
+          })
+          break
+        default:
+          result[i][key] = value
+      }
+    }
+  }
+
+  return result
 }
