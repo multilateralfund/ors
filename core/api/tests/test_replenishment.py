@@ -426,10 +426,29 @@ class TestStatusOfContributions(BaseTest):
         }
 
     def test_status_of_contributions_country_user(self, country_user):
-        ContributionStatusFactory.create()
-        ContributionStatusFactory.create()
-        DisputedContributionsFactory.create()
-        FermGainLossFactory.create()
+        country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
+        country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
+        year_1 = 2020
+        year_2 = 2021
+
+        ContributionStatusFactory.create(
+            country=country_1, year=year_1
+        )
+        ContributionStatusFactory.create(
+            country=country_1, year=year_2
+        )
+        ContributionStatusFactory.create(
+            country=country_2, year=year_1
+        )
+        ContributionStatusFactory.create(
+            country=country_2, year=year_2
+        )
+
+        DisputedContributionsFactory.create(year=year_1)
+        DisputedContributionsFactory.create(year=year_2)
+
+        FermGainLossFactory.create(country=country_1)
+        FermGainLossFactory.create(country=country_2)
 
         self.client.force_authenticate(user=country_user)
 
