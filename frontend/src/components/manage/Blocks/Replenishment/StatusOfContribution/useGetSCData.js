@@ -49,17 +49,20 @@ function useGetSCData(start_year, end_year) {
         {
           agreed_contributions: data.disputed_contributions,
           country: 'Disputed Contributions ***',
+          outstanding_contributions: data.disputed_contributions,
         },
         {
           agreed_contributions: data.total?.agreed_contributions_with_disputed,
           country: 'Total',
+          outstanding_contributions:
+            data.total?.outstanding_contributions_with_disputed,
         },
       ]
     },
     [data],
   )
 
-  return {data, extraRows, loading, rows}
+  return { data, extraRows, loading, rows }
 }
 
 export default useGetSCData

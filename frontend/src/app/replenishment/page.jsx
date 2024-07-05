@@ -5,5 +5,5 @@ export const metadata = {
 }
 
 export default async function Replenishment() {
-  redirect('/replenishment/scale-of-assessment')
+  redirect('/replenishment/dashboard')
 }

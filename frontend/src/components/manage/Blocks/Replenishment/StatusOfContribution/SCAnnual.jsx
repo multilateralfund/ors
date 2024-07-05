@@ -1,7 +1,10 @@
 'use client'
 
 import useGetSCData from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/useGetSCData'
-import { SC_COLUMNS } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
+import {
+  SC_COLUMNS,
+  formatTableRows,
+} from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import Table from '@ors/components/manage/Blocks/Replenishment/Table'
 
 export default function SCAnnual({ year }) {
@@ -12,8 +15,8 @@ export default function SCAnnual({ year }) {
       columns={SC_COLUMNS}
       enableEdit={false}
       enableSort={false}
-      extraRows={extraRows}
-      rowData={rows}
+      extraRows={formatTableRows(extraRows)}
+      rowData={formatTableRows(rows)}
       textPosition="center"
     />
   )

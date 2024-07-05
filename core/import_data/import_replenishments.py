@@ -5,7 +5,7 @@ from decimal import Decimal
 import pandas as pd
 from django.db import transaction
 
-from core.models import Replenishment, Country, Contribution
+from core.models import Replenishment, Contribution
 from core.import_data.utils import (
     IMPORT_RESOURCES_DIR,
     delete_old_data,
@@ -59,14 +59,12 @@ def string_converter(value):
 
 
 @transaction.atomic
-def import_replenishments():
+def import_replenishments(countries):
     """
     Import past replenishments (2024-2026).
     """
     delete_old_data(Contribution)
     delete_old_data(Replenishment)
-
-    countries = {country.name: country for country in Country.objects.all()}
 
     for start_year, end_year in REPLENISHMENT_YEARS:
         scale_of_assessment_df = pd.read_excel(

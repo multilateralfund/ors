@@ -1,18 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import { makePeriodOptions } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { formatApiUrl } from '@ors/helpers/Api/utils'
 
 import ReplenishmentContext from './ReplenishmentContext'
-
-function makePeriodOptions(periods) {
-  const result = []
-  for (let i = 0; i < periods.length; i++) {
-    const labelComponents = [periods[i].start_year, periods[i].end_year]
-    const label = labelComponents.join('-')
-    result.push({ label, value: label })
-  }
-  return result
-}
 
 function filterCountries(countries) {
   const result = []

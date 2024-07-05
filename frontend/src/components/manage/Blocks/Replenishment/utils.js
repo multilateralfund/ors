@@ -2,6 +2,16 @@ import { MAX_DECIMALS, MIN_DECIMALS } from './constants'
 
 const RE_PERIOD_OR_YEAR = new RegExp(/(\d{4}-\d{4})|(\d{4})/)
 
+export function makePeriodOptions(periods) {
+  const result = []
+  for (let i = 0; i < periods.length; i++) {
+    const labelComponents = [periods[i].start_year, periods[i].end_year]
+    const label = labelComponents.join('-')
+    result.push({ label, value: label })
+  }
+  return result
+}
+
 export function getPathPeriod(path) {
   let result = null
   const candidate = path.split('/').at(-1)

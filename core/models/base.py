@@ -81,3 +81,10 @@ class AbstractWChemical(models.Model):
 
     class Meta:
         abstract = True
+
+
+class AbstractSingleton(models.Model):
+    _singleton = models.BooleanField(default=True, editable=False, unique=True)
+
+    class Meta:
+        abstract = True
