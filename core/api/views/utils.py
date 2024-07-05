@@ -93,15 +93,58 @@ def get_archive_reports_final_for_year(year):
     return archive_reports
 
 
-def get_final_records_for_year(year, filter_list=None):
+def get_archive_reports_final_for_years(min_year, max_year):
     """
-    Get all the final records for the year with the given filters
+    Get the max version for each archive report that does not have a final report
+    This will take into account the range of years [min_year, max_year]
+
+    @param min_year: min year
+    @param max_year: max year
+
+    @return: list of archive reports (country_id, year, max_version)
+    """
+    current_reports = (
+        CPReport.objects.filter(
+            year__gte=min_year,
+            year__lte=max_year,
+            status=CPReport.CPReportStatus.FINAL,
+        )
+        .values_list("country_id", "year")
+        .all()
+    )
+
+    # get the max version for each archive report (country&yuear)
+    # that does not have a final report
+    archive_reports_q = CPReportArchive.objects.filter(
+        year__gte=min_year,
+        year__lte=max_year,
+        status=CPReport.CPReportStatus.FINAL,
+    )
+    # exclude the current reports
+    for country, year in current_reports:
+        archive_reports_q = archive_reports_q.exclude(
+            country_id=country,
+            year=year,
+        )
+
+    return (
+        archive_reports_q.values("country_id", "year")
+        .annotate(max_version=models.Max("version"))
+        .values_list("country_id", "year", "max_version")
+        .all()
+    )
+
+
+def get_final_records_for_years(min_year, max_year, filter_list=None):
+    """
+    Get all the final records for the years in the range [min_year, max_year]
      - first get the final records for the countries that have a final report (CPReport)
      - then get the max version for each archive report that does not have a final report
      - get all the records for the archive reports
      - union the final records with the archive records
 
-    @param year: year
+    @param min_year: min year
+    @param max_year: max year
     @param filter_list: list of filters to apply to the records
 
     @return: list of records (CPRecord objects and CPRecordArchive objects)
@@ -109,20 +152,29 @@ def get_final_records_for_year(year, filter_list=None):
     if not filter_list:
         filter_list = []
 
-    final_records = CPRecord.objects.get_for_year(year).filter(
-        country_programme_report__status=CPReport.CPReportStatus.FINAL,
-        *filter_list,
+    final_records = (
+        CPRecord.objects.get_for_years(min_year, max_year)
+        .filter(
+            country_programme_report__status=CPReport.CPReportStatus.FINAL,
+            *filter_list,
+        )
+        .order_by(
+            "country_programme_report__year",
+            "country_programme_report__country__name",
+            "substance__sort_order",
+            "blend__sort_order",
+        )
     )
 
     # get the max version for each archive report that does not have a final report
-    archive_reports = get_archive_reports_final_for_year(year)
+    archive_reports = get_archive_reports_final_for_years(min_year, max_year)
 
     if not archive_reports:
         return list(final_records)
 
     # get all the records for the archive reports
     archive_records = (
-        CPRecordArchive.objects.get_for_year(year)
+        CPRecordArchive.objects.get_for_years(min_year, max_year)
         .filter(
             *filter_list,
         )
@@ -130,12 +182,19 @@ def get_final_records_for_year(year, filter_list=None):
             # get the records for the max version of the archive reports
             *[
                 models.Q(
-                    country_programme_report__version=v,
                     country_programme_report__country_id=c,
+                    country_programme_report__year=y,
+                    country_programme_report__version=v,
                 )
-                for c, v in archive_reports
+                for c, y, v in archive_reports
             ],
             _connector=models.Q.OR,
+        )
+        .order_by(
+            "country_programme_report__year",
+            "country_programme_report__country__name",
+            "substance__sort_order",
+            "blend__sort_order",
         )
     )
 
