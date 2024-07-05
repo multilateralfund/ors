@@ -114,25 +114,29 @@ class StatusOfContributionsView(views.APIView):
         data["status_of_contributions"] = (
             contribution_status_qs.values("country__name")
             .annotate(
-                agreed_contributions=models.Sum("agreed_contributions"),
-                cash_payments=models.Sum("cash_payments"),
-                bilateral_assistance=models.Sum("bilateral_assistance"),
-                promissory_notes=models.Sum("promissory_notes"),
-                outstanding_contributions=models.Sum("outstanding_contributions"),
+                agreed_contributions=models.Sum("agreed_contributions", default=0),
+                cash_payments=models.Sum("cash_payments", default=0),
+                bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+                promissory_notes=models.Sum("promissory_notes", default=0),
+                outstanding_contributions=models.Sum(
+                    "outstanding_contributions", default=0
+                ),
                 gain_loss=models.F("country__ferm_gain_loss__amount"),
             )
             .order_by("country__name")
         )
 
         disputed_contributions_total = disputed_contributions_qs.aggregate(
-            total=models.Sum("amount")
+            total=models.Sum("amount", default=0)
         )["total"]
         data["total"] = contribution_status_qs.aggregate(
-            agreed_contributions=models.Sum("agreed_contributions"),
-            cash_payments=models.Sum("cash_payments"),
-            bilateral_assistance=models.Sum("bilateral_assistance"),
-            promissory_notes=models.Sum("promissory_notes"),
-            outstanding_contributions=models.Sum("outstanding_contributions"),
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
         )
 
         data["total"]["agreed_contributions_with_disputed"] = (
