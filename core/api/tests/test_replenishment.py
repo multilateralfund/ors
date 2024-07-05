@@ -176,7 +176,15 @@ class TestStatusOfContributions(BaseTest):
         assert response.data == {
             "status_of_contributions": [
                 {
-                    "country__name": country_1.name,
+                    "country": {
+                        "id": country_1.id,
+                        "name": country_1.name,
+                        "abbr": country_1.abbr,
+                        "name_alt": country_1.name_alt,
+                        "iso3": country_1.iso3,
+                        "has_cp_report": None,
+                        "is_a2": country_1.is_a2,
+                    },
                     "agreed_contributions": (
                         contribution_1.agreed_contributions
                         + contribution_2.agreed_contributions
@@ -201,7 +209,15 @@ class TestStatusOfContributions(BaseTest):
                     ),
                 },
                 {
-                    "country__name": country_2.name,
+                    "country": {
+                        "id": country_2.id,
+                        "name": country_2.name,
+                        "abbr": country_2.abbr,
+                        "name_alt": country_2.name_alt,
+                        "iso3": country_2.iso3,
+                        "has_cp_report": None,
+                        "is_a2": country_2.is_a2,
+                    },
                     "agreed_contributions": (
                         contribution_3.agreed_contributions
                         + contribution_4.agreed_contributions
@@ -318,7 +334,15 @@ class TestStatusOfContributions(BaseTest):
         assert response.data == {
             "status_of_contributions": [
                 {
-                    "country__name": country_1.name,
+                    "country": {
+                        "id": country_1.id,
+                        "name": country_1.name,
+                        "abbr": country_1.abbr,
+                        "name_alt": country_1.name_alt,
+                        "iso3": country_1.iso3,
+                        "has_cp_report": None,
+                        "is_a2": country_1.is_a2,
+                    },
                     "agreed_contributions": contribution_1.agreed_contributions.quantize(
                         self.fifteen_decimals
                     ),
@@ -339,7 +363,15 @@ class TestStatusOfContributions(BaseTest):
                     ),
                 },
                 {
-                    "country__name": country_2.name,
+                    "country": {
+                        "id": country_2.id,
+                        "name": country_2.name,
+                        "abbr": country_2.abbr,
+                        "name_alt": country_2.name_alt,
+                        "iso3": country_2.iso3,
+                        "has_cp_report": None,
+                        "is_a2": country_2.is_a2,
+                    },
                     "agreed_contributions": contribution_3.agreed_contributions.quantize(
                         self.fifteen_decimals
                     ),
