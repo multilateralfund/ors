@@ -1,4 +1,13 @@
+'use client'
+
+import { useState } from 'react'
+
 import cx from 'classnames'
+
+import { SubmitButton } from '@ors/components/ui/Button/Button'
+
+import FormDialog from './FormDialog'
+import { Input } from './Inputs'
 
 const DATA_INCOME = {
   bilateral_cooperation: '187,767,175',
@@ -107,11 +116,112 @@ function CashCard(props) {
   )
 }
 
+function InputField(props) {
+  const { id, className, label, ...fieldProps } = props
+  return (
+    <div className="flex w-72 flex-col">
+      <label htmlFor={id}>
+        <div className="flex flex-col text-primary">
+          <span className="font-medium">{label}</span>
+        </div>
+      </label>
+      <Input
+        id={id}
+        className={cx('!ml-0', className)}
+        type="number"
+        {...fieldProps}
+      />
+    </div>
+  )
+}
+
+function EditStatusDialog(props) {
+  const { ...dialogProps } = props
+  return (
+    <FormDialog title="Status of the fund:" {...dialogProps}>
+      <div className="flex flex-col gap-y-4">
+        <h3 className="m-0 uppercase">Income</h3>
+        <div className="flex gap-x-4">
+          <InputField id="interestEarned" label="Interest earned" />
+          <InputField id="miscIncome" label="Miscellaneous income" />
+        </div>
+        <h3 className="m-0 my-4 uppercase">Allocations ands provisions</h3>
+        <div className="flex gap-x-4">
+          <InputField id="undp" label="UNDP" />
+          <InputField id="unep" label="UNEP" />
+        </div>
+        <div className="flex gap-x-4">
+          <InputField id="unido" label="UNIDO" />
+          <InputField id="worldBank" label="World Bank" />
+        </div>
+        <div className="flex gap-x-4">
+          <InputField id="unido" label="UNIDO" />
+          <InputField id="worldBank" label="World Bank" />
+        </div>
+
+        <div className="my-4 border border-x-0 border-b-0 border-solid border-gray-200"></div>
+
+        <div className="flex gap-x-4">
+          <InputField
+            id="secretariatCosts"
+            label="Secretariat and Executive Committee costs"
+          />
+          <InputField
+            id="monitoringCosts"
+            label="Monitoring and Evaluation costs"
+          />
+        </div>
+
+        <div className="flex gap-x-4">
+          <InputField id="isCosts" label="Information Strategy costs " />
+          <InputField id="bilateralCooperation" label="Bilateral cooperation" />
+        </div>
+
+        <div className="flex gap-x-4">
+          <InputField
+            id="provisionFerm"
+            label="Provision for FERM fluctuations"
+          />
+        </div>
+      </div>
+    </FormDialog>
+  )
+}
+
 function DashboardView() {
+  const [showEdit, setShowEdit] = useState(false)
+
+  function handleEditClick() {
+    setShowEdit(!showEdit)
+  }
+
+  function handleEditCancel() {
+    setShowEdit(false)
+  }
+
+  function handleEditSubmit(data) {
+    console.log(data)
+    setShowEdit(false)
+  }
+
   return (
     <>
-      <h2 className="m-0 text-3xl">STATUS OF THE FUND</h2>
-      <p className="m-0 text-xl">as of 15 May 2024 ( US Dollars )</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="m-0 text-3xl">STATUS OF THE FUND</h2>
+          <p className="m-0 text-xl">as of 15 May 2024 ( US Dollars )</p>
+        </div>
+        <SubmitButton className="tracking-widest" onClick={handleEditClick}>
+          Edit
+        </SubmitButton>
+      </div>
+
+      {showEdit ? (
+        <EditStatusDialog
+          onCancel={handleEditCancel}
+          onSubmit={handleEditSubmit}
+        />
+      ) : null}
 
       <div className="flex">
         <div className="w-7/12">
