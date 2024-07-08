@@ -4,17 +4,17 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, mixins, views
 from rest_framework.response import Response
 
-from core.api.filters.replenishments import ContributionFilter
+from core.api.filters.replenishments import ScaleOfAssessmentFilter
 from core.api.serializers import (
     CountrySerializer,
     ReplenishmentSerializer,
-    ContributionSerializer,
+    ScaleOfAssessmentSerializer,
 )
 from core.models import (
     Country,
     Replenishment,
-    Contribution,
-    ContributionStatus,
+    ScaleOfAssessment,
+    AnnualContributionStatus,
     DisputedContribution,
 )
 
@@ -54,17 +54,17 @@ class ContributionViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     Viewset for all contributions that are available.
     """
 
-    model = Contribution
-    filterset_class = ContributionFilter
-    serializer_class = ContributionSerializer
+    model = ScaleOfAssessment
+    filterset_class = ScaleOfAssessmentFilter
+    serializer_class = ScaleOfAssessmentSerializer
 
     def get_queryset(self):
         user = self.request.user
         if user.user_type == user.UserType.SECRETARIAT:
-            return Contribution.objects.select_related(
+            return ScaleOfAssessment.objects.select_related(
                 "country", "replenishment"
             ).order_by("country__name")
-        return Contribution.objects.none()
+        return ScaleOfAssessment.objects.none()
 
 
 class StatusOfContributionsView(views.APIView):
@@ -93,8 +93,8 @@ class StatusOfContributionsView(views.APIView):
 
         data = {}
         disputed_contributions_qs = DisputedContribution.objects.all()
-        contribution_status_qs = ContributionStatus.objects.all()
-        country_filter = models.Q(contributions_status__isnull=False)
+        contribution_status_qs = AnnualContributionStatus.objects.all()
+        country_filter = models.Q(annual_contributions_status__isnull=False)
 
         if request.query_params.get("start_year"):
             disputed_contributions_qs = disputed_contributions_qs.filter(
@@ -104,7 +104,7 @@ class StatusOfContributionsView(views.APIView):
                 year__gte=request.query_params["start_year"]
             )
             country_filter &= models.Q(
-                contributions_status__year__gte=request.query_params["start_year"]
+                annual_contributions_status__year__gte=request.query_params["start_year"]
             )
 
         if request.query_params.get("end_year"):
@@ -115,7 +115,7 @@ class StatusOfContributionsView(views.APIView):
                 year__lte=request.query_params["end_year"]
             )
             country_filter &= models.Q(
-                contributions_status__year__lte=request.query_params["end_year"]
+                annual_contributions_status__year__lte=request.query_params["end_year"]
             )
 
         data["status_of_contributions"] = [
@@ -129,23 +129,23 @@ class StatusOfContributionsView(views.APIView):
                 "gain_loss": country.gain_loss,
             }
             for country in Country.objects.filter(country_filter)
-            .prefetch_related("contributions_status")
+            .prefetch_related("annual_contributions_status")
             .select_related("ferm_gain_loss")
             .annotate(
                 agreed_contributions=models.Sum(
-                    "contributions_status__agreed_contributions", default=0
+                    "annual_contributions_status__agreed_contributions", default=0
                 ),
                 cash_payments=models.Sum(
-                    "contributions_status__cash_payments", default=0
+                    "annual_contributions_status__cash_payments", default=0
                 ),
                 bilateral_assistance=models.Sum(
-                    "contributions_status__bilateral_assistance", default=0
+                    "annual_contributions_status__bilateral_assistance", default=0
                 ),
                 promissory_notes=models.Sum(
-                    "contributions_status__promissory_notes", default=0
+                    "annual_contributions_status__promissory_notes", default=0
                 ),
                 outstanding_contributions=models.Sum(
-                    "contributions_status__outstanding_contributions", default=0
+                    "annual_contributions_status__outstanding_contributions", default=0
                 ),
                 gain_loss=models.F("ferm_gain_loss__amount"),
             )

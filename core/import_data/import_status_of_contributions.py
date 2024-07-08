@@ -5,7 +5,7 @@ import pandas as pd
 from django.db import transaction
 
 from core.import_data.utils import IMPORT_RESOURCES_DIR, delete_old_data
-from core.models import ContributionStatus, DisputedContribution, FermGainLoss
+from core.models import AnnualContributionStatus, DisputedContribution, FermGainLoss
 
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ COUNTRY_MAPPING = {
 }
 
 # Indices are 1-based like in Excel for easier comparison
-STATUS_OF_CONTRIBUTIONS_SHEET_INFO = {
+ANNUAL_STATUS_OF_CONTRIBUTIONS_SHEET_INFO = {
     1991: {
         "cols": "A:F",
         "start_row": 7,
@@ -242,16 +242,6 @@ STATUS_OF_CONTRIBUTIONS_SHEET_INFO = {
     },
 }
 
-CONTRIBUTION_AMOUNT_MODIFIER = {
-    1996: {
-        "FRA": decimal.Decimal("-693288"),
-        "DEU": decimal.Decimal("-171486"),
-        "ITA": decimal.Decimal("-1568782"),
-        "JPN": decimal.Decimal("-5164674"),
-        "GBR": decimal.Decimal("-500037"),
-    }
-}
-
 
 def decimal_converter(value):
     try:
@@ -266,13 +256,14 @@ def import_status_of_contributions(countries):
     Import the status of contributions
     """
 
-    delete_old_data(ContributionStatus)
+    delete_old_data(AnnualContributionStatus)
     delete_old_data(DisputedContribution)
     delete_old_data(FermGainLoss)
 
     soc_file = pd.ExcelFile(IMPORT_RESOURCES_DIR / "9303p2.xlsx")
 
-    for year, info in STATUS_OF_CONTRIBUTIONS_SHEET_INFO.items():
+    # Import annual contributions
+    for year, info in ANNUAL_STATUS_OF_CONTRIBUTIONS_SHEET_INFO.items():
         contributions_status_objects = []
         status_of_contributions_df = soc_file.parse(
             sheet_name=f"YR{year}",
@@ -298,21 +289,10 @@ def import_status_of_contributions(countries):
                 COUNTRY_MAPPING.get(country_name_sheet, country_name_sheet)
             ]
 
-            agreed_contributions = row["Agreed Contributions"]
-            if (
-                year in CONTRIBUTION_AMOUNT_MODIFIER
-                and country.iso3 in CONTRIBUTION_AMOUNT_MODIFIER[year]
-            ):
-                modifier = CONTRIBUTION_AMOUNT_MODIFIER[year][country.iso3]
-                logger.info(
-                    f"Applying modifier for {country.name} in {year}: {modifier}"
-                )
-                agreed_contributions += modifier
-
-            contribution_status = ContributionStatus(
+            contribution_status = AnnualContributionStatus(
                 year=year,
                 country=country,
-                agreed_contributions=agreed_contributions,
+                agreed_contributions=row["Agreed Contributions"],
                 cash_payments=row["Cash Payments"],
                 bilateral_assistance=row["Bilateral Assistance"],
                 promissory_notes=row["Promissory Notes"],
@@ -320,15 +300,16 @@ def import_status_of_contributions(countries):
             )
             contributions_status_objects.append(contribution_status)
 
-        ContributionStatus.objects.bulk_create(contributions_status_objects)
+        AnnualContributionStatus.objects.bulk_create(contributions_status_objects)
 
         logger.info(
-            f"Imported ({len(contributions_status_objects)}) Status of Contributions for {year}"
+            f"Imported ({len(contributions_status_objects)}) Annual Status of Contributions for {year}"
         )
 
         if info.get("disputed_contributions") is None:
             continue
 
+        # Disputed contributions annual data checks out with the Excel file
         disputed_contributions_info = info["disputed_contributions"]
         disputed_contributions_df = soc_file.parse(
             sheet_name=f"YR{year}",

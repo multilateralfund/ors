@@ -1,7 +1,7 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
 from django.contrib import admin
 
-from core.models import Replenishment, Contribution, Invoice, Payment
+from core.models import Replenishment, ScaleOfAssessment, Invoice, Payment
 
 
 @admin.register(Replenishment)
@@ -14,7 +14,7 @@ class ReplenishmentAdmin(admin.ModelAdmin):
     list_filter = ["start_year", "end_year", "amount"]
 
 
-@admin.register(Contribution)
+@admin.register(ScaleOfAssessment)
 class ContributionAdmin(admin.ModelAdmin):
     search_fields = [
         "country__name",

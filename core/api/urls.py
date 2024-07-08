@@ -96,9 +96,9 @@ router.register(
     basename="replenishment-replenishments",
 )
 router.register(
-    "replenishment/contributions",
+    "replenishment/scales-of-assessment",
     ContributionViewSet,
-    basename="replenishment-contributions",
+    basename="replenishment-scales-of-assessment",
 )
 
 

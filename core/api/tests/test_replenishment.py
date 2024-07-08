@@ -7,8 +7,8 @@ from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
     CountryFactory,
     ReplenishmentFactory,
-    ContributionFactory,
-    ContributionStatusFactory,
+    ScaleOfAssessmentFactory,
+    AnnualContributionStatusFactory,
     DisputedContributionsFactory,
     FermGainLossFactory,
 )
@@ -77,18 +77,18 @@ class TestReplenishments(BaseTest):
         assert len(response.data) == 0
 
 
-class TestContributions(BaseTest):
-    url = reverse("replenishment-contributions-list")
+class TestScalesOfAssessment(BaseTest):
+    url = reverse("replenishment-scales-of-assessment")
 
-    def test_contributions_list(self, user):
+    def test_scales_of_assessment_list(self, user):
         replenishment_1 = ReplenishmentFactory.create(start_year=2018, end_year=2020)
         replenishment_2 = ReplenishmentFactory.create(start_year=2021, end_year=2023)
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
-        contribution_1 = ContributionFactory.create(
+        contribution_1 = ScaleOfAssessmentFactory.create(
             country=country_1, replenishment=replenishment_1
         )
-        contribution_2 = ContributionFactory.create(
+        contribution_2 = ScaleOfAssessmentFactory.create(
             country=country_2, replenishment=replenishment_2
         )
 
@@ -112,11 +112,11 @@ class TestContributions(BaseTest):
             == contribution_2.override_adjusted_scale_of_assessment
         )
 
-    def test_contributions_list_filtered(self, user):
+    def test_scales_of_assessment_list_filtered(self, user):
         replenishment_1 = ReplenishmentFactory.create(start_year=2018, end_year=2020)
         replenishment_2 = ReplenishmentFactory.create(start_year=2021, end_year=2023)
-        contribution_1 = ContributionFactory.create(replenishment=replenishment_1)
-        ContributionFactory.create(replenishment=replenishment_2)
+        contribution_1 = ScaleOfAssessmentFactory.create(replenishment=replenishment_1)
+        ScaleOfAssessmentFactory.create(replenishment=replenishment_2)
 
         self.client.force_authenticate(user=user)
 
@@ -130,11 +130,11 @@ class TestContributions(BaseTest):
             == replenishment_1.start_year
         )
 
-    def test_contributions_list_country_user(self, country_user):
+    def test_scales_of_assessment_list_country_user(self, country_user):
         replenishment_1 = ReplenishmentFactory.create(start_year=2018, end_year=2020)
         replenishment_2 = ReplenishmentFactory.create(start_year=2021, end_year=2023)
-        ContributionFactory.create(replenishment=replenishment_1)
-        ContributionFactory.create(replenishment=replenishment_2)
+        ScaleOfAssessmentFactory.create(replenishment=replenishment_1)
+        ScaleOfAssessmentFactory.create(replenishment=replenishment_2)
 
         self.client.force_authenticate(user=country_user)
 
@@ -153,16 +153,16 @@ class TestStatusOfContributions(BaseTest):
         year_1 = 2020
         year_2 = 2021
 
-        contribution_1 = ContributionStatusFactory.create(
+        contribution_1 = AnnualContributionStatusFactory.create(
             country=country_1, year=year_1
         )
-        contribution_2 = ContributionStatusFactory.create(
+        contribution_2 = AnnualContributionStatusFactory.create(
             country=country_1, year=year_2
         )
-        contribution_3 = ContributionStatusFactory.create(
+        contribution_3 = AnnualContributionStatusFactory.create(
             country=country_2, year=year_1
         )
-        contribution_4 = ContributionStatusFactory.create(
+        contribution_4 = AnnualContributionStatusFactory.create(
             country=country_2, year=year_2
         )
 
@@ -311,14 +311,14 @@ class TestStatusOfContributions(BaseTest):
         year_1 = 2020
         year_2 = 2021
 
-        contribution_1 = ContributionStatusFactory.create(
+        contribution_1 = AnnualContributionStatusFactory.create(
             country=country_1, year=year_1
         )
-        ContributionStatusFactory.create(country=country_1, year=year_2)
-        contribution_3 = ContributionStatusFactory.create(
+        AnnualContributionStatusFactory.create(country=country_1, year=year_2)
+        contribution_3 = AnnualContributionStatusFactory.create(
             country=country_2, year=year_1
         )
-        ContributionStatusFactory.create(country=country_2, year=year_2)
+        AnnualContributionStatusFactory.create(country=country_2, year=year_2)
 
         disputed_1 = DisputedContributionsFactory.create(year=year_1)
         DisputedContributionsFactory.create(year=year_2)
@@ -437,10 +437,10 @@ class TestStatusOfContributions(BaseTest):
         year_1 = 2020
         year_2 = 2021
 
-        ContributionStatusFactory.create(country=country_1, year=year_1)
-        ContributionStatusFactory.create(country=country_1, year=year_2)
-        ContributionStatusFactory.create(country=country_2, year=year_1)
-        ContributionStatusFactory.create(country=country_2, year=year_2)
+        AnnualContributionStatusFactory.create(country=country_1, year=year_1)
+        AnnualContributionStatusFactory.create(country=country_1, year=year_2)
+        AnnualContributionStatusFactory.create(country=country_2, year=year_1)
+        AnnualContributionStatusFactory.create(country=country_2, year=year_2)
 
         DisputedContributionsFactory.create(year=year_1)
         DisputedContributionsFactory.create(year=year_2)

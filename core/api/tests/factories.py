@@ -3,8 +3,8 @@ from django.contrib.auth import get_user_model
 
 from core.models import (
     Replenishment,
-    Contribution,
-    ContributionStatus,
+    ScaleOfAssessment,
+    AnnualContributionStatus,
     DisputedContribution,
     FermGainLoss,
 )
@@ -489,9 +489,9 @@ class ReplenishmentFactory(factory.django.DjangoModelFactory):
     amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
 
 
-class ContributionFactory(factory.django.DjangoModelFactory):
+class ScaleOfAssessmentFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Contribution
+        model = ScaleOfAssessment
 
     country = factory.SubFactory(CountryFactory)
     replenishment = factory.SubFactory(ReplenishmentFactory)
@@ -508,9 +508,9 @@ class ContributionFactory(factory.django.DjangoModelFactory):
     override_qualifies_for_fixed_rate_mechanism = factory.Faker("pybool")
 
 
-class ContributionStatusFactory(factory.django.DjangoModelFactory):
+class AnnualContributionStatusFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = ContributionStatus
+        model = AnnualContributionStatus
 
     country = factory.SubFactory(CountryFactory)
     year = factory.Faker("random_int", min=2000, max=2024)
