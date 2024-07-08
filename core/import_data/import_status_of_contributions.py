@@ -5,7 +5,12 @@ import pandas as pd
 from django.db import transaction
 
 from core.import_data.utils import IMPORT_RESOURCES_DIR, delete_old_data
-from core.models import AnnualContributionStatus, DisputedContribution, FermGainLoss
+from core.models import (
+    AnnualContributionStatus,
+    DisputedContribution,
+    FermGainLoss,
+    TriennialContributionStatus,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -242,6 +247,64 @@ ANNUAL_STATUS_OF_CONTRIBUTIONS_SHEET_INFO = {
     },
 }
 
+TRIENNIAL_STATUS_OF_CONTRIBUTIONS_SHEET_INFO = {
+    (1991, 1993): {
+        "cols": "A:F",
+        "start_row": 7,
+        "end_row": 58,
+    },
+    (1994, 1996): {
+        "cols": "A:F",
+        "start_row": 7,
+        "end_row": 58,
+    },
+    (1997, 1999): {
+        "cols": "A:F",
+        "start_row": 7,
+        "end_row": 58,
+    },
+    (2000, 2002): {
+        "cols": "A:F",
+        "start_row": 7,
+        "end_row": 50,
+    },
+    (2003, 2005): {
+        "cols": "A:F",
+        "start_row": 7,
+        "end_row": 50,
+    },
+    (2006, 2008): {
+        "cols": "A:F",
+        "start_row": 8,
+        "end_row": 53,
+    },
+    (2009, 2011): {
+        "cols": "A:F",
+        "start_row": 8,
+        "end_row": 55,
+    },
+    (2012, 2014): {
+        "cols": "A:F",
+        "start_row": 8,
+        "end_row": 57,
+    },
+    (2015, 2017): {
+        "cols": "A:F",
+        "start_row": 8,
+        "end_row": 57,
+    },
+    (2018, 2020): {
+        "cols": "A:F",
+        "start_row": 8,
+        "end_row": 57,
+    },
+    (2021, 2023): {
+        "cols": "A:F",
+        "start_row": 8,
+        "end_row": 57,
+    },
+}
+
 
 def decimal_converter(value):
     try:
@@ -257,6 +320,7 @@ def import_status_of_contributions(countries):
     """
 
     delete_old_data(AnnualContributionStatus)
+    delete_old_data(TriennialContributionStatus)
     delete_old_data(DisputedContribution)
     delete_old_data(FermGainLoss)
 
@@ -325,6 +389,53 @@ def import_status_of_contributions(countries):
         )
         logger.info(
             f"Imported Disputed Contributions for {year}, amount {disputed_contributions_df.iloc[0, 0]}"
+        )
+
+    # Import triennial contributions
+    for (
+        start_year,
+        end_year,
+    ), info in TRIENNIAL_STATUS_OF_CONTRIBUTIONS_SHEET_INFO.items():
+        contributions_status_objects = []
+        status_of_contributions_df = soc_file.parse(
+            sheet_name=f"YR{start_year}_{str(end_year)[-2:]}",
+            usecols=info["cols"],
+            skiprows=info["start_row"] - 1,
+            nrows=info["end_row"] - info["start_row"],
+            converters={
+                "Party": str,
+                "Agreed Contributions": decimal_converter,
+                "Cash Payments": decimal_converter,
+                "Bilateral Assistance": decimal_converter,
+                "Promissory Notes": decimal_converter,
+                "Outstanding Contributions": decimal_converter,
+            },
+        )
+
+        for _, row in status_of_contributions_df.iterrows():
+            country_name_sheet = (
+                row["Party"].replace("(*)", "").replace("*", "").strip()
+            )
+            country = countries[
+                COUNTRY_MAPPING.get(country_name_sheet, country_name_sheet)
+            ]
+
+            contribution_status = TriennialContributionStatus(
+                start_year=start_year,
+                end_year=end_year,
+                country=country,
+                agreed_contributions=row["Agreed Contributions"],
+                cash_payments=row["Cash Payments"],
+                bilateral_assistance=row["Bilateral Assistance"],
+                promissory_notes=row["Promissory Notes"],
+                outstanding_contributions=row["Outstanding Contributions"],
+            )
+            contributions_status_objects.append(contribution_status)
+
+        TriennialContributionStatus.objects.bulk_create(contributions_status_objects)
+
+        logger.info(
+            f"Imported ({len(contributions_status_objects)}) Triennial Status of Contributions for {start_year}-{end_year}"
         )
 
     ferm_gain_loss_objects = []

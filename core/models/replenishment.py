@@ -217,7 +217,7 @@ class AnnualContributionStatus(AbstractContributionStatus):
         ]
 
 
-class TriennialContributionsStatus(AbstractContributionStatus):
+class TriennialContributionStatus(AbstractContributionStatus):
     country = models.ForeignKey(
         Country,
         on_delete=models.PROTECT,

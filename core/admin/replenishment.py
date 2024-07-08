@@ -15,7 +15,7 @@ class ReplenishmentAdmin(admin.ModelAdmin):
 
 
 @admin.register(ScaleOfAssessment)
-class ContributionAdmin(admin.ModelAdmin):
+class ScaleOfAssessmentAdmin(admin.ModelAdmin):
     search_fields = [
         "country__name",
         "replenishment__start_year",
