@@ -8,8 +8,10 @@ from core.api.views import (
     ProjectFundViewSet,
     ReplenishmentCountriesViewSet,
     ReplenishmentViewSet,
-    ContributionViewSet,
-    StatusOfContributionsView,
+    AnnualStatusOfContributionsView,
+    ScaleOfAssessmentViewSet,
+    TriennialStatusOfContributionsView,
+    SummaryStatusOfContributionsView,
 )
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
@@ -97,7 +99,7 @@ router.register(
 )
 router.register(
     "replenishment/scales-of-assessment",
-    ContributionViewSet,
+    ScaleOfAssessmentViewSet,
     basename="replenishment-scales-of-assessment",
 )
 
@@ -346,9 +348,19 @@ urlpatterns = [
         name="business-plan-status",
     ),
     path(
-        "replenishment/status-of-contributions/",
-        StatusOfContributionsView.as_view(),
-        name="replenishment-status-of-contributions",
+        "replenishment/status-of-contributions/summary/",
+        SummaryStatusOfContributionsView.as_view(),
+        name="replenishment-status-of-contributions-summary",
+    ),
+    path(
+        "replenishment/status-of-contributions/<int:start_year>/<int:end_year>/",
+        TriennialStatusOfContributionsView.as_view(),
+        name="replenishment-status-of-contributions-triennial",
+    ),
+    path(
+        "replenishment/status-of-contributions/<int:year>/",
+        AnnualStatusOfContributionsView.as_view(),
+        name="replenishment-status-of-contributions-annual",
     ),
     *router.urls,
 ]

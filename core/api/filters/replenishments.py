@@ -5,7 +5,7 @@ from core.models import ScaleOfAssessment
 
 class ScaleOfAssessmentFilter(filters.FilterSet):
     """
-    Filter for contributions
+    Filter for scale of assessment
     """
 
     start_year = filters.NumberFilter(field_name="replenishment__start_year")
