@@ -386,7 +386,7 @@ export default function BusinessPlansTable() {
               headerName: 'Approved / Planned',
               resizable: true,
               sortable: true,
-              tooltipField: 'bp_type_display',
+              tooltipField: 'status_display',
               width: 100,
             },
             {
