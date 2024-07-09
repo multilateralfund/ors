@@ -6,7 +6,7 @@ from core.models import (
     ScaleOfAssessment,
     AnnualContributionStatus,
     DisputedContribution,
-    FermGainLoss,
+    FermGainLoss, TriennialContributionStatus,
 )
 from core.models.business_plan import (
     BusinessPlan,
@@ -514,6 +514,22 @@ class AnnualContributionStatusFactory(factory.django.DjangoModelFactory):
 
     country = factory.SubFactory(CountryFactory)
     year = factory.Faker("random_int", min=2000, max=2024)
+    agreed_contributions = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    cash_payments = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    bilateral_assistance = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    promissory_notes = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    outstanding_contributions = factory.Faker(
+        "pydecimal", left_digits=10, right_digits=2
+    )
+
+
+class TriennialContributionStatusFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = TriennialContributionStatus
+
+    country = factory.SubFactory(CountryFactory)
+    start_year = factory.Faker("random_int", min=2000, max=2028)
+    end_year = factory.Faker("random_int", min=2000, max=2028)
     agreed_contributions = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     cash_payments = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     bilateral_assistance = factory.Faker("pydecimal", left_digits=10, right_digits=2)
