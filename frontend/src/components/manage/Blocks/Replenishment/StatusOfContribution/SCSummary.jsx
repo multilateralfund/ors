@@ -1,5 +1,5 @@
 'use client'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import useGetSCData from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/useGetSCData'
 import {
@@ -7,6 +7,7 @@ import {
   formatTableRows,
 } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import Table from '@ors/components/manage/Blocks/Replenishment/Table'
+import { sortTableData } from '@ors/components/manage/Blocks/Replenishment/utils'
 
 const summary_columns = [
   ...SC_COLUMNS,
@@ -19,6 +20,9 @@ const summary_columns = [
 
 export default function SCSummary() {
   const { extraRows, rows } = useGetSCData()
+
+  const [sortOn, setSortOn] = useState(0)
+  const [sortDirection, setSortDirection] = useState(1)
 
   const columns = useMemo(function () {
     const result = []
@@ -39,15 +43,30 @@ export default function SCSummary() {
     return result
   }, [])
 
+  const sortedData = useMemo(
+    function () {
+      return sortTableData(rows, summary_columns[sortOn].field, sortDirection)
+    },
+    [rows, sortOn, sortDirection],
+  )
+
+  function handleSort(column) {
+    setSortDirection((direction) => (column === sortOn ? -direction : 1))
+    setSortOn(column)
+  }
+
   return (
     <Table
       adminButtons={false}
       columns={columns}
       enableEdit={false}
-      enableSort={false}
+      enableSort={true}
       extraRows={formatTableRows(extraRows)}
-      rowData={formatTableRows(rows)}
+      rowData={formatTableRows(sortedData)}
+      sortDirection={sortDirection}
+      sortOn={sortOn}
       textPosition="center"
+      onSort={handleSort}
     />
   )
 }
