@@ -82,7 +82,7 @@ export function FormattedNumberInput(props) {
         className={cx(CLASSESS, className, { hidden: inputMode })}
         readOnly={true}
         type="text"
-        value={formatDecimalValue(value, {})}
+        value={formatDecimalValue(value ?? '', {})}
         onFocus={() => setInputMode(true)}
         {...rest}
       />

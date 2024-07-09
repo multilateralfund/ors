@@ -39,7 +39,7 @@ const COLUMNS = [
   {
     field: 'annual_contributions',
     label: 'Annual contributions',
-    subLabel: '([PERIOD] in U.S. Dollar)',
+    subLabel: '([PERIOD] in U.S.D)',
   },
   {
     editable: true,
@@ -56,8 +56,8 @@ const COLUMNS = [
     editParser: function (v) {
       return v ? v.toString() : 'false'
     },
-    editWidget: 'select',
-    editable: true,
+    // editWidget: 'select',
+    // editable: true,
     field: 'qual_ferm',
     label: 'Qualifying for fixed exchange rate mechanism',
     parser: function (v) {
@@ -97,7 +97,7 @@ function getEditableFieldNames(cs) {
 const EDITABLE = getEditableFieldNames(COLUMNS)
 
 function SaveManager(props) {
-  const { data } = props
+  const { amount, comment, data } = props
 
   const [isFinal, setIsFinal] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -113,7 +113,7 @@ function SaveManager(props) {
   }
 
   function confirmSave(formData) {
-    const saveData = { ...formData, data }
+    const saveData = { ...formData, amount, comment, data }
     saveData['final'] = isFinal
     setSaving(false)
     alert(`Save not implemented!\n\n${JSON.stringify(saveData, undefined, 2)}`)
@@ -151,8 +151,8 @@ function SaveManager(props) {
                 <Input
                   id="decision"
                   className="!m-0 max-h-12 w-16 !py-1"
+                  required={isFinal}
                   type="text"
-                  required
                 />
               </div>
             </div>
@@ -300,7 +300,6 @@ function SAView(props) {
     function () {
       setTableData(contributions)
       setReplenishmentAmount(apiReplenishmentAmount)
-      setAnnualReplenishmentAmount(apiReplenishmentAmount / 3)
     },
     [contributions, apiReplenishmentAmount],
   )
@@ -314,7 +313,8 @@ function SAView(props) {
   const [showAdd, setShowAdd] = useState(false)
 
   const [replenishmentAmount, setReplenishmentAmount] = useState(0)
-  const [annualReplenishmentAmount, setAnnualReplenishmentAmount] = useState(0)
+
+  const [commentText, setCommentText] = useState('')
 
   useEffect(
     function () {
@@ -390,9 +390,10 @@ function SAView(props) {
 
   function handleAmountInput(evt) {
     const value = parseFloat(evt.target.value)
-    setAnnualReplenishmentAmount(value)
-    setReplenishmentAmount(value * 3)
-    setShouldCompute(true)
+    if (typeof value === 'number' && !isNaN(value)) {
+      setReplenishmentAmount(value)
+      setShouldCompute(true)
+    }
   }
 
   function handleSort(column) {
@@ -419,6 +420,10 @@ function SAView(props) {
     setShouldCompute(true)
   }
 
+  function handleCommentInput(evt) {
+    setCommentText(evt.target.value)
+  }
+
   return (
     <>
       <div className="flex items-center justify-between">
@@ -427,7 +432,7 @@ function SAView(props) {
             <label htmlFor="triannualBudget_mask">
               <div className="flex flex-col uppercase text-primary">
                 <span className="font-bold">Triannual budget</span>
-                <span className="">(in u.s. dollar)</span>
+                <span className="">(in U.S.D)</span>
               </div>
             </label>
             <FormattedNumberInput
@@ -435,8 +440,7 @@ function SAView(props) {
               className="w-36"
               type="number"
               value={replenishmentAmount}
-              disabled
-              readOnly
+              onChange={handleAmountInput}
             />
           </div>
           <div className="h-8 border-y-0 border-l border-r-0 border-solid border-gray-400"></div>
@@ -444,19 +448,24 @@ function SAView(props) {
             <label htmlFor="totalAmount_mask">
               <div className="flex flex-col uppercase text-primary">
                 <span className="font-bold">Annual budget</span>
-                <span className="">(in u.s. dollar)</span>
+                <span className="">(in U.S.D)</span>
               </div>
             </label>
             <FormattedNumberInput
               id="totalAmount"
               className="w-36"
               type="number"
-              value={annualReplenishmentAmount}
-              onChange={handleAmountInput}
+              value={replenishmentAmount / 3}
+              disabled
+              readOnly
             />
           </div>
         </div>
-        <SaveManager data={transformForSave(tableData)} />
+        <SaveManager
+          amount={replenishmentAmount}
+          comment={commentText}
+          data={transformForSave(tableData)}
+        />
       </div>
       <SATable
         columns={columns}
@@ -479,6 +488,22 @@ function SAView(props) {
           <AddButton onClick={showAddRow}>Add country</AddButton>
         </div>
       ) : null}
+      <div className="-mx-4 -mb-4 rounded-b-lg bg-gray-200 p-4">
+        <div className="flex items-center gap-x-2">
+          <h2>Comment Version N</h2>
+          <div className="rounded bg-primary px-1 font-medium uppercase text-mlfs-hlYellow">
+            Meeting {`NN`}
+          </div>
+          <div className="rounded bg-primary px-1 font-medium uppercase text-mlfs-hlYellow">
+            Decision {`NN`}
+          </div>
+        </div>
+        <textarea
+          className="h-32 w-3/4 rounded-lg border-0 bg-white p-2"
+          value={commentText}
+          onChange={handleCommentInput}
+        ></textarea>
+      </div>
     </>
   )
 }

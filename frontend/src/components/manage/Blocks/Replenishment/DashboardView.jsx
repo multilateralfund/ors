@@ -1,73 +1,153 @@
+'use client'
+
+import { useState } from 'react'
+
 import cx from 'classnames'
 
+import { SubmitButton } from '@ors/components/ui/Button/Button'
+
+import FormDialog from './FormDialog'
+import { FormattedNumberInput } from './Inputs'
+import { formatNumberValue } from './utils'
+
+const INCOME = [
+  {
+    field: 'cash_payments',
+    label: 'Cash payments including note encashments',
+  },
+  {
+    field: 'promissory_notes',
+    label: 'Promissory notes held',
+  },
+  {
+    field: 'bilateral_cooperation',
+    label: 'Bilateral cooperation',
+  },
+  {
+    field: 'interest_earned',
+    label: 'Interest earned',
+    labelRich: (
+      <>
+        Interest earned <sup>*</sup>
+      </>
+    ),
+  },
+  {
+    field: 'miscellaneous_income',
+    label: 'Miscellaneous income',
+  },
+  {
+    field: 'total_income',
+    label: 'Total Income',
+  },
+]
+
 const DATA_INCOME = {
-  bilateral_cooperation: '187,767,175',
-  cash_payments: '4,239,242,826',
-  interest_earned: '256,310,311',
-  miscellaneous_income: '21,841,581',
-  promissory_notes: '0',
-  total_income: '4,705,161,892',
+  bilateral_cooperation: 187767175,
+  cash_payments: 4239242826,
+  interest_earned: 256310311,
+  miscellaneous_income: 21841581,
+  promissory_notes: 0,
+  total_income: 4705161892,
 }
 
-const DATA_ALLOCATIONS = [
-  { label: 'UNDP', value: '1,029,932,433' },
-  { label: 'UNEP', value: '423,780,713' },
-  { label: 'UNIDO', value: '1,022,487,150' },
-  { label: 'World Bank', value: '1,310,140,942' },
-  { label: 'Unspecified projects', value: '-' },
-  { label: 'Less Adjustments', value: '-' },
+const ALLOCATIONS = [
+  { field: 'undp', label: 'UNDP' },
+  { field: 'unep', label: 'UNEP' },
+  { field: 'unido', label: 'UNIDO' },
+  { field: 'world_bank', label: 'World Bank' },
+  { field: 'unspecified_projects', label: 'Unspecified projects' },
+  { field: 'less_adjustments', label: 'Less Adjustments' },
   { className: '!bg-transparent' },
   {
     className: '!bg-primary text-white',
+    field: 'total_allocations_to_implementing_agencies',
     label: 'Total allocations to implementing agencies',
-    value: '3,786,341,238',
   },
 ]
 
-const DATA_PROVISIONS = [
+const DATA_ALLOCATIONS = {
+  less_adjustments: '-',
+  total_allocations_to_implementing_agencies: 3786341238,
+  undp: 1029932433,
+  unep: 423780713,
+  unido: 1022487150,
+  unspecified_projects: '-',
+  world_bank: 1310140942,
+}
+
+const PROVISIONS = [
   {
-    label: 'Secretariat and Executive Committee costs  (1991-2025)',
+    field: 'secretariat_and_executive_committee_costs',
+    label: 'Secretariat and Executive Committee costs (1991-2025)',
     sub: '(includes provision for staff contracts into 2025)',
-    value: '161,339,318',
   },
-  { label: 'Treasury fees (2003-2025)', value: '11,556,982' },
-  { label: 'Monitoring and Evaluation costs (1999-2023)', value: '3,812,244' },
-  { label: 'Technical Audit costs (1998-2010)', value: '1,699,806' },
   {
+    field: 'treasury_fees',
+    label: 'Treasury fees (2003-2025)',
+  },
+  {
+    field: 'monitoring_and_evaluation_costs',
+    label: 'Monitoring and Evaluation costs (1999-2023)',
+  },
+  {
+    field: 'technical_audit_costs',
+    label: 'Technical Audit costs (1998-2010)',
+  },
+  {
+    field: 'information_strategy_costs',
     label: 'Information Strategy costs (2003-2004)',
     sub: '(includes provision for Network maintenance costs for 2004)',
-    value: '104,750',
   },
-  { label: 'Bilateral cooperation', value: '187,767,175' },
   {
+    field: 'bilateral_cooperation',
+    label: 'Bilateral cooperation',
+  },
+  {
+    field: 'provision_for_ferm_fluctuations',
     label: "Provision for fixed-exchange-rate mechanism's fluctuations",
     sub: '(losses/(gains) in value)',
-    value: '29,540,239',
   },
   {
     className: '!bg-primary text-white',
-    label: 'Total allocations and  provisions',
-    value: '4,182,161,753',
+    field: 'total_allocations_and_provisions',
+    label: 'Total allocations and provisions',
   },
 ]
 
-const DATA_TOTAL = [
+const DATA_PROVISIONS = {
+  bilateral_cooperation: 187767175,
+  information_strategy_costs: 104750,
+  monitoring_and_evaluation_costs: 3812244,
+  provision_for_ferm_fluctuations: 29540239,
+  secretariat_and_executive_committee_costs: 161339318,
+  technical_audit_costs: 1699806,
+  total_allocations_and_provisions: 4182161753,
+  treasury_fees: 11556982,
+}
+
+const TOTAL = [
   {
+    field: 'cash',
     label: (
       <>
         Cash<sup>***</sup>
       </>
     ),
-    value: '523,000,140',
   },
   { label: 'Promissory Notes:' },
   { className: '!bg-transparent' },
   {
     className: '!bg-primary text-white',
+    field: 'balance_available_for_new_allocations',
     label: 'BALANCE AVAILABLE FOR NEW ALLOCATIONS',
-    value: '523,000,140',
   },
 ]
+
+const DATA_TOTAL = {
+  balance_available_for_new_allocations: 523000140,
+  cash: 523000140,
+}
 
 function ListItem(props) {
   const { label, value } = props
@@ -107,11 +187,190 @@ function CashCard(props) {
   )
 }
 
+function InputField(props) {
+  const { id, className, label, ...fieldProps } = props
+  return (
+    <div className="flex w-72 flex-col">
+      <label htmlFor={`${id}_mask`}>
+        <div className="flex flex-col text-primary">
+          <span className="font-medium">{label}</span>
+        </div>
+      </label>
+      <FormattedNumberInput
+        id={id}
+        className={cx('!ml-0', className)}
+        {...fieldProps}
+      />
+    </div>
+  )
+}
+
+function EditStatusDialog(props) {
+  const { data, onSubmit, ...dialogProps } = props
+
+  const [formState, setFormState] = useState(data)
+
+  function handleChange(name) {
+    return function (evt) {
+      const value = parseFloat(evt.target.value)
+      if (typeof value === 'number' && !isNaN(value)) {
+        setFormState(function (prev) {
+          return { ...prev, [name]: value }
+        })
+      }
+    }
+  }
+
+  function handleSubmit() {
+    onSubmit(formState)
+  }
+
+  return (
+    <FormDialog
+      title="Status of the fund:"
+      onSubmit={handleSubmit}
+      {...dialogProps}
+    >
+      <div className="flex flex-col gap-y-4">
+        <h3 className="m-0 uppercase">Income</h3>
+        <div className="flex gap-x-4">
+          <InputField
+            id="interest_earned"
+            label="Interest earned"
+            value={formState['interest_earned']}
+            onChange={handleChange('interest_earned')}
+          />
+          <InputField
+            id="miscellaneous_income"
+            label="Miscellaneous income"
+            value={formState['miscellaneous_income']}
+            onChange={handleChange('miscellaneous_income')}
+          />
+        </div>
+        <h3 className="m-0 my-4 uppercase">Allocations and provisions</h3>
+        <div className="flex gap-x-4">
+          <InputField
+            id="undp"
+            label="UNDP"
+            value={formState['undp']}
+            onChange={handleChange('undp')}
+          />
+          <InputField
+            id="unep"
+            label="UNEP"
+            value={formState['unep']}
+            onChange={handleChange('unep')}
+          />
+        </div>
+        <div className="flex gap-x-4">
+          <InputField
+            id="unido"
+            label="UNIDO"
+            value={formState['unido']}
+            onChange={handleChange('unido')}
+          />
+          <InputField
+            id="world_bank"
+            label="World Bank"
+            value={formState['world_bank']}
+            onChange={handleChange('world_bank')}
+          />
+        </div>
+
+        <div className="my-4 border border-x-0 border-b-0 border-solid border-gray-200"></div>
+
+        <div className="flex gap-x-4">
+          <InputField
+            id="secretariat_costs"
+            label="Secretariat and Executive Committee costs"
+            value={formState['secretariat_costs']}
+            onChange={handleChange('secretariat_costs')}
+          />
+          <InputField
+            id="monitoring_and_evaluation_costs"
+            label="Monitoring and Evaluation costs"
+            value={formState['monitoring_and_evaluation_costs']}
+            onChange={handleChange('monitoring_and_evaluation_costs')}
+          />
+        </div>
+
+        <div className="flex gap-x-4">
+          <InputField
+            id="information_strategy_costs"
+            label="Information Strategy costs "
+            value={formState['information_strategy_costs']}
+            onChange={handleChange('information_strategy_costs')}
+          />
+          <InputField
+            id="bilateral_cooperation"
+            label="Bilateral cooperation"
+            value={formState['bilateral_cooperation']}
+            onChange={handleChange('bilateral_cooperation')}
+          />
+        </div>
+
+        <div className="flex gap-x-4">
+          <InputField
+            id="provision_for_ferm_fluctuations"
+            label="Provision for FERM fluctuations"
+            value={formState['provision_for_ferm_fluctuations']}
+            onChange={handleChange('provision_for_ferm_fluctuations')}
+          />
+        </div>
+      </div>
+    </FormDialog>
+  )
+}
+
 function DashboardView() {
+  const [showEdit, setShowEdit] = useState(false)
+  const [data, setData] = useState({
+    ...DATA_INCOME,
+    ...DATA_ALLOCATIONS,
+    ...DATA_PROVISIONS,
+    ...DATA_TOTAL,
+  })
+
+  function handleEditClick() {
+    setShowEdit(!showEdit)
+  }
+
+  function handleEditCancel() {
+    setShowEdit(false)
+  }
+
+  function handleEditSubmit(data) {
+    const parsedData = {}
+    const dataKeys = Object.keys(data)
+    for (let i = 0; i < dataKeys.length; i++) {
+      parsedData[dataKeys[i]] = parseFloat(data[dataKeys[i]]) ?? 0
+    }
+    console.log(data, parsedData)
+    setData(function (prev) {
+      return { ...prev, ...parsedData }
+    })
+    setShowEdit(false)
+  }
+
   return (
     <>
-      <h2 className="m-0 text-3xl">STATUS OF THE FUND</h2>
-      <p className="m-0 text-xl">as of 15 May 2024 ( US Dollars )</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="m-0 text-3xl">STATUS OF THE FUND</h2>
+          <p className="m-0 text-xl">as of 15 May 2024 ( US Dollars )</p>
+        </div>
+        <SubmitButton className="tracking-widest" onClick={handleEditClick}>
+          Edit
+        </SubmitButton>
+      </div>
+
+      {showEdit ? (
+        <EditStatusDialog
+          data={data}
+          onCancel={handleEditCancel}
+          onSubmit={handleEditSubmit}
+        />
+      ) : null}
 
       <div className="flex">
         <div className="w-7/12">
@@ -133,35 +392,15 @@ function DashboardView() {
           <h3 className="text-2xl">INCOME</h3>
 
           <ul className="flex list-none flex-wrap gap-4 pl-0">
-            <CashCard
-              label="Cash payments including note encashments"
-              value={DATA_INCOME.cash_payments}
-            />
-            <CashCard
-              label="Promissory notes held"
-              value={DATA_INCOME.promissory_notes}
-            />
-            <CashCard
-              label="Bilateral cooperation"
-              value={DATA_INCOME.bilateral_cooperation}
-            />
-            <CashCard
-              value={DATA_INCOME.interest_earned}
-              label={
-                <>
-                  Interest earned <sup>*</sup>
-                </>
-              }
-            />
-            <CashCard
-              label="Miscellaneous income"
-              value={DATA_INCOME.miscellaneous_income}
-            />
-            <CashCard
-              className="!bg-primary text-white"
-              label="Total Income"
-              value={DATA_INCOME.total_income}
-            />
+            {INCOME.map(function (o) {
+              return (
+                <CashCard
+                  key={o.field}
+                  label={o.labelRich ?? o.label}
+                  value={formatNumberValue(data[o.field], 0, 0)}
+                />
+              )
+            })}
           </ul>
 
           <h3 className="text-2xl">
@@ -169,19 +408,40 @@ function DashboardView() {
           </h3>
 
           <ul className="flex list-none flex-wrap gap-4 pl-0">
-            {DATA_ALLOCATIONS.map((item, idx) => (
-              <CashCard key={idx} {...item} />
-            ))}
+            {ALLOCATIONS.map(function (o) {
+              const value = data[o.field]
+              return (
+                <CashCard
+                  key={o.field}
+                  value={isNaN(value) ? value : formatNumberValue(value, 0, 0)}
+                  {...o}
+                />
+              )
+            })}
           </ul>
           <ul className="flex list-none flex-wrap gap-4 pl-0">
-            {DATA_PROVISIONS.map((item, idx) => (
-              <CashCard key={idx} {...item} />
-            ))}
+            {PROVISIONS.map(function (o) {
+              const value = data[o.field]
+              return (
+                <CashCard
+                  key={o.field}
+                  value={isNaN(value) ? value : formatNumberValue(value, 0, 0)}
+                  {...o}
+                />
+              )
+            })}
           </ul>
           <ul className="flex list-none flex-wrap gap-4 pl-0">
-            {DATA_TOTAL.map((item, idx) => (
-              <CashCard key={idx} {...item} />
-            ))}
+            {TOTAL.map(function (o) {
+              const value = data[o.field]
+              return (
+                <CashCard
+                  key={o.field}
+                  value={isNaN(value) ? value : formatNumberValue(value, 0, 0)}
+                  {...o}
+                />
+              )
+            })}
           </ul>
         </div>
 
