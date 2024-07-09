@@ -29,10 +29,10 @@ export function formatDateValue(value) {
   return `${date.getDate()}-${intl.format(date).toUpperCase()}-${date.getFullYear()}`
 }
 
-export function formatNumberValue(value) {
+export function formatNumberValue(value, minDigits, maxDigits) {
   return parseFloat(value).toLocaleString('en-US', {
-    maximumFractionDigits: MAX_DECIMALS,
-    minimumFractionDigits: MIN_DECIMALS,
+    maximumFractionDigits: maxDigits ?? MAX_DECIMALS,
+    minimumFractionDigits: minDigits ?? MIN_DECIMALS,
   })
 }
 
