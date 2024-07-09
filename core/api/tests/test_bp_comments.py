@@ -18,8 +18,8 @@ class TestBPComments:
     COMMENT_AGENCY = "comment_agency"
     COMMENT_SECRETARIAT = "comment_secretariat"
 
-    def test_without_permission_secretariat(self, user, business_plan):
-        url = reverse("business-plan-comments", kwargs={"id": business_plan.id})
+    def test_without_permission_secretariat(self, user, bp_record):
+        url = reverse("business-plan-comments", kwargs={"id": bp_record.id})
 
         # try to create agency comment
         self.client.force_authenticate(user=user)
@@ -30,8 +30,8 @@ class TestBPComments:
         response = self.client.post(url, data, format="json")
         assert response.status_code == 400
 
-    def test_without_permission_agency(self, agency_user, business_plan):
-        url = reverse("business-plan-comments", kwargs={"id": business_plan.id})
+    def test_without_permission_agency(self, agency_user, bp_record):
+        url = reverse("business-plan-comments", kwargs={"id": bp_record.id})
 
         # try to create secretariat comment
         self.client.force_authenticate(user=agency_user)
@@ -43,9 +43,9 @@ class TestBPComments:
         assert response.status_code == 400
 
     def test_create_comments(
-        self, user, agency_user, business_plan, mock_send_mail_comment
+        self, user, agency_user, bp_record, mock_send_mail_comment
     ):
-        url = reverse("business-plan-comments", kwargs={"id": business_plan.id})
+        url = reverse("business-plan-comments", kwargs={"id": bp_record.id})
 
         self.client.force_authenticate(user=agency_user)
         # create agency comment
@@ -76,7 +76,7 @@ class TestBPComments:
         assert response.status_code == 201
         assert response.data["comment_secretariat"] == "Test update secretariat"
 
-        url = reverse("businessplan-list") + f"{business_plan.id}/"
+        url = reverse("bprecord-list") + f"{bp_record.id}/"
         response = self.client.get(url)
         assert response.status_code == 200
         assert response.data["comment_agency"] == "Test create agency"
@@ -86,9 +86,9 @@ class TestBPComments:
         mock_send_mail_comment.assert_called()
         assert mock_send_mail_comment.call_count == 3
 
-    def test_config_mail_not_sent(self, user, business_plan, mock_send_mail_comment):
+    def test_config_mail_not_sent(self, user, bp_record, mock_send_mail_comment):
         config.SEND_MAIL = False  # change config
-        url = reverse("business-plan-comments", kwargs={"id": business_plan.id})
+        url = reverse("business-plan-comments", kwargs={"id": bp_record.id})
 
         self.client.force_authenticate(user=user)
         # create  comment

@@ -2,7 +2,8 @@ import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from core.models.business_plan import BusinessPlan, BPHistory
+from core.api.tests.factories import BPRecordFactory
+from core.models.business_plan import BusinessPlan, BPHistory, BPRecord
 
 pytestmark = pytest.mark.django_db
 
@@ -36,7 +37,10 @@ class TestBPHistory:
         business_plan_id = response.data["id"]
 
         # add comment
-        url = reverse("business-plan-comments", kwargs={"id": business_plan_id})
+        bp_record = BPRecordFactory(
+            business_plan_id=business_plan_id, status=BPRecord.Status.approved
+        )
+        url = reverse("business-plan-comments", kwargs={"id": bp_record.id})
         response = self.client.post(
             url,
             {
@@ -58,7 +62,10 @@ class TestBPHistory:
         new_id = response.data["id"]
 
         # add other comment
-        url = reverse("business-plan-comments", kwargs={"id": new_id})
+        bp_record = BPRecordFactory(
+            business_plan_id=new_id, status=BPRecord.Status.approved
+        )
+        url = reverse("business-plan-comments", kwargs={"id": bp_record.id})
         response = self.client.post(
             url,
             {

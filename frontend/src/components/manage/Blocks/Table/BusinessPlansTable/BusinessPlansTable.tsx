@@ -33,7 +33,7 @@ export default function BusinessPlansTable() {
   // const initialParams = {
   //   blends: null,
   //   bp_chemical_type: null,
-  //   bp_type: null,
+  //   status: null,
   //   business_plan_id: null,
   //   country_id: null,
   //   is_multi_year: null,
@@ -382,7 +382,7 @@ export default function BusinessPlansTable() {
             },
             ...yearColumns,
             {
-              field: 'bp_type',
+              field: 'status',
               headerName: 'Approved / Planned',
               resizable: true,
               sortable: true,

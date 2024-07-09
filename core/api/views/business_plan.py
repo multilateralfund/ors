@@ -262,7 +262,7 @@ class BPRecordViewSet(
         "project_type__code",
         "sector__code",
         "subsector__code",
-        "bp_type",
+        "status",
         "is_multi_year",
     ]
 
@@ -470,16 +470,16 @@ class BPRecordViewSet(
 
 class BPCommentsView(generics.GenericAPIView):
     """
-    API endpoint that allows updating business plan comments.
-    This is called with either POST or PUT on an already-existing BP.
+    API endpoint that allows updating business plan record comments.
+    This is called with either POST or PUT on an already-existing BP record.
     """
 
-    queryset = BusinessPlan.objects.all()
+    queryset = BPRecord.objects.all()
     serializer_class = BPCommentsSerializer
     lookup_field = "id"
 
     @swagger_auto_schema(
-        operation_description="Update business plan comments",
+        operation_description="Update business plan record comments",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             required=[],
@@ -496,7 +496,7 @@ class BPCommentsView(generics.GenericAPIView):
         ),
     )
     def _comments_update_or_create(self, request, *args, **kwargs):
-        business_plan = self.get_object()
+        bp_record = self.get_object()
         comment_type = request.data.get("comment_type")
         comment = request.data.get("comment", "")
 
@@ -507,7 +507,7 @@ class BPCommentsView(generics.GenericAPIView):
                     {comment_type: f"Invalid value {comment}"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            business_plan.comment_agency = comment
+            bp_record.comment_agency = comment
 
         if comment_type == "comment_secretariat":
             if user.user_type != user.UserType.SECRETARIAT:
@@ -515,15 +515,16 @@ class BPCommentsView(generics.GenericAPIView):
                     {comment_type: f"Invalid value {comment}"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            business_plan.comment_secretariat = comment
+            bp_record.comment_secretariat = comment
 
-        business_plan.save()
+        bp_record.save()
+        business_plan = bp_record.business_plan
         BPHistory.objects.create(
             business_plan=business_plan,
             updated_by=user,
             event_description="Comments updated by user",
         )
-        serializer = self.get_serializer(business_plan)
+        serializer = self.get_serializer(bp_record)
 
         if config.SEND_MAIL:
             # send mail to agency or MLFS

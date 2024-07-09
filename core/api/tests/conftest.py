@@ -406,7 +406,7 @@ def bp_record(business_plan, country_ro):
     return BPRecordFactory(
         business_plan=business_plan,
         country=country_ro,
-        bp_type=BPRecord.BPType.approved,
+        status=BPRecord.Status.approved,
     )
 
 
