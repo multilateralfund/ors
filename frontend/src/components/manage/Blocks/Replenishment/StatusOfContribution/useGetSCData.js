@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { transformData } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import { formatApiUrl } from '@ors/helpers'
 
+const BASE_URL = '/api/replenishment/status-of-contributions'
+
 function useGetSCData(start_year, end_year) {
   const [data, setData] = useState({
     disputed_contributions: null,
@@ -14,10 +16,16 @@ function useGetSCData(start_year, end_year) {
 
   useEffect(() => {
     setLoading(true)
-    const params = new URLSearchParams()
-    if (start_year) params.append('start_year', start_year)
-    if (end_year) params.append('end_year', end_year)
-    const url = `/api/replenishment/status-of-contributions?${params.toString()}`
+
+    let url
+
+    if (start_year && end_year) {
+      url = `${BASE_URL}/${start_year}/${end_year}/`
+    } else if (start_year) {
+      url = `${BASE_URL}/${start_year}`
+    } else {
+      url = `${BASE_URL}/summary`
+    }
 
     fetch(formatApiUrl(url), {
       credentials: 'include',

@@ -8,7 +8,7 @@ import {
 import Table from '@ors/components/manage/Blocks/Replenishment/Table'
 
 export default function SCAnnual({ year }) {
-  const { extraRows, rows } = useGetSCData(year, year)
+  const { extraRows, rows } = useGetSCData(year)
   return (
     <Table
       adminButtons={false}

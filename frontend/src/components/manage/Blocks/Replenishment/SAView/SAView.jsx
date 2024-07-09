@@ -243,7 +243,7 @@ function useApiReplenishment(startYear) {
   useEffect(
     function () {
       const path = [
-        '/api/replenishment/contributions',
+        '/api/replenishment/scales-of-assessment',
         new URLSearchParams({ start_year: startYear }),
       ].join('?')
 
