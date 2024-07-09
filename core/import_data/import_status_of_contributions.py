@@ -435,6 +435,7 @@ def import_status_of_contributions(countries):
         TriennialContributionStatus.objects.bulk_create(contributions_status_objects)
 
         logger.info(
+            # pylint: disable=line-too-long
             f"Imported ({len(contributions_status_objects)}) Triennial Status of Contributions for {start_year}-{end_year}"
         )
 
