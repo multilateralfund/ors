@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import cx from 'classnames'
 
@@ -8,7 +8,7 @@ import ConfirmDialog from '../ConfirmDialog'
 import HeaderCells from '../Table/HeaderCells'
 import styles from '../Table/table.module.css'
 
-import { IoPencil, IoTrash } from 'react-icons/io5'
+import { IoAlertCircle, IoPencil, IoTrash } from 'react-icons/io5'
 
 function ConfirmEditDialog(props) {
   return <ConfirmDialog title="Change this system computed value?" {...props} />
@@ -90,6 +90,14 @@ function TableCell(props) {
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(initialValue)
 
+  const invalidMessage = useMemo(
+    function () {
+      const parsedValue = column.parser ? column.parser(value) : value
+      return column.validator ? column.validator(value) : ''
+    },
+    [value, column],
+  )
+
   const [showConfirmEdit, setShowConfirmEdit] = useState(false)
 
   function handleStartEdit() {
@@ -103,10 +111,10 @@ function TableCell(props) {
       cancelNewValue()
     } else if (evt.key === 'Enter') {
       evt.preventDefault()
-      saveNewValue()
+      saveNewValue(evt)
     } else if (evt.key === 'Tab') {
       evt.preventDefault()
-      saveNewValue()
+      saveNewValue(evt)
     }
   }
 
@@ -115,13 +123,15 @@ function TableCell(props) {
     setEditing(false)
   }
 
-  function saveNewValue() {
+  function saveNewValue(evt) {
     if (value !== initialValue) {
-      if (confirmationText) {
-        setShowConfirmEdit(true)
-      } else {
-        onCellEdit(r, c, fname, value)
-        setEditing(false)
+      if (!invalidMessage) {
+        if (confirmationText) {
+          setShowConfirmEdit(true)
+        } else {
+          onCellEdit(r, c, fname, value)
+          setEditing(false)
+        }
       }
     } else {
       setEditing(false)
@@ -158,14 +168,25 @@ function TableCell(props) {
       ) : null}
       <div className="w-full whitespace-nowrap">
         {editing ? (
-          <EditField
-            className="w-full"
-            column={columns[c]}
-            value={value}
-            onBlur={saveNewValue}
-            onChange={handleChangeValue}
-            onKeyDown={handleKeyDown}
-          />
+          <div className="flex items-center gap-x-2">
+            <EditField
+              className={cx('w-full', {
+                'text-error outline outline-2 outline-error': invalidMessage,
+              })}
+              column={columns[c]}
+              value={value}
+              onBlur={saveNewValue}
+              onChange={handleChangeValue}
+              onKeyDown={handleKeyDown}
+            />
+            {invalidMessage ? (
+              <IoAlertCircle
+                className="text-error"
+                size={24}
+                title={invalidMessage}
+              />
+            ) : null}
+          </div>
         ) : (
           cell?.view ?? cell
         )}
@@ -222,7 +243,7 @@ function AddRow(props) {
 function SATable(props) {
   const {
     columns,
-    countries,
+    countriesForAdd,
     enableEdit,
     enableSort,
     extraRows,
@@ -272,7 +293,7 @@ function SATable(props) {
       <AddRow
         key="addRow"
         columns={columns}
-        countries={countries}
+        countries={countriesForAdd}
         onCancel={onAddCancel}
         onSubmit={onAddSubmit}
       />,

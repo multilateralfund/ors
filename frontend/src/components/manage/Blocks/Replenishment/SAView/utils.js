@@ -79,6 +79,13 @@ export function computeTableData(tableData, totalReplenishment) {
         ? (result[i].override_ferm_rate ?? result[i].ferm_rate) *
           result[i].annual_contributions
         : null
+
+    if (!result[i].opted_for_ferm && result[i].qual_ferm) {
+      result[i].opted_for_ferm = false
+    } else if (!result[i].qual_ferm) {
+      result[i].opted_for_ferm = null
+      delete result[i].override_opted_for_ferm
+    }
   }
 
   return result

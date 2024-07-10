@@ -26,7 +26,7 @@ const COLUMNS = [
     field: 'un_soa',
     label: 'UN scale of assessment',
     parser: parseFloat,
-    subLabel: '( YYYY - YYYY )',
+    subLabel: '( [PREV_PERIOD] )',
   },
   {
     confirmationText:
@@ -35,6 +35,11 @@ const COLUMNS = [
     field: 'adj_un_soa',
     label: 'Adjusted UN Scale of Assessment',
     parser: parseFloat,
+    validator: function (value) {
+      if (value > 22) {
+        return "Value can't be greater than 22."
+      }
+    },
   },
   {
     field: 'annual_contributions',
@@ -46,7 +51,7 @@ const COLUMNS = [
     field: 'avg_ir',
     label: 'Average inflation rate',
     parser: parseFloat,
-    subLabel: '( YYYY - YYYY )',
+    subLabel: '( [PREV_PERIOD] )',
   },
   {
     editOptions: [
@@ -66,16 +71,33 @@ const COLUMNS = [
     subLabel: '(Yes / No)',
   },
   {
+    editOptions: [
+      { label: 'Yes', value: 'true' },
+      { label: 'No', value: 'false' },
+    ],
+    editParser: function (v) {
+      return v ? v.toString() : 'false'
+    },
+    editWidget: 'select',
+    editable: true,
+    field: 'opted_for_ferm',
+    label: 'Opted for fixed exchange rate mechanism',
+    parser: function (v) {
+      return v === 'true' || v === 't' || v === 'y' || v === '1'
+    },
+    subLabel: '(Yes / No)',
+  },
+  {
     editable: true,
     field: 'ferm_rate',
     label: 'Currency rate of exchange used for fixed exchange',
     parser: parseFloat,
-    subLabel: '(01 Jan - 30 Jun YYYY)',
+    subLabel: '(01 Jan - 30 Jun [PREV_YEAR])',
   },
   {
     editable: true,
     field: 'ferm_cur',
-    label: 'National currencies used for fixed exchange',
+    label: 'National currency used for fixed exchange',
   },
   {
     field: 'ferm_cur_amount',
@@ -115,6 +137,7 @@ function SaveManager(props) {
   function confirmSave(formData) {
     const saveData = { ...formData, amount, comment, data }
     saveData['final'] = isFinal
+    console.log(saveData)
     setSaving(false)
     alert(`Save not implemented!\n\n${JSON.stringify(saveData, undefined, 2)}`)
   }
@@ -187,6 +210,9 @@ function tranformContributions(cs) {
       ferm_cur_amount: cs[i].amount_local_currency,
       ferm_rate: cs[i].exchange_rate,
       iso3: cs[i].country.iso3,
+      opted_for_ferm:
+        cs[i].opted_for_ferm ??
+        (cs[i].qualifies_for_fixed_rate_mechanism ? false : null),
       qual_ferm: cs[i].qualifies_for_fixed_rate_mechanism,
       un_soa: cs[i].un_scale_of_assessment,
     })
@@ -227,6 +253,10 @@ function transformForSave(d) {
 
     if (d[i].hasOwnProperty('override_qual_ferm')) {
       n.override_qualifies_for_fixed_rate_mechanism = d[i].override_qual_ferm
+    }
+
+    if (d[i].override_opted_for_ferm && d[i].qual_ferm) {
+      n.opted_for_ferm = true
     }
 
     r.push(n)
@@ -271,6 +301,9 @@ function SAView(props) {
 
   const ctx = useContext(ReplenishmentContext)
 
+  const periodStart = parseInt(period.split('-')[0], 10)
+  const prevPeriod = [periodStart - 3, periodStart - 1].join('-')
+
   const columns = useMemo(
     function () {
       const result = []
@@ -279,7 +312,10 @@ function SAView(props) {
           <div className="flex flex-col">
             <span>{COLUMNS[i].label}</span>
             <span className="whitespace-nowrap text-sm font-normal">
-              {COLUMNS[i].subLabel?.replace('[PERIOD]', period)}
+              {COLUMNS[i].subLabel
+                ?.replace('[PERIOD]', period)
+                .replace('[PREV_PERIOD]', prevPeriod)
+                .replace('[PREV_YEAR]', periodStart - 1)}
             </span>
           </div>
         )
@@ -290,7 +326,7 @@ function SAView(props) {
       }
       return result
     },
-    [period],
+    [period, periodStart, prevPeriod],
   )
 
   const { contributions, replenishmentAmount: apiReplenishmentAmount } =
@@ -353,6 +389,27 @@ function SAView(props) {
     [sortedData],
   )
 
+  const countriesForAdd = useMemo(
+    function () {
+      const r = []
+
+      const knownCountries = []
+
+      for (let i = 0; i < computedData.length; i++) {
+        knownCountries.push(computedData[i].country_id)
+      }
+
+      for (let i = 0; i < ctx.countries.length; i++) {
+        if (!knownCountries.includes(ctx.countries[i].id)) {
+          r.push(ctx.countries[i])
+        }
+      }
+
+      return r
+    },
+    [ctx.countries, computedData],
+  )
+
   function showAddRow() {
     setShowAdd(true)
   }
@@ -366,6 +423,7 @@ function SAView(props) {
       ferm_rate: null,
       isNew: true,
       iso3: country.iso3,
+      opted_for_ferm: null,
       qual_ferm: false,
       un_soa: 0.0,
     }
@@ -469,7 +527,7 @@ function SAView(props) {
       </div>
       <SATable
         columns={columns}
-        countries={ctx.countries}
+        countriesForAdd={countriesForAdd}
         enableEdit={true}
         enableSort={true}
         extraRows={[{ country: 'Total', ...sumColumns(computedData) }]}

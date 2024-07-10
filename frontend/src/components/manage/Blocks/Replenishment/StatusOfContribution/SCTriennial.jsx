@@ -10,8 +10,7 @@ import Table from '@ors/components/manage/Blocks/Replenishment/Table'
 import { sortTableData } from '@ors/components/manage/Blocks/Replenishment/utils'
 
 export default function SCTriennial({ period }) {
-  const year_start = period.split('-')[0]
-  const year_end = period.split('-')[1]
+  const [year_start, year_end] = period.split('-')
   const { extraRows, rows } = useGetSCData(year_start, year_end)
 
   const [sortOn, setSortOn] = useState(0)
