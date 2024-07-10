@@ -25,7 +25,7 @@ class Replenishment(models.Model):
         ]
 
 
-class Contribution(models.Model):
+class ScaleOfAssessment(models.Model):
     """
     Contribution to a replenishment, used in Scale of Assessment.
     """
@@ -64,7 +64,7 @@ class Contribution(models.Model):
         if self.country.iso3 == "USA":
             return US_SCALE_OF_ASSESSMENT
 
-        un_assessment_sum = Contribution.objects.filter(
+        un_assessment_sum = ScaleOfAssessment.objects.filter(
             replenishment=self.replenishment
         ).aggregate(models.Sum("un_scale_of_assessment"))["un_scale_of_assessment__sum"]
 
@@ -181,13 +181,7 @@ class PaymentFile(models.Model):
 
 
 # Dashboard and Status of Contributions
-class ContributionStatus(models.Model):
-    country = models.ForeignKey(
-        Country,
-        on_delete=models.PROTECT,
-        related_name="contributions_status",
-    )
-    year = models.IntegerField()
+class AbstractContributionStatus(models.Model):
     agreed_contributions = models.DecimalField(
         max_digits=30, decimal_places=15, default=0
     )
@@ -200,6 +194,18 @@ class ContributionStatus(models.Model):
         max_digits=30, decimal_places=15, default=0
     )
 
+    class Meta:
+        abstract = True
+
+
+class AnnualContributionStatus(AbstractContributionStatus):
+    country = models.ForeignKey(
+        Country,
+        on_delete=models.PROTECT,
+        related_name="annual_contributions_status",
+    )
+    year = models.IntegerField()
+
     def __str__(self):
         return f"Contribution Status {self.country.name} - {self.year}"
 
@@ -207,6 +213,27 @@ class ContributionStatus(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["country", "year"], name="unique_country_year"
+            )
+        ]
+
+
+class TriennialContributionStatus(AbstractContributionStatus):
+    country = models.ForeignKey(
+        Country,
+        on_delete=models.PROTECT,
+        related_name="triennial_contributions_status",
+    )
+    start_year = models.IntegerField()
+    end_year = models.IntegerField()
+
+    def __str__(self):
+        return f"Triennial Contribution Status {self.country.name} - {self.start_year} - {self.end_year}"
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["country", "start_year", "end_year"],
+                name="unique_country_start_year_end_year",
             )
         ]
 

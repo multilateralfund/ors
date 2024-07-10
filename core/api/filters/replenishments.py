@@ -1,15 +1,15 @@
 from django_filters import rest_framework as filters
 
-from core.models import Contribution
+from core.models import ScaleOfAssessment
 
 
-class ContributionFilter(filters.FilterSet):
+class ScaleOfAssessmentFilter(filters.FilterSet):
     """
-    Filter for contributions
+    Filter for scale of assessment
     """
 
     start_year = filters.NumberFilter(field_name="replenishment__start_year")
 
     class Meta:
-        model = Contribution
+        model = ScaleOfAssessment
         fields = ["start_year"]

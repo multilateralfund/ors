@@ -1,21 +1,20 @@
 from django.db import models
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, mixins, views
 from rest_framework.response import Response
 
-from core.api.filters.replenishments import ContributionFilter
+from core.api.filters.replenishments import ScaleOfAssessmentFilter
 from core.api.serializers import (
     CountrySerializer,
     ReplenishmentSerializer,
-    ContributionSerializer,
+    ScaleOfAssessmentSerializer,
 )
 from core.models import (
     Country,
     Replenishment,
-    Contribution,
-    ContributionStatus,
+    ScaleOfAssessment,
+    AnnualContributionStatus,
     DisputedContribution,
+    TriennialContributionStatus, FermGainLoss,
 )
 
 
@@ -49,42 +48,169 @@ class ReplenishmentViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         return Replenishment.objects.none()
 
 
-class ContributionViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class ScaleOfAssessmentViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     """
     Viewset for all contributions that are available.
     """
 
-    model = Contribution
-    filterset_class = ContributionFilter
-    serializer_class = ContributionSerializer
+    model = ScaleOfAssessment
+    filterset_class = ScaleOfAssessmentFilter
+    serializer_class = ScaleOfAssessmentSerializer
 
     def get_queryset(self):
         user = self.request.user
         if user.user_type == user.UserType.SECRETARIAT:
-            return Contribution.objects.select_related(
+            return ScaleOfAssessment.objects.select_related(
                 "country", "replenishment"
             ).order_by("country__name")
-        return Contribution.objects.none()
+        return ScaleOfAssessment.objects.none()
 
 
-class StatusOfContributionsView(views.APIView):
+class AnnualStatusOfContributionsView(views.APIView):
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "start_year",
-                openapi.IN_QUERY,
-                description="Start year for the status of contributions",
-                type=openapi.TYPE_INTEGER,
-            ),
-            openapi.Parameter(
-                "end_year",
-                openapi.IN_QUERY,
-                description="End year for the status of contributions",
-                type=openapi.TYPE_INTEGER,
-            ),
+    def get(self, request, *args, **kwargs):
+        year = kwargs["year"]
+        user = request.user
+
+        if user.user_type != user.UserType.SECRETARIAT:
+            return Response({})
+
+        data = {}
+        data["status_of_contributions"] = [
+            {
+                "country": CountrySerializer(country).data,
+                "agreed_contributions": country.agreed_contributions,
+                "cash_payments": country.cash_payments,
+                "bilateral_assistance": country.bilateral_assistance,
+                "promissory_notes": country.promissory_notes,
+                "outstanding_contributions": country.outstanding_contributions,
+            }
+            for country in Country.objects.filter(
+                annual_contributions_status__year=year,
+            )
+            .prefetch_related("annual_contributions_status")
+            .annotate(
+                agreed_contributions=models.Sum(
+                    "annual_contributions_status__agreed_contributions", default=0
+                ),
+                cash_payments=models.Sum(
+                    "annual_contributions_status__cash_payments", default=0
+                ),
+                bilateral_assistance=models.Sum(
+                    "annual_contributions_status__bilateral_assistance", default=0
+                ),
+                promissory_notes=models.Sum(
+                    "annual_contributions_status__promissory_notes", default=0
+                ),
+                outstanding_contributions=models.Sum(
+                    "annual_contributions_status__outstanding_contributions", default=0
+                ),
+            )
+            .order_by("country__name")
         ]
-    )
+
+        data["total"] = AnnualContributionStatus.objects.filter(year=year).aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+
+        try:
+            disputed_contribution_amount = DisputedContribution.objects.get(
+                year=year
+            ).amount
+        except DisputedContribution.DoesNotExist:
+            disputed_contribution_amount = 0
+
+        data["total"]["agreed_contributions_with_disputed"] = (
+            data["total"]["agreed_contributions"] + disputed_contribution_amount
+        )
+        data["total"]["outstanding_contributions_with_disputed"] = (
+            data["total"]["outstanding_contributions"] + disputed_contribution_amount
+        )
+        data["disputed_contributions"] = disputed_contribution_amount
+
+        return Response(data)
+
+
+class TriennialStatusOfContributionsView(views.APIView):
+
+    def get(self, request, *args, **kwargs):
+        start_year = kwargs["start_year"]
+        end_year = kwargs["end_year"]
+        user = request.user
+
+        if user.user_type != user.UserType.SECRETARIAT:
+            return Response({})
+
+        data = {}
+        data["status_of_contributions"] = [
+            {
+                "country": CountrySerializer(country).data,
+                "agreed_contributions": country.agreed_contributions,
+                "cash_payments": country.cash_payments,
+                "bilateral_assistance": country.bilateral_assistance,
+                "promissory_notes": country.promissory_notes,
+                "outstanding_contributions": country.outstanding_contributions,
+            }
+            for country in Country.objects.filter(
+                triennial_contributions_status__start_year=start_year,
+                triennial_contributions_status__end_year=end_year,
+            )
+            .prefetch_related("triennial_contributions_status")
+            .annotate(
+                agreed_contributions=models.Sum(
+                    "triennial_contributions_status__agreed_contributions", default=0
+                ),
+                cash_payments=models.Sum(
+                    "triennial_contributions_status__cash_payments", default=0
+                ),
+                bilateral_assistance=models.Sum(
+                    "triennial_contributions_status__bilateral_assistance", default=0
+                ),
+                promissory_notes=models.Sum(
+                    "triennial_contributions_status__promissory_notes", default=0
+                ),
+                outstanding_contributions=models.Sum(
+                    "triennial_contributions_status__outstanding_contributions",
+                    default=0,
+                ),
+            )
+            .order_by("country__name")
+        ]
+
+        data["total"] = TriennialContributionStatus.objects.filter(
+            start_year=start_year, end_year=end_year
+        ).aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+
+        disputed_contribution_amount = DisputedContribution.objects.filter(
+            year__gte=start_year, year__lte=end_year
+        ).aggregate(total=models.Sum("amount", default=0))["total"]
+        data["total"]["agreed_contributions_with_disputed"] = (
+            data["total"]["agreed_contributions"] + disputed_contribution_amount
+        )
+        data["total"]["outstanding_contributions_with_disputed"] = (
+            data["total"]["outstanding_contributions"] + disputed_contribution_amount
+        )
+        data["disputed_contributions"] = disputed_contribution_amount
+
+        return Response(data)
+
+
+class SummaryStatusOfContributionsView(views.APIView):
+
     def get(self, request, *args, **kwargs):
         user = request.user
 
@@ -92,32 +218,6 @@ class StatusOfContributionsView(views.APIView):
             return Response({})
 
         data = {}
-        disputed_contributions_qs = DisputedContribution.objects.all()
-        contribution_status_qs = ContributionStatus.objects.all()
-        country_filter = models.Q(contributions_status__isnull=False)
-
-        if request.query_params.get("start_year"):
-            disputed_contributions_qs = disputed_contributions_qs.filter(
-                year__gte=request.query_params["start_year"]
-            )
-            contribution_status_qs = contribution_status_qs.filter(
-                year__gte=request.query_params["start_year"]
-            )
-            country_filter &= models.Q(
-                contributions_status__year__gte=request.query_params["start_year"]
-            )
-
-        if request.query_params.get("end_year"):
-            disputed_contributions_qs = disputed_contributions_qs.filter(
-                year__lte=request.query_params["end_year"]
-            )
-            contribution_status_qs = contribution_status_qs.filter(
-                year__lte=request.query_params["end_year"]
-            )
-            country_filter &= models.Q(
-                contributions_status__year__lte=request.query_params["end_year"]
-            )
-
         data["status_of_contributions"] = [
             {
                 "country": CountrySerializer(country).data,
@@ -128,34 +228,34 @@ class StatusOfContributionsView(views.APIView):
                 "outstanding_contributions": country.outstanding_contributions,
                 "gain_loss": country.gain_loss,
             }
-            for country in Country.objects.filter(country_filter)
-            .prefetch_related("contributions_status")
+            for country in Country.objects.filter(
+                triennial_contributions_status__isnull=False
+            )
+            .prefetch_related("triennial_contributions_status")
             .select_related("ferm_gain_loss")
             .annotate(
                 agreed_contributions=models.Sum(
-                    "contributions_status__agreed_contributions", default=0
+                    "triennial_contributions_status__agreed_contributions", default=0
                 ),
                 cash_payments=models.Sum(
-                    "contributions_status__cash_payments", default=0
+                    "triennial_contributions_status__cash_payments", default=0
                 ),
                 bilateral_assistance=models.Sum(
-                    "contributions_status__bilateral_assistance", default=0
+                    "triennial_contributions_status__bilateral_assistance", default=0
                 ),
                 promissory_notes=models.Sum(
-                    "contributions_status__promissory_notes", default=0
+                    "triennial_contributions_status__promissory_notes", default=0
                 ),
                 outstanding_contributions=models.Sum(
-                    "contributions_status__outstanding_contributions", default=0
+                    "triennial_contributions_status__outstanding_contributions",
+                    default=0,
                 ),
                 gain_loss=models.F("ferm_gain_loss__amount"),
             )
             .order_by("country__name")
         ]
 
-        disputed_contributions_total = disputed_contributions_qs.aggregate(
-            total=models.Sum("amount", default=0)
-        )["total"]
-        data["total"] = contribution_status_qs.aggregate(
+        data["total"] = TriennialContributionStatus.objects.aggregate(
             agreed_contributions=models.Sum("agreed_contributions", default=0),
             cash_payments=models.Sum("cash_payments", default=0),
             bilateral_assistance=models.Sum("bilateral_assistance", default=0),
@@ -164,13 +264,19 @@ class StatusOfContributionsView(views.APIView):
                 "outstanding_contributions", default=0
             ),
         )
+        data["total"]["gain_loss"] = FermGainLoss.objects.aggregate(
+            total=models.Sum("amount", default=0)
+        )["total"]
 
+        disputed_contribution_amount = DisputedContribution.objects.filter().aggregate(
+            total=models.Sum("amount", default=0)
+        )["total"]
         data["total"]["agreed_contributions_with_disputed"] = (
-            data["total"]["agreed_contributions"] + disputed_contributions_total
+            data["total"]["agreed_contributions"] + disputed_contribution_amount
         )
         data["total"]["outstanding_contributions_with_disputed"] = (
-            data["total"]["outstanding_contributions"] + disputed_contributions_total
+            data["total"]["outstanding_contributions"] + disputed_contribution_amount
         )
-        data["disputed_contributions"] = disputed_contributions_total
+        data["disputed_contributions"] = disputed_contribution_amount
 
         return Response(data)

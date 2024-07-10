@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from core.api.serializers.country import CountrySerializer
-from core.models import Replenishment, Contribution
+from core.models import Replenishment, ScaleOfAssessment
 
 
 class ReplenishmentSerializer(serializers.ModelSerializer):
@@ -14,7 +14,7 @@ class ReplenishmentSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ContributionSerializer(serializers.ModelSerializer):
+class ScaleOfAssessmentSerializer(serializers.ModelSerializer):
     replenishment = ReplenishmentSerializer(read_only=True)
     country = CountrySerializer(read_only=True)
     currency = serializers.CharField()
@@ -41,5 +41,5 @@ class ContributionSerializer(serializers.ModelSerializer):
     amount_local_currency = serializers.ReadOnlyField()
 
     class Meta:
-        model = Contribution
+        model = ScaleOfAssessment
         fields = "__all__"

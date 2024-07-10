@@ -5,7 +5,7 @@ from decimal import Decimal
 import pandas as pd
 from django.db import transaction
 
-from core.models import Replenishment, Contribution
+from core.models import Replenishment, ScaleOfAssessment
 from core.import_data.utils import (
     IMPORT_RESOURCES_DIR,
     delete_old_data,
@@ -63,7 +63,7 @@ def import_replenishments(countries):
     """
     Import past replenishments (2024-2026).
     """
-    delete_old_data(Contribution)
+    delete_old_data(ScaleOfAssessment)
     delete_old_data(Replenishment)
 
     for start_year, end_year in REPLENISHMENT_YEARS:
@@ -104,7 +104,7 @@ def import_replenishments(countries):
                 logger.warning(f"Country {country_name} not found")
                 continue
 
-            contribution = Contribution(
+            contribution = ScaleOfAssessment(
                 replenishment=replenishment,
                 country=country,
                 un_scale_of_assessment=row.iloc[UN_SCALE_OF_ASSESSMENT_COLUMN],
@@ -120,7 +120,7 @@ def import_replenishments(countries):
             )
             contributions.append(contribution)
 
-        Contribution.objects.bulk_create(contributions)
+        ScaleOfAssessment.objects.bulk_create(contributions)
 
         logger.info(
             f"Imported {len(contributions)} contributions for Replenishment {start_year} - {end_year}"
