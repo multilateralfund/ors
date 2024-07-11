@@ -162,7 +162,7 @@ function ListItem(props) {
 function SummaryCard(props) {
   const { label, value } = props
   return (
-    <div className="flex h-[150px] w-[250px] flex-col justify-between rounded-lg bg-[#F5F5F5] px-4 py-4">
+    <div className="flex h-[150px] flex-col justify-between rounded-lg bg-[#F5F5F5] px-4 py-4">
       <div className="text-xl font-medium uppercase">{label}</div>
       <div className="text-2xl font-bold">{value}</div>
     </div>
@@ -372,7 +372,7 @@ function DashboardView() {
         />
       ) : null}
 
-      <div className="flex">
+      <div className="flex gap-x-4">
         <div className="w-7/12">
           <h3 className="text-2xl">OVERVIEW</h3>
 
@@ -448,8 +448,8 @@ function DashboardView() {
         <div className="w-5/12">
           <br className="m-5 leading-7" />
           <div className="flex flex-col gap-8">
-            <div className="h-[562px] w-[690px] rounded-lg bg-[#F5F5F5]"></div>
-            <div className="h-[464px] w-[690px] rounded-lg bg-[#F5F5F5]"></div>
+            <div className="h-[562px] w-full rounded-lg bg-[#F5F5F5]"></div>
+            <div className="h-[464px] w-full rounded-lg bg-[#F5F5F5]"></div>
           </div>
         </div>
       </div>

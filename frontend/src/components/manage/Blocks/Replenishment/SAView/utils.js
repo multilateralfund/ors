@@ -2,7 +2,8 @@ import { fixFloat } from '@ors/helpers/Utils/Utils'
 
 import { MAX_DECIMALS, MIN_DECIMALS, PRECISION } from '../constants'
 
-export { getCountryForIso3, sortTableData } from '../utils'
+export { getCountryForIso3 } from '../utils'
+import { getDefaultFieldSorter } from '../utils'
 
 export function uniformDecimals(v) {
   let result = null
@@ -21,7 +22,7 @@ export function clearNew(d) {
   return r
 }
 
-export function computeTableData(tableData, totalReplenishment) {
+export function computeTableData(tableData, totalReplenishment, currencies) {
   const result = new Array(tableData.length)
 
   let adj_un_soa = 0
@@ -71,12 +72,18 @@ export function computeTableData(tableData, totalReplenishment) {
         100,
       PRECISION,
     )
+
+    // Does it qualify for FERM?
     result[i].qual_ferm =
       (result[i].override_avg_ir ?? result[i].avg_ir ?? 100) < 10 ? true : false
+    result[i].qual_ferm = result[i].qual_ferm || result[i].ferm_cur === 'Euro'
+
+    // Calculate contribution in national currency for those qualifying for FERM
     result[i].ferm_cur_amount =
       (result[i].override_qual_ferm ?? result[i].qual_ferm) &&
-      (result[i].override_ferm_rate ?? result[i].ferm_rate)
-        ? (result[i].override_ferm_rate ?? result[i].ferm_rate) *
+      (result[i].override_ferm_rate ?? result[i].ferm_rate != null)
+        ? (result[i].override_ferm_rate ??
+            currencies.idToRate[result[i].ferm_rate]) *
           result[i].annual_contributions
         : null
 
@@ -91,7 +98,26 @@ export function computeTableData(tableData, totalReplenishment) {
   return result
 }
 
-export function formatTableData(tableData, editableColumns) {
+function formattedValue(value) {
+  let newValue = value
+
+  if (value === null) {
+    newValue = 'N/A'
+  } else if (typeof value === 'number') {
+    newValue = value.toLocaleString('en-US', {
+      maximumFractionDigits: MAX_DECIMALS,
+      minimumFractionDigits: MIN_DECIMALS,
+    })
+  } else if (value === false) {
+    newValue = 'No'
+  } else if (value === true) {
+    newValue = 'Yes'
+  }
+
+  return newValue
+}
+
+export function formatTableData(tableData, editableColumns, currencies) {
   const result = new Array(tableData.length)
 
   for (let i = 0; i < tableData.length; i++) {
@@ -102,21 +128,16 @@ export function formatTableData(tableData, editableColumns) {
       const overrideKey = `override_${key}`
       const value = tableData[i][overrideKey] ?? tableData[i][key]
       const hasOverride = tableData[i].hasOwnProperty(overrideKey)
-      const valueType = typeof value
 
-      let newValue = value
+      let newValue
 
-      if (value === null) {
-        newValue = 'N/A'
-      } else if (valueType === 'number') {
-        newValue = value.toLocaleString('en-US', {
-          maximumFractionDigits: MAX_DECIMALS,
-          minimumFractionDigits: MIN_DECIMALS,
-        })
-      } else if (value === false) {
-        newValue = 'No'
-      } else if (value === true) {
-        newValue = 'Yes'
+      // Handle currency display
+      if (key === 'ferm_cur' && value !== null) {
+        newValue = formattedValue(currencies.idToValue[value])
+      } else if (key === 'ferm_rate' && value !== null) {
+        newValue = formattedValue(currencies.idToRate[value])
+      } else {
+        newValue = formattedValue(value)
       }
 
       if (editableColumns.includes(key)) {
@@ -138,6 +159,13 @@ export function formatTableData(tableData, editableColumns) {
           edit: value,
           view: <div className="text-center">{newValue}</div>,
         }
+      }
+
+      // Handle currency edit
+      if (key === 'ferm_cur' && value !== null) {
+        result[i][key].edit = currencies.idToValue[value]
+      } else if (key === 'ferm_rate' && value !== null) {
+        result[i][key].edit = currencies.idToRate[value]
       }
     }
   }
@@ -177,5 +205,89 @@ export function sumColumns(tableData) {
     },
   )
 
+  return result
+}
+
+export function extractCurrencies(tableData) {
+  const idToValue = []
+  const valueToId = {}
+  const idToRate = []
+  const r = []
+
+  for (let i = 0; i < tableData.length; i++) {
+    const value = tableData[i].ferm_cur
+    r.push(tableData[i])
+    if (value && valueToId[value] === undefined) {
+      const id = idToValue.length
+      idToValue.push(value)
+      idToRate.push(tableData[i].ferm_rate)
+      valueToId[value] = id
+    }
+    r[i].ferm_cur = valueToId[value] ?? value
+    r[i].ferm_rate = valueToId[value] ?? value
+  }
+
+  return {
+    idToRate,
+    idToValue,
+    tableData: r,
+    valueToId,
+  }
+}
+
+function currencyNameFieldSorter(field, direction, currencies) {
+  function valueGetter(v) {
+    return currencies.idToValue[v] ?? v
+  }
+
+  return function (a, b) {
+    const infinityValue = direction > 0 ? 'Z' : 'A'
+    const a_val = valueGetter(a[field]) ?? infinityValue
+    const b_val = valueGetter(b[field]) ?? infinityValue
+    if (typeof a_val === 'string') {
+      return a_val.localeCompare(b_val) * direction
+    } else {
+      if (a_val < b_val) {
+        return direction
+      } else {
+        return -direction
+      }
+    }
+  }
+}
+
+function currencyRateFieldSorter(field, direction, currencies) {
+  function valueGetter(v) {
+    return currencies.idToRate[v] ?? v
+  }
+
+  return function (a, b) {
+    const infinityValue = direction > 0 ? -Infinity : Infinity
+    const a_val = valueGetter(a[field]) ?? infinityValue
+    const b_val = valueGetter(b[field]) ?? infinityValue
+    if (a_val < b_val) {
+      return direction
+    } else {
+      return -direction
+    }
+  }
+}
+
+export function sortSATableData(tableData, field, direction, currencies) {
+  const result = [...tableData]
+
+  let sorter
+  switch (field) {
+    case 'ferm_cur':
+      sorter = currencyNameFieldSorter(field, direction, currencies)
+      break
+    case 'ferm_rate':
+      sorter = currencyRateFieldSorter(field, direction, currencies)
+      break
+    default:
+      sorter = getDefaultFieldSorter(field, direction)
+  }
+
+  result.sort(sorter)
   return result
 }

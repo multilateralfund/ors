@@ -13,9 +13,10 @@ import SATable from './SATable'
 import {
   clearNew,
   computeTableData,
+  extractCurrencies,
   formatTableData,
   getCountryForIso3,
-  sortTableData,
+  sortSATableData,
   sumColumns,
 } from './utils'
 
@@ -26,7 +27,7 @@ const COLUMNS = [
     field: 'un_soa',
     label: 'UN scale of assessment',
     parser: parseFloat,
-    subLabel: '( [PREV_PERIOD] )',
+    subLabel: '( [UN_SCALE_PERIOD] )',
   },
   {
     confirmationText:
@@ -166,7 +167,6 @@ function SaveManager(props) {
                   id="meeting"
                   className="!m-0 max-h-12 w-16 !py-1"
                   type="text"
-                  required
                 />
               </div>
               <div className="flex flex-col">
@@ -174,7 +174,6 @@ function SaveManager(props) {
                 <Input
                   id="decision"
                   className="!m-0 max-h-12 w-16 !py-1"
-                  required={isFinal}
                   type="text"
                 />
               </div>
@@ -200,13 +199,14 @@ function tranformContributions(cs) {
   const r = []
 
   for (let i = 0; i < cs.length; i++) {
+    const cur = cs[i].currency
     r.push({
       adj_un_soa: cs[i].adjusted_scale_of_assessment,
       annual_contributions: cs[i].amount,
       avg_ir: cs[i].average_inflation_rate,
       country: cs[i].country.name_alt,
       country_id: cs[i].country.id,
-      ferm_cur: cs[i].currency,
+      ferm_cur: cur && cur !== 'nan' ? cur : null,
       ferm_cur_amount: cs[i].amount_local_currency,
       ferm_rate: cs[i].exchange_rate,
       iso3: cs[i].country.iso3,
@@ -221,13 +221,11 @@ function tranformContributions(cs) {
   return r
 }
 
-function transformForSave(d) {
+function transformForSave(d, currencies) {
   const r = []
 
   const mapping = [
     ['average_inflation_rate', 'avg_ir'],
-    ['currency', 'ferm_cur'],
-    ['exchange_rate', 'ferm_rate'],
     ['un_scale_of_assessment', 'un_soa'],
   ]
 
@@ -258,6 +256,9 @@ function transformForSave(d) {
     if (d[i].override_opted_for_ferm && d[i].qual_ferm) {
       n.opted_for_ferm = true
     }
+
+    n.exchange_rate = currencies.idToRate[d[i].ferm_rate]
+    n.currency = currencies.idToValue[d[i].ferm_cur]
 
     r.push(n)
   }
@@ -303,6 +304,7 @@ function SAView(props) {
 
   const periodStart = parseInt(period.split('-')[0], 10)
   const prevPeriod = [periodStart - 3, periodStart - 1].join('-')
+  const unScalePeriod = [periodStart - 2, periodStart].join('-')
 
   const columns = useMemo(
     function () {
@@ -314,6 +316,7 @@ function SAView(props) {
             <span className="whitespace-nowrap text-sm font-normal">
               {COLUMNS[i].subLabel
                 ?.replace('[PERIOD]', period)
+                .replace('[UN_SCALE_PERIOD]', unScalePeriod)
                 .replace('[PREV_PERIOD]', prevPeriod)
                 .replace('[PREV_YEAR]', periodStart - 1)}
             </span>
@@ -326,7 +329,7 @@ function SAView(props) {
       }
       return result
     },
-    [period, periodStart, prevPeriod],
+    [period, unScalePeriod, periodStart, prevPeriod],
   )
 
   const { contributions, replenishmentAmount: apiReplenishmentAmount } =
@@ -334,12 +337,13 @@ function SAView(props) {
 
   useEffect(
     function () {
-      setTableData(contributions)
+      handleNewTableData(contributions)
       setReplenishmentAmount(apiReplenishmentAmount)
     },
     [contributions, apiReplenishmentAmount],
   )
 
+  const [currencies, setCurrencies] = useState({})
   const [tableData, setTableData] = useState(contributions)
   const [shouldCompute, setShouldCompute] = useState(false)
 
@@ -351,6 +355,35 @@ function SAView(props) {
   const [replenishmentAmount, setReplenishmentAmount] = useState(0)
 
   const [commentText, setCommentText] = useState('')
+
+  function addOrEditCurrency(prevId, value) {
+    let id = prevId !== null ? prevId : currencies.valueToId[value]
+    setCurrencies(function (prev) {
+      const next = { ...prev }
+      if (id == undefined) {
+        // New currency
+        id = next.idToValue.length
+        next.idToValue.push(value)
+        next.idToRate.push(null)
+        next.valueToId[value] = id
+      } else {
+        // Edit currency
+        next.idToValue[id] = value
+      }
+      return next
+    })
+    return id
+  }
+
+  function handleNewTableData(newData) {
+    const extractedCurrencies = extractCurrencies(newData)
+    setTableData(extractedCurrencies.tableData)
+    setCurrencies({
+      idToRate: extractedCurrencies.idToRate,
+      idToValue: extractedCurrencies.idToValue,
+      valueToId: extractedCurrencies.valueToId,
+    })
+  }
 
   useEffect(
     function () {
@@ -369,24 +402,29 @@ function SAView(props) {
   const computedData = useMemo(
     () =>
       shouldCompute
-        ? computeTableData(tableData, replenishmentAmount)
+        ? computeTableData(tableData, replenishmentAmount, currencies)
         : tableData,
     /* eslint-disable-next-line */
-    [tableData, replenishmentAmount, shouldCompute],
+    [tableData, replenishmentAmount, shouldCompute, currencies],
   )
 
   const sortedData = useMemo(
     function () {
-      return sortTableData(computedData, columns[sortOn].field, sortDirection)
+      return sortSATableData(
+        computedData,
+        columns[sortOn].field,
+        sortDirection,
+        currencies,
+      )
     },
-    [computedData, sortOn, sortDirection, columns],
+    [computedData, sortOn, sortDirection, columns, currencies],
   )
 
   const formattedTableData = useMemo(
     function () {
-      return formatTableData(sortedData, EDITABLE)
+      return formatTableData(sortedData, EDITABLE, currencies)
     },
-    [sortedData],
+    [sortedData, currencies],
   )
 
   const countriesForAdd = useMemo(
@@ -462,17 +500,31 @@ function SAView(props) {
   function handleCellEdit(r, c, n, v) {
     const parser = columns[c].parser
     const overrideKey = `override_${n}`
+    const prevValue = sortedData[r][n]
     const next = [...sortedData]
     const value = parser ? parser(v) : v
-    if (
+    const isNullValue =
       value === '' ||
       value === undefined ||
-      (typeof value === 'number' && isNaN(value)) ||
-      next[r][n] === value
-    ) {
-      delete next[r][overrideKey]
+      (typeof value === 'number' && isNaN(value))
+    if (n === 'ferm_cur') {
+      if (isNullValue) {
+        next[r][n] = null
+      } else {
+        next[r][n] = addOrEditCurrency(prevValue, value)
+      }
+    } else if (n === 'ferm_rate') {
+      setCurrencies(function (prevCurrencies) {
+        const nextCurrencies = { ...prevCurrencies }
+        nextCurrencies.idToRate[prevValue] = isNullValue ? null : value
+        return nextCurrencies
+      })
     } else {
-      next[r][overrideKey] = value
+      if (isNullValue || next[r][n] === value) {
+        delete next[r][overrideKey]
+      } else {
+        next[r][overrideKey] = value
+      }
     }
     setTableData(next)
     setShouldCompute(true)
@@ -522,7 +574,7 @@ function SAView(props) {
         <SaveManager
           amount={replenishmentAmount}
           comment={commentText}
-          data={transformForSave(tableData)}
+          data={transformForSave(tableData, currencies)}
         />
       </div>
       <SATable

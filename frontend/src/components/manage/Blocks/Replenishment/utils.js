@@ -73,9 +73,8 @@ export function filterTableData(tableData, searchValue) {
   return result
 }
 
-export function sortTableData(tableData, field, direction) {
-  const result = [...tableData]
-  result.sort(function (a, b) {
+export function getDefaultFieldSorter(field, direction) {
+  return function (a, b) {
     const a_val = a[field]
     const b_val = b[field]
     if (typeof a_val === 'string') {
@@ -87,7 +86,13 @@ export function sortTableData(tableData, field, direction) {
         return -direction
       }
     }
-  })
+  }
+}
+
+export function sortTableData(tableData, field, direction) {
+  const result = [...tableData]
+  const defaultSorter = getDefaultFieldSorter(field, direction)
+  result.sort(defaultSorter)
   return result
 }
 
