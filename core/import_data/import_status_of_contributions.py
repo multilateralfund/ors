@@ -244,6 +244,15 @@ ANNUAL_STATUS_OF_CONTRIBUTIONS_SHEET_INFO = {
         "cols": "A:F",
         "start_row": 8,
         "end_row": 57,
+        "disputed_contributions": {
+            "col": "B",
+            "row": 59,
+        }
+    },
+    2024: {
+        "cols": "A:F",
+        "start_row": 8,
+        "end_row": 57,
     },
 }
 
@@ -303,6 +312,11 @@ TRIENNIAL_STATUS_OF_CONTRIBUTIONS_SHEET_INFO = {
         "start_row": 8,
         "end_row": 57,
     },
+    (2024, 2026): {
+        "cols": "A:F",
+        "start_row": 8,
+        "end_row": 57,
+    }
 }
 
 
@@ -324,7 +338,7 @@ def import_status_of_contributions(countries):
     delete_old_data(DisputedContribution)
     delete_old_data(FermGainLoss)
 
-    soc_file = pd.ExcelFile(IMPORT_RESOURCES_DIR / "9303p2.xlsx")
+    soc_file = pd.ExcelFile(IMPORT_RESOURCES_DIR / "9403_Annex_I_270524.xlsx")
 
     # Import annual contributions
     for year, info in ANNUAL_STATUS_OF_CONTRIBUTIONS_SHEET_INFO.items():
@@ -441,7 +455,7 @@ def import_status_of_contributions(countries):
 
     ferm_gain_loss_objects = []
     ferm_gain_loss_df = soc_file.parse(
-        sheet_name="YR91_23",
+        sheet_name="YR91_24",
         usecols="A,G",
         skiprows=8 - 1,
         nrows=63 - 8,
