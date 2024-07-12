@@ -100,7 +100,7 @@ const COLUMNS = [
     field: 'ferm_rate',
     label: 'Currency rate of exchange used for fixed exchange',
     parser: parseFloat,
-    subLabel: '(01 Jan - 30 Jun [PREV_YEAR])',
+    subLabel: '[DATE_RANGE]',
   },
   {
     editable: true,
@@ -358,6 +358,12 @@ function getInitialCurrencyDateRange(year) {
   return { end, start }
 }
 
+function formatCurrencyDateRangeForHeader(dateRange) {
+  const { end, start } = dateRange
+  const intl = new Intl.DateTimeFormat('en-US', { month: 'short' })
+  return `${start.getUTCDate()} ${intl.format(start)} - ${end.getUTCDate()} ${intl.format(end)} ${start.getUTCFullYear()}`
+}
+
 function SAView(props) {
   const { period } = props
 
@@ -383,7 +389,10 @@ function SAView(props) {
                 ?.replace('[PERIOD]', period)
                 .replace('[UN_SCALE_PERIOD]', unScalePeriod)
                 .replace('[PREV_PERIOD]', prevPeriod)
-                .replace('[PREV_YEAR]', periodStart - 1)}
+                .replace(
+                  '[DATE_RANGE]',
+                  formatCurrencyDateRangeForHeader(currencyDateRange),
+                )}
             </span>
           </div>
         )
@@ -394,7 +403,7 @@ function SAView(props) {
       }
       return result
     },
-    [period, unScalePeriod, periodStart, prevPeriod],
+    [currencyDateRange, period, unScalePeriod, prevPeriod],
   )
 
   const { contributions, replenishmentAmount: apiReplenishmentAmount } =
