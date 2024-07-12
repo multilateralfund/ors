@@ -8,7 +8,14 @@ import ReplenishmentProvider from '@ors/contexts/Replenishment/ReplenishmentProv
 import { formatApiUrl } from '@ors/helpers/Api/utils'
 
 import FormDialog from '../FormDialog'
-import { FieldInput, FieldSelect, FormattedNumberInput, Input } from '../Inputs'
+import {
+  DateInput,
+  FieldInput,
+  FieldSelect,
+  FormattedNumberInput,
+  Input,
+} from '../Inputs'
+import { dateForInput, dateFromInput } from '../utils'
 import SATable from './SATable'
 import {
   clearNew,
@@ -120,13 +127,20 @@ function getEditableFieldNames(cs) {
 const EDITABLE = getEditableFieldNames(COLUMNS)
 
 function SaveManager(props) {
-  const { amount, comment, data } = props
+  const { amount, comment, currencyDateRange, data } = props
 
   const [isFinal, setIsFinal] = useState(false)
+  const [createNewVersion, setCreateNewVersion] = useState(true)
   const [saving, setSaving] = useState(false)
 
   function handleChangeFinal() {
     setIsFinal(function (prev) {
+      return !prev
+    })
+  }
+
+  function handleChangeCreateNewVersion() {
+    setCreateNewVersion(function (prev) {
       return !prev
     })
   }
@@ -138,6 +152,9 @@ function SaveManager(props) {
   function confirmSave(formData) {
     const saveData = { ...formData, amount, comment, data }
     saveData['final'] = isFinal
+    saveData['currency_date_range_start'] =
+      currencyDateRange.start.toISOString()
+    saveData['currency_date_range_end'] = currencyDateRange.end.toISOString()
     console.log(saveData)
     setSaving(false)
     alert(`Save not implemented!\n\n${JSON.stringify(saveData, undefined, 2)}`)
@@ -166,6 +183,7 @@ function SaveManager(props) {
                 <Input
                   id="meeting"
                   className="!m-0 max-h-12 w-16 !py-1"
+                  required={isFinal}
                   type="text"
                 />
               </div>
@@ -174,9 +192,22 @@ function SaveManager(props) {
                 <Input
                   id="decision"
                   className="!m-0 max-h-12 w-16 !py-1"
+                  required={isFinal}
                   type="text"
                 />
               </div>
+            </div>
+          </div>
+          <div className="mt-2 flex">
+            <div className="flex items-center gap-x-2">
+              <Input
+                id="createNewVersion"
+                className="!ml-0"
+                checked={createNewVersion}
+                type="checkbox"
+                onChange={handleChangeCreateNewVersion}
+              />
+              <label htmlFor="createNewVersion">Create new version</label>
             </div>
           </div>
         </FormDialog>
@@ -191,6 +222,30 @@ function SaveManager(props) {
         <label htmlFor="markAsFinal">Mark as final</label>
       </div>
       <SubmitButton onClick={handleSave}>Save changes</SubmitButton>
+    </div>
+  )
+}
+
+function DateRangeInput(props) {
+  const { initialEnd, initialStart, onChange } = props
+
+  const [start, setStart] = useState(initialStart)
+  const [end, setEnd] = useState(initialEnd)
+
+  function handleChangeStart(evt) {
+    onChange(evt.target.value, end)
+    setStart(evt.target.value)
+  }
+
+  function handleChangeEnd(evt) {
+    onChange(start, evt.target.value)
+    setEnd(evt.target.value)
+  }
+
+  return (
+    <div>
+      <DateInput value={start} onChange={handleChangeStart} />
+      <DateInput value={end} onChange={handleChangeEnd} />
     </div>
   )
 }
@@ -297,6 +352,12 @@ function useApiReplenishment(startYear) {
   return { contributions, replenishmentAmount }
 }
 
+function getInitialCurrencyDateRange(year) {
+  const start = new Date(Date.UTC(year, 0, 1))
+  const end = new Date(Date.UTC(year, 6, 0))
+  return { end, start }
+}
+
 function SAView(props) {
   const { period } = props
 
@@ -305,6 +366,10 @@ function SAView(props) {
   const periodStart = parseInt(period.split('-')[0], 10)
   const prevPeriod = [periodStart - 3, periodStart - 1].join('-')
   const unScalePeriod = [periodStart - 2, periodStart].join('-')
+
+  const [currencyDateRange, setCurrencyDateRange] = useState(
+    getInitialCurrencyDateRange(periodStart - 1),
+  )
 
   const columns = useMemo(
     function () {
@@ -353,6 +418,7 @@ function SAView(props) {
   const [showAdd, setShowAdd] = useState(false)
 
   const [replenishmentAmount, setReplenishmentAmount] = useState(0)
+  const [unusedAmount, setUnusedAmount] = useState('')
 
   const [commentText, setCommentText] = useState('')
 
@@ -402,10 +468,14 @@ function SAView(props) {
   const computedData = useMemo(
     () =>
       shouldCompute
-        ? computeTableData(tableData, replenishmentAmount, currencies)
+        ? computeTableData(
+            tableData,
+            replenishmentAmount - unusedAmount || 0,
+            currencies,
+          )
         : tableData,
     /* eslint-disable-next-line */
-    [tableData, replenishmentAmount, shouldCompute, currencies],
+    [tableData, replenishmentAmount, unusedAmount, shouldCompute, currencies],
   )
 
   const sortedData = useMemo(
@@ -492,6 +562,16 @@ function SAView(props) {
     }
   }
 
+  function handleUnusedAmountInput(evt) {
+    const value = parseFloat(evt.target.value)
+    if (typeof value === 'number' && !isNaN(value)) {
+      setUnusedAmount(value)
+      setShouldCompute(true)
+    } else {
+      setUnusedAmount('')
+    }
+  }
+
   function handleSort(column) {
     setSortDirection((direction) => (column === sortOn ? -direction : 1))
     setSortOn(column)
@@ -534,46 +614,87 @@ function SAView(props) {
     setCommentText(evt.target.value)
   }
 
+  function handleChangeCurrencyDateRange(start, end) {
+    setCurrencyDateRange({
+      end: dateFromInput(end),
+      start: dateFromInput(start),
+    })
+  }
+
   return (
     <>
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-x-4 py-4">
-          <div className="flex items-center">
-            <label htmlFor="triannualBudget_mask">
-              <div className="flex flex-col uppercase text-primary">
-                <span className="font-bold">Triannual budget</span>
-                <span className="">(in U.S.D)</span>
-              </div>
-            </label>
-            <FormattedNumberInput
-              id="triannualBudget"
-              className="w-36"
-              type="number"
-              value={replenishmentAmount}
-              onChange={handleAmountInput}
-            />
+        <div className="flex py-4 sm:flex-col 2xl:flex-row 2xl:items-center 2xl:gap-x-4">
+          <div className="flex items-center gap-x-4 py-4">
+            <div className="flex items-center">
+              <label htmlFor="triannualBudget_mask">
+                <div className="flex flex-col uppercase text-primary">
+                  <span className="font-bold">Triannual budget</span>
+                  <span className="">(in U.S.D)</span>
+                </div>
+              </label>
+              <FormattedNumberInput
+                id="triannualBudget"
+                className="w-36"
+                type="number"
+                value={replenishmentAmount}
+                onChange={handleAmountInput}
+              />
+            </div>
+            <div className="h-8 border-y-0 border-l border-r-0 border-solid border-gray-400"></div>
+            <div className="flex items-center">
+              <label htmlFor="triannualBudget_mask">
+                <div className="flex flex-col uppercase text-primary">
+                  <span className="font-bold">Previously unused sum</span>
+                  <span className="">(in U.S.D)</span>
+                </div>
+              </label>
+              <FormattedNumberInput
+                id="previouslyUnusedSum"
+                className="w-36"
+                type="number"
+                value={unusedAmount}
+                onChange={handleUnusedAmountInput}
+              />
+            </div>
+            <div className="h-8 border-y-0 border-l border-r-0 border-solid border-gray-400"></div>
+            <div className="flex items-center">
+              <label htmlFor="totalAmount_mask">
+                <div className="flex flex-col uppercase text-primary">
+                  <span className="font-bold">Annual budget</span>
+                  <span className="">(in U.S.D)</span>
+                </div>
+              </label>
+              <FormattedNumberInput
+                id="totalAmount"
+                className="w-36"
+                type="number"
+                value={(replenishmentAmount - unusedAmount || 0) / 3}
+                disabled
+                readOnly
+              />
+            </div>
           </div>
-          <div className="h-8 border-y-0 border-l border-r-0 border-solid border-gray-400"></div>
+          <div className="h-8 border-y-0 border-l border-r-0 border-solid border-gray-400 sm:hidden 2xl:block"></div>
           <div className="flex items-center">
-            <label htmlFor="totalAmount_mask">
+            <label>
               <div className="flex flex-col uppercase text-primary">
-                <span className="font-bold">Annual budget</span>
-                <span className="">(in U.S.D)</span>
+                <span className="max-w-28 font-bold">
+                  Currency rate date range
+                </span>
               </div>
             </label>
-            <FormattedNumberInput
-              id="totalAmount"
-              className="w-36"
-              type="number"
-              value={replenishmentAmount / 3}
-              disabled
-              readOnly
+            <DateRangeInput
+              initialEnd={dateForInput(currencyDateRange.end)}
+              initialStart={dateForInput(currencyDateRange.start)}
+              onChange={handleChangeCurrencyDateRange}
             />
           </div>
         </div>
         <SaveManager
           amount={replenishmentAmount}
           comment={commentText}
+          currencyDateRange={currencyDateRange}
           data={transformForSave(tableData, currencies)}
         />
       </div>

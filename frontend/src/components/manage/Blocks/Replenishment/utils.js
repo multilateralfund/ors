@@ -38,11 +38,22 @@ export function formatNumberValue(value, minDigits, maxDigits) {
 
 export function dateForEditField(value) {
   const date = new Date(Date.parse(value))
+  return dateForInput(date)
+}
+
+export function dateForInput(date) {
   let day = date.getDate()
   let month = date.getMonth() + 1
   day = day < 10 ? `0${day}` : day
   month = month < 10 ? `0${month}` : month
   return `${date.getFullYear()}-${month}-${day}`
+}
+
+export function dateFromInput(value) {
+  const [year, month, day] = value.split('-')
+  return new Date(
+    Date.UTC(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10)),
+  )
 }
 
 export function numberForEditField(value) {

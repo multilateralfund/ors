@@ -1,9 +1,8 @@
 import React from 'react'
 
+import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
 import SAView from '@ors/components/manage/Blocks/Replenishment/SAView'
-import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-import { PageHeading } from '@ors/components/ui/Heading/Heading'
 
 export const metadata = {
   title: 'Replenishment - Scale of assessment',
@@ -16,9 +15,7 @@ export default async function ReplenishmentScaleOfAssessment(props) {
       className="w-full rounded-b-lg bg-white p-4"
       defaultSpacing={false}
     >
-      <HeaderTitle>
-        <PageHeading>Replenishment - Scale of assessment</PageHeading>
-      </HeaderTitle>
+      <ReplenishmentHeading>Scale of assessment</ReplenishmentHeading>
       <SAView period={period} />
     </PageWrapper>
   )

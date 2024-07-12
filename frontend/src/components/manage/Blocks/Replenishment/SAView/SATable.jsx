@@ -101,7 +101,7 @@ function TableCell(props) {
   const [showConfirmEdit, setShowConfirmEdit] = useState(false)
 
   function handleStartEdit() {
-    if (enableEdit && column.editable === true) {
+    if (enableEdit && cell.isEditable === true) {
       setEditing(true)
     }
   }

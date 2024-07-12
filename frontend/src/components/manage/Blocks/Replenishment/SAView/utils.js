@@ -76,7 +76,8 @@ export function computeTableData(tableData, totalReplenishment, currencies) {
     // Does it qualify for FERM?
     result[i].qual_ferm =
       (result[i].override_avg_ir ?? result[i].avg_ir ?? 100) < 10 ? true : false
-    result[i].qual_ferm = result[i].qual_ferm || result[i].ferm_cur === 'Euro'
+    result[i].qual_ferm =
+      result[i].qual_ferm || currencies.idToValue[result[i].ferm_cur] === 'Euro'
 
     // Calculate contribution in national currency for those qualifying for FERM
     result[i].ferm_cur_amount =
@@ -129,6 +130,8 @@ export function formatTableData(tableData, editableColumns, currencies) {
       const value = tableData[i][overrideKey] ?? tableData[i][key]
       const hasOverride = tableData[i].hasOwnProperty(overrideKey)
 
+      let isEditable = editableColumns.includes(key)
+
       let newValue
 
       // Handle currency display
@@ -136,13 +139,21 @@ export function formatTableData(tableData, editableColumns, currencies) {
         newValue = formattedValue(currencies.idToValue[value])
       } else if (key === 'ferm_rate' && value !== null) {
         newValue = formattedValue(currencies.idToRate[value])
+      } else if (key === 'opted_for_ferm' && value == null) {
+        newValue = '-'
+        isEditable = false
       } else {
         newValue = formattedValue(value)
       }
 
-      if (editableColumns.includes(key)) {
+      if (key === 'adj_un_soa' && tableData[i].iso3 == 'USA') {
+        isEditable = false
+      }
+
+      if (isEditable) {
         result[i][key] = {
           edit: value,
+          isEditable,
           view: (
             <div className="flex items-center justify-between">
               <span
@@ -157,6 +168,7 @@ export function formatTableData(tableData, editableColumns, currencies) {
       } else {
         result[i][key] = {
           edit: value,
+          isEditable,
           view: <div className="text-center">{newValue}</div>,
         }
       }
