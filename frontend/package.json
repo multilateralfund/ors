@@ -32,7 +32,7 @@
     "@next/mdx": "^14.2.3",
     "@sentry/nextjs": "^8",
     "@types/mdx": "^2.0.13",
-    "ag-grid-community": "^31.0.3",
+    "ag-grid-community": "^32.0.1",
     "ag-grid-react": "^31.3.1",
     "classnames": "^2.5.1",
     "dayjs": "^1.11.11",
