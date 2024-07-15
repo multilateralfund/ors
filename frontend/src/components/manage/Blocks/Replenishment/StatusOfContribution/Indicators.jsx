@@ -31,7 +31,7 @@ const SummaryIndicators = ({ data }) => {
   )
 }
 
-const TriennialIndicators = ({ data, totalPledge }) => {
+const TriennialIndicators = ({ data, period, totalPledge }) => {
   return (
     <div className="flex flex-wrap items-center justify-center gap-4 border-primary text-primary">
       <IndicatorBox
@@ -39,7 +39,7 @@ const TriennialIndicators = ({ data, totalPledge }) => {
         value={data.contributions}
       />
       <IndicatorBox
-        text="of the total pledge received for the triennial"
+        text={`of the total pledge received for ${period}`}
         value={totalPledge}
         isPercentage
       />
@@ -47,4 +47,20 @@ const TriennialIndicators = ({ data, totalPledge }) => {
   )
 }
 
-export { SummaryIndicators, TriennialIndicators }
+const AnnualIndicators = ({ data, totalPledge, year }) => {
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-4 border-primary text-primary">
+      <IndicatorBox
+        text={`parties have made their contributions for ${year}`}
+        value={data.contributions}
+      />
+      <IndicatorBox
+        text={`of the total pledge received for ${year}`}
+        value={totalPledge}
+        isPercentage
+      />
+    </div>
+  )
+}
+
+export { AnnualIndicators, SummaryIndicators, TriennialIndicators }

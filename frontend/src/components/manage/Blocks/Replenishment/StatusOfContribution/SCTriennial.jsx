@@ -12,7 +12,7 @@ import { sortTableData } from '@ors/components/manage/Blocks/Replenishment/utils
 
 export default function SCTriennial({ period }) {
   const [year_start, year_end] = period.split('-')
-  const { data, extraRows, loading, rows } = useGetSCData(year_start, year_end)
+  const { data, extraRows, rows } = useGetSCData(year_start, year_end)
 
   const [sortOn, setSortOn] = useState(0)
   const [sortDirection, setSortDirection] = useState(1)
@@ -64,7 +64,11 @@ export default function SCTriennial({ period }) {
 
   return (
     <div className="flex flex-col items-start gap-6">
-      <TriennialIndicators data={indicatorsData} totalPledge={totalPledge} />
+      <TriennialIndicators
+        data={indicatorsData}
+        totalPledge={totalPledge}
+        period={period}
+      />
       <Table
         adminButtons={false}
         columns={SC_COLUMNS}
