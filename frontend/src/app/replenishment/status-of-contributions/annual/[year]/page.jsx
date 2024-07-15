@@ -9,7 +9,7 @@ export const metadata = {
 export default async function ReplenishmentSoCAnnual(props) {
   const { year } = props.params
   return (
-    <PageWrapper className="w-full p-2" defaultSpacing={false}>
+    <PageWrapper className="w-full p-4" defaultSpacing={false}>
       <ReplenishmentHeading>Status of contributions</ReplenishmentHeading>
       <SCView year={year} />
     </PageWrapper>

@@ -9,7 +9,7 @@ export const metadata = {
 export default async function ReplenishmentInvoices(props) {
   const { period } = props.params
   return (
-    <PageWrapper className="w-full p-2" defaultSpacing={false}>
+    <PageWrapper className="w-full p-4" defaultSpacing={false}>
       <ReplenishmentHeading>Invoices</ReplenishmentHeading>
       <InvoicesView period={period} />
     </PageWrapper>
