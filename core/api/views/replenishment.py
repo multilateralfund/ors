@@ -328,6 +328,7 @@ class ReplenishmentDashboardView(views.APIView):
                 "cash_payments": computed_data["cash_payments"],
                 "bilateral_assistance": computed_data["bilateral_assistance"],
                 "interest_earned": income.interest_earned,
+                "promissory_notes": computed_data["promissory_notes"],
                 "miscellaneous_income": income.miscellaneous_income,
             },
             "allocations": {
@@ -341,6 +342,7 @@ class ReplenishmentDashboardView(views.APIView):
                 "technical_audit": allocations.technical_audit,
                 "information_strategy": allocations.information_strategy,
                 "bilateral_assistance": computed_data["bilateral_assistance"],
+                "gain_loss": gain_loss,
             },
         }
 
