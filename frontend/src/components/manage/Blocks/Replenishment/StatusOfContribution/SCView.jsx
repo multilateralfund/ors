@@ -77,7 +77,6 @@ export default function SCView(props) {
 
   const ctx = useContext(ReplenishmentContext)
 
-  console.log(ctx)
   const periodOptions = props.period
     ? mockSCPeriodOptions(ctx.periods)
     : mockScAnnualOptions()

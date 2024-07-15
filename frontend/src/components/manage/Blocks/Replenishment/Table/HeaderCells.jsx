@@ -1,3 +1,5 @@
+import cx from 'classnames'
+
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
 
 export default function HeaderCells(props) {
@@ -16,7 +18,7 @@ export default function HeaderCells(props) {
     hCols.push(
       <th
         key={i}
-        className="relative"
+        className={cx('relative', { 'cursor-pointer': enableSort })}
         onClick={function () {
           enableSort && onSort(i)
         }}
