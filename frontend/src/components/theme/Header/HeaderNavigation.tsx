@@ -2,6 +2,7 @@ import {
   UserType,
   userCanExportData,
   userCanSubmitReport,
+  userCanViewReports,
 } from '@ors/types/user_types'
 
 import React, { useState } from 'react'
@@ -67,11 +68,14 @@ const useInternalNavSections = () => {
   const { user_type } = useStore((state) => state.user?.data)
   const pathname = usePathname()
   const nI = makeInternalNavItem.bind(null, pathname)
+  const userIsAdminOrSecretariat = ['admin', 'secretariat'].includes(user_type)
   return [
     {
       label: 'Online CP Reporting',
       menu: [
-        { label: 'View reports', url: '/country-programme/reports' },
+        userCanViewReports[user_type as UserType]
+          ? { label: 'View reports', url: '/country-programme/reports' }
+          : null,
         userCanSubmitReport[user_type as UserType]
           ? { label: 'Add new report', url: '/country-programme/create' }
           : null,
@@ -84,14 +88,16 @@ const useInternalNavSections = () => {
       ].filter(Boolean),
       url: '/country-programme/reports',
     },
-    { label: 'Business plans', url: '/business-plans' },
-    ...(['admin', 'secretariat'].includes(user_type)
+    ...(userIsAdminOrSecretariat
       ? [
           {
             label: 'Replenishment',
             menu: [
               { label: 'Dashboard', url: '/replenishment/dashboard' },
-              { label: 'Status of contributions', url: '/replenishment/status-of-contributions' },
+              {
+                label: 'Status of contributions',
+                url: '/replenishment/status-of-contributions',
+              },
               {
                 label: 'Scale of assessment',
                 url: '/replenishment/scale-of-assessment',
@@ -103,14 +109,21 @@ const useInternalNavSections = () => {
           },
         ]
       : []),
-    { label: 'Project submissions', url: '/project-submissions' },
-    { label: 'Projects', url: '/projects' },
+    ...(userIsAdminOrSecretariat
+      ? [{ label: 'Business plans', url: '/business-plans' }]
+      : []),
+    ...(userIsAdminOrSecretariat
+      ? [{ label: 'Project submissions', url: '/project-submissions' }]
+      : []),
+    ...(userIsAdminOrSecretariat
+      ? [{ label: 'Projects', url: '/projects' }]
+      : []),
     // @ts-ignore
   ].map((item) => nI(item))
 }
 
 interface navItem {
-  current: boolean
+  current?: boolean
   external?: boolean
   internal?: boolean
   label: string
@@ -143,23 +156,30 @@ const useMenuItems = () => {
     ]),
     makeExternalNavItem('Our impact', '/our-impact'),
     makeExternalNavItem('Projects & Data', '/projects-data', [
+      {
+        label: 'Dashboards',
+        menu: [
+          makeExternalNavItem(
+            'Countries Dashboard',
+            '/projects-data/countries-dashboard',
+          ),
+          makeExternalNavItem(
+            'Funding Dashboard',
+            '/projects-data/funding-dashboard',
+          ),
+          makeExternalNavItem(
+            'People & Environment',
+            '/projects-data/people-environment',
+          ),
+          makeExternalNavItem(
+            'Projects Dashboard',
+            '/projects-data/projects-dashboard',
+          ),
+        ],
+        url: '',
+      },
+      { label: 'Data Center', url: '#' },
       ...useInternalNavSections(),
-      makeExternalNavItem(
-        'Countries Dashboard',
-        '/projects-data/countries-dashboard',
-      ),
-      makeExternalNavItem(
-        'Funding Dashboard',
-        '/projects-data/funding-dashboard',
-      ),
-      makeExternalNavItem(
-        'People & Environment',
-        '/projects-data/people-environment',
-      ),
-      makeExternalNavItem(
-        'Projects Dashboard',
-        '/projects-data/projects-dashboard',
-      ),
     ]),
     makeExternalNavItem('Resources', '/resources', [
       makeExternalNavItem('Decision handbook', '/resources/decisions'),
