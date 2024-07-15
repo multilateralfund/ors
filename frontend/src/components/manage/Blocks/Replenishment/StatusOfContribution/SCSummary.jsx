@@ -1,6 +1,7 @@
 'use client'
 import { useMemo, useState } from 'react'
 
+import { SummaryIndicators } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/Indicators'
 import useGetSCData from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/useGetSCData'
 import {
   SC_COLUMNS,
@@ -55,18 +56,43 @@ export default function SCSummary() {
     setSortOn(column)
   }
 
+  const indicatorsData = useMemo(() => {
+    return rows.reduce(
+      (acc, { outstanding_contributions }) => {
+        if (outstanding_contributions < 0) {
+          acc.contributions_advance += 1
+        } else if (outstanding_contributions === 0) {
+          acc.contributions += 1
+        } else {
+          acc.outstanding_contributions += 1
+        }
+        return acc
+      },
+      {
+        contributions: 0,
+        contributions_advance: 0,
+        outstanding_contributions: 0,
+      },
+    )
+  }, [rows])
+
+    console.log(rows)
+
   return (
-    <Table
-      adminButtons={false}
-      columns={columns}
-      enableEdit={false}
-      enableSort={true}
-      extraRows={formatTableRows(extraRows)}
-      rowData={formatTableRows(sortedData)}
-      sortDirection={sortDirection}
-      sortOn={sortOn}
-      textPosition="center"
-      onSort={handleSort}
-    />
+    <div className="flex flex-col items-start gap-6">
+      <SummaryIndicators data={indicatorsData} />
+      <Table
+        adminButtons={false}
+        columns={columns}
+        enableEdit={false}
+        enableSort={true}
+        extraRows={formatTableRows(extraRows)}
+        rowData={formatTableRows(sortedData)}
+        sortDirection={sortDirection}
+        sortOn={sortOn}
+        textPosition="center"
+        onSort={handleSort}
+      />
+    </div>
   )
 }
