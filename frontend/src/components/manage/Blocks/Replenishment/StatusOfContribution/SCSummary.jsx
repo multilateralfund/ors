@@ -59,9 +59,13 @@ export default function SCSummary() {
   const indicatorsData = useMemo(() => {
     return rows.reduce(
       (acc, { outstanding_contributions }) => {
-        if (outstanding_contributions < 0) {
+        let value = outstanding_contributions
+        if (value > -1 && value < 1) {
+          value = 0
+        }
+        if (value < 0) {
           acc.contributions_advance += 1
-        } else if (outstanding_contributions === 0) {
+        } else if (value === 0) {
           acc.contributions += 1
         } else {
           acc.outstanding_contributions += 1
@@ -75,8 +79,6 @@ export default function SCSummary() {
       },
     )
   }, [rows])
-
-    console.log(rows)
 
   return (
     <div className="flex flex-col items-start gap-6">

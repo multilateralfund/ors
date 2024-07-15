@@ -65,7 +65,12 @@ export function formatTableRows(rows, minDigits, maxDigits) {
 
     for (let j = 0; j < keys.length; j++) {
       const key = keys[j]
-      const value = rows[i][key]
+      let value = rows[i][key]
+
+      // As per specs, transform values in range (-1, 1) to 0
+      if (typeof value === 'number' && value > -1 && value < 1) {
+        value = 0
+      }
 
       switch (typeof value) {
         case 'number':
