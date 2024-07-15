@@ -223,7 +223,7 @@ function AddRow(props) {
   }
 
   return (
-    <tr className="bg-gray-100">
+    <tr className="bg-gray-100 print:hidden">
       <td colSpan={columns.length}>
         <form className="flex items-center gap-x-4" onSubmit={handleSubmit}>
           <select value={countryIdx} onChange={handleChangeCountryIdx} required>
@@ -263,7 +263,7 @@ function SATable(props) {
     const row = []
     for (let i = 0; i < columns.length; i++) {
       row.push(
-        <td key={i}>
+        <td key={i} className={cx(columns[i].className)}>
           <TableCell
             c={i}
             columns={columns}
@@ -305,7 +305,7 @@ function SATable(props) {
       const row = []
       for (let i = 0; i < columns.length; i++) {
         row.push(
-          <td key={i}>
+          <td key={i} className={cx(columns[i].className)}>
             <TableCell c={i} columns={columns} r={j} rowData={extraRows} />
           </td>,
         )

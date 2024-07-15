@@ -79,6 +79,7 @@ const COLUMNS = [
     subLabel: '(Yes / No)',
   },
   {
+    className: 'print:hidden',
     editOptions: [
       { label: 'Yes', value: 'true' },
       { label: 'No', value: 'false' },
@@ -165,7 +166,7 @@ function SaveManager(props) {
   }
 
   return (
-    <div className="flex items-center gap-x-4">
+    <div className="flex items-center gap-x-4 print:hidden">
       {saving ? (
         <FormDialog
           title="Save changes?"
@@ -633,7 +634,7 @@ function SAView(props) {
   return (
     <>
       <div className="flex items-center justify-between">
-        <div className="flex py-4 sm:flex-col 2xl:flex-row 2xl:items-center 2xl:gap-x-4">
+        <div className="flex py-4 sm:flex-col 2xl:flex-row 2xl:items-center 2xl:gap-x-4 print:hidden">
           <div className="flex items-center gap-x-4 py-4">
             <div className="flex items-center">
               <label htmlFor="triannualBudget_mask">
@@ -724,11 +725,11 @@ function SAView(props) {
         onSort={handleSort}
       />
       {!showAdd ? (
-        <div className="flex items-center py-4">
+        <div className="flex items-center py-4 print:hidden">
           <AddButton onClick={showAddRow}>Add country</AddButton>
         </div>
       ) : null}
-      <div className="-mx-4 -mb-4 rounded-b-lg bg-gray-200 p-4">
+      <div className="-mx-4 -mb-4 rounded-b-lg bg-gray-200 p-4 print:hidden">
         <div className="flex items-center gap-x-2">
           <h2>Comment Version N</h2>
           <div className="rounded bg-primary px-1 font-medium uppercase text-mlfs-hlYellow">

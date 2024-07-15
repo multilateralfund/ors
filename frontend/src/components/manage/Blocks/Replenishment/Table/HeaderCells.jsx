@@ -1,3 +1,5 @@
+import cx from 'classnames'
+
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
 
 export default function HeaderCells(props) {
@@ -16,14 +18,16 @@ export default function HeaderCells(props) {
     hCols.push(
       <th
         key={i}
-        className="relative"
+        className={cx('relative', columns[i].className)}
         onClick={function () {
           enableSort && onSort(i)
         }}
       >
         {columns[i].label}{' '}
         {sortOn === i ? (
-          <div className="absolute bottom-1 right-1">{sortIcon}</div>
+          <div className="absolute bottom-1 right-1 print:hidden">
+            {sortIcon}
+          </div>
         ) : null}
       </th>,
     )

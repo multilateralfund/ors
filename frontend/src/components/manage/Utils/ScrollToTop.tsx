@@ -30,7 +30,7 @@ const ScrollToTop = () => {
   }, [])
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-4 right-4 z-50 print:hidden">
       <button
         className={cx(
           'cursor-pointer rounded-lg border-none bg-primary p-3 font-bold uppercase text-mlfs-hlYellow opacity-0 shadow-2xl transition-all',
