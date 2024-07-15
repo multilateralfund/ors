@@ -36,7 +36,7 @@ export default function SCTriennial({ period }) {
         if (value > -1 && value < 1) {
           value = 0
         }
-        if (value === 0) {
+        if (value <= 0) {
           acc.contributions += 1
         }
         return acc
@@ -66,8 +66,8 @@ export default function SCTriennial({ period }) {
     <div className="flex flex-col items-start gap-6">
       <TriennialIndicators
         data={indicatorsData}
-        totalPledge={totalPledge}
         period={period}
+        totalPledge={totalPledge}
       />
       <Table
         adminButtons={false}

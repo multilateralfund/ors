@@ -35,7 +35,7 @@ export default function SCAnnual({ year }) {
         if (value > -1 && value < 1) {
           value = 0
         }
-        if (value === 0) {
+        if (value <= 0) {
           acc.contributions += 1
         }
         return acc
