@@ -542,7 +542,7 @@ def import_status_of_contributions(countries):
         income_kwargs[attribute] = value.iloc[0, 0]
 
     ExternalIncome.objects.create(**income_kwargs)
-    logger.info(f"Imported External Income")
+    logger.info("Imported External Income")
 
     allocations_kwargs = {}
     for attribute, info in DASHBOARD_DATA_ALLOCATIONS.items():
@@ -557,4 +557,4 @@ def import_status_of_contributions(countries):
         allocations_kwargs[attribute] = value.iloc[0, 0]
 
     ExternalAllocation.objects.create(**allocations_kwargs)
-    logger.info(f"Imported External Allocations")
+    logger.info("Imported External Allocations")
