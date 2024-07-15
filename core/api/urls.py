@@ -12,6 +12,7 @@ from core.api.views import (
     ScaleOfAssessmentViewSet,
     TriennialStatusOfContributionsView,
     SummaryStatusOfContributionsView,
+    ReplenishmentDashboardView,
 )
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
@@ -346,6 +347,11 @@ urlpatterns = [
         "business-plan/<int:id>/status-update/",
         BPStatusUpdateView.as_view(),
         name="business-plan-status",
+    ),
+    path(
+        "replenishment/dashboard",
+        ReplenishmentDashboardView.as_view(),
+        name="replenishment-dashboard",
     ),
     path(
         "replenishment/status-of-contributions/summary/",

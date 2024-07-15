@@ -10,6 +10,8 @@ from core.models import (
     DisputedContribution,
     FermGainLoss,
     TriennialContributionStatus,
+    ExternalIncome,
+    ExternalAllocation,
 )
 
 
@@ -247,7 +249,7 @@ ANNUAL_STATUS_OF_CONTRIBUTIONS_SHEET_INFO = {
         "disputed_contributions": {
             "col": "B",
             "row": 59,
-        }
+        },
     },
     2024: {
         "cols": "A:F",
@@ -316,7 +318,57 @@ TRIENNIAL_STATUS_OF_CONTRIBUTIONS_SHEET_INFO = {
         "cols": "A:F",
         "start_row": 8,
         "end_row": 57,
-    }
+    },
+}
+
+DASHBOARD_DATA_INCOME = {
+    "interest_earned": {
+        "row": 13,
+        "col": "C",
+    },
+    "miscellaneous_income": {
+        "row": 14,
+        "col": "C",
+    },
+}
+
+DASHBOARD_DATA_ALLOCATIONS = {
+    "undp": {
+        "row": 19,
+        "col": "B",
+    },
+    "unep": {
+        "row": 20,
+        "col": "B",
+    },
+    "unido": {
+        "row": 21,
+        "col": "B",
+    },
+    "world_bank": {
+        "row": 22,
+        "col": "B",
+    },
+    "staff_contracts": {
+        "row": 28,
+        "col": "C",
+    },
+    "treasury_fees": {
+        "row": 29,
+        "col": "C",
+    },
+    "monitoring_fees": {
+        "row": 30,
+        "col": "C",
+    },
+    "technical_audit": {
+        "row": 31,
+        "col": "C",
+    },
+    "information_strategy": {
+        "row": 33,
+        "col": "C",
+    },
 }
 
 
@@ -337,6 +389,8 @@ def import_status_of_contributions(countries):
     delete_old_data(TriennialContributionStatus)
     delete_old_data(DisputedContribution)
     delete_old_data(FermGainLoss)
+    delete_old_data(ExternalIncome)
+    delete_old_data(ExternalAllocation)
 
     soc_file = pd.ExcelFile(IMPORT_RESOURCES_DIR / "9403_Annex_I_270524.xlsx")
 
@@ -473,3 +527,34 @@ def import_status_of_contributions(countries):
 
     FermGainLoss.objects.bulk_create(ferm_gain_loss_objects)
     logger.info(f"Imported {len(ferm_gain_loss_objects)} Ferm Gain/Loss")
+
+    # Import dashboard data
+    income_kwargs = {}
+    for attribute, info in DASHBOARD_DATA_INCOME.items():
+        value = soc_file.parse(
+            sheet_name="Status",
+            usecols=info["col"],
+            skiprows=info["row"] - 1,
+            nrows=1,
+            header=None,
+            converters={0: decimal_converter},
+        )
+        income_kwargs[attribute] = value.iloc[0, 0]
+
+    ExternalIncome.objects.create(**income_kwargs)
+    logger.info(f"Imported External Income")
+
+    allocations_kwargs = {}
+    for attribute, info in DASHBOARD_DATA_ALLOCATIONS.items():
+        value = soc_file.parse(
+            sheet_name="Status",
+            usecols=info["col"],
+            skiprows=info["row"] - 1,
+            nrows=1,
+            header=None,
+            converters={0: decimal_converter},
+        )
+        allocations_kwargs[attribute] = value.iloc[0, 0]
+
+    ExternalAllocation.objects.create(**allocations_kwargs)
+    logger.info(f"Imported External Allocations")

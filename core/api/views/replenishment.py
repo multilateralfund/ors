@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db import models
 from rest_framework import viewsets, mixins, views
 from rest_framework.response import Response
@@ -14,7 +16,10 @@ from core.models import (
     ScaleOfAssessment,
     AnnualContributionStatus,
     DisputedContribution,
-    TriennialContributionStatus, FermGainLoss,
+    TriennialContributionStatus,
+    FermGainLoss,
+    ExternalIncome,
+    ExternalAllocation,
 )
 
 
@@ -278,5 +283,69 @@ class SummaryStatusOfContributionsView(views.APIView):
             data["total"]["outstanding_contributions"] + disputed_contribution_amount
         )
         data["disputed_contributions"] = disputed_contribution_amount
+
+        return Response(data)
+
+
+class ReplenishmentDashboardView(views.APIView):
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+
+        if user.user_type != user.UserType.SECRETARIAT:
+            return Response({})
+
+        income = ExternalIncome.objects.get()
+        allocations = ExternalAllocation.objects.get()
+
+        computed_data = TriennialContributionStatus.objects.aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+        )
+
+        gain_loss = FermGainLoss.objects.aggregate(
+            total=models.Sum("amount", default=0)
+        )["total"]
+
+        payment_pledge_percentage = (
+            (
+                computed_data["cash_payments"]
+                + computed_data["bilateral_assistance"]
+                + computed_data["promissory_notes"]
+            )
+            / computed_data["agreed_contributions"]
+            * Decimal("100")
+        )
+
+        data = {
+            "overview": {
+                "payment_pledge_percentage": payment_pledge_percentage,
+                "gain_loss": gain_loss,
+            },
+            "income": {
+                "cash_payments": computed_data["cash_payments"],
+                "bilateral_assistance": computed_data["bilateral_assistance"],
+                "interest_earned": income.interest_earned,
+                "miscellaneous_income": income.miscellaneous_income,
+            },
+            "allocations": {
+                "undp": allocations.undp,
+                "unep": allocations.unep,
+                "unido": allocations.unido,
+                "world_bank": allocations.world_bank,
+                "staff_contracts": allocations.staff_contracts,
+                "treasury_fees": allocations.treasury_fees,
+                "monitoring_fees": allocations.monitoring_fees,
+                "technical_audit": allocations.technical_audit,
+                "information_strategy": allocations.information_strategy,
+                "bilateral_assistance": computed_data["bilateral_assistance"],
+            },
+        }
+
+        data["overview"]["balance"] = sum(data["income"].values()) - sum(
+            data["allocations"].values()
+        )
 
         return Response(data)
