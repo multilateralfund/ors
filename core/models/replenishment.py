@@ -26,15 +26,36 @@ class Replenishment(models.Model):
         ]
 
 
+class ScaleOfAssessmentVersion(models.Model):
+    replenishment = models.ForeignKey(
+        Replenishment,
+        on_delete=models.PROTECT,
+        related_name="scales_of_assessment_versions",
+    )
+    version = models.IntegerField(default=0)
+    is_final = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Scale of Assessment Version {self.version} ({self.replenishment.start_year} - {self.replenishment.end_year})"
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["replenishment", "version"], name="unique_replenishment_version"
+            )
+        ]
+
+
+# TODO: import code
 class ScaleOfAssessment(models.Model):
     """
     Contribution to a replenishment, used in Scale of Assessment.
     """
 
-    replenishment = models.ForeignKey(
-        Replenishment,
+    version = models.ForeignKey(
+        ScaleOfAssessmentVersion,
         on_delete=models.PROTECT,
-        related_name="contributions",
+        related_name="scales_of_assessments",
     )
     country = models.ForeignKey(
         Country, on_delete=models.PROTECT, related_name="contributions"
@@ -101,7 +122,7 @@ class ScaleOfAssessment(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["replenishment", "country"], name="unique_replenishment_country"
+                fields=["version", "country"], name="unique_version_country"
             )
         ]
 
@@ -219,6 +240,11 @@ class AnnualContributionStatus(AbstractContributionStatus):
 
 
 class TriennialContributionStatus(AbstractContributionStatus):
+    """
+    Model is necessary because added annual data is not equal to the triennial data.
+    Triennial data can be updated in the future when countries pay their contributions.
+    """
+
     country = models.ForeignKey(
         Country,
         on_delete=models.PROTECT,
