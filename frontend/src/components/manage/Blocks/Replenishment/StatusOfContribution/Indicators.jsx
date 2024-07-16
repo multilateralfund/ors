@@ -42,7 +42,7 @@ const TriennialIndicators = ({ data, period, totalPledge }) => {
   return (
     <div className="flex flex-wrap items-center justify-center gap-4 border-primary text-primary">
       <IndicatorBox
-        text="parties have made their contributions"
+        text={`parties have made their contributions for ${period}`}
         value={data.contributions}
       />
       <IndicatorBox
