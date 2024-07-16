@@ -5,6 +5,7 @@ import {
   FieldInput,
   FieldSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import {mockScAnnualOptions} from "@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils";
 import { AddButton } from '@ors/components/ui/Button/Button'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
@@ -45,6 +46,14 @@ export default function DisputedContributionDialog() {
             required
           />
           <FieldInput id="comment" label="Comment" type="text" required />
+          <FieldSelect id="year" label="Year" required>
+            <option value=""> -</option>
+            {mockScAnnualOptions().map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </FieldSelect>
         </FormDialog>
       )}
       <div>
