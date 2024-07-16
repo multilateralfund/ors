@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import PeriodSelector from '@ors/components/manage/Blocks/Replenishment/PeriodSelector'
+import DisputedContributionDialog from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/DisputedContributionDialog'
 import SCAnnual from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCAnnual'
 import SCNotes from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCNotes'
 import SCSummary from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCSummary'
@@ -36,7 +37,7 @@ const TABS = [
   },
 ]
 
-function getTabLinks(pathname, period) {
+function getTabLinks(pathname) {
   const result = []
 
   let currentSection
@@ -115,6 +116,7 @@ export default function SCView(props) {
         </div>
       </div>
       <Component {...props} />
+      <DisputedContributionDialog />
       <SCNotes type={currentSection?.label.toLowerCase()} />
     </section>
   )
