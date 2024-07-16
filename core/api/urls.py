@@ -349,7 +349,7 @@ urlpatterns = [
         name="business-plan-status",
     ),
     path(
-        "replenishment/dashboard",
+        "replenishment/dashboard/",
         ReplenishmentDashboardView.as_view(),
         name="replenishment-dashboard",
     ),
