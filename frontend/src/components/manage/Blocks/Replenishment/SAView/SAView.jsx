@@ -749,4 +749,8 @@ function SAView(props) {
   )
 }
 
-export default SAView
+function SAViewWrapper(props) {
+  return props.period ? <SAView {...props} /> : <div className="h-screen"></div>
+}
+
+export default SAViewWrapper

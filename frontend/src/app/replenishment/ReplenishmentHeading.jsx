@@ -38,7 +38,7 @@ export default function ReplenishmentHeading(props) {
           <div className="mb-2 font-[500] uppercase">Replenishment</div>
           <PageHeading>{props.children}</PageHeading>
         </div>
-        <div>
+        <div className="print:hidden">
           {showPeriodSelector ? (
             <PeriodSelector
               period={period}
