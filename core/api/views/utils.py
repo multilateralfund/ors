@@ -310,15 +310,15 @@ def get_cp_prices(cp_report, cp_prices_class, append_items=True):
                     if "HCFC" in x.substance.name or "HFC" in x.substance.name
                     else "zzzBBB"
                 ),  # other substances needs to be displayed last
-                getattr(x, "sort_order", float("inf")),
-                x.substance.sort_order,
+                getattr(x, "sort_order", float("inf")) or float("inf"),
+                getattr(x.substance, "sort_order", float("inf")) or float("inf"),
                 x.substance.name,
             )
             if x.substance
             else (
                 "zzzAAA",
-                getattr(x, "sort_order", float("inf")),
-                x.blend.sort_order or float("inf"),
+                getattr(x, "sort_order", float("inf")) or float("inf"),
+                getattr(x.blend, "sort_order", float("inf")) or float("inf"),
                 x.blend.name,
             )
         )
