@@ -17,7 +17,7 @@ const SECTIONS = [
   },
   {
     label: 'Status of contributions',
-    path: '/replenishment/status-of-contributions/summary',
+    path: '/replenishment/status-of-contributions',
   },
   {
     label: 'Scale of assessment',
