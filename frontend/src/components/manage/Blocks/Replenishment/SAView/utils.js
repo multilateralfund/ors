@@ -161,7 +161,7 @@ export function formatTableData(tableData, editableColumns, currencies) {
               >
                 {newValue}
               </span>
-              <span className="text-gray-400">{'\u22EE'}</span>
+              <span className="text-gray-400 print:hidden">{'\u22EE'}</span>
             </div>
           ),
         }

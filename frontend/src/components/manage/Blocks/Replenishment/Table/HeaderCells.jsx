@@ -18,14 +18,18 @@ export default function HeaderCells(props) {
     hCols.push(
       <th
         key={i}
-        className={cx('relative', { 'cursor-pointer': enableSort })}
+        className={cx('relative', columns[i].className, {
+          'cursor-pointer': enableSort,
+        })}
         onClick={function () {
           enableSort && onSort(i)
         }}
       >
         {columns[i].label}{' '}
         {sortOn === i ? (
-          <div className="absolute bottom-1 right-1">{sortIcon}</div>
+          <div className="absolute bottom-1 right-1 print:hidden">
+            {sortIcon}
+          </div>
         ) : null}
       </th>,
     )

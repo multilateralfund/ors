@@ -78,7 +78,7 @@ function ReplenishmentLayoutContent(props) {
 
   return (
     <>
-      <div className={styles.nav}>
+      <div className={cx('print:hidden', styles.nav)}>
         <nav>{navLinks}</nav>
         <div>
           {currentSection?.showPeriodSelector ?? true ? (
@@ -100,7 +100,7 @@ function ReplenishmentLayoutContent(props) {
 
 export default function ReplenishmentLayout({ children }) {
   return (
-    <PageWrapper className="max-w-screen-2xl">
+    <PageWrapper className="max-w-screen-2xl print:p-0">
       <ReplenishmentProvider>
         <ReplenishmentLayoutContent>{children}</ReplenishmentLayoutContent>
       </ReplenishmentProvider>

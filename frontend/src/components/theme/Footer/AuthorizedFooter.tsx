@@ -13,8 +13,8 @@ const FooterLinks = () => {
   const items = [
     { label: 'Careers', url: makeExternalUrl('/') },
     { label: 'Contact us', url: makeExternalUrl('/') },
-    { label: 'Privacy policy', url: makeExternalUrl('/') },
-    { label: 'Terms of service', url: makeExternalUrl('/') },
+    // { label: 'Privacy policy', url: makeExternalUrl('/') },
+    // { label: 'Terms of service', url: makeExternalUrl('/') },
   ]
   return (
     <div
@@ -31,16 +31,18 @@ const FooterLinks = () => {
           {item.label}
         </a>
       ))}
-      <button
-        className={cx(
-          'cursor-pointer text-nowrap rounded-full border border-solid border-mlfs-hlYellow bg-transparent px-4 py-0 text-xl font-normal uppercase text-mlfs-hlYellow no-underline transition-all hover:bg-black',
-        )}
-        onClick={async () => {
-          await user.logout()
-        }}
-      >
-        Logout
-      </button>
+      {false && (
+        <button
+          className={cx(
+            'cursor-pointer text-nowrap rounded-full border border-solid border-mlfs-hlYellow bg-transparent px-4 py-0 text-xl font-normal uppercase text-mlfs-hlYellow no-underline transition-all hover:bg-black',
+          )}
+          onClick={async () => {
+            await user.logout()
+          }}
+        >
+          Logout
+        </button>
+      )}
     </div>
   )
 }
@@ -55,7 +57,15 @@ export default function Footer() {
         <div className="container w-full">
           <div className="flex flex-col items-center justify-center gap-x-72 gap-y-14 py-12 md:flex-row md:gap-y-0">
             <Logo className="min-w-[260px]" variant="white" />
-            <FooterLinks />
+            <div className="flex flex-col justify-between gap-y-8">
+              <FooterLinks />
+              <a
+                className="text-lg font-light uppercase text-white no-underline"
+                href={makeExternalUrl('/terms-use')}
+              >
+                Terms of use
+              </a>
+            </div>
           </div>
         </div>
       </Box>
