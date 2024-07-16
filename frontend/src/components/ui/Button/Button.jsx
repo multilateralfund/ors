@@ -1,8 +1,15 @@
 import cx from 'classnames'
 
-import { IoAddCircle, IoRemoveCircle } from 'react-icons/io5'
+import Link from '@ors/components/ui/Link/Link'
 
-function BaseButton(props: any) {
+import {
+  IoAddCircle,
+  IoDownloadOutline,
+  IoPrintOutline,
+  IoRemoveCircle,
+} from 'react-icons/io5'
+
+function BaseButton(props) {
   const { children, className, onClick, ...rest } = props
   return (
     <button
@@ -19,7 +26,7 @@ function BaseButton(props: any) {
   )
 }
 
-function CancelButton(props: any) {
+function CancelButton(props) {
   const { className, ...rest } = props
   return (
     <BaseButton
@@ -33,7 +40,7 @@ function CancelButton(props: any) {
   )
 }
 
-function SubmitButton(props: any) {
+function SubmitButton(props) {
   const { className, ...rest } = props
   return (
     <BaseButton
@@ -47,7 +54,7 @@ function SubmitButton(props: any) {
   )
 }
 
-function AddButton(props: any) {
+function AddButton(props) {
   const { children, className, iconSize, ...rest } = props
   return (
     <BaseButton
@@ -63,7 +70,41 @@ function AddButton(props: any) {
   )
 }
 
-function DeleteButton(props: any) {
+function PrintButton(props) {
+  const { children, className, iconSize, ...rest } = props
+  return (
+    <button
+      className={cx(
+        'flex cursor-pointer items-center gap-x-2 border-none bg-transparent text-primary no-underline',
+        className,
+      )}
+      style={{ fontFamily: 'var(--font-roboto-condensed)' }}
+      {...rest}
+    >
+      {children}
+      <IoPrintOutline className="text-secondary" size={iconSize || 18} />
+    </button>
+  )
+}
+
+function DownloadLink(props) {
+  const { children, className, iconSize, ...rest } = props
+  return (
+    <Link
+      className={cx(
+        'flex cursor-pointer items-center gap-x-2 text-primary no-underline',
+        className,
+      )}
+      download
+      {...rest}
+    >
+      {children}
+      <IoDownloadOutline className="text-secondary" size={iconSize || 18} />
+    </Link>
+  )
+}
+
+function DeleteButton(props) {
   const { children, className, iconSize, ...rest } = props
   return (
     <BaseButton
@@ -79,4 +120,12 @@ function DeleteButton(props: any) {
   )
 }
 
-export { AddButton, BaseButton, CancelButton, DeleteButton, SubmitButton }
+export {
+  AddButton,
+  BaseButton,
+  CancelButton,
+  DeleteButton,
+  DownloadLink,
+  PrintButton,
+  SubmitButton,
+}

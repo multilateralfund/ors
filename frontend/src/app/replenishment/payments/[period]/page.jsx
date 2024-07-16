@@ -1,18 +1,21 @@
-import React from 'react'
+'use client'
 
+import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
 import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
 import PaymentsView from '@ors/components/manage/Blocks/Replenishment/PaymentsView'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
-export const metadata = {
-  title: 'Replenishment - Payments',
-}
-
-export default async function ReplenishmentPayments(props) {
+export default function ReplenishmentPayments(props) {
   const { period } = props.params
   return (
     <PageWrapper className="w-full p-4" defaultSpacing={false}>
-      <ReplenishmentHeading>Payments</ReplenishmentHeading>
+      <ReplenishmentHeading
+        extraPeriodOptions={[{ label: 'All', value: '' }]}
+        showPeriodSelector={true}
+      >
+        Payments
+      </ReplenishmentHeading>
+      <DownloadButtons />
       <PaymentsView period={period} />
     </PageWrapper>
   )
