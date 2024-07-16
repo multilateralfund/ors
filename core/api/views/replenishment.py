@@ -111,7 +111,7 @@ class AnnualStatusOfContributionsView(views.APIView):
                     "annual_contributions_status__outstanding_contributions", default=0
                 ),
             )
-            .order_by("country__name")
+            .order_by("name")
         ]
 
         data["total"] = AnnualContributionStatus.objects.filter(year=year).aggregate(
@@ -185,7 +185,7 @@ class TriennialStatusOfContributionsView(views.APIView):
                     default=0,
                 ),
             )
-            .order_by("country__name")
+            .order_by("name")
         ]
 
         data["total"] = TriennialContributionStatus.objects.filter(
@@ -257,7 +257,7 @@ class SummaryStatusOfContributionsView(views.APIView):
                 ),
                 gain_loss=models.F("ferm_gain_loss__amount"),
             )
-            .order_by("country__name")
+            .order_by("name")
         ]
 
         data["total"] = TriennialContributionStatus.objects.aggregate(
