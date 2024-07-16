@@ -1,13 +1,20 @@
-import React from 'react'
+import cx from 'classnames'
+
+const PRINT_CLASS = 'print:w-full print:min-w-full print:max-w-full print:border-none print:p-0 print:gap-3 print:justify-start'
 
 function IndicatorBox({ isPercentage, text, value }) {
   return (
-    <div className="flex min-w-80 max-w-96 flex-1 items-center justify-center gap-5 rounded-lg border-2 border-solid border-gray-200 p-4 uppercase text-primary">
-      <span className="text-6xl font-bold">
+    <div
+      className={cx(
+        'flex min-w-80 max-w-96 flex-1 items-center justify-center gap-5 rounded-lg border-2 border-solid border-gray-200 p-4 uppercase text-primary',
+        PRINT_CLASS,
+      )}
+    >
+      <span className="text-6xl font-bold print:text-4xl">
         {value}
         {isPercentage && '%'}
       </span>
-      <span className="text-2xl font-medium">{text}</span>
+      <span className="text-2xl font-medium print:text-lg">{text}</span>
     </div>
   )
 }

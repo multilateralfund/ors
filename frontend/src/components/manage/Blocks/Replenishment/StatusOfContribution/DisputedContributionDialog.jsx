@@ -23,7 +23,7 @@ export default function DisputedContributionDialog() {
   }
 
   return (
-    <>
+    <div className="print:hidden">
       {showAdd && (
         <FormDialog
           title="Disputed Contribution:"
@@ -52,6 +52,6 @@ export default function DisputedContributionDialog() {
           Add disputed contribution
         </AddButton>
       </div>
-    </>
+    </div>
   )
 }

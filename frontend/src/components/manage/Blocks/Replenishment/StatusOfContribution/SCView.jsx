@@ -91,14 +91,14 @@ export default function SCView(props) {
 
   return (
     <section className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 print:flex-col print:items-start">
         <h2>
           {title}{' '}
           <span className="text-2xl font-normal">
             as of {dateOfLastUpdate} (US Dollars)
           </span>
         </h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 print:hidden">
           {currentSection?.showPeriodSelector ?? true ? (
             <PeriodSelector
               key={currentSection.label}
@@ -114,6 +114,9 @@ export default function SCView(props) {
             {navLinks}
           </nav>
         </div>
+        <h1 className="my-0 hidden text-5xl leading-normal print:inline-block">
+          {currentSection.label}
+        </h1>
       </div>
       <Component {...props} />
       <DisputedContributionDialog />
