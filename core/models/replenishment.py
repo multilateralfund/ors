@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django.db import models
 
+from core.models.base import AbstractSingleton
 from core.models.country import Country
 from core.models.utils import get_protected_storage
 
@@ -259,3 +260,20 @@ class FermGainLoss(models.Model):
 
     def __str__(self):
         return f"Ferm Gain/Loss {self.country.iso3} - {self.amount}"
+
+
+class ExternalIncome(AbstractSingleton):
+    interest_earned = models.DecimalField(max_digits=30, decimal_places=15)
+    miscellaneous_income = models.DecimalField(max_digits=30, decimal_places=15)
+
+
+class ExternalAllocation(AbstractSingleton):
+    undp = models.DecimalField(max_digits=30, decimal_places=15)
+    unep = models.DecimalField(max_digits=30, decimal_places=15)
+    unido = models.DecimalField(max_digits=30, decimal_places=15)
+    world_bank = models.DecimalField(max_digits=30, decimal_places=15)
+    staff_contracts = models.DecimalField(max_digits=30, decimal_places=15)
+    treasury_fees = models.DecimalField(max_digits=30, decimal_places=15)
+    monitoring_fees = models.DecimalField(max_digits=30, decimal_places=15)
+    technical_audit = models.DecimalField(max_digits=30, decimal_places=15)
+    information_strategy = models.DecimalField(max_digits=30, decimal_places=15)

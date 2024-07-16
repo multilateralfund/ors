@@ -215,7 +215,12 @@ docker-compose exec app ./manage.py import_business_plans
 ---
 
 ## Replenishments and contributions
-To import replenishments and contributions
+To import replenishments and status of contributions
 ```shell
-docker-compose exec app ./manage.py import_replenishments
+docker-compose exec app ./manage.py import_replenishments all
 ```
+
+### Command options:
+- all -> all of the below
+- replenishments -> replenishments from 2021-2023 and 2024-2026
+- status_of_contributions -> status of contributions from 2021 onwards

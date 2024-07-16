@@ -1,4 +1,5 @@
 import decimal
+from decimal import Decimal
 
 import pytest
 from django.urls import reverse
@@ -14,6 +15,7 @@ from core.api.tests.factories import (
     FermGainLossFactory,
     TriennialContributionStatusFactory,
 )
+from core.models import ExternalIncome, ExternalAllocation
 
 
 pytestmark = pytest.mark.django_db
@@ -667,3 +669,168 @@ class TestStatusOfContributions:
             )
         )
         assert response.data == {}
+
+
+class TestReplenishmentDashboard(BaseTest):
+    url = reverse("replenishment-dashboard")
+    fifteen_decimals = decimal.Decimal("0.000000000000001")
+
+    def test_replenishment_dashboard(self, user):
+        country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
+        country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
+        year_1 = 2020
+        year_2 = 2022
+        year_3 = 2023
+        year_4 = 2025
+
+        contribution_1 = TriennialContributionStatusFactory.create(
+            country=country_1, start_year=year_1, end_year=year_2
+        )
+        contribution_2 = TriennialContributionStatusFactory.create(
+            country=country_1, start_year=year_3, end_year=year_4
+        )
+        contribution_3 = TriennialContributionStatusFactory.create(
+            country=country_2, start_year=year_1, end_year=year_2
+        )
+        contribution_4 = TriennialContributionStatusFactory.create(
+            country=country_2, start_year=year_3, end_year=year_4
+        )
+
+        DisputedContributionsFactory.create(year=year_1)
+        DisputedContributionsFactory.create(year=year_3)
+
+        ferm_gain_loss_1 = FermGainLossFactory.create(country=country_1)
+        ferm_gain_loss_2 = FermGainLossFactory.create(country=country_2)
+
+        external_income = ExternalIncome.objects.create(
+            interest_earned=decimal.Decimal("100"),
+            miscellaneous_income=decimal.Decimal("200"),
+        )
+
+        external_allocation = ExternalAllocation.objects.create(
+            undp=decimal.Decimal("100"),
+            unep=decimal.Decimal("100"),
+            unido=decimal.Decimal("100"),
+            world_bank=decimal.Decimal("100"),
+            staff_contracts=decimal.Decimal("100"),
+            treasury_fees=decimal.Decimal("100"),
+            monitoring_fees=decimal.Decimal("100"),
+            technical_audit=decimal.Decimal("100"),
+            information_strategy=decimal.Decimal("100"),
+        )
+
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url)
+
+        payment_pledge_percentage = (
+            (
+                contribution_1.cash_payments
+                + contribution_2.cash_payments
+                + contribution_3.cash_payments
+                + contribution_4.cash_payments
+                + contribution_1.bilateral_assistance
+                + contribution_2.bilateral_assistance
+                + contribution_3.bilateral_assistance
+                + contribution_4.bilateral_assistance
+                + contribution_1.promissory_notes
+                + contribution_2.promissory_notes
+                + contribution_3.promissory_notes
+                + contribution_4.promissory_notes
+            )
+            / (
+                contribution_1.agreed_contributions
+                + contribution_2.agreed_contributions
+                + contribution_3.agreed_contributions
+                + contribution_4.agreed_contributions
+            )
+            * Decimal("100")
+        )
+
+        correct_response = {
+            "overview": {
+                "payment_pledge_percentage": payment_pledge_percentage,
+                "gain_loss": (
+                    ferm_gain_loss_1.amount + ferm_gain_loss_2.amount
+                ).quantize(self.fifteen_decimals),
+            },
+            "income": {
+                "cash_payments": (
+                    contribution_1.cash_payments
+                    + contribution_2.cash_payments
+                    + contribution_3.cash_payments
+                    + contribution_4.cash_payments
+                ).quantize(self.fifteen_decimals),
+                "bilateral_assistance": (
+                    contribution_1.bilateral_assistance
+                    + contribution_2.bilateral_assistance
+                    + contribution_3.bilateral_assistance
+                    + contribution_4.bilateral_assistance
+                ).quantize(self.fifteen_decimals),
+                "interest_earned": external_income.interest_earned.quantize(
+                    self.fifteen_decimals
+                ),
+                "promissory_notes": (
+                    contribution_1.promissory_notes
+                    + contribution_2.promissory_notes
+                    + contribution_3.promissory_notes
+                    + contribution_4.promissory_notes
+                ).quantize(self.fifteen_decimals),
+                "miscellaneous_income": external_income.miscellaneous_income.quantize(
+                    self.fifteen_decimals
+                ),
+            },
+            "allocations": {
+                "undp": external_allocation.undp.quantize(self.fifteen_decimals),
+                "unep": external_allocation.unep.quantize(self.fifteen_decimals),
+                "unido": external_allocation.unido.quantize(self.fifteen_decimals),
+                "world_bank": external_allocation.world_bank.quantize(
+                    self.fifteen_decimals
+                ),
+                "staff_contracts": external_allocation.staff_contracts.quantize(
+                    self.fifteen_decimals
+                ),
+                "treasury_fees": external_allocation.treasury_fees.quantize(
+                    self.fifteen_decimals
+                ),
+                "monitoring_fees": external_allocation.monitoring_fees.quantize(
+                    self.fifteen_decimals
+                ),
+                "technical_audit": external_allocation.technical_audit.quantize(
+                    self.fifteen_decimals
+                ),
+                "information_strategy": external_allocation.information_strategy.quantize(
+                    self.fifteen_decimals
+                ),
+                "bilateral_assistance": (
+                    contribution_1.bilateral_assistance
+                    + contribution_2.bilateral_assistance
+                    + contribution_3.bilateral_assistance
+                    + contribution_4.bilateral_assistance
+                ).quantize(self.fifteen_decimals),
+                "gain_loss": (
+                    ferm_gain_loss_1.amount + ferm_gain_loss_2.amount
+                ).quantize(self.fifteen_decimals),
+            },
+        }
+
+        correct_response["overview"]["balance"] = (
+            correct_response["income"]["cash_payments"]
+            + correct_response["income"]["bilateral_assistance"]
+            + correct_response["income"]["interest_earned"]
+            + correct_response["income"]["promissory_notes"]
+            + correct_response["income"]["miscellaneous_income"]
+            - correct_response["allocations"]["undp"]
+            - correct_response["allocations"]["unep"]
+            - correct_response["allocations"]["unido"]
+            - correct_response["allocations"]["world_bank"]
+            - correct_response["allocations"]["staff_contracts"]
+            - correct_response["allocations"]["treasury_fees"]
+            - correct_response["allocations"]["monitoring_fees"]
+            - correct_response["allocations"]["technical_audit"]
+            - correct_response["allocations"]["information_strategy"]
+            - correct_response["allocations"]["bilateral_assistance"]
+            - correct_response["allocations"]["gain_loss"]
+        ).quantize(self.fifteen_decimals)
+
+        assert response.data == correct_response
