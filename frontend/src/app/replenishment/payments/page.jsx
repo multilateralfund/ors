@@ -10,7 +10,7 @@ export const metadata = {
 
 export default async function ReplenishmentPayments() {
   return (
-    <PageWrapper className="w-full p-2" defaultSpacing={false}>
+    <PageWrapper className="w-full p-4" defaultSpacing={false}>
       <ReplenishmentHeading>Payments</ReplenishmentHeading>
       <PaymentsView />
     </PageWrapper>

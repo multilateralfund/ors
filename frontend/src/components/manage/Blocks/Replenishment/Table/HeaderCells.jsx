@@ -18,7 +18,9 @@ export default function HeaderCells(props) {
     hCols.push(
       <th
         key={i}
-        className={cx('relative', columns[i].className)}
+        className={cx('relative', columns[i].className, {
+          'cursor-pointer': enableSort,
+        })}
         onClick={function () {
           enableSort && onSort(i)
         }}

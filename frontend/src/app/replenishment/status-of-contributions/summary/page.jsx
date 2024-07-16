@@ -8,7 +8,7 @@ export const metadata = {
 
 export default async function ReplenishmentSoCSummary() {
   return (
-    <PageWrapper className="w-full p-2" defaultSpacing={false}>
+    <PageWrapper className="w-full p-4" defaultSpacing={false}>
       <ReplenishmentHeading>Status of contributions</ReplenishmentHeading>
       <SCView />
     </PageWrapper>
