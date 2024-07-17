@@ -44,6 +44,9 @@ dependencies:
   ag-grid-react:
     specifier: ^31.3.1
     version: 31.3.2(react-dom@18.3.1)(react@18.3.1)
+  chart.js:
+    specifier: ^4.4.3
+    version: 4.4.3
   classnames:
     specifier: ^2.5.1
     version: 2.5.1
@@ -77,6 +80,9 @@ dependencies:
   react:
     specifier: 18.3.1
     version: 18.3.1
+  react-chartjs-2:
+    specifier: ^5.2.0
+    version: 5.2.0(chart.js@4.4.3)(react@18.3.1)
   react-country-flag:
     specifier: ^3.1.0
     version: 3.1.0(react@18.3.1)
@@ -2327,6 +2333,10 @@ packages:
   /@jsdevtools/rehype-toc@3.0.2:
     resolution: {integrity: sha512-n5JEf16Wr4mdkRMZ8wMP/wN9/sHmTjRPbouXjJH371mZ2LEGDl72t8tEsMRNFerQN/QJtivOxqK1frdGa4QK5Q==}
     engines: {node: '>=10'}
+    dev: false
+
+  /@kurkle/color@0.3.2:
+    resolution: {integrity: sha512-fuscdXJ9G1qb7W8VdHi+IwRqij3lBkosAm4ydQtEmbY58OzHXqQhvlxqEkoz0yssNVn38bcpRWgA9PP+OGoisw==}
     dev: false
 
   /@mdx-js/loader@3.0.1(webpack@5.90.2):
@@ -5062,6 +5072,13 @@ packages:
 
   /character-reference-invalid@2.0.1:
     resolution: {integrity: sha512-iBZ4F4wRbyORVsu0jPV7gXkOsGYjGHPmAyv+HiHG8gi5PtC9KI2j1+v8/tlibRvjoWX027ypmG/n0HtO5t7unw==}
+    dev: false
+
+  /chart.js@4.4.3:
+    resolution: {integrity: sha512-qK1gkGSRYcJzqrrzdR6a+I0vQ4/R+SoODXyAjscQ/4mzuNzySaMCd+hyVxitSY1+L2fjPD1Gbn+ibNqRmwQeLw==}
+    engines: {pnpm: '>=8'}
+    dependencies:
+      '@kurkle/color': 0.3.2
     dev: false
 
   /chokidar@3.6.0:
@@ -9378,6 +9395,16 @@ packages:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
     dependencies:
       safe-buffer: 5.2.1
+
+  /react-chartjs-2@5.2.0(chart.js@4.4.3)(react@18.3.1):
+    resolution: {integrity: sha512-98iN5aguJyVSxp5U3CblRLH67J8gkfyGNbiK3c+l1QI/G4irHMPQw44aEPmjVag+YKTyQ260NcF82GTQ3bdscA==}
+    peerDependencies:
+      chart.js: ^4.1.1
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      chart.js: 4.4.3
+      react: 18.3.1
+    dev: false
 
   /react-country-flag@3.1.0(react@18.3.1):
     resolution: {integrity: sha512-JWQFw1efdv9sTC+TGQvTKXQg1NKbDU2mBiAiRWcKM9F1sK+/zjhP2yGmm8YDddWyZdXVkR8Md47rPMJmo4YO5g==}
