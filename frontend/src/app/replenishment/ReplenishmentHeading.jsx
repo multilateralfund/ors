@@ -22,13 +22,20 @@ export default function ReplenishmentHeading(props) {
   const titleMemo = useMemo(
     function () {
       return {
+        children: props.children,
         extraPeriodOptions,
         period,
         periodOptions: ctx.periodOptions,
         showPeriodSelector,
       }
     },
-    [ctx.periodOptions, period, showPeriodSelector, extraPeriodOptions],
+    [
+      ctx.periodOptions,
+      period,
+      showPeriodSelector,
+      extraPeriodOptions,
+      props.children,
+    ],
   )
 
   return (

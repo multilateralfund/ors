@@ -14,12 +14,14 @@ export default function Replenishment() {
   const router = useRouter()
   const ctxPeriods = useContext(ReplenishmentContext)
 
+  // Redirect to latest period
   if (ctxPeriods.periodOptions.length > 0) {
     router.replace(
       `/replenishment/scale-of-assessment/${ctxPeriods.periodOptions[0].value}`,
     )
   }
 
+  // Return SAView so that there is no flicker after the redirect.
   return (
     <PageWrapper
       className="w-full rounded-b-lg bg-white p-4"
