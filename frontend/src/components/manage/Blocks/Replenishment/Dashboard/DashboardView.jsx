@@ -48,7 +48,7 @@ const provisionsOrder = [
 function SummaryCard(props) {
   const { label, value } = props
   return (
-    <div className="flex h-[150px] min-w-64 flex-1 flex-col justify-between rounded-lg bg-[#F5F5F5] px-4 py-4">
+    <div className="flex h-[150px] min-w-64 flex-1 flex-col justify-between rounded-lg bg-[#F5F5F5] px-4 py-4 print:break-inside-avoid">
       <div className="text-xl font-medium uppercase">{label}</div>
       <div className="text-5xl font-bold leading-normal">{value}</div>
     </div>
@@ -60,7 +60,7 @@ function CashCard(props) {
   return (
     <li
       className={cx(
-        ' flex h-[90px] w-auto min-w-96 flex-1 items-center justify-between rounded-lg bg-[#F5F5F5] px-4 py-4',
+        ' flex h-[90px] w-auto min-w-96 flex-1 items-center justify-between rounded-lg bg-[#F5F5F5] px-4 py-4 print:break-inside-avoid',
         className,
       )}
     >
@@ -247,7 +247,7 @@ function DashboardView() {
           <h2 className="m-0 text-3xl">STATUS OF THE FUND</h2>
           <p className="m-0 text-3xl">as of 15 May 2024 ( US Dollars )</p>
         </div>
-        <SubmitButton className="tracking-widest" onClick={handleEditClick}>
+        <SubmitButton className="tracking-widest print:hidden" onClick={handleEditClick}>
           Edit
         </SubmitButton>
       </div>
@@ -260,7 +260,10 @@ function DashboardView() {
         />
       ) : null}
 
-      <div className="flex flex-wrap gap-4 lg:justify-between">
+      <div
+        className="flex flex-wrap gap-4 lg:justify-between"
+        style={{ WebkitPrintColorAdjust: 'exact' }}
+      >
         <div className="w-full lg:w-[58%]">
           <h3 className="text-2xl">OVERVIEW</h3>
 
@@ -336,8 +339,8 @@ function DashboardView() {
         <div className="w-full lg:w-[40%]">
           <br className="m-5 leading-7" />
           <div className="flex flex-col gap-8">
-            <div className="h-[562px] w-full rounded-lg bg-[#F5F5F5]"></div>
-            <div className="h-[464px] w-full rounded-lg bg-[#F5F5F5]"></div>
+            <div className="h-[562px] w-full rounded-lg bg-[#F5F5F5] print:break-inside-avoid"></div>
+            <div className="h-[464px] w-full rounded-lg bg-[#F5F5F5] print:my-2	print:break-inside-avoid"></div>
           </div>
         </div>
       </div>
