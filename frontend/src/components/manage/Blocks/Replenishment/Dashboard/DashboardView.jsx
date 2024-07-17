@@ -66,7 +66,7 @@ function CashCard(props) {
   return (
     <li
       className={cx(
-        ' flex min-h-24 flex-1 items-center justify-between rounded-lg bg-[#F5F5F5] p-4 min-w-80 md:min-w-96 print:break-inside-avoid',
+        ' flex min-h-24 min-w-80 flex-1 items-center justify-between rounded-lg bg-[#F5F5F5] p-4 md:min-w-96 print:break-inside-avoid',
         className,
       )}
     >
@@ -215,7 +215,6 @@ function EditStatusDialog(props) {
 }
 
 const DashboardIndicators = ({ data }) => {
-  console.log(data)
   return (
     <div className="my-5 flex flex-wrap items-stretch gap-4 text-primary">
       {data &&
@@ -238,8 +237,14 @@ const DashboardIndicators = ({ data }) => {
 
 function DashboardView() {
   const { data: newData, formData, loading } = useGetDashboardData()
-  const { allocations, income, overview, overviewIndicators, provisions } =
-    newData
+  const {
+    allocations,
+    charts,
+    income,
+    overview,
+    overviewIndicators,
+    provisions,
+  } = newData
 
   const [showEdit, setShowEdit] = useState(false)
   const [data, setData] = useState(null)
@@ -375,7 +380,7 @@ function DashboardView() {
           <br className="m-5 leading-7" />
           <div className="flex flex-col gap-8">
             <div className="min-h-96 w-full print:break-inside-avoid">
-              <BarChart />
+              {charts && <BarChart data={charts.outstanding_pledges} />}
             </div>
             <div className="min-h-96 w-full print:break-inside-avoid">
               <AreaChart />

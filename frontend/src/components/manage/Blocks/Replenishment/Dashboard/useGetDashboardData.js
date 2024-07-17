@@ -137,6 +137,7 @@ const updateObjectValues = (fetchedData) => {
 function useGetDashboardData() {
   const [data, setData] = useState({
     allocations: null,
+    charts: null,
     income: null,
     overview: null,
     overviewIndicators: null,
@@ -157,6 +158,7 @@ function useGetDashboardData() {
         setFormData({ ...data.overview, ...data.allocations, ...data.income })
         setData({
           allocations: ALLOCATIONS,
+          charts: data.charts,
           income: INCOME,
           overview: OVERVIEW,
           overviewIndicators: OVERVIEW_INDICATORS,

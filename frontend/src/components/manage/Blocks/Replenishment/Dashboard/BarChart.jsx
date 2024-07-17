@@ -14,7 +14,6 @@ import resolveConfig from 'tailwindcss/resolveConfig'
 
 import {
   COMMON_OPTIONS,
-  MOCK_LABELS,
   backgroundColorPlugin,
   downloadChartAsImage,
 } from '@ors/components/manage/Blocks/Replenishment/Dashboard/chartUtils'
@@ -27,27 +26,27 @@ const tailwindConfig = resolveConfig(tailwindConfigModule)
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
-const BarChart = () => {
+const BarChart = ({ data }) => {
   const { mode } = useStore((state) => state.theme)
   const primaryColor = tailwindConfig.originalColors[mode].primary.DEFAULT
   const chartRef = useRef(null)
   const [showToolbar, setShowToolbar] = useState(false)
 
-  // Ensure data is consistent and does not change on hover
-  const dataRef = useRef({
+  // Prepare the data for the chart
+  const chartData = {
     datasets: [
       {
         backgroundColor: primaryColor,
         borderColor: primaryColor,
         borderWidth: 1,
-        data: Array.from({ length: 11 }, () =>
-          Math.floor(Math.random() * 30000000),
-        ),
-        label: 'Random Data',
+        data: data.map((item) => item.outstanding_pledges),
+        label: 'Outstanding Pledges',
       },
     ],
-    labels: MOCK_LABELS,
-  })
+    labels: data.map(
+      (item) => `${item.start_year}-${item.end_year}`,
+    ),
+  }
 
   const options = {
     scales: {
@@ -71,7 +70,7 @@ const BarChart = () => {
         onMouseLeave={() => setShowToolbar(false)}
       >
         <Bar
-          data={dataRef.current}
+          data={chartData}
           options={options}
           plugins={[backgroundColorPlugin]}
           ref={chartRef}
