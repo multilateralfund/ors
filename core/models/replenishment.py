@@ -46,7 +46,6 @@ class ScaleOfAssessmentVersion(models.Model):
         ]
 
 
-# TODO: import code
 class ScaleOfAssessment(models.Model):
     """
     Contribution to a replenishment, used in Scale of Assessment.
@@ -55,7 +54,8 @@ class ScaleOfAssessment(models.Model):
     version = models.ForeignKey(
         ScaleOfAssessmentVersion,
         on_delete=models.PROTECT,
-        related_name="scales_of_assessments",
+        related_name="scales_of_assessment",
+        null=True,
     )
     country = models.ForeignKey(
         Country, on_delete=models.PROTECT, related_name="contributions"
