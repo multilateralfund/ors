@@ -299,10 +299,10 @@ function DashboardView() {
       ) : null}
 
       <div
-        className="flex flex-wrap gap-4 lg:justify-between"
+        className="grid grid-cols-1 auto-rows-auto gap-4 lg:grid-cols-5"
         style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
       >
-        <div className="w-full lg:w-[58%]">
+        <div className="lg:col-span-3">
           <h3 className="text-2xl">OVERVIEW</h3>
 
           <div className="flex flex-wrap items-stretch gap-4">
@@ -377,7 +377,7 @@ function DashboardView() {
           </ul>
         </div>
 
-        <div className="w-full lg:w-[40%]">
+        <div className="lg:col-span-2 lg:col-start-4">
           <br className="m-5 leading-7" />
           <div className="flex w-full flex-col">
             {charts && (
