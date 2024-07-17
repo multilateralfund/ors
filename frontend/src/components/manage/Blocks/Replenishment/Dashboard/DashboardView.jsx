@@ -247,7 +247,10 @@ function DashboardView() {
           <h2 className="m-0 text-3xl">STATUS OF THE FUND</h2>
           <p className="m-0 text-3xl">as of 15 May 2024 ( US Dollars )</p>
         </div>
-        <SubmitButton className="tracking-widest print:hidden" onClick={handleEditClick}>
+        <SubmitButton
+          className="tracking-widest print:hidden"
+          onClick={handleEditClick}
+        >
           Edit
         </SubmitButton>
       </div>
@@ -262,7 +265,7 @@ function DashboardView() {
 
       <div
         className="flex flex-wrap gap-4 lg:justify-between"
-        style={{ WebkitPrintColorAdjust: 'exact' }}
+        style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
       >
         <div className="w-full lg:w-[58%]">
           <h3 className="text-2xl">OVERVIEW</h3>
@@ -340,7 +343,7 @@ function DashboardView() {
           <br className="m-5 leading-7" />
           <div className="flex flex-col gap-8">
             <div className="h-[562px] w-full rounded-lg bg-[#F5F5F5] print:break-inside-avoid"></div>
-            <div className="h-[464px] w-full rounded-lg bg-[#F5F5F5] print:my-2	print:break-inside-avoid"></div>
+            <div className="h-[464px] w-full rounded-lg bg-[#F5F5F5] print:break-inside-avoid"></div>
           </div>
         </div>
       </div>
