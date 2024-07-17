@@ -1,54 +1,80 @@
 import React, { useMemo, useRef, useState } from 'react'
-import { Bar } from 'react-chartjs-2'
+import { Line } from 'react-chartjs-2'
 
 import {
-  BarElement,
   CategoryScale,
   Chart as ChartJS,
+  Filler,
   Legend,
+  LineElement,
   LinearScale,
+  PointElement,
   Title,
   Tooltip,
 } from 'chart.js'
-import resolveConfig from 'tailwindcss/resolveConfig'
+import resolveConfig from "tailwindcss/resolveConfig";
 
 import {
   COMMON_OPTIONS,
   backgroundColorPlugin,
   downloadChartAsImage,
 } from '@ors/components/manage/Blocks/Replenishment/Dashboard/chartUtils'
-import { useStore } from '@ors/store'
-import tailwindConfigModule from '~/tailwind.config'
+import {useStore} from "@ors/store";
+import tailwindConfigModule from "~/tailwind.config";
 
 import { IoDownloadOutline } from 'react-icons/io5'
-
 const tailwindConfig = resolveConfig(tailwindConfigModule)
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Filler,
+)
 
-const BarChart = ({ data, title }) => {
+const TwoAreaCharts = ({ data, title }) => {
   const { mode } = useStore((state) => state.theme)
   const primaryColor = tailwindConfig.originalColors[mode].primary.DEFAULT
   const chartRef = useRef(null)
   const [showToolbar, setShowToolbar] = useState(false)
+  const { payments, pledged_contributions } = data
 
   const chartData = useMemo(() => {
     return {
       datasets: [
         {
-          backgroundColor: primaryColor,
-          borderColor: primaryColor,
-          borderWidth: 1,
-          data: data.map((item) => item.outstanding_pledges),
-          label: 'Outstanding Pledges',
+          backgroundColor: 'rgba(255, 255, 0, 0.2)', // Yellow color
+          borderColor: 'rgba(255, 255, 0, 1)',
+          borderWidth: 2,
+          data: payments.map((item) => item.total_payments),
+          fill: 'origin',
+          label: 'Total Payments',
+        },
+        {
+          backgroundColor: 'rgba(0, 0, 255, 0.2)', // Blue color
+          borderColor: 'rgba(0, 0, 255, 1)',
+          borderWidth: 2,
+          data: pledged_contributions.map((item) => item.agreed_pledges),
+          fill: 'origin',
+          label: 'Pledged Contributions',
         },
       ],
-      labels: data.map((item) => `${item.start_year}-${item.end_year}`),
+      labels: pledged_contributions.map(
+        (item) => `${item.start_year}-${item.end_year}`,
+      ),
     }
-  }, [data, primaryColor])
+  }, [pledged_contributions, payments])
 
   const options = {
-    plugins: { customCanvasBackgroundColor: true, legend: { display: false } },
+    interaction: {
+      intersect: false,
+      mode: 'index', // Show tooltip for all datasets at the same index
+    },
+    plugins: { customCanvasBackgroundColor: true },
     ...COMMON_OPTIONS(primaryColor),
   }
 
@@ -58,7 +84,7 @@ const BarChart = ({ data, title }) => {
       onMouseEnter={() => setShowToolbar(true)}
       onMouseLeave={() => setShowToolbar(false)}
     >
-      <Bar
+      <Line
         data={chartData}
         options={options}
         plugins={[backgroundColorPlugin]}
@@ -76,4 +102,4 @@ const BarChart = ({ data, title }) => {
   )
 }
 
-export default BarChart
+export default TwoAreaCharts

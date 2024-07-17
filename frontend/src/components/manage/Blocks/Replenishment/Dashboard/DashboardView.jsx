@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 
 import cx from 'classnames'
 
-import AreaChart from '@ors/components/manage/Blocks/Replenishment/Dashboard/AreaChart'
+import FilledAreaChart from '@ors/components/manage/Blocks/Replenishment/Dashboard/FilledAreaChart'
 import BarChart from '@ors/components/manage/Blocks/Replenishment/Dashboard/BarChart'
 import useGetDashboardData from '@ors/components/manage/Blocks/Replenishment/Dashboard/useGetDashboardData'
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
@@ -12,6 +12,7 @@ import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishmen
 import { IndicatorBox } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/Indicators'
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { SubmitButton } from '@ors/components/ui/Button/Button'
+import TwoAreaCharts from '@ors/components/manage/Blocks/Replenishment/Dashboard/TwoAreaCharts'
 
 const overviewOrder = ['balance', 'payment_pledge_percentage', 'gain_loss']
 const overviewIndicatorsOrder = [
@@ -378,9 +379,30 @@ function DashboardView() {
 
         <div className="w-full lg:w-[40%]">
           <br className="m-5 leading-7" />
-          <div className="w-full flex flex-col gap-8">
-              {charts && <BarChart data={charts.outstanding_pledges} />}
-            <AreaChart />
+          <div className="flex w-full flex-col">
+            {charts && (
+              <>
+                <h3 className="text-2xl uppercase">
+                  Outstanding pledges for closed triennials
+                </h3>
+                <BarChart
+                  data={charts.outstanding_pledges}
+                  title="Outstanding pledges for closed triennials"
+                />
+                <h3 className="text-2xl uppercase">Pledged Contributions</h3>
+                <FilledAreaChart
+                  data={charts.pledged_contributions}
+                  title="Pledged Contributions"
+                />
+                <h3 className="text-2xl uppercase">
+                  Pledged Contributions vs. total payments
+                </h3>
+                <TwoAreaCharts
+                  data={charts}
+                  title="Pledged Contributions vs total payments"
+                />
+              </>
+            )}
           </div>
         </div>
       </div>
