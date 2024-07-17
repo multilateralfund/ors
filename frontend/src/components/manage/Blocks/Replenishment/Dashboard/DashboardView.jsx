@@ -10,6 +10,7 @@ import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { SubmitButton } from '@ors/components/ui/Button/Button'
+import AreaChart from "@ors/components/manage/Blocks/Replenishment/Dashboard/AreaChart";
 
 const overviewOrder = ['balance', 'payment_pledge_percentage', 'gain_loss']
 const overviewIndicatorsOrder = [
@@ -348,10 +349,12 @@ function DashboardView() {
         <div className="w-full lg:w-[40%]">
           <br className="m-5 leading-7" />
           <div className="flex flex-col gap-8">
-            <div className="h-auto w-full rounded-lg p-4 print:break-inside-avoid">
+            <div className="min-h-96 w-full print:break-inside-avoid">
               <BarChart />
             </div>
-            <div className="h-[464px] w-full rounded-lg bg-[#F5F5F5] print:break-inside-avoid"></div>
+            <div className="min-h-96 w-full print:break-inside-avoid">
+              <AreaChart />
+            </div>
           </div>
         </div>
       </div>
