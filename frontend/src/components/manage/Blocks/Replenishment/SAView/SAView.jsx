@@ -4,7 +4,7 @@ import { useContext, useEffect, useMemo, useState } from 'react'
 
 import { AddButton, SubmitButton } from '@ors/components/ui/Button/Button'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
-import ReplenishmentProvider from '@ors/contexts/Replenishment/ReplenishmentProvider'
+import SoAContext from '@ors/contexts/Replenishment/SoAContext'
 import { formatApiUrl } from '@ors/helpers/Api/utils'
 
 import FormDialog from '../FormDialog'
@@ -322,37 +322,6 @@ function transformForSave(d, currencies) {
   return r
 }
 
-function useApiReplenishment(startYear) {
-  const [contributions, setContributions] = useState([])
-  const [replenishmentAmount, setReplenishmentAmount] = useState(0)
-  const [loading, setLoading] = useState(false)
-
-  useEffect(
-    function () {
-      const path = [
-        '/api/replenishment/scales-of-assessment',
-        new URLSearchParams({ start_year: startYear }),
-      ].join('?')
-
-      fetch(formatApiUrl(path), {
-        credentials: 'include',
-      })
-        .then(function (resp) {
-          return resp.json()
-        })
-        .then(function (jsonData) {
-          setContributions(tranformContributions(jsonData))
-          if (jsonData.length > 0) {
-            setReplenishmentAmount(jsonData[0].replenishment.amount)
-          }
-        })
-    },
-    [startYear],
-  )
-
-  return { contributions, replenishmentAmount }
-}
-
 function getInitialCurrencyDateRange(year) {
   const start = new Date(Date.UTC(year, 0, 1))
   const end = new Date(Date.UTC(year, 6, 0))
@@ -369,6 +338,15 @@ function SAView(props) {
   const { period } = props
 
   const ctx = useContext(ReplenishmentContext)
+  const ctxSoA = useContext(SoAContext)
+  const version = ctxSoA.version
+
+  const contributions = useMemo(
+    function () {
+      return tranformContributions(ctxSoA.contributions)
+    },
+    [ctxSoA.contributions],
+  )
 
   const periodStart = parseInt(period.split('-')[0], 10)
   const prevPeriod = [periodStart - 3, periodStart - 1].join('-')
@@ -407,15 +385,12 @@ function SAView(props) {
     [currencyDateRange, period, unScalePeriod, prevPeriod],
   )
 
-  const { contributions, replenishmentAmount: apiReplenishmentAmount } =
-    useApiReplenishment(period.split('-')[0])
-
   useEffect(
     function () {
       handleNewTableData(contributions)
-      setReplenishmentAmount(apiReplenishmentAmount)
+      setReplenishmentAmount(ctxSoA.replenishmentAmount)
     },
-    [contributions, apiReplenishmentAmount],
+    [contributions, ctxSoA.replenishmentAmount],
   )
 
   const [currencies, setCurrencies] = useState({})
@@ -731,13 +706,17 @@ function SAView(props) {
       ) : null}
       <div className="-mx-4 -mb-4 rounded-b-lg bg-gray-200 p-4 print:hidden">
         <div className="flex items-center gap-x-2">
-          <h2>Comment Version N</h2>
-          <div className="rounded bg-primary px-1 font-medium uppercase text-mlfs-hlYellow">
-            Meeting {`NN`}
-          </div>
-          <div className="rounded bg-primary px-1 font-medium uppercase text-mlfs-hlYellow">
-            Decision {`NN`}
-          </div>
+          <h2>Comment Version {version.id} </h2>
+          {version.meeting ? (
+            <div className="rounded bg-primary px-1 font-medium uppercase text-mlfs-hlYellow">
+              Meeting {version.meeting}
+            </div>
+          ) : null}
+          {version.decision ? (
+            <div className="rounded bg-primary px-1 font-medium uppercase text-mlfs-hlYellow">
+              Decision {version.decision}
+            </div>
+          ) : null}
         </div>
         <textarea
           className="h-32 w-3/4 rounded-lg border-0 bg-white p-2"
@@ -749,4 +728,9 @@ function SAView(props) {
   )
 }
 
-export default SAView
+function SAViewWrapper(props) {
+  // Wrapper used to avoid flicker when no period is given.
+  return props.period ? <SAView {...props} /> : <div className="h-screen"></div>
+}
+
+export default SAViewWrapper

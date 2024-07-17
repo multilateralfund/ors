@@ -327,7 +327,7 @@ function InvoicesView(props) {
           onSubmit={handleEditInvoiceSubmit}
         />
       ) : null}
-      <div className="flex items-center py-4">
+      <div className="flex items-center py-4 print:hidden">
         <AddButton onClick={showAddInvoiceDialog}>Add invoice</AddButton>
         <div className="ml-8">
           <label>

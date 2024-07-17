@@ -30,10 +30,11 @@ export function formatDateValue(value) {
 }
 
 export function formatNumberValue(value, minDigits, maxDigits) {
-  return parseFloat(value).toLocaleString('en-US', {
+  const formatted = parseFloat(value).toLocaleString('en-US', {
     maximumFractionDigits: maxDigits ?? MAX_DECIMALS,
     minimumFractionDigits: minDigits ?? MIN_DECIMALS,
   })
+  return formatted === '-0' ? '0' : formatted
 }
 
 export function dateForEditField(value) {

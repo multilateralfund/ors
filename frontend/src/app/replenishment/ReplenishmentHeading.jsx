@@ -22,13 +22,20 @@ export default function ReplenishmentHeading(props) {
   const titleMemo = useMemo(
     function () {
       return {
+        children: props.children,
         extraPeriodOptions,
         period,
         periodOptions: ctx.periodOptions,
         showPeriodSelector,
       }
     },
-    [ctx.periodOptions, period, showPeriodSelector, extraPeriodOptions],
+    [
+      ctx.periodOptions,
+      period,
+      showPeriodSelector,
+      extraPeriodOptions,
+      props.children,
+    ],
   )
 
   return (
@@ -38,7 +45,7 @@ export default function ReplenishmentHeading(props) {
           <div className="mb-2 font-[500] uppercase">Replenishment</div>
           <PageHeading>{props.children}</PageHeading>
         </div>
-        <div>
+        <div className="print:hidden">
           {showPeriodSelector ? (
             <PeriodSelector
               period={period}
