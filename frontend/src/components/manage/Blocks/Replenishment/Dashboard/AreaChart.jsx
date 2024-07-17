@@ -19,7 +19,6 @@ import {
   MOCK_LABELS,
   backgroundColorPlugin,
   downloadChartAsImage,
-  createGradient,
 } from '@ors/components/manage/Blocks/Replenishment/Dashboard/chartUtils'
 import { useStore } from '@ors/store'
 import tailwindConfigModule from '~/tailwind.config'

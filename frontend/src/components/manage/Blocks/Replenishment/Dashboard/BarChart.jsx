@@ -12,16 +12,16 @@ import {
 } from 'chart.js'
 import resolveConfig from 'tailwindcss/resolveConfig'
 
+import {
+  COMMON_OPTIONS,
+  MOCK_LABELS,
+  backgroundColorPlugin,
+  downloadChartAsImage,
+} from '@ors/components/manage/Blocks/Replenishment/Dashboard/chartUtils'
 import { useStore } from '@ors/store'
 import tailwindConfigModule from '~/tailwind.config'
 
 import { IoDownloadOutline } from 'react-icons/io5'
-import {
-  backgroundColorPlugin,
-  COMMON_OPTIONS,
-  downloadChartAsImage,
-  MOCK_LABELS,
-} from '@ors/components/manage/Blocks/Replenishment/Dashboard/chartUtils'
 
 const tailwindConfig = resolveConfig(tailwindConfigModule)
 

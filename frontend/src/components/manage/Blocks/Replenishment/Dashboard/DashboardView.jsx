@@ -4,13 +4,13 @@ import { useEffect, useState } from 'react'
 
 import cx from 'classnames'
 
+import AreaChart from "@ors/components/manage/Blocks/Replenishment/Dashboard/AreaChart";
 import BarChart from '@ors/components/manage/Blocks/Replenishment/Dashboard/BarChart'
 import useGetDashboardData from '@ors/components/manage/Blocks/Replenishment/Dashboard/useGetDashboardData'
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { SubmitButton } from '@ors/components/ui/Button/Button'
-import AreaChart from "@ors/components/manage/Blocks/Replenishment/Dashboard/AreaChart";
 
 const overviewOrder = ['balance', 'payment_pledge_percentage', 'gain_loss']
 const overviewIndicatorsOrder = [
