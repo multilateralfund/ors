@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 
 import cx from 'classnames'
 
+import AreaChart from "@ors/components/manage/Blocks/Replenishment/Dashboard/AreaChart";
+import BarChart from '@ors/components/manage/Blocks/Replenishment/Dashboard/BarChart'
 import useGetDashboardData from '@ors/components/manage/Blocks/Replenishment/Dashboard/useGetDashboardData'
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
@@ -347,8 +349,12 @@ function DashboardView() {
         <div className="w-full lg:w-[40%]">
           <br className="m-5 leading-7" />
           <div className="flex flex-col gap-8">
-            <div className="h-[562px] w-full rounded-lg bg-[#F5F5F5] print:break-inside-avoid"></div>
-            <div className="h-[464px] w-full rounded-lg bg-[#F5F5F5] print:break-inside-avoid"></div>
+            <div className="min-h-96 w-full print:break-inside-avoid">
+              <BarChart />
+            </div>
+            <div className="min-h-96 w-full print:break-inside-avoid">
+              <AreaChart />
+            </div>
           </div>
         </div>
       </div>
