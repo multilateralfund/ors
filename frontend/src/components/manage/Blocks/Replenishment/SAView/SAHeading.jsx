@@ -22,6 +22,15 @@ function SAHeading(props) {
     setShowVersionsMenu(false)
   })
 
+
+  function handleClickVersion(v) {
+    return function() {
+      setCurrentVersion(v.id)
+      setShowVersionsMenu(false)
+    }
+  }
+
+
   const tagLatest = (
     <span className="mx-2 rounded-md bg-gray-400 p-1 text-xs text-white">
       LATEST
@@ -43,13 +52,13 @@ function SAHeading(props) {
         >
           <div className="flex items-center gap-x-2">
             <div>Scale of assessment</div>
-            <IoChevronDown className="text-5xl font-bold text-gray-700" />
-            <div className="rounded bg-mlfs-hlYellow px-1 text-base font-medium uppercase text-primary">
+            <IoChevronDown className="print:hidden text-5xl font-bold text-gray-700" />
+            <div className="print:hidden rounded bg-mlfs-hlYellow px-1 text-base font-medium uppercase text-primary">
               Version {version?.id}{' '}
               {version?.isDraft ? `(${version?.status})` : null}
             </div>
             {version?.isFinal ? (
-              <div className="rounded bg-primary px-1 text-base font-medium uppercase text-mlfs-hlYellow">
+              <div className="print:hidden rounded bg-primary px-1 text-base font-medium uppercase text-mlfs-hlYellow">
                 final
               </div>
             ) : null}
@@ -68,9 +77,7 @@ function SAHeading(props) {
             <div
               key={v.id}
               className="flex cursor-pointer items-center gap-x-2 rounded-none px-2 py-2 text-black no-underline hover:bg-primary hover:text-white"
-              onClick={function () {
-                setCurrentVersion(v.id)
-              }}
+              onClick={handleClickVersion(v)}
             >
               <div
                 className={cx(
