@@ -4,15 +4,14 @@ import { useEffect, useState } from 'react'
 
 import cx from 'classnames'
 
-import FilledAreaChart from '@ors/components/manage/Blocks/Replenishment/Dashboard/FilledAreaChart'
 import BarChart from '@ors/components/manage/Blocks/Replenishment/Dashboard/BarChart'
+import FilledAreaChart from '@ors/components/manage/Blocks/Replenishment/Dashboard/FilledAreaChart'
+import TwoAreaCharts from '@ors/components/manage/Blocks/Replenishment/Dashboard/TwoAreaCharts'
 import useGetDashboardData from '@ors/components/manage/Blocks/Replenishment/Dashboard/useGetDashboardData'
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
-import { IndicatorBox } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/Indicators'
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { SubmitButton } from '@ors/components/ui/Button/Button'
-import TwoAreaCharts from '@ors/components/manage/Blocks/Replenishment/Dashboard/TwoAreaCharts'
 
 const overviewOrder = ['balance', 'payment_pledge_percentage', 'gain_loss']
 const overviewIndicatorsOrder = [
@@ -38,16 +37,6 @@ const provisionsOrder = [
   'bilateral_assistance',
   'total',
 ]
-
-// function ListItem(props) {
-//   const { label, value } = props
-//   return (
-//     <li className={cx('mb-2 flex', props.className)}>
-//       <span className={cx('font-bold', { 'w-80': value })}>{label}</span>
-//       {value && <span className="ml-0">{value}</span>}
-//     </li>
-//   )
-// }
 
 function SummaryCard(props) {
   const { label, percentage, value } = props
@@ -299,7 +288,7 @@ function DashboardView() {
       ) : null}
 
       <div
-        className="grid grid-cols-1 auto-rows-auto gap-4 lg:grid-cols-5"
+        className="grid auto-rows-auto grid-cols-1 gap-4 lg:grid-cols-5"
         style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
       >
         <div className="lg:col-span-3">
