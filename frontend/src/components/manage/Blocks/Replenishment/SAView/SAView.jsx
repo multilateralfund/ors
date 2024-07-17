@@ -128,9 +128,9 @@ function getEditableFieldNames(cs) {
 const EDITABLE = getEditableFieldNames(COLUMNS)
 
 function SaveManager(props) {
-  const { amount, comment, currencyDateRange, data } = props
+  const { amount, comment, currencyDateRange, data, version } = props
 
-  const [isFinal, setIsFinal] = useState(false)
+  const [isFinal, setIsFinal] = useState(version?.isFinal ?? false)
   const [createNewVersion, setCreateNewVersion] = useState(true)
   const [saving, setSaving] = useState(false)
 
@@ -681,6 +681,7 @@ function SAView(props) {
           comment={commentText}
           currencyDateRange={currencyDateRange}
           data={transformForSave(tableData, currencies)}
+          version={version}
         />
       </div>
       <SATable
@@ -706,13 +707,13 @@ function SAView(props) {
       ) : null}
       <div className="-mx-4 -mb-4 rounded-b-lg bg-gray-200 p-4 print:hidden">
         <div className="flex items-center gap-x-2">
-          <h2>Comment Version {version.id} </h2>
-          {version.meeting ? (
+          <h2>Comment Version {version?.id} </h2>
+          {version?.meeting ? (
             <div className="rounded bg-primary px-1 font-medium uppercase text-mlfs-hlYellow">
               Meeting {version.meeting}
             </div>
           ) : null}
-          {version.decision ? (
+          {version?.decision ? (
             <div className="rounded bg-primary px-1 font-medium uppercase text-mlfs-hlYellow">
               Decision {version.decision}
             </div>
