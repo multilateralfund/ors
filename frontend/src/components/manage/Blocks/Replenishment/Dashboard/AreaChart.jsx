@@ -125,27 +125,25 @@ const AreaChart = () => {
   }
 
   return (
-    <div className="relative">
-      <div
-        className="relative"
-        onMouseEnter={() => setShowToolbar(true)}
-        onMouseLeave={() => setShowToolbar(false)}
-      >
-        <Line
-          data={dataRef.current}
-          options={options}
-          plugins={[backgroundColorPlugin]}
-          ref={chartRef}
-        />
-        {showToolbar && (
-          <button
-            className="absolute right-2 top-2 flex cursor-pointer items-center border-none bg-transparent text-primary no-underline"
-            onClick={() => downloadChartAsImage(chartRef)}
-          >
-            <IoDownloadOutline size={18} />
-          </button>
-        )}
-      </div>
+    <div
+      className="relative h-96 w-full print:break-inside-avoid"
+      onMouseEnter={() => setShowToolbar(true)}
+      onMouseLeave={() => setShowToolbar(false)}
+    >
+      <Line
+        data={dataRef.current}
+        options={options}
+        plugins={[backgroundColorPlugin]}
+        ref={chartRef}
+      />
+      {showToolbar && (
+        <button
+          className="absolute right-2 top-2 flex cursor-pointer items-center border-none bg-transparent text-primary no-underline"
+          onClick={() => downloadChartAsImage(chartRef)}
+        >
+          <IoDownloadOutline size={18} />
+        </button>
+      )}
     </div>
   )
 }

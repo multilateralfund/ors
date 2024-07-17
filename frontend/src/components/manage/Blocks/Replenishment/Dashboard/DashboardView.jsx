@@ -378,13 +378,9 @@ function DashboardView() {
 
         <div className="w-full lg:w-[40%]">
           <br className="m-5 leading-7" />
-          <div className="flex flex-col gap-8">
-            <div className="min-h-96 w-full print:break-inside-avoid">
+          <div className="w-full flex flex-col gap-8">
               {charts && <BarChart data={charts.outstanding_pledges} />}
-            </div>
-            <div className="min-h-96 w-full print:break-inside-avoid">
-              <AreaChart />
-            </div>
+            <AreaChart />
           </div>
         </div>
       </div>

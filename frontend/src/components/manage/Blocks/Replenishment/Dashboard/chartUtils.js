@@ -25,6 +25,7 @@ export const COMMON_OPTIONS = {
   layout: {
     padding: 10,
   },
+  maintainAspectRatio: false,
   plugins: { customCanvasBackgroundColor: true },
   responsive: true,
 }
