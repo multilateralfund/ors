@@ -1,15 +1,11 @@
 'use client'
 
-import { useContext } from 'react'
-
 import cx from 'classnames'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-import PeriodSelector from '@ors/components/manage/Blocks/Replenishment/PeriodSelector'
 import { getPathPeriod } from '@ors/components/manage/Blocks/Replenishment/utils'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import ReplenishmentProvider from '@ors/contexts/Replenishment/ReplenishmentProvider'
 
 import styles from './styles.module.css'
@@ -18,24 +14,20 @@ const SECTIONS = [
   {
     label: 'Dashboard',
     path: '/replenishment/dashboard',
-    showPeriodSelector: false,
   },
   {
     label: 'Status of contributions',
     path: '/replenishment/status-of-contributions',
-    showPeriodSelector: false,
   },
   {
     label: 'Scale of assessment',
     path: '/replenishment/scale-of-assessment',
   },
   {
-    extraPeriodOptions: [{ label: 'All', value: '' }],
     label: 'Invoices',
     path: '/replenishment/invoices',
   },
   {
-    extraPeriodOptions: [{ label: 'All', value: '' }],
     label: 'Payments',
     path: '/replenishment/payments',
   },
@@ -72,26 +64,13 @@ function ReplenishmentLayoutContent(props) {
   const pathname = usePathname()
   const period = getPathPeriod(pathname)
 
-  const [currentSection, navLinks] = getNavLinks(pathname, period)
-
-  const ctx = useContext(ReplenishmentContext)
+  const [_, navLinks] = getNavLinks(pathname, period)
 
   return (
     <>
       <div className={cx('print:hidden', styles.nav)}>
         <nav>{navLinks}</nav>
-        <div>
-          {currentSection?.showPeriodSelector ?? true ? (
-            <PeriodSelector
-              key={currentSection?.label}
-              period={period}
-              periodOptions={[
-                ...(currentSection?.extraPeriodOptions ?? []),
-                ...ctx.periodOptions,
-              ]}
-            />
-          ) : null}
-        </div>
+        <div id="replenishment-tab-buttons" className="self-end"></div>
       </div>
       <div className={styles.page}>{children}</div>
     </>
