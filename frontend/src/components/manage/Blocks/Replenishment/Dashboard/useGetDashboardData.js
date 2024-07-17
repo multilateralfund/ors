@@ -7,6 +7,7 @@ const OVERVIEW = {
   gain_loss: { label: 'ferm loss', value: null },
   payment_pledge_percentage: {
     label: 'pledge contribution received for 2021-2023',
+    percentage: true,
     value: null,
   },
 }

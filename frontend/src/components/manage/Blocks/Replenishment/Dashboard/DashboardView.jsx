@@ -46,17 +46,20 @@ const provisionsOrder = [
 // }
 
 function SummaryCard(props) {
-  const { label, value } = props
+  const { label, percentage, value } = props
   return (
     <div className="flex h-[150px] min-w-64 flex-1 flex-col justify-between rounded-lg bg-[#F5F5F5] px-4 py-4 print:break-inside-avoid">
       <div className="text-xl font-medium uppercase">{label}</div>
-      <div className="text-5xl font-bold leading-normal">{value}</div>
+      <div className="text-5xl font-bold leading-normal">
+        {value}
+        {percentage && '%'}
+      </div>
     </div>
   )
 }
 
 function CashCard(props) {
-  const { className, label, sub, value } = props
+  const { className, label, sub_text, value } = props
   return (
     <li
       className={cx(
@@ -66,7 +69,7 @@ function CashCard(props) {
     >
       <div className="">
         <div className="text-xl font-medium">{label}</div>
-        <div className="text-lg font-normal">{sub}</div>
+        <div className="text-lg font-normal">{sub_text}</div>
       </div>
       <div className="text-2xl font-bold leading-normal">{value}</div>
     </li>
@@ -276,6 +279,7 @@ function DashboardView() {
                 <SummaryCard
                   key={key}
                   label={overview[key].label}
+                  percentage={overview[key].percentage}
                   value={
                     overview[key].value !== null
                       ? formatNumberValue(overview[key].value, 0, 0)
@@ -329,6 +333,7 @@ function DashboardView() {
                     key === 'total' ? 'ml-auto !bg-primary text-white' : ''
                   }
                   label={allocations[key].label}
+                  sub_text={allocations[key].sub_text}
                   value={
                     allocations[key].value !== null
                       ? formatNumberValue(allocations[key].value, 0, 0)
