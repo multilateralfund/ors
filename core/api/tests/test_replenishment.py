@@ -822,6 +822,60 @@ class TestReplenishmentDashboard(BaseTest):
                     ferm_gain_loss_1.amount + ferm_gain_loss_2.amount
                 ).quantize(self.fifteen_decimals),
             },
+            "charts": {
+                "outstanding_pledges": [
+                    {
+                        "start_year": year_1,
+                        "end_year": year_2,
+                        "outstanding_pledges": (
+                            contribution_1.outstanding_contributions
+                            + contribution_3.outstanding_contributions
+                        ).quantize(self.fifteen_decimals),
+                    },
+                    {
+                        "start_year": year_3,
+                        "end_year": year_4,
+                        "outstanding_pledges": (
+                            contribution_2.outstanding_contributions
+                            + contribution_4.outstanding_contributions
+                        ).quantize(self.fifteen_decimals),
+                    },
+                ],
+                "pledged_contributions": [
+                    {
+                        "start_year": year_1,
+                        "end_year": year_2,
+                        "agreed_pledges": (
+                            contribution_1.agreed_contributions
+                            + contribution_3.agreed_contributions
+                        ).quantize(self.fifteen_decimals),
+                    },
+                    {
+                        "start_year": year_3,
+                        "end_year": year_4,
+                        "agreed_pledges": (
+                            contribution_2.agreed_contributions
+                            + contribution_4.agreed_contributions
+                        ).quantize(self.fifteen_decimals),
+                    },
+                ],
+                "payments": [
+                    {
+                        "start_year": year_1,
+                        "end_year": year_2,
+                        "total_payments": (
+                            contribution_1.cash_payments + contribution_3.cash_payments
+                        ).quantize(self.fifteen_decimals),
+                    },
+                    {
+                        "start_year": year_3,
+                        "end_year": year_4,
+                        "total_payments": (
+                            contribution_2.cash_payments + contribution_4.cash_payments
+                        ).quantize(self.fifteen_decimals),
+                    },
+                ],
+            },
         }
 
         correct_response["overview"]["balance"] = (

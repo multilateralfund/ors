@@ -352,6 +352,16 @@ class ReplenishmentDashboardView(views.APIView):
             * Decimal("100")
         )
 
+        pledges = (
+            TriennialContributionStatus.objects.values("start_year", "end_year")
+            .annotate(
+                outstanding_pledges=models.Sum("outstanding_contributions", default=0),
+                agreed_pledges=models.Sum("agreed_contributions", default=0),
+                total_payments=models.Sum("cash_payments", default=0),
+            )
+            .order_by("start_year")
+        )
+
         data = {
             "overview": {
                 "payment_pledge_percentage": payment_pledge_percentage_2021_2023,
@@ -383,6 +393,32 @@ class ReplenishmentDashboardView(views.APIView):
                 "information_strategy": allocations.information_strategy,
                 "bilateral_assistance": computed_summary_data["bilateral_assistance"],
                 "gain_loss": gain_loss,
+            },
+            "charts": {
+                "outstanding_pledges": [
+                    {
+                        "start_year": pledge["start_year"],
+                        "end_year": pledge["end_year"],
+                        "outstanding_pledges": pledge["outstanding_pledges"],
+                    }
+                    for pledge in pledges
+                ],
+                "pledged_contributions": [
+                    {
+                        "start_year": pledge["start_year"],
+                        "end_year": pledge["end_year"],
+                        "agreed_pledges": pledge["agreed_pledges"],
+                    }
+                    for pledge in pledges
+                ],
+                "payments": [
+                    {
+                        "start_year": pledge["start_year"],
+                        "end_year": pledge["end_year"],
+                        "total_payments": pledge["total_payments"],
+                    }
+                    for pledge in pledges
+                ],
             },
         }
 
