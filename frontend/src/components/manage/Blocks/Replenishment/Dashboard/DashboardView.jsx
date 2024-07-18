@@ -288,82 +288,86 @@ function DashboardView() {
       ) : null}
 
       <div
-        className="grid auto-rows-auto grid-cols-1 gap-4 lg:grid-cols-5"
+        className="grid auto-rows-auto grid-cols-1 gap-4 lg:grid-cols-5 print:block"
         style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
       >
-        <div className="lg:col-span-3">
-          <h3 className="text-2xl">OVERVIEW</h3>
+        <div className="lg:col-span-3 print:flex print:flex-col print:gap-4">
+          <div className="print:break-inside-avoid">
+            <h3 className="text-2xl">OVERVIEW</h3>
 
-          <div className="flex flex-wrap items-stretch gap-4">
-            {overview &&
-              overviewOrder.map((key) => (
-                <SummaryCard
-                  key={key}
-                  label={overview[key].label}
-                  percentage={overview[key].percentage}
-                  value={
-                    overview[key].value !== null
-                      ? formatNumberValue(overview[key].value, 0, 0)
-                      : 'N/A'
-                  }
-                />
-              ))}
+            <div className="flex flex-wrap items-stretch gap-4">
+              {overview &&
+                overviewOrder.map((key) => (
+                  <SummaryCard
+                    key={key}
+                    label={overview[key].label}
+                    percentage={overview[key].percentage}
+                    value={
+                      overview[key].value !== null
+                        ? formatNumberValue(overview[key].value, 0, 0)
+                        : 'N/A'
+                    }
+                  />
+                ))}
+            </div>
+            <DashboardIndicators data={overviewIndicators} />
           </div>
-          <DashboardIndicators data={overviewIndicators} />
+          <div className="print:break-inside-avoid">
+            <h3 className="text-2xl">INCOME</h3>
 
-          <h3 className="text-2xl">INCOME</h3>
+            <ul className="flex list-none flex-wrap items-stretch gap-4 pl-0">
+              {income &&
+                incomeOrder.map((key) => (
+                  <CashCard
+                    key={key}
+                    className={key === 'total' ? '!bg-primary text-white' : ''}
+                    label={income[key].label}
+                    value={
+                      income[key].value !== null
+                        ? formatNumberValue(income[key].value, 0, 0)
+                        : 'N/A'
+                    }
+                  />
+                ))}
+            </ul>
+          </div>
+          <div className="print:break-inside-avoid">
+            <h3 className="text-2xl">ALLOCATIONS AND PROVISIONS</h3>
 
-          <ul className="flex list-none flex-wrap items-stretch gap-4 pl-0">
-            {income &&
-              incomeOrder.map((key) => (
-                <CashCard
-                  key={key}
-                  className={key === 'total' ? '!bg-primary text-white' : ''}
-                  label={income[key].label}
-                  value={
-                    income[key].value !== null
-                      ? formatNumberValue(income[key].value, 0, 0)
-                      : 'N/A'
-                  }
-                />
-              ))}
-          </ul>
-
-          <h3 className="text-2xl">ALLOCATIONS AND PROVISIONS</h3>
-
-          <ul className="flex list-none flex-wrap items-stretch gap-4 pl-0">
-            {allocations &&
-              allocationsOrder.map((key) => (
-                <CashCard
-                  key={key}
-                  className={key === 'total' ? '!bg-primary text-white' : ''}
-                  label={allocations[key].label}
-                  value={
-                    allocations[key].value !== null
-                      ? formatNumberValue(allocations[key].value, 0, 0)
-                      : 'N/A'
-                  }
-                />
-              ))}
-          </ul>
-          <ul className="flex list-none flex-wrap justify-between gap-4 pl-0">
-            {provisions &&
-              provisionsOrder.map((key) => (
-                <CashCard
-                  key={key}
-                  className={
-                    key === 'total' ? 'ml-auto !bg-primary text-white' : ''
-                  }
-                  label={provisions[key].label}
-                  sub_text={provisions[key].sub_text}
-                  value={
-                    provisions[key].value !== null
-                      ? formatNumberValue(provisions[key].value, 0, 0)
-                      : 'N/A'
-                  }
-                />
-              ))}
-          </ul>
+            <ul className="flex list-none flex-wrap items-stretch gap-4 pl-0">
+              {allocations &&
+                allocationsOrder.map((key) => (
+                  <CashCard
+                    key={key}
+                    className={key === 'total' ? '!bg-primary text-white' : ''}
+                    label={allocations[key].label}
+                    value={
+                      allocations[key].value !== null
+                        ? formatNumberValue(allocations[key].value, 0, 0)
+                        : 'N/A'
+                    }
+                  />
+                ))}
+            </ul>
+            <ul className="flex list-none flex-wrap justify-between gap-4 pl-0">
+              {provisions &&
+                provisionsOrder.map((key) => (
+                  <CashCard
+                    key={key}
+                    className={
+                      key === 'total' ? 'ml-auto !bg-primary text-white' : ''
+                    }
+                    label={provisions[key].label}
+                    sub_text={provisions[key].sub_text}
+                    value={
+                      provisions[key].value !== null
+                        ? formatNumberValue(provisions[key].value, 0, 0)
+                        : 'N/A'
+                    }
+                  />
+                ))}
+            </ul>
+          </div>
         </div>
 
         <div className="lg:col-span-2 lg:col-start-4">
@@ -371,25 +375,31 @@ function DashboardView() {
           <div className="flex w-full flex-col">
             {charts && (
               <>
-                <h3 className="text-2xl uppercase">
-                  Outstanding pledges for closed triennials
-                </h3>
-                <BarChart
-                  data={charts.outstanding_pledges}
-                  title="Outstanding pledges for closed triennials"
-                />
-                <h3 className="text-2xl uppercase">Pledged Contributions</h3>
-                <FilledAreaChart
-                  data={charts.pledged_contributions}
-                  title="Pledged Contributions"
-                />
-                <h3 className="text-2xl uppercase">
-                  Pledged Contributions vs. total payments
-                </h3>
-                <TwoAreaCharts
-                  data={charts}
-                  title="Pledged Contributions vs total payments"
-                />
+                <div className="print:break-inside-avoid">
+                  <h3 className="text-2xl uppercase">
+                    Outstanding pledges for closed triennials
+                  </h3>
+                  <BarChart
+                    data={charts.outstanding_pledges}
+                    title="Outstanding pledges for closed triennials"
+                  />
+                </div>
+                <div className="print:break-inside-avoid">
+                  <h3 className="text-2xl uppercase">Pledged Contributions</h3>
+                  <FilledAreaChart
+                    data={charts.pledged_contributions}
+                    title="Pledged Contributions"
+                  />
+                </div>
+                <div className="print:break-inside-avoid">
+                  <h3 className="text-2xl uppercase">
+                    Pledged Contributions vs. total payments
+                  </h3>
+                  <TwoAreaCharts
+                    data={charts}
+                    title="Pledged Contributions vs total payments"
+                  />
+                </div>
               </>
             )}
           </div>
