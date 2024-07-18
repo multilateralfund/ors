@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react'
 
 import cx from 'classnames'
 
-import AreaChart from "@ors/components/manage/Blocks/Replenishment/Dashboard/AreaChart";
 import BarChart from '@ors/components/manage/Blocks/Replenishment/Dashboard/BarChart'
+import FilledAreaChart from '@ors/components/manage/Blocks/Replenishment/Dashboard/FilledAreaChart'
+import TwoAreaCharts from '@ors/components/manage/Blocks/Replenishment/Dashboard/TwoAreaCharts'
 import useGetDashboardData from '@ors/components/manage/Blocks/Replenishment/Dashboard/useGetDashboardData'
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
@@ -37,20 +38,10 @@ const provisionsOrder = [
   'total',
 ]
 
-// function ListItem(props) {
-//   const { label, value } = props
-//   return (
-//     <li className={cx('mb-2 flex', props.className)}>
-//       <span className={cx('font-bold', { 'w-80': value })}>{label}</span>
-//       {value && <span className="ml-0">{value}</span>}
-//     </li>
-//   )
-// }
-
 function SummaryCard(props) {
   const { label, percentage, value } = props
   return (
-    <div className="flex h-[150px] min-w-64 flex-1 flex-col justify-between rounded-lg bg-[#F5F5F5] px-4 py-4 print:break-inside-avoid">
+    <div className="flex min-h-36 flex-1 flex-col justify-between rounded-lg bg-[#F5F5F5] p-4 print:break-inside-avoid">
       <div className="text-xl font-medium uppercase">{label}</div>
       <div className="text-5xl font-bold leading-normal">
         {value}
@@ -65,7 +56,7 @@ function CashCard(props) {
   return (
     <li
       className={cx(
-        ' flex h-[90px] w-auto min-w-96 flex-1 items-center justify-between rounded-lg bg-[#F5F5F5] px-4 py-4 print:break-inside-avoid',
+        ' flex min-h-24 min-w-80 flex-1 items-center justify-between rounded-lg bg-[#F5F5F5] p-4 md:min-w-96 print:break-inside-avoid',
         className,
       )}
     >
@@ -213,9 +204,37 @@ function EditStatusDialog(props) {
   )
 }
 
+const DashboardIndicators = ({ data }) => {
+  return (
+    <div className="my-5 flex flex-wrap items-stretch gap-4 text-primary">
+      {data &&
+        overviewIndicatorsOrder.map((key) => (
+          <div
+            key={key}
+            className="flex flex-1 items-center justify-between gap-4 rounded-lg bg-[#F5F5F5] p-4 print:break-inside-avoid"
+          >
+            <span className="text-6xl font-bold print:text-4xl">
+              {data[key].value}
+            </span>
+            <span className="text-2xl font-medium print:text-lg">
+              {data[key].label}
+            </span>
+          </div>
+        ))}
+    </div>
+  )
+}
+
 function DashboardView() {
   const { data: newData, formData, loading } = useGetDashboardData()
-  const { allocations, income, overview } = newData
+  const {
+    allocations,
+    charts,
+    income,
+    overview,
+    overviewIndicators,
+    provisions,
+  } = newData
 
   const [showEdit, setShowEdit] = useState(false)
   const [data, setData] = useState(null)
@@ -269,13 +288,13 @@ function DashboardView() {
       ) : null}
 
       <div
-        className="flex flex-wrap gap-4 lg:justify-between"
+        className="grid auto-rows-auto grid-cols-1 gap-4 lg:grid-cols-5"
         style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
       >
-        <div className="w-full lg:w-[58%]">
+        <div className="lg:col-span-3">
           <h3 className="text-2xl">OVERVIEW</h3>
 
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-stretch gap-4">
             {overview &&
               overviewOrder.map((key) => (
                 <SummaryCard
@@ -290,10 +309,11 @@ function DashboardView() {
                 />
               ))}
           </div>
+          <DashboardIndicators data={overviewIndicators} />
 
           <h3 className="text-2xl">INCOME</h3>
 
-          <ul className="flex list-none flex-wrap gap-4 pl-0">
+          <ul className="flex list-none flex-wrap items-stretch gap-4 pl-0">
             {income &&
               incomeOrder.map((key) => (
                 <CashCard
@@ -311,7 +331,7 @@ function DashboardView() {
 
           <h3 className="text-2xl">ALLOCATIONS AND PROVISIONS</h3>
 
-          <ul className="flex list-none flex-wrap gap-4 pl-0">
+          <ul className="flex list-none flex-wrap items-stretch gap-4 pl-0">
             {allocations &&
               allocationsOrder.map((key) => (
                 <CashCard
@@ -327,18 +347,18 @@ function DashboardView() {
               ))}
           </ul>
           <ul className="flex list-none flex-wrap justify-between gap-4 pl-0">
-            {allocations &&
+            {provisions &&
               provisionsOrder.map((key) => (
                 <CashCard
                   key={key}
                   className={
                     key === 'total' ? 'ml-auto !bg-primary text-white' : ''
                   }
-                  label={allocations[key].label}
-                  sub_text={allocations[key].sub_text}
+                  label={provisions[key].label}
+                  sub_text={provisions[key].sub_text}
                   value={
-                    allocations[key].value !== null
-                      ? formatNumberValue(allocations[key].value, 0, 0)
+                    provisions[key].value !== null
+                      ? formatNumberValue(provisions[key].value, 0, 0)
                       : 'N/A'
                   }
                 />
@@ -346,15 +366,32 @@ function DashboardView() {
           </ul>
         </div>
 
-        <div className="w-full lg:w-[40%]">
+        <div className="lg:col-span-2 lg:col-start-4">
           <br className="m-5 leading-7" />
-          <div className="flex flex-col gap-8">
-            <div className="min-h-96 w-full print:break-inside-avoid">
-              <BarChart />
-            </div>
-            <div className="min-h-96 w-full print:break-inside-avoid">
-              <AreaChart />
-            </div>
+          <div className="flex w-full flex-col">
+            {charts && (
+              <>
+                <h3 className="text-2xl uppercase">
+                  Outstanding pledges for closed triennials
+                </h3>
+                <BarChart
+                  data={charts.outstanding_pledges}
+                  title="Outstanding pledges for closed triennials"
+                />
+                <h3 className="text-2xl uppercase">Pledged Contributions</h3>
+                <FilledAreaChart
+                  data={charts.pledged_contributions}
+                  title="Pledged Contributions"
+                />
+                <h3 className="text-2xl uppercase">
+                  Pledged Contributions vs. total payments
+                </h3>
+                <TwoAreaCharts
+                  data={charts}
+                  title="Pledged Contributions vs total payments"
+                />
+              </>
+            )}
           </div>
         </div>
       </div>

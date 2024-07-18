@@ -1,13 +1,15 @@
 import cx from 'classnames'
 
-const PRINT_CLASS = 'print:w-full print:min-w-full print:max-w-full print:border-none print:p-0 print:gap-3 print:justify-start'
+const PRINT_CLASS =
+  'print:w-full print:min-w-full print:max-w-full print:border-none print:p-0 print:gap-3 print:justify-start'
 
-function IndicatorBox({ isPercentage, text, value }) {
+function IndicatorBox({ classes, isPercentage, text, value }) {
   return (
     <div
       className={cx(
         'flex min-w-80 max-w-96 flex-1 items-center justify-center gap-5 rounded-lg border-2 border-solid border-gray-200 p-4 uppercase text-primary',
         PRINT_CLASS,
+        classes,
       )}
     >
       <span className="text-6xl font-bold print:text-4xl">
@@ -21,7 +23,7 @@ function IndicatorBox({ isPercentage, text, value }) {
 
 const SummaryIndicators = ({ data }) => {
   return (
-    <div className="flex flex-wrap items-center justify-center gap-4 border-primary text-primary">
+    <div className="flex flex-wrap items-stretch justify-start gap-4 border-primary text-primary">
       <IndicatorBox
         text="Parties have made their contributions in advance"
         value={data.contributions_advance}
@@ -40,7 +42,7 @@ const SummaryIndicators = ({ data }) => {
 
 const TriennialIndicators = ({ data, period, totalPledge }) => {
   return (
-    <div className="flex flex-wrap items-center justify-center gap-4 border-primary text-primary">
+    <div className="flex flex-wrap items-stretch justify-start gap-4 border-primary text-primary">
       <IndicatorBox
         text={`parties have made their contributions for ${period}`}
         value={data.contributions}
@@ -56,7 +58,7 @@ const TriennialIndicators = ({ data, period, totalPledge }) => {
 
 const AnnualIndicators = ({ data, totalPledge, year }) => {
   return (
-    <div className="flex flex-wrap items-center justify-center gap-4 border-primary text-primary">
+    <div className="flex flex-wrap items-stretch justify-start gap-4 border-primary text-primary">
       <IndicatorBox
         text={`parties have made their contributions for ${year}`}
         value={data.contributions}
@@ -70,4 +72,9 @@ const AnnualIndicators = ({ data, totalPledge, year }) => {
   )
 }
 
-export { AnnualIndicators, SummaryIndicators, TriennialIndicators }
+export {
+  AnnualIndicators,
+  IndicatorBox,
+  SummaryIndicators,
+  TriennialIndicators,
+}

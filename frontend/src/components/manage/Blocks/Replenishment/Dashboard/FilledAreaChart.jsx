@@ -1,12 +1,14 @@
 import React, { useMemo, useRef, useState } from 'react'
-import { Bar } from 'react-chartjs-2'
+import { Line } from 'react-chartjs-2'
 
 import {
-  BarElement,
   CategoryScale,
   Chart as ChartJS,
+  Filler,
   Legend,
+  LineElement,
   LinearScale,
+  PointElement,
   Title,
   Tooltip,
 } from 'chart.js'
@@ -24,9 +26,18 @@ import { IoDownloadOutline } from 'react-icons/io5'
 
 const tailwindConfig = resolveConfig(tailwindConfigModule)
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Filler,
+)
 
-const BarChart = ({ data, title }) => {
+const FilledAreaChart = ({ data, title }) => {
   const { mode } = useStore((state) => state.theme)
   const primaryColor = tailwindConfig.originalColors[mode].primary.DEFAULT
   const chartRef = useRef(null)
@@ -36,11 +47,12 @@ const BarChart = ({ data, title }) => {
     return {
       datasets: [
         {
-          backgroundColor: primaryColor,
+          backgroundColor: 'rgba(0, 0, 255, 0.2)', // Blue color
           borderColor: primaryColor,
-          borderWidth: 1,
-          data: data.map((item) => item.outstanding_pledges),
-          label: 'Outstanding Pledges',
+          borderWidth: 2,
+          data: data.map((item) => item.agreed_pledges),
+          fill: 'origin',
+          label: 'Pledged Contributions',
         },
       ],
       labels: data.map((item) => `${item.start_year}-${item.end_year}`),
@@ -48,6 +60,10 @@ const BarChart = ({ data, title }) => {
   }, [data, primaryColor])
 
   const options = {
+    interaction: {
+      intersect: false,
+      mode: 'nearest', // Trigger tooltip when mouse is closest to a point
+    },
     plugins: { customCanvasBackgroundColor: true, legend: { display: false } },
     ...COMMON_OPTIONS(primaryColor),
   }
@@ -58,7 +74,7 @@ const BarChart = ({ data, title }) => {
       onMouseEnter={() => setShowToolbar(true)}
       onMouseLeave={() => setShowToolbar(false)}
     >
-      <Bar
+      <Line
         data={chartData}
         options={options}
         plugins={[backgroundColorPlugin]}
@@ -76,4 +92,4 @@ const BarChart = ({ data, title }) => {
   )
 }
 
-export default BarChart
+export default FilledAreaChart
