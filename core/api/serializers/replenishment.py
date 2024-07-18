@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from core.api.serializers.country import CountrySerializer
-from core.models import Replenishment, ScaleOfAssessment
+from core.models import Replenishment, ScaleOfAssessment, ScaleOfAssessmentVersion
 
 
 class ReplenishmentSerializer(serializers.ModelSerializer):
@@ -14,8 +14,20 @@ class ReplenishmentSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ScaleOfAssessmentVersionSerializer(serializers.ModelSerializer):
+    version = serializers.CharField(read_only=True)
+    is_final = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = ScaleOfAssessmentVersion
+        fields = "__all__"
+
+
 class ScaleOfAssessmentSerializer(serializers.ModelSerializer):
-    replenishment = ReplenishmentSerializer(read_only=True)
+    version = ScaleOfAssessmentVersionSerializer(read_only=True)
+    replenishment = ReplenishmentSerializer(
+        source="version.replenishment", read_only=True
+    )
     country = CountrySerializer(read_only=True)
     currency = serializers.CharField()
     exchange_rate = serializers.DecimalField(

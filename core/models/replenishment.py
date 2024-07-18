@@ -34,6 +34,8 @@ class ScaleOfAssessmentVersion(models.Model):
     )
     version = models.IntegerField(default=0)
     is_final = models.BooleanField(default=False)
+    meeting_number = models.CharField(max_length=32, default="")
+    decision_number = models.CharField(max_length=32, default="")
 
     def __str__(self):
         return f"Scale of Assessment Version {self.version} ({self.replenishment.start_year} - {self.replenishment.end_year})"
@@ -65,7 +67,7 @@ class ScaleOfAssessment(models.Model):
     bilateral_assistance_amount = models.DecimalField(
         max_digits=30, decimal_places=15, default=0
     )
-    un_scale_of_assessment = models.DecimalField(max_digits=30, decimal_places=15)
+    un_scale_of_assessment = models.DecimalField(max_digits=30, decimal_places=15, null=True)
     override_adjusted_scale_of_assessment = models.DecimalField(
         max_digits=30, decimal_places=15, null=True
     )

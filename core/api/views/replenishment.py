@@ -1,7 +1,8 @@
 from decimal import Decimal
 
-from django.db import models
+from django.db import models, transaction
 from rest_framework import viewsets, mixins, views
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from core.api.filters.replenishments import ScaleOfAssessmentFilter
@@ -20,6 +21,7 @@ from core.models import (
     FermGainLoss,
     ExternalIncome,
     ExternalAllocation,
+    ScaleOfAssessmentVersion,
 )
 
 
@@ -38,7 +40,9 @@ class ReplenishmentCountriesViewSet(viewsets.GenericViewSet, mixins.ListModelMix
         return queryset.order_by("name")
 
 
-class ReplenishmentViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class ReplenishmentViewSet(
+    viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin
+):
     """
     Viewset for all replenishments that are available.
     """
@@ -51,6 +55,58 @@ class ReplenishmentViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         if user.user_type == user.UserType.SECRETARIAT:
             return Replenishment.objects.order_by("-start_year")
         return Replenishment.objects.none()
+
+    @transaction.atomic
+    def perform_create(self, serializer):
+        if Replenishment.objects.filter(
+            start_year=serializer.validated_data["start_year"],
+        ).exists():
+            raise ValidationError("A replenishment already exists for this start year.")
+
+        try:
+            previous_replenishment = Replenishment.objects.get(
+                start_year=serializer.validated_data["start_year"] - 3
+            )
+        except Replenishment.DoesNotExist:
+            raise ValidationError(
+                "There is no previous replenishment, something went wrong."
+            )
+
+        try:
+            previous_replenishment_final_version = (
+                previous_replenishment.scales_of_assessment_versions.get(is_final=True)
+            )
+        except ScaleOfAssessmentVersion.DoesNotExist:
+            raise ValidationError(
+                "There is no final version for the previous replenishment, something went wrong."
+            )
+        except ScaleOfAssessmentVersion.MultipleObjectsReturned:
+            raise ValidationError(
+                "There are multiple final versions for the previous replenishment, something went wrong."
+            )
+
+        new_replenishment = serializer.save()
+
+        # Create draft version
+        new_version = ScaleOfAssessmentVersion.objects.create(
+            replenishment=new_replenishment
+        )
+
+        # Copy scales of assessment from previous replenishment
+        new_scales_of_assessment = []
+        for (
+            previous_scale_of_assessment
+        ) in previous_replenishment_final_version.scales_of_assessment.values(
+            "country", "currency"
+        ):
+            new_scale_of_assessment = ScaleOfAssessment(
+                version=new_version,
+                country_id=previous_scale_of_assessment["country"],
+                currency=previous_scale_of_assessment["currency"],
+            )
+            new_scales_of_assessment.append(new_scale_of_assessment)
+
+        ScaleOfAssessment.objects.bulk_create(new_scales_of_assessment)
 
 
 class ScaleOfAssessmentViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
@@ -66,7 +122,7 @@ class ScaleOfAssessmentViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         user = self.request.user
         if user.user_type == user.UserType.SECRETARIAT:
             return ScaleOfAssessment.objects.select_related(
-                "country", "replenishment"
+                "country", "version__replenishment"
             ).order_by("country__name")
         return ScaleOfAssessment.objects.none()
 

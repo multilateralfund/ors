@@ -98,7 +98,7 @@ def import_replenishments(countries):
         logger.info(f"Imported Replenishment {start_year} - {end_year}")
         scale_of_assessment_version = ScaleOfAssessmentVersion.objects.create(
             replenishment=replenishment,
-            is_final=True,
+            is_final=True if start_year == 2021 else False,
         )
         logger.info(f"Crated version 0 for Replenishment {start_year} - {end_year}")
         scales_of_assessment = []
