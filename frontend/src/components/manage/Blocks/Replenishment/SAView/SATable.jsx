@@ -8,7 +8,7 @@ import ConfirmDialog from '../ConfirmDialog'
 import HeaderCells from '../Table/HeaderCells'
 import styles from '../Table/table.module.css'
 
-import { IoAlertCircle, IoPencil, IoTrash } from 'react-icons/io5'
+import { IoAlertCircle, IoArrowUndo, IoPencil, IoTrash } from 'react-icons/io5'
 
 function ConfirmEditDialog(props) {
   return <ConfirmDialog title="Change this system computed value?" {...props} />
@@ -27,6 +27,46 @@ function AdminButtons(props) {
       </button>
     </div>
   )
+}
+
+function RevertButton(props) {
+  const { className, onClick, ...rest } = props
+  return (
+    <button
+      className={cx(
+        '-mr-2 cursor-pointer border-none bg-transparent p-0 text-secondary',
+        className,
+      )}
+      title="Discard override and revert to initial value."
+      type="button"
+      onClick={onClick}
+      {...rest}
+    >
+      <IoArrowUndo />
+    </button>
+  )
+}
+
+function ViewField(props) {
+  const { cell, onRevert } = props
+  if (cell?.isEditable) {
+    return (
+      <div className="flex items-center justify-between">
+        <span
+          className={`w-full text-center ${cell.hasOverride ? 'text-secondary' : ''}`}
+        >
+          {cell.view}
+        </span>
+        {cell.hasOverride ? (
+          <RevertButton onClick={onRevert} />
+        ) : (
+          <span className="text-gray-400 print:hidden">{'\u22EE'}</span>
+        )}
+      </div>
+    )
+  } else {
+    return <div className="text-center">{cell?.view}</div>
+  }
 }
 
 function EditField(props) {
@@ -71,7 +111,16 @@ function EditField(props) {
 }
 
 function TableCell(props) {
-  const { c, columns, enableEdit, onCellEdit, onDelete, r, rowData } = props
+  const {
+    c,
+    columns,
+    enableEdit,
+    onCellEdit,
+    onCellRevert,
+    onDelete,
+    r,
+    rowData,
+  } = props
 
   const column = columns[c]
   const fname = column.field
@@ -153,6 +202,10 @@ function TableCell(props) {
     setValue(evt.target.value)
   }
 
+  function handleRevert() {
+    onCellRevert(r, fname)
+  }
+
   return (
     <div
       className="flex items-center justify-between"
@@ -188,7 +241,7 @@ function TableCell(props) {
             ) : null}
           </div>
         ) : (
-          cell?.view ?? cell
+          <ViewField cell={cell} onRevert={handleRevert} />
         )}
       </div>
       {c === 0 && enableEdit && !editing ? (
@@ -250,6 +303,7 @@ function SATable(props) {
     onAddCancel,
     onAddSubmit,
     onCellEdit,
+    onCellRevert,
     onDelete,
     onSort,
     rowData,
@@ -271,6 +325,7 @@ function SATable(props) {
             r={j}
             rowData={rowData}
             onCellEdit={onCellEdit}
+            onCellRevert={onCellRevert}
             onDelete={onDelete}
           />
         </td>,
