@@ -1,3 +1,5 @@
+import Chart from 'chart.js/auto'
+
 export const backgroundColorPlugin = {
   id: 'customCanvasBackgroundColor',
   beforeDraw: (chart) => {
@@ -9,16 +11,63 @@ export const backgroundColorPlugin = {
   },
 }
 
-export const downloadChartAsImage = (chartRef, fileName) => {
-  const chart = chartRef.current
-  if (!chart) return
+export const downloadChartAsImage = async (chartRef, title) => {
+  const chartInstance = chartRef.current
+  if (!chartInstance) {
+    console.error('Chart instance is not available.')
+    return
+  }
 
-  // Get base64 image with white background
-  const url = chart.toBase64Image('image/jpeg', 1.0)
+  // Clone existing chart configuration
+  const newChartConfig = {
+    data: JSON.parse(JSON.stringify(chartInstance.config.data)), // Deep clone data
+    options: JSON.parse(JSON.stringify(chartInstance.config.options)), // Deep clone options
+    plugins: [backgroundColorPlugin], // Include your custom plugin here
+    type: chartInstance.config.type,
+  }
+
+  // Adjust chart configuration for download dimensions
+  newChartConfig.options.devicePixelRatio = window.devicePixelRatio || 1
+  newChartConfig.options.animation = false // Disable animations for clarity
+  newChartConfig.options.maintainAspectRatio = true
+  newChartConfig.options.plugins.title = {
+    display: true,
+    font: { size: 16 },
+    text: title.toUpperCase(),
+  }
+
+  // Create a new canvas element
+  const newCanvas = document.createElement('canvas')
+  newCanvas.width = 1920
+  newCanvas.height = 1080
+  newCanvas.style.display = 'none' // Hide the canvas
+
+  // Ensure canvas element is attached to the DOM before creating chart instance
+  // Otherwise the canvas will be empty
+  document.body.appendChild(newCanvas)
+
+  const newContext = newCanvas.getContext('2d')
+
+  // Create a new chart instance with the adjusted configuration
+  const tempChart = new Chart(newContext, newChartConfig)
+
+  // Render the chart onto the new canvas
+  tempChart.render()
+
+  // Wait for a fixed duration (adjust as needed) to ensure rendering completes
+  await new Promise((resolve) => setTimeout(resolve, 500))
+
+  // Get base64 image data URL from the canvas
+  const url = newCanvas.toDataURL('image/jpeg', 1.0)
+
+  // Create a temporary link element to trigger download
   const link = document.createElement('a')
   link.href = url
-  link.download = fileName.toLowerCase().replaceAll(' ', '_') + '_chart.jpeg'
+  link.download = `${title.toLowerCase().replaceAll(' ', '_')}_chart.jpeg`
   link.click()
+
+  // Clean up
+  newCanvas.remove()
 }
 
 export const COMMON_OPTIONS = (color = '#002A3C') => ({

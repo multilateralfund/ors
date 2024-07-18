@@ -86,8 +86,8 @@ const TwoAreaCharts = ({ data, title }) => {
       />
       {showToolbar && (
         <button
-          className="absolute right-2 top-2 flex cursor-pointer items-center border-none bg-transparent text-primary no-underline"
-          onClick={() => downloadChartAsImage(chartRef, title)}
+          className="absolute -top-2 right-2 flex cursor-pointer items-center border-none bg-transparent text-primary no-underline"
+          onClick={() => downloadChartAsImage(chartRef, title, title)}
         >
           <IoDownloadOutline size={18} />
         </button>

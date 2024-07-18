@@ -59,7 +59,7 @@ const BarChart = ({ data, title }) => {
       />
       {showToolbar && (
         <button
-          className="absolute right-2 top-2 flex cursor-pointer items-center border-none bg-transparent text-primary no-underline"
+          className="absolute right-2 -top-2 flex cursor-pointer items-center border-none bg-transparent text-primary no-underline"
           onClick={() => downloadChartAsImage(chartRef, title)}
         >
           <IoDownloadOutline size={18} />
