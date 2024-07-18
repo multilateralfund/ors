@@ -9,7 +9,7 @@ export const backgroundColorPlugin = {
   },
 }
 
-export const downloadChartAsImage = (chartRef) => {
+export const downloadChartAsImage = (chartRef, fileName) => {
   const chart = chartRef.current
   if (!chart) return
 
@@ -17,28 +17,39 @@ export const downloadChartAsImage = (chartRef) => {
   const url = chart.toBase64Image('image/jpeg', 1.0)
   const link = document.createElement('a')
   link.href = url
-  link.download = 'chart.jpg'
+  link.download = fileName.toLowerCase().replaceAll(' ', '_') + '_chart.jpeg'
   link.click()
 }
 
-export const COMMON_OPTIONS = {
+
+export const COMMON_OPTIONS = (color) => ({
   layout: {
     padding: 10,
   },
-  plugins: { customCanvasBackgroundColor: true },
+  maintainAspectRatio: false,
   responsive: true,
-}
-
-export const MOCK_LABELS = [
-  '1991-1993',
-  '1994-1996',
-  '1997-1999',
-  '2000-2002',
-  '2003-2005',
-  '2006-2008',
-  '2009-2011',
-  '2012-2014',
-  '2015-2017',
-  '2018-2020',
-  '2021-2023',
-]
+  scales: {
+    x: {
+      border: {
+        color: color,
+        width: 2,
+      },
+      grid: {
+        display: false,
+      },
+    },
+    y: {
+      beginAtZero: true,
+      border: {
+        display: false,
+      },
+      ticks: {
+        callback: function (value) {
+          return value.toLocaleString()
+        },
+        padding: 10,
+      },
+    },
+  },
+  tension: 0, // Adjust line curve
+})

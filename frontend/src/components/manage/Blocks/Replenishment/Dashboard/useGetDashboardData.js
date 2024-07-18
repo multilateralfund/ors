@@ -99,8 +99,13 @@ const updateObjectValues = (fetchedData) => {
     fetchedData.overview.payment_pledge_percentage
   OVERVIEW.gain_loss.value = fetchedData.overview.gain_loss
 
-  // Update OVERVIEW_INDICATORS object (if needed)
-  // ...
+  // Update OVERVIEW_INDICATORS object
+  OVERVIEW_INDICATORS.advance_contributions.value =
+    fetchedData.overview.parties_paid_in_advance_count
+  OVERVIEW_INDICATORS.contributions.value =
+    fetchedData.overview.parties_paid_count
+  OVERVIEW_INDICATORS.outstanding_contributions.value =
+    fetchedData.overview.parties_have_to_pay_count
 
   // Update INCOME object
   INCOME.cash_payments.value = fetchedData.income.cash_payments
@@ -132,8 +137,11 @@ const updateObjectValues = (fetchedData) => {
 function useGetDashboardData() {
   const [data, setData] = useState({
     allocations: null,
+    charts: null,
     income: null,
     overview: null,
+    overviewIndicators: null,
+    provisions: null,
   })
   const [formData, setFormData] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -149,12 +157,12 @@ function useGetDashboardData() {
         updateObjectValues(data)
         setFormData({ ...data.overview, ...data.allocations, ...data.income })
         setData({
-          allocations: {
-            ...ALLOCATIONS,
-            ...PROVISIONS,
-          },
+          allocations: ALLOCATIONS,
+          charts: data.charts,
           income: INCOME,
           overview: OVERVIEW,
+          overviewIndicators: OVERVIEW_INDICATORS,
+          provisions: PROVISIONS,
         })
         setLoading(false)
       })

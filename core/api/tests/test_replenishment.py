@@ -674,30 +674,30 @@ class TestStatusOfContributions:
 class TestReplenishmentDashboard(BaseTest):
     url = reverse("replenishment-dashboard")
     fifteen_decimals = decimal.Decimal("0.000000000000001")
+    year_1 = 2021
+    year_2 = 2023
+    year_3 = 2024
+    year_4 = 2026
 
     def test_replenishment_dashboard(self, user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
-        year_1 = 2020
-        year_2 = 2022
-        year_3 = 2023
-        year_4 = 2025
 
         contribution_1 = TriennialContributionStatusFactory.create(
-            country=country_1, start_year=year_1, end_year=year_2
+            country=country_1, start_year=self.year_1, end_year=self.year_2
         )
         contribution_2 = TriennialContributionStatusFactory.create(
-            country=country_1, start_year=year_3, end_year=year_4
+            country=country_1, start_year=self.year_3, end_year=self.year_4
         )
         contribution_3 = TriennialContributionStatusFactory.create(
-            country=country_2, start_year=year_1, end_year=year_2
+            country=country_2, start_year=self.year_1, end_year=self.year_2
         )
         contribution_4 = TriennialContributionStatusFactory.create(
-            country=country_2, start_year=year_3, end_year=year_4
+            country=country_2, start_year=self.year_3, end_year=self.year_4
         )
 
-        DisputedContributionsFactory.create(year=year_1)
-        DisputedContributionsFactory.create(year=year_3)
+        DisputedContributionsFactory.create(year=self.year_1)
+        DisputedContributionsFactory.create(year=self.year_3)
 
         ferm_gain_loss_1 = FermGainLossFactory.create(country=country_1)
         ferm_gain_loss_2 = FermGainLossFactory.create(country=country_2)
@@ -723,36 +723,46 @@ class TestReplenishmentDashboard(BaseTest):
 
         response = self.client.get(self.url)
 
+        # Only 2021-2023 for now
         payment_pledge_percentage = (
             (
                 contribution_1.cash_payments
-                + contribution_2.cash_payments
                 + contribution_3.cash_payments
-                + contribution_4.cash_payments
                 + contribution_1.bilateral_assistance
-                + contribution_2.bilateral_assistance
                 + contribution_3.bilateral_assistance
-                + contribution_4.bilateral_assistance
                 + contribution_1.promissory_notes
-                + contribution_2.promissory_notes
                 + contribution_3.promissory_notes
-                + contribution_4.promissory_notes
             )
             / (
                 contribution_1.agreed_contributions
-                + contribution_2.agreed_contributions
                 + contribution_3.agreed_contributions
-                + contribution_4.agreed_contributions
             )
             * Decimal("100")
         )
 
+        zero_decimal = Decimal("0")
+        country_1_outstanding = (
+            contribution_1.outstanding_contributions
+            + contribution_2.outstanding_contributions
+        )
+        country_2_outstanding = (
+            contribution_3.outstanding_contributions
+            + contribution_4.outstanding_contributions
+        )
         correct_response = {
             "overview": {
                 "payment_pledge_percentage": payment_pledge_percentage,
                 "gain_loss": (
                     ferm_gain_loss_1.amount + ferm_gain_loss_2.amount
                 ).quantize(self.fifteen_decimals),
+                "parties_paid_in_advance_count": int(
+                    country_1_outstanding < zero_decimal
+                )
+                + int(country_2_outstanding < zero_decimal),
+                "parties_paid_count": int(country_1_outstanding == zero_decimal)
+                + int(country_2_outstanding == zero_decimal),
+                "parties_have_to_pay_count": int(country_1_outstanding > zero_decimal)
+                + int(country_2_outstanding > zero_decimal),
             },
             "income": {
                 "cash_payments": (
@@ -811,6 +821,60 @@ class TestReplenishmentDashboard(BaseTest):
                 "gain_loss": (
                     ferm_gain_loss_1.amount + ferm_gain_loss_2.amount
                 ).quantize(self.fifteen_decimals),
+            },
+            "charts": {
+                "outstanding_pledges": [
+                    {
+                        "start_year": self.year_1,
+                        "end_year": self.year_2,
+                        "outstanding_pledges": (
+                            contribution_1.outstanding_contributions
+                            + contribution_3.outstanding_contributions
+                        ).quantize(self.fifteen_decimals),
+                    },
+                    {
+                        "start_year": self.year_3,
+                        "end_year": self.year_4,
+                        "outstanding_pledges": (
+                            contribution_2.outstanding_contributions
+                            + contribution_4.outstanding_contributions
+                        ).quantize(self.fifteen_decimals),
+                    },
+                ],
+                "pledged_contributions": [
+                    {
+                        "start_year": self.year_1,
+                        "end_year": self.year_2,
+                        "agreed_pledges": (
+                            contribution_1.agreed_contributions
+                            + contribution_3.agreed_contributions
+                        ).quantize(self.fifteen_decimals),
+                    },
+                    {
+                        "start_year": self.year_3,
+                        "end_year": self.year_4,
+                        "agreed_pledges": (
+                            contribution_2.agreed_contributions
+                            + contribution_4.agreed_contributions
+                        ).quantize(self.fifteen_decimals),
+                    },
+                ],
+                "payments": [
+                    {
+                        "start_year": self.year_1,
+                        "end_year": self.year_2,
+                        "total_payments": (
+                            contribution_1.cash_payments + contribution_3.cash_payments
+                        ).quantize(self.fifteen_decimals),
+                    },
+                    {
+                        "start_year": self.year_3,
+                        "end_year": self.year_4,
+                        "total_payments": (
+                            contribution_2.cash_payments + contribution_4.cash_payments
+                        ).quantize(self.fifteen_decimals),
+                    },
+                ],
             },
         }
 

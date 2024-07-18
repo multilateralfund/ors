@@ -298,37 +298,87 @@ class ReplenishmentDashboardView(views.APIView):
         income = ExternalIncome.objects.get()
         allocations = ExternalAllocation.objects.get()
 
-        computed_data = TriennialContributionStatus.objects.aggregate(
-            agreed_contributions=models.Sum("agreed_contributions", default=0),
+        computed_summary_data = TriennialContributionStatus.objects.aggregate(
             cash_payments=models.Sum("cash_payments", default=0),
             bilateral_assistance=models.Sum("bilateral_assistance", default=0),
             promissory_notes=models.Sum("promissory_notes", default=0),
+        )
+        computed_party_data = (
+            Country.objects.filter(
+                triennial_contributions_status__isnull=False,
+            )
+            .prefetch_related("triennial_contributions_status")
+            .annotate(
+                outstanding_contributions_sum=models.Sum(
+                    "triennial_contributions_status__outstanding_contributions",
+                    default=0,
+                )
+            )
+            .aggregate(
+                parties_paid_in_advance_count=models.Count(
+                    "id",
+                    filter=models.Q(outstanding_contributions_sum__lt=0),
+                ),
+                parties_paid_count=models.Count(
+                    "id",
+                    filter=models.Q(outstanding_contributions_sum=0),
+                ),
+                parties_have_to_pay_count=models.Count(
+                    "id",
+                    filter=models.Q(outstanding_contributions_sum__gt=0),
+                ),
+            )
         )
 
         gain_loss = FermGainLoss.objects.aggregate(
             total=models.Sum("amount", default=0)
         )["total"]
 
-        payment_pledge_percentage = (
+        computed_summary_data_2021_2023 = TriennialContributionStatus.objects.filter(
+            start_year=2021, end_year=2023
+        ).aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+        )
+        payment_pledge_percentage_2021_2023 = (
             (
-                computed_data["cash_payments"]
-                + computed_data["bilateral_assistance"]
-                + computed_data["promissory_notes"]
+                computed_summary_data_2021_2023["cash_payments"]
+                + computed_summary_data_2021_2023["bilateral_assistance"]
+                + computed_summary_data_2021_2023["promissory_notes"]
             )
-            / computed_data["agreed_contributions"]
+            / computed_summary_data_2021_2023["agreed_contributions"]
             * Decimal("100")
+        )
+
+        pledges = (
+            TriennialContributionStatus.objects.values("start_year", "end_year")
+            .annotate(
+                outstanding_pledges=models.Sum("outstanding_contributions", default=0),
+                agreed_pledges=models.Sum("agreed_contributions", default=0),
+                total_payments=models.Sum("cash_payments", default=0),
+            )
+            .order_by("start_year")
         )
 
         data = {
             "overview": {
-                "payment_pledge_percentage": payment_pledge_percentage,
+                "payment_pledge_percentage": payment_pledge_percentage_2021_2023,
                 "gain_loss": gain_loss,
+                "parties_paid_in_advance_count": computed_party_data[
+                    "parties_paid_in_advance_count"
+                ],
+                "parties_paid_count": computed_party_data["parties_paid_count"],
+                "parties_have_to_pay_count": computed_party_data[
+                    "parties_have_to_pay_count"
+                ],
             },
             "income": {
-                "cash_payments": computed_data["cash_payments"],
-                "bilateral_assistance": computed_data["bilateral_assistance"],
+                "cash_payments": computed_summary_data["cash_payments"],
+                "bilateral_assistance": computed_summary_data["bilateral_assistance"],
                 "interest_earned": income.interest_earned,
-                "promissory_notes": computed_data["promissory_notes"],
+                "promissory_notes": computed_summary_data["promissory_notes"],
                 "miscellaneous_income": income.miscellaneous_income,
             },
             "allocations": {
@@ -341,8 +391,34 @@ class ReplenishmentDashboardView(views.APIView):
                 "monitoring_fees": allocations.monitoring_fees,
                 "technical_audit": allocations.technical_audit,
                 "information_strategy": allocations.information_strategy,
-                "bilateral_assistance": computed_data["bilateral_assistance"],
+                "bilateral_assistance": computed_summary_data["bilateral_assistance"],
                 "gain_loss": gain_loss,
+            },
+            "charts": {
+                "outstanding_pledges": [
+                    {
+                        "start_year": pledge["start_year"],
+                        "end_year": pledge["end_year"],
+                        "outstanding_pledges": pledge["outstanding_pledges"],
+                    }
+                    for pledge in pledges
+                ],
+                "pledged_contributions": [
+                    {
+                        "start_year": pledge["start_year"],
+                        "end_year": pledge["end_year"],
+                        "agreed_pledges": pledge["agreed_pledges"],
+                    }
+                    for pledge in pledges
+                ],
+                "payments": [
+                    {
+                        "start_year": pledge["start_year"],
+                        "end_year": pledge["end_year"],
+                        "total_payments": pledge["total_payments"],
+                    }
+                    for pledge in pledges
+                ],
             },
         }
 
