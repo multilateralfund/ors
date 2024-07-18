@@ -21,8 +21,7 @@ export const downloadChartAsImage = (chartRef, fileName) => {
   link.click()
 }
 
-
-export const COMMON_OPTIONS = (color) => ({
+export const COMMON_OPTIONS = (color = '#002A3C') => ({
   layout: {
     padding: 10,
   },

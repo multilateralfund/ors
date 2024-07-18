@@ -12,19 +12,14 @@ import {
   Title,
   Tooltip,
 } from 'chart.js'
-import resolveConfig from 'tailwindcss/resolveConfig'
 
 import {
   COMMON_OPTIONS,
   backgroundColorPlugin,
   downloadChartAsImage,
 } from '@ors/components/manage/Blocks/Replenishment/Dashboard/chartUtils'
-import { useStore } from '@ors/store'
-import tailwindConfigModule from '~/tailwind.config'
 
 import { IoDownloadOutline } from 'react-icons/io5'
-
-const tailwindConfig = resolveConfig(tailwindConfigModule)
 
 ChartJS.register(
   Title,
@@ -38,8 +33,6 @@ ChartJS.register(
 )
 
 const FilledAreaChart = ({ data, title }) => {
-  const { mode } = useStore((state) => state.theme)
-  const primaryColor = tailwindConfig.originalColors[mode].primary.DEFAULT
   const chartRef = useRef(null)
   const [showToolbar, setShowToolbar] = useState(false)
 
@@ -47,8 +40,8 @@ const FilledAreaChart = ({ data, title }) => {
     return {
       datasets: [
         {
-          backgroundColor: 'rgba(0, 0, 255, 0.2)', // Blue color
-          borderColor: primaryColor,
+          backgroundColor: 'rgba(0, 149, 213, 0.2)',
+          borderColor: '#002A3C',
           borderWidth: 2,
           data: data.map((item) => item.agreed_pledges),
           fill: 'origin',
@@ -57,7 +50,7 @@ const FilledAreaChart = ({ data, title }) => {
       ],
       labels: data.map((item) => `${item.start_year}-${item.end_year}`),
     }
-  }, [data, primaryColor])
+  }, [data])
 
   const options = {
     interaction: {
@@ -65,7 +58,7 @@ const FilledAreaChart = ({ data, title }) => {
       mode: 'nearest', // Trigger tooltip when mouse is closest to a point
     },
     plugins: { customCanvasBackgroundColor: true, legend: { display: false } },
-    ...COMMON_OPTIONS(primaryColor),
+    ...COMMON_OPTIONS(),
   }
 
   return (

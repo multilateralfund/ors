@@ -12,18 +12,14 @@ import {
   Title,
   Tooltip,
 } from 'chart.js'
-import resolveConfig from "tailwindcss/resolveConfig";
 
 import {
   COMMON_OPTIONS,
   backgroundColorPlugin,
   downloadChartAsImage,
 } from '@ors/components/manage/Blocks/Replenishment/Dashboard/chartUtils'
-import {useStore} from "@ors/store";
-import tailwindConfigModule from "~/tailwind.config";
 
 import { IoDownloadOutline } from 'react-icons/io5'
-const tailwindConfig = resolveConfig(tailwindConfigModule)
 
 ChartJS.register(
   Title,
@@ -37,8 +33,6 @@ ChartJS.register(
 )
 
 const TwoAreaCharts = ({ data, title }) => {
-  const { mode } = useStore((state) => state.theme)
-  const primaryColor = tailwindConfig.originalColors[mode].primary.DEFAULT
   const chartRef = useRef(null)
   const [showToolbar, setShowToolbar] = useState(false)
   const { payments, pledged_contributions } = data
@@ -47,16 +41,16 @@ const TwoAreaCharts = ({ data, title }) => {
     return {
       datasets: [
         {
-          backgroundColor: 'rgba(255, 255, 0, 0.2)', // Yellow color
-          borderColor: 'rgba(255, 255, 0, 1)',
+          backgroundColor: 'rgba(235, 255, 0, 0.2)',
+          borderColor: '#A4B200',
           borderWidth: 2,
           data: payments.map((item) => item.total_payments),
           fill: 'origin',
           label: 'Total Payments',
         },
         {
-          backgroundColor: 'rgba(0, 0, 255, 0.2)', // Blue color
-          borderColor: 'rgba(0, 0, 255, 1)',
+          backgroundColor: 'rgba(0, 149, 213, 0.2)',
+          borderColor: '#002A3C',
           borderWidth: 2,
           data: pledged_contributions.map((item) => item.agreed_pledges),
           fill: 'origin',
@@ -75,7 +69,7 @@ const TwoAreaCharts = ({ data, title }) => {
       mode: 'index', // Show tooltip for all datasets at the same index
     },
     plugins: { customCanvasBackgroundColor: true },
-    ...COMMON_OPTIONS(primaryColor),
+    ...COMMON_OPTIONS(),
   }
 
   return (
