@@ -27,7 +27,7 @@ export default function Replenishment() {
       className="w-full rounded-b-lg bg-white p-4"
       defaultSpacing={false}
     >
-      <ReplenishmentHeading showPeriodSelector={true}>
+      <ReplenishmentHeading showPeriodSelector={false}>
         Scale of assessment
       </ReplenishmentHeading>
       <SAView />
