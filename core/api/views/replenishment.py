@@ -7,11 +7,13 @@ from rest_framework.response import Response
 from core.api.filters.replenishments import ScaleOfAssessmentFilter
 from core.api.serializers import (
     CountrySerializer,
+    InvoiceSerializer,
     ReplenishmentSerializer,
     ScaleOfAssessmentSerializer,
 )
 from core.models import (
     Country,
+    Invoice,
     Replenishment,
     ScaleOfAssessment,
     AnnualContributionStatus,
@@ -427,3 +429,18 @@ class ReplenishmentDashboardView(views.APIView):
         )
 
         return Response(data)
+
+
+class ReplenishmentInvoiceViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+    """
+    Viewset for all the invoices.
+    """
+
+    serializer_class = InvoiceSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Invoice.objects.all()
+        if user.user_type == user.UserType.COUNTRY_USER:
+            queryset = queryset.filter(country_id=user.country_id)
+        return queryset

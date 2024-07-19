@@ -52,9 +52,32 @@ class Country(models.Model):
 
     objects = CountryManager()
 
+    def is_ceit_for_year(self, year):
+        """
+        Returns CEIT status of this Country for given year
+        """
+        for ceit_status in self.ceit_statuses.all():
+            if year >= ceit_status.start_year and (
+                ceit_status.end_year is None or year <= ceit_status
+            ):
+                return ceit_status.is_ceit
+
+        return False
+
     class Meta:
         verbose_name_plural = "Countries"
         ordering = ("name",)
 
     def __str__(self):
         return self.name
+
+
+class CountryCEITStatus(models.Model):
+    country = models.ForeignKey(
+        Country, related_name="ceit_statuses", on_delete=models.CASCADE
+    )
+
+    start_year = models.IntegerField()
+    end_year = models.ImageField(null=True, blank=True)
+
+    is_ceit = models.BooleanField()

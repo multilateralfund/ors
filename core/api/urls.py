@@ -13,6 +13,7 @@ from core.api.views import (
     TriennialStatusOfContributionsView,
     SummaryStatusOfContributionsView,
     ReplenishmentDashboardView,
+    ReplenishmentInvoiceViewSet,
 )
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
@@ -102,6 +103,11 @@ router.register(
     "replenishment/scales-of-assessment",
     ScaleOfAssessmentViewSet,
     basename="replenishment-scales-of-assessment",
+)
+router.register(
+    "replenishment/invoices",
+    ReplenishmentInvoiceViewSet,
+    basename="replenishment-invoices",
 )
 
 
