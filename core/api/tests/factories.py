@@ -6,7 +6,8 @@ from core.models import (
     ScaleOfAssessment,
     AnnualContributionStatus,
     DisputedContribution,
-    FermGainLoss, TriennialContributionStatus,
+    FermGainLoss,
+    TriennialContributionStatus,
 )
 from core.models.business_plan import (
     BusinessPlan,
