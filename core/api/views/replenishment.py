@@ -440,7 +440,7 @@ class ReplenishmentInvoiceViewSet(viewsets.GenericViewSet, mixins.ListModelMixin
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Country.objects.all()
+        queryset = Invoice.objects.all()
         if user.user_type == user.UserType.COUNTRY_USER:
             queryset = queryset.filter(country_id=user.country_id)
         return queryset
