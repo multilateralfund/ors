@@ -131,7 +131,6 @@ function InvoicesView() {
 
   const editData = useMemo(() => {
     let entry = null
-    console.log('editIdx', editIdx)
     if (editIdx !== null) {
       entry = { ...sortedTableData[editIdx] }
       entry.date = dateForEditField(entry.date)
@@ -147,7 +146,6 @@ function InvoicesView() {
   }
 
   function showEditInvoiceDialog(idx) {
-    console.log(idx)
     setEditIdx(idx)
   }
 
