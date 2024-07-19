@@ -8,8 +8,6 @@ import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invo
 const InvoiceDialog = function InvoiceDialog(props) {
   const { columns, countries, data, title, ...dialogProps } = props
 
-    console.log(data)
-
   return (
     <FormDialog title={title} {...dialogProps}>
       <FieldSelect id="iso3" defaultValue={data?.iso3} label="Country" required>
@@ -21,11 +19,18 @@ const InvoiceDialog = function InvoiceDialog(props) {
         ))}
       </FieldSelect>
       <FieldInput
-        id="number"
+        id="invoice_number"
         defaultValue={data?.invoice_number}
         label="Invoice number"
         type="text"
         required
+      />
+      <FieldInput
+        id="period"
+        defaultValue="2024-2026"
+        label="Period"
+        type="text"
+        disabled
       />
       <FieldInput
         id="date"
@@ -35,17 +40,39 @@ const InvoiceDialog = function InvoiceDialog(props) {
         required
       />
       <FieldInput
-        id="sent_out"
+        id="amount"
+        defaultValue={data?.amount}
+        label={columns[2].label}
+        type="number"
+        required
+      />
+      <FieldInput
+        id="currency"
+        defaultValue={data?.currency}
+        label={columns[3].label}
+        type="text"
+        required
+      />
+      <FieldInput
+        id="exchange_rate"
+        defaultValue={data?.exchange_rate}
+        label={columns[4].label}
+        type="number"
+        step="0.01"
+        required
+      />
+      <FieldInput
+        id="sent_on"
         defaultValue={data?.sent_on}
         label="Sent out"
         type="date"
         required
       />
       <FieldInput
-        id="amount"
-        defaultValue={data?.amount}
-        label={columns[3].label}
-        type="number"
+        id="reminder"
+        defaultValue={data?.reminder}
+        label="Reminder"
+        type="date"
         required
       />
       <h5>Files</h5>

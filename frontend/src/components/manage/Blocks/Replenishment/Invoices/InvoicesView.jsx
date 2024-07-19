@@ -42,30 +42,6 @@ const COLUMNS = [
   { field: 'files', label: 'Files' },
 ]
 
-const DATA = [
-  {
-    amount: '123,123,123.123',
-    country: 'Finland',
-    date: '17-MAY-2023',
-    iso3: 'FIN',
-    number: '40-MFL-FIN',
-    sent_out: '18-MAY-2023',
-  },
-]
-
-function generateData(cs) {
-  const r = []
-  for (let i = 0; i < cs.length; i++) {
-    r.push({
-      ...DATA[0],
-      country: cs[i].name_alt,
-      iso3: cs[i].iso3,
-      number: `${DATA[0].number.split('-').slice(0, 2).join('-')}-${cs[i].iso3}`,
-    })
-  }
-  return r
-}
-
 const AddInvoiceDialog = function AddInvoiceDialog(props) {
   return <InvoiceDialog title="Add invoice" {...props} />
 }
@@ -106,13 +82,7 @@ function InvoicesView() {
       }),
       country: data.country.name,
       currency: data.currency,
-      date: new Date(data.date_of_issuance)
-        .toLocaleDateString('en-GB', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-        })
-        .toUpperCase(),
+      date: formatDateValue(data.date_of_issuance),
       exchange_rate: data.exchange_rate.toFixed(3),
       files:
         data.invoice_files.length > 0
@@ -121,13 +91,7 @@ function InvoicesView() {
       invoice_number: data.number.toLocaleString(),
       iso3: data.country.iso3,
       reminder: data.reminder_sent_on || 'N/A',
-      sent_on: new Date(data.date_sent_out)
-        .toLocaleDateString('en-GB', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-        })
-        .toUpperCase(),
+      sent_on: formatDateValue(data.date_sent_out),
     }))
   }, [results])
 
@@ -142,9 +106,9 @@ function InvoicesView() {
 
   useEffect(
     function () {
-      setTableData(generateData(ctx.countries))
+      setTableData(rows)
     },
-    [ctx],
+    [rows],
   )
 
   const filteredTableData = useMemo(
@@ -167,29 +131,31 @@ function InvoicesView() {
 
   const editData = useMemo(() => {
     let entry = null
+    console.log('editIdx', editIdx)
     if (editIdx !== null) {
-      entry = { ...rows[editIdx] }
+      entry = { ...sortedTableData[editIdx] }
       entry.date = dateForEditField(entry.date)
       entry.sent_on = dateForEditField(entry.sent_on)
+      entry.reminder = dateForEditField(entry.reminder)
       entry.amount = numberForEditField(entry.amount)
     }
     return entry
-  }, [editIdx, rows])
-
-  console.log(editData)
+  }, [editIdx, sortedTableData])
 
   function showAddInvoiceDialog() {
     setShowAdd(true)
   }
 
   function showEditInvoiceDialog(idx) {
+    console.log(idx)
     setEditIdx(idx)
   }
 
   function handleAddInvoiceSubmit(data) {
     const entry = { ...data }
     entry.date = formatDateValue(entry.date)
-    entry.sent_out = formatDateValue(entry.sent_out)
+    entry.sent_on = formatDateValue(entry.sent_on)
+    entry.reminder = formatDateValue(entry.reminder)
     entry.amount = formatNumberValue(entry.amount)
     entry.country = getCountryForIso3(entry.iso3, ctx.countries)?.name_alt
     setTableData((prev) => [entry, ...prev])
@@ -214,7 +180,7 @@ function InvoicesView() {
   function handleEditInvoiceSubmit(data) {
     const entry = { ...data }
     entry.date = formatDateValue(entry.date)
-    entry.sent_out = formatDateValue(entry.sent_out)
+    entry.sent_on = formatDateValue(entry.sent_on)
     entry.amount = formatNumberValue(entry.amount)
     entry.country = getCountryForIso3(entry.iso3, ctx.countries)?.name_alt
 
@@ -238,6 +204,7 @@ function InvoicesView() {
     <>
       {showAdd ? (
         <AddInvoiceDialog
+          columns={COLUMNS}
           countries={ctx.countries}
           onCancel={() => setShowAdd(false)}
           onSubmit={handleAddInvoiceSubmit}
@@ -293,26 +260,26 @@ function InvoicesView() {
               Period
             </option>
             {[{ label: '2024-2026', value: '2024-2026' }].map((c) => (
-              <option key={c.value} value={c.value}>
+              <option key={c.value} className="text-primary" value={c.value}>
                 {c.label}
               </option>
             ))}
           </Select>
-          <Select
-            id="status"
-            className="placeholder-select"
-            defaultValue=""
-            required
-          >
-            <option value="" disabled hidden>
-              Status
-            </option>
-            {MOCK_STATUSES.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </Select>
+          {/*<Select*/}
+          {/*  id="status"*/}
+          {/*  className="placeholder-select"*/}
+          {/*  defaultValue=""*/}
+          {/*  required*/}
+          {/*>*/}
+          {/*  <option value="" disabled hidden>*/}
+          {/*    Status*/}
+          {/*  </option>*/}
+          {/*  {MOCK_STATUSES.map((c) => (*/}
+          {/*    <option key={c.value} className="text-primary" value={c.value}>*/}
+          {/*      {c.label}*/}
+          {/*    </option>*/}
+          {/*  ))}*/}
+          {/*</Select>*/}
         </div>
         <AddButton onClick={showAddInvoiceDialog}>Add invoice</AddButton>
       </div>
@@ -320,7 +287,7 @@ function InvoicesView() {
         columns={columns}
         enableEdit={true}
         enableSort={true}
-        rowData={rows}
+        rowData={sortedTableData}
         sortDirection={sortDirection}
         sortOn={sortOn}
         onDelete={handleDeleteInvoice}
@@ -333,8 +300,4 @@ function InvoicesView() {
 
 export default InvoicesView
 
-// Year to Period (hardcoded 24-26)
-// DONE: Hide Period Selector on Invoice
-// DONE: Remove Status filter and column
-// DONE: Remove Date of reminder issuance column
 // Add debounce to search input
