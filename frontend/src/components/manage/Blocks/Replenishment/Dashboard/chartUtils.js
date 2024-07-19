@@ -20,9 +20,9 @@ export const downloadChartAsImage = async (chartRef, title) => {
 
   // Clone existing chart configuration
   const newChartConfig = {
-    data: JSON.parse(JSON.stringify(chartInstance.config.data)), // Deep clone data
-    options: JSON.parse(JSON.stringify(chartInstance.config.options)), // Deep clone options
-    plugins: [backgroundColorPlugin], // Include your custom plugin here
+    data: JSON.parse(JSON.stringify(chartInstance.config.data)),
+    options: JSON.parse(JSON.stringify(chartInstance.config.options)),
+    plugins: [backgroundColorPlugin],
     type: chartInstance.config.type,
   }
 
@@ -30,17 +30,17 @@ export const downloadChartAsImage = async (chartRef, title) => {
   newChartConfig.options.devicePixelRatio = window.devicePixelRatio || 1
   newChartConfig.options.animation = false // Disable animations for clarity
   newChartConfig.options.maintainAspectRatio = true
+  newChartConfig.options.responsive = false
   newChartConfig.options.plugins.title = {
     display: true,
-    font: { size: 16 },
+    font: { size: 20 },
     text: title.toUpperCase(),
   }
 
   // Create a new canvas element
   const newCanvas = document.createElement('canvas')
-  newCanvas.width = 1920
-  newCanvas.height = 1080
-  newCanvas.style.display = 'none' // Hide the canvas
+  newCanvas.style.width = '1280px'
+  newCanvas.style.display = 'none'
 
   // Ensure canvas element is attached to the DOM before creating chart instance
   // Otherwise the canvas will be empty
@@ -54,7 +54,7 @@ export const downloadChartAsImage = async (chartRef, title) => {
   // Render the chart onto the new canvas
   tempChart.render()
 
-  // Wait for a fixed duration (adjust as needed) to ensure rendering completes
+  // Wait for a fixed duration to ensure rendering completes
   await new Promise((resolve) => setTimeout(resolve, 500))
 
   // Get base64 image data URL from the canvas
