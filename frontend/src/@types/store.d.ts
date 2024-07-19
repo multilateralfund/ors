@@ -92,16 +92,6 @@ export interface CPCurrentTabSlice {
   setDiffActiveTab: (nr: number) => void
 }
 
-export interface HeaderSlice {
-  HeaderTitle: React.FC | React.ReactNode | null
-  navigationBackground: string
-  setHeaderTitleComponent: (
-    component: React.FC | React.ReactNode | null,
-    animate?: boolean,
-  ) => void
-  setNavigationBackground: (value: string) => void
-}
-
 export interface ProjectsSlice {
   clusters: SliceData
   meetings: SliceData
@@ -169,7 +159,6 @@ export type StoreState = {
   cp_current_tab: CPCurrentTabSlice
   cp_reports: CPReportsSlice
   filters: FiltersSlice
-  header: HeaderSlice
   internalError: any
   projects: ProjectsSlice
   settings: SettingsSlice

@@ -37,7 +37,7 @@ function DownloadReport(props: any) {
 
   const toggleShowMenu = () => setShowMenu((prev) => !prev)
 
-  const ref = useClickOutside<HTMLDivElement>(() => {
+  const ref = useClickOutside(() => {
     setShowMenu(false)
   })
 
@@ -97,7 +97,7 @@ function DownloadCalculatedAmounts(props: any) {
 
   const toggleShowMenu = () => setShowMenu((prev) => !prev)
 
-  const ref = useClickOutside<HTMLDivElement>(() => {
+  const ref = useClickOutside(() => {
     setShowMenu(false)
   })
 

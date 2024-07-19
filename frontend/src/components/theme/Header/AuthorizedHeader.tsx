@@ -14,7 +14,6 @@ import { useStore } from '@ors/store'
 import HeaderNavigation from './HeaderNavigation'
 
 export default function Header() {
-  const { HeaderTitle } = useStore((state) => state.header)
 
   return (
     <FadeInOut className="header-motion">
@@ -31,12 +30,7 @@ export default function Header() {
           </div>
         </div>
         <div className="container relative print:absolute print:-top-8 print:left-[300px]">
-          <div id="header-title">
-            <AnimatePresence>
-              {isFunction(HeaderTitle) && <HeaderTitle />}
-              {!!HeaderTitle && !isFunction(HeaderTitle) && HeaderTitle}
-            </AnimatePresence>
-          </div>
+          <div id="header-title"></div>
         </div>
       </nav>
     </FadeInOut>

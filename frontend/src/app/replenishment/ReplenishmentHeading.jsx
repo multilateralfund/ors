@@ -19,27 +19,8 @@ export default function ReplenishmentHeading(props) {
 
   const ctx = useContext(ReplenishmentContext)
 
-  const titleMemo = useMemo(
-    function () {
-      return {
-        children: props.children,
-        extraPeriodOptions,
-        period,
-        periodOptions: ctx.periodOptions,
-        showPeriodSelector,
-      }
-    },
-    [
-      ctx.periodOptions,
-      period,
-      showPeriodSelector,
-      extraPeriodOptions,
-      props.children,
-    ],
-  )
-
   return (
-    <HeaderTitle memo={titleMemo}>
+    <HeaderTitle>
       <div className="flex items-center justify-between">
         <div>
           <div className="mb-2 font-[500] uppercase">Replenishment</div>

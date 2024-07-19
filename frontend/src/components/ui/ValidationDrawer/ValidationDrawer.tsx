@@ -13,7 +13,7 @@ export default function ValidationDrawer({
   ...props
 }: IValidationDrawer) {
   const errors = extractErrors(props.errors)
-  const ref = useClickOutside<HTMLDivElement>(() => {
+  const ref = useClickOutside(() => {
     onClose()
   })
   return (
