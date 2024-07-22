@@ -7,7 +7,6 @@ function useGetInvoices(filters) {
   const { data, loading, setParams } = useApi({
     options: {
       params: {
-        // country_id: filters?.country?.join(','),
         limit: _PER_PAGE,
         offset: 0,
         // ordering: '-created_at',

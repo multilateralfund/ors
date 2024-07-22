@@ -23,19 +23,34 @@ export function Field(props) {
 }
 
 export function Select(props) {
-  const { id, children, className, hasClear, name, ...rest } = props
+  const { id, children, className, hasClear, name, onChange, ...rest } = props
   const selectRef = useRef(null)
+  const [value, setValue] = useState('')
 
   const handleClear = () => {
     if (selectRef.current) {
       selectRef.current.value = ''
     }
-    if (props.onChange) {
-      props.onChange({ target: { name: name || id, value: '' } })
+    setValue('')
+    if (onChange) {
+      onChange({ target: { name: name || id, value: '' } })
     }
   }
 
-  const withClear = hasClear && selectRef.current.value
+  const handleChange = (event) => {
+    setValue(event.target.value)
+    if (onChange) {
+      onChange(event)
+    }
+  }
+
+  useEffect(() => {
+    if (selectRef.current) {
+      setValue(selectRef.current.value)
+    }
+  }, [])
+
+  const withClear = hasClear && value
 
   return (
     <div className="relative">
@@ -44,6 +59,8 @@ export function Select(props) {
         name={name || id}
         className={cx(CLASSESS, className)}
         ref={selectRef}
+        value={value}
+        onChange={handleChange}
         {...rest}
       >
         {children}

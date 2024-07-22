@@ -44,6 +44,8 @@ const COLUMNS = [
   { field: 'files', label: 'Files' },
 ]
 
+const MOCK_PERIODS = ['2024-2026', '2021-2023']
+
 const AddInvoiceDialog = function AddInvoiceDialog(props) {
   return <InvoiceDialog title="Add invoice" {...props} />
 }
@@ -152,10 +154,6 @@ function InvoicesView() {
     return entry
   }, [editIdx, sortedTableData])
 
-  function showAddInvoiceDialog() {
-    setShowAdd(true)
-  }
-
   function showEditInvoiceDialog(idx) {
     setEditIdx(idx)
   }
@@ -214,6 +212,12 @@ function InvoicesView() {
     setParams({ country_id })
   }
 
+  function handlePeriodFilter(evt) {
+    const period = evt.target.value
+    const replenishment_start = period.split('-')[0]
+    setParams({ replenishment_start })
+  }
+
   return (
     <>
       {showAdd ? (
@@ -251,8 +255,7 @@ function InvoicesView() {
           </div>
           <Select
             id="country"
-            className="placeholder-select"
-            defaultValue=""
+            className="placeholder-select w-52"
             onChange={handleCountryFilter}
             hasClear
             required
@@ -268,36 +271,22 @@ function InvoicesView() {
           </Select>
           <Select
             id="period"
-            className="placeholder-select"
-            defaultValue=""
+            className="placeholder-select w-44"
+            onChange={handlePeriodFilter}
+            hasClear
             required
           >
             <option value="" disabled hidden>
               Period
             </option>
-            {[{ label: '2024-2026', value: '2024-2026' }].map((c) => (
-              <option key={c.value} className="text-primary" value={c.value}>
-                {c.label}
+            {MOCK_PERIODS.map((period) => (
+              <option key={period} className="text-primary" value={period}>
+                {period}
               </option>
             ))}
           </Select>
-          {/*<Select*/}
-          {/*  id="status"*/}
-          {/*  className="placeholder-select"*/}
-          {/*  defaultValue=""*/}
-          {/*  required*/}
-          {/*>*/}
-          {/*  <option value="" disabled hidden>*/}
-          {/*    Status*/}
-          {/*  </option>*/}
-          {/*  {MOCK_STATUSES.map((c) => (*/}
-          {/*    <option key={c.value} className="text-primary" value={c.value}>*/}
-          {/*      {c.label}*/}
-          {/*    </option>*/}
-          {/*  ))}*/}
-          {/*</Select>*/}
         </div>
-        <AddButton onClick={showAddInvoiceDialog}>Add invoice</AddButton>
+        <AddButton onClick={() => setShowAdd(true)}>Add invoice</AddButton>
       </div>
       <Table
         columns={columns}
