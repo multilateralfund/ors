@@ -15,12 +15,10 @@ import useGetInvoices, {
 import Table from '@ors/components/manage/Blocks/Replenishment/Table'
 import {
   dateForEditField,
-  filterTableData,
   formatDateValue,
   formatNumberValue,
   getCountryForIso3,
   numberForEditField,
-  sortTableData,
 } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { AddButton } from '@ors/components/ui/Button/Button'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
@@ -31,7 +29,7 @@ import { IoSearchSharp } from 'react-icons/io5'
 const COLUMNS = [
   { field: 'country', label: 'Country' },
   { field: 'number', label: 'Invoice number' },
-  { field: 'date', label: 'Date of issuance', sortable: true },
+  { field: 'date_of_issuance', label: 'Date of issuance', sortable: true },
   { field: 'amount', label: 'Amount', sortable: true },
   { field: 'currency', label: 'Currency' },
   {
@@ -39,7 +37,7 @@ const COLUMNS = [
     label: 'Exchange Rate',
     subLabel: '(FERM)',
   },
-  { field: 'sent_on', label: 'Sent on', sortable: true },
+  { field: 'date_sent_out', label: 'Sent on', sortable: true },
   { field: 'reminder', label: 'Reminder sent on' },
   { field: 'files', label: 'Files' },
 ]
@@ -57,7 +55,7 @@ const EditInvoiceDialog = function EditInvoiceDialog(props) {
 function InvoicesView() {
   const ctx = useContext(ReplenishmentContext)
 
-  const { count, loaded, loading, results, setParams } = useGetInvoices()
+  const { count, loaded, results, setParams } = useGetInvoices()
   const [pagination, setPagination] = useState({
     page: 1,
     rowsPerPage: _PER_PAGE,
@@ -80,7 +78,8 @@ function InvoicesView() {
         country: data.country.name,
         country_id: data.country.id,
         currency: data.currency,
-        date: formatDateValue(data.date_of_issuance),
+        date_of_issuance: formatDateValue(data.date_of_issuance),
+        date_sent_out: formatDateValue(data.date_sent_out),
         exchange_rate: data.exchange_rate.toFixed(3),
         files:
           data.invoice_files.length > 0
@@ -90,7 +89,6 @@ function InvoicesView() {
         iso3: data.country.iso3,
         number: data.number,
         reminder: data.reminder_sent_on || 'N/A',
-        sent_on: formatDateValue(data.date_sent_out),
       })),
     ]
   }, [results, loaded, pagination.rowsPerPage])
@@ -116,43 +114,23 @@ function InvoicesView() {
     return result
   }, [])
 
-  const [searchValue, setSearchValue] = useState('')
-
-  const [sortOn, setSortOn] = useState(0)
+  const [sortOn, setSortOn] = useState(2)
   const [sortDirection, setSortDirection] = useState(1)
 
   const [editIdx, setEditIdx] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
 
-  const filteredTableData = useMemo(
-    function () {
-      return filterTableData(memoResults, searchValue)
-    },
-    [memoResults, searchValue],
-  )
-
-  const sortedTableData = useMemo(
-    function () {
-      return sortTableData(
-        filteredTableData,
-        COLUMNS[sortOn].field,
-        sortDirection,
-      )
-    },
-    [filteredTableData, sortOn, sortDirection],
-  )
-
   const editData = useMemo(() => {
     let entry = null
     if (editIdx !== null) {
-      entry = { ...sortedTableData[editIdx] }
-      entry.date = dateForEditField(entry.date)
-      entry.sent_on = dateForEditField(entry.sent_on)
+      entry = { ...memoResults[editIdx] }
+      entry.date_of_issuance = dateForEditField(entry.date_of_issuance)
+      entry.date_sent_out = dateForEditField(entry.date_sent_out)
       entry.reminder = dateForEditField(entry.reminder)
       entry.amount = numberForEditField(entry.amount)
     }
     return entry
-  }, [editIdx, sortedTableData])
+  }, [editIdx, memoResults])
 
   function showEditInvoiceDialog(idx) {
     setEditIdx(idx)
@@ -160,8 +138,8 @@ function InvoicesView() {
 
   function handleAddInvoiceSubmit(data) {
     const entry = { ...data }
-    entry.date = formatDateValue(entry.date)
-    entry.sent_on = formatDateValue(entry.sent_on)
+    entry.date_of_issuance = formatDateValue(entry.date_of_issuance)
+    entry.date_sent_out = formatDateValue(entry.date_sent_out)
     entry.reminder = formatDateValue(entry.reminder)
     entry.amount = formatNumberValue(entry.amount)
     entry.country = getCountryForIso3(entry.iso3, ctx.countries)?.name_alt
@@ -186,12 +164,12 @@ function InvoicesView() {
 
   function handleEditInvoiceSubmit(data) {
     const entry = { ...data }
-    entry.date = formatDateValue(entry.date)
-    entry.sent_on = formatDateValue(entry.sent_on)
+    entry.date_of_issuance = formatDateValue(entry.date_of_issuance)
+    entry.date_sent_out = formatDateValue(entry.date_sent_out)
     entry.amount = formatNumberValue(entry.amount)
     entry.country = getCountryForIso3(entry.iso3, ctx.countries)?.name_alt
 
-    const next = [...sortedTableData]
+    const next = [...memoResults]
     next[editIdx] = entry
 
     // setTableData(next)
@@ -199,12 +177,19 @@ function InvoicesView() {
   }
 
   function handleSearchInput(evt) {
-    setSearchValue(evt.target.value)
+    setParams({ search: evt.target.value })
   }
 
   function handleSort(column) {
-    setSortDirection((direction) => (column === sortOn ? -direction : 1))
+    const property = COLUMNS[column].field
+    const newDirection = column === sortOn ? -sortDirection : 1
+    setSortDirection(newDirection)
     setSortOn(column)
+    setPagination({ ...pagination, page: 1 })
+    setParams({
+      offset: 0,
+      ordering: newDirection < 0 ? `-${property}` : property,
+    })
   }
 
   function handleCountryFilter(evt) {
@@ -247,9 +232,9 @@ function InvoicesView() {
             <Input
               id="search"
               className="!ml-0 w-full rounded border py-2 pl-10 pr-3"
+              defaultValue=""
               placeholder="Search invoice..."
               type="text"
-              value={searchValue}
               onChange={handleSearchInput}
             />
           </div>
@@ -292,7 +277,7 @@ function InvoicesView() {
         columns={columns}
         enableEdit={true}
         enableSort={true}
-        rowData={sortedTableData}
+        rowData={memoResults}
         sortDirection={sortDirection}
         sortOn={sortOn}
         sortableColumns={COLUMNS.reduce((acc, col, idx) => {
@@ -306,7 +291,7 @@ function InvoicesView() {
         onSort={handleSort}
       />
       {!!pages && pages > 1 && (
-        <div className="flex items-center justify-start print:hidden mt-6">
+        <div className="mt-6 flex items-center justify-start print:hidden">
           <Pagination
             count={pages}
             page={pagination.page}
