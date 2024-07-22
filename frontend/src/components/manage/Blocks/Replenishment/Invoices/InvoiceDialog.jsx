@@ -1,12 +1,16 @@
+import React, { useContext } from 'react'
+
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
   FieldInput,
   FieldSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
+import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
 const InvoiceDialog = function InvoiceDialog(props) {
   const { columns, countries, data, isEdit, title, ...dialogProps } = props
+  const ctx = useContext(ReplenishmentContext)
 
   return (
     <FormDialog title={title} {...dialogProps}>
@@ -26,7 +30,7 @@ const InvoiceDialog = function InvoiceDialog(props) {
         label={columns[0].label}
         required
       >
-        <option value=""> -</option>
+        <option value="" disabled hidden></option>
         {countries.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name_alt}
@@ -40,13 +44,26 @@ const InvoiceDialog = function InvoiceDialog(props) {
         type="text"
         required
       />
-      <FieldInput
+      <FieldSelect
         id="period"
-        defaultValue="2024-2026"
         label="Period"
-        type="text"
-        disabled
-      />
+        defaultValue={
+          data &&
+          `${data?.replenishment.start_year}-${data?.replenishment.end_year}`
+        }
+        required
+      >
+        <option value="" disabled hidden></option>
+        {ctx.periodOptions.map((period) => (
+          <option
+            key={period.value}
+            className="text-primary"
+            value={period.value}
+          >
+            {period.label}
+          </option>
+        ))}
+      </FieldSelect>
       <FieldInput
         id="date_of_issuance"
         defaultValue={data?.date_of_issuance}

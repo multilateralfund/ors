@@ -44,8 +44,6 @@ const COLUMNS = [
   { field: 'files', label: 'Files' },
 ]
 
-const MOCK_PERIODS = ['2024-2026', '2021-2023']
-
 const AddInvoiceDialog = function AddInvoiceDialog(props) {
   return <InvoiceDialog title="Add invoice" {...props} />
 }
@@ -186,18 +184,57 @@ function InvoicesView() {
     }
 
     setEditIdx(null)
-    console.log('Edit invoice', entry)
   }
 
-  function handleAddInvoiceSubmit(formData) {
+  async function handleAddInvoiceSubmit(formData) {
     const entry = { ...formData }
-    entry.date_of_issuance = formatDateValue(entry.date_of_issuance)
-    entry.date_sent_out = formatDateValue(entry.date_sent_out)
-    entry.reminder = formatDateValue(entry.reminder)
-    entry.amount = formatNumberValue(entry.amount)
-    // setTableData((prev) => [entry, ...prev])
-    setShowAdd(false)
-    console.log('Add invoice', entry)
+    entry.date_of_issuance = dateForInput(entry.date_of_issuance)
+    entry.date_sent_out = dateForInput(entry.date_sent_out)
+    entry.reminder = dateForInput(entry.reminder)
+    entry.replenishment_id = ctx.periods.find(
+      (p) => Number(p.start_year) === Number(entry.period.split('-')[0]),
+    )?.id
+
+    const file_fields = Object.keys(entry).filter(
+      (key) => key.startsWith('file_') && !key.startsWith('file_type'),
+    )
+
+    const files = []
+    for (let i = 0; i < file_fields.length; i++) {
+      files.push({ file: entry[`file_${i}`], type: entry[`file_type_${i}`] })
+      delete entry[`file_${i}`]
+      delete entry[`file_type_${i}`]
+    }
+    entry.files = files
+
+    try {
+      await api(`api/replenishment/invoices/`, {
+        data: entry,
+        method: 'POST',
+      })
+      enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
+      setParams({
+        offset: 0,
+      })
+      setShowAdd(false)
+    } catch (error) {
+      if (error.status === 400) {
+        setShowAdd(true)
+        const errors = await error.json()
+        setError({ ...errors })
+        enqueueSnackbar(
+          errors.general_error ||
+            errors.files ||
+            'Please make sure all the inputs are correct.',
+          { variant: 'error' },
+        )
+      } else {
+        enqueueSnackbar(<>An error occurred. Please try again.</>, {
+          variant: 'error',
+        })
+        setError({})
+      }
+    }
   }
 
   async function handleDeleteInvoice(rowId) {
