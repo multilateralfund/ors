@@ -432,7 +432,13 @@ class ReplenishmentDashboardView(views.APIView):
         return Response(data)
 
 
-class ReplenishmentInvoiceViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class ReplenishmentInvoiceViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     """
     Viewset for all the invoices.
     """
@@ -449,7 +455,7 @@ class ReplenishmentInvoiceViewSet(viewsets.GenericViewSet, mixins.ListModelMixin
         "amount",
         "country__name",
         "date_of_issuance",
-        "date_sent",
+        "date_sent_out",
     ]
     search_fields = ["number"]
 
