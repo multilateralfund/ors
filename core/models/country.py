@@ -78,6 +78,6 @@ class CountryCEITStatus(models.Model):
     )
 
     start_year = models.IntegerField()
-    end_year = models.ImageField(null=True, blank=True)
+    end_year = models.IntegerField(null=True, blank=True)
 
     is_ceit = models.BooleanField()
