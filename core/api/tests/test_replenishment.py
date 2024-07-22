@@ -14,6 +14,7 @@ from core.api.tests.factories import (
     DisputedContributionsFactory,
     FermGainLossFactory,
     TriennialContributionStatusFactory,
+    ScaleOfAssessmentVersionFactory,
 )
 from core.models import ExternalIncome, ExternalAllocation
 
@@ -119,7 +120,7 @@ class TestScalesOfAssessment(BaseTest):
     def test_scales_of_assessment_list_filtered(self, user):
         replenishment_1 = ReplenishmentFactory.create(start_year=2018, end_year=2020)
         replenishment_2 = ReplenishmentFactory.create(start_year=2021, end_year=2023)
-        contribution_1 = ScaleOfAssessmentFactory.create(replenishment=replenishment_1)
+        soa_1 = ScaleOfAssessmentFactory.create(replenishment=replenishment_1)
         ScaleOfAssessmentFactory.create(replenishment=replenishment_2)
 
         self.client.force_authenticate(user=user)
@@ -128,7 +129,7 @@ class TestScalesOfAssessment(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 1
 
-        assert response.data[0]["country"]["name"] == contribution_1.country.name
+        assert response.data[0]["country"]["name"] == soa_1.country.name
         assert (
             response.data[0]["replenishment"]["start_year"]
             == replenishment_1.start_year
@@ -899,5 +900,60 @@ class TestReplenishmentDashboard(BaseTest):
 
         assert response.data == correct_response
 
-class TestScaleOfAssessmentWorkflow(BaseTest):
-    url = reverse("replenishment-scales-of-assessment-list")
+
+class TestScaleOfAssessmentWorkflow:
+    client = APIClient()
+    url_replenishment = reverse("replenishment-replenishments-list")
+    url_scale_of_assessment = reverse("replenishment-scales-of-assessment-list")
+
+    def test_without_login(self):
+        response = self.client.get(self.url_replenishment)
+        assert response.status_code == 403
+
+        response = self.client.get(self.url_scale_of_assessment)
+        assert response.status_code == 403
+
+    def test_create_replenishment(self, user):
+        country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
+        country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
+        country_3 = CountryFactory.create(name="Country 3", iso3="DEF")
+        replenishment_1 = ReplenishmentFactory.create(
+            amount=1000, start_year=2021, end_year=2023
+        )
+        replenishment_2 = ReplenishmentFactory.create(
+            amount=1000, start_year=2024, end_year=2026
+        )
+
+        version_1 = ScaleOfAssessmentVersionFactory.create(
+            version=0,
+            replenishment=replenishment_1,
+            is_final=True,
+        )
+        version_2 = ScaleOfAssessmentVersionFactory.create(
+            version=0,
+            replenishment=replenishment_2,
+            is_final=True,
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_1, replenishment=replenishment_1
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_2, replenishment=replenishment_1
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_3, replenishment=replenishment_1
+        )
+
+        ScaleOfAssessmentFactory.create(
+            country=country_1, replenishment=replenishment_2
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_2, replenishment=replenishment_2
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_3, replenishment=replenishment_2
+        )
+
+        self.client.force_authenticate(user=user)
+
+        self.client.post(self.url_replenishment, {}, format="json")

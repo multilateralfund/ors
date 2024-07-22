@@ -126,7 +126,9 @@ class ScaleOfAssessmentViewSet(
     def create(self, request, *args, **kwargs):
         input_data = request.data
 
-        replenishment_qs = Replenishment.objects.filter(id=input_data["replenishment_id"])
+        replenishment_qs = Replenishment.objects.filter(
+            id=input_data["replenishment_id"]
+        )
         if not replenishment_qs.exists():
             raise ValidationError({"replenishment_id": "Replenishment does not exist."})
 
@@ -134,13 +136,14 @@ class ScaleOfAssessmentViewSet(
         replenishment = replenishment_qs.first()
 
         should_create_new_version = input_data.get("createNewVersion")
-        if should_create_new_version:
+        final = input_data.get("final")
+        if should_create_new_version or final:
+            # Marking as final always creates a new version that is marked as final
             version = ScaleOfAssessmentVersion.objects.create(
-                replenishment=replenishment
+                replenishment=replenishment,
+                is_final=final,
             )
         else:
-            # TODO: Ask if we should get the latest version or
-            # intermediate versions can be updated
             version = replenishment.scales_of_assessment_versions.order_by(
                 "-version"
             ).first()
@@ -157,6 +160,48 @@ class ScaleOfAssessmentViewSet(
         ]
 
         ScaleOfAssessment.objects.bulk_create(scales_of_assessment)
+
+        if final:
+            annual_contributions = []
+            triennial_contributions = []
+            # Create Status of Contributions data
+            for scale_of_assessment in scales_of_assessment:
+                annual_contributions.extend(
+                    [
+                        AnnualContributionStatus(
+                            year=replenishment.start_year,
+                            country=scale_of_assessment.country,
+                            agreed_contributions=(
+                                scale_of_assessment.amount / Decimal("3")
+                            ),
+                        ),
+                        AnnualContributionStatus(
+                            year=replenishment.start_year + 1,
+                            country=scale_of_assessment.country,
+                            agreed_contributions=(
+                                scale_of_assessment.amount / Decimal("3")
+                            ),
+                        ),
+                        AnnualContributionStatus(
+                            year=replenishment.start_year + 2,
+                            country=scale_of_assessment.country,
+                            agreed_contributions=(
+                                scale_of_assessment.amount / Decimal("3")
+                            ),
+                        ),
+                    ]
+                )
+                triennial_contributions.append(
+                    TriennialContributionStatus(
+                        start_year=replenishment.start_year,
+                        end_year=replenishment.end_year,
+                        country=scale_of_assessment.country,
+                        agreed_contributions=scale_of_assessment.amount,
+                    )
+                )
+
+            AnnualContributionStatus.objects.bulk_create(annual_contributions)
+            TriennialContributionStatus.objects.bulk_create(triennial_contributions)
 
         headers = self.get_success_headers(serializer.data)
         return Response(
