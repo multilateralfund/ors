@@ -1,7 +1,5 @@
 from rest_framework import serializers
 
-from django.db import transaction
-
 from core.api.serializers.country import CountrySerializer
 from core.models import Country, Invoice, Replenishment, ScaleOfAssessment
 
