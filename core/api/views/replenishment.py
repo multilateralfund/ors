@@ -1,7 +1,8 @@
 from decimal import Decimal
 
+from django_filters.rest_framework import DjangoFilterBackend
 from django.db import models
-from rest_framework import viewsets, mixins, views
+from rest_framework import filters, mixins, views, viewsets
 from rest_framework.response import Response
 
 from core.api.filters.replenishments import InvoiceFilter, ScaleOfAssessmentFilter
@@ -437,12 +438,24 @@ class ReplenishmentInvoiceViewSet(viewsets.GenericViewSet, mixins.ListModelMixin
     """
 
     model = Invoice
-    filterset_class = InvoiceFilter
     serializer_class = InvoiceSerializer
+    filterset_class = InvoiceFilter
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.OrderingFilter,
+        filters.SearchFilter,
+    ]
+    ordering_fields = [
+        "amount",
+        "comuntry__name" "date_of_issuance",
+        "date_sent",
+    ]
+    search_fields = ["number"]
 
     def get_queryset(self):
         user = self.request.user
         queryset = Invoice.objects.all()
         if user.user_type == user.UserType.COUNTRY_USER:
             queryset = queryset.filter(country_id=user.country_id)
-        return queryset
+
+        return queryset.select_related("country", "replenishment")
