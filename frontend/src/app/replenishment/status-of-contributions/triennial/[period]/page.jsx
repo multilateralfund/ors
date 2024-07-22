@@ -1,20 +1,16 @@
+'use client'
+
+import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
+import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
 import SCView from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCView'
-import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-import { PageHeading } from '@ors/components/ui/Heading/Heading'
 
-export const metadata = {
-  title: 'Replenishment - Status of contributions',
-}
-
-export default async function ReplenishmentSoCTriennial(props) {
+export default function ReplenishmentSoCTriennial(props) {
   const { period } = props.params
   return (
-    <PageWrapper className="w-full p-2" defaultSpacing={false}>
-      <HeaderTitle>
-        <div className="mb-2 font-[500] uppercase">Replenishment</div>
-        <PageHeading>Status of contributions</PageHeading>
-      </HeaderTitle>
+    <PageWrapper className="w-full p-4" defaultSpacing={false}>
+      <ReplenishmentHeading>Status of contributions</ReplenishmentHeading>
+      <DownloadButtons />
       <SCView period={period} />
     </PageWrapper>
   )

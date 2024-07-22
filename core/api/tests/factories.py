@@ -3,10 +3,12 @@ from django.contrib.auth import get_user_model
 
 from core.models import (
     Replenishment,
-    Contribution,
-    ContributionStatus,
+    ScaleOfAssessment,
+    AnnualContributionStatus,
     DisputedContribution,
     FermGainLoss,
+    TriennialContributionStatus,
+    Invoice,
 )
 from core.models.business_plan import (
     BusinessPlan,
@@ -489,9 +491,9 @@ class ReplenishmentFactory(factory.django.DjangoModelFactory):
     amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
 
 
-class ContributionFactory(factory.django.DjangoModelFactory):
+class ScaleOfAssessmentFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Contribution
+        model = ScaleOfAssessment
 
     country = factory.SubFactory(CountryFactory)
     replenishment = factory.SubFactory(ReplenishmentFactory)
@@ -508,12 +510,28 @@ class ContributionFactory(factory.django.DjangoModelFactory):
     override_qualifies_for_fixed_rate_mechanism = factory.Faker("pybool")
 
 
-class ContributionStatusFactory(factory.django.DjangoModelFactory):
+class AnnualContributionStatusFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = ContributionStatus
+        model = AnnualContributionStatus
 
     country = factory.SubFactory(CountryFactory)
     year = factory.Faker("random_int", min=2000, max=2024)
+    agreed_contributions = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    cash_payments = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    bilateral_assistance = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    promissory_notes = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    outstanding_contributions = factory.Faker(
+        "pydecimal", left_digits=10, right_digits=2
+    )
+
+
+class TriennialContributionStatusFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = TriennialContributionStatus
+
+    country = factory.SubFactory(CountryFactory)
+    start_year = factory.Faker("random_int", min=2000, max=2028)
+    end_year = factory.Faker("random_int", min=2000, max=2028)
     agreed_contributions = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     cash_payments = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     bilateral_assistance = factory.Faker("pydecimal", left_digits=10, right_digits=2)
@@ -537,3 +555,17 @@ class FermGainLossFactory(factory.django.DjangoModelFactory):
 
     country = factory.SubFactory(CountryFactory)
     amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+
+
+class InvoiceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Invoice
+
+    country = factory.SubFactory(CountryFactory)
+    replenishment = factory.SubFactory(ReplenishmentFactory)
+
+    amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    currency = factory.Faker("pystr", max_chars=3)
+
+    number = factory.Faker("pystr", max_chars=16)
+    date_of_issuance = factory.Faker("date")

@@ -21,7 +21,7 @@ const HeaderVersionsDropdown = () => {
   const bpSlice = useStore((state) => state.businessPlans)
   const toggleShowVersionsMenu = () => setShowVersionsMenu((prev) => !prev)
 
-  const ref = useClickOutside<HTMLDivElement>(() => {
+  const ref = useClickOutside(() => {
     setShowVersionsMenu(false)
   })
 

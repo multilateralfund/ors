@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from core.api.serializers.country import CountrySerializer
-from core.models import Replenishment, Contribution
+from core.models import Invoice, Replenishment, ScaleOfAssessment
 
 
 class ReplenishmentSerializer(serializers.ModelSerializer):
@@ -14,7 +14,7 @@ class ReplenishmentSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ContributionSerializer(serializers.ModelSerializer):
+class ScaleOfAssessmentSerializer(serializers.ModelSerializer):
     replenishment = ReplenishmentSerializer(read_only=True)
     country = CountrySerializer(read_only=True)
     currency = serializers.CharField()
@@ -41,5 +41,39 @@ class ContributionSerializer(serializers.ModelSerializer):
     amount_local_currency = serializers.ReadOnlyField()
 
     class Meta:
-        model = Contribution
+        model = ScaleOfAssessment
         fields = "__all__"
+
+
+class InvoiceSerializer(serializers.ModelSerializer):
+    country = CountrySerializer(read_only=True)
+
+    replenishment = ReplenishmentSerializer(read_only=True)
+
+    amount = serializers.DecimalField(
+        max_digits=30, decimal_places=15, coerce_to_string=False
+    )
+    currency = serializers.CharField()
+    exchange_rate = serializers.DecimalField(
+        max_digits=30, decimal_places=15, allow_null=True, coerce_to_string=False
+    )
+
+    number = serializers.ReadOnlyField()
+
+    invoice_files = serializers.SlugRelatedField(
+        slug_field="name", many=True, read_only=True
+    )
+
+    class Meta:
+        model = Invoice
+        fields = [
+            "country",
+            "replenishment",
+            "amount",
+            "currency",
+            "exchange_rate",
+            "number",
+            "date_of_issuance",
+            "date_sent_out",
+            "invoice_files",
+        ]

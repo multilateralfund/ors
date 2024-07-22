@@ -31,4 +31,4 @@ jobs:
       - name: "Backend tests"
         id: "backendTests"
         run: |
-          docker compose exec -T app pytest --cov
+          docker compose exec -T app pytest -vv --cov

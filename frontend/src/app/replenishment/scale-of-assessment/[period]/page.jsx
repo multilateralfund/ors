@@ -1,25 +1,25 @@
-import React from 'react'
+'use client'
 
+import { useContext } from 'react'
+
+import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
 import SAView from '@ors/components/manage/Blocks/Replenishment/SAView'
-import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
+import SAHeading from '@ors/components/manage/Blocks/Replenishment/SAView/SAHeading'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-import { PageHeading } from '@ors/components/ui/Heading/Heading'
+import SoAProvider from '@ors/contexts/Replenishment/SoAProvider'
 
-export const metadata = {
-  title: 'Replenishment - Scale of assessment',
-}
-
-export default async function ReplenishmentScaleOfAssessment(props) {
+export default function ReplenishmentScaleOfAssessment(props) {
   const { period } = props.params
   return (
     <PageWrapper
       className="w-full rounded-b-lg bg-white p-4"
       defaultSpacing={false}
     >
-      <HeaderTitle>
-        <PageHeading>Replenishment - Scale of assessment</PageHeading>
-      </HeaderTitle>
-      <SAView period={period} />
+      <SoAProvider startYear={period.split('-')[0]}>
+        <SAHeading period={period} />
+        <DownloadButtons />
+        <SAView period={period} />
+      </SoAProvider>
     </PageWrapper>
   )
 }

@@ -69,7 +69,7 @@ export default function CPViewPrint(props: { iso3: string; year: number }) {
       />
       {!!report.error && <Error error={report.error} />}
       {report.loaded && !!report.data && (
-        <HeaderTitle memo={report.data.status}>
+        <HeaderTitle>
           <div className="mb-4 min-h-[40px]">
             <PageHeading>{report.data.name}</PageHeading>
           </div>

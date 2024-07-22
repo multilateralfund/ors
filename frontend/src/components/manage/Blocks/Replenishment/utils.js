@@ -29,20 +29,32 @@ export function formatDateValue(value) {
   return `${date.getDate()}-${intl.format(date).toUpperCase()}-${date.getFullYear()}`
 }
 
-export function formatNumberValue(value) {
-  return parseFloat(value).toLocaleString('en-US', {
-    maximumFractionDigits: MAX_DECIMALS,
-    minimumFractionDigits: MIN_DECIMALS,
+export function formatNumberValue(value, minDigits, maxDigits) {
+  const formatted = parseFloat(value).toLocaleString('en-US', {
+    maximumFractionDigits: maxDigits ?? MAX_DECIMALS,
+    minimumFractionDigits: minDigits ?? MIN_DECIMALS,
   })
+  return formatted === '-0' ? '0' : formatted
 }
 
 export function dateForEditField(value) {
   const date = new Date(Date.parse(value))
+  return dateForInput(date)
+}
+
+export function dateForInput(date) {
   let day = date.getDate()
   let month = date.getMonth() + 1
   day = day < 10 ? `0${day}` : day
   month = month < 10 ? `0${month}` : month
   return `${date.getFullYear()}-${month}-${day}`
+}
+
+export function dateFromInput(value) {
+  const [year, month, day] = value.split('-')
+  return new Date(
+    Date.UTC(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10)),
+  )
 }
 
 export function numberForEditField(value) {
@@ -73,9 +85,8 @@ export function filterTableData(tableData, searchValue) {
   return result
 }
 
-export function sortTableData(tableData, field, direction) {
-  const result = [...tableData]
-  result.sort(function (a, b) {
+export function getDefaultFieldSorter(field, direction) {
+  return function (a, b) {
     const a_val = a[field]
     const b_val = b[field]
     if (typeof a_val === 'string') {
@@ -87,7 +98,13 @@ export function sortTableData(tableData, field, direction) {
         return -direction
       }
     }
-  })
+  }
+}
+
+export function sortTableData(tableData, field, direction) {
+  const result = [...tableData]
+  const defaultSorter = getDefaultFieldSorter(field, direction)
+  result.sort(defaultSorter)
   return result
 }
 

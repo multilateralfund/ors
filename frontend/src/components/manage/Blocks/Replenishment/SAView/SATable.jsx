@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import cx from 'classnames'
 
@@ -8,7 +8,7 @@ import ConfirmDialog from '../ConfirmDialog'
 import HeaderCells from '../Table/HeaderCells'
 import styles from '../Table/table.module.css'
 
-import { IoPencil, IoTrash } from 'react-icons/io5'
+import { IoAlertCircle, IoArrowUndo, IoPencil, IoTrash } from 'react-icons/io5'
 
 function ConfirmEditDialog(props) {
   return <ConfirmDialog title="Change this system computed value?" {...props} />
@@ -27,6 +27,46 @@ function AdminButtons(props) {
       </button>
     </div>
   )
+}
+
+function RevertButton(props) {
+  const { className, onClick, ...rest } = props
+  return (
+    <button
+      className={cx(
+        '-mr-2 cursor-pointer border-none bg-transparent p-0 text-secondary',
+        className,
+      )}
+      title="Discard override and revert to initial value."
+      type="button"
+      onClick={onClick}
+      {...rest}
+    >
+      <IoArrowUndo />
+    </button>
+  )
+}
+
+function ViewField(props) {
+  const { cell, onRevert } = props
+  if (cell?.isEditable) {
+    return (
+      <div className="flex items-center justify-between">
+        <span
+          className={`w-full text-center ${cell.hasOverride ? 'text-secondary' : ''}`}
+        >
+          {cell.view}
+        </span>
+        {cell.hasOverride ? (
+          <RevertButton onClick={onRevert} />
+        ) : (
+          <span className="text-gray-400 print:hidden">{'\u22EE'}</span>
+        )}
+      </div>
+    )
+  } else {
+    return <div className="text-center">{cell?.view}</div>
+  }
 }
 
 function EditField(props) {
@@ -71,7 +111,16 @@ function EditField(props) {
 }
 
 function TableCell(props) {
-  const { c, columns, enableEdit, onCellEdit, onDelete, r, rowData } = props
+  const {
+    c,
+    columns,
+    enableEdit,
+    onCellEdit,
+    onCellRevert,
+    onDelete,
+    r,
+    rowData,
+  } = props
 
   const column = columns[c]
   const fname = column.field
@@ -90,10 +139,18 @@ function TableCell(props) {
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(initialValue)
 
+  const invalidMessage = useMemo(
+    function () {
+      const parsedValue = column.parser ? column.parser(value) : value
+      return column.validator ? column.validator(value) : ''
+    },
+    [value, column],
+  )
+
   const [showConfirmEdit, setShowConfirmEdit] = useState(false)
 
   function handleStartEdit() {
-    if (enableEdit && column.editable === true) {
+    if (enableEdit && cell.isEditable === true) {
       setEditing(true)
     }
   }
@@ -103,10 +160,10 @@ function TableCell(props) {
       cancelNewValue()
     } else if (evt.key === 'Enter') {
       evt.preventDefault()
-      saveNewValue()
+      saveNewValue(evt)
     } else if (evt.key === 'Tab') {
       evt.preventDefault()
-      saveNewValue()
+      saveNewValue(evt)
     }
   }
 
@@ -115,13 +172,15 @@ function TableCell(props) {
     setEditing(false)
   }
 
-  function saveNewValue() {
+  function saveNewValue(evt) {
     if (value !== initialValue) {
-      if (confirmationText) {
-        setShowConfirmEdit(true)
-      } else {
-        onCellEdit(r, c, fname, value)
-        setEditing(false)
+      if (!invalidMessage) {
+        if (confirmationText) {
+          setShowConfirmEdit(true)
+        } else {
+          onCellEdit(r, c, fname, value)
+          setEditing(false)
+        }
       }
     } else {
       setEditing(false)
@@ -143,6 +202,10 @@ function TableCell(props) {
     setValue(evt.target.value)
   }
 
+  function handleRevert() {
+    onCellRevert(r, fname)
+  }
+
   return (
     <div
       className="flex items-center justify-between"
@@ -158,16 +221,27 @@ function TableCell(props) {
       ) : null}
       <div className="w-full whitespace-nowrap">
         {editing ? (
-          <EditField
-            className="w-full"
-            column={columns[c]}
-            value={value}
-            onBlur={saveNewValue}
-            onChange={handleChangeValue}
-            onKeyDown={handleKeyDown}
-          />
+          <div className="flex items-center gap-x-2">
+            <EditField
+              className={cx('w-full', {
+                'text-error outline outline-2 outline-error': invalidMessage,
+              })}
+              column={columns[c]}
+              value={value}
+              onBlur={saveNewValue}
+              onChange={handleChangeValue}
+              onKeyDown={handleKeyDown}
+            />
+            {invalidMessage ? (
+              <IoAlertCircle
+                className="text-error"
+                size={24}
+                title={invalidMessage}
+              />
+            ) : null}
+          </div>
         ) : (
-          cell?.view ?? cell
+          <ViewField cell={cell} onRevert={handleRevert} />
         )}
       </div>
       {c === 0 && enableEdit && !editing ? (
@@ -202,7 +276,7 @@ function AddRow(props) {
   }
 
   return (
-    <tr className="bg-gray-100">
+    <tr className="bg-gray-100 print:hidden">
       <td colSpan={columns.length}>
         <form className="flex items-center gap-x-4" onSubmit={handleSubmit}>
           <select value={countryIdx} onChange={handleChangeCountryIdx} required>
@@ -222,13 +296,14 @@ function AddRow(props) {
 function SATable(props) {
   const {
     columns,
-    countries,
+    countriesForAdd,
     enableEdit,
     enableSort,
     extraRows,
     onAddCancel,
     onAddSubmit,
     onCellEdit,
+    onCellRevert,
     onDelete,
     onSort,
     rowData,
@@ -242,7 +317,7 @@ function SATable(props) {
     const row = []
     for (let i = 0; i < columns.length; i++) {
       row.push(
-        <td key={i}>
+        <td key={i} className={cx(columns[i].className)}>
           <TableCell
             c={i}
             columns={columns}
@@ -250,6 +325,7 @@ function SATable(props) {
             r={j}
             rowData={rowData}
             onCellEdit={onCellEdit}
+            onCellRevert={onCellRevert}
             onDelete={onDelete}
           />
         </td>,
@@ -272,7 +348,7 @@ function SATable(props) {
       <AddRow
         key="addRow"
         columns={columns}
-        countries={countries}
+        countries={countriesForAdd}
         onCancel={onAddCancel}
         onSubmit={onAddSubmit}
       />,
@@ -284,7 +360,7 @@ function SATable(props) {
       const row = []
       for (let i = 0; i < columns.length; i++) {
         row.push(
-          <td key={i}>
+          <td key={i} className={cx(columns[i].className)}>
             <TableCell c={i} columns={columns} r={j} rowData={extraRows} />
           </td>,
         )

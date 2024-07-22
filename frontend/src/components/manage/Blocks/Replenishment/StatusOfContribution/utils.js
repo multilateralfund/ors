@@ -1,9 +1,6 @@
-import {
-  MAX_DECIMALS,
-  MIN_DECIMALS,
-  PRECISION,
-} from '@ors/components/manage/Blocks/Replenishment/constants'
 import { makePeriodOptions } from '@ors/components/manage/Blocks/Replenishment/utils'
+
+import { MAX_DECIMALS, MIN_DECIMALS } from '../constants'
 
 export const SC_COLUMNS = [
   { field: 'country', label: 'Country' },
@@ -58,7 +55,7 @@ export function transformData(data) {
   return rows
 }
 
-export function formatTableRows(rows) {
+export function formatTableRows(rows, minDigits, maxDigits) {
   const result = new Array(rows.length)
 
   for (let i = 0; i < rows.length; i++) {
@@ -68,13 +65,18 @@ export function formatTableRows(rows) {
 
     for (let j = 0; j < keys.length; j++) {
       const key = keys[j]
-      const value = rows[i][key]
+      let value = rows[i][key]
+
+      // As per specs, transform values in range (-1, 1) to 0
+      if (typeof value === 'number' && value > -1 && value < 1) {
+        value = 0
+      }
 
       switch (typeof value) {
         case 'number':
           result[i][key] = value.toLocaleString('en-US', {
-            maximumFractionDigits: MAX_DECIMALS,
-            minimumFractionDigits: MIN_DECIMALS,
+            maximumFractionDigits: maxDigits ?? 0 ?? MAX_DECIMALS,
+            minimumFractionDigits: minDigits ?? 0 ?? MIN_DECIMALS,
           })
           break
         default:

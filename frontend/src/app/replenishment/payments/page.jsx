@@ -1,20 +1,20 @@
-import React from 'react'
+'use client'
 
+import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
+import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
 import PaymentsView from '@ors/components/manage/Blocks/Replenishment/PaymentsView'
-import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-import { PageHeading } from '@ors/components/ui/Heading/Heading'
 
-export const metadata = {
-  title: 'Replenishment - Payments',
-}
-
-export default async function ReplenishmentPayments() {
+export default function ReplenishmentPayments() {
   return (
-    <PageWrapper className="w-full p-2" defaultSpacing={false}>
-      <HeaderTitle>
-        <PageHeading>Replenishment - Payments</PageHeading>
-      </HeaderTitle>
+    <PageWrapper className="w-full p-4" defaultSpacing={false}>
+      <ReplenishmentHeading
+        extraPeriodOptions={[{ label: 'All', value: '' }]}
+        showPeriodSelector={true}
+      >
+        Payments
+      </ReplenishmentHeading>
+      <DownloadButtons />
       <PaymentsView />
     </PageWrapper>
   )

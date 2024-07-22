@@ -610,7 +610,7 @@ function useLogSectionApi(filters: FiltersType) {
         country_id: filters?.country?.join(','),
         limit: LOGS_PER_PAGE,
         offset: 0,
-        ordering: '-year',
+        ordering: '-created_at',
         status: filters.status,
         ...(filters.range.length == 2
           ? {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { forwardRef, useEffect, useMemo, useRef, useState } from 'react'
 
 import cx from 'classnames'
 
@@ -82,7 +82,60 @@ export function FormattedNumberInput(props) {
         className={cx(CLASSESS, className, { hidden: inputMode })}
         readOnly={true}
         type="text"
-        value={formatDecimalValue(value, {})}
+        value={formatDecimalValue(value ?? '', {})}
+        onFocus={() => setInputMode(true)}
+        {...rest}
+      />
+    </>
+  )
+}
+
+export function DateInput(props) {
+  const { id, className, name, onChange, type, value, ...rest } = props
+
+  const [inputMode, setInputMode] = useState(false)
+
+  const realInput = useRef(null)
+
+  useEffect(
+    function () {
+      if (inputMode) {
+        realInput.current.focus()
+        realInput.current.showPicker()
+      }
+    },
+    [realInput, inputMode],
+  )
+
+  const maskDate = useMemo(
+    function () {
+      const intl = new Intl.DateTimeFormat('en-US', { month: 'short' })
+      const date = new Date(Date.parse(value))
+      return `${date.getDate()} ${intl.format(date)} ${date.getFullYear()}`
+    },
+    [value],
+  )
+
+  return (
+    <>
+      <input
+        id={id}
+        name={name || id}
+        className={cx(CLASSESS, className, { hidden: !inputMode })}
+        ref={realInput}
+        type="date"
+        value={value}
+        onBlur={() => setInputMode(false)}
+        onChange={onChange}
+        {...rest}
+      />
+      <input
+        id={`${id}_mask`}
+        name={`${name || id}_mask`}
+        className={cx(CLASSESS, className, { hidden: inputMode })}
+        readOnly={true}
+        type="text"
+        value={maskDate}
         onFocus={() => setInputMode(true)}
         {...rest}
       />

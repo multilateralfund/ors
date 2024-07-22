@@ -259,7 +259,7 @@ function PaymentsView(props) {
           onSubmit={handleEditPaymentSubmit}
         />
       ) : null}
-      <div className="flex items-center py-4">
+      <div className="flex items-center py-4 print:hidden">
         <AddButton onClick={showAddPaymentDialog}>Add payment</AddButton>
         <div className="ml-8">
           <label>

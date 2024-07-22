@@ -2,7 +2,8 @@ import { fixFloat } from '@ors/helpers/Utils/Utils'
 
 import { MAX_DECIMALS, MIN_DECIMALS, PRECISION } from '../constants'
 
-export { getCountryForIso3, sortTableData } from '../utils'
+export { getCountryForIso3 } from '../utils'
+import { getDefaultFieldSorter } from '../utils'
 
 export function uniformDecimals(v) {
   let result = null
@@ -21,6 +22,14 @@ export function clearNew(d) {
   return r
 }
 
+export function getOverrideOrDefault(record, name) {
+  let result = record[`override_${name}`]
+  if (result === undefined) {
+    result = record[name]
+  }
+  return result
+}
+
 export function computeTableData(tableData, totalReplenishment) {
   const result = new Array(tableData.length)
 
@@ -30,17 +39,12 @@ export function computeTableData(tableData, totalReplenishment) {
   for (let i = 0; i < tableData.length; i++) {
     if (tableData[i].iso3 === 'USA') {
       adj_un_soa_percent -= fixFloat(
-        tableData[i].override_un_soa ?? tableData[i].un_soa ?? 0,
-        PRECISION,
-      )
-    } else if (tableData[i].hasOwnProperty('override_adj_un_soa')) {
-      adj_un_soa_percent -= fixFloat(
-        tableData[i].override_adj_un_soa ?? 0,
+        getOverrideOrDefault(tableData[i], 'un_soa') ?? 0,
         PRECISION,
       )
     } else {
       adj_un_soa += fixFloat(
-        tableData[i].override_un_soa ?? tableData[i].un_soa ?? 0,
+        getOverrideOrDefault(tableData[i], 'un_soa') ?? 0,
         PRECISION,
       )
     }
@@ -52,7 +56,7 @@ export function computeTableData(tableData, totalReplenishment) {
     result[i] = { ...tableData[i] }
 
     const un_soa = fixFloat(
-      tableData[i].override_un_soa ?? tableData[i].un_soa ?? 0,
+      getOverrideOrDefault(tableData[i], 'un_soa') ?? 0,
       PRECISION,
     )
 
@@ -66,22 +70,52 @@ export function computeTableData(tableData, totalReplenishment) {
     }
 
     result[i].annual_contributions = fixFloat(
-      ((result[i].override_adj_un_soa ?? result[i].adj_un_soa) *
-        totalReplenishment) /
+      (getOverrideOrDefault(result[i], 'adj_un_soa') * totalReplenishment) /
         100,
       PRECISION,
     )
+
+    // Does it qualify for FERM?
     result[i].qual_ferm =
-      (result[i].override_avg_ir ?? result[i].avg_ir ?? 100) < 10 ? true : false
+      (getOverrideOrDefault(result[i], 'avg_ir') ?? 100) < 10 ? true : false
+    result[i].qual_ferm = result[i].qual_ferm || result[i].ferm_cur === 'Euro'
+
+    // Calculate contribution in national currency for those qualifying for FERM
     result[i].ferm_cur_amount =
-      (result[i].override_qual_ferm ?? result[i].qual_ferm) &&
-      (result[i].override_ferm_rate ?? result[i].ferm_rate)
-        ? (result[i].override_ferm_rate ?? result[i].ferm_rate) *
+      getOverrideOrDefault(result[i], 'qual_ferm') &&
+      getOverrideOrDefault(result[i], 'ferm_rate') !== null
+        ? getOverrideOrDefault(result[i], 'ferm_rate') *
           result[i].annual_contributions
         : null
+
+    if (!result[i].opted_for_ferm && result[i].qual_ferm) {
+      result[i].opted_for_ferm = false
+    } else if (!result[i].qual_ferm) {
+      result[i].opted_for_ferm = null
+      delete result[i].override_opted_for_ferm
+    }
   }
 
   return result
+}
+
+function formattedValue(value) {
+  let newValue = value
+
+  if (value === null) {
+    newValue = 'N/A'
+  } else if (typeof value === 'number') {
+    newValue = value.toLocaleString('en-US', {
+      maximumFractionDigits: MAX_DECIMALS,
+      minimumFractionDigits: MIN_DECIMALS,
+    })
+  } else if (value === false) {
+    newValue = 'No'
+  } else if (value === true) {
+    newValue = 'Yes'
+  }
+
+  return newValue
 }
 
 export function formatTableData(tableData, editableColumns) {
@@ -93,44 +127,29 @@ export function formatTableData(tableData, editableColumns) {
     for (let j = 0; j < keys.length; j++) {
       const key = keys[j]
       const overrideKey = `override_${key}`
-      const value = tableData[i][overrideKey] ?? tableData[i][key]
       const hasOverride = tableData[i].hasOwnProperty(overrideKey)
-      const valueType = typeof value
+      const value = hasOverride ? tableData[i][overrideKey] : tableData[i][key]
 
-      let newValue = value
+      let isEditable = editableColumns.includes(key)
 
-      if (value === null) {
-        newValue = 'N/A'
-      } else if (valueType === 'number') {
-        newValue = value.toLocaleString('en-US', {
-          maximumFractionDigits: MAX_DECIMALS,
-          minimumFractionDigits: MIN_DECIMALS,
-        })
-      } else if (value === false) {
-        newValue = 'No'
-      } else if (value === true) {
-        newValue = 'Yes'
+      let newValue
+
+      if (key === 'opted_for_ferm' && value == null) {
+        newValue = '-'
+        isEditable = false
+      } else {
+        newValue = formattedValue(value)
       }
 
-      if (editableColumns.includes(key)) {
-        result[i][key] = {
-          edit: value,
-          view: (
-            <div className="flex items-center justify-between">
-              <span
-                className={`w-full text-center ${hasOverride ? 'text-secondary' : ''}`}
-              >
-                {newValue}
-              </span>
-              <span className="text-gray-400">{'\u22EE'}</span>
-            </div>
-          ),
-        }
-      } else {
-        result[i][key] = {
-          edit: value,
-          view: <div className="text-center">{newValue}</div>,
-        }
+      if (key === 'adj_un_soa' && tableData[i].iso3 == 'USA') {
+        isEditable = false
+      }
+
+      result[i][key] = {
+        edit: value,
+        hasOverride,
+        isEditable,
+        view: newValue,
       }
     }
   }
@@ -143,13 +162,13 @@ export function sumColumns(tableData) {
 
   for (let i = 0; i < tableData.length; i++) {
     if (!tableData[i].hasOwnProperty('override_adj_un_soa')) {
-      result.un_soa += tableData[i].override_un_soa ?? tableData[i].un_soa
+      result.un_soa += getOverrideOrDefault(tableData[i], 'un_soa')
     }
-    result.adj_un_soa +=
-      tableData[i].override_adj_un_soa ?? tableData[i].adj_un_soa
-    result.annual_contributions +=
-      tableData[i].override_annual_contributions ??
-      tableData[i].annual_contributions
+    result.adj_un_soa += getOverrideOrDefault(tableData[i], 'adj_un_soa')
+    result.annual_contributions += getOverrideOrDefault(
+      tableData[i],
+      'annual_contributions',
+    )
   }
 
   result.un_soa =
@@ -170,5 +189,54 @@ export function sumColumns(tableData) {
     },
   )
 
+  return result
+}
+
+function currencyNameFieldSorter(field, direction) {
+  return function (a, b) {
+    const infinityValue = direction > 0 ? 'Z' : 'A'
+    const a_val = getOverrideOrDefault(a, field) ?? infinityValue
+    const b_val = getOverrideOrDefault(b, field) ?? infinityValue
+    if (typeof a_val === 'string') {
+      return a_val.localeCompare(b_val) * direction
+    } else {
+      if (a_val < b_val) {
+        return direction
+      } else {
+        return -direction
+      }
+    }
+  }
+}
+
+function currencyRateFieldSorter(field, direction) {
+  return function (a, b) {
+    const infinityValue = direction > 0 ? -Infinity : Infinity
+    const a_val = getOverrideOrDefault(a, field) ?? infinityValue
+    const b_val = getOverrideOrDefault(b, field) ?? infinityValue
+    if (a_val < b_val) {
+      return direction
+    } else {
+      return -direction
+    }
+  }
+}
+
+export function sortSATableData(tableData, field, direction) {
+  const result = [...tableData]
+
+  let sorter
+  switch (field) {
+    case 'ferm_cur':
+      sorter = currencyNameFieldSorter(field, direction)
+      break
+    case 'ferm_rate':
+      sorter = currencyRateFieldSorter(field, direction)
+      break
+    default:
+      sorter = getDefaultFieldSorter(field, direction)
+  }
+
+  result.sort(sorter)
   return result
 }
