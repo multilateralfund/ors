@@ -57,6 +57,7 @@ const FormDialog = function FormDialog(props) {
       )}
       ref={dialogRef}
       onKeyDown={handleKeyDown}
+      enctype='multipart/form-data'
     >
       <div className="mb-8 flex items-center justify-between text-secondary">
         <h3 className="m-0 text-xl">{title}</h3>

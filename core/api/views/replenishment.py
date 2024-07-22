@@ -482,8 +482,9 @@ class ReplenishmentInvoiceViewSet(
 
         self.perform_create(serializer)
 
-        # TODO: now create the files!
-        # files
+        for invoice_file in files:
+            # TODO: actually create the files
+            pass
 
         headers = self.get_success_headers(serializer.data)
         return Response(
@@ -507,7 +508,9 @@ class ReplenishmentInvoiceViewSet(
         existing_file_ids = set(
             current_obj.invoice_files.objects.values_list("id", flat=True)
         )
+
         files_to_delete = existing_file_ids.difference(new_file_ids)
+        current_obj.invoice_files.objects.delete(id__in=files_to_delete)
 
         for invoice_file in files:
             if invoice_file.get("id", None) is None:
