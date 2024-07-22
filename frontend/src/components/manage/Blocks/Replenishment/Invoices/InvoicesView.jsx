@@ -145,7 +145,6 @@ function InvoicesView() {
     const entry = { ...formData }
     entry.date_of_issuance = dateForInput(entry.date_of_issuance)
     entry.date_sent_out = dateForInput(entry.date_sent_out)
-    // entry.amount = entry.amount
 
     const file_fields = Object.keys(entry).filter(
       (key) => key.startsWith('file_') && !key.startsWith('file_type'),
@@ -201,18 +200,37 @@ function InvoicesView() {
     console.log('Add invoice', entry)
   }
 
-  function handleDeleteInvoice(idx) {
+  async function handleDeleteInvoice(rowId) {
     const confirmed = confirm('Are you sure you want to delete this invoice?')
-    if (confirmed) {
-      // setTableData((prev) => {
-      //   const next = []
-      //   for (let i = 0; i < sortedTableData.length; i++) {
-      //     if (i !== idx) {
-      //       next.push(sortedTableData[i])
-      //     }
-      //   }
-      //   return next
-      // })
+    if (!confirmed) return
+
+    const entry = { ...memoResults[rowId] }
+
+    try {
+      await api(`api/replenishment/invoices/${entry.id}/`, {
+        data: entry,
+        method: 'DELETE',
+      })
+      enqueueSnackbar('Invoice deleted.', { variant: 'success' })
+      setParams({
+        offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,
+      })
+    } catch (error) {
+      if (error.status === 400) {
+        const errors = await error.json()
+        setError({ ...errors })
+        enqueueSnackbar(
+          errors.general_error ||
+            errors.files ||
+            'Please make sure all the inputs are correct.',
+          { variant: 'error' },
+        )
+      } else {
+        enqueueSnackbar(<>An error occurred. Please try again.</>, {
+          variant: 'error',
+        })
+        setError({})
+      }
     }
   }
 
