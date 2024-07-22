@@ -87,9 +87,8 @@ function InvoicesView() {
           data.invoice_files.length > 0
             ? data.invoice_files.join(', ')
             : 'No files',
-        invoice_number: data.number.toLocaleString(),
         iso3: data.country.iso3,
-        number: data.number,
+        number: data.number.toLocaleString(),
         reminder: data.reminder_sent_on || 'N/A',
         replenishment: data.replenishment,
       })),

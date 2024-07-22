@@ -38,8 +38,8 @@ const InvoiceDialog = function InvoiceDialog(props) {
         ))}
       </FieldSelect>
       <FieldInput
-        id="invoice_number"
-        defaultValue={data?.invoice_number}
+        id="number"
+        defaultValue={data?.number}
         label={columns[1].label}
         type="text"
         required
