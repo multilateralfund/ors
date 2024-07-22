@@ -947,3 +947,54 @@ class TestInvoices(BaseTest):
         response_all = self.client.get(self.url, {"start_year": "all"})
         assert response_all.status_code == 200
         assert len(response_all.data) == 2
+
+    def test_invoices_create(self, user):
+        country = CountryFactory.create(name="Country 1", iso3="XYZ")
+        replenishment = ReplenishmentFactory.create(
+            start_year=self.year_1, end_year=self.year_2
+        )
+
+        self.client.force_authenticate(user=user)
+
+        request_data = {
+            "country_id": country.id,
+            "replenishment_id": replenishment.id,
+            "amount": 100.0,
+            "currency": "EUR",
+            "exchange_rate": 0.7,
+            "number": "aaa-yyy-create-1",
+            "date_of_issuance": "2019-03-14",
+            "date_sent_out": None,
+            "files": [],
+        }
+
+        response = self.client.post(self.url, data=request_data, format="json")
+        assert response.status_code == 201
+
+    def test_invoices_update(self, user):
+        country = CountryFactory.create(name="Country 1", iso3="XYZ")
+        replenishment = ReplenishmentFactory.create(
+            start_year=self.year_1, end_year=self.year_2
+        )
+        invoice = InvoiceFactory(
+            country=country, replenishment=replenishment, number="aaa-yyy-1"
+        )
+
+        self.client.force_authenticate(user=user)
+
+        request_data = {
+            "country_id": country.id,
+            "replenishment_id": replenishment.id,
+            "amount": 100.0,
+            "currency": "EUR",
+            "exchange_rate": 0.7,
+            "number": "aaa-yyy-create-1",
+            "date_of_issuance": "2019-03-14",
+            "date_sent_out": None,
+            "files": [],
+        }
+
+        response = self.client.put(
+            self.url + f"{invoice.id}/", data=request_data, format="json"
+        )
+        assert response.status_code == 200

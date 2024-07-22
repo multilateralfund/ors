@@ -1,14 +1,15 @@
 from decimal import Decimal
 
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db import models
-from rest_framework import filters, mixins, views, viewsets
+from django.db import models, transaction
+from rest_framework import filters, mixins, status, views, viewsets
 from rest_framework.response import Response
 
 from core.api.filters.replenishments import InvoiceFilter, ScaleOfAssessmentFilter
 from core.api.serializers import (
     CountrySerializer,
     InvoiceSerializer,
+    InvoiceCreateSerializer,
     ReplenishmentSerializer,
     ScaleOfAssessmentSerializer,
 )
@@ -466,3 +467,52 @@ class ReplenishmentInvoiceViewSet(
             queryset = queryset.filter(country_id=user.country_id)
 
         return queryset.select_related("country", "replenishment")
+
+    def get_serializer_class(self):
+        if self.request.method in ["POST", "PUT"]:
+            return InvoiceCreateSerializer
+        return InvoiceSerializer
+
+    def create(self, request, *args, **kwargs):
+        files = request.data.pop("files", [])
+
+        serializer = InvoiceCreateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        self.perform_create(serializer)
+
+        # TODO: now create the files!
+        # files
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    @transaction.atomic
+    def put(self, request, *args, **kwargs):
+        current_obj = self.get_object()
+
+        files = request.data.pop("files", [])
+
+        serializer = InvoiceCreateSerializer(current_obj, data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        self.perform_update(serializer)
+
+        # TODO: update files
+        # Delete files no longer present; create new files
+        new_file_ids = set(f["id"] for f in files)
+        existing_file_ids = set(
+            current_obj.invoice_files.objects.values_list("id", flat=True)
+        )
+        files_to_delete = existing_file_ids.difference(new_file_ids)
+
+        for invoice_file in files:
+            if invoice_file.get("id", None) is None:
+                # TODO: actually create this file
+                pass
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
