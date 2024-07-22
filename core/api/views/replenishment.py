@@ -4,7 +4,7 @@ from django.db import models
 from rest_framework import viewsets, mixins, views
 from rest_framework.response import Response
 
-from core.api.filters.replenishments import ScaleOfAssessmentFilter
+from core.api.filters.replenishments import InvoiceFilter, ScaleOfAssessmentFilter
 from core.api.serializers import (
     CountrySerializer,
     InvoiceSerializer,
@@ -436,6 +436,8 @@ class ReplenishmentInvoiceViewSet(viewsets.GenericViewSet, mixins.ListModelMixin
     Viewset for all the invoices.
     """
 
+    model = Invoice
+    filterset_class = InvoiceFilter
     serializer_class = InvoiceSerializer
 
     def get_queryset(self):

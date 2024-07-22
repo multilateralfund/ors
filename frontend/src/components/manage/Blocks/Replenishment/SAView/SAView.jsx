@@ -130,9 +130,16 @@ const EDITABLE = getEditableFieldNames(COLUMNS)
 function SaveManager(props) {
   const { amount, comment, currencyDateRange, data, version } = props
 
-  const [isFinal, setIsFinal] = useState(version?.isFinal ?? false)
+  const [isFinal, setIsFinal] = useState(false)
   const [createNewVersion, setCreateNewVersion] = useState(true)
   const [saving, setSaving] = useState(false)
+
+  useEffect(
+    function () {
+      setIsFinal(version?.isFinal ?? false)
+    },
+    [version],
+  )
 
   function handleChangeFinal() {
     setIsFinal(function (prev) {

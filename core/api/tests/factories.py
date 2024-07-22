@@ -8,6 +8,7 @@ from core.models import (
     DisputedContribution,
     FermGainLoss,
     TriennialContributionStatus,
+    Invoice,
 )
 from core.models.business_plan import (
     BusinessPlan,
@@ -554,3 +555,17 @@ class FermGainLossFactory(factory.django.DjangoModelFactory):
 
     country = factory.SubFactory(CountryFactory)
     amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+
+
+class InvoiceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Invoice
+
+    country = factory.SubFactory(CountryFactory)
+    replenishment = factory.SubFactory(ReplenishmentFactory)
+
+    amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    currency = factory.Faker("pystr", max_chars=3)
+
+    number = factory.Faker("pystr", max_chars=16)
+    date_of_issuance = factory.Faker("date")
