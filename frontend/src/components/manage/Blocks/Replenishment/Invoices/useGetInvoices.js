@@ -1,8 +1,7 @@
-import { simulatedResponse } from '@ors/components/manage/Blocks/Replenishment/Invoices/simulatedResponse'
 import { getResults } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
 
-const _PER_PAGE = 50
+export const _PER_PAGE = 50
 
 function useGetInvoices(filters) {
   const { data, loading, setParams } = useApi({
@@ -24,8 +23,8 @@ function useGetInvoices(filters) {
     },
     path: 'api/replenishment/invoices/',
   })
-  const { count, loaded, results } = getResults(simulatedResponse)
-  return { count, data: simulatedResponse, loaded, loading, results, setParams }
+  const { count, loaded, results } = getResults(data)
+  return { count, data, loaded, loading, results, setParams }
 }
 
 export default useGetInvoices

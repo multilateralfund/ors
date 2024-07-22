@@ -1,13 +1,17 @@
 'use client'
 
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
+
+import { times } from 'lodash'
 
 import {
   Input,
   Select,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceDialog from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceDialog'
-import useGetInvoices from '@ors/components/manage/Blocks/Replenishment/Invoices/useGetInvoices'
+import useGetInvoices, {
+  _PER_PAGE,
+} from '@ors/components/manage/Blocks/Replenishment/Invoices/useGetInvoices'
 import Table from '@ors/components/manage/Blocks/Replenishment/Table'
 import {
   dateForEditField,
@@ -19,16 +23,14 @@ import {
   sortTableData,
 } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { AddButton } from '@ors/components/ui/Button/Button'
+import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
 import { IoSearchSharp } from 'react-icons/io5'
 
-const MOCK_STATUSES = [
-  { label: 'Pending', value: 'pending' },
-  { label: 'Paid', value: 'paid' },
-]
 const COLUMNS = [
   { field: 'country', label: 'Country' },
+  { field: 'number', label: 'Invoice number' },
   { field: 'date', label: 'Date of issuance' },
   { field: 'amount', label: 'Amount' },
   { field: 'currency', label: 'Currency' },
@@ -53,7 +55,45 @@ const EditInvoiceDialog = function EditInvoiceDialog(props) {
 function InvoicesView() {
   const ctx = useContext(ReplenishmentContext)
 
-  const { count, data, loading, results, setParams } = useGetInvoices()
+  const { count, loaded, loading, results, setParams } = useGetInvoices()
+  const [pagination, setPagination] = useState({
+    page: 1,
+    rowsPerPage: _PER_PAGE,
+  })
+  const memoResults = useMemo(() => {
+    if (!loaded) {
+      return times(pagination.rowsPerPage, (num) => {
+        return {
+          id: num + 1,
+          isSkeleton: true,
+        }
+      })
+    }
+    return [
+      ...results.map((data) => ({
+        amount: data.amount.toLocaleString(undefined, {
+          maximumFractionDigits: 3,
+          minimumFractionDigits: 3,
+        }),
+        country: data.country.name,
+        country_id: data.country.id,
+        currency: data.currency,
+        date: formatDateValue(data.date_of_issuance),
+        exchange_rate: data.exchange_rate.toFixed(3),
+        files:
+          data.invoice_files.length > 0
+            ? data.invoice_files.join(', ')
+            : 'No files',
+        invoice_number: data.number.toLocaleString(),
+        iso3: data.country.iso3,
+        number: data.number,
+        reminder: data.reminder_sent_on || 'N/A',
+        sent_on: formatDateValue(data.date_sent_out),
+      })),
+    ]
+  }, [results, loaded, pagination.rowsPerPage])
+
+  const pages = Math.ceil(count / pagination.rowsPerPage)
 
   const columns = useMemo(function () {
     const result = []
@@ -74,28 +114,6 @@ function InvoicesView() {
     return result
   }, [])
 
-  const rows = useMemo(() => {
-    return results.map((data) => ({
-      amount: data.amount.toLocaleString(undefined, {
-        maximumFractionDigits: 3,
-        minimumFractionDigits: 3,
-      }),
-      country: data.country.name,
-      currency: data.currency,
-      date: formatDateValue(data.date_of_issuance),
-      exchange_rate: data.exchange_rate.toFixed(3),
-      files:
-        data.invoice_files.length > 0
-          ? data.invoice_files.join(', ')
-          : 'No files',
-      invoice_number: data.number.toLocaleString(),
-      iso3: data.country.iso3,
-      reminder: data.reminder_sent_on || 'N/A',
-      sent_on: formatDateValue(data.date_sent_out),
-    }))
-  }, [results])
-
-  const [tableData, setTableData] = useState([])
   const [searchValue, setSearchValue] = useState('')
 
   const [sortOn, setSortOn] = useState(0)
@@ -104,18 +122,11 @@ function InvoicesView() {
   const [editIdx, setEditIdx] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
 
-  useEffect(
-    function () {
-      setTableData(rows)
-    },
-    [rows],
-  )
-
   const filteredTableData = useMemo(
     function () {
-      return filterTableData(tableData, searchValue)
+      return filterTableData(memoResults, searchValue)
     },
-    [tableData, searchValue],
+    [memoResults, searchValue],
   )
 
   const sortedTableData = useMemo(
@@ -156,22 +167,22 @@ function InvoicesView() {
     entry.reminder = formatDateValue(entry.reminder)
     entry.amount = formatNumberValue(entry.amount)
     entry.country = getCountryForIso3(entry.iso3, ctx.countries)?.name_alt
-    setTableData((prev) => [entry, ...prev])
+    // setTableData((prev) => [entry, ...prev])
     setShowAdd(false)
   }
 
   function handleDeleteInvoice(idx) {
     const confirmed = confirm('Are you sure you want to delete this invoice?')
     if (confirmed) {
-      setTableData((prev) => {
-        const next = []
-        for (let i = 0; i < sortedTableData.length; i++) {
-          if (i !== idx) {
-            next.push(sortedTableData[i])
-          }
-        }
-        return next
-      })
+      // setTableData((prev) => {
+      //   const next = []
+      //   for (let i = 0; i < sortedTableData.length; i++) {
+      //     if (i !== idx) {
+      //       next.push(sortedTableData[i])
+      //     }
+      //   }
+      //   return next
+      // })
     }
   }
 
@@ -185,7 +196,7 @@ function InvoicesView() {
     const next = [...sortedTableData]
     next[editIdx] = entry
 
-    setTableData(next)
+    // setTableData(next)
     setEditIdx(null)
   }
 
@@ -196,6 +207,11 @@ function InvoicesView() {
   function handleSort(column) {
     setSortDirection((direction) => (column === sortOn ? -direction : 1))
     setSortOn(column)
+  }
+
+  function handleCountryFilter(evt) {
+    const country_id = evt.target.value
+    setParams({ country_id })
   }
 
   return (
@@ -237,13 +253,15 @@ function InvoicesView() {
             id="country"
             className="placeholder-select"
             defaultValue=""
+            onChange={handleCountryFilter}
+            hasClear
             required
           >
             <option value="" disabled hidden>
               Country
             </option>
             {ctx.countries.map((c) => (
-              <option key={c.iso3} className="text-primary" value={c.iso3}>
+              <option key={c.iso3} className="text-primary" value={c.id}>
                 {c.name_alt}
               </option>
             ))}
@@ -292,6 +310,22 @@ function InvoicesView() {
         onEdit={showEditInvoiceDialog}
         onSort={handleSort}
       />
+      {!!pages && pages > 1 && (
+        <div className="flex items-center justify-center print:hidden">
+          <Pagination
+            count={pages}
+            page={pagination.page}
+            siblingCount={1}
+            onPaginationChanged={(page) => {
+              setPagination({ ...pagination, page: page || 1 })
+              setParams({
+                limit: pagination.rowsPerPage,
+                offset: ((page || 1) - 1) * pagination.rowsPerPage,
+              })
+            }}
+          />
+        </div>
+      )}
     </>
   )
 }
