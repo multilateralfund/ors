@@ -3,6 +3,7 @@
 import React, { useContext, useMemo, useState } from 'react'
 
 import { times } from 'lodash'
+import { enqueueSnackbar } from 'notistack'
 
 import {
   Input,
@@ -15,6 +16,7 @@ import useGetInvoices, {
 import Table from '@ors/components/manage/Blocks/Replenishment/Table'
 import {
   dateForEditField,
+  dateForInput,
   formatDateValue,
   formatNumberValue,
   numberForEditField,
@@ -22,6 +24,7 @@ import {
 import { AddButton } from '@ors/components/ui/Button/Button'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
+import api from '@ors/helpers/Api/_api'
 
 import { IoSearchSharp } from 'react-icons/io5'
 
@@ -55,6 +58,7 @@ function InvoicesView() {
   const ctx = useContext(ReplenishmentContext)
 
   const { count, loaded, results, setParams } = useGetInvoices()
+  const [error, setError] = useState(null)
   const [pagination, setPagination] = useState({
     page: 1,
     rowsPerPage: _PER_PAGE,
@@ -70,6 +74,7 @@ function InvoicesView() {
     }
     return [
       ...results.map((data) => ({
+        id: data.id,
         amount: data.amount.toLocaleString(undefined, {
           maximumFractionDigits: 3,
           minimumFractionDigits: 3,
@@ -88,6 +93,7 @@ function InvoicesView() {
         iso3: data.country.iso3,
         number: data.number,
         reminder: data.reminder_sent_on || 'N/A',
+        replenishment: data.replenishment,
       })),
     ]
   }, [results, loaded, pagination.rowsPerPage])
@@ -135,8 +141,57 @@ function InvoicesView() {
     setEditIdx(idx)
   }
 
-  function handleAddInvoiceSubmit(data) {
-    const entry = { ...data }
+  async function handleEditInvoiceSubmit(formData) {
+    const entry = { ...formData }
+    entry.date_of_issuance = dateForInput(entry.date_of_issuance)
+    entry.date_sent_out = dateForInput(entry.date_sent_out)
+    // entry.amount = entry.amount
+
+    const file_fields = Object.keys(entry).filter(
+      (key) => key.startsWith('file_') && !key.startsWith('file_type'),
+    )
+
+    const files = []
+    for (let i = 0; i < file_fields.length; i++) {
+      files.push({ file: entry[`file_${i}`], type: entry[`file_type_${i}`] })
+      delete entry[`file_${i}`]
+      delete entry[`file_type_${i}`]
+    }
+    entry.files = files
+
+    try {
+      await api(`api/replenishment/invoices/${entry.id}/`, {
+        data: entry,
+        method: 'PUT',
+      })
+      enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
+      setParams({
+        offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,
+      })
+    } catch (error) {
+      if (error.status === 400) {
+        const errors = await error.json()
+        setError({ ...errors })
+        enqueueSnackbar(
+          errors.general_error ||
+            errors.files ||
+            'Please make sure all the inputs are correct.',
+          { variant: 'error' },
+        )
+      } else {
+        enqueueSnackbar(<>An error occurred. Please try again.</>, {
+          variant: 'error',
+        })
+        setError({})
+      }
+    }
+
+    setEditIdx(null)
+    console.log('Edit invoice', entry)
+  }
+
+  function handleAddInvoiceSubmit(formData) {
+    const entry = { ...formData }
     entry.date_of_issuance = formatDateValue(entry.date_of_issuance)
     entry.date_sent_out = formatDateValue(entry.date_sent_out)
     entry.reminder = formatDateValue(entry.reminder)
@@ -159,32 +214,6 @@ function InvoicesView() {
       //   return next
       // })
     }
-  }
-
-  function handleEditInvoiceSubmit(data) {
-    const entry = { ...data }
-    entry.date_of_issuance = formatDateValue(entry.date_of_issuance)
-    entry.date_sent_out = formatDateValue(entry.date_sent_out)
-    entry.amount = formatNumberValue(entry.amount)
-
-    const file_fields = Object.keys(entry).filter(
-      (key) => key.startsWith('file_') && !key.startsWith('file_type'),
-    )
-
-    const files = []
-    for (let i = 0; i < file_fields.length; i++) {
-      files.push({ file: entry[`file_${i}`], type: entry[`file_type_${i}`] })
-      delete entry[`file_${i}`]
-      delete entry[`file_type_${i}`]
-    }
-    entry.files = files
-
-    const next = [...memoResults]
-    next[editIdx] = entry
-
-    // setTableData(next)
-    setEditIdx(null)
-    console.log('Edit invoice', entry)
   }
 
   function handleSearchInput(evt) {
@@ -275,9 +304,13 @@ function InvoicesView() {
             <option value="" disabled hidden>
               Period
             </option>
-            {MOCK_PERIODS.map((period) => (
-              <option key={period} className="text-primary" value={period}>
-                {period}
+            {ctx.periodOptions.map((period) => (
+              <option
+                key={period.value}
+                className="text-primary"
+                value={period.value}
+              >
+                {period.label}
               </option>
             ))}
           </Select>

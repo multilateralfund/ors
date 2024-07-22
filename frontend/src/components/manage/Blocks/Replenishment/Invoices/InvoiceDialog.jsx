@@ -10,13 +10,23 @@ const InvoiceDialog = function InvoiceDialog(props) {
 
   return (
     <FormDialog title={title} {...dialogProps}>
+      {isEdit && (
+        <>
+          <input name="id" defaultValue={data?.id} type="hidden" />
+          <input
+            name="replenishment_id"
+            defaultValue={data?.replenishment.id}
+            type="hidden"
+          />
+        </>
+      )}
       <FieldSelect
         id="country_id"
         defaultValue={data?.country_id}
         label={columns[0].label}
         required
       >
-        <option value=""> - </option>
+        <option value=""> -</option>
         {countries.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name_alt}

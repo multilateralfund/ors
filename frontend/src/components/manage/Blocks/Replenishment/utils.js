@@ -44,7 +44,9 @@ export function dateForEditField(value) {
   return dateForInput(date)
 }
 
-export function dateForInput(date) {
+export function dateForInput(input) {
+  const date = typeof input === 'string' ? new Date(input) : input
+
   let day = date.getDate()
   let month = date.getMonth() + 1
   day = day < 10 ? `0${day}` : day
