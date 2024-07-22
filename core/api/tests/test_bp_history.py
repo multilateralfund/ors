@@ -2,8 +2,7 @@ import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from core.api.tests.factories import BPRecordFactory
-from core.models.business_plan import BusinessPlan, BPHistory, BPRecord
+from core.models.business_plan import BusinessPlan, BPHistory
 
 pytestmark = pytest.mark.django_db
 
@@ -23,10 +22,8 @@ class TestBPHistory:
 
     def test_create_history(self, user, second_user, _setup_new_business_plan_create):
         VALIDATION_LIST = [
-            ("created by user", 3, 1, user.username),
-            ("comments updated", 2, 1, user.username),
-            ("updated by user", 1, 1, second_user.username),
-            ("comments updated", 0, 1, second_user.username),
+            ("created by user", 1, 1, user.username),
+            ("updated by user", 0, 1, second_user.username),
         ]
 
         # create new business plan
@@ -35,21 +32,6 @@ class TestBPHistory:
         response = self.client.post(url, _setup_new_business_plan_create, format="json")
         assert response.status_code == 201
         business_plan_id = response.data["id"]
-
-        # add comment
-        bp_record = BPRecordFactory(
-            business_plan_id=business_plan_id, status=BPRecord.Status.approved
-        )
-        url = reverse("business-plan-comments", kwargs={"id": bp_record.id})
-        response = self.client.post(
-            url,
-            {
-                "comment_type": "comment_secretariat",
-                "comment": "Test comment",
-            },
-            format="json",
-        )
-        assert response.status_code == 201
 
         # update business plan
         self.client.force_authenticate(user=second_user)
@@ -61,22 +43,7 @@ class TestBPHistory:
         assert response.status_code == 200
         new_id = response.data["id"]
 
-        # add other comment
-        bp_record = BPRecordFactory(
-            business_plan_id=new_id, status=BPRecord.Status.approved
-        )
-        url = reverse("business-plan-comments", kwargs={"id": bp_record.id})
-        response = self.client.post(
-            url,
-            {
-                "comment_type": "comment_secretariat",
-                "comment": "Test comment 2",
-            },
-            format="json",
-        )
-        assert response.status_code == 201
-
-        # check 3 history objects created
+        # check 2 history objects created
         history = BPHistory.objects.filter(business_plan_id=new_id)
         assert history.count() == len(VALIDATION_LIST)
 

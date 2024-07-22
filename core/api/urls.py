@@ -19,7 +19,6 @@ from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
 from core.api.views.agency import AgencyListView
 from core.api.views.business_plan import (
-    BPCommentsView,
     BPFileDownloadView,
     BPFileView,
     BPRecordViewSet,
@@ -333,11 +332,6 @@ urlpatterns = [
         "^project-files/(?P<pk>[^/]+)/$",
         ProjectFileView.as_view(),
         name="project-files",
-    ),
-    path(
-        "business-plan/<int:id>/comments/",
-        BPCommentsView.as_view(),
-        name="business-plan-comments",
     ),
     path(
         "business-plan/<int:id>/file/",

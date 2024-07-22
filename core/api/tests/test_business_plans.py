@@ -192,6 +192,8 @@ def setup_bp_record_create(
         "reason_for_exceeding": "Planu, planu, planu, planu, planu",
         "remarks": "Merge bine, bine, bine ca aeroplanu",
         "remarks_additional": "Poate si la anu / Daca merge bine planu stau ca barosanu.",
+        "comment_agency": "Alo, alo",
+        "comment_secretariat": "Te-am sunat sa-ti spun",
         "values": [
             {
                 "year": 2020,
@@ -273,6 +275,8 @@ class TestBPRecordCreate:
             response.data["remarks_additional"]
             == "Poate si la anu / Daca merge bine planu stau ca barosanu."
         )
+        assert response.data["comment_agency"] == "Alo, alo"
+        assert response.data["comment_secretariat"] == "Te-am sunat sa-ti spun"
         assert response.data["values"][0]["year"] == 2020
         assert response.data["values"][1]["year"] == 2021
 
@@ -329,6 +333,7 @@ class TestBPRecordUpdate:
         data["status"] = "P"
         data["is_multi_year"] = True
         data["remarks"] = "Merge rau"
+        data["comment_agency"] = "Nu inchide telefonu"
         data["values"] = [
             {
                 "year": 2022,
@@ -347,6 +352,7 @@ class TestBPRecordUpdate:
         assert response.data["status"] == "P"
         assert response.data["is_multi_year"] is True
         assert response.data["remarks"] == "Merge rau"
+        assert response.data["comment_agency"] == "Nu inchide telefonu"
         assert response.data["values"][0]["year"] == 2022
 
 
@@ -459,6 +465,8 @@ def setup_bp_record_list(
                 "reason_for_exceeding": f"Planu, planu, planu, planu, planu{i}",
                 "remarks": f"Merge bine, bine, bine ca aeroplanu{i}",
                 "remarks_additional": f"Poate si la anu / Daca merge bine planu stau ca barosanu.{i}",
+                "comment_agency": f"Alo, alo{i}",
+                "comment_secretariat": f"Te-am sunat sa-ti spun{i}",
             }
             bp_record = BPRecordFactory.create(**data)
             bp_record.substances.set([substance])
@@ -647,6 +655,7 @@ class TestBPUpdate:
         record_data["status"] = "P"
         record_data["is_multi_year"] = True
         record_data["remarks"] = "Merge rau"
+        record_data["comment_agency"] = "Nu inchide telefonu"
         record_data["values"] = [
             {
                 "year": 2022,
@@ -673,6 +682,7 @@ class TestBPUpdate:
         assert records[0]["status"] == "P"
         assert records[0]["is_multi_year"] is True
         assert records[0]["remarks"] == "Merge rau"
+        assert records[0]["comment_agency"] == "Nu inchide telefonu"
         assert records[0]["values"][0]["year"] == 2022
 
         mock_send_mail_bp_update.assert_called_once()

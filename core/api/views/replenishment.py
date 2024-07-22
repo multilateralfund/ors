@@ -447,7 +447,8 @@ class ReplenishmentInvoiceViewSet(viewsets.GenericViewSet, mixins.ListModelMixin
     ]
     ordering_fields = [
         "amount",
-        "comuntry__name" "date_of_issuance",
+        "country__name",
+        "date_of_issuance",
         "date_sent",
     ]
     search_fields = ["number"]

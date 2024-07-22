@@ -143,8 +143,6 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
     bp_chemical_type = BPChemicalTypeSerializer()
     is_multi_year_display = serializers.SerializerMethodField()
     status_display = serializers.SerializerMethodField()
-    comment_agency = serializers.CharField(read_only=True)
-    comment_secretariat = serializers.CharField(read_only=True)
 
     substances = serializers.SlugRelatedField("name", many=True, read_only=True)
     blends = serializers.SlugRelatedField(slug_field="name", many=True, read_only=True)
@@ -245,6 +243,8 @@ class BPRecordCreateSerializer(serializers.ModelSerializer):
             "reason_for_exceeding",
             "remarks",
             "remarks_additional",
+            "comment_agency",
+            "comment_secretariat",
             "values",
         ]
 
@@ -308,15 +308,6 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
         self._create_bp_records(business_plan, records)
 
         return business_plan
-
-
-class BPCommentsSerializer(serializers.ModelSerializer):
-    comment_agency = serializers.CharField(required=False, allow_blank=True)
-    comment_secretariat = serializers.CharField(required=False, allow_blank=True)
-
-    class Meta:
-        model = BPRecord
-        fields = ["comment_agency", "comment_secretariat"]
 
 
 class BPFileSerializer(serializers.ModelSerializer):
