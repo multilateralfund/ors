@@ -898,3 +898,6 @@ class TestReplenishmentDashboard(BaseTest):
         ).quantize(self.fifteen_decimals)
 
         assert response.data == correct_response
+
+class TestScaleOfAssessmentWorkflow(BaseTest):
+    url = reverse("replenishment-scales-of-assessment-list")

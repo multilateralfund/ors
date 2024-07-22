@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from django.db import models, transaction
-from rest_framework import viewsets, mixins, views
+from rest_framework import viewsets, mixins, views, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
@@ -58,34 +58,28 @@ class ReplenishmentViewSet(
 
     @transaction.atomic
     def perform_create(self, serializer):
-        if Replenishment.objects.filter(
-            start_year=serializer.validated_data["start_year"],
-        ).exists():
-            raise ValidationError("A replenishment already exists for this start year.")
-
-        try:
-            previous_replenishment = Replenishment.objects.get(
-                start_year=serializer.validated_data["start_year"] - 3
-            )
-        except Replenishment.DoesNotExist:
-            raise ValidationError(
-                "There is no previous replenishment, something went wrong."
-            )
-
+        previous_replenishment = Replenishment.objects.order_by("-start_year").first()
         try:
             previous_replenishment_final_version = (
                 previous_replenishment.scales_of_assessment_versions.get(is_final=True)
             )
         except ScaleOfAssessmentVersion.DoesNotExist:
             raise ValidationError(
-                "There is no final version for the previous replenishment, something went wrong."
+                {
+                    "non_field_errors": "The current replenishment hasn't been finalized yet."
+                }
             )
         except ScaleOfAssessmentVersion.MultipleObjectsReturned:
             raise ValidationError(
-                "There are multiple final versions for the previous replenishment, something went wrong."
+                {
+                    "non_field_errors": "There are multiple final versions for the previous replenishment, something went wrong."
+                }
             )
 
-        new_replenishment = serializer.save()
+        new_replenishment = serializer.save(
+            start_year=previous_replenishment.start_year + 3,
+            end_year=previous_replenishment.end_year + 3,
+        )
 
         # Create draft version
         new_version = ScaleOfAssessmentVersion.objects.create(
@@ -109,9 +103,11 @@ class ReplenishmentViewSet(
         ScaleOfAssessment.objects.bulk_create(new_scales_of_assessment)
 
 
-class ScaleOfAssessmentViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class ScaleOfAssessmentViewSet(
+    viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin
+):
     """
-    Viewset for all contributions that are available.
+    Viewset for all scales of assessment.
     """
 
     model = ScaleOfAssessment
@@ -125,6 +121,53 @@ class ScaleOfAssessmentViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
                 "country", "version__replenishment"
             ).order_by("country__name")
         return ScaleOfAssessment.objects.none()
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        input_data = request.data
+
+        replenishment_qs = Replenishment.objects.filter(id=input_data["replenishment_id"])
+        if not replenishment_qs.exists():
+            raise ValidationError({"replenishment_id": "Replenishment does not exist."})
+
+        replenishment_qs.update(amount=input_data["amount"])
+        replenishment = replenishment_qs.first()
+
+        should_create_new_version = input_data.get("createNewVersion")
+        if should_create_new_version:
+            version = ScaleOfAssessmentVersion.objects.create(
+                replenishment=replenishment
+            )
+        else:
+            # TODO: Ask if we should get the latest version or
+            # intermediate versions can be updated
+            version = replenishment.scales_of_assessment_versions.order_by(
+                "-version"
+            ).first()
+
+        # Delete all scales of assessment if updating the latest version
+        if not should_create_new_version:
+            version.scales_of_assessment.all().delete()
+
+        serializer = ScaleOfAssessmentSerializer(data=input_data["data"], many=True)
+        serializer.is_valid(raise_exception=True)
+        scales_of_assessment = [
+            ScaleOfAssessment(version=version, **scale_of_assessment)
+            for scale_of_assessment in serializer.validated_data
+        ]
+
+        ScaleOfAssessment.objects.bulk_create(scales_of_assessment)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            {},
+            status=(
+                status.HTTP_201_CREATED
+                if should_create_new_version
+                else status.HTTP_200_OK
+            ),
+            headers=headers,
+        )
 
 
 class AnnualStatusOfContributionsView(views.APIView):
