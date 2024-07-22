@@ -53,7 +53,7 @@ export function Select(props) {
   const withClear = hasClear && value
 
   return (
-    <div className="relative">
+    <div className="relative flex flex-1">
       <select
         id={id}
         name={name || id}
