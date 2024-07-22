@@ -111,7 +111,6 @@ class Invoice(models.Model):
         Country, on_delete=models.PROTECT, related_name="invoices"
     )
 
-    # TODO: probably need to change this! Can an invoice not be related to a triennial?
     replenishment = models.ForeignKey(
         Replenishment, on_delete=models.PROTECT, null=True, related_name="invoices"
     )
