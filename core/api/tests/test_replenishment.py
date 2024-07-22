@@ -919,10 +919,10 @@ class TestInvoices(BaseTest):
             start_year=self.year_3, end_year=self.year_4
         )
 
-        invoice_1 = InvoiceFactory(
+        InvoiceFactory(
             country=country_1, replenishment=replenishment_1, number="aaa-yyy-1"
         )
-        invoice_2 = InvoiceFactory(
+        InvoiceFactory(
             country=country_2, replenishment=replenishment_2, number="aaa-yyy-2"
         )
 
