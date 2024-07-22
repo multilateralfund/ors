@@ -152,7 +152,7 @@ export default function BPRecord({ params }: BPRecordProps) {
                 <div>
                   <Label>Approved / Planned</Label>
                   <Typography className="font-bold">
-                    {data.bp_type_display}
+                    {data.status_display}
                   </Typography>
                 </div>
                 <div>
