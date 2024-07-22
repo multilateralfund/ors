@@ -23,9 +23,9 @@ export function Field(props) {
 }
 
 export function Select(props) {
-  const { id, children, className, hasClear, name, onChange, ...rest } = props
+  const { id, children, className, defaultValue, hasClear, name, onChange, ...rest } = props
   const selectRef = useRef(null)
-  const [value, setValue] = useState('')
+  const [value, setValue] = useState(defaultValue || '')
 
   const handleClear = () => {
     if (selectRef.current) {

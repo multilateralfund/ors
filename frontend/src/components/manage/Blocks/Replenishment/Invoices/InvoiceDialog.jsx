@@ -6,14 +6,19 @@ import {
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
 
 const InvoiceDialog = function InvoiceDialog(props) {
-  const { columns, countries, data, title, ...dialogProps } = props
+  const { columns, countries, data, isEdit, title, ...dialogProps } = props
 
   return (
     <FormDialog title={title} {...dialogProps}>
-      <FieldSelect id="iso3" defaultValue={data?.iso3} label="Country" required>
+      <FieldSelect
+        id="country_id"
+        defaultValue={data?.country_id}
+        label={columns[0].label}
+        required
+      >
         <option value=""> - </option>
         {countries.map((c) => (
-          <option key={c.iso3} value={c.iso3}>
+          <option key={c.id} value={c.id}>
             {c.name_alt}
           </option>
         ))}
@@ -21,7 +26,7 @@ const InvoiceDialog = function InvoiceDialog(props) {
       <FieldInput
         id="invoice_number"
         defaultValue={data?.invoice_number}
-        label="Invoice number"
+        label={columns[1].label}
         type="text"
         required
       />
@@ -33,37 +38,37 @@ const InvoiceDialog = function InvoiceDialog(props) {
         disabled
       />
       <FieldInput
-        id="date"
-        defaultValue={data?.date}
-        label="Date"
+        id="date_of_issuance"
+        defaultValue={data?.date_of_issuance}
+        label={columns[2].label}
         type="date"
         required
       />
       <FieldInput
         id="amount"
         defaultValue={data?.amount}
-        label={columns[2].label}
+        label={columns[3].label}
         type="number"
         required
       />
       <FieldInput
         id="currency"
         defaultValue={data?.currency}
-        label={columns[3].label}
+        label={columns[4].label}
         type="text"
         required
       />
       <FieldInput
         id="exchange_rate"
         defaultValue={data?.exchange_rate}
-        label={columns[4].label}
+        label={columns[5].label}
         step="0.001"
         type="number"
         required
       />
       <FieldInput
-        id="sent_on"
-        defaultValue={data?.sent_on}
+        id="date_sent_out"
+        defaultValue={data?.date_sent_out}
         label="Sent out"
         type="date"
         required

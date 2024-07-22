@@ -9,23 +9,23 @@ import {
 import { AddButton, DeleteButton } from '@ors/components/ui/Button/Button'
 
 function InvoiceAttachments() {
-  const [files, setFiles] = useState([{ id: 1 }])
+  const [files, setFiles] = useState([])
   const [selected, setSelected] = useState([])
 
   function handleNewFileField() {
-    setFiles((prev) => [...prev, { id: [...prev].pop().id + 1 }])
+    setFiles((prev) => {
+      const newId = prev.length > 0 ? prev[prev.length - 1].id + 1 : 1
+      return [...prev, { id: newId }]
+    })
   }
 
   function handleDeleteSelectedFileFields() {
-    setFiles(function (prev) {
+    setFiles((prev) => {
       const result = []
-      for (let i = 0; i < files.length; i++) {
+      for (let i = 0; i < prev.length; i++) {
         if (!selected.includes(i)) {
-          result.push(files[i])
+          result.push(prev[i])
         }
-      }
-      if (result.length === 0) {
-        result.push({ id: 1 })
       }
       return result
     })
@@ -34,7 +34,7 @@ function InvoiceAttachments() {
 
   function handleToggleSelected(idx) {
     function toggle() {
-      setSelected(function (prev) {
+      setSelected((prev) => {
         const result = []
         let removed = false
         for (let i = 0; i < prev.length; i++) {
@@ -64,7 +64,7 @@ function InvoiceAttachments() {
           type="button"
           onClick={handleNewFileField}
         >
-          Add another
+          {files ? 'Add another file' : 'Add file'}
         </AddButton>
         {selected.length ? (
           <DeleteButton
@@ -87,7 +87,7 @@ function InvoiceAttachments() {
                 <option value="invoice">Invoice</option>
                 <option value="reminder">Reminder</option>
               </Select>
-              <Input id={`file_${i}`} type="file" />
+              <Input id={`file_${i}`} type="file" required />
               <Input
                 id={`file_chk_${i}`}
                 checked={selected.includes(i)}

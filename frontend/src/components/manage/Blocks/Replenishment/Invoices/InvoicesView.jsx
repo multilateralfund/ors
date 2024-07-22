@@ -17,7 +17,6 @@ import {
   dateForEditField,
   formatDateValue,
   formatNumberValue,
-  getCountryForIso3,
   numberForEditField,
 } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { AddButton } from '@ors/components/ui/Button/Button'
@@ -49,7 +48,7 @@ const AddInvoiceDialog = function AddInvoiceDialog(props) {
 }
 
 const EditInvoiceDialog = function EditInvoiceDialog(props) {
-  return <InvoiceDialog title="Edit invoice" {...props} />
+  return <InvoiceDialog title="Edit invoice" isEdit {...props} />
 }
 
 function InvoicesView() {
@@ -115,7 +114,7 @@ function InvoicesView() {
   }, [])
 
   const [sortOn, setSortOn] = useState(2)
-  const [sortDirection, setSortDirection] = useState(1)
+  const [sortDirection, setSortDirection] = useState(-1)
 
   const [editIdx, setEditIdx] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
@@ -142,9 +141,9 @@ function InvoicesView() {
     entry.date_sent_out = formatDateValue(entry.date_sent_out)
     entry.reminder = formatDateValue(entry.reminder)
     entry.amount = formatNumberValue(entry.amount)
-    entry.country = getCountryForIso3(entry.iso3, ctx.countries)?.name_alt
     // setTableData((prev) => [entry, ...prev])
     setShowAdd(false)
+    console.log('Add invoice', entry)
   }
 
   function handleDeleteInvoice(idx) {
@@ -167,13 +166,25 @@ function InvoicesView() {
     entry.date_of_issuance = formatDateValue(entry.date_of_issuance)
     entry.date_sent_out = formatDateValue(entry.date_sent_out)
     entry.amount = formatNumberValue(entry.amount)
-    entry.country = getCountryForIso3(entry.iso3, ctx.countries)?.name_alt
+
+    const file_fields = Object.keys(entry).filter(
+      (key) => key.startsWith('file_') && !key.startsWith('file_type'),
+    )
+
+    const files = []
+    for (let i = 0; i < file_fields.length; i++) {
+      files.push({ file: entry[`file_${i}`], type: entry[`file_type_${i}`] })
+      delete entry[`file_${i}`]
+      delete entry[`file_type_${i}`]
+    }
+    entry.files = files
 
     const next = [...memoResults]
     next[editIdx] = entry
 
     // setTableData(next)
     setEditIdx(null)
+    console.log('Edit invoice', entry)
   }
 
   function handleSearchInput(evt) {
