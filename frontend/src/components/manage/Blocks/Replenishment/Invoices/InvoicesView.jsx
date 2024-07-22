@@ -31,15 +31,15 @@ import { IoSearchSharp } from 'react-icons/io5'
 const COLUMNS = [
   { field: 'country', label: 'Country' },
   { field: 'number', label: 'Invoice number' },
-  { field: 'date', label: 'Date of issuance' },
-  { field: 'amount', label: 'Amount' },
+  { field: 'date', label: 'Date of issuance', sortable: true },
+  { field: 'amount', label: 'Amount', sortable: true },
   { field: 'currency', label: 'Currency' },
   {
     field: 'exchange_rate',
     label: 'Exchange Rate',
     subLabel: '(FERM)',
   },
-  { field: 'sent_on', label: 'Sent on' },
+  { field: 'sent_on', label: 'Sent on', sortable: true },
   { field: 'reminder', label: 'Reminder sent on' },
   { field: 'files', label: 'Files' },
 ]
@@ -295,12 +295,18 @@ function InvoicesView() {
         rowData={sortedTableData}
         sortDirection={sortDirection}
         sortOn={sortOn}
+        sortableColumns={COLUMNS.reduce((acc, col, idx) => {
+          if (col.sortable) {
+            acc.push(idx)
+          }
+          return acc
+        }, [])}
         onDelete={handleDeleteInvoice}
         onEdit={showEditInvoiceDialog}
         onSort={handleSort}
       />
       {!!pages && pages > 1 && (
-        <div className="flex items-center justify-center print:hidden">
+        <div className="flex items-center justify-start print:hidden mt-6">
           <Pagination
             count={pages}
             page={pagination.page}

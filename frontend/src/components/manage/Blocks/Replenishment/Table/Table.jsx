@@ -70,6 +70,7 @@ function Table(props) {
     rowData,
     sortDirection,
     sortOn,
+    sortableColumns,
     textPosition,
   } = props
 
@@ -142,6 +143,7 @@ function Table(props) {
             enableSort={enableSort}
             sortDirection={sortDirection}
             sortOn={sortOn}
+            sortableColumns={sortableColumns}
             onSort={onSort}
           />
         </tr>
