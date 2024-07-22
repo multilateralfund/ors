@@ -453,7 +453,7 @@ class ReplenishmentInvoiceViewSet(
     ]
     ordering_fields = [
         "amount",
-        "comuntry__name",
+        "country__name",
         "date_of_issuance",
         "date_sent_out",
     ]
