@@ -1,8 +1,10 @@
+import urllib
 from decimal import Decimal
 
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db import models, transaction
-from rest_framework import filters, mixins, status, views, viewsets
+from django.http import HttpResponse
+from rest_framework import filters, generics, mixins, status, views, viewsets
 from rest_framework.response import Response
 
 from core.api.filters.replenishments import (
@@ -550,6 +552,23 @@ class ReplenishmentInvoiceViewSet(
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+
+
+class ReplenishmentInvoiceFileDownloadView(generics.RetrieveAPIView):
+    # TODO: add proper permission_classes
+    queryset = InvoiceFile.objects.all()
+    lookup_field = "id"
+
+    def get(self, request, *args, **kwargs):
+        obj = self.get_object()
+        response = HttpResponse(
+            obj.file.read(), content_type="application/octet-stream"
+        )
+        file_name = urllib.parse.quote(obj.filename)
+        response["Content-Disposition"] = (
+            f"attachment; filename*=UTF-8''{file_name}; filename=\"{file_name}\""
+        )
+        return response
 
 
 class ReplenishmentPaymentViewSet(

@@ -1,7 +1,15 @@
+from django.urls import reverse
 from rest_framework import serializers
 
 from core.api.serializers.country import CountrySerializer
-from core.models import Country, Invoice, Payment, Replenishment, ScaleOfAssessment
+from core.models import (
+    Country,
+    Invoice,
+    InvoiceFile,
+    Payment,
+    Replenishment,
+    ScaleOfAssessment,
+)
 
 
 class ReplenishmentSerializer(serializers.ModelSerializer):
@@ -45,6 +53,22 @@ class ScaleOfAssessmentSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class InvoiceFileSerializer(serializers.ModelSerializer):
+    download_url = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = InvoiceFile
+        fields = [
+            "id",
+            "filename",
+            "file_type",
+            "download_url",
+        ]
+
+    def get_download_url(self, obj):
+        return reverse("replenishment-invoice-file-download", args=(obj.id,))
+
+
 class InvoiceSerializer(serializers.ModelSerializer):
     country = CountrySerializer(read_only=True)
 
@@ -60,9 +84,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
     number = serializers.ReadOnlyField()
 
-    invoice_files = serializers.SlugRelatedField(
-        slug_field="filename", many=True, read_only=True
-    )
+    invoice_files = InvoiceFileSerializer(many=True, read_only=True)
 
     class Meta:
         model = Invoice

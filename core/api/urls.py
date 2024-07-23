@@ -14,6 +14,7 @@ from core.api.views import (
     SummaryStatusOfContributionsView,
     ReplenishmentDashboardView,
     ReplenishmentInvoiceViewSet,
+    ReplenishmentInvoiceFileDownloadView,
     ReplenishmentPaymentViewSet,
 )
 from core.api.views import ProjectCommentViewSet
@@ -113,7 +114,7 @@ router.register(
 router.register(
     "replenishment/payments",
     ReplenishmentPaymentViewSet,
-    basename="replenishment-payments"
+    basename="replenishment-payments",
 )
 
 
@@ -379,6 +380,11 @@ urlpatterns = [
         "replenishment/status-of-contributions/<int:year>/",
         AnnualStatusOfContributionsView.as_view(),
         name="replenishment-status-of-contributions-annual",
+    ),
+    path(
+        "replenishment/invoice-file/<int:id>/download/",
+        ReplenishmentInvoiceFileDownloadView.as_view(),
+        name="replenishment-invoice-file-download",
     ),
     *router.urls,
 ]
