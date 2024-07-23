@@ -14,6 +14,7 @@ from core.api.views import (
     SummaryStatusOfContributionsView,
     ReplenishmentDashboardView,
     ReplenishmentInvoiceViewSet,
+    ReplenishmentPaymentViewSet,
 )
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
@@ -108,6 +109,11 @@ router.register(
     "replenishment/invoices",
     ReplenishmentInvoiceViewSet,
     basename="replenishment-invoices",
+)
+router.register(
+    "replenishment/payments",
+    ReplenishmentPaymentViewSet,
+    basename="replenishment-payments"
 )
 
 

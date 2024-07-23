@@ -147,10 +147,6 @@ class InvoiceFile(models.Model):
     )
 
 
-# class InvoiceReminder(models.Model):
-#     pass
-
-
 class Payment(models.Model):
     country = models.ForeignKey(
         Country, on_delete=models.PROTECT, related_name="payments"

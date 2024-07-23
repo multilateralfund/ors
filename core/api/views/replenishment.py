@@ -5,11 +5,16 @@ from django.db import models, transaction
 from rest_framework import filters, mixins, status, views, viewsets
 from rest_framework.response import Response
 
-from core.api.filters.replenishments import InvoiceFilter, ScaleOfAssessmentFilter
+from core.api.filters.replenishments import (
+    InvoiceFilter,
+    PaymentFilter,
+    ScaleOfAssessmentFilter,
+)
 from core.api.serializers import (
     CountrySerializer,
     InvoiceSerializer,
     InvoiceCreateSerializer,
+    PaymentSerializer,
     ReplenishmentSerializer,
     ScaleOfAssessmentSerializer,
 )
@@ -22,6 +27,7 @@ from core.models import (
     FermGainLoss,
     Invoice,
     InvoiceFile,
+    Payment,
     Replenishment,
     ScaleOfAssessment,
     TriennialContributionStatus,
@@ -544,3 +550,36 @@ class ReplenishmentInvoiceViewSet(
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+
+
+class ReplenishmentPaymentViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    Viewset for all the payments.
+    """
+
+    model = Payment
+    serializer_class = PaymentSerializer
+    filterset_class = PaymentFilter
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.OrderingFilter,
+    ]
+    ordering_fields = [
+        "amount",
+        "country__name",
+    ]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Payment.objects.all()
+        if user.user_type == user.UserType.COUNTRY_USER:
+            queryset = queryset.filter(country_id=user.country_id)
+
+        return queryset.select_related("country", "replenishment")
