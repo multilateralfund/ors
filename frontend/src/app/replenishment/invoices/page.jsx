@@ -7,6 +7,8 @@ import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export default function ReplenishmentInvoices() {
   return (
+    <>
+      <title>Replenishment - Invoices</title>
     <PageWrapper className="w-full p-4" defaultSpacing={false}>
       <ReplenishmentHeading
         extraPeriodOptions={[{ label: 'All', value: '' }]}
@@ -17,5 +19,6 @@ export default function ReplenishmentInvoices() {
       <DownloadButtons />
       <InvoicesView />
     </PageWrapper>
+    </>
   )
 }
