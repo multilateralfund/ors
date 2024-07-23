@@ -105,7 +105,6 @@ const InvoiceDialog = function InvoiceDialog(props) {
         defaultValue={data?.reminder}
         label="Reminder"
         type="date"
-        required
       />
       <h5>Files</h5>
       <InvoiceAttachments />

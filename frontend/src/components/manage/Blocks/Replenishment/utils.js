@@ -40,11 +40,18 @@ export function formatNumberValue(value, minDigits, maxDigits) {
 }
 
 export function dateForEditField(value) {
+  if (!value) {
+    return null
+  }
   const date = new Date(Date.parse(value))
   return dateForInput(date)
 }
 
 export function dateForInput(input) {
+  if (!input) {
+    return null
+  }
+
   const date = typeof input === 'string' ? new Date(input) : input
 
   let day = date.getDate()

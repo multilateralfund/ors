@@ -123,6 +123,8 @@ function InvoicesView() {
   const [editIdx, setEditIdx] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
 
+  console.log('showAdd', showAdd)
+
   const editData = useMemo(() => {
     let entry = null
     if (editIdx !== null) {
@@ -233,8 +235,8 @@ function InvoicesView() {
       setPagination({ ...pagination, page: 1 })
       setShowAdd(false)
     } catch (error) {
+      setShowAdd(false)
       if (error.status === 400) {
-        setShowAdd(false)
         const errors = await error.json()
         setError({ ...errors })
         enqueueSnackbar(
