@@ -61,7 +61,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
     number = serializers.ReadOnlyField()
 
     invoice_files = serializers.SlugRelatedField(
-        slug_field="name", many=True, read_only=True
+        slug_field="filename", many=True, read_only=True
     )
 
     class Meta:

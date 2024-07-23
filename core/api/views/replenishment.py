@@ -14,16 +14,17 @@ from core.api.serializers import (
     ScaleOfAssessmentSerializer,
 )
 from core.models import (
-    Country,
-    Invoice,
-    Replenishment,
-    ScaleOfAssessment,
     AnnualContributionStatus,
+    Country,
     DisputedContribution,
-    TriennialContributionStatus,
-    FermGainLoss,
     ExternalIncome,
     ExternalAllocation,
+    FermGainLoss,
+    Invoice,
+    InvoiceFile,
+    Replenishment,
+    ScaleOfAssessment,
+    TriennialContributionStatus,
 )
 
 
@@ -438,6 +439,7 @@ class ReplenishmentInvoiceViewSet(
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
     """
@@ -473,18 +475,36 @@ class ReplenishmentInvoiceViewSet(
             return InvoiceCreateSerializer
         return InvoiceSerializer
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
-        files = request.data.pop("files", [])
+        number_of_files = int(request.data.get("nr_of_files", 0))
+        files = [
+            {
+                "id": None,
+                "type": request.data.get(f"files[{file_no}][type]"),
+                "contents": request.data.get(f"files[{file_no}][file]"),
+            }
+            for file_no in range(number_of_files)
+        ]
 
         serializer = InvoiceCreateSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         self.perform_create(serializer)
+        invoice = serializer.instance
 
+        # Now create the files for this Invoice
+        invoice_files = []
         for invoice_file in files:
-            # TODO: actually create the files
-            pass
+            invoice_files.append(
+                InvoiceFile(
+                    invoice=invoice,
+                    filename=invoice_file["contents"].name,
+                    file=invoice_file["contents"],
+                )
+            )
+        InvoiceFile.objects.bulk_create(invoice_files)
 
         headers = self.get_success_headers(serializer.data)
         return Response(
