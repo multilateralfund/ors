@@ -1,7 +1,7 @@
 import { getResults } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
 
-export const _PER_PAGE = 2
+export const _PER_PAGE = 5
 
 function useGetInvoices() {
   const { data, loading, setParams } = useApi({

@@ -57,7 +57,7 @@ function InvoicesView() {
   const ctx = useContext(ReplenishmentContext)
 
   const { count, loaded, results, setParams } = useGetInvoices()
-  const [error, setError] = useState(null)
+  const [_, setError] = useState(null)
   const [pagination, setPagination] = useState({
     page: 1,
     rowsPerPage: _PER_PAGE,
@@ -146,30 +146,42 @@ function InvoicesView() {
     entry.date_of_issuance = dateForInput(entry.date_of_issuance)
     entry.date_sent_out = dateForInput(entry.date_sent_out)
 
-    const file_fields = Object.keys(entry).filter(
-      (key) => key.startsWith('file_') && !key.startsWith('file_type'),
-    )
-
-    // Add files to entry
-
-    const files = []
-    for (let i = 0; i < file_fields.length; i++) {
-      files.push({ file: entry[`file_${i}`], type: entry[`file_type_${i}`] })
-      delete entry[`file_${i}`]
-      delete entry[`file_type_${i}`]
+    const data = new FormData()
+    for (const key in entry) {
+      if (!key.startsWith('file_')) {
+        data.append(key, entry[key])
+      }
     }
-    entry.files = files
+
+    // Append files with their types
+    for (const key in entry) {
+      if (key.startsWith('file_') && entry[key] instanceof File) {
+        const fileIndex = key.split('_')[1]
+        const fileTypeKey = `file_type_${fileIndex}`
+        if (entry[fileTypeKey]) {
+          data.append(`files[${fileIndex}][file]`, entry[key])
+          data.append(`files[${fileIndex}][type]`, entry[fileTypeKey])
+        }
+      }
+    }
 
     try {
-      await api(`api/replenishment/invoices/${entry.id}/`, {
-        data: entry,
+      const csrftoken = Cookies.get('csrftoken')
+      await fetch(formatApiUrl(`api/replenishment/invoices/${entry.id}/`), {
+        body: data,
+        credentials: 'include',
+        headers: {
+          ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
+        },
         method: 'PUT',
       })
       enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
       setParams({
         offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,
       })
+      setShowAdd(false)
     } catch (error) {
+      setShowAdd(false)
       if (error.status === 400) {
         const errors = await error.json()
         setError({ ...errors })
@@ -226,7 +238,7 @@ function InvoicesView() {
         headers: {
           ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
         },
-        method: 'POST',
+        method: 'PUT',
       })
       enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
       setParams({
