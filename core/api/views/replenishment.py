@@ -1,3 +1,4 @@
+import json
 import urllib
 from decimal import Decimal
 
@@ -484,6 +485,17 @@ class ReplenishmentInvoiceViewSet(
             return InvoiceCreateSerializer
         return InvoiceSerializer
 
+    def _parse_invoice_new_files(self, request):
+        number_of_files = int(request.data.get("nr_new_files", 0))
+        files = [
+            {
+                "type": request.data.get(f"files[{file_no}][type]"),
+                "contents": request.data.get(f"files[{file_no}][file]"),
+            }
+            for file_no in range(number_of_files)
+        ]
+        return files
+
     def _create_new_invoice_files(self, invoice, files_list):
         invoice_files = []
         for invoice_file in files_list:
@@ -498,15 +510,7 @@ class ReplenishmentInvoiceViewSet(
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        number_of_files = int(request.data.get("nr_of_files", 0))
-        files = [
-            {
-                "id": None,
-                "type": request.data.get(f"files[{file_no}][type]"),
-                "contents": request.data.get(f"files[{file_no}][file]"),
-            }
-            for file_no in range(number_of_files)
-        ]
+        files = self._parse_invoice_new_files(request)
 
         serializer = InvoiceCreateSerializer(data=request.data)
         if not serializer.is_valid():
@@ -525,31 +529,23 @@ class ReplenishmentInvoiceViewSet(
         )
 
     @transaction.atomic
-    def put(self, request, *args, **kwargs):
+    def update(self, request, *args, **kwargs):
         current_obj = self.get_object()
 
-        files = request.data.pop("files", [])
+        new_files = self._parse_invoice_new_files(request)
+        files_to_delete = json.loads(request.data.get("deleted_files", "[]"))
 
+        # First perform the update for the Invoice fields
         serializer = InvoiceCreateSerializer(current_obj, data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         self.perform_update(serializer)
 
-        # TODO: update files
-        # Delete files no longer present; create new files
-        # TODO: also exclude None from the set
-        new_file_ids = set(f["id"] for f in files)
-        existing_file_ids = set(
-            current_obj.invoice_files.objects.values_list("id", flat=True)
-        )
+        # Now create the new files for this Invoice
+        self._create_new_invoice_files(current_obj, new_files)
 
-        files_to_delete = existing_file_ids.difference(new_file_ids)
-        current_obj.invoice_files.objects.delete(id__in=files_to_delete)
-
-        for invoice_file in files:
-            if invoice_file.get("id", None) is None:
-                # TODO: actually create this file
-                pass
+        # And delete the ones that need to be deleted
+        current_obj.invoice_files.filter(id__in=files_to_delete).delete()
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
