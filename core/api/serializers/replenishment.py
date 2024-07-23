@@ -155,8 +155,8 @@ class PaymentFileSerializer(serializers.ModelSerializer):
 
 
 class PaymentSerializer(serializers.ModelSerializer):
-    country_id = CountrySerializer(read_only=True)
-    replenishment_id = ReplenishmentSerializer(read_only=True)
+    country = CountrySerializer(read_only=True)
+    replenishment = ReplenishmentSerializer(read_only=True)
 
     gain_or_loss = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
@@ -174,8 +174,8 @@ class PaymentSerializer(serializers.ModelSerializer):
         model = Payment
         fields = [
             "id",
-            "country_id",
-            "replenishment_id",
+            "country",
+            "replenishment",
             "date",
             "payment_for_year",
             "gain_or_loss",
