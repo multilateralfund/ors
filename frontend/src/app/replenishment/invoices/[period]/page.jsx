@@ -2,7 +2,7 @@
 
 import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
 import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
-import InvoicesView from '@ors/components/manage/Blocks/Replenishment/InvoicesView'
+import InvoicesView from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoicesView'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export default function ReplenishmentInvoices(props) {

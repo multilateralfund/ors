@@ -3,8 +3,14 @@ import cx from 'classnames'
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
 
 export default function HeaderCells(props) {
-  const { columns, enableSort, onSort, sortDirection, sortOn } = props
-
+  const {
+    columns,
+    enableSort,
+    onSort,
+    sortDirection,
+    sortOn,
+    sortableColumns,
+  } = props
   const sortIcon =
     sortDirection > 0 ? (
       <IoChevronDown className="min-w-8 text-secondary" size={18} />
@@ -15,14 +21,20 @@ export default function HeaderCells(props) {
   const hCols = []
 
   for (let i = 0; i < columns.length; i++) {
+    const isSortable = sortableColumns
+      ? sortableColumns.includes(i)
+      : enableSort
+
     hCols.push(
       <th
         key={i}
         className={cx('relative', columns[i].className, {
-          'cursor-pointer': enableSort,
+          'cursor-pointer': isSortable,
         })}
-        onClick={function () {
-          enableSort && onSort(i)
+        onClick={() => {
+          if (isSortable) {
+            onSort(i);
+          }
         }}
       >
         {columns[i].label}{' '}

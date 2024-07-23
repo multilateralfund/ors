@@ -118,3 +118,11 @@ nav.toc {
 .hash-link:hover::before {
   @apply visible;
 }
+
+.placeholder-select:invalid {
+  @apply text-gray-500;
+}
+
+.placeholder-select:valid {
+  @apply text-primary;
+}

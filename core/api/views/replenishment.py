@@ -1,29 +1,40 @@
+import json
+import urllib
 from decimal import Decimal
 
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db import models, transaction
-from rest_framework import filters, mixins, status, views, viewsets
+from django.http import HttpResponse
+from rest_framework import filters, generics, mixins, status, views, viewsets
 from rest_framework.response import Response
 
-from core.api.filters.replenishments import InvoiceFilter, ScaleOfAssessmentFilter
+from core.api.filters.replenishments import (
+    InvoiceFilter,
+    PaymentFilter,
+    ScaleOfAssessmentFilter,
+)
 from core.api.serializers import (
     CountrySerializer,
     InvoiceSerializer,
     InvoiceCreateSerializer,
+    PaymentSerializer,
     ReplenishmentSerializer,
     ScaleOfAssessmentSerializer,
 )
 from core.models import (
-    Country,
-    Invoice,
-    Replenishment,
-    ScaleOfAssessment,
     AnnualContributionStatus,
+    Country,
     DisputedContribution,
-    TriennialContributionStatus,
-    FermGainLoss,
     ExternalIncome,
     ExternalAllocation,
+    FermGainLoss,
+    Invoice,
+    InvoiceFile,
+    Payment,
+    PaymentFile,
+    Replenishment,
+    ScaleOfAssessment,
+    TriennialContributionStatus,
 )
 
 
@@ -438,6 +449,7 @@ class ReplenishmentInvoiceViewSet(
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
     """
@@ -473,17 +485,43 @@ class ReplenishmentInvoiceViewSet(
             return InvoiceCreateSerializer
         return InvoiceSerializer
 
+    def _parse_invoice_new_files(self, request):
+        number_of_files = int(request.data.get("nr_new_files", 0))
+        files = [
+            {
+                "type": request.data.get(f"files[{file_no}][type]"),
+                "contents": request.data.get(f"files[{file_no}][file]"),
+            }
+            for file_no in range(number_of_files)
+        ]
+        return files
+
+    def _create_new_invoice_files(self, invoice, files_list):
+        invoice_files = []
+        for invoice_file in files_list:
+            invoice_files.append(
+                InvoiceFile(
+                    invoice=invoice,
+                    filename=invoice_file["contents"].name,
+                    file=invoice_file["contents"],
+                )
+            )
+        InvoiceFile.objects.bulk_create(invoice_files)
+
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
-        files = request.data.pop("files", [])
+        files = self._parse_invoice_new_files(request)
 
         serializer = InvoiceCreateSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+        # First create the actual invoice
         self.perform_create(serializer)
+        invoice = serializer.instance
 
-        # TODO: now create the files!
-        # files
+        # Now create the files for this Invoice
+        self._create_new_invoice_files(invoice, files)
 
         headers = self.get_success_headers(serializer.data)
         return Response(
@@ -491,28 +529,90 @@ class ReplenishmentInvoiceViewSet(
         )
 
     @transaction.atomic
-    def put(self, request, *args, **kwargs):
+    def update(self, request, *args, **kwargs):
         current_obj = self.get_object()
 
-        files = request.data.pop("files", [])
+        new_files = self._parse_invoice_new_files(request)
+        files_to_delete = json.loads(request.data.get("deleted_files", "[]"))
 
+        # First perform the update for the Invoice fields
         serializer = InvoiceCreateSerializer(current_obj, data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         self.perform_update(serializer)
 
-        # TODO: update files
-        # Delete files no longer present; create new files
-        new_file_ids = set(f["id"] for f in files)
-        existing_file_ids = set(
-            current_obj.invoice_files.objects.values_list("id", flat=True)
-        )
-        files_to_delete = existing_file_ids.difference(new_file_ids)
+        # Now create the new files for this Invoice
+        self._create_new_invoice_files(current_obj, new_files)
 
-        for invoice_file in files:
-            if invoice_file.get("id", None) is None:
-                # TODO: actually create this file
-                pass
+        # And delete the ones that need to be deleted
+        current_obj.invoice_files.filter(id__in=files_to_delete).delete()
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+
+
+class ReplenishmentInvoiceFileDownloadView(generics.RetrieveAPIView):
+    # TODO: add proper permission_classes
+    queryset = InvoiceFile.objects.all()
+    lookup_field = "id"
+
+    def get(self, request, *args, **kwargs):
+        obj = self.get_object()
+        response = HttpResponse(
+            obj.file.read(), content_type="application/octet-stream"
+        )
+        file_name = urllib.parse.quote(obj.filename)
+        response["Content-Disposition"] = (
+            f"attachment; filename*=UTF-8''{file_name}; filename=\"{file_name}\""
+        )
+        return response
+
+
+class ReplenishmentPaymentViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    Viewset for all the payments.
+    """
+
+    model = Payment
+    serializer_class = PaymentSerializer
+    filterset_class = PaymentFilter
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.OrderingFilter,
+    ]
+    ordering_fields = [
+        "amount",
+        "country__name",
+    ]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Payment.objects.all()
+        if user.user_type == user.UserType.COUNTRY_USER:
+            queryset = queryset.filter(country_id=user.country_id)
+
+        return queryset.select_related("country", "replenishment")
+
+
+class ReplenishmentPaymentFileDownloadView(generics.RetrieveAPIView):
+    # TODO: add proper permission_classes
+    queryset = PaymentFile.objects.all()
+    lookup_field = "id"
+
+    def get(self, request, *args, **kwargs):
+        obj = self.get_object()
+        response = HttpResponse(
+            obj.file.read(), content_type="application/octet-stream"
+        )
+        file_name = urllib.parse.quote(obj.filename)
+        response["Content-Disposition"] = (
+            f"attachment; filename*=UTF-8''{file_name}; filename=\"{file_name}\""
+        )
+        return response

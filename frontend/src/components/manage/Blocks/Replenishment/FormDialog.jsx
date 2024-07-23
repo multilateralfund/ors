@@ -66,7 +66,11 @@ const FormDialog = function FormDialog(props) {
           onClick={cancelHandler}
         />
       </div>
-      <form ref={formRef} onSubmit={submitHandler}>
+      <form
+        encType="multipart/form-data"
+        ref={formRef}
+        onSubmit={submitHandler}
+      >
         {children}
         <footer className="mt-8 flex items-center justify-between border-x-0 border-b-0 border-t border-solid border-gray-200 pt-6">
           <CancelButton onClick={cancelHandler}>Cancel</CancelButton>
