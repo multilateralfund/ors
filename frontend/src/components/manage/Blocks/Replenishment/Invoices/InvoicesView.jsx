@@ -292,11 +292,19 @@ function InvoicesView() {
 
     const entry = { ...memoResults[rowId] }
 
+    console.log(entry)
+
     try {
-      await api(`api/replenishment/invoices/${entry.id}/`, {
-        data: entry,
+      const response = await api(`api/replenishment/invoices/${entry.id}/`, {
         method: 'DELETE',
       })
+      if (!response.ok) {
+        const errorData = await response.json() // Get the error details
+        const error = new Error('Request failed')
+        error.status = response.status
+        error.data = errorData
+        throw error
+      }
       enqueueSnackbar('Invoice deleted.', { variant: 'success' })
       setParams({
         offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,

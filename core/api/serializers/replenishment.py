@@ -155,8 +155,8 @@ class PaymentFileSerializer(serializers.ModelSerializer):
 
 
 class PaymentSerializer(serializers.ModelSerializer):
-    country = CountrySerializer(read_only=True)
-    replenishment = ReplenishmentSerializer(read_only=True)
+    country_id = CountrySerializer(read_only=True)
+    replenishment_id = ReplenishmentSerializer(read_only=True)
 
     gain_or_loss = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
