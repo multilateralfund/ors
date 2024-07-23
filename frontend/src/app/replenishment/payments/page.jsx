@@ -2,7 +2,7 @@
 
 import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
 import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
-import PaymentsView from '@ors/components/manage/Blocks/Replenishment/PaymentsView'
+import PaymentsView from '@ors/components/manage/Blocks/Replenishment/Payments/PaymentsView'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export default function ReplenishmentPayments() {

@@ -8,7 +8,8 @@ import {
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { AddButton, DeleteButton } from '@ors/components/ui/Button/Button'
 
-function InvoiceAttachments() {
+function InvoiceAttachments(props) {
+  const { withFileType = true } = props
   const [files, setFiles] = useState([])
   const [selected, setSelected] = useState([])
 
@@ -76,20 +77,23 @@ function InvoiceAttachments() {
           </DeleteButton>
         ) : null}
       </div>
-      <div className="">
+      <div>
         {files.map((o, i) => {
           return (
             <div
               key={o.id}
-              className={cx('flex justify-between py-2 [&_select]:ml-0')}
+              className={cx('flex gap-4 items-center justify-between pt-4')}
             >
-              <Select id={`file_type_${i}`}>
-                <option value="invoice">Invoice</option>
-                <option value="reminder">Reminder</option>
-              </Select>
-              <Input id={`file_${i}`} type="file" required />
+              {withFileType && (
+                <Select id={`file_type_${i}`} className="h-10 !ml-0">
+                  <option value="invoice">Invoice</option>
+                  <option value="reminder">Reminder</option>
+                </Select>
+              )}
+              <Input id={`file_${i}`} className="h-10 !ml-0" type="file" required />
               <Input
                 id={`file_chk_${i}`}
+                className="w-5 h-5 !ml-0"
                 checked={selected.includes(i)}
                 type="checkbox"
                 onClick={handleToggleSelected(i)}
