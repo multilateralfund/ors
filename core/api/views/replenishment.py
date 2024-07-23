@@ -30,6 +30,7 @@ from core.models import (
     Invoice,
     InvoiceFile,
     Payment,
+    PaymentFile,
     Replenishment,
     ScaleOfAssessment,
     TriennialContributionStatus,
@@ -602,3 +603,20 @@ class ReplenishmentPaymentViewSet(
             queryset = queryset.filter(country_id=user.country_id)
 
         return queryset.select_related("country", "replenishment")
+
+
+class ReplenishmentPaymentFileDownloadView(generics.RetrieveAPIView):
+    # TODO: add proper permission_classes
+    queryset = PaymentFile.objects.all()
+    lookup_field = "id"
+
+    def get(self, request, *args, **kwargs):
+        obj = self.get_object()
+        response = HttpResponse(
+            obj.file.read(), content_type="application/octet-stream"
+        )
+        file_name = urllib.parse.quote(obj.filename)
+        response["Content-Disposition"] = (
+            f"attachment; filename*=UTF-8''{file_name}; filename=\"{file_name}\""
+        )
+        return response

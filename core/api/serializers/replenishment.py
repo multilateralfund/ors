@@ -7,6 +7,7 @@ from core.models import (
     Invoice,
     InvoiceFile,
     Payment,
+    PaymentFile,
     Replenishment,
     ScaleOfAssessment,
 )
@@ -137,6 +138,22 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
         ]
 
 
+class PaymentFileSerializer(serializers.ModelSerializer):
+    download_url = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = PaymentFile
+        fields = [
+            "id",
+            "filename",
+            "file_type",
+            "download_url",
+        ]
+
+    def get_download_url(self, obj):
+        return reverse("replenishment-payment-file-download", args=(obj.id,))
+
+
 class PaymentSerializer(serializers.ModelSerializer):
     country = CountrySerializer(read_only=True)
     replenishment = ReplenishmentSerializer(read_only=True)
@@ -151,6 +168,8 @@ class PaymentSerializer(serializers.ModelSerializer):
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
 
+    payment_files = PaymentFileSerializer(many=True, read_only=True)
+
     class Meta:
         model = Payment
         fields = [
@@ -162,4 +181,5 @@ class PaymentSerializer(serializers.ModelSerializer):
             "gain_or_loss",
             "amount_local_currency",
             "amount_usd",
+            "payment_files",
         ]

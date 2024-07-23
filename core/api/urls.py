@@ -16,6 +16,7 @@ from core.api.views import (
     ReplenishmentInvoiceViewSet,
     ReplenishmentInvoiceFileDownloadView,
     ReplenishmentPaymentViewSet,
+    ReplenishmentPaymentFileDownloadView,
 )
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
@@ -385,6 +386,11 @@ urlpatterns = [
         "replenishment/invoice-file/<int:id>/download/",
         ReplenishmentInvoiceFileDownloadView.as_view(),
         name="replenishment-invoice-file-download",
+    ),
+    path(
+        "replenishment/payment-file/<int:id>/download/",
+        ReplenishmentPaymentFileDownloadView.as_view(),
+        name="replenishment-payment-file-download",
     ),
     *router.urls,
 ]
