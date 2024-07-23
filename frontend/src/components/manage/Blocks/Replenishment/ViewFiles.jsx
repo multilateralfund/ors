@@ -4,7 +4,7 @@ import { IoDocumentTextOutline } from 'react-icons/io5'
 
 export default function ViewFiles(props) {
   const { files } = props
-  console.log(files)
+
   if (!files) {
     return null
   }
