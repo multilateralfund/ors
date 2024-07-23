@@ -123,8 +123,6 @@ function InvoicesView() {
   const [editIdx, setEditIdx] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
 
-  console.log('showAdd', showAdd)
-
   const editData = useMemo(() => {
     let entry = null
     if (editIdx !== null) {
@@ -152,18 +150,21 @@ function InvoicesView() {
         data.append(key, entry[key])
       }
     }
-
-    // Append files with their types
+    let nr_of_files = 0
+    // Append files with their types [invoice, reminder]
     for (const key in entry) {
       if (key.startsWith('file_') && entry[key] instanceof File) {
         const fileIndex = key.split('_')[1]
         const fileTypeKey = `file_type_${fileIndex}`
         if (entry[fileTypeKey]) {
+          nr_of_files++
           data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
           data.append(`files[${fileIndex}][type]`, entry[fileTypeKey])
         }
       }
     }
+
+    data.append('nr_of_files', nr_of_files)
 
     try {
       const csrftoken = Cookies.get('csrftoken')
@@ -218,17 +219,21 @@ function InvoicesView() {
       }
     }
 
-    // Append files with their types
+    let nr_of_files = 0
+    // Append files with their types [invoice, reminder]
     for (const key in entry) {
       if (key.startsWith('file_') && entry[key] instanceof File) {
         const fileIndex = key.split('_')[1]
         const fileTypeKey = `file_type_${fileIndex}`
         if (entry[fileTypeKey]) {
+          nr_of_files++
           data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
           data.append(`files[${fileIndex}][type]`, entry[fileTypeKey])
         }
       }
     }
+
+    data.append('nr_of_files', nr_of_files)
 
     try {
       const csrftoken = Cookies.get('csrftoken')
@@ -238,7 +243,7 @@ function InvoicesView() {
         headers: {
           ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
         },
-        method: 'PUT',
+        method: 'POST',
       })
       enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
       setParams({
