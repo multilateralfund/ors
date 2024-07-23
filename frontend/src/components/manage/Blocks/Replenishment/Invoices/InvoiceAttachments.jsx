@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import cx from 'classnames'
 
@@ -6,11 +6,21 @@ import {
   Input,
   Select,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
-import { AddButton, DeleteButton } from '@ors/components/ui/Button/Button'
+import { AddButton } from '@ors/components/ui/Button/Button'
+import { formatApiUrl } from '@ors/helpers'
 
-function InvoiceAttachments() {
+import { IoDocumentTextOutline, IoTrash } from 'react-icons/io5'
+
+function InvoiceAttachments(props) {
   const [files, setFiles] = useState([])
-  const [selected, setSelected] = useState([])
+  const [oldFiles, setOldFiles] = useState(props.oldFiles || [])
+  const [deletedFiles, setDeletedFiles] = useState([])
+
+  useEffect(() => {
+    if (props.oldFiles) {
+      setOldFiles(props.oldFiles)
+    }
+  }, [props.oldFiles])
 
   function handleNewFileField() {
     setFiles((prev) => {
@@ -19,44 +29,46 @@ function InvoiceAttachments() {
     })
   }
 
-  function handleDeleteSelectedFileFields() {
-    setFiles((prev) => {
-      const result = []
-      for (let i = 0; i < prev.length; i++) {
-        if (!selected.includes(i)) {
-          result.push(prev[i])
-        }
-      }
-      return result
-    })
-    setSelected([])
+  function handleDeleteFile(index) {
+    setFiles((prev) => prev.filter((_, i) => i !== index))
   }
 
-  function handleToggleSelected(idx) {
-    function toggle() {
-      setSelected((prev) => {
-        const result = []
-        let removed = false
-        for (let i = 0; i < prev.length; i++) {
-          if (prev[i] !== idx) {
-            result.push(prev[i])
-          } else {
-            removed = true
-          }
-        }
-
-        if (!removed) {
-          result.push(idx)
-        }
-
-        return result
-      })
-    }
-    return toggle
+  function handleDeleteOldFiles(index) {
+    // this files will have an id
+    // we need to add that id to a list of files to be deleted to be sent to the backend
+    setOldFiles((prev) => prev.filter((_, i) => i !== index))
+    setDeletedFiles((prev) => [...prev, oldFiles[index].id])
   }
+
+  console.log(deletedFiles)
 
   return (
-    <div>
+    <div className="flex flex-col gap-3">
+      {oldFiles && oldFiles.length > 0 && (
+        <div className="flex flex-col gap-2">
+          {oldFiles.map((file, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-between gap-2 bg-transparent"
+            >
+              <div className="flex items-center gap-2">
+                <IoDocumentTextOutline color="#0086C9" size="16" />
+                <a
+                  className="text-secondary no-underline"
+                  href={formatApiUrl(file.download_url)}
+                >
+                  {file.filename}
+                </a>
+              </div>
+              <IoTrash
+                className="cursor-pointer  text-red-500"
+                size={20}
+                onClick={() => handleDeleteOldFiles(index)}
+              />
+            </div>
+          ))}
+        </div>
+      )}
       <div className="font-sm flex justify-between">
         <AddButton
           className="p-[0px] text-sm"
@@ -64,40 +76,36 @@ function InvoiceAttachments() {
           type="button"
           onClick={handleNewFileField}
         >
-          {files ? 'Add another file' : 'Add file'}
+          {files.length > 0 ? 'Add another file' : 'Add file'}
         </AddButton>
-        {selected.length ? (
-          <DeleteButton
-            className="py-1 text-sm"
-            type="button"
-            onClick={handleDeleteSelectedFileFields}
-          >
-            Remove selected
-          </DeleteButton>
-        ) : null}
       </div>
-      <div className="">
+      <div>
         {files.map((o, i) => {
           return (
             <div
               key={o.id}
-              className={cx('flex justify-between py-2 [&_select]:ml-0')}
+              className={cx('flex items-center justify-between gap-3')}
             >
-              <Select id={`file_type_${i}`}>
+              <Select id={`file_type_${i}`} className="!ml-0">
                 <option value="invoice">Invoice</option>
                 <option value="reminder">Reminder</option>
               </Select>
-              <Input id={`file_${i}`} type="file" required />
-              <Input
-                id={`file_chk_${i}`}
-                checked={selected.includes(i)}
-                type="checkbox"
-                onClick={handleToggleSelected(i)}
+              <Input id={`file_${i}`} className="!ml-0" type="file" required />
+              <IoTrash
+                className="cursor-pointer text-red-500"
+                size={20}
+                onClick={() => handleDeleteFile(i)}
               />
             </div>
           )
         })}
       </div>
+      <input
+        id="deleted_files"
+        name="deleted_files"
+        type="hidden"
+        value={JSON.stringify(deletedFiles)}
+      />
     </div>
   )
 }

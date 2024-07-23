@@ -106,8 +106,8 @@ const InvoiceDialog = function InvoiceDialog(props) {
         label="Reminder"
         type="date"
       />
-      <h5>Files</h5>
-      <InvoiceAttachments />
+      <h4>Files</h4>
+      <InvoiceAttachments oldFiles={data?.files_data} />
     </FormDialog>
   )
 }

@@ -15,6 +15,7 @@ import useGetInvoices, {
   _PER_PAGE,
 } from '@ors/components/manage/Blocks/Replenishment/Invoices/useGetInvoices'
 import Table from '@ors/components/manage/Blocks/Replenishment/Table'
+import ViewFiles from '@ors/components/manage/Blocks/Replenishment/ViewFiles'
 import {
   dateForEditField,
   dateForInput,
@@ -57,7 +58,6 @@ function InvoicesView() {
   const ctx = useContext(ReplenishmentContext)
 
   const { count, loaded, results, setParams } = useGetInvoices()
-  const [_, setError] = useState(null)
   const [pagination, setPagination] = useState({
     page: 1,
     rowsPerPage: _PER_PAGE,
@@ -84,10 +84,8 @@ function InvoicesView() {
         date_of_issuance: formatDateValue(data.date_of_issuance),
         date_sent_out: formatDateValue(data.date_sent_out),
         exchange_rate: data.exchange_rate.toFixed(3),
-        files:
-          data.invoice_files.length > 0
-            ? data.invoice_files.join(', ')
-            : 'No files',
+        files: <ViewFiles files={data.invoice_files} />,
+        files_data: data.invoice_files,
         iso3: data.country.iso3,
         number: data.number.toLocaleString(),
         reminder: data.reminder_sent_on || 'N/A',
@@ -150,32 +148,42 @@ function InvoicesView() {
         data.append(key, entry[key])
       }
     }
-    let nr_of_files = 0
+    let nr_new_files = 0
     // Append files with their types [invoice, reminder]
     for (const key in entry) {
       if (key.startsWith('file_') && entry[key] instanceof File) {
         const fileIndex = key.split('_')[1]
         const fileTypeKey = `file_type_${fileIndex}`
         if (entry[fileTypeKey]) {
-          nr_of_files++
+          nr_new_files++
           data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
           data.append(`files[${fileIndex}][type]`, entry[fileTypeKey])
         }
       }
     }
 
-    data.append('nr_of_files', nr_of_files)
+    data.append('nr_new_files', nr_new_files)
 
     try {
       const csrftoken = Cookies.get('csrftoken')
-      await fetch(formatApiUrl(`api/replenishment/invoices/${entry.id}/`), {
-        body: data,
-        credentials: 'include',
-        headers: {
-          ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
+      const response = await fetch(
+        formatApiUrl(`api/replenishment/invoices/${entry.id}/`),
+        {
+          body: data,
+          credentials: 'include',
+          headers: {
+            ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
+          },
+          method: 'PUT',
         },
-        method: 'PUT',
-      })
+      )
+      if (!response.ok) {
+        const errorData = await response.json() // Get the error details
+        const error = new Error('Request failed')
+        error.status = response.status
+        error.data = errorData
+        throw error
+      }
       enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
       setParams({
         offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,
@@ -185,7 +193,6 @@ function InvoicesView() {
       setShowAdd(false)
       if (error.status === 400) {
         const errors = await error.json()
-        setError({ ...errors })
         enqueueSnackbar(
           errors.general_error ||
             errors.files ||
@@ -196,7 +203,6 @@ function InvoicesView() {
         enqueueSnackbar(<>An error occurred. Please try again.</>, {
           variant: 'error',
         })
-        setError({})
       }
     }
 
@@ -219,32 +225,43 @@ function InvoicesView() {
       }
     }
 
-    let nr_of_files = 0
+    let nr_new_files = 0
     // Append files with their types [invoice, reminder]
     for (const key in entry) {
       if (key.startsWith('file_') && entry[key] instanceof File) {
         const fileIndex = key.split('_')[1]
         const fileTypeKey = `file_type_${fileIndex}`
         if (entry[fileTypeKey]) {
-          nr_of_files++
+          nr_new_files++
           data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
           data.append(`files[${fileIndex}][type]`, entry[fileTypeKey])
         }
       }
     }
 
-    data.append('nr_of_files', nr_of_files)
+    data.append('nr_new_files', nr_new_files)
 
     try {
       const csrftoken = Cookies.get('csrftoken')
-      await fetch(formatApiUrl('api/replenishment/invoices/'), {
-        body: data,
-        credentials: 'include',
-        headers: {
-          ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
+      const response = await fetch(
+        formatApiUrl('api/replenishment/invoices/'),
+        {
+          body: data,
+          credentials: 'include',
+          headers: {
+            ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
+          },
+          method: 'POST',
         },
-        method: 'POST',
-      })
+      )
+      if (!response.ok) {
+        const errorData = await response.json() // Get the error details
+        const error = new Error('Request failed')
+        error.status = response.status
+        error.data = errorData
+        throw error
+      }
+
       enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
       setParams({
         offset: 0,
@@ -255,7 +272,6 @@ function InvoicesView() {
       setShowAdd(false)
       if (error.status === 400) {
         const errors = await error.json()
-        setError({ ...errors })
         enqueueSnackbar(
           errors.general_error ||
             errors.files ||
@@ -266,7 +282,6 @@ function InvoicesView() {
         enqueueSnackbar(<>An error occurred. Please try again.</>, {
           variant: 'error',
         })
-        setError({})
       }
     }
   }
@@ -289,7 +304,6 @@ function InvoicesView() {
     } catch (error) {
       if (error.status === 400) {
         const errors = await error.json()
-        setError({ ...errors })
         enqueueSnackbar(
           errors.general_error ||
             errors.files ||
@@ -300,7 +314,6 @@ function InvoicesView() {
         enqueueSnackbar(<>An error occurred. Please try again.</>, {
           variant: 'error',
         })
-        setError({})
       }
     }
   }
