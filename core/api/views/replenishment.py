@@ -475,6 +475,18 @@ class ReplenishmentInvoiceViewSet(
             return InvoiceCreateSerializer
         return InvoiceSerializer
 
+    def _create_new_invoice_files(self, invoice, files_list):
+        invoice_files = []
+        for invoice_file in files_list:
+            invoice_files.append(
+                InvoiceFile(
+                    invoice=invoice,
+                    filename=invoice_file["contents"].name,
+                    file=invoice_file["contents"],
+                )
+            )
+        InvoiceFile.objects.bulk_create(invoice_files)
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         number_of_files = int(request.data.get("nr_of_files", 0))
@@ -491,20 +503,12 @@ class ReplenishmentInvoiceViewSet(
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+        # First create the actual invoice
         self.perform_create(serializer)
         invoice = serializer.instance
 
         # Now create the files for this Invoice
-        invoice_files = []
-        for invoice_file in files:
-            invoice_files.append(
-                InvoiceFile(
-                    invoice=invoice,
-                    filename=invoice_file["contents"].name,
-                    file=invoice_file["contents"],
-                )
-            )
-        InvoiceFile.objects.bulk_create(invoice_files)
+        self._create_new_invoice_files(invoice, files)
 
         headers = self.get_success_headers(serializer.data)
         return Response(
@@ -524,6 +528,7 @@ class ReplenishmentInvoiceViewSet(
 
         # TODO: update files
         # Delete files no longer present; create new files
+        # TODO: also exclude None from the set
         new_file_ids = set(f["id"] for f in files)
         existing_file_ids = set(
             current_obj.invoice_files.objects.values_list("id", flat=True)
