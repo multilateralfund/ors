@@ -27,6 +27,8 @@ import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentConte
 import api from '@ors/helpers/Api/_api'
 
 import { IoSearchSharp } from 'react-icons/io5'
+import Cookies from 'js-cookie'
+import { formatApiUrl } from '@ors/helpers'
 
 const COLUMNS = [
   { field: 'country', label: 'Country' },
@@ -147,6 +149,8 @@ function InvoicesView() {
       (key) => key.startsWith('file_') && !key.startsWith('file_type'),
     )
 
+    // Add files to entry
+
     const files = []
     for (let i = 0; i < file_fields.length; i++) {
       files.push({ file: entry[`file_${i}`], type: entry[`file_type_${i}`] })
@@ -194,31 +198,44 @@ function InvoicesView() {
       (p) => Number(p.start_year) === Number(entry.period.split('-')[0]),
     )?.id
 
-    const file_fields = Object.keys(entry).filter(
-      (key) => key.startsWith('file_') && !key.startsWith('file_type'),
-    )
-
-    const files = []
-    for (let i = 0; i < file_fields.length; i++) {
-      files.push({ file: entry[`file_${i}`], type: entry[`file_type_${i}`] })
-      delete entry[`file_${i}`]
-      delete entry[`file_type_${i}`]
+    const data = new FormData()
+    for (const key in entry) {
+      if (!key.startsWith('file_')) {
+        data.append(key, entry[key])
+      }
     }
-    entry.files = files
+
+    // Append files with their types
+    for (const key in entry) {
+      if (key.startsWith('file_') && entry[key] instanceof File) {
+        const fileIndex = key.split('_')[1]
+        const fileTypeKey = `file_type_${fileIndex}`
+        if (entry[fileTypeKey]) {
+          data.append(`files[${fileIndex}][file]`, entry[key])
+          data.append(`files[${fileIndex}][type]`, entry[fileTypeKey])
+        }
+      }
+    }
 
     try {
-      await api(`api/replenishment/invoices/`, {
-        data: entry,
+      const csrftoken = Cookies.get('csrftoken')
+      await fetch(formatApiUrl('api/replenishment/invoices/'), {
+        body: data,
+        credentials: 'include',
+        headers: {
+          ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
+        },
         method: 'POST',
       })
       enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
       setParams({
         offset: 0,
       })
+      setPagination({ ...pagination, page: 1 })
       setShowAdd(false)
     } catch (error) {
       if (error.status === 400) {
-        setShowAdd(true)
+        setShowAdd(false)
         const errors = await error.json()
         setError({ ...errors })
         enqueueSnackbar(
