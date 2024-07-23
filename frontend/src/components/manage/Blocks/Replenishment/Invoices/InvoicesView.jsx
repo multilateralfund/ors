@@ -159,7 +159,7 @@ function InvoicesView() {
         const fileIndex = key.split('_')[1]
         const fileTypeKey = `file_type_${fileIndex}`
         if (entry[fileTypeKey]) {
-          data.append(`files[${fileIndex}][file]`, entry[key])
+          data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
           data.append(`files[${fileIndex}][type]`, entry[fileTypeKey])
         }
       }
@@ -224,7 +224,7 @@ function InvoicesView() {
         const fileIndex = key.split('_')[1]
         const fileTypeKey = `file_type_${fileIndex}`
         if (entry[fileTypeKey]) {
-          data.append(`files[${fileIndex}][file]`, entry[key])
+          data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
           data.append(`files[${fileIndex}][type]`, entry[fileTypeKey])
         }
       }
