@@ -27,7 +27,7 @@ import '@ors/themes/styles/global.css'
 export const metadata: Metadata = {
   description:
     'Multilateral Fund for the Implementation of the Montreal Protocol',
-  title: 'ORS',
+  title: 'KMS',
 }
 
 export default async function RootLayout({
