@@ -57,7 +57,6 @@ const FormDialog = function FormDialog(props) {
       )}
       ref={dialogRef}
       onKeyDown={handleKeyDown}
-      enctype='multipart/form-data'
     >
       <div className="mb-8 flex items-center justify-between text-secondary">
         <h3 className="m-0 text-xl">{title}</h3>
@@ -67,7 +66,11 @@ const FormDialog = function FormDialog(props) {
           onClick={cancelHandler}
         />
       </div>
-      <form ref={formRef} onSubmit={submitHandler}>
+      <form
+        encType="multipart/form-data"
+        ref={formRef}
+        onSubmit={submitHandler}
+      >
         {children}
         <footer className="mt-8 flex items-center justify-between border-x-0 border-b-0 border-t border-solid border-gray-200 pt-6">
           <CancelButton onClick={cancelHandler}>Cancel</CancelButton>
