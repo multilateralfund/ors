@@ -64,7 +64,6 @@ const PaymentDialog = function PaymentDialog(props) {
         label={columns[4].label}
         step="0.001"
         type="number"
-        required
       />
       <FieldInput
         id="payment_for_year"
