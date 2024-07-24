@@ -26,7 +26,6 @@ import { AddButton } from '@ors/components/ui/Button/Button'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
-import api from '@ors/helpers/Api/_api'
 
 const COLUMNS = [
   { field: 'country', label: 'Country' },
@@ -78,8 +77,8 @@ function PaymentsView() {
         country_id: data.country.id,
         currency: data.currency,
         date: formatDateValue(data.date),
-        exchange_rate: data.exchange_rate?.toFixed(3),
-        ferm_gain_or_loss: data.ferm_gain_or_loss,
+        exchange_rate: data.exchange_rate?.toFixed(3) || 'N/A',
+        ferm_gain_or_loss: data.ferm_gain_or_loss || 'N/A',
         files: <ViewFiles files={data.payment_files} />,
         files_data: data.payment_files,
         iso3: data.country.iso3,
@@ -122,7 +121,6 @@ function PaymentsView() {
       entry = { ...memoResults[editIdx] }
       entry.date = dateForEditField(entry.date)
       entry.amount = numberForEditField(entry.amount)
-      // entry.ferm_gain_or_loss = numberForEditField(entry.ferm_gain_or_loss)
     }
     return entry
   }, [editIdx, memoResults])
@@ -139,8 +137,13 @@ function PaymentsView() {
     const data = new FormData()
 
     for (const key in entry) {
+      const value = entry[key]
+
+      // Append non-file fields if they are not null, undefined, or empty string
       if (!key.startsWith('file_')) {
-        data.append(key, entry[key])
+        if (value !== null && value !== undefined && value !== '') {
+          data.append(key, value)
+        }
       }
       // if (key.startsWith('file_') && entry[key] instanceof File) {
       //   const fileIndex = key.split('_')[1]
@@ -191,13 +194,21 @@ function PaymentsView() {
   async function handleAddPaymentSubmit(formData) {
     const entry = { ...formData }
     entry.date = dateForInput(entry.date)
+    entry.exchange_rate = entry.exchange_rate || ''
+    entry.ferm_gain_or_loss = entry.ferm_gain_or_loss || ''
+    entry.comment = entry.comment || ''
 
     let nr_new_files = 0
     const data = new FormData()
 
     for (const key in entry) {
+      const value = entry[key]
+
+      // Append non-file fields if they are not null, undefined, or empty string
       if (!key.startsWith('file_')) {
-        data.append(key, entry[key])
+        if (value !== null && value !== undefined && value !== '') {
+          data.append(key, value)
+        }
       }
       // if (key.startsWith('file_') && entry[key] instanceof File) {
       //   const fileIndex = key.split('_')[1]

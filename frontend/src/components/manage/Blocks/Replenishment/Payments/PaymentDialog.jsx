@@ -10,20 +10,10 @@ import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentConte
 
 const PaymentDialog = function PaymentDialog(props) {
   const { columns, countries, data, isEdit, title, ...dialogProps } = props
-  // const ctx = useContext(ReplenishmentContext)
 
   return (
     <FormDialog title={title} {...dialogProps}>
-      {isEdit && (
-        <>
-          <input name="id" defaultValue={data?.id} type="hidden" />
-          <input
-            name="replenishment_id"
-            defaultValue={data?.replenishment.id}
-            type="hidden"
-          />
-        </>
-      )}
+      {isEdit && <input name="id" defaultValue={data?.id} type="hidden" />}
       <FieldSelect
         id="country_id"
         defaultValue={data?.country_id}
@@ -80,7 +70,7 @@ const PaymentDialog = function PaymentDialog(props) {
       />
       <FieldInput
         id="comment"
-        defaultValue={data?.comment}
+        defaultValue={data?.comment || ''}
         label={columns[8].label}
         type="text-area"
       />

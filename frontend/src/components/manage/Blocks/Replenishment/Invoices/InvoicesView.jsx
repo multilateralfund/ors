@@ -28,7 +28,6 @@ import { AddButton } from '@ors/components/ui/Button/Button'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
-import api from '@ors/helpers/Api/_api'
 
 import { IoSearchSharp } from 'react-icons/io5'
 
@@ -85,7 +84,7 @@ function InvoicesView() {
         currency: data.currency,
         date_of_issuance: formatDateValue(data.date_of_issuance),
         date_sent_out: formatDateValue(data.date_sent_out) || 'N/A',
-        exchange_rate: data.exchange_rate.toFixed(3),
+        exchange_rate: data.exchange_rate?.toFixed(3) || 'N/A',
         files: <ViewFiles files={data.invoice_files} />,
         files_data: data.invoice_files,
         iso3: data.country.iso3,
@@ -148,18 +147,25 @@ function InvoicesView() {
     const data = new FormData()
 
     for (const key in entry) {
+      const value = entry[key]
+
+      // Append non-file fields if they are not null, undefined, or empty string
       if (!key.startsWith('file_')) {
-        data.append(key, entry[key])
+        if (value !== null && value !== undefined && value !== '') {
+          data.append(key, value)
+        }
       }
-      // Append files with their types [payment, reminder]
-      if (key.startsWith('file_') && entry[key] instanceof File) {
+
+      // Append files with their types if they are valid
+      if (key.startsWith('file_') && value instanceof File) {
         const fileIndex = key.split('_')[1]
         const fileTypeKey = `file_type_${fileIndex}`
-        if (entry[fileTypeKey]) {
-          nr_new_files++
-          data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
-          data.append(`files[${fileIndex}][type]`, entry[fileTypeKey])
-        }
+        const fileType = entry[fileTypeKey]
+
+        ;(fileType ?? fileType !== '') &&
+          nr_new_files++ &&
+          (data.append(`files[${fileIndex}][file]`, value, value.name),
+          data.append(`files[${fileIndex}][type]`, fileType))
       }
     }
 
@@ -206,6 +212,7 @@ function InvoicesView() {
     entry.date_of_issuance = dateForInput(entry.date_of_issuance)
     entry.date_sent_out = dateForInput(entry.date_sent_out)
     entry.reminder = dateForInput(entry.reminder)
+    entry.exchange_rate = entry.exchange_rate || ''
     entry.replenishment_id = ctx.periods.find(
       (p) => Number(p.start_year) === Number(entry.period.split('-')[0]),
     )?.id
@@ -214,10 +221,14 @@ function InvoicesView() {
     const data = new FormData()
 
     for (const key in entry) {
+      const value = entry[key]
+
+      // Append non-file fields if they are not null, undefined, or empty string
       if (!key.startsWith('file_')) {
-        data.append(key, entry[key])
+        if (value !== null && value !== undefined && value !== '') {
+          data.append(key, value)
+        }
       }
-      // Append files with their types [payment, reminder]
       if (key.startsWith('file_') && entry[key] instanceof File) {
         const fileIndex = key.split('_')[1]
         const fileTypeKey = `file_type_${fileIndex}`
