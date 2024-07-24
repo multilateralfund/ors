@@ -7,7 +7,7 @@ import { times } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
 import { Select } from '@ors/components/manage/Blocks/Replenishment/Inputs'
-import PaymentDialogue from '@ors/components/manage/Blocks/Replenishment/Payments/PaymentDialogue'
+import PaymentDialog from '@ors/components/manage/Blocks/Replenishment/Payments/PaymentDialog'
 import useGetPayments, {
   _PER_PAGE,
 } from '@ors/components/manage/Blocks/Replenishment/Payments/useGetPayments'
@@ -42,11 +42,11 @@ const COLUMNS = [
 ]
 
 const AddPaymentDialogue = function AddPaymentDialogue(props) {
-  return <PaymentDialogue title="Add payment" {...props} />
+  return <PaymentDialog title="Add payment" {...props} />
 }
 
 const EditPaymentDialogue = function EditPaymentDialogue(props) {
-  return <PaymentDialogue title="Edit payment" isEdit {...props} />
+  return <PaymentDialog title="Edit payment" isEdit {...props} />
 }
 
 function PaymentsView() {

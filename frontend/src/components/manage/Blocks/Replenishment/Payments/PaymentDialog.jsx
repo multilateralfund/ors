@@ -8,7 +8,7 @@ import {
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
-const PaymentDialogue = function PaymentDialogue(props) {
+const PaymentDialog = function PaymentDialog(props) {
   const { columns, countries, data, isEdit, title, ...dialogProps } = props
   // const ctx = useContext(ReplenishmentContext)
 
@@ -91,4 +91,4 @@ const PaymentDialogue = function PaymentDialogue(props) {
   )
 }
 
-export default PaymentDialogue
+export default PaymentDialog

@@ -41,8 +41,6 @@ function InvoiceAttachments(props) {
     setDeletedFiles((prev) => [...prev, oldFiles[index].id])
   }
 
-  console.log(deletedFiles)
-
   return (
     <div className="flex flex-col gap-3">
       {oldFiles && oldFiles.length > 0 && (
@@ -88,12 +86,17 @@ function InvoiceAttachments(props) {
               className={cx('flex items-center justify-between gap-3')}
             >
               {withFileType && (
-                <Select id={`file_type_${i}`} className="h-10 !ml-0">
+                <Select id={`file_type_${i}`} className="!ml-0 h-10">
                   <option value="invoice">Invoice</option>
                   <option value="reminder">Reminder</option>
                 </Select>
               )}
-              <Input id={`file_${i}`} className="h-10 !ml-0" type="file" required />
+              <Input
+                id={`file_${i}`}
+                className="!ml-0 h-10"
+                type="file"
+                required
+              />
               <IoTrash
                 className="cursor-pointer text-red-500"
                 size={20}
