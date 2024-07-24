@@ -45,7 +45,7 @@ class ScaleOfAssessmentSerializer(serializers.ModelSerializer):
     )
     currency = serializers.CharField(allow_blank=True, required=False)
     exchange_rate = serializers.DecimalField(
-        max_digits=30, decimal_places=15, coerce_to_string=False
+        max_digits=30, decimal_places=15, coerce_to_string=False, allow_null=True
     )
     bilateral_assistance_amount = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False, required=False
@@ -60,6 +60,7 @@ class ScaleOfAssessmentSerializer(serializers.ModelSerializer):
         max_digits=30,
         decimal_places=15,
         coerce_to_string=False,
+        allow_null=True,
     )
     override_qualifies_for_fixed_rate_mechanism = serializers.BooleanField(
         required=False

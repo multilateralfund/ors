@@ -2,26 +2,21 @@
 
 import { useContext, useEffect, useMemo, useState } from 'react'
 
+import { useSnackbar } from 'notistack'
+
 import { AddButton, SubmitButton } from '@ors/components/ui/Button/Button'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import SoAContext from '@ors/contexts/Replenishment/SoAContext'
-import { formatApiUrl } from '@ors/helpers/Api/utils'
+import { api } from '@ors/helpers'
 
 import FormDialog from '../FormDialog'
-import {
-  DateInput,
-  FieldInput,
-  FieldSelect,
-  FormattedNumberInput,
-  Input,
-} from '../Inputs'
+import { DateInput, FormattedNumberInput, Input } from '../Inputs'
 import { dateForInput, dateFromInput } from '../utils'
 import SATable from './SATable'
 import {
   clearNew,
   computeTableData,
   formatTableData,
-  getCountryForIso3,
   getOverrideOrDefault,
   sortSATableData,
   sumColumns,
@@ -134,6 +129,8 @@ function SaveManager(props) {
   const [createNewVersion, setCreateNewVersion] = useState(true)
   const [saving, setSaving] = useState(false)
 
+  const { enqueueSnackbar } = useSnackbar()
+
   useEffect(
     function () {
       setIsFinal(version?.isFinal ?? false)
@@ -170,7 +167,18 @@ function SaveManager(props) {
       currencyDateRange.start.toISOString()
     saveData['currency_date_range_end'] = currencyDateRange.end.toISOString()
     setSaving(false)
-    alert(`Save not implemented!\n\n${JSON.stringify(saveData, undefined, 2)}`)
+    api('api/replenishment/scales-of-assessment', {
+      data: saveData,
+      method: 'POST',
+    })
+      .then(() => {
+        enqueueSnackbar('Data saved successfully.', { variant: 'success' })
+      })
+      .catch((error) => {
+        error.json().then((data) => {
+          enqueueSnackbar(data, { variant: 'error' })
+        })
+      })
   }
 
   function cancelSave() {
