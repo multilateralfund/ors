@@ -6,6 +6,7 @@ import Cookies from 'js-cookie'
 import { times } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
+import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
 import {
   Input,
   Select,
@@ -29,7 +30,6 @@ import { formatApiUrl } from '@ors/helpers'
 import api from '@ors/helpers/Api/_api'
 
 import { IoSearchSharp } from 'react-icons/io5'
-import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
 
 const COLUMNS = [
   { field: 'country', label: 'Country' },

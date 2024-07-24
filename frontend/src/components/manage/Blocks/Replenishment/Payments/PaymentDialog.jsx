@@ -80,8 +80,8 @@ const PaymentDialog = function PaymentDialog(props) {
         type="number"
       />
       <FieldInput
-        id="comments"
-        defaultValue={data?.comments}
+        id="comment"
+        defaultValue={data?.comment}
         label={columns[8].label}
         type="text-area"
       />

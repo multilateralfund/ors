@@ -6,6 +6,7 @@ import Cookies from 'js-cookie'
 import { times } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
+import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
 import { Select } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import PaymentDialog from '@ors/components/manage/Blocks/Replenishment/Payments/PaymentDialog'
 import useGetPayments, {
@@ -25,7 +26,6 @@ import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
 import api from '@ors/helpers/Api/_api'
-import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
 
 const COLUMNS = [
   { field: 'country', label: 'Country' },
@@ -39,7 +39,7 @@ const COLUMNS = [
   { field: 'payment_for_year', label: 'Year(s)' },
   { field: 'ferm_gain_or_loss', label: 'FERM Gain/Loss' },
   { field: 'files', label: 'Files' },
-  { field: 'comments', label: 'Comments' },
+  { field: 'comment', label: 'Comments' },
 ]
 
 const AddPaymentDialogue = function AddPaymentDialogue(props) {
@@ -72,7 +72,7 @@ function PaymentsView() {
       ...results.map((data) => ({
         id: data.id,
         amount: formatNumberValue(data.amount),
-        comments: data.comments,
+        comment: data.comment,
         country: data.country.name,
         country_id: data.country.id,
         currency: data.currency,
@@ -206,7 +206,7 @@ function PaymentsView() {
   async function handleAddPaymentSubmit(formData) {
     const entry = { ...formData }
     entry.date = dateForInput(entry.date)
-    entry.replenishment_id = null
+    entry.replenishment_id = NaN
 
     const data = new FormData()
     for (const key in entry) {
