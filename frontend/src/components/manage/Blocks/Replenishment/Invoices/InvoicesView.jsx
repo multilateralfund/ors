@@ -82,7 +82,7 @@ function InvoicesView() {
         country_id: data.country.id,
         currency: data.currency,
         date_of_issuance: formatDateValue(data.date_of_issuance),
-        date_sent_out: formatDateValue(data.date_sent_out),
+        date_sent_out: formatDateValue(data.date_sent_out) || 'N/A',
         exchange_rate: data.exchange_rate.toFixed(3),
         files: <ViewFiles files={data.invoice_files} />,
         files_data: data.invoice_files,

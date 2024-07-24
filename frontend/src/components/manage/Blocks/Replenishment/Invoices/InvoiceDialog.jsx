@@ -98,7 +98,6 @@ const InvoiceDialog = function InvoiceDialog(props) {
         defaultValue={data?.date_sent_out}
         label="Sent out"
         type="date"
-        required
       />
       <FieldInput
         id="reminder"

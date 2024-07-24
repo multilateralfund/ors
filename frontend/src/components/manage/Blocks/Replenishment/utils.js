@@ -24,6 +24,9 @@ export function getPathPeriod(path) {
 }
 
 export function formatDateValue(value) {
+  if (!value) {
+    return null
+  }
   return new Date(value).toLocaleDateString('en-US', {
     day: '2-digit',
     month: 'short',
