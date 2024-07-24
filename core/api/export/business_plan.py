@@ -94,7 +94,7 @@ class BusinessPlanWriter(BaseWriter):
                 "column_width": self.COLUMN_WIDTH * 2,
             },
             {
-                "id": "bp_type",
+                "id": "status",
                 "headerName": "A-Appr. P-Plan'd",
             },
             {

@@ -461,7 +461,7 @@ class BPRecordFactory(factory.django.DjangoModelFactory):
     amount_polyol = factory.Faker("random_int", min=1, max=1000)
     sector = factory.SubFactory(ProjectSectorFactory)
     subsector = factory.SubFactory(ProjectSubSectorFactory)
-    bp_type = factory.fuzzy.FuzzyChoice(BPRecord.BPType.choices)
+    status = factory.fuzzy.FuzzyChoice(BPRecord.Status.choices)
     reason_for_exceeding = factory.Faker(
         "pystr", max_chars=200, prefix="bprecord-reason-for-exceeding"
     )
