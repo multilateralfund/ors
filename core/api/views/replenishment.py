@@ -68,7 +68,9 @@ class ReplenishmentViewSet(
     def get_queryset(self):
         user = self.request.user
         if user.user_type == user.UserType.SECRETARIAT:
-            return Replenishment.objects.order_by("-start_year")
+            return Replenishment.objects.prefetch_related(
+                "scales_of_assessment_versions"
+            ).order_by("-start_year")
         return Replenishment.objects.none()
 
     @transaction.atomic
@@ -201,6 +203,14 @@ class ScaleOfAssessmentViewSet(
         ScaleOfAssessment.objects.bulk_create(scales_of_assessment)
 
         if final:
+            # Delete all previous status of contributions data, if any
+            AnnualContributionStatus.objects.filter(
+                year__gte=replenishment.start_year, year__lte=replenishment.end_year
+            ).delete()
+            TriennialContributionStatus.objects.filter(
+                start_year__gte=replenishment.start_year,
+                end_year__lte=replenishment.end_year,
+            ).delete()
             annual_contributions = []
             triennial_contributions = []
             # Create Status of Contributions data

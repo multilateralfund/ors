@@ -25,7 +25,7 @@ function SAHeading(props) {
 
   function handleClickVersion(v) {
     return function() {
-      setCurrentVersion(v.id)
+      setCurrentVersion(v.version)
       setShowVersionsMenu(false)
     }
   }
@@ -52,16 +52,13 @@ function SAHeading(props) {
         >
           <div className="flex items-center gap-x-2">
             <div>Scale of assessment</div>
-            <IoChevronDown className="print:hidden text-5xl font-bold text-gray-700" />
-            <div className="print:hidden rounded bg-mlfs-hlYellow px-1 text-base font-medium uppercase text-primary">
-              Version {version?.id}{' '}
-              {version?.isDraft ? `(${version?.status})` : null}
+            <IoChevronDown className="text-5xl font-bold text-gray-700 print:hidden" />
+            <div className="rounded bg-mlfs-hlYellow px-1 text-base font-medium uppercase text-primary print:hidden">
+              Version {version?.version}{' '}
             </div>
-            {version?.isFinal ? (
-              <div className="print:hidden rounded bg-primary px-1 text-base font-medium uppercase text-mlfs-hlYellow">
-                final
-              </div>
-            ) : null}
+            <div className="rounded bg-primary px-1 text-base font-medium uppercase text-mlfs-hlYellow print:hidden">
+              {version?.is_final ? 'final' : 'draft'}
+            </div>
           </div>
         </div>
         <div
@@ -75,20 +72,20 @@ function SAHeading(props) {
         >
           {versions.map((v, idx) => (
             <div
-              key={v.id}
+              key={v.version}
               className="flex cursor-pointer items-center gap-x-2 rounded-none px-2 py-2 text-black no-underline hover:bg-primary hover:text-white"
               onClick={handleClickVersion(v)}
             >
               <div
                 className={cx(
                   'flex items-center justify-between hover:text-white',
-                  { 'font-bold': v.id === version?.id },
+                  { 'font-bold': v.version === version?.version },
                 )}
               >
-                <div>Version {v.id}</div>
+                <div>Version {v.version}</div>
                 <div className="flex items-center">
-                  {idx == 0 && (v.isFinal ? tagLatest : tagDraft)}
-                  {idx == 1 && versions[0].isDraft && tagLatest}
+                  {idx == 0 && (v.is_final ? tagLatest : tagDraft)}
+                  {idx == 1 && !versions[0].is_final && tagLatest}
                 </div>
               </div>
             </div>

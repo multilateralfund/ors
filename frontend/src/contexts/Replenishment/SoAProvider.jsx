@@ -15,7 +15,7 @@ function useApiReplenishment(startYear, versionId) {
       }
 
       if (versionId !== null && versionId !== undefined) {
-        urlParams.version_id = versionId
+        urlParams.version = versionId
       }
 
       const path = [
@@ -42,21 +42,6 @@ function useApiReplenishment(startYear, versionId) {
   return { contributions, replenishment }
 }
 
-function makeVersion(id, status, meeting, decision) {
-  return {
-    id: id,
-    decision: decision,
-    get isDraft() {
-      return this.status === 'draft'
-    },
-    get isFinal() {
-      return this.status === 'final'
-    },
-    meeting: meeting,
-    status: status,
-  }
-}
-
 function SoAProvider(props) {
   const { children, startYear } = props
 
@@ -69,28 +54,18 @@ function SoAProvider(props) {
   // Mock versions
   const versions = useMemo(
     function () {
-      if (startYear < 2024) {
-        return [
-          makeVersion(3, 'final', 93, 41),
-          makeVersion(2, 'final', 81, 32),
-          makeVersion(1, 'final', 80, 55),
-        ]
-      } else {
-        return [makeVersion(0, 'draft')]
-      }
+      return replenishment.scales_of_assessment_versions || []
     },
-    [startYear],
+    [replenishment],
   )
 
   useEffect(
     function () {
-      if (versions.length) {
-        setCurrentVersion(versions[0].id)
-      } else {
-        setCurrentVersion(null)
+      if (versions.length > 0 && currentVersion === null) {
+        setCurrentVersion(versions[0].version)
       }
     },
-    [versions],
+    [currentVersion, versions],
   )
 
   const version = useMemo(
@@ -99,7 +74,7 @@ function SoAProvider(props) {
 
       if (currentVersion !== null) {
         for (let i = 0; i < versions.length; i++) {
-          if (versions[i].id === currentVersion) {
+          if (versions[i].version === currentVersion) {
             r = versions[i]
             break
           }

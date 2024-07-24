@@ -134,7 +134,7 @@ function SaveManager(props) {
 
   useEffect(
     function () {
-      setIsFinal(version?.isFinal ?? false)
+      setIsFinal(version?.is_final ?? false)
     },
     [version],
   )
@@ -784,15 +784,15 @@ function SAView(props) {
       ) : null}
       <div className="-mx-4 -mb-4 rounded-b-lg bg-gray-200 p-4 print:hidden">
         <div className="flex items-center gap-x-2">
-          <h2>Comment Version {version?.id} </h2>
-          {version?.meeting ? (
+          <h2>Comment Version {version?.version} </h2>
+          {version?.meeting_number ? (
             <div className="rounded bg-primary px-1 font-medium uppercase text-mlfs-hlYellow">
-              Meeting {version.meeting}
+              Meeting {version.meeting_number}
             </div>
           ) : null}
-          {version?.decision ? (
+          {version?.decision_number ? (
             <div className="rounded bg-primary px-1 font-medium uppercase text-mlfs-hlYellow">
-              Decision {version.decision}
+              Decision {version.decision_number}
             </div>
           ) : null}
         </div>
