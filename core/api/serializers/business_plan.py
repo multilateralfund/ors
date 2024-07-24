@@ -175,7 +175,6 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
             "values",
             "is_multi_year_display",
             "status_display",
-            "comment_agency",
             "comment_secretariat",
         ]
 
@@ -243,7 +242,6 @@ class BPRecordCreateSerializer(serializers.ModelSerializer):
             "reason_for_exceeding",
             "remarks",
             "remarks_additional",
-            "comment_agency",
             "comment_secretariat",
             "values",
         ]

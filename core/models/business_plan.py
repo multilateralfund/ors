@@ -126,8 +126,7 @@ class BPRecord(models.Model):
     remarks = models.TextField(null=True, blank=True)
     remarks_additional = models.TextField(null=True, blank=True)
 
-    # Comments for Agency and Secretariat
-    comment_agency = models.TextField(blank=True)
+    # Secretariat comment
     comment_secretariat = models.TextField(blank=True)
 
     def __str__(self):
