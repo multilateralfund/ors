@@ -292,8 +292,6 @@ function InvoicesView() {
 
     const entry = { ...memoResults[rowId] }
 
-    console.log(entry)
-
     try {
       const response = await api(`api/replenishment/invoices/${entry.id}/`, {
         method: 'DELETE',

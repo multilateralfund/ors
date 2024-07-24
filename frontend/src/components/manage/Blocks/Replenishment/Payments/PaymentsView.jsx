@@ -41,11 +41,11 @@ const COLUMNS = [
   { field: 'comments', label: 'Comments' },
 ]
 
-const AddInvoiceDialog = function AddInvoiceDialog(props) {
+const AddPaymentDialogue = function AddPaymentDialogue(props) {
   return <PaymentDialogue title="Add payment" {...props} />
 }
 
-const EditInvoiceDialog = function EditInvoiceDialog(props) {
+const EditPaymentDialogue = function EditPaymentDialogue(props) {
   return <PaymentDialogue title="Edit payment" isEdit {...props} />
 }
 
@@ -157,14 +157,17 @@ function PaymentsView() {
 
     try {
       const csrftoken = Cookies.get('csrftoken')
-      await fetch(formatApiUrl(`api/replenishment/payments/${entry.id}/`), {
-        body: data,
-        credentials: 'include',
-        headers: {
-          ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
+      const response = await fetch(
+        formatApiUrl(`api/replenishment/payments/${entry.id}/`),
+        {
+          body: data,
+          credentials: 'include',
+          headers: {
+            ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
+          },
+          method: 'PUT',
         },
-        method: 'PUT',
-      })
+      )
       if (!response.ok) {
         const errorData = await response.json() // Get the error details
         const error = new Error('Request failed')
@@ -172,7 +175,7 @@ function PaymentsView() {
         error.data = errorData
         throw error
       }
-      enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
+      enqueueSnackbar('Payment updated successfully.', { variant: 'success' })
       setParams({
         offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,
       })
@@ -229,14 +232,17 @@ function PaymentsView() {
 
     try {
       const csrftoken = Cookies.get('csrftoken')
-      await fetch(formatApiUrl('api/replenishment/payments/'), {
-        body: data,
-        credentials: 'include',
-        headers: {
-          ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
+      const response = await fetch(
+        formatApiUrl('api/replenishment/payments/'),
+        {
+          body: data,
+          credentials: 'include',
+          headers: {
+            ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
+          },
+          method: 'POST',
         },
-        method: 'POST',
-      })
+      )
       if (!response.ok) {
         const errorData = await response.json() // Get the error details
         const error = new Error('Request failed')
@@ -244,7 +250,7 @@ function PaymentsView() {
         error.data = errorData
         throw error
       }
-      enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
+      enqueueSnackbar('Payment updated successfully.', { variant: 'success' })
       setParams({
         offset: 0,
       })
@@ -277,8 +283,7 @@ function PaymentsView() {
     const entry = { ...memoResults[rowId] }
 
     try {
-      await api(`api/replenishment/payments/${entry.id}/`, {
-        data: entry,
+      const response = await api(`api/replenishment/payments/${entry.id}/`, {
         method: 'DELETE',
       })
       if (!response.ok) {
@@ -288,7 +293,7 @@ function PaymentsView() {
         error.data = errorData
         throw error
       }
-      enqueueSnackbar('Invoice deleted.', { variant: 'success' })
+      enqueueSnackbar('Payment deleted.', { variant: 'success' })
       setParams({
         offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,
       })
@@ -331,7 +336,7 @@ function PaymentsView() {
   return (
     <>
       {showAdd ? (
-        <AddInvoiceDialog
+        <AddPaymentDialogue
           columns={COLUMNS}
           countries={ctx.countries}
           onCancel={() => setShowAdd(false)}
@@ -339,7 +344,7 @@ function PaymentsView() {
         />
       ) : null}
       {editData !== null ? (
-        <EditInvoiceDialog
+        <EditPaymentDialogue
           columns={COLUMNS}
           countries={ctx.countries}
           data={editData}
