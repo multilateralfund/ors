@@ -132,6 +132,9 @@ function PaymentsView() {
   async function handleEditPaymentSubmit(formData) {
     const entry = { ...formData }
     entry.date = dateForInput(entry.date)
+    entry.exchange_rate = entry.exchange_rate || ''
+    entry.ferm_gain_or_loss = entry.ferm_gain_or_loss || ''
+    entry.comment = entry.comment || ''
 
     let nr_new_files = 0
     const data = new FormData()
@@ -139,9 +142,10 @@ function PaymentsView() {
     for (const key in entry) {
       const value = entry[key]
 
-      // Append non-file fields if they are not null, undefined, or empty string
+      // Append non-file fields if they are not null, undefined
+      // Empty strings are used to delete a value
       if (!key.startsWith('file_')) {
-        if (value !== null && value !== undefined && value !== '') {
+        if (value !== null && value !== undefined) {
           data.append(key, value)
         }
       }

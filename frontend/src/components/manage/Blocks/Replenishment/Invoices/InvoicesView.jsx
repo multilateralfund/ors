@@ -141,7 +141,9 @@ function InvoicesView() {
   async function handleEditInvoiceSubmit(formData) {
     const entry = { ...formData }
     entry.date_of_issuance = dateForInput(entry.date_of_issuance)
-    entry.date_sent_out = dateForInput(entry.date_sent_out)
+    entry.date_sent_out = dateForInput(entry.date_sent_out) || ''
+    entry.reminder = dateForInput(entry.reminder) || ''
+    entry.exchange_rate = entry.exchange_rate || ''
 
     let nr_new_files = 0
     const data = new FormData()
@@ -149,9 +151,10 @@ function InvoicesView() {
     for (const key in entry) {
       const value = entry[key]
 
-      // Append non-file fields if they are not null, undefined, or empty string
+      // Append non-file fields if they are not null, undefined
+      // Empty strings are used to delete a value
       if (!key.startsWith('file_')) {
-        if (value !== null && value !== undefined && value !== '') {
+        if (value !== null && value !== undefined) {
           data.append(key, value)
         }
       }
