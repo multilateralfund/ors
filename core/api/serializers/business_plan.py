@@ -1,5 +1,3 @@
-import itertools
-
 from django.db import transaction
 from django.urls import reverse
 from rest_framework import serializers
@@ -11,7 +9,6 @@ from core.api.serializers.project import ProjectSubSectorSerializer
 from core.api.serializers.project import ProjectTypeSerializer
 from core.models import (
     Agency,
-    Blend,
     BPChemicalType,
     BPRecord,
     BPRecordValue,
@@ -126,13 +123,7 @@ class BPRecordExportSerializer(serializers.ModelSerializer):
         return obj.business_plan.agency.name
 
     def get_chemical_detail(self, obj):
-        return "/".join(
-            chem.name
-            for chem in itertools.chain(
-                obj.substances.all(),
-                obj.blends.all(),
-            )
-        )
+        return "/".join(chem.name for chem in obj.substances.all())
 
 
 class BPRecordDetailSerializer(serializers.ModelSerializer):
@@ -145,7 +136,6 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
     status_display = serializers.SerializerMethodField()
 
     substances = serializers.SlugRelatedField("name", many=True, read_only=True)
-    blends = serializers.SlugRelatedField(slug_field="name", many=True, read_only=True)
 
     sector = ProjectSectorSerializer()
     subsector = ProjectSubSectorSerializer()
@@ -162,7 +152,6 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
             "project_type",
             "bp_chemical_type",
             "substances",
-            "blends",
             "amount_polyol",
             "sector",
             "subsector",
@@ -207,10 +196,6 @@ class BPRecordCreateSerializer(serializers.ModelSerializer):
         many=True,
         queryset=Substance.objects.all().values_list("id", flat=True),
     )
-    blends = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset=Blend.objects.all().values_list("id", flat=True),
-    )
 
     sector_id = serializers.PrimaryKeyRelatedField(
         queryset=ProjectSector.objects.all().values_list("id", flat=True),
@@ -232,7 +217,6 @@ class BPRecordCreateSerializer(serializers.ModelSerializer):
             "project_type_id",
             "bp_chemical_type_id",
             "substances",
-            "blends",
             "amount_polyol",
             "sector_id",
             "subsector_id",

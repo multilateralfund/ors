@@ -174,7 +174,6 @@ def setup_bp_record_create(
     project_type,
     bp_chemical_type,
     substance,
-    blend,
 ):
     return {
         "business_plan_id": business_plan.id,
@@ -184,7 +183,6 @@ def setup_bp_record_create(
         "project_type_id": project_type.id,
         "bp_chemical_type_id": bp_chemical_type.id,
         "substances": [substance.id],
-        "blends": [blend.id],
         "sector_id": sector.id,
         "subsector_id": subsector.id,
         "status": "A",
@@ -244,7 +242,6 @@ class TestBPRecordCreate:
         business_plan,
         country_ro,
         substance,
-        blend,
         sector,
         subsector,
         project_type,
@@ -261,7 +258,6 @@ class TestBPRecordCreate:
         assert response.data["project_type_id"] == project_type.id
         assert response.data["bp_chemical_type_id"] == bp_chemical_type.id
         assert response.data["substances"] == [substance.id]
-        assert response.data["blends"] == [blend.id]
         assert response.data["sector_id"] == sector.id
         assert response.data["subsector_id"] == subsector.id
         assert response.data["status"] == "A"
@@ -274,7 +270,9 @@ class TestBPRecordCreate:
             response.data["remarks_additional"]
             == "Poate si la anu / Daca merge bine planu stau ca barosanu."
         )
-        assert response.data["comment_secretariat"] == "Alo, alo, Te-am sunat sa-ti spun"
+        assert (
+            response.data["comment_secretariat"] == "Alo, alo, Te-am sunat sa-ti spun"
+        )
         assert response.data["values"][0]["year"] == 2020
         assert response.data["values"][1]["year"] == 2021
 
@@ -326,7 +324,6 @@ class TestBPRecordUpdate:
         data = _setup_bp_record_create
         substance2 = SubstanceFactory.create(name="substance2")
         data["substances"] = [substance.id, substance2.id]
-        data["blends"] = []
         data["title"] = "Planu 2"
         data["status"] = "P"
         data["is_multi_year"] = True
@@ -346,7 +343,6 @@ class TestBPRecordUpdate:
         assert response.data["business_plan_id"] == business_plan.id
         assert response.data["title"] == "Planu 2"
         assert response.data["substances"] == [substance.id, substance2.id]
-        assert response.data["blends"] == []
         assert response.data["status"] == "P"
         assert response.data["is_multi_year"] is True
         assert response.data["remarks"] == "Merge rau"
@@ -426,7 +422,6 @@ def setup_bp_record_list(
     project_type,
     bp_chemical_type,
     substance,
-    blend,
     project_cluster_kpp,
 ):
     countries = [country_ro]
@@ -467,7 +462,6 @@ def setup_bp_record_list(
             }
             bp_record = BPRecordFactory.create(**data)
             bp_record.substances.set([substance])
-            bp_record.blends.set([blend])
             for i in range(business_plan.year_start, business_plan.year_end + 1):
                 BPRecordValueFactory.create(
                     bp_record=bp_record, value_usd=i, value_odp=i, value_mt=i
@@ -647,7 +641,6 @@ class TestBPUpdate:
         record_data = _setup_bp_record_create
         substance2 = SubstanceFactory.create(name="substance2")
         record_data["substances"] = [substance.id, substance2.id]
-        record_data["blends"] = []
         record_data["title"] = "Planu 2"
         record_data["status"] = "P"
         record_data["is_multi_year"] = True
@@ -675,7 +668,6 @@ class TestBPUpdate:
         assert records[0]["business_plan_id"] == response.data["id"]
         assert records[0]["title"] == "Planu 2"
         assert records[0]["substances"] == [substance.id, substance2.id]
-        assert records[0]["blends"] == []
         assert records[0]["status"] == "P"
         assert records[0]["is_multi_year"] is True
         assert records[0]["remarks"] == "Merge rau"

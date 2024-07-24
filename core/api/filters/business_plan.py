@@ -62,7 +62,6 @@ class BPRecordFilter(filters.FilterSet):
             "project_type_id",
             "bp_chemical_type",
             "substances",
-            "blends",
             "sector_id",
             "subsector_id",
             "status",
