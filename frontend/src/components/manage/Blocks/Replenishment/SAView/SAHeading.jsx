@@ -85,7 +85,6 @@ function SAHeading(props) {
                 <div>Version {v.version}</div>
                 <div className="flex items-center">
                   {idx == 0 && (v.is_final ? tagLatest : tagDraft)}
-                  {idx == 1 && !versions[0].is_final && tagLatest}
                 </div>
               </div>
             </div>

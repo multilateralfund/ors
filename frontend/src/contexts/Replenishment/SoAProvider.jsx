@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import { api } from '@ors/helpers'
 import { formatApiUrl } from '@ors/helpers/Api/utils'
 
 import SoAContext from './SoAContext'
@@ -10,6 +11,8 @@ function useApiReplenishment(startYear, versionId) {
 
   useEffect(
     function () {
+      // Avoid race conditions...use swr/react-query next time
+      let ignore = false
       const urlParams = {
         start_year: startYear,
       }
@@ -23,18 +26,20 @@ function useApiReplenishment(startYear, versionId) {
         new URLSearchParams(urlParams),
       ].join('?')
 
-      fetch(formatApiUrl(path), {
+      api(formatApiUrl(path), {
         credentials: 'include',
-      })
-        .then(function (resp) {
-          return resp.json()
-        })
-        .then(function (jsonData) {
+      }).then(function (jsonData) {
+        if (!ignore) {
           setContributions(jsonData)
           if (jsonData.length > 0) {
             setReplenishment(jsonData[0].replenishment)
           }
-        })
+        }
+      })
+
+      return function () {
+        ignore = true
+      }
     },
     [startYear, versionId],
   )
@@ -51,7 +56,6 @@ function SoAProvider(props) {
     currentVersion,
   )
 
-  // Mock versions
   const versions = useMemo(
     function () {
       return replenishment.scales_of_assessment_versions || []
