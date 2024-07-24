@@ -1,3 +1,6 @@
+# TODO: split into more functions
+# pylint: disable=R0915
+
 import decimal
 import logging
 

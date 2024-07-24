@@ -1,8 +1,10 @@
+# TODO: split the file into multiple files
+# pylint: disable=C0302
+
 import decimal
 from decimal import Decimal
 
 import pytest
-from django.db.models import F
 from django.urls import reverse
 from rest_framework.test import APIClient
 

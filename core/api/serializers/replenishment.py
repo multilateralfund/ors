@@ -28,7 +28,6 @@ class ReplenishmentSerializer(serializers.ModelSerializer):
 
 class ScaleOfAssessmentVersionSerializer(serializers.ModelSerializer):
     version = serializers.CharField(read_only=True)
-    is_final = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = ScaleOfAssessmentVersion

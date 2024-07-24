@@ -78,18 +78,18 @@ class ReplenishmentViewSet(
             previous_replenishment_final_version = (
                 previous_replenishment.scales_of_assessment_versions.get(is_final=True)
             )
-        except ScaleOfAssessmentVersion.DoesNotExist:
+        except ScaleOfAssessmentVersion.DoesNotExist as exc:
             raise ValidationError(
                 {
                     "non_field_errors": "The current replenishment hasn't been finalized yet."
                 }
-            )
-        except ScaleOfAssessmentVersion.MultipleObjectsReturned:
+            ) from exc
+        except ScaleOfAssessmentVersion.MultipleObjectsReturned as exc:
             raise ValidationError(
                 {
-                    "non_field_errors": "There are multiple final versions for the previous replenishment, something went wrong."
+                    "non_field_errors": "There are multiple final versions for the previous replenishment."
                 }
-            )
+            ) from exc
 
         new_replenishment = serializer.save(
             start_year=previous_replenishment.start_year + 3,
@@ -143,17 +143,20 @@ class ScaleOfAssessmentViewSet(
 
         try:
             replenishment = Replenishment.objects.get(id=input_data["replenishment_id"])
-        except Replenishment.DoesNotExist:
-            raise ValidationError({"replenishment_id": "Replenishment does not exist."})
+        except Replenishment.DoesNotExist as exc:
+            raise ValidationError(
+                {"replenishment_id": "Replenishment does not exist."}
+            ) from exc
 
         if input_data.get("amount"):
             replenishment.amount = input_data["amount"]
             replenishment.save()
 
         should_create_new_version = input_data.get("createNewVersion")
-        final = input_data.get("final")
-        meeting_number = input_data.get("meeting")
-        decision_number = input_data.get("decision")
+        final = input_data.get("final") or False
+        meeting_number = input_data.get("meeting") or ""
+        decision_number = input_data.get("decision") or ""
+        comment = input_data.get("comment") or ""
 
         previous_version = replenishment.scales_of_assessment_versions.order_by(
             "-version"
@@ -174,12 +177,14 @@ class ScaleOfAssessmentViewSet(
                 meeting_number=meeting_number,
                 decision_number=decision_number,
                 version=previous_version.version + 1,
+                comment=comment,
             )
         else:
             version = previous_version
             version.decision_number = decision_number
             version.meeting_number = meeting_number
             version.is_final = final
+            version.comment = comment
             version.save()
 
         # Delete all scales of assessment if updating the latest version

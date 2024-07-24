@@ -501,6 +501,7 @@ class ScaleOfAssessmentVersionFactory(factory.django.DjangoModelFactory):
     is_final = factory.Faker("pybool")
     meeting_number = factory.Faker("pystr", max_chars=32)
     decision_number = factory.Faker("pystr", max_chars=32)
+    comment = factory.Faker("pystr", max_chars=100)
 
 
 class ScaleOfAssessmentFactory(factory.django.DjangoModelFactory):

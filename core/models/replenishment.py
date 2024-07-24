@@ -36,9 +36,11 @@ class ScaleOfAssessmentVersion(models.Model):
     is_final = models.BooleanField(default=False)
     meeting_number = models.CharField(max_length=32, default="")
     decision_number = models.CharField(max_length=32, default="")
+    comment = models.TextField(blank=True, default="")
 
     def __str__(self):
-        return f"Scale of Assessment Version {self.version} ({self.replenishment.start_year} - {self.replenishment.end_year})"
+        return (f"Scale of Assessment Version {self.version} "
+                f"({self.replenishment.start_year} - {self.replenishment.end_year})")
 
     class Meta:
         constraints = [
@@ -121,7 +123,8 @@ class ScaleOfAssessment(models.Model):
         return self.amount * self.exchange_rate
 
     def __str__(self):
-        return f"Contribution (version {self.version.version}) {self.country.name} ({self.version.replenishment.start_year} - {self.version.replenishment.end_year})"
+        return (f"Contribution (version {self.version.version}) {self.country.name} "
+                f"({self.version.replenishment.start_year} - {self.version.replenishment.end_year})")
 
     class Meta:
         constraints = [
