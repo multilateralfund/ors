@@ -119,12 +119,12 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
     )
     currency = serializers.CharField()
     exchange_rate = serializers.DecimalField(
-        max_digits=30, decimal_places=15, allow_null=True, coerce_to_string=False
+        max_digits=30, decimal_places=15, allow_null=True, required=False, coerce_to_string=False
     )
 
     number = serializers.CharField()
 
-    date_sent_out = serializers.DateField(allow_null=True)
+    date_sent_out = serializers.DateField(allow_null=True, required=False)
 
     class Meta:
         model = Invoice
@@ -199,16 +199,17 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
         queryset=Replenishment.objects.all().values_list("id", flat=True),
         write_only=True,
         allow_null=True,
+        required=False,
     )
 
     amount = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
     exchange_rate = serializers.DecimalField(
-        max_digits=30, decimal_places=15, allow_null=True, coerce_to_string=False
+        max_digits=30, decimal_places=15, allow_null=True, required=False, coerce_to_string=False
     )
     ferm_gain_or_loss = serializers.DecimalField(
-        max_digits=30, decimal_places=15, allow_null=True, coerce_to_string=False
+        max_digits=30, decimal_places=15, allow_null=True, required=False, coerce_to_string=False
     )
 
     class Meta:
