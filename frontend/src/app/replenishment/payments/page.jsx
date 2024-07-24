@@ -7,15 +7,18 @@ import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export default function ReplenishmentPayments() {
   return (
-    <PageWrapper className="w-full p-4" defaultSpacing={false}>
-      <ReplenishmentHeading
-        extraPeriodOptions={[{ label: 'All', value: '' }]}
-        showPeriodSelector={true}
-      >
-        Payments
-      </ReplenishmentHeading>
-      <DownloadButtons />
-      <PaymentsView />
-    </PageWrapper>
+    <>
+      <title>Replenishment - Payments</title>
+      <PageWrapper className="w-full p-4" defaultSpacing={false}>
+        <ReplenishmentHeading
+          extraPeriodOptions={[{ label: 'All', value: '' }]}
+          showPeriodSelector={true}
+        >
+          Payments
+        </ReplenishmentHeading>
+        <DownloadButtons />
+        <PaymentsView />
+      </PageWrapper>
+    </>
   )
 }

@@ -8,7 +8,6 @@ import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
 import SAView from '@ors/components/manage/Blocks/Replenishment/SAView'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
-import ReplenishmentProvider from '@ors/contexts/Replenishment/ReplenishmentProvider'
 
 export default function Replenishment() {
   const router = useRouter()
@@ -23,14 +22,17 @@ export default function Replenishment() {
 
   // Return SAView so that there is no flicker after the redirect.
   return (
-    <PageWrapper
-      className="w-full rounded-b-lg bg-white p-4"
-      defaultSpacing={false}
-    >
-      <ReplenishmentHeading showPeriodSelector={false}>
-        Scale of assessment
-      </ReplenishmentHeading>
-      <SAView />
-    </PageWrapper>
+    <>
+      <title>Replenishment - Scale of assessment</title>
+      <PageWrapper
+        className="w-full rounded-b-lg bg-white p-4"
+        defaultSpacing={false}
+      >
+        <ReplenishmentHeading showPeriodSelector={false}>
+          Scale of assessment
+        </ReplenishmentHeading>
+        <SAView />
+      </PageWrapper>
+    </>
   )
 }

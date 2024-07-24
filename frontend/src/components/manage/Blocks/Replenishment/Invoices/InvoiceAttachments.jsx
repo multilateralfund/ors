@@ -11,7 +11,6 @@ import { formatApiUrl } from '@ors/helpers'
 
 import { IoDocumentTextOutline, IoTrash } from 'react-icons/io5'
 
-
 function InvoiceAttachments(props) {
   const { withFileType = true } = props
   const [files, setFiles] = useState([])
