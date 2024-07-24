@@ -7,7 +7,7 @@ import { times } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
 import { Select } from '@ors/components/manage/Blocks/Replenishment/Inputs'
-import PaymentDialoge from '@ors/components/manage/Blocks/Replenishment/Payments/PaymentDialogue'
+import PaymentDialogue from '@ors/components/manage/Blocks/Replenishment/Payments/PaymentDialogue'
 import useGetPayments, {
   _PER_PAGE,
 } from '@ors/components/manage/Blocks/Replenishment/Payments/useGetPayments'
@@ -42,11 +42,11 @@ const COLUMNS = [
 ]
 
 const AddInvoiceDialog = function AddInvoiceDialog(props) {
-  return <PaymentDialoge title="Add payment" {...props} />
+  return <PaymentDialogue title="Add payment" {...props} />
 }
 
 const EditInvoiceDialog = function EditInvoiceDialog(props) {
-  return <PaymentDialoge title="Edit payment" isEdit {...props} />
+  return <PaymentDialogue title="Edit payment" isEdit {...props} />
 }
 
 function PaymentsView() {
@@ -118,7 +118,7 @@ function PaymentsView() {
     let entry = null
     if (editIdx !== null) {
       entry = { ...memoResults[editIdx] }
-      entry.reminder_date = dateForEditField(entry.reminder_date)
+      entry.date = dateForEditField(entry.date)
       entry.amount = numberForEditField(entry.amount)
       // entry.ferm_gain_or_loss = numberForEditField(entry.ferm_gain_or_loss)
     }
@@ -131,7 +131,7 @@ function PaymentsView() {
 
   async function handleEditPaymentSubmit(formData) {
     const entry = { ...formData }
-    entry.reminder_date = dateForInput(entry.reminder_date)
+    entry.date = dateForInput(entry.date)
 
     const data = new FormData()
     for (const key in entry) {
@@ -165,6 +165,13 @@ function PaymentsView() {
         },
         method: 'PUT',
       })
+      if (!response.ok) {
+        const errorData = await response.json() // Get the error details
+        const error = new Error('Request failed')
+        error.status = response.status
+        error.data = errorData
+        throw error
+      }
       enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
       setParams({
         offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,
@@ -193,9 +200,9 @@ function PaymentsView() {
   }
 
   async function handleAddPaymentSubmit(formData) {
-    console.log('formData', formData)
     const entry = { ...formData }
-    entry.reminder_date = dateForInput(entry.reminder_date)
+    entry.date = dateForInput(entry.date)
+    entry.replenishment_id = null
 
     const data = new FormData()
     for (const key in entry) {
@@ -230,6 +237,13 @@ function PaymentsView() {
         },
         method: 'POST',
       })
+      if (!response.ok) {
+        const errorData = await response.json() // Get the error details
+        const error = new Error('Request failed')
+        error.status = response.status
+        error.data = errorData
+        throw error
+      }
       enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
       setParams({
         offset: 0,
@@ -267,6 +281,13 @@ function PaymentsView() {
         data: entry,
         method: 'DELETE',
       })
+      if (!response.ok) {
+        const errorData = await response.json() // Get the error details
+        const error = new Error('Request failed')
+        error.status = response.status
+        error.data = errorData
+        throw error
+      }
       enqueueSnackbar('Invoice deleted.', { variant: 'success' })
       setParams({
         offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,
@@ -330,7 +351,7 @@ function PaymentsView() {
         <div className="flex items-center">
           <Select
             id="country"
-            className="placeholder-select w-52 !ml-0"
+            className="placeholder-select !ml-0 w-52"
             onChange={handleCountryFilter}
             hasClear
             required

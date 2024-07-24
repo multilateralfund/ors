@@ -8,7 +8,7 @@ import {
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
-const PaymentDialoge = function PaymentDialoge(props) {
+const PaymentDialogue = function PaymentDialogue(props) {
   const { columns, countries, data, isEdit, title, ...dialogProps } = props
   // const ctx = useContext(ReplenishmentContext)
 
@@ -67,8 +67,8 @@ const PaymentDialoge = function PaymentDialoge(props) {
         required
       />
       <FieldInput
-        id="year"
-        defaultValue={data?.year}
+        id="payment_for_year"
+        defaultValue={data?.payment_for_year}
         label={columns[5].label}
         type="text"
         required
@@ -91,4 +91,4 @@ const PaymentDialoge = function PaymentDialoge(props) {
   )
 }
 
-export default PaymentDialoge
+export default PaymentDialogue
