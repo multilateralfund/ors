@@ -156,16 +156,19 @@ class PaymentFileSerializer(serializers.ModelSerializer):
 
 class PaymentSerializer(serializers.ModelSerializer):
     country = CountrySerializer(read_only=True)
-    replenishment = ReplenishmentSerializer(read_only=True)
+    replenishment = ReplenishmentSerializer(read_only=True, allow_null=True)
 
     gain_or_loss = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
-    amount_local_currency = serializers.DecimalField(
+    amount = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
-    amount_usd = serializers.DecimalField(
-        max_digits=30, decimal_places=15, coerce_to_string=False
+    exchange_rate = serializers.DecimalField(
+        max_digits=30, decimal_places=15, allow_null=True, coerce_to_string=False
+    )
+    ferm_gain_or_loss = serializers.DecimalField(
+        max_digits=30, decimal_places=15, allow_null=True, coerce_to_string=False
     )
 
     payment_files = PaymentFileSerializer(many=True, read_only=True)
@@ -178,8 +181,10 @@ class PaymentSerializer(serializers.ModelSerializer):
             "replenishment",
             "date",
             "payment_for_year",
-            "gain_or_loss",
-            "amount_local_currency",
-            "amount_usd",
+            "amount",
+            "currency",
+            "exchange_rate",
+            "ferm_gain_or_loss",
+            "comment",
             "payment_files",
         ]
