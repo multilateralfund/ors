@@ -25,6 +25,7 @@ import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
 import api from '@ors/helpers/Api/_api'
+import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
 
 const COLUMNS = [
   { field: 'country', label: 'Country' },
@@ -276,10 +277,15 @@ function PaymentsView() {
     }
   }
 
-  async function handleDeletePayment(rowId) {
-    const confirmed = confirm('Are you sure you want to delete this payment?')
-    if (!confirmed) return
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false)
+  const [paymentToDelete, setPaymentToDelete] = useState(null)
 
+  function promptDeletePayment(rowId) {
+    setPaymentToDelete(rowId)
+    setIsDeleteModalVisible(true)
+  }
+
+  async function handleDeletePayment(rowId) {
     const entry = { ...memoResults[rowId] }
 
     try {
@@ -335,6 +341,14 @@ function PaymentsView() {
 
   return (
     <>
+      {isDeleteModalVisible ? (
+        <ConfirmDialog
+          onCancel={() => setIsDeleteModalVisible(false)}
+          onSubmit={() => handleDeletePayment(paymentToDelete)}
+        >
+          <div className="text-lg">Are you sure you want to delete this payment ?</div>
+        </ConfirmDialog>
+      ) : null}
       {showAdd ? (
         <AddPaymentDialogue
           columns={COLUMNS}
@@ -386,7 +400,7 @@ function PaymentsView() {
           }
           return acc
         }, [])}
-        onDelete={handleDeletePayment}
+        onDelete={promptDeletePayment}
         onEdit={showEditPaymentDialogue}
         onSort={handleSort}
       />
