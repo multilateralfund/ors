@@ -20,6 +20,7 @@ import ViewFiles from '@ors/components/manage/Blocks/Replenishment/ViewFiles'
 import {
   dateForEditField,
   dateForInput,
+  fetchWithHandling,
   formatDateValue,
   numberForEditField,
 } from '@ors/components/manage/Blocks/Replenishment/utils'
@@ -143,15 +144,14 @@ function InvoicesView() {
     entry.date_of_issuance = dateForInput(entry.date_of_issuance)
     entry.date_sent_out = dateForInput(entry.date_sent_out)
 
+    let nr_new_files = 0
     const data = new FormData()
+
     for (const key in entry) {
       if (!key.startsWith('file_')) {
         data.append(key, entry[key])
       }
-    }
-    let nr_new_files = 0
-    // Append files with their types [invoice, reminder]
-    for (const key in entry) {
+      // Append files with their types [payment, reminder]
       if (key.startsWith('file_') && entry[key] instanceof File) {
         const fileIndex = key.split('_')[1]
         const fileTypeKey = `file_type_${fileIndex}`
@@ -167,24 +167,15 @@ function InvoicesView() {
 
     try {
       const csrftoken = Cookies.get('csrftoken')
-      const response = await fetch(
+
+      await fetchWithHandling(
         formatApiUrl(`api/replenishment/invoices/${entry.id}/`),
         {
           body: data,
-          credentials: 'include',
-          headers: {
-            ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
-          },
           method: 'PUT',
         },
+        csrftoken,
       )
-      if (!response.ok) {
-        const errorData = await response.json() // Get the error details
-        const error = new Error('Request failed')
-        error.status = response.status
-        error.data = errorData
-        throw error
-      }
       enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
       setParams({
         offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,
@@ -219,16 +210,14 @@ function InvoicesView() {
       (p) => Number(p.start_year) === Number(entry.period.split('-')[0]),
     )?.id
 
+    let nr_new_files = 0
     const data = new FormData()
+
     for (const key in entry) {
       if (!key.startsWith('file_')) {
         data.append(key, entry[key])
       }
-    }
-
-    let nr_new_files = 0
-    // Append files with their types [invoice, reminder]
-    for (const key in entry) {
+      // Append files with their types [payment, reminder]
       if (key.startsWith('file_') && entry[key] instanceof File) {
         const fileIndex = key.split('_')[1]
         const fileTypeKey = `file_type_${fileIndex}`
@@ -244,24 +233,15 @@ function InvoicesView() {
 
     try {
       const csrftoken = Cookies.get('csrftoken')
-      const response = await fetch(
+
+      await fetchWithHandling(
         formatApiUrl('api/replenishment/invoices/'),
         {
           body: data,
-          credentials: 'include',
-          headers: {
-            ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
-          },
           method: 'POST',
         },
+        csrftoken,
       )
-      if (!response.ok) {
-        const errorData = await response.json() // Get the error details
-        const error = new Error('Request failed')
-        error.status = response.status
-        error.data = errorData
-        throw error
-      }
 
       enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
       setParams({
@@ -300,16 +280,14 @@ function InvoicesView() {
     const entry = { ...memoResults[rowId] }
 
     try {
-      const response = await api(`api/replenishment/invoices/${entry.id}/`, {
-        method: 'DELETE',
-      })
-      if (!response.ok) {
-        const errorData = await response.json() // Get the error details
-        const error = new Error('Request failed')
-        error.status = response.status
-        error.data = errorData
-        throw error
-      }
+      const csrftoken = Cookies.get('csrftoken')
+      await fetchWithHandling(
+        formatApiUrl(`api/replenishment/invoices/${entry.id}/`),
+        {
+          method: 'DELETE',
+        },
+        csrftoken,
+      )
       enqueueSnackbar('Invoice deleted.', { variant: 'success' })
       setParams({
         offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,

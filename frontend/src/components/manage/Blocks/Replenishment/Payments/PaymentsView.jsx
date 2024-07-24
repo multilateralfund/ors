@@ -17,6 +17,7 @@ import ViewFiles from '@ors/components/manage/Blocks/Replenishment/ViewFiles'
 import {
   dateForEditField,
   dateForInput,
+  fetchWithHandling,
   formatDateValue,
   formatNumberValue,
   numberForEditField,
@@ -134,48 +135,32 @@ function PaymentsView() {
     const entry = { ...formData }
     entry.date = dateForInput(entry.date)
 
+    let nr_new_files = 0
     const data = new FormData()
+
     for (const key in entry) {
       if (!key.startsWith('file_')) {
         data.append(key, entry[key])
       }
+      // if (key.startsWith('file_') && entry[key] instanceof File) {
+      //   const fileIndex = key.split('_')[1]
+      //   data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
+      //   nr_new_files++
+      // }
     }
-    // let nr_of_files = 0
-    // // Append files with their types [payment, reminder]
-    // for (const key in entry) {
-    //   if (key.startsWith('file_') && entry[key] instanceof File) {
-    //     const fileIndex = key.split('_')[1]
-    //     const fileTypeKey = `file_type_${fileIndex}`
-    //     if (entry[fileTypeKey]) {
-    //       nr_of_files++
-    //       data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
-    //       data.append(`files[${fileIndex}][type]`, entry[fileTypeKey])
-    //     }
-    //   }
-    // }
-    //
-    // data.append('nr_of_files', nr_of_files)
+
+    // data.append('nr_new_files', nr_new_files)
 
     try {
       const csrftoken = Cookies.get('csrftoken')
-      const response = await fetch(
+      await fetchWithHandling(
         formatApiUrl(`api/replenishment/payments/${entry.id}/`),
         {
           body: data,
-          credentials: 'include',
-          headers: {
-            ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
-          },
           method: 'PUT',
         },
+        csrftoken,
       )
-      if (!response.ok) {
-        const errorData = await response.json() // Get the error details
-        const error = new Error('Request failed')
-        error.status = response.status
-        error.data = errorData
-        throw error
-      }
       enqueueSnackbar('Payment updated successfully.', { variant: 'success' })
       setParams({
         offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,
@@ -207,49 +192,32 @@ function PaymentsView() {
     const entry = { ...formData }
     entry.date = dateForInput(entry.date)
 
+    let nr_new_files = 0
     const data = new FormData()
+
     for (const key in entry) {
       if (!key.startsWith('file_')) {
         data.append(key, entry[key])
       }
+      // if (key.startsWith('file_') && entry[key] instanceof File) {
+      //   const fileIndex = key.split('_')[1]
+      //   data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
+      //   nr_new_files++
+      // }
     }
 
-    // let nr_of_files = 0
-    // // Append files with their types [payment, reminder]
-    // for (const key in entry) {
-    //   if (key.startsWith('file_') && entry[key] instanceof File) {
-    //     const fileIndex = key.split('_')[1]
-    //     const fileTypeKey = `file_type_${fileIndex}`
-    //     if (entry[fileTypeKey]) {
-    //       nr_of_files++
-    //       data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
-    //       data.append(`files[${fileIndex}][type]`, entry[fileTypeKey])
-    //     }
-    //   }
-    // }
-    //
-    // data.append('nr_of_files', nr_of_files)
+    // data.append('nr_new_files', nr_new_files)
 
     try {
       const csrftoken = Cookies.get('csrftoken')
-      const response = await fetch(
+      await fetchWithHandling(
         formatApiUrl('api/replenishment/payments/'),
         {
           body: data,
-          credentials: 'include',
-          headers: {
-            ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
-          },
           method: 'POST',
         },
+        csrftoken,
       )
-      if (!response.ok) {
-        const errorData = await response.json() // Get the error details
-        const error = new Error('Request failed')
-        error.status = response.status
-        error.data = errorData
-        throw error
-      }
       enqueueSnackbar('Payment updated successfully.', { variant: 'success' })
       setParams({
         offset: 0,
@@ -289,16 +257,14 @@ function PaymentsView() {
     const entry = { ...memoResults[rowId] }
 
     try {
-      const response = await api(`api/replenishment/payments/${entry.id}/`, {
-        method: 'DELETE',
-      })
-      if (!response.ok) {
-        const errorData = await response.json() // Get the error details
-        const error = new Error('Request failed')
-        error.status = response.status
-        error.data = errorData
-        throw error
-      }
+      const csrftoken = Cookies.get('csrftoken')
+      await fetchWithHandling(
+        formatApiUrl(`api/replenishment/payments/${entry.id}/`),
+        {
+          method: 'DELETE',
+        },
+        csrftoken,
+      )
       enqueueSnackbar('Payment deleted.', { variant: 'success' })
       setParams({
         offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,
