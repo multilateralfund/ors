@@ -15,6 +15,7 @@ from core.api.tests.factories import (
     FermGainLossFactory,
     TriennialContributionStatusFactory,
     InvoiceFactory,
+    PaymentFactory,
 )
 from core.models import ExternalIncome, ExternalAllocation
 
@@ -998,3 +999,48 @@ class TestInvoices(BaseTest):
             self.url + f"{invoice.id}/", data=request_data, format="json"
         )
         assert response.status_code == 200
+
+
+class TestPayments(BaseTest):
+    url = reverse("replenishment-payments-list")
+    year_1 = 2021
+    year_2 = 2023
+    year_3 = 2024
+    year_4 = 2026
+
+    def test_payments_list(self, user):
+        country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
+        country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
+
+        replenishment = ReplenishmentFactory.create(
+            start_year=self.year_3, end_year=self.year_4
+        )
+
+        PaymentFactory(country=country_1, replenishment=None)
+        PaymentFactory(country=country_2, replenishment=replenishment)
+
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 2
+
+    def test_payments_create(self, user):
+        country = CountryFactory.create(name="Country 1", iso3="XYZ")
+
+        self.client.force_authenticate(user=user)
+
+        request_data = {
+            "country_id": country.id,
+            "replenishment_id": None,
+            "date": "2019-03-14",
+            "payment_for_year": "deferred",
+            "amount": 100.0,
+            "currency": "EUR",
+            "exchange_rate": 0.7,
+            "ferm_gain_or_loss": None,
+            "files": [],
+        }
+
+        response = self.client.post(self.url, data=request_data, format="json")
+        assert response.status_code == 201

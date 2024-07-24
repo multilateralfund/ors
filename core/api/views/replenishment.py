@@ -18,6 +18,7 @@ from core.api.serializers import (
     InvoiceSerializer,
     InvoiceCreateSerializer,
     PaymentSerializer,
+    PaymentCreateSerializer,
     ReplenishmentSerializer,
     ScaleOfAssessmentSerializer,
 )
@@ -599,6 +600,76 @@ class ReplenishmentPaymentViewSet(
             queryset = queryset.filter(country_id=user.country_id)
 
         return queryset.select_related("country", "replenishment")
+
+    def get_serializer_class(self):
+        if self.request.method in ["POST", "PUT"]:
+            return PaymentCreateSerializer
+        return PaymentSerializer
+
+    def _parse_payment_new_files(self, request):
+        number_of_files = int(request.data.get("nr_new_files", 0))
+        files = [
+            {
+                "type": request.data.get(f"files[{file_no}][type]"),
+                "contents": request.data.get(f"files[{file_no}][file]"),
+            }
+            for file_no in range(number_of_files)
+        ]
+        return files
+
+    def _create_new_payment_files(self, payment, files_list):
+        payment_files = []
+        for payment_file in files_list:
+            payment_files.append(
+                PaymentFile(
+                    payment=payment,
+                    filename=payment_file["contents"].name,
+                    file=payment_file["contents"],
+                )
+            )
+        PaymentFile.objects.bulk_create(payment_files)
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        files = self._parse_payment_new_files(request)
+
+        serializer = PaymentCreateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # First create the actual payment
+        self.perform_create(serializer)
+        payment = serializer.instance
+
+        # Now create the files for this Payment
+        self._create_new_payment_files(payment, files)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        current_obj = self.get_object()
+
+        new_files = self._parse_payment_new_files(request)
+        files_to_delete = json.loads(request.data.get("deleted_files", "[]"))
+
+        # First perform the update for the Payment fields
+        serializer = PaymentCreateSerializer(current_obj, data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        self.perform_update(serializer)
+
+        # Now create the new files for this Payment
+        self._create_new_payment_files(current_obj, new_files)
+
+        # And delete the ones that need to be deleted
+        current_obj.payment_files.filter(id__in=files_to_delete).delete()
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
 
 class ReplenishmentPaymentFileDownloadView(generics.RetrieveAPIView):

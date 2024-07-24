@@ -187,3 +187,40 @@ class PaymentSerializer(serializers.ModelSerializer):
             "comment",
             "payment_files",
         ]
+
+
+class PaymentCreateSerializer(serializers.ModelSerializer):
+    country_id = serializers.PrimaryKeyRelatedField(
+        queryset=Country.objects.all().values_list("id", flat=True),
+        write_only=True,
+    )
+
+    replenishment_id = serializers.PrimaryKeyRelatedField(
+        queryset=Replenishment.objects.all().values_list("id", flat=True),
+        write_only=True,
+        allow_null=True,
+    )
+
+    amount = serializers.DecimalField(
+        max_digits=30, decimal_places=15, coerce_to_string=False
+    )
+    exchange_rate = serializers.DecimalField(
+        max_digits=30, decimal_places=15, allow_null=True, coerce_to_string=False
+    )
+    ferm_gain_or_loss = serializers.DecimalField(
+        max_digits=30, decimal_places=15, allow_null=True, coerce_to_string=False
+    )
+
+    class Meta:
+        model = Payment
+        fields = [
+            "country_id",
+            "replenishment_id",
+            "date",
+            "payment_for_year",
+            "amount",
+            "currency",
+            "exchange_rate",
+            "ferm_gain_or_loss",
+            "comment",
+        ]
