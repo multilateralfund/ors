@@ -29,6 +29,7 @@ import { formatApiUrl } from '@ors/helpers'
 import api from '@ors/helpers/Api/_api'
 
 import { IoSearchSharp } from 'react-icons/io5'
+import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
 
 const COLUMNS = [
   { field: 'country', label: 'Country' },
@@ -286,10 +287,16 @@ function InvoicesView() {
     }
   }
 
-  async function handleDeleteInvoice(rowId) {
-    const confirmed = confirm('Are you sure you want to delete this invoice?')
-    if (!confirmed) return
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false)
+  const [invoiceToDelete, setInvoiceToDelete] = useState(null)
 
+  function promptDeletePayment(rowId) {
+    setInvoiceToDelete(rowId)
+    setIsDeleteModalVisible(true)
+  }
+
+  async function handleDeleteInvoice(rowId) {
+    setInvoiceToDelete(null)
     const entry = { ...memoResults[rowId] }
 
     try {
@@ -353,6 +360,19 @@ function InvoicesView() {
 
   return (
     <>
+      {isDeleteModalVisible && invoiceToDelete !== null ? (
+        <ConfirmDialog
+          onCancel={() => {
+            setIsDeleteModalVisible(false)
+            setInvoiceToDelete(null)
+          }}
+          onSubmit={() => handleDeleteInvoice(invoiceToDelete)}
+        >
+          <div className="text-lg">
+            Are you sure you want to delete this invoice ?
+          </div>
+        </ConfirmDialog>
+      ) : null}
       {showAdd ? (
         <AddInvoiceDialog
           columns={COLUMNS}
@@ -438,7 +458,7 @@ function InvoicesView() {
           }
           return acc
         }, [])}
-        onDelete={handleDeleteInvoice}
+        onDelete={promptDeletePayment}
         onEdit={showEditInvoiceDialog}
         onSort={handleSort}
       />

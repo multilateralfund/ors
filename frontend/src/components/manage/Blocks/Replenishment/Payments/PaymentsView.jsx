@@ -286,6 +286,7 @@ function PaymentsView() {
   }
 
   async function handleDeletePayment(rowId) {
+    setPaymentToDelete(null)
     const entry = { ...memoResults[rowId] }
 
     try {
@@ -341,12 +342,17 @@ function PaymentsView() {
 
   return (
     <>
-      {isDeleteModalVisible ? (
+      {isDeleteModalVisible && paymentToDelete !== null ? (
         <ConfirmDialog
-          onCancel={() => setIsDeleteModalVisible(false)}
+          onCancel={() => {
+            setIsDeleteModalVisible(false)
+            setPaymentToDelete(null)
+          }}
           onSubmit={() => handleDeletePayment(paymentToDelete)}
         >
-          <div className="text-lg">Are you sure you want to delete this payment ?</div>
+          <div className="text-lg">
+            Are you sure you want to delete this payment ?
+          </div>
         </ConfirmDialog>
       ) : null}
       {showAdd ? (
