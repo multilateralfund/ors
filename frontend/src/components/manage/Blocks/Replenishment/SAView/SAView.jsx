@@ -1,6 +1,5 @@
 'use client'
 
-import { join } from 'lodash'
 import { useContext, useEffect, useMemo, useState } from 'react'
 
 import { useSnackbar } from 'notistack'
