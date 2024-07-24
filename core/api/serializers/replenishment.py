@@ -124,6 +124,8 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
 
     number = serializers.CharField()
 
+    date_sent_out = serializers.DateField(allow_null=True)
+
     class Meta:
         model = Invoice
         fields = [
