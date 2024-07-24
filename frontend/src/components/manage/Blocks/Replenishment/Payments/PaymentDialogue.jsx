@@ -10,7 +10,7 @@ import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentConte
 
 const PaymentDialoge = function PaymentDialoge(props) {
   const { columns, countries, data, isEdit, title, ...dialogProps } = props
-  const ctx = useContext(ReplenishmentContext)
+  // const ctx = useContext(ReplenishmentContext)
 
   return (
     <FormDialog title={title} {...dialogProps}>
@@ -38,8 +38,8 @@ const PaymentDialoge = function PaymentDialoge(props) {
         ))}
       </FieldSelect>
       <FieldInput
-        id="reminder_date"
-        defaultValue={data?.reminder_date}
+        id="date"
+        defaultValue={data?.date}
         label={columns[1].label}
         type="date"
         required
@@ -74,8 +74,8 @@ const PaymentDialoge = function PaymentDialoge(props) {
         required
       />
       <FieldInput
-        id="ferm"
-        defaultValue={data?.ferm}
+        id="gain_or_loss"
+        defaultValue={data?.gain_or_loss}
         label={columns[6].label}
         type="number"
       />

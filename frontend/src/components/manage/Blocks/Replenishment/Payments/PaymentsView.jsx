@@ -19,6 +19,7 @@ import {
   dateForEditField,
   dateForInput,
   formatDateValue,
+  formatNumberValue,
   numberForEditField,
 } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { AddButton } from '@ors/components/ui/Button/Button'
@@ -28,18 +29,19 @@ import { formatApiUrl } from '@ors/helpers'
 import api from '@ors/helpers/Api/_api'
 
 import { IoSearchSharp } from 'react-icons/io5'
+import ViewFiles from '@ors/components/manage/Blocks/Replenishment/ViewFiles'
 
 const COLUMNS = [
   { field: 'country', label: 'Country' },
-  { field: 'reminder_date', label: 'Date', sortable: true },
+  { field: 'date', label: 'Date', sortable: true },
   { field: 'amount', label: 'Amount', sortable: true },
   { field: 'currency', label: 'Currency' },
   {
     field: 'exchange_rate',
     label: 'Exchange Rate',
   },
-  { field: 'year', label: 'Year(s)' },
-  { field: 'ferm', label: 'FERM Gain/Loss' },
+  { field: 'payment_for_year', label: 'Year(s)' },
+  { field: 'gain_or_loss', label: 'FERM Gain/Loss' },
   { field: 'files', label: 'Files' },
   { field: 'comments', label: 'Comments' },
 ]
@@ -73,21 +75,19 @@ function PaymentsView() {
     return [
       ...results.map((data) => ({
         id: data.id,
-        amount: data.amount.toLocaleString(undefined, {
-          maximumFractionDigits: 3,
-          minimumFractionDigits: 3,
-        }),
+        amount: formatNumberValue(data.amount_local_currency),
         comments: data.comments,
         country: data.country.name,
         country_id: data.country.id,
-        currency: data.currency,
-        exchange_rate: data.exchange_rate.toFixed(3),
-        ferm: data.ferm,
-        files: data.files?.length > 0 ? data.files.join(', ') : 'No files',
+        date: formatDateValue(data.date),
+        // currency: data.currency,
+        // exchange_rate: data.exchange_rate.toFixed(3),
+        files: <ViewFiles files={data.payment_files} />,
+        files_data: data.payment_files,
+        gain_or_loss: data.gain_or_loss,
         iso3: data.country.iso3,
-        reminder_date: formatDateValue(data.reminder_date) || 'N/A',
+        payment_for_year: data.payment_for_year,
         replenishment: data.replenishment,
-        year: data.year,
       })),
     ]
   }, [results, loaded, pagination.rowsPerPage])
@@ -125,7 +125,7 @@ function PaymentsView() {
       entry = { ...memoResults[editIdx] }
       entry.reminder_date = dateForEditField(entry.reminder_date)
       entry.amount = numberForEditField(entry.amount)
-      // entry.ferm = numberForEditField(entry.ferm)
+      // entry.gain_or_loss = numberForEditField(entry.gain_or_loss)
     }
     return entry
   }, [editIdx, memoResults])

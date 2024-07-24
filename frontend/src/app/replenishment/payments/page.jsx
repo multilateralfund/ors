@@ -12,7 +12,7 @@ export default function ReplenishmentPayments() {
       <PageWrapper className="w-full p-4" defaultSpacing={false}>
         <ReplenishmentHeading
           extraPeriodOptions={[{ label: 'All', value: '' }]}
-          showPeriodSelector={true}
+          showPeriodSelector={false}
         >
           Payments
         </ReplenishmentHeading>
