@@ -1,5 +1,6 @@
 'use client'
 
+import { join } from 'lodash'
 import { useContext, useEffect, useMemo, useState } from 'react'
 
 import { useSnackbar } from 'notistack'
@@ -176,7 +177,12 @@ function SaveManager(props) {
       })
       .catch((error) => {
         error.json().then((data) => {
-          enqueueSnackbar(data, { variant: 'error' })
+          enqueueSnackbar(
+            Object.entries(data)
+              .map(([_, value]) => value)
+              .join(' '),
+            { variant: 'error' },
+          )
         })
       })
   }
