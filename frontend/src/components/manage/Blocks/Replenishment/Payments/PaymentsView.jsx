@@ -206,7 +206,6 @@ function PaymentsView() {
   async function handleAddPaymentSubmit(formData) {
     const entry = { ...formData }
     entry.date = dateForInput(entry.date)
-    entry.replenishment_id = NaN
 
     const data = new FormData()
     for (const key in entry) {
