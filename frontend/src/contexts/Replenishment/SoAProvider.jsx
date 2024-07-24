@@ -6,8 +6,7 @@ import SoAContext from './SoAContext'
 
 function useApiReplenishment(startYear, versionId) {
   const [contributions, setContributions] = useState([])
-  const [replenishmentAmount, setReplenishmentAmount] = useState(0)
-  const [loading, setLoading] = useState(false)
+  const [replenishment, setReplenishment] = useState({ amount: 0 })
 
   useEffect(
     function () {
@@ -33,14 +32,14 @@ function useApiReplenishment(startYear, versionId) {
         .then(function (jsonData) {
           setContributions(jsonData)
           if (jsonData.length > 0) {
-            setReplenishmentAmount(jsonData[0].replenishment.amount)
+            setReplenishment(jsonData[0].replenishment)
           }
         })
     },
     [startYear, versionId],
   )
 
-  return { contributions, replenishmentAmount }
+  return { contributions, replenishment }
 }
 
 function makeVersion(id, status, meeting, decision) {
@@ -62,7 +61,7 @@ function SoAProvider(props) {
   const { children, startYear } = props
 
   const [currentVersion, setCurrentVersion] = useState(null)
-  const { contributions, replenishmentAmount } = useApiReplenishment(
+  const { contributions, replenishment } = useApiReplenishment(
     startYear,
     currentVersion,
   )
@@ -116,7 +115,7 @@ function SoAProvider(props) {
     <SoAContext.Provider
       value={{
         contributions,
-        replenishmentAmount,
+        replenishment,
         setCurrentVersion,
         version,
         versions,
