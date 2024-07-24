@@ -2,6 +2,7 @@ import decimal
 from decimal import Decimal
 
 import pytest
+from django.db.models import F
 from django.urls import reverse
 from rest_framework.test import APIClient
 
@@ -16,7 +17,14 @@ from core.api.tests.factories import (
     TriennialContributionStatusFactory,
     ScaleOfAssessmentVersionFactory,
 )
-from core.models import ExternalIncome, ExternalAllocation
+from core.models import (
+    ExternalIncome,
+    ExternalAllocation,
+    ScaleOfAssessment,
+    ScaleOfAssessmentVersion,
+    Replenishment,
+    Country,
+)
 
 
 pytestmark = pytest.mark.django_db
@@ -90,12 +98,14 @@ class TestScalesOfAssessment(BaseTest):
         replenishment_2 = ReplenishmentFactory.create(start_year=2021, end_year=2023)
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
-        contribution_1 = ScaleOfAssessmentFactory.create(
-            country=country_1, replenishment=replenishment_1
+        version_1 = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_1, version=0
         )
-        contribution_2 = ScaleOfAssessmentFactory.create(
-            country=country_2, replenishment=replenishment_2
+        version_2 = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_2, version=0
         )
+        soa_1 = ScaleOfAssessmentFactory.create(country=country_1, version=version_1)
+        soa_2 = ScaleOfAssessmentFactory.create(country=country_2, version=version_2)
 
         self.client.force_authenticate(user=user)
 
@@ -107,21 +117,27 @@ class TestScalesOfAssessment(BaseTest):
         assert response.data[0]["country"]["iso3"] == "XYZ"
         assert (
             response.data[0]["adjusted_scale_of_assessment"]
-            == contribution_1.override_adjusted_scale_of_assessment
+            == soa_1.override_adjusted_scale_of_assessment
         )
 
         assert response.data[1]["country"]["name"] == "Country 2"
         assert response.data[1]["country"]["iso3"] == "ABC"
         assert (
             response.data[1]["adjusted_scale_of_assessment"]
-            == contribution_2.override_adjusted_scale_of_assessment
+            == soa_2.override_adjusted_scale_of_assessment
         )
 
     def test_scales_of_assessment_list_filtered(self, user):
         replenishment_1 = ReplenishmentFactory.create(start_year=2018, end_year=2020)
         replenishment_2 = ReplenishmentFactory.create(start_year=2021, end_year=2023)
-        soa_1 = ScaleOfAssessmentFactory.create(replenishment=replenishment_1)
-        ScaleOfAssessmentFactory.create(replenishment=replenishment_2)
+        version_1 = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_1, version=0
+        )
+        version_2 = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_2, version=0
+        )
+        soa_1 = ScaleOfAssessmentFactory.create(version=version_1)
+        ScaleOfAssessmentFactory.create(version=version_2)
 
         self.client.force_authenticate(user=user)
 
@@ -138,8 +154,14 @@ class TestScalesOfAssessment(BaseTest):
     def test_scales_of_assessment_list_country_user(self, country_user):
         replenishment_1 = ReplenishmentFactory.create(start_year=2018, end_year=2020)
         replenishment_2 = ReplenishmentFactory.create(start_year=2021, end_year=2023)
-        ScaleOfAssessmentFactory.create(replenishment=replenishment_1)
-        ScaleOfAssessmentFactory.create(replenishment=replenishment_2)
+        version_1 = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_1, version=0
+        )
+        version_2 = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_2, version=0
+        )
+        ScaleOfAssessmentFactory.create(version=version_1)
+        ScaleOfAssessmentFactory.create(version=version_2)
 
         self.client.force_authenticate(user=country_user)
 
@@ -913,47 +935,501 @@ class TestScaleOfAssessmentWorkflow:
         response = self.client.get(self.url_scale_of_assessment)
         assert response.status_code == 403
 
-    def test_create_replenishment(self, user):
-        country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
-        country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
-        country_3 = CountryFactory.create(name="Country 3", iso3="DEF")
-        replenishment_1 = ReplenishmentFactory.create(
-            amount=1000, start_year=2021, end_year=2023
-        )
-        replenishment_2 = ReplenishmentFactory.create(
-            amount=1000, start_year=2024, end_year=2026
-        )
+    def test_create_replenishment_while_ongoing(self, user):
+        replenishment_1 = ReplenishmentFactory.create(start_year=2021, end_year=2023)
+        replenishment_2 = ReplenishmentFactory.create(start_year=2024, end_year=2026)
 
-        version_1 = ScaleOfAssessmentVersionFactory.create(
-            version=0,
-            replenishment=replenishment_1,
-            is_final=True,
+        ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_1, version=0, is_final=True
         )
-        version_2 = ScaleOfAssessmentVersionFactory.create(
-            version=0,
-            replenishment=replenishment_2,
-            is_final=True,
-        )
-        ScaleOfAssessmentFactory.create(
-            country=country_1, replenishment=replenishment_1
-        )
-        ScaleOfAssessmentFactory.create(
-            country=country_2, replenishment=replenishment_1
-        )
-        ScaleOfAssessmentFactory.create(
-            country=country_3, replenishment=replenishment_1
-        )
-
-        ScaleOfAssessmentFactory.create(
-            country=country_1, replenishment=replenishment_2
-        )
-        ScaleOfAssessmentFactory.create(
-            country=country_2, replenishment=replenishment_2
-        )
-        ScaleOfAssessmentFactory.create(
-            country=country_3, replenishment=replenishment_2
+        ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_2, version=0, is_final=False
         )
 
         self.client.force_authenticate(user=user)
 
-        self.client.post(self.url_replenishment, {}, format="json")
+        response = self.client.post(
+            self.url_replenishment,
+            {
+                "amount": 2000,
+            },
+            format="json",
+        )
+
+        # Bad request, latest replenishment is still ongoing
+        assert response.status_code == 400
+
+    def test_create_replenishment_simple(self, user):
+        replenishment_1 = ReplenishmentFactory.create(start_year=2021, end_year=2023)
+        replenishment_2 = ReplenishmentFactory.create(start_year=2024, end_year=2026)
+
+        ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_1, version=0, is_final=True
+        )
+        ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_2, version=0, is_final=True
+        )
+
+        self.client.force_authenticate(user=user)
+
+        response = self.client.post(
+            self.url_replenishment,
+            {
+                "amount": 2000,
+            },
+            format="json",
+        )
+
+        assert response.status_code == 201
+        assert response.data["start_year"] == 2027
+        assert response.data["end_year"] == 2029
+
+        assert Replenishment.objects.all().count() == 3
+        assert (
+            ScaleOfAssessmentVersion.objects.filter(
+                replenishment=response.data["id"]
+            ).count()
+            == 1
+        )
+
+    def test_create_replenishment_with_scales_of_assessment(self, user):
+        country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
+        country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
+        country_3 = CountryFactory.create(name="Country 3", iso3="DEF")
+        replenishment_1 = ReplenishmentFactory.create(start_year=2021, end_year=2023)
+        replenishment_2 = ReplenishmentFactory.create(start_year=2024, end_year=2026)
+
+        version_1 = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_1, version=0, is_final=True
+        )
+        version_2 = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_2, version=0, is_final=True
+        )
+
+        ScaleOfAssessmentFactory.create(
+            country=country_1,
+            version=version_1,
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_2,
+            version=version_1,
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_3,
+            version=version_1,
+        )
+
+        ScaleOfAssessmentFactory.create(
+            country=country_1,
+            version=version_2,
+            currency="USD",
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_2,
+            version=version_2,
+            currency="USD",
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_3,
+            version=version_2,
+            currency="USD",
+        )
+
+        self.client.force_authenticate(user=user)
+
+        response = self.client.post(
+            self.url_replenishment,
+            {
+                "amount": 2000,
+            },
+            format="json",
+        )
+
+        assert response.status_code == 201
+        assert response.data["start_year"] == 2027
+        assert response.data["end_year"] == 2029
+        assert Replenishment.objects.all().count() == 3
+        assert (
+            ScaleOfAssessmentVersion.objects.filter(
+                replenishment=response.data["id"]
+            ).count()
+            == 1
+        )
+        assert (
+            ScaleOfAssessment.objects.filter(
+                version__replenishment=response.data["id"]
+            ).count()
+            == 3
+        )
+        for soa in ScaleOfAssessment.objects.filter(
+            version__replenishment=response.data["id"]
+        ):
+            assert soa.currency == "USD"
+
+    def test_update_scales_of_assessment_bad_replenishment(self, user):
+        country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
+        country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
+        country_3 = CountryFactory.create(name="Country 3", iso3="DEF")
+        replenishment = ReplenishmentFactory.create(
+            start_year=2021, end_year=2023, amount=500
+        )
+
+        version = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment, version=0, is_final=True
+        )
+
+        ScaleOfAssessmentFactory.create(
+            country=country_1,
+            version=version,
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_2,
+            version=version,
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_3,
+            version=version,
+        )
+
+        self.client.force_authenticate(user=user)
+
+        response = self.client.post(
+            self.url_scale_of_assessment,
+            {
+                "replenishment_id": replenishment.id + 10,
+                "amount": 1000,
+                "data": [],
+                "final": False,
+            },
+            format="json",
+        )
+
+        assert response.status_code == 400
+
+    def test_update_scales_of_assessment_already_finalized(self, user):
+        country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
+        country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
+        country_3 = CountryFactory.create(name="Country 3", iso3="DEF")
+        replenishment = ReplenishmentFactory.create(
+            start_year=2021, end_year=2023, amount=500
+        )
+
+        version = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment, version=0, is_final=True
+        )
+
+        ScaleOfAssessmentFactory.create(
+            country=country_1,
+            version=version,
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_2,
+            version=version,
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_3,
+            version=version,
+        )
+
+        self.client.force_authenticate(user=user)
+
+        post_data = {
+            "replenishment_id": replenishment.id,
+            "amount": 1000,
+            "meeting": "meeting",
+            "decision": "decision",
+            "data": [
+                {
+                    "country_id": country_1.id,
+                    "average_inflation_rate": Decimal("4.49233333333333"),
+                    "exchange_rate": Decimal("0.92358"),
+                    "currency": "",
+                    "un_scale_of_assessment": Decimal("0.005"),
+                },
+                {
+                    "country_id": country_2.id,
+                    "average_inflation_rate": Decimal("4.927666666666667"),
+                    "exchange_rate": Decimal("1.48183"),
+                    "currency": "Australian Dollar",
+                    "un_scale_of_assessment": Decimal("2.111"),
+                },
+                {
+                    "country_id": country_3.id,
+                    "average_inflation_rate": Decimal("6.513000000000001"),
+                    "exchange_rate": Decimal("0.92358"),
+                    "currency": "Euro",
+                    "un_scale_of_assessment": Decimal("0.679"),
+                },
+            ],
+            "final": True,
+        }
+        response = self.client.post(
+            self.url_scale_of_assessment,
+            post_data,
+            format="json",
+        )
+
+        assert response.status_code == 400
+
+    def test_update_scales_of_assessment(self, user):
+        country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
+        country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
+        country_3 = CountryFactory.create(name="Country 3", iso3="DEF")
+        replenishment = ReplenishmentFactory.create(
+            start_year=2021, end_year=2023, amount=500
+        )
+
+        version = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment, version=0, is_final=False
+        )
+
+        ScaleOfAssessmentFactory.create(
+            country=country_1,
+            version=version,
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_2,
+            version=version,
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_3,
+            version=version,
+        )
+
+        self.client.force_authenticate(user=user)
+
+        post_data = {
+            "replenishment_id": replenishment.id,
+            "amount": 1000,
+            "meeting": "meeting",
+            "decision": "decision",
+            "data": [
+                {
+                    "country_id": country_1.id,
+                    "average_inflation_rate": Decimal("4.49233333333333"),
+                    "exchange_rate": Decimal("0.92358"),
+                    "currency": "",
+                    "un_scale_of_assessment": Decimal("0.005"),
+                },
+                {
+                    "country_id": country_2.id,
+                    "average_inflation_rate": Decimal("4.927666666666667"),
+                    "exchange_rate": Decimal("1.48183"),
+                    "currency": "Australian Dollar",
+                    "un_scale_of_assessment": Decimal("2.111"),
+                },
+                {
+                    "country_id": country_3.id,
+                    "average_inflation_rate": Decimal("6.513000000000001"),
+                    "exchange_rate": Decimal("0.92358"),
+                    "currency": "Euro",
+                    "un_scale_of_assessment": Decimal("0.679"),
+                },
+            ],
+            "final": False,
+        }
+        response = self.client.post(
+            self.url_scale_of_assessment,
+            post_data,
+            format="json",
+        )
+
+        assert response.status_code == 200
+        replenishment.refresh_from_db()
+        assert replenishment.amount == 1000
+
+        assert Country.objects.all().count() == 3
+        assert Replenishment.objects.all().count() == 1
+        # No new version
+        assert ScaleOfAssessmentVersion.objects.all().count() == 1
+        assert ScaleOfAssessment.objects.all().count() == 3
+
+        assert (
+            list(
+                ScaleOfAssessment.objects.values(
+                    "country_id",
+                    "average_inflation_rate",
+                    "exchange_rate",
+                    "currency",
+                    "un_scale_of_assessment",
+                ).order_by("country__name")
+            )
+            == post_data["data"]
+        )
+
+    def test_update_scales_of_assessment_final(self, user):
+        country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
+        country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
+        country_3 = CountryFactory.create(name="Country 3", iso3="DEF")
+        replenishment = ReplenishmentFactory.create(
+            start_year=2021, end_year=2023, amount=500
+        )
+
+        version = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment, version=0, is_final=False
+        )
+
+        ScaleOfAssessmentFactory.create(
+            country=country_1,
+            version=version,
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_2,
+            version=version,
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_3,
+            version=version,
+        )
+
+        self.client.force_authenticate(user=user)
+
+        post_data = {
+            "replenishment_id": replenishment.id,
+            "amount": 1000,
+            "meeting": "meeting",
+            "decision": "decision",
+            "data": [
+                {
+                    "country_id": country_1.id,
+                    "average_inflation_rate": Decimal("4.49233333333333"),
+                    "exchange_rate": Decimal("0.92358"),
+                    "currency": "",
+                    "un_scale_of_assessment": Decimal("0.005"),
+                },
+                {
+                    "country_id": country_2.id,
+                    "average_inflation_rate": Decimal("4.927666666666667"),
+                    "exchange_rate": Decimal("1.48183"),
+                    "currency": "Australian Dollar",
+                    "un_scale_of_assessment": Decimal("2.111"),
+                },
+                {
+                    "country_id": country_3.id,
+                    "average_inflation_rate": Decimal("6.513000000000001"),
+                    "exchange_rate": Decimal("0.92358"),
+                    "currency": "Euro",
+                    "un_scale_of_assessment": Decimal("0.679"),
+                },
+            ],
+            "final": True,
+        }
+        response = self.client.post(
+            self.url_scale_of_assessment,
+            post_data,
+            format="json",
+        )
+
+        assert response.status_code == 201
+        replenishment.refresh_from_db()
+        assert replenishment.amount == 1000
+
+        assert Country.objects.all().count() == 3
+        assert Replenishment.objects.all().count() == 1
+        # A new version is created
+        assert ScaleOfAssessmentVersion.objects.all().count() == 2
+        assert ScaleOfAssessment.objects.all().count() == 6
+
+        assert (
+            list(
+                ScaleOfAssessment.objects.filter(version__version=1)
+                .values(
+                    "country_id",
+                    "average_inflation_rate",
+                    "exchange_rate",
+                    "currency",
+                    "un_scale_of_assessment",
+                )
+                .order_by("country__name")
+            )
+            == post_data["data"]
+        )
+
+    def test_update_scales_of_assessment_new_version(self, user):
+        country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
+        country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
+        country_3 = CountryFactory.create(name="Country 3", iso3="DEF")
+        replenishment = ReplenishmentFactory.create(
+            start_year=2021, end_year=2023, amount=500
+        )
+
+        version = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment, version=0, is_final=False
+        )
+
+        ScaleOfAssessmentFactory.create(
+            country=country_1,
+            version=version,
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_2,
+            version=version,
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_3,
+            version=version,
+        )
+
+        self.client.force_authenticate(user=user)
+
+        post_data = {
+            "replenishment_id": replenishment.id,
+            "createNewVersion": "on",
+            "amount": 1000,
+            "meeting": "meeting",
+            "decision": "decision",
+            "data": [
+                {
+                    "country_id": country_1.id,
+                    "average_inflation_rate": Decimal("4.49233333333333"),
+                    "exchange_rate": Decimal("0.92358"),
+                    "currency": "",
+                    "un_scale_of_assessment": Decimal("0.005"),
+                },
+                {
+                    "country_id": country_2.id,
+                    "average_inflation_rate": Decimal("4.927666666666667"),
+                    "exchange_rate": Decimal("1.48183"),
+                    "currency": "Australian Dollar",
+                    "un_scale_of_assessment": Decimal("2.111"),
+                },
+                {
+                    "country_id": country_3.id,
+                    "average_inflation_rate": Decimal("6.513000000000001"),
+                    "exchange_rate": Decimal("0.92358"),
+                    "currency": "Euro",
+                    "un_scale_of_assessment": Decimal("0.679"),
+                },
+            ],
+            "final": False,
+        }
+        response = self.client.post(
+            self.url_scale_of_assessment,
+            post_data,
+            format="json",
+        )
+
+        assert response.status_code == 201
+        replenishment.refresh_from_db()
+        assert replenishment.amount == 1000
+
+        assert Country.objects.all().count() == 3
+        assert Replenishment.objects.all().count() == 1
+        # A new version is created
+        assert ScaleOfAssessmentVersion.objects.all().count() == 2
+        assert ScaleOfAssessment.objects.all().count() == 6
+
+        assert (
+            list(
+                ScaleOfAssessment.objects.filter(version__version=1)
+                .values(
+                    "country_id",
+                    "average_inflation_rate",
+                    "exchange_rate",
+                    "currency",
+                    "un_scale_of_assessment",
+                )
+                .order_by("country__name")
+            )
+            == post_data["data"]
+        )

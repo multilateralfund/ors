@@ -39,23 +39,27 @@ class ScaleOfAssessmentSerializer(serializers.ModelSerializer):
     country_id = serializers.PrimaryKeyRelatedField(
         source="country", queryset=Country.objects.all(), write_only=True
     )
-    currency = serializers.CharField()
+    currency = serializers.CharField(allow_blank=True, required=False)
     exchange_rate = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
     bilateral_assistance_amount = serializers.DecimalField(
-        max_digits=30, decimal_places=15, coerce_to_string=False
+        max_digits=30, decimal_places=15, coerce_to_string=False, required=False
     )
     un_scale_of_assessment = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
     override_adjusted_scale_of_assessment = serializers.DecimalField(
-        max_digits=30, decimal_places=15, coerce_to_string=False
+        max_digits=30, decimal_places=15, coerce_to_string=False, required=False
     )
     average_inflation_rate = serializers.DecimalField(
-        max_digits=30, decimal_places=15, coerce_to_string=False
+        max_digits=30,
+        decimal_places=15,
+        coerce_to_string=False,
     )
-    override_qualifies_for_fixed_rate_mechanism = serializers.BooleanField()
+    override_qualifies_for_fixed_rate_mechanism = serializers.BooleanField(
+        required=False
+    )
 
     adjusted_scale_of_assessment = serializers.ReadOnlyField()
     qualifies_for_fixed_rate_mechanism = serializers.ReadOnlyField()

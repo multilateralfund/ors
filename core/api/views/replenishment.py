@@ -126,27 +126,46 @@ class ScaleOfAssessmentViewSet(
     def create(self, request, *args, **kwargs):
         input_data = request.data
 
-        replenishment_qs = Replenishment.objects.filter(
-            id=input_data["replenishment_id"]
-        )
-        if not replenishment_qs.exists():
+        try:
+            replenishment = Replenishment.objects.get(id=input_data["replenishment_id"])
+        except Replenishment.DoesNotExist:
             raise ValidationError({"replenishment_id": "Replenishment does not exist."})
 
-        replenishment_qs.update(amount=input_data["amount"])
-        replenishment = replenishment_qs.first()
+        if input_data.get("amount"):
+            replenishment.amount = input_data["amount"]
+            replenishment.save()
 
         should_create_new_version = input_data.get("createNewVersion")
         final = input_data.get("final")
+        meeting_number = input_data.get("meeting")
+        decision_number = input_data.get("decision")
+
+        previous_version = replenishment.scales_of_assessment_versions.order_by(
+            "-version"
+        ).first()
+
+        if previous_version.is_final:
+            raise ValidationError(
+                {
+                    "non_field_errors": "The current replenishment has already been finalized."
+                }
+            )
+
         if should_create_new_version or final:
             # Marking as final always creates a new version that is marked as final
             version = ScaleOfAssessmentVersion.objects.create(
                 replenishment=replenishment,
                 is_final=final,
+                meeting_number=meeting_number,
+                decision_number=decision_number,
+                version=previous_version.version + 1,
             )
         else:
-            version = replenishment.scales_of_assessment_versions.order_by(
-                "-version"
-            ).first()
+            version = previous_version
+            version.decision_number = decision_number
+            version.meeting_number = meeting_number
+            version.is_final = final
+            version.save()
 
         # Delete all scales of assessment if updating the latest version
         if not should_create_new_version:
@@ -208,7 +227,7 @@ class ScaleOfAssessmentViewSet(
             {},
             status=(
                 status.HTTP_201_CREATED
-                if should_create_new_version
+                if should_create_new_version or final
                 else status.HTTP_200_OK
             ),
             headers=headers,

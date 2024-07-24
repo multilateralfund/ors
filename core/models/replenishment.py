@@ -67,7 +67,9 @@ class ScaleOfAssessment(models.Model):
     bilateral_assistance_amount = models.DecimalField(
         max_digits=30, decimal_places=15, default=0
     )
-    un_scale_of_assessment = models.DecimalField(max_digits=30, decimal_places=15, null=True)
+    un_scale_of_assessment = models.DecimalField(
+        max_digits=30, decimal_places=15, null=True
+    )
     override_adjusted_scale_of_assessment = models.DecimalField(
         max_digits=30, decimal_places=15, null=True
     )
@@ -89,7 +91,7 @@ class ScaleOfAssessment(models.Model):
             return US_SCALE_OF_ASSESSMENT
 
         un_assessment_sum = ScaleOfAssessment.objects.filter(
-            replenishment=self.replenishment
+            version=self.version
         ).aggregate(models.Sum("un_scale_of_assessment"))["un_scale_of_assessment__sum"]
 
         return (
@@ -107,7 +109,7 @@ class ScaleOfAssessment(models.Model):
     @property
     def amount(self):
         return (
-            self.replenishment.amount
+            self.version.replenishment.amount
             * self.adjusted_scale_of_assessment
             / Decimal("100")
         )
@@ -119,7 +121,7 @@ class ScaleOfAssessment(models.Model):
         return self.amount * self.exchange_rate
 
     def __str__(self):
-        return f"Contribution {self.country.name} ({self.replenishment.start_year} - {self.replenishment.end_year})"
+        return f"Contribution (version {self.version.version}) {self.country.name} ({self.version.replenishment.start_year} - {self.version.replenishment.end_year})"
 
     class Meta:
         constraints = [
