@@ -6,15 +6,13 @@ import Cookies from 'js-cookie'
 import { times } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
-import {
-  Input,
-  Select,
-} from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import { Select } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import PaymentDialoge from '@ors/components/manage/Blocks/Replenishment/Payments/PaymentDialogue'
 import useGetPayments, {
   _PER_PAGE,
 } from '@ors/components/manage/Blocks/Replenishment/Payments/useGetPayments'
 import Table from '@ors/components/manage/Blocks/Replenishment/Table'
+import ViewFiles from '@ors/components/manage/Blocks/Replenishment/ViewFiles'
 import {
   dateForEditField,
   dateForInput,
@@ -28,9 +26,6 @@ import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentConte
 import { formatApiUrl } from '@ors/helpers'
 import api from '@ors/helpers/Api/_api'
 
-import { IoSearchSharp } from 'react-icons/io5'
-import ViewFiles from '@ors/components/manage/Blocks/Replenishment/ViewFiles'
-
 const COLUMNS = [
   { field: 'country', label: 'Country' },
   { field: 'date', label: 'Date', sortable: true },
@@ -41,7 +36,7 @@ const COLUMNS = [
     label: 'Exchange Rate',
   },
   { field: 'payment_for_year', label: 'Year(s)' },
-  { field: 'gain_or_loss', label: 'FERM Gain/Loss' },
+  { field: 'ferm_gain_or_loss', label: 'FERM Gain/Loss' },
   { field: 'files', label: 'Files' },
   { field: 'comments', label: 'Comments' },
 ]
@@ -75,16 +70,16 @@ function PaymentsView() {
     return [
       ...results.map((data) => ({
         id: data.id,
-        amount: formatNumberValue(data.amount_local_currency),
+        amount: formatNumberValue(data.amount),
         comments: data.comments,
         country: data.country.name,
         country_id: data.country.id,
+        currency: data.currency,
         date: formatDateValue(data.date),
-        // currency: data.currency,
-        // exchange_rate: data.exchange_rate.toFixed(3),
+        exchange_rate: data.exchange_rate?.toFixed(3),
+        ferm_gain_or_loss: data.ferm_gain_or_loss,
         files: <ViewFiles files={data.payment_files} />,
         files_data: data.payment_files,
-        gain_or_loss: data.gain_or_loss,
         iso3: data.country.iso3,
         payment_for_year: data.payment_for_year,
         replenishment: data.replenishment,
@@ -125,7 +120,7 @@ function PaymentsView() {
       entry = { ...memoResults[editIdx] }
       entry.reminder_date = dateForEditField(entry.reminder_date)
       entry.amount = numberForEditField(entry.amount)
-      // entry.gain_or_loss = numberForEditField(entry.gain_or_loss)
+      // entry.ferm_gain_or_loss = numberForEditField(entry.ferm_gain_or_loss)
     }
     return entry
   }, [editIdx, memoResults])
@@ -295,10 +290,6 @@ function PaymentsView() {
     }
   }
 
-  function handleSearchInput(evt) {
-    // setParams({ search: evt.target.value })
-  }
-
   function handleSort(column) {
     const property = COLUMNS[column].field
     const newDirection = column === sortOn ? -sortDirection : 1
@@ -314,12 +305,6 @@ function PaymentsView() {
   function handleCountryFilter(evt) {
     const country_id = evt.target.value
     setParams({ country_id })
-  }
-
-  function handlePeriodFilter(evt) {
-    const period = evt.target.value
-    const replenishment_start = period.split('-')[0]
-    setParams({ replenishment_start })
   }
 
   return (
@@ -343,23 +328,9 @@ function PaymentsView() {
       ) : null}
       <div className="flex items-center justify-between gap-4 pb-4 print:hidden">
         <div className="flex items-center">
-          <div className="relative">
-            <IoSearchSharp
-              className="absolute left-3 top-1/2 -translate-y-1/2 transform text-primary"
-              size={20}
-            />
-            <Input
-              id="search"
-              className="!ml-0 w-full rounded border py-2 pl-10 pr-3"
-              defaultValue=""
-              placeholder="Search payment..."
-              type="text"
-              onChange={handleSearchInput}
-            />
-          </div>
           <Select
             id="country"
-            className="placeholder-select w-52"
+            className="placeholder-select w-52 !ml-0"
             onChange={handleCountryFilter}
             hasClear
             required
@@ -370,26 +341,6 @@ function PaymentsView() {
             {ctx.countries.map((c) => (
               <option key={c.iso3} className="text-primary" value={c.id}>
                 {c.name_alt}
-              </option>
-            ))}
-          </Select>
-          <Select
-            id="period"
-            className="placeholder-select w-44"
-            onChange={handlePeriodFilter}
-            hasClear
-            required
-          >
-            <option value="" disabled hidden>
-              Period
-            </option>
-            {ctx.periodOptions.map((period) => (
-              <option
-                key={period.value}
-                className="text-primary"
-                value={period.value}
-              >
-                {period.label}
               </option>
             ))}
           </Select>

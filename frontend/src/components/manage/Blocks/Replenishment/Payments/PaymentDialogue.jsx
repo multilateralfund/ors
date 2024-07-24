@@ -74,8 +74,8 @@ const PaymentDialoge = function PaymentDialoge(props) {
         required
       />
       <FieldInput
-        id="gain_or_loss"
-        defaultValue={data?.gain_or_loss}
+        id="ferm_gain_or_loss"
+        defaultValue={data?.ferm_gain_or_loss}
         label={columns[6].label}
         type="number"
       />
