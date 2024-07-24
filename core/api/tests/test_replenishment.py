@@ -21,6 +21,7 @@ from core.models import ExternalIncome, ExternalAllocation
 
 
 pytestmark = pytest.mark.django_db
+# pylint: disable=C0302
 
 
 class TestReplenishmentCountries(BaseTest):
