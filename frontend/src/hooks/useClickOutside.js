@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react'
 
-function useClickOutside<T extends HTMLElement>(callback: () => void) {
-  const ref = useRef<T>(null)
+function useClickOutside(callback) {
+  const ref = useRef(null)
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
+    const handleClickOutside = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) {
         callback()
       }
     }
@@ -17,7 +17,7 @@ function useClickOutside<T extends HTMLElement>(callback: () => void) {
       document.removeEventListener('mouseup', handleClickOutside)
       document.removeEventListener('touchend', handleClickOutside)
     }
-  }, [callback])
+  }, [ref, callback])
 
   return ref
 }

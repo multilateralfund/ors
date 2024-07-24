@@ -78,7 +78,7 @@ const HeaderVersionsDropdown = () => {
 
   const toggleShowVersionsMenu = () => setShowVersionsMenu((prev) => !prev)
 
-  const ref = useClickOutside<HTMLDivElement>(() => {
+  const ref = useClickOutside(() => {
     setShowVersionsMenu(false)
   })
 
@@ -487,15 +487,10 @@ const CPHeader = ({
   titlePrefix?: React.JSX.Element
 }) => {
   const { report } = useStore((state) => state.cp_reports)
-  const [memo, setMemo] = useState(0)
-
-  useEffect(() => {
-    setMemo((prev) => prev + 1)
-  }, [report.data?.status, report.versions.data, actions])
 
   return (
     !!report.data && (
-      <HeaderTitle memo={memo}>
+      <HeaderTitle>
         <div className="mb-2 font-[500] uppercase">
           Country programme report
         </div>
@@ -563,7 +558,6 @@ const CPArchiveHeader = () => {
 const CPDiffHeader = () => {
   const { report } = useStore((state) => state.cp_reports)
   const { versions } = report
-  const [memo, setMemo] = useState(0)
   const report_version = report.data?.version
 
   const currentVersion = useMemo(() => {
@@ -606,13 +600,9 @@ const CPDiffHeader = () => {
     )
   }
 
-  useEffect(() => {
-    setMemo((prev) => prev + 1)
-  }, [report.data?.status, report.versions.data])
-
   return (
     !!report.data && (
-      <HeaderTitle memo={memo}>
+      <HeaderTitle>
         <div className="mb-2 font-[500] uppercase">
           Country programme report
         </div>

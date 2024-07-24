@@ -10,25 +10,18 @@ import {
   Title,
   Tooltip,
 } from 'chart.js'
-import resolveConfig from 'tailwindcss/resolveConfig'
 
 import {
   COMMON_OPTIONS,
   backgroundColorPlugin,
   downloadChartAsImage,
 } from '@ors/components/manage/Blocks/Replenishment/Dashboard/chartUtils'
-import { useStore } from '@ors/store'
-import tailwindConfigModule from '~/tailwind.config'
 
 import { IoDownloadOutline } from 'react-icons/io5'
-
-const tailwindConfig = resolveConfig(tailwindConfigModule)
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const BarChart = ({ data, title }) => {
-  const { mode } = useStore((state) => state.theme)
-  const primaryColor = tailwindConfig.originalColors[mode].primary.DEFAULT
   const chartRef = useRef(null)
   const [showToolbar, setShowToolbar] = useState(false)
 
@@ -36,8 +29,8 @@ const BarChart = ({ data, title }) => {
     return {
       datasets: [
         {
-          backgroundColor: primaryColor,
-          borderColor: primaryColor,
+          backgroundColor: '#002A3C',
+          borderColor: '#002A3C',
           borderWidth: 1,
           data: data.map((item) => item.outstanding_pledges),
           label: 'Outstanding Pledges',
@@ -45,11 +38,11 @@ const BarChart = ({ data, title }) => {
       ],
       labels: data.map((item) => `${item.start_year}-${item.end_year}`),
     }
-  }, [data, primaryColor])
+  }, [data])
 
   const options = {
     plugins: { customCanvasBackgroundColor: true, legend: { display: false } },
-    ...COMMON_OPTIONS(primaryColor),
+    ...COMMON_OPTIONS(),
   }
 
   return (
@@ -66,7 +59,7 @@ const BarChart = ({ data, title }) => {
       />
       {showToolbar && (
         <button
-          className="absolute right-2 top-2 flex cursor-pointer items-center border-none bg-transparent text-primary no-underline"
+          className="absolute right-2 -top-2 flex cursor-pointer items-center border-none bg-transparent text-primary no-underline"
           onClick={() => downloadChartAsImage(chartRef, title)}
         >
           <IoDownloadOutline size={18} />

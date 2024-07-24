@@ -135,12 +135,18 @@ class Invoice(models.Model):
     country = models.ForeignKey(
         Country, on_delete=models.PROTECT, related_name="invoices"
     )
+
     replenishment = models.ForeignKey(
         Replenishment, on_delete=models.PROTECT, null=True, related_name="invoices"
     )
+
     amount = models.DecimalField(max_digits=30, decimal_places=15)
-    date = models.DateField()
+    currency = models.CharField(max_length=64)
+    exchange_rate = models.DecimalField(max_digits=30, decimal_places=15, null=True)
+
     number = models.CharField(max_length=128, unique=True)
+    date_of_issuance = models.DateField()
+    date_sent_out = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return f"Invoice {self.country.name} - {self.number}"

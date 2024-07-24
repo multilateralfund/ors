@@ -6,7 +6,10 @@ from core.models import (
     ScaleOfAssessment,
     AnnualContributionStatus,
     DisputedContribution,
-    FermGainLoss, TriennialContributionStatus, ScaleOfAssessmentVersion,
+    FermGainLoss,
+    TriennialContributionStatus,
+    Invoice,
+    ScaleOfAssessmentVersion,
 )
 from core.models.business_plan import (
     BusinessPlan,
@@ -459,7 +462,7 @@ class BPRecordFactory(factory.django.DjangoModelFactory):
     amount_polyol = factory.Faker("random_int", min=1, max=1000)
     sector = factory.SubFactory(ProjectSectorFactory)
     subsector = factory.SubFactory(ProjectSubSectorFactory)
-    bp_type = factory.fuzzy.FuzzyChoice(BPRecord.BPType.choices)
+    status = factory.fuzzy.FuzzyChoice(BPRecord.Status.choices)
     reason_for_exceeding = factory.Faker(
         "pystr", max_chars=200, prefix="bprecord-reason-for-exceeding"
     )
@@ -564,3 +567,17 @@ class FermGainLossFactory(factory.django.DjangoModelFactory):
 
     country = factory.SubFactory(CountryFactory)
     amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+
+
+class InvoiceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Invoice
+
+    country = factory.SubFactory(CountryFactory)
+    replenishment = factory.SubFactory(ReplenishmentFactory)
+
+    amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    currency = factory.Faker("pystr", max_chars=3)
+
+    number = factory.Faker("pystr", max_chars=16)
+    date_of_issuance = factory.Faker("date")

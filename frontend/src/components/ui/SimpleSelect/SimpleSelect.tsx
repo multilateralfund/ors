@@ -2,6 +2,8 @@ import { useState } from 'react'
 
 import cx from 'classnames'
 
+import useClickOutside from '@ors/hooks/useClickOutside'
+
 import { IoChevronDownCircle } from 'react-icons/io5'
 
 interface ISimpleSelectOption {
@@ -32,6 +34,10 @@ const SimpleSelect = ({
     onChange(options[index], index)
   }
 
+  const ref = useClickOutside(function () {
+    setShowMenu(false)
+  })
+
   const toggleShowMenu = () => setShowMenu((prev) => !prev)
   const idFromLabel = label.toLowerCase().replace(' ', '_')
 
@@ -49,6 +55,7 @@ const SimpleSelect = ({
         <output
           id={idFromLabel}
           className="flex cursor-pointer items-center justify-between gap-x-2 rounded-lg border border-solid border-primary px-2 py-2"
+          ref={ref}
           onClick={toggleShowMenu}
         >
           <div>{options[selectedIndex]?.label}</div>

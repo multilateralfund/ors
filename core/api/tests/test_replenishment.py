@@ -14,6 +14,7 @@ from core.api.tests.factories import (
     AnnualContributionStatusFactory,
     DisputedContributionsFactory,
     FermGainLossFactory,
+    InvoiceFactory,
     TriennialContributionStatusFactory,
     ScaleOfAssessmentVersionFactory,
 )
@@ -1433,3 +1434,102 @@ class TestScaleOfAssessmentWorkflow:
             )
             == post_data["data"]
         )
+
+
+class TestInvoices(BaseTest):
+    url = reverse("replenishment-invoices-list")
+    year_1 = 2021
+    year_2 = 2023
+    year_3 = 2024
+    year_4 = 2026
+
+    def test_invoices_list(self, user):
+        country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
+        country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
+
+        replenishment_1 = ReplenishmentFactory.create(
+            start_year=self.year_1, end_year=self.year_2
+        )
+        replenishment_2 = ReplenishmentFactory.create(
+            start_year=self.year_3, end_year=self.year_4
+        )
+
+        InvoiceFactory(
+            country=country_1, replenishment=replenishment_1, number="aaa-yyy-1"
+        )
+        InvoiceFactory(
+            country=country_2, replenishment=replenishment_2, number="aaa-yyy-2"
+        )
+
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 2
+
+        response_1 = self.client.get(
+            self.url, {"replenishment_start": replenishment_1.start_year}
+        )
+        assert response_1.status_code == 200
+        assert len(response_1.data) == 1
+        assert response_1.data[0]["number"] == "aaa-yyy-1"
+
+        response_2 = self.client.get(self.url, {"country_id": country_2.id})
+        assert response_2.status_code == 200
+        assert len(response_2.data) == 1
+        assert response_2.data[0]["number"] == "aaa-yyy-2"
+
+        response_all = self.client.get(self.url, {"start_year": "all"})
+        assert response_all.status_code == 200
+        assert len(response_all.data) == 2
+
+    def test_invoices_create(self, user):
+        country = CountryFactory.create(name="Country 1", iso3="XYZ")
+        replenishment = ReplenishmentFactory.create(
+            start_year=self.year_1, end_year=self.year_2
+        )
+
+        self.client.force_authenticate(user=user)
+
+        request_data = {
+            "country_id": country.id,
+            "replenishment_id": replenishment.id,
+            "amount": 100.0,
+            "currency": "EUR",
+            "exchange_rate": 0.7,
+            "number": "aaa-yyy-create-1",
+            "date_of_issuance": "2019-03-14",
+            "date_sent_out": None,
+            "files": [],
+        }
+
+        response = self.client.post(self.url, data=request_data, format="json")
+        assert response.status_code == 201
+
+    def test_invoices_update(self, user):
+        country = CountryFactory.create(name="Country 1", iso3="XYZ")
+        replenishment = ReplenishmentFactory.create(
+            start_year=self.year_1, end_year=self.year_2
+        )
+        invoice = InvoiceFactory(
+            country=country, replenishment=replenishment, number="aaa-yyy-1"
+        )
+
+        self.client.force_authenticate(user=user)
+
+        request_data = {
+            "country_id": country.id,
+            "replenishment_id": replenishment.id,
+            "amount": 100.0,
+            "currency": "EUR",
+            "exchange_rate": 0.7,
+            "number": "aaa-yyy-create-1",
+            "date_of_issuance": "2019-03-14",
+            "date_sent_out": None,
+            "files": [],
+        }
+
+        response = self.client.put(
+            self.url + f"{invoice.id}/", data=request_data, format="json"
+        )
+        assert response.status_code == 200

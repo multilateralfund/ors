@@ -20,9 +20,9 @@ import SATable from './SATable'
 import {
   clearNew,
   computeTableData,
-  extractCurrencies,
   formatTableData,
   getCountryForIso3,
+  getOverrideOrDefault,
   sortSATableData,
   sumColumns,
 } from './utils'
@@ -130,9 +130,16 @@ const EDITABLE = getEditableFieldNames(COLUMNS)
 function SaveManager(props) {
   const { amount, comment, currencyDateRange, data, version } = props
 
-  const [isFinal, setIsFinal] = useState(version?.isFinal ?? false)
+  const [isFinal, setIsFinal] = useState(false)
   const [createNewVersion, setCreateNewVersion] = useState(true)
   const [saving, setSaving] = useState(false)
+
+  useEffect(
+    function () {
+      setIsFinal(version?.isFinal ?? false)
+    },
+    [version],
+  )
 
   function handleChangeFinal() {
     setIsFinal(function (prev) {
@@ -277,11 +284,13 @@ function tranformContributions(cs) {
   return r
 }
 
-function transformForSave(d, currencies) {
+function transformForSave(d) {
   const r = []
 
   const mapping = [
     ['average_inflation_rate', 'avg_ir'],
+    ['exchange_rate', 'ferm_rate'],
+    ['currency', 'ferm_cur'],
     ['un_scale_of_assessment', 'un_soa'],
   ]
 
@@ -313,12 +322,20 @@ function transformForSave(d, currencies) {
       n.opted_for_ferm = true
     }
 
-    n.exchange_rate = currencies.idToRate[d[i].ferm_rate]
-    n.currency = currencies.idToValue[d[i].ferm_cur]
-
     r.push(n)
   }
 
+  return r
+}
+
+function getExistingCurrency(rows, value) {
+  let r = null
+  for (let i = 0; i < rows.length; i++) {
+    if (getOverrideOrDefault(rows[i], 'ferm_cur') === value) {
+      r = { ferm_rate: getOverrideOrDefault(rows[i], 'ferm_rate') }
+      break
+    }
+  }
   return r
 }
 
@@ -332,6 +349,39 @@ function formatCurrencyDateRangeForHeader(dateRange) {
   const { end, start } = dateRange
   const intl = new Intl.DateTimeFormat('en-US', { month: 'short' })
   return `${start.getUTCDate()} ${intl.format(start)} - ${end.getUTCDate()} ${intl.format(end)} ${start.getUTCFullYear()}`
+}
+
+function revertAllCurrencyNames(rows, value) {
+  for (let i = 0; i < rows.length; i++) {
+    if (getOverrideOrDefault(rows[i], 'ferm_cur') === value) {
+      delete rows[i]['override_ferm_cur']
+      delete rows[i]['override_ferm_rate']
+    }
+  }
+}
+
+function revertAllCurrencyRates(rows, name) {
+  for (let i = 0; i < rows.length; i++) {
+    if (getOverrideOrDefault(rows[i], 'ferm_cur') === name) {
+      delete rows[i]['override_ferm_rate']
+    }
+  }
+}
+
+function updateAllCurrencyNames(rows, oldValue, newValue) {
+  for (let i = 0; i < rows.length; i++) {
+    if (getOverrideOrDefault(rows[i], 'ferm_cur') === oldValue) {
+      rows[i]['override_ferm_cur'] = newValue
+    }
+  }
+}
+
+function updateAllCurrencyRates(rows, name, newValue) {
+  for (let i = 0; i < rows.length; i++) {
+    if (getOverrideOrDefault(rows[i], 'ferm_cur') === name) {
+      rows[i]['override_ferm_rate'] = newValue
+    }
+  }
 }
 
 function SAView(props) {
@@ -393,7 +443,6 @@ function SAView(props) {
     [contributions, ctxSoA.replenishmentAmount],
   )
 
-  const [currencies, setCurrencies] = useState({})
   const [tableData, setTableData] = useState(contributions)
   const [shouldCompute, setShouldCompute] = useState(false)
 
@@ -407,33 +456,8 @@ function SAView(props) {
 
   const [commentText, setCommentText] = useState('')
 
-  function addOrEditCurrency(prevId, value) {
-    let id = prevId !== null ? prevId : currencies.valueToId[value]
-    setCurrencies(function (prev) {
-      const next = { ...prev }
-      if (id == undefined) {
-        // New currency
-        id = next.idToValue.length
-        next.idToValue.push(value)
-        next.idToRate.push(null)
-        next.valueToId[value] = id
-      } else {
-        // Edit currency
-        next.idToValue[id] = value
-      }
-      return next
-    })
-    return id
-  }
-
   function handleNewTableData(newData) {
-    const extractedCurrencies = extractCurrencies(newData)
-    setTableData(extractedCurrencies.tableData)
-    setCurrencies({
-      idToRate: extractedCurrencies.idToRate,
-      idToValue: extractedCurrencies.idToValue,
-      valueToId: extractedCurrencies.valueToId,
-    })
+    setTableData(newData)
   }
 
   useEffect(
@@ -453,33 +477,24 @@ function SAView(props) {
   const computedData = useMemo(
     () =>
       shouldCompute
-        ? computeTableData(
-            tableData,
-            replenishmentAmount - unusedAmount || 0,
-            currencies,
-          )
+        ? computeTableData(tableData, replenishmentAmount - unusedAmount || 0)
         : tableData,
     /* eslint-disable-next-line */
-    [tableData, replenishmentAmount, unusedAmount, shouldCompute, currencies],
+    [tableData, replenishmentAmount, unusedAmount, shouldCompute],
   )
 
   const sortedData = useMemo(
     function () {
-      return sortSATableData(
-        computedData,
-        columns[sortOn].field,
-        sortDirection,
-        currencies,
-      )
+      return sortSATableData(computedData, columns[sortOn].field, sortDirection)
     },
-    [computedData, sortOn, sortDirection, columns, currencies],
+    [computedData, sortOn, sortDirection, columns],
   )
 
   const formattedTableData = useMemo(
     function () {
-      return formatTableData(sortedData, EDITABLE, currencies)
+      return formatTableData(sortedData, EDITABLE)
     },
-    [sortedData, currencies],
+    [sortedData],
   )
 
   const countriesForAdd = useMemo(
@@ -565,31 +580,70 @@ function SAView(props) {
   function handleCellEdit(r, c, n, v) {
     const parser = columns[c].parser
     const overrideKey = `override_${n}`
-    const prevValue = sortedData[r][n]
+    const prevValue = getOverrideOrDefault(sortedData[r], n)
     const next = [...sortedData]
     const value = parser ? parser(v) : v
     const isNullValue =
       value === '' ||
       value === undefined ||
       (typeof value === 'number' && isNaN(value))
+
     if (n === 'ferm_cur') {
+      const existingCurrency = getExistingCurrency(sortedData, value)
       if (isNullValue) {
-        next[r][n] = null
+        next[r][overrideKey] = null
+        next[r]['override_ferm_rate'] = null
+      } else if (existingCurrency) {
+        next[r]['override_ferm_rate'] = existingCurrency.ferm_rate
+        next[r][overrideKey] = value
+      } else if (prevValue === null) {
+        next[r][overrideKey] = value
       } else {
-        next[r][n] = addOrEditCurrency(prevValue, value)
+        updateAllCurrencyNames(
+          next,
+          getOverrideOrDefault(sortedData[r], n),
+          value,
+        )
       }
     } else if (n === 'ferm_rate') {
-      setCurrencies(function (prevCurrencies) {
-        const nextCurrencies = { ...prevCurrencies }
-        nextCurrencies.idToRate[prevValue] = isNullValue ? null : value
-        return nextCurrencies
-      })
-    } else {
-      if (isNullValue || next[r][n] === value) {
-        delete next[r][overrideKey]
-      } else {
+      if (isNullValue) {
+        next[r][overrideKey] = null
+      } else if (prevValue === null) {
         next[r][overrideKey] = value
+      } else {
+        updateAllCurrencyRates(
+          next,
+          getOverrideOrDefault(sortedData[r], 'ferm_cur'),
+          value,
+        )
       }
+    } else if (isNullValue) {
+      next[r][overrideKey] = null
+    } else if (next[r][n] === value) {
+      delete next[r][overrideKey]
+    } else {
+      next[r][overrideKey] = value
+    }
+    setTableData(next)
+    setShouldCompute(true)
+  }
+
+  function handleCellRevert(r, n) {
+    const overrideKey = `override_${n}`
+    const next = [...sortedData]
+
+    if (n === 'ferm_cur') {
+      revertAllCurrencyNames(
+        next,
+        getOverrideOrDefault(sortedData[r], 'ferm_cur'),
+      )
+    } else if (n === 'ferm_rate') {
+      revertAllCurrencyRates(
+        next,
+        getOverrideOrDefault(sortedData[r], 'ferm_cur'),
+      )
+    } else {
+      delete next[r][overrideKey]
     }
     setTableData(next)
     setShouldCompute(true)
@@ -680,7 +734,7 @@ function SAView(props) {
           amount={replenishmentAmount}
           comment={commentText}
           currencyDateRange={currencyDateRange}
-          data={transformForSave(tableData, currencies)}
+          data={transformForSave(tableData)}
           version={version}
         />
       </div>
@@ -697,6 +751,7 @@ function SAView(props) {
         onAddCancel={() => setShowAdd(false)}
         onAddSubmit={handleAddSubmit}
         onCellEdit={handleCellEdit}
+        onCellRevert={handleCellRevert}
         onDelete={handleDelete}
         onSort={handleSort}
       />

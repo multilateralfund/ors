@@ -36,11 +36,11 @@ class ScaleOfAssessmentAdmin(admin.ModelAdmin):
 class InvoiceAdmin(admin.ModelAdmin):
     search_fields = [
         "country__name",
-        "date",
+        "date_of_issuance",
         "number",
     ]
     list_filter = [
-        "date",
+        "date_of_issuance",
         AutocompleteFilterFactory("country", "country"),
         AutocompleteFilterFactory("replenishment", "replenishment"),
     ]
