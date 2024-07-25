@@ -23,16 +23,7 @@ export function Field(props) {
 }
 
 export function Select(props) {
-  const {
-    id,
-    children,
-    className,
-    defaultValue,
-    hasClear,
-    name,
-    onChange,
-    ...rest
-  } = props
+  const { id, children, className, defaultValue, hasClear, name, onChange, ...rest } = props
   const selectRef = useRef(null)
   const [value, setValue] = useState(defaultValue || '')
 
@@ -89,16 +80,16 @@ export function Select(props) {
 }
 
 export function Input(props) {
-  const { id, className, name, type, ...rest } = props;
-  const elementType = type === 'text-area' ? 'textarea' : 'input';
-
-  return React.createElement(elementType, {
-    id,
-    className: cx(CLASSESS, className),
-    name: name || id,
-    type: type !== 'text-area' ? type : undefined,
-    ...rest,
-  });
+  const { id, className, name, type, ...rest } = props
+  return (
+    <input
+      id={id}
+      name={name || id}
+      className={cx(CLASSESS, className)}
+      type={type}
+      {...rest}
+    />
+  )
 }
 
 export function FormattedNumberInput(props) {

@@ -6,7 +6,6 @@ import Cookies from 'js-cookie'
 import { times } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
-import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
 import {
   Input,
   Select,
@@ -20,7 +19,6 @@ import ViewFiles from '@ors/components/manage/Blocks/Replenishment/ViewFiles'
 import {
   dateForEditField,
   dateForInput,
-  fetchWithHandling,
   formatDateValue,
   numberForEditField,
 } from '@ors/components/manage/Blocks/Replenishment/utils'
@@ -28,6 +26,7 @@ import { AddButton } from '@ors/components/ui/Button/Button'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
+import api from '@ors/helpers/Api/_api'
 
 import { IoSearchSharp } from 'react-icons/io5'
 
@@ -83,8 +82,8 @@ function InvoicesView() {
         country_id: data.country.id,
         currency: data.currency,
         date_of_issuance: formatDateValue(data.date_of_issuance),
-        date_sent_out: formatDateValue(data.date_sent_out) || 'N/A',
-        exchange_rate: data.exchange_rate?.toFixed(3) || 'N/A',
+        date_sent_out: formatDateValue(data.date_sent_out),
+        exchange_rate: data.exchange_rate.toFixed(3),
         files: <ViewFiles files={data.invoice_files} />,
         files_data: data.invoice_files,
         iso3: data.country.iso3,
@@ -141,34 +140,25 @@ function InvoicesView() {
   async function handleEditInvoiceSubmit(formData) {
     const entry = { ...formData }
     entry.date_of_issuance = dateForInput(entry.date_of_issuance)
-    entry.date_sent_out = dateForInput(entry.date_sent_out) || ''
-    entry.reminder = dateForInput(entry.reminder) || ''
-    entry.exchange_rate = entry.exchange_rate || ''
+    entry.date_sent_out = dateForInput(entry.date_sent_out)
 
-    let nr_new_files = 0
     const data = new FormData()
-
     for (const key in entry) {
-      const value = entry[key]
-
-      // Append non-file fields if they are not null, undefined
-      // Empty strings are used to delete a value
       if (!key.startsWith('file_')) {
-        if (value !== null && value !== undefined) {
-          data.append(key, value)
-        }
+        data.append(key, entry[key])
       }
-
-      // Append files with their types if they are valid
-      if (key.startsWith('file_') && value instanceof File) {
+    }
+    let nr_new_files = 0
+    // Append files with their types [invoice, reminder]
+    for (const key in entry) {
+      if (key.startsWith('file_') && entry[key] instanceof File) {
         const fileIndex = key.split('_')[1]
         const fileTypeKey = `file_type_${fileIndex}`
-        const fileType = entry[fileTypeKey]
-
-        ;(fileType ?? fileType !== '') &&
-          nr_new_files++ &&
-          (data.append(`files[${fileIndex}][file]`, value, value.name),
-          data.append(`files[${fileIndex}][type]`, fileType))
+        if (entry[fileTypeKey]) {
+          nr_new_files++
+          data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
+          data.append(`files[${fileIndex}][type]`, entry[fileTypeKey])
+        }
       }
     }
 
@@ -176,15 +166,24 @@ function InvoicesView() {
 
     try {
       const csrftoken = Cookies.get('csrftoken')
-
-      await fetchWithHandling(
+      const response = await fetch(
         formatApiUrl(`api/replenishment/invoices/${entry.id}/`),
         {
           body: data,
+          credentials: 'include',
+          headers: {
+            ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
+          },
           method: 'PUT',
         },
-        csrftoken,
       )
+      if (!response.ok) {
+        const errorData = await response.json() // Get the error details
+        const error = new Error('Request failed')
+        error.status = response.status
+        error.data = errorData
+        throw error
+      }
       enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
       setParams({
         offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,
@@ -215,23 +214,20 @@ function InvoicesView() {
     entry.date_of_issuance = dateForInput(entry.date_of_issuance)
     entry.date_sent_out = dateForInput(entry.date_sent_out)
     entry.reminder = dateForInput(entry.reminder)
-    entry.exchange_rate = entry.exchange_rate || ''
     entry.replenishment_id = ctx.periods.find(
       (p) => Number(p.start_year) === Number(entry.period.split('-')[0]),
     )?.id
 
-    let nr_new_files = 0
     const data = new FormData()
-
     for (const key in entry) {
-      const value = entry[key]
-
-      // Append non-file fields if they are not null, undefined, or empty string
       if (!key.startsWith('file_')) {
-        if (value !== null && value !== undefined && value !== '') {
-          data.append(key, value)
-        }
+        data.append(key, entry[key])
       }
+    }
+
+    let nr_new_files = 0
+    // Append files with their types [invoice, reminder]
+    for (const key in entry) {
       if (key.startsWith('file_') && entry[key] instanceof File) {
         const fileIndex = key.split('_')[1]
         const fileTypeKey = `file_type_${fileIndex}`
@@ -247,15 +243,24 @@ function InvoicesView() {
 
     try {
       const csrftoken = Cookies.get('csrftoken')
-
-      await fetchWithHandling(
+      const response = await fetch(
         formatApiUrl('api/replenishment/invoices/'),
         {
           body: data,
+          credentials: 'include',
+          headers: {
+            ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
+          },
           method: 'POST',
         },
-        csrftoken,
       )
+      if (!response.ok) {
+        const errorData = await response.json() // Get the error details
+        const error = new Error('Request failed')
+        error.status = response.status
+        error.data = errorData
+        throw error
+      }
 
       enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
       setParams({
@@ -281,27 +286,25 @@ function InvoicesView() {
     }
   }
 
-  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false)
-  const [invoiceToDelete, setInvoiceToDelete] = useState(null)
-
-  function promptDeletePayment(rowId) {
-    setInvoiceToDelete(rowId)
-    setIsDeleteModalVisible(true)
-  }
-
   async function handleDeleteInvoice(rowId) {
-    setInvoiceToDelete(null)
+    const confirmed = confirm('Are you sure you want to delete this invoice?')
+    if (!confirmed) return
+
     const entry = { ...memoResults[rowId] }
 
+    console.log(entry)
+
     try {
-      const csrftoken = Cookies.get('csrftoken')
-      await fetchWithHandling(
-        formatApiUrl(`api/replenishment/invoices/${entry.id}/`),
-        {
-          method: 'DELETE',
-        },
-        csrftoken,
-      )
+      const response = await api(`api/replenishment/invoices/${entry.id}/`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) {
+        const errorData = await response.json() // Get the error details
+        const error = new Error('Request failed')
+        error.status = response.status
+        error.data = errorData
+        throw error
+      }
       enqueueSnackbar('Invoice deleted.', { variant: 'success' })
       setParams({
         offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,
@@ -352,19 +355,6 @@ function InvoicesView() {
 
   return (
     <>
-      {isDeleteModalVisible && invoiceToDelete !== null ? (
-        <ConfirmDialog
-          onCancel={() => {
-            setIsDeleteModalVisible(false)
-            setInvoiceToDelete(null)
-          }}
-          onSubmit={() => handleDeleteInvoice(invoiceToDelete)}
-        >
-          <div className="text-lg">
-            Are you sure you want to delete this invoice ?
-          </div>
-        </ConfirmDialog>
-      ) : null}
       {showAdd ? (
         <AddInvoiceDialog
           columns={COLUMNS}
@@ -450,7 +440,7 @@ function InvoicesView() {
           }
           return acc
         }, [])}
-        onDelete={promptDeletePayment}
+        onDelete={handleDeleteInvoice}
         onEdit={showEditInvoiceDialog}
         onSort={handleSort}
       />

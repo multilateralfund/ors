@@ -91,12 +91,14 @@ const InvoiceDialog = function InvoiceDialog(props) {
         label={columns[5].label}
         step="0.001"
         type="number"
+        required
       />
       <FieldInput
         id="date_sent_out"
         defaultValue={data?.date_sent_out}
         label="Sent out"
         type="date"
+        required
       />
       <FieldInput
         id="reminder"
