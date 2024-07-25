@@ -121,7 +121,7 @@ function SCView(props) {
         </h1>
       </div>
       <Component {...props} />
-      <DisputedContributionDialog />
+      {ctx.isTreasurer && <DisputedContributionDialog />}
       <SCNotes type={currentSection?.label.toLowerCase()} />
     </section>
   )
