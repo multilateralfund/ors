@@ -7,14 +7,11 @@ import { times } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
 import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
-import {
-  Input,
-  Select,
-} from '@ors/components/manage/Blocks/Replenishment/Inputs'
-import InvoiceDialog from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceDialog'
-import useGetInvoices, {
+import { Select } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import PaymentDialog from '@ors/components/manage/Blocks/Replenishment/Payments/PaymentDialog'
+import useGetPayments, {
   _PER_PAGE,
-} from '@ors/components/manage/Blocks/Replenishment/Invoices/useGetInvoices'
+} from '@ors/components/manage/Blocks/Replenishment/Payments/useGetPayments'
 import Table from '@ors/components/manage/Blocks/Replenishment/Table'
 import ViewFiles from '@ors/components/manage/Blocks/Replenishment/ViewFiles'
 import {
@@ -29,36 +26,34 @@ import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
 
-import { IoSearchSharp } from 'react-icons/io5'
-
 const COLUMNS = [
   { field: 'country', label: 'Country' },
-  { field: 'number', label: 'Invoice number' },
-  { field: 'date_of_issuance', label: 'Date of issuance', sortable: true },
+  { field: 'date', label: 'Date', sortable: true },
   { field: 'amount', label: 'Amount', sortable: true },
   { field: 'currency', label: 'Currency' },
   {
     field: 'exchange_rate',
     label: 'Exchange Rate',
-    subLabel: '(FERM)',
   },
-  { field: 'date_sent_out', label: 'Sent on', sortable: true },
-  { field: 'reminder', label: 'Reminder sent on' },
+  { field: 'payment_for_year', label: 'Year(s)' },
+  { field: 'ferm_gain_or_loss', label: 'FERM Gain/Loss' },
   { field: 'files', label: 'Files' },
+  { field: 'comment', label: 'Comments' },
 ]
 
-const AddInvoiceDialog = function AddInvoiceDialog(props) {
-  return <InvoiceDialog title="Add invoice" {...props} />
+const AddPaymentDialogue = function AddPaymentDialogue(props) {
+  return <PaymentDialog title="Add payment" {...props} />
 }
 
-const EditInvoiceDialog = function EditInvoiceDialog(props) {
-  return <InvoiceDialog title="Edit invoice" isEdit {...props} />
+const EditPaymentDialogue = function EditPaymentDialogue(props) {
+  return <PaymentDialog title="Edit payment" isEdit {...props} />
 }
 
-function InvoicesView() {
+function PaymentsView() {
   const ctx = useContext(ReplenishmentContext)
 
-  const { count, loaded, results, setParams } = useGetInvoices()
+  const { count, loaded, results, setParams } = useGetPayments()
+  const [_, setError] = useState(null)
   const [pagination, setPagination] = useState({
     page: 1,
     rowsPerPage: _PER_PAGE,
@@ -78,17 +73,18 @@ function InvoicesView() {
         amount: formatNumberValue(data.amount),
         be_amount: data.amount,
         be_exchange_rate: data.exchange_rate,
+        be_ferm: data.ferm_gain_or_loss,
+        comment: data.comment,
         country: data.country.name,
         country_id: data.country.id,
         currency: data.currency,
-        date_of_issuance: formatDateValue(data.date_of_issuance),
-        date_sent_out: formatDateValue(data.date_sent_out) || 'N/A',
+        date: formatDateValue(data.date),
         exchange_rate: formatNumberValue(data.exchange_rate) || 'N/A',
-        files: <ViewFiles files={data.invoice_files} />,
-        files_data: data.invoice_files,
+        ferm_gain_or_loss: formatNumberValue(data.ferm_gain_or_loss) || 'N/A',
+        files: <ViewFiles files={data.payment_files} />,
+        files_data: data.payment_files,
         iso3: data.country.iso3,
-        number: data.number.toLocaleString(),
-        reminder: data.reminder_sent_on || 'N/A',
+        payment_for_year: data.payment_for_year,
         replenishment: data.replenishment,
       })),
     ]
@@ -125,25 +121,26 @@ function InvoicesView() {
     let entry = null
     if (editIdx !== null) {
       entry = { ...memoResults[editIdx] }
-      entry.date_of_issuance = dateForEditField(entry.date_of_issuance)
-      entry.date_sent_out = dateForEditField(entry.date_sent_out)
-      entry.reminder = dateForEditField(entry.reminder)
+      entry.date = dateForEditField(entry.date)
       entry.amount = entry.be_amount
       entry.exchange_rate = entry.be_exchange_rate
+      entry.ferm_gain_or_loss = entry.be_ferm
     }
     return entry
   }, [editIdx, memoResults])
 
-  function showEditInvoiceDialog(idx) {
+  function showEditPaymentDialogue(idx) {
     setEditIdx(idx)
   }
 
-  async function handleEditInvoiceSubmit(formData) {
+  async function handleEditPaymentSubmit(formData) {
     const entry = { ...formData }
-    entry.date_of_issuance = dateForInput(entry.date_of_issuance)
-    entry.date_sent_out = dateForInput(entry.date_sent_out) || ''
-    entry.reminder = dateForInput(entry.reminder) || ''
+    entry.date = dateForInput(entry.date)
     entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
+    entry.ferm_gain_or_loss = isNaN(entry.ferm_gain_or_loss)
+      ? ''
+      : entry.ferm_gain_or_loss
+    entry.comment = entry.comment || ''
 
     let nr_new_files = 0
     const data = new FormData()
@@ -158,17 +155,10 @@ function InvoicesView() {
           data.append(key, value)
         }
       }
-
-      // Append files with their types if they are valid
-      if (key.startsWith('file_') && value instanceof File) {
+      if (key.startsWith('file_') && entry[key] instanceof File) {
         const fileIndex = key.split('_')[1]
-        const fileTypeKey = `file_type_${fileIndex}`
-        const fileType = entry[fileTypeKey]
-
-        ;(fileType ?? fileType !== '') &&
-          nr_new_files++ &&
-          (data.append(`files[${fileIndex}][file]`, value, value.name),
-          data.append(`files[${fileIndex}][type]`, fileType))
+        data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
+        nr_new_files++
       }
     }
 
@@ -176,16 +166,15 @@ function InvoicesView() {
 
     try {
       const csrftoken = Cookies.get('csrftoken')
-
       await fetchWithHandling(
-        formatApiUrl(`api/replenishment/invoices/${entry.id}/`),
+        formatApiUrl(`api/replenishment/payments/${entry.id}/`),
         {
           body: data,
           method: 'PUT',
         },
         csrftoken,
       )
-      enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
+      enqueueSnackbar('Payment updated successfully.', { variant: 'success' })
       setParams({
         offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,
       })
@@ -194,6 +183,7 @@ function InvoicesView() {
       setShowAdd(false)
       if (error.status === 400) {
         const errors = await error.json()
+        setError({ ...errors })
         enqueueSnackbar(
           errors.general_error ||
             errors.files ||
@@ -204,21 +194,21 @@ function InvoicesView() {
         enqueueSnackbar(<>An error occurred. Please try again.</>, {
           variant: 'error',
         })
+        setError({})
       }
     }
 
     setEditIdx(null)
   }
 
-  async function handleAddInvoiceSubmit(formData) {
+  async function handleAddPaymentSubmit(formData) {
     const entry = { ...formData }
-    entry.date_of_issuance = dateForInput(entry.date_of_issuance)
-    entry.date_sent_out = dateForInput(entry.date_sent_out)
-    entry.reminder = dateForInput(entry.reminder)
+    entry.date = dateForInput(entry.date)
     entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
-    entry.replenishment_id = ctx.periods.find(
-      (p) => Number(p.start_year) === Number(entry.period.split('-')[0]),
-    )?.id
+    entry.ferm_gain_or_loss = isNaN(entry.ferm_gain_or_loss)
+      ? ''
+      : entry.ferm_gain_or_loss
+    entry.comment = entry.comment || ''
 
     let nr_new_files = 0
     const data = new FormData()
@@ -234,12 +224,8 @@ function InvoicesView() {
       }
       if (key.startsWith('file_') && entry[key] instanceof File) {
         const fileIndex = key.split('_')[1]
-        const fileTypeKey = `file_type_${fileIndex}`
-        if (entry[fileTypeKey]) {
-          nr_new_files++
-          data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
-          data.append(`files[${fileIndex}][type]`, entry[fileTypeKey])
-        }
+        data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
+        nr_new_files++
       }
     }
 
@@ -247,17 +233,15 @@ function InvoicesView() {
 
     try {
       const csrftoken = Cookies.get('csrftoken')
-
       await fetchWithHandling(
-        formatApiUrl('api/replenishment/invoices/'),
+        formatApiUrl('api/replenishment/payments/'),
         {
           body: data,
           method: 'POST',
         },
         csrftoken,
       )
-
-      enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
+      enqueueSnackbar('Payment updated successfully.', { variant: 'success' })
       setParams({
         offset: 0,
       })
@@ -267,6 +251,7 @@ function InvoicesView() {
       setShowAdd(false)
       if (error.status === 400) {
         const errors = await error.json()
+        setError({ ...errors })
         enqueueSnackbar(
           errors.general_error ||
             errors.files ||
@@ -277,38 +262,40 @@ function InvoicesView() {
         enqueueSnackbar(<>An error occurred. Please try again.</>, {
           variant: 'error',
         })
+        setError({})
       }
     }
   }
 
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false)
-  const [invoiceToDelete, setInvoiceToDelete] = useState(null)
+  const [paymentToDelete, setPaymentToDelete] = useState(null)
 
   function promptDeletePayment(rowId) {
-    setInvoiceToDelete(rowId)
+    setPaymentToDelete(rowId)
     setIsDeleteModalVisible(true)
   }
 
-  async function handleDeleteInvoice(rowId) {
-    setInvoiceToDelete(null)
+  async function handleDeletePayment(rowId) {
+    setPaymentToDelete(null)
     const entry = { ...memoResults[rowId] }
 
     try {
       const csrftoken = Cookies.get('csrftoken')
       await fetchWithHandling(
-        formatApiUrl(`api/replenishment/invoices/${entry.id}/`),
+        formatApiUrl(`api/replenishment/payments/${entry.id}/`),
         {
           method: 'DELETE',
         },
         csrftoken,
       )
-      enqueueSnackbar('Invoice deleted.', { variant: 'success' })
+      enqueueSnackbar('Payment deleted.', { variant: 'success' })
       setParams({
         offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,
       })
     } catch (error) {
       if (error.status === 400) {
         const errors = await error.json()
+        setError({ ...errors })
         enqueueSnackbar(
           errors.general_error ||
             errors.files ||
@@ -319,12 +306,9 @@ function InvoicesView() {
         enqueueSnackbar(<>An error occurred. Please try again.</>, {
           variant: 'error',
         })
+        setError({})
       }
     }
-  }
-
-  function handleSearchInput(evt) {
-    setParams({ search: evt.target.value })
   }
 
   function handleSort(column) {
@@ -344,63 +328,43 @@ function InvoicesView() {
     setParams({ country_id })
   }
 
-  function handlePeriodFilter(evt) {
-    const period = evt.target.value
-    const replenishment_start = period.split('-')[0]
-    setParams({ replenishment_start })
-  }
-
   return (
     <>
-      {isDeleteModalVisible && invoiceToDelete !== null ? (
+      {isDeleteModalVisible && paymentToDelete !== null ? (
         <ConfirmDialog
           onCancel={() => {
             setIsDeleteModalVisible(false)
-            setInvoiceToDelete(null)
+            setPaymentToDelete(null)
           }}
-          onSubmit={() => handleDeleteInvoice(invoiceToDelete)}
+          onSubmit={() => handleDeletePayment(paymentToDelete)}
         >
           <div className="text-lg">
-            Are you sure you want to delete this invoice ?
+            Are you sure you want to delete this payment ?
           </div>
         </ConfirmDialog>
       ) : null}
       {showAdd ? (
-        <AddInvoiceDialog
+        <AddPaymentDialogue
           columns={COLUMNS}
           countries={ctx.countries}
           onCancel={() => setShowAdd(false)}
-          onSubmit={handleAddInvoiceSubmit}
+          onSubmit={handleAddPaymentSubmit}
         />
       ) : null}
       {editData !== null ? (
-        <EditInvoiceDialog
+        <EditPaymentDialogue
           columns={COLUMNS}
           countries={ctx.countries}
           data={editData}
           onCancel={() => setEditIdx(null)}
-          onSubmit={handleEditInvoiceSubmit}
+          onSubmit={handleEditPaymentSubmit}
         />
       ) : null}
       <div className="flex items-center justify-between gap-4 pb-4 print:hidden">
         <div className="flex items-center">
-          <div className="relative">
-            <IoSearchSharp
-              className="absolute left-3 top-1/2 -translate-y-1/2 transform text-primary"
-              size={20}
-            />
-            <Input
-              id="search"
-              className="!ml-0 w-full rounded border py-2 pl-10 pr-3"
-              defaultValue=""
-              placeholder="Search invoice..."
-              type="text"
-              onChange={handleSearchInput}
-            />
-          </div>
           <Select
             id="country"
-            className="placeholder-select w-52"
+            className="placeholder-select !ml-0 w-52"
             onChange={handleCountryFilter}
             hasClear
             required
@@ -414,28 +378,8 @@ function InvoicesView() {
               </option>
             ))}
           </Select>
-          <Select
-            id="period"
-            className="placeholder-select w-44"
-            onChange={handlePeriodFilter}
-            hasClear
-            required
-          >
-            <option value="" disabled hidden>
-              Period
-            </option>
-            {ctx.periodOptions.map((period) => (
-              <option
-                key={period.value}
-                className="text-primary"
-                value={period.value}
-              >
-                {period.label}
-              </option>
-            ))}
-          </Select>
         </div>
-        <AddButton onClick={() => setShowAdd(true)}>Add invoice</AddButton>
+        <AddButton onClick={() => setShowAdd(true)}>Add payment</AddButton>
       </div>
       <Table
         columns={columns}
@@ -451,7 +395,7 @@ function InvoicesView() {
           return acc
         }, [])}
         onDelete={promptDeletePayment}
-        onEdit={showEditInvoiceDialog}
+        onEdit={showEditPaymentDialogue}
         onSort={handleSort}
       />
       {!!pages && pages > 1 && (
@@ -474,6 +418,4 @@ function InvoicesView() {
   )
 }
 
-export default InvoicesView
-
-// Add debounce to search input
+export default PaymentsView

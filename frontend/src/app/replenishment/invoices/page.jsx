@@ -9,16 +9,16 @@ export default function ReplenishmentInvoices() {
   return (
     <>
       <title>Replenishment - Invoices</title>
-    <PageWrapper className="w-full p-4" defaultSpacing={false}>
-      <ReplenishmentHeading
-        extraPeriodOptions={[{ label: 'All', value: '' }]}
-        showPeriodSelector={false}
-      >
-        Invoices
-      </ReplenishmentHeading>
-      <DownloadButtons />
-      <InvoicesView />
-    </PageWrapper>
+      <PageWrapper className="w-full p-4" defaultSpacing={false}>
+        <ReplenishmentHeading
+          extraPeriodOptions={[{ label: 'All', value: '' }]}
+          showPeriodSelector={false}
+        >
+          Invoices
+        </ReplenishmentHeading>
+        <DownloadButtons />
+        <InvoicesView />
+      </PageWrapper>
     </>
   )
 }

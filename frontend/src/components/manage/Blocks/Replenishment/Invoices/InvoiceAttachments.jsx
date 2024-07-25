@@ -12,6 +12,7 @@ import { formatApiUrl } from '@ors/helpers'
 import { IoDocumentTextOutline, IoTrash } from 'react-icons/io5'
 
 function InvoiceAttachments(props) {
+  const { withFileType = true } = props
   const [files, setFiles] = useState([])
   const [oldFiles, setOldFiles] = useState(props.oldFiles || [])
   const [deletedFiles, setDeletedFiles] = useState([])
@@ -39,8 +40,6 @@ function InvoiceAttachments(props) {
     setOldFiles((prev) => prev.filter((_, i) => i !== index))
     setDeletedFiles((prev) => [...prev, oldFiles[index].id])
   }
-
-  console.log(deletedFiles)
 
   return (
     <div className="flex flex-col gap-3">
@@ -86,11 +85,18 @@ function InvoiceAttachments(props) {
               key={o.id}
               className={cx('flex items-center justify-between gap-3')}
             >
-              <Select id={`file_type_${i}`} className="!ml-0">
-                <option value="invoice">Invoice</option>
-                <option value="reminder">Reminder</option>
-              </Select>
-              <Input id={`file_${i}`} className="!ml-0" type="file" required />
+              {withFileType && (
+                <Select id={`file_type_${i}`} className="!ml-0 h-10">
+                  <option value="invoice">Invoice</option>
+                  <option value="reminder">Reminder</option>
+                </Select>
+              )}
+              <Input
+                id={`file_${i}`}
+                className="!ml-0 h-10"
+                type="file"
+                required
+              />
               <IoTrash
                 className="cursor-pointer text-red-500"
                 size={20}
