@@ -498,9 +498,7 @@ class ReplenishmentDashboardView(views.APIView):
         income = ExternalIncome.objects.get()
         allocations = ExternalAllocation.objects.get()
 
-        computed_summary_data = TriennialContributionStatus.objects.filter(
-            end_year__lte=latest_closed_triennial.end_year,
-        ).aggregate(
+        computed_summary_data = TriennialContributionStatus.objects.aggregate(
             cash_payments=models.Sum("cash_payments", default=0),
             bilateral_assistance=models.Sum("bilateral_assistance", default=0),
             promissory_notes=models.Sum("promissory_notes", default=0),
@@ -508,7 +506,6 @@ class ReplenishmentDashboardView(views.APIView):
         computed_party_data = (
             Country.objects.filter(
                 triennial_contributions_status__isnull=False,
-                triennial_contributions_status__end_year__lte=latest_closed_triennial.end_year,
             )
             .prefetch_related("triennial_contributions_status")
             .annotate(
@@ -548,7 +545,7 @@ class ReplenishmentDashboardView(views.APIView):
                 promissory_notes=models.Sum("promissory_notes", default=0),
             )
         )
-        payment_pledge_percentage_2021_2023 = (
+        payment_pledge_percentage_latest_closed_triennial = (
             (
                 computed_summary_data_latest_closed_triennial["cash_payments"]
                 + computed_summary_data_latest_closed_triennial["bilateral_assistance"]
@@ -559,10 +556,7 @@ class ReplenishmentDashboardView(views.APIView):
         )
 
         pledges = (
-            TriennialContributionStatus.objects.filter(
-                end_year__lte=latest_closed_triennial.end_year,
-            )
-            .values("start_year", "end_year")
+            TriennialContributionStatus.objects.values("start_year", "end_year")
             .annotate(
                 outstanding_pledges=models.Sum("outstanding_contributions", default=0),
                 agreed_pledges=models.Sum("agreed_contributions", default=0),
@@ -573,7 +567,7 @@ class ReplenishmentDashboardView(views.APIView):
 
         data = {
             "overview": {
-                "payment_pledge_percentage": payment_pledge_percentage_2021_2023,
+                "payment_pledge_percentage": payment_pledge_percentage_latest_closed_triennial,
                 "gain_loss": gain_loss,
                 "parties_paid_in_advance_count": computed_party_data[
                     "parties_paid_in_advance_count"
@@ -611,6 +605,7 @@ class ReplenishmentDashboardView(views.APIView):
                         "outstanding_pledges": pledge["outstanding_pledges"],
                     }
                     for pledge in pledges
+                    if pledge["end_year"] <= latest_closed_triennial.end_year
                 ],
                 "pledged_contributions": [
                     {
