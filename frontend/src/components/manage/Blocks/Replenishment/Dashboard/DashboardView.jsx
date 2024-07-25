@@ -1,7 +1,7 @@
 'use client'
 
-import { useSnackbar } from 'notistack'
 import { useEffect, useState } from 'react'
+import { useSnackbar } from 'notistack'
 
 import cx from 'classnames'
 
