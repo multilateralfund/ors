@@ -2,7 +2,7 @@
 
 import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
 import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
-import PaymentsView from '@ors/components/manage/Blocks/Replenishment/Payments/PaymentsView'
+import PaymentsView from '@ors/components/manage/Blocks/Replenishment/PaymentsView'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export default function ReplenishmentPayments() {
@@ -12,7 +12,7 @@ export default function ReplenishmentPayments() {
       <PageWrapper className="w-full p-4" defaultSpacing={false}>
         <ReplenishmentHeading
           extraPeriodOptions={[{ label: 'All', value: '' }]}
-          showPeriodSelector={false}
+          showPeriodSelector={true}
         >
           Payments
         </ReplenishmentHeading>

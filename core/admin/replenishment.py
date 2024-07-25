@@ -55,7 +55,7 @@ class PaymentAdmin(admin.ModelAdmin):
     search_fields = [
         "country__name",
         "date",
-        "payment_for_year",
+        "replenishment__start_year",
     ]
     list_filter = [
         "date",

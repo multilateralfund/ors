@@ -180,17 +180,13 @@ class Payment(models.Model):
         Country, on_delete=models.PROTECT, related_name="payments"
     )
     replenishment = models.ForeignKey(
-        Replenishment, on_delete=models.PROTECT, related_name="payments", null=True
+        Replenishment, on_delete=models.PROTECT, related_name="payments"
     )
     date = models.DateField()
-    payment_for_year = models.CharField(max_length=64)
-
-    amount = models.DecimalField(max_digits=30, decimal_places=15)
-    currency = models.CharField(max_length=64)
-    exchange_rate = models.DecimalField(max_digits=30, decimal_places=15, null=True)
-    ferm_gain_or_loss = models.DecimalField(max_digits=30, decimal_places=15, null=True)
-
-    comment = models.TextField(blank=True)
+    payment_for_year = models.CharField(max_length=16)
+    gain_or_loss = models.DecimalField(max_digits=30, decimal_places=15)
+    amount_local_currency = models.DecimalField(max_digits=30, decimal_places=15)
+    amount_usd = models.DecimalField(max_digits=30, decimal_places=15)
 
     def __str__(self):
         return f"Payment {self.country.name} - {self.payment_for_year}"
