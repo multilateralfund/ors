@@ -1,6 +1,6 @@
 'use client'
 
-import { useContext } from 'react'
+import { useContext, useEffect } from 'react'
 
 import { useRouter } from 'next/navigation'
 
@@ -14,11 +14,13 @@ export default function Replenishment() {
   const ctxPeriods = useContext(ReplenishmentContext)
 
   // Redirect to latest period
-  if (ctxPeriods.periodOptions.length > 0) {
-    router.replace(
-      `/replenishment/scale-of-assessment/${ctxPeriods.periodOptions[0].value}`,
-    )
-  }
+  useEffect(() => {
+    if (ctxPeriods.periodOptions.length > 0) {
+      router.replace(
+        `/replenishment/scale-of-assessment/${ctxPeriods.periodOptions[0].value}`,
+      )
+    }
+  }, [ctxPeriods.periodOptions, router])
 
   // Return SAView so that there is no flicker after the redirect.
   return (

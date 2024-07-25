@@ -57,8 +57,6 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
     status = serializers.ChoiceField(
         choices=BusinessPlan.Status.choices, required=False
     )
-    comment_agency = serializers.CharField(read_only=True)
-    comment_secretariat = serializers.CharField(read_only=True)
     feedback_filename = serializers.CharField(read_only=True)
     feedback_file_download_url = serializers.SerializerMethodField(read_only=True)
     updated_by = serializers.StringRelatedField(
@@ -73,8 +71,6 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
             "year_start",
             "year_end",
             "agency",
-            "comment_agency",
-            "comment_secretariat",
             "feedback_filename",
             "feedback_file_download_url",
             "updated_at",
@@ -89,7 +85,7 @@ class BPRecordExportSerializer(serializers.ModelSerializer):
     agency = serializers.SerializerMethodField()
     lvc_status = serializers.ChoiceField(choices=BPRecord.LVCStatus.choices)
     project_type = serializers.SlugRelatedField("code", read_only=True)
-    bp_type = serializers.ChoiceField(choices=BPRecord.BPType.choices)
+    status = serializers.ChoiceField(choices=BPRecord.Status.choices)
     bp_chemical_type = serializers.SlugRelatedField("name", read_only=True)
     chemical_detail = serializers.SerializerMethodField()
     country = serializers.SlugRelatedField("name", read_only=True)
@@ -118,7 +114,7 @@ class BPRecordExportSerializer(serializers.ModelSerializer):
             "sector",
             "subsector",
             "legacy_sector_and_subsector",
-            "bp_type",
+            "status",
             "is_multi_year",
             "reason_for_exceeding",
             "remarks",
@@ -143,10 +139,10 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
     country = CountrySerializer()
     lvc_status = serializers.ChoiceField(choices=BPRecord.LVCStatus.choices)
     project_type = ProjectTypeSerializer()
-    bp_type = serializers.ChoiceField(choices=BPRecord.BPType.choices)
+    status = serializers.ChoiceField(choices=BPRecord.Status.choices)
     bp_chemical_type = BPChemicalTypeSerializer()
     is_multi_year_display = serializers.SerializerMethodField()
-    bp_type_display = serializers.SerializerMethodField()
+    status_display = serializers.SerializerMethodField()
 
     substances = serializers.SlugRelatedField("name", many=True, read_only=True)
     blends = serializers.SlugRelatedField(slug_field="name", many=True, read_only=True)
@@ -171,14 +167,15 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
             "sector",
             "subsector",
             "legacy_sector_and_subsector",
-            "bp_type",
+            "status",
             "is_multi_year",
             "reason_for_exceeding",
             "remarks",
             "remarks_additional",
             "values",
             "is_multi_year_display",
-            "bp_type_display",
+            "status_display",
+            "comment_secretariat",
         ]
 
     def get_is_multi_year_display(self, obj):
@@ -186,8 +183,8 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
             return "Multi-Year"
         return "Individual"
 
-    def get_bp_type_display(self, obj):
-        return obj.get_bp_type_display()
+    def get_status_display(self, obj):
+        return obj.get_status_display()
 
 
 class BPRecordCreateSerializer(serializers.ModelSerializer):
@@ -201,7 +198,7 @@ class BPRecordCreateSerializer(serializers.ModelSerializer):
     project_type_id = serializers.PrimaryKeyRelatedField(
         queryset=ProjectType.objects.all().values_list("id", flat=True),
     )
-    bp_type = serializers.ChoiceField(choices=BPRecord.BPType.choices)
+    status = serializers.ChoiceField(choices=BPRecord.Status.choices)
     bp_chemical_type_id = serializers.PrimaryKeyRelatedField(
         queryset=BPChemicalType.objects.all().values_list("id", flat=True),
     )
@@ -240,11 +237,12 @@ class BPRecordCreateSerializer(serializers.ModelSerializer):
             "sector_id",
             "subsector_id",
             "legacy_sector_and_subsector",
-            "bp_type",
+            "status",
             "is_multi_year",
             "reason_for_exceeding",
             "remarks",
             "remarks_additional",
+            "comment_secretariat",
             "values",
         ]
 
@@ -308,15 +306,6 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
         self._create_bp_records(business_plan, records)
 
         return business_plan
-
-
-class BPCommentsSerializer(serializers.ModelSerializer):
-    comment_agency = serializers.CharField(required=False, allow_blank=True)
-    comment_secretariat = serializers.CharField(required=False, allow_blank=True)
-
-    class Meta:
-        model = BusinessPlan
-        fields = ["comment_agency", "comment_secretariat"]
 
 
 class BPFileSerializer(serializers.ModelSerializer):

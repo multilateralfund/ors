@@ -10,6 +10,7 @@ from core.models import (
     TriennialContributionStatus,
     Invoice,
     Payment,
+    ScaleOfAssessmentVersion,
 )
 from core.models.business_plan import (
     BusinessPlan,
@@ -462,7 +463,7 @@ class BPRecordFactory(factory.django.DjangoModelFactory):
     amount_polyol = factory.Faker("random_int", min=1, max=1000)
     sector = factory.SubFactory(ProjectSectorFactory)
     subsector = factory.SubFactory(ProjectSubSectorFactory)
-    bp_type = factory.fuzzy.FuzzyChoice(BPRecord.BPType.choices)
+    status = factory.fuzzy.FuzzyChoice(BPRecord.Status.choices)
     reason_for_exceeding = factory.Faker(
         "pystr", max_chars=200, prefix="bprecord-reason-for-exceeding"
     )
@@ -492,12 +493,24 @@ class ReplenishmentFactory(factory.django.DjangoModelFactory):
     amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
 
 
+class ScaleOfAssessmentVersionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ScaleOfAssessmentVersion
+
+    replenishment = factory.SubFactory(ReplenishmentFactory)
+    version = factory.Faker("random_int", min=1, max=100)
+    is_final = factory.Faker("pybool")
+    meeting_number = factory.Faker("pystr", max_chars=32)
+    decision_number = factory.Faker("pystr", max_chars=32)
+    comment = factory.Faker("pystr", max_chars=100)
+
+
 class ScaleOfAssessmentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ScaleOfAssessment
 
     country = factory.SubFactory(CountryFactory)
-    replenishment = factory.SubFactory(ReplenishmentFactory)
+    version = factory.SubFactory(ScaleOfAssessmentVersionFactory)
     currency = factory.Faker("pystr", max_chars=3)
     exchange_rate = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     bilateral_assistance_amount = factory.Faker(

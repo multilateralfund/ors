@@ -6,6 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.db import models, transaction
 from django.http import HttpResponse
 from rest_framework import filters, generics, mixins, status, views, viewsets
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from core.api.filters.replenishments import (
@@ -35,6 +36,7 @@ from core.models import (
     PaymentFile,
     Replenishment,
     ScaleOfAssessment,
+    ScaleOfAssessmentVersion,
     TriennialContributionStatus,
 )
 
@@ -54,7 +56,9 @@ class ReplenishmentCountriesViewSet(viewsets.GenericViewSet, mixins.ListModelMix
         return queryset.order_by("name")
 
 
-class ReplenishmentViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class ReplenishmentViewSet(
+    viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin
+):
     """
     Viewset for all replenishments that are available.
     """
@@ -65,13 +69,63 @@ class ReplenishmentViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     def get_queryset(self):
         user = self.request.user
         if user.user_type == user.UserType.SECRETARIAT:
-            return Replenishment.objects.order_by("-start_year")
+            return Replenishment.objects.prefetch_related(
+                "scales_of_assessment_versions"
+            ).order_by("-start_year")
         return Replenishment.objects.none()
 
+    @transaction.atomic
+    def perform_create(self, serializer):
+        previous_replenishment = Replenishment.objects.order_by("-start_year").first()
+        try:
+            previous_replenishment_final_version = (
+                previous_replenishment.scales_of_assessment_versions.get(is_final=True)
+            )
+        except ScaleOfAssessmentVersion.DoesNotExist as exc:
+            raise ValidationError(
+                {
+                    "non_field_errors": "The current replenishment hasn't been finalized yet."
+                }
+            ) from exc
+        except ScaleOfAssessmentVersion.MultipleObjectsReturned as exc:
+            raise ValidationError(
+                {
+                    "non_field_errors": "There are multiple final versions for the previous replenishment."
+                }
+            ) from exc
 
-class ScaleOfAssessmentViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+        new_replenishment = serializer.save(
+            start_year=previous_replenishment.start_year + 3,
+            end_year=previous_replenishment.end_year + 3,
+        )
+
+        # Create draft version
+        new_version = ScaleOfAssessmentVersion.objects.create(
+            replenishment=new_replenishment
+        )
+
+        # Copy scales of assessment from previous replenishment
+        new_scales_of_assessment = []
+        for (
+            previous_scale_of_assessment
+        ) in previous_replenishment_final_version.scales_of_assessment.values(
+            "country", "currency"
+        ):
+            new_scale_of_assessment = ScaleOfAssessment(
+                version=new_version,
+                country_id=previous_scale_of_assessment["country"],
+                currency=previous_scale_of_assessment["currency"],
+            )
+            new_scales_of_assessment.append(new_scale_of_assessment)
+
+        ScaleOfAssessment.objects.bulk_create(new_scales_of_assessment)
+
+
+class ScaleOfAssessmentViewSet(
+    viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin
+):
     """
-    Viewset for all contributions that are available.
+    Viewset for all scales of assessment.
     """
 
     model = ScaleOfAssessment
@@ -82,9 +136,133 @@ class ScaleOfAssessmentViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         user = self.request.user
         if user.user_type == user.UserType.SECRETARIAT:
             return ScaleOfAssessment.objects.select_related(
-                "country", "replenishment"
+                "country", "version__replenishment"
             ).order_by("country__name")
         return ScaleOfAssessment.objects.none()
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        input_data = request.data
+
+        try:
+            replenishment = Replenishment.objects.get(id=input_data["replenishment_id"])
+        except Replenishment.DoesNotExist as exc:
+            raise ValidationError(
+                {"replenishment_id": "Replenishment does not exist."}
+            ) from exc
+
+        if input_data.get("amount"):
+            replenishment.amount = input_data["amount"]
+            replenishment.save()
+
+        should_create_new_version = input_data.get("createNewVersion")
+        final = input_data.get("final") or False
+        meeting_number = input_data.get("meeting") or ""
+        decision_number = input_data.get("decision") or ""
+        comment = input_data.get("comment") or ""
+
+        previous_version = replenishment.scales_of_assessment_versions.order_by(
+            "-version"
+        ).first()
+
+        if previous_version.is_final:
+            raise ValidationError(
+                {
+                    "non_field_errors": "The current replenishment has already been finalized."
+                }
+            )
+
+        if should_create_new_version or final:
+            # Marking as final always creates a new version that is marked as final
+            version = ScaleOfAssessmentVersion.objects.create(
+                replenishment=replenishment,
+                is_final=final,
+                meeting_number=meeting_number,
+                decision_number=decision_number,
+                version=previous_version.version + 1,
+                comment=comment,
+            )
+        else:
+            version = previous_version
+            version.decision_number = decision_number
+            version.meeting_number = meeting_number
+            version.is_final = final
+            version.comment = comment
+            version.save()
+
+        # Delete all scales of assessment if updating the latest version
+        if not should_create_new_version:
+            version.scales_of_assessment.all().delete()
+
+        serializer = ScaleOfAssessmentSerializer(data=input_data["data"], many=True)
+        serializer.is_valid(raise_exception=True)
+        scales_of_assessment = [
+            ScaleOfAssessment(version=version, **scale_of_assessment)
+            for scale_of_assessment in serializer.validated_data
+        ]
+
+        ScaleOfAssessment.objects.bulk_create(scales_of_assessment)
+
+        if final:
+            # Delete all previous status of contributions data, if any
+            AnnualContributionStatus.objects.filter(
+                year__gte=replenishment.start_year, year__lte=replenishment.end_year
+            ).delete()
+            TriennialContributionStatus.objects.filter(
+                start_year__gte=replenishment.start_year,
+                end_year__lte=replenishment.end_year,
+            ).delete()
+            annual_contributions = []
+            triennial_contributions = []
+            # Create Status of Contributions data
+            for scale_of_assessment in scales_of_assessment:
+                annual_contributions.extend(
+                    [
+                        AnnualContributionStatus(
+                            year=replenishment.start_year,
+                            country=scale_of_assessment.country,
+                            agreed_contributions=(
+                                scale_of_assessment.amount / Decimal("3")
+                            ),
+                        ),
+                        AnnualContributionStatus(
+                            year=replenishment.start_year + 1,
+                            country=scale_of_assessment.country,
+                            agreed_contributions=(
+                                scale_of_assessment.amount / Decimal("3")
+                            ),
+                        ),
+                        AnnualContributionStatus(
+                            year=replenishment.start_year + 2,
+                            country=scale_of_assessment.country,
+                            agreed_contributions=(
+                                scale_of_assessment.amount / Decimal("3")
+                            ),
+                        ),
+                    ]
+                )
+                triennial_contributions.append(
+                    TriennialContributionStatus(
+                        start_year=replenishment.start_year,
+                        end_year=replenishment.end_year,
+                        country=scale_of_assessment.country,
+                        agreed_contributions=scale_of_assessment.amount,
+                    )
+                )
+
+            AnnualContributionStatus.objects.bulk_create(annual_contributions)
+            TriennialContributionStatus.objects.bulk_create(triennial_contributions)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            {},
+            status=(
+                status.HTTP_201_CREATED
+                if should_create_new_version or final
+                else status.HTTP_200_OK
+            ),
+            headers=headers,
+        )
 
 
 class AnnualStatusOfContributionsView(views.APIView):
