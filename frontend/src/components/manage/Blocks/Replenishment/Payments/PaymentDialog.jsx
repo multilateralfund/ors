@@ -75,7 +75,7 @@ const PaymentDialog = function PaymentDialog(props) {
         type="text-area"
       />
       <h5>Files</h5>
-      <InvoiceAttachments withFileType={false} />
+      <InvoiceAttachments oldFiles={data?.files_data} withFileType={false} />
     </FormDialog>
   )
 }

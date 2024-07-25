@@ -149,14 +149,14 @@ function PaymentsView() {
           data.append(key, value)
         }
       }
-      // if (key.startsWith('file_') && entry[key] instanceof File) {
-      //   const fileIndex = key.split('_')[1]
-      //   data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
-      //   nr_new_files++
-      // }
+      if (key.startsWith('file_') && entry[key] instanceof File) {
+        const fileIndex = key.split('_')[1]
+        data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
+        nr_new_files++
+      }
     }
 
-    // data.append('nr_new_files', nr_new_files)
+    data.append('nr_new_files', nr_new_files)
 
     try {
       const csrftoken = Cookies.get('csrftoken')
@@ -214,14 +214,14 @@ function PaymentsView() {
           data.append(key, value)
         }
       }
-      // if (key.startsWith('file_') && entry[key] instanceof File) {
-      //   const fileIndex = key.split('_')[1]
-      //   data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
-      //   nr_new_files++
-      // }
+      if (key.startsWith('file_') && entry[key] instanceof File) {
+        const fileIndex = key.split('_')[1]
+        data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
+        nr_new_files++
+      }
     }
 
-    // data.append('nr_new_files', nr_new_files)
+    data.append('nr_new_files', nr_new_files)
 
     try {
       const csrftoken = Cookies.get('csrftoken')
