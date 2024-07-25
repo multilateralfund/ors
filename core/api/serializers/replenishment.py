@@ -10,13 +10,29 @@ from core.models import (
     PaymentFile,
     Replenishment,
     ScaleOfAssessment,
+    ScaleOfAssessmentVersion,
 )
 
 
+class ScaleOfAssessmentVersionSerializer(serializers.ModelSerializer):
+    version = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = ScaleOfAssessmentVersion
+        fields = "__all__"
+
+
 class ReplenishmentSerializer(serializers.ModelSerializer):
+    start_year = serializers.IntegerField(read_only=True)
+    end_year = serializers.IntegerField(read_only=True)
     amount = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
+    scales_of_assessment_versions = serializers.SerializerMethodField()
+
+    def get_scales_of_assessment_versions(self, obj):
+        qs = obj.scales_of_assessment_versions.order_by("-version")
+        return ScaleOfAssessmentVersionSerializer(qs, many=True).data
 
     class Meta:
         model = Replenishment
@@ -24,25 +40,36 @@ class ReplenishmentSerializer(serializers.ModelSerializer):
 
 
 class ScaleOfAssessmentSerializer(serializers.ModelSerializer):
-    replenishment = ReplenishmentSerializer(read_only=True)
+    version = ScaleOfAssessmentVersionSerializer(read_only=True)
+    replenishment = ReplenishmentSerializer(
+        source="version.replenishment", read_only=True
+    )
     country = CountrySerializer(read_only=True)
-    currency = serializers.CharField()
+    country_id = serializers.PrimaryKeyRelatedField(
+        source="country", queryset=Country.objects.all(), write_only=True
+    )
+    currency = serializers.CharField(allow_blank=True, required=False)
     exchange_rate = serializers.DecimalField(
-        max_digits=30, decimal_places=15, coerce_to_string=False
+        max_digits=30, decimal_places=15, coerce_to_string=False, allow_null=True
     )
     bilateral_assistance_amount = serializers.DecimalField(
-        max_digits=30, decimal_places=15, coerce_to_string=False
+        max_digits=30, decimal_places=15, coerce_to_string=False, required=False
     )
     un_scale_of_assessment = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
     override_adjusted_scale_of_assessment = serializers.DecimalField(
-        max_digits=30, decimal_places=15, coerce_to_string=False
+        max_digits=30, decimal_places=15, coerce_to_string=False, required=False
     )
     average_inflation_rate = serializers.DecimalField(
-        max_digits=30, decimal_places=15, coerce_to_string=False
+        max_digits=30,
+        decimal_places=15,
+        coerce_to_string=False,
+        allow_null=True,
     )
-    override_qualifies_for_fixed_rate_mechanism = serializers.BooleanField()
+    override_qualifies_for_fixed_rate_mechanism = serializers.BooleanField(
+        required=False
+    )
 
     adjusted_scale_of_assessment = serializers.ReadOnlyField()
     qualifies_for_fixed_rate_mechanism = serializers.ReadOnlyField()
