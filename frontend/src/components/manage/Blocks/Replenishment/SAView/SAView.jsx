@@ -130,7 +130,6 @@ function SaveManager(props) {
   const [saving, setSaving] = useState(false)
 
   const { enqueueSnackbar } = useSnackbar()
-  const { setCurrentVersion, versions } = useContext(SoAContext)
 
   useEffect(
     function () {

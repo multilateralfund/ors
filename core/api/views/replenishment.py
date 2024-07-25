@@ -621,6 +621,36 @@ class ReplenishmentDashboardView(views.APIView):
 
         return Response(data)
 
+    @transaction.atomic
+    def put(self, request, *args, **kwargs):
+        user = request.user
+
+        if user.user_type != user.UserType.SECRETARIAT:
+            return Response({})
+
+        data = request.data
+
+        income = ExternalIncome.objects.get()
+        allocations = ExternalAllocation.objects.get()
+
+        # TODO: serializers?
+        income.interest_earned = data["interest_earned"]
+        income.miscellaneous_income = data["miscellaneous_income"]
+        income.save()
+
+        allocations.undp = data["undp"]
+        allocations.unep = data["unep"]
+        allocations.unido = data["unido"]
+        allocations.world_bank = data["world_bank"]
+        allocations.staff_contracts = data["staff_contracts"]
+        allocations.treasury_fees = data["treasury_fees"]
+        allocations.monitoring_fees = data["monitoring_fees"]
+        allocations.technical_audit = data["technical_audit"]
+        allocations.information_strategy = data["information_strategy"]
+        allocations.save()
+
+        return Response({})
+
 
 class ReplenishmentInvoiceViewSet(
     mixins.CreateModelMixin,
