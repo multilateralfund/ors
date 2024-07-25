@@ -24,10 +24,12 @@ const SECTIONS = [
     path: '/replenishment/scale-of-assessment',
   },
   {
+    hidePeriod: true,
     label: 'Invoices',
     path: '/replenishment/invoices',
   },
   {
+    hidePeriod: true,
     label: 'Payments',
     path: '/replenishment/payments',
   },
@@ -48,7 +50,11 @@ function getNavLinks(pathname, period) {
       <Link
         key={i}
         className={cx({ [styles.current]: isCurrent })}
-        href={i > 1 && period != null ? `${entry.path}/${period}` : entry.path}
+        href={
+          i > 1 && period != null && !entry.hidePeriod
+            ? `${entry.path}/${period}`
+            : entry.path
+        }
       >
         {entry.label}
       </Link>,

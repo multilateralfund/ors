@@ -9,6 +9,7 @@ class User(AbstractUser):
         COUNTRY_USER = "country_user", _("Country user")
         SECRETARIAT = "secretariat", _("Secretariat")
         STAKEHOLDER = "stakeholder", _("Stakeholder")
+        TREASURER = "treasurer", _("Treasurer")
 
     class AgencyRole(models.TextChoices):
         AGENCY_INPUTTER = "agency_inputter", _("Agency inputter")

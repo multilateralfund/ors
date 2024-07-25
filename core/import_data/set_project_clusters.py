@@ -8,6 +8,7 @@ from django.db.models import Q
 from core.import_data.utils import (
     IMPORT_RESOURCES_DIR,
     PCR_DIR_LIST,
+    get_mya_cluster_by_myasector,
     get_object_by_code,
 )
 
@@ -22,41 +23,6 @@ from core.models.project import (
 # pylint: disable=R0915
 
 logger = logging.getLogger(__name__)
-
-
-SECTOR_CLUSTER_MAPPING = {
-    "pcr2023": {
-        "CFC phase out plan": "CFC Phase-out Plans",
-        "CFCs/CTC/Halon Accelerated Phase-Out Plan": "Other ODS Sector Plans",
-        "CTC phase out plan": "Other ODS Sector Plans",
-        "Domestic Refrigeration": "CFC Phase-out Plans",
-        "Foam": "CFC Phase-out Plans",
-        "Halon": "Other ODS Sector Plans",
-        "Methyl bromide": "Other ODS Sector Plans",
-        "Accelerated Production CFC": "CFC Production Phase out Plans",
-        "ODS phase out plan": "Other ODS Sector Plans",
-        "Process Agent (Phase I)": "Other ODS Sector Plans",
-        "Process Agent (Phase II)": "Other ODS Sector Plans",
-        "Production CFC": "CFC Production Phase out Plans",
-        "Production Methyl Bromide": "Other ODS Production Phase out Plans",
-        "Production ODS": "Other ODS Production Phase out Plans",
-        "Production TCA": "Other ODS Production Phase out Plans",
-        "Refrigerant management plan": "CFC Phase-out Plans",
-        "Refrigeration Servicing": "CFC Phase-out Plans",
-        "Solvent": "Other ODS Sector Plans",
-        "Tobacco Expansion": "Other ODS Sector Plans",
-        "Tobacco": "Other ODS Sector Plans",
-    },
-    "hpmppcr2023": {
-        "HCFC Phase Out Plan (Stage I)": "HPMP1",
-        "HCFC Phase Out Plan (Stage II)": "HPMP2",
-        "HCFC Phase Out Plan (Stage III)": "HPMP3",
-        "Production HCFC (Stage I)": "HPPMP1",
-        "HCFC Production (Stage I)": "HPPMP1",
-        "HCFC Production (Stage II)": "HPPMP2",
-        "HCFC Production (Stage III)": "HPPMP3",
-    },
-}
 
 
 def set_custom_clusters(file_path):
@@ -115,20 +81,12 @@ def parse_clusters_file(file_path, database_name):
             continue
 
         # set cluster
-        cluster_name = SECTOR_CLUSTER_MAPPING[database_name].get(
-            project_json["MYASector"]
+        cluster = get_mya_cluster_by_myasector(
+            project_json["MYASector"], database_name, project_json["Code"]
         )
-        if not cluster_name:
-            logger.error(
-                f"Cluster not found for project {project_json['Code']}, {project_json['MYASector']}"
-            )
-        else:
-            cluster = ProjectCluster.objects.find_by_name_or_code(cluster_name)
-            if cluster:
-                project.cluster = cluster
-                project.save()
-            else:
-                logger.error(f"Cluster not found: {cluster_name}")
+        if cluster:
+            project.cluster = cluster
+            project.save()
 
 
 def set_substance_cluster(project):

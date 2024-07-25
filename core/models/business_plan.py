@@ -66,9 +66,6 @@ class BusinessPlan(models.Model):
         max_length=32, choices=Status.choices, default=Status.draft
     )
     version = models.IntegerField(default=1)
-    # General business plan comments for Agency and Secretariat
-    comment_agency = models.TextField(blank=True)
-    comment_secretariat = models.TextField(blank=True)
 
     # feedback file
     feedback_filename = models.CharField(max_length=100, blank=True)
@@ -87,9 +84,10 @@ class BPRecord(models.Model):
         regional = "Regional", "Regional"
         undefined = "Undefined", "Undefined"
 
-    class BPType(models.TextChoices):
+    class Status(models.TextChoices):
         approved = "A", "Approved"
         planned = "P", "Planned"
+        rejected = "R", "Rejected"
         undefined = "U", "Undefined"
 
     business_plan = models.ForeignKey(
@@ -121,11 +119,16 @@ class BPRecord(models.Model):
     legacy_sector_and_subsector = models.CharField(
         max_length=255, null=True, blank=True
     )
-    bp_type = models.CharField(max_length=16, choices=BPType.choices)
+    status = models.CharField(
+        max_length=16, choices=Status.choices, default=Status.undefined
+    )
     is_multi_year = models.BooleanField(default=False)
     reason_for_exceeding = models.TextField(null=True, blank=True)
     remarks = models.TextField(null=True, blank=True)
     remarks_additional = models.TextField(null=True, blank=True)
+
+    # Secretariat comment
+    comment_secretariat = models.TextField(blank=True)
 
     def __str__(self):
         return self.title

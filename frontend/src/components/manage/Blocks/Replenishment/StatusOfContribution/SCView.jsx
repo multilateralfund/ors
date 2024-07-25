@@ -70,7 +70,7 @@ function getTabLinks(pathname) {
   return [currentSection, result]
 }
 
-export default function SCView(props) {
+function SCView(props) {
   const pathname = usePathname()
   const period = props.year || props.period
 
@@ -124,3 +124,10 @@ export default function SCView(props) {
     </section>
   )
 }
+
+function SCViewWrapper(props) {
+  // Wrapper used to avoid flicker when no period is given.
+  return props.period ? <SCView {...props} /> : <div className="h-screen"></div>
+}
+
+export { SCView, SCViewWrapper }

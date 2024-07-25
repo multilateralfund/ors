@@ -1,7 +1,7 @@
 from django_filters import rest_framework as filters
 from django_filters.widgets import CSVWidget
 
-from core.models import Country, Invoice, ScaleOfAssessment
+from core.models import Country, Invoice, Payment, ScaleOfAssessment
 
 
 class ScaleOfAssessmentFilter(filters.FilterSet):
@@ -9,11 +9,12 @@ class ScaleOfAssessmentFilter(filters.FilterSet):
     FilterSet for Scale of Assessment
     """
 
-    start_year = filters.NumberFilter(field_name="replenishment__start_year")
+    start_year = filters.NumberFilter(field_name="version__replenishment__start_year")
+    version = filters.NumberFilter(field_name="version__version")
 
     class Meta:
         model = ScaleOfAssessment
-        fields = ["start_year"]
+        fields = ["start_year", "version"]
 
 
 class InvoiceFilter(filters.FilterSet):
@@ -37,3 +38,17 @@ class InvoiceFilter(filters.FilterSet):
         if value == "all":
             return queryset
         return queryset.filter(replenishment__start_year=int(value))
+
+
+class PaymentFilter(filters.FilterSet):
+    """
+    FilterSet for Payment
+    """
+
+    country_id = filters.ModelMultipleChoiceFilter(
+        field_name="country_id", queryset=Country.objects.all(), widget=CSVWidget
+    )
+
+    class Meta:
+        model = Payment
+        fields = ["country_id"]

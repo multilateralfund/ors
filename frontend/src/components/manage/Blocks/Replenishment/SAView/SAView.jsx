@@ -2,26 +2,21 @@
 
 import { useContext, useEffect, useMemo, useState } from 'react'
 
+import { useSnackbar } from 'notistack'
+
 import { AddButton, SubmitButton } from '@ors/components/ui/Button/Button'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import SoAContext from '@ors/contexts/Replenishment/SoAContext'
-import { formatApiUrl } from '@ors/helpers/Api/utils'
+import { api } from '@ors/helpers'
 
 import FormDialog from '../FormDialog'
-import {
-  DateInput,
-  FieldInput,
-  FieldSelect,
-  FormattedNumberInput,
-  Input,
-} from '../Inputs'
+import { DateInput, FormattedNumberInput, Input } from '../Inputs'
 import { dateForInput, dateFromInput } from '../utils'
 import SATable from './SATable'
 import {
   clearNew,
   computeTableData,
   formatTableData,
-  getCountryForIso3,
   getOverrideOrDefault,
   sortSATableData,
   sumColumns,
@@ -128,15 +123,17 @@ function getEditableFieldNames(cs) {
 const EDITABLE = getEditableFieldNames(COLUMNS)
 
 function SaveManager(props) {
-  const { amount, comment, currencyDateRange, data, version } = props
+  const { comment, currencyDateRange, data, replenishment, version } = props
 
   const [isFinal, setIsFinal] = useState(false)
   const [createNewVersion, setCreateNewVersion] = useState(true)
   const [saving, setSaving] = useState(false)
 
+  const { enqueueSnackbar } = useSnackbar()
+
   useEffect(
     function () {
-      setIsFinal(version?.isFinal ?? false)
+      setIsFinal(version?.is_final ?? false)
     },
     [version],
   )
@@ -158,14 +155,36 @@ function SaveManager(props) {
   }
 
   function confirmSave(formData) {
-    const saveData = { ...formData, amount, comment, data }
+    const saveData = {
+      ...formData,
+      amount: replenishment.amount,
+      comment,
+      data,
+      replenishment_id: replenishment.id,
+    }
     saveData['final'] = isFinal
     saveData['currency_date_range_start'] =
       currencyDateRange.start.toISOString()
     saveData['currency_date_range_end'] = currencyDateRange.end.toISOString()
-    console.log(saveData)
     setSaving(false)
-    alert(`Save not implemented!\n\n${JSON.stringify(saveData, undefined, 2)}`)
+    api('api/replenishment/scales-of-assessment', {
+      data: saveData,
+      method: 'POST',
+    })
+      .then(() => {
+        window.location.reload()
+        enqueueSnackbar('Data saved successfully.', { variant: 'success' })
+      })
+      .catch((error) => {
+        error.json().then((data) => {
+          enqueueSnackbar(
+            Object.entries(data)
+              .map(([_, value]) => value)
+              .join(' '),
+            { variant: 'error' },
+          )
+        })
+      })
   }
 
   function cancelSave() {
@@ -269,7 +288,7 @@ function tranformContributions(cs) {
       avg_ir: cs[i].average_inflation_rate,
       country: cs[i].country.name_alt,
       country_id: cs[i].country.id,
-      ferm_cur: cur && cur !== 'nan' ? cur : null,
+      ferm_cur: cur && cur !== 'nan' ? cur : '',
       ferm_cur_amount: cs[i].amount_local_currency,
       ferm_rate: cs[i].exchange_rate,
       iso3: cs[i].country.iso3,
@@ -296,7 +315,7 @@ function transformForSave(d) {
 
   for (let i = 0; i < d.length; i++) {
     const n = {
-      country: d[i].country_id,
+      country_id: d[i].country_id,
     }
 
     for (let j = 0; j < mapping.length; j++) {
@@ -438,9 +457,9 @@ function SAView(props) {
   useEffect(
     function () {
       handleNewTableData(contributions)
-      setReplenishmentAmount(ctxSoA.replenishmentAmount)
+      setReplenishment(ctxSoA.replenishment)
     },
-    [contributions, ctxSoA.replenishmentAmount],
+    [contributions, ctxSoA.replenishment],
   )
 
   const [tableData, setTableData] = useState(contributions)
@@ -451,7 +470,7 @@ function SAView(props) {
 
   const [showAdd, setShowAdd] = useState(false)
 
-  const [replenishmentAmount, setReplenishmentAmount] = useState(0)
+  const [replenishment, setReplenishment] = useState({ amount: 0 })
   const [unusedAmount, setUnusedAmount] = useState('')
 
   const [commentText, setCommentText] = useState('')
@@ -477,10 +496,10 @@ function SAView(props) {
   const computedData = useMemo(
     () =>
       shouldCompute
-        ? computeTableData(tableData, replenishmentAmount - unusedAmount || 0)
+        ? computeTableData(tableData, replenishment.amount - unusedAmount || 0)
         : tableData,
     /* eslint-disable-next-line */
-    [tableData, replenishmentAmount, unusedAmount, shouldCompute],
+    [tableData, replenishment, unusedAmount, shouldCompute],
   )
 
   const sortedData = useMemo(
@@ -527,7 +546,7 @@ function SAView(props) {
       avg_ir: null,
       country: country.name_alt,
       country_id: country.id,
-      ferm_cur: null,
+      ferm_cur: '',
       ferm_rate: null,
       isNew: true,
       iso3: country.iso3,
@@ -557,7 +576,10 @@ function SAView(props) {
   function handleAmountInput(evt) {
     const value = parseFloat(evt.target.value)
     if (typeof value === 'number' && !isNaN(value)) {
-      setReplenishmentAmount(value)
+      setReplenishment((oldReplenishment) => ({
+        ...oldReplenishment,
+        amount: value,
+      }))
       setShouldCompute(true)
     }
   }
@@ -676,7 +698,7 @@ function SAView(props) {
                 id="triannualBudget"
                 className="w-36"
                 type="number"
-                value={replenishmentAmount}
+                value={replenishment?.amount}
                 onChange={handleAmountInput}
               />
             </div>
@@ -708,7 +730,7 @@ function SAView(props) {
                 id="totalAmount"
                 className="w-36"
                 type="number"
-                value={(replenishmentAmount - unusedAmount || 0) / 3}
+                value={(replenishment?.amount - unusedAmount || 0) / 3}
                 disabled
                 readOnly
               />
@@ -731,10 +753,10 @@ function SAView(props) {
           </div>
         </div>
         <SaveManager
-          amount={replenishmentAmount}
           comment={commentText}
           currencyDateRange={currencyDateRange}
           data={transformForSave(tableData)}
+          replenishment={replenishment}
           version={version}
         />
       </div>
@@ -762,15 +784,15 @@ function SAView(props) {
       ) : null}
       <div className="-mx-4 -mb-4 rounded-b-lg bg-gray-200 p-4 print:hidden">
         <div className="flex items-center gap-x-2">
-          <h2>Comment Version {version?.id} </h2>
-          {version?.meeting ? (
+          <h2>Comment Version {version?.version} </h2>
+          {version?.meeting_number ? (
             <div className="rounded bg-primary px-1 font-medium uppercase text-mlfs-hlYellow">
-              Meeting {version.meeting}
+              Meeting {version.meeting_number}
             </div>
           ) : null}
-          {version?.decision ? (
+          {version?.decision_number ? (
             <div className="rounded bg-primary px-1 font-medium uppercase text-mlfs-hlYellow">
-              Decision {version.decision}
+              Decision {version.decision_number}
             </div>
           ) : null}
         </div>

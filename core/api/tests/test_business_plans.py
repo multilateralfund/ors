@@ -187,11 +187,12 @@ def setup_bp_record_create(
         "blends": [blend.id],
         "sector_id": sector.id,
         "subsector_id": subsector.id,
-        "bp_type": "A",
+        "status": "A",
         "is_multi_year": False,
         "reason_for_exceeding": "Planu, planu, planu, planu, planu",
         "remarks": "Merge bine, bine, bine ca aeroplanu",
         "remarks_additional": "Poate si la anu / Daca merge bine planu stau ca barosanu.",
+        "comment_secretariat": "Alo, alo, Te-am sunat sa-ti spun",
         "values": [
             {
                 "year": 2020,
@@ -263,7 +264,7 @@ class TestBPRecordCreate:
         assert response.data["blends"] == [blend.id]
         assert response.data["sector_id"] == sector.id
         assert response.data["subsector_id"] == subsector.id
-        assert response.data["bp_type"] == "A"
+        assert response.data["status"] == "A"
         assert response.data["is_multi_year"] is False
         assert (
             response.data["reason_for_exceeding"] == "Planu, planu, planu, planu, planu"
@@ -273,6 +274,7 @@ class TestBPRecordCreate:
             response.data["remarks_additional"]
             == "Poate si la anu / Daca merge bine planu stau ca barosanu."
         )
+        assert response.data["comment_secretariat"] == "Alo, alo, Te-am sunat sa-ti spun"
         assert response.data["values"][0]["year"] == 2020
         assert response.data["values"][1]["year"] == 2021
 
@@ -326,9 +328,10 @@ class TestBPRecordUpdate:
         data["substances"] = [substance.id, substance2.id]
         data["blends"] = []
         data["title"] = "Planu 2"
-        data["bp_type"] = "P"
+        data["status"] = "P"
         data["is_multi_year"] = True
         data["remarks"] = "Merge rau"
+        data["comment_secretariat"] = "Nu inchide telefonu"
         data["values"] = [
             {
                 "year": 2022,
@@ -344,9 +347,10 @@ class TestBPRecordUpdate:
         assert response.data["title"] == "Planu 2"
         assert response.data["substances"] == [substance.id, substance2.id]
         assert response.data["blends"] == []
-        assert response.data["bp_type"] == "P"
+        assert response.data["status"] == "P"
         assert response.data["is_multi_year"] is True
         assert response.data["remarks"] == "Merge rau"
+        assert response.data["comment_secretariat"] == "Nu inchide telefonu"
         assert response.data["values"][0]["year"] == 2022
 
 
@@ -461,11 +465,12 @@ def setup_bp_record_list(
                 "bp_chemical_type": bp_chemical_type,
                 "sector": subsectors[i].sector,
                 "subsector": subsectors[i],
-                "bp_type": "Approved",
+                "status": "A",
                 "is_multi_year": i % 2 == 0,
                 "reason_for_exceeding": f"Planu, planu, planu, planu, planu{i}",
                 "remarks": f"Merge bine, bine, bine ca aeroplanu{i}",
                 "remarks_additional": f"Poate si la anu / Daca merge bine planu stau ca barosanu.{i}",
+                "comment_secretariat": f"Alo, alo, Te-am sunat sa-ti spun{i}",
             }
             bp_record = BPRecordFactory.create(**data)
             bp_record.substances.set([substance])
@@ -525,6 +530,23 @@ class TestBPRecordList:
             {"business_plan_id": business_plan.id, "country_id": 999},
         )
         assert response.status_code == 400
+
+    def test_status_filter(self, user, business_plan, _setup_bp_record_list):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(
+            self.url,
+            {"business_plan_id": business_plan.id, "status": "A"},
+        )
+        assert response.status_code == 200
+        assert len(response.json()["records"]) == 4
+
+        response = self.client.get(
+            self.url,
+            {"business_plan_id": business_plan.id, "status": "U"},
+        )
+        assert response.status_code == 200
+        assert len(response.json()["records"]) == 0
 
     def test_search_filter(self, user, business_plan, _setup_bp_record_list):
         self.client.force_authenticate(user=user)
@@ -652,9 +674,10 @@ class TestBPUpdate:
         record_data["substances"] = [substance.id, substance2.id]
         record_data["blends"] = []
         record_data["title"] = "Planu 2"
-        record_data["bp_type"] = "P"
+        record_data["status"] = "P"
         record_data["is_multi_year"] = True
         record_data["remarks"] = "Merge rau"
+        record_data["comment_secretariat"] = "Nu inchide telefonu"
         record_data["values"] = [
             {
                 "year": 2022,
@@ -678,9 +701,10 @@ class TestBPUpdate:
         assert records[0]["title"] == "Planu 2"
         assert records[0]["substances"] == [substance.id, substance2.id]
         assert records[0]["blends"] == []
-        assert records[0]["bp_type"] == "P"
+        assert records[0]["status"] == "P"
         assert records[0]["is_multi_year"] is True
         assert records[0]["remarks"] == "Merge rau"
+        assert records[0]["comment_secretariat"] == "Nu inchide telefonu"
         assert records[0]["values"][0]["year"] == 2022
 
         mock_send_mail_bp_update.assert_called_once()

@@ -24,12 +24,20 @@ export function getPathPeriod(path) {
 }
 
 export function formatDateValue(value) {
-  const intl = new Intl.DateTimeFormat('en-US', { month: 'short' })
-  const date = new Date(Date.parse(value))
-  return `${date.getDate()}-${intl.format(date).toUpperCase()}-${date.getFullYear()}`
+  if (!value) {
+    return null
+  }
+  return new Date(value).toLocaleDateString('en-US', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 
 export function formatNumberValue(value, minDigits, maxDigits) {
+  if (isNaN(value) || (!value && value !== 0)) {
+    return null
+  }
   const formatted = parseFloat(value).toLocaleString('en-US', {
     maximumFractionDigits: maxDigits ?? MAX_DECIMALS,
     minimumFractionDigits: minDigits ?? MIN_DECIMALS,
@@ -38,11 +46,20 @@ export function formatNumberValue(value, minDigits, maxDigits) {
 }
 
 export function dateForEditField(value) {
+  if (!value) {
+    return null
+  }
   const date = new Date(Date.parse(value))
   return dateForInput(date)
 }
 
-export function dateForInput(date) {
+export function dateForInput(input) {
+  if (!input) {
+    return null
+  }
+
+  const date = typeof input === 'string' ? new Date(input) : input
+
   let day = date.getDate()
   let month = date.getMonth() + 1
   day = day < 10 ? `0${day}` : day
@@ -89,14 +106,32 @@ export function getDefaultFieldSorter(field, direction) {
   return function (a, b) {
     const a_val = a[field]
     const b_val = b[field]
-    if (typeof a_val === 'string') {
+
+    // Check if the values are dates
+    const isDate = (val) => !isNaN(Date.parse(val))
+
+    if (isDate(a_val) && isDate(b_val)) {
+      // Convert strings to Date objects if they are dates
+      const dateA = new Date(a_val)
+      const dateB = new Date(b_val)
+      return (dateA - dateB) * direction
+    }
+
+    // Handle strings
+    if (typeof a_val === 'string' && typeof b_val === 'string') {
       return a_val.localeCompare(b_val) * direction
+    }
+
+    // Handle numbers
+    if (typeof a_val === 'number' && typeof b_val === 'number') {
+      return (a_val - b_val) * direction
+    }
+
+    // Default comparison for other types
+    if (a_val < b_val) {
+      return direction
     } else {
-      if (a_val < b_val) {
-        return direction
-      } else {
-        return -direction
-      }
+      return -direction
     }
   }
 }
@@ -117,4 +152,22 @@ export function getCountryForIso3(iso3, countries) {
     }
   }
   return result
+}
+
+export async function fetchWithHandling(url, options = {}, csrftoken) {
+  const response = await fetch(url, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
+      ...options.headers,
+    },
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json() // Get the error details
+    const error = new Error('Request failed with status ' + response.status)
+    error.data = errorData
+    throw error
+  }
 }

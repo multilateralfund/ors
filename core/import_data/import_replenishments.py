@@ -5,7 +5,7 @@ from decimal import Decimal
 import pandas as pd
 from django.db import transaction
 
-from core.models import Replenishment, ScaleOfAssessment
+from core.models import Replenishment, ScaleOfAssessment, ScaleOfAssessmentVersion
 from core.import_data.utils import (
     IMPORT_RESOURCES_DIR,
     delete_old_data,
@@ -64,6 +64,7 @@ def import_replenishments(countries):
     Import past replenishments (2024-2026).
     """
     delete_old_data(ScaleOfAssessment)
+    delete_old_data(ScaleOfAssessmentVersion)
     delete_old_data(Replenishment)
 
     for start_year, end_year in REPLENISHMENT_YEARS:
@@ -95,8 +96,12 @@ def import_replenishments(countries):
         )
 
         logger.info(f"Imported Replenishment {start_year} - {end_year}")
-
-        contributions = []
+        scale_of_assessment_version = ScaleOfAssessmentVersion.objects.create(
+            replenishment=replenishment,
+            is_final=start_year == 2021,
+        )
+        logger.info(f"Crated version 0 for Replenishment {start_year} - {end_year}")
+        scales_of_assessment = []
         for _, row in scale_of_assessment_df.iterrows():
             country_name = row.iloc[COUNTRY_COLUMN].replace("\n", " ").strip()
             country = countries.get(COUNTRY_MAPPING.get(country_name, country_name))
@@ -105,7 +110,7 @@ def import_replenishments(countries):
                 continue
 
             contribution = ScaleOfAssessment(
-                replenishment=replenishment,
+                version=scale_of_assessment_version,
                 country=country,
                 un_scale_of_assessment=row.iloc[UN_SCALE_OF_ASSESSMENT_COLUMN],
                 override_adjusted_scale_of_assessment=row.iloc[
@@ -118,10 +123,10 @@ def import_replenishments(countries):
                 exchange_rate=row.iloc[FIXED_EXCHANGE_RATE_MECHANISM_COLUMN],
                 currency=row.iloc[FIXED_EXCHANGE_RATE_CURRENCY_COLUMN],
             )
-            contributions.append(contribution)
+            scales_of_assessment.append(contribution)
 
-        ScaleOfAssessment.objects.bulk_create(contributions)
+        ScaleOfAssessment.objects.bulk_create(scales_of_assessment)
 
         logger.info(
-            f"Imported {len(contributions)} contributions for Replenishment {start_year} - {end_year}"
+            f"Imported {len(scales_of_assessment)} scales of assessment for Replenishment {start_year} - {end_year}"
         )

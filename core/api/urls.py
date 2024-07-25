@@ -14,12 +14,14 @@ from core.api.views import (
     SummaryStatusOfContributionsView,
     ReplenishmentDashboardView,
     ReplenishmentInvoiceViewSet,
+    ReplenishmentInvoiceFileDownloadView,
+    ReplenishmentPaymentViewSet,
+    ReplenishmentPaymentFileDownloadView,
 )
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
 from core.api.views.agency import AgencyListView
 from core.api.views.business_plan import (
-    BPCommentsView,
     BPFileDownloadView,
     BPFileView,
     BPRecordViewSet,
@@ -108,6 +110,11 @@ router.register(
     "replenishment/invoices",
     ReplenishmentInvoiceViewSet,
     basename="replenishment-invoices",
+)
+router.register(
+    "replenishment/payments",
+    ReplenishmentPaymentViewSet,
+    basename="replenishment-payments",
 )
 
 
@@ -335,11 +342,6 @@ urlpatterns = [
         name="project-files",
     ),
     path(
-        "business-plan/<int:id>/comments/",
-        BPCommentsView.as_view(),
-        name="business-plan-comments",
-    ),
-    path(
         "business-plan/<int:id>/file/",
         BPFileView.as_view(),
         name="business-plan-file",
@@ -373,6 +375,16 @@ urlpatterns = [
         "replenishment/status-of-contributions/<int:year>/",
         AnnualStatusOfContributionsView.as_view(),
         name="replenishment-status-of-contributions-annual",
+    ),
+    path(
+        "replenishment/invoice-file/<int:id>/download/",
+        ReplenishmentInvoiceFileDownloadView.as_view(),
+        name="replenishment-invoice-file-download",
+    ),
+    path(
+        "replenishment/payment-file/<int:id>/download/",
+        ReplenishmentPaymentFileDownloadView.as_view(),
+        name="replenishment-payment-file-download",
     ),
     *router.urls,
 ]

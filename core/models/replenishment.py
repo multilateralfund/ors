@@ -26,15 +26,40 @@ class Replenishment(models.Model):
         ]
 
 
+class ScaleOfAssessmentVersion(models.Model):
+    replenishment = models.ForeignKey(
+        Replenishment,
+        on_delete=models.PROTECT,
+        related_name="scales_of_assessment_versions",
+    )
+    version = models.IntegerField(default=0)
+    is_final = models.BooleanField(default=False)
+    meeting_number = models.CharField(max_length=32, default="")
+    decision_number = models.CharField(max_length=32, default="")
+    comment = models.TextField(blank=True, default="")
+
+    def __str__(self):
+        return (f"Scale of Assessment Version {self.version} "
+                f"({self.replenishment.start_year} - {self.replenishment.end_year})")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["replenishment", "version"], name="unique_replenishment_version"
+            )
+        ]
+
+
 class ScaleOfAssessment(models.Model):
     """
     Contribution to a replenishment, used in Scale of Assessment.
     """
 
-    replenishment = models.ForeignKey(
-        Replenishment,
+    version = models.ForeignKey(
+        ScaleOfAssessmentVersion,
         on_delete=models.PROTECT,
-        related_name="contributions",
+        related_name="scales_of_assessment",
+        null=True,
     )
     country = models.ForeignKey(
         Country, on_delete=models.PROTECT, related_name="contributions"
@@ -44,7 +69,9 @@ class ScaleOfAssessment(models.Model):
     bilateral_assistance_amount = models.DecimalField(
         max_digits=30, decimal_places=15, default=0
     )
-    un_scale_of_assessment = models.DecimalField(max_digits=30, decimal_places=15)
+    un_scale_of_assessment = models.DecimalField(
+        max_digits=30, decimal_places=15, null=True
+    )
     override_adjusted_scale_of_assessment = models.DecimalField(
         max_digits=30, decimal_places=15, null=True
     )
@@ -66,7 +93,7 @@ class ScaleOfAssessment(models.Model):
             return US_SCALE_OF_ASSESSMENT
 
         un_assessment_sum = ScaleOfAssessment.objects.filter(
-            replenishment=self.replenishment
+            version=self.version
         ).aggregate(models.Sum("un_scale_of_assessment"))["un_scale_of_assessment__sum"]
 
         return (
@@ -84,7 +111,7 @@ class ScaleOfAssessment(models.Model):
     @property
     def amount(self):
         return (
-            self.replenishment.amount
+            self.version.replenishment.amount
             * self.adjusted_scale_of_assessment
             / Decimal("100")
         )
@@ -96,12 +123,13 @@ class ScaleOfAssessment(models.Model):
         return self.amount * self.exchange_rate
 
     def __str__(self):
-        return f"Contribution {self.country.name} ({self.replenishment.start_year} - {self.replenishment.end_year})"
+        return (f"Contribution (version {self.version.version}) {self.country.name} "
+                f"({self.version.replenishment.start_year} - {self.version.replenishment.end_year})")
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["replenishment", "country"], name="unique_replenishment_country"
+                fields=["version", "country"], name="unique_version_country"
             )
         ]
 
@@ -147,22 +175,22 @@ class InvoiceFile(models.Model):
     )
 
 
-# class InvoiceReminder(models.Model):
-#     pass
-
-
 class Payment(models.Model):
     country = models.ForeignKey(
         Country, on_delete=models.PROTECT, related_name="payments"
     )
     replenishment = models.ForeignKey(
-        Replenishment, on_delete=models.PROTECT, related_name="payments"
+        Replenishment, on_delete=models.PROTECT, related_name="payments", null=True
     )
     date = models.DateField()
-    payment_for_year = models.CharField(max_length=16)
-    gain_or_loss = models.DecimalField(max_digits=30, decimal_places=15)
-    amount_local_currency = models.DecimalField(max_digits=30, decimal_places=15)
-    amount_usd = models.DecimalField(max_digits=30, decimal_places=15)
+    payment_for_year = models.CharField(max_length=64)
+
+    amount = models.DecimalField(max_digits=30, decimal_places=15)
+    currency = models.CharField(max_length=64)
+    exchange_rate = models.DecimalField(max_digits=30, decimal_places=15, null=True)
+    ferm_gain_or_loss = models.DecimalField(max_digits=30, decimal_places=15, null=True)
+
+    comment = models.TextField(blank=True)
 
     def __str__(self):
         return f"Payment {self.country.name} - {self.payment_for_year}"
@@ -229,6 +257,11 @@ class AnnualContributionStatus(AbstractContributionStatus):
 
 
 class TriennialContributionStatus(AbstractContributionStatus):
+    """
+    Model is necessary because added annual data is not equal to the triennial data.
+    Triennial data can be updated in the future when countries pay their contributions.
+    """
+
     country = models.ForeignKey(
         Country,
         on_delete=models.PROTECT,
