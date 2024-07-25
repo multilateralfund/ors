@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 
 import cx from 'classnames'
 import { useSnackbar } from 'notistack'
@@ -13,6 +13,7 @@ import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { SubmitButton } from '@ors/components/ui/Button/Button'
+import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { api } from '@ors/helpers'
 
 const overviewOrder = ['balance', 'payment_pledge_percentage', 'gain_loss']
@@ -228,6 +229,7 @@ const DashboardIndicators = ({ data }) => {
 }
 
 function DashboardView() {
+  const ctx = useContext(ReplenishmentContext)
   const { data: newData, formData, loading } = useGetDashboardData()
   const {
     allocations,
@@ -283,12 +285,14 @@ function DashboardView() {
           <h2 className="m-0 text-3xl">STATUS OF THE FUND</h2>
           <p className="m-0 text-3xl">as of 15 May 2024 ( US Dollars )</p>
         </div>
-        <SubmitButton
-          className="tracking-widest print:hidden"
-          onClick={handleEditClick}
-        >
-          Edit
-        </SubmitButton>
+        {ctx.isTreasurer && (
+          <SubmitButton
+            className="tracking-widest print:hidden"
+            onClick={handleEditClick}
+          >
+            Edit
+          </SubmitButton>
+        )}
       </div>
 
       {showEdit ? (

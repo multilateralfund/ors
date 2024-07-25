@@ -362,28 +362,32 @@ function PaymentsView() {
       ) : null}
       <div className="flex items-center justify-between gap-4 pb-4 print:hidden">
         <div className="flex items-center">
-          <Select
-            id="country"
-            className="placeholder-select !ml-0 w-52"
-            onChange={handleCountryFilter}
-            hasClear
-            required
-          >
-            <option value="" disabled hidden>
-              Country
-            </option>
-            {ctx.countries.map((c) => (
-              <option key={c.iso3} className="text-primary" value={c.id}>
-                {c.name_alt}
+          {!ctx.isCountryUser && (
+            <Select
+              id="country"
+              className="placeholder-select !ml-0 w-52"
+              onChange={handleCountryFilter}
+              hasClear
+              required
+            >
+              <option value="" disabled hidden>
+                Country
               </option>
-            ))}
-          </Select>
+              {ctx.countries.map((c) => (
+                <option key={c.iso3} className="text-primary" value={c.id}>
+                  {c.name_alt}
+                </option>
+              ))}
+            </Select>
+          )}
         </div>
-        <AddButton onClick={() => setShowAdd(true)}>Add payment</AddButton>
+        {ctx.isTreasurer && (
+          <AddButton onClick={() => setShowAdd(true)}>Add payment</AddButton>
+        )}
       </div>
       <Table
+        adminButtons={ctx.isTreasurer}
         columns={columns}
-        enableEdit={true}
         enableSort={true}
         rowData={memoResults}
         sortDirection={sortDirection}

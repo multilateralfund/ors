@@ -1,5 +1,6 @@
 import React from 'react'
 
+// TODO: GET actual notes
 const NOTES = {
   annual: [
     'Additional amount on disputed contributions from the United States of America.',

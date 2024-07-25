@@ -78,10 +78,12 @@ function SCView(props) {
 
   const ctx = useContext(ReplenishmentContext)
 
+  // TODO: GET actual period/annual options
   const periodOptions = props.period
     ? mockSCPeriodOptions(ctx.periods)
     : mockScAnnualOptions()
 
+  // TODO: GET actual date of last update
   const dateOfLastUpdate = '26 September 2023'
   const title = period
     ? `Status of Contribution for ${period}`
