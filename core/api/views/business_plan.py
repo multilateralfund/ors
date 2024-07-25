@@ -505,6 +505,7 @@ class BPFileView(generics.GenericAPIView):
     API endpoint that allows uploading business plan file.
     """
 
+    permission_classes = [IsUserAllowedBP]
     queryset = BusinessPlan.objects.all()
     serializer_class = BPFileSerializer
     lookup_field = "id"
@@ -560,6 +561,7 @@ class BPFileView(generics.GenericAPIView):
 
 
 class BPFileDownloadView(generics.RetrieveAPIView):
+    permission_classes = [IsUserAllowedBP]
     queryset = BusinessPlan.objects.all()
     lookup_field = "id"
 

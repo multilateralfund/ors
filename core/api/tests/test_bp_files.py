@@ -22,8 +22,8 @@ class TestBPFile:
         response = self.client.post(url, {})
         assert response.status_code == 403
 
-    def test_file_upload_wrong_extension(self, user, business_plan, test_file):
-        self.client.force_authenticate(user=user)
+    def test_file_upload_wrong_extension(self, agency_user, business_plan, test_file):
+        self.client.force_authenticate(user=agency_user)
         url = reverse("business-plan-file", kwargs={"id": business_plan.id})
 
         # upload file with wrong extension
@@ -31,8 +31,8 @@ class TestBPFile:
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 400
 
-    def test_file_upload(self, user, business_plan, test_file):
-        self.client.force_authenticate(user=user)
+    def test_file_upload(self, agency_user, business_plan, test_file):
+        self.client.force_authenticate(user=agency_user)
 
         # upload file (POST)
         url = reverse("business-plan-file", kwargs={"id": business_plan.id})
@@ -47,8 +47,8 @@ class TestBPFile:
         assert response.status_code == 200
         assert response.data["feedback_filename"] == "adrian.csv"
 
-    def test_file_download(self, user, business_plan, test_file):
-        self.client.force_authenticate(user=user)
+    def test_file_download(self, agency_user, business_plan, test_file):
+        self.client.force_authenticate(user=agency_user)
         url = reverse("business-plan-file", kwargs={"id": business_plan.id})
 
         # upload file (POST)
