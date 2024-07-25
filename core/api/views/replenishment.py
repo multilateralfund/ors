@@ -489,10 +489,18 @@ class ReplenishmentDashboardView(views.APIView):
         if user.user_type != user.UserType.SECRETARIAT:
             return Response({})
 
+        latest_closed_triennial = (
+            Replenishment.objects.filter(scales_of_assessment_versions__is_final=True)
+            .distinct()
+            .order_by("-start_year")
+            .first()
+        )
         income = ExternalIncome.objects.get()
         allocations = ExternalAllocation.objects.get()
 
-        computed_summary_data = TriennialContributionStatus.objects.aggregate(
+        computed_summary_data = TriennialContributionStatus.objects.filter(
+            end_year__lte=latest_closed_triennial.end_year,
+        ).aggregate(
             cash_payments=models.Sum("cash_payments", default=0),
             bilateral_assistance=models.Sum("bilateral_assistance", default=0),
             promissory_notes=models.Sum("promissory_notes", default=0),
@@ -500,6 +508,7 @@ class ReplenishmentDashboardView(views.APIView):
         computed_party_data = (
             Country.objects.filter(
                 triennial_contributions_status__isnull=False,
+                triennial_contributions_status__end_year__lte=latest_closed_triennial.end_year,
             )
             .prefetch_related("triennial_contributions_status")
             .annotate(
@@ -528,26 +537,32 @@ class ReplenishmentDashboardView(views.APIView):
             total=models.Sum("amount", default=0)
         )["total"]
 
-        computed_summary_data_2021_2023 = TriennialContributionStatus.objects.filter(
-            start_year=2021, end_year=2023
-        ).aggregate(
-            agreed_contributions=models.Sum("agreed_contributions", default=0),
-            cash_payments=models.Sum("cash_payments", default=0),
-            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
-            promissory_notes=models.Sum("promissory_notes", default=0),
+        computed_summary_data_latest_closed_triennial = (
+            TriennialContributionStatus.objects.filter(
+                start_year=latest_closed_triennial.start_year,
+                end_year=latest_closed_triennial.end_year,
+            ).aggregate(
+                agreed_contributions=models.Sum("agreed_contributions", default=0),
+                cash_payments=models.Sum("cash_payments", default=0),
+                bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+                promissory_notes=models.Sum("promissory_notes", default=0),
+            )
         )
         payment_pledge_percentage_2021_2023 = (
             (
-                computed_summary_data_2021_2023["cash_payments"]
-                + computed_summary_data_2021_2023["bilateral_assistance"]
-                + computed_summary_data_2021_2023["promissory_notes"]
+                computed_summary_data_latest_closed_triennial["cash_payments"]
+                + computed_summary_data_latest_closed_triennial["bilateral_assistance"]
+                + computed_summary_data_latest_closed_triennial["promissory_notes"]
             )
-            / computed_summary_data_2021_2023["agreed_contributions"]
+            / computed_summary_data_latest_closed_triennial["agreed_contributions"]
             * Decimal("100")
         )
 
         pledges = (
-            TriennialContributionStatus.objects.values("start_year", "end_year")
+            TriennialContributionStatus.objects.filter(
+                end_year__lte=latest_closed_triennial.end_year,
+            )
+            .values("start_year", "end_year")
             .annotate(
                 outstanding_pledges=models.Sum("outstanding_contributions", default=0),
                 agreed_pledges=models.Sum("agreed_contributions", default=0),
@@ -621,6 +636,36 @@ class ReplenishmentDashboardView(views.APIView):
         )
 
         return Response(data)
+
+    @transaction.atomic
+    def put(self, request, *args, **kwargs):
+        user = request.user
+
+        if user.user_type != user.UserType.SECRETARIAT:
+            return Response({})
+
+        data = request.data
+
+        income = ExternalIncome.objects.get()
+        allocations = ExternalAllocation.objects.get()
+
+        # TODO: serializers?
+        income.interest_earned = data["interest_earned"]
+        income.miscellaneous_income = data["miscellaneous_income"]
+        income.save()
+
+        allocations.undp = data["undp"]
+        allocations.unep = data["unep"]
+        allocations.unido = data["unido"]
+        allocations.world_bank = data["world_bank"]
+        allocations.staff_contracts = data["staff_contracts"]
+        allocations.treasury_fees = data["treasury_fees"]
+        allocations.monitoring_fees = data["monitoring_fees"]
+        allocations.technical_audit = data["technical_audit"]
+        allocations.information_strategy = data["information_strategy"]
+        allocations.save()
+
+        return Response({})
 
 
 class ReplenishmentInvoiceViewSet(

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 
 import cx from 'classnames'
+import { useSnackbar } from 'notistack'
 
 import BarChart from '@ors/components/manage/Blocks/Replenishment/Dashboard/BarChart'
 import FilledAreaChart from '@ors/components/manage/Blocks/Replenishment/Dashboard/FilledAreaChart'
@@ -12,6 +13,7 @@ import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { SubmitButton } from '@ors/components/ui/Button/Button'
+import { api } from '@ors/helpers'
 
 const overviewOrder = ['balance', 'payment_pledge_percentage', 'gain_loss']
 const overviewIndicatorsOrder = [
@@ -239,6 +241,8 @@ function DashboardView() {
   const [showEdit, setShowEdit] = useState(false)
   const [data, setData] = useState(null)
 
+  const { enqueueSnackbar } = useSnackbar()
+
   useEffect(() => {
     setData(formData)
   }, [formData])
@@ -257,11 +261,19 @@ function DashboardView() {
     for (let i = 0; i < dataKeys.length; i++) {
       parsedData[dataKeys[i]] = parseFloat(data[dataKeys[i]]) ?? 0
     }
-    console.log(data, parsedData)
-    setData(function (prev) {
-      return { ...prev, ...parsedData }
+
+    api('/api/replenishment/dashboard', {
+      data: parsedData,
+      method: 'PUT',
     })
-    setShowEdit(false)
+      .then(() => {
+        // TODO: proper way to update data
+        window.location.reload()
+        enqueueSnackbar('Data updated successfully', { variant: 'success' })
+      })
+      .catch(() => {
+        enqueueSnackbar('Failed to update data', { variant: 'error' })
+      })
   }
 
   return (

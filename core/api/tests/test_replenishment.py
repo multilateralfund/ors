@@ -711,6 +711,13 @@ class TestReplenishmentDashboard(BaseTest):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
 
+        replenishment = ReplenishmentFactory.create(
+            start_year=self.year_3, end_year=self.year_4
+        )
+        ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment, is_final=True
+        )
+
         contribution_1 = TriennialContributionStatusFactory.create(
             country=country_1, start_year=self.year_1, end_year=self.year_2
         )
@@ -751,19 +758,18 @@ class TestReplenishmentDashboard(BaseTest):
 
         response = self.client.get(self.url)
 
-        # Only 2021-2023 for now
         payment_pledge_percentage = (
             (
-                contribution_1.cash_payments
-                + contribution_3.cash_payments
-                + contribution_1.bilateral_assistance
-                + contribution_3.bilateral_assistance
-                + contribution_1.promissory_notes
-                + contribution_3.promissory_notes
+                contribution_2.cash_payments
+                + contribution_4.cash_payments
+                + contribution_2.bilateral_assistance
+                + contribution_4.bilateral_assistance
+                + contribution_2.promissory_notes
+                + contribution_4.promissory_notes
             )
             / (
-                contribution_1.agreed_contributions
-                + contribution_3.agreed_contributions
+                contribution_2.agreed_contributions
+                + contribution_4.agreed_contributions
             )
             * Decimal("100")
         )
