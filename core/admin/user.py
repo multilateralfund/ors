@@ -23,6 +23,11 @@ class UserEditAdminForm(ModelForm):
             raise ValidationError(
                 _("Country users need to be assigned to countries. Choose a country and try again.")
             )
+
+        if user_type == User.UserType.AGENCY and not agency_role:
+            raise ValidationError(
+                _("Agency users need to be assigned to an agency role. Choose an agency role and try again.")
+            )
         return cleaned_data
 
 

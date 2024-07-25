@@ -17,6 +17,19 @@ class IsUserAllowedCP(permissions.BasePermission):
         return False
 
 
+class IsUserAllowedBP(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        if user.is_authenticated:
+            if user.user_type == user.UserType.AGENCY:
+                return True
+
+            if user.user_type == user.UserType.SECRETARIAT:
+                if request.method in permissions.SAFE_METHODS:
+                    return True
+        return False
+
+
 class IsUserAllowedCPComment(IsUserAllowedCP):
     """
     Is this user allowed to POST comments on a CPReport.

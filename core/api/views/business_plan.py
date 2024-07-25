@@ -20,6 +20,7 @@ from core.api.export.base import configure_sheet_print
 from core.api.export.business_plan import BusinessPlanWriter
 from core.api.filters.business_plan import BPRecordFilter
 from core.api.filters.business_plan import BusinessPlanFilter
+from core.api.permissions import IsUserAllowedBP
 from core.api.serializers.bp_history import BPHistorySerializer
 from core.api.serializers.business_plan import (
     BusinessPlanCreateSerializer,
@@ -49,6 +50,7 @@ class BusinessPlanViewSet(
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
+    permission_classes = [IsUserAllowedBP]
     serializer_class = BusinessPlanSerializer
     filterset_class = BusinessPlanFilter
     filter_backends = [
@@ -103,13 +105,30 @@ class BusinessPlanViewSet(
         self.perform_create(serializer)
         instance = serializer.instance
 
+        # check user permissions
+        user = request.user
+        if (
+            user.agency_role == user.AgencyRole.AGENCY_INPUTTER
+            and instane.status != BusinessPlan.Status.draft
+        ):
+            return Response(
+                {
+                    "general_error": "Agency inputter can't submit a final version"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # set name
+        if not instance.name:
+            instance.name = f"{instance.agency} {instance.year_start} - {instance.year_end}"
+
         # set created by user
-        instance.created_by = request.user
+        instance.created_by = user
         instance.save()
 
         BPHistory.objects.create(
             business_plan=instance,
-            updated_by=request.user,
+            updated_by=user,
             event_description="Created by user",
         )
         if config.SEND_MAIL and instance.status != BusinessPlan.Status.draft:
@@ -162,8 +181,20 @@ class BusinessPlanViewSet(
         self.perform_create(serializer)
         new_instance = serializer.instance
 
+        # check user permissions
+        user = request.user
+        if (
+            user.agency_role == user.AgencyRole.AGENCY_INPUTTER
+            and new_instane.status != BusinessPlan.Status.draft
+        ):
+            return Response(
+                {
+                    "general_error": "Agency inputter can't submit a final version"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         # set updated by user
-        new_instance.updated_by = request.user
+        new_instance.updated_by = user
         new_instance.save()
 
         # inherit all history
@@ -174,7 +205,7 @@ class BusinessPlanViewSet(
         # create new history for update event
         BPHistory.objects.create(
             business_plan=new_instance,
-            updated_by=request.user,
+            updated_by=user,
             event_description="Updated by user",
         )
 
@@ -245,6 +276,7 @@ class BPRecordViewSet(
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
+    permission_classes = [IsUserAllowedBP]
     serializer_class = BPRecordDetailSerializer
     filterset_class = BPRecordFilter
     filter_backends = [

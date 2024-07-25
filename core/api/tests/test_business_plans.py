@@ -362,10 +362,18 @@ def setup_new_business_plan_create(agency):
 
 class TestBPCreate:
     client = APIClient()
+    url = reverse("businessplan-list")
 
     def test_without_login(self, _setup_new_business_plan_create):
-        url = reverse("businessplan-list")
-        response = self.client.post(url, _setup_new_business_plan_create, format="json")
+        response = self.client.post(self.url, _setup_new_business_plan_create, format="json")
+        assert response.status_code == 403
+
+    def test_without_permission_agency_inputter(self, agency_user, _setup_new_business_plan_create):
+        agency_user.agency_role = "agency_inputter"
+        agency_user.save()
+        self.client.force_authenticate(user=agency_user)
+
+        response = self.client.post(self.url, _setup_new_business_plan_create, format="json")
         assert response.status_code == 403
 
     def test_create_business_plan(
@@ -373,8 +381,7 @@ class TestBPCreate:
     ):
         # create new business plan
         self.client.force_authenticate(user=user)
-        url = reverse("businessplan-list")
-        response = self.client.post(url, _setup_new_business_plan_create, format="json")
+        response = self.client.post(self.url, _setup_new_business_plan_create, format="json")
 
         assert response.status_code == 201
         assert response.data["status"] == "Submitted"
@@ -579,6 +586,24 @@ class TestBPUpdate:
             "records": [_setup_bp_record_create],
         }
         response = self.client.put(url, data, format="json")
+        assert response.status_code == 403
+
+    def test_without_permission_agency_inputter(
+        self, agency_user, _setup_bp_record_create, business_plan
+    ):
+        agency_user.agency_role = "agency_inputter"
+        agency_user.save()
+        self.client.force_authenticate(user=agency_user)
+
+        url = reverse("businessplan-list") + f"{business_plan.id}/"
+        data = {
+            "agency_id": business_plan.agency_id,
+            "year_start": business_plan.year_start,
+            "year_end": business_plan.year_end,
+            "status": "Submitted",
+            "records": [_setup_bp_record_create],
+        }
+        response = self.client.post(url, data, format="json")
         assert response.status_code == 403
 
     def test_update_wrong_record_values(

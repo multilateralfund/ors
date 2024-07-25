@@ -10,8 +10,15 @@ class User(AbstractUser):
         SECRETARIAT = "secretariat", _("Secretariat")
         STAKEHOLDER = "stakeholder", _("Stakeholder")
 
+    class AgencyRole(models.TextChoices):
+        AGENCY_INPUTTER = "agency_inputter", _("Agency inputter")
+        AGENCY_SUBMITTER = "agency_submitter", _("Agency submitter")
+
     country = models.ForeignKey(
         "Country", null=True, blank=True, on_delete=models.CASCADE
+    )
+    agency_role = models.CharField(
+        max_length=50, choices=AgencyRole.choices, blank=True
     )
     user_type = models.CharField(
         max_length=50, choices=UserType.choices, blank=True
