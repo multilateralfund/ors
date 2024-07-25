@@ -274,7 +274,9 @@ class TestBPRecordCreate:
             response.data["remarks_additional"]
             == "Poate si la anu / Daca merge bine planu stau ca barosanu."
         )
-        assert response.data["comment_secretariat"] == "Alo, alo, Te-am sunat sa-ti spun"
+        assert (
+            response.data["comment_secretariat"] == "Alo, alo, Te-am sunat sa-ti spun"
+        )
         assert response.data["values"][0]["year"] == 2020
         assert response.data["values"][1]["year"] == 2021
 
@@ -479,28 +481,38 @@ class TestBPRecordList:
     url = reverse("bprecord-list")
 
     def test_list_anon(self, business_plan):
-        response = self.client.get(self.url, {"business_plan_id": business_plan.id})
+        response = self.client.get(
+            self.url,
+            {
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+            },
+        )
         assert response.status_code == 403
 
     def test_record_list(self, user, _setup_bp_record_list, business_plan):
         self.client.force_authenticate(user=user)
 
-        # get by id
-        response = self.client.get(self.url, {"business_plan_id": business_plan.id})
-        assert response.status_code == 200
-        assert len(response.json()["records"]) == 4
-
-        # get by agency, start_year, end_year
+        # get by start_year, end_year
         response = self.client.get(
             self.url,
             {
-                "agency_id": business_plan.agency_id,
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
             },
         )
         assert response.status_code == 200
-        assert len(response.json()["records"]) == 4
+        assert len(response.json()) == 4
+
+        response = self.client.get(
+            self.url,
+            {
+                "year_start": business_plan.year_start - 1,
+                "year_end": business_plan.year_end,
+            },
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 8
 
     def test_country_filter(
         self, user, business_plan, country_ro, _setup_bp_record_list
@@ -509,18 +521,26 @@ class TestBPRecordList:
 
         response = self.client.get(
             self.url,
-            {"business_plan_id": business_plan.id, "country_id": country_ro.id},
+            {
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+                "country_id": country_ro.id,
+            },
         )
         assert response.status_code == 200
-        assert len(response.json()["records"]) == 1
-        assert response.json()["records"][0]["country"]["id"] == country_ro.id
+        assert len(response.json()) == 1
+        assert response.json()[0]["country"]["id"] == country_ro.id
 
     def test_invalid_country_filter(self, user, _setup_bp_record_list, business_plan):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
             self.url,
-            {"business_plan_id": business_plan.id, "country_id": 999},
+            {
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+                "country_id": 999,
+            },
         )
         assert response.status_code == 400
 
@@ -529,63 +549,41 @@ class TestBPRecordList:
 
         response = self.client.get(
             self.url,
-            {"business_plan_id": business_plan.id, "status": "A"},
+            {
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+                "status": "A",
+            },
         )
         assert response.status_code == 200
-        assert len(response.json()["records"]) == 4
+        assert len(response.json()) == 4
+        assert response.json()[0]["status"] == "A"
 
         response = self.client.get(
             self.url,
-            {"business_plan_id": business_plan.id, "status": "U"},
+            {
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+                "status": "U",
+            },
         )
         assert response.status_code == 200
-        assert len(response.json()["records"]) == 0
+        assert len(response.json()) == 0
 
     def test_search_filter(self, user, business_plan, _setup_bp_record_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
             self.url,
-            {"business_plan_id": business_plan.id, "search": "Planu2"},
+            {
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+                "search": "Planu2",
+            },
         )
         assert response.status_code == 200
-        assert len(response.json()["records"]) == 1
-        assert response.json()["records"][0]["title"] == "Planu2"
-
-    def test_invalid_bp_id(self, user, _setup_bp_record_list):
-        self.client.force_authenticate(user=user)
-
-        response = self.client.get(
-            self.url,
-            {"business_plan_id": 999},
-        )
-        assert response.status_code == 400
-
-    def test_invalid_year(self, user, _setup_bp_record_list, agency):
-        self.client.force_authenticate(user=user)
-
-        response = self.client.get(
-            self.url,
-            {
-                "agency_id": agency.id,
-                "year_start": 99,
-                "year_end": 999,
-            },
-        )
-        assert response.status_code == 400
-
-    def test_invalid_agency(self, user, _setup_bp_record_list):
-        self.client.force_authenticate(user=user)
-
-        response = self.client.get(
-            self.url,
-            {
-                "agency_id": 999,
-                "year_start": 2021,
-                "year_end": 2023,
-            },
-        )
-        assert response.status_code == 400
+        assert len(response.json()) == 1
+        assert response.json()[0]["title"] == "Planu2"
 
 
 class TestBPUpdate:

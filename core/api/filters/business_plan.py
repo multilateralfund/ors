@@ -68,3 +68,15 @@ class BPRecordFilter(filters.FilterSet):
             "status",
             "is_multi_year",
         ]
+
+
+class BPRecordListFilter(BPRecordFilter):
+    year_start = filters.NumberFilter(
+        field_name="business_plan__year_start", lookup_expr="gte", required=True
+    )
+    year_end = filters.NumberFilter(
+        field_name="business_plan__year_end", lookup_expr="lte", required=True
+    )
+
+    class Meta(BPRecordFilter.Meta):
+        fields = BPRecordFilter.Meta.fields + ["year_start", "year_end"]
