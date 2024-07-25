@@ -24,6 +24,9 @@ export function getPathPeriod(path) {
 }
 
 export function formatDateValue(value) {
+  if (!value) {
+    return null
+  }
   return new Date(value).toLocaleDateString('en-US', {
     day: '2-digit',
     month: 'short',
@@ -146,4 +149,22 @@ export function getCountryForIso3(iso3, countries) {
     }
   }
   return result
+}
+
+export async function fetchWithHandling(url, options = {}, csrftoken) {
+  const response = await fetch(url, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
+      ...options.headers,
+    },
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json() // Get the error details
+    const error = new Error('Request failed with status ' + response.status)
+    error.data = errorData
+    throw error
+  }
 }
