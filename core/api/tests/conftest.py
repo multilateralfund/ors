@@ -62,7 +62,7 @@ def second_user():
 
 @pytest.fixture
 def agency_user():
-    return UserFactory(user_type="agency")
+    return UserFactory(user_type="agency", agency_role="agency_submitter")
 
 
 @pytest.fixture

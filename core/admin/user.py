@@ -19,6 +19,7 @@ class UserEditAdminForm(ModelForm):
         cleaned_data = super().clean()
         user_type = cleaned_data["user_type"]
         country = cleaned_data["country"]
+        agency_role = cleaned_data["agency_role"]
         if user_type == User.UserType.COUNTRY_USER and not country:
             raise ValidationError(
                 _("Country users need to be assigned to countries. Choose a country and try again.")

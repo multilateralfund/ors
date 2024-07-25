@@ -107,18 +107,18 @@ class BusinessPlanViewSet(
         user = request.user
         if (
             user.agency_role == user.AgencyRole.AGENCY_INPUTTER
-            and instane.status != BusinessPlan.Status.draft
+            and instance.status != BusinessPlan.Status.draft
         ):
             return Response(
-                {
-                    "general_error": "Agency inputter can't submit a final version"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
+                {"general_error": "Agency inputter can't submit a final version"},
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         # set name
         if not instance.name:
-            instance.name = f"{instance.agency} {instance.year_start} - {instance.year_end}"
+            instance.name = (
+                f"{instance.agency} {instance.year_start} - {instance.year_end}"
+            )
 
         # set created by user
         instance.created_by = user
@@ -183,14 +183,16 @@ class BusinessPlanViewSet(
         user = request.user
         if (
             user.agency_role == user.AgencyRole.AGENCY_INPUTTER
-            and new_instane.status != BusinessPlan.Status.draft
+            and new_instance.status != BusinessPlan.Status.draft
         ):
             return Response(
-                {
-                    "general_error": "Agency inputter can't submit a final version"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
+                {"general_error": "Agency inputter can't submit a final version"},
+                status=status.HTTP_403_FORBIDDEN,
             )
+        # set name
+        if not new_instance.name:
+            new_instance.name = f"{new_instance.agency} {new_instance.year_start} - {new_instance.year_end}"
+
         # set updated by user
         new_instance.updated_by = user
         new_instance.save()
