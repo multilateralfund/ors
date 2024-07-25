@@ -9,11 +9,12 @@ class ScaleOfAssessmentFilter(filters.FilterSet):
     FilterSet for Scale of Assessment
     """
 
-    start_year = filters.NumberFilter(field_name="replenishment__start_year")
+    start_year = filters.NumberFilter(field_name="version__replenishment__start_year")
+    version = filters.NumberFilter(field_name="version__version")
 
     class Meta:
         model = ScaleOfAssessment
-        fields = ["start_year"]
+        fields = ["start_year", "version"]
 
 
 class InvoiceFilter(filters.FilterSet):

@@ -48,6 +48,10 @@ class BPRecordFilter(filters.FilterSet):
         queryset=ProjectType.objects.all(),
         widget=CSVWidget,
     )
+    status = filters.MultipleChoiceFilter(
+        choices=BPRecord.Status.choices,
+        widget=CSVWidget,
+    )
 
     class Meta:
         model = BPRecord
@@ -61,6 +65,6 @@ class BPRecordFilter(filters.FilterSet):
             "blends",
             "sector_id",
             "subsector_id",
-            "bp_type",
+            "status",
             "is_multi_year",
         ]

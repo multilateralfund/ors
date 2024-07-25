@@ -83,34 +83,6 @@ def send_mail_report_update(cp_report_id):
 
 # Business Plan
 @app.task()
-def send_mail_comment_submit_bp(business_plan_id, comment_type):
-    business_plan = get_object_or_404(BusinessPlan, id=business_plan_id)
-    link = (
-        f"{settings.FRONTEND_HOST[0]}/business-plans/{business_plan.agency.name}/"
-        f"{business_plan.year_start}/{business_plan.year_end}"
-    )
-
-    if comment_type == "comment_agency":
-        recipients = User.objects.filter(user_type=User.UserType.SECRETARIAT)
-    else:
-        # TODO filter by agency
-        recipients = User.objects.filter(user_type=User.UserType.AGENCY)
-
-    send_mail(
-        "MLF Knowledge Management System: New comment added for Business Plan",
-        (
-            f"This is an automated message informing you that a new "
-            f"comment was added for the Business Plan of agency: {business_plan.agency} "
-            f"and years: {business_plan.year_start} - {business_plan.year_end}.\n\n"
-            f"The Business Plan is available at {link}"
-        ),
-        None,  # use DEFAULT_FROM_EMAIL
-        recipients.values_list("email", flat=True),
-        fail_silently=False,
-    )
-
-
-@app.task()
 def send_mail_bp_create(business_plan_id):
     business_plan = get_object_or_404(BusinessPlan, id=business_plan_id)
     link = (
