@@ -22,6 +22,7 @@ import {
   dateForInput,
   fetchWithHandling,
   formatDateValue,
+  formatNumberValue,
   numberForEditField,
 } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { AddButton } from '@ors/components/ui/Button/Button'
@@ -75,16 +76,15 @@ function InvoicesView() {
     return [
       ...results.map((data) => ({
         id: data.id,
-        amount: data.amount.toLocaleString(undefined, {
-          maximumFractionDigits: 3,
-          minimumFractionDigits: 3,
-        }),
+        amount: formatNumberValue(data.amount),
+        be_amount: data.amount,
+        be_exchange_rate: data.exchange_rate,
         country: data.country.name,
         country_id: data.country.id,
         currency: data.currency,
         date_of_issuance: formatDateValue(data.date_of_issuance),
         date_sent_out: formatDateValue(data.date_sent_out) || 'N/A',
-        exchange_rate: data.exchange_rate?.toFixed(3) || 'N/A',
+        exchange_rate: formatNumberValue(data.exchange_rate) || 'N/A',
         files: <ViewFiles files={data.invoice_files} />,
         files_data: data.invoice_files,
         iso3: data.country.iso3,
@@ -129,7 +129,8 @@ function InvoicesView() {
       entry.date_of_issuance = dateForEditField(entry.date_of_issuance)
       entry.date_sent_out = dateForEditField(entry.date_sent_out)
       entry.reminder = dateForEditField(entry.reminder)
-      entry.amount = numberForEditField(entry.amount)
+      entry.amount = entry.be_amount
+      entry.exchange_rate = entry.be_exchange_rate
     }
     return entry
   }, [editIdx, memoResults])
@@ -143,7 +144,7 @@ function InvoicesView() {
     entry.date_of_issuance = dateForInput(entry.date_of_issuance)
     entry.date_sent_out = dateForInput(entry.date_sent_out) || ''
     entry.reminder = dateForInput(entry.reminder) || ''
-    entry.exchange_rate = entry.exchange_rate || ''
+    entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
 
     let nr_new_files = 0
     const data = new FormData()
@@ -215,7 +216,7 @@ function InvoicesView() {
     entry.date_of_issuance = dateForInput(entry.date_of_issuance)
     entry.date_sent_out = dateForInput(entry.date_sent_out)
     entry.reminder = dateForInput(entry.reminder)
-    entry.exchange_rate = entry.exchange_rate || ''
+    entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
     entry.replenishment_id = ctx.periods.find(
       (p) => Number(p.start_year) === Number(entry.period.split('-')[0]),
     )?.id

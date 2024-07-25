@@ -35,6 +35,9 @@ export function formatDateValue(value) {
 }
 
 export function formatNumberValue(value, minDigits, maxDigits) {
+  if (isNaN(value) || (!value && value !== 0)) {
+    return null
+  }
   const formatted = parseFloat(value).toLocaleString('en-US', {
     maximumFractionDigits: maxDigits ?? MAX_DECIMALS,
     minimumFractionDigits: minDigits ?? MIN_DECIMALS,

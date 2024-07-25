@@ -38,6 +38,7 @@ const PaymentDialog = function PaymentDialog(props) {
         id="amount"
         defaultValue={data?.amount}
         label={columns[2].label}
+        step="any"
         type="number"
         required
       />
@@ -52,7 +53,7 @@ const PaymentDialog = function PaymentDialog(props) {
         id="exchange_rate"
         defaultValue={data?.exchange_rate}
         label={columns[4].label}
-        step="0.001"
+        step="any"
         type="number"
       />
       <FieldInput
@@ -66,6 +67,7 @@ const PaymentDialog = function PaymentDialog(props) {
         id="ferm_gain_or_loss"
         defaultValue={data?.ferm_gain_or_loss}
         label={columns[6].label}
+        step="any"
         type="number"
       />
       <FieldInput

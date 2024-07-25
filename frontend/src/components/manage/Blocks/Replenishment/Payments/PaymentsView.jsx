@@ -72,13 +72,16 @@ function PaymentsView() {
       ...results.map((data) => ({
         id: data.id,
         amount: formatNumberValue(data.amount),
+        be_amount: data.amount,
+        be_exchange_rate: data.exchange_rate,
+        be_ferm: data.ferm_gain_or_loss,
         comment: data.comment,
         country: data.country.name,
         country_id: data.country.id,
         currency: data.currency,
         date: formatDateValue(data.date),
-        exchange_rate: data.exchange_rate?.toFixed(3) || 'N/A',
-        ferm_gain_or_loss: data.ferm_gain_or_loss || 'N/A',
+        exchange_rate: formatNumberValue(data.exchange_rate) || 'N/A',
+        ferm_gain_or_loss: formatNumberValue(data.ferm_gain_or_loss) || 'N/A',
         files: <ViewFiles files={data.payment_files} />,
         files_data: data.payment_files,
         iso3: data.country.iso3,
@@ -120,7 +123,9 @@ function PaymentsView() {
     if (editIdx !== null) {
       entry = { ...memoResults[editIdx] }
       entry.date = dateForEditField(entry.date)
-      entry.amount = numberForEditField(entry.amount)
+      entry.amount = entry.be_amount
+      entry.exchange_rate = entry.be_exchange_rate
+      entry.ferm_gain_or_loss = entry.be_ferm
     }
     return entry
   }, [editIdx, memoResults])
@@ -132,8 +137,10 @@ function PaymentsView() {
   async function handleEditPaymentSubmit(formData) {
     const entry = { ...formData }
     entry.date = dateForInput(entry.date)
-    entry.exchange_rate = entry.exchange_rate || ''
-    entry.ferm_gain_or_loss = entry.ferm_gain_or_loss || ''
+    entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
+    entry.ferm_gain_or_loss = isNaN(entry.ferm_gain_or_loss)
+      ? ''
+      : entry.ferm_gain_or_loss
     entry.comment = entry.comment || ''
 
     let nr_new_files = 0
@@ -198,8 +205,10 @@ function PaymentsView() {
   async function handleAddPaymentSubmit(formData) {
     const entry = { ...formData }
     entry.date = dateForInput(entry.date)
-    entry.exchange_rate = entry.exchange_rate || ''
-    entry.ferm_gain_or_loss = entry.ferm_gain_or_loss || ''
+    entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
+    entry.ferm_gain_or_loss = isNaN(entry.ferm_gain_or_loss)
+      ? ''
+      : entry.ferm_gain_or_loss
     entry.comment = entry.comment || ''
 
     let nr_new_files = 0

@@ -75,6 +75,7 @@ const InvoiceDialog = function InvoiceDialog(props) {
         id="amount"
         defaultValue={data?.amount}
         label={columns[3].label}
+        step="any"
         type="number"
         required
       />
@@ -89,7 +90,7 @@ const InvoiceDialog = function InvoiceDialog(props) {
         id="exchange_rate"
         defaultValue={data?.exchange_rate}
         label={columns[5].label}
-        step="0.001"
+        step="any"
         type="number"
       />
       <FieldInput
