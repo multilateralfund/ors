@@ -94,9 +94,9 @@ function SCView(props) {
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-4 print:flex-col print:items-start">
-        <h2>
-          {title}{' '}
-          <span className="text-2xl font-normal">
+        <h2 className="flex flex-wrap gap-1 shrink">
+          <span className="whitespace-normal">{title}</span>
+          <span className="whitespace-normal text-2xl font-normal">
             as of {dateOfLastUpdate} (US Dollars)
           </span>
         </h2>
