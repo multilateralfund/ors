@@ -20,7 +20,6 @@ import {
   fetchWithHandling,
   formatDateValue,
   formatNumberValue,
-  numberForEditField,
 } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { AddButton } from '@ors/components/ui/Button/Button'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
