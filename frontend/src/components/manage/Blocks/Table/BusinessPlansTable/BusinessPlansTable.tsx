@@ -2,6 +2,8 @@
 import React, { useContext, useMemo, useRef, useState } from 'react'
 
 import {
+  Checkbox,
+  FormControlLabel,
   InputAdornment,
   IconButton as MuiIconButton,
   Typography,
@@ -29,6 +31,9 @@ export default function BusinessPlansTable() {
   const form = useRef<any>()
   const commonSlice = useStore((state) => state.common)
   const bpSlice = useStore((state) => state.businessPlans)
+  const projects = useStore((state) => state.projects)
+
+  const clusters = projects.clusters.data || []
 
   // const initialParams = {
   //   blends: null,
@@ -50,6 +55,8 @@ export default function BusinessPlansTable() {
 
   const initialFilters = {
     country_id: [],
+    is_multi_year: true,
+    project_cluster_id: [],
     project_type_id: [],
     search: '',
     sector_id: [],
@@ -179,199 +186,243 @@ export default function BusinessPlansTable() {
           rowData={results}
           tooltipShowDelay={200}
           Toolbar={() => (
-            <div className="flex items-center justify-between">
-              <div className="flex flex-wrap items-center gap-2">
-                {/*<div className="w-64">*/}
-                {/*  <Field*/}
-                {/*    Input={{ label: 'Year' }}*/}
-                {/*    options={bpSlice.yearRanges.data}*/}
-                {/*    value={yearRangeSelected}*/}
-                {/*    widget="autocomplete"*/}
-                {/*    getOptionLabel={(option: any) =>*/}
-                {/*      `${option.year_start}-${option.year_end}`*/}
-                {/*    }*/}
-                {/*    isOptionEqualToValue={(option: any, value: any) =>*/}
-                {/*      option.year_start === value.year_start*/}
-                {/*    }*/}
-                {/*    onChange={(_: any, value: any) => {*/}
-                {/*      handleParamsChange({*/}
-                {/*        offset: 0,*/}
-                {/*        year_end: value.year_end,*/}
-                {/*        year_start: value.year_start,*/}
-                {/*      })*/}
-                {/*      handleFilterChange({*/}
-                {/*        year_end: value.year_end,*/}
-                {/*        year_start: value.year_start,*/}
-                {/*      })*/}
-                {/*    }}*/}
-                {/*    disableClearable*/}
-                {/*  />*/}
-                {/*</div>*/}
-                <div className="w-80">
+            <div className="flex flex-col">
+              {/*  First row */}
+              <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center gap-3">
                   <Field
-                    Input={{ label: 'Country' }}
-                    getOptionLabel={(option: any) => option?.name}
-                    options={commonSlice.countries.data}
-                    value={filters.country_id}
-                    widget="autocomplete"
-                    onChange={(_: any, value: any) => {
-                      handleFilterChange({ country_id: value })
-                      handleParamsChange({
-                        country_id: value.map((item: any) => item.id).join(','),
-                        offset: 0,
-                      })
+                    name="search"
+                    placeholder="Search by keyword..."
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <MuiIconButton
+                            aria-label="search table"
+                            edge="start"
+                            tabIndex={-1}
+                            onClick={() => {
+                              const search = form.current.search.value
+                              handleParamsChange({
+                                offset: 0,
+                                search,
+                              })
+                              handleFilterChange({ search })
+                            }}
+                            disableRipple
+                          >
+                            <IoSearchOutline />
+                          </MuiIconButton>
+                        </InputAdornment>
+                      ),
                     }}
-                    multiple
-                  />
-                </div>
-                <div className="w-64">
-                  <Field
-                    Input={{ label: 'Sector' }}
-                    getOptionLabel={(option: any) => option?.name}
-                    options={bpSlice.sectors.data}
-                    value={filters.sector_id}
-                    widget="autocomplete"
-                    onChange={(_: any, value: any) => {
-                      handleFilterChange({ sector_id: value })
-                      handleParamsChange({
-                        offset: 0,
-                        sector_id: value.map((item: any) => item.id).join(','),
-                      })
+                    onKeyDown={(event: any) => {
+                      const search = form.current.search.value
+                      if (event.key === KEY_ENTER) {
+                        handleParamsChange({
+                          offset: 0,
+                          search,
+                        })
+                        handleFilterChange({ search })
+                      }
                     }}
-                    multiple
                   />
-                </div>
-                <div className="w-64">
-                  <Field
-                    Input={{ label: 'Subsector' }}
-                    getOptionLabel={(option: any) => option?.name}
-                    options={bpSlice.subsectors.data}
-                    value={filters.subsector_id}
-                    widget="autocomplete"
-                    onChange={(_: any, value: any) => {
-                      handleFilterChange({ subsector_id: value })
-                      handleParamsChange({
-                        offset: 0,
-                        subsector_id: value
-                          .map((item: any) => item.id)
-                          .join(','),
-                      })
-                    }}
-                    multiple
-                  />
-                </div>
-                <div className="w-64">
-                  <Field
-                    Input={{ label: 'Type' }}
-                    getOptionLabel={(option: any) => option?.name}
-                    options={bpSlice.types.data}
-                    value={filters.project_type_id}
-                    widget="autocomplete"
-                    isOptionEqualToValue={(option: any, value: any) =>
-                      option.id === value
-                    }
-                    onChange={(_: any, value: any) => {
-                      handleFilterChange({ project_type_id: value })
-                      handleParamsChange({
-                        offset: 0,
-                        project_type_id: value
-                          .map((item: any) => item.id)
-                          .join(','),
-                      })
-                    }}
-                    multiple
-                  />
-                </div>
-
-                <Field
-                  name="search"
-                  placeholder="Search by keyword..."
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <MuiIconButton
-                          aria-label="search table"
-                          edge="start"
-                          tabIndex={-1}
-                          onClick={() => {
-                            const search = form.current.search.value
-                            handleParamsChange({
-                              offset: 0,
-                              search,
-                            })
-                            handleFilterChange({ search })
-                          }}
-                          disableRipple
-                        >
-                          <IoSearchOutline />
-                        </MuiIconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                  onKeyDown={(event: any) => {
-                    const search = form.current.search.value
-                    if (event.key === KEY_ENTER) {
-                      handleParamsChange({
-                        offset: 0,
-                        search,
-                      })
-                      handleFilterChange({ search })
-                    }
-                  }}
-                />
-                {!!filters.search && (
-                  <div className="mb-4">
-                    <Typography className="inline-flex items-center gap-2 rounded-sm border border-solid border-mui-default-border bg-action-highlight px-2 py-1 italic text-typography-secondary">
-                      {filters.search}
-                      <IoClose
-                        className="cursor-pointer rounded-sm"
-                        onClick={() => {
-                          form.current.search.value = ''
-                          handleParamsChange({ offset: 0, search: '' })
-                          handleFilterChange({ search: '' })
+                  {/*<div className="w-52">*/}
+                  {/*  <Field*/}
+                  {/*    Input={{ label: 'Year' }}*/}
+                  {/*    options={bpSlice.yearRanges.data}*/}
+                  {/*    value={yearRangeSelected}*/}
+                  {/*    widget="autocomplete"*/}
+                  {/*    getOptionLabel={(option: any) =>*/}
+                  {/*      `${option.year_start}-${option.year_end}`*/}
+                  {/*    }*/}
+                  {/*    isOptionEqualToValue={(option: any, value: any) =>*/}
+                  {/*      option.year_start === value.year_start*/}
+                  {/*    }*/}
+                  {/*    onChange={(_: any, value: any) => {*/}
+                  {/*      handleParamsChange({*/}
+                  {/*        offset: 0,*/}
+                  {/*        year_end: value.year_end,*/}
+                  {/*        year_start: value.year_start,*/}
+                  {/*      })*/}
+                  {/*      handleFilterChange({*/}
+                  {/*        year_end: value.year_end,*/}
+                  {/*        year_start: value.year_start,*/}
+                  {/*      })*/}
+                  {/*    }}*/}
+                  {/*    disableClearable*/}
+                  {/*  />*/}
+                  {/*</div>*/}
+                  <div className="w-40">
+                    <Field
+                      Input={{ label: 'Country' }}
+                      getOptionLabel={(option: any) => option?.name}
+                      options={commonSlice.countries.data}
+                      value={filters.country_id}
+                      widget="autocomplete"
+                      onChange={(_: any, value: any) => {
+                        handleFilterChange({ country_id: value })
+                        handleParamsChange({
+                          country_id: value
+                            .map((item: any) => item.id)
+                            .join(','),
+                          offset: 0,
+                        })
+                      }}
+                      multiple
+                    />
+                  </div>
+                  <div className="w-40">
+                    <Field
+                      Input={{ label: 'Cluster' }}
+                      getOptionLabel={(option: any) => option?.name}
+                      options={clusters}
+                      value={filters.project_cluster_id}
+                      widget="autocomplete"
+                      onChange={(_: any, value: any) => {
+                        handleFilterChange({ project_cluster_id: value })
+                        handleParamsChange({
+                          offset: 0,
+                          project_cluster_id: value
+                            .map((item: any) => item.id)
+                            .join(','),
+                        })
+                      }}
+                      multiple
+                    />
+                  </div>
+                  <div className="w-40">
+                    <Field
+                      Input={{ label: 'Sector' }}
+                      getOptionLabel={(option: any) => option?.name}
+                      options={bpSlice.sectors.data}
+                      value={filters.sector_id}
+                      widget="autocomplete"
+                      onChange={(_: any, value: any) => {
+                        handleFilterChange({ sector_id: value })
+                        handleParamsChange({
+                          offset: 0,
+                          sector_id: value
+                            .map((item: any) => item.id)
+                            .join(','),
+                        })
+                      }}
+                      multiple
+                    />
+                  </div>
+                  <div className="w-40">
+                    <Field
+                      Input={{ label: 'Subsector' }}
+                      getOptionLabel={(option: any) => option?.name}
+                      options={bpSlice.subsectors.data}
+                      value={filters.subsector_id}
+                      widget="autocomplete"
+                      onChange={(_: any, value: any) => {
+                        handleFilterChange({ subsector_id: value })
+                        handleParamsChange({
+                          offset: 0,
+                          subsector_id: value
+                            .map((item: any) => item.id)
+                            .join(','),
+                        })
+                      }}
+                      multiple
+                    />
+                  </div>
+                  <div className="w-40">
+                    <Field
+                      Input={{ label: 'Type' }}
+                      getOptionLabel={(option: any) => option?.name}
+                      options={bpSlice.types.data}
+                      value={filters.project_type_id}
+                      widget="autocomplete"
+                      isOptionEqualToValue={(option: any, value: any) =>
+                        option.id === value
+                      }
+                      onChange={(_: any, value: any) => {
+                        handleFilterChange({ project_type_id: value })
+                        handleParamsChange({
+                          offset: 0,
+                          project_type_id: value
+                            .map((item: any) => item.id)
+                            .join(','),
+                        })
+                      }}
+                      multiple
+                    />
+                  </div>
+                  <FormControlLabel
+                    className="widget"
+                    label="Multi-Year"
+                    control={
+                      <Checkbox
+                        checked={filters.is_multi_year}
+                        onChange={(event) => {
+                          handleFilterChange({
+                            is_multi_year: event.target.checked,
+                          })
+                          handleParamsChange({
+                            is_multi_year: event.target.checked,
+                            offset: 0,
+                          })
                         }}
                       />
-                    </Typography>
-                  </div>
-                )}
+                    }
+                  />
+                </div>
+                <Dropdown
+                  color="primary"
+                  label={<IoDownloadOutline />}
+                  tooltip="Download"
+                  icon
+                >
+                  <Dropdown.Item>
+                    <Link
+                      className="flex items-center gap-x-2 text-black no-underline"
+                      target="_blank"
+                      href={
+                        formatApiUrl('api/business-plan-record/export/') +
+                        '?year_start=' +
+                        yearRangeSelected?.year_start.toString()
+                      }
+                      download
+                    >
+                      <AiFillFileExcel className="fill-green-700" size={24} />
+                      <span>XLSX</span>
+                    </Link>
+                  </Dropdown.Item>
+                  <Dropdown.Item>
+                    <Link
+                      className="flex items-center gap-x-2 text-black no-underline"
+                      target="_blank"
+                      href={
+                        formatApiUrl('api/business-plan-record/print/') +
+                        '?year_start=' +
+                        yearRangeSelected?.year_start.toString()
+                      }
+                      download
+                    >
+                      <AiFillFilePdf className="fill-red-700" size={24} />
+                      <span>PDF</span>
+                    </Link>
+                  </Dropdown.Item>
+                </Dropdown>
               </div>
-              <Dropdown
-                color="primary"
-                label={<IoDownloadOutline />}
-                tooltip="Download"
-                icon
-              >
-                <Dropdown.Item>
-                  <Link
-                    className="flex items-center gap-x-2 text-black no-underline"
-                    target="_blank"
-                    href={
-                      formatApiUrl('api/business-plan-record/export/') +
-                      '?year_start=' +
-                      yearRangeSelected?.year_start.toString()
-                    }
-                    download
-                  >
-                    <AiFillFileExcel className="fill-green-700" size={24} />
-                    <span>XLSX</span>
-                  </Link>
-                </Dropdown.Item>
-                <Dropdown.Item>
-                  <Link
-                    className="flex items-center gap-x-2 text-black no-underline"
-                    target="_blank"
-                    href={
-                      formatApiUrl('api/business-plan-record/print/') +
-                      '?year_start=' +
-                      yearRangeSelected?.year_start.toString()
-                    }
-                    download
-                  >
-                    <AiFillFilePdf className="fill-red-700" size={24} />
-                    <span>PDF</span>
-                  </Link>
-                </Dropdown.Item>
-              </Dropdown>
+              {/* Second row  */}
+              {!!filters.search && (
+                <div className="mb-4">
+                  <Typography className="inline-flex items-center gap-2 rounded-sm border border-solid border-mui-default-border bg-action-highlight px-2 py-1 italic text-typography-secondary">
+                    {filters.search}
+                    <IoClose
+                      className="cursor-pointer rounded-sm"
+                      onClick={() => {
+                        form.current.search.value = ''
+                        handleParamsChange({ offset: 0, search: '' })
+                        handleFilterChange({ search: '' })
+                      }}
+                    />
+                  </Typography>
+                </div>
+              )}
             </div>
           )}
           columnDefs={[
@@ -403,13 +454,12 @@ export default function BusinessPlansTable() {
             {
               autoHeight: true,
               cellClass: 'ag-text-center',
-              field: 'cluster',
+              field: 'project_cluster',
               headerClass: 'ag-text-center',
               headerName: 'Cluster',
               minWidth: 70,
               resizable: true,
               sortable: true,
-              tooltipField: 'cluster',
             },
             {
               autoHeight: true,
