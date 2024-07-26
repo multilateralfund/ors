@@ -72,23 +72,14 @@ def set_mya_clusters():
 
 def set_substances_cluster(record):
     cluster_names = []
-    if not record.substances.exists() and not record.blends.exists():
+    if not record.substances.exists():
         return
 
-    if (
-        record.substances.filter(name__icontains="CFC").exists()
-        or record.blends.filter(name__icontains="CFC").exists()
-    ):
+    if record.substances.filter(name__icontains="CFC").exists():
         cluster_names.append("CFC Individual")
-    elif (
-        record.substances.filter(name__icontains="HCFC").exists()
-        or record.blends.filter(name__icontains="HCFC").exists()
-    ):
+    elif record.substances.filter(name__icontains="HCFC").exists():
         cluster_names.append("HCFC Individual")
-    elif (
-        record.substances.filter(name__icontains="HFC").exists()
-        or record.blends.filter(name__icontains="HFC").exists()
-    ):
+    elif record.substances.filter(name__icontains="HFC").exists():
         cluster_names.append("HFC Individual")
 
     if not cluster_names:
@@ -143,7 +134,7 @@ def set_ind_clusters():
         BPRecord.objects.filter(
             project_cluster__isnull=True,
         )
-        .prefetch_related("substances", "blends")
+        .prefetch_related("substances")
         .all()
     )
     for record in bp_records:
