@@ -103,14 +103,18 @@ class BusinessPlanViewSet(
         self.perform_create(serializer)
         instance = serializer.instance
 
+        # check bp status
+        if instance.status != BusinessPlan.Status.draft:
+            return Response(
+                {"general_error": "Only draft BP can be created"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         # check user permissions
         user = request.user
-        if (
-            user.agency_role == user.AgencyRole.AGENCY_INPUTTER
-            and instance.status != BusinessPlan.Status.draft
-        ):
+        if user.agency != instance.agency:
             return Response(
-                {"general_error": "Agency inputter can't submit a final version"},
+                {"general_error": "BP agency doesn't match with user agency"},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -129,7 +133,7 @@ class BusinessPlanViewSet(
             updated_by=user,
             event_description="Created by user",
         )
-        if config.SEND_MAIL and instance.status != BusinessPlan.Status.draft:
+        if config.SEND_MAIL:
             send_mail_bp_create.delay(instance.id)  # send mail to MLFS
 
         headers = self.get_success_headers(serializer.data)
@@ -179,16 +183,21 @@ class BusinessPlanViewSet(
         self.perform_create(serializer)
         new_instance = serializer.instance
 
+        # check bp status
+        if new_instance.status != BusinessPlan.Status.draft:
+            return Response(
+                {"general_error": "Only draft BP can be created"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         # check user permissions
         user = request.user
-        if (
-            user.agency_role == user.AgencyRole.AGENCY_INPUTTER
-            and new_instance.status != BusinessPlan.Status.draft
-        ):
+        if user.agency != new_instance.agency:
             return Response(
-                {"general_error": "Agency inputter can't submit a final version"},
+                {"general_error": "BP agency doesn't match with user agency"},
                 status=status.HTTP_403_FORBIDDEN,
             )
+
         # set name
         if not new_instance.name:
             new_instance.name = f"{new_instance.agency} {new_instance.year_start} - {new_instance.year_end}"
@@ -211,7 +220,7 @@ class BusinessPlanViewSet(
 
         current_obj.delete()
 
-        if config.SEND_MAIL and new_instance.status != BusinessPlan.Status.draft:
+        if config.SEND_MAIL:
             send_mail_bp_update.delay(new_instance.id)  # send mail to MLFS
 
         headers = self.get_success_headers(serializer.data)

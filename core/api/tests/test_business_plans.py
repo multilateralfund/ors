@@ -357,7 +357,7 @@ def setup_new_business_plan_create(agency):
         "agency_id": agency.id,
         "year_start": 2020,
         "year_end": 2022,
-        "status": "Submitted",
+        "status": "Draft",
     }
 
 
@@ -371,10 +371,10 @@ class TestBPCreate:
         )
         assert response.status_code == 403
 
-    def test_without_permission_agency_inputter(
+    def test_without_permission_wrong_agency(
         self, agency_user, _setup_new_business_plan_create
     ):
-        agency_user.agency_role = "agency_inputter"
+        agency_user.agency = None
         agency_user.save()
         self.client.force_authenticate(user=agency_user)
 
@@ -382,6 +382,18 @@ class TestBPCreate:
             self.url, _setup_new_business_plan_create, format="json"
         )
         assert response.status_code == 403
+        assert (
+            response.data["general_error"] == "BP agency doesn't match with user agency"
+        )
+
+    def test_create_final_version(self, agency_user, _setup_new_business_plan_create):
+        self.client.force_authenticate(user=agency_user)
+
+        data = _setup_new_business_plan_create
+        data["status"] = "Submitted"
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 400
+        assert response.data["general_error"] == "Only draft BP can be created"
 
     def test_create_business_plan(
         self,
@@ -398,7 +410,7 @@ class TestBPCreate:
 
         assert response.status_code == 201
         assert response.data["name"] == "Test BP"
-        assert response.data["status"] == "Submitted"
+        assert response.data["status"] == "Draft"
         assert response.data["year_start"] == 2020
         assert response.data["year_end"] == 2022
         assert response.data["agency_id"] == agency.id
@@ -612,17 +624,36 @@ class TestBPUpdate:
             "agency_id": business_plan.agency_id,
             "year_start": business_plan.year_start,
             "year_end": business_plan.year_end,
-            "status": "Submitted",
+            "status": "Draft",
             "records": [_setup_bp_record_create],
         }
         response = self.client.put(url, data, format="json")
         assert response.status_code == 403
 
-    def test_without_permission_agency_inputter(
+    def test_without_permission_wrong_agency(
         self, agency_user, _setup_bp_record_create, business_plan
     ):
-        agency_user.agency_role = "agency_inputter"
+        agency_user.agency = None
         agency_user.save()
+        self.client.force_authenticate(user=agency_user)
+
+        url = reverse("businessplan-list") + f"{business_plan.id}/"
+        data = {
+            "agency_id": business_plan.agency_id,
+            "year_start": business_plan.year_start,
+            "year_end": business_plan.year_end,
+            "status": "Draft",
+            "records": [_setup_bp_record_create],
+        }
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 403
+        assert (
+            response.data["general_error"] == "BP agency doesn't match with user agency"
+        )
+
+    def test_update_final_version(
+        self, agency_user, _setup_bp_record_create, business_plan
+    ):
         self.client.force_authenticate(user=agency_user)
 
         url = reverse("businessplan-list") + f"{business_plan.id}/"
@@ -634,7 +665,8 @@ class TestBPUpdate:
             "records": [_setup_bp_record_create],
         }
         response = self.client.put(url, data, format="json")
-        assert response.status_code == 403
+        assert response.status_code == 400
+        assert response.data["general_error"] == "Only draft BP can be created"
 
     def test_update_wrong_record_values(
         self, agency_user, _setup_bp_record_create, business_plan
@@ -655,7 +687,7 @@ class TestBPUpdate:
             "agency_id": business_plan.agency_id,
             "year_start": business_plan.year_start,
             "year_end": business_plan.year_end,
-            "status": "Submitted",
+            "status": "Draft",
             "records": [record_data],
         }
         response = self.client.put(url, data, format="json")
@@ -697,7 +729,7 @@ class TestBPUpdate:
             "agency_id": business_plan.agency_id,
             "year_start": business_plan.year_start,
             "year_end": business_plan.year_end,
-            "status": "Submitted",
+            "status": "Draft",
             "records": [record_data],
         }
         response = self.client.put(url, data, format="json")

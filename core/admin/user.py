@@ -19,15 +19,22 @@ class UserEditAdminForm(ModelForm):
         cleaned_data = super().clean()
         user_type = cleaned_data["user_type"]
         country = cleaned_data["country"]
-        agency_role = cleaned_data["agency_role"]
+        agency = cleaned_data["agency"]
         if user_type == User.UserType.COUNTRY_USER and not country:
             raise ValidationError(
-                _("Country users need to be assigned to countries. Choose a country and try again.")
+                _(
+                    "Country users need to be assigned to countries. Choose a country and try again."
+                )
             )
 
-        if user_type == User.UserType.AGENCY and not agency_role:
+        if (
+            user_type in (User.UserType.AGENCY_SUBMITTER, User.UserType.AGENCY_INPUTTER)
+            and not agency
+        ):
             raise ValidationError(
-                _("Agency users need to be assigned to an agency role. Choose an agency role and try again.")
+                _(
+                    "Agency users need to be assigned to agencies. Choose an agency and try again."
+                )
             )
         return cleaned_data
 

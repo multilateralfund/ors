@@ -136,8 +136,10 @@ def send_mail_bp_status_update(business_plan_id):
         f"{settings.FRONTEND_HOST[0]}/business-plans/{business_plan.agency.name}/"
         f"{business_plan.year_start}/{business_plan.year_end}"
     )
-    # TODO filter by agency
-    recipients = User.objects.filter(user_type=User.UserType.AGENCY)
+    recipients = User.objects.filter(
+        user_type__in=[User.UserType.AGENCY_SUBMITTER, User.UserType.AGENCY_INPUTTER],
+        agency=business_plan.agency,
+    )
     action = business_plan.status
 
     send_mail(

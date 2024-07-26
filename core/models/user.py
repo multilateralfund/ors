@@ -5,22 +5,17 @@ from django.utils.translation import gettext_lazy as _
 
 class User(AbstractUser):
     class UserType(models.TextChoices):
-        AGENCY = "agency", _("Agency")
+        AGENCY_INPUTTER = "agency_inputter", _("Agency inputter")
+        AGENCY_SUBMITTER = "agency_submitter", _("Agency submitter")
         COUNTRY_USER = "country_user", _("Country user")
         SECRETARIAT = "secretariat", _("Secretariat")
         STAKEHOLDER = "stakeholder", _("Stakeholder")
         TREASURER = "treasurer", _("Treasurer")
 
-    class AgencyRole(models.TextChoices):
-        AGENCY_INPUTTER = "agency_inputter", _("Agency inputter")
-        AGENCY_SUBMITTER = "agency_submitter", _("Agency submitter")
-
     country = models.ForeignKey(
         "Country", null=True, blank=True, on_delete=models.CASCADE
     )
-    agency_role = models.CharField(
-        max_length=50, choices=AgencyRole.choices, blank=True
+    agency = models.ForeignKey(
+        "Agency", null=True, blank=True, on_delete=models.CASCADE
     )
-    user_type = models.CharField(
-        max_length=50, choices=UserType.choices, blank=True
-    )
+    user_type = models.CharField(max_length=50, choices=UserType.choices, blank=True)
