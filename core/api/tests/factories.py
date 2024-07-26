@@ -9,6 +9,8 @@ from core.models import (
     FermGainLoss,
     TriennialContributionStatus,
     Invoice,
+    Payment,
+    ScaleOfAssessmentVersion,
 )
 from core.models.business_plan import (
     BusinessPlan,
@@ -491,12 +493,24 @@ class ReplenishmentFactory(factory.django.DjangoModelFactory):
     amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
 
 
+class ScaleOfAssessmentVersionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ScaleOfAssessmentVersion
+
+    replenishment = factory.SubFactory(ReplenishmentFactory)
+    version = factory.Faker("random_int", min=1, max=100)
+    is_final = factory.Faker("pybool")
+    meeting_number = factory.Faker("pystr", max_chars=32)
+    decision_number = factory.Faker("pystr", max_chars=32)
+    comment = factory.Faker("pystr", max_chars=100)
+
+
 class ScaleOfAssessmentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ScaleOfAssessment
 
     country = factory.SubFactory(CountryFactory)
-    replenishment = factory.SubFactory(ReplenishmentFactory)
+    version = factory.SubFactory(ScaleOfAssessmentVersionFactory)
     currency = factory.Faker("pystr", max_chars=3)
     exchange_rate = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     bilateral_assistance_amount = factory.Faker(
@@ -569,3 +583,17 @@ class InvoiceFactory(factory.django.DjangoModelFactory):
 
     number = factory.Faker("pystr", max_chars=16)
     date_of_issuance = factory.Faker("date")
+
+
+class PaymentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Payment
+
+    country = factory.SubFactory(CountryFactory)
+    replenishment = factory.SubFactory(ReplenishmentFactory)
+
+    amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    currency = factory.Faker("pystr", max_chars=3)
+
+    date = factory.Faker("date")
+    payment_for_year = factory.Faker("pystr", max_chars=32)

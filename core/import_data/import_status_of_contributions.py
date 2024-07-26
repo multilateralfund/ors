@@ -1,3 +1,6 @@
+# TODO: split into more functions
+# pylint: disable=R0915
+
 import decimal
 import logging
 
@@ -430,6 +433,17 @@ def import_status_of_contributions(countries):
                 promissory_notes=row["Promissory Notes"],
                 outstanding_contributions=row["Outstanding Contributions"],
             )
+
+            if (
+                contribution_status.agreed_contributions
+                == contribution_status.cash_payments
+                == contribution_status.bilateral_assistance
+                == contribution_status.promissory_notes
+                == contribution_status.outstanding_contributions
+                == 0
+            ):
+                continue
+
             contributions_status_objects.append(contribution_status)
 
         AnnualContributionStatus.objects.bulk_create(contributions_status_objects)
@@ -498,6 +512,17 @@ def import_status_of_contributions(countries):
                 promissory_notes=row["Promissory Notes"],
                 outstanding_contributions=row["Outstanding Contributions"],
             )
+
+            if (
+                contribution_status.agreed_contributions
+                == contribution_status.cash_payments
+                == contribution_status.bilateral_assistance
+                == contribution_status.promissory_notes
+                == contribution_status.outstanding_contributions
+                == 0
+            ):
+                continue
+
             contributions_status_objects.append(contribution_status)
 
         TriennialContributionStatus.objects.bulk_create(contributions_status_objects)

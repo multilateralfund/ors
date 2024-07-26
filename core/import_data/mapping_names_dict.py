@@ -23,6 +23,7 @@ COUNTRY_NAME_MAPPING = {
     "St. Vincent and the Grenadines": "Saint Vincent and the Grenadines",
     "Commonwealth of Dominica": "Dominica",
     "Lao, DPR": "Lao People's Democratic Republic",
+    "PAK": "Pakistan",
 }
 
 SECTOR_NAME_MAPPING = {
@@ -364,3 +365,38 @@ CP_FORMAT_FILE_DATA_MAPPING = {
 }
 
 ADM_DE_MAPPING = {"N/A RMP already completed": "N/A RMP/NPP/TPMP already completed"}
+
+
+MYASECTOR_CLUSTER_MAPPING = {
+    "pcr2023": {
+        "CFC phase out plan": "CFC Phase-out Plans",
+        "CFCs/CTC/Halon Accelerated Phase-Out Plan": "Other ODS Sector Plans",
+        "CTC phase out plan": "Other ODS Sector Plans",
+        "Domestic Refrigeration": "CFC Phase-out Plans",
+        "Foam": "CFC Phase-out Plans",
+        "Halon": "Other ODS Sector Plans",
+        "Methyl bromide": "Other ODS Sector Plans",
+        "Accelerated Production CFC": "CFC Production Phase out Plans",
+        "ODS phase out plan": "Other ODS Sector Plans",
+        "Process Agent (Phase I)": "Other ODS Sector Plans",
+        "Process Agent (Phase II)": "Other ODS Sector Plans",
+        "Production CFC": "CFC Production Phase out Plans",
+        "Production Methyl Bromide": "Other ODS Production Phase out Plans",
+        "Production ODS": "Other ODS Production Phase out Plans",
+        "Production TCA": "Other ODS Production Phase out Plans",
+        "Refrigerant management plan": "CFC Phase-out Plans",
+        "Refrigeration Servicing": "CFC Phase-out Plans",
+        "Solvent": "Other ODS Sector Plans",
+        "Tobacco Expansion": "Other ODS Sector Plans",
+        "Tobacco": "Other ODS Sector Plans",
+    },
+    "hpmppcr2023": {
+        "HCFC Phase Out Plan (Stage I)": "HPMP1",
+        "HCFC Phase Out Plan (Stage II)": "HPMP2",
+        "HCFC Phase Out Plan (Stage III)": "HPMP3",
+        "Production HCFC (Stage I)": "HPPMP1",
+        "HCFC Production (Stage I)": "HPPMP1",
+        "HCFC Production (Stage II)": "HPPMP2",
+        "HCFC Production (Stage III)": "HPPMP3",
+    },
+}

@@ -10,6 +10,7 @@ from django.db import models
 from core.import_data.mapping_names_dict import (
     CHEMICAL_NAME_MAPPING,
     COUNTRY_NAME_MAPPING,
+    MYASECTOR_CLUSTER_MAPPING,
     PROJECT_TYPE_CODE_MAPPING,
     SECTOR_CODE_MAPPING,
     SUBSECTOR_SECTOR_MAPPING,
@@ -25,6 +26,7 @@ from core.models.country_programme_archive import CPReportArchive
 from core.models.meeting import Meeting
 from core.models.project import (
     Project,
+    ProjectCluster,
     ProjectSector,
     ProjectStatus,
     ProjectSubSector,
@@ -329,6 +331,21 @@ def get_project_type_by_code(project_type_code, row_index):
         "code",
         row_index,
     )
+
+
+def get_mya_cluster_by_myasector(mya_sector, database_name, project_code):
+    cluster_name = MYASECTOR_CLUSTER_MAPPING[database_name].get(mya_sector)
+
+    if not cluster_name:
+        logger.error(f"Cluster not found for project {project_code}, {mya_sector}")
+        return None
+
+    cluster = ProjectCluster.objects.find_by_name_or_code(cluster_name)
+    if cluster:
+        return cluster
+
+    logger.error(f"Cluster not found: {cluster_name}")
+    return None
 
 
 def get_cp_report(

@@ -3,20 +3,20 @@ import useApi from '@ors/hooks/useApi'
 
 export const _PER_PAGE = 50
 
-function useGetInvoices() {
+function useGetPayments() {
   const { data, loading, setParams } = useApi({
     options: {
       params: {
         limit: _PER_PAGE,
         offset: 0,
-        ordering: '-date_of_issuance',
+        ordering: '-date',
       },
       withStoreCache: false,
     },
-    path: 'api/replenishment/invoices/',
+    path: 'api/replenishment/payments/',
   })
   const { count, loaded, results } = getResults(data)
   return { count, data, loaded, loading, results, setParams }
 }
 
-export default useGetInvoices
+export default useGetPayments

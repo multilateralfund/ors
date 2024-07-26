@@ -1,6 +1,6 @@
 import { MAX_DECIMALS, MIN_DECIMALS } from './constants'
 
-const RE_PERIOD_OR_YEAR = new RegExp(/(\d{4}-\d{4})|(\d{4})/)
+const RE_PERIOD = new RegExp(/\d{4}-\d{4}/)
 
 export function makePeriodOptions(periods) {
   const result = []
@@ -16,7 +16,7 @@ export function getPathPeriod(path) {
   let result = null
   const candidate = path.split('/').at(-1)
 
-  if (candidate.match(RE_PERIOD_OR_YEAR)) {
+  if (candidate.match(RE_PERIOD)) {
     result = candidate
   }
 
@@ -24,6 +24,9 @@ export function getPathPeriod(path) {
 }
 
 export function formatDateValue(value) {
+  if (!value) {
+    return null
+  }
   return new Date(value).toLocaleDateString('en-US', {
     day: '2-digit',
     month: 'short',
@@ -32,6 +35,9 @@ export function formatDateValue(value) {
 }
 
 export function formatNumberValue(value, minDigits, maxDigits) {
+  if (isNaN(value) || (!value && value !== 0)) {
+    return null
+  }
   const formatted = parseFloat(value).toLocaleString('en-US', {
     maximumFractionDigits: maxDigits ?? MAX_DECIMALS,
     minimumFractionDigits: minDigits ?? MIN_DECIMALS,
@@ -146,4 +152,22 @@ export function getCountryForIso3(iso3, countries) {
     }
   }
   return result
+}
+
+export async function fetchWithHandling(url, options = {}, csrftoken) {
+  const response = await fetch(url, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
+      ...options.headers,
+    },
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json() // Get the error details
+    const error = new Error('Request failed with status ' + response.status)
+    error.data = errorData
+    throw error
+  }
 }

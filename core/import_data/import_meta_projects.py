@@ -4,7 +4,13 @@ import logging
 from django.conf import settings
 from django.db import transaction
 from core.api.utils import SUBMISSION_STATUSE_CODES
-from core.import_data.utils import PCR_DIR_LIST, get_object_by_code
+from core.import_data.utils import (
+    PCR_DIR_LIST,
+    get_country_by_name,
+    get_mya_cluster_by_myasector,
+    get_object_by_code,
+    get_serial_number_from_code,
+)
 
 from core.models.project import MetaProject, Project, ProjectStatus
 from core.utils import get_meta_project_code
@@ -76,7 +82,7 @@ def create_custom_metaprojects():
             create_metaproj_for_custproj(project_codes, meta_type, code)
 
 
-def parse_meta_projects_file(file_path):
+def parse_meta_projects_file(file_path, database_name):
     """
     Import meta projects from json file
 
@@ -94,22 +100,34 @@ def parse_meta_projects_file(file_path):
 
         # get project by code
         project = get_object_by_code(
-            Project, project_json["CODE"], "code", project_json["CODE"], with_log=False
+            Project, project_json["Code"], "code", project_json["Code"], with_log=False
         )
-
-        # skip project if not exists
-        if not project:
-            logger.info(f"Project not found: {project_json['CODE']}")
-            continue
 
         # skip project if already has meta project
-        if project.meta_project:
+        if project and project.meta_project:
             continue
 
+        # set metaproject code details
+        mp_code = {}
+        if project:
+            mp_code = {
+                "country": project.country,
+                "cluster": project.cluster,
+                "serial_number": project.serial_number_legacy,
+            }
+        else:
+            mp_code = {
+                "country": get_country_by_name(
+                    project_json["Country"], project_json["Code"], use_offset=False
+                ),
+                "cluster": get_mya_cluster_by_myasector(
+                    project_json["MYASector"], database_name, project_json["Code"]
+                ),
+                "serial_number": get_serial_number_from_code(project_json["Code"])[0],
+            }
+
         # create meta project
-        meta_project_code = get_meta_project_code(
-            project.country, project.cluster, project.serial_number_legacy
-        )
+        meta_project_code = get_meta_project_code(**mp_code)
 
         meta_project_json = {
             "type": project_type,
@@ -124,8 +142,9 @@ def parse_meta_projects_file(file_path):
         )
 
         # set metaproject for project
-        project.meta_project = meta_project
-        project.save()
+        if project:
+            project.meta_project = meta_project
+            project.save()
 
 
 def create_transf_meta_project():
@@ -235,7 +254,9 @@ def import_meta_projects():
     db_dir_path = settings.IMPORT_DATA_DIR / "pcr"
     for database_name in PCR_DIR_LIST:
         logger.info(f"⏳ importing pcr meta projects from {database_name}")
-        parse_meta_projects_file(db_dir_path / database_name / "tbINVENTORY.json")
+        parse_meta_projects_file(
+            db_dir_path / database_name / "Import_ListofMYAProjects.json", database_name
+        )
 
     logger.info("⏳ creating meta projects for transferred projects")
     create_transf_meta_project()

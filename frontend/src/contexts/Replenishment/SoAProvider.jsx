@@ -1,22 +1,24 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import { api } from '@ors/helpers'
 import { formatApiUrl } from '@ors/helpers/Api/utils'
 
 import SoAContext from './SoAContext'
 
 function useApiReplenishment(startYear, versionId) {
   const [contributions, setContributions] = useState([])
-  const [replenishmentAmount, setReplenishmentAmount] = useState(0)
-  const [loading, setLoading] = useState(false)
+  const [replenishment, setReplenishment] = useState({ amount: 0 })
 
   useEffect(
     function () {
+      // Avoid race conditions...use swr/react-query next time
+      let ignore = false
       const urlParams = {
         start_year: startYear,
       }
 
       if (versionId !== null && versionId !== undefined) {
-        urlParams.version_id = versionId
+        urlParams.version = versionId
       }
 
       const path = [
@@ -24,74 +26,50 @@ function useApiReplenishment(startYear, versionId) {
         new URLSearchParams(urlParams),
       ].join('?')
 
-      fetch(formatApiUrl(path), {
+      api(formatApiUrl(path), {
         credentials: 'include',
-      })
-        .then(function (resp) {
-          return resp.json()
-        })
-        .then(function (jsonData) {
+      }).then(function (jsonData) {
+        if (!ignore) {
           setContributions(jsonData)
           if (jsonData.length > 0) {
-            setReplenishmentAmount(jsonData[0].replenishment.amount)
+            setReplenishment(jsonData[0].replenishment)
           }
-        })
+        }
+      })
+
+      return function () {
+        ignore = true
+      }
     },
     [startYear, versionId],
   )
 
-  return { contributions, replenishmentAmount }
-}
-
-function makeVersion(id, status, meeting, decision) {
-  return {
-    id: id,
-    decision: decision,
-    get isDraft() {
-      return this.status === 'draft'
-    },
-    get isFinal() {
-      return this.status === 'final'
-    },
-    meeting: meeting,
-    status: status,
-  }
+  return { contributions, replenishment }
 }
 
 function SoAProvider(props) {
   const { children, startYear } = props
 
   const [currentVersion, setCurrentVersion] = useState(null)
-  const { contributions, replenishmentAmount } = useApiReplenishment(
+  const { contributions, replenishment } = useApiReplenishment(
     startYear,
     currentVersion,
   )
 
-  // Mock versions
   const versions = useMemo(
     function () {
-      if (startYear < 2024) {
-        return [
-          makeVersion(3, 'final', 93, 41),
-          makeVersion(2, 'final', 81, 32),
-          makeVersion(1, 'final', 80, 55),
-        ]
-      } else {
-        return [makeVersion(0, 'draft')]
-      }
+      return replenishment.scales_of_assessment_versions || []
     },
-    [startYear],
+    [replenishment],
   )
 
   useEffect(
     function () {
-      if (versions.length) {
-        setCurrentVersion(versions[0].id)
-      } else {
-        setCurrentVersion(null)
+      if (versions.length > 0 && currentVersion === null) {
+        setCurrentVersion(versions[0].version)
       }
     },
-    [versions],
+    [currentVersion, versions],
   )
 
   const version = useMemo(
@@ -100,7 +78,7 @@ function SoAProvider(props) {
 
       if (currentVersion !== null) {
         for (let i = 0; i < versions.length; i++) {
-          if (versions[i].id === currentVersion) {
+          if (versions[i].version === currentVersion) {
             r = versions[i]
             break
           }
@@ -116,7 +94,7 @@ function SoAProvider(props) {
     <SoAContext.Provider
       value={{
         contributions,
-        replenishmentAmount,
+        replenishment,
         setCurrentVersion,
         version,
         versions,
