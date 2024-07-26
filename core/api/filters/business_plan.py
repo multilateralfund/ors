@@ -4,6 +4,7 @@ from django_filters.widgets import CSVWidget
 from core.models import BPRecord
 from core.models import BusinessPlan
 from core.models import Country
+from core.models import ProjectCluster
 from core.models import ProjectSector
 from core.models import ProjectSubSector
 from core.models import ProjectType
@@ -53,6 +54,10 @@ class BPRecordFilter(filters.FilterSet):
         queryset=ProjectType.objects.all(),
         widget=CSVWidget,
     )
+    project_cluster_id = filters.ModelMultipleChoiceFilter(
+        queryset=ProjectCluster.objects.all(),
+        widget=CSVWidget,
+    )
     status = filters.MultipleChoiceFilter(
         choices=BPRecord.Status.choices,
         widget=CSVWidget,
@@ -66,6 +71,7 @@ class BPRecordFilter(filters.FilterSet):
             "country_id",
             "lvc_status",
             "project_type_id",
+            "project_cluster_id",
             "bp_chemical_type",
             "substances",
             "sector_id",
