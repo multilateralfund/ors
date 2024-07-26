@@ -30,7 +30,7 @@ function BPProvider(props) {
       },
       withStoreCache: true,
     },
-    path: 'api/business-plan-record/',
+    path: 'api/business-plan/get/',
   })
 
   return (

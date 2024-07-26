@@ -60,8 +60,8 @@ export default function BusinessPlansTable() {
 
   const [filters, setFilters] = useState({ ...initialFilters })
   const { data, loading, setParams } = useContext(BPContext) as any
-  const records = data?.results?.records
-  const { count, loaded, results } = getResults(records)
+  const activities = data?.results?.activities
+  const { count, loaded, results } = getResults(activities)
 
   const yearRangeSelected = useMemo(
     () =>
@@ -73,7 +73,9 @@ export default function BusinessPlansTable() {
   const yearColumns = useMemo(() => {
     if (!yearRangeSelected) return []
 
-    const result = []
+    const valuesUSD = []
+    const valuesODP = []
+    const valuesMT = []
 
     for (
       let year = yearRangeSelected.min_year;
@@ -85,11 +87,12 @@ export default function BusinessPlansTable() {
         label = `After ${year - 1}`
       }
 
-      result.push({
+      valuesUSD.push({
         autoHeaderHeight: true,
         field: `value_usd_${year}`,
-        headerName: `Value ($000) ${label}`,
-        resizable: true,
+        headerName: `${label}`,
+        minWidth: 80,
+        // resizable: true,
         valueGetter: (params: any) => {
           const value = params.data.values.find((i: any) => i.year === year)
           if (value) {
@@ -97,10 +100,53 @@ export default function BusinessPlansTable() {
           }
           return ''
         },
-        width: 120,
+      })
+
+      valuesODP.push({
+        autoHeaderHeight: true,
+        field: `value_odp_${year}`,
+        headerName: `${label}`,
+        minWidth: 80,
+        // resizable: true,
+        valueGetter: (params: any) => {
+          const value = params.data.values.find((i: any) => i.year === year)
+          if (value) {
+            return parseFloat(value.value_odp)
+          }
+          return ''
+        },
+      })
+
+      valuesMT.push({
+        autoHeaderHeight: true,
+        field: `value_mt_${year}`,
+        headerName: `${label}`,
+        minWidth: 80,
+        // resizable: true,
+        valueGetter: (params: any) => {
+          const value = params.data.values.find((i: any) => i.year === year)
+          if (value) {
+            return parseFloat(value.value_mt)
+          }
+          return ''
+        },
       })
     }
-    return result
+
+    return [
+      {
+        children: valuesUSD,
+        headerName: 'Value ($000)',
+      },
+      {
+        children: valuesODP,
+        headerName: 'ODP',
+      },
+      {
+        children: valuesMT,
+        headerName: 'MT for HFC',
+      },
+    ]
   }, [yearRangeSelected])
 
   function handleParamsChange(params: { [key: string]: any }) {
@@ -116,6 +162,7 @@ export default function BusinessPlansTable() {
     bpSlice.yearRanges.data.length > 0 && (
       <form ref={form}>
         <Table
+
           loaded={loaded}
           loading={loading}
           paginationPageSize={BP_PER_PAGE}
@@ -320,83 +367,116 @@ export default function BusinessPlansTable() {
           )}
           columnDefs={[
             {
-              cellRenderer: (params: any) => (
-                <Link href={`/business-plans/${params.data.id}`}>
-                  {params.data.title}
-                </Link>
-              ),
+              // cellRenderer: (params: any) => (
+              //   <Link href={`/business-plans/${params.data.id}`}>
+              //     {params.data.title}
+              //   </Link>
+              // ),
               field: 'title',
               headerName: 'Title',
-              resizable: true,
+              minWidth: 200,
+              // resizable: true,
               sortable: true,
               tooltipField: 'title',
-              width: 200,
             },
             {
               field: 'country.iso3',
               headerName: 'Country',
-              resizable: true,
+              minWidth: 100,
+              // resizable: true,
               sortable: true,
               tooltipField: 'country.name',
-              width: 100,
             },
             {
-              field: 'business_plan.agency.name',
-              headerName: 'Agency',
-              resizable: true,
+              field: 'cluster',
+              headerName: 'Cluster',
+              minWidth: 100,
+              // resizable: true,
               sortable: true,
-              width: 100,
+              tooltipField: 'cluster',
             },
             {
               field: 'project_type.code',
               headerName: 'Type',
-              resizable: true,
+              minWidth: 100,
+              // resizable: true,
               sortable: true,
               tooltipField: 'project_type.name',
-              width: 100,
-            },
-            {
-              autoHeaderHeight: true,
-              field: 'chemical_details',
-              headerName: 'Chemical Details',
-              resizable: true,
-              valueGetter: ({ data }) =>
-                data.substances.concat(data.blends).join('/'),
-              width: 100,
             },
             {
               field: 'sector.code',
               headerName: 'Sector',
-              resizable: true,
+              minWidth: 100,
+              // resizable: true,
               sortable: true,
               tooltipField: 'sector.name',
-              width: 100,
             },
             {
               field: 'subsector.code',
               headerName: 'Subsector',
-              resizable: true,
+              minWidth: 100,
+              // resizable: true,
               sortable: true,
               tooltipField: 'subsector.name',
-              width: 100,
+            },
+            {
+              field: 'required_by_model',
+              headerName: 'Required by model',
+              minWidth: 100,
+              // resizable: true,
+              sortable: true,
+            },
+            {
+              // cellRenderer: (params: any) => (
+              //   <Link href={`/business-plans/${params.data.id}`}>
+              //     {params.data.title}
+              //   </Link>
+              // ),
+              field: 'substances',
+              headerName: 'Substances',
+              minWidth: 100,
+              // resizable: true,
+              sortable: true,
+              valueGetter: ({ data }) => data.substances.join('/'),
+            },
+            {
+              field: 'amount_polyol',
+              headerName: 'Polyol Amount',
+              minWidth: 100,
+              // resizable: true,
+              sortable: true,
             },
             ...yearColumns,
             {
               field: 'status',
-              headerName: 'Approved / Planned',
-              resizable: true,
+              headerName: 'Status',
+              minWidth: 100,
+              // resizable: true,
               sortable: true,
               tooltipField: 'status_display',
-              width: 100,
             },
             {
               field: 'is_multi_year',
               headerName: 'IND/MYA',
-              resizable: true,
+              minWidth: 100,
+              // resizable: true,
               sortable: true,
               tooltipField: 'is_multi_year_display',
               valueGetter: ({ data }) => (data.is_multi_year ? 'MYA' : 'IND'),
-              width: 100,
+            },
+            {
+              field: 'reason_for_exceeding',
+              headerName: 'Reason for Exceeding',
+              minWidth: 100,
+              // resizable: true,
+              sortable: true,
+            },
+            {
+              field: 'comment_secretariat',
+              headerName: 'Comment',
+              minWidth: 100,
+              // resizable: true,
+              sortable: true,
             },
           ]}
           components={{
