@@ -2,7 +2,6 @@ from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 from core.models.agency import Agency
-from core.models.blend import Blend
 
 from core.models.country import Country
 from core.models.project import (
@@ -105,7 +104,6 @@ class BPRecord(models.Model):
         BPChemicalType, on_delete=models.CASCADE
     )  # cluster
     substances = models.ManyToManyField(Substance)
-    blends = models.ManyToManyField(Blend)
     amount_polyol = models.DecimalField(
         max_digits=25, decimal_places=15, null=True, blank=True
     )

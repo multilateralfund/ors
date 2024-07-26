@@ -280,7 +280,6 @@ class BPRecordViewSet(
             "project_cluster",
         ).prefetch_related(
             "substances",
-            "blends",
             "values",
         )
 
