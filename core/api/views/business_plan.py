@@ -112,11 +112,12 @@ class BusinessPlanViewSet(
 
         # check user permissions
         user = request.user
-        if user.agency != instance.agency:
-            return Response(
-                {"general_error": "BP agency doesn't match with user agency"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        if user.user_type != user.UserType.SECRETARIAT:
+            if user.agency != instance.agency:
+                return Response(
+                    {"general_error": "BP agency doesn't match with user agency"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
 
         # set name
         if not instance.name:
@@ -192,11 +193,12 @@ class BusinessPlanViewSet(
 
         # check user permissions
         user = request.user
-        if user.agency != new_instance.agency:
-            return Response(
-                {"general_error": "BP agency doesn't match with user agency"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        if user.user_type != user.UserType.SECRETARIAT:
+            if user.agency != new_instance.agency:
+                return Response(
+                    {"general_error": "BP agency doesn't match with user agency"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
 
         # set name
         if not new_instance.name:

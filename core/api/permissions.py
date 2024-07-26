@@ -28,12 +28,10 @@ class IsUserAllowedBP(permissions.BasePermission):
             if user.user_type in (
                 user.UserType.AGENCY_SUBMITTER,
                 user.UserType.AGENCY_INPUTTER,
+                user.UserType.SECRETARIAT,
             ):
                 return True
 
-            if user.user_type == user.UserType.SECRETARIAT:
-                if request.method in permissions.SAFE_METHODS:
-                    return True
         return False
 
 
