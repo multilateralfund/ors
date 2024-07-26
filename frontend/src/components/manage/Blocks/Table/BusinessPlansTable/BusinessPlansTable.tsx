@@ -89,14 +89,17 @@ export default function BusinessPlansTable() {
 
       valuesUSD.push({
         autoHeaderHeight: true,
+        autoHeight: true,
+        cellClass: 'ag-text-center',
         field: `value_usd_${year}`,
+        headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        // resizable: true,
+        resizable: true,
         valueGetter: (params: any) => {
           const value = params.data.values.find((i: any) => i.year === year)
-          if (value) {
-            return parseFloat(value.value_usd)
+          if (value && value.value_usd !== null) {
+            return parseFloat(value.value_usd).toFixed(2)
           }
           return ''
         },
@@ -104,14 +107,17 @@ export default function BusinessPlansTable() {
 
       valuesODP.push({
         autoHeaderHeight: true,
+        autoHeight: true,
+        cellClass: 'ag-text-center',
         field: `value_odp_${year}`,
+        headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        // resizable: true,
+        resizable: true,
         valueGetter: (params: any) => {
           const value = params.data.values.find((i: any) => i.year === year)
-          if (value) {
-            return parseFloat(value.value_odp)
+          if (value && value.value_odp !== null) {
+            return parseFloat(value.value_odp).toFixed(2)
           }
           return ''
         },
@@ -119,14 +125,17 @@ export default function BusinessPlansTable() {
 
       valuesMT.push({
         autoHeaderHeight: true,
+        autoHeight: true,
+        cellClass: 'ag-text-center',
         field: `value_mt_${year}`,
+        headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        // resizable: true,
+        resizable: true,
         valueGetter: (params: any) => {
           const value = params.data.values.find((i: any) => i.year === year)
-          if (value) {
-            return parseFloat(value.value_mt)
+          if (value && value.value_mt !== null) {
+            return parseFloat(value.value_mt).toFixed(2)
           }
           return ''
         },
@@ -162,7 +171,7 @@ export default function BusinessPlansTable() {
     bpSlice.yearRanges.data.length > 0 && (
       <form ref={form}>
         <Table
-
+          domLayout="autoHeight"
           loaded={loaded}
           loading={loading}
           paginationPageSize={BP_PER_PAGE}
@@ -367,6 +376,7 @@ export default function BusinessPlansTable() {
           )}
           columnDefs={[
             {
+              autoHeight: true,
               // cellRenderer: (params: any) => (
               //   <Link href={`/business-plans/${params.data.id}`}>
               //     {params.data.title}
@@ -375,107 +385,140 @@ export default function BusinessPlansTable() {
               field: 'title',
               headerName: 'Title',
               minWidth: 200,
-              // resizable: true,
+              resizable: true,
               sortable: true,
               tooltipField: 'title',
             },
             {
+              autoHeight: true,
+              cellClass: 'ag-text-center',
               field: 'country.iso3',
+              headerClass: 'ag-text-center',
               headerName: 'Country',
-              minWidth: 100,
-              // resizable: true,
+              minWidth: 70,
+              resizable: true,
               sortable: true,
               tooltipField: 'country.name',
             },
             {
+              autoHeight: true,
+              cellClass: 'ag-text-center',
               field: 'cluster',
+              headerClass: 'ag-text-center',
               headerName: 'Cluster',
-              minWidth: 100,
-              // resizable: true,
+              minWidth: 70,
+              resizable: true,
               sortable: true,
               tooltipField: 'cluster',
             },
             {
+              autoHeight: true,
+              cellClass: 'ag-text-center',
               field: 'project_type.code',
+              headerClass: 'ag-text-center',
               headerName: 'Type',
-              minWidth: 100,
-              // resizable: true,
+              minWidth: 70,
+              resizable: true,
               sortable: true,
               tooltipField: 'project_type.name',
             },
             {
+              autoHeight: true,
+              cellClass: 'ag-text-center',
               field: 'sector.code',
+              headerClass: 'ag-text-center',
               headerName: 'Sector',
-              minWidth: 100,
-              // resizable: true,
+              minWidth: 70,
+              resizable: true,
               sortable: true,
               tooltipField: 'sector.name',
             },
             {
+              autoHeight: true,
+              cellClass: 'ag-text-center',
               field: 'subsector.code',
+              headerClass: 'ag-text-center',
               headerName: 'Subsector',
               minWidth: 100,
-              // resizable: true,
+              resizable: true,
               sortable: true,
               tooltipField: 'subsector.name',
             },
             {
+              autoHeight: true,
+              cellClass: 'ag-text-center ag-cell-wrap-text',
               field: 'required_by_model',
+              headerClass: 'ag-text-center',
               headerName: 'Required by model',
-              minWidth: 100,
-              // resizable: true,
+              minWidth: 150,
+              resizable: true,
               sortable: true,
             },
             {
+              autoHeight: true,
               // cellRenderer: (params: any) => (
               //   <Link href={`/business-plans/${params.data.id}`}>
               //     {params.data.title}
               //   </Link>
               // ),
               field: 'substances',
+              headerClass: 'ag-text-center',
               headerName: 'Substances',
-              minWidth: 100,
-              // resizable: true,
+              minWidth: 200,
+              resizable: true,
               sortable: true,
               valueGetter: ({ data }) => data.substances.join('/'),
             },
             {
+              autoHeight: true,
+              cellClass: 'ag-text-center',
               field: 'amount_polyol',
+              headerClass: 'ag-text-center',
               headerName: 'Polyol Amount',
               minWidth: 100,
-              // resizable: true,
+              resizable: true,
               sortable: true,
             },
             ...yearColumns,
             {
+              autoHeight: true,
+              cellClass: 'ag-text-center',
               field: 'status',
+              headerClass: 'ag-text-center',
               headerName: 'Status',
               minWidth: 100,
-              // resizable: true,
+              resizable: true,
               sortable: true,
               tooltipField: 'status_display',
             },
             {
+              autoHeight: true,
+              cellClass: 'ag-text-center',
               field: 'is_multi_year',
+              headerClass: 'ag-text-center',
               headerName: 'IND/MYA',
               minWidth: 100,
-              // resizable: true,
+              resizable: true,
               sortable: true,
               tooltipField: 'is_multi_year_display',
               valueGetter: ({ data }) => (data.is_multi_year ? 'MYA' : 'IND'),
             },
             {
+              autoHeight: true,
               field: 'reason_for_exceeding',
+              headerClass: 'ag-text-center',
               headerName: 'Reason for Exceeding',
-              minWidth: 100,
-              // resizable: true,
+              minWidth: 200,
+              resizable: true,
               sortable: true,
             },
             {
+              autoHeight: true,
               field: 'comment_secretariat',
+              headerClass: 'ag-text-center',
               headerName: 'Comment',
-              minWidth: 100,
-              // resizable: true,
+              minWidth: 200,
+              resizable: true,
               sortable: true,
             },
           ]}
