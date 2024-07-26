@@ -32,6 +32,11 @@ class BusinessPlanFilter(filters.FilterSet):
 
 
 class BPRecordFilter(filters.FilterSet):
+    agency_id = filters.ModelMultipleChoiceFilter(
+        field_name="business_plan__agency_id",
+        queryset=Agency.objects.all(),
+        widget=CSVWidget,
+    )
     country_id = filters.ModelMultipleChoiceFilter(
         queryset=Country.objects.all(),
         widget=CSVWidget,
@@ -57,6 +62,7 @@ class BPRecordFilter(filters.FilterSet):
         model = BPRecord
         fields = [
             "business_plan_id",
+            "agency_id",
             "country_id",
             "lvc_status",
             "project_type_id",

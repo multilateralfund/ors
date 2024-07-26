@@ -28,6 +28,7 @@ from core.api.serializers.business_plan import (
     BPRecordExportSerializer,
     BPRecordCreateSerializer,
     BPRecordDetailSerializer,
+    BPRecordListSerializer,
 )
 from core.api.utils import workbook_pdf_response
 from core.api.utils import workbook_response
@@ -94,7 +95,6 @@ class BusinessPlanViewSet(
             "project_cluster",
         ).prefetch_related(
             "substances",
-            "blends",
             "values",
         )
 
@@ -355,10 +355,15 @@ class BPRecordViewSet(
     def list(self, request, *args, **kwargs):
         # get all activities between year_start and year_end
         self.filterset_class = BPRecordListFilter
+        self.serializer_class = BPRecordListSerializer
 
         queryset = self.filter_queryset(self.get_queryset())
-        serializer = self.get_serializer(queryset, many=True)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
 
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):

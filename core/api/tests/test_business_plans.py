@@ -577,6 +577,37 @@ class TestBPRecordList:
         assert len(response.json()) == 1
         assert response.json()[0]["title"] == "Planu2"
 
+    def test_agency_filter(self, user, business_plan, _setup_bp_record_list):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(
+            self.url,
+            {
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+                "agency_id": business_plan.agency_id,
+            },
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 4
+        assert (
+            response.json()[0]["business_plan"]["agency"]["id"]
+            == business_plan.agency_id
+        )
+
+    def test_invalid_agency(self, user, business_plan, _setup_bp_record_list):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(
+            self.url,
+            {
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+                "agency_id": 999,
+            },
+        )
+        assert response.status_code == 400
+
 
 class TestBPUpdate:
     client = APIClient()
