@@ -53,6 +53,7 @@ class BusinessPlan(models.Model):
         help_text="User who last updated the business plan",
     )
 
+    name = models.CharField(max_length=100, blank=True)
     year_start = models.IntegerField(
         validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
     )

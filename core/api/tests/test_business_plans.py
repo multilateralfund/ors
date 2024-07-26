@@ -216,8 +216,8 @@ class TestBPRecordCreate:
         response = self.client.post(self.url, _setup_bp_record_create, format="json")
         assert response.status_code == 403
 
-    def test_create_wrong_record_values(self, user, _setup_bp_record_create):
-        self.client.force_authenticate(user=user)
+    def test_create_wrong_record_values(self, agency_user, _setup_bp_record_create):
+        self.client.force_authenticate(user=agency_user)
         data = _setup_bp_record_create
         data["values"] = [
             {
@@ -237,7 +237,7 @@ class TestBPRecordCreate:
 
     def test_create_record(
         self,
-        user,
+        agency_user,
         _setup_bp_record_create,
         business_plan,
         country_ro,
@@ -247,7 +247,7 @@ class TestBPRecordCreate:
         project_type,
         bp_chemical_type,
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=agency_user)
         response = self.client.post(self.url, _setup_bp_record_create, format="json")
 
         assert response.status_code == 201
@@ -280,8 +280,8 @@ class TestBPRecordCreate:
 class TestBPRecordUpdate:
     client = APIClient()
 
-    def test_update_wrong_record_values(self, user, _setup_bp_record_create):
-        self.client.force_authenticate(user=user)
+    def test_update_wrong_record_values(self, agency_user, _setup_bp_record_create):
+        self.client.force_authenticate(user=agency_user)
 
         url = reverse("bprecord-list")
         response = self.client.post(url, _setup_bp_record_create, format="json")
@@ -308,12 +308,12 @@ class TestBPRecordUpdate:
 
     def test_update_record(
         self,
-        user,
+        agency_user,
         _setup_bp_record_create,
         business_plan,
         substance,
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=agency_user)
 
         url = reverse("bprecord-list")
         response = self.client.post(url, _setup_bp_record_create, format="json")
@@ -353,31 +353,64 @@ class TestBPRecordUpdate:
 @pytest.fixture(name="_setup_new_business_plan_create")
 def setup_new_business_plan_create(agency):
     return {
+        "name": "Test BP",
         "agency_id": agency.id,
         "year_start": 2020,
         "year_end": 2022,
-        "status": "Submitted",
+        "status": "Draft",
     }
 
 
 class TestBPCreate:
     client = APIClient()
+    url = reverse("businessplan-list")
 
     def test_without_login(self, _setup_new_business_plan_create):
-        url = reverse("businessplan-list")
-        response = self.client.post(url, _setup_new_business_plan_create, format="json")
+        response = self.client.post(
+            self.url, _setup_new_business_plan_create, format="json"
+        )
         assert response.status_code == 403
 
+    def test_without_permission_wrong_agency(
+        self, agency_user, _setup_new_business_plan_create
+    ):
+        agency_user.agency = None
+        agency_user.save()
+        self.client.force_authenticate(user=agency_user)
+
+        response = self.client.post(
+            self.url, _setup_new_business_plan_create, format="json"
+        )
+        assert response.status_code == 403
+        assert (
+            response.data["general_error"] == "BP agency doesn't match with user agency"
+        )
+
+    def test_create_final_version(self, agency_user, _setup_new_business_plan_create):
+        self.client.force_authenticate(user=agency_user)
+
+        data = _setup_new_business_plan_create
+        data["status"] = "Submitted"
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 400
+        assert response.data["general_error"] == "Only draft BP can be created"
+
     def test_create_business_plan(
-        self, user, agency, _setup_new_business_plan_create, mock_send_mail_bp_create
+        self,
+        agency_user,
+        agency,
+        _setup_new_business_plan_create,
+        mock_send_mail_bp_create,
     ):
         # create new business plan
-        self.client.force_authenticate(user=user)
-        url = reverse("businessplan-list")
-        response = self.client.post(url, _setup_new_business_plan_create, format="json")
+        self.client.force_authenticate(user=agency_user)
+        response = self.client.post(
+            self.url, _setup_new_business_plan_create, format="json"
+        )
 
         assert response.status_code == 201
-        assert response.data["status"] == "Submitted"
+        assert response.data["name"] == "Test BP"
+        assert response.data["status"] == "Draft"
         assert response.data["year_start"] == 2020
         assert response.data["year_end"] == 2022
         assert response.data["agency_id"] == agency.id
@@ -591,16 +624,54 @@ class TestBPUpdate:
             "agency_id": business_plan.agency_id,
             "year_start": business_plan.year_start,
             "year_end": business_plan.year_end,
-            "status": "Submitted",
+            "status": "Draft",
             "records": [_setup_bp_record_create],
         }
         response = self.client.put(url, data, format="json")
         assert response.status_code == 403
 
-    def test_update_wrong_record_values(
-        self, user, _setup_bp_record_create, business_plan
+    def test_without_permission_wrong_agency(
+        self, agency_user, _setup_bp_record_create, business_plan
     ):
-        self.client.force_authenticate(user=user)
+        agency_user.agency = None
+        agency_user.save()
+        self.client.force_authenticate(user=agency_user)
+
+        url = reverse("businessplan-list") + f"{business_plan.id}/"
+        data = {
+            "agency_id": business_plan.agency_id,
+            "year_start": business_plan.year_start,
+            "year_end": business_plan.year_end,
+            "status": "Draft",
+            "records": [_setup_bp_record_create],
+        }
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 403
+        assert (
+            response.data["general_error"] == "BP agency doesn't match with user agency"
+        )
+
+    def test_update_final_version(
+        self, agency_user, _setup_bp_record_create, business_plan
+    ):
+        self.client.force_authenticate(user=agency_user)
+
+        url = reverse("businessplan-list") + f"{business_plan.id}/"
+        data = {
+            "agency_id": business_plan.agency_id,
+            "year_start": business_plan.year_start,
+            "year_end": business_plan.year_end,
+            "status": "Submitted",
+            "records": [_setup_bp_record_create],
+        }
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 400
+        assert response.data["general_error"] == "Only draft BP can be created"
+
+    def test_update_wrong_record_values(
+        self, agency_user, _setup_bp_record_create, business_plan
+    ):
+        self.client.force_authenticate(user=agency_user)
 
         url = reverse("businessplan-list") + f"{business_plan.id}/"
         record_data = _setup_bp_record_create
@@ -616,7 +687,7 @@ class TestBPUpdate:
             "agency_id": business_plan.agency_id,
             "year_start": business_plan.year_start,
             "year_end": business_plan.year_end,
-            "status": "Submitted",
+            "status": "Draft",
             "records": [record_data],
         }
         response = self.client.put(url, data, format="json")
@@ -629,13 +700,13 @@ class TestBPUpdate:
 
     def test_bp_update(
         self,
-        user,
+        agency_user,
         _setup_bp_record_create,
         business_plan,
         substance,
         mock_send_mail_bp_update,
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=agency_user)
 
         url = reverse("businessplan-list") + f"{business_plan.id}/"
         record_data = _setup_bp_record_create
@@ -658,12 +729,16 @@ class TestBPUpdate:
             "agency_id": business_plan.agency_id,
             "year_start": business_plan.year_start,
             "year_end": business_plan.year_end,
-            "status": "Submitted",
+            "status": "Draft",
             "records": [record_data],
         }
         response = self.client.put(url, data, format="json")
 
         assert response.status_code == 200
+        assert (
+            response.data["name"]
+            == f"{business_plan.agency} {business_plan.year_start} - {business_plan.year_end}"
+        )
         records = response.data["records"]
         assert records[0]["business_plan_id"] == response.data["id"]
         assert records[0]["title"] == "Planu 2"

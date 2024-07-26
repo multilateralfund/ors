@@ -64,6 +64,7 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
         model = BusinessPlan
         fields = [
             "id",
+            "name",
             "status",
             "year_start",
             "year_end",
@@ -269,6 +270,7 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
         model = BusinessPlan
         fields = [
             "id",
+            "name",
             "year_start",
             "year_end",
             "agency_id",

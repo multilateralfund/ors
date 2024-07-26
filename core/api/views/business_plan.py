@@ -20,6 +20,7 @@ from core.api.export.base import configure_sheet_print
 from core.api.export.business_plan import BusinessPlanWriter
 from core.api.filters.business_plan import BPRecordFilter
 from core.api.filters.business_plan import BusinessPlanFilter
+from core.api.permissions import IsUserAllowedBP
 from core.api.serializers.bp_history import BPHistorySerializer
 from core.api.serializers.business_plan import (
     BusinessPlanCreateSerializer,
@@ -47,6 +48,7 @@ class BusinessPlanViewSet(
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
+    permission_classes = [IsUserAllowedBP]
     serializer_class = BusinessPlanSerializer
     filterset_class = BusinessPlanFilter
     filter_backends = [
@@ -101,16 +103,38 @@ class BusinessPlanViewSet(
         self.perform_create(serializer)
         instance = serializer.instance
 
+        # check bp status
+        if instance.status != BusinessPlan.Status.draft:
+            return Response(
+                {"general_error": "Only draft BP can be created"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # check user permissions
+        user = request.user
+        if user.user_type != user.UserType.SECRETARIAT:
+            if user.agency != instance.agency:
+                return Response(
+                    {"general_error": "BP agency doesn't match with user agency"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        # set name
+        if not instance.name:
+            instance.name = (
+                f"{instance.agency} {instance.year_start} - {instance.year_end}"
+            )
+
         # set created by user
-        instance.created_by = request.user
+        instance.created_by = user
         instance.save()
 
         BPHistory.objects.create(
             business_plan=instance,
-            updated_by=request.user,
+            updated_by=user,
             event_description="Created by user",
         )
-        if config.SEND_MAIL and instance.status != BusinessPlan.Status.draft:
+        if config.SEND_MAIL:
             send_mail_bp_create.delay(instance.id)  # send mail to MLFS
 
         headers = self.get_success_headers(serializer.data)
@@ -160,8 +184,28 @@ class BusinessPlanViewSet(
         self.perform_create(serializer)
         new_instance = serializer.instance
 
+        # check bp status
+        if new_instance.status != BusinessPlan.Status.draft:
+            return Response(
+                {"general_error": "Only draft BP can be created"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # check user permissions
+        user = request.user
+        if user.user_type != user.UserType.SECRETARIAT:
+            if user.agency != new_instance.agency:
+                return Response(
+                    {"general_error": "BP agency doesn't match with user agency"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        # set name
+        if not new_instance.name:
+            new_instance.name = f"{new_instance.agency} {new_instance.year_start} - {new_instance.year_end}"
+
         # set updated by user
-        new_instance.updated_by = request.user
+        new_instance.updated_by = user
         new_instance.save()
 
         # inherit all history
@@ -172,13 +216,13 @@ class BusinessPlanViewSet(
         # create new history for update event
         BPHistory.objects.create(
             business_plan=new_instance,
-            updated_by=request.user,
+            updated_by=user,
             event_description="Updated by user",
         )
 
         current_obj.delete()
 
-        if config.SEND_MAIL and new_instance.status != BusinessPlan.Status.draft:
+        if config.SEND_MAIL:
             send_mail_bp_update.delay(new_instance.id)  # send mail to MLFS
 
         headers = self.get_success_headers(serializer.data)
@@ -243,6 +287,7 @@ class BPRecordViewSet(
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
+    permission_classes = [IsUserAllowedBP]
     serializer_class = BPRecordDetailSerializer
     filterset_class = BPRecordFilter
     filter_backends = [
@@ -470,6 +515,7 @@ class BPFileView(generics.GenericAPIView):
     API endpoint that allows uploading business plan file.
     """
 
+    permission_classes = [IsUserAllowedBP]
     queryset = BusinessPlan.objects.all()
     serializer_class = BPFileSerializer
     lookup_field = "id"
@@ -525,6 +571,7 @@ class BPFileView(generics.GenericAPIView):
 
 
 class BPFileDownloadView(generics.RetrieveAPIView):
+    permission_classes = [IsUserAllowedBP]
     queryset = BusinessPlan.objects.all()
     lookup_field = "id"
 
