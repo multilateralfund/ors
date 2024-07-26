@@ -98,13 +98,18 @@ class BusinessPlanViewSet(
             "values",
         )
 
-        return Response(
-            {
-                "business_plan": BusinessPlanSerializer(bp).data,
-                "history": BPHistorySerializer(history_qs, many=True).data,
-                "activities": BPRecordDetailSerializer(activities, many=True).data,
-            }
-        )
+        ret = {
+            "business_plan": BusinessPlanSerializer(bp).data,
+            "history": BPHistorySerializer(history_qs, many=True).data,
+        }
+
+        page = self.paginate_queryset(activities)
+        if page is not None:
+            ret["activities"] = BPRecordDetailSerializer(page, many=True).data
+            return self.get_paginated_response(ret)
+
+        ret["activities"] = BPRecordDetailSerializer(activities, many=True).data
+        return Response(ret)
 
     def create(self, request, *args, **kwargs):
         # check if the business plan already exists

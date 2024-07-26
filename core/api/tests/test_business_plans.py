@@ -590,10 +590,7 @@ class TestBPRecordList:
         )
         assert response.status_code == 200
         assert len(response.json()) == 4
-        assert (
-            response.json()[0]["business_plan"]["agency"]["id"]
-            == business_plan.agency_id
-        )
+        assert response.json()[0]["agency"] == business_plan.agency.name
 
     def test_invalid_agency(self, user, business_plan, _setup_bp_record_list):
         self.client.force_authenticate(user=user)
@@ -702,3 +699,38 @@ class TestBPUpdate:
         assert records[0]["values"][0]["year"] == 2022
 
         mock_send_mail_bp_update.assert_called_once()
+
+
+class TestBPGet:
+    client = APIClient()
+    url = reverse("businessplan-get")
+
+    def test_without_login(self, _setup_bp_record_list, business_plan):
+        response = self.client.get(self.url, {"business_plan_id": business_plan.id})
+        assert response.status_code == 403
+
+    def test_bp_get(self, user, _setup_bp_record_list, business_plan):
+        self.client.force_authenticate(user=user)
+
+        # get by business plan id
+        response = self.client.get(self.url, {"business_plan_id": business_plan.id})
+        assert response.status_code == 200
+        assert response.data["business_plan"]["id"] == business_plan.id
+        assert response.data["business_plan"]["year_start"] == business_plan.year_start
+        assert response.data["business_plan"]["year_end"] == business_plan.year_end
+        assert len(response.data["activities"]) == 4
+
+        # get by agency_id, year_start, year_end
+        response = self.client.get(
+            self.url,
+            {
+                "agency_id": business_plan.agency_id,
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+            },
+        )
+        assert response.status_code == 200
+        assert response.data["business_plan"]["id"] == business_plan.id
+        assert response.data["business_plan"]["year_start"] == business_plan.year_start
+        assert response.data["business_plan"]["year_end"] == business_plan.year_end
+        assert len(response.data["activities"]) == 4
