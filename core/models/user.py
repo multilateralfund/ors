@@ -9,6 +9,7 @@ class User(AbstractUser):
         COUNTRY_USER = "country_user", _("Country user")
         SECRETARIAT = "secretariat", _("Secretariat")
         STAKEHOLDER = "stakeholder", _("Stakeholder")
+        TREASURER = "treasurer", _("Treasurer")
 
     country = models.ForeignKey(
         "Country", null=True, blank=True, on_delete=models.CASCADE

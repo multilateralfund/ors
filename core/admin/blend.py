@@ -28,7 +28,6 @@ class BlendAdmin(admin.ModelAdmin):
             "cpprices",
             "components",
             "project_ods",
-            "bprecord",
             "cprecordarchive",
             "cppricesarchive",
             "admrecordarchive",

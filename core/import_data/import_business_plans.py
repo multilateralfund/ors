@@ -136,13 +136,15 @@ def get_sector_subsector(sector_subsector, index_row):
 
     # check if we have a mapping for this string
     if sector_subsector in BP_SECTOR_SUBSECTOR_MAPPING:
-        sector_name = BP_SECTOR_SUBSECTOR_MAPPING[sector_subsector]['sector']
-        subsector_name = BP_SECTOR_SUBSECTOR_MAPPING[sector_subsector]['subsector']
+        sector_name = BP_SECTOR_SUBSECTOR_MAPPING[sector_subsector]["sector"]
+        subsector_name = BP_SECTOR_SUBSECTOR_MAPPING[sector_subsector]["subsector"]
     else:
         # get sector name
         sector_name_re = re.search(SECTOR_REGEX, sector_subsector)
         sector_name_str = (
-            sector_name_re.group("sector").strip() if sector_name_re else sector_subsector
+            sector_name_re.group("sector").strip()
+            if sector_name_re
+            else sector_subsector
         )
         sector_name = SECTOR_NAME_MAPPING.get(sector_name_str, sector_name_str)
 
@@ -316,7 +318,6 @@ def add_chemicals(bp_record, row, index_row):
 
     chemicals = row["Chemical detail"].split("/")
     substances = []
-    blends = []
     for chemical_name in chemicals:
         chemical, ch_type = get_chemical_by_name_or_components(chemical_name)
         if not chemical:
@@ -327,11 +328,8 @@ def add_chemicals(bp_record, row, index_row):
             continue
         if ch_type == "substance":
             substances.append(chemical)
-        elif ch_type == "blend":
-            blends.append(chemical)
 
     bp_record.substances.add(*substances)
-    bp_record.blends.add(*blends)
 
 
 def parse_file(file_path, file_name):

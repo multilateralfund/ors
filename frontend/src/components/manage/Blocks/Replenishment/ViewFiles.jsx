@@ -12,7 +12,7 @@ export default function ViewFiles(props) {
   return (
     <div className="flex flex-col gap-2">
       {files.length === 0 ? (
-        <p className="m-1 text-lg font-normal text-gray-500">No files</p>
+        <p className="m-1 font-normal text-gray-500">No files</p>
       ) : (
         files.map((file, index) => (
           <div key={index} className="flex items-center gap-2 bg-transparent">

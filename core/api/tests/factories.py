@@ -9,6 +9,7 @@ from core.models import (
     FermGainLoss,
     TriennialContributionStatus,
     Invoice,
+    Payment,
     ScaleOfAssessmentVersion,
 )
 from core.models.business_plan import (
@@ -582,3 +583,17 @@ class InvoiceFactory(factory.django.DjangoModelFactory):
 
     number = factory.Faker("pystr", max_chars=16)
     date_of_issuance = factory.Faker("date")
+
+
+class PaymentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Payment
+
+    country = factory.SubFactory(CountryFactory)
+    replenishment = factory.SubFactory(ReplenishmentFactory)
+
+    amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    currency = factory.Faker("pystr", max_chars=3)
+
+    date = factory.Faker("date")
+    payment_for_year = factory.Faker("pystr", max_chars=32)

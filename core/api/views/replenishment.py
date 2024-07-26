@@ -19,6 +19,7 @@ from core.api.serializers import (
     InvoiceSerializer,
     InvoiceCreateSerializer,
     PaymentSerializer,
+    PaymentCreateSerializer,
     ReplenishmentSerializer,
     ScaleOfAssessmentSerializer,
 )
@@ -488,6 +489,12 @@ class ReplenishmentDashboardView(views.APIView):
         if user.user_type != user.UserType.SECRETARIAT:
             return Response({})
 
+        latest_closed_triennial = (
+            Replenishment.objects.filter(scales_of_assessment_versions__is_final=True)
+            .distinct()
+            .order_by("-start_year")
+            .first()
+        )
         income = ExternalIncome.objects.get()
         allocations = ExternalAllocation.objects.get()
 
@@ -527,21 +534,24 @@ class ReplenishmentDashboardView(views.APIView):
             total=models.Sum("amount", default=0)
         )["total"]
 
-        computed_summary_data_2021_2023 = TriennialContributionStatus.objects.filter(
-            start_year=2021, end_year=2023
-        ).aggregate(
-            agreed_contributions=models.Sum("agreed_contributions", default=0),
-            cash_payments=models.Sum("cash_payments", default=0),
-            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
-            promissory_notes=models.Sum("promissory_notes", default=0),
-        )
-        payment_pledge_percentage_2021_2023 = (
-            (
-                computed_summary_data_2021_2023["cash_payments"]
-                + computed_summary_data_2021_2023["bilateral_assistance"]
-                + computed_summary_data_2021_2023["promissory_notes"]
+        computed_summary_data_latest_closed_triennial = (
+            TriennialContributionStatus.objects.filter(
+                start_year=latest_closed_triennial.start_year,
+                end_year=latest_closed_triennial.end_year,
+            ).aggregate(
+                agreed_contributions=models.Sum("agreed_contributions", default=0),
+                cash_payments=models.Sum("cash_payments", default=0),
+                bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+                promissory_notes=models.Sum("promissory_notes", default=0),
             )
-            / computed_summary_data_2021_2023["agreed_contributions"]
+        )
+        payment_pledge_percentage_latest_closed_triennial = (
+            (
+                computed_summary_data_latest_closed_triennial["cash_payments"]
+                + computed_summary_data_latest_closed_triennial["bilateral_assistance"]
+                + computed_summary_data_latest_closed_triennial["promissory_notes"]
+            )
+            / computed_summary_data_latest_closed_triennial["agreed_contributions"]
             * Decimal("100")
         )
 
@@ -557,7 +567,7 @@ class ReplenishmentDashboardView(views.APIView):
 
         data = {
             "overview": {
-                "payment_pledge_percentage": payment_pledge_percentage_2021_2023,
+                "payment_pledge_percentage": payment_pledge_percentage_latest_closed_triennial,
                 "gain_loss": gain_loss,
                 "parties_paid_in_advance_count": computed_party_data[
                     "parties_paid_in_advance_count"
@@ -595,6 +605,7 @@ class ReplenishmentDashboardView(views.APIView):
                         "outstanding_pledges": pledge["outstanding_pledges"],
                     }
                     for pledge in pledges
+                    if pledge["end_year"] <= latest_closed_triennial.end_year
                 ],
                 "pledged_contributions": [
                     {
@@ -620,6 +631,36 @@ class ReplenishmentDashboardView(views.APIView):
         )
 
         return Response(data)
+
+    @transaction.atomic
+    def put(self, request, *args, **kwargs):
+        user = request.user
+
+        if user.user_type != user.UserType.SECRETARIAT:
+            return Response({})
+
+        data = request.data
+
+        income = ExternalIncome.objects.get()
+        allocations = ExternalAllocation.objects.get()
+
+        # TODO: serializers?
+        income.interest_earned = data["interest_earned"]
+        income.miscellaneous_income = data["miscellaneous_income"]
+        income.save()
+
+        allocations.undp = data["undp"]
+        allocations.unep = data["unep"]
+        allocations.unido = data["unido"]
+        allocations.world_bank = data["world_bank"]
+        allocations.staff_contracts = data["staff_contracts"]
+        allocations.treasury_fees = data["treasury_fees"]
+        allocations.monitoring_fees = data["monitoring_fees"]
+        allocations.technical_audit = data["technical_audit"]
+        allocations.information_strategy = data["information_strategy"]
+        allocations.save()
+
+        return Response({})
 
 
 class ReplenishmentInvoiceViewSet(
@@ -777,6 +818,76 @@ class ReplenishmentPaymentViewSet(
             queryset = queryset.filter(country_id=user.country_id)
 
         return queryset.select_related("country", "replenishment")
+
+    def get_serializer_class(self):
+        if self.request.method in ["POST", "PUT"]:
+            return PaymentCreateSerializer
+        return PaymentSerializer
+
+    def _parse_payment_new_files(self, request):
+        number_of_files = int(request.data.get("nr_new_files", 0))
+        files = [
+            {
+                "type": request.data.get(f"files[{file_no}][type]"),
+                "contents": request.data.get(f"files[{file_no}][file]"),
+            }
+            for file_no in range(number_of_files)
+        ]
+        return files
+
+    def _create_new_payment_files(self, payment, files_list):
+        payment_files = []
+        for payment_file in files_list:
+            payment_files.append(
+                PaymentFile(
+                    payment=payment,
+                    filename=payment_file["contents"].name,
+                    file=payment_file["contents"],
+                )
+            )
+        PaymentFile.objects.bulk_create(payment_files)
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        files = self._parse_payment_new_files(request)
+
+        serializer = PaymentCreateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # First create the actual payment
+        self.perform_create(serializer)
+        payment = serializer.instance
+
+        # Now create the files for this Payment
+        self._create_new_payment_files(payment, files)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        current_obj = self.get_object()
+
+        new_files = self._parse_payment_new_files(request)
+        files_to_delete = json.loads(request.data.get("deleted_files", "[]"))
+
+        # First perform the update for the Payment fields
+        serializer = PaymentCreateSerializer(current_obj, data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        self.perform_update(serializer)
+
+        # Now create the new files for this Payment
+        self._create_new_payment_files(current_obj, new_files)
+
+        # And delete the ones that need to be deleted
+        current_obj.payment_files.filter(id__in=files_to_delete).delete()
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
 
 class ReplenishmentPaymentFileDownloadView(generics.RetrieveAPIView):

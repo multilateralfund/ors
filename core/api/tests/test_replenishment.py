@@ -17,6 +17,7 @@ from core.api.tests.factories import (
     DisputedContributionsFactory,
     FermGainLossFactory,
     InvoiceFactory,
+    PaymentFactory,
     TriennialContributionStatusFactory,
     ScaleOfAssessmentVersionFactory,
 )
@@ -31,6 +32,7 @@ from core.models import (
 
 
 pytestmark = pytest.mark.django_db
+# pylint: disable=C0302
 
 
 class TestReplenishmentCountries(BaseTest):
@@ -709,6 +711,13 @@ class TestReplenishmentDashboard(BaseTest):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
 
+        replenishment = ReplenishmentFactory.create(
+            start_year=self.year_3, end_year=self.year_4
+        )
+        ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment, is_final=True
+        )
+
         contribution_1 = TriennialContributionStatusFactory.create(
             country=country_1, start_year=self.year_1, end_year=self.year_2
         )
@@ -749,19 +758,18 @@ class TestReplenishmentDashboard(BaseTest):
 
         response = self.client.get(self.url)
 
-        # Only 2021-2023 for now
         payment_pledge_percentage = (
             (
-                contribution_1.cash_payments
-                + contribution_3.cash_payments
-                + contribution_1.bilateral_assistance
-                + contribution_3.bilateral_assistance
-                + contribution_1.promissory_notes
-                + contribution_3.promissory_notes
+                contribution_2.cash_payments
+                + contribution_4.cash_payments
+                + contribution_2.bilateral_assistance
+                + contribution_4.bilateral_assistance
+                + contribution_2.promissory_notes
+                + contribution_4.promissory_notes
             )
             / (
-                contribution_1.agreed_contributions
-                + contribution_3.agreed_contributions
+                contribution_2.agreed_contributions
+                + contribution_4.agreed_contributions
             )
             * Decimal("100")
         )
@@ -1535,3 +1543,48 @@ class TestInvoices(BaseTest):
             self.url + f"{invoice.id}/", data=request_data, format="json"
         )
         assert response.status_code == 200
+
+
+class TestPayments(BaseTest):
+    url = reverse("replenishment-payments-list")
+    year_1 = 2021
+    year_2 = 2023
+    year_3 = 2024
+    year_4 = 2026
+
+    def test_payments_list(self, user):
+        country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
+        country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
+
+        replenishment = ReplenishmentFactory.create(
+            start_year=self.year_3, end_year=self.year_4
+        )
+
+        PaymentFactory(country=country_1, replenishment=None)
+        PaymentFactory(country=country_2, replenishment=replenishment)
+
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 2
+
+    def test_payments_create(self, user):
+        country = CountryFactory.create(name="Country 1", iso3="XYZ")
+
+        self.client.force_authenticate(user=user)
+
+        request_data = {
+            "country_id": country.id,
+            "replenishment_id": None,
+            "date": "2019-03-14",
+            "payment_for_year": "deferred",
+            "amount": 100.0,
+            "currency": "EUR",
+            "exchange_rate": 0.7,
+            "ferm_gain_or_loss": None,
+            "files": [],
+        }
+
+        response = self.client.post(self.url, data=request_data, format="json")
+        assert response.status_code == 201
