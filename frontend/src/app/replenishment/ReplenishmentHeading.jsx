@@ -21,13 +21,8 @@ export default function ReplenishmentHeading(props) {
   const pathname = usePathname()
   const period = getPathPeriod(pathname)
 
-  console.log(period)
-
   const ctx = useContext(ReplenishmentContext)
   const ctx_2 = useContext(soAContext)
-
-  console.log(ctx.periods[0]?.amount)
-  console.log(ctx.periodOptions[0])
 
   async function handleCreateNewSOA() {
     try {
@@ -66,7 +61,7 @@ export default function ReplenishmentHeading(props) {
               ]}
             />
           ) : null}
-          {ctx_2.version?.is_final && (
+          {ctx_2?.version?.is_final && (
             <AddButton
               className="shrink-0"
               onClick={() => setShowAddNewSOA(true)}
