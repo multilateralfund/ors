@@ -44,6 +44,8 @@ export default function ReplenishmentHeading(props) {
     }
   }
 
+  const isLastPeriod = period === ctx?.periodOptions[0]?.value
+
   return (
     <HeaderTitle>
       <div className="flex items-center justify-between">
@@ -61,7 +63,7 @@ export default function ReplenishmentHeading(props) {
               ]}
             />
           ) : null}
-          {ctx_2?.version?.is_final && (
+          {ctx_2?.version?.is_final && isLastPeriod && (
             <AddButton
               className="shrink-0"
               onClick={() => setShowAddNewSOA(true)}
