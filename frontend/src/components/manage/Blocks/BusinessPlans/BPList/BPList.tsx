@@ -69,6 +69,11 @@ export default function BPList() {
     setPagination({ page: 1, rowsPerPage: pagination.rowsPerPage })
   }
 
+  const handleSearch = (search: string, filters: FiltersType) => {
+    setParams({ ...filters, limit: pagination.rowsPerPage, offset: 0, search })
+    setPagination({ page: 1, rowsPerPage: pagination.rowsPerPage })
+  }
+
   return (
     <>
       <div className="mb-6 flex items-center justify-end gap-x-6 lg:mb-4 lg:gap-x-4">
@@ -85,6 +90,7 @@ export default function BPList() {
       <BPFilters
         agencies={agencies.data}
         filters={filters}
+        handleSearch={handleSearch}
         setFilters={handleFiltersChange}
         statuses={settings.data.business_plan_statuses}
         yearRanges={bpSlice.yearRanges.data}

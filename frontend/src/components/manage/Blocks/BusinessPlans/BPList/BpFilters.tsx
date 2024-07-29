@@ -1,9 +1,12 @@
-import {Box} from "@mui/material";
+import React from 'react'
+
+import { Box, InputAdornment, IconButton as MuiIconButton } from '@mui/material'
 
 import Field from '@ors/components/manage/Form/Field'
+import { KEY_ENTER } from '@ors/constants'
 import { debounce } from '@ors/helpers'
 
-import { IoChevronDownCircle } from 'react-icons/io5'
+import { IoChevronDownCircle, IoSearchOutline } from 'react-icons/io5'
 
 const StatusFilter = (props: {
   filters: any
@@ -20,12 +23,12 @@ const StatusFilter = (props: {
 
   return (
     <Field
-      FieldProps={{ className: 'mb-0 w-full CPListing' }}
+      FieldProps={{ className: 'mb-0 w-40 BPList' }}
       options={statusOptions}
       popupIcon={<IoChevronDownCircle color="black" size={24} />}
       widget="autocomplete"
       Input={{
-        placeholder: 'STATUS',
+        placeholder: 'Status',
       }}
       getOptionLabel={(option: { label: string; value: string }) =>
         option.label
@@ -38,6 +41,41 @@ const StatusFilter = (props: {
         debounce(() => {
           setFilters({ ...filters, status: value ? value.value : null })
         })
+      }}
+    />
+  )
+}
+const SearchInput = (props: { filters: any; handleSearch: any }) => {
+  const { filters, handleSearch } = props
+
+  return (
+    <Field
+      name="search"
+      FieldProps={{ className: 'mb-0 min-w-64 BPList' }}
+      placeholder="Search in activities..."
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <MuiIconButton
+              aria-label="search table"
+              edge="start"
+              tabIndex={-1}
+              onClick={(value) => {
+                console.log(value)
+                handleSearch(value, filters)
+              }}
+              disableRipple
+            >
+              <IoSearchOutline className="text-gray-700" />
+            </MuiIconButton>
+          </InputAdornment>
+        ),
+      }}
+      onKeyDown={(event: any) => {
+        const search = event.target.value
+        if (event.key === KEY_ENTER) {
+          handleSearch(search, filters)
+        }
       }}
     />
   )
@@ -56,11 +94,12 @@ const YearSelect = (props: {
 
   return (
     <div className="flex gap-4">
+      <label className="uppercase">Date Range</label>
       <Field
-        FieldProps={{ className: 'mb-0 w-full CPListing' }}
+        FieldProps={{ className: 'mb-0 w-24 BPList' }}
         getOptionLabel={(option: number) => option.toString()}
         options={startYearOptions}
-        popupIcon={<IoChevronDownCircle color="black" size={24} />}
+        popupIcon={null}
         value={filters.year_start}
         widget="autocomplete"
         Input={{
@@ -73,10 +112,10 @@ const YearSelect = (props: {
         }}
       />
       <Field
-        FieldProps={{ className: 'mb-0 w-full CPListing' }}
+        FieldProps={{ className: 'mb-0 w-24 BPList' }}
         getOptionLabel={(option: number) => option.toString()}
         options={endYearOptions}
-        popupIcon={<IoChevronDownCircle color="black" size={24} />}
+        popupIcon={null}
         value={filters.year_end}
         widget="autocomplete"
         Input={{
@@ -92,62 +131,64 @@ const YearSelect = (props: {
   )
 }
 
-const AgencyFilter = (props: {
-  agencies: any
-  filters: any
-  setFilters: any
-}) => {
-  const { agencies, filters, setFilters } = props
-
-  const agencyOptions = agencies.map((agency: any) => ({
-    id: agency.id,
-    label: agency.name,
-  }))
-
-  return (
-    <Field
-      FieldProps={{ className: 'mb-0 w-full CPListing' }}
-      getOptionLabel={(option: { id: number; label: string }) => option.label}
-      options={agencyOptions}
-      popupIcon={<IoChevronDownCircle color="black" size={24} />}
-      widget="autocomplete"
-      Input={{
-        placeholder: 'AGENCY',
-      }}
-      value={
-        agencyOptions.find((option: any) => option.id === filters.agency_id) ||
-        null
-      }
-      onChange={(_: any, value: any) => {
-        debounce(() => {
-          setFilters({ ...filters, agency_id: value ? value.id : null })
-        })
-      }}
-    />
-  )
-}
+// const AgencyFilter = (props: {
+//   agencies: any
+//   filters: any
+//   setFilters: any
+// }) => {
+//   const { agencies, filters, setFilters } = props
+//
+//   const agencyOptions = agencies.map((agency: any) => ({
+//     id: agency.id,
+//     label: agency.name,
+//   }))
+//
+//   return (
+//     <Field
+//       FieldProps={{ className: 'mb-0 w-full BPList' }}
+//       getOptionLabel={(option: { id: number; label: string }) => option.label}
+//       options={agencyOptions}
+//       popupIcon={<IoChevronDownCircle color="black" size={24} />}
+//       widget="autocomplete"
+//       Input={{
+//         placeholder: 'AGENCY',
+//       }}
+//       value={
+//         agencyOptions.find((option: any) => option.id === filters.agency_id) ||
+//         null
+//       }
+//       onChange={(_: any, value: any) => {
+//         debounce(() => {
+//           setFilters({ ...filters, agency_id: value ? value.id : null })
+//         })
+//       }}
+//     />
+//   )
+// }
 
 function BPFilters(props: any) {
-  const { agencies, filters, setFilters, statuses, yearRanges } = props
+  const { agencies, filters, handleSearch, setFilters, statuses, yearRanges } =
+    props
 
   return (
-    <Box id="filters" className="flex h-fit gap-6 bg-transparent">
+    <div id="filters" className="flex h-fit gap-4 py-4">
+      <SearchInput filters={filters} handleSearch={handleSearch} />
       <StatusFilter
         filters={filters}
         setFilters={setFilters}
         statuses={statuses}
       />
-      <AgencyFilter
-        agencies={agencies}
-        filters={filters}
-        setFilters={setFilters}
-      />
+      {/*<AgencyFilter*/}
+      {/*  agencies={agencies}*/}
+      {/*  filters={filters}*/}
+      {/*  setFilters={setFilters}*/}
+      {/*/>*/}
       <YearSelect
         filters={filters}
         setFilters={setFilters}
         yearRanges={yearRanges}
       />
-    </Box>
+    </div>
   )
 }
 

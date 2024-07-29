@@ -46,7 +46,7 @@ function SimpleList(props: any) {
     </ul>
   ) : (
     <Typography component="h1" variant="h5">
-      No data available for the selected filters.
+      No data available.
     </Typography>
   )
 }
