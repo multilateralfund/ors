@@ -51,24 +51,44 @@ class BusinessPlanViewSet(
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
-    serializer_class = BusinessPlanSerializer
     filterset_class = BusinessPlanFilter
     filter_backends = [
         DjangoFilterBackend,
         filters.OrderingFilter,
         filters.SearchFilter,
     ]
+    ordering = ["agency__name", "id"]
     ordering_fields = "__all__"
     search_fields = ["agency__name"]
 
     def get_queryset(self):
         business_plans = BusinessPlan.objects.all()
 
+        if self.action == "get":
+            self.filterset_class = BPRecordFilter
+            return BPRecord.objects.select_related(
+                "business_plan",
+                "business_plan__agency",
+                "country",
+                "sector",
+                "subsector",
+                "project_type",
+                "bp_chemical_type",
+                "project_cluster",
+            ).prefetch_related(
+                "substances",
+                "values",
+            )
         if self.request.method == "PUT":
             return business_plans.select_for_update()
         return business_plans.select_related(
             "agency", "created_by", "updated_by"
         ).order_by("year_start", "year_end", "id")
+
+    def get_serializer_class(self):
+        if self.action == "get":
+            return BPRecordDetailSerializer
+        return BusinessPlanSerializer
 
     @action(methods=["GET"], detail=False, url_path="get-years")
     def get_years(self, *args, **kwargs):
@@ -82,6 +102,30 @@ class BusinessPlanViewSet(
                 .order_by("-year_start")
             )
         )
+
+    @action(methods=["GET"], detail=False)
+    def get(self, *args, **kwargs):
+        self.search_fields = ["title"]
+        self.ordering = ["title", "country", "id"]
+        self.ordering_fields = BPRECORD_ORDERING_FIELDS
+
+        # get activities and history for a specific business plan
+        bp = get_business_plan_from_request(self.request)
+        history_qs = bp.bphistory.select_related("business_plan", "updated_by")
+        activities = self.filter_queryset(self.get_queryset()).filter(business_plan=bp)
+
+        ret = {
+            "business_plan": BusinessPlanSerializer(bp).data,
+            "history": BPHistorySerializer(history_qs, many=True).data,
+        }
+
+        page = self.paginate_queryset(activities)
+        if page is not None:
+            ret["activities"] = self.get_serializer(page, many=True).data
+            return self.get_paginated_response(ret)
+
+        ret["activities"] = self.get_serializer(activities, many=True).data
+        return Response(ret)
 
     def create(self, request, *args, **kwargs):
         # check if the business plan already exists
@@ -238,52 +282,6 @@ class BPStatusUpdateView(generics.GenericAPIView):
             send_mail_bp_status_update.delay(business_plan.id)
 
         return Response(serializer.data)
-
-
-class BusinessPlanGetViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    filterset_class = BPRecordFilter
-    serializer_class = BPRecordDetailSerializer
-    queryset = BPRecord.objects.select_related(
-        "business_plan",
-        "business_plan__agency",
-        "country",
-        "sector",
-        "subsector",
-        "project_type",
-        "bp_chemical_type",
-        "project_cluster",
-    ).prefetch_related(
-        "substances",
-        "values",
-    )
-
-    filter_backends = [
-        DjangoFilterBackend,
-        filters.OrderingFilter,
-        filters.SearchFilter,
-    ]
-    search_fields = ["title"]
-    ordering = ["title", "country", "id"]
-    ordering_fields = BPRECORD_ORDERING_FIELDS
-
-    def list(self, request, *args, **kwargs):
-        # get activities and history for a specific business plan
-        bp = get_business_plan_from_request(request)
-        history_qs = bp.bphistory.select_related("business_plan", "updated_by")
-        activities = self.filter_queryset(self.get_queryset()).filter(business_plan=bp)
-
-        ret = {
-            "business_plan": BusinessPlanSerializer(bp).data,
-            "history": BPHistorySerializer(history_qs, many=True).data,
-        }
-
-        page = self.paginate_queryset(activities)
-        if page is not None:
-            ret["activities"] = self.get_serializer(page, many=True).data
-            return self.get_paginated_response(ret)
-
-        ret["activities"] = self.get_serializer(activities, many=True).data
-        return Response(ret)
 
 
 class BPRecordViewSet(

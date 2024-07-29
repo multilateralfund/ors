@@ -53,7 +53,7 @@ class TestBPHistory:
             assert history[i].bp_version == version
 
         # check history in API response
-        url = reverse("businessplan-get-list")
+        url = reverse("businessplan-get")
         response = self.client.get(url, {"business_plan_id": new_id})
         assert response.status_code == 200
 

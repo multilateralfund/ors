@@ -608,7 +608,7 @@ class TestBPRecordList:
 
 class TestBPGet:
     client = APIClient()
-    url = reverse("businessplan-get-list")
+    url = reverse("businessplan-get")
 
     def test_list_anon(self, business_plan):
         response = self.client.get(self.url, {"business_plan_id": business_plan.id})
