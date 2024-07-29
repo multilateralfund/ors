@@ -3,6 +3,7 @@
 import React, { useContext, useState } from 'react'
 
 import { usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { enqueueSnackbar } from 'notistack'
 
 import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
@@ -17,6 +18,7 @@ import { api } from '@ors/helpers'
 
 export default function ReplenishmentHeading(props) {
   const { extraPeriodOptions, showPeriodSelector } = props
+  const router = useRouter()
   const [showAddNewSOA, setShowAddNewSOA] = useState(false)
   const pathname = usePathname()
   const period = getPathPeriod(pathname)
@@ -24,14 +26,27 @@ export default function ReplenishmentHeading(props) {
   const ctx = useContext(ReplenishmentContext)
   const ctx_2 = useContext(soAContext)
 
+  const createNextPeriod = (options) => {
+    if (!options) return
+
+    const endYears = options.map((option) => {
+      const years = option.value.split('-')
+      return parseInt(years[1], 10)
+    })
+
+    const maxYear = Math.max(...endYears)
+    return `${maxYear + 1}-${maxYear + 3}`
+  }
+
   async function handleCreateNewSOA() {
     try {
+      const newPeriod = createNextPeriod(ctx.periodOptions)
       setShowAddNewSOA(false)
       await api('/api/replenishment/replenishments/', {
         data: { amount: ctx.periods[0].amount },
         method: 'POST',
       })
-      window.location.reload()
+      router.push(`/replenishment/scale-of-assessment/${newPeriod}`)
     } catch (error) {
       error.json().then((data) => {
         enqueueSnackbar(
@@ -73,7 +88,7 @@ export default function ReplenishmentHeading(props) {
           )}
           {showAddNewSOA && (
             <ConfirmDialog
-              title={`Add a new scale of assessment for ?`}
+              title={`Add a new scale of assessment for ${createNextPeriod(ctx.periodOptions)}?`}
               onCancel={() => {
                 setShowAddNewSOA(false)
               }}
