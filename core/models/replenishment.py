@@ -96,6 +96,9 @@ class ScaleOfAssessment(models.Model):
             version=self.version
         ).aggregate(models.Sum("un_scale_of_assessment"))["un_scale_of_assessment__sum"]
 
+        if un_assessment_sum is None:
+            return None
+
         return (
             self.un_scale_of_assessment / (un_assessment_sum - US_SCALE_OF_ASSESSMENT)
         ) * (Decimal("100") - un_assessment_sum) + self.un_scale_of_assessment
@@ -110,6 +113,9 @@ class ScaleOfAssessment(models.Model):
 
     @property
     def amount(self):
+        if self.adjusted_scale_of_assessment is None:
+            return None
+
         return (
             self.version.replenishment.amount
             * self.adjusted_scale_of_assessment
