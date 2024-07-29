@@ -96,9 +96,15 @@ def import_replenishments(countries):
         )
 
         logger.info(f"Imported Replenishment {start_year} - {end_year}")
-        scale_of_assessment_version = ScaleOfAssessmentVersion.objects.create(
+        scale_of_assessment_draft_version = ScaleOfAssessmentVersion.objects.create(
             replenishment=replenishment,
-            is_final=start_year == 2021,
+            version=0,
+            is_final=False,
+        )
+        scale_of_assessment_final_version = ScaleOfAssessmentVersion.objects.create(
+            replenishment=replenishment,
+            version=1,
+            is_final=True,
         )
         logger.info(f"Crated version 0 for Replenishment {start_year} - {end_year}")
         scales_of_assessment = []
@@ -109,8 +115,8 @@ def import_replenishments(countries):
                 logger.warning(f"Country {country_name} not found")
                 continue
 
-            contribution = ScaleOfAssessment(
-                version=scale_of_assessment_version,
+            contribution_draft = ScaleOfAssessment(
+                version=scale_of_assessment_draft_version,
                 country=country,
                 un_scale_of_assessment=row.iloc[UN_SCALE_OF_ASSESSMENT_COLUMN],
                 override_adjusted_scale_of_assessment=row.iloc[
@@ -123,7 +129,22 @@ def import_replenishments(countries):
                 exchange_rate=row.iloc[FIXED_EXCHANGE_RATE_MECHANISM_COLUMN],
                 currency=row.iloc[FIXED_EXCHANGE_RATE_CURRENCY_COLUMN],
             )
-            scales_of_assessment.append(contribution)
+            contribution_final = ScaleOfAssessment(
+                version=scale_of_assessment_final_version,
+                country=country,
+                un_scale_of_assessment=row.iloc[UN_SCALE_OF_ASSESSMENT_COLUMN],
+                override_adjusted_scale_of_assessment=row.iloc[
+                    ADJUSTED_SCALE_OF_ASSESSMENT_COLUMN
+                ],
+                average_inflation_rate=row.iloc[AVERAGE_INFLATION_RATE_COLUMN],
+                override_qualifies_for_fixed_rate_mechanism=row.iloc[
+                    QUALIFIES_FOR_FIXED_RATE_MECHANISM_COLUMN
+                ],
+                exchange_rate=row.iloc[FIXED_EXCHANGE_RATE_MECHANISM_COLUMN],
+                currency=row.iloc[FIXED_EXCHANGE_RATE_CURRENCY_COLUMN],
+            )
+            scales_of_assessment.append(contribution_draft)
+            scales_of_assessment.append(contribution_final)
 
         ScaleOfAssessment.objects.bulk_create(scales_of_assessment)
 
