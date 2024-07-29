@@ -61,13 +61,23 @@ def second_user():
 
 
 @pytest.fixture
-def agency_user():
-    return UserFactory(user_type="agency")
+def stakeholder_user():
+    return UserFactory(user_type="stakeholder")
 
 
 @pytest.fixture
-def stakeholder_user():
-    return UserFactory(user_type="stakeholder")
+def agency():
+    return AgencyFactory.create(name="Agency", code="AG")
+
+
+@pytest.fixture
+def agency_user(agency):
+    return UserFactory(user_type="agency_submitter", agency=agency)
+
+
+@pytest.fixture
+def second_agency_user(agency):
+    return UserFactory(user_type="agency_submitter", agency=agency)
 
 
 @pytest.fixture
@@ -271,11 +281,6 @@ def blend(excluded_usage, time_frames):
         time_frame=time_frames[(2000, None)],
     )
     return blend
-
-
-@pytest.fixture
-def agency():
-    return AgencyFactory.create(name="Agency", code="AG")
 
 
 @pytest.fixture

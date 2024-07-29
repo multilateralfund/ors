@@ -10,6 +10,7 @@ pytestmark = pytest.mark.django_db
 @pytest.fixture(name="_setup_new_business_plan_create")
 def setup_new_business_plan_create(agency):
     return {
+        "name": "Test BP",
         "agency_id": agency.id,
         "year_start": 2020,
         "year_end": 2022,
@@ -20,21 +21,23 @@ def setup_new_business_plan_create(agency):
 class TestBPHistory:
     client = APIClient()
 
-    def test_create_history(self, user, second_user, _setup_new_business_plan_create):
+    def test_create_history(
+        self, agency_user, second_agency_user, _setup_new_business_plan_create
+    ):
         VALIDATION_LIST = [
-            ("created by user", 1, 1, user.username),
-            ("updated by user", 0, 1, second_user.username),
+            ("created by user", 1, 1, agency_user.username),
+            ("updated by user", 0, 1, second_agency_user.username),
         ]
 
         # create new business plan
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=agency_user)
         url = reverse("businessplan-list")
         response = self.client.post(url, _setup_new_business_plan_create, format="json")
         assert response.status_code == 201
         business_plan_id = response.data["id"]
 
         # update business plan
-        self.client.force_authenticate(user=second_user)
+        self.client.force_authenticate(user=second_agency_user)
         url = reverse("businessplan-list") + f"{business_plan_id}/"
         data = _setup_new_business_plan_create
         data["records"] = []
