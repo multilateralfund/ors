@@ -239,16 +239,20 @@ function SaveManager(props) {
           </div>
         </FormDialog>
       ) : null}
-      <div className="flex items-center gap-x-2">
-        <Input
-          id="markAsFinal"
-          checked={isFinal}
-          type="checkbox"
-          onChange={handleChangeFinal}
-        />
-        <label htmlFor="markAsFinal">Mark as final</label>
-      </div>
-      <SubmitButton onClick={handleSave}>Save changes</SubmitButton>
+      {!version?.is_final && (
+        <>
+          <div className="flex items-center gap-x-2">
+            <Input
+              id="markAsFinal"
+              checked={isFinal}
+              type="checkbox"
+              onChange={handleChangeFinal}
+            />
+            <label htmlFor="markAsFinal">Mark as final</label>
+          </div>
+          <SubmitButton onClick={handleSave}>Save changes</SubmitButton>
+        </>
+      )}
     </div>
   )
 }
