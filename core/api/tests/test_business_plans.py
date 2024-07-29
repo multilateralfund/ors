@@ -606,9 +606,9 @@ class TestBPRecordList:
         assert response.status_code == 400
 
 
-class TestBPRecordGet:
+class TestBPGet:
     client = APIClient()
-    url = reverse("bprecord-get")
+    url = reverse("businessplan-get-list")
 
     def test_list_anon(self, business_plan):
         response = self.client.get(self.url, {"business_plan_id": business_plan.id})

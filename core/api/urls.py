@@ -26,7 +26,11 @@ from core.api.views.business_plan import (
     BPFileView,
     BPRecordViewSet,
 )
-from core.api.views.business_plan import BPStatusUpdateView, BusinessPlanViewSet
+from core.api.views.business_plan import (
+    BPStatusUpdateView,
+    BusinessPlanViewSet,
+    BusinessPlanGetViewSet,
+)
 from core.api.views.chemicals import (
     BlendCreateView,
     BlendNextCustNameView,
@@ -90,6 +94,9 @@ router.register("project-comment", ProjectCommentViewSet)
 router.register("project-rbm-measure", ProjectRbmMeasureViewSet)
 router.register("submission-amount", ProjectSubmissionAmountViewSet)
 router.register("business-plan", BusinessPlanViewSet, basename="businessplan")
+router.register(
+    "business-plan-get", BusinessPlanGetViewSet, basename="businessplan-get"
+)
 router.register("business-plan-record", BPRecordViewSet, basename="bprecord")
 router.register(
     "replenishment/countries",

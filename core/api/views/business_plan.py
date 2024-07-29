@@ -32,7 +32,10 @@ from core.api.serializers.business_plan import (
 )
 from core.api.utils import workbook_pdf_response
 from core.api.utils import workbook_response
-from core.api.views.utils import get_business_plan_from_request
+from core.api.views.utils import (
+    get_business_plan_from_request,
+    BPRECORD_ORDERING_FIELDS,
+)
 from core.models import BusinessPlan, BPHistory, BPRecord
 from core.tasks import (
     send_mail_bp_create,
@@ -237,6 +240,52 @@ class BPStatusUpdateView(generics.GenericAPIView):
         return Response(serializer.data)
 
 
+class BusinessPlanGetViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    filterset_class = BPRecordFilter
+    serializer_class = BPRecordDetailSerializer
+    queryset = BPRecord.objects.select_related(
+        "business_plan",
+        "business_plan__agency",
+        "country",
+        "sector",
+        "subsector",
+        "project_type",
+        "bp_chemical_type",
+        "project_cluster",
+    ).prefetch_related(
+        "substances",
+        "values",
+    )
+
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.OrderingFilter,
+        filters.SearchFilter,
+    ]
+    search_fields = ["title"]
+    ordering = ["title", "country", "id"]
+    ordering_fields = BPRECORD_ORDERING_FIELDS
+
+    def list(self, request, *args, **kwargs):
+        # get activities and history for a specific business plan
+        bp = get_business_plan_from_request(request)
+        history_qs = bp.bphistory.select_related("business_plan", "updated_by")
+        activities = self.filter_queryset(self.get_queryset()).filter(business_plan=bp)
+
+        ret = {
+            "business_plan": BusinessPlanSerializer(bp).data,
+            "history": BPHistorySerializer(history_qs, many=True).data,
+        }
+
+        page = self.paginate_queryset(activities)
+        if page is not None:
+            ret["activities"] = self.get_serializer(page, many=True).data
+            return self.get_paginated_response(ret)
+
+        ret["activities"] = self.get_serializer(activities, many=True).data
+        return Response(ret)
+
+
 class BPRecordViewSet(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
@@ -253,19 +302,7 @@ class BPRecordViewSet(
     ]
     search_fields = ["title"]
     ordering = ["title", "country", "id"]
-    ordering_fields = [
-        "title",
-        "country__iso3",
-        "country__name",
-        "business_plan__agency__name",
-        "bp_chemical_type__name",
-        "project_type__code",
-        "project_cluster__code",
-        "sector__code",
-        "subsector__code",
-        "status",
-        "is_multi_year",
-    ]
+    ordering_fields = ["business_plan__agency__name"] + BPRECORD_ORDERING_FIELDS
 
     def get_queryset(self):
         bp_records = BPRecord.objects.all()
@@ -327,26 +364,6 @@ class BPRecordViewSet(
     @action(methods=["GET"], detail=False)
     def print(self, *args, **kwargs):
         return self.get_wb(workbook_pdf_response)
-
-    @action(methods=["GET"], detail=False)
-    def get(self, *args, **kwargs):
-        # get activities and history for a specific business plan
-        bp = get_business_plan_from_request(self.request)
-        history_qs = bp.bphistory.select_related("business_plan", "updated_by")
-        activities = self.filter_queryset(self.get_queryset()).filter(business_plan=bp)
-
-        ret = {
-            "business_plan": BusinessPlanSerializer(bp).data,
-            "history": BPHistorySerializer(history_qs, many=True).data,
-        }
-
-        page = self.paginate_queryset(activities)
-        if page is not None:
-            ret["activities"] = self.get_serializer(page, many=True).data
-            return self.get_paginated_response(ret)
-
-        ret["activities"] = self.get_serializer(activities, many=True).data
-        return Response(ret)
 
     def list(self, request, *args, **kwargs):
         # get all activities between year_start and year_end
