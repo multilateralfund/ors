@@ -80,37 +80,6 @@ class BusinessPlanViewSet(
             )
         )
 
-    @action(methods=["GET"], detail=False)
-    def get(self, *args, **kwargs):
-        bp = get_business_plan_from_request(self.request)
-        history_qs = bp.bphistory.select_related("business_plan", "updated_by")
-        activities = bp.records.select_related(
-            "business_plan",
-            "business_plan__agency",
-            "country",
-            "sector",
-            "subsector",
-            "project_type",
-            "bp_chemical_type",
-            "project_cluster",
-        ).prefetch_related(
-            "substances",
-            "values",
-        )
-
-        ret = {
-            "business_plan": BusinessPlanSerializer(bp).data,
-            "history": BPHistorySerializer(history_qs, many=True).data,
-        }
-
-        page = self.paginate_queryset(activities)
-        if page is not None:
-            ret["activities"] = BPRecordDetailSerializer(page, many=True).data
-            return self.get_paginated_response(ret)
-
-        ret["activities"] = BPRecordDetailSerializer(activities, many=True).data
-        return Response(ret)
-
     def create(self, request, *args, **kwargs):
         # check if the business plan already exists
         business_plan = BusinessPlan.objects.filter(
@@ -289,7 +258,9 @@ class BPRecordViewSet(
         "country__iso3",
         "country__name",
         "business_plan__agency__name",
+        "bp_chemical_type__name",
         "project_type__code",
+        "project_cluster__code",
         "sector__code",
         "subsector__code",
         "status",
@@ -356,6 +327,26 @@ class BPRecordViewSet(
     @action(methods=["GET"], detail=False)
     def print(self, *args, **kwargs):
         return self.get_wb(workbook_pdf_response)
+
+    @action(methods=["GET"], detail=False)
+    def get(self, *args, **kwargs):
+        # get activities and history for a specific business plan
+        bp = get_business_plan_from_request(self.request)
+        history_qs = bp.bphistory.select_related("business_plan", "updated_by")
+        activities = self.filter_queryset(self.get_queryset()).filter(business_plan=bp)
+
+        ret = {
+            "business_plan": BusinessPlanSerializer(bp).data,
+            "history": BPHistorySerializer(history_qs, many=True).data,
+        }
+
+        page = self.paginate_queryset(activities)
+        if page is not None:
+            ret["activities"] = self.get_serializer(page, many=True).data
+            return self.get_paginated_response(ret)
+
+        ret["activities"] = self.get_serializer(activities, many=True).data
+        return Response(ret)
 
     def list(self, request, *args, **kwargs):
         # get all activities between year_start and year_end

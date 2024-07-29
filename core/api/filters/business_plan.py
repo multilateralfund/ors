@@ -33,11 +33,6 @@ class BusinessPlanFilter(filters.FilterSet):
 
 
 class BPRecordFilter(filters.FilterSet):
-    agency_id = filters.ModelMultipleChoiceFilter(
-        field_name="business_plan__agency_id",
-        queryset=Agency.objects.all(),
-        widget=CSVWidget,
-    )
     country_id = filters.ModelMultipleChoiceFilter(
         queryset=Country.objects.all(),
         widget=CSVWidget,
@@ -66,8 +61,6 @@ class BPRecordFilter(filters.FilterSet):
     class Meta:
         model = BPRecord
         fields = [
-            "business_plan_id",
-            "agency_id",
             "country_id",
             "lvc_status",
             "project_type_id",
@@ -88,6 +81,11 @@ class BPRecordListFilter(BPRecordFilter):
     year_end = filters.NumberFilter(
         field_name="business_plan__year_end", lookup_expr="lte", required=True
     )
+    agency_id = filters.ModelMultipleChoiceFilter(
+        field_name="business_plan__agency_id",
+        queryset=Agency.objects.all(),
+        widget=CSVWidget,
+    )
 
     class Meta(BPRecordFilter.Meta):
-        fields = BPRecordFilter.Meta.fields + ["year_start", "year_end"]
+        fields = BPRecordFilter.Meta.fields + ["year_start", "year_end", "agency_id"]
