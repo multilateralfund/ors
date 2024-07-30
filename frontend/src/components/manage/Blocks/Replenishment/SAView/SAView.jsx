@@ -178,12 +178,36 @@ function SaveManager(props) {
       })
       .catch((error) => {
         error.json().then((data) => {
-          enqueueSnackbar(
-            Object.entries(data)
-              .map(([_, value]) => value)
-              .join(' '),
-            { variant: 'error' },
-          )
+          // Iterate over each error object and format it
+          const messages = data
+            .map((errorObj, index) => {
+              // Extract the field name and the error message
+              const fieldErrors = Object.entries(errorObj).map(
+                ([field, errors]) => {
+                  // Check if errors is an array or object
+                  const errorMessage = Array.isArray(errors)
+                    ? errors
+                        .map((error) =>
+                          typeof error === 'object'
+                            ? JSON.stringify(error)
+                            : error,
+                        )
+                        .join(' ')
+                    : typeof errors === 'object'
+                      ? JSON.stringify(errors)
+                      : errors
+
+                  return `Row ${index + 1}: field ${field} - ${errorMessage}\n`
+                },
+              )
+
+              // Join all field errors for this particular row
+              return fieldErrors.join('\n')
+            })
+            .join('\n\n') // Separate different row errors with double newlines
+
+          // Display the notification with the formatted messages
+          enqueueSnackbar(messages, { variant: 'error' })
         })
       })
   }
