@@ -46,6 +46,7 @@ export default function ReplenishmentHeading(props) {
         data: { amount: ctx.periods[0].amount },
         method: 'POST',
       })
+      ctx.refetchData()
       router.push(`/replenishment/scale-of-assessment/${newPeriod}`)
     } catch (error) {
       error.json().then((data) => {
