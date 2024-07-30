@@ -437,7 +437,7 @@ class BusinessPlanFactory(factory.django.DjangoModelFactory):
     year_start = factory.Faker("random_int", min=2000, max=2009)
     year_end = factory.Faker("random_int", min=2010, max=2019)
     agency = factory.SubFactory(AgencyFactory)
-    status = factory.fuzzy.FuzzyChoice(BusinessPlan.Status.choices)
+    status = BusinessPlan.Status.agency_draft
 
 
 class BPChemicalTypeFactory(factory.django.DjangoModelFactory):

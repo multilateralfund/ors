@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
-from core.models.agency import Agency
 
+from core.models.agency import Agency
 from core.models.country import Country
 from core.models.project import (
     ProjectCluster,
@@ -23,11 +23,15 @@ class BPChemicalType(models.Model):
 
 class BusinessPlan(models.Model):
     class Status(models.TextChoices):
-        draft = "Draft", "Draft"  # update => not saving versions
+        agency_draft = "Agency Draft", "Agency Draft"  # update => not saving versions
+        secretariat_draft = (
+            "Secretariat Draft",
+            "Secretariat Draft",
+        )  # update => not versions
         submitted = "Submitted", "Submitted"  # can't update
         need_changes = "Need Changes", "Need Changes"  # update => saving versions
         approved = "Approved", "Approved"  # can't update
-        rejected = "Rejected", "Rejected"  # can't update ???
+        rejected = "Rejected", "Rejected"  # can't update
 
     def upload_path(self, filename):
         return f"bp_files/{self.agency}/{self.year_start}-{self.year_end}/{filename}"
@@ -62,7 +66,7 @@ class BusinessPlan(models.Model):
     )
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
     status = models.CharField(
-        max_length=32, choices=Status.choices, default=Status.draft
+        max_length=32, choices=Status.choices, default=Status.agency_draft
     )
     version = models.IntegerField(default=1)
 
