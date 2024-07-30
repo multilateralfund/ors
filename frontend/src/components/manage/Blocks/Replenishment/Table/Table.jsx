@@ -9,20 +9,24 @@ function AdminButtons(props) {
   const { onDelete, onEdit } = props
   return (
     <div className={styles.adminButtons}>
-      <button
-        className="cursor-pointer rounded-lg border border-solid border-error bg-white text-error hover:bg-error hover:text-white"
-        title="Delete"
-        onClick={onDelete}
-      >
-        <IoTrash />
-      </button>
-      <button
-        className="cursor-pointer rounded-lg border border-solid border-secondary bg-white text-secondary hover:bg-secondary hover:text-white"
-        title="Edit"
-        onClick={onEdit}
-      >
-        <IoPencil />
-      </button>
+      {onDelete && (
+        <button
+          className="cursor-pointer rounded-lg border border-solid border-error bg-white text-error hover:bg-error hover:text-white"
+          title="Delete"
+          onClick={onDelete}
+        >
+          <IoTrash />
+        </button>
+      )}
+      {onEdit && (
+        <button
+          className="cursor-pointer rounded-lg border border-solid border-secondary bg-white text-secondary hover:bg-secondary hover:text-white"
+          title="Edit"
+          onClick={onEdit}
+        >
+          <IoPencil />
+        </button>
+      )}
     </div>
   )
 }
@@ -42,17 +46,29 @@ function TableCell(props) {
   const fname = columns[c].field
   const cell = rowData[r][fname]
 
+  const RowButtons = () => {
+    const hasDeleteButton = rowData[r]['can_delete']
+    if (hasDeleteButton) {
+      return <AdminButtons onDelete={() => onDelete(r, rowData[r])} />
+    }
+    if (adminButtons) {
+      return (
+        <AdminButtons
+          onDelete={() => onDelete(r, rowData[r])}
+          onEdit={() => onEdit(r)}
+        />
+      )
+    }
+
+    return null
+  }
+
   return (
     <div className="flex items-center justify-between">
       <div className={`w-full whitespace-nowrap text-${textPosition}`}>
         {cell}
       </div>
-      {c === 0 && adminButtons ? (
-        <AdminButtons
-          onDelete={() => onDelete(r, rowData[r])}
-          onEdit={() => onEdit(r)}
-        />
-      ) : null}
+      {c === 0 && <RowButtons />}
     </div>
   )
 }
@@ -110,6 +126,8 @@ function Table(props) {
               r={j}
               rowData={extraRows}
               textPosition={textPosition}
+              onDelete={onDelete}
+              onEdit={onEdit}
             />
           </td>,
         )

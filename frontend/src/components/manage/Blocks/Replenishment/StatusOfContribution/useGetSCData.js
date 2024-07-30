@@ -65,6 +65,18 @@ function useGetSCData(start_year, end_year) {
           outstanding_contributions: data.disputed_contributions,
         },
         {
+          agreed_contributions: data.disputed_contributions,
+          can_delete: true,
+          country: (
+            <li className="flex flex-col gap-1">
+              <span>Romania</span>
+              <span>Some Comment</span>
+            </li>
+          ),
+          country_to_display: 'Romania',
+          outstanding_contributions: data.disputed_contributions,
+        },
+        {
           agreed_contributions: data.total?.agreed_contributions_with_disputed,
           country: 'Total',
           outstanding_contributions:
