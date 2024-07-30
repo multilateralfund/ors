@@ -45,6 +45,13 @@ from core.tasks import (
 )
 
 
+class BPFilterBackend(DjangoFilterBackend):
+    def get_filterset_class(self, view, queryset=None):
+        if getattr(view, "action", None) == "get":
+            return BPRecordFilter
+        return BusinessPlanFilter
+
+
 class BusinessPlanViewSet(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
@@ -53,9 +60,8 @@ class BusinessPlanViewSet(
     viewsets.GenericViewSet,
 ):
     permission_classes = [IsUserAllowedBP]
-    filterset_class = BusinessPlanFilter
     filter_backends = [
-        DjangoFilterBackend,
+        BPFilterBackend,
         filters.OrderingFilter,
         filters.SearchFilter,
     ]
@@ -67,7 +73,6 @@ class BusinessPlanViewSet(
         business_plans = BusinessPlan.objects.all()
 
         if self.action == "get":
-            self.filterset_class = BPRecordFilter
             return BPRecord.objects.select_related(
                 "business_plan",
                 "business_plan__agency",
