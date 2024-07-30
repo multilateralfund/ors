@@ -34,6 +34,30 @@ class IsUserAllowedBP(permissions.BasePermission):
 
         return False
 
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        if user.user_type == user.UserType.SECRETARIAT:
+            return True
+
+        if user.agency == obj.agency:
+            return True
+
+        return False
+
+
+class IsUserAllowedBPRecord(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        if user.is_authenticated:
+            if user.user_type in (
+                user.UserType.AGENCY_SUBMITTER,
+                user.UserType.AGENCY_INPUTTER,
+                user.UserType.SECRETARIAT,
+            ):
+                return True
+
+        return False
+
 
 class IsUserAllowedCPComment(IsUserAllowedCP):
     """

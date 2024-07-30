@@ -20,7 +20,7 @@ from core.api.export.base import configure_sheet_print
 from core.api.export.business_plan import BusinessPlanWriter
 from core.api.filters.business_plan import BPRecordFilter
 from core.api.filters.business_plan import BusinessPlanFilter
-from core.api.permissions import IsUserAllowedBP
+from core.api.permissions import IsUserAllowedBP, IsUserAllowedBPRecord
 from core.api.serializers.bp_history import BPHistorySerializer
 from core.api.serializers.business_plan import (
     BusinessPlanCreateSerializer,
@@ -30,7 +30,7 @@ from core.api.serializers.business_plan import (
     BPRecordCreateSerializer,
     BPRecordDetailSerializer,
 )
-from core.api.utils import workbook_pdf_response
+from core.api.utils import STATUS_TRANSITIONS, workbook_pdf_response
 from core.api.utils import workbook_response
 from core.api.views.utils import get_business_plan_from_request
 from core.models import BusinessPlan, BPHistory, BPRecord
@@ -81,6 +81,7 @@ class BusinessPlanViewSet(
             )
         )
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         # check if the business plan already exists
         business_plan = BusinessPlan.objects.filter(
@@ -100,24 +101,24 @@ class BusinessPlanViewSet(
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        self.perform_create(serializer)
-        instance = serializer.instance
+        instance = BusinessPlan(**serializer.validated_data)
+
+        # check user permissions
+        user = request.user
+        self.check_object_permissions(request, instance)
 
         # check bp status
-        if instance.status != BusinessPlan.Status.draft:
+        if instance.status not in [
+            BusinessPlan.Status.agency_draft,
+            BusinessPlan.Status.secretariat_draft,
+        ]:
             return Response(
                 {"general_error": "Only draft BP can be created"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # check user permissions
-        user = request.user
-        if user.user_type != user.UserType.SECRETARIAT:
-            if user.agency != instance.agency:
-                return Response(
-                    {"general_error": "BP agency doesn't match with user agency"},
-                    status=status.HTTP_403_FORBIDDEN,
-                )
+        self.perform_create(serializer)
+        instance = serializer.instance
 
         # set name
         if not instance.name:
@@ -157,6 +158,7 @@ class BusinessPlanViewSet(
             serializer.initial_data["agency_id"] != current_obj.agency_id
             or serializer.initial_data["year_start"] != current_obj.year_start
             or serializer.initial_data["year_end"] != current_obj.year_end
+            or serializer.initial_data["status"] != current_obj.status
         )
 
     @transaction.atomic
@@ -181,30 +183,25 @@ class BusinessPlanViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        self.perform_create(serializer)
-        new_instance = serializer.instance
-
-        # check bp status
-        if new_instance.status != BusinessPlan.Status.draft:
+        # the updates can only be made on drafts
+        if current_obj.status not in [
+            BusinessPlan.Status.agency_draft,
+            BusinessPlan.Status.secretariat_draft,
+        ]:
             return Response(
-                {"general_error": "Only draft BP can be created"},
+                {"general_error": "Only draft BP can be updated"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # check user permissions
-        user = request.user
-        if user.user_type != user.UserType.SECRETARIAT:
-            if user.agency != new_instance.agency:
-                return Response(
-                    {"general_error": "BP agency doesn't match with user agency"},
-                    status=status.HTTP_403_FORBIDDEN,
-                )
+        self.perform_create(serializer)
+        new_instance = serializer.instance
 
         # set name
         if not new_instance.name:
             new_instance.name = f"{new_instance.agency} {new_instance.year_start} - {new_instance.year_end}"
 
         # set updated by user
+        user = request.user
         new_instance.updated_by = user
         new_instance.save()
 
@@ -237,6 +234,7 @@ class BPStatusUpdateView(generics.GenericAPIView):
     queryset = BusinessPlan.objects.all()
     serializer_class = BusinessPlanSerializer
     lookup_field = "id"
+    permission_classes = [IsUserAllowedBP]
 
     @swagger_auto_schema(
         operation_description="Update business plan status",
@@ -245,31 +243,42 @@ class BPStatusUpdateView(generics.GenericAPIView):
             properties={
                 "status": openapi.Schema(
                     type=openapi.TYPE_STRING,
-                    description="Approved or Rejected",
+                    description="Update bp status",
                 )
             },
         ),
     )
     def put(self, request, *args, **kwargs):
         business_plan = self.get_object()
-        bp_status = request.data.get("status")
-        if bp_status not in (
-            BusinessPlan.Status.approved,
-            BusinessPlan.Status.rejected,
+        initial_status = business_plan.status
+        new_status = request.data.get("status")
+
+        # validate status transition
+        if (
+            initial_status not in STATUS_TRANSITIONS
+            or new_status not in STATUS_TRANSITIONS[initial_status]
         ):
             return Response(
-                {"status": f"Invalid value {bp_status}"},
+                {"general_error": "Invalid status transition"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        initial_value = business_plan.status
-        business_plan.status = bp_status
+        # validate user permissions
+        user = request.user
+        if user.user_type not in STATUS_TRANSITIONS[initial_status][new_status]:
+            return Response(
+                {"general_error": "User not allowed to update status"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # update status
+        business_plan.status = new_status
         business_plan.save()
 
         BPHistory.objects.create(
             business_plan=business_plan,
             updated_by=request.user,
-            event_description=f"Status updated from {initial_value} to {bp_status}",
+            event_description=f"Status updated from {initial_status} to {new_status}",
         )
 
         serializer = self.get_serializer(business_plan)
@@ -287,7 +296,7 @@ class BPRecordViewSet(
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
-    permission_classes = [IsUserAllowedBP]
+    permission_classes = [IsUserAllowedBPRecord]
     serializer_class = BPRecordDetailSerializer
     filterset_class = BPRecordFilter
     filter_backends = [
