@@ -24,6 +24,10 @@ export default function SCAnnual({ year }) {
     [rows, sortOn, sortDirection],
   )
 
+  const countriesInTable = useMemo(() => {
+    return rows.map(({ country, country_iso3 }) => ({ country, country_iso3 }))
+  }, [rows])
+
   function handleSort(column) {
     setSortDirection((direction) => (column === sortOn ? -direction : 1))
     setSortOn(column)
@@ -81,7 +85,7 @@ export default function SCAnnual({ year }) {
         textPosition="center"
         onSort={handleSort}
       />
-      <DisputedContributionDialog />
+      <DisputedContributionDialog countryOptions={countriesInTable} />
     </div>
   )
 }

@@ -5,11 +5,11 @@ import {
   FieldInput,
   FieldSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
-import {mockScAnnualOptions} from "@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils";
+import { mockScAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import { AddButton } from '@ors/components/ui/Button/Button'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
-export default function DisputedContributionDialog() {
+export default function DisputedContributionDialog({ countryOptions }) {
   const ctx = useContext(ReplenishmentContext)
   const [showAdd, setShowAdd] = useState(false)
 
@@ -33,9 +33,9 @@ export default function DisputedContributionDialog() {
         >
           <FieldSelect id="iso3" label="Country" required>
             <option value=""> -</option>
-            {ctx.countries.map((c) => (
-              <option key={c.iso3} value={c.iso3}>
-                {c.name_alt}
+            {countryOptions.map((c) => (
+              <option key={c.country_iso3} value={c.country_iso3}>
+                {c.country}
               </option>
             ))}
           </FieldSelect>
