@@ -8,6 +8,8 @@ import {
 import { mockScAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import { AddButton } from '@ors/components/ui/Button/Button'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
+import { api } from '@ors/helpers'
+import { enqueueSnackbar } from 'notistack'
 
 export default function DisputedContributionDialog({
   countryOptions,
@@ -21,11 +23,26 @@ export default function DisputedContributionDialog({
     setShowAdd(true)
   }
 
-  function confirmSave(formData) {
-    console.log(formData)
-    setShowAdd(false)
-    alert(`Save not implemented!\n\n${JSON.stringify(formData, undefined, 2)}`)
-    refetchSCData()
+  async function confirmSave(formData) {
+    try {
+      await api('/api/replenishment/disputed-contributions/', {
+        data: formData,
+        method: 'POST',
+      })
+      setShowAdd(false)
+      refetchSCData()
+    } catch (error) {
+      error.json().then((data) => {
+        enqueueSnackbar(
+          Object.entries(data)
+            .map(([_, value]) =>
+              typeof value === 'object' ? JSON.stringify(value) : value,
+            )
+            .join(' '),
+          { variant: 'error' },
+        )
+      })
+    }
   }
 
   return (
