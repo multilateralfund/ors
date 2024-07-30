@@ -6,6 +6,19 @@ from core.models.business_plan import BusinessPlan
 from core.models.country_programme import CPRecord, CPReport, CPReportFormatRow
 from core.models.country_programme_archive import CPRecordArchive, CPReportArchive
 
+BPRECORD_ORDERING_FIELDS = [
+    "title",
+    "country__iso3",
+    "country__name",
+    "bp_chemical_type__name",
+    "project_type__code",
+    "project_cluster__code",
+    "sector__code",
+    "subsector__code",
+    "status",
+    "is_multi_year",
+]
+
 
 def get_cp_report_from_request(request, cp_report_class):
     """
