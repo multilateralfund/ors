@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { makePeriodOptions } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { formatApiUrl } from '@ors/helpers/Api/utils'
@@ -20,26 +20,34 @@ function ReplenishmentProvider(props) {
 
   const [periods, setPeriods] = useState([])
   const [countries, setCountries] = useState([])
+  const [fetchTrigger, setFetchTrigger] = useState(false)
 
-  useEffect(function () {
-    Promise.all([
-      fetch(formatApiUrl('/api/replenishment/replenishments'), {
-        credentials: 'include',
-      }),
-      fetch(formatApiUrl('/api/replenishment/countries'), {
-        credentials: 'include',
-      }),
-    ])
-      .then(function (responses) {
-        const [respPeriods, respCountries] = responses
-        return Promise.all([respPeriods.json(), respCountries.json()])
-      })
-      .then(function (jsonData) {
-        const [jsonPeriods, jsonCountries] = jsonData
-        setPeriods(jsonPeriods)
-        setCountries(filterCountries(jsonCountries))
-      })
+  const refetchData = useCallback(() => {
+    setFetchTrigger((prev) => !prev)
   }, [])
+
+  useEffect(
+    function () {
+      Promise.all([
+        fetch(formatApiUrl('/api/replenishment/replenishments'), {
+          credentials: 'include',
+        }),
+        fetch(formatApiUrl('/api/replenishment/countries'), {
+          credentials: 'include',
+        }),
+      ])
+        .then(function (responses) {
+          const [respPeriods, respCountries] = responses
+          return Promise.all([respPeriods.json(), respCountries.json()])
+        })
+        .then(function (jsonData) {
+          const [jsonPeriods, jsonCountries] = jsonData
+          setPeriods(jsonPeriods)
+          setCountries(filterCountries(jsonCountries))
+        })
+    },
+    [fetchTrigger],
+  )
 
   const periodOptions = useMemo(
     function () {
@@ -54,6 +62,7 @@ function ReplenishmentProvider(props) {
         countries,
         periodOptions,
         periods,
+        refetchData,
       }}
     >
       {children}
