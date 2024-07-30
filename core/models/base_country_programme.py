@@ -48,6 +48,28 @@ class CPRecordAbstractManager(models.Manager):
             )
         )
 
+    def get_for_years(self, min_year, max_year):
+        return (
+            self.select_related(
+                "substance__group",
+                "blend",
+                "country_programme_report__country",
+            )
+            .prefetch_related(
+                "record_usages",
+                "blend__components",
+            )
+            .filter(
+                country_programme_report__year__gte=min_year,
+                country_programme_report__year__lte=max_year,
+            )
+            .order_by(
+                "country_programme_report__country__name",
+                "substance__sort_order",
+                "blend__sort_order",
+            )
+        )
+
 
 class AbstractCPRecord(AbstractWChemical):
     display_name = models.CharField(max_length=248, null=True, blank=True)
