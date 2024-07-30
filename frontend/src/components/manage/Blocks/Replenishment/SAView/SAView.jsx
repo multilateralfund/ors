@@ -207,7 +207,10 @@ function SaveManager(props) {
             .join('\n\n') // Separate different row errors with double newlines
 
           // Display the notification with the formatted messages
-          enqueueSnackbar(messages, { variant: 'error' })
+          enqueueSnackbar(messages, {
+            style: { whiteSpace: 'pre-line' },
+            variant: 'error',
+          })
         })
       })
   }
