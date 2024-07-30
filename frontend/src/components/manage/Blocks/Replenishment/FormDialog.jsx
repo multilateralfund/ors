@@ -61,7 +61,7 @@ const FormDialog = function FormDialog(props) {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [])
+  }, [cancelHandler])
 
   return (
     <dialog
