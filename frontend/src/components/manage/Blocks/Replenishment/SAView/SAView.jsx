@@ -123,7 +123,8 @@ function getEditableFieldNames(cs) {
 const EDITABLE = getEditableFieldNames(COLUMNS)
 
 function SaveManager(props) {
-  const { comment, currencyDateRange, data, replenishment, version } = props
+  const { comment, currencyDateRange, data, replenishment, version, versions } =
+    props
 
   const [isFinal, setIsFinal] = useState(false)
   const [createNewVersion, setCreateNewVersion] = useState(true)
@@ -191,6 +192,10 @@ function SaveManager(props) {
     setSaving(false)
   }
 
+  const isNewestVersion = version?.version === versions[0]?.version
+
+  const showSave = !version?.is_final && isNewestVersion
+
   return (
     <div className="flex items-center gap-x-4 print:hidden">
       {saving ? (
@@ -239,7 +244,7 @@ function SaveManager(props) {
           </div>
         </FormDialog>
       ) : null}
-      {!version?.is_final && (
+      {showSave && (
         <>
           <div className="flex items-center gap-x-2">
             <Input
@@ -413,6 +418,7 @@ function SAView(props) {
   const ctx = useContext(ReplenishmentContext)
   const ctxSoA = useContext(SoAContext)
   const version = ctxSoA.version
+  const versions = ctxSoA.versions
 
   const contributions = useMemo(
     function () {
@@ -762,6 +768,7 @@ function SAView(props) {
           data={transformForSave(tableData)}
           replenishment={replenishment}
           version={version}
+          versions={versions}
         />
       </div>
       <SATable
