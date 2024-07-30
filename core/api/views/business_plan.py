@@ -18,7 +18,7 @@ from rest_framework.response import Response
 
 from core.api.export.base import configure_sheet_print
 from core.api.export.business_plan import BusinessPlanWriter
-from core.api.filters.business_plan import BPRecordFilter
+from core.api.filters.business_plan import BPRecordFilter, BPRecordListFilter
 from core.api.filters.business_plan import BusinessPlanFilter
 from core.api.permissions import IsUserAllowedBP, IsUserAllowedBPRecord
 from core.api.serializers.bp_history import BPHistorySerializer
@@ -29,10 +29,14 @@ from core.api.serializers.business_plan import (
     BPRecordExportSerializer,
     BPRecordCreateSerializer,
     BPRecordDetailSerializer,
+    BPRecordListSerializer,
 )
 from core.api.utils import STATUS_TRANSITIONS, workbook_pdf_response
 from core.api.utils import workbook_response
-from core.api.views.utils import get_business_plan_from_request
+from core.api.views.utils import (
+    get_business_plan_from_request,
+    BPRECORD_ORDERING_FIELDS,
+)
 from core.models import BusinessPlan, BPHistory, BPRecord
 from core.tasks import (
     send_mail_bp_create,
@@ -49,24 +53,44 @@ class BusinessPlanViewSet(
     viewsets.GenericViewSet,
 ):
     permission_classes = [IsUserAllowedBP]
-    serializer_class = BusinessPlanSerializer
     filterset_class = BusinessPlanFilter
     filter_backends = [
         DjangoFilterBackend,
         filters.OrderingFilter,
         filters.SearchFilter,
     ]
+    ordering = ["agency__name", "id"]
     ordering_fields = "__all__"
     search_fields = ["agency__name"]
 
     def get_queryset(self):
         business_plans = BusinessPlan.objects.all()
 
+        if self.action == "get":
+            self.filterset_class = BPRecordFilter
+            return BPRecord.objects.select_related(
+                "business_plan",
+                "business_plan__agency",
+                "country",
+                "sector",
+                "subsector",
+                "project_type",
+                "bp_chemical_type",
+                "project_cluster",
+            ).prefetch_related(
+                "substances",
+                "values",
+            )
         if self.request.method == "PUT":
             return business_plans.select_for_update()
         return business_plans.select_related(
             "agency", "created_by", "updated_by"
         ).order_by("year_start", "year_end", "id")
+
+    def get_serializer_class(self):
+        if self.action == "get":
+            return BPRecordDetailSerializer
+        return BusinessPlanSerializer
 
     @action(methods=["GET"], detail=False, url_path="get-years")
     def get_years(self, *args, **kwargs):
@@ -80,6 +104,30 @@ class BusinessPlanViewSet(
                 .order_by("-year_start")
             )
         )
+
+    @action(methods=["GET"], detail=False)
+    def get(self, *args, **kwargs):
+        self.search_fields = ["title"]
+        self.ordering = ["title", "country", "id"]
+        self.ordering_fields = BPRECORD_ORDERING_FIELDS
+
+        # get activities and history for a specific business plan
+        bp = get_business_plan_from_request(self.request)
+        history_qs = bp.bphistory.select_related("business_plan", "updated_by")
+        activities = self.filter_queryset(self.get_queryset()).filter(business_plan=bp)
+
+        ret = {
+            "business_plan": BusinessPlanSerializer(bp).data,
+            "history": BPHistorySerializer(history_qs, many=True).data,
+        }
+
+        page = self.paginate_queryset(activities)
+        if page is not None:
+            ret["activities"] = self.get_serializer(page, many=True).data
+            return self.get_paginated_response(ret)
+
+        ret["activities"] = self.get_serializer(activities, many=True).data
+        return Response(ret)
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -306,17 +354,7 @@ class BPRecordViewSet(
     ]
     search_fields = ["title"]
     ordering = ["title", "country", "id"]
-    ordering_fields = [
-        "title",
-        "country__iso3",
-        "country__name",
-        "business_plan__agency__name",
-        "project_type__code",
-        "sector__code",
-        "subsector__code",
-        "status",
-        "is_multi_year",
-    ]
+    ordering_fields = ["business_plan__agency__name"] + BPRECORD_ORDERING_FIELDS
 
     def get_queryset(self):
         bp_records = BPRecord.objects.all()
@@ -379,61 +417,19 @@ class BPRecordViewSet(
     def print(self, *args, **kwargs):
         return self.get_wb(workbook_pdf_response)
 
-    def get_history(self, business_plan):
-        history_qs = business_plan.bphistory.all().select_related(
-            "business_plan", "updated_by"
-        )
-        history = BPHistorySerializer(history_qs, many=True).data
-
-        return history
-
-    @swagger_auto_schema(
-        operation_description="List records for a specific business plan",
-        manual_parameters=[
-            openapi.Parameter(
-                name="business_plan_id",
-                in_=openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-                description="Business plan ID",
-            ),
-            openapi.Parameter(
-                name="agency_id",
-                in_=openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-                description="Agency ID",
-            ),
-            openapi.Parameter(
-                name="year_start",
-                in_=openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-                description="Year start",
-            ),
-            openapi.Parameter(
-                name="year_end",
-                in_=openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-                description="Year end",
-            ),
-        ],
-    )
     def list(self, request, *args, **kwargs):
-        # get records for a specific business plan
-        bp = get_business_plan_from_request(request)
-        ret = {
-            "business_plan": BusinessPlanSerializer(bp).data,
-            "history": self.get_history(bp),
-        }
+        # get all activities between year_start and year_end
+        self.filterset_class = BPRecordListFilter
+        self.serializer_class = BPRecordListSerializer
 
-        # get records for the business plan
-        queryset = self.filter_queryset(self.get_queryset()).filter(business_plan=bp)
-
+        queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
-            ret["records"] = self.get_serializer(page, many=True).data
-            return self.get_paginated_response(ret)
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
 
-        ret["records"] = self.get_serializer(queryset, many=True).data
-        return Response(ret)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         serializer = BPRecordCreateSerializer(data=request.data)

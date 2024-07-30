@@ -48,7 +48,7 @@ const ConfirmDialog = function ConfirmDialog(props) {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [])
+  }, [cancelHandler])
 
   return (
     <dialog
