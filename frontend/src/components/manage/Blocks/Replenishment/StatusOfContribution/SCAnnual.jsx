@@ -12,7 +12,7 @@ import Table from '@ors/components/manage/Blocks/Replenishment/Table'
 import { sortTableData } from '@ors/components/manage/Blocks/Replenishment/utils'
 
 export default function SCAnnual({ year }) {
-  const { data, extraRows, rows } = useGetSCData(year)
+  const { data, extraRows, refetchSCData, rows } = useGetSCData(year)
 
   const [sortOn, setSortOn] = useState(0)
   const [sortDirection, setSortDirection] = useState(1)
@@ -85,7 +85,11 @@ export default function SCAnnual({ year }) {
         textPosition="center"
         onSort={handleSort}
       />
-      <DisputedContributionDialog countryOptions={countriesInTable} />
+      <DisputedContributionDialog
+        countryOptions={countriesInTable}
+        refetchSCData={refetchSCData}
+        year={year}
+      />
     </div>
   )
 }

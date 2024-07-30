@@ -13,6 +13,11 @@ function useGetSCData(start_year, end_year) {
   })
   const [loading, setLoading] = useState(false)
   const [rows, setRows] = useState([])
+  const [refetchTrigger, setRefetchTrigger] = useState(false)
+
+  const refetchSCData = () => {
+    setRefetchTrigger((prev) => !prev)
+  }
 
   useEffect(() => {
     setLoading(true)
@@ -45,7 +50,7 @@ function useGetSCData(start_year, end_year) {
         console.error('Error:', error)
         setLoading(false)
       })
-  }, [start_year, end_year])
+  }, [start_year, end_year, refetchTrigger])
 
   const extraRows = useMemo(
     function () {
@@ -70,7 +75,7 @@ function useGetSCData(start_year, end_year) {
     [data],
   )
 
-  return { data, extraRows, loading, rows }
+  return { data, extraRows, loading, refetchSCData, rows }
 }
 
 export default useGetSCData
