@@ -264,7 +264,7 @@ class TestCPExtractionALLExport(BaseTest):
     def test_get_cp_export(self, user, _setup_new_cp_report, _cp_report_format):
         self.client.force_authenticate(user=user)
 
-        response = self.client.get(self.url, {"year": 2019})
+        response = self.client.get(self.url, {"min_year": 2019, "max_year": 2019})
         assert response.status_code == 200
         assert response.filename == "CP Data Extraction-All.xlsx"
 
@@ -288,22 +288,22 @@ class TestCPExtractionALLExport(BaseTest):
         assert wb["MbrConsumption"].max_row == 1
 
         # check number of columns
-        # country, substance,  previous_year_price, 2019, remarks, notes
-        assert wb["ODSPrice"].max_column == 6
-        # country, annex_group, substance, odp_value, gwp_value, 2019, notes
-        assert wb["CP-Details"].max_column == 7
-        # country, substance, year, notes
-        assert wb["CPConsumption(ODP)"].max_column == 4
-        # country, status, chemical, group,
+        # country, year, substance,  previous_year_price, 2019, remarks, notes
+        assert wb["ODSPrice"].max_column == 7
+        # country, year, annex_group, substance, odp_value, gwp_value, 2019, notes
+        assert wb["CP-Details"].max_column == 8
+        # country, year, substance, year, notes
+        assert wb["CPConsumption(ODP)"].max_column == 5
+        # country, year, status, chemical, group,
         # 2019 MT, 2019 CO2, 2019 Servicing, 2019 Usage Total, notes
-        assert wb["HFC-Consumption(MTvsCO2Equi)"].max_column == 9
+        assert wb["HFC-Consumption(MTvsCO2Equi)"].max_column == 10
         # country, year, substance, all_uses, feedstock, destruction, notes
         assert wb["HFC-23Generation"].max_column == 7
         # country, year, facility, total, all_uses, feedstock_gc, destruction
         # feedstock_wpc, destruction_wpc, generated_emissions, remarks, notes
         assert wb["HFC-23Emission"].max_column == 12
-        # country, qps, non-qps, total
-        assert wb["MbrConsumption"].max_column == 4
+        # country, year, qps, non-qps, total
+        assert wb["MbrConsumption"].max_column == 5
 
 
 class TestCPCalculatedAmountExport(BaseTest):

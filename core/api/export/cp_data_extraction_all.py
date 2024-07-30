@@ -4,11 +4,16 @@ from core.api.export.base import BaseWriter
 class CPPricesExtractionWriter(BaseWriter):
     header_row_start_idx = 1
 
-    def __init__(self, wb, year):
+    def __init__(self, wb):
         headers = [
             {
                 "id": "country_name",
                 "headerName": "Country",
+            },
+            {
+                "id": "year",
+                "headerName": "Year",
+                "align": "center",
             },
             {
                 "id": "chemical_name",
@@ -21,7 +26,7 @@ class CPPricesExtractionWriter(BaseWriter):
             },
             {
                 "id": "current_year_price",
-                "headerName": str(year),
+                "headerName": "Current year price",
                 "align": "right",
             },
             {
@@ -48,6 +53,8 @@ class CPPricesExtractionWriter(BaseWriter):
                 value = price.country_programme_report.country.name
             elif header_id == "chemical_name":
                 value = price.display_name or price.get_chemical_display_name()
+            elif header_id == "year":
+                value = price.country_programme_report.year
             elif "price" in header_id:
                 # try to convert the value to float else keep it as it is
                 value = getattr(price, header_id, None)
@@ -70,11 +77,17 @@ class CPPricesExtractionWriter(BaseWriter):
 class CPDetailsExtractionWriter(BaseWriter):
     header_row_start_idx = 1
 
-    def __init__(self, wb, year):
+    def __init__(self, wb):
         headers = [
             {
                 "id": "country_name",
                 "headerName": "Country",
+            },
+            {
+                "id": "year",
+                "headerName": "Year",
+                "align": "center",
+                "type": "number",
             },
             {
                 "id": "substance_group",
@@ -98,7 +111,7 @@ class CPDetailsExtractionWriter(BaseWriter):
             },
             {
                 "id": "record_value",
-                "headerName": str(year),
+                "headerName": "Value",
                 "align": "right",
                 "type": "number",
             },
@@ -120,6 +133,8 @@ class CPDetailsExtractionWriter(BaseWriter):
         for header_id, header in self.headers.items():
             if header_id == "country_name":
                 value = record.country_programme_report.country.name
+            elif header_id == "year":
+                value = record.country_programme_report.year
             elif header_id == "substance_name":
                 value = record.display_name or record.get_chemical_display_name()
             elif header_id == "substance_group":
@@ -151,11 +166,16 @@ class CPDetailsExtractionWriter(BaseWriter):
 class CPConsumptionODPWriter(BaseWriter):
     header_row_start_idx = 1
 
-    def __init__(self, wb, year):
+    def __init__(self, wb):
         headers = [
             {
                 "id": "country_name",
                 "headerName": "Country",
+            },
+            {
+                "id": "year",
+                "headerName": "Year",
+                "align": "center",
             },
             {
                 "id": "substance_name",
@@ -163,7 +183,7 @@ class CPConsumptionODPWriter(BaseWriter):
             },
             {
                 "id": "record_value",
-                "headerName": str(year),
+                "headerName": "Record Value",
                 "align": "right",
                 "type": "number",
             },
@@ -181,22 +201,26 @@ class CPConsumptionODPWriter(BaseWriter):
         @param data: dict
         structure:
         {
-            "country_name": {
-                "substance_category": consumption_value,
+            "year": {
+                "country_name": {
+                    "substance_category": consumption_value,
+                    ...
+                },
                 ...
-            },
+            }
             ...
         }
         """
         row_idx = self.header_row_end_idx + 1
-        for country, country_data in data.items():
-            if not country_data:
-                continue
-            for subst_cat, cons_value in country_data.items():
-                self._write_row(row_idx, country, subst_cat, cons_value)
-                row_idx += 1
+        for year, year_values in data.items():
+            for country, country_data in year_values.items():
+                if not country_data:
+                    continue
+                for subst_cat, cons_value in country_data.items():
+                    self._write_row(row_idx, country, year, subst_cat, cons_value)
+                    row_idx += 1
 
-    def _write_row(self, row_idx, country, subst_cat, cons_value):
+    def _write_row(self, row_idx, country, year, subst_cat, cons_value):
         for header_id, header in self.headers.items():
             if header_id == "country_name":
                 value = country
@@ -204,6 +228,8 @@ class CPConsumptionODPWriter(BaseWriter):
                 value = subst_cat
             elif header_id == "record_value":
                 value = cons_value
+            elif header_id == "year":
+                value = year
             else:
                 value = None
 
@@ -218,11 +244,16 @@ class CPConsumptionODPWriter(BaseWriter):
 class CPHFCConsumptionMTCO2Writer(BaseWriter):
     header_row_start_idx = 1
 
-    def __init__(self, wb, year):
+    def __init__(self, wb):
         headers = [
             {
                 "id": "country_name",
                 "headerName": "Country",
+            },
+            {
+                "id": "year",
+                "headerName": "Year",
+                "align": "center",
             },
             {
                 "id": "country_lvc",
@@ -238,25 +269,25 @@ class CPHFCConsumptionMTCO2Writer(BaseWriter):
             },
             {
                 "id": "consumption_mt",
-                "headerName": f"{year} (MT)",
+                "headerName": "Consumption value (MT)",
                 "align": "right",
                 "type": "number",
             },
             {
                 "id": "consumption_co2",
-                "headerName": f"{year} (MT CO2-eq)",
+                "headerName": "Consumption value (MT CO2-eq)",
                 "align": "right",
                 "type": "number",
             },
             {
                 "id": "servicing",
-                "headerName": f"{year} (MT) - Servicing",
+                "headerName": "Consumption value (MT) - Servicing",
                 "align": "right",
                 "type": "number",
             },
             {
                 "id": "usages_total",
-                "headerName": f"{year} (MT) - Use By Sector Total",
+                "headerName": "Consumption value (MT) - Use By Sector Total",
                 "align": "right",
                 "type": "number",
             },
@@ -274,27 +305,33 @@ class CPHFCConsumptionMTCO2Writer(BaseWriter):
         @param data: dict
         structure:
         {
-            "country_name": {
-                "substance_group": value,
-                "consumption_mt": value,
-                "consumption_co2": value,
-                "servicing": value,
-                "usages_total": value,
-            },
+            "year": {
+                "country_name": {
+                    "substance_group": value,
+                    "consumption_mt": value,
+                    "consumption_co2": value,
+                    "servicing": value,
+                    "usages_total": value,
+                },
+                ...
+            }
             ...
         }
         """
         row_idx = self.header_row_end_idx + 1
-        for country, country_data in data.items():
-            if not country_data:
-                continue
-            self._write_row(row_idx, country, country_data)
-            row_idx += 1
+        for year, year_values in data.items():
+            for country, country_data in year_values.items():
+                if not country_data:
+                    continue
+                self._write_row(row_idx, country, year, country_data)
+                row_idx += 1
 
-    def _write_row(self, row_idx, country, values):
+    def _write_row(self, row_idx, country, year, values):
         for header_id, header in self.headers.items():
             if header_id == "country_name":
                 value = country
+            elif header_id == "year":
+                value = year
             elif header_id == "country_lvc":
                 value = "LVC" if values["country_lvc"] else "Non-LVC"
             else:
@@ -490,6 +527,10 @@ class MbrConsumptionWriter(BaseWriter):
             {
                 "id": "country_name",
                 "headerName": "Country",
+            },
+            {
+                "id": "year",
+                "headerName": "Year",
             },
             {
                 "id": "methyl_bromide_qps",
