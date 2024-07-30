@@ -23,8 +23,8 @@ export default function ReplenishmentHeading(props) {
   const pathname = usePathname()
   const period = getPathPeriod(pathname)
 
-  const ctx = useContext(ReplenishmentContext)
-  const ctx_2 = useContext(soAContext)
+  const replenishmentContext = useContext(ReplenishmentContext)
+  const soaContext = useContext(soAContext)
 
   const createNextPeriod = (options) => {
     if (!options) return
@@ -40,13 +40,13 @@ export default function ReplenishmentHeading(props) {
 
   async function handleCreateNewSOA() {
     try {
-      const newPeriod = createNextPeriod(ctx.periodOptions)
+      const newPeriod = createNextPeriod(replenishmentContext.periodOptions)
       setShowAddNewSOA(false)
       await api('/api/replenishment/replenishments/', {
-        data: { amount: ctx.periods[0].amount },
+        data: { amount: replenishmentContext.periods[0].amount },
         method: 'POST',
       })
-      ctx.refetchData()
+      replenishmentContext.refetchData()
       router.push(`/replenishment/scale-of-assessment/${newPeriod}`)
     } catch (error) {
       error.json().then((data) => {
@@ -60,7 +60,7 @@ export default function ReplenishmentHeading(props) {
     }
   }
 
-  const isLastPeriod = period === ctx?.periodOptions[0]?.value
+  const isLastPeriod = period === replenishmentContext?.periodOptions[0]?.value
 
   return (
     <HeaderTitle>
@@ -75,11 +75,11 @@ export default function ReplenishmentHeading(props) {
               period={period}
               periodOptions={[
                 ...(extraPeriodOptions ?? []),
-                ...ctx.periodOptions,
+                ...replenishmentContext.periodOptions,
               ]}
             />
           ) : null}
-          {ctx_2?.version?.is_final && isLastPeriod && (
+          {soaContext?.version?.is_final && isLastPeriod && (
             <AddButton
               className="shrink-0"
               onClick={() => setShowAddNewSOA(true)}
@@ -89,7 +89,7 @@ export default function ReplenishmentHeading(props) {
           )}
           {showAddNewSOA && (
             <ConfirmDialog
-              title={`Add a new scale of assessment for ${createNextPeriod(ctx.periodOptions)}?`}
+              title={`Add a new scale of assessment for ${createNextPeriod(replenishmentContext.periodOptions)}?`}
               onCancel={() => {
                 setShowAddNewSOA(false)
               }}
