@@ -56,8 +56,6 @@ function ReplenishmentProvider(props) {
     [periods],
   )
 
-  console.log(fetchTrigger)
-
   return (
     <ReplenishmentContext.Provider
       value={{
