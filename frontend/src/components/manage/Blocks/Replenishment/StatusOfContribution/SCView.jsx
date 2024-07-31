@@ -12,8 +12,8 @@ import SCNotes from '@ors/components/manage/Blocks/Replenishment/StatusOfContrib
 import SCSummary from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCSummary'
 import SCTriennial from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCTriennial'
 import {
-  scPeriodOptions,
   scAnnualOptions,
+  scPeriodOptions,
 } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 

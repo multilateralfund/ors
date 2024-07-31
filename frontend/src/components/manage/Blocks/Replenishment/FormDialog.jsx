@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 import cx from 'classnames'
 
@@ -37,11 +37,14 @@ const FormDialog = function FormDialog(props) {
     onSubmit(data, evt)
   }
 
-  function cancelHandler(evt) {
-    formRef.current.reset()
-    dialogRef.current.close()
-    onCancel()
-  }
+  const cancelHandler = useCallback(
+    (evt) => {
+      formRef.current.reset()
+      dialogRef.current.close()
+      onCancel()
+    },
+    [onCancel],
+  )
 
   function handleKeyDown(evt) {
     if (evt.key === 'Escape') {
@@ -66,7 +69,7 @@ const FormDialog = function FormDialog(props) {
   return (
     <dialog
       className={cx(
-        'max-h-2/3 justify-between rounded-xl border-none p-0 bg-white shadow-2xl',
+        'max-h-2/3 justify-between rounded-xl border-none bg-white p-0 shadow-2xl',
         props.className,
       )}
       ref={dialogRef}
