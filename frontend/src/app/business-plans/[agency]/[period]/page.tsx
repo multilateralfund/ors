@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 
-import BPView from '@ors/components/manage/Blocks/BusinessPlans/BPView'
+import BPView from '@ors/components/manage/Blocks/BusinessPlans/BPRecord/BPView'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export const metadata: Metadata = {
