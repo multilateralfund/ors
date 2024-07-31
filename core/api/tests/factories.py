@@ -14,8 +14,8 @@ from core.models import (
 )
 from core.models.business_plan import (
     BusinessPlan,
-    BPRecord,
-    BPRecordValue,
+    BPActivity,
+    BPActivityValue,
     BPChemicalType,
 )
 from core.models.adm import AdmChoice, AdmColumn, AdmRecord, AdmRow
@@ -447,14 +447,14 @@ class BPChemicalTypeFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("pystr", max_chars=200, prefix="bpchemicaltype-name")
 
 
-class BPRecordFactory(factory.django.DjangoModelFactory):
+class BPActivityFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = BPRecord
+        model = BPActivity
 
     business_plan = factory.SubFactory(BusinessPlanFactory)
-    title = factory.Faker("pystr", max_chars=200, prefix="bprecord-title")
+    title = factory.Faker("pystr", max_chars=200, prefix="bpactivity-title")
     required_by_model = factory.Faker(
-        "pystr", max_chars=200, prefix="bprecord-required-by-model"
+        "pystr", max_chars=200, prefix="bpactivity-required-by-model"
     )
     country = factory.SubFactory(CountryFactory)
     lvc_status = factory.fuzzy.FuzzyChoice(BPRecord.LVCStatus.choices)
@@ -465,19 +465,19 @@ class BPRecordFactory(factory.django.DjangoModelFactory):
     subsector = factory.SubFactory(ProjectSubSectorFactory)
     status = factory.fuzzy.FuzzyChoice(BPRecord.Status.choices)
     reason_for_exceeding = factory.Faker(
-        "pystr", max_chars=200, prefix="bprecord-reason-for-exceeding"
+        "pystr", max_chars=200, prefix="bpactivity-reason-for-exceeding"
     )
-    remarks = factory.Faker("pystr", max_chars=200, prefix="bprecord-remarks")
+    remarks = factory.Faker("pystr", max_chars=200, prefix="bpactivity-remarks")
     remarks_additional = factory.Faker(
-        "pystr", max_chars=200, prefix="bprecord-remarks-additional"
+        "pystr", max_chars=200, prefix="bpactivity-remarks-additional"
     )
 
 
-class BPRecordValueFactory(factory.django.DjangoModelFactory):
+class BPActivityValueFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = BPRecordValue
+        model = BPActivityValue
 
-    bp_record = factory.SubFactory(BPRecordFactory)
+    bp_activity = factory.SubFactory(BPActivityFactory)
     year = factory.Faker("random_int", min=2000, max=2024)
     value_usd = factory.Faker("random_int", min=1, max=10000)
     value_odp = factory.Faker("random_int", min=1, max=10000)

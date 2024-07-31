@@ -80,7 +80,7 @@ class BusinessPlan(models.Model):
         return f"{self.agency_id} {self.year_start}-{self.year_end}"
 
 
-class BPRecord(models.Model):
+class BPActivity(models.Model):
     class LVCStatus(models.TextChoices):
         lvc = "LVC", "LVC"
         non_lvc = "Non-LVC", "Non-LVC"
@@ -94,7 +94,7 @@ class BPRecord(models.Model):
         undefined = "U", "Undefined"
 
     business_plan = models.ForeignKey(
-        BusinessPlan, on_delete=models.CASCADE, related_name="records"
+        BusinessPlan, on_delete=models.CASCADE, related_name="activities"
     )
     title = models.CharField(max_length=255)
     required_by_model = models.CharField(max_length=255, null=True, blank=True)
@@ -136,9 +136,9 @@ class BPRecord(models.Model):
         return self.title
 
 
-class BPRecordValue(models.Model):
-    bp_record = models.ForeignKey(
-        BPRecord, on_delete=models.CASCADE, related_name="values"
+class BPActivityValue(models.Model):
+    bp_activity = models.ForeignKey(
+        BPActivity, on_delete=models.CASCADE, related_name="values"
     )
     year = models.IntegerField(validators=[MinValueValidator(settings.MIN_VALID_YEAR)])
     value_usd = models.DecimalField(

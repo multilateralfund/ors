@@ -45,7 +45,7 @@ class IsUserAllowedBP(permissions.BasePermission):
         return False
 
 
-class IsUserAllowedBPRecord(permissions.BasePermission):
+class IsUserAllowedBPActivity(permissions.BasePermission):
     def has_permission(self, request, view):
         user = request.user
         if user.is_authenticated:

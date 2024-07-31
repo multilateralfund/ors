@@ -24,7 +24,7 @@ from core.api.views.agency import AgencyListView
 from core.api.views.business_plan import (
     BPFileDownloadView,
     BPFileView,
-    BPRecordViewSet,
+    BPActivityViewSet,
 )
 from core.api.views.business_plan import BPStatusUpdateView, BusinessPlanViewSet
 from core.api.views.chemicals import (
@@ -90,7 +90,7 @@ router.register("project-comment", ProjectCommentViewSet)
 router.register("project-rbm-measure", ProjectRbmMeasureViewSet)
 router.register("submission-amount", ProjectSubmissionAmountViewSet)
 router.register("business-plan", BusinessPlanViewSet, basename="businessplan")
-router.register("business-plan-record", BPRecordViewSet, basename="bprecord")
+router.register("business-plan-activity", BPActivityViewSet, basename="bpactivity")
 router.register(
     "replenishment/countries",
     ReplenishmentCountriesViewSet,

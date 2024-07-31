@@ -20,7 +20,7 @@ class CountryAdmin(admin.ModelAdmin):
         exclude = [
             "cpreport",
             "project",
-            "bprecord",
+            "bpactivity",
             "cpreportarchive",
             "country",
             "user",

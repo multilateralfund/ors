@@ -1,7 +1,7 @@
 from django_filters import rest_framework as filters
 from django_filters.widgets import CSVWidget
 
-from core.models import BPRecord
+from core.models import BPActivity
 from core.models import BusinessPlan
 from core.models import Country
 from core.models import ProjectCluster
@@ -32,7 +32,7 @@ class BusinessPlanFilter(filters.FilterSet):
         ]
 
 
-class BPRecordFilter(filters.FilterSet):
+class BPActivityFilter(filters.FilterSet):
     country_id = filters.ModelMultipleChoiceFilter(
         queryset=Country.objects.all(),
         widget=CSVWidget,
@@ -54,12 +54,12 @@ class BPRecordFilter(filters.FilterSet):
         widget=CSVWidget,
     )
     status = filters.MultipleChoiceFilter(
-        choices=BPRecord.Status.choices,
+        choices=BPActivity.Status.choices,
         widget=CSVWidget,
     )
 
     class Meta:
-        model = BPRecord
+        model = BPActivity
         fields = [
             "country_id",
             "lvc_status",
@@ -74,7 +74,7 @@ class BPRecordFilter(filters.FilterSet):
         ]
 
 
-class BPRecordListFilter(BPRecordFilter):
+class BPActivityListFilter(BPActivityFilter):
     year_start = filters.NumberFilter(
         field_name="business_plan__year_start", lookup_expr="gte", required=True
     )
@@ -87,5 +87,5 @@ class BPRecordListFilter(BPRecordFilter):
         widget=CSVWidget,
     )
 
-    class Meta(BPRecordFilter.Meta):
-        fields = BPRecordFilter.Meta.fields + ["year_start", "year_end", "agency_id"]
+    class Meta(BPActivityFilter.Meta):
+        fields = BPActivityFilter.Meta.fields + ["year_start", "year_end", "agency_id"]
