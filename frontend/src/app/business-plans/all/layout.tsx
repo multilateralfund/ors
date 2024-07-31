@@ -61,11 +61,12 @@ function BusinessPlansList(props: any) {
   return (
     <>
       <div className={cx('print:hidden', styles.nav)}>
+        {/* @ts-ignore */}
         <nav className="shrink-0">{navLinks}</nav>
         <PeriodSelector
           label="Triennial"
           period={period}
-          periodOptions={periodOptions}
+          periodOptions={[{ label: 'All', value: null }, ...periodOptions]}
         />
         {/*<div id="replenishment-tab-buttons" className="self-end"></div>*/}
       </div>
@@ -74,7 +75,7 @@ function BusinessPlansList(props: any) {
   )
 }
 
-export default function ReplenishmentLayout({ children }: any) {
+export default function BusinessPlansListLayout({ children }: any) {
   return (
     <PageWrapper className="max-w-screen-xl print:p-0">
       <BusinessPlansList>{children}</BusinessPlansList>

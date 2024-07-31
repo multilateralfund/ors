@@ -55,8 +55,8 @@ export default function BPList(props: any) {
   const [filters, setFilters] = useState<FiltersType>({
     agency_id: null,
     status: null,
-    year_end: period.split('-')[1],
-    year_start: period.split('-')[0],
+    year_end: period?.split('-')[1] || null,
+    year_start: period?.split('-')[0] || null,
   })
 
   const { count, results, setParams } = useBPListApi(filters)

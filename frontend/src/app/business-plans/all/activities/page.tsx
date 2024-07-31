@@ -8,7 +8,6 @@ export const metadata: Metadata = {
   title: 'Business Plans - Activities',
 }
 
-export default async function BusinessPlansActivities(props: any) {
-  const { period } = props.params
-  return <BPActivities period={period} />
+export default async function BusinessPlansActivities() {
+  return <BPActivities />
 }
