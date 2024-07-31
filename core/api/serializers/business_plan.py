@@ -198,6 +198,7 @@ class BPActivityListSerializer(BPActivityDetailSerializer):
 
 class BPActivityCreateSerializer(serializers.ModelSerializer):
     business_plan_id = serializers.PrimaryKeyRelatedField(
+        required=False,
         queryset=BusinessPlan.objects.all().values_list("id", flat=True),
     )
     country_id = serializers.PrimaryKeyRelatedField(

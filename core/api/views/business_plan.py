@@ -8,7 +8,6 @@ from django.db import transaction
 from django.db.models import Max
 from django.db.models import Min
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -27,7 +26,6 @@ from core.api.serializers.business_plan import (
     BusinessPlanSerializer,
     BPFileSerializer,
     BPActivityExportSerializer,
-    BPActivityCreateSerializer,
     BPActivityDetailSerializer,
     BPActivityListSerializer,
 )
@@ -154,7 +152,17 @@ class BusinessPlanViewSet(
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        instance = BusinessPlan(**serializer.validated_data)
+        validated_data = serializer.validated_data.copy()
+        validated_data.pop("activities", [])
+        instance = BusinessPlan(**validated_data)
+
+        if not self.check_activity_values(serializer, instance):
+            return Response(
+                {
+                    "general_error": "BP activity values year not in business plan interval"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # check user permissions
         user = request.user
@@ -343,15 +351,27 @@ class BPStatusUpdateView(generics.GenericAPIView):
 
 
 class BPActivityViewSet(
-    mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
-    mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
     permission_classes = [IsUserAllowedBPActivity]
     serializer_class = BPActivityDetailSerializer
     filterset_class = BPActivityFilter
+    queryset = BPActivity.objects.select_related(
+        "business_plan",
+        "business_plan__agency",
+        "country",
+        "sector",
+        "subsector",
+        "project_type",
+        "bp_chemical_type",
+        "project_cluster",
+    ).prefetch_related(
+        "substances",
+        "values",
+    )
+
     filter_backends = [
         DjangoFilterBackend,
         filters.OrderingFilter,
@@ -360,25 +380,6 @@ class BPActivityViewSet(
     search_fields = ["title"]
     ordering = ["title", "country", "id"]
     ordering_fields = ["business_plan__agency__name"] + BPACTIVITY_ORDERING_FIELDS
-
-    def get_queryset(self):
-        bp_records = BPRecord.objects.all()
-
-        if self.request.method == "PUT":
-            return bp_records.select_for_update()
-        return bp_records.select_related(
-            "business_plan",
-            "business_plan__agency",
-            "country",
-            "sector",
-            "subsector",
-            "project_type",
-            "bp_chemical_type",
-            "project_cluster",
-        ).prefetch_related(
-            "substances",
-            "values",
-        )
 
     def get_wb(self, method):
         bp = get_business_plan_from_request(self.request)
@@ -435,89 +436,6 @@ class BPActivityViewSet(
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-
-    def create(self, request, *args, **kwargs):
-        serializer = BPRecordCreateSerializer(data=request.data)
-
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        business_plan = get_object_or_404(
-            BusinessPlan,
-            id=serializer.initial_data["business_plan_id"],
-        )
-        if not self.check_readonly_fields(serializer, business_plan):
-            return Response(
-                {
-                    "general_error": "BP record values year not in business plan interval"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        self.perform_create(serializer)
-        instance = serializer.instance
-
-        # set updated by user
-        business_plan.updated_by = request.user
-        business_plan.save()
-
-        BPHistory.objects.create(
-            business_plan=instance.business_plan,
-            updated_by=request.user,
-            event_description=f"Created record {instance.id}",
-        )
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
-
-    def check_readonly_fields(self, serializer, business_plan):
-        for record_value in serializer.initial_data.get("values", []):
-            if (
-                business_plan.year_start > record_value["year"]
-                or record_value["year"] > business_plan.year_end
-            ):
-                return False
-        return True
-
-    @transaction.atomic
-    def update(self, request, *args, **kwargs):
-        current_obj = self.get_object()
-
-        serializer = BPRecordCreateSerializer(current_obj, data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        if serializer.initial_data["business_plan_id"] != current_obj.business_plan_id:
-            return Response(
-                {"general_error": "Business plan changed"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        business_plan = current_obj.business_plan
-        if not self.check_readonly_fields(serializer, business_plan):
-            return Response(
-                {
-                    "general_error": "BP record values year not in business plan interval"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        self.perform_update(serializer)
-
-        # set updated by user
-        business_plan.updated_by = request.user
-        business_plan.save()
-
-        # create new history for update event
-        BPHistory.objects.create(
-            business_plan=current_obj.business_plan,
-            updated_by=request.user,
-            event_description=f"Updated record {current_obj.id}",
-        )
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
 
 class BPFileView(generics.GenericAPIView):
