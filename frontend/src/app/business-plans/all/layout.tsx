@@ -66,7 +66,7 @@ function BusinessPlansList(props: any) {
         <PeriodSelector
           label="Triennial"
           period={period}
-          periodOptions={[{ label: 'All', value: null }, ...periodOptions]}
+          periodOptions={[{ label: 'All', value: '' }, ...periodOptions]}
         />
         {/*<div id="replenishment-tab-buttons" className="self-end"></div>*/}
       </div>
