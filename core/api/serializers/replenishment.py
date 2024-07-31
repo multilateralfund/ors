@@ -11,6 +11,7 @@ from core.models import (
     Replenishment,
     ScaleOfAssessment,
     ScaleOfAssessmentVersion,
+    DisputedContribution,
 )
 
 
@@ -146,7 +147,11 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
     )
     currency = serializers.CharField()
     exchange_rate = serializers.DecimalField(
-        max_digits=30, decimal_places=15, allow_null=True, required=False, coerce_to_string=False
+        max_digits=30,
+        decimal_places=15,
+        allow_null=True,
+        required=False,
+        coerce_to_string=False,
     )
 
     number = serializers.CharField()
@@ -233,10 +238,18 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
     exchange_rate = serializers.DecimalField(
-        max_digits=30, decimal_places=15, allow_null=True, required=False, coerce_to_string=False
+        max_digits=30,
+        decimal_places=15,
+        allow_null=True,
+        required=False,
+        coerce_to_string=False,
     )
     ferm_gain_or_loss = serializers.DecimalField(
-        max_digits=30, decimal_places=15, allow_null=True, required=False, coerce_to_string=False
+        max_digits=30,
+        decimal_places=15,
+        allow_null=True,
+        required=False,
+        coerce_to_string=False,
     )
 
     class Meta:
@@ -251,4 +264,41 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
             "exchange_rate",
             "ferm_gain_or_loss",
             "comment",
+        ]
+
+
+class DisputedContributionReadSerializer(serializers.ModelSerializer):
+    country = CountrySerializer(read_only=True)
+    year = serializers.IntegerField()
+    amount = serializers.DecimalField(
+        max_digits=30, decimal_places=15, coerce_to_string=False
+    )
+
+    class Meta:
+        model = DisputedContribution
+        fields = [
+            "id",
+            "country",
+            "year",
+            "amount",
+        ]
+
+
+class DisputedContributionCreateSerializer(serializers.ModelSerializer):
+    country = serializers.PrimaryKeyRelatedField(
+        queryset=Country.objects.all(),
+        write_only=True,
+    )
+    year = serializers.IntegerField()
+    amount = serializers.DecimalField(
+        max_digits=30, decimal_places=15, coerce_to_string=False
+    )
+
+    class Meta:
+        model = DisputedContribution
+        fields = [
+            "id",
+            "country",
+            "year",
+            "amount",
         ]
