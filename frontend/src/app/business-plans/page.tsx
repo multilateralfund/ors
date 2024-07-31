@@ -14,11 +14,11 @@ export const metadata: Metadata = {
 export default async function BusinessPlans() {
   return (
     <PageWrapper className="max-w-screen-xl xl:px-0">
-      <HeaderTitle>
-        <PageHeading className="mx-auto max-w-screen-xl">
-          Business Plans
-        </PageHeading>
-      </HeaderTitle>
+      {/*<HeaderTitle>*/}
+      {/*  <PageHeading className="mx-auto max-w-screen-xl">*/}
+      {/*    Business Plans*/}
+      {/*  </PageHeading>*/}
+      {/*</HeaderTitle>*/}
       <BPList />
     </PageWrapper>
   )
