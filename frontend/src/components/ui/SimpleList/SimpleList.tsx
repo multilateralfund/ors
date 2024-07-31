@@ -27,7 +27,7 @@ function ListItem(props: any) {
           </span>
           <StatusPill status={item.status} />
         </div>
-        <span className="font-normal tracking-tight">
+        <span className="font-normal tracking-tight text-lg">
           Modified on {randomDate} by {mockUser}
         </span>
       </Link>

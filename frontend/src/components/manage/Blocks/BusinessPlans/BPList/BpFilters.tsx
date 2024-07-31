@@ -94,23 +94,23 @@ const YearSelect = (props: {
 
   return (
     <div className="flex gap-4">
-      <label className="uppercase">Date Range</label>
-      <Field
-        FieldProps={{ className: 'mb-0 w-24 BPList' }}
-        getOptionLabel={(option: number) => option.toString()}
-        options={startYearOptions}
-        popupIcon={null}
-        value={filters.year_start}
-        widget="autocomplete"
-        Input={{
-          placeholder: 'Start Year',
-        }}
-        onChange={(_: any, value: any) => {
-          debounce(() => {
-            setFilters({ ...filters, year_start: value || null })
-          })
-        }}
-      />
+      {/*<label className="uppercase">Date<br />Range</label>*/}
+      {/*<Field*/}
+      {/*  FieldProps={{ className: 'mb-0 w-24 BPList' }}*/}
+      {/*  getOptionLabel={(option: number) => option.toString()}*/}
+      {/*  options={startYearOptions}*/}
+      {/*  popupIcon={null}*/}
+      {/*  value={filters.year_start}*/}
+      {/*  widget="autocomplete"*/}
+      {/*  Input={{*/}
+      {/*    placeholder: 'Start Year',*/}
+      {/*  }}*/}
+      {/*  onChange={(_: any, value: any) => {*/}
+      {/*    debounce(() => {*/}
+      {/*      setFilters({ ...filters, year_start: value || null })*/}
+      {/*    })*/}
+      {/*  }}*/}
+      {/*/>*/}
       <Field
         FieldProps={{ className: 'mb-0 w-24 BPList' }}
         getOptionLabel={(option: number) => option.toString()}
@@ -131,40 +131,40 @@ const YearSelect = (props: {
   )
 }
 
-// const AgencyFilter = (props: {
-//   agencies: any
-//   filters: any
-//   setFilters: any
-// }) => {
-//   const { agencies, filters, setFilters } = props
-//
-//   const agencyOptions = agencies.map((agency: any) => ({
-//     id: agency.id,
-//     label: agency.name,
-//   }))
-//
-//   return (
-//     <Field
-//       FieldProps={{ className: 'mb-0 w-full BPList' }}
-//       getOptionLabel={(option: { id: number; label: string }) => option.label}
-//       options={agencyOptions}
-//       popupIcon={<IoChevronDownCircle color="black" size={24} />}
-//       widget="autocomplete"
-//       Input={{
-//         placeholder: 'AGENCY',
-//       }}
-//       value={
-//         agencyOptions.find((option: any) => option.id === filters.agency_id) ||
-//         null
-//       }
-//       onChange={(_: any, value: any) => {
-//         debounce(() => {
-//           setFilters({ ...filters, agency_id: value ? value.id : null })
-//         })
-//       }}
-//     />
-//   )
-// }
+const AgencyFilter = (props: {
+  agencies: any
+  filters: any
+  setFilters: any
+}) => {
+  const { agencies, filters, setFilters } = props
+
+  const agencyOptions = agencies.map((agency: any) => ({
+    id: agency.id,
+    label: agency.name,
+  }))
+
+  return (
+    <Field
+      FieldProps={{ className: 'mb-0 w-40 BPList' }}
+      getOptionLabel={(option: { id: number; label: string }) => option.label}
+      options={agencyOptions}
+      popupIcon={<IoChevronDownCircle color="black" size={24} />}
+      widget="autocomplete"
+      Input={{
+        placeholder: 'Agency',
+      }}
+      value={
+        agencyOptions.find((option: any) => option.id === filters.agency_id) ||
+        null
+      }
+      onChange={(_: any, value: any) => {
+        debounce(() => {
+          setFilters({ ...filters, agency_id: value ? value.id : null })
+        })
+      }}
+    />
+  )
+}
 
 function BPFilters(props: any) {
   const { agencies, filters, handleSearch, setFilters, statuses, yearRanges } =
@@ -172,22 +172,22 @@ function BPFilters(props: any) {
 
   return (
     <div id="filters" className="flex h-fit gap-4 py-4">
-      <SearchInput filters={filters} handleSearch={handleSearch} />
+      {/*<SearchInput filters={filters} handleSearch={handleSearch} />*/}
+      <AgencyFilter
+        agencies={agencies}
+        filters={filters}
+        setFilters={setFilters}
+      />
       <StatusFilter
         filters={filters}
         setFilters={setFilters}
         statuses={statuses}
       />
-      {/*<AgencyFilter*/}
-      {/*  agencies={agencies}*/}
+      {/*<YearSelect*/}
       {/*  filters={filters}*/}
       {/*  setFilters={setFilters}*/}
+      {/*  yearRanges={yearRanges}*/}
       {/*/>*/}
-      <YearSelect
-        filters={filters}
-        setFilters={setFilters}
-        yearRanges={yearRanges}
-      />
     </div>
   )
 }
