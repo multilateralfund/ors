@@ -27,7 +27,7 @@ from core.models import (
     ScaleOfAssessment,
     ScaleOfAssessmentVersion,
     Replenishment,
-    Country,
+    Country, DisputedContribution,
 )
 
 
@@ -320,6 +320,7 @@ class TestStatusOfContributions:
                     },
                     "year": year_1,
                     "amount": disputed_1.amount.quantize(self.fifteen_decimals),
+                    "comment": disputed_1.comment,
                 }
             ],
         }
@@ -635,6 +636,7 @@ class TestStatusOfContributions:
                     },
                     "year": year_1,
                     "amount": disputed_1.amount.quantize(self.fifteen_decimals),
+                    "comment": disputed_1.comment,
                 }
             ],
         }
@@ -732,6 +734,37 @@ class TestStatusOfContributions:
             )
         )
         assert response.data == {}
+
+
+class TestDisputedContributions(BaseTest):
+    url = reverse("replenishment-disputed-contributions-list")
+
+    def test_create_disputed_contributions(self, user):
+        country = CountryFactory.create(name="Country 1", iso3="XYZ")
+
+        self.client.force_authenticate(user=user)
+        self.client.post(
+            self.url,
+            {
+                "country": country.id,
+                "year": 2020,
+                "amount": "100",
+                "comment": "Comment",
+            },
+            format="json",
+        )
+
+        assert DisputedContribution.objects.count() == 1
+
+    def test_delete_disputed_contributions(self, user):
+        disputed = DisputedContributionsFactory.create()
+
+        self.client.force_authenticate(user=user)
+        self.client.delete(
+            reverse("replenishment-disputed-contributions-detail", args=[disputed.id])
+        )
+
+        assert DisputedContribution.objects.count() == 0
 
 
 class TestReplenishmentDashboard(BaseTest):

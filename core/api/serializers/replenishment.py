@@ -273,6 +273,7 @@ class DisputedContributionReadSerializer(serializers.ModelSerializer):
     amount = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
+    comment = serializers.CharField()
 
     class Meta:
         model = DisputedContribution
@@ -281,6 +282,7 @@ class DisputedContributionReadSerializer(serializers.ModelSerializer):
             "country",
             "year",
             "amount",
+            "comment",
         ]
 
 
@@ -293,6 +295,7 @@ class DisputedContributionCreateSerializer(serializers.ModelSerializer):
     amount = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
+    comment = serializers.CharField(allow_blank=True, required=False)
 
     class Meta:
         model = DisputedContribution
@@ -301,4 +304,5 @@ class DisputedContributionCreateSerializer(serializers.ModelSerializer):
             "country",
             "year",
             "amount",
+            "comment",
         ]

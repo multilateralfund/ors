@@ -301,6 +301,7 @@ class DisputedContribution(models.Model):
     )
     year = models.IntegerField()
     amount = models.DecimalField(max_digits=30, decimal_places=15, default=0)
+    comment = models.TextField(blank=True, default="")
 
     def __str__(self):
         return f"Disputed Contribution {self.year} - {self.amount}"
