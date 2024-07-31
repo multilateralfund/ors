@@ -43,7 +43,8 @@ function useBPListApi(filters?: any) {
   return { count, data, loaded, loading, results, setParams }
 }
 
-export default function BPList() {
+export default function BPList(props: any) {
+  const { period } = props
   const bpSlice = useStore((state) => state.businessPlans)
   const { agencies, settings } = useStore((state) => state.common)
 
@@ -54,8 +55,8 @@ export default function BPList() {
   const [filters, setFilters] = useState<FiltersType>({
     agency_id: null,
     status: null,
-    year_end: null,
-    year_start: null,
+    year_end: period.split('-')[1],
+    year_start: period.split('-')[0],
   })
 
   const { count, results, setParams } = useBPListApi(filters)

@@ -1,25 +1,18 @@
-import React from 'react'
+'use client'
 
-import { Metadata } from 'next'
+import { useEffect } from 'react'
 
-import BPList from '@ors/components/manage/Blocks/BusinessPlans/BPList/BPList'
-import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
-import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-import { PageHeading } from '@ors/components/ui/Heading/Heading'
+import { useRouter } from 'next/navigation'
 
-export const metadata: Metadata = {
-  title: 'Business Plans',
-}
+import useGetBpPeriods from '@ors/components/manage/Blocks/BusinessPlans/BPList/useGetBPPeriods'
 
-export default async function BusinessPlans() {
-  return (
-    <PageWrapper className="max-w-screen-xl xl:px-0">
-      {/*<HeaderTitle>*/}
-      {/*  <PageHeading className="mx-auto max-w-screen-xl">*/}
-      {/*    Business Plans*/}
-      {/*  </PageHeading>*/}
-      {/*</HeaderTitle>*/}
-      <BPList />
-    </PageWrapper>
-  )
+export default function BusinessPlans() {
+  const router = useRouter()
+  const { periodOptions } = useGetBpPeriods()
+
+  useEffect(() => {
+    if (periodOptions.length > 0) {
+      router.replace(`/business-plans/all/plans/${periodOptions[0].value}`)
+    }
+  }, [periodOptions, router])
 }
