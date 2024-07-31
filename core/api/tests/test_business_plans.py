@@ -27,13 +27,13 @@ pytestmark = pytest.mark.django_db
 # pylint: disable=C8008, W0221, W0613, R0913
 
 
-@pytest.fixture
-def new_agency():
+@pytest.fixture(name="new_agency")
+def _new_agency():
     return AgencyFactory.create(name="Agency2", code="AG2")
 
 
-@pytest.fixture
-def new_agency_user(new_agency):
+@pytest.fixture(name="new_agency_user")
+def _new_agency_user(new_agency):
     return UserFactory.create(agency=new_agency, user_type="agency_submitter")
 
 

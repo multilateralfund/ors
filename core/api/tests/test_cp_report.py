@@ -73,8 +73,8 @@ def _status_update_url(cp_report_2019):
     return reverse("country-programme-report-status", kwargs={"id": cp_report_2019.id})
 
 
-@pytest.fixture
-def another_country_user():
+@pytest.fixture(name="another_country_user")
+def _another_country_user():
     new_country = CountryFactory.create(name="New Country")
     return UserFactory.create(country=new_country, user_type="country_user")
 

@@ -8,8 +8,8 @@ from core.models.business_plan import BusinessPlan
 pytestmark = pytest.mark.django_db
 
 
-@pytest.fixture
-def new_agency_user():
+@pytest.fixture(name="new_agency_user")
+def _new_agency_user():
     new_agency = AgencyFactory.create(name="Agency2", code="AG2")
     return UserFactory.create(agency=new_agency, user_type="agency_submitter")
 
@@ -72,9 +72,7 @@ class TestBPFileDownload:
         response = self.client.get(url)
         assert response.status_code == 403
 
-    def test_file_download_wrong_user(
-        self, business_plan, agency_user, new_agency_user, test_file
-    ):
+    def test_file_download_wrong_user(self, business_plan, new_agency_user):
         self.client.force_authenticate(user=new_agency_user)
         url = reverse("business-plan-file-download", kwargs={"id": business_plan.id})
         response = self.client.get(url)
