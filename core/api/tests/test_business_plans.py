@@ -177,7 +177,6 @@ def setup_bp_record_create(
     substance,
 ):
     return {
-        "business_plan_id": business_plan.id,
         "title": "Planu",
         "country_id": country_ro.id,
         "lvc_status": "LVC",
@@ -419,9 +418,11 @@ class TestBPUpdate:
         self.client.force_authenticate(user=agency_user)
 
         url = reverse("businessplan-list") + f"{business_plan.id}/"
+        other_business_plan = BusinessPlanFactory()
         record_data = _setup_bp_record_create
         substance2 = SubstanceFactory.create(name="substance2")
         record_data["substances"] = [substance.id, substance2.id]
+        record_data["business_plan_id"] = other_business_plan.id  # should be ignored
         record_data["title"] = "Planu 2"
         record_data["status"] = "P"
         record_data["is_multi_year"] = True
