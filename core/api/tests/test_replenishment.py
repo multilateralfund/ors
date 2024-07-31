@@ -27,7 +27,8 @@ from core.models import (
     ScaleOfAssessment,
     ScaleOfAssessmentVersion,
     Replenishment,
-    Country, DisputedContribution,
+    Country,
+    DisputedContribution,
 )
 
 
