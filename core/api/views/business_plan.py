@@ -19,7 +19,7 @@ from core.api.export.base import configure_sheet_print
 from core.api.export.business_plan import BusinessPlanWriter
 from core.api.filters.business_plan import BPRecordFilter, BPRecordListFilter
 from core.api.filters.business_plan import BusinessPlanFilter
-from core.api.permissions import IsUserAllowedBP, IsUserAllowedBPRecord
+from core.api.permissions import IsAgency, IsSecretariat
 from core.api.serializers.bp_history import BPHistorySerializer
 from core.api.serializers.business_plan import (
     BusinessPlanCreateSerializer,
@@ -57,7 +57,7 @@ class BusinessPlanViewSet(
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
-    permission_classes = [IsUserAllowedBP]
+    permission_classes = [IsSecretariat | IsAgency]
     filter_backends = [
         BPFilterBackend,
         filters.OrderingFilter,
@@ -68,8 +68,6 @@ class BusinessPlanViewSet(
     search_fields = ["agency__name"]
 
     def get_queryset(self):
-        business_plans = BusinessPlan.objects.all()
-
         if self.action == "get":
             return BPRecord.objects.select_related(
                 "business_plan",
@@ -84,8 +82,16 @@ class BusinessPlanViewSet(
                 "substances",
                 "values",
             )
+
+        business_plans = BusinessPlan.objects.all()
+
         if self.request.method == "PUT":
             return business_plans.select_for_update()
+
+        # filter business plans by agency if user is agency
+        if "agency" in self.request.user.user_type.lower():
+            business_plans = business_plans.filter(agency=self.request.user.agency)
+
         return business_plans.select_related(
             "agency", "created_by", "updated_by"
         ).order_by("year_start", "year_end", "id")
@@ -116,6 +122,8 @@ class BusinessPlanViewSet(
 
         # get activities and history for a specific business plan
         bp = get_business_plan_from_request(self.request)
+        self.check_object_permissions(self.request, bp)
+
         history_qs = bp.bphistory.select_related("business_plan", "updated_by")
         activities = self.filter_queryset(self.get_queryset()).filter(business_plan=bp)
 
@@ -140,6 +148,7 @@ class BusinessPlanViewSet(
             year_start=request.data.get("year_start"),
             year_end=request.data.get("year_end"),
         ).first()
+
         if business_plan:
             return Response(
                 {
@@ -156,6 +165,9 @@ class BusinessPlanViewSet(
         validated_data.pop("records", [])
         instance = BusinessPlan(**validated_data)
 
+        # check user permissions
+        self.check_object_permissions(request, instance)
+
         if not self.check_record_values(serializer, instance):
             return Response(
                 {
@@ -163,10 +175,6 @@ class BusinessPlanViewSet(
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-        # check user permissions
-        user = request.user
-        self.check_object_permissions(request, instance)
 
         # check bp status
         if instance.status not in [
@@ -188,6 +196,7 @@ class BusinessPlanViewSet(
             )
 
         # set created by user
+        user = request.user
         instance.created_by = user
         instance.save()
 
@@ -295,7 +304,7 @@ class BPStatusUpdateView(generics.GenericAPIView):
     queryset = BusinessPlan.objects.all()
     serializer_class = BusinessPlanSerializer
     lookup_field = "id"
-    permission_classes = [IsUserAllowedBP]
+    permission_classes = [IsSecretariat | IsAgency]
 
     @swagger_auto_schema(
         operation_description="Update business plan status",
@@ -355,22 +364,9 @@ class BPRecordViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    permission_classes = [IsUserAllowedBPRecord]
+    permission_classes = [IsSecretariat | IsAgency]
     serializer_class = BPRecordDetailSerializer
     filterset_class = BPRecordFilter
-    queryset = BPRecord.objects.select_related(
-        "business_plan",
-        "business_plan__agency",
-        "country",
-        "sector",
-        "subsector",
-        "project_type",
-        "bp_chemical_type",
-        "project_cluster",
-    ).prefetch_related(
-        "substances",
-        "values",
-    )
 
     filter_backends = [
         DjangoFilterBackend,
@@ -380,6 +376,27 @@ class BPRecordViewSet(
     search_fields = ["title"]
     ordering = ["title", "country", "id"]
     ordering_fields = ["business_plan__agency__name"] + BPRECORD_ORDERING_FIELDS
+
+    def get_queryset(self):
+        queryset = BPRecord.objects.select_related(
+            "business_plan",
+            "business_plan__agency",
+            "country",
+            "sector",
+            "subsector",
+            "project_type",
+            "bp_chemical_type",
+            "project_cluster",
+        ).prefetch_related(
+            "substances",
+            "values",
+        )
+
+        if "agency" in self.request.user.user_type.lower():
+            # filter records by agency if user is agency
+            queryset = queryset.filter(business_plan__agency=self.request.user.agency)
+
+        return queryset
 
     def get_wb(self, method):
         bp = get_business_plan_from_request(self.request)
@@ -443,7 +460,7 @@ class BPFileView(generics.GenericAPIView):
     API endpoint that allows uploading business plan file.
     """
 
-    permission_classes = [IsUserAllowedBP]
+    permission_classes = [IsSecretariat | IsAgency]
     queryset = BusinessPlan.objects.all()
     serializer_class = BPFileSerializer
     lookup_field = "id"
@@ -499,7 +516,7 @@ class BPFileView(generics.GenericAPIView):
 
 
 class BPFileDownloadView(generics.RetrieveAPIView):
-    permission_classes = [IsUserAllowedBP]
+    permission_classes = [IsSecretariat | IsAgency]
     queryset = BusinessPlan.objects.all()
     lookup_field = "id"
 
