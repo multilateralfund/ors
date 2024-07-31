@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import cx from 'classnames'
 
@@ -27,6 +27,10 @@ const SimpleSelect = ({
 }: SimpleSelectProps) => {
   const [selectedIndex, setSelectedIndex] = useState(initialIndex)
   const [showMenu, setShowMenu] = useState(false)
+
+  useEffect(() => {
+    setSelectedIndex(initialIndex)
+  }, [initialIndex])
 
   const handleClickOption = (index: number) => () => {
     setSelectedIndex(index)

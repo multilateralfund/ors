@@ -1,6 +1,7 @@
 'use client'
 import { useMemo, useState } from 'react'
 
+import DisputedContributionDialog from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/DisputedContributionDialog'
 import { AnnualIndicators } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/Indicators'
 import useGetSCData from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/useGetSCData'
 import {
@@ -80,6 +81,7 @@ export default function SCAnnual({ year }) {
         textPosition="center"
         onSort={handleSort}
       />
+      <DisputedContributionDialog />
     </div>
   )
 }

@@ -48,7 +48,7 @@ const ConfirmDialog = function ConfirmDialog(props) {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [])
+  }, [cancelHandler])
 
   return (
     <dialog
@@ -69,7 +69,7 @@ const ConfirmDialog = function ConfirmDialog(props) {
           />
         </div>
         {children}
-        <footer className="mt-6 flex items-center justify-between border-x-0 border-b-0 border-t border-solid border-gray-200 pt-6">
+        <footer className="mt-6 flex items-center gap-2 border-x-0 border-b-0 border-t border-solid border-gray-200 pt-6">
           <SubmitButton onClick={submitHandler}>Yes</SubmitButton>
           <CancelButton onClick={cancelHandler}>Cancel</CancelButton>
         </footer>
