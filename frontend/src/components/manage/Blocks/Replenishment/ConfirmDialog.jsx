@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 import cx from 'classnames'
 
@@ -25,17 +25,23 @@ const ConfirmDialog = function ConfirmDialog(props) {
     onSubmit()
   }
 
-  function cancelHandler(evt) {
-    dialogRef.current.close()
-    onCancel()
-  }
+  const cancelHandler = useCallback(
+    (evt) => {
+      dialogRef.current.close()
+      onCancel()
+    },
+    [onCancel],
+  )
 
-  function handleKeyDown(evt) {
-    if (evt.key === 'Escape') {
-      evt.preventDefault()
-      cancelHandler(evt)
-    }
-  }
+  const handleKeyDown = useCallback(
+    (evt) => {
+      if (evt.key === 'Escape') {
+        evt.preventDefault()
+        cancelHandler(evt)
+      }
+    },
+    [cancelHandler],
+  )
 
   useEffect(() => {
     const handleClickOutside = (event) => {

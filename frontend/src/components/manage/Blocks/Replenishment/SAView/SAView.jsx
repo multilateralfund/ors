@@ -126,6 +126,9 @@ function SaveManager(props) {
   const { comment, currencyDateRange, data, replenishment, version, versions } =
     props
 
+  const { refetchData: refetchReplenishment } = useContext(ReplenishmentContext)
+  const { refetchData: refetchSoA, setCurrentVersion } = useContext(SoAContext)
+
   const [isFinal, setIsFinal] = useState(false)
   const [createNewVersion, setCreateNewVersion] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -173,7 +176,11 @@ function SaveManager(props) {
       method: 'POST',
     })
       .then(() => {
-        window.location.reload()
+        refetchReplenishment()
+        refetchSoA()
+        if (createNewVersion) {
+          setCurrentVersion(prevVersion => prevVersion + 1)
+        }
         enqueueSnackbar('Data saved successfully.', { variant: 'success' })
       })
       .catch((error) => {
