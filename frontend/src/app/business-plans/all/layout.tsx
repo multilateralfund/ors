@@ -10,6 +10,8 @@ import useGetBpPeriods from '@ors/components/manage/Blocks/BusinessPlans/BPList/
 import PeriodSelector from '@ors/components/manage/Blocks/Replenishment/PeriodSelector'
 import { getPathPeriod } from '@ors/components/manage/Blocks/Replenishment/utils'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
+import { PageHeading } from '@ors/components/ui/Heading/Heading'
+import CustomLink from '@ors/components/ui/Link/Link'
 
 import styles from './styles.module.css'
 
@@ -75,9 +77,27 @@ function BusinessPlansList(props: any) {
   )
 }
 
+function BPListHeader() {
+  return (
+    <div className="flex items-center justify-between mb-8">
+      <PageHeading>Business Plans</PageHeading>
+      <CustomLink
+        className="px-4 py-2 text-lg uppercase"
+        color="secondary"
+        href="/business-plans/create"
+        variant="contained"
+        button
+      >
+        Create new plan
+      </CustomLink>
+    </div>
+  )
+}
+
 export default function BusinessPlansListLayout({ children }: any) {
   return (
     <PageWrapper className="max-w-screen-xl print:p-0">
+      <BPListHeader />
       <BusinessPlansList>{children}</BusinessPlansList>
     </PageWrapper>
   )

@@ -3,7 +3,6 @@
 import { useState } from 'react'
 
 import { BPFilters } from '@ors/components/manage/Blocks/BusinessPlans/BPList/BpFilters'
-import Link from '@ors/components/ui/Link/Link'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import SimpleList from '@ors/components/ui/SimpleList/SimpleList'
 import { getResults } from '@ors/helpers'
@@ -77,17 +76,6 @@ export default function BPList(props: any) {
 
   return (
     <>
-      <div className="mb-6 flex items-center justify-end gap-x-6 lg:mb-4 lg:gap-x-4">
-        <Link
-          className="px-4 py-2 text-lg uppercase"
-          color="secondary"
-          href="/business-plans/create"
-          variant="contained"
-          button
-        >
-          Create new plan
-        </Link>
-      </div>
       <BPFilters
         agencies={agencies.data}
         filters={filters}
