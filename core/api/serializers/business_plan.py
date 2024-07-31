@@ -301,7 +301,7 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
     def _create_bp_activities(self, business_plan, activities):
         for activity in activities:
             activity["business_plan_id"] = business_plan.id
-        activity_serializer = BPActivityCreateSerializer(data=activies, many=True)
+        activity_serializer = BPActivityCreateSerializer(data=activities, many=True)
         activity_serializer.is_valid(raise_exception=True)
         activity_serializer.save()
 

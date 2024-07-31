@@ -457,13 +457,13 @@ class BPActivityFactory(factory.django.DjangoModelFactory):
         "pystr", max_chars=200, prefix="bpactivity-required-by-model"
     )
     country = factory.SubFactory(CountryFactory)
-    lvc_status = factory.fuzzy.FuzzyChoice(BPRecord.LVCStatus.choices)
+    lvc_status = factory.fuzzy.FuzzyChoice(BPActivity.LVCStatus.choices)
     project_type = factory.SubFactory(ProjectTypeFactory)
     bp_chemical_type = factory.SubFactory(BPChemicalTypeFactory)
     amount_polyol = factory.Faker("random_int", min=1, max=1000)
     sector = factory.SubFactory(ProjectSectorFactory)
     subsector = factory.SubFactory(ProjectSubSectorFactory)
-    status = factory.fuzzy.FuzzyChoice(BPRecord.Status.choices)
+    status = factory.fuzzy.FuzzyChoice(BPActivity.Status.choices)
     reason_for_exceeding = factory.Faker(
         "pystr", max_chars=200, prefix="bpactivity-reason-for-exceeding"
     )

@@ -408,7 +408,7 @@ def bp_chemical_type():
 
 @pytest.fixture
 def bp_activity(business_plan, country_ro):
-    return BPRecordFactory(
+    return BPActivityFactory(
         business_plan=business_plan,
         country=country_ro,
         status=BPActivity.Status.approved,
