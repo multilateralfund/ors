@@ -3,10 +3,15 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+from django.contrib.auth import get_user_model
 from django.db.models import Exists
 from django.db.models import OuterRef
 from django.http import FileResponse
 from django_filters import rest_framework as filters
+
+from core.models.business_plan import BusinessPlan
+
+User = get_user_model()
 
 SECTION_ANNEX_MAPPING = {
     "A": ["A", "B", "C", "D", "E"],
@@ -37,6 +42,39 @@ SUBSTANCE_GROUP_ID_TO_CATEGORY = {
 }
 
 SUBMISSION_STATUSE_CODES = ["NEWSUB", "UNK"]
+
+
+STATUS_TRANSITIONS = {
+    BusinessPlan.Status.agency_draft: {
+        BusinessPlan.Status.agency_draft: [
+            User.UserType.AGENCY_SUBMITTER,
+            User.UserType.AGENCY_INPUTTER,
+            User.UserType.SECRETARIAT,
+        ],
+        BusinessPlan.Status.submitted: [
+            User.UserType.AGENCY_SUBMITTER,
+            User.UserType.SECRETARIAT,
+        ],
+    },
+    BusinessPlan.Status.submitted: {
+        BusinessPlan.Status.need_changes: [User.UserType.SECRETARIAT],
+        BusinessPlan.Status.secretariat_draft: [User.UserType.SECRETARIAT],
+        BusinessPlan.Status.approved: [User.UserType.SECRETARIAT],
+        BusinessPlan.Status.rejected: [User.UserType.SECRETARIAT],
+    },
+    BusinessPlan.Status.need_changes: {
+        BusinessPlan.Status.agency_draft: [
+            User.UserType.AGENCY_SUBMITTER,
+            User.UserType.AGENCY_INPUTTER,
+            User.UserType.SECRETARIAT,
+        ],
+        BusinessPlan.Status.secretariat_draft: [User.UserType.SECRETARIAT],
+    },
+    BusinessPlan.Status.secretariat_draft: {
+        BusinessPlan.Status.secretariat_draft: [User.UserType.SECRETARIAT],
+        BusinessPlan.Status.submitted: [User.UserType.SECRETARIAT],
+    },
+}
 
 
 class RelatedExistsFilter(filters.BooleanFilter):

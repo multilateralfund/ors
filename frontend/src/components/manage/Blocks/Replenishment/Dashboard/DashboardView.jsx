@@ -12,6 +12,7 @@ import useGetDashboardData from '@ors/components/manage/Blocks/Replenishment/Das
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
+import Loading from '@ors/components/theme/Loading/Loading'
 import { SubmitButton } from '@ors/components/ui/Button/Button'
 import { api } from '@ors/helpers'
 
@@ -228,7 +229,7 @@ const DashboardIndicators = ({ data }) => {
 }
 
 function DashboardView() {
-  const { data: newData, formData, loading } = useGetDashboardData()
+  const { formData, invalidateDataFn, loading, newData } = useGetDashboardData()
   const {
     allocations,
     charts,
@@ -239,13 +240,12 @@ function DashboardView() {
   } = newData
 
   const [showEdit, setShowEdit] = useState(false)
-  const [data, setData] = useState(null)
 
   const { enqueueSnackbar } = useSnackbar()
 
-  useEffect(() => {
-    setData(formData)
-  }, [formData])
+  if (loading) {
+    return <Loading />
+  }
 
   function handleEditClick() {
     setShowEdit(!showEdit)
@@ -267,9 +267,11 @@ function DashboardView() {
       method: 'PUT',
     })
       .then(() => {
-        // TODO: proper way to update data
-        window.location.reload()
+        invalidateDataFn({
+          cache_bust: crypto.randomUUID(),
+        })
         enqueueSnackbar('Data updated successfully', { variant: 'success' })
+        handleEditCancel()
       })
       .catch(() => {
         enqueueSnackbar('Failed to update data', { variant: 'error' })
@@ -293,7 +295,7 @@ function DashboardView() {
 
       {showEdit ? (
         <EditStatusDialog
-          data={data}
+          data={formData}
           onCancel={handleEditCancel}
           onSubmit={handleEditSubmit}
         />

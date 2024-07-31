@@ -22,14 +22,12 @@ function SAHeading(props) {
     setShowVersionsMenu(false)
   })
 
-
   function handleClickVersion(v) {
-    return function() {
+    return function () {
       setCurrentVersion(v.version)
       setShowVersionsMenu(false)
     }
   }
-
 
   const tagLatest = (
     <span className="mx-2 rounded-md bg-gray-400 p-1 text-xs text-white">
@@ -84,7 +82,18 @@ function SAHeading(props) {
               >
                 <div>Version {v.version}</div>
                 <div className="flex items-center">
-                  {idx == 0 && (v.is_final ? tagLatest : tagDraft)}
+                  {versions.length === 1 ? (
+                    v.is_final ? (
+                      tagLatest
+                    ) : (
+                      tagDraft
+                    )
+                  ) : (
+                    <>
+                      {idx === 0 && (v.is_final ? tagLatest : tagDraft)}
+                      {idx === versions.length - 1 && tagDraft}
+                    </>
+                  )}
                 </div>
               </div>
             </div>

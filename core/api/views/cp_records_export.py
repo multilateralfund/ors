@@ -1,7 +1,6 @@
 import collections
 import itertools
 import openpyxl
-from datetime import datetime
 
 from django.db.models import Prefetch
 from django.db import models
@@ -33,8 +32,8 @@ from core.api.utils import workbook_response
 from core.api.views.cp_records import CPRecordListView
 from core.api.views.cp_report_empty_form import EmptyFormView
 from core.api.views.utils import (
-    get_archive_reports_final_for_year,
-    get_final_records_for_year,
+    get_archive_reports_final_for_years,
+    get_final_records_for_years,
     get_year_params_from_request,
 )
 from core.models import Blend
@@ -323,7 +322,7 @@ class CPHFCHCFCExportBaseView(views.APIView):
             filter_list = []
         filter_list.append(models.Q(section=section))
 
-        return get_final_records_for_year(year, filter_list)
+        return get_final_records_for_years(year, year, filter_list)
 
     def get_response(self, name, wb):
         return workbook_response(name, wb)
@@ -445,56 +444,58 @@ class CPDataExtractionAllExport(views.APIView):
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(
-                "year",
+                "min_year",
                 openapi.IN_QUERY,
-                description="The year to generate the report for",
+                description="Minimum year",
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "max_year",
+                openapi.IN_QUERY,
+                description="Maximum year",
                 type=openapi.TYPE_INTEGER,
             ),
         ],
     )
     def get(self, *args, **kwargs):
-        year = self.request.query_params.get("year")
-
-        if not year:
-            # set current year for min year and max year
-            year = datetime.now().year
+        min_year, max_year = get_year_params_from_request(self.request)
 
         wb = openpyxl.Workbook()
-        archive_reports = get_archive_reports_final_for_year(year)
+        archive_reports = get_archive_reports_final_for_years(min_year, max_year)
 
         # ODS Price
-        exporter = CPPricesExtractionWriter(wb, year)
-        data = self.get_prices(year, archive_reports)
+        exporter = CPPricesExtractionWriter(wb)
+        data = self.get_prices(min_year, max_year, archive_reports)
         exporter.write(data)
 
         # CP Details
-        exporter = CPDetailsExtractionWriter(wb, year)
-        data = get_final_records_for_year(year)
+        exporter = CPDetailsExtractionWriter(wb)
+        data = get_final_records_for_years(min_year, max_year)
         exporter.write(data)
 
         # CPConsumption(ODP)
-        exporter = CPConsumptionODPWriter(wb, year)
-        data = self._get_cp_consumption_data(year)
+        exporter = CPConsumptionODPWriter(wb)
+        data = self._get_cp_consumption_data(min_year, max_year)
         exporter.write(data)
 
         # HFC-Consumption(MTvsCO2)
-        exporter = CPHFCConsumptionMTCO2Writer(wb, year)
-        data = self._get_hfc_consumption_data(year)
+        exporter = CPHFCConsumptionMTCO2Writer(wb)
+        data = self._get_hfc_consumption_data(min_year, max_year)
         exporter.write(data)
 
         # HFC-23Generation
         exporter = HFC23GenerationWriter(wb)
-        data = self._get_generations(year, archive_reports)
+        data = self._get_generations(min_year, max_year, archive_reports)
         exporter.write(data)
 
         # HFC23Emission
         exporter = HFC23EmissionWriter(wb)
-        data = self._get_emissions(year, archive_reports)
+        data = self._get_emissions(min_year, max_year, archive_reports)
         exporter.write(data)
 
         # MbrConsumption
         exporter = MbrConsumptionWriter(wb)
-        data = self.get_mbr_consumption_data(year, archive_reports)
+        data = self.get_mbr_consumption_data(min_year, max_year, archive_reports)
         exporter.write(data)
 
         # delete default sheet
@@ -502,15 +503,16 @@ class CPDataExtractionAllExport(views.APIView):
 
         return workbook_response("CP Data Extraction-All", wb)
 
-    def get_mbr_consumption_data(self, year, archive_reports):
+    def get_mbr_consumption_data(self, min_year, max_year, archive_reports):
         final_records = (
-            CPRecord.objects.get_for_year(year)
+            CPRecord.objects.get_for_years(min_year, max_year)
             .filter(
                 country_programme_report__status=CPReport.CPReportStatus.FINAL,
                 substance__name__iexact="Methyl Bromide",
             )
             .annotate(
                 country_name=models.F("country_programme_report__country__name"),
+                year=models.F("country_programme_report__year"),
                 methyl_bromide_qps=models.Sum(
                     "record_usages__quantity",
                     filter=models.Q(record_usages__usage__name__iexact="QPS"),
@@ -526,6 +528,7 @@ class CPDataExtractionAllExport(views.APIView):
             )
         ).values(
             "country_name",
+            "year",
             "methyl_bromide_qps",
             "methyl_bromide_non_qps",
             "total",
@@ -535,7 +538,7 @@ class CPDataExtractionAllExport(views.APIView):
             return list(final_records)
 
         archive_records = (
-            CPRecordArchive.objects.get_for_year(year)
+            CPRecordArchive.objects.get_for_years(min_year, max_year)
             .filter(
                 country_programme_report__status=CPReport.CPReportStatus.FINAL,
                 substance__name__iexact="Methyl Bromide",
@@ -544,15 +547,17 @@ class CPDataExtractionAllExport(views.APIView):
                 # get the records for the max version of the archive reports
                 *[
                     models.Q(
-                        country_programme_report__version=v,
                         country_programme_report__country_id=c,
+                        country_programme_report__year=y,
+                        country_programme_report__version=v,
                     )
-                    for c, v in archive_reports
+                    for c, y, v in archive_reports
                 ],
                 _connector=models.Q.OR,
             )
             .annotate(
                 country_name=models.F("country_programme_report__country__name"),
+                year=models.F("country_programme_report__year"),
                 methyl_bromide_qps=models.Sum(
                     "record_usages__quantity",
                     filter=models.Q(record_usages__usage__name__iexact="QPS"),
@@ -568,6 +573,7 @@ class CPDataExtractionAllExport(views.APIView):
             )
         ).values(
             "country_name",
+            "year",
             "methyl_bromide_qps",
             "methyl_bromide_non_qps",
             "total",
@@ -575,7 +581,7 @@ class CPDataExtractionAllExport(views.APIView):
 
         return list(final_records) + list(archive_records)
 
-    def get_prices(self, year, archive_reports):
+    def get_prices(self, min_year, max_year, archive_reports):
         final_prices = (
             CPPrices.objects.select_related(
                 "blend",
@@ -585,13 +591,15 @@ class CPDataExtractionAllExport(views.APIView):
             .prefetch_related("blend__components")
             .filter(
                 country_programme_report__status=CPReport.CPReportStatus.FINAL,
-                country_programme_report__year=year,
+                country_programme_report__year__gte=min_year,
+                country_programme_report__year__lte=max_year,
             )
             .filter(
                 models.Q(current_year_price__isnull=False)
                 | models.Q(previous_year_price__isnull=False)
             )
             .order_by(
+                "country_programme_report__year",
                 "country_programme_report__country__name",
                 "substance__sort_order",
                 "blend__sort_order",
@@ -610,10 +618,6 @@ class CPDataExtractionAllExport(views.APIView):
             )
             .prefetch_related("blend__components")
             .filter(
-                country_programme_report__status=CPReport.CPReportStatus.FINAL,
-                country_programme_report__year=year,
-            )
-            .filter(
                 models.Q(current_year_price__isnull=False)
                 | models.Q(previous_year_price__isnull=False)
             )
@@ -621,14 +625,16 @@ class CPDataExtractionAllExport(views.APIView):
                 # get the records for the max version of the archive reports
                 *[
                     models.Q(
-                        country_programme_report__version=v,
                         country_programme_report__country_id=c,
+                        country_programme_report__year=y,
+                        country_programme_report__version=v,
                     )
-                    for c, v in archive_reports
+                    for c, y, v in archive_reports
                 ],
                 _connector=models.Q.OR,
             )
             .order_by(
+                "country_programme_report__year",
                 "country_programme_report__country__name",
                 "substance__sort_order",
                 "blend__sort_order",
@@ -638,7 +644,7 @@ class CPDataExtractionAllExport(views.APIView):
 
         return list(final_prices) + list(archive_prices)
 
-    def _get_cp_consumption_data(self, year):
+    def _get_cp_consumption_data(self, min_year, max_year):
         """
         Get CP consumption data for the given year
 
@@ -647,10 +653,13 @@ class CPDataExtractionAllExport(views.APIView):
         @return: dict
         structure:
         {
-            "country_name": {
-                "substance_category": consumption_value,
+            "year":{
+                "country_name": {
+                    "substance_category": consumption_value,
+                    ...
+                },
                 ...
-            },
+            }
             ...
         }
         """
@@ -658,12 +667,15 @@ class CPDataExtractionAllExport(views.APIView):
             models.Q(substance__isnull=False),
             models.Q(section="A"),
         ]
-        records = get_final_records_for_year(year, filters)
+        records = get_final_records_for_years(min_year, max_year, filters)
         country_records = {}
         for record in records:
             country_name = record.country_programme_report.country.name
-            if country_name not in country_records:
-                country_records[country_name] = {}
+            year = record.country_programme_report.year
+            if year not in country_records:
+                country_records[year] = {}
+            if country_name not in country_records[year]:
+                country_records[year][country_name] = {}
 
             # get consumption value
             if "methyl bromide" in record.substance.name.lower():
@@ -680,23 +692,23 @@ class CPDataExtractionAllExport(views.APIView):
                 == "hcfc-141b in imported pre-blended polyol"
             ):
                 group = "HCFC-141b Preblended Polyol"
-                if group not in country_records[country_name]:
-                    country_records[country_name][group] = 0
-                country_records[country_name][group] += consumption_value
+                if group not in country_records[year][country_name]:
+                    country_records[year][country_name][group] = 0
+                country_records[year][country_name][group] += consumption_value
                 continue
 
             # set the group
             group = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(record.substance.group.group_id)
             if not group:
                 continue
-            if group not in country_records[country_name]:
-                country_records[country_name][group] = 0
+            if group not in country_records[year][country_name]:
+                country_records[year][country_name][group] = 0
 
-            country_records[country_name][group] += consumption_value
+            country_records[year][country_name][group] += consumption_value
 
         return country_records
 
-    def _get_hfc_consumption_data(self, year):
+    def _get_hfc_consumption_data(self, min_year, max_year):
         """
         Get HFC consumption data for the given year
 
@@ -704,22 +716,30 @@ class CPDataExtractionAllExport(views.APIView):
         @return: dict
         structure:
         {
-            "country_name": {
-                "substance_group": value,
-                "consumption_mt": value,
-                "consumption_co2": value,
-                "servicing": value,
-                "usages_total": value,
-            },
+            "year": {
+                "country_name": {
+                    "substance_group": value,
+                    "consumption_mt": value,
+                    "consumption_co2": value,
+                    "servicing": value,
+                    "usages_total": value,
+                },
+                ...
+            }
             ...
         }
         """
-        records = get_final_records_for_year(year, [models.Q(section="B")])
+        records = get_final_records_for_years(
+            min_year, max_year, [models.Q(section="B")]
+        )
         country_records = {}
         for record in records:
             country_name = record.country_programme_report.country.name
-            if country_name not in country_records:
-                country_records[country_name] = {
+            year = record.country_programme_report.year
+            if year not in country_records:
+                country_records[year] = {}
+            if country_name not in country_records[year]:
+                country_records[year][country_name] = {
                     "country_lvc": record.country_programme_report.country.is_lvc,
                     "substance_name": (
                         SUBSTANCE_GROUP_ID_TO_CATEGORY.get(
@@ -737,27 +757,32 @@ class CPDataExtractionAllExport(views.APIView):
 
             # get consumption data
             consumption_value = record.get_consumption_value() or 0
-            country_records[country_name]["consumption_mt"] += consumption_value
+            country_records[year][country_name]["consumption_mt"] += consumption_value
 
             # convert consumption value to CO2 equivalent
-            country_records[country_name]["consumption_co2"] += (
+            country_records[year][country_name]["consumption_co2"] += (
                 consumption_value * record.get_chemical_gwp()
             )
 
             for rec_us in record.record_usages.all():
                 if "servicing" in rec_us.usage.full_name.lower():
-                    country_records[country_name]["servicing"] += rec_us.quantity
-                country_records[country_name]["usages_total"] += rec_us.quantity
+                    country_records[year][country_name]["servicing"] += rec_us.quantity
+                country_records[year][country_name]["usages_total"] += rec_us.quantity
 
         return country_records
 
-    def _get_generations(self, year, archive_reports):
+    def _get_generations(self, min_year, max_year, archive_reports):
         final_generations = (
             CPGeneration.objects.filter(
                 country_programme_report__status=CPReport.CPReportStatus.FINAL,
-                country_programme_report__year=year,
+                country_programme_report__year__gte=min_year,
+                country_programme_report__year__lte=max_year,
             )
             .select_related("country_programme_report__country")
+            .order_by(
+                "country_programme_report__year",
+                "country_programme_report__country__name",
+            )
             .all()
         )
 
@@ -767,32 +792,43 @@ class CPDataExtractionAllExport(views.APIView):
         archive_generations = (
             CPGenerationArchive.objects.filter(
                 country_programme_report__status=CPReport.CPReportStatus.FINAL,
-                country_programme_report__year=year,
+                country_programme_report__year__gte=min_year,
+                country_programme_report__year__lte=max_year,
             )
             .filter(
                 # get the records for the max version of the archive reports
                 *[
                     models.Q(
-                        country_programme_report__version=v,
                         country_programme_report__country_id=c,
+                        country_programme_report__year=y,
+                        country_programme_report__version=v,
                     )
-                    for c, v in archive_reports
+                    for c, y, v in archive_reports
                 ],
                 _connector=models.Q.OR,
             )
             .select_related("country_programme_report__country")
+            .order_by(
+                "country_programme_report__year",
+                "country_programme_report__country__name",
+            )
             .all()
         )
 
         return list(final_generations) + list(archive_generations)
 
-    def _get_emissions(self, year, archive_reports):
+    def _get_emissions(self, min_year, max_year, archive_reports):
         final_emissions = (
             CPEmission.objects.filter(
                 country_programme_report__status=CPReport.CPReportStatus.FINAL,
-                country_programme_report__year=year,
+                country_programme_report__year__gte=min_year,
+                country_programme_report__year__lte=max_year,
             )
             .select_related("country_programme_report__country")
+            .order_by(
+                "country_programme_report__year",
+                "country_programme_report__country__name",
+            )
             .all()
         )
 
@@ -802,16 +838,18 @@ class CPDataExtractionAllExport(views.APIView):
         archive_emissions = (
             CPEmissionArchive.objects.filter(
                 country_programme_report__status=CPReport.CPReportStatus.FINAL,
-                country_programme_report__year=year,
+                country_programme_report__year__gte=min_year,
+                country_programme_report__year__lte=max_year,
             )
             .filter(
                 # get the records for the max version of the archive reports
                 *[
                     models.Q(
-                        country_programme_report__version=v,
                         country_programme_report__country_id=c,
+                        country_programme_report__year=y,
+                        country_programme_report__version=v,
                     )
-                    for c, v in archive_reports
+                    for c, y, v in archive_reports
                 ],
                 _connector=models.Q.OR,
             )

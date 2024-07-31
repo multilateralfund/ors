@@ -42,8 +42,8 @@ function BPView() {
           <Tab
             id="submissions"
             className="rounded-b-none px-3 py-2"
-            aria-controls="records-list"
-            label="Records List"
+            aria-controls="activities"
+            label="Activities"
             classes={{
               selected:
                 'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',

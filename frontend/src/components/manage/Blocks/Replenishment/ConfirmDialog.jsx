@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 import cx from 'classnames'
 
@@ -25,17 +25,23 @@ const ConfirmDialog = function ConfirmDialog(props) {
     onSubmit()
   }
 
-  function cancelHandler(evt) {
-    dialogRef.current.close()
-    onCancel()
-  }
+  const cancelHandler = useCallback(
+    (evt) => {
+      dialogRef.current.close()
+      onCancel()
+    },
+    [onCancel],
+  )
 
-  function handleKeyDown(evt) {
-    if (evt.key === 'Escape') {
-      evt.preventDefault()
-      cancelHandler(evt)
-    }
-  }
+  const handleKeyDown = useCallback(
+    (evt) => {
+      if (evt.key === 'Escape') {
+        evt.preventDefault()
+        cancelHandler(evt)
+      }
+    },
+    [cancelHandler],
+  )
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -48,7 +54,7 @@ const ConfirmDialog = function ConfirmDialog(props) {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [])
+  }, [cancelHandler])
 
   return (
     <dialog
@@ -69,7 +75,7 @@ const ConfirmDialog = function ConfirmDialog(props) {
           />
         </div>
         {children}
-        <footer className="mt-6 flex items-center justify-between border-x-0 border-b-0 border-t border-solid border-gray-200 pt-6">
+        <footer className="mt-6 flex items-center gap-2 border-x-0 border-b-0 border-t border-solid border-gray-200 pt-6">
           <SubmitButton onClick={submitHandler}>Yes</SubmitButton>
           <CancelButton onClick={cancelHandler}>Cancel</CancelButton>
         </footer>

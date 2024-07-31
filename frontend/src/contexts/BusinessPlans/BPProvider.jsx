@@ -23,14 +23,15 @@ function BPProvider(props) {
     options: {
       params: {
         agency_id: currentAgency?.id,
+        is_multi_year: true,
         limit: BP_PER_PAGE,
         offset: 0,
         year_end: period.split('-')[1],
         year_start: period.split('-')[0],
       },
-      withStoreCache: true,
+      withStoreCache: false,
     },
-    path: 'api/business-plan-record/',
+    path: 'api/business-plan/get/',
   })
 
   return (

@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from core.api.serializers import CountrySerializer
 from core.api.serializers.agency import AgencySerializer
+from core.api.serializers.project import ProjectClusterSerializer
 from core.api.serializers.project import ProjectSectorSerializer
 from core.api.serializers.project import ProjectSubSectorSerializer
 from core.api.serializers.project import ProjectTypeSerializer
@@ -135,6 +136,7 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
     bp_chemical_type = BPChemicalTypeSerializer()
     is_multi_year_display = serializers.SerializerMethodField()
     status_display = serializers.SerializerMethodField()
+    project_cluster = ProjectClusterSerializer()
 
     substances = serializers.SlugRelatedField("name", many=True, read_only=True)
 
@@ -152,6 +154,7 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
             "lvc_status",
             "project_type",
             "bp_chemical_type",
+            "project_cluster",
             "substances",
             "amount_polyol",
             "sector",
@@ -177,8 +180,25 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
         return obj.get_status_display()
 
 
+class BPRecordListSerializer(BPRecordDetailSerializer):
+    agency = serializers.SerializerMethodField()
+    project_type = serializers.SlugRelatedField("code", read_only=True)
+    bp_chemical_type = serializers.SlugRelatedField("name", read_only=True)
+    project_cluster = serializers.SlugRelatedField("code", read_only=True)
+
+    sector = serializers.SlugRelatedField("code", read_only=True)
+    subsector = serializers.SlugRelatedField("code", read_only=True)
+
+    class Meta(BPRecordDetailSerializer.Meta):
+        fields = ["agency"] + BPRecordDetailSerializer.Meta.fields
+
+    def get_agency(self, obj):
+        return obj.business_plan.agency.name
+
+
 class BPRecordCreateSerializer(serializers.ModelSerializer):
     business_plan_id = serializers.PrimaryKeyRelatedField(
+        required=False,
         queryset=BusinessPlan.objects.all().values_list("id", flat=True),
     )
     country_id = serializers.PrimaryKeyRelatedField(
