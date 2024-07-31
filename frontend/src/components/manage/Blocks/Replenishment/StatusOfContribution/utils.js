@@ -11,27 +11,34 @@ export const SC_COLUMNS = [
   { field: 'outstanding_contributions', label: 'Outstanding Contribution' },
 ]
 
-export const mockScAnnualOptions = () => {
+const FIRST_YEAR = 1991
+
+export const scAnnualOptions = (periods) => {
   const options = []
-  for (let i = 2023; i >= 1991; i--) {
-    options.push({ label: i.toString(), value: i.toString() })
+
+  const latestYear =
+    periods.length > 0 ? periods[0].end_year : new Date().getFullYear()
+  for (let year = latestYear; year >= FIRST_YEAR; year--) {
+    options.push({ label: year.toString(), value: year.toString() })
   }
 
   return options
 }
 
-export function mockSCPeriodOptions(periods) {
-  const options = periods.length > 1 ? periods.slice(1) : periods.slice(0)
+export function scPeriodOptions(periods) {
+  const options = []
+  let startYear
+  periods.forEach((period) => {
+    startYear = period.start_year
+    options.push({
+      end_year: period.end_year,
+      start_year: period.start_year,
+    })
+  })
 
-  const fillFrom = 1991
-  const fillTo =
-    (options.length ? options[options.length - 1].start_year : 2023) - 1
-
-  for (let y = fillTo; y >= fillFrom; y--) {
-    if ((fillTo - y) % 3 === 0) {
-      options.push({ end_year: y, start_year: y - 2 })
-      y -= 2
-    }
+  while (startYear > FIRST_YEAR) {
+    options.push({ end_year: startYear - 1, start_year: startYear - 3 })
+    startYear -= 3
   }
 
   return makePeriodOptions(options)

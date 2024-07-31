@@ -12,8 +12,8 @@ import SCNotes from '@ors/components/manage/Blocks/Replenishment/StatusOfContrib
 import SCSummary from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCSummary'
 import SCTriennial from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCTriennial'
 import {
-  mockSCPeriodOptions,
-  mockScAnnualOptions,
+  scPeriodOptions,
+  scAnnualOptions,
 } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
@@ -78,8 +78,8 @@ function SCView(props) {
   const ctx = useContext(ReplenishmentContext)
 
   const periodOptions = props.period
-    ? mockSCPeriodOptions(ctx.periods)
-    : mockScAnnualOptions()
+    ? scPeriodOptions(ctx.periods)
+    : scAnnualOptions(ctx.periods)
 
   const dateOfLastUpdate = '26 September 2023'
   const title = period
