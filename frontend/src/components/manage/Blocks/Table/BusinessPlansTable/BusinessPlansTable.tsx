@@ -25,7 +25,7 @@ const BP_PER_PAGE = 20
 
 export default function BusinessPlansTable() {
   const params = useParams<BpPathParams>()
-  const { start_year } = params
+  const { period } = params
   const form = useRef<any>()
   const commonSlice = useStore((state) => state.common)
   const bpSlice = useStore((state) => state.businessPlans)
@@ -55,7 +55,7 @@ export default function BusinessPlansTable() {
     sector_id: [],
     subsector_id: [],
     // year_end: end_year,
-    year_start: start_year,
+    year_start: period.split('-')[0],
   }
 
   const [filters, setFilters] = useState({ ...initialFilters })

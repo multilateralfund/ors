@@ -12,7 +12,7 @@ const BP_PER_PAGE = 20
 function BPProvider(props) {
   const { children } = props
   const pathParams = useParams()
-  const { agency, end_year, start_year } = pathParams
+  const { agency, period } = pathParams
   const commonSlice = useStore((state) => state.common)
 
   const currentAgency = useMemo(() => {
@@ -25,8 +25,8 @@ function BPProvider(props) {
         agency_id: currentAgency?.id,
         limit: BP_PER_PAGE,
         offset: 0,
-        year_end: end_year,
-        year_start: start_year,
+        year_end: period.split('-')[1],
+        year_start: period.split('-')[0],
       },
       withStoreCache: true,
     },
