@@ -2,7 +2,8 @@ import React from 'react'
 
 import { Metadata } from 'next'
 
-import BPActivities from '@ors/components/manage/Blocks/BusinessPlans/BPActivities'
+import BPActivities from "@ors/components/manage/Blocks/BusinessPlans/BPList/BPActivities";
+
 
 export const metadata: Metadata = {
   title: 'Business Plans - Activities',
