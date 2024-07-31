@@ -168,7 +168,6 @@ class TestBPList(BaseTest):
 
 @pytest.fixture(name="_setup_bp_record_create")
 def setup_bp_record_create(
-    business_plan,
     country_ro,
     sector,
     subsector,
