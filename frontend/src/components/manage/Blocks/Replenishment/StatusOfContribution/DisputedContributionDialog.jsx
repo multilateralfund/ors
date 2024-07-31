@@ -1,15 +1,15 @@
 import React, { useContext, useState } from 'react'
 
+import { enqueueSnackbar } from 'notistack'
+
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
   FieldInput,
   FieldSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
-import { mockScAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import { AddButton } from '@ors/components/ui/Button/Button'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { api } from '@ors/helpers'
-import { enqueueSnackbar } from 'notistack'
 
 export default function DisputedContributionDialog({
   countryOptions,

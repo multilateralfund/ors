@@ -48,7 +48,8 @@ const ConfirmDialog = function ConfirmDialog(props) {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [cancelHandler])
+    //   eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <dialog
