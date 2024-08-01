@@ -64,7 +64,7 @@ function TableCell(props) {
   }
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-1">
       <div className={`w-full whitespace-nowrap text-${textPosition}`}>
         {cell}
       </div>
@@ -118,7 +118,7 @@ function Table(props) {
       const row = []
       for (let i = 0; i < columns.length; i++) {
         row.push(
-          <td key={i}>
+          <td key={i} className={`${i === 0 ? 'max-w-52' : ''}`}>
             <TableCell
               adminButtons={adminButtons}
               c={i}

@@ -62,24 +62,26 @@ function useGetSCData(start_year, end_year) {
           country: 'Total',
           ...data.total,
         },
-        {
-          agreed_contributions: data.disputed_contributions,
-          country: 'Disputed Contributions ***',
-          outstanding_contributions: data.disputed_contributions,
-        },
         ...(data?.disputed_contributions_per_country?.map((disputed) => ({
           agreed_contributions: disputed.amount,
           can_delete: true,
           country: (
-            <li className="flex flex-col gap-1">
-              <span>{disputed.country.name}</span>
-              <span>{disputed.comment}</span>
-            </li>
+            <div className="flex flex-col gap-1 !whitespace-normal">
+              <span className="inline-block">{disputed.country.name}</span>
+              <span className="inline-block !break-words">
+                {disputed.comment}
+              </span>
+            </div>
           ),
           country_to_display: disputed.country.name,
           disputed_id: disputed.id,
           outstanding_contributions: disputed.amount,
         })) || []),
+        {
+          agreed_contributions: data.disputed_contributions,
+          country: 'Disputed Contributions',
+          outstanding_contributions: data.disputed_contributions,
+        },
         {
           agreed_contributions: data.total?.agreed_contributions_with_disputed,
           country: 'Total',
