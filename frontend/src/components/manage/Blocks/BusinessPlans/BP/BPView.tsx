@@ -3,7 +3,7 @@ import React, { useContext, useState } from 'react'
 
 import { Tab, Tabs } from '@mui/material'
 
-import BPDetails from '@ors/components/manage/Blocks/BusinessPlans/BPRecord/BPDetails'
+import BPDetails from '@ors/components/manage/Blocks/BusinessPlans/BP/BPDetails'
 import BusinessPlansTable from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
 import Loading from '@ors/components/theme/Loading/Loading'
 import BPContext from '@ors/contexts/BusinessPlans/BPContext'
