@@ -5,7 +5,7 @@ textarea {
 
 .BPList .MuiInputBase-root,
 .BPList .MuiAutocomplete-inputRoot {
-  @apply h-10 rounded-lg bg-white;
+  @apply min-h-10 rounded-lg bg-white;
 }
 
 .BPList .MuiInputBase-root fieldset,
