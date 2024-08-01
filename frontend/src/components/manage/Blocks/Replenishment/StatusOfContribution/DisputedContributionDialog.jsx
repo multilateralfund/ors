@@ -67,7 +67,7 @@ export default function DisputedContributionDialog({
             type="number"
             required
           />
-          <FieldInput id="comment" label="Comment" type="text" required />
+          <FieldInput id="comment" label="Comment" type="text-area" required />
           <FieldInput
             id="year"
             label="Year"
