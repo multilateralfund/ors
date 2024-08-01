@@ -60,7 +60,6 @@ function BusinessPlansList(props: any) {
 
   const [_, navLinks] = getNavLinks(pathname, period)
 
-  // TODO: Remove All option from Period Selector
   return (
     <>
       <div className={cx('print:hidden', styles.nav)}>
@@ -69,7 +68,7 @@ function BusinessPlansList(props: any) {
         <PeriodSelector
           label="Triennial"
           period={period}
-          periodOptions={[{ label: 'All', value: '' }, ...periodOptions]}
+          periodOptions={[...periodOptions]}
         />
         {/*<div id="replenishment-tab-buttons" className="self-end"></div>*/}
       </div>
@@ -80,7 +79,7 @@ function BusinessPlansList(props: any) {
 
 function BPListHeader() {
   return (
-    <div className="flex items-center justify-between mb-8">
+    <div className="mb-8 flex items-center justify-between">
       <PageHeading>Business Plans</PageHeading>
       <CustomLink
         className="px-4 py-2 text-lg uppercase"
