@@ -7,6 +7,8 @@ export default function Activities(props: any) {
     return <Loading />
   }
 
+  // TODO: Add activity item
+
   return (
     <ul className="flex list-none flex-col gap-4 pl-0">
       {results.map((activity: any) => {

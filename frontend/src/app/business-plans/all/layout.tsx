@@ -60,6 +60,7 @@ function BusinessPlansList(props: any) {
 
   const [_, navLinks] = getNavLinks(pathname, period)
 
+  // TODO: Remove All option from Period Selector
   return (
     <>
       <div className={cx('print:hidden', styles.nav)}>

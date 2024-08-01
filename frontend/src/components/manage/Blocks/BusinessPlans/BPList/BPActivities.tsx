@@ -33,6 +33,8 @@ export default function BPActivities(props: any) {
     setParams(params)
   }
 
+  // TODO: Add Pagination
+
   return (
     <form ref={form}>
       <ActivitiesFilters
