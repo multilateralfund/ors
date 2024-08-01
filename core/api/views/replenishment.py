@@ -22,6 +22,8 @@ from core.api.serializers import (
     PaymentCreateSerializer,
     ReplenishmentSerializer,
     ScaleOfAssessmentSerializer,
+    DisputedContributionCreateSerializer,
+    DisputedContributionReadSerializer,
 )
 from core.models import (
     AnnualContributionStatus,
@@ -319,9 +321,9 @@ class AnnualStatusOfContributionsView(views.APIView):
         )
 
         try:
-            disputed_contribution_amount = DisputedContribution.objects.get(
+            disputed_contribution_amount = DisputedContribution.objects.filter(
                 year=year
-            ).amount
+            ).aggregate(total=models.Sum("amount", default=0))["total"]
         except DisputedContribution.DoesNotExist:
             disputed_contribution_amount = 0
 
@@ -332,6 +334,12 @@ class AnnualStatusOfContributionsView(views.APIView):
             data["total"]["outstanding_contributions"] + disputed_contribution_amount
         )
         data["disputed_contributions"] = disputed_contribution_amount
+        data["disputed_contributions_per_country"] = DisputedContributionReadSerializer(
+            DisputedContribution.objects.filter(
+                year=year, country__isnull=False
+            ).select_related("country"),
+            many=True,
+        ).data
 
         return Response(data)
 
@@ -404,6 +412,12 @@ class TriennialStatusOfContributionsView(views.APIView):
             data["total"]["outstanding_contributions"] + disputed_contribution_amount
         )
         data["disputed_contributions"] = disputed_contribution_amount
+        data["disputed_contributions_per_country"] = DisputedContributionReadSerializer(
+            DisputedContribution.objects.filter(
+                year__gte=start_year, year__lte=end_year, country__isnull=False
+            ).select_related("country"),
+            many=True,
+        ).data
 
         return Response(data)
 
@@ -467,7 +481,7 @@ class SummaryStatusOfContributionsView(views.APIView):
             total=models.Sum("amount", default=0)
         )["total"]
 
-        disputed_contribution_amount = DisputedContribution.objects.filter().aggregate(
+        disputed_contribution_amount = DisputedContribution.objects.aggregate(
             total=models.Sum("amount", default=0)
         )["total"]
         data["total"]["agreed_contributions_with_disputed"] = (
@@ -477,8 +491,36 @@ class SummaryStatusOfContributionsView(views.APIView):
             data["total"]["outstanding_contributions"] + disputed_contribution_amount
         )
         data["disputed_contributions"] = disputed_contribution_amount
+        data["disputed_contributions_per_country"] = DisputedContributionReadSerializer(
+            DisputedContribution.objects.filter(country__isnull=False).select_related(
+                "country"
+            ),
+            many=True,
+        ).data
 
         return Response(data)
+
+
+class DisputedContributionViewSet(
+    viewsets.GenericViewSet,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+):
+    model = DisputedContribution
+
+    def get_serializer_class(self):
+        if self.request.method in ["POST", "PUT"]:
+            return DisputedContributionCreateSerializer
+        return DisputedContributionReadSerializer
+
+    def get_queryset(self):
+        # TODO: add proper permission classes
+        user = self.request.user
+        queryset = DisputedContribution.objects.all()
+        if user.user_type == user.UserType.COUNTRY_USER:
+            queryset = queryset.filter(country_id=user.country_id)
+
+        return queryset.select_related("country")
 
 
 class ReplenishmentDashboardView(views.APIView):
