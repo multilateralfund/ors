@@ -380,7 +380,7 @@ export default function BusinessPlansTable() {
                       className="flex items-center gap-x-2 text-black no-underline"
                       target="_blank"
                       href={
-                        formatApiUrl('api/business-plan-record/export/') +
+                        formatApiUrl('api/business-plan-activity/export/') +
                         '?year_start=' +
                         yearRangeSelected?.year_start.toString()
                       }
@@ -395,7 +395,7 @@ export default function BusinessPlansTable() {
                       className="flex items-center gap-x-2 text-black no-underline"
                       target="_blank"
                       href={
-                        formatApiUrl('api/business-plan-record/print/') +
+                        formatApiUrl('api/business-plan-activity/print/') +
                         '?year_start=' +
                         yearRangeSelected?.year_start.toString()
                       }
