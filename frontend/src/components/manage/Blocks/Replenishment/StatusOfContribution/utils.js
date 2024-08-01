@@ -53,7 +53,7 @@ export function transformData(data) {
       bilateral_assisstance: data[i].bilateral_assisstance,
       cash_payments: data[i].cash_payments,
       country: data[i].country.name_alt,
-      country_iso3: data[i].country.iso3,
+      country_id: data[i].country.id,
       gain_loss: data[i].gain_loss,
       outstanding_contributions: data[i].outstanding_contributions,
       promissory_notes: data[i].promissory_notes,

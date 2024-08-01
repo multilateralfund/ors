@@ -45,6 +45,8 @@ export default function DisputedContributionDialog({
     }
   }
 
+  console.log(countryOptions)
+
   return (
     <div className="print:hidden">
       {showAdd && (
@@ -53,16 +55,16 @@ export default function DisputedContributionDialog({
           onCancel={() => setShowAdd(false)}
           onSubmit={confirmSave}
         >
-          <FieldSelect id="iso3" label="Country" required>
+          <FieldSelect id="country" label="Country" required>
             <option value=""> -</option>
             {countryOptions.map((c) => (
-              <option key={c.country_iso3} value={c.country_iso3}>
+              <option key={c.country_id} value={c.country_id}>
                 {c.country}
               </option>
             ))}
           </FieldSelect>
           <FieldInput
-            id="disputed_amount"
+            id="amount"
             label="Disputed amount"
             type="number"
             required
