@@ -1,3 +1,6 @@
+# TODO: split the file into multiple files
+# pylint: disable=C0302
+
 import json
 import urllib
 from decimal import Decimal
