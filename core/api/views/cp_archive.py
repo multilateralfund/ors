@@ -10,7 +10,7 @@ from core.api.export.cp_report_old import CPReportOldExporter
 from core.api.filters.country_programme import (
     CPReportArchiveFilter,
 )
-from core.api.permissions import IsUserAllowedCP
+from core.api.permissions import IsCountryUser, IsSecretariat
 from core.api.serializers.adm import AdmRecordArchiveSerializer
 from core.api.serializers.cp_comment import CPCommentArchiveSerializer
 from core.api.serializers.cp_emission import CPEmissionArchiveSerializer
@@ -38,7 +38,7 @@ from core.utils import IMPORT_DB_MAX_YEAR
 
 
 class CPReportVersionsListView(generics.GenericAPIView):
-    permission_classes = [IsUserAllowedCP]
+    permission_classes = [IsSecretariat | IsCountryUser]
     queryset = CPReportArchive.objects.all()
     serializer_class = CPReportArchiveSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]

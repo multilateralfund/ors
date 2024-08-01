@@ -4,6 +4,8 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from unittest.mock import patch
 
+from core.api.tests.factories import UserFactory
+
 pytestmark = pytest.mark.django_db
 
 
@@ -49,6 +51,18 @@ class TestCPReportComments:
         }
         response = self.client.post(url, data, format="json")
         assert response.status_code == 400
+
+        # try create from another country
+        new_user = UserFactory(user_type="country_user", country=None)
+        self.client.force_authenticate(user=new_user)
+
+        data = {
+            "section": self.SECTION_A,
+            "comment_type": self.COMMENT_COUNTRY,
+            "comment": "Hai in vacante/ Pe la Saint Tropez",
+        }
+        response = self.client.post(url, data, format="json")
+        assert response.status_code == 403
 
     def test_create_comments(
         self, user, country_user, cp_report_2019, mock_send_mail_comment
