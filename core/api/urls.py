@@ -17,6 +17,7 @@ from core.api.views import (
     ReplenishmentInvoiceFileDownloadView,
     ReplenishmentPaymentViewSet,
     ReplenishmentPaymentFileDownloadView,
+    DisputedContributionViewSet,
     ReplenishmentDashboardExportView,
 )
 from core.api.views import ProjectCommentViewSet
@@ -101,6 +102,11 @@ router.register(
     "replenishment/replenishments",
     ReplenishmentViewSet,
     basename="replenishment-replenishments",
+)
+router.register(
+    "replenishment/disputed-contributions",
+    DisputedContributionViewSet,
+    basename="replenishment-disputed-contributions",
 )
 router.register(
     "replenishment/scales-of-assessment",

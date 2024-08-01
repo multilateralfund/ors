@@ -7,14 +7,13 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import PeriodSelector from '@ors/components/manage/Blocks/Replenishment/PeriodSelector'
-import DisputedContributionDialog from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/DisputedContributionDialog'
 import SCAnnual from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCAnnual'
 import SCNotes from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCNotes'
 import SCSummary from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCSummary'
 import SCTriennial from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCTriennial'
 import {
-  mockSCPeriodOptions,
-  mockScAnnualOptions,
+  scAnnualOptions,
+  scPeriodOptions,
 } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
@@ -79,8 +78,8 @@ function SCView(props) {
   const ctx = useContext(ReplenishmentContext)
 
   const periodOptions = props.period
-    ? mockSCPeriodOptions(ctx.periods)
-    : mockScAnnualOptions()
+    ? scPeriodOptions(ctx.periods)
+    : scAnnualOptions(ctx.periods)
 
   const dateOfLastUpdate = '27 May 2024'
   const title = period
