@@ -206,6 +206,7 @@ class MeetingAdmin(admin.ModelAdmin):
             "projectfund",
             "approved_projects",
             "transferred_projects",
+            "projectcomment",
         ]
         return get_final_display_list(Meeting, exclude)
 
