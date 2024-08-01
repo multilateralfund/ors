@@ -11,6 +11,7 @@ import {
 } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import Table from '@ors/components/manage/Blocks/Replenishment/Table'
 import { sortTableData } from '@ors/components/manage/Blocks/Replenishment/utils'
+import { api } from '@ors/helpers'
 
 export default function SCAnnual({ year }) {
   const { data, extraRows, refetchSCData, rows } = useGetSCData(year)
@@ -75,9 +76,11 @@ export default function SCAnnual({ year }) {
     setShowDeleteModal(true)
   }
 
-  function handleDeleteRow(rowId) {
+  async function handleDeleteRow(rowId) {
     const row = extraRows[rowId]
-    console.log(row.disputed_id)
+    await api(`api/replenishment/disputed-contributions/${row.disputed_id}`, {
+      method: 'DELETE',
+    })
     setShowDeleteModal(false)
     refetchSCData()
   }

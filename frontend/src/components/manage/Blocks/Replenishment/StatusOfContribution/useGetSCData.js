@@ -67,7 +67,7 @@ function useGetSCData(start_year, end_year) {
           country: 'Disputed Contributions ***',
           outstanding_contributions: data.disputed_contributions,
         },
-        ...data?.disputed_contributions_per_country?.map((disputed) => ({
+        ...(data?.disputed_contributions_per_country?.map((disputed) => ({
           agreed_contributions: disputed.amount,
           can_delete: true,
           country: (
@@ -78,7 +78,8 @@ function useGetSCData(start_year, end_year) {
           ),
           country_to_display: disputed.country.name,
           disputed_id: disputed.id,
-        })),
+          outstanding_contributions: disputed.amount,
+        })) || []),
         {
           agreed_contributions: data.total?.agreed_contributions_with_disputed,
           country: 'Total',
