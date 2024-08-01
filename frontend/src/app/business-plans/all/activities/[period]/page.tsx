@@ -2,7 +2,7 @@ import React from 'react'
 
 import { Metadata } from 'next'
 
-import BPActivities from '@ors/components/manage/Blocks/BusinessPlans/BPList/BPActivities'
+import BPListActivities from '@ors/components/manage/Blocks/BusinessPlans/BPList/BPListActivities'
 
 export const metadata: Metadata = {
   title: 'Business Plans - Activities',
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 
 export default async function BusinessPlansActivities(props: any) {
   const { period } = props.params
-  return <BPActivities period={period} />
+  return <BPListActivities period={period} />
 }

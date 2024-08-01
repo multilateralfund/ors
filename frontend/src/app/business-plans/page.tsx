@@ -12,5 +12,5 @@ export default function BusinessPlans() {
 
   useEffect(() => {
     router.replace(`/business-plans/all/plans/${periodOptions[0].value}`)
-  }, [router])
+  }, [periodOptions, router])
 }

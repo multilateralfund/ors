@@ -11,7 +11,7 @@ import { useStore } from '@ors/store'
 
 const ACTIVITIES_PER_PAGE = 20
 
-export default function BPActivities(props: any) {
+export default function BPListActivities(props: any) {
   const { period } = props
   const { periodOptions } = useGetBpPeriods()
 
@@ -52,8 +52,8 @@ export default function BPActivities(props: any) {
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
   return (
-    <>
-      <form ref={form}>
+    <div className="flex flex-1 flex-col justify-start gap-6 pt-6">
+      <form className="flex flex-col gap-6" ref={form}>
         <ActivitiesFilters
           bpSlice={bpSlice}
           clusters={clusters}
@@ -62,6 +62,7 @@ export default function BPActivities(props: any) {
           form={form}
           handleFilterChange={handleFilterChange}
           handleParamsChange={handleParamsChange}
+          withAgency
         />
         <Activities loaded={loaded} period={period} results={results} />
       </form>
@@ -82,6 +83,6 @@ export default function BPActivities(props: any) {
           />
         </div>
       )}
-    </>
+    </div>
   )
 }

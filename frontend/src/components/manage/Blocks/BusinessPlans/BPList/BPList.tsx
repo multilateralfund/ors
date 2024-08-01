@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-import { BPFilters } from '@ors/components/manage/Blocks/BusinessPlans/BPList/BpFilters'
+import { BPListFilters } from '@ors/components/manage/Blocks/BusinessPlans/BPList/BPListFilters'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import SimpleList from '@ors/components/ui/SimpleList/SimpleList'
 import { getResults } from '@ors/helpers'
@@ -75,8 +75,8 @@ export default function BPList(props: any) {
   }
 
   return (
-    <>
-      <BPFilters
+    <div className="flex flex-1 flex-col justify-start gap-6 pt-6">
+      <BPListFilters
         agencies={agencies.data}
         filters={filters}
         handleSearch={handleSearch}
@@ -84,27 +84,23 @@ export default function BPList(props: any) {
         statuses={settings.data.business_plan_statuses}
         yearRanges={bpSlice.yearRanges.data}
       />
-      <div className="relative flex flex-col-reverse gap-6 lg:flex-row lg:gap-4">
-        <div className="flex flex-1 flex-col justify-start gap-6">
-          <SimpleList list={results} />
-          {!!pages && pages > 1 && (
-            <div className="mt-4 flex items-center justify-start">
-              <Pagination
-                count={pages}
-                page={pagination.page}
-                siblingCount={1}
-                onPaginationChanged={(page) => {
-                  setPagination({ ...pagination, page: page || 1 })
-                  setParams({
-                    limit: pagination.rowsPerPage,
-                    offset: ((page || 1) - 1) * pagination.rowsPerPage,
-                  })
-                }}
-              />
-            </div>
-          )}
+      <SimpleList list={results} />
+      {!!pages && pages > 1 && (
+        <div className="mt-4 flex items-center justify-start">
+          <Pagination
+            count={pages}
+            page={pagination.page}
+            siblingCount={1}
+            onPaginationChanged={(page) => {
+              setPagination({ ...pagination, page: page || 1 })
+              setParams({
+                limit: pagination.rowsPerPage,
+                offset: ((page || 1) - 1) * pagination.rowsPerPage,
+              })
+            }}
+          />
         </div>
-      </div>
-    </>
+      )}
+    </div>
   )
 }
