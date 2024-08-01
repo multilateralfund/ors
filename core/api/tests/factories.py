@@ -559,8 +559,10 @@ class DisputedContributionsFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = DisputedContribution
 
+    country = factory.SubFactory(CountryFactory)
     year = factory.Faker("random_int", min=2000, max=2024)
     amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    comment = factory.Faker("pystr", max_chars=100)
 
 
 class FermGainLossFactory(factory.django.DjangoModelFactory):

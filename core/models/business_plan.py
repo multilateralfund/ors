@@ -135,6 +135,9 @@ class BPActivity(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        verbose_name_plural = "Bp activities"
+
 
 class BPActivityValue(models.Model):
     bp_activity = models.ForeignKey(

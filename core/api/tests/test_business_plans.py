@@ -19,11 +19,22 @@ from core.api.tests.factories import (
     ProjectSubSectorFactory,
     ProjectTypeFactory,
     SubstanceFactory,
+    UserFactory,
 )
 from core.models.business_plan import BPHistory, BusinessPlan
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008, W0221, W0613, R0913
+
+
+@pytest.fixture(name="new_agency")
+def _new_agency():
+    return AgencyFactory.create(name="Agency2", code="AG2")
+
+
+@pytest.fixture(name="new_agency_user")
+def _new_agency_user(new_agency):
+    return UserFactory.create(agency=new_agency, user_type="agency_submitter")
 
 
 @pytest.fixture(name="mock_send_mail_bp_create")
@@ -109,8 +120,7 @@ class TestBPPrint(BaseTest):
 
 
 @pytest.fixture(name="_setup_bp_list")
-def setup_bp_list(agency):
-    new_agency = AgencyFactory.create(name="Agency2", code="AG2")
+def setup_bp_list(agency, new_agency):
     for i in range(3):
         for ag, status in [(agency, "Approved"), (new_agency, "Agency Draft")]:
             data = {
@@ -129,12 +139,17 @@ class TestBPList(BaseTest):
         response = self.client.get(self.url)
         assert response.status_code == 403
 
-    def test_list(self, user, _setup_bp_list):
+    def test_list(self, user, agency_user, _setup_bp_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
         assert len(response.json()) == 6
+
+        self.client.force_authenticate(user=agency_user)
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.json()) == 3
 
     def test_list_agency_filter(self, user, _setup_bp_list, agency):
         self.client.force_authenticate(user=user)
@@ -231,11 +246,9 @@ class TestBPCreate:
         assert response.status_code == 403
 
     def test_without_permission_wrong_agency(
-        self, agency_user, _setup_bp_activity_create, _setup_new_business_plan_create
+        self, new_agency_user, _setup_bp_activity_create, _setup_new_business_plan_create
     ):
-        agency_user.agency = None
-        agency_user.save()
-        self.client.force_authenticate(user=agency_user)
+        self.client.force_authenticate(user=new_agency_user)
 
         data = _setup_new_business_plan_create
         data["activities"] = [_setup_bp_activity_create]
@@ -340,11 +353,9 @@ class TestBPUpdate:
         assert response.status_code == 403
 
     def test_without_permission_wrong_agency(
-        self, agency_user, _setup_bp_activity_create, business_plan
+        self, new_agency_user, _setup_bp_activity_create, business_plan
     ):
-        agency_user.agency = None
-        agency_user.save()
-        self.client.force_authenticate(user=agency_user)
+        self.client.force_authenticate(user=new_agency_user)
 
         url = reverse("businessplan-list") + f"{business_plan.id}/"
         data = {
@@ -486,17 +497,15 @@ class TestBPStatusUpdate:
         assert response.status_code == 400
         assert "Invalid status" in response.data["general_error"]
 
-    def test_wrong_user(self, agency_inputter_user, business_plan):
+    def test_wrong_user(self, agency_inputter_user, new_agency_user, business_plan):
         self.client.force_authenticate(user=agency_inputter_user)
         url = reverse("business-plan-status", kwargs={"id": business_plan.id})
 
         response = self.client.put(url, {"status": "Submitted"})
         assert response.status_code == 403
 
-        new_agency = AgencyFactory.create(name="Agency2", code="AG2")
-        new_bp = BusinessPlanFactory.create(agency=new_agency)
+        self.client.force_authenticate(user=new_agency_user)
 
-        url = reverse("business-plan-status", kwargs={"id": new_bp.id})
         response = self.client.put(url, {"status": "Agency Draft"})
         assert response.status_code == 403
 
@@ -531,17 +540,23 @@ def setup_bp_activity_list(
     bp_chemical_type,
     substance,
     project_cluster_kpp,
+    new_agency,
 ):
     countries = [country_ro]
     subsectors = [subsector]
     project_types = [project_type]
     clusters = [project_cluster_kpp]
+    new_bp = BusinessPlanFactory.create(
+        agency=new_agency,
+        year_start=business_plan.year_start,
+        year_end=business_plan.year_end,
+    )
     another_bp = BusinessPlanFactory.create(
         agency=business_plan.agency,
         year_start=business_plan.year_start - 1,
         year_end=business_plan.year_end - 1,
     )
-    for i in range(3):
+    for i in range(4):
         countries.append(CountryFactory.create(name=f"Country{i}", iso3=f"CO{i}"))
         sector = ProjectSectorFactory.create(name=f"Sector{i}")
         subsector = ProjectSubSectorFactory.create(name=f"Subsector{i}", sector=sector)
@@ -549,7 +564,7 @@ def setup_bp_activity_list(
         project_types.append(ProjectTypeFactory.create(name=f"Type{i}"))
         clusters.append(ProjectClusterFactory.create(name=f"Cluster{i}", code=f"CL{i}"))
 
-    for bp in [business_plan, another_bp]:
+    for bp in [business_plan, another_bp, new_bp]:
         for i in range(4):
             data = {
                 "business_plan": bp,
@@ -602,7 +617,7 @@ class TestBPActivityList:
             },
         )
         assert response.status_code == 200
-        assert len(response.json()) == 4
+        assert len(response.json()) == 8
 
         response = self.client.get(
             self.url,
@@ -612,12 +627,12 @@ class TestBPActivityList:
             },
         )
         assert response.status_code == 200
-        assert len(response.json()) == 8
+        assert len(response.json()) == 12
 
     def test_country_filter(
-        self, user, business_plan, country_ro, _setup_bp_activity_list
+        self, agency_user, business_plan, country_ro, _setup_bp_activity_list
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=agency_user)
 
         response = self.client.get(
             self.url,
@@ -644,8 +659,8 @@ class TestBPActivityList:
         )
         assert response.status_code == 400
 
-    def test_status_filter(self, user, business_plan, _setup_bp_activity_list):
-        self.client.force_authenticate(user=user)
+    def test_status_filter(self, agency_user, business_plan, _setup_bp_activity_list):
+        self.client.force_authenticate(user=agency_user)
 
         response = self.client.get(
             self.url,
@@ -670,8 +685,8 @@ class TestBPActivityList:
         assert response.status_code == 200
         assert len(response.json()) == 0
 
-    def test_search_filter(self, user, business_plan, _setup_bp_activity_list):
-        self.client.force_authenticate(user=user)
+    def test_search_filter(self, agency_user, business_plan, _setup_bp_activity_list):
+        self.client.force_authenticate(user=agency_user)
 
         response = self.client.get(
             self.url,
@@ -713,12 +728,33 @@ class TestBPActivityList:
         )
         assert response.status_code == 400
 
+    def test_all_for_new_user(
+        self, new_agency_user, business_plan, _setup_bp_activity_list
+    ):
+        self.client.force_authenticate(user=new_agency_user)
+
+        response = self.client.get(
+            self.url,
+            {
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+            },
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 4
+
 
 class TestBPGet:
     client = APIClient()
     url = reverse("businessplan-get")
 
     def test_list_anon(self, business_plan):
+        response = self.client.get(self.url, {"business_plan_id": business_plan.id})
+        assert response.status_code == 403
+
+    def test_without_permission(self, new_agency_user, business_plan):
+        self.client.force_authenticate(user=new_agency_user)
+
         response = self.client.get(self.url, {"business_plan_id": business_plan.id})
         assert response.status_code == 403
 

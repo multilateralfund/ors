@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0112_alter_businessplan_status"),
+        ("core", "0113_remove_disputedcontribution_unique_year_and_more"),
     ]
 
     operations = [
