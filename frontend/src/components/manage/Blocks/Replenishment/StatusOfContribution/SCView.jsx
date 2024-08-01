@@ -82,7 +82,7 @@ function SCView(props) {
     ? mockSCPeriodOptions(ctx.periods)
     : mockScAnnualOptions()
 
-  const dateOfLastUpdate = '26 September 2023'
+  const dateOfLastUpdate = '27 May 2024'
   const title = period
     ? `Status of Contribution for ${period}`
     : 'Status of Contribution'
