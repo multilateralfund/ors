@@ -55,15 +55,7 @@ export default function DownloadButtons(props) {
   return (
     <Portal active={domNode} domNode={domNode}>
       <div className="mb-2 flex items-center gap-x-2">
-        <DownloadLink
-          href={downloadUrl ?? '#'}
-          onClick={function (evt) {
-            evt.preventDefault()
-            alert('Not yet implemented.')
-          }}
-        >
-          Download
-        </DownloadLink>
+        <DownloadLink href={downloadUrl ?? '#'}>Download</DownloadLink>
         <PrintButton
           onClick={function () {
             window.print()

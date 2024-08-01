@@ -369,7 +369,7 @@ urlpatterns = [
         name="replenishment-dashboard",
     ),
     path(
-        "replenishment/dashboard/export",
+        "replenishment/dashboard/export/",
         ReplenishmentDashboardExportView.as_view(),
         name="replenishment-dashboard-export",
     ),
