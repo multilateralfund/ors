@@ -7,15 +7,20 @@ import SimpleSelect from '@ors/components/ui/SimpleSelect/SimpleSelect'
 import styles from './periodSelector.module.css'
 import { getPathPeriod } from './utils'
 
+function isYear(period: string) {
+  return /^\d{4}$/.test(period)
+}
+
 function PeriodSelector(props: any) {
   const { label = 'Period', period, periodOptions } = props
 
   const pathname = usePathname()
   const router = useRouter()
 
-  const basePath = getPathPeriod(pathname)
-    ? pathname.split('/').slice(0, -1).join('/')
-    : pathname
+  const basePath =
+    getPathPeriod(pathname) || isYear(props.period)
+      ? pathname.split('/').slice(0, -1).join('/')
+      : pathname
 
   const options = []
   let selectedIndex = 0

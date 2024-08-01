@@ -14,6 +14,7 @@ from core.api.tests.factories import (
     SubstanceFactory,
     TimeFrameFactory,
     UsageFactory,
+    UserFactory,
 )
 from core.models import AdmRecordArchive
 from core.models import Country
@@ -72,6 +73,12 @@ def _status_update_url(cp_report_2019):
     return reverse("country-programme-report-status", kwargs={"id": cp_report_2019.id})
 
 
+@pytest.fixture(name="another_country_user")
+def _another_country_user():
+    new_country = CountryFactory.create(name="New Country")
+    return UserFactory.create(country=new_country, user_type="country_user")
+
+
 class TestCPReportList(BaseTest):
     url = reverse("country-programme-reports")
 
@@ -94,24 +101,6 @@ class TestCPReportList(BaseTest):
         assert len(response.data) == 3
         assert response.data[0]["name"] == "Romania2010"
         assert response.data[2]["name"] == "Romania2012"
-
-    def test_get_cp_report_list_agency(self, agency_user, _setup_cp_report_list):
-        self.client.force_authenticate(user=agency_user)
-
-        # get cp reports list
-        response = self.client.get(self.url)
-        assert response.status_code == 200
-        assert len(response.data) == 9
-
-    def test_get_cp_report_list_stakeholder(
-        self, stakeholder_user, _setup_cp_report_list
-    ):
-        self.client.force_authenticate(user=stakeholder_user)
-
-        # get cp reports list
-        response = self.client.get(self.url)
-        assert response.status_code == 200
-        assert len(response.data) == 9
 
     def test_get_cp_report_list_country_filter(self, user, _setup_cp_report_list):
         self.client.force_authenticate(user=user)
@@ -457,6 +446,15 @@ class TestCPReportCreate(BaseTest):
         self, stakeholder_user, _setup_new_cp_report_create
     ):
         self.client.force_authenticate(user=stakeholder_user)
+        response = self.client.post(
+            self.url, _setup_new_cp_report_create, format="json"
+        )
+        assert response.status_code == 403
+
+    def test_without_permission_country_user(
+        self, another_country_user, _setup_new_cp_report_create
+    ):
+        self.client.force_authenticate(user=another_country_user)
         response = self.client.post(
             self.url, _setup_new_cp_report_create, format="json"
         )

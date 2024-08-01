@@ -8,11 +8,17 @@ const BASE_URL = '/api/replenishment/status-of-contributions'
 function useGetSCData(start_year, end_year) {
   const [data, setData] = useState({
     disputed_contributions: null,
+    disputed_contributions_per_country: null,
     status_of_contributions: null,
     total: null,
   })
   const [loading, setLoading] = useState(false)
   const [rows, setRows] = useState([])
+  const [refetchTrigger, setRefetchTrigger] = useState(false)
+
+  const refetchSCData = () => {
+    setRefetchTrigger((prev) => !prev)
+  }
 
   useEffect(() => {
     setLoading(true)
@@ -36,6 +42,8 @@ function useGetSCData(start_year, end_year) {
 
         setData({
           disputed_contributions: data.disputed_contributions,
+          disputed_contributions_per_country:
+            data.disputed_contributions_per_country,
           status_of_contributions: data.status_of_contributions,
           total: data.total,
         })
@@ -45,7 +53,7 @@ function useGetSCData(start_year, end_year) {
         console.error('Error:', error)
         setLoading(false)
       })
-  }, [start_year, end_year])
+  }, [start_year, end_year, refetchTrigger])
 
   const extraRows = useMemo(
     function () {
@@ -54,9 +62,24 @@ function useGetSCData(start_year, end_year) {
           country: 'Total',
           ...data.total,
         },
+        ...(data?.disputed_contributions_per_country?.map((disputed) => ({
+          agreed_contributions: disputed.amount,
+          can_delete: true,
+          country: (
+            <div className="flex flex-col gap-1 !whitespace-normal">
+              <span className="inline-block">{disputed.country.name}</span>
+              <span className="inline-block !break-words">
+                {disputed.comment}
+              </span>
+            </div>
+          ),
+          country_to_display: disputed.country.name,
+          disputed_id: disputed.id,
+          outstanding_contributions: disputed.amount,
+        })) || []),
         {
           agreed_contributions: data.disputed_contributions,
-          country: 'Disputed Contributions ***',
+          country: 'Disputed Contributions',
           outstanding_contributions: data.disputed_contributions,
         },
         {
@@ -70,7 +93,7 @@ function useGetSCData(start_year, end_year) {
     [data],
   )
 
-  return { data, extraRows, loading, rows }
+  return { data, extraRows, loading, refetchSCData, rows }
 }
 
 export default useGetSCData
