@@ -715,7 +715,6 @@ class ReplenishmentDashboardView(views.APIView):
 class ReplenishmentDashboardExportView(views.APIView):
 
     def get(self, request, *args, **kwargs):
-        # TODO: get data
         income = ExternalIncome.objects.get()
         allocations = ExternalAllocation.objects.get()
 
