@@ -8,6 +8,7 @@ const BASE_URL = '/api/replenishment/status-of-contributions'
 function useGetSCData(start_year, end_year) {
   const [data, setData] = useState({
     disputed_contributions: null,
+    disputed_contributions_per_country: null,
     status_of_contributions: null,
     total: null,
   })
@@ -41,6 +42,8 @@ function useGetSCData(start_year, end_year) {
 
         setData({
           disputed_contributions: data.disputed_contributions,
+          disputed_contributions_per_country:
+            data.disputed_contributions_per_country,
           status_of_contributions: data.status_of_contributions,
           total: data.total,
         })
@@ -64,18 +67,18 @@ function useGetSCData(start_year, end_year) {
           country: 'Disputed Contributions ***',
           outstanding_contributions: data.disputed_contributions,
         },
-        {
-          agreed_contributions: data.disputed_contributions,
+        ...data?.disputed_contributions_per_country?.map((disputed) => ({
+          agreed_contributions: disputed.amount,
           can_delete: true,
           country: (
             <li className="flex flex-col gap-1">
-              <span>Romania</span>
-              <span>Some Comment</span>
+              <span>{disputed.country.name}</span>
+              <span>{disputed.comment}</span>
             </li>
           ),
-          country_to_display: 'Romania',
-          outstanding_contributions: data.disputed_contributions,
-        },
+          country_to_display: disputed.country.name,
+          disputed_id: disputed.id,
+        })),
         {
           agreed_contributions: data.total?.agreed_contributions_with_disputed,
           country: 'Total',

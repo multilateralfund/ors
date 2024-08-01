@@ -45,8 +45,6 @@ export default function DisputedContributionDialog({
     }
   }
 
-  console.log(countryOptions)
-
   return (
     <div className="print:hidden">
       {showAdd && (

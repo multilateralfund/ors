@@ -25,8 +25,6 @@ export default function SCAnnual({ year }) {
     [rows, sortOn, sortDirection],
   )
 
-  console.log(rows)
-
   const countriesInTable = useMemo(() => {
     return rows.map(({ country, country_id }) => ({ country, country_id }))
   }, [rows])
@@ -79,7 +77,8 @@ export default function SCAnnual({ year }) {
 
   function handleDeleteRow(rowId) {
     const row = extraRows[rowId]
-    console.log(row)
+    console.log(row.disputed_id)
+    setShowDeleteModal(false)
     refetchSCData()
   }
 
