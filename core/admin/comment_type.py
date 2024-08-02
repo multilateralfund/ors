@@ -9,5 +9,5 @@ class CommentTypeAdmin(admin.ModelAdmin):
     search_fields = ["name"]
 
     def get_list_display(self, request):
-        exclude = ["bprecord"]
+        exclude = ["bpactivity"]
         return get_final_display_list(CommentType, exclude)

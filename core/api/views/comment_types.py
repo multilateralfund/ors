@@ -1,12 +1,12 @@
-from rest_framework import mixins, generics
+from rest_framework import generics
 
 from core.api.serializers.base import CommentTypeSerializer
 from core.models.base import CommentType
 
 
-class CommentTypeListView(mixins.ListModelMixin, generics.GenericAPIView):
+class CommentTypeListView(generics.ListAPIView):
     """
-    API endpoint to list comment types.
+    List comment types.
     """
 
     queryset = CommentType.objects.all()

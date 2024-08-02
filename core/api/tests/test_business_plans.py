@@ -10,8 +10,8 @@ from core.api.tests.base import BaseTest
 from core.api.tests.conftest import pdf_text
 from core.api.tests.factories import (
     AgencyFactory,
-    BPRecordFactory,
-    BPRecordValueFactory,
+    BPActivityFactory,
+    BPActivityValueFactory,
     BusinessPlanFactory,
     CountryFactory,
     ProjectClusterFactory,
@@ -56,13 +56,13 @@ def _mock_send_mail_bp_status_update():
 
 
 class TestBPExport(BaseTest):
-    url = reverse("bprecord-export")
+    url = reverse("bpactivity-export")
 
     def test_export_anon(self, business_plan):
         response = self.client.get(self.url, {"business_plan_id": business_plan.id})
         assert response.status_code == 403
 
-    def test_export(self, user, business_plan, bp_record, bp_record_values):
+    def test_export(self, user, business_plan, bp_activity, bp_activity_values):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"business_plan_id": business_plan.id})
@@ -74,35 +74,35 @@ class TestBPExport(BaseTest):
 
         wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
         sheet = wb.active
-        assert sheet["A2"].value == bp_record.country.name
+        assert sheet["A2"].value == bp_activity.country.name
         assert sheet["B2"].value == business_plan.agency.name
-        assert sheet["M2"].value == bp_record.title
+        assert sheet["M2"].value == bp_activity.title
 
-        assert sheet["O2"].value == bp_record_values[0].value_usd
-        assert sheet["P2"].value == bp_record_values[0].value_odp
-        assert sheet["Q2"].value == bp_record_values[0].value_mt
+        assert sheet["O2"].value == bp_activity_values[0].value_usd
+        assert sheet["P2"].value == bp_activity_values[0].value_odp
+        assert sheet["Q2"].value == bp_activity_values[0].value_mt
 
-        assert sheet["R2"].value == bp_record_values[1].value_usd
-        assert sheet["S2"].value == bp_record_values[1].value_odp
-        assert sheet["T2"].value == bp_record_values[1].value_mt
+        assert sheet["R2"].value == bp_activity_values[1].value_usd
+        assert sheet["S2"].value == bp_activity_values[1].value_odp
+        assert sheet["T2"].value == bp_activity_values[1].value_mt
 
-        assert sheet["U2"].value == bp_record_values[2].value_usd
-        assert sheet["V2"].value == bp_record_values[2].value_odp
-        assert sheet["W2"].value == bp_record_values[2].value_mt
+        assert sheet["U2"].value == bp_activity_values[2].value_usd
+        assert sheet["V2"].value == bp_activity_values[2].value_odp
+        assert sheet["W2"].value == bp_activity_values[2].value_mt
 
-        assert sheet["X2"].value == bp_record_values[3].value_usd
-        assert sheet["Y2"].value == bp_record_values[3].value_odp
-        assert sheet["Z2"].value == bp_record_values[3].value_mt
+        assert sheet["X2"].value == bp_activity_values[3].value_usd
+        assert sheet["Y2"].value == bp_activity_values[3].value_odp
+        assert sheet["Z2"].value == bp_activity_values[3].value_mt
 
 
 class TestBPPrint(BaseTest):
-    url = reverse("bprecord-print")
+    url = reverse("bpactivity-print")
 
     def test_export_anon(self, business_plan):
         response = self.client.get(self.url, {"business_plan_id": business_plan.id})
         assert response.status_code == 403
 
-    def test_export(self, user, business_plan, bp_record, bp_record_values):
+    def test_export(self, user, business_plan, bp_activity, bp_activity_values):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"business_plan_id": business_plan.id})
@@ -114,9 +114,9 @@ class TestBPPrint(BaseTest):
 
         text = pdf_text(io.BytesIO(response.getvalue())).replace("\n", "")
 
-        assert bp_record.country.name in text
+        assert bp_activity.country.name in text
         assert business_plan.agency.name in text
-        assert bp_record.title in text
+        assert bp_activity.title in text
 
 
 @pytest.fixture(name="_setup_bp_list")
@@ -181,8 +181,8 @@ class TestBPList(BaseTest):
         assert all(bp["year_end"] == 2023 for bp in response.json())
 
 
-@pytest.fixture(name="_setup_bp_record_create")
-def setup_bp_record_create(
+@pytest.fixture(name="_setup_bp_activity_create")
+def setup_bp_activity_create(
     country_ro,
     sector,
     subsector,
@@ -238,43 +238,43 @@ class TestBPCreate:
     url = reverse("businessplan-list")
 
     def test_without_login(
-        self, _setup_bp_record_create, _setup_new_business_plan_create
+        self, _setup_bp_activity_create, _setup_new_business_plan_create
     ):
         data = _setup_new_business_plan_create
-        data["records"] = [_setup_bp_record_create]
+        data["activities"] = [_setup_bp_activity_create]
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 403
 
     def test_without_permission_wrong_agency(
-        self, new_agency_user, _setup_bp_record_create, _setup_new_business_plan_create
+        self, new_agency_user, _setup_bp_activity_create, _setup_new_business_plan_create
     ):
         self.client.force_authenticate(user=new_agency_user)
 
         data = _setup_new_business_plan_create
-        data["records"] = [_setup_bp_record_create]
+        data["activities"] = [_setup_bp_activity_create]
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 403
 
     def test_create_final_version(
-        self, agency_user, _setup_bp_record_create, _setup_new_business_plan_create
+        self, agency_user, _setup_bp_activity_create, _setup_new_business_plan_create
     ):
         self.client.force_authenticate(user=agency_user)
 
         data = _setup_new_business_plan_create
         data["status"] = "Submitted"
-        data["records"] = [_setup_bp_record_create]
+        data["activities"] = [_setup_bp_activity_create]
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
         assert response.data["general_error"] == "Only draft BP can be created"
 
-    def test_create_wrong_record_values(
-        self, agency_user, _setup_bp_record_create, _setup_new_business_plan_create
+    def test_create_wrong_activity_values(
+        self, agency_user, _setup_bp_activity_create, _setup_new_business_plan_create
     ):
         self.client.force_authenticate(user=agency_user)
 
         data = _setup_new_business_plan_create
-        record_data = _setup_bp_record_create
-        record_data["values"] = [
+        activity_data = _setup_bp_activity_create
+        activity_data["values"] = [
             {
                 "year": 2025,  # wrong year
                 "value_usd": 100,
@@ -282,13 +282,13 @@ class TestBPCreate:
                 "value_mt": 100,
             }
         ]
-        data["records"] = [record_data]
+        data["activities"] = [activity_data]
         response = self.client.post(self.url, data, format="json")
 
         assert response.status_code == 400
         assert (
             response.data["general_error"]
-            == "BP record values year not in business plan interval"
+            == "BP activity values year not in business plan interval"
         )
 
     def test_bp_create(
@@ -301,14 +301,14 @@ class TestBPCreate:
         subsector,
         project_type,
         bp_chemical_type,
-        _setup_bp_record_create,
+        _setup_bp_activity_create,
         _setup_new_business_plan_create,
         mock_send_mail_bp_create,
     ):
         self.client.force_authenticate(user=agency_user)
 
         data = _setup_new_business_plan_create
-        data["records"] = [_setup_bp_record_create]
+        data["activities"] = [_setup_bp_activity_create]
 
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 201
@@ -318,21 +318,21 @@ class TestBPCreate:
         assert response.data["year_end"] == 2023
         assert response.data["agency_id"] == agency.id
 
-        records = response.data["records"]
-        assert records[0]["business_plan_id"] == response.data["id"]
-        assert records[0]["title"] == "Planu"
-        assert records[0]["country_id"] == country_ro.id
-        assert records[0]["lvc_status"] == "LVC"
-        assert records[0]["project_type_id"] == project_type.id
-        assert records[0]["bp_chemical_type_id"] == bp_chemical_type.id
-        assert records[0]["substances"] == [substance.id]
-        assert records[0]["sector_id"] == sector.id
-        assert records[0]["subsector_id"] == subsector.id
-        assert records[0]["status"] == "A"
-        assert records[0]["is_multi_year"] is False
-        assert records[0]["remarks"] == "Merge bine, bine, bine ca aeroplanu"
-        assert records[0]["comment_secretariat"] == "Alo, alo, Te-am sunat sa-ti spun"
-        assert records[0]["values"][0]["year"] == 2020
+        activities = response.data["activities"]
+        assert activities[0]["business_plan_id"] == response.data["id"]
+        assert activities[0]["title"] == "Planu"
+        assert activities[0]["country_id"] == country_ro.id
+        assert activities[0]["lvc_status"] == "LVC"
+        assert activities[0]["project_type_id"] == project_type.id
+        assert activities[0]["bp_chemical_type_id"] == bp_chemical_type.id
+        assert activities[0]["substances"] == [substance.id]
+        assert activities[0]["sector_id"] == sector.id
+        assert activities[0]["subsector_id"] == subsector.id
+        assert activities[0]["status"] == "A"
+        assert activities[0]["is_multi_year"] is False
+        assert activities[0]["remarks"] == "Merge bine, bine, bine ca aeroplanu"
+        assert activities[0]["comment_secretariat"] == "Alo, alo, Te-am sunat sa-ti spun"
+        assert activities[0]["values"][0]["year"] == 2020
 
         mock_send_mail_bp_create.assert_called_once()
 
@@ -340,20 +340,20 @@ class TestBPCreate:
 class TestBPUpdate:
     client = APIClient()
 
-    def test_without_login(self, _setup_bp_record_create, business_plan):
+    def test_without_login(self, _setup_bp_activity_create, business_plan):
         url = reverse("businessplan-list") + f"{business_plan.id}/"
         data = {
             "agency_id": business_plan.agency_id,
             "year_start": business_plan.year_start,
             "year_end": business_plan.year_end,
             "status": "Agency Draft",
-            "records": [_setup_bp_record_create],
+            "activities": [_setup_bp_activity_create],
         }
         response = self.client.put(url, data, format="json")
         assert response.status_code == 403
 
     def test_without_permission_wrong_agency(
-        self, new_agency_user, _setup_bp_record_create, business_plan
+        self, new_agency_user, _setup_bp_activity_create, business_plan
     ):
         self.client.force_authenticate(user=new_agency_user)
 
@@ -363,13 +363,13 @@ class TestBPUpdate:
             "year_start": business_plan.year_start,
             "year_end": business_plan.year_end,
             "status": "Agency Draft",
-            "records": [_setup_bp_record_create],
+            "activities": [_setup_bp_activity_create],
         }
         response = self.client.put(url, data, format="json")
         assert response.status_code == 403
 
     def test_update_final_version(
-        self, agency_user, _setup_bp_record_create, business_plan
+        self, agency_user, _setup_bp_activity_create, business_plan
     ):
         self.client.force_authenticate(user=agency_user)
         business_plan.status = BusinessPlan.Status.submitted
@@ -381,20 +381,20 @@ class TestBPUpdate:
             "year_start": business_plan.year_start,
             "year_end": business_plan.year_end,
             "status": "Submitted",
-            "records": [_setup_bp_record_create],
+            "activities": [_setup_bp_activity_create],
         }
         response = self.client.put(url, data, format="json")
         assert response.status_code == 400
         assert response.data["general_error"] == "Only draft BP can be updated"
 
-    def test_update_wrong_record_values(
-        self, agency_user, _setup_bp_record_create, business_plan
+    def test_update_wrong_activity_values(
+        self, agency_user, _setup_bp_activity_create, business_plan
     ):
         self.client.force_authenticate(user=agency_user)
 
         url = reverse("businessplan-list") + f"{business_plan.id}/"
-        record_data = _setup_bp_record_create
-        record_data["values"] = [
+        activity_data = _setup_bp_activity_create
+        activity_data["values"] = [
             {
                 "year": 2025,  # wrong year
                 "value_usd": 100,
@@ -407,20 +407,20 @@ class TestBPUpdate:
             "year_start": business_plan.year_start,
             "year_end": business_plan.year_end,
             "status": "Agency Draft",
-            "records": [record_data],
+            "activities": [activity_data],
         }
         response = self.client.put(url, data, format="json")
 
         assert response.status_code == 400
         assert (
             response.data["general_error"]
-            == "BP record values year not in business plan interval"
+            == "BP activity values year not in business plan interval"
         )
 
     def test_bp_update(
         self,
         agency_user,
-        _setup_bp_record_create,
+        _setup_bp_activity_create,
         business_plan,
         substance,
         comment_type,
@@ -430,17 +430,17 @@ class TestBPUpdate:
 
         url = reverse("businessplan-list") + f"{business_plan.id}/"
         other_business_plan = BusinessPlanFactory()
-        record_data = _setup_bp_record_create
+        activity_data = _setup_bp_activity_create
         substance2 = SubstanceFactory.create(name="substance2")
-        record_data["substances"] = [substance.id, substance2.id]
-        record_data["business_plan_id"] = other_business_plan.id  # should be ignored
-        record_data["title"] = "Planu 2"
-        record_data["status"] = "P"
-        record_data["is_multi_year"] = True
-        record_data["remarks"] = "Merge rau"
-        record_data["comment_secretariat"] = "Nu inchide telefonu"
-        record_data["comment_types"] = [comment_type.id]
-        record_data["values"] = [
+        activity_data["substances"] = [substance.id, substance2.id]
+        activity_data["business_plan_id"] = other_business_plan.id  # should be ignored
+        activity_data["title"] = "Planu 2"
+        activity_data["status"] = "P"
+        activity_data["is_multi_year"] = True
+        activity_data["remarks"] = "Merge rau"
+        activity_data["comment_secretariat"] = "Nu inchide telefonu"
+        activity_data["comment_types"] = [comment_type.id]
+        activity_data["values"] = [
             {
                 "year": 2022,
                 "value_usd": 300,
@@ -453,7 +453,7 @@ class TestBPUpdate:
             "year_start": business_plan.year_start,
             "year_end": business_plan.year_end,
             "status": "Agency Draft",
-            "records": [record_data],
+            "activities": [activity_data],
         }
         response = self.client.put(url, data, format="json")
 
@@ -462,16 +462,16 @@ class TestBPUpdate:
             response.data["name"]
             == f"{business_plan.agency} {business_plan.year_start} - {business_plan.year_end}"
         )
-        records = response.data["records"]
-        assert records[0]["business_plan_id"] == response.data["id"]
-        assert records[0]["title"] == "Planu 2"
-        assert records[0]["substances"] == [substance.id, substance2.id]
-        assert records[0]["status"] == "P"
-        assert records[0]["is_multi_year"] is True
-        assert records[0]["remarks"] == "Merge rau"
-        assert records[0]["comment_secretariat"] == "Nu inchide telefonu"
-        assert records[0]["comment_types"] == [comment_type.id]
-        assert records[0]["values"][0]["year"] == 2022
+        activities = response.data["activities"]
+        assert activities[0]["business_plan_id"] == response.data["id"]
+        assert activities[0]["title"] == "Planu 2"
+        assert activities[0]["substances"] == [substance.id, substance2.id]
+        assert activities[0]["status"] == "P"
+        assert activities[0]["is_multi_year"] is True
+        assert activities[0]["remarks"] == "Merge rau"
+        assert activities[0]["comment_secretariat"] == "Nu inchide telefonu"
+        assert activities[0]["comment_types"] == [comment_type.id]
+        assert activities[0]["values"][0]["year"] == 2022
 
         mock_send_mail_bp_update.assert_called_once()
 
@@ -533,8 +533,8 @@ class TestBPStatusUpdate:
         assert history.count() == 2
 
 
-@pytest.fixture(name="_setup_bp_record_list")
-def setup_bp_record_list(
+@pytest.fixture(name="_setup_bp_activity_list")
+def setup_bp_activity_list(
     business_plan,
     country_ro,
     sector,
@@ -587,18 +587,18 @@ def setup_bp_record_list(
                 "remarks_additional": f"Poate si la anu / Daca merge bine planu stau ca barosanu.{i}",
                 "comment_secretariat": f"Alo, alo, Te-am sunat sa-ti spun{i}",
             }
-            bp_record = BPRecordFactory.create(**data)
-            bp_record.substances.set([substance])
-            bp_record.comment_types.set([comment_type])
+            bp_activity = BPActivityFactory.create(**data)
+            bp_activity.substances.set([substance])
+            bp_activity.comment_types.set([comment_type])
             for i in range(business_plan.year_start, business_plan.year_end + 1):
-                BPRecordValueFactory.create(
-                    bp_record=bp_record, value_usd=i, value_odp=i, value_mt=i
+                BPActivityValueFactory.create(
+                    bp_activity=bp_activity, value_usd=i, value_odp=i, value_mt=i
                 )
 
 
-class TestBPRecordList:
+class TestBPActivityList:
     client = APIClient()
-    url = reverse("bprecord-list")
+    url = reverse("bpactivity-list")
 
     def test_list_anon(self, business_plan):
         response = self.client.get(
@@ -610,7 +610,7 @@ class TestBPRecordList:
         )
         assert response.status_code == 403
 
-    def test_record_list(self, user, _setup_bp_record_list, business_plan):
+    def test_activity_list(self, user, _setup_bp_activity_list, business_plan):
         self.client.force_authenticate(user=user)
 
         # get by start_year, end_year
@@ -635,7 +635,7 @@ class TestBPRecordList:
         assert len(response.json()) == 12
 
     def test_country_filter(
-        self, agency_user, business_plan, country_ro, _setup_bp_record_list
+        self, agency_user, business_plan, country_ro, _setup_bp_activity_list
     ):
         self.client.force_authenticate(user=agency_user)
 
@@ -651,7 +651,7 @@ class TestBPRecordList:
         assert len(response.json()) == 1
         assert response.json()[0]["country"]["id"] == country_ro.id
 
-    def test_invalid_country_filter(self, user, _setup_bp_record_list, business_plan):
+    def test_invalid_country_filter(self, user, _setup_bp_activity_list, business_plan):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
@@ -664,7 +664,7 @@ class TestBPRecordList:
         )
         assert response.status_code == 400
 
-    def test_status_filter(self, agency_user, business_plan, _setup_bp_record_list):
+    def test_status_filter(self, agency_user, business_plan, _setup_bp_activity_list):
         self.client.force_authenticate(user=agency_user)
 
         response = self.client.get(
@@ -690,7 +690,7 @@ class TestBPRecordList:
         assert response.status_code == 200
         assert len(response.json()) == 0
 
-    def test_search_filter(self, agency_user, business_plan, _setup_bp_record_list):
+    def test_search_filter(self, agency_user, business_plan, _setup_bp_activity_list):
         self.client.force_authenticate(user=agency_user)
 
         response = self.client.get(
@@ -705,7 +705,7 @@ class TestBPRecordList:
         assert len(response.json()) == 1
         assert response.json()[0]["title"] == "Planu2"
 
-    def test_agency_filter(self, user, business_plan, _setup_bp_record_list):
+    def test_agency_filter(self, user, business_plan, _setup_bp_activity_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
@@ -720,7 +720,7 @@ class TestBPRecordList:
         assert len(response.json()) == 4
         assert response.json()[0]["agency"] == business_plan.agency.name
 
-    def test_invalid_agency(self, user, business_plan, _setup_bp_record_list):
+    def test_invalid_agency(self, user, business_plan, _setup_bp_activity_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
@@ -734,7 +734,7 @@ class TestBPRecordList:
         assert response.status_code == 400
 
     def test_all_for_new_user(
-        self, new_agency_user, business_plan, _setup_bp_record_list
+        self, new_agency_user, business_plan, _setup_bp_activity_list
     ):
         self.client.force_authenticate(user=new_agency_user)
 
@@ -763,7 +763,7 @@ class TestBPGet:
         response = self.client.get(self.url, {"business_plan_id": business_plan.id})
         assert response.status_code == 403
 
-    def test_record_list(self, user, _setup_bp_record_list, business_plan):
+    def test_activity_list(self, user, _setup_bp_activity_list, business_plan):
         self.client.force_authenticate(user=user)
 
         # get by id
@@ -784,7 +784,7 @@ class TestBPGet:
         assert len(response.json()["activities"]) == 4
 
     def test_country_filter(
-        self, user, business_plan, country_ro, _setup_bp_record_list
+        self, user, business_plan, country_ro, _setup_bp_activity_list
     ):
         self.client.force_authenticate(user=user)
 
@@ -796,7 +796,7 @@ class TestBPGet:
         assert len(response.json()["activities"]) == 1
         assert response.json()["activities"][0]["country"]["id"] == country_ro.id
 
-    def test_invalid_country_filter(self, user, _setup_bp_record_list, business_plan):
+    def test_invalid_country_filter(self, user, _setup_bp_activity_list, business_plan):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
@@ -805,7 +805,7 @@ class TestBPGet:
         )
         assert response.status_code == 400
 
-    def test_status_filter(self, user, business_plan, _setup_bp_record_list):
+    def test_status_filter(self, user, business_plan, _setup_bp_activity_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
@@ -823,7 +823,7 @@ class TestBPGet:
         assert response.status_code == 200
         assert len(response.json()["activities"]) == 0
 
-    def test_search_filter(self, user, business_plan, _setup_bp_record_list):
+    def test_search_filter(self, user, business_plan, _setup_bp_activity_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
@@ -834,7 +834,7 @@ class TestBPGet:
         assert len(response.json()["activities"]) == 1
         assert response.json()["activities"][0]["title"] == "Planu2"
 
-    def test_invalid_bp_id(self, user, _setup_bp_record_list):
+    def test_invalid_bp_id(self, user, _setup_bp_activity_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
@@ -843,7 +843,7 @@ class TestBPGet:
         )
         assert response.status_code == 400
 
-    def test_invalid_year(self, user, _setup_bp_record_list, agency):
+    def test_invalid_year(self, user, _setup_bp_activity_list, agency):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
@@ -856,7 +856,7 @@ class TestBPGet:
         )
         assert response.status_code == 400
 
-    def test_invalid_agency(self, user, _setup_bp_record_list):
+    def test_invalid_agency(self, user, _setup_bp_activity_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
