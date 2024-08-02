@@ -423,6 +423,7 @@ class TestBPUpdate:
         _setup_bp_record_create,
         business_plan,
         substance,
+        comment_type,
         mock_send_mail_bp_update,
     ):
         self.client.force_authenticate(user=agency_user)
@@ -438,6 +439,7 @@ class TestBPUpdate:
         record_data["is_multi_year"] = True
         record_data["remarks"] = "Merge rau"
         record_data["comment_secretariat"] = "Nu inchide telefonu"
+        record_data["comment_types"] = [comment_type.id]
         record_data["values"] = [
             {
                 "year": 2022,
@@ -468,6 +470,7 @@ class TestBPUpdate:
         assert records[0]["is_multi_year"] is True
         assert records[0]["remarks"] == "Merge rau"
         assert records[0]["comment_secretariat"] == "Nu inchide telefonu"
+        assert records[0]["comment_types"] == [comment_type.id]
         assert records[0]["values"][0]["year"] == 2022
 
         mock_send_mail_bp_update.assert_called_once()
@@ -541,6 +544,7 @@ def setup_bp_record_list(
     substance,
     project_cluster_kpp,
     new_agency,
+    comment_type,
 ):
     countries = [country_ro]
     subsectors = [subsector]
@@ -585,6 +589,7 @@ def setup_bp_record_list(
             }
             bp_record = BPRecordFactory.create(**data)
             bp_record.substances.set([substance])
+            bp_record.comment_types.set([comment_type])
             for i in range(business_plan.year_start, business_plan.year_end + 1):
                 BPRecordValueFactory.create(
                     bp_record=bp_record, value_usd=i, value_odp=i, value_mt=i

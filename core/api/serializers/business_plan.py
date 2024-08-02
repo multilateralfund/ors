@@ -14,6 +14,7 @@ from core.models import (
     BPRecord,
     BPRecordValue,
     BusinessPlan,
+    CommentType,
     Country,
     ProjectSector,
     ProjectSubSector,
@@ -139,6 +140,7 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
     project_cluster = ProjectClusterSerializer()
 
     substances = serializers.SlugRelatedField("name", many=True, read_only=True)
+    comment_types = serializers.SlugRelatedField("name", many=True, read_only=True)
 
     sector = ProjectSectorSerializer()
     subsector = ProjectSubSectorSerializer()
@@ -169,6 +171,7 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
             "is_multi_year_display",
             "status_display",
             "comment_secretariat",
+            "comment_types",
         ]
 
     def get_is_multi_year_display(self, obj):
@@ -217,6 +220,10 @@ class BPRecordCreateSerializer(serializers.ModelSerializer):
         many=True,
         queryset=Substance.objects.all().values_list("id", flat=True),
     )
+    comment_types = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=CommentType.objects.all().values_list("id", flat=True),
+    )
 
     sector_id = serializers.PrimaryKeyRelatedField(
         queryset=ProjectSector.objects.all().values_list("id", flat=True),
@@ -248,6 +255,7 @@ class BPRecordCreateSerializer(serializers.ModelSerializer):
             "remarks",
             "remarks_additional",
             "comment_secretariat",
+            "comment_types",
             "values",
         ]
 
