@@ -246,7 +246,10 @@ class TestBPCreate:
         assert response.status_code == 403
 
     def test_without_permission_wrong_agency(
-        self, new_agency_user, _setup_bp_activity_create, _setup_new_business_plan_create
+        self,
+        new_agency_user,
+        _setup_bp_activity_create,
+        _setup_new_business_plan_create,
     ):
         self.client.force_authenticate(user=new_agency_user)
 
@@ -331,7 +334,9 @@ class TestBPCreate:
         assert activities[0]["status"] == "A"
         assert activities[0]["is_multi_year"] is False
         assert activities[0]["remarks"] == "Merge bine, bine, bine ca aeroplanu"
-        assert activities[0]["comment_secretariat"] == "Alo, alo, Te-am sunat sa-ti spun"
+        assert (
+            activities[0]["comment_secretariat"] == "Alo, alo, Te-am sunat sa-ti spun"
+        )
         assert activities[0]["values"][0]["year"] == 2020
 
         mock_send_mail_bp_create.assert_called_once()
@@ -748,6 +753,23 @@ class TestBPActivityList:
         assert response.status_code == 200
         assert len(response.json()) == 4
 
+    def test_comment_type_filter(
+        self, agency_user, business_plan, comment_type, _setup_bp_activity_list
+    ):
+        self.client.force_authenticate(user=agency_user)
+
+        response = self.client.get(
+            self.url,
+            {
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+                "comment_types": comment_type.id,
+            },
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 4
+        assert response.json()[0]["comment_types"] == [comment_type.name]
+
 
 class TestBPGet:
     client = APIClient()
@@ -868,3 +890,16 @@ class TestBPGet:
             },
         )
         assert response.status_code == 400
+
+    def test_comment_type_filter(
+        self, user, business_plan, comment_type, _setup_bp_activity_list
+    ):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(
+            self.url,
+            {"business_plan_id": business_plan.id, "comment_types": comment_type.id},
+        )
+        assert response.status_code == 200
+        assert len(response.json()["activities"]) == 4
+        assert response.json()["activities"][0]["comment_types"] == [comment_type.name]

@@ -265,7 +265,9 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
 
         for activity_value in activity_values:
             activity_value["bp_activity_id"] = bp_activity.id
-        activity_value_serializer = BPActivityValueSerializer(data=activity_values, many=True)
+        activity_value_serializer = BPActivityValueSerializer(
+            data=activity_values, many=True
+        )
         activity_value_serializer.is_valid(raise_exception=True)
         activity_value_serializer.save()
 

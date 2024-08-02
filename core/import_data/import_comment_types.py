@@ -1,0 +1,27 @@
+import json
+import logging
+
+from django.db import transaction
+
+from core.models.base import CommentType
+from core.import_data.utils import IMPORT_RESOURCES_DIR
+
+logger = logging.getLogger(__name__)
+
+
+def parse_comment_types_file(file_path):
+    """
+    Parse comment types json file and import types
+    @param file_path string
+    """
+    with open(file_path, "r", encoding="utf-8") as f:
+        json_list = json.load(f)
+
+    for type_data in json_list:
+        CommentType.objects.get_or_create(name=type_data["name"])
+
+
+@transaction.atomic
+def import_comment_types():
+    parse_comment_types_file(IMPORT_RESOURCES_DIR / "comment_types.json")
+    logger.info("✔ comment types imported")
