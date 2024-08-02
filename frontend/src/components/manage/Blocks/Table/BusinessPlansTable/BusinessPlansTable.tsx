@@ -5,6 +5,15 @@ import { useParams } from 'next/navigation'
 
 import ActivitiesFilters from '@ors/components/manage/Blocks/BusinessPlans/ActivitiesFilters'
 import { BpPathParams } from '@ors/components/manage/Blocks/BusinessPlans/types'
+import TableDateSwitcher, {
+  TableDataSelectorValuesType,
+} from '@ors/components/manage/Blocks/Table/BusinessPlansTable/TableDateSwitcher'
+import {
+  allColumnDefs,
+  commentsColumnDefs,
+  odpColumnDefs,
+  valuesColumnDefs,
+} from '@ors/components/manage/Blocks/Table/BusinessPlansTable/schema'
 import Table from '@ors/components/manage/Form/Table'
 import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import { getResults } from '@ors/helpers'
@@ -142,11 +151,28 @@ export default function BusinessPlansTable() {
     setFilters((filters) => ({ ...filters, ...newFilters }))
   }
 
+  const [gridOptions, setGridOptions] =
+    useState<TableDataSelectorValuesType>('all')
+
+  const columnDefs = useMemo(() => {
+    switch (gridOptions) {
+      case 'values':
+        return valuesColumnDefs(yearColumns)
+      case 'odp':
+        return odpColumnDefs(yearColumns)
+      case 'comments':
+        return commentsColumnDefs(yearColumns)
+      default:
+        return allColumnDefs(yearColumns)
+    }
+  }, [gridOptions, yearColumns])
+
   return (
     bpSlice.yearRanges.data &&
     bpSlice.yearRanges.data.length > 0 && (
       <form ref={form}>
         <Table
+          columnDefs={[...columnDefs]}
           domLayout="autoHeight"
           loaded={loaded}
           loading={loading}
@@ -155,7 +181,7 @@ export default function BusinessPlansTable() {
           rowData={results}
           tooltipShowDelay={200}
           Toolbar={() => (
-            <>
+            <div className="flex items-center justify-between gap-1 mb-4">
               <ActivitiesFilters
                 bpSlice={bpSlice}
                 clusters={clusters}
@@ -164,6 +190,10 @@ export default function BusinessPlansTable() {
                 form={form}
                 handleFilterChange={handleFilterChange}
                 handleParamsChange={handleParamsChange}
+              />
+              <TableDateSwitcher
+                changeHandler={(event, value) => setGridOptions(value)}
+                value={gridOptions}
               />
               {/*<Dropdown*/}
               {/*  color="primary"*/}
@@ -202,155 +232,8 @@ export default function BusinessPlansTable() {
               {/*    </Link>*/}
               {/*  </Dropdown.Item>*/}
               {/*</Dropdown>*/}
-            </>
+            </div>
           )}
-          columnDefs={[
-            {
-              autoHeight: true,
-              // cellRenderer: (params: any) => (
-              //   <Link href={`/business-plans/${params.data.id}`}>
-              //     {params.data.title}
-              //   </Link>
-              // ),
-              field: 'title',
-              headerName: 'Title',
-              minWidth: 200,
-              resizable: true,
-              sortable: true,
-              tooltipField: 'title',
-            },
-            {
-              autoHeight: true,
-              cellClass: 'ag-text-center',
-              field: 'country.iso3',
-              headerClass: 'ag-text-center',
-              headerName: 'Country',
-              minWidth: 70,
-              resizable: true,
-              sortable: true,
-              tooltipField: 'country.name',
-            },
-            {
-              autoHeight: true,
-              cellClass: 'ag-text-center',
-              field: 'project_cluster',
-              headerClass: 'ag-text-center',
-              headerName: 'Cluster',
-              minWidth: 70,
-              resizable: true,
-              sortable: true,
-            },
-            {
-              autoHeight: true,
-              cellClass: 'ag-text-center',
-              field: 'project_type.code',
-              headerClass: 'ag-text-center',
-              headerName: 'Type',
-              minWidth: 70,
-              resizable: true,
-              sortable: true,
-              tooltipField: 'project_type.name',
-            },
-            {
-              autoHeight: true,
-              cellClass: 'ag-text-center',
-              field: 'sector.code',
-              headerClass: 'ag-text-center',
-              headerName: 'Sector',
-              minWidth: 70,
-              resizable: true,
-              sortable: true,
-              tooltipField: 'sector.name',
-            },
-            {
-              autoHeight: true,
-              cellClass: 'ag-text-center',
-              field: 'subsector.code',
-              headerClass: 'ag-text-center',
-              headerName: 'Subsector',
-              minWidth: 100,
-              resizable: true,
-              sortable: true,
-              tooltipField: 'subsector.name',
-            },
-            {
-              autoHeight: true,
-              cellClass: 'ag-text-center ag-cell-wrap-text',
-              field: 'required_by_model',
-              headerClass: 'ag-text-center',
-              headerName: 'Required by model',
-              minWidth: 150,
-              resizable: true,
-              sortable: true,
-            },
-            {
-              autoHeight: true,
-              // cellRenderer: (params: any) => (
-              //   <Link href={`/business-plans/${params.data.id}`}>
-              //     {params.data.title}
-              //   </Link>
-              // ),
-              field: 'substances',
-              headerClass: 'ag-text-center',
-              headerName: 'Substances',
-              minWidth: 200,
-              resizable: true,
-              sortable: true,
-              valueGetter: ({ data }) => data.substances.join('/'),
-            },
-            {
-              autoHeight: true,
-              cellClass: 'ag-text-center',
-              field: 'amount_polyol',
-              headerClass: 'ag-text-center',
-              headerName: 'Polyol Amount',
-              minWidth: 100,
-              resizable: true,
-              sortable: true,
-            },
-            ...yearColumns,
-            {
-              autoHeight: true,
-              cellClass: 'ag-text-center',
-              field: 'status',
-              headerClass: 'ag-text-center',
-              headerName: 'Status',
-              minWidth: 100,
-              resizable: true,
-              sortable: true,
-              tooltipField: 'status_display',
-            },
-            {
-              autoHeight: true,
-              cellClass: 'ag-text-center',
-              field: 'is_multi_year',
-              headerClass: 'ag-text-center',
-              headerName: 'IND/MYA',
-              minWidth: 100,
-              resizable: true,
-              sortable: true,
-              tooltipField: 'is_multi_year_display',
-              valueGetter: ({ data }) => (data.is_multi_year ? 'MYA' : 'IND'),
-            },
-            {
-              autoHeight: true,
-              field: 'reason_for_exceeding',
-              headerClass: 'ag-text-center',
-              headerName: 'Reason for Exceeding',
-              minWidth: 200,
-              resizable: true,
-              sortable: true,
-            },
-            {
-              autoHeight: true,
-              field: 'comment_secretariat',
-              headerClass: 'ag-text-center',
-              headerName: 'Comment',
-              minWidth: 200,
-              resizable: true,
-              sortable: true,
-            },
-          ]}
           components={{
             agColumnHeader: undefined,
             agTextCellRenderer: undefined,
