@@ -3,6 +3,21 @@ textarea {
   @apply bg-action-highlight;
 }
 
+.BPList .MuiInputBase-root,
+.BPList .MuiAutocomplete-inputRoot {
+  @apply min-h-10 rounded-lg bg-white;
+}
+
+.BPList .MuiInputBase-root fieldset,
+.BPList .MuiAutocomplete-inputRoot fieldset {
+  @apply border-2 border-primary;
+}
+
+.BPList .MuiInputBase-root input::placeholder,
+.BPList .MuiAutocomplete-inputRoot input::placeholder {
+  @apply text-lg font-normal text-mlfs-deepTealShade opacity-100;
+}
+
 .MuiInputBase-root:has(input:-webkit-autofill),
 .MuiInputBase-root input:-webkit-autofill {
   box-shadow: 0 0 0 100px #e7f0fe inset;

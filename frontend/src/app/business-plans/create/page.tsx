@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default async function BusinessPlans() {
   return (
-    <PageWrapper className="max-w-screen-xl lg:px-0">
+    <PageWrapper className="max-w-screen-xl xl:px-0">
       <HeaderTitle>
         <PageHeading className="mx-auto max-w-screen-xl">
           Business Plans
