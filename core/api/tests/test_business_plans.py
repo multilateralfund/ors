@@ -13,6 +13,7 @@ from core.api.tests.factories import (
     BPActivityFactory,
     BPActivityValueFactory,
     BusinessPlanFactory,
+    CommentTypeFactory,
     CountryFactory,
     ProjectClusterFactory,
     ProjectSectorFactory,
@@ -758,12 +759,13 @@ class TestBPActivityList:
     ):
         self.client.force_authenticate(user=agency_user)
 
+        other_comment_type = CommentTypeFactory()
         response = self.client.get(
             self.url,
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
-                "comment_types": comment_type.id,
+                "comment_types": [comment_type.id, other_comment_type.id],
             },
         )
         assert response.status_code == 200
@@ -896,9 +898,13 @@ class TestBPGet:
     ):
         self.client.force_authenticate(user=user)
 
+        other_comment_type = CommentTypeFactory()
         response = self.client.get(
             self.url,
-            {"business_plan_id": business_plan.id, "comment_types": comment_type.id},
+            {
+                "business_plan_id": business_plan.id,
+                "comment_types": [comment_type.id, other_comment_type.id],
+            },
         )
         assert response.status_code == 200
         assert len(response.json()["activities"]) == 4

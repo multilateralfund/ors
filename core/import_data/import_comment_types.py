@@ -17,8 +17,14 @@ def parse_comment_types_file(file_path):
     with open(file_path, "r", encoding="utf-8") as f:
         json_list = json.load(f)
 
+    new_comment_types = []
+    existing_types = CommentType.objects.values_list("name", flat=True)
     for type_data in json_list:
-        CommentType.objects.get_or_create(name=type_data["name"])
+        name = type_data["name"]
+        if name not in existing_types:
+            new_comment_types.append(CommentType(name=name))
+
+    CommentType.objects.bulk_create(new_comment_types)
 
 
 @transaction.atomic
