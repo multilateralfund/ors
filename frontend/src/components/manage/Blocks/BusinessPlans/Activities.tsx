@@ -1,6 +1,11 @@
-import { useState } from 'react'
+import React, { useMemo, useState } from 'react'
+
+import cx from 'classnames'
 
 import Loading from '@ors/components/theme/Loading/Loading'
+
+import styles from '@ors/components/manage/Blocks/Replenishment/Table/table.module.css'
+import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
 
 // {
 //     "agency": "UNEP",
@@ -35,26 +40,154 @@ import Loading from '@ors/components/theme/Loading/Loading'
 //             "id": 60329,
 //             "year": 2024,
 //             "value_usd": "150.290000000000000",
-//             "value_odp": null,
-//             "value_mt": null
+//             "value_odp": 34279,
+//             "value_mt": 7843
 //         },
 //         {
-//             "id": 84781,
+//             "id": 60329,
 //             "year": 2024,
 //             "value_usd": "150.290000000000000",
-//             "value_odp": null,
-//             "value_mt": null
-//         }
+//             "value_odp": 34279,
+//             "value_mt": 7843
+//         },
+//         {
+//             "id": 867,
+//             "year": 2023,
+//             "value_usd": "150.290000000000000",
+//             "value_odp": 34279,
+//             "value_mt": 7843
+//         },
 //     ],
 //     "is_multi_year_display": "Individual",
 //     "status_display": "Undefined",
 //     "comment_secretariat": ""
 // }
 
+interface Value {
+  id: number
+  value_mt: null | string
+  value_odp: null | string
+  value_usd: null | string
+  year: number
+}
+
+const generateYearRange = (period: string) => {
+  const [min_year, max_year] = period.split('-').map(Number)
+  return { max_year, min_year }
+}
+
+const generateTableData = (
+  values: Value[],
+  min_year: number,
+  max_year: number,
+) => {
+  const years: (number | string)[] = []
+  const usdValues: (number | string)[] = []
+  const odpValues: (number | string)[] = []
+  const mtValues: (number | string)[] = []
+
+  const afterMaxYearValues = {
+    value_mt: 0,
+    value_odp: 0,
+    value_usd: 0,
+  }
+
+  for (let year = min_year; year <= max_year; year++) {
+    years.push(year)
+
+    const yearData = values.find((value) => value.year === year)
+    usdValues.push(
+      yearData && yearData.value_usd !== null
+        ? parseFloat(yearData.value_usd).toFixed(2)
+        : '0.00',
+    )
+    odpValues.push(
+      yearData && yearData.value_odp !== null
+        ? parseFloat(yearData.value_odp).toFixed(2)
+        : '0.00',
+    )
+    mtValues.push(
+      yearData && yearData.value_mt !== null
+        ? parseFloat(yearData.value_mt).toFixed(2)
+        : '0.00',
+    )
+  }
+
+  values.forEach((value) => {
+    if (value.year > max_year) {
+      afterMaxYearValues.value_usd +=
+        value.value_usd !== null ? parseFloat(value.value_usd) : 0
+      afterMaxYearValues.value_odp +=
+        value.value_odp !== null ? parseFloat(value.value_odp) : 0
+      afterMaxYearValues.value_mt +=
+        value.value_mt !== null ? parseFloat(value.value_mt) : 0
+    }
+  })
+
+  years.push(`After ${max_year}`)
+  usdValues.push(afterMaxYearValues.value_usd.toFixed(2))
+  odpValues.push(afterMaxYearValues.value_odp.toFixed(2))
+  mtValues.push(afterMaxYearValues.value_mt.toFixed(2))
+
+  return {
+    mtValues,
+    odpValues,
+    usdValues,
+    years,
+  }
+}
+
+interface Props {
+  period: string
+  values: Value[]
+}
+
+const ValuesTable: React.FC<Props> = ({ period, values }) => {
+  const { max_year, min_year } = generateYearRange(period)
+
+  const tableData = useMemo(
+    () => generateTableData(values, min_year, max_year),
+    [values, min_year, max_year],
+  )
+
+  const renderTable = (header: string, data: (number | string)[]) => (
+    <table className={cx(styles.replTable, '')}>
+      <thead className="text-center">
+        <tr>
+          <th colSpan={tableData.years.length}>{header}</th>
+        </tr>
+        <tr>
+          {tableData.years.map((year, index) => (
+            <th key={index}>{year}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody className="text-center">
+        <tr>
+          {data.map((value, index) => (
+            <td key={index}>{value}</td>
+          ))}
+        </tr>
+      </tbody>
+    </table>
+  )
+
+  return (
+    <div className="grid grid-cols-1 gap-4 border-0 border-b border-solid border-secondary pb-4 md:grid-cols-2 lg:grid-cols-3">
+      {renderTable('Value ($000)', tableData.usdValues)}
+      {renderTable('ODP', tableData.odpValues)}
+      {renderTable('MT for HFC', tableData.mtValues)}
+    </div>
+  )
+}
+
 function OpenActivity({ activity, period }: any) {
   return (
     <div className="transition-opacity flex w-full flex-col gap-4 opacity-100 duration-300 ease-in-out">
-      <h4 className="m-0 border-0 border-b border-solid border-primary pb-4">
+      <h4 className="m-0 flex items-center gap-4 border-0 border-b border-solid border-primary pb-4">
+        <div className="flex h-5 w-5 items-center justify-center rounded-full border border-solid border-primary bg-mlfs-hlYellowTint">
+          <IoChevronDown className="text-primary" size={14} />
+        </div>
         {activity.title}
       </h4>
       <div className="grid grid-cols-2 gap-y-4 md:grid-cols-3 lg:grid-cols-4">
@@ -121,14 +254,19 @@ function OpenActivity({ activity, period }: any) {
         <span>Polyol amount</span>
         <h4 className="m-0">{activity.amount_polyol || '-'}</h4>
       </span>
+
+      <ValuesTable period={period} values={activity.values} />
     </div>
   )
 }
 
 function ClosedActivity({ activity, period }: any) {
   return (
-    <div className="transition-opacity flex w-full flex-col-reverse lg:flex-row justify-between gap-4 opacity-100 duration-300 ease-in-out">
-      <div className="flex items-center flex-wrap gap-4">
+    <div className="transition-opacity flex w-full flex-col-reverse justify-between gap-4 opacity-100 duration-300 ease-in-out lg:flex-row">
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="flex h-5 w-5 items-center justify-center rounded-full border border-solid border-primary bg-mlfs-hlYellowTint">
+          <IoChevronUp className="text-primary" size={14} />
+        </div>
         <span className="flex items-center gap-2">
           <span>Country</span>
           <h4 className="m-0">
