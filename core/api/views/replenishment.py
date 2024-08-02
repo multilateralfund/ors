@@ -1,7 +1,11 @@
+# TODO: split the file into multiple files
+# pylint: disable=C0302
+
 import json
 import urllib
 from decimal import Decimal
 
+import openpyxl
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db import models, transaction
 from django.http import HttpResponse
@@ -9,6 +13,8 @@ from rest_framework import filters, generics, mixins, status, views, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
+from core.api.export.base import configure_sheet_print
+from core.api.export.replenishment import DashboardWriter, EMPTY_ROW
 from core.api.filters.replenishments import (
     InvoiceFilter,
     PaymentFilter,
@@ -25,6 +31,7 @@ from core.api.serializers import (
     DisputedContributionCreateSerializer,
     DisputedContributionReadSerializer,
 )
+from core.api.utils import workbook_response
 from core.models import (
     AnnualContributionStatus,
     Country,
@@ -703,6 +710,153 @@ class ReplenishmentDashboardView(views.APIView):
         allocations.save()
 
         return Response({})
+
+
+class ReplenishmentDashboardExportView(views.APIView):
+
+    def get(self, request, *args, **kwargs):
+        income = ExternalIncome.objects.get()
+        allocations = ExternalAllocation.objects.get()
+
+        computed_summary_data = TriennialContributionStatus.objects.aggregate(
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+        )
+        gain_loss = FermGainLoss.objects.aggregate(
+            total=models.Sum("amount", default=0)
+        )["total"]
+
+        total_income = sum(
+            [
+                computed_summary_data["cash_payments"],
+                computed_summary_data["promissory_notes"],
+                computed_summary_data["bilateral_assistance"],
+                income.interest_earned,
+                income.miscellaneous_income,
+            ]
+        )
+
+        total_allocations_agencies = sum(
+            [
+                allocations.undp,
+                allocations.unep,
+                allocations.unido,
+                allocations.world_bank,
+            ]
+        )
+
+        total_provisions = sum(
+            [
+                total_allocations_agencies,
+                allocations.staff_contracts,
+                allocations.treasury_fees,
+                allocations.monitoring_fees,
+                allocations.technical_audit,
+                allocations.information_strategy,
+                computed_summary_data["bilateral_assistance"],
+                gain_loss,
+            ]
+        )
+
+        balance = total_income - total_provisions
+
+        data = [
+            ("INCOME", None, None),
+            ("Contributions received:", None, None),
+            (
+                "    -  Cash payments including note encashments",
+                None,
+                computed_summary_data["cash_payments"],
+            ),
+            (
+                "    -  Promissory notes held",
+                None,
+                computed_summary_data["promissory_notes"],
+            ),
+            (
+                "    -  Bilateral cooperation",
+                None,
+                computed_summary_data["bilateral_assistance"],
+            ),
+            (
+                "    -  Interest earned",
+                None,
+                income.interest_earned,
+            ),
+            (
+                "    -  Miscellaneous income",
+                None,
+                income.miscellaneous_income,
+            ),
+            EMPTY_ROW,
+            (
+                "Total income",
+                None,
+                total_income,
+            ),
+            EMPTY_ROW,
+            (
+                "ALLOCATIONS AND PROVISIONS",
+                None,
+                None,
+            ),
+            ("    -  UNDP", allocations.undp, None),
+            ("    -  UNEP", allocations.unep, None),
+            ("    -  UNIDO", allocations.unido, None),
+            ("    -  World Bank", allocations.world_bank, None),
+            ("Unspecified projects", "-", None),
+            ("Less Adjustments", "-", None),
+            (
+                "Total allocations to implementing agencies",
+                None,
+                total_allocations_agencies,
+            ),
+            EMPTY_ROW,
+            # TODO: dynamic years?
+            ("Secretariat and Executive Committee costs (1991-2026)", None, None),
+            (
+                "    -  including provision for staff contracts into 2026",
+                None,
+                allocations.staff_contracts,
+            ),
+            ("Treasury fees", None, allocations.treasury_fees),
+            (
+                "Monitoring and Evaluation costs (1999-2025)",
+                None,
+                allocations.monitoring_fees,
+            ),
+            ("Technical Audit costs (1998-2010)", None, allocations.technical_audit),
+            ("Information strategy costs (2003-2004)", None, None),
+            (
+                "    -  includes provision for Network maintenance costs for 2004",
+                None,
+                allocations.information_strategy,
+            ),
+            (
+                "Bilateral cooperation",
+                None,
+                computed_summary_data["bilateral_assistance"],
+            ),
+            ("Provision for fixed-exchange-rate mechanism's fluctuations", None, None),
+            ("    -  losses/(gains) in value", None, gain_loss),
+            EMPTY_ROW,
+            (
+                "Total allocations and provisions",
+                None,
+                total_provisions,
+            ),
+            EMPTY_ROW,
+            ("Balance", None, balance),
+        ]
+
+        wb = openpyxl.Workbook(write_only=True)
+        sheet = wb.create_sheet("Status")
+        configure_sheet_print(sheet, "landscape")
+
+        DashboardWriter(sheet, []).write(data)
+
+        return workbook_response("Status", wb)
 
 
 class ReplenishmentInvoiceViewSet(

@@ -18,6 +18,7 @@ from core.api.views import (
     ReplenishmentPaymentViewSet,
     ReplenishmentPaymentFileDownloadView,
     DisputedContributionViewSet,
+    ReplenishmentDashboardExportView,
 )
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
@@ -366,6 +367,11 @@ urlpatterns = [
         "replenishment/dashboard/",
         ReplenishmentDashboardView.as_view(),
         name="replenishment-dashboard",
+    ),
+    path(
+        "replenishment/dashboard/export/",
+        ReplenishmentDashboardExportView.as_view(),
+        name="replenishment-dashboard-export",
     ),
     path(
         "replenishment/status-of-contributions/summary/",

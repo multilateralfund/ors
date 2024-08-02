@@ -81,7 +81,7 @@ function SCView(props) {
     ? scPeriodOptions(ctx.periods)
     : scAnnualOptions(ctx.periods)
 
-  const dateOfLastUpdate = '26 September 2023'
+  const dateOfLastUpdate = '27 May 2024'
   const title = period
     ? `Status of Contribution for ${period}`
     : 'Status of Contribution'

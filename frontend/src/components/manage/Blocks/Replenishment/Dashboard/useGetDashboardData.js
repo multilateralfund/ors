@@ -129,7 +129,10 @@ const updateObjectValues = (fetchedData) => {
     fetchedData.allocations.information_strategy
   PROVISIONS.bilateral_assistance.value =
     fetchedData.allocations.bilateral_assistance
-  PROVISIONS.total.value = calculateTotal(PROVISIONS)
+  PROVISIONS.total.value =
+    calculateTotal(PROVISIONS) +
+    ALLOCATIONS.total.value +
+    OVERVIEW.gain_loss.value
 }
 
 function useGetDashboardData() {

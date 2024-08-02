@@ -95,6 +95,7 @@ function DownloadLink(props) {
         'flex cursor-pointer items-center gap-x-2 text-primary no-underline',
         className,
       )}
+      target="_blank"
       download
       {...rest}
     >
