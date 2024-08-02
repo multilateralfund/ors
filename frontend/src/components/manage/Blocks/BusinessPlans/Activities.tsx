@@ -7,62 +7,6 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import styles from '@ors/components/manage/Blocks/Replenishment/Table/table.module.css'
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
 
-// {
-//     "agency": "UNEP",
-//     "id": 15411,
-//     "title": "Afghanistan HFC Phase down plan preparation ",
-//     "required_by_model": "KIP Preparation",
-//     "country": {
-//         "id": 418,
-//         "name": "Afghanistan",
-//         "abbr": "AF",
-//         "name_alt": "Afghanistan",
-//         "iso3": "AFG",
-//         "has_cp_report": null,
-//         "is_a2": false
-//     },
-//     "lvc_status": "Non-LVC",
-//     "project_type": "PRP",
-//     "bp_chemical_type": "HFC",
-//     "project_cluster": null,
-//     "substances": [],
-//     "amount_polyol": null,
-//     "sector": null,
-//     "subsector": null,
-//     "legacy_sector_and_subsector": "HFC Phase Down National Implementation Plans (preparation)",
-//     "status": "U",
-//     "is_multi_year": false,
-//     "reason_for_exceeding": null,
-//     "remarks": "UNEP is a lead agency in cooperation with UNIDO. PRP is moved to 2024 due to the political situation",
-//     "remarks_additional": null,
-//     "values": [
-//         {
-//             "id": 60329,
-//             "year": 2024,
-//             "value_usd": "150.290000000000000",
-//             "value_odp": 34279,
-//             "value_mt": 7843
-//         },
-//         {
-//             "id": 60329,
-//             "year": 2024,
-//             "value_usd": "150.290000000000000",
-//             "value_odp": 34279,
-//             "value_mt": 7843
-//         },
-//         {
-//             "id": 867,
-//             "year": 2023,
-//             "value_usd": "150.290000000000000",
-//             "value_odp": 34279,
-//             "value_mt": 7843
-//         },
-//     ],
-//     "is_multi_year_display": "Individual",
-//     "status_display": "Undefined",
-//     "comment_secretariat": ""
-// }
-
 interface Value {
   id: number
   value_mt: null | string

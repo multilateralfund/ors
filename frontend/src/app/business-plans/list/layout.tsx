@@ -26,27 +26,23 @@ const SECTIONS = [
   },
 ]
 
-function getNavLinks(pathname: string, period: null) {
-  const result: React.ReactElement[] = []
+function getNavLinks(pathname: string, period: null | string) {
+  const currentSection = SECTIONS.find((entry) =>
+    pathname.startsWith(entry.path),
+  )
 
-  let currentSection
-
-  for (let i = 0; i < SECTIONS.length; i++) {
-    const entry = SECTIONS[i]
+  const result = SECTIONS.map((entry, i) => {
     const isCurrent = pathname.startsWith(entry.path)
-    if (isCurrent) {
-      currentSection = SECTIONS[i]
-    }
-    result.push(
+    return (
       <Link
         key={i}
         className={cx({ [styles.current]: isCurrent })}
         href={period != null ? `${entry.path}/${period}` : entry.path}
       >
         {entry.label}
-      </Link>,
+      </Link>
     )
-  }
+  })
 
   return [currentSection, result]
 }
