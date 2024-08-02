@@ -27,6 +27,7 @@ export default function BPListActivities(props: any) {
   const year_start = period?.split('-')[0] || firstPeriod.split('-')[0]
 
   const initialFilters = {
+    is_multi_year: true,
     limit: ACTIVITIES_PER_PAGE,
     offset: 0,
     ordering: 'business_plan__agency__name, country__name',
