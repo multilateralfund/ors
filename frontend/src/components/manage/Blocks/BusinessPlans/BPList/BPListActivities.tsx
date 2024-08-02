@@ -29,6 +29,7 @@ export default function BPListActivities(props: any) {
   const initialFilters = {
     limit: ACTIVITIES_PER_PAGE,
     offset: 0,
+    ordering: 'business_plan__agency__name, country__name',
     year_end: year_end,
     year_start: year_start,
   }
@@ -46,8 +47,6 @@ export default function BPListActivities(props: any) {
   function handleParamsChange(params: { [key: string]: any }) {
     setParams(params)
   }
-
-  // TODO: What are activities ordered by default ?
 
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
