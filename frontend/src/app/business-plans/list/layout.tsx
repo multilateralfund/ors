@@ -18,11 +18,11 @@ import styles from './styles.module.css'
 const SECTIONS = [
   {
     label: 'Plans',
-    path: '/business-plans/all/plans',
+    path: '/business-plans/list/plans',
   },
   {
     label: 'All Activities',
-    path: '/business-plans/all/activities',
+    path: '/business-plans/list/activities',
   },
 ]
 

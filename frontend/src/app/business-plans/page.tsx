@@ -11,6 +11,6 @@ export default function BusinessPlans() {
   const { periodOptions } = useGetBpPeriods()
 
   useEffect(() => {
-    router.replace(`/business-plans/all/plans/${periodOptions[0].value}`)
+    router.replace(`/business-plans/list/plans/${periodOptions[0].value}`)
   }, [periodOptions, router])
 }
