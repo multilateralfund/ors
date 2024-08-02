@@ -32,7 +32,7 @@ function useBPListApi(filters?: any) {
         ...filters,
         limit: PLANS_PER_PAGE,
         offset: 0,
-        ordering: '-year_start',
+        ordering: '-updated_at',
       },
       withStoreCache: true,
     },
