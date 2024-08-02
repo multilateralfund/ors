@@ -58,7 +58,7 @@ function OpenActivity({ activity, period }: any) {
       <h4 className="m-0 border-0 border-b border-solid border-primary pb-4">
         {activity.title}
       </h4>
-      <div className="flex flex-wrap items-center gap-x-56 gap-y-4">
+      <div className="grid grid-cols-2 gap-y-4 md:grid-cols-3 lg:grid-cols-4">
         <span className="flex items-center gap-2">
           <span>Country</span>
           <h4 className="m-0">
@@ -128,8 +128,8 @@ function OpenActivity({ activity, period }: any) {
 
 function ClosedActivity({ activity, period }: any) {
   return (
-    <div className="transition-opacity flex w-full flex-row justify-between gap-4 opacity-100 duration-300 ease-in-out">
-      <div className="flex items-center gap-4">
+    <div className="transition-opacity flex w-full flex-col-reverse lg:flex-row justify-between gap-4 opacity-100 duration-300 ease-in-out">
+      <div className="flex items-center flex-wrap gap-4">
         <span className="flex items-center gap-2">
           <span>Country</span>
           <h4 className="m-0">

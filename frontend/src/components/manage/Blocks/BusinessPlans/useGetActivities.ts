@@ -7,8 +7,7 @@ export function useGetActivities(initialFilters: any) {
       params: { ...initialFilters },
       withStoreCache: false,
     },
-    // path: 'api/business-plan-activity/',
-    path: 'api/business-plan-record/',
+    path: 'api/business-plan-activity/',
   })
   const { count, loaded, results } = getResults(data)
 
