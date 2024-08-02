@@ -83,6 +83,7 @@ from core.api.views.rbm_measures import RBMMeasureListView
 from core.api.views.settings import SettingsView
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView
+from core.api.views.comment_types import CommentTypeListView
 
 router = routers.SimpleRouter()
 router.register("projects", ProjectViewSet)
@@ -397,6 +398,11 @@ urlpatterns = [
         "replenishment/payment-file/<int:id>/download/",
         ReplenishmentPaymentFileDownloadView.as_view(),
         name="replenishment-payment-file-download",
+    ),
+    path(
+        "comment-types/",
+        CommentTypeListView.as_view(),
+        name="comment-type-list",
     ),
     *router.urls,
 ]

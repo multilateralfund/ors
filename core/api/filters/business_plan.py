@@ -71,6 +71,7 @@ class BPActivityFilter(filters.FilterSet):
             "subsector_id",
             "status",
             "is_multi_year",
+            "comment_types",
         ]
 
 

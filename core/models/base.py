@@ -88,3 +88,10 @@ class AbstractSingleton(models.Model):
 
     class Meta:
         abstract = True
+
+
+class CommentType(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name

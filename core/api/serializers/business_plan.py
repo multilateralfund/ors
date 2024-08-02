@@ -14,6 +14,7 @@ from core.models import (
     BPActivity,
     BPActivityValue,
     BusinessPlan,
+    CommentType,
     Country,
     ProjectSector,
     ProjectSubSector,
@@ -139,6 +140,7 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
     project_cluster = ProjectClusterSerializer()
 
     substances = serializers.SlugRelatedField("name", many=True, read_only=True)
+    comment_types = serializers.SlugRelatedField("name", many=True, read_only=True)
 
     sector = ProjectSectorSerializer()
     subsector = ProjectSubSectorSerializer()
@@ -169,6 +171,7 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
             "is_multi_year_display",
             "status_display",
             "comment_secretariat",
+            "comment_types",
         ]
 
     def get_is_multi_year_display(self, obj):
@@ -217,6 +220,11 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
         many=True,
         queryset=Substance.objects.all().values_list("id", flat=True),
     )
+    comment_types = serializers.PrimaryKeyRelatedField(
+        required=False,
+        many=True,
+        queryset=CommentType.objects.all().values_list("id", flat=True),
+    )
 
     sector_id = serializers.PrimaryKeyRelatedField(
         queryset=ProjectSector.objects.all().values_list("id", flat=True),
@@ -248,6 +256,7 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
             "remarks",
             "remarks_additional",
             "comment_secretariat",
+            "comment_types",
             "values",
         ]
 
@@ -256,7 +265,9 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
 
         for activity_value in activity_values:
             activity_value["bp_activity_id"] = bp_activity.id
-        activity_value_serializer = BPActivityValueSerializer(data=activity_values, many=True)
+        activity_value_serializer = BPActivityValueSerializer(
+            data=activity_values, many=True
+        )
         activity_value_serializer.is_valid(raise_exception=True)
         activity_value_serializer.save()
 
