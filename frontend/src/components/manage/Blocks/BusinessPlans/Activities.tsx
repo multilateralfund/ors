@@ -51,7 +51,6 @@ import Loading from '@ors/components/theme/Loading/Loading'
 //     "comment_secretariat": ""
 // }
 
-// TODO: Add grid
 function OpenActivity({ activity, period }: any) {
   return (
     <div className="transition-opacity flex w-full flex-col gap-4 opacity-100 duration-300 ease-in-out">

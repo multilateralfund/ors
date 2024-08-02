@@ -31,7 +31,7 @@ export default function ActivitiesFilters(props: any) {
       <div className="flex items-center gap-2 lg:items-start lg:flex-col">
         <Field
           name="search"
-          FieldProps={{ className: 'mb-0 w-80 lg:w-60 BPList' }}
+          FieldProps={{ className: 'mb-0 w-full md:w-80 lg:w-60 BPList' }}
           placeholder="Search by keyword..."
           InputProps={{
             startAdornment: (
@@ -81,9 +81,9 @@ export default function ActivitiesFilters(props: any) {
         )}
       </div>
       {/* Rest of filters */}
-      <div className="flex h-full flex-wrap items-center gap-x-4 gap-y-2 border-0 border-solid border-gray-200 lg:border-l lg:pl-4">
+      <div className="grid grid-cols-2 md:flex h-full flex-wrap items-center gap-x-4 gap-y-2 border-0 border-solid border-gray-200 lg:border-l lg:pl-4">
         <Field
-          FieldProps={{ className: 'mb-0 w-40 BPList' }}
+          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
           Input={{ label: 'Country' }}
           getOptionLabel={(option: any) => option?.name}
           options={commonSlice.countries.data}
@@ -100,7 +100,7 @@ export default function ActivitiesFilters(props: any) {
         />
         {withAgency && (
           <Field
-            FieldProps={{ className: 'mb-0 w-40 BPList' }}
+          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
             Input={{ label: 'Agency' }}
             getOptionLabel={(option: any) => option?.name}
             options={commonSlice.agencies.data}
@@ -117,7 +117,7 @@ export default function ActivitiesFilters(props: any) {
           />
         )}
         <Field
-          FieldProps={{ className: 'mb-0 w-40 BPList' }}
+          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
           Input={{ label: 'Cluster' }}
           getOptionLabel={(option: any) => option?.name}
           options={clusters}
@@ -133,7 +133,7 @@ export default function ActivitiesFilters(props: any) {
           multiple
         />
         <Field
-          FieldProps={{ className: 'mb-0 w-40 BPList' }}
+          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
           Input={{ label: 'Sector' }}
           getOptionLabel={(option: any) => option?.name}
           options={bpSlice.sectors.data}
@@ -149,7 +149,7 @@ export default function ActivitiesFilters(props: any) {
           multiple
         />
         <Field
-          FieldProps={{ className: 'mb-0 w-40 BPList' }}
+          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
           Input={{ label: 'Subsector' }}
           getOptionLabel={(option: any) => option?.name}
           options={bpSlice.subsectors.data}
@@ -165,7 +165,7 @@ export default function ActivitiesFilters(props: any) {
           multiple
         />
         <Field
-          FieldProps={{ className: 'mb-0 w-40 BPList' }}
+          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
           Input={{ label: 'Type' }}
           getOptionLabel={(option: any) => option?.name}
           options={bpSlice.types.data}
