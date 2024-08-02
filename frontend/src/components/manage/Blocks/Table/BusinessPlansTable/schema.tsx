@@ -28,13 +28,13 @@ const defaultColumnDefs = [
   {
     autoHeight: true,
     cellClass: 'ag-text-center ag-cell-wrap-text',
-    field: 'project_cluster',
+    field: 'project_cluster.code',
     headerClass: 'ag-text-center',
     headerName: 'Cluster',
     minWidth: 70,
     resizable: true,
     sortable: true,
-    tooltipField: 'title',
+    tooltipField: 'project_cluster.name',
   },
   {
     autoHeight: true,

@@ -138,7 +138,7 @@ function OpenActivity({ activity, period }: any) {
         <span className="flex items-center gap-2">
           <span>Country</span>
           <h4 className="m-0">
-            {activity.country.iso3 || activity.country.name_alt}
+            {activity.country?.iso3 || activity.country?.name_alt}
           </h4>
         </span>
         {period && (
@@ -149,7 +149,7 @@ function OpenActivity({ activity, period }: any) {
         )}
         <span className="flex items-center gap-2">
           <span>Cluster</span>
-          <h4 className="m-0">{activity.project_cluster || '-'}</h4>
+          <h4 className="m-0">{activity.project_cluster?.code || '-'}</h4>
         </span>
         <span className="flex items-center gap-2">
           <span>Type</span>
@@ -214,7 +214,7 @@ function ClosedActivity({ activity, period }: any) {
         <span className="flex items-center gap-2">
           <span>Country</span>
           <h4 className="m-0">
-            {activity.country.iso3 || activity.country.name_alt}
+            {activity.country?.iso3 || activity.country?.name_alt}
           </h4>
         </span>
         {period && (
@@ -225,7 +225,7 @@ function ClosedActivity({ activity, period }: any) {
         )}
         <span className="flex items-center gap-2">
           <span>Cluster</span>
-          <h4 className="m-0">{activity.project_cluster || '-'}</h4>
+          <h4 className="m-0">{activity.project_cluster?.code || '-'}</h4>
         </span>
         <span className="flex items-center gap-2">
           <span>Type</span>
