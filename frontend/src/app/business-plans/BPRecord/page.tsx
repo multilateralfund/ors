@@ -12,9 +12,9 @@ import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
 
-type BPRecordProps = {
+type BPActivityProps = {
   params: {
-    bp_record_id: string
+    bp_activity_id: string
   }
 }
 
@@ -36,11 +36,11 @@ function Divider() {
   return <div className="my-8 h-[1px] w-full bg-gray-200 bg-opacity-30" />
 }
 
-export default function BPRecord({ params }: BPRecordProps) {
+export default function BPRecord({ params }: BPActivityProps) {
   const bpSlice = useStore((state) => state.businessPlans)
   const { data, loaded } = useApi({
     options: {},
-    path: `api/business-plan-record/${params.bp_record_id}/`,
+    path: `api/business-plan-activity/${params.bp_activity_id}/`,
   })
   const valuesByYear = groupBy(data?.values || [], 'year')
 

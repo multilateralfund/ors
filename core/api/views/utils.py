@@ -6,7 +6,7 @@ from core.models.business_plan import BusinessPlan
 from core.models.country_programme import CPRecord, CPReport, CPReportFormatRow
 from core.models.country_programme_archive import CPRecordArchive, CPReportArchive
 
-BPRECORD_ORDERING_FIELDS = [
+BPACTIVITY_ORDERING_FIELDS = [
     "title",
     "country__iso3",
     "country__name",

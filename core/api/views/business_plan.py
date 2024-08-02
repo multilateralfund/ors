@@ -17,7 +17,7 @@ from rest_framework.response import Response
 
 from core.api.export.base import configure_sheet_print
 from core.api.export.business_plan import BusinessPlanWriter
-from core.api.filters.business_plan import BPRecordFilter, BPRecordListFilter
+from core.api.filters.business_plan import BPActivityFilter, BPActivityListFilter
 from core.api.filters.business_plan import BusinessPlanFilter
 from core.api.permissions import IsAgency, IsSecretariat
 from core.api.serializers.bp_history import BPHistorySerializer
@@ -25,17 +25,17 @@ from core.api.serializers.business_plan import (
     BusinessPlanCreateSerializer,
     BusinessPlanSerializer,
     BPFileSerializer,
-    BPRecordExportSerializer,
-    BPRecordDetailSerializer,
-    BPRecordListSerializer,
+    BPActivityExportSerializer,
+    BPActivityDetailSerializer,
+    BPActivityListSerializer,
 )
 from core.api.utils import STATUS_TRANSITIONS, workbook_pdf_response
 from core.api.utils import workbook_response
 from core.api.views.utils import (
     get_business_plan_from_request,
-    BPRECORD_ORDERING_FIELDS,
+    BPACTIVITY_ORDERING_FIELDS,
 )
-from core.models import BusinessPlan, BPHistory, BPRecord
+from core.models import BusinessPlan, BPHistory, BPActivity
 from core.tasks import (
     send_mail_bp_create,
     send_mail_bp_status_update,
@@ -46,7 +46,7 @@ from core.tasks import (
 class BPFilterBackend(DjangoFilterBackend):
     def get_filterset_class(self, view, queryset=None):
         if getattr(view, "action", None) == "get":
-            return BPRecordFilter
+            return BPActivityFilter
         return BusinessPlanFilter
 
 
@@ -69,7 +69,7 @@ class BusinessPlanViewSet(
 
     def get_queryset(self):
         if self.action == "get":
-            return BPRecord.objects.select_related(
+            return BPActivity.objects.select_related(
                 "business_plan",
                 "business_plan__agency",
                 "country",
@@ -98,7 +98,7 @@ class BusinessPlanViewSet(
 
     def get_serializer_class(self):
         if self.action == "get":
-            return BPRecordDetailSerializer
+            return BPActivityDetailSerializer
         return BusinessPlanSerializer
 
     @action(methods=["GET"], detail=False, url_path="get-years")
@@ -107,8 +107,8 @@ class BusinessPlanViewSet(
             (
                 BusinessPlan.objects.values("year_start", "year_end")
                 .annotate(
-                    min_year=Min("records__values__year"),
-                    max_year=Max("records__values__year"),
+                    min_year=Min("activities__values__year"),
+                    max_year=Max("activities__values__year"),
                 )
                 .order_by("-year_start")
             )
@@ -118,7 +118,7 @@ class BusinessPlanViewSet(
     def get(self, *args, **kwargs):
         self.search_fields = ["title"]
         self.ordering = ["title", "country", "id"]
-        self.ordering_fields = BPRECORD_ORDERING_FIELDS
+        self.ordering_fields = BPACTIVITY_ORDERING_FIELDS
 
         # get activities and history for a specific business plan
         bp = get_business_plan_from_request(self.request)
@@ -162,16 +162,16 @@ class BusinessPlanViewSet(
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         validated_data = serializer.validated_data.copy()
-        validated_data.pop("records", [])
+        validated_data.pop("activities", [])
         instance = BusinessPlan(**validated_data)
 
         # check user permissions
         self.check_object_permissions(request, instance)
 
-        if not self.check_record_values(serializer, instance):
+        if not self.check_activity_values(serializer, instance):
             return Response(
                 {
-                    "general_error": "BP record values year not in business plan interval"
+                    "general_error": "BP activity values year not in business plan interval"
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -213,12 +213,12 @@ class BusinessPlanViewSet(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
-    def check_record_values(self, serializer, business_plan):
-        for record in serializer.initial_data.get("records", []):
-            for record_value in record.get("values", []):
+    def check_activity_values(self, serializer, business_plan):
+        for activity in serializer.initial_data.get("activities", []):
+            for activity_value in activity.get("values", []):
                 if (
-                    business_plan.year_start > record_value["year"]
-                    or record_value["year"] > business_plan.year_end
+                    business_plan.year_start > activity_value["year"]
+                    or activity_value["year"] > business_plan.year_end
                 ):
                     return False
         return True
@@ -245,10 +245,10 @@ class BusinessPlanViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if not self.check_record_values(serializer, current_obj):
+        if not self.check_activity_values(serializer, current_obj):
             return Response(
                 {
-                    "general_error": "BP record values year not in business plan interval"
+                    "general_error": "BP activity values year not in business plan interval"
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -359,14 +359,14 @@ class BPStatusUpdateView(generics.GenericAPIView):
         return Response(serializer.data)
 
 
-class BPRecordViewSet(
+class BPActivityViewSet(
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
     permission_classes = [IsSecretariat | IsAgency]
-    serializer_class = BPRecordDetailSerializer
-    filterset_class = BPRecordFilter
+    serializer_class = BPActivityDetailSerializer
+    filterset_class = BPActivityFilter
 
     filter_backends = [
         DjangoFilterBackend,
@@ -375,10 +375,10 @@ class BPRecordViewSet(
     ]
     search_fields = ["title"]
     ordering = ["title", "country", "id"]
-    ordering_fields = ["business_plan__agency__name"] + BPRECORD_ORDERING_FIELDS
+    ordering_fields = ["business_plan__agency__name"] + BPACTIVITY_ORDERING_FIELDS
 
     def get_queryset(self):
-        queryset = BPRecord.objects.select_related(
+        queryset = BPActivity.objects.select_related(
             "business_plan",
             "business_plan__agency",
             "country",
@@ -393,7 +393,7 @@ class BPRecordViewSet(
         )
 
         if "agency" in self.request.user.user_type.lower():
-            # filter records by agency if user is agency
+            # filter activities by agency if user is agency
             queryset = queryset.filter(business_plan__agency=self.request.user.agency)
 
         return queryset
@@ -401,10 +401,10 @@ class BPRecordViewSet(
     def get_wb(self, method):
         bp = get_business_plan_from_request(self.request)
 
-        # get records for the business plan
+        # get activities for the business plan
         queryset = self.filter_queryset(self.get_queryset()).filter(business_plan=bp)
 
-        data = BPRecordExportSerializer(queryset, many=True).data
+        data = BPActivityExportSerializer(queryset, many=True).data
 
         limits = queryset.aggregate(
             min_year=Min("values__year"), max_year=Max("values__year")
@@ -442,8 +442,8 @@ class BPRecordViewSet(
 
     def list(self, request, *args, **kwargs):
         # get all activities between year_start and year_end
-        self.filterset_class = BPRecordListFilter
-        self.serializer_class = BPRecordListSerializer
+        self.filterset_class = BPActivityListFilter
+        self.serializer_class = BPActivityListSerializer
 
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
