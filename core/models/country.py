@@ -58,7 +58,7 @@ class Country(models.Model):
         """
         for ceit_status in self.ceit_statuses.all():
             if year >= ceit_status.start_year and (
-                ceit_status.end_year is None or year <= ceit_status
+                ceit_status.end_year is None or year <= ceit_status.end_year
             ):
                 return ceit_status.is_ceit
 

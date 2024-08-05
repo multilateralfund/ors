@@ -15,6 +15,7 @@ from core.models import (
     TriennialContributionStatus,
     ExternalIncome,
     ExternalAllocation,
+    CountryCEITStatus,
 )
 
 
@@ -382,6 +383,113 @@ def decimal_converter(value):
         return 0
 
 
+CEIT = [
+    {
+        "country": "Azerbaijan",
+        "start_year": 1991,
+        "end_year": None,
+        "is_ceit": True,
+    },
+    {
+        "country": "Belarus",
+        "start_year": 1991,
+        "end_year": None,
+        "is_ceit": True,
+    },
+    {
+        "country": "Bulgaria",
+        "start_year": 1991,
+        "end_year": None,
+        "is_ceit": True,
+    },
+    {
+        "country": "Czechia",
+        "start_year": 1991,
+        "end_year": None,
+        "is_ceit": True,
+    },
+    {
+        "country": "Estonia",
+        "start_year": 1991,
+        "end_year": None,
+        "is_ceit": True,
+    },
+    {
+        "country": "Hungary",
+        "start_year": 1991,
+        "end_year": None,
+        "is_ceit": True,
+    },
+    {
+        "country": "Kazakhstan",
+        "start_year": 2015,
+        "end_year": None,
+        "is_ceit": True,
+    },
+    {
+        "country": "Latvia",
+        "start_year": 1991,
+        "end_year": None,
+        "is_ceit": True,
+    },
+    {
+        "country": "Lithuania",
+        "start_year": 1991,
+        "end_year": None,
+        "is_ceit": True,
+    },
+    {
+        "country": "Poland",
+        "start_year": 1991,
+        "end_year": None,
+        "is_ceit": True,
+    },
+    {
+        "country": "Russian Federation",
+        "start_year": 1991,
+        "end_year": None,
+        "is_ceit": True,
+    },
+    {
+        "country": "Slovakia",
+        "start_year": 1991,
+        "end_year": None,
+        "is_ceit": True,
+    },
+    {
+        "country": "Slovenia",
+        "start_year": 1991,
+        "end_year": None,
+        "is_ceit": True,
+    },
+    {
+        "country": "Tajikistan",
+        "start_year": 1991,
+        "end_year": None,
+        "is_ceit": True,
+    },
+    {
+        "country": "Turkmenistan",
+        "start_year": 1991,
+        # It's actually 2004, but it's counted for the whole 2003-2005 triennial
+        "end_year": 2005,
+        "is_ceit": True,
+    },
+    {
+        "country": "Ukraine",
+        "start_year": 1991,
+        "end_year": None,
+        "is_ceit": True,
+    },
+    {
+        "country": "Uzbekistan",
+        "start_year": 1991,
+        "end_year": None,
+        "is_ceit": True,
+    },
+]
+
+
 @transaction.atomic
 def import_status_of_contributions(countries):
     """
@@ -394,6 +502,23 @@ def import_status_of_contributions(countries):
     delete_old_data(FermGainLoss)
     delete_old_data(ExternalIncome)
     delete_old_data(ExternalAllocation)
+    delete_old_data(CountryCEITStatus)
+
+    # Import CEIT status
+
+    ceit_objects = []
+    for ceit in CEIT:
+        country = countries[ceit["country"]]
+        ceit_objects.append(
+            CountryCEITStatus(
+                country=country,
+                start_year=ceit["start_year"],
+                end_year=ceit["end_year"],
+                is_ceit=ceit["is_ceit"],
+            )
+        )
+    CountryCEITStatus.objects.bulk_create(ceit_objects)
+    logger.info(f"Imported ({len(ceit_objects)}) CEIT statuses")
 
     soc_file = pd.ExcelFile(IMPORT_RESOURCES_DIR / "9403_Annex_I_270524.xlsx")
 

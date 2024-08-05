@@ -6,6 +6,7 @@ import urllib
 from decimal import Decimal
 
 import openpyxl
+from django.db.models import Q, F
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db import models, transaction
 from django.http import HttpResponse
@@ -47,6 +48,7 @@ from core.models import (
     ScaleOfAssessment,
     ScaleOfAssessmentVersion,
     TriennialContributionStatus,
+    CountryCEITStatus,
 )
 
 
@@ -317,6 +319,35 @@ class AnnualStatusOfContributionsView(views.APIView):
             .order_by("name")
         ]
 
+        # TODO: I think this might return duplicates if a country has multiple
+        # statuses
+        data["ceit"] = AnnualContributionStatus.objects.filter(
+            Q(year=year)
+            & Q(country__ceit_statuses__is_ceit=True)
+            & Q(country__ceit_statuses__start_year__lte=year)
+            & (
+                Q(country__ceit_statuses__end_year__gte=year)
+                | Q(country__ceit_statuses__end_year__isnull=True)
+            )
+        ).aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+        ceit_countries_qs = Country.objects.filter(
+            Q(ceit_statuses__is_ceit=True)
+            & Q(ceit_statuses__start_year__lte=year)
+            & (
+                Q(ceit_statuses__end_year__gte=year)
+                | Q(ceit_statuses__end_year__isnull=True)
+            ),
+        )
+        data["ceit_countries"] = CountrySerializer(ceit_countries_qs, many=True).data
+
         data["total"] = AnnualContributionStatus.objects.filter(year=year).aggregate(
             agreed_contributions=models.Sum("agreed_contributions", default=0),
             cash_payments=models.Sum("cash_payments", default=0),
@@ -397,6 +428,36 @@ class TriennialStatusOfContributionsView(views.APIView):
             .order_by("name")
         ]
 
+        # TODO: I think this might return duplicates if a country has multiple
+        # statuses
+        data["ceit"] = TriennialContributionStatus.objects.filter(
+            Q(start_year=start_year)
+            & Q(end_year=end_year)
+            & Q(country__ceit_statuses__is_ceit=True)
+            & Q(country__ceit_statuses__start_year__lte=start_year)
+            & (
+                Q(country__ceit_statuses__end_year__gte=end_year)
+                | Q(country__ceit_statuses__end_year__isnull=True)
+            )
+        ).aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+        ceit_countries_qs = Country.objects.filter(
+            Q(ceit_statuses__is_ceit=True)
+            & Q(ceit_statuses__start_year__lte=start_year)
+            & (
+                Q(ceit_statuses__end_year__gte=end_year)
+                | Q(ceit_statuses__end_year__isnull=True)
+            ),
+        )
+        data["ceit_countries"] = CountrySerializer(ceit_countries_qs, many=True).data
+
         data["total"] = TriennialContributionStatus.objects.filter(
             start_year=start_year, end_year=end_year
         ).aggregate(
@@ -474,6 +535,27 @@ class SummaryStatusOfContributionsView(views.APIView):
             )
             .order_by("name")
         ]
+
+        # CEIT data needs to be computed per replenishment
+        data["ceit"] = TriennialContributionStatus.objects.filter(
+            Q(country__ceit_statuses__is_ceit=True)
+            & Q(country__ceit_statuses__start_year__lte=F("start_year"))
+            & (
+                Q(country__ceit_statuses__end_year__gte=F("end_year"))
+                | Q(country__ceit_statuses__end_year__isnull=True)
+            )
+        ).aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+        data["ceit_countries"] = CountrySerializer(
+            Country.objects.filter(ceit_statuses__is_ceit=True).distinct(), many=True
+        ).data
 
         data["total"] = TriennialContributionStatus.objects.aggregate(
             agreed_contributions=models.Sum("agreed_contributions", default=0),
