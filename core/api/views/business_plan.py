@@ -157,7 +157,9 @@ class BusinessPlanViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        serializer = BusinessPlanCreateSerializer(data=request.data)
+        serializer = BusinessPlanCreateSerializer(
+            data=request.data, context={"ignore_comment": True}
+        )
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -233,9 +235,13 @@ class BusinessPlanViewSet(
 
     @transaction.atomic
     def update(self, request, *args, **kwargs):
+        user = request.user
         current_obj = self.get_object()
 
-        serializer = BusinessPlanCreateSerializer(data=request.data)
+        ignore_comment = bool("agency" in user.user_type.lower())
+        serializer = BusinessPlanCreateSerializer(
+            data=request.data, context={"ignore_comment": ignore_comment}
+        )
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -271,7 +277,6 @@ class BusinessPlanViewSet(
             new_instance.name = f"{new_instance.agency} {new_instance.year_start} - {new_instance.year_end}"
 
         # set updated by user
-        user = request.user
         new_instance.updated_by = user
         new_instance.save()
 

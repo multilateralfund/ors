@@ -273,16 +273,12 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
+        if self.context.get("ignore_comment", False):
+            validated_data.pop("comment_secretariat", "")
+            validated_data.pop("comment_types", [])
+
         activity_values = validated_data.pop("values", [])
         bp_activity = super().create(validated_data)
-        self._create_bp_activity_values(bp_activity, activity_values)
-
-        return bp_activity
-
-    @transaction.atomic
-    def update(self, instance, validated_data):
-        activity_values = validated_data.pop("values", [])
-        bp_activity = super().update(instance, validated_data)
         self._create_bp_activity_values(bp_activity, activity_values)
 
         return bp_activity
@@ -312,7 +308,11 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
     def _create_bp_activities(self, business_plan, activities):
         for activity in activities:
             activity["business_plan_id"] = business_plan.id
-        activity_serializer = BPActivityCreateSerializer(data=activities, many=True)
+
+        ignore_comment = self.context.get("ignore_comment", False)
+        activity_serializer = BPActivityCreateSerializer(
+            data=activities, many=True, context={"ignore_comment": ignore_comment}
+        )
         activity_serializer.is_valid(raise_exception=True)
         activity_serializer.save()
 
