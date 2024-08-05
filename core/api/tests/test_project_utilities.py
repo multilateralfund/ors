@@ -14,7 +14,7 @@ from core.models.project import ProjectSector, ProjectSubSector
 
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008
+# pylint: disable=C8008,W0221
 
 
 class TestProjectsStatus(BaseTest):

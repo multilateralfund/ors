@@ -40,8 +40,6 @@ from core.models.project import (
     ProjectCluster,
     ProjectOdsOdp,
     ProjectRBMMeasure,
-    ProjectSector,
-    ProjectSubSector,
     ProjectType,
     ProjectFile,
     SubmissionAmount,
