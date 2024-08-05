@@ -485,7 +485,7 @@ class TestBPUpdate:
 
         mock_send_mail_bp_update.assert_called_once()
 
-    def test_bp_update_secreatriat(
+    def test_bp_update_secretariat(
         self,
         user,
         _setup_bp_activity_create,
