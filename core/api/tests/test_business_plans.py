@@ -205,7 +205,6 @@ def setup_bp_activity_create(
         "reason_for_exceeding": "Planu, planu, planu, planu, planu",
         "remarks": "Merge bine, bine, bine ca aeroplanu",
         "remarks_additional": "Poate si la anu / Daca merge bine planu stau ca barosanu.",
-        "comment_secretariat": "Alo, alo, Te-am sunat sa-ti spun",
         "values": [
             {
                 "year": 2020,
@@ -305,6 +304,7 @@ class TestBPCreate:
         subsector,
         project_type,
         bp_chemical_type,
+        comment_type,
         _setup_bp_activity_create,
         _setup_new_business_plan_create,
         mock_send_mail_bp_create,
@@ -312,7 +312,11 @@ class TestBPCreate:
         self.client.force_authenticate(user=agency_user)
 
         data = _setup_new_business_plan_create
-        data["activities"] = [_setup_bp_activity_create]
+        # comment data should be ignored
+        activity_data = _setup_bp_activity_create
+        activity_data["comment_secretariat"] = "Alo, alo, Te-am sunat sa-ti spun"
+        activity_data["comment_types"] = [comment_type.id]
+        data["activities"] = [activity_data]
 
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 201
@@ -335,9 +339,8 @@ class TestBPCreate:
         assert activities[0]["status"] == "A"
         assert activities[0]["is_multi_year"] is False
         assert activities[0]["remarks"] == "Merge bine, bine, bine ca aeroplanu"
-        assert (
-            activities[0]["comment_secretariat"] == "Alo, alo, Te-am sunat sa-ti spun"
-        )
+        assert activities[0]["comment_secretariat"] == ""
+        assert activities[0]["comment_types"] == []
         assert activities[0]["values"][0]["year"] == 2020
 
         mock_send_mail_bp_create.assert_called_once()
@@ -423,7 +426,7 @@ class TestBPUpdate:
             == "BP activity values year not in business plan interval"
         )
 
-    def test_bp_update(
+    def test_bp_update_agency(
         self,
         agency_user,
         _setup_bp_activity_create,
@@ -444,6 +447,7 @@ class TestBPUpdate:
         activity_data["status"] = "P"
         activity_data["is_multi_year"] = True
         activity_data["remarks"] = "Merge rau"
+        # comment data should be ignored
         activity_data["comment_secretariat"] = "Nu inchide telefonu"
         activity_data["comment_types"] = [comment_type.id]
         activity_data["values"] = [
@@ -475,9 +479,40 @@ class TestBPUpdate:
         assert activities[0]["status"] == "P"
         assert activities[0]["is_multi_year"] is True
         assert activities[0]["remarks"] == "Merge rau"
+        assert activities[0]["comment_secretariat"] == ""
+        assert activities[0]["comment_types"] == []
+        assert activities[0]["values"][0]["year"] == 2022
+
+        mock_send_mail_bp_update.assert_called_once()
+
+    def test_bp_update_secreatriat(
+        self,
+        user,
+        _setup_bp_activity_create,
+        business_plan,
+        comment_type,
+        mock_send_mail_bp_update,
+    ):
+        self.client.force_authenticate(user=user)
+
+        url = reverse("businessplan-list") + f"{business_plan.id}/"
+        activity_data = _setup_bp_activity_create
+        # only secretariat can update comments
+        activity_data["comment_secretariat"] = "Nu inchide telefonu"
+        activity_data["comment_types"] = [comment_type.id]
+        data = {
+            "agency_id": business_plan.agency_id,
+            "year_start": business_plan.year_start,
+            "year_end": business_plan.year_end,
+            "status": "Agency Draft",
+            "activities": [activity_data],
+        }
+        response = self.client.put(url, data, format="json")
+
+        assert response.status_code == 200
+        activities = response.data["activities"]
         assert activities[0]["comment_secretariat"] == "Nu inchide telefonu"
         assert activities[0]["comment_types"] == [comment_type.id]
-        assert activities[0]["values"][0]["year"] == 2022
 
         mock_send_mail_bp_update.assert_called_once()
 
