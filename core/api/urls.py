@@ -74,12 +74,11 @@ from core.api.views.projects import (
     ProjectStatisticsView,
     ProjectSubmissionAmountViewSet,
     ProjectViewSet,
-    ProjectSectorListView,
     ProjectStatusListView,
-    ProjectSubSectorListView,
     ProjectTypeListView,
 )
 from core.api.views.rbm_measures import RBMMeasureListView
+from core.api.views.sector_subsector import ProjectSectorView, ProjectSubSectorView
 from core.api.views.settings import SettingsView
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView
@@ -91,6 +90,8 @@ router.register("project-fund", ProjectFundViewSet)
 router.register("project-ods-odp", ProjectOdsOdpViewSet)
 router.register("project-comment", ProjectCommentViewSet)
 router.register("project-rbm-measure", ProjectRbmMeasureViewSet)
+router.register("project-sector", ProjectSectorView)
+router.register("project-subsector", ProjectSubSectorView)
 router.register("submission-amount", ProjectSubmissionAmountViewSet)
 router.register("business-plan", BusinessPlanViewSet, basename="businessplan")
 router.register("business-plan-activity", BPActivityViewSet, basename="bpactivity")
@@ -308,16 +309,6 @@ urlpatterns = [
         "project-statuses/",
         ProjectStatusListView.as_view(),
         name="project-status-list",
-    ),
-    path(
-        "project-sectors/",
-        ProjectSectorListView.as_view(),
-        name="project-sector-list",
-    ),
-    path(
-        "project-subsectors/",
-        ProjectSubSectorListView.as_view(),
-        name="project-subsector-list",
     ),
     path(
         "project-types/",

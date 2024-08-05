@@ -30,9 +30,7 @@ from core.api.serializers.project import (
 from core.api.serializers.project import (
     ProjectDetailsSerializer,
     ProjectListSerializer,
-    ProjectSectorSerializer,
     ProjectStatusSerializer,
-    ProjectSubSectorSerializer,
     ProjectTypeSerializer,
 )
 from core.api.utils import workbook_pdf_response, workbook_response
@@ -59,24 +57,6 @@ class ProjectStatusListView(generics.ListAPIView):
 
     queryset = ProjectStatus.objects.all()
     serializer_class = ProjectStatusSerializer
-
-
-class ProjectSectorListView(generics.ListAPIView):
-    """
-    List project sector
-    """
-
-    queryset = ProjectSector.objects.order_by("sort_order").all()
-    serializer_class = ProjectSectorSerializer
-
-
-class ProjectSubSectorListView(generics.ListAPIView):
-    """
-    List project subsector
-    """
-
-    queryset = ProjectSubSector.objects.order_by("sort_order").all()
-    serializer_class = ProjectSubSectorSerializer
 
 
 class ProjectTypeListView(generics.ListAPIView):
