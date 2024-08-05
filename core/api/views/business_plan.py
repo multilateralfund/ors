@@ -238,7 +238,7 @@ class BusinessPlanViewSet(
         user = request.user
         current_obj = self.get_object()
 
-        ignore_comment = True if "agency" in user.user_type.lower() else False
+        ignore_comment = bool("agency" in user.user_type.lower())
         serializer = BusinessPlanCreateSerializer(
             data=request.data, context={"ignore_comment": ignore_comment}
         )
