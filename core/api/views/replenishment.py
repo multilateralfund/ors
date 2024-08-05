@@ -6,10 +6,10 @@ import urllib
 from decimal import Decimal
 
 import openpyxl
-from django.db.models import Q, F
-from django_filters.rest_framework import DjangoFilterBackend
 from django.db import models, transaction
+from django.db.models import Q, F
 from django.http import HttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, mixins, status, views, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -48,7 +48,6 @@ from core.models import (
     ScaleOfAssessment,
     ScaleOfAssessmentVersion,
     TriennialContributionStatus,
-    CountryCEITStatus,
 )
 
 

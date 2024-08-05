@@ -1,5 +1,5 @@
 # TODO: split into more functions
-# pylint: disable=R0915
+# pylint: disable=R0915,R0914
 
 import decimal
 import logging
